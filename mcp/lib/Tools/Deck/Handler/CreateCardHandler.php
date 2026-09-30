@@ -42,6 +42,17 @@ final class CreateCardHandler extends AbstractHandler {
 	 */
 	public function handle(array $arguments, string $userId): array {
 		return $this->run(function () use ($arguments, $userId): array {
+			// The stack decides whose board the card lands on; without the user's confirmation the
+			// answer is the shared-resource payload and nothing is created.
+			$confirmation = $this->confirmShared(
+				$arguments,
+				$userId,
+				$this->gateway->stackOwnership($userId, (int)$arguments['stackId']),
+			);
+			if ($confirmation !== null) {
+				return $confirmation;
+			}
+
 			$card = $this->gateway->createCard(
 				$userId,
 				(int)$arguments['stackId'],

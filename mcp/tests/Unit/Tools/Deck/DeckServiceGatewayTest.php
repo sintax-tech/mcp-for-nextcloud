@@ -14,6 +14,8 @@ use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
 use OCA\Deck\Service\StackService;
 use OCA\Mcp\Tools\Deck\DeckServiceGateway;
+use OCP\IUser;
+use OCP\IUserManager;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
@@ -47,6 +49,7 @@ final class DeckServiceGatewayTest extends TestCase {
 			PermissionService::class => $this->createMock(PermissionService::class),
 			CardMapper::class => $this->createMock(CardMapper::class),
 			StackMapper::class => $this->createMock(StackMapper::class),
+			IUserManager::class => $this->createMock(IUserManager::class),
 		];
 
 		$this->container = $this->createMock(ContainerInterface::class);
@@ -315,6 +318,93 @@ final class DeckServiceGatewayTest extends TestCase {
 		self::assertCount(1, $this->record('get:' . CardService::class));
 	}
 
+	public function testStackOwnershipChecksEditAccessBeforeReadingTheBoard(): void {
+		$this->recordSetUserId();
+		$this->recordUser('pedro', 'Pedro Almeida');
+		$this->services[PermissionService::class]
+			->expects(self::once())
+			->method('checkPermission')
+			->with(self::isInstanceOf(StackMapper::class), 10, Acl::PERMISSION_EDIT)
+			->willReturnCallback(function (): bool {
+				$this->calls[] = 'checkPermission';
+
+				return true;
+			});
+		$this->services[StackMapper::class]
+			->expects(self::once())
+			->method('findBoardId')
+			->with(10)
+			->willReturnCallback(function (): int {
+				$this->calls[] = 'findBoardId';
+
+				return 4;
+			});
+		$this->services[BoardService::class]
+			->expects(self::once())
+			->method('find')
+			->with(4, false, true)
+			->willReturn($this->boardDouble(4, 'Comercial', 'pedro'));
+
+		self::assertSame(
+			['owner' => 'pedro', 'ownerDisplayName' => 'Pedro Almeida', 'name' => 'Comercial'],
+			$this->gateway->stackOwnership('alice', 10),
+		);
+		self::assertSame(['checkPermission', 'findBoardId'], $this->record('checkPermission', 'findBoardId'));
+	}
+
+	public function testCardOwnershipRunsTheSameCheckTheWriteRuns(): void {
+		$this->recordSetUserId();
+		$this->recordUser('pedro', 'Pedro Almeida');
+		$this->services[PermissionService::class]
+			->expects(self::once())
+			->method('checkPermission')
+			->with(self::isInstanceOf(CardMapper::class), 7, Acl::PERMISSION_EDIT)
+			->willReturn(true);
+		$this->services[CardMapper::class]
+			->expects(self::once())
+			->method('findBoardId')
+			->with(7)
+			->willReturn(4);
+		$this->services[BoardService::class]
+			->expects(self::once())
+			->method('find')
+			->with(4, false, true)
+			->willReturn($this->boardDouble(4, 'Comercial', 'pedro'));
+
+		self::assertSame(
+			['owner' => 'pedro', 'ownerDisplayName' => 'Pedro Almeida', 'name' => 'Comercial'],
+			$this->gateway->cardOwnership('alice', 7),
+		);
+	}
+
+	public function testOwnershipIsRefusedBeforeAnyOwnerIsReadWhenAccessIsDenied(): void {
+		$this->recordSetUserId();
+		$this->services[PermissionService::class]
+			->method('checkPermission')
+			->willThrowException(new NoPermissionException('Permission denied'));
+		$this->services[StackMapper::class]->expects(self::never())->method('findBoardId');
+		$this->services[BoardService::class]->expects(self::never())->method('find');
+
+		$this->expectException(NoPermissionException::class);
+
+		$this->gateway->stackOwnership('alice', 10);
+	}
+
+	public function testOwnershipShowsTheUidWhenTheOwnerAccountIsGone(): void {
+		$this->recordSetUserId();
+		$this->services[PermissionService::class]->method('checkPermission')->willReturn(true);
+		$this->services[StackMapper::class]->method('findBoardId')->willReturn(4);
+		$this->services[BoardService::class]
+			->method('find')
+			->willReturn($this->boardDouble(4, 'Comercial', 'ex-usuario'));
+		$this->services[IUserManager::class]->method('get')->with('ex-usuario')->willReturn(null);
+
+		self::assertSame(
+			['owner' => 'ex-usuario', 'ownerDisplayName' => 'ex-usuario', 'name' => 'Comercial'],
+			$this->gateway->stackOwnership('alice', 10),
+		);
+	}
+
 	/**
 	 * Makes every `setUserId()` call record itself in the call log.
 	 *
@@ -326,6 +416,19 @@ final class DeckServiceGatewayTest extends TestCase {
 			->willReturnCallback(function (string $userId): void {
 				$this->calls[] = 'setUserId:' . $userId;
 			});
+	}
+
+	/**
+	 * Makes the user manager resolve one account for the display-name lookup.
+	 *
+	 * @param string $uid UID to resolve.
+	 * @param string $displayName Name that account reports.
+	 * @return void
+	 */
+	private function recordUser(string $uid, string $displayName): void {
+		$user = $this->createMock(IUser::class);
+		$user->method('getDisplayName')->willReturn($displayName);
+		$this->services[IUserManager::class]->method('get')->with($uid)->willReturn($user);
 	}
 
 	/**
@@ -343,9 +446,15 @@ final class DeckServiceGatewayTest extends TestCase {
 
 	/**
 	 * @param int $id Board id.
+	 * @param string|null $title Board title, or null for the default one.
+	 * @param string $owner UID of the board owner.
 	 * @return \OCA\Deck\Db\Board Board double.
 	 */
-	private function boardDouble(int $id): \OCA\Deck\Db\Board {
-		return new \OCA\Deck\Db\Board(['id' => $id, 'title' => 'Board ' . $id]);
+	private function boardDouble(int $id, ?string $title = null, string $owner = ''): \OCA\Deck\Db\Board {
+		return new \OCA\Deck\Db\Board([
+			'id' => $id,
+			'title' => $title ?? 'Board ' . $id,
+			'owner' => $owner,
+		]);
 	}
 }

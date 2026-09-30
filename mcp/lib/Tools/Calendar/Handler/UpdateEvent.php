@@ -14,6 +14,7 @@ use OCA\Mcp\Tools\Calendar\EventBuilder;
 use OCA\Mcp\Tools\Calendar\EventMapper;
 use OCA\Mcp\Tools\Calendar\EventRepository;
 use OCA\Mcp\Tools\Calendar\EventTiming;
+use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCP\AppFramework\Utility\ITimeFactory;
 use Sabre\VObject\Component\VEvent;
@@ -29,6 +30,7 @@ final class UpdateEvent implements CalendarTool {
 
     /**
      * @param CalendarAccess $access calendar visibility and ACL
+     * @param SharedGuard $guard confirmation gate for calendars of somebody else
      * @param CalendarStore $store calendar storage port
      * @param EventRepository $events event lookup with classification and ETag checks
      * @param EventBuilder $builder VEVENT changes
@@ -38,6 +40,7 @@ final class UpdateEvent implements CalendarTool {
      */
     public function __construct(
         private CalendarAccess $access,
+        private SharedGuard $guard,
         private CalendarStore $store,
         private EventRepository $events,
         private EventBuilder $builder,
@@ -52,7 +55,7 @@ final class UpdateEvent implements CalendarTool {
     public function definition(): array {
         return ToolSchema::definition(
             'calendar_update_event',
-            'Altera título, local, descrição ou datas de um evento. Datas de série recorrente não podem ser alteradas.' . ToolSchema::NO_NOTIFICATION,
+            'Altera título, local, descrição ou datas de um evento. Datas de série recorrente não podem ser alteradas.' . ToolSchema::NO_NOTIFICATION . SharedGuard::DESCRIPTION_SUFFIX,
             'edit',
             [
                 'calendar' => ToolSchema::calendar(),
@@ -65,13 +68,14 @@ final class UpdateEvent implements CalendarTool {
                 'location' => ToolSchema::text('novo local; vazio remove', 0, 255),
                 'description' => ToolSchema::text('nova descrição; vazio remove', 0, 65536),
                 'etag' => ToolSchema::etag(),
+                'confirm_shared' => SharedGuard::property(),
             ],
             ['calendar', 'uid'],
         );
     }
 
     /**
-     * @param array{calendar: string, uid: string, summary?: string, start?: string, end?: string, allDay?: bool, timeZone?: string, location?: string, description?: string, etag?: string} $arguments
+     * @param array{calendar: string, uid: string, summary?: string, start?: string, end?: string, allDay?: bool, timeZone?: string, location?: string, description?: string, etag?: string, confirm_shared?: bool} $arguments
      * @param string $userId authenticated UID
      * @return array{content: list<array{type:string, text:string}>} updated event item plus etag
      * @throws CalendarException when not visible, not writable, changed meanwhile or a recurring timing change
@@ -84,6 +88,9 @@ final class UpdateEvent implements CalendarTool {
             throw new CalendarArgumentException('Informe ao menos um campo para alterar.');
         }
         $calendar = $this->access->resolveWritable($userId, $arguments['calendar']);
+        if (($confirmation = $this->guard->confirm($calendar, $userId, $arguments)) !== null) {
+            return $confirmation;
+        }
         $stored = $this->events->forChange($calendar, $arguments['uid'], $userId, $arguments['etag'] ?? null);
         $master = $stored->master() ?? throw CalendarException::notFound();
         if ($timingChanges !== []) {

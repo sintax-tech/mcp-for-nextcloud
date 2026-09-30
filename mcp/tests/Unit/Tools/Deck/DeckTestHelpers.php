@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Deck\Db\Card;
+use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Shared helpers for the Deck unit tests.
@@ -11,6 +13,43 @@ use OCA\Deck\Db\Card;
  * Deck doubles live in `Stubs/`, which a Deck test must require before touching the module.
  */
 trait DeckTestHelpers {
+	/**
+	 * Builds a gateway double whose ownership lookups report a board of the given owner.
+	 *
+	 * Every write handler asks for the ownership before touching the Deck, so a double of a write
+	 * handler has to answer it; `alice` is the caller and owns `Pessoal`, which lets the write go
+	 * through. Tests about somebody else's board pass another owner.
+	 *
+	 * @param string $owner UID reported as owner of the board of both the card and the stack.
+	 * @param string $name Board title reported by the ownership lookups.
+	 * @return DeckGatewayInterface&MockObject Gateway double, ready for the write expectations.
+	 */
+	protected function gatewayOwnedBy(string $owner, string $name = 'Pessoal'): DeckGatewayInterface&MockObject {
+		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$ownership = $this->ownershipOf($owner, $name);
+		$gateway->method('cardOwnership')->willReturn($ownership);
+		$gateway->method('stackOwnership')->willReturn($ownership);
+
+		return $gateway;
+	}
+
+	/**
+	 * Ownership report a gateway returns for a board.
+	 *
+	 * @param string $owner UID of the board owner.
+	 * @param string $name Board title.
+	 * @return array{owner: string, ownerDisplayName: string, name: string} Ownership report.
+	 */
+	protected function ownershipOf(string $owner, string $name = 'Pessoal'): array {
+		$displayNames = ['alice' => 'Alice Silva', 'pedro' => 'Pedro Almeida'];
+
+		return [
+			'owner' => $owner,
+			'ownerDisplayName' => $displayNames[$owner] ?? $owner,
+			'name' => $name,
+		];
+	}
+
 	/**
 	 * Builds a card double.
 	 *
@@ -58,5 +97,25 @@ trait DeckTestHelpers {
 		self::assertArrayHasKey('content', $result);
 
 		return $result['content'][0]['text'];
+	}
+
+	/**
+	 * Asserts a result is the shared-resource confirmation of `pedro`'s board, with no error.
+	 *
+	 * @param array{content: list<array{type: string, text: string}>} $result Result returned by a handler.
+	 */
+	protected function assertSharedConfirmation(array $result): void {
+		self::assertArrayNotHasKey('isError', $result);
+		$payload = $this->payload($result);
+		self::assertTrue($payload['requiresConfirmation']);
+		self::assertSame('shared', $payload['scope']);
+		self::assertSame('pedro', $payload['owner']);
+		self::assertSame('Pedro Almeida', $payload['ownerDisplayName']);
+		self::assertSame('Comercial', $payload['resource']);
+		self::assertSame(
+			"O quadro 'Comercial' pertence a Pedro Almeida e é compartilhado com você. Alterações afetam outras pessoas."
+			. ' Confirme com o usuário antes de continuar e repita a chamada com confirm_shared: true.',
+			$payload['message'],
+		);
 	}
 }

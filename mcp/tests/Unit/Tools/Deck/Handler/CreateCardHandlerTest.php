@@ -29,7 +29,7 @@ final class CreateCardHandlerTest extends TestCase {
 	 * @return CreateCardHandler Handler under test.
 	 */
 	private function handler(?\Throwable $failure = null): CreateCardHandler {
-		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway = $this->gatewayOwnedBy('alice');
 		$expectation = $gateway->method('createCard');
 		if ($failure !== null) {
 			$expectation->willThrowException($failure);
@@ -41,7 +41,7 @@ final class CreateCardHandlerTest extends TestCase {
 	}
 
 	public function testHappyPathSendsTheCardOwnedByTheCaller(): void {
-		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::once())
 			->method('createCard')
 			->with('alice', 10, 'Fechar contrato', 'Com o cliente', '2026-03-01')
@@ -59,7 +59,7 @@ final class CreateCardHandlerTest extends TestCase {
 	}
 
 	public function testOptionalFieldsFallBackToEmptyAndNoDate(): void {
-		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::once())
 			->method('createCard')
 			->with('alice', 10, 'Fechar', '', null)
@@ -70,7 +70,7 @@ final class CreateCardHandlerTest extends TestCase {
 	}
 
 	public function testBlankTitleIsAParameterErrorAndNeverReachesDeck(): void {
-		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::never())->method('createCard');
 		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
 
@@ -81,7 +81,7 @@ final class CreateCardHandlerTest extends TestCase {
 	}
 
 	public function testImpossibleDateIsAParameterError(): void {
-		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::never())->method('createCard');
 		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
 
@@ -92,7 +92,7 @@ final class CreateCardHandlerTest extends TestCase {
 	}
 
 	public function testOversizedDescriptionIsRefusedInsteadOfTruncated(): void {
-		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::never())->method('createCard');
 		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
 
@@ -128,5 +128,50 @@ final class CreateCardHandlerTest extends TestCase {
 		self::assertTrue($result['isError']);
 		self::assertSame(DeckMessages::ERROR_GENERIC, $this->text($result));
 		self::assertStringNotContainsString('foreign key', $this->text($result));
+	}
+
+	public function testSharedBoardWithoutConfirmationCreatesNothing(): void {
+		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway->expects(self::once())
+			->method('stackOwnership')
+			->with('alice', 10)
+			->willReturn($this->ownershipOf('pedro', 'Comercial'));
+		$gateway->expects(self::never())->method('createCard');
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+
+		$this->assertSharedConfirmation($handler->handle([
+			'stackId' => 10,
+			'title' => 'Fechar contrato',
+		], 'alice'));
+	}
+
+	public function testSharedBoardWithConfirmationCreatesTheCard(): void {
+		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway->method('stackOwnership')->willReturn($this->ownershipOf('pedro', 'Comercial'));
+		$gateway->expects(self::once())
+			->method('createCard')
+			->with('alice', 10, 'Fechar contrato', '', null)
+			->willReturn($this->card(['id' => 9]));
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+
+		$payload = $this->payload($handler->handle([
+			'stackId' => 10,
+			'title' => 'Fechar contrato',
+			'confirm_shared' => true,
+		], 'alice'));
+
+		self::assertSame(9, $payload['id']);
+	}
+
+	public function testOwnershipDeniedIsRefusedBeforeAnythingIsCreated(): void {
+		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway->method('stackOwnership')->willThrowException(new NoPermissionException('Permission denied'));
+		$gateway->expects(self::never())->method('createCard');
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+
+		$result = $handler->handle(['stackId' => 10, 'title' => 'Fechar contrato'], 'alice');
+
+		self::assertTrue($result['isError']);
+		self::assertSame(DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN, $this->text($result));
 	}
 }

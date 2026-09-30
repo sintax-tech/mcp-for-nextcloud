@@ -106,4 +106,31 @@ interface DeckGatewayInterface {
 	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
 	 */
 	public function deleteCard(string $userId, int $cardId): Card;
+
+	/**
+	 * Ownership of the board behind a stack, after the edit check the write needs.
+	 *
+	 * The Deck has no owner query for a stack, so the gateway checks `PERMISSION_EDIT` on the board
+	 * the stack belongs to first: a stack the caller may not write is answered as "denied" before
+	 * any owner or title is read, exactly like the write itself would.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $stackId Stack whose board is looked up.
+	 * @return array{owner: string, ownerDisplayName: string, name: string} Owner uid, its display name and the board title.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 */
+	public function stackOwnership(string $userId, int $stackId): array;
+
+	/**
+	 * Ownership of the board behind a card, after the edit check the write needs.
+	 *
+	 * Same contract as {@see self::stackOwnership()}, starting from the card: the Deck checks
+	 * `PERMISSION_EDIT` on the board of the card and refuses a card that is already deleted.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $cardId Card whose board is looked up.
+	 * @return array{owner: string, ownerDisplayName: string, name: string} Owner uid, its display name and the board title.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 */
+	public function cardOwnership(string $userId, int $cardId): array;
 }

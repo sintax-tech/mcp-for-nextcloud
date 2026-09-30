@@ -7,6 +7,7 @@ use InvalidArgumentException;
 use OCA\Mcp\Tools\Deck\DeckConflictException;
 use OCA\Mcp\Tools\Deck\DeckErrors;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Tools\Deck\DeckMessages;
 use OCA\Mcp\Tools\Deck\DeckResult;
 use Psr\Log\LoggerInterface;
 
@@ -66,6 +67,34 @@ abstract class AbstractHandler {
 
 			return DeckResult::error(DeckErrors::messageFor($e));
 		}
+	}
+
+	/**
+	 * Shared-resource gate every write tool runs before touching the Deck.
+	 *
+	 * A board owned by somebody else is written only when the call repeats with
+	 * `confirm_shared: true`; otherwise the payload below is returned as a normal, non-error
+	 * result, so the agent can read it, ask the user and call the tool again. The caller's own
+	 * board never needs the flag.
+	 *
+	 * @param array<string, mixed> $arguments Arguments of the call, read for `confirm_shared`.
+	 * @param string $userId UID of the authenticated caller.
+	 * @param array{owner: string, ownerDisplayName: string, name: string} $ownership Board the write would touch.
+	 * @return array<string, mixed>|null Payload to answer with instead of writing, or null to proceed.
+	 */
+	protected function confirmShared(array $arguments, string $userId, array $ownership): ?array {
+		if ($ownership['owner'] === $userId || ($arguments['confirm_shared'] ?? null) === true) {
+			return null;
+		}
+
+		return [
+			'requiresConfirmation' => true,
+			'scope' => 'shared',
+			'owner' => $ownership['owner'],
+			'ownerDisplayName' => $ownership['ownerDisplayName'],
+			'resource' => $ownership['name'],
+			'message' => sprintf(DeckMessages::SHARED_CONFIRMATION, $ownership['name'], $ownership['ownerDisplayName']),
+		];
 	}
 
 	/**

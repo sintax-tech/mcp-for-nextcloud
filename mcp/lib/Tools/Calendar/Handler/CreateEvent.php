@@ -11,6 +11,7 @@ use OCA\Mcp\Tools\Calendar\DateInput;
 use OCA\Mcp\Tools\Calendar\EventBuilder;
 use OCA\Mcp\Tools\Calendar\EventMapper;
 use OCA\Mcp\Tools\Calendar\EventRepository;
+use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCP\AppFramework\Utility\ITimeFactory;
 
@@ -20,6 +21,7 @@ use OCP\AppFramework\Utility\ITimeFactory;
 final class CreateEvent implements CalendarTool {
     /**
      * @param CalendarAccess $access calendar visibility and ACL
+     * @param SharedGuard $guard confirmation gate for calendars of somebody else
      * @param CalendarStore $store calendar storage port
      * @param EventRepository $events UID/URI conflict checks
      * @param EventBuilder $builder VEVENT construction
@@ -29,6 +31,7 @@ final class CreateEvent implements CalendarTool {
      */
     public function __construct(
         private CalendarAccess $access,
+        private SharedGuard $guard,
         private CalendarStore $store,
         private EventRepository $events,
         private EventBuilder $builder,
@@ -43,7 +46,7 @@ final class CreateEvent implements CalendarTool {
     public function definition(): array {
         return ToolSchema::definition(
             'calendar_create_event',
-            'Cria um evento simples (sem recorrência) num calendário com permissão de escrita.' . ToolSchema::NO_NOTIFICATION,
+            'Cria um evento simples (sem recorrência) num calendário com permissão de escrita.' . ToolSchema::NO_NOTIFICATION . SharedGuard::DESCRIPTION_SUFFIX,
             'create',
             [
                 'calendar' => ToolSchema::calendar(),
@@ -54,13 +57,14 @@ final class CreateEvent implements CalendarTool {
                 'timeZone' => ToolSchema::text('fuso IANA, ex.: America/Sao_Paulo', 1, 64),
                 'location' => ToolSchema::text('local', 0, 255),
                 'description' => ToolSchema::text('descrição', 0, 65536),
+                'confirm_shared' => SharedGuard::property(),
             ],
             ['calendar', 'summary', 'start', 'end'],
         );
     }
 
     /**
-     * @param array{calendar: string, summary: string, start: string, end: string, allDay?: bool, timeZone?: string, location?: string, description?: string} $arguments
+     * @param array{calendar: string, summary: string, start: string, end: string, allDay?: bool, timeZone?: string, location?: string, description?: string, confirm_shared?: bool} $arguments
      * @param string $userId authenticated UID
      * @return array{content: list<array{type:string, text:string}>} created event item plus etag
      * @throws \OCA\Mcp\Tools\Calendar\CalendarException when the calendar is not visible, not writable or the UID is taken
@@ -68,6 +72,9 @@ final class CreateEvent implements CalendarTool {
      */
     public function execute(array $arguments, string $userId): array {
         $calendar = $this->access->resolveWritable($userId, $arguments['calendar']);
+        if (($confirmation = $this->guard->confirm($calendar, $userId, $arguments)) !== null) {
+            return $confirmation;
+        }
         $timing = $this->dates->timing($arguments['start'], $arguments['end'], (bool)($arguments['allDay'] ?? false), $arguments['timeZone'] ?? null);
         $uid = $this->newUid();
         $uri = $uid . '.ics';

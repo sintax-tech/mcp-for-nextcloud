@@ -42,6 +42,17 @@ final class DeleteCardHandler extends AbstractHandler {
 	 */
 	public function handle(array $arguments, string $userId): array {
 		return $this->run(function () use ($arguments, $userId): array {
+			// `confirm` is already true here (the schema forces it); `confirm_shared` is what the
+			// board of somebody else still needs before the card is deleted.
+			$confirmation = $this->confirmShared(
+				$arguments,
+				$userId,
+				$this->gateway->cardOwnership($userId, (int)$arguments['cardId']),
+			);
+			if ($confirmation !== null) {
+				return $confirmation;
+			}
+
 			return $this->formatter->card($this->gateway->deleteCard($userId, (int)$arguments['cardId']));
 		});
 	}

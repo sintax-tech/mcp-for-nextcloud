@@ -77,9 +77,9 @@ Os arquivos de licença acompanham cada pacote em `vendor/`. O `vendor/autoload.
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-0.6.0.tar.gz <servidor>:/tmp/
+scp build/mcp-0.6.1.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-0.6.0.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-0.6.1.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp
@@ -150,7 +150,7 @@ Respostas esperadas:
 | Serviço desligado, usuário inelegível ou desconectado | 403 |
 | `Origin` de outro host | 403 |
 | Faltando `Accept: application/json, text/event-stream` ou `Content-Type: application/json` | 406 |
-| Falta `MCP-Protocol-Version: 2025-06-18` depois do `initialize`, ou versão diferente | 400 |
+| `MCP-Protocol-Version` desconhecida ou malformada depois do `initialize` (aceitas: 2025-03-26, 2025-06-18, 2025-11-25; ausente vale 2025-03-26; no `initialize` o header é ignorado). O motivo de cada 400 vai para o log em nível debug. | 400 |
 | JSON inválido (`-32700`), lote ou envelope inválido (`-32600`) | 400 |
 | Método desconhecido (`-32601`) ou parâmetros inválidos (`-32602`) | 200 com erro JSON-RPC |
 | GET ou DELETE | 405 |

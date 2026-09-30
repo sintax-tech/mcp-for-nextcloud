@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Service;
 
 use OCA\Mcp\Tools\ToolRegistry;
+use Psr\Log\LoggerInterface;
 
 /**
  * Stateless MCP 2025-06-18 JSON-RPC handling for a single POSTed message.
@@ -14,8 +15,15 @@ class McpProtocol {
     public const VERSION = '2025-06-18';
     /** Built-in diagnostic tool that reads no user data. */
     public const TOOL = 'mcp_status';
+    /** MCP-Protocol-Version values accepted after initialize. */
+    public const KNOWN_VERSIONS = ['2025-03-26', '2025-06-18', '2025-11-25'];
+    /** Version assumed when the header is absent, as the Streamable HTTP transport specifies. */
+    public const DEFAULT_HEADER_VERSION = '2025-03-26';
 
-    public function __construct(private ToolRegistry $tools) {}
+    public function __construct(
+        private ToolRegistry $tools,
+        private LoggerInterface $logger,
+    ) {}
 
     /**
      * Handles one JSON-RPC message.
@@ -29,26 +37,29 @@ class McpProtocol {
         try {
             $message = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
         } catch (\JsonException) {
-            return $this->error(null, -32700, 'Parse error', 400);
+            return $this->reject('parse error', $this->error(null, -32700, 'Parse error', 400));
         }
         if (!is_array($message) || array_is_list($message) || ($message['jsonrpc'] ?? null) !== '2.0'
             || !isset($message['method']) || !is_string($message['method'])
             || (array_key_exists('id', $message) && !is_int($message['id']) && !is_string($message['id']))) {
-            return $this->error(null, -32600, 'Invalid Request', 400);
+            return $this->reject('invalid JSON-RPC envelope', $this->error(null, -32600, 'Invalid Request', 400));
         }
         $method = $message['method'];
-        // Every request after initialize must carry the negotiated version header.
-        if ($method !== 'initialize' && $headerVersion !== self::VERSION) {
-            return ['status' => 400, 'body' => null];
-        }
-        if ($method === 'initialize' && $headerVersion !== '' && $headerVersion !== self::VERSION) {
-            return ['status' => 400, 'body' => null];
+        // initialize negotiates through params.protocolVersion, so its header is ignored; later requests
+        // may carry any known version, and a missing header means the transport's default.
+        $version = $headerVersion === '' ? self::DEFAULT_HEADER_VERSION : $headerVersion;
+        if ($method !== 'initialize' && !in_array($version, self::KNOWN_VERSIONS, true)) {
+            return $this->reject('unsupported MCP-Protocol-Version', ['status' => 400, 'body' => null], [
+                'method' => mb_substr($method, 0, 64),
+                'version' => preg_match('/^\d{4}-\d{2}-\d{2}$/', $headerVersion) === 1 ? $headerVersion : 'malformed',
+            ]);
         }
         $id = $message['id'] ?? null;
         if ($id === null) {
-            return $method === 'notifications/initialized'
+            // Every client notification is acknowledged; none of them changes server state here.
+            return str_starts_with($method, 'notifications/')
                 ? ['status' => 202, 'body' => null]
-                : $this->error(null, -32600, 'Invalid Request', 400);
+                : $this->reject('unsupported notification', $this->error(null, -32600, 'Invalid Request', 400));
         }
         $params = $message['params'] ?? [];
         if (!is_array($params) || array_is_list($params) && $params !== []) {
@@ -62,7 +73,7 @@ class McpProtocol {
             return $this->result($id, [
                 'protocolVersion' => self::VERSION,
                 'capabilities' => ['tools' => new \stdClass()],
-                'serverInfo' => ['name' => 'nextcloud-mcp', 'version' => '0.6.0'],
+                'serverInfo' => ['name' => 'nextcloud-mcp', 'version' => '0.6.1'],
             ]);
         }
         if ($method === 'ping') {
@@ -93,6 +104,19 @@ class McpProtocol {
             }
         }
         return $this->error($id, -32601, 'Method not found');
+    }
+
+    /**
+     * Logs why a request got HTTP 400 at debug level: the reason and method only, never body or auth headers.
+     *
+     * @param string $reason fixed description of the rejection
+     * @param array{status:int, body:array<string, mixed>|null} $response response being returned
+     * @param array<string, string> $context extra safe context
+     * @return array{status:int, body:array<string, mixed>|null} the same response
+     */
+    private function reject(string $reason, array $response, array $context = []): array {
+        $this->logger->debug('MCP request rejected: ' . $reason, ['app' => 'mcp'] + $context);
+        return $response;
     }
 
     /** Only the registry's fixed validation messages reach the client. */

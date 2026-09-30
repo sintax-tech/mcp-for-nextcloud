@@ -103,7 +103,57 @@ final class L10nTest extends TestCase {
         if ($dynamic) {
             $keys = array_merge($keys, $this->catalogKeys());
         }
+        return array_values(array_unique(array_merge($keys, $this->libraryKeys())));
+    }
+
+    /**
+     * Literal source texts of the Translator::t() and Translator::n() calls under lib/.
+     *
+     * @return list<string> keys in the format of the translation file
+     */
+    private function libraryKeys(): array {
+        $keys = [];
+        foreach ($this->libraryFiles() as $file) {
+            $source = (string)file_get_contents($file);
+            $this->assertSame([], $this->nonLiteralCalls($source), $file . ': the source text of Translator::t()/n() must be a literal');
+            foreach (["/Translator::t\\s*\\(\\s*'((?:[^'\\\\]|\\\\.)*)'\\s*[,)]/s", '/Translator::t\\s*\\(\\s*"((?:[^"\\\\]|\\\\.)*)"\\s*[,)]/s'] as $pattern) {
+                preg_match_all($pattern, $source, $matches);
+                $keys = array_merge($keys, array_map($this->unescape(...), $matches[1]));
+            }
+            foreach (["/Translator::n\\s*\\(\\s*'((?:[^'\\\\]|\\\\.)*)'\\s*,\\s*'((?:[^'\\\\]|\\\\.)*)'\\s*,/s", '/Translator::n\\s*\\(\\s*"((?:[^"\\\\]|\\\\.)*)"\\s*,\\s*"((?:[^"\\\\]|\\\\.)*)"\\s*,/s'] as $pattern) {
+                preg_match_all($pattern, $source, $matches);
+                foreach ($matches[1] as $i => $singular) {
+                    $keys[] = '_' . $this->unescape($singular) . '_::_' . $this->unescape($matches[2][$i]) . '_';
+                }
+            }
+        }
         return array_values(array_unique($keys));
+    }
+
+    /** @return list<string> every PHP file under lib/ */
+    private function libraryFiles(): array {
+        $files = [];
+        $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->path('lib'), \FilesystemIterator::SKIP_DOTS));
+        foreach ($iterator as $file) {
+            if ($file->isFile() && $file->getExtension() === 'php') {
+                $files[] = $file->getPathname();
+            }
+        }
+        sort($files);
+        return $files;
+    }
+
+    /** @return list<string> Translator calls whose first argument does not start with a quoted literal or continues after it */
+    private function nonLiteralCalls(string $source): array {
+        $bad = [];
+        preg_match_all("/Translator::([tn])\\s*\\((.{0,400})/s", $source, $calls, PREG_SET_ORDER);
+        foreach ($calls as $call) {
+            $literal = "/^\\s*(?:'(?:[^'\\\\]|\\\\.)*'|\"(?:[^\"\\\\]|\\\\.)*\")\\s*[,)]/s";
+            if (!preg_match($literal, $call[2])) {
+                $bad[] = $call[0];
+            }
+        }
+        return $bad;
     }
 
     /** @return list<string> keys of one source file */

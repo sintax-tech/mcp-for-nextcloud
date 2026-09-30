@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools;
 
+use OCA\Mcp\L10n\Translator;
+
 /**
  * How tools are shown to the model and to the person reading the conversation.
  *
@@ -12,9 +14,9 @@ namespace OCA\Mcp\Tools;
  * add its tools without touching this class's callers.
  */
 final class ToolPresentation {
-    /** Guidance sent in `initialize` and in `server/discover`, so the model speaks the titles too. */
-    public const INSTRUCTIONS = "Ao falar com o usuário, refira-se às ferramentas pelo título (ex.: \"Buscar arquivos\"), "
-        . "nunca pelo nome técnico. Mostre caminhos e nomes de arquivos de forma legível.";
+    /** Guidance sent in `initialize` and in `server/discover`; read by the model, so it is fixed English. */
+    public const INSTRUCTIONS = "Reply in the user's language. When you mention a tool to the user, use its title "
+        . "(for example \"Search files\"), never its technical name. Show file paths and names in a readable way.";
 
     /** Operations that only read; every other operation may change data. */
     private const READ_OPERATION = 'read';
@@ -31,72 +33,71 @@ final class ToolPresentation {
      */
     private const DESTRUCTIVE_TOOLS = ['talk_create_group'];
 
-    /** Technical tool name to human-readable pt-BR title. A tool missing here falls back to a humanized name. */
-    private const TITLES = [
-        // Diagnóstico
-        'mcp_status' => 'Verificar o status do MCP',
-        // Files
-        'files_list' => 'Listar arquivos',
-        'files_search' => 'Buscar arquivos',
-        'files_read' => 'Ler arquivo',
-        'files_edit' => 'Editar arquivo',
-        'files_tree' => 'Ver árvore de pastas',
-        'files_mkdir' => 'Criar pasta',
-        'files_copy' => 'Copiar arquivo',
-        'files_move' => 'Mover arquivo',
-        'files_move_batch' => 'Mover arquivos em lote',
-        'files_undo_batch' => 'Desfazer operação em lote',
-        'files_replace' => 'Substituir trecho do arquivo',
-        'files_checkout' => 'Baixar arquivo para edição local',
-        'files_versions_list' => 'Listar versões do arquivo',
-        'files_version_read' => 'Ler versão do arquivo',
-        'files_version_restore' => 'Restaurar versão do arquivo',
-        // Notes
-        'notes_list' => 'Listar notas',
-        'notes_read' => 'Ler nota',
-        'notes_create' => 'Criar nota',
-        'notes_edit' => 'Editar nota',
-        'notes_move' => 'Mover nota',
-        'notes_delete' => 'Excluir nota',
-        // Calendar
-        'calendar_list_calendars' => 'Listar calendários',
-        'calendar_list_events' => 'Listar eventos',
-        'calendar_create_event' => 'Criar evento',
-        'calendar_update_event' => 'Editar evento',
-        'calendar_move_event' => 'Mover evento para outro calendário',
-        'calendar_transfer_event' => 'Transferir evento para calendário de outra pessoa',
-        'calendar_delete_event' => 'Excluir evento',
-        // Deck
-        'deck_list_boards' => 'Listar quadros do Deck',
-        'deck_list_stacks' => 'Listar listas do Deck',
-        'deck_list_cards' => 'Listar cards do Deck',
-        'deck_read_card' => 'Ler card do Deck',
-        'deck_create_card' => 'Criar card no Deck',
-        'deck_edit_card' => 'Editar card do Deck',
-        'deck_move_card' => 'Mover card no Deck',
-        'deck_delete_card' => 'Excluir card do Deck',
-        'deck_followup_cards' => 'Acompanhar tarefas do Deck',
-        // Talk
-        'talk_list_conversations' => 'Listar conversas do Talk',
-        'talk_read_messages' => 'Ler mensagens do Talk',
-        'talk_reply' => 'Responder no Talk',
-        'talk_attach_file' => 'Anexar arquivo no Talk',
-        'talk_quote_file' => 'Citar arquivo no Talk',
-        'talk_message_user' => 'Mensagem direta no Talk',
-        'talk_send_batch' => 'Enviar lote no Talk',
-        'talk_create_group' => 'Criar grupo no Talk',
-    ];
-
     private function __construct() {
     }
 
     /**
-     * Human-readable title for a tool, falling back to the humanized technical name.
+     * Human-readable title for a tool in the language of the current user, falling back to the humanized technical name.
      *
      * @param string $name technical tool name
      */
     public static function title(string $name): string {
-        return self::TITLES[$name] ?? self::humanized($name);
+        // One literal per call: the translation tool extracts the source texts from here.
+        return match ($name) {
+            // Diagnostics
+            'mcp_status' => Translator::t('Check MCP status'),
+            // Files
+            'files_list' => Translator::t('List files'),
+            'files_search' => Translator::t('Search files'),
+            'files_read' => Translator::t('Read file'),
+            'files_edit' => Translator::t('Edit file'),
+            'files_tree' => Translator::t('View folder tree'),
+            'files_mkdir' => Translator::t('Create folder'),
+            'files_copy' => Translator::t('Copy file'),
+            'files_move' => Translator::t('Move file'),
+            'files_move_batch' => Translator::t('Move files in bulk'),
+            'files_undo_batch' => Translator::t('Undo bulk operation'),
+            'files_replace' => Translator::t('Replace part of a file'),
+            'files_checkout' => Translator::t('Download file for local editing'),
+            'files_versions_list' => Translator::t('List file versions'),
+            'files_version_read' => Translator::t('Read file version'),
+            'files_version_restore' => Translator::t('Restore file version'),
+            // Notes
+            'notes_list' => Translator::t('List notes'),
+            'notes_read' => Translator::t('Read note'),
+            'notes_create' => Translator::t('Create note'),
+            'notes_edit' => Translator::t('Edit note'),
+            'notes_move' => Translator::t('Move note'),
+            'notes_delete' => Translator::t('Delete note'),
+            // Calendar
+            'calendar_list_calendars' => Translator::t('List calendars'),
+            'calendar_list_events' => Translator::t('List events'),
+            'calendar_create_event' => Translator::t('Create event'),
+            'calendar_update_event' => Translator::t('Edit event'),
+            'calendar_move_event' => Translator::t('Move event to another calendar'),
+            'calendar_transfer_event' => Translator::t('Transfer event to another person\'s calendar'),
+            'calendar_delete_event' => Translator::t('Delete event'),
+            // Deck
+            'deck_list_boards' => Translator::t('List Deck boards'),
+            'deck_list_stacks' => Translator::t('List Deck lists'),
+            'deck_list_cards' => Translator::t('List Deck cards'),
+            'deck_read_card' => Translator::t('Read Deck card'),
+            'deck_create_card' => Translator::t('Create card in Deck'),
+            'deck_edit_card' => Translator::t('Edit Deck card'),
+            'deck_move_card' => Translator::t('Move card in Deck'),
+            'deck_delete_card' => Translator::t('Delete Deck card'),
+            'deck_followup_cards' => Translator::t('Follow up on Deck tasks'),
+            // Talk
+            'talk_list_conversations' => Translator::t('List Talk conversations'),
+            'talk_read_messages' => Translator::t('Read Talk messages'),
+            'talk_reply' => Translator::t('Reply in Talk'),
+            'talk_attach_file' => Translator::t('Attach file in Talk'),
+            'talk_quote_file' => Translator::t('Quote file in Talk'),
+            'talk_message_user' => Translator::t('Direct message in Talk'),
+            'talk_send_batch' => Translator::t('Send batch in Talk'),
+            'talk_create_group' => Translator::t('Create group in Talk'),
+            default => self::humanized($name),
+        };
     }
 
     /**

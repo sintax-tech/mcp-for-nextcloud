@@ -4,12 +4,14 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract;
 
 use OCA\Mcp\AppInfo\Application;
+use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\McpProtocol;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\ToolPresentation;
 use OCA\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
+use OCP\IL10N;
 use OCP\IUser;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
@@ -211,10 +213,23 @@ final class ToolsListContractTest extends TestCase {
     public function testEveryRegisteredToolIsInTheTitleMap(): void {
         $tools = json_decode($this->toolsListJson(), false, 512, JSON_THROW_ON_ERROR)->result->tools;
         $missing = [];
-        foreach ($tools as $tool) {
-            if (ToolPresentation::title($tool->name) === ToolPresentation::humanized($tool->name)) {
-                $missing[] = $tool->name;
+        // A mapped title goes through the translator, the humanized fallback does not: the marker tells them apart
+        // even when the English title happens to equal the humanized name.
+        Translator::use(new class implements IL10N {
+            public function t(string $text, $parameters = []): string { return '«' . $text . '»'; }
+            public function n(string $text_singular, string $text_plural, int $count, array $parameters = []): string { return '«' . $text_singular . '»'; }
+            public function l(string $type, $data, array $options = []) { return (string)$data; }
+            public function getLanguageCode(): string { return 'en'; }
+            public function getLocaleCode(): string { return 'en'; }
+        });
+        try {
+            foreach ($tools as $tool) {
+                if (!str_starts_with(ToolPresentation::title($tool->name), '«')) {
+                    $missing[] = $tool->name;
+                }
             }
+        } finally {
+            Translator::reset();
         }
         $this->assertSame([], $missing, 'these tools are missing a friendly title in ToolPresentation');
     }

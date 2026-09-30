@@ -110,7 +110,7 @@ class Stack {
 /** Card entity double. */
 class Card {
 	/**
-	 * @param array{id?: int, stackId?: int, title?: string, description?: string, type?: string, owner?: string, order?: int, archived?: bool, deletedAt?: int, duedate?: \DateTime|null, done?: \DateTime|null, lastModified?: int, attachmentCount?: int|null, relatedBoard?: Board|null} $fields Values the getters report.
+	 * @param array{id?: int, stackId?: int, title?: string, description?: string, type?: string, owner?: string, order?: int, archived?: bool, deletedAt?: int, duedate?: \DateTime|null, done?: \DateTime|null, lastModified?: int, attachmentCount?: int|null, relatedBoard?: Board|null, assignedUsers?: Assignment[]|null} $fields Values the getters report.
 	 */
 	public function __construct(private array $fields = []) {
 	}
@@ -169,6 +169,22 @@ class Card {
 
 	public function getRelatedBoard(): ?Board {
 		return $this->fields['relatedBoard'] ?? null;
+	}
+
+	/**
+	 * Assignments the Deck embeds with the card; null until a mapper or service attaches them.
+	 *
+	 * @return Assignment[]|null Assignments of the card.
+	 */
+	public function getAssignedUsers(): ?array {
+		return $this->fields['assignedUsers'] ?? null;
+	}
+
+	/**
+	 * @param Assignment[] $assignments Assignments of the card, as `CardService::enrichCards()` attaches them.
+	 */
+	public function setAssignedUsers(array $assignments): void {
+		$this->fields['assignedUsers'] = $assignments;
 	}
 }
 
@@ -240,6 +256,53 @@ class CardMapper implements IPermissionMapper {
 	 * @return Card[] Active cards of the stack.
 	 */
 	public function findAll($stackId, ?int $limit = null, int $offset = 0, int $since = -1) {
+		return [];
+	}
+
+	/**
+	 * @param array<int> $stackIds Stacks whose cards are read in one query.
+	 * @param int|null $limit Maximum number of cards per stack.
+	 * @param int $offset Cards to skip.
+	 * @param int $since Only cards modified after this timestamp.
+	 * @return array<int, Card[]|null> Cards grouped by stack id; a stack without cards is null.
+	 */
+	public function findAllForStacks(array $stackIds, ?int $limit = null, int $offset = 0, int $since = -1): array {
+		return [];
+	}
+}
+
+/** Assignment entity double; signatures mirror Deck `v1.17.5` `lib/Db/Assignment.php`. */
+class Assignment {
+	/**
+	 * @param array{id?: int, cardId?: int, participant?: string, type?: int} $fields Values the getters report.
+	 */
+	public function __construct(private array $fields = []) {
+	}
+
+	public function getId(): int {
+		return (int)($this->fields['id'] ?? 0);
+	}
+
+	public function getCardId(): int {
+		return (int)($this->fields['cardId'] ?? 0);
+	}
+
+	public function getParticipant(): string {
+		return (string)($this->fields['participant'] ?? '');
+	}
+
+	public function getType(): int {
+		return (int)($this->fields['type'] ?? 0);
+	}
+}
+
+/** Assignment mapper double; signatures mirror Deck `v1.17.5` `lib/Db/AssignmentMapper.php`. */
+class AssignmentMapper {
+	/**
+	 * @param array<int> $cardIds Cards whose assignments are read in one query.
+	 * @return Assignment[] Assignments of those cards.
+	 */
+	public function findIn(array $cardIds): array {
 		return [];
 	}
 }

@@ -65,6 +65,7 @@ final class ToolPresentation {
         'deck_edit_card' => 'Editar card do Deck',
         'deck_move_card' => 'Mover card no Deck',
         'deck_delete_card' => 'Excluir card do Deck',
+        'deck_followup_cards' => 'Acompanhar tarefas do Deck',
         // Talk
         'talk_list_conversations' => 'Listar conversas do Talk',
         'talk_read_messages' => 'Ler mensagens do Talk',

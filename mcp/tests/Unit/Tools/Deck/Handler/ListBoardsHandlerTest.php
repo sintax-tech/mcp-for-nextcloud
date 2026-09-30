@@ -32,7 +32,7 @@ final class ListBoardsHandlerTest extends TestCase {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->method('listBoards')->willReturn($boards);
 
-		return new ListBoardsHandler($gateway, $logger ?? $this->createMock(LoggerInterface::class), new CardFormatter());
+		return new ListBoardsHandler($gateway, $logger ?? $this->createMock(LoggerInterface::class), $this->cardFormatter());
 	}
 
 	public function testHappyPathReturnsTheBoards(): void {
@@ -53,7 +53,7 @@ final class ListBoardsHandlerTest extends TestCase {
 			->method('listBoards')
 			->with('alice')
 			->willReturn([]);
-		$handler = new ListBoardsHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new ListBoardsHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		self::assertSame(['boards' => [], 'truncated' => false], $this->payload($handler->handle([], 'alice')));
 	}
@@ -73,7 +73,7 @@ final class ListBoardsHandlerTest extends TestCase {
 	public function testDeniedAccessBecomesTheGenericMessageWithoutDetails(): void {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->method('listBoards')->willThrowException(new NoPermissionException('Permission denied'));
-		$handler = new ListBoardsHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new ListBoardsHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$result = $handler->handle([], 'alice');
 
@@ -85,7 +85,7 @@ final class ListBoardsHandlerTest extends TestCase {
 	public function testArchivedBoardBecomesTheNotAllowedMessage(): void {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->method('listBoards')->willThrowException(new StatusException('Operation not allowed. This board is archived.'));
-		$handler = new ListBoardsHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new ListBoardsHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$result = $handler->handle([], 'alice');
 
@@ -108,7 +108,7 @@ final class ListBoardsHandlerTest extends TestCase {
 
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->method('listBoards')->willThrowException(new RuntimeException('connection refused'));
-		$handler = new ListBoardsHandler($gateway, $logger, new CardFormatter());
+		$handler = new ListBoardsHandler($gateway, $logger, $this->cardFormatter());
 
 		$result = $handler->handle([], 'alice');
 

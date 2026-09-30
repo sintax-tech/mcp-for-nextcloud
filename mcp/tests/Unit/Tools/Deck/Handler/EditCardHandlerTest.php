@@ -42,7 +42,7 @@ final class EditCardHandlerTest extends TestCase {
 			$expectation->willReturn($this->card($current + ['id' => 7]));
 		}
 
-		return new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		return new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 	}
 
 	public function testHappyPathSendsTheMergedForm(): void {
@@ -61,7 +61,7 @@ final class EditCardHandlerTest extends TestCase {
 			->method('updateCard')
 			->with('alice', $current, 'Novo título', 'Descrição atual', '2026-01-05')
 			->willReturn($current);
-		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$payload = $this->payload($handler->handle(['cardId' => 7, 'title' => 'Novo título'], 'alice'));
 
@@ -76,7 +76,7 @@ final class EditCardHandlerTest extends TestCase {
 			->method('updateCard')
 			->with('alice', $current, 'Card', 'Só isso', null)
 			->willReturn($current);
-		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$handler->handle(['cardId' => 7, 'description' => 'Só isso'], 'alice');
 	}
@@ -90,7 +90,7 @@ final class EditCardHandlerTest extends TestCase {
 			->method('updateCard')
 			->with('alice', $current, 'Card', '', null)
 			->willReturn($current);
-		(new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter()))
+		(new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter()))
 			->handle(['cardId' => 7, 'duedate' => null], 'alice');
 
 		$gateway = $this->gatewayOwnedBy('alice');
@@ -99,7 +99,7 @@ final class EditCardHandlerTest extends TestCase {
 			->method('updateCard')
 			->with('alice', $current, 'Card', '', '2026-01-05')
 			->willReturn($current);
-		(new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter()))
+		(new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter()))
 			->handle(['cardId' => 7, 'title' => 'Card', 'description' => ''], 'alice');
 	}
 
@@ -107,7 +107,7 @@ final class EditCardHandlerTest extends TestCase {
 		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->method('findCard')->willReturn($this->card(['id' => 7, 'lastModified' => 1_700_000_000]));
 		$gateway->expects(self::never())->method('updateCard');
-		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$result = $handler->handle([
 			'cardId' => 7,
@@ -124,7 +124,7 @@ final class EditCardHandlerTest extends TestCase {
 		$current = $this->card(['id' => 7, 'lastModified' => 1_700_000_000]);
 		$gateway->method('findCard')->willReturn($current);
 		$gateway->expects(self::once())->method('updateCard')->willReturn($current);
-		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$result = $handler->handle([
 			'cardId' => 7,
@@ -139,7 +139,7 @@ final class EditCardHandlerTest extends TestCase {
 		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::never())->method('findCard');
 		$gateway->expects(self::never())->method('updateCard');
-		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->expectException(InvalidArgumentException::class);
 		$this->expectExceptionMessage(DeckMessages::ERROR_NO_FIELD_TO_EDIT);
@@ -168,7 +168,7 @@ final class EditCardHandlerTest extends TestCase {
 	public function testDeniedAccessBecomesTheGenericMessage(): void {
 		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->method('findCard')->willThrowException(new NoPermissionException('Permission denied'));
-		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$result = $handler->handle(['cardId' => 7, 'title' => 'Novo'], 'alice');
 
@@ -206,7 +206,7 @@ final class EditCardHandlerTest extends TestCase {
 			->willReturn($this->ownershipOf('pedro', 'Comercial'));
 		$gateway->expects(self::never())->method('findCard');
 		$gateway->expects(self::never())->method('updateCard');
-		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->assertSharedConfirmation($handler->handle([
 			'cardId' => 7,
@@ -223,7 +223,7 @@ final class EditCardHandlerTest extends TestCase {
 			->method('updateCard')
 			->with('alice', $current, 'Novo título', 'Descrição atual', null)
 			->willReturn($current);
-		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$payload = $this->payload($handler->handle([
 			'cardId' => 7,
@@ -239,7 +239,7 @@ final class EditCardHandlerTest extends TestCase {
 		$gateway->method('cardOwnership')->willThrowException(new NoPermissionException('Permission denied'));
 		$gateway->expects(self::never())->method('findCard');
 		$gateway->expects(self::never())->method('updateCard');
-		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$result = $handler->handle(['cardId' => 7, 'title' => 'Novo título'], 'alice');
 

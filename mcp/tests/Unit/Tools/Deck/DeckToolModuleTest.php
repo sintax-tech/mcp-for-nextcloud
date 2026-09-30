@@ -9,6 +9,7 @@ use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCA\Mcp\Tools\Deck\Handler\CreateCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\DeleteCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\EditCardHandler;
+use OCA\Mcp\Tools\Deck\Handler\FollowupCardsHandler;
 use OCA\Mcp\Tools\Deck\Handler\ListBoardsHandler;
 use OCA\Mcp\Tools\Deck\Handler\ListCardsHandler;
 use OCA\Mcp\Tools\Deck\Handler\ListStacksHandler;
@@ -16,6 +17,8 @@ use OCA\Mcp\Tools\Deck\Handler\MoveCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\ReadCardHandler;
 use OCA\Mcp\Tools\ToolModule;
 use OCP\App\IAppManager;
+use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IURLGenerator;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -34,19 +37,42 @@ final class DeckToolModuleTest extends TestCase {
 
 	private DeckToolModule $module;
 
+	/**
+	 * @param ContainerInterface $container Container the module resolves the Deck through.
+	 * @param IAppManager $appManager App availability check.
+	 * @param LoggerInterface $logger Logger under test.
+	 * @param \OCP\IUserManager|null $users Account lookup of the module, null to leave it out.
+	 * @return DeckToolModule Module wired with the collaborators every card payload needs.
+	 */
+	private function module(
+		ContainerInterface $container,
+		IAppManager $appManager,
+		LoggerInterface $logger,
+		?\OCP\IUserManager $users = null,
+	): DeckToolModule {
+		return new DeckToolModule(
+			$container,
+			$appManager,
+			$logger,
+			$this->createMock(IURLGenerator::class),
+			$this->createMock(ITimeFactory::class),
+			$users,
+		);
+	}
+
 	protected function setUp(): void {
 		$container = $this->createMock(ContainerInterface::class);
 		$container->method('get')->willThrowException(new \LogicException('The Deck app must not be resolved at construction time.'));
 		$this->appManager = $this->createMock(IAppManager::class);
 		$this->appManager->method('isEnabledForUser')->willReturn(true);
-		$this->module = new DeckToolModule($container, $this->appManager, $this->createMock(LoggerInterface::class));
+		$this->module = $this->module($container, $this->appManager, $this->createMock(LoggerInterface::class));
 	}
 
 	public function testImplementsTheModuleContract(): void {
 		self::assertInstanceOf(ToolModule::class, $this->module);
 	}
 
-	public function testDeclaresTheEightContractedTools(): void {
+	public function testDeclaresTheNineToolsInTheDeclaredOrder(): void {
 		self::assertSame([
 			'deck_list_boards',
 			'deck_list_stacks',
@@ -56,6 +82,7 @@ final class DeckToolModuleTest extends TestCase {
 			'deck_edit_card',
 			'deck_move_card',
 			'deck_delete_card',
+			'deck_followup_cards',
 		], array_column($this->module->definitions(), 'name'));
 	}
 
@@ -80,6 +107,7 @@ final class DeckToolModuleTest extends TestCase {
 			'edit card' => [EditCardHandler::TOOL, 'edit'],
 			'move card' => [MoveCardHandler::TOOL, 'move'],
 			'delete card' => [DeleteCardHandler::TOOL, 'delete'],
+			'follow up cards' => [FollowupCardsHandler::TOOL, 'read'],
 		];
 	}
 
@@ -175,6 +203,7 @@ final class DeckToolModuleTest extends TestCase {
 			ListBoardsHandler::TOOL,
 			ListStacksHandler::TOOL,
 			ListCardsHandler::TOOL,
+			FollowupCardsHandler::TOOL,
 			ReadCardHandler::TOOL,
 		];
 
@@ -204,6 +233,18 @@ final class DeckToolModuleTest extends TestCase {
 		self::assertSame(0, $properties['offset']['minimum']);
 	}
 
+	public function testFollowupCardsTakesEveryArgumentAsOptionalWithTheLateDefault(): void {
+		$schema = $this->definitionOf(FollowupCardsHandler::TOOL)['inputSchema'];
+
+		self::assertArrayNotHasKey('required', $schema);
+		self::assertFalse($schema['additionalProperties']);
+		self::assertSame(['overdue', 'open', 'done', 'all'], $schema['properties']['status']['enum']);
+		self::assertSame('overdue', $schema['properties']['status']['default']);
+		self::assertSame(1, $schema['properties']['limit']['minimum']);
+		self::assertSame(FollowupCardsHandler::MAX_LIMIT, $schema['properties']['limit']['maximum']);
+		self::assertSame(FollowupCardsHandler::DEFAULT_LIMIT, $schema['properties']['limit']['default']);
+	}
+
 	public function testTitleIsBoundedByTheDeckColumnWidth(): void {
 		$title = $this->definitionOf(CreateCardHandler::TOOL)['inputSchema']['properties']['title'];
 
@@ -227,7 +268,7 @@ final class DeckToolModuleTest extends TestCase {
 			->method('isEnabledForUser')
 			->with('deck', self::identicalTo($user))
 			->willReturn(false);
-		$module = new DeckToolModule(
+		$module = $this->module(
 			$this->createMock(ContainerInterface::class),
 			$appManager,
 			$this->createMock(LoggerInterface::class),
@@ -244,7 +285,7 @@ final class DeckToolModuleTest extends TestCase {
 		foreach ($this->module->definitions() as $definition) {
 			$appManager = $this->createMock(IAppManager::class);
 			$appManager->method('isEnabledForUser')->willReturn(false);
-			$module = new DeckToolModule(
+			$module = $this->module(
 				$this->createMock(ContainerInterface::class),
 				$appManager,
 				$this->createMock(LoggerInterface::class),

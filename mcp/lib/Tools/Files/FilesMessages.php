@@ -33,6 +33,30 @@ final class FilesMessages {
             . 'gravado e pode ser desfeito, e o que faltou é devolvido como not_attempted.';
     }
 
+    /** @return string description of files_undo_batch */
+    public static function undoTool(): string {
+        return 'Desfaz um lote de files_move_batch, devolvendo cada nó ao caminho de origem na ordem inversa. '
+            . 'Antes de mexer em qualquer coisa confere o lote inteiro: se algum item não for mais o que o '
+            . 'lote deixou no destino, se o caminho de origem já estiver ocupado ou se as permissões mudaram, '
+            . 'nada é desfeito e a resposta diz qual item bloqueou. Remove somente as pastas vazias que o '
+            . 'próprio lote criou; uma pasta com conteúdo é preservada e vem em kept_dirs.';
+    }
+
+    /** @return string a batch that does not exist, is not this user's, or is past its retention */
+    public static function batchNotFound(): string {
+        return 'Lote não encontrado.';
+    }
+
+    /** @return string a batch that was already undone */
+    public static function batchAlreadyUndone(): string {
+        return 'Este lote já foi desfeito.';
+    }
+
+    /** @return string a node at the destination that is not the one the batch moved */
+    public static function notTheBatchNode(): string {
+        return 'O item não é mais o que este lote moveu; nada foi desfeito.';
+    }
+
     /** @return string description of files_read */
     public static function readTool(): string {
         return 'Lê o texto de um arquivo do Nextcloud (txt/md direto; PDF/DOCX/ODT com extração de texto).';

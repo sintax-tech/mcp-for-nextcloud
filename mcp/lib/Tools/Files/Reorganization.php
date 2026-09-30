@@ -356,6 +356,182 @@ final class Reorganization {
     }
 
     /**
+     * Gives a batch back what it moved, and removes the folders it created while they are still empty.
+     *
+     * The whole batch is checked before anything moves: undoing half of it would overwrite what the user did
+     * afterwards and still leave a mess, so a single divergence refuses the whole thing and names the item.
+     * The only removal here is an empty folder this batch created, which is why the delete is written here
+     * and not in a helper — the allowance is scoped to this method on purpose.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param int $batchId the batch to undo
+     * @param BatchStore $store where the batch is recorded
+     * @param int $now current time
+     * @return array{batch_id:int, undone:int, removed_dirs:list<string>, kept_dirs:list<string>, conflicts:list<array{from:string, to:string, reason:string}>}
+     * @throws ToolFailure when the batch is not this user's, is gone, or was already undone
+     */
+    public function undoBatch(Folder $root, string $userId, int $batchId, BatchStore $store, int $now): array {
+        $batch = $store->find($batchId, $userId);
+        // A batch of somebody else and a batch past its retention answer the same way, so nothing leaks about
+        // which ids ever existed.
+        if ($batch === null || $batch->createdAt < $now - BatchStore::RETENTION_SECONDS) {
+            throw new ToolFailure(FilesMessages::batchNotFound());
+        }
+        if ($batch->isUndone()) {
+            throw new ToolFailure(FilesMessages::batchAlreadyUndone());
+        }
+        $conflicts = $this->undoConflicts($root, $batch);
+        if ($conflicts !== []) {
+            return ['batch_id' => $batchId, 'undone' => 0, 'removed_dirs' => [], 'kept_dirs' => [], 'conflicts' => $conflicts];
+        }
+        // A way back that lands in a folder this batch created needs that folder again, and recreating only
+        // what is actually missing keeps the undo from bringing back a folder the user emptied on purpose.
+        $this->createFolders($root, $this->missingRecordedParents($root, $batch));
+        $undone = 0;
+        foreach (array_reverse($batch->moves) as $move) {
+            try {
+                $node = NodeAccess::run(fn () => NodeAccess::get($root, $move['to']));
+                NodeAccess::run(fn () => $node->move($this->absolute($root, $move['from'])));
+            } catch (ToolFailure $e) {
+                // Every condition was checked above, so this is a lock or a permission that changed in
+                // between. The count says how much already went back and the batch stays undoable, so the
+                // user can retry instead of finding out later that half of it is in the wrong place.
+                return ['batch_id' => $batchId, 'undone' => $undone, 'removed_dirs' => [], 'kept_dirs' => [],
+                    'conflicts' => [['from' => $move['from'], 'to' => $move['to'], 'reason' => $e->getMessage()]]];
+            }
+            $undone++;
+        }
+        $removed = [];
+        $kept = [];
+        // Deepest first: a folder cannot go while something the undo just emptied is still inside it.
+        foreach ($this->byDepth($batch->dirs) as $dir) {
+            $relative = ltrim($dir, '/');
+            if (!$root->nodeExists($relative)) {
+                continue;
+            }
+            $folder = $root->get($relative);
+            if (!$folder instanceof Folder || !$folder->isDeletable() || $folder->getDirectoryListing() !== []) {
+                $kept[] = $dir;
+                continue;
+            }
+            NodeAccess::run(fn () => $folder->delete());
+            $removed[] = $dir;
+        }
+        $store->markUndone($batchId, $userId, $now);
+        return [
+            'batch_id' => $batchId,
+            'undone' => $undone,
+            'removed_dirs' => $removed,
+            'kept_dirs' => $kept,
+            'conflicts' => [],
+        ];
+    }
+
+    /**
+     * Checks every move of a batch before the undo touches anything, in reverse order.
+     *
+     * @param Folder $root the user's folder
+     * @param Batch $batch the batch to check
+     * @return list<array{from:string, to:string, reason:string}> the items that block the undo, empty when it may run
+     */
+    private function undoConflicts(Folder $root, Batch $batch): array {
+        $conflicts = [];
+        foreach (array_reverse($batch->moves) as $move) {
+            try {
+                $this->assertUndoable($root, $batch, $move);
+            } catch (ToolFailure $e) {
+                $conflicts[] = ['from' => $move['from'], 'to' => $move['to'], 'reason' => $e->getMessage()];
+            }
+        }
+        return $conflicts;
+    }
+
+    /**
+     * @param Folder $root the user's folder
+     * @param Batch $batch the batch the move came from
+     * @param array{from:string, to:string, toId:int} $move one recorded move
+     * @throws ToolFailure when the item is not what the batch left there, the way back is taken, or the permissions changed
+     */
+    private function assertUndoable(Folder $root, Batch $batch, array $move): void {
+        $there = NodeAccess::run(fn () => NodeAccess::get($root, $move['to']));
+        if ((int)$there->getId() !== $move['toId']) {
+            throw new ToolFailure(FilesMessages::notTheBatchNode());
+        }
+        if ($root->nodeExists(ltrim(PathGuard::normalize($move['from']), '/'))) {
+            throw new MoveConflict(FilesMessages::destinationExists());
+        }
+        if (!$there->isDeletable()) {
+            throw new ToolFailure(ToolFailure::FORBIDDEN);
+        }
+        try {
+            $parent = $this->destination($root, $move['from']);
+        } catch (ToolFailure $e) {
+            // The way back lands in a folder this batch created, so the undo puts the folder back first.
+            if (!$this->isRecordedAncestor($batch, $move['from'])) {
+                throw $e;
+            }
+            return;
+        }
+        if (!$parent->isCreatable()) {
+            throw new ToolFailure(ToolFailure::FORBIDDEN);
+        }
+    }
+
+    /**
+     * @param list<string> $paths folders, in the order the batch created them
+     * @return list<string> the same paths, deepest first
+     */
+    private function byDepth(array $paths): array {
+        $byDepth = $paths;
+        usort($byDepth, fn (string $a, string $b) => substr_count($b, '/') <=> substr_count($a, '/'));
+        return $byDepth;
+    }
+
+    /**
+     * The folders this batch created that a move needs again to go back, and that are not there anymore.
+     *
+     * @param Folder $root the user's folder
+     * @param Batch $batch the batch being undone
+     * @return list<string> the missing folders, shallowest first
+     */
+    private function missingRecordedParents(Folder $root, Batch $batch): array {
+        $missing = [];
+        foreach ($batch->moves as $move) {
+            $segments = array_values(array_filter(explode('/', PathGuard::normalize($move['from']))));
+            array_pop($segments);
+            while ($segments !== []) {
+                $candidate = '/' . implode('/', $segments);
+                if ($root->nodeExists(ltrim($candidate, '/'))) {
+                    break;
+                }
+                if (in_array($candidate, $batch->dirs, true)) {
+                    $missing[] = $candidate;
+                }
+                array_pop($segments);
+            }
+        }
+        return $missing;
+    }
+
+    /**
+     * @param Batch $batch the batch that ran
+     * @param string $from original path of a recorded move
+     * @return bool whether a folder the batch created is the parent of, or an ancestor above, that path
+     */
+    private function isRecordedAncestor(Batch $batch, string $from): bool {
+        $segments = array_values(array_filter(explode('/', PathGuard::normalize($from))));
+        array_pop($segments);
+        while ($segments !== []) {
+            if (in_array('/' . implode('/', $segments), $batch->dirs, true)) {
+                return true;
+            }
+            array_pop($segments);
+        }
+        return false;
+    }
+
+    /**
      * Creates the folders a batch asked for and answers which ones it really made.
      *
      * Every folder created counts, including a parent created on the way, because the undo removes what the

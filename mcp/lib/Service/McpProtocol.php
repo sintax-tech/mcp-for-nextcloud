@@ -44,6 +44,8 @@ class McpProtocol {
 
     public function __construct(
         private ToolRegistry $tools,
+        private PromptCatalog $prompts,
+        private GrantPolicy $policy,
         private LoggerInterface $logger,
     ) {}
 
@@ -106,7 +108,7 @@ class McpProtocol {
             // Version negotiation: always answer with the single supported legacy version.
             return $this->result($id, [
                 'protocolVersion' => self::VERSION,
-                'capabilities' => ['tools' => new \stdClass()],
+                'capabilities' => ['tools' => new \stdClass(), 'prompts' => new \stdClass()],
                 'serverInfo' => self::SERVER_INFO,
                 'instructions' => ToolPresentation::INSTRUCTIONS,
             ]);
@@ -119,6 +121,13 @@ class McpProtocol {
         }
         if ($method === 'tools/call') {
             return $this->callTool($id, $params, $userId, false);
+        }
+        if ($method === 'prompts/list') {
+            return $this->result($id, ['prompts' => $this->prompts->list($this->policy, $userId)]);
+        }
+        if ($method === 'prompts/get') {
+            $prompt = $this->prompt($params, $userId);
+            return $prompt === null ? $this->error($id, -32602, 'Invalid params') : $this->result($id, $prompt);
         }
         return $this->error($id, -32601, 'Method not found');
     }
@@ -158,7 +167,8 @@ class McpProtocol {
             'server/discover' => $this->result($id, [
                 'resultType' => 'complete',
                 'supportedVersions' => self::SUPPORTED_VERSIONS,
-                'capabilities' => ['tools' => new \stdClass()],
+                // The prompt set is static, so no listChanged notification is ever needed.
+                'capabilities' => ['tools' => new \stdClass(), 'prompts' => ['listChanged' => false]],
                 // DiscoverResult carries the same display guidance the legacy initialize does.
                 'instructions' => ToolPresentation::INSTRUCTIONS,
                 // Discovery is only answered to an authenticated user, so shared caches must not keep it.
@@ -175,8 +185,48 @@ class McpProtocol {
                 '_meta' => $meta,
             ]),
             'tools/call' => $this->callTool($id, $params, $userId, true),
+            'prompts/list' => $this->result($id, [
+                'resultType' => 'complete',
+                'prompts' => $this->prompts->list($this->policy, $userId),
+                // Prompts follow the user's grants, so a shared cache must not keep them.
+                'ttlMs' => 0,
+                'cacheScope' => 'private',
+                '_meta' => $meta,
+            ]),
+            'prompts/get' => $this->modernPrompt($id, $params, $userId, $meta),
             default => $this->error($id, -32601, 'Method not found', 404),
         };
+    }
+
+    /**
+     * @param array<string, mixed> $params JSON-RPC params
+     * @param string $userId authenticated user
+     * @return array{description:string, messages:list<array{role:string, content:array{type:string, text:string}}>}|null
+     *   the rendered prompt, or null for an unknown or ungranted name
+     */
+    private function prompt(array $params, string $userId): ?array {
+        $name = $params['name'] ?? null;
+        if (!is_string($name) || (isset($params['arguments']) && $params['arguments'] !== [])) {
+            return null;
+        }
+        return $this->prompts->get($name, $this->policy, $userId);
+    }
+
+    /**
+     * Modern prompts/get result: the legacy payload plus resultType, cache hints and serverInfo.
+     *
+     * @param int|string $id JSON-RPC id
+     * @param array<string, mixed> $params JSON-RPC params
+     * @param string $userId authenticated user
+     * @param array<string, mixed> $meta _meta of the request
+     * @return array{status:int, body:array<string, mixed>}
+     */
+    private function modernPrompt(int|string $id, array $params, string $userId, array $meta): array {
+        $prompt = $this->prompt($params, $userId);
+        if ($prompt === null) {
+            return $this->error($id, -32602, 'Invalid params');
+        }
+        return $this->result($id, ['resultType' => 'complete'] + $prompt + ['_meta' => $meta]);
     }
 
     /** @return list<array<string, mixed>> diagnostic tool followed by the tools the user may call now */
@@ -263,7 +313,14 @@ class McpProtocol {
 
     /** Only the registry's fixed validation messages reach the client. */
     private function safeMessage(string $message): string {
-        return preg_match('/^(Unknown tool|Invalid arguments|(Unknown|Missing|Invalid) argument: [a-z_]{1,64})$/', $message) === 1 ? $message : 'Invalid arguments';
+        // The argument name is a path into the arguments the client itself sent: keys, and the [n] and
+        // . separators the validator joins them with. That is why dots and brackets are allowed here — a
+        // nested field has to survive to the client as itself, or "Invalid argument: items[1].reply_to"
+        // collapses into a message that says nothing about which item to fix. The charset stays strict so
+        // nothing built from server state (a path, a file name, an exception) can slip through.
+        return preg_match('/^(Unknown tool|Invalid arguments|(Unknown|Missing|Invalid) argument: [a-z_0-9]+(?:[.\[][a-z_0-9]+\]?)*)$/', $message) === 1
+            ? $message
+            : 'Invalid arguments';
     }
 
     /**

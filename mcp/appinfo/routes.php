@@ -5,6 +5,11 @@ return ['routes' => [
     ['name' => 'mcp#post', 'url' => '/', 'verb' => 'POST'],
     ['name' => 'mcp#get', 'url' => '/', 'verb' => 'GET'],
     ['name' => 'mcp#delete', 'url' => '/', 'verb' => 'DELETE'],
+    // The token in the path is the credential, so these are public and CSRF-free on purpose.
+    ['name' => 'checkout#download', 'url' => '/checkout/{token}', 'verb' => 'GET'],
+    ['name' => 'checkout#upload', 'url' => '/checkout/{token}', 'verb' => 'PUT'],
+    // curl -T sends PUT, but several HTTP clients use POST for the same body.
+    ['name' => 'checkout#uploadPost', 'url' => '/checkout/{token}', 'verb' => 'POST'],
     ['name' => 'settings#personal', 'url' => '/settings/personal', 'verb' => 'POST'],
     ['name' => 'grants#index', 'url' => '/api/grants', 'verb' => 'GET'],
     // POST keeps "bulk" from colliding with a user whose uid is "bulk" on PUT /api/grants/{uid}.

@@ -116,9 +116,10 @@ final class McpProtocolTest extends TestCase {
     /** Protocol with an empty module list: only the diagnostic tool exists. */
     public static function protocol(TestCase $test, ?\Psr\Log\LoggerInterface $logger = null): McpProtocol {
         $mock = fn (string $class) => (new \ReflectionMethod($test, 'createMock'))->invoke($test, $class);
-        return new McpProtocol(new \OCA\Mcp\Tools\ToolRegistry([], new \OCA\Mcp\Service\GrantPolicy((new InMemoryConfig())->mock($test)),
+        $policy = new \OCA\Mcp\Service\GrantPolicy((new InMemoryConfig())->mock($test));
+        return new McpProtocol(new \OCA\Mcp\Tools\ToolRegistry([], $policy,
             $mock(\OCP\App\IAppManager::class), $mock(\OCP\IUserManager::class), $mock(\Psr\Log\LoggerInterface::class)),
-            $logger ?? $mock(\Psr\Log\LoggerInterface::class));
+            new \OCA\Mcp\Service\PromptCatalog(), $policy, $logger ?? $mock(\Psr\Log\LoggerInterface::class));
     }
 
     private function codes(array $out): array {

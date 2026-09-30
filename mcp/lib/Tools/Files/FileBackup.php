@@ -50,7 +50,7 @@ class FileBackup {
     public function prepare(Folder $root, File $file, string $path, string $userId, ?string $etag): string {
         $user = $this->userManager->get($userId);
         if ($user === null || !$this->appManager->isEnabledForUser('files_versions', $user)) {
-            throw new ToolFailure('Edição bloqueada: o versionamento de arquivos (files_versions) não está ativo.');
+            throw new ToolFailure(FilesMessages::versioningOff());
         }
         if (!$file->isUpdateable()) {
             throw new ToolFailure(ToolFailure::FORBIDDEN);
@@ -82,7 +82,7 @@ class FileBackup {
             $valid = false;
         }
         if (!$valid) {
-            throw new ToolFailure('Edição bloqueada: não foi possível criar a cópia de segurança do original.');
+            throw new ToolFailure(FilesMessages::backupFailed());
         }
         return $root->getRelativePath($copy->getPath()) ?? '';
     }

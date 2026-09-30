@@ -92,10 +92,15 @@ final class ArgumentValidator {
             if ($count < ($rule['minItems'] ?? 0) || (isset($rule['maxItems']) && $count > $rule['maxItems'])) {
                 throw new InvalidArgumentException("Invalid argument: $key");
             }
-            $items = $rule['items'] ?? [];
+            // A schema that does not say what its items look like (a plain list of strings, or one whose
+            // shape is checked further down) has nothing to validate each item against, and inventing an
+            // empty rule would refuse every element it was given.
+            if (!isset($rule['items']) || !is_array($rule['items'])) {
+                return $value;
+            }
             $out = [];
             foreach ($value as $index => $item) {
-                $out[] = self::check($key . '[' . $index . ']', is_array($items) ? $items : [], $item);
+                $out[] = self::check($key . '[' . $index . ']', $rule['items'], $item);
             }
             return $out;
         }

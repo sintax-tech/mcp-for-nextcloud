@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Checkout;
 
-use OCA\Mcp\Checkout\CheckoutController;
+use OCA\Mcp\Controller\CheckoutController;
 use OCA\Mcp\Checkout\CheckoutToken;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Service\GrantPolicy;
@@ -24,6 +24,7 @@ use OCP\IUser;
 use OCP\IUserManager;
 use OCP\IUserSession;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
+use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -108,7 +109,7 @@ final class CheckoutControllerTest extends TestCase {
         $this->users->method('get')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $alice : null);
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturnCallback(fn (string $route, array $args = []) => '/apps/mcp/' . ($args['token'] ?? ''));
-        $access = new NodeAccessInfo();
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS));
         $backup = new FileBackup($this->apps, $this->users, $this->time, $config);
 
         $this->controller = $this->build($root, $session ?? $this->session, $config, $urls, $backup, $access);
@@ -362,7 +363,7 @@ final class CheckoutControllerTest extends TestCase {
         $config = $this->config->mock($this);
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturn('/apps/mcp/x');
-        $access = new NodeAccessInfo();
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS));
         $this->controller = $this->build($root, $this->session, $config, $urls,
             new FileBackup($this->apps, $this->users, $this->time, $config), $access);
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Common;
 
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
+use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\ToolFailure;
@@ -19,7 +20,7 @@ final class SharedWriteGuardTest extends TestCase {
     private FakeTree $tree;
 
     protected function setUp(): void {
-        $this->guard = new SharedWriteGuard(new NodeAccessInfo());
+        $this->guard = new SharedWriteGuard(new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS)));
         $this->tree = new FakeTree($this);
     }
 

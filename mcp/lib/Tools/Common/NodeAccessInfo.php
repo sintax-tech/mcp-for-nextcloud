@@ -7,13 +7,14 @@ use OCP\Constants;
 use OCP\Files\IHomeStorage;
 use OCP\Files\Node;
 use OCP\Files\Storage\ISharedStorage;
+use OCP\IUserManager;
 
 /**
  * Ownership awareness of a file node: in which scope it lives (personal, shared, team folder or external
  * storage), who owns it and what the viewer may do with it. Detection reads only OCP interfaces, so no
  * app class (files_sharing, groupfolders) is referenced and an upgrade of those apps cannot break it.
  */
-final class NodeAccessInfo {
+class NodeAccessInfo {
     /** Node lives in the viewer's own home storage. */
     public const PERSONAL = 'personal';
     /** Node reached through a share mounted in the viewer's tree. */
@@ -28,6 +29,8 @@ final class NodeAccessInfo {
     private const MOUNT_SHARED = 'shared';
     /** IMountPoint::getMountType() of an external storage mount. */
     private const MOUNT_EXTERNAL = 'external';
+
+    public function __construct(private IUserManager $userManager) {}
 
     /**
      * Describes a node for a given viewer.
@@ -51,7 +54,7 @@ final class NodeAccessInfo {
             $info['teamFolder'] = $this->teamFolder($node);
         }
         if ($scope === self::SHARED) {
-            $info['sharedBy'] = $share?->getSharedBy()?->getDisplayName() ?? $info['ownerDisplayName'];
+            $info['sharedBy'] = $share === null ? $info['ownerDisplayName'] : $this->sharerName($share->getSharedBy());
         }
         return $info;
     }
@@ -76,6 +79,21 @@ final class NodeAccessInfo {
             };
         }
         return $this->byStorage($node, $viewerUid, $sharedStorage);
+    }
+
+    /**
+     * IShare::getSharedBy() returns the sharer's UID, not an IUser (stable33,
+     * lib/public/Share/IShare.php:440), so the display name has to be looked up. A share whose sharer was
+     * deleted, or a link share, answers null and falls back to whatever the interface gave us.
+     *
+     * @param string|null $uid sharer UID as IShare::getSharedBy() returns it
+     * @return string a display name when the user still exists, otherwise the UID
+     */
+    private function sharerName(?string $uid): string {
+        if ($uid === null || $uid === '') {
+            return 'uma conta removida';
+        }
+        return $this->userManager->get($uid)?->getDisplayName() ?? $uid;
     }
 
     /**

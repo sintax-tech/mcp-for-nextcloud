@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Common;
 
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
+use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use PHPUnit\Framework\TestCase;
 
@@ -16,7 +17,7 @@ final class NodeAccessInfoTest extends TestCase {
     private FakeTree $tree;
 
     protected function setUp(): void {
-        $this->access = new NodeAccessInfo();
+        $this->access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS));
         $this->tree = new FakeTree($this);
     }
 
@@ -98,6 +99,36 @@ final class NodeAccessInfoTest extends TestCase {
         $file->method('isShared')->willReturn($shared);
         $file->method('getPermissions')->willReturn(\OCP\Constants::PERMISSION_ALL);
         return $file;
+    }
+
+    /**
+     * IShare::getSharedBy() is documented as returning the sharer's UID string in stable33
+     * (lib/public/Share/IShare.php:440), and this test feeds the description exactly that: a string, never
+     * an IUser. Calling getDisplayName() on it is the TypeError that shipped; FakeTree's shared storage is
+     * a real ISharedStorage so the branch is live instead of unreachable.
+     */
+    public function testSharedByIsResolvedFromTheUidStringTheShareReturns(): void {
+        $this->tree->addFile('/alice/files/Compartilhado/plano.md', 'x', 'text/markdown', ['scope' => 'shared']);
+        $share = $this->tree->node('/alice/files/Compartilhado/plano.md')->getStorage()->getShare();
+        $this->assertSame('pedro', $share->getSharedBy(), 'IShare::getSharedBy() must be a string in this fixture');
+        $this->assertSame('Pedro Almeida', $this->access->describe($this->tree->node('/alice/files/Compartilhado/plano.md'), 'alice')['sharedBy']);
+    }
+
+    /** A share whose sharer no longer exists must degrade to the UID, never crash and never stay empty. */
+    public function testSharedByFallsBackToTheUidWhenTheUserIsGone(): void {
+        $this->tree->addFile('/alice/files/Compartilhado/plano.md', 'x', 'text/markdown',
+            ['scope' => 'shared', 'sharedBy' => 'fantasma']);
+        $this->assertSame('fantasma', $this->access->describe($this->tree->node('/alice/files/Compartilhado/plano.md'), 'alice')['sharedBy']);
+    }
+
+    /** A link share has no sharer at all; the description still has to carry something usable. */
+    public function testAShareWithoutASharerStillNamesSomeone(): void {
+        $this->tree->addFile('/alice/files/Compartilhado/plano.md', 'x', 'text/markdown',
+            ['scope' => 'shared', 'sharedBy' => null]);
+        $info = $this->access->describe($this->tree->node('/alice/files/Compartilhado/plano.md'), 'alice');
+        $this->assertSame('shared', $info['scope']);
+        $this->assertNotSame('', $info['sharedBy']);
+        $this->assertStringNotContainsString('getDisplayName', json_encode($info, JSON_THROW_ON_ERROR));
     }
 
     /** The description must never carry anything the client could use to reach the file another way. */

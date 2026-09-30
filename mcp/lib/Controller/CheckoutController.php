@@ -1,8 +1,10 @@
 <?php
 declare(strict_types=1);
 
-namespace OCA\Mcp\Checkout;
+namespace OCA\Mcp\Controller;
 
+use OCA\Mcp\Checkout\CheckoutToken;
+use OCA\Mcp\Checkout\CheckoutTokenStore;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tools\Common\NodeAccess;

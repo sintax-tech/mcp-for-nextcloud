@@ -8,6 +8,7 @@ use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Tests\Unit\Checkout\InMemoryCheckoutTokenStore;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
+use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tools\ArgumentValidator;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
@@ -73,7 +74,7 @@ abstract class FilesToolsTestCase extends TestCase {
             return 'https://cloud.test/apps/mcp/' . ($args['token'] ?? '');
         });
 
-        $access = new NodeAccessInfo();
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS));
         $extractor = new TextExtractor($this->temp);
         $backup = new FileBackup($this->apps, $this->users, $this->time, $config);
         $this->module = new FilesModule(

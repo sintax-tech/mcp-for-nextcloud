@@ -7,6 +7,7 @@ use InvalidArgumentException;
 use OCA\Mcp\Checkout\CheckoutTokenStore;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tools\ArgumentValidator;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
@@ -57,7 +58,7 @@ final class FilesModuleTest extends TestCase {
         // Alice's own timezone stamps every backup below; the stamps are local, never UTC.
         $this->config->user['alice']['core']['timezone'] = 'America/Sao_Paulo';
         $appConfig = $this->config->mock($this);
-        $access = new NodeAccessInfo();
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS));
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturnCallback(fn (string $route, array $args = []) => 'https://cloud.test/apps/mcp/' . ($args['token'] ?? ''));
         $versions = new VersionTools($apps, $users, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $access, $this->createMock(\Psr\Container\ContainerInterface::class));

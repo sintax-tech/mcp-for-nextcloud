@@ -27,6 +27,8 @@ final class FakeTree {
     public string $ownerName = 'Alice';
     /** Display name of whoever shared a node whose scope is 'shared'. */
     public string $sharedByName = 'Pedro Almeida';
+    /** UID IShare::getSharedBy() answers with; stable33 returns a string, not an IUser. */
+    public string $sharedByUid = 'pedro';
     /** Absolute path of the mount a node lives in; null means "the node's own folder". */
     public ?string $mountPath = null;
     public bool $failWrite = false;
@@ -81,6 +83,7 @@ final class FakeTree {
         $mock->method('isUpdateable')->willReturnCallback(fn () => $this->nodes[$path]['updateable']);
         $mock->method('isDeletable')->willReturnCallback(fn () => $this->nodes[$path]['deletable']);
         $mock->method('getStorage')->willReturnCallback(fn () => $this->storage($path));
+        $mock->method('getInternalPath')->willReturn(ltrim($path, '/'));
         $mock->method('getMountPoint')->willReturnCallback(fn () => $this->mount($path));
         $mock->method('getOwner')->willReturnCallback(fn () => $this->owner($path));
         $mock->method('getPermissions')->willReturnCallback(fn () => $this->nodes[$path]['permissions'] ?? \OCP\Constants::PERMISSION_ALL);
@@ -168,18 +171,39 @@ final class FakeTree {
     }
 
     /**
-     * The storage a node sits on. Home storage only when the node is personal, and the trash wrapper is
-     * still what decides whether a deletion is recoverable.
+     * The storage a node sits on. Home storage only when the node is personal, the trash wrapper still
+     * decides whether a deletion is recoverable, and a shared node really is an ISharedStorage — which is
+     * the only way the share branch of NodeAccessInfo gets exercised at all.
      */
     private function storage(string $path): object {
-        $storage = $this->mock(\OCP\Files\Storage\IStorage::class);
-        $storage->method('instanceOfStorage')->willReturnCallback(function (string $class) use ($path): bool {
+        $scope = $this->nodes[$path]['scope'] ?? 'personal';
+        $storage = $this->mock($scope === 'shared' ? \OCP\Files\Storage\ISharedStorage::class : \OCP\Files\Storage\IStorage::class);
+        $storage->method('instanceOfStorage')->willReturnCallback(function (string $class) use ($path, $scope): bool {
             if ($class === 'OCA\Files_Trashbin\Storage') {
                 return $this->nodes[$path]['trash'] ?? true;
             }
-            return $class === \OCP\Files\IHomeStorage::class && ($this->nodes[$path]['scope'] ?? 'personal') === 'personal';
+            return $class === \OCP\Files\IHomeStorage::class && $scope === 'personal';
         });
+        // IStorage::getId() is what the move guard compares to keep a move inside one storage.
+        $storage->method('getId')->willReturn($this->storageId($path));
+        if ($scope === 'shared') {
+            $share = $this->mock(\OCP\Share\IShare::class);
+            // getSharedBy() is documented as returning the sharer's UID string in stable33.
+            $share->method('getSharedBy')->willReturn($this->nodes[$path]['sharedBy'] ?? $this->sharedByUid);
+            $share->method('getShareOwner')->willReturn($this->sharedByUid);
+            $storage->method('getShare')->willReturn($share);
+        }
         return $storage;
+    }
+
+    /**
+     * The identifier IStorage::getId() reports, so a test can put two nodes on different storages.
+     *
+     * @param string $path node path
+     * @return string the storage id, defaulting to a single storage for the whole tree
+     */
+    public function storageId(string $path): string {
+        return (string)($this->nodes[$path]['storageId'] ?? 'home');
     }
 
     /** The mount point a node lives in: only the three shared mounts carry a mount type. */

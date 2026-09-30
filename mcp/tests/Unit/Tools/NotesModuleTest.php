@@ -5,6 +5,7 @@ namespace OCA\Mcp\Tests\Unit\Tools;
 
 use InvalidArgumentException;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tools\ArgumentValidator;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
@@ -39,7 +40,7 @@ final class NotesModuleTest extends TestCase {
         $apps->method('isEnabledForUser')->willReturnCallback(fn (string $app) => in_array($app, $this->apps, true));
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturn($this->createMock(IUser::class));
-        $access = new NodeAccessInfo();
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS));
         $this->module = new NotesModule(new NotesRepository($root, $this->config->mock($this)), $apps, $users,
             new SharedWriteGuard($access), $access);
     }

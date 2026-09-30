@@ -21,7 +21,7 @@
     "fast-xml-parser": "^5.11.2",
     "mammoth": "^1.8.0",
     "node-ical": "^0.26.1",
-    "unpdf": "^0.12.2",
+    "unpdf": "^1.7.0",
     "zod": "^3.23.0"
   },
   "devDependencies": {

@@ -1,5 +1,6 @@
 <?php
 /** @var array $_ */
+\OCP\Util::addScript('mcp', 'admin-user-picker');
 $escape = static fn ($value): string => htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 ?>
 <div class="section" id="mcp-admin">
@@ -16,7 +17,8 @@ $escape = static fn ($value): string => htmlspecialchars((string)$value, ENT_QUO
     <p>New users, including administrators, cannot connect until enabled here. Write grants are disabled by default.</p>
     <form method="get" action="<?= $escape($_['settingsUrl']) ?>">
         <label for="mcp_uid">Nextcloud user ID</label>
-        <input id="mcp_uid" name="mcp_uid" value="<?= $escape($_['selectedUid']) ?>" required>
+        <input id="mcp_uid" name="mcp_uid" list="mcp_uid_list" value="<?= $escape($_['selectedUid']) ?>" autocomplete="off" required>
+        <datalist id="mcp_uid_list"></datalist>
         <button type="submit">Load user</button>
     </form>
     <?php if ($_['selectedUid'] !== ''): ?>

@@ -9,6 +9,7 @@ use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;
 use OCP\Files\Folder;
+use OCP\IConfig;
 use OCP\IUserManager;
 
 /**
@@ -23,6 +24,7 @@ class FileBackup {
         private IAppManager $appManager,
         private IUserManager $userManager,
         private ITimeFactory $time,
+        private IConfig $config,
     ) {}
 
     /**
@@ -53,14 +55,22 @@ class FileBackup {
             throw new ToolFailure(ToolFailure::FORBIDDEN);
         }
         NodeAccess::checkEtag($file, $etag);
-        return $this->copy($root, $file, $path);
+        return $this->copy($root, $file, $path, $userId);
     }
 
-    /** Copies the original next to its mirrored path in the backup folder and checks the copy's size. */
-    private function copy(Folder $root, File $file, string $path): string {
+    /**
+     * Copies the original next to its mirrored path in the backup folder and checks the copy's size.
+     *
+     * @param Folder $root the user's folder
+     * @param File $file file about to be overwritten
+     * @param string $path normalized user-relative path of $file
+     * @param string $userId authenticated user, whose timezone stamps the copy
+     * @throws ToolFailure when the copy cannot be created or its size differs
+     */
+    private function copy(Folder $root, File $file, string $path, string $userId): string {
         try {
             $folder = NodeAccess::ensureFolder($root, self::FOLDER . dirname($path));
-            $base = $file->getName() . '.' . gmdate('Ymd-His', $this->time->getTime());
+            $base = $file->getName() . '.' . $this->stamp($userId);
             $name = $base . '.bak';
             for ($i = 2; $folder->nodeExists($name); $i++) {
                 $name = $base . '-' . $i . '.bak';
@@ -74,5 +84,40 @@ class FileBackup {
             throw new ToolFailure('Edição bloqueada: não foi possível criar a cópia de segurança do original.');
         }
         return $root->getRelativePath($copy->getPath()) ?? '';
+    }
+
+    /**
+     * Renders ITimeFactory's instant as `Ymd-His` in the timezone of the user (see timezone()).
+     *
+     * @param string $userId authenticated user, deciding the timezone
+     * @return string backup stamp, e.g. `20260921-111320`
+     */
+    private function stamp(string $userId): string {
+        return (new \DateTimeImmutable('@' . $this->time->getTime()))
+            ->setTimezone($this->timezone($userId))
+            ->format('Ymd-His');
+    }
+
+    /**
+     * Resolves the timezone for backup names: the user's own preference, then the system default, then
+     * PHP's default. Same precedence Nextcloud uses in lib/private/DateTimeZone.php — an unknown or empty
+     * name does not fail, it falls through to the next source.
+     *
+     * @param string $userId authenticated user
+     * @return \DateTimeZone timezone to render the stamp in
+     */
+    private function timezone(string $userId): \DateTimeZone {
+        $candidates = [
+            $this->config->getUserValue($userId, 'core', 'timezone', ''),
+            $this->config->getSystemValueString('default_timezone', ''),
+        ];
+        foreach ($candidates as $candidate) {
+            try {
+                return new \DateTimeZone($candidate);
+            } catch (\Exception) {
+                // empty or unknown zone: try the next source in the precedence list
+            }
+        }
+        return new \DateTimeZone(date_default_timezone_get());
     }
 }

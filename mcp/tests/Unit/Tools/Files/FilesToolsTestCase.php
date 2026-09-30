@@ -93,7 +93,7 @@ abstract class FilesToolsTestCase extends TestCase {
             new SharedWriteGuard($access),
             new CheckoutService($urls, $config, $this->time, new TokenHasher($config), $this->store, $this->apps, $this->users),
             new VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class)),
-            new Reorganization($access),
+            new Reorganization($access, new SharedWriteGuard($access)),
         );
     }
 

@@ -6,7 +6,9 @@ namespace OCA\Mcp\Tools\Files;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\PathGuard;
+use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\ToolFailure;
+use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\Node;
 
@@ -28,6 +30,7 @@ final class Reorganization {
 
     public function __construct(
         private NodeAccessInfo $access,
+        private SharedWriteGuard $guard,
     ) {}
 
     /**
@@ -78,6 +81,86 @@ final class Reorganization {
             $level = $next;
         }
         return ['path' => $path, 'entries' => $entries, 'count' => count($entries), 'truncated' => $truncated];
+    }
+
+    /**
+     * Creates one folder, and whatever parents are missing, refusing to touch a destination that is taken.
+     *
+     * The refusal is deliberate rather than a silent reuse: the point of the reorganization is to place
+     * files in a tree the user described, and a folder that already holds something else would swallow
+     * them without anyone deciding that.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param string $path folder to create, user-relative
+     * @param bool $confirmedShared whether the caller passed confirm_shared
+     * @return array{path:string, created:bool, created_paths:list<string>}
+     * @throws \InvalidArgumentException for a path with traversal or control characters
+     * @throws ToolFailure when the destination is taken, inside the backup folder, denied, or shared without confirmation
+     */
+    public function mkdir(Folder $root, string $userId, string $path, bool $confirmedShared): array {
+        $path = PathGuard::normalize($path);
+        if ($path === '/') {
+            throw new ToolFailure(FilesMessages::destinationExists());
+        }
+        if (FileBackup::isBackupPath($path)) {
+            throw new ToolFailure(FilesMessages::backupPath());
+        }
+        if ($root->nodeExists(ltrim($path, '/'))) {
+            throw new ToolFailure(FilesMessages::destinationExists());
+        }
+        // The guard and the permission check run against the closest folder that already exists. Creating
+        // the missing levels first and only then asking would leave the tree changed on a refusal, and
+        // would ask about the wrong folder: the scope that matters is the one the new folder lands in.
+        $parent = $this->existingAncestor($root, $path);
+        if (($payload = $this->guard->guard($parent, $userId, $path, $confirmedShared)) !== null) {
+            return ['path' => $path, 'created' => false, 'created_paths' => []] + $payload;
+        }
+        if (!$parent->isCreatable()) {
+            throw new ToolFailure(ToolFailure::FORBIDDEN);
+        }
+        $created = $this->missingLevels($root, $path);
+        NodeAccess::ensureFolder($root, $path);
+        return ['path' => $path, 'created' => true, 'created_paths' => $created];
+    }
+
+    /**
+     * The closest folder above $path that already exists, without creating anything on the way.
+     *
+     * @param Folder $root the user's folder
+     * @param string $path folder about to be created
+     * @return Folder the existing ancestor, the user's own root at worst
+     */
+    private function existingAncestor(Folder $root, string $path): Folder {
+        $segments = array_values(array_filter(explode('/', $path)));
+        while ($segments !== []) {
+            array_pop($segments);
+            $walk = '/' . implode('/', $segments);
+            if ($root->nodeExists(ltrim($walk, '/'))) {
+                $found = $root->get(ltrim($walk, '/'));
+                if ($found instanceof Folder) {
+                    return $found;
+                }
+            }
+        }
+        return $root;
+    }
+
+    /**
+     * @param Folder $root the user's folder
+     * @param string $path folder about to be created
+     * @return list<string> user-relative paths of the levels that do not exist yet, shallowest first
+     */
+    private function missingLevels(Folder $root, string $path): array {
+        $missing = [];
+        $walk = '';
+        foreach (array_filter(explode('/', $path)) as $segment) {
+            $walk .= '/' . $segment;
+            if (!$root->nodeExists(ltrim($walk, '/'))) {
+                $missing[] = $walk;
+            }
+        }
+        return $missing;
     }
 
     /**

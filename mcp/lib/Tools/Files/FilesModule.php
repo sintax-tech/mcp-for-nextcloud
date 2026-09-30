@@ -71,6 +71,9 @@ class FilesModule implements ToolModule {
                     'depth' => ['type' => 'integer', 'minimum' => 1, 'maximum' => Reorganization::MAX_DEPTH, 'default' => Reorganization::MAX_DEPTH],
                     'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => Reorganization::MAX_ENTRIES, 'default' => Reorganization::MAX_ENTRIES],
                 ])],
+            ['name' => 'files_mkdir', 'module' => 'files', 'operation' => 'create',
+                'description' => FilesMessages::mkdirTool(),
+                'inputSchema' => self::schema(['path' => $path, 'confirm_shared' => $confirmShared], ['path'])],
             ['name' => 'files_read', 'module' => 'files', 'operation' => 'read',
                 'description' => FilesMessages::readTool(),
                 'inputSchema' => self::schema(['path' => $path], ['path'])],
@@ -128,6 +131,7 @@ class FilesModule implements ToolModule {
         return NodeAccess::run(fn (): array => match ($name) {
             'files_list' => ToolResult::json($this->list($root, $userId, $arguments['path'])),
             'files_tree' => ToolResult::json($this->reorganization->tree($root, $userId, $arguments['path'], $arguments['depth'], $arguments['limit'])),
+            'files_mkdir' => ToolResult::json($this->reorganization->mkdir($root, $userId, $arguments['path'], $confirmed)),
             'files_search' => ToolResult::json($this->search($root, $userId, $arguments['query'], $arguments['limit'])),
             'files_read' => $this->read($root, $userId, $arguments['path']),
             'files_edit' => $this->write($root, $userId, $arguments['path'], $arguments['content'], $arguments['etag'] ?? null, $confirmed),

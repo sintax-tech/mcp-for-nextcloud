@@ -35,6 +35,13 @@ final class FilesMessages {
             . 'entradas, e avisa quando cortou.';
     }
 
+    /** @return string description of files_mkdir */
+    public static function mkdirTool(): string {
+        return 'Cria uma pasta, com os níveis intermediários quando faltam. Recusa se já existir algo no '
+            . 'destino e nunca apaga o que estiver lá. Se o destino estiver fora da sua pasta pessoal, '
+            . 'pergunte ao usuário antes e repita com confirm_shared.';
+    }
+
     /** @return string description of files_edit */
     public static function editTool(): string {
         return 'Substitui o conteúdo de um arquivo de texto existente e devolve o diff. Antes de gravar, exige '
@@ -177,6 +184,11 @@ final class FilesMessages {
     /** @return string the snippet given to files_replace is not text we can locate in the file */
     public static function snippetNotUtf8(): string {
         return 'O trecho informado não é UTF-8 válido; envie-o exatamente como aparece no arquivo.';
+    }
+
+    /** @return string something already sits where a folder would go */
+    public static function destinationExists(): string {
+        return 'Já existe um arquivo ou pasta neste destino.';
     }
 
     /**

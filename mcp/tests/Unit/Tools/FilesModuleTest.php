@@ -66,7 +66,7 @@ final class FilesModuleTest extends TestCase {
         $this->module = new FilesModule($root, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $users, $db,
             $access, new SharedWriteGuard($access),
             new CheckoutService($urls, $appConfig, $time, new TokenHasher($appConfig), $this->createMock(CheckoutTokenStore::class), $apps, $users),
-            $versions, new Reorganization($access));
+            $versions, new Reorganization($access, new SharedWriteGuard($access)));
         $this->versions = $versions;
     }
 
@@ -95,9 +95,10 @@ final class FilesModuleTest extends TestCase {
 
     public function testDefinitionsKeepPrototypeNamesAndGrants(): void {
         $defs = array_column($this->module->definitions(), null, 'name');
-        $this->assertSame(['files_list', 'files_search', 'files_tree', 'files_read', 'files_edit', 'files_replace',
-            'files_checkout', 'files_versions_list', 'files_version_read', 'files_version_restore'], array_keys($defs));
-        $this->assertSame(['read', 'read', 'read', 'read', 'edit', 'edit', 'edit', 'read', 'read', 'restore'],
+        $this->assertSame(['files_list', 'files_search', 'files_tree', 'files_mkdir', 'files_read', 'files_edit',
+            'files_replace', 'files_checkout', 'files_versions_list', 'files_version_read', 'files_version_restore'],
+            array_keys($defs));
+        $this->assertSame(['read', 'read', 'read', 'create', 'read', 'edit', 'edit', 'edit', 'read', 'read', 'restore'],
             array_column($defs, 'operation'));
         $this->assertSame(['files_versions', 'files_versions', 'files_versions'],
             array_values(array_filter(array_column($defs, 'app', 'name'))));

@@ -142,6 +142,9 @@ final class FakeTree {
         $folder->method('getType')->willReturn(FileInfo::TYPE_FOLDER);
         $folder->method('getMimetype')->willReturn('httpd/unix-directory');
         $folder->method('getSize')->willReturn(0);
+        // Nextcloud decides isCreatable from the create permission on the node itself.
+        $folder->method('isCreatable')->willReturnCallback(fn () => ($this->nodes[$path]['permissions'] ?? \OCP\Constants::PERMISSION_ALL)
+            & \OCP\Constants::PERMISSION_CREATE);
         $folder->method('get')->willReturnCallback(fn (string $rel) => $this->node($path . '/' . ltrim($rel, '/')));
         $folder->method('nodeExists')->willReturnCallback(fn (string $rel) => isset($this->nodes[$path . '/' . ltrim($rel, '/')]));
         $folder->method('getDirectoryListing')->willReturnCallback(fn () => array_map(fn ($p) => $this->node($p), $this->children($path)));

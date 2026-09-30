@@ -7,6 +7,12 @@ use InvalidArgumentException;
 
 /** Validates tool arguments against the small JSON Schema subset the tools declare, applying defaults. */
 final class ArgumentValidator {
+    /**
+     * @param array<string, mixed> $schema object schema with properties/required/additionalProperties=false
+     * @param array<string, mixed> $arguments arguments sent by the client
+     * @return array<string, mixed> validated arguments with defaults applied
+     * @throws InvalidArgumentException naming the first unknown, missing or invalid argument
+     */
     public static function validate(array $schema, array $arguments): array {
         $properties = $schema['properties'] ?? [];
         $properties = $properties instanceof \stdClass ? (array)$properties : $properties;
@@ -36,6 +42,10 @@ final class ArgumentValidator {
         return $out;
     }
 
+    /**
+     * @param array<string, mixed> $rule property schema (type, minLength, maxLength, minimum, maximum, const)
+     * @throws InvalidArgumentException when the value breaks the rule
+     */
     private static function check(string $key, array $rule, mixed $value): mixed {
         $valid = match ($rule['type'] ?? null) {
             'string' => is_string($value)

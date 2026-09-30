@@ -18,8 +18,11 @@ use OCP\IUserManager;
 
 /** Files tools: list, search, read and protected edit. There is deliberately no delete, move or rename. */
 class FilesModule implements ToolModule {
+    /** Characters returned by files_read before the text is truncated. */
     public const MAX_CHARS = 100000;
+    /** Maximum size of the new content accepted by files_edit, in bytes. */
     public const MAX_EDIT_BYTES = 10 * 1024 * 1024;
+    /** Folder in the user's root that receives a copy of every file before files_edit writes it. */
     public const BACKUP_FOLDER = 'MCP backups';
 
     public function __construct(
@@ -30,6 +33,7 @@ class FilesModule implements ToolModule {
         private ITimeFactory $time,
     ) {}
 
+    /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string}> */
     public function definitions(): array {
         return [
             ['name' => 'files_list', 'module' => 'files', 'operation' => 'read',
@@ -54,6 +58,14 @@ class FilesModule implements ToolModule {
         ];
     }
 
+    /**
+     * @param string $name one of the names from definitions()
+     * @param array<string, mixed> $arguments already validated against the tool schema, defaults applied
+     * @param string $userId authenticated user; only their IRootFolder view is used
+     * @return array{content: list<array{type:string, text:string}>, isError?: bool}
+     * @throws \InvalidArgumentException for an unknown tool or a path with traversal/control characters
+     * @throws ToolFailure for client-safe failures (not found, forbidden, limits, blocked edit)
+     */
     public function call(string $name, array $arguments, string $userId): array {
         $root = $this->rootFolder->getUserFolder($userId);
         return NodeAccess::run(fn () => match ($name) {
@@ -65,6 +77,7 @@ class FilesModule implements ToolModule {
         });
     }
 
+    /** @return list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string}> */
     private function list(Folder $root, string $path): array {
         $folder = NodeAccess::get($root, $path);
         if (!$folder instanceof Folder) {
@@ -75,6 +88,7 @@ class FilesModule implements ToolModule {
         return $entries;
     }
 
+    /** @return list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string}> */
     private function search(Folder $root, string $query, int $limit): array {
         $out = [];
         foreach ($root->search($query) as $node) {
@@ -94,6 +108,7 @@ class FilesModule implements ToolModule {
         return mb_strlen($text) > self::MAX_CHARS ? mb_substr($text, 0, self::MAX_CHARS) . "\n\n[conteúdo truncado]" : $text;
     }
 
+    /** @return array{path:string, size:int, etag:string, backup:string} */
     private function edit(Folder $root, string $userId, string $path, string $content, ?string $etag): array {
         $path = PathGuard::normalize($path);
         if ($path === '/' . self::BACKUP_FOLDER || str_starts_with($path, '/' . self::BACKUP_FOLDER . '/')) {
@@ -146,6 +161,7 @@ class FilesModule implements ToolModule {
         return $root->getRelativePath($copy->getPath()) ?? '';
     }
 
+    /** @return array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string} */
     private function entry(Folder $root, Node $node): array {
         $isDir = NodeAccess::isFolder($node);
         return [
@@ -158,6 +174,11 @@ class FilesModule implements ToolModule {
         ];
     }
 
+    /**
+     * @param array<string, array<string, mixed>> $properties
+     * @param list<string> $required
+     * @return array<string, mixed>
+     */
     private static function schema(array $properties, array $required = []): array {
         $schema = ['type' => 'object', 'properties' => $properties, 'additionalProperties' => false];
         return $required === [] ? $schema : $schema + ['required' => $required];

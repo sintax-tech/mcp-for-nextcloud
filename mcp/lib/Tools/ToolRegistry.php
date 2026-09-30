@@ -11,7 +11,7 @@ use Psr\Log\LoggerInterface;
 
 /** Single policy point for tools/list and tools/call: grant and app availability are re-read on every request. */
 class ToolRegistry {
-    /** @param list<ToolModule> $modules */
+    /** @param list<ToolModule> $modules explicit module list, in tools/list order */
     public function __construct(
         private array $modules,
         private GrantPolicy $policy,
@@ -20,7 +20,10 @@ class ToolRegistry {
         private LoggerInterface $logger,
     ) {}
 
-    /** @return list<array{name:string,description:string,inputSchema:array}> */
+    /**
+     * @param string $userId authenticated user
+     * @return list<array{name:string, description:string, inputSchema:array<string, mixed>}> tools the user may call now
+     */
     public function list(string $userId): array {
         $tools = [];
         foreach ($this->modules as $module) {
@@ -37,7 +40,13 @@ class ToolRegistry {
         return $tools;
     }
 
-    /** @throws InvalidArgumentException for unknown, hidden or invalid calls (JSON-RPC -32602) */
+    /**
+     * @param string $name tool name
+     * @param array<string, mixed> $arguments raw arguments from tools/call
+     * @param string $userId authenticated user
+     * @return array{content: list<array{type:string, text:string}>, isError?: bool} MCP tool result
+     * @throws InvalidArgumentException for unknown, hidden or invalid calls (JSON-RPC -32602)
+     */
     public function call(string $name, array $arguments, string $userId): array {
         foreach ($this->modules as $module) {
             foreach ($module->definitions() as $definition) {
@@ -63,6 +72,7 @@ class ToolRegistry {
         throw new InvalidArgumentException('Unknown tool');
     }
 
+    /** @param array{module:string, operation:string, app?:string} $definition */
     private function allowed(array $definition, string $userId): bool {
         try {
             if (!$this->policy->granted($userId, $definition['module'], $definition['operation'])) {

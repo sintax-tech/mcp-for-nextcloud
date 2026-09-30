@@ -16,7 +16,9 @@ use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
+/** App bootstrap: loads the bundled production vendor/ and wires the tool registry with its explicit module list. */
 class Application extends App implements IBootstrap {
+    /** App id, equal to the app directory name. */
     public const APP_ID = 'mcp';
 
     /** Tool modules in tools/list order; registered explicitly, no autodiscovery. */
@@ -29,6 +31,7 @@ class Application extends App implements IBootstrap {
         parent::__construct(self::APP_ID);
     }
 
+    /** @param IRegistrationContext $context registration context of the app */
     public function register(IRegistrationContext $context): void {
         // Production dependencies (smalot/pdfparser) are bundled in the package's vendor/.
         $autoload = __DIR__ . '/../../vendor/autoload.php';
@@ -44,6 +47,7 @@ class Application extends App implements IBootstrap {
         ));
     }
 
+    /** @param IBootContext $context unused; the app needs no boot-time work */
     public function boot(IBootContext $context): void {
     }
 }

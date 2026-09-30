@@ -18,8 +18,9 @@ use OCP\Lock\LockedException;
 final class NodeAccess {
     /**
      * @template T
-     * @param callable():T $action
+     * @param callable():T $action file operation to run
      * @return T
+     * @throws ToolFailure mapped from NotFound, NotPermitted/Forbidden, Locked and NotEnoughSpace
      */
     public static function run(callable $action): mixed {
         try {
@@ -35,6 +36,14 @@ final class NodeAccess {
         }
     }
 
+    /**
+     * @param Folder $root the user's folder
+     * @param string $path user-relative path
+     * @return Node readable node
+     * @throws InvalidArgumentException for traversal or control characters
+     * @throws \OCP\Files\NotFoundException when the node does not exist
+     * @throws ToolFailure when the node is not readable
+     */
     public static function get(Folder $root, string $path): Node {
         $path = PathGuard::normalize($path);
         $node = $path === '/' ? $root : $root->get(ltrim($path, '/'));
@@ -44,10 +53,15 @@ final class NodeAccess {
         return $node;
     }
 
+    /** @return bool whether the node is a folder */
     public static function isFolder(Node $node): bool {
         return $node instanceof Folder || $node->getType() === FileInfo::TYPE_FOLDER;
     }
 
+    /**
+     * @return File the node itself
+     * @throws ToolFailure when the node is a folder
+     */
     public static function requireFile(Node $node): File {
         if (!$node instanceof File) {
             throw new ToolFailure('O caminho informado não é um arquivo.');
@@ -55,7 +69,15 @@ final class NodeAccess {
         return $node;
     }
 
-    /** Folder below $root, created segment by segment when missing. */
+    /**
+     * Folder below $root, created segment by segment when missing.
+     *
+     * @param Folder $root base folder
+     * @param string $relative path below $root ('' or '/' returns $root)
+     * @return Folder existing or newly created folder
+     * @throws InvalidArgumentException for traversal or control characters
+     * @throws ToolFailure when a file already uses one of the folder names
+     */
     public static function ensureFolder(Folder $root, string $relative): Folder {
         $folder = $root;
         foreach (array_filter(explode('/', PathGuard::normalize($relative))) as $segment) {
@@ -72,7 +94,11 @@ final class NodeAccess {
         return $folder;
     }
 
-    /** @throws ToolFailure when the caller's etag does not match the current one */
+    /**
+     * @param Node $node node about to change
+     * @param string|null $etag ETag the caller read before, null to skip the check
+     * @throws ToolFailure when the caller's etag does not match the current one
+     */
     public static function checkEtag(Node $node, ?string $etag): void {
         if ($etag !== null && trim($etag, '"') !== trim((string)$node->getEtag(), '"')) {
             throw new ToolFailure(ToolFailure::CONFLICT);

@@ -11,20 +11,34 @@ use Smalot\PdfParser\Parser;
 
 /** Reads a file within a byte limit and turns text, PDF, DOCX and ODT into plain text. */
 class TextExtractor {
+    /** Largest file read (and largest zip entry inflated), in bytes. */
     public const MAX_BYTES = 20 * 1024 * 1024;
+    /** Extensions returned as UTF-8 text. */
     private const TEXT_EXTENSIONS = ['txt', 'md', 'markdown', 'csv', 'tsv', 'json', 'xml', 'yaml', 'yml', 'log', 'ini', 'conf', 'html', 'htm', 'css', 'js', 'ts', 'php', 'py', 'sh', 'sql', 'svg', 'ics', 'vcf', 'rtf', 'tex'];
+    /** Non text/* MIME types that are still text. */
     private const TEXT_MIMES = ['application/json', 'application/xml', 'application/x-yaml', 'application/yaml', 'application/javascript', 'application/x-php', 'application/sql', 'image/svg+xml'];
+    /** MIME type of Word documents. */
     private const DOCX = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+    /** MIME type of OpenDocument text. */
     private const ODT = 'application/vnd.oasis.opendocument.text';
 
     public function __construct(private ITempManager $tempManager) {}
 
+    /**
+     * @param File $file file whose MIME type and extension are checked
+     * @return bool whether the file is plain text (and therefore readable as-is and editable)
+     */
     public static function isText(File $file): bool {
         $mime = strtolower((string)$file->getMimetype());
         return str_starts_with($mime, 'text/') || in_array($mime, self::TEXT_MIMES, true)
             || in_array(strtolower(pathinfo($file->getName(), PATHINFO_EXTENSION)), self::TEXT_EXTENSIONS, true);
     }
 
+    /**
+     * @param File $file readable file within the byte limit
+     * @return string extracted text; a "[não foi possível extrair...]" notice for corrupt PDF/DOCX/ODT
+     * @throws ToolFailure over the byte limit, unreadable or unsupported format
+     */
     public function extract(File $file): string {
         $bytes = $this->read($file);
         $mime = strtolower((string)$file->getMimetype());
@@ -45,7 +59,13 @@ class TextExtractor {
         throw new ToolFailure('Formato de arquivo não suportado para leitura de texto.');
     }
 
-    /** Refuses before opening when the size is known, and never buffers more than the limit + 1 byte. */
+    /**
+     * Refuses before opening when the size is known, and never buffers more than the limit + 1 byte.
+     *
+     * @param File $file file to read
+     * @return string raw bytes
+     * @throws ToolFailure over the byte limit or when the stream cannot be read
+     */
     public function read(File $file): string {
         if ($file->getSize() > self::MAX_BYTES) {
             throw new ToolFailure(self::tooLarge());
@@ -68,10 +88,12 @@ class TextExtractor {
         return $bytes;
     }
 
+    /** @return string client message for a file over MAX_BYTES */
     public static function tooLarge(): string {
         return 'Arquivo excede o limite de leitura de ' . self::MAX_BYTES . ' bytes.';
     }
 
+    /** @param callable():string $extract parser call whose failures become a generic notice */
     private function guarded(File $file, callable $extract): string {
         try {
             return trim($extract());
@@ -87,6 +109,11 @@ class TextExtractor {
         return (new Parser([], $config))->parseContent($bytes)->getText();
     }
 
+    /**
+     * @param string $entry XML entry holding the document body
+     * @param array<string, string> $breaks regex => replacement applied before stripping tags
+     * @throws \RuntimeException when the archive or entry is missing, unreadable or too large
+     */
     private function zipXml(string $bytes, string $entry, array $breaks): string {
         $path = $this->tempManager->getTemporaryFile('.zip');
         if ($path === false) {

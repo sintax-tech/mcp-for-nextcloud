@@ -130,6 +130,29 @@ class UserConversationResolverTest extends TestCase {
         }
     }
 
+    public function testAGuestListIsResolvedInOrderWithoutRepeatingAnyone(): void {
+        $this->givenReachableTarget();
+
+        $contacts = $this->resolver->contacts('alice', ['bob', 'bob'], true);
+
+        $this->assertSame([['id' => 'bob', 'displayName' => 'Bob Souza']], array_map(
+            static fn ($contact): array => $contact->describe(),
+            $contacts,
+        ));
+    }
+
+    public function testARefusalInAGuestListNamesTheIdTheCallerSent(): void {
+        $this->givenReachableTarget();
+
+        try {
+            $this->resolver->contacts('alice', ['bob', 'ghost'], true);
+            $this->fail('an account out of reach was accepted in a guest list');
+        } catch (ConversationAccessException $e) {
+            // The id is the caller's own input, so naming it tells which guest to fix and maps nothing new.
+            $this->assertSame(sprintf(Messages::PARTICIPANT_NOT_REACHABLE, 'ghost'), $e->getMessage());
+        }
+    }
+
     public function testAMalformedAccountIdIsAClientMistake(): void {
         foreach (['', 'a/b', 'a\\b', "bob\0", "bob\n", str_repeat('a', 65)] as $targetId) {
             try {

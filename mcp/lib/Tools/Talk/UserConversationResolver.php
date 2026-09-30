@@ -51,12 +51,14 @@ class UserConversationResolver {
      *
      * @param string $userId Authenticated user
      * @param list<string> $targetIds Accounts to resolve, without the caller themself
+     * @param bool $nameTheAccount Whether a refusal names the account id, for lists where the caller must know which
+     *                             one failed; the id is the caller's own input, so naming it maps nothing new
      * @return list<DirectContact> One contact per id, in the order received and without repetition
      * @throws InvalidArgumentException When an account id is malformed
      * @throws ConversationAccessException When an account does not exist, is the caller, or is not reachable
      * @throws TalkUnavailableException When spreed is unavailable
      */
-    public function contacts(string $userId, array $targetIds): array {
+    public function contacts(string $userId, array $targetIds, bool $nameTheAccount = false): array {
         // What the client sent is checked first: a malformed id is a mistake in the call whatever the server
         // knows, and it must not turn into a lookup of an account nobody asked for.
         $wanted = [];
@@ -64,7 +66,7 @@ class UserConversationResolver {
             $this->assertValidTarget($targetId);
             // The caller is already in every conversation of theirs, and asking to invite them is a mistake.
             if ($targetId === $userId) {
-                throw new ConversationAccessException(Messages::USER_NOT_REACHABLE);
+                throw new ConversationAccessException(self::unreachable($targetId, $nameTheAccount));
             }
             $wanted[$targetId] = $targetId;
         }
@@ -81,7 +83,7 @@ class UserConversationResolver {
                 $target = $this->userManager->get($targetId);
                 // Same answer for missing and out of reach: the tool must not map out who exists on the server.
                 if ($target === null || !$this->shareManager->currentUserCanEnumerateTargetUser($actor, $target)) {
-                    throw new ConversationAccessException(Messages::USER_NOT_REACHABLE);
+                    throw new ConversationAccessException(self::unreachable($targetId, $nameTheAccount));
                 }
                 $contacts[$targetId] = new DirectContact(
                     $targetId,
@@ -164,5 +166,10 @@ class UserConversationResolver {
         if ($targetId === '' || mb_strlen($targetId) > self::MAX_TARGET_LENGTH || preg_match('/[\/\\\\\x00-\x1F]/', $targetId) === 1) {
             throw new InvalidArgumentException(Messages::INVALID_USER);
         }
+    }
+
+    /** The same refusal for a missing and an unreachable account, optionally naming the id the caller sent. */
+    private static function unreachable(string $targetId, bool $nameTheAccount): string {
+        return $nameTheAccount ? sprintf(Messages::PARTICIPANT_NOT_REACHABLE, $targetId) : Messages::USER_NOT_REACHABLE;
     }
 }

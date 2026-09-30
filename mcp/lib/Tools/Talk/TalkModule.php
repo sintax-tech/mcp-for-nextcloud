@@ -28,6 +28,7 @@ class TalkModule implements ToolModule {
     public const TOOL_QUOTE = 'talk_quote_file';
     public const TOOL_MESSAGE_USER = 'talk_message_user';
     public const TOOL_SEND_BATCH = 'talk_send_batch';
+    public const TOOL_CREATE_GROUP = 'talk_create_group';
 
     private const MODULE = 'talk';
     private const APP = TalkServices::APP_ID;
@@ -47,6 +48,7 @@ class TalkModule implements ToolModule {
         private FileSharer $sharer,
         private DraftApproval $draftApproval,
         private UserConversationResolver $userConversations,
+        private GroupCreator $groups,
         private LoggerInterface $logger,
     ) {}
 
@@ -217,6 +219,36 @@ class TalkModule implements ToolModule {
                 'operation' => 'reply',
                 'app' => self::APP,
             ],
+            [
+                'name' => self::TOOL_CREATE_GROUP,
+                'description' => Messages::TOOL_CREATE_GROUP,
+                'inputSchema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'name' => [
+                            'type' => 'string',
+                            'minLength' => 1,
+                            'maxLength' => GroupCreator::MAX_NAME_LENGTH,
+                        ],
+                        'participants' => [
+                            'type' => 'array',
+                            'maxItems' => GroupCreator::MAX_PARTICIPANTS,
+                            'items' => [
+                                'type' => 'string',
+                                'minLength' => 1,
+                                'maxLength' => UserConversationResolver::MAX_TARGET_LENGTH,
+                            ],
+                        ],
+                        'confirm' => self::CONFIRM_SCHEMA,
+                        'approval_id' => self::APPROVAL_ID_SCHEMA,
+                    ],
+                    'required' => ['name'],
+                    'additionalProperties' => false,
+                ],
+                'module' => self::MODULE,
+                'operation' => 'create',
+                'app' => self::APP,
+            ],
         ];
     }
 
@@ -248,6 +280,7 @@ class TalkModule implements ToolModule {
                 self::TOOL_QUOTE => ToolResult::success($this->quoteCall($userId, $arguments)),
                 self::TOOL_MESSAGE_USER => ToolResult::success($this->messageUserCall($userId, $arguments)),
                 self::TOOL_SEND_BATCH => ToolResult::success($this->sendBatchCall($userId, $arguments)),
+                self::TOOL_CREATE_GROUP => ToolResult::success($this->createGroupCall($userId, $arguments)),
                 default => throw new InvalidArgumentException(Messages::UNKNOWN_TOOL),
             };
         } catch (InvalidArgumentException $e) {
@@ -506,6 +539,57 @@ class TalkModule implements ToolModule {
         }
 
         return $result;
+    }
+
+    /**
+     * A new group. Both steps of the product's API happen only here, in the approved call: the draft resolves the
+     * people who would be invited and stops, so an abandoned preview leaves no room behind.
+     *
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> Result data of talk_create_group, or the draft when confirm is absent
+     * @throws InvalidArgumentException When the name or the participant list is not usable
+     * @throws ConversationAccessException When an account is out of reach or the product refuses the creation
+     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
+     * @throws TalkUnavailableException When spreed is unavailable
+     */
+    private function createGroupCall(string $userId, array $arguments): array {
+        $name = GroupCreator::normalizeName((string)($arguments['name'] ?? ''));
+        $participants = $this->participantIds($arguments);
+
+        if (!$this->confirmed($arguments)) {
+            return $this->draftApproval->group(
+                $userId,
+                $name,
+                $this->userConversations->contacts($userId, $participants, true),
+            );
+        }
+
+        $this->draftApproval->approveGroup($userId, $this->approvalId($arguments), $name, $participants);
+
+        return $this->groups->create($userId, $name, $participants);
+    }
+
+    /**
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return list<string> Accounts the call would invite, in the order received
+     * @throws InvalidArgumentException When participants is not a list of account ids
+     */
+    private function participantIds(array $arguments): array {
+        $participants = $arguments['participants'] ?? [];
+        if (!is_array($participants) || !array_is_list($participants)) {
+            throw new InvalidArgumentException(Messages::INVALID_USER);
+        }
+
+        $ids = [];
+        foreach ($participants as $participantId) {
+            if (!is_string($participantId)) {
+                throw new InvalidArgumentException(Messages::INVALID_USER);
+            }
+            $ids[] = $participantId;
+        }
+
+        return $ids;
     }
 
     /**

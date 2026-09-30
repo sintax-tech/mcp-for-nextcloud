@@ -16,9 +16,9 @@ use OCP\Comments\IComment;
  * never a field the call would not publish.
  *
  * The confirmation is not a boolean the caller can assert out of thin air: each draft stores a fingerprint of its
- * own content and hands back an id, and approveReply, approveAttach, approveQuote and approveDirectMessage
- * recompute that fingerprint from the arguments of the confirmed call. Publishing therefore requires a draft of this same account, this same
- * conversation, this same action and this same payload, still inside its TTL and not spent yet. What the server
+ * own content and hands back an id, and every approve* method recomputes that fingerprint from the arguments of the
+ * confirmed call. Publishing therefore requires a draft of this same account, this same target (conversation,
+ * account or new group), this same action and this same payload, still inside its TTL and not spent yet. What the server
  * can prove is that it showed the draft; that a human read and accepted it is the client's promise to keep.
  */
 class DraftApproval {
@@ -185,6 +185,53 @@ class DraftApproval {
             'draft' => ['message' => $text],
             'message' => sprintf(Messages::CONFIRMATION_INSTRUCTION_TARGET, $target->displayName),
         ];
+    }
+
+    /**
+     * Draft of a new group. It carries the name and the people who would be invited, and no token: there is no
+     * conversation yet, and a preview that created one would leave the user with a group they never asked for.
+     *
+     * @param string $userId Authenticated user, the future owner
+     * @param string $name Name of the group, normalized exactly as it will be stored
+     * @param list<DirectContact> $participants Accounts that would be invited
+     * @return array{requiresConfirmation:true, approvalId:string, action:string, draft:array{name:string, participants:list<array{id:string, displayName:string}>}, message:string}
+     * @throws InvalidArgumentException When the name is blank or too long
+     */
+    public function group(string $userId, string $name, array $participants): array {
+        $title = GroupCreator::normalizeName($name);
+        $invited = array_map(static fn (DirectContact $contact): array => $contact->describe(), $participants);
+
+        return [
+            'requiresConfirmation' => true,
+            'approvalId' => $this->approvals->issue($userId, [
+                'action' => 'talk_create_group',
+                'name' => $title,
+                'participants' => array_column($invited, 'id'),
+            ]),
+            'action' => 'talk_create_group',
+            'draft' => ['name' => $title, 'participants' => $invited],
+            'message' => sprintf(
+                Messages::CONFIRMATION_INSTRUCTION_GROUP,
+                $title,
+                $invited === [] ? '' : ' e como convidados ' . implode(', ', array_column($invited, 'displayName')),
+            ),
+        ];
+    }
+
+    /**
+     * @param string $userId Authenticated user, the future owner
+     * @param string|null $approvalId Id returned by the draft call
+     * @param string $name Name of the group the approved call creates
+     * @param list<string> $participantIds Accounts the approved call invites
+     * @throws ApprovalException When no pending draft of this call can be approved
+     */
+    public function approveGroup(string $userId, ?string $approvalId, string $name, array $participantIds): void {
+        $this->approvals->consume($userId, $approvalId, [
+            'action' => 'talk_create_group',
+            'name' => GroupCreator::normalizeName($name),
+            // The draft showed each guest once, so a repeated id in the confirmed call is the same approved list.
+            'participants' => array_values(array_unique($participantIds)),
+        ]);
     }
 
     /**

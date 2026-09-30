@@ -13,6 +13,7 @@ use OCA\Mcp\Tools\Talk\ConversationWriter;
 use OCA\Mcp\Tools\Talk\DirectContact;
 use OCA\Mcp\Tools\Talk\DraftApproval;
 use OCA\Mcp\Tools\Talk\FileAccessException;
+use OCA\Mcp\Tools\Talk\GroupCreator;
 use OCA\Mcp\Tools\Talk\FileSharer;
 use OCA\Mcp\Tools\Talk\Messages;
 use OCA\Mcp\Tools\Talk\TalkModule;
@@ -31,6 +32,7 @@ class TalkModuleTest extends TestCase {
     private FileSharer&MockObject $sharer;
     private DraftApproval&MockObject $draftApproval;
     private UserConversationResolver&MockObject $userConversations;
+    private GroupCreator&MockObject $groups;
     private LoggerInterface&MockObject $logger;
     private TalkModule $module;
 
@@ -42,6 +44,7 @@ class TalkModuleTest extends TestCase {
         $this->sharer = $this->createMock(FileSharer::class);
         $this->draftApproval = $this->createMock(DraftApproval::class);
         $this->userConversations = $this->createMock(UserConversationResolver::class);
+        $this->groups = $this->createMock(GroupCreator::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->module = new TalkModule(
             $this->createMock(TalkServices::class),
@@ -51,6 +54,7 @@ class TalkModuleTest extends TestCase {
             $this->sharer,
             $this->draftApproval,
             $this->userConversations,
+            $this->groups,
             $this->logger,
         );
     }
@@ -65,6 +69,7 @@ class TalkModuleTest extends TestCase {
                 'talk_quote_file' => 'quote',
                 'talk_message_user' => 'reply',
                 'talk_send_batch' => 'reply',
+                'talk_create_group' => 'create',
             ],
             array_column($this->module->definitions(), 'operation', 'name'),
         );
@@ -94,6 +99,8 @@ class TalkModuleTest extends TestCase {
         $this->assertSame(['conversation_token', 'path'], $schemas['talk_attach_file']['required']);
         $this->assertSame(['conversation_token', 'attachment_id'], $schemas['talk_quote_file']['required']);
         $this->assertSame(['user', 'message'], $schemas['talk_message_user']['required']);
+        $this->assertSame(['name'], $schemas['talk_create_group']['required']);
+        $this->assertSame(GroupCreator::MAX_PARTICIPANTS, $schemas['talk_create_group']['properties']['participants']['maxItems']);
         // The account id goes through the same bound as a token, and the text through the same bound as a message.
         $this->assertSame(64, $schemas['talk_message_user']['properties']['user']['maxLength']);
         $this->assertSame(ConversationWriter::MAX_MESSAGE_LENGTH, $schemas['talk_message_user']['properties']['message']['maxLength']);
@@ -103,7 +110,7 @@ class TalkModuleTest extends TestCase {
         $this->assertArrayNotHasKey('message', $schemas['talk_quote_file']['required']);
         // confirm is what turns a draft into a send, so it is a boolean the caller may omit: an absent one is
         // the draft, never an error, and only an explicit true publishes.
-        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch'] as $name) {
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch', 'talk_create_group'] as $name) {
             $this->assertSame(['type' => 'boolean'], $schemas[$name]['properties']['confirm'], $name);
             $this->assertArrayNotHasKey('confirm', $schemas[$name]['required'], $name);
         }
@@ -262,7 +269,7 @@ class TalkModuleTest extends TestCase {
 
         // The description is the only thing the agent reads before it decides to call the tool, so the rule
         // lives in the sentence itself and not only in this test.
-        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch'] as $name) {
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch', 'talk_create_group'] as $name) {
             $this->assertStringContainsString(
                 'Antes de enviar, o agente DEVE chamar a tool sem confirm, mostrar o rascunho devolvido ao usuário'
                     . ' e obter aprovação explícita; só então repetir com confirm: true e o approval_id da prévia.',
@@ -301,6 +308,120 @@ class TalkModuleTest extends TestCase {
             ['conversation_token' => 'zzzz', 'messageId' => 91, 'user' => ['id' => 'bob', 'displayName' => 'Comercial']],
             $this->payloadOf($result),
         );
+    }
+
+    public function testAGroupIsDraftedWithTheNameAndTheGuestsAndCreatedOnlyWhenApproved(): void {
+        $contacts = [new DirectContact('bob', 'Bob Souza'), new DirectContact('carol', 'Carol Lima')];
+        $this->userConversations->method('contacts')->willReturn($contacts);
+        $this->draftApproval->expects($this->once())
+            ->method('group')
+            ->with('alice', 'Projeto X', $contacts)
+            ->willReturn(['requiresConfirmation' => true, 'action' => 'talk_create_group']);
+        // A preview that created the room would leave a group nobody approved in the user's list.
+        $this->groups->expects($this->never())->method('create');
+
+        $draft = $this->module->call(
+            TalkModule::TOOL_CREATE_GROUP,
+            ['name' => 'Projeto X', 'participants' => ['bob', 'carol']],
+            'alice',
+        );
+
+        $this->assertSame(['requiresConfirmation' => true, 'action' => 'talk_create_group'], $this->payloadOf($draft));
+    }
+
+    public function testTheApprovedGroupIsCreatedWithTheSameNameAndGuests(): void {
+        $this->userConversations->method('contacts')->willReturn([]);
+        $this->draftApproval->expects($this->once())
+            ->method('approveGroup')
+            ->with('alice', 'APR-3', 'Projeto X', ['bob']);
+        $this->groups->expects($this->once())
+            ->method('create')
+            ->with('alice', 'Projeto X', ['bob'])
+            ->willReturn(['conversation_token' => 'wxyz', 'name' => 'Projeto X', 'participants' => []]);
+
+        $result = $this->module->call(
+            TalkModule::TOOL_CREATE_GROUP,
+            ['name' => 'Projeto X', 'participants' => ['bob'], 'confirm' => true, 'approval_id' => 'APR-3'],
+            'alice',
+        );
+
+        $this->assertSame(['conversation_token' => 'wxyz', 'name' => 'Projeto X', 'participants' => []], $this->payloadOf($result));
+    }
+
+    public function testAGroupWithoutANameIsAClientMistakeBeforeAnythingIsLookedUp(): void {
+        $this->userConversations->expects($this->never())->method('contacts');
+        $this->groups->expects($this->never())->method('create');
+
+        try {
+            $this->module->call(TalkModule::TOOL_CREATE_GROUP, ['name' => '   '], 'alice');
+            $this->fail('a group without a name was accepted');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame(Messages::INVALID_GROUP_NAME, $e->getMessage());
+        }
+    }
+
+    public function testAReusedGroupDraftCreatesNothing(): void {
+        // The approval is spent by the first confirmed call, so a second one with the same id is refused and the
+        // group is not created twice.
+        $this->draftApproval->method('approveGroup')
+            ->willThrowException(new ApprovalException(Messages::APPROVAL_INVALID));
+        $this->groups->expects($this->never())->method('create');
+
+        $result = $this->module->call(
+            TalkModule::TOOL_CREATE_GROUP,
+            ['name' => 'Projeto X', 'participants' => ['bob'], 'confirm' => true, 'approval_id' => 'APR-3'],
+            'alice',
+        );
+
+        $this->assertTrue($result['isError']);
+        $this->assertSame(Messages::APPROVAL_INVALID, $result['content'][0]['text']);
+    }
+
+    public function testAGroupWithSomeGuestsRefusedIsASuccessThatNamesThem(): void {
+        $created = [
+            'conversation_token' => 'wxyz',
+            'name' => 'Projeto X',
+            'participants' => [['id' => 'bob', 'displayName' => 'Bob Souza']],
+            'invitations_failed' => [['id' => 'carol', 'displayName' => 'Carol Lima', 'error' => Messages::INVITATION_FAILED]],
+        ];
+        $this->groups->method('create')->willReturn($created);
+
+        $result = $this->module->call(
+            TalkModule::TOOL_CREATE_GROUP,
+            ['name' => 'Projeto X', 'participants' => ['bob', 'carol'], 'confirm' => true, 'approval_id' => 'APR-3'],
+            'alice',
+        );
+
+        // The group exists: an error here would push the agent to create it again.
+        $this->assertSame($created, $this->payloadOf($result));
+    }
+
+    public function testAGuestOutOfReachInTheDraftIsNamedInTheRefusal(): void {
+        $this->userConversations->expects($this->once())
+            ->method('contacts')
+            ->with('alice', ['bob', 'ghost'], true)
+            ->willThrowException(new ConversationAccessException(sprintf(Messages::PARTICIPANT_NOT_REACHABLE, 'ghost')));
+        $this->draftApproval->expects($this->never())->method('group');
+
+        $result = $this->module->call(
+            TalkModule::TOOL_CREATE_GROUP,
+            ['name' => 'Projeto X', 'participants' => ['bob', 'ghost']],
+            'alice',
+        );
+
+        $this->assertTrue($result['isError']);
+        $this->assertSame(sprintf(Messages::PARTICIPANT_NOT_REACHABLE, 'ghost'), $result['content'][0]['text']);
+    }
+
+    public function testAGuestThatIsNotAnAccountIdIsAClientMistake(): void {
+        $this->userConversations->expects($this->never())->method('contacts');
+
+        try {
+            $this->module->call(TalkModule::TOOL_CREATE_GROUP, ['name' => 'Projeto X', 'participants' => [42]], 'alice');
+            $this->fail('a participant that is not an account id was accepted');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame(Messages::INVALID_USER, $e->getMessage());
+        }
     }
 
     public function testABatchIsApprovedAsAWholeAndTheWriterReportsEachItem(): void {
@@ -506,7 +627,7 @@ class TalkModuleTest extends TestCase {
     public function testTheDraftInstructionTellsTheAgentWhichIdToSendBack(): void {
         $descriptions = array_column($this->module->definitions(), 'description', 'name');
 
-        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch'] as $name) {
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch', 'talk_create_group'] as $name) {
             $this->assertStringContainsString(
                 'Antes de enviar, o agente DEVE chamar a tool sem confirm, mostrar o rascunho devolvido ao usuário',
                 $descriptions[$name],
@@ -621,7 +742,7 @@ class TalkModuleTest extends TestCase {
     public function testTheSchemasTellTheAgentWhichIdTheApprovalIs(): void {
         $schemas = array_column($this->module->definitions(), 'inputSchema', 'name');
 
-        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch'] as $name) {
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch', 'talk_create_group'] as $name) {
             $this->assertSame(
                 ['type' => 'string', 'minLength' => 1, 'maxLength' => 64],
                 $schemas[$name]['properties']['approval_id'],
@@ -635,7 +756,7 @@ class TalkModuleTest extends TestCase {
     public function testTheDescriptionTellsTheAgentHowToApproveAndWhoHasToApprove(): void {
         $descriptions = array_column($this->module->definitions(), 'description', 'name');
 
-        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch'] as $name) {
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch', 'talk_create_group'] as $name) {
             $this->assertStringContainsString('approval_id da prévia', $descriptions[$name], $name);
             // The server can prove it showed the draft; it cannot prove a human said yes. Say so.
             $this->assertStringContainsString(

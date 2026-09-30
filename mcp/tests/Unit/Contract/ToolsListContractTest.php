@@ -62,12 +62,12 @@ final class ToolsListContractTest extends TestCase {
      *
      * @return string response body exactly as the endpoint encodes it
      */
-    private function handle(string $request, string $version, string $headers = '{}'): string {
+    private function handle(string $request, string $version, string $headers = '{}', ?callable $grants = null): string {
         $config = new InMemoryConfig();
         $policy = new GrantPolicy($config->mock($this));
         foreach (GrantPolicy::CATALOG as $module => $operations) {
             foreach ($operations as $operation) {
-                $policy->setGrant('alice', $module, $operation, true);
+                $policy->setGrant('alice', $module, $operation, $grants === null || $grants($module, $operation));
             }
         }
         $apps = $this->createMock(IAppManager::class);
@@ -142,7 +142,7 @@ final class ToolsListContractTest extends TestCase {
             'name',
         );
 
-        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file'] as $name) {
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch', 'talk_create_group'] as $name) {
             $annotations = $tools[$name]->annotations;
             $this->assertFalse($annotations->readOnlyHint, "$name: publishing a message is not reading");
             $this->assertTrue($annotations->destructiveHint, "$name: a sent message cannot be unsent by the client");
@@ -163,6 +163,31 @@ final class ToolsListContractTest extends TestCase {
 
         $this->assertTrue($tools['talk_list_conversations']->annotations->readOnlyHint);
         $this->assertTrue($tools['talk_read_messages']->annotations->readOnlyHint);
+    }
+
+    /**
+     * talk.create is its own grant, off until an administrator turns it on: a user allowed to reply is not by that
+     * allowed to open conversations and invite people, so the group tool must not show up nor run on reply alone.
+     */
+    public function testTheGroupToolNeedsItsOwnGrantAndStaysOutOfTheListWithoutIt(): void {
+        $onlyTalkWrites = static fn (string $module, string $operation): bool => $module === 'talk' && $operation !== 'create';
+        $listed = array_column(
+            json_decode($this->handle('{"jsonrpc":"2.0","id":1,"method":"tools/list"}', McpProtocol::VERSION, '{}', $onlyTalkWrites), false, 512, JSON_THROW_ON_ERROR)->result->tools,
+            'name',
+        );
+        $this->assertContains('talk_message_user', $listed);
+        $this->assertNotContains('talk_create_group', $listed);
+
+        $call = json_decode($this->handle(
+            json_encode(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/call', 'params' => ['name' => 'talk_create_group', 'arguments' => ['name' => 'Projeto X']]]),
+            McpProtocol::VERSION,
+            '{}',
+            $onlyTalkWrites,
+        ), true, 512, JSON_THROW_ON_ERROR);
+        // Refused the same way as a tool that does not exist, before any draft is issued.
+        $this->assertArrayNotHasKey('result', $call);
+        $this->assertSame(-32602, $call['error']['code']);
+        $this->assertSame('Unknown tool', $call['error']['message']);
     }
 
     /**

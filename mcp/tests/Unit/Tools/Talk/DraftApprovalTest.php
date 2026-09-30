@@ -82,6 +82,92 @@ class DraftApprovalTest extends TestCase {
         $this->assertSame('oi', $draft['draft']['message']);
     }
 
+    public function testAGroupDraftNamesTheGroupAndTheGuestsAndCarriesNoConversation(): void {
+        $draft = $this->drafts->group(
+            'alice',
+            '  Projeto X  ',
+            [new DirectContact('bob', 'Bob Souza'), new DirectContact('carol', 'Carol Lima')],
+        );
+
+        $this->assertTrue($draft['requiresConfirmation']);
+        $this->assertSame('talk_create_group', $draft['action']);
+        // The room does not exist yet: a preview that created one would leave a group nobody approved behind.
+        $this->assertArrayNotHasKey('conversation', $draft);
+        $this->assertSame(
+            [
+                'name' => 'Projeto X',
+                'participants' => [
+                    ['id' => 'bob', 'displayName' => 'Bob Souza'],
+                    ['id' => 'carol', 'displayName' => 'Carol Lima'],
+                ],
+            ],
+            $draft['draft'],
+        );
+        // The instruction repeats what is about to happen: the user approves a name and a guest list.
+        $this->assertStringContainsString('Projeto X', $draft['message']);
+        $this->assertStringContainsString('Bob Souza, Carol Lima', $draft['message']);
+        $this->assertStringContainsString('approval_id igual ao approvalId acima', $draft['message']);
+    }
+
+    public function testAGroupDraftWithoutGuestsDoesNotPromiseAnyInvitation(): void {
+        $draft = $this->drafts->group('alice', 'Projeto X', []);
+
+        $this->assertSame([], $draft['draft']['participants']);
+        $this->assertStringNotContainsString('convidados', $draft['message']);
+    }
+
+    public function testAGroupApprovalCoversTheNameAndTheGuestListTogether(): void {
+        $guests = ['bob', 'carol'];
+        $draft = $this->drafts->group('alice', 'Projeto X', [
+            new DirectContact('bob', 'Bob Souza'),
+            new DirectContact('carol', 'Carol Lima'),
+        ]);
+
+        $this->drafts->approveGroup('alice', $draft['approvalId'], 'Projeto X', $guests);
+
+        // A different name is another group: the one the user saw is the one that gets created.
+        try {
+            $this->drafts->approveGroup('alice', $draft['approvalId'], 'Outro grupo', $guests);
+            $this->fail('an approval covered a group the user never saw');
+        } catch (ApprovalException $e) {
+            $this->assertSame(Messages::APPROVAL_INVALID, $e->getMessage());
+        }
+    }
+
+    public function testAGroupApprovalIsSpentByTheFirstConfirmedCall(): void {
+        $draft = $this->drafts->group('alice', 'Projeto X', [new DirectContact('bob', 'Bob Souza')]);
+
+        $this->drafts->approveGroup('alice', $draft['approvalId'], 'Projeto X', ['bob']);
+
+        $this->expectException(ApprovalException::class);
+        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->drafts->approveGroup('alice', $draft['approvalId'], 'Projeto X', ['bob']);
+    }
+
+    public function testARepeatedGuestInTheConfirmedCallIsTheSameApprovedList(): void {
+        $draft = $this->drafts->group('alice', 'Projeto X', [new DirectContact('bob', 'Bob Souza')]);
+
+        $this->drafts->approveGroup('alice', $draft['approvalId'], 'Projeto X', ['bob', 'bob']);
+
+        $this->expectException(ApprovalException::class);
+        $this->drafts->approveGroup('alice', $draft['approvalId'], 'Projeto X', ['bob']);
+    }
+
+    public function testAGroupDraftCannotDropAGuestToCreateItWithoutThem(): void {
+        $draft = $this->drafts->group('alice', 'Projeto X', [new DirectContact('bob', 'Bob Souza')]);
+
+        $this->expectException(ApprovalException::class);
+        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->drafts->approveGroup('alice', $draft['approvalId'], 'Projeto X', []);
+    }
+
+    public function testABlankGroupNameIsAClientMistakeBeforeAnyPreview(): void {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(Messages::INVALID_GROUP_NAME);
+
+        $this->drafts->group('alice', '   ', []);
+    }
+
     public function testABatchDraftShowsEveryItemWithTheExactTextAndTheQuotedAnswer(): void {
         $this->userManager->method('get')->with('bob')->willReturn($this->givenUser('Bob Souza'));
         $this->givenQuotedComment('42', 'bob', 'concordo com o envio');

@@ -19,7 +19,10 @@ final class Messages {
 
     public const TOOL_SEND_BATCH = 'Envia várias mensagens de uma vez na mesma conversa, cada uma com a citação opcional de uma mensagem anterior: informe messages com a lista de objetos {message, reply_to}. Use quando a resposta for uma sequência de mensagens curtas (uma por item de uma lista, por exemplo), e prefira talk_reply quando for uma única mensagem. A conversa e as citações são verificadas antes de qualquer envio; o envio acontece item a item e cada item é reportado em sent ou failed, sem repetir o que já foi publicado. Antes de enviar, o agente DEVE chamar a tool sem confirm, mostrar o rascunho devolvido ao usuário e obter aprovação explícita; só então repetir com confirm: true e o approval_id da prévia. O servidor só publica com uma prévia válida, de uso único e com validade de 10 minutos; a aprovação vale para o lote inteiro, não para cada item, e a aprovação em si depende de o agente mostrar o rascunho e de o usuário confirmar no cliente.';
 
+    public const TOOL_CREATE_GROUP = 'Cria uma conversa em grupo no Talk, com o usuário autenticado como dono: informe name com o nome do grupo e participants com a lista de contas a convidar (opcional). Cada convidado passa pela mesma regra de visibilidade que uma mensagem direta, e todos aparecem na prévia antes de qualquer convite. Criar um grupo convida pessoas e esta ferramenta não desfaz o convite depois de feito, então a operação exige o grant talk.create e aprovação explícita. Antes de enviar, o agente DEVE chamar a tool sem confirm, mostrar o rascunho devolvido ao usuário e obter aprovação explícita; só então repetir com confirm: true e o approval_id da prévia. O servidor só cria a sala com uma prévia válida, de uso único e com validade de 10 minutos; a aprovação vale para o grupo inteiro, nome e convidados juntos, e a aprovação em si depende de o agente mostrar o rascunho e de o usuário confirmar no cliente. Quem não aprovar não fica com grupo vazio na lista: a sala só é criada na chamada aprovada. Os convites são feitos um a um depois da criação: quem entrou vem em participants e quem o Talk recusou vem em invitations_failed, com o id de cada um; nesse caso o grupo já existe, então não repita a chamada, informe ao usuário quem ficou de fora.';
 
+    /** Instruction shown next to a group draft, where %s is the name of the group. */
+    public const CONFIRMATION_INSTRUCTION_GROUP = 'Vou criar no Talk o grupo \'%s\' com você como dono%s. Mostre isso ao usuário e só repita a mesma chamada com confirm: true e approval_id igual ao approvalId acima depois que ele aprovar; se ele pedir mudanças, mude o rascunho e gere outra prévia. Sem essa aprovação o servidor não cria nada.';
 
     /** Instruction shown next to a draft, where %s is the conversation name. */
     public const CONFIRMATION_INSTRUCTION = 'Mostre este rascunho ao usuário exatamente como será enviado para a conversa \'%s\' e só repita a mesma chamada com confirm: true e approval_id igual ao approvalId acima depois que ele aprovar. Se ele pedir mudanças, ajuste o texto, chame a tool de novo para gerar outra prévia e mostre de novo. Sem essa aprovação o servidor não publica nada.';
@@ -33,6 +36,11 @@ final class Messages {
     public const FILE_NOT_FOUND = 'arquivo não encontrado ou sem acesso';
     public const ATTACHMENT_NOT_FOUND = 'anexo não encontrado nesta conversa';
     public const USER_NOT_REACHABLE = 'usuário não encontrado ou sem permissão para falar com ele';
+    /** Refusal of one guest of a group, where %s is the account id the caller sent. */
+    public const PARTICIPANT_NOT_REACHABLE = 'participante \'%s\' não encontrado ou sem permissão para falar com ele';
+    /** Reported per guest in invitations_failed, after the group already exists. */
+    public const INVITATION_FAILED = 'o Talk não aceitou o convite deste participante';
+    public const CONVERSATION_NOT_CREATED = 'conversa não criada pelo Talk';
     public const MESSAGE_NOT_SENT = 'não foi possível enviar a mensagem';
     public const FILE_NOT_SHARED = 'não foi possível compartilhar o arquivo';
     public const FILE_ALREADY_SHARED = 'o arquivo já está compartilhado nesta conversa';
@@ -50,6 +58,9 @@ final class Messages {
     public const MESSAGE_TOO_LONG = 'message excede o limite de caracteres';
     public const INVALID_PATH = 'path inválido';
     public const INVALID_USER = 'user inválido';
+    public const INVALID_GROUP_NAME = 'name do grupo não pode ser vazio';
+    public const GROUP_NAME_TOO_LONG = 'name do grupo excede o limite de caracteres';
+    public const TOO_MANY_PARTICIPANTS = 'grupo com mais de %d participantes';
     public const INVALID_IDENTIFIER = 'identificador inválido';
     public const INVALID_LIMIT = 'limit deve ser um número entre 1 e 200';
     public const REPLY_TARGET_NOT_FOUND = 'mensagem citada não encontrada nesta conversa';

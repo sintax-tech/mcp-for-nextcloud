@@ -5,6 +5,7 @@ namespace OCA\Mcp\AppInfo;
 
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tools\Files\FilesModule;
+use OCA\Mcp\Tools\Notes\NotesModule;
 use OCA\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\AppFramework\App;
@@ -21,6 +22,7 @@ class Application extends App implements IBootstrap {
     /** Tool modules in tools/list order; registered explicitly, no autodiscovery. */
     public const MODULES = [
         FilesModule::class,
+        NotesModule::class,
     ];
 
     public function __construct() {

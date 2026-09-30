@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
+    <id>mcp</id>
+    <name>MCP</name>
+    <summary>Instance-local MCP endpoint with per-user grants</summary>
+    <description>Native MCP endpoint for Nextcloud. This first test release provides a diagnostic tool and authorization controls.</description>
+    <version>0.1.0</version>
+    <licence>AGPL-3.0-or-later</licence>
+    <author>Sintax Tech</author>
+    <namespace>Mcp</namespace>
+    <category>tools</category>
+    <dependencies><nextcloud min-version="33" max-version="33"/></dependencies>
+    <settings>
+        <admin>OCA\Mcp\Settings\AdminSettings</admin>
+        <personal>OCA\Mcp\Settings\PersonalSettings</personal>
+    </settings>
+</info>

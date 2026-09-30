@@ -62,7 +62,7 @@ class McpProtocol {
             return $this->result($id, [
                 'protocolVersion' => self::VERSION,
                 'capabilities' => ['tools' => new \stdClass()],
-                'serverInfo' => ['name' => 'nextcloud-mcp', 'version' => '0.3.0'],
+                'serverInfo' => ['name' => 'nextcloud-mcp', 'version' => '0.3.1'],
             ]);
         }
         if ($method === 'ping') {

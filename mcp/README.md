@@ -77,9 +77,9 @@ Os arquivos de licença acompanham cada pacote em `vendor/`. O `vendor/autoload.
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-0.3.0.tar.gz <servidor>:/tmp/
+scp build/mcp-0.3.1.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-0.3.0.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-0.3.1.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp
@@ -96,6 +96,17 @@ Para atualizar: `occ app:disable mcp`, remover `<apps>/mcp`, extrair o novo paco
 3. Em **Configurações pessoais → Segurança**, o usuário cria uma senha de app. O cliente MCP usa autenticação HTTP Basic com o ID do usuário e essa senha de app. O app nunca pede nem guarda a senha principal.
 
 Login pelo navegador (Login Flow v2/OAuth) ainda não está disponível.
+
+### Chaves de configuração
+
+| Escopo | Chave | Valores |
+| --- | --- | --- |
+| app `mcp` | `service_enabled` | `1` ligado, `0` ou ausente desligado |
+| usuário, app `mcp` | `eligible` | `1` liberado pelo administrador |
+| usuário, app `mcp` | `connected` | `1` conexão pessoal ativa |
+| usuário, app `mcp` | `grant_<módulo>_<operação>` | `1`/`0`; ausente vale `1` para `read` e `0` para as demais |
+
+A chave `enabled` do app `mcp` pertence ao Nextcloud, que a usa para marcar o app como habilitado (`yes`), e não é o liga/desliga do MCP. O app nunca lê nem grava `enabled`, `installed_version`, `types`, `levels` ou `ocsid`. Para diagnóstico: `occ config:app:get mcp service_enabled`.
 
 ## Revogar
 

@@ -20,7 +20,7 @@
     "@modelcontextprotocol/sdk": "^1.0.0",
     "fast-xml-parser": "^5.11.2",
     "mammoth": "^1.8.0",
-    "node-ical": "^0.18.0",
+    "node-ical": "^0.26.1",
     "unpdf": "^0.12.2",
     "zod": "^3.23.0"
   },

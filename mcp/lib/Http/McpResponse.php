@@ -5,7 +5,12 @@ namespace OCA\Mcp\Http;
 
 use OCP\AppFramework\Http\Response;
 
+/** JSON response with a pre-encoded body and no caching, used for every MCP endpoint reply. */
 class McpResponse extends Response {
+    /**
+     * @param string $body already encoded JSON, or '' for no body
+     * @param int $status HTTP status code
+     */
     public function __construct(private string $body = '', int $status = 200) {
         parent::__construct();
         $this->setStatus($status);
@@ -13,6 +18,7 @@ class McpResponse extends Response {
         $this->addHeader('Cache-Control', 'no-store');
     }
 
+    /** @return string the body exactly as given */
     public function render(): string {
         return $this->body;
     }

@@ -14,6 +14,11 @@ use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\IUserSession;
 
+/**
+ * The MCP Streamable HTTP endpoint (stateless, no SSE). Authentication happens inside the controller so that
+ * anonymous callers get a 401 with WWW-Authenticate instead of a login redirect; the connection policy is
+ * re-checked on every request.
+ */
 class McpController extends Controller {
     public function __construct(
         string $appName,
@@ -26,6 +31,11 @@ class McpController extends Controller {
         parent::__construct($appName, $request);
     }
 
+    /**
+     * Receives one JSON-RPC message.
+     *
+     * @return McpResponse 200/202 with the JSON-RPC result, or 400/401/403/406/413 without a body
+     */
     #[PublicPage]
     #[NoAdminRequired]
     #[NoCSRFRequired]
@@ -46,6 +56,7 @@ class McpController extends Controller {
         return new McpResponse($result['body'] === null ? '' : json_encode($result['body'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $result['status']);
     }
 
+    /** @return McpResponse 405: no SSE stream is offered (401/403 first when access is denied) */
     #[PublicPage]
     #[NoAdminRequired]
     #[NoCSRFRequired]
@@ -53,6 +64,7 @@ class McpController extends Controller {
         return $this->preflight() ?? new McpResponse('', 405);
     }
 
+    /** @return McpResponse 405: there are no sessions to terminate (401/403 first when access is denied) */
     #[PublicPage]
     #[NoAdminRequired]
     #[NoCSRFRequired]
@@ -60,11 +72,16 @@ class McpController extends Controller {
         return $this->preflight() ?? new McpResponse('', 405);
     }
 
-    /** IRequest does not expose the raw body; php://input stays readable after Nextcloud parsed JSON params. */
+    /**
+     * IRequest does not expose the raw body; php://input stays readable after Nextcloud parsed JSON params.
+     *
+     * @return string|false at most 1 MiB + 1 byte of the body, false when unreadable
+     */
     protected function readBody(): string|false {
         return file_get_contents('php://input', false, null, 0, 1048577);
     }
 
+    /** @return McpResponse|null a rejection for foreign Origin, missing identity or denied policy; null to proceed */
     private function preflight(): ?McpResponse {
         $origin = $this->request->getHeader('Origin');
         if ($origin !== '') {

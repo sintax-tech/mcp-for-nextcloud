@@ -10,12 +10,21 @@ use OCA\Mcp\Tools\ToolRegistry;
  * Authentication and connection policy are enforced by the controller before this runs.
  */
 class McpProtocol {
+    /** The single MCP protocol version implemented and answered in initialize. */
     public const VERSION = '2025-06-18';
+    /** Built-in diagnostic tool that reads no user data. */
     public const TOOL = 'mcp_status';
 
     public function __construct(private ToolRegistry $tools) {}
 
-    /** @return array{status:int,body:?array} */
+    /**
+     * Handles one JSON-RPC message.
+     *
+     * @param string $raw request body as received
+     * @param string $headerVersion value of MCP-Protocol-Version ('' when absent)
+     * @param string $userId authenticated Nextcloud user the tools run as
+     * @return array{status:int, body:array<string, mixed>|null} HTTP status and JSON-RPC envelope (null for no body)
+     */
     public function handle(string $raw, string $headerVersion, string $userId): array {
         try {
             $message = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
@@ -91,10 +100,15 @@ class McpProtocol {
         return preg_match('/^(Unknown tool|Invalid arguments|(Unknown|Missing|Invalid) argument: [a-z_]{1,64})$/', $message) === 1 ? $message : 'Invalid arguments';
     }
 
+    /**
+     * @param array<string, mixed>|\stdClass $result
+     * @return array{status:int, body:array<string, mixed>}
+     */
     private function result(int|string $id, array|\stdClass $result): array {
         return ['status' => 200, 'body' => ['jsonrpc' => '2.0', 'id' => $id, 'result' => $result]];
     }
 
+    /** @return array{status:int, body:array<string, mixed>} */
     private function error(int|string|null $id, int $code, string $message, int $status = 200): array {
         return ['status' => $status, 'body' => ['jsonrpc' => '2.0', 'id' => $id, 'error' => ['code' => $code, 'message' => $message]]];
     }

@@ -15,6 +15,10 @@ use OCP\IURLGenerator;
 use OCP\IUserManager;
 use OCP\IUserSession;
 
+/**
+ * Form targets of the admin and personal settings pages. Admin routes rely on Nextcloud's default
+ * admin-only and CSRF checks; the personal route only lets a user change their own connection.
+ */
 class SettingsController extends Controller {
     public function __construct(
         string $appName,
@@ -27,6 +31,10 @@ class SettingsController extends Controller {
         parent::__construct($appName, $request);
     }
 
+    /**
+     * @param string $enabled '1' to enable the service, '0' to disable it
+     * @return Response redirect to the admin page, or 400 for invalid input
+     */
     public function global(string $enabled = '0'): Response {
         return $this->guard(function () use ($enabled): Response {
             if (!in_array($enabled, ['0', '1'], true)) {
@@ -37,16 +45,32 @@ class SettingsController extends Controller {
         });
     }
 
+    /**
+     * @param string $uid existing Nextcloud user id
+     * @param string $module grant module (kind=grant)
+     * @param string $operation grant operation (kind=grant)
+     * @param string $enabled '1' or '0'
+     * @param string $kind 'eligible' or 'grant'
+     * @return Response redirect to the admin page, or 400 for invalid input
+     */
     public function user(string $uid = '', string $module = '', string $operation = '', string $enabled = '0', string $kind = 'grant'): Response {
         return $this->guard(fn (): Response => $this->applyUser($uid, $module, $operation, $enabled, $kind));
     }
 
+    /**
+     * @param string $enabled '1' to connect (needs service on and eligibility), '0' to disconnect
+     * @return Response redirect to the personal page, or 400 for invalid input
+     */
     #[NoAdminRequired]
     public function personal(string $enabled = '0'): Response {
         return $this->guard(fn (): Response => $this->applyPersonal($enabled));
     }
 
-    /** Validation failures become a generic 400 instead of an unhandled 500. */
+    /**
+     * Validation failures become a generic 400 instead of an unhandled 500.
+     *
+     * @param callable():Response $action
+     */
     private function guard(callable $action): Response {
         try {
             return $action();
@@ -55,6 +79,7 @@ class SettingsController extends Controller {
         }
     }
 
+    /** @throws InvalidArgumentException for an unknown user, value, kind, module or operation */
     private function applyUser(string $uid, string $module, string $operation, string $enabled, string $kind): Response {
         if ($uid === '' || $this->userManager->get($uid) === null || !in_array($enabled, ['0', '1'], true)) {
             throw new InvalidArgumentException('Invalid user or value');
@@ -69,6 +94,7 @@ class SettingsController extends Controller {
         return $this->adminRedirect();
     }
 
+    /** @throws InvalidArgumentException without a valid user, value, service or eligibility */
     private function applyPersonal(string $enabled): Response {
         $user = $this->userSession->getUser();
         if ($user === null || !$user->isEnabled() || !in_array($enabled, ['0', '1'], true)) {

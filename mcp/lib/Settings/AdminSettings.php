@@ -11,6 +11,7 @@ use OCP\IRequest;
 use OCP\IUserManager;
 use OCP\Settings\ISettings;
 
+/** Admin page (Additional settings): endpoint URL, global switch, eligibility and the grant matrix of one user. */
 class AdminSettings implements ISettings {
     public function __construct(
         private GrantPolicy $policy,
@@ -19,6 +20,7 @@ class AdminSettings implements ISettings {
         private IUserManager $userManager,
     ) {}
 
+    /** @return TemplateResponse the rendered settings section */
     public function getForm(): TemplateResponse {
         $uid = $this->request->getParam('mcp_uid', '');
         $uid = is_string($uid) && $this->userManager->get($uid) !== null ? $uid : '';
@@ -44,6 +46,8 @@ class AdminSettings implements ISettings {
         ], '');
     }
 
+    /** @return string settings section id ('additional') */
     public function getSection(): string { return 'additional'; }
+    /** @return int ordering within the section */
     public function getPriority(): int { return 50; }
 }

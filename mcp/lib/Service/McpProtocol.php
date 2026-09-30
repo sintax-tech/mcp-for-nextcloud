@@ -36,7 +36,7 @@ class McpProtocol {
     /** _meta key of the server identity in modern results. */
     public const META_SERVER_INFO = 'io.modelcontextprotocol/serverInfo';
     /** Server identity reported in initialize and modern results. */
-    public const SERVER_INFO = ['name' => 'nextcloud-mcp', 'version' => '0.7.0'];
+    public const SERVER_INFO = ['name' => 'nextcloud-mcp', 'version' => '0.6.10'];
     /** HeaderMismatch error code of the 2026-07-28 specification. */
     public const HEADER_MISMATCH = -32020;
     /** UnsupportedProtocolVersion error code of the 2026-07-28 specification. */
@@ -313,7 +313,14 @@ class McpProtocol {
 
     /** Only the registry's fixed validation messages reach the client. */
     private function safeMessage(string $message): string {
-        return preg_match('/^(Unknown tool|Invalid arguments|(Unknown|Missing|Invalid) argument: [a-z_]{1,64})$/', $message) === 1 ? $message : 'Invalid arguments';
+        // The argument name is a path into the arguments the client itself sent: keys, and the [n] and
+        // . separators the validator joins them with. That is why dots and brackets are allowed here — a
+        // nested field has to survive to the client as itself, or "Invalid argument: items[1].reply_to"
+        // collapses into a message that says nothing about which item to fix. The charset stays strict so
+        // nothing built from server state (a path, a file name, an exception) can slip through.
+        return preg_match('/^(Unknown tool|Invalid arguments|(Unknown|Missing|Invalid) argument: [a-z_0-9]+(?:[.\[][a-z_0-9]+\]?)*)$/', $message) === 1
+            ? $message
+            : 'Invalid arguments';
     }
 
     /**

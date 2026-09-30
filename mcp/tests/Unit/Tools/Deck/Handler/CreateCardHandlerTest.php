@@ -37,7 +37,7 @@ final class CreateCardHandlerTest extends TestCase {
 			$expectation->willReturn($this->card(['id' => 9, 'title' => 'Fechar contrato']));
 		}
 
-		return new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		return new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 	}
 
 	public function testHappyPathSendsTheCardOwnedByTheCaller(): void {
@@ -46,7 +46,7 @@ final class CreateCardHandlerTest extends TestCase {
 			->method('createCard')
 			->with('alice', 10, 'Fechar contrato', 'Com o cliente', '2026-03-01')
 			->willReturn($this->card(['id' => 9]));
-		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$payload = $this->payload($handler->handle([
 			'stackId' => 10,
@@ -64,7 +64,7 @@ final class CreateCardHandlerTest extends TestCase {
 			->method('createCard')
 			->with('alice', 10, 'Fechar', '', null)
 			->willReturn($this->card(['id' => 9]));
-		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$handler->handle(['stackId' => 10, 'title' => 'Fechar'], 'alice');
 	}
@@ -72,7 +72,7 @@ final class CreateCardHandlerTest extends TestCase {
 	public function testBlankTitleIsAParameterErrorAndNeverReachesDeck(): void {
 		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::never())->method('createCard');
-		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->expectException(InvalidArgumentException::class);
 		$this->expectExceptionMessage(DeckMessages::ERROR_TITLE_REQUIRED);
@@ -83,7 +83,7 @@ final class CreateCardHandlerTest extends TestCase {
 	public function testImpossibleDateIsAParameterError(): void {
 		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::never())->method('createCard');
-		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->expectException(InvalidArgumentException::class);
 		$this->expectExceptionMessage(DeckMessages::ERROR_INVALID_DUEDATE);
@@ -94,7 +94,7 @@ final class CreateCardHandlerTest extends TestCase {
 	public function testOversizedDescriptionIsRefusedInsteadOfTruncated(): void {
 		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::never())->method('createCard');
-		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->expectException(InvalidArgumentException::class);
 		$this->expectExceptionMessage(DeckMessages::ERROR_DESCRIPTION_TOO_LONG);
@@ -137,7 +137,7 @@ final class CreateCardHandlerTest extends TestCase {
 			->with('alice', 10)
 			->willReturn($this->ownershipOf('pedro', 'Comercial'));
 		$gateway->expects(self::never())->method('createCard');
-		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->assertSharedConfirmation($handler->handle([
 			'stackId' => 10,
@@ -152,7 +152,7 @@ final class CreateCardHandlerTest extends TestCase {
 			->method('createCard')
 			->with('alice', 10, 'Fechar contrato', '', null)
 			->willReturn($this->card(['id' => 9]));
-		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$payload = $this->payload($handler->handle([
 			'stackId' => 10,
@@ -167,7 +167,7 @@ final class CreateCardHandlerTest extends TestCase {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->method('stackOwnership')->willThrowException(new NoPermissionException('Permission denied'));
 		$gateway->expects(self::never())->method('createCard');
-		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$result = $handler->handle(['stackId' => 10, 'title' => 'Fechar contrato'], 'alice');
 

@@ -20,7 +20,9 @@ class GrantPolicy {
         'notes' => ['read', 'create', 'edit', 'move', 'delete'],
         'deck' => ['read', 'create', 'edit', 'move', 'delete'],
         'calendar' => ['read', 'create', 'edit', 'move', 'delete', 'transfer'],
-        'talk' => ['read', 'reply', 'attach', 'quote'],
+        // 'create' is what talk_create_group asks for: opening a conversation invites people, so it is denied by
+        // default like every other operation that is not a read.
+        'talk' => ['read', 'reply', 'attach', 'quote', 'create'],
     ];
 
     /** App id under which every value of this policy is stored. */

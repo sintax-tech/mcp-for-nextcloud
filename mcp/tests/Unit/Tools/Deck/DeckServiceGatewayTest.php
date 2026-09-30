@@ -5,7 +5,11 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use LogicException;
 use OCA\Deck\Db\Acl;
+use OCA\Deck\Db\Assignment;
+use OCA\Deck\Db\AssignmentMapper;
+use OCA\Deck\Db\Card;
 use OCA\Deck\Db\CardMapper;
+use OCA\Deck\Db\Stack;
 use OCA\Deck\Db\StackMapper;
 use OCA\Deck\Model\OptionalNullableValue;
 use OCA\Deck\NoPermissionException;
@@ -13,7 +17,11 @@ use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
 use OCA\Deck\Service\StackService;
+use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Tools\Deck\CardCriteria;
 use OCA\Mcp\Tools\Deck\DeckServiceGateway;
+use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IConfig;
 use OCP\IUser;
 use OCP\IUserManager;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -39,6 +47,9 @@ final class DeckServiceGatewayTest extends TestCase {
 	/** @var ContainerInterface&MockObject */
 	private ContainerInterface $container;
 
+	/** @var ITimeFactory&MockObject Clock the follow-up reads `overdue` from. */
+	private ITimeFactory $time;
+
 	private DeckServiceGateway $gateway;
 
 	protected function setUp(): void {
@@ -49,8 +60,12 @@ final class DeckServiceGatewayTest extends TestCase {
 			PermissionService::class => $this->createMock(PermissionService::class),
 			CardMapper::class => $this->createMock(CardMapper::class),
 			StackMapper::class => $this->createMock(StackMapper::class),
+			AssignmentMapper::class => $this->createMock(AssignmentMapper::class),
 			IUserManager::class => $this->createMock(IUserManager::class),
 		];
+
+		$this->time = $this->createMock(ITimeFactory::class);
+		$this->time->method('getTime')->willReturn((new \DateTime('2026-03-05 12:00:00'))->getTimestamp());
 
 		$this->container = $this->createMock(ContainerInterface::class);
 		$this->container
@@ -64,7 +79,7 @@ final class DeckServiceGatewayTest extends TestCase {
 				return $this->services[$id];
 			});
 
-		$this->gateway = new DeckServiceGateway($this->container);
+		$this->gateway = new DeckServiceGateway($this->container, $this->time);
 	}
 
 	public function testListBoardsBindsTheCallerAndHidesArchivedBoards(): void {
@@ -163,10 +178,39 @@ final class DeckServiceGatewayTest extends TestCase {
 		$this->services[CardService::class]
 			->expects(self::once())
 			->method('create')
-			->with('Fechar', 10, 'note', 99999, 'alice', 'Com o cliente', '2026-03-01')
+			->with('Fechar', 10, 'note', 99999, 'alice', 'Com o cliente', CardCriteria::localMidnight('2026-03-01', new \DateTimeZone(date_default_timezone_get())))
 			->willReturn($card);
 
 		self::assertSame($card, $this->gateway->createCard('alice', 10, 'Fechar', 'Com o cliente', '2026-03-01'));
+	}
+
+	public function testDayWrittenByTheToolsIsMidnightInTheCallerTimezone(): void {
+		$config = $this->createMock(IConfig::class);
+		$config->method('getUserValue')->willReturn('America/Sao_Paulo');
+		$gateway = new DeckServiceGateway($this->container, $this->time, new UserTimezone($config));
+		$this->recordSetUserId();
+		$this->services[CardService::class]
+			->expects(self::once())
+			->method('create')
+			->with('Fechar', 10, 'note', 99999, 'alice', '', '2026-10-01T00:00:00-03:00')
+			->willReturn($this->card());
+
+		$gateway->createCard('alice', 10, 'Fechar', '', '2026-10-01');
+	}
+
+	public function testUpdateKeepsAFullTimestampUntouched(): void {
+		$config = $this->createMock(IConfig::class);
+		$config->method('getUserValue')->willReturn('America/Sao_Paulo');
+		$gateway = new DeckServiceGateway($this->container, $this->time, new UserTimezone($config));
+		$card = $this->card(['id' => 7, 'duedate' => new \DateTime('2026-10-01 18:30:00', new \DateTimeZone('UTC'))]);
+		$this->recordSetUserId();
+		$this->services[CardService::class]
+			->expects(self::once())
+			->method('update')
+			->with(7, 'Card', 10, 'note', 'alice', '', 0, '2026-10-01T18:30:00+00:00')
+			->willReturn($card);
+
+		$gateway->updateCard('alice', $card, 'Card', '', '2026-10-01T18:30:00+00:00');
 	}
 
 	public function testUpdateCardPreservesEveryFieldTheCallerDidNotChange(): void {
@@ -301,7 +345,7 @@ final class DeckServiceGatewayTest extends TestCase {
 	public function testUnresolvedDeckServiceSurfacesAsAnExceptionForTheCallerToMap(): void {
 		$this->container = $this->createMock(ContainerInterface::class);
 		$this->container->method('get')->willThrowException(new RuntimeException('Service not found'));
-		$gateway = new DeckServiceGateway($this->container);
+		$gateway = new DeckServiceGateway($this->container, $this->time);
 
 		$this->expectException(RuntimeException::class);
 
@@ -377,6 +421,43 @@ final class DeckServiceGatewayTest extends TestCase {
 		);
 	}
 
+	public function testTheBoardOfACardIsReadOnlyAfterTheReadCheck(): void {
+		$this->recordSetUserId();
+		$this->services[PermissionService::class]
+			->expects(self::once())
+			->method('checkPermission')
+			->with(self::isInstanceOf(CardMapper::class), 7, Acl::PERMISSION_READ)
+			->willReturnCallback(function (): bool {
+				$this->calls[] = 'checkPermission';
+
+				return true;
+			});
+		$this->services[CardMapper::class]
+			->expects(self::once())
+			->method('findBoardId')
+			->with(7)
+			->willReturnCallback(function (): int {
+				$this->calls[] = 'findBoardId';
+
+				return 4;
+			});
+
+		self::assertSame(4, $this->gateway->cardBoardId('alice', 7));
+		$calls = array_values(array_filter($this->calls, static fn (string $call): bool => !str_starts_with($call, 'get:')));
+		self::assertSame(['setUserId:alice', 'checkPermission', 'findBoardId'], $calls);
+	}
+
+	public function testTheBoardOfACardIsNotReadWithoutAccess(): void {
+		$this->recordSetUserId();
+		$this->services[PermissionService::class]
+			->method('checkPermission')
+			->willThrowException(new NoPermissionException('Permission denied'));
+		$this->services[CardMapper::class]->expects(self::never())->method('findBoardId');
+
+		$this->expectException(NoPermissionException::class);
+		$this->gateway->cardBoardId('alice', 7);
+	}
+
 	public function testOwnershipIsRefusedBeforeAnyOwnerIsReadWhenAccessIsDenied(): void {
 		$this->recordSetUserId();
 		$this->services[PermissionService::class]
@@ -405,6 +486,219 @@ final class DeckServiceGatewayTest extends TestCase {
 		);
 	}
 
+	public function testFollowupScansOnlyTheBoardsTheCallerMayManage(): void {
+		$this->recordSetUserId();
+		$this->services[BoardService::class]
+			->method('findAll')
+			->willReturn([$this->boardDouble(1), $this->boardDouble(2)]);
+		$checked = [];
+		$this->services[PermissionService::class]
+			->expects(self::exactly(2))
+			->method('getPermissions')
+			->willReturnCallback(function (int $boardId, string $userId) use (&$checked): array {
+				$checked[] = $boardId . ':' . $userId;
+
+				return $boardId === 1
+					? [Acl::PERMISSION_MANAGE => true]
+					: [Acl::PERMISSION_READ => true, Acl::PERMISSION_MANAGE => false];
+			});
+		$this->services[StackMapper::class]
+			->expects(self::once())
+			->method('findAll')
+			->with(1)
+			->willReturn([new Stack(['id' => 10, 'boardId' => 1])]);
+		$this->services[CardMapper::class]
+			->method('findAllForStacks')
+			->willReturn([10 => [$this->card(['id' => 11, 'stackId' => 10, 'duedate' => new \DateTime('2026-03-01 00:00:00')])]]);
+
+		$page = $this->gateway->followupCards('alice', 'overdue', null, null, null, 10);
+
+		self::assertSame(['1:alice', '2:alice'], $checked);
+		self::assertSame([11], array_map(static fn (array $item): int => $item['card']->getId(), $page['items']));
+		self::assertSame([1], array_map(static fn (array $item): int => $item['boardId'], $page['items']));
+		self::assertFalse($page['truncated']);
+		self::assertSame(['setUserId:alice'], $this->record('setUserId'));
+	}
+
+	public function testFollowupClassifiesCardsWithTheInjectedClock(): void {
+		$late = $this->card(['id' => 1, 'stackId' => 10, 'duedate' => new \DateTime('2026-03-01 00:00:00')]);
+		$today = $this->card(['id' => 2, 'stackId' => 10, 'duedate' => new \DateTime('2026-03-05 00:00:00')]);
+		$future = $this->card(['id' => 3, 'stackId' => 10, 'duedate' => new \DateTime('2026-03-06 00:00:00')]);
+		$undated = $this->card(['id' => 4, 'stackId' => 10]);
+		$done = $this->card(['id' => 5, 'stackId' => 10, 'duedate' => new \DateTime('2026-03-01 00:00:00'), 'done' => new \DateTime('2026-03-02 09:00:00')]);
+		$archived = $this->card(['id' => 6, 'stackId' => 10, 'duedate' => new \DateTime('2026-03-01 00:00:00'), 'archived' => true]);
+		$this->managedBoardWith([$late, $today, $future, $undated, $done, $archived]);
+
+		$ids = fn (string $status): array => array_map(
+			static fn (array $item): int => $item['card']->getId(),
+			$this->gateway->followupCards('alice', $status, null, null, null, 100)['items'],
+		);
+
+		// The clock of the test is 2026-03-05 noon, so "today" is not late yet.
+		self::assertSame([1], $ids('overdue'));
+		self::assertSame([1, 2, 3, 4], $ids('open'));
+		self::assertSame([5], $ids('done'));
+		self::assertSame([1, 2, 3, 4, 5, 6], $ids('all'));
+	}
+
+	public function testFollowupKeepsOnlyTheCardsOfTheAskedAssignee(): void {
+		// Deck stores the assignments apart from the card, so the gateway reads them per board.
+		$this->services[AssignmentMapper::class]
+			->method('findIn')
+			->willReturn([
+				new Assignment(['cardId' => 1, 'participant' => 'pedro', 'type' => Acl::PERMISSION_TYPE_USER]),
+				new Assignment(['cardId' => 2, 'participant' => 'vendas', 'type' => Acl::PERMISSION_TYPE_GROUP]),
+			]);
+		$this->managedBoardWith([
+			$this->card(['id' => 1, 'stackId' => 10, 'duedate' => new \DateTime('2026-03-01 00:00:00')]),
+			$this->card(['id' => 2, 'stackId' => 10, 'duedate' => new \DateTime('2026-03-01 00:00:00')]),
+		]);
+
+		$ids = fn (?string $assignee): array => array_map(
+			static fn (array $item): int => $item['card']->getId(),
+			$this->gateway->followupCards('alice', 'overdue', null, $assignee, null, 100)['items'],
+		);
+
+		self::assertSame([1], $ids('pedro'));
+		// A group names no person, so a UID filter never answers a card assigned only to one.
+		self::assertSame([], $ids('alice'));
+		self::assertSame([1, 2], $ids(null));
+	}
+
+	public function testFollowupAppliesTheDueDateCeilingOnlyToCardsThatHaveADate(): void {
+		$this->managedBoardWith([
+			$this->card(['id' => 1, 'stackId' => 10, 'duedate' => new \DateTime('2026-03-01 00:00:00')]),
+			$this->card(['id' => 2, 'stackId' => 10, 'duedate' => new \DateTime('2026-03-10 00:00:00')]),
+			$this->card(['id' => 3, 'stackId' => 10]),
+		]);
+
+		$page = $this->gateway->followupCards('alice', 'all', null, null, '2026-03-05', 100);
+
+		// Cards without a due date cannot be "until a date", so they stay out of the ceiling.
+		self::assertSame([1], array_map(static fn (array $item): int => $item['card']->getId(), $page['items']));
+	}
+
+	public function testFollowupStopsAtTheLimitAndReportsTheTruncation(): void {
+		$cards = array_map(
+			fn (int $id): Card => $this->card(['id' => $id, 'stackId' => 10, 'duedate' => new \DateTime('2026-03-01 00:00:00')]),
+			range(1, 12),
+		);
+		$this->managedBoardWith($cards);
+
+		$page = $this->gateway->followupCards('alice', 'overdue', null, null, null, 5);
+
+		self::assertCount(5, $page['items']);
+		self::assertSame([1, 2, 3, 4, 5], array_map(static fn (array $item): int => $item['card']->getId(), $page['items']));
+		self::assertTrue($page['truncated']);
+	}
+
+	public function testFollowupStopsReadingBoardsOnceTheLimitIsCovered(): void {
+		$boards = array_map(fn (int $id): \OCA\Deck\Db\Board => $this->boardDouble($id), [1, 2, 3]);
+		$this->services[BoardService::class]->method('findAll')->willReturn($boards);
+		$this->services[PermissionService::class]
+			->method('getPermissions')
+			->willReturn([Acl::PERMISSION_MANAGE => true]);
+		$this->services[StackMapper::class]
+			->expects(self::exactly(2))
+			->method('findAll')
+			->willReturnCallback(static fn (int $boardId): array => [new Stack(['id' => $boardId * 10, 'boardId' => $boardId])]);
+		$this->services[CardMapper::class]
+			->method('findAllForStacks')
+			->willReturnCallback(function (array $stackIds): array {
+				$cards = [];
+				foreach ($stackIds as $stackId) {
+					$cards[$stackId] = [$this->card([
+						'id' => $stackId + 1,
+						'stackId' => $stackId,
+						'duedate' => new \DateTime('2026-03-01 00:00:00'),
+					])];
+				}
+
+				return $cards;
+			});
+
+		$page = $this->gateway->followupCards('alice', 'overdue', null, null, null, 1);
+
+		self::assertCount(1, $page['items']);
+		self::assertTrue($page['truncated']);
+	}
+
+	public function testFollowupNeverExaminesMoreThanOneHundredBoards(): void {
+		$this->services[BoardService::class]
+			->method('findAll')
+			->willReturn(array_map(fn (int $id): \OCA\Deck\Db\Board => $this->boardDouble($id), range(1, 101)));
+		$this->services[PermissionService::class]
+			->expects(self::exactly(100))
+			->method('getPermissions')
+			->willReturn([Acl::PERMISSION_MANAGE => false]);
+		$this->services[StackMapper::class]->expects(self::never())->method('findAll');
+
+		$page = $this->gateway->followupCards('alice', 'overdue', null, null, null, 100);
+
+		self::assertSame([], $page['items']);
+		self::assertTrue($page['truncated']);
+	}
+
+	public function testFollowupScansOnlyTheBoardTheCallerAskedFor(): void {
+		$this->services[BoardService::class]
+			->method('findAll')
+			->willReturn([$this->boardDouble(4), $this->boardDouble(9)]);
+		$this->services[PermissionService::class]
+			->expects(self::once())
+			->method('getPermissions')
+			->with(9, 'alice')
+			->willReturn([Acl::PERMISSION_MANAGE => true]);
+		$this->services[StackMapper::class]
+			->expects(self::once())
+			->method('findAll')
+			->with(9)
+			->willReturn([new Stack(['id' => 90, 'boardId' => 9])]);
+		$this->services[CardMapper::class]
+			->method('findAllForStacks')
+			->willReturn([90 => [$this->card(['id' => 91, 'stackId' => 90, 'duedate' => new \DateTime('2026-03-01 00:00:00')])]]);
+
+		$page = $this->gateway->followupCards('alice', 'overdue', 9, null, null, 10);
+
+		self::assertSame([9], array_map(static fn (array $item): int => $item['boardId'], $page['items']));
+		self::assertSame([91], array_map(static fn (array $item): int => $item['card']->getId(), $page['items']));
+	}
+
+	public function testFollowupReadsTheAssignmentsOfAWholeBoardInOneQuery(): void {
+		$this->managedBoardWith([
+			$this->card(['id' => 1, 'stackId' => 10, 'duedate' => new \DateTime('2026-03-01 00:00:00')]),
+			$this->card(['id' => 2, 'stackId' => 10, 'duedate' => new \DateTime('2026-03-01 00:00:00')]),
+		]);
+		$this->services[AssignmentMapper::class]
+			->expects(self::once())
+			->method('findIn')
+			->with([1, 2])
+			->willReturn([new Assignment(['cardId' => 1, 'participant' => 'alice', 'type' => Acl::PERMISSION_TYPE_USER])]);
+
+		$page = $this->gateway->followupCards('alice', 'overdue', null, null, null, 10);
+
+		self::assertSame(['alice'], CardCriteria::assignedUids($page['items'][0]['card']));
+		self::assertSame([], CardCriteria::assignedUids($page['items'][1]['card']));
+	}
+
+	public function testListCardsEmbedsTheAssignmentsOfTheWholePageInOneQuery(): void {
+		$this->recordSetUserId();
+		$this->services[PermissionService::class]->method('checkPermission')->willReturn(true);
+		$this->services[StackMapper::class]->method('findBoardId')->willReturn(4);
+		$first = $this->card(['id' => 1]);
+		$second = $this->card(['id' => 2]);
+		$this->services[CardMapper::class]->method('findAll')->willReturn([$first, $second]);
+		$this->services[AssignmentMapper::class]
+			->expects(self::once())
+			->method('findIn')
+			->with([1, 2])
+			->willReturn([new Assignment(['cardId' => 2, 'participant' => 'alice', 'type' => Acl::PERMISSION_TYPE_USER])]);
+
+		$page = $this->gateway->listCards('alice', 10, 25, 0);
+
+		self::assertSame([], $page['items'][0]->getAssignedUsers());
+		self::assertSame('alice', $page['items'][1]->getAssignedUsers()[0]->getParticipant());
+	}
+
 	/**
 	 * Makes every `setUserId()` call record itself in the call log.
 	 *
@@ -416,6 +710,27 @@ final class DeckServiceGatewayTest extends TestCase {
 			->willReturnCallback(function (string $userId): void {
 				$this->calls[] = 'setUserId:' . $userId;
 			});
+	}
+
+	/**
+	 * Answers a follow-up over one board the caller manages, holding one stack with the given cards.
+	 *
+	 * @param list<Card> $cards Cards of the single stack of board 4.
+	 */
+	private function managedBoardWith(array $cards): void {
+		$this->services[BoardService::class]->method('findAll')->willReturn([$this->boardDouble(4)]);
+		$this->services[PermissionService::class]
+			->method('getPermissions')
+			->with(4, 'alice')
+			->willReturn([Acl::PERMISSION_MANAGE => true]);
+		$this->services[StackMapper::class]
+			->method('findAll')
+			->with(4)
+			->willReturn([new Stack(['id' => 10, 'boardId' => 4])]);
+		$this->services[CardMapper::class]
+			->method('findAllForStacks')
+			->with([10])
+			->willReturn([10 => $cards]);
 	}
 
 	/**

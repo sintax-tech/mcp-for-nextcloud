@@ -98,12 +98,15 @@ final class EditCardHandler extends AbstractHandler {
 	}
 
 	/**
-	 * Current due date of a card, in the format the tools use.
+	 * Current due date of a card, kept to the second.
+	 *
+	 * Sending back only the day would reset the time set in the Deck web interface to midnight on
+	 * every edit of the title or description, so the full instant goes back unchanged.
 	 *
 	 * @param mixed $duedate Value of `Card::getDuedate()`.
-	 * @return string|null Date as `YYYY-MM-DD`, or null when the card has no date.
+	 * @return string|null ISO 8601 timestamp, or null when the card has no date.
 	 */
 	private function currentDuedate(mixed $duedate): ?string {
-		return $duedate instanceof \DateTime ? $duedate->format('Y-m-d') : null;
+		return $duedate instanceof \DateTimeInterface ? $duedate->format(\DateTimeInterface::ATOM) : null;
 	}
 }

@@ -9,11 +9,16 @@ use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
- * The five tools of the talk module, routed by name.
+ * The tools of the talk module, routed by name.
  *
  * The module holds no access rule of its own: the registry checks the grant and the app enablement, and every
  * resource decision belongs to ConversationResolver, UserFileResolver or the share lookup. What it does own is the
  * translation of a failure into an MCP result, keeping every user-facing string in Messages.
+ *
+ * Every writing tool stops at a draft until the user approves it: a call without confirm answers with the draft
+ * and an approvalId, and a call with confirm: true only publishes when that id proves a draft of this same account,
+ * conversation, action and payload was already shown and has not been spent. Without confirm the tool answers with
+ * a payload, never with an error, and writes nothing.
  */
 class TalkModule implements ToolModule {
     public const TOOL_LIST = 'talk_list_conversations';
@@ -21,9 +26,19 @@ class TalkModule implements ToolModule {
     public const TOOL_REPLY = 'talk_reply';
     public const TOOL_ATTACH = 'talk_attach_file';
     public const TOOL_QUOTE = 'talk_quote_file';
+    public const TOOL_MESSAGE_USER = 'talk_message_user';
+    public const TOOL_SEND_BATCH = 'talk_send_batch';
+    public const TOOL_CREATE_GROUP = 'talk_create_group';
 
     private const MODULE = 'talk';
     private const APP = TalkServices::APP_ID;
+
+    /** Optional on purpose: a call without it is the draft, a call with it true is the approved send. */
+    private const CONFIRM_SCHEMA = ['type' => 'boolean'];
+    /** Id of the draft being approved; meaningful only together with confirm: true. */
+    private const APPROVAL_ID_SCHEMA = ['type' => 'string', 'minLength' => 1, 'maxLength' => 64];
+    /** Public conversation token; Talk tokens are 30 characters at most, so this only bounds the payload. */
+    private const TOKEN_SCHEMA = ['type' => 'string', 'minLength' => 1, 'maxLength' => 30];
 
     public function __construct(
         private TalkServices $talkServices,
@@ -31,6 +46,10 @@ class TalkModule implements ToolModule {
         private ConversationResolver $resolver,
         private ConversationWriter $writer,
         private FileSharer $sharer,
+        private DraftApproval $draftApproval,
+        private UserConversationResolver $userConversations,
+        private GroupCreator $groups,
+        private ReferenceLinker $references,
         private LoggerInterface $logger,
     ) {}
 
@@ -53,7 +72,7 @@ class TalkModule implements ToolModule {
                 'inputSchema' => [
                     'type' => 'object',
                     'properties' => [
-                        'conversation_token' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 30],
+                        'conversation_token' => self::TOKEN_SCHEMA,
                         'limit' => [
                             'type' => 'integer',
                             'minimum' => 1,
@@ -74,13 +93,38 @@ class TalkModule implements ToolModule {
                 'inputSchema' => [
                     'type' => 'object',
                     'properties' => [
-                        'conversation_token' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 30],
+                        'conversation_token' => self::TOKEN_SCHEMA,
                         'message' => [
                             'type' => 'string',
                             'minLength' => 1,
                             'maxLength' => ConversationWriter::MAX_MESSAGE_LENGTH,
                         ],
                         'reply_to' => ['type' => 'integer', 'minimum' => 1],
+                        'reference' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'type' => [
+                                    'type' => 'string',
+                                    'enum' => [ReferenceLinker::TYPE_DECK_CARD, ReferenceLinker::TYPE_CALENDAR_EVENT],
+                                ],
+                                'card_id' => ['type' => 'integer', 'minimum' => 1],
+                                'board_id' => ['type' => 'integer', 'minimum' => 1],
+                                'calendar' => [
+                                    'type' => 'string',
+                                    'minLength' => 1,
+                                    'maxLength' => ReferenceLinker::MAX_CALENDAR_LENGTH,
+                                ],
+                                'uid' => [
+                                    'type' => 'string',
+                                    'minLength' => 1,
+                                    'maxLength' => ReferenceLinker::MAX_UID_LENGTH,
+                                ],
+                            ],
+                            'required' => ['type'],
+                            'additionalProperties' => false,
+                        ],
+                        'confirm' => self::CONFIRM_SCHEMA,
+                        'approval_id' => self::APPROVAL_ID_SCHEMA,
                     ],
                     'required' => ['conversation_token', 'message'],
                     'additionalProperties' => false,
@@ -95,13 +139,15 @@ class TalkModule implements ToolModule {
                 'inputSchema' => [
                     'type' => 'object',
                     'properties' => [
-                        'conversation_token' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 30],
+                        'conversation_token' => self::TOKEN_SCHEMA,
                         'path' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 4000],
                         'message' => [
                             'type' => 'string',
                             'minLength' => 1,
                             'maxLength' => ConversationWriter::MAX_MESSAGE_LENGTH,
                         ],
+                        'confirm' => self::CONFIRM_SCHEMA,
+                        'approval_id' => self::APPROVAL_ID_SCHEMA,
                     ],
                     'required' => ['conversation_token', 'path'],
                     'additionalProperties' => false,
@@ -116,19 +162,115 @@ class TalkModule implements ToolModule {
                 'inputSchema' => [
                     'type' => 'object',
                     'properties' => [
-                        'conversation_token' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 30],
+                        'conversation_token' => self::TOKEN_SCHEMA,
                         'attachment_id' => ['type' => 'integer', 'minimum' => 1],
                         'message' => [
                             'type' => 'string',
                             'minLength' => 1,
                             'maxLength' => AttachmentMessage::MAX_CAPTION,
                         ],
+                        'confirm' => self::CONFIRM_SCHEMA,
+                        'approval_id' => self::APPROVAL_ID_SCHEMA,
                     ],
                     'required' => ['conversation_token', 'attachment_id'],
                     'additionalProperties' => false,
                 ],
                 'module' => self::MODULE,
                 'operation' => 'quote',
+                'app' => self::APP,
+            ],
+            [
+                'name' => self::TOOL_MESSAGE_USER,
+                'description' => Messages::TOOL_MESSAGE_USER,
+                'inputSchema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'user' => [
+                            'type' => 'string',
+                            'minLength' => 1,
+                            'maxLength' => UserConversationResolver::MAX_TARGET_LENGTH,
+                        ],
+                        'message' => [
+                            'type' => 'string',
+                            'minLength' => 1,
+                            'maxLength' => ConversationWriter::MAX_MESSAGE_LENGTH,
+                        ],
+                        'confirm' => self::CONFIRM_SCHEMA,
+                        'approval_id' => self::APPROVAL_ID_SCHEMA,
+                    ],
+                    'required' => ['user', 'message'],
+                    'additionalProperties' => false,
+                ],
+                'module' => self::MODULE,
+                'operation' => 'reply',
+                'app' => self::APP,
+            ],
+            [
+                'name' => self::TOOL_SEND_BATCH,
+                'description' => Messages::TOOL_SEND_BATCH,
+                'inputSchema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'conversation_token' => self::TOKEN_SCHEMA,
+                        'messages' => [
+                            'type' => 'array',
+                            'minItems' => 1,
+                            'maxItems' => DraftApproval::MAX_BATCH,
+                            'items' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'message' => [
+                                        'type' => 'string',
+                                        'minLength' => 1,
+                                        'maxLength' => ConversationWriter::MAX_MESSAGE_LENGTH,
+                                    ],
+                                    'reply_to' => [
+                                        'type' => 'integer',
+                                        'minimum' => 1,
+                                    ],
+                                ],
+                                'required' => ['message'],
+                                'additionalProperties' => false,
+                            ],
+                        ],
+                        'confirm' => self::CONFIRM_SCHEMA,
+                        'approval_id' => self::APPROVAL_ID_SCHEMA,
+                    ],
+                    'required' => ['conversation_token', 'messages'],
+                    'additionalProperties' => false,
+                ],
+                'module' => self::MODULE,
+                'operation' => 'reply',
+                'app' => self::APP,
+            ],
+            [
+                'name' => self::TOOL_CREATE_GROUP,
+                'description' => Messages::TOOL_CREATE_GROUP,
+                'inputSchema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'name' => [
+                            'type' => 'string',
+                            'minLength' => 1,
+                            'maxLength' => GroupCreator::MAX_NAME_LENGTH,
+                        ],
+                        'participants' => [
+                            'type' => 'array',
+                            'maxItems' => GroupCreator::MAX_PARTICIPANTS,
+                            'items' => [
+                                'type' => 'string',
+                                'minLength' => 1,
+                                'maxLength' => UserConversationResolver::MAX_TARGET_LENGTH,
+                            ],
+                        ],
+                        'confirm' => self::CONFIRM_SCHEMA,
+                        'approval_id' => self::APPROVAL_ID_SCHEMA,
+                    ],
+                    'required' => ['name'],
+                    'additionalProperties' => false,
+                ],
+                'module' => self::MODULE,
+                'operation' => 'create',
                 'app' => self::APP,
             ],
         ];
@@ -160,6 +302,9 @@ class TalkModule implements ToolModule {
                 self::TOOL_REPLY => ToolResult::success($this->replyCall($userId, $arguments)),
                 self::TOOL_ATTACH => ToolResult::success($this->attachCall($userId, $arguments)),
                 self::TOOL_QUOTE => ToolResult::success($this->quoteCall($userId, $arguments)),
+                self::TOOL_MESSAGE_USER => ToolResult::success($this->messageUserCall($userId, $arguments)),
+                self::TOOL_SEND_BATCH => ToolResult::success($this->sendBatchCall($userId, $arguments)),
+                self::TOOL_CREATE_GROUP => ToolResult::success($this->createGroupCall($userId, $arguments)),
                 default => throw new InvalidArgumentException(Messages::UNKNOWN_TOOL),
             };
         } catch (InvalidArgumentException $e) {
@@ -186,7 +331,9 @@ class TalkModule implements ToolModule {
     private function messageFor(Throwable $e): string {
         return match (true) {
             $e instanceof TalkUnavailableException => Messages::TALK_UNAVAILABLE,
-            $e instanceof ConversationAccessException, $e instanceof FileAccessException => $e->getMessage(),
+            $e instanceof ConversationAccessException,
+            $e instanceof FileAccessException,
+            $e instanceof ApprovalException => $e->getMessage(),
             default => Messages::UNEXPECTED,
         };
     }
@@ -267,56 +414,280 @@ class TalkModule implements ToolModule {
     }
 
     /**
-     * Every writing tool reads and checks its arguments before the conversation is resolved, so a malformed call is
+     * Every writing tool reads and checks its arguments before anything is resolved, so a malformed call is
      * reported as the client mistake it is instead of reaching a lookup it should never have started.
      *
      * @param string $userId Authenticated user
      * @param array<string, mixed> $arguments Validated arguments
-     * @return array<string, mixed> Result data of talk_reply
+     * @return array<string, mixed> Result data of talk_reply, or the draft when confirm is absent
      * @throws InvalidArgumentException When an argument is missing
-     * @throws ConversationAccessException When the conversation is missing or not writable
+     * @throws ConversationAccessException When the conversation is missing, not writable, or the quoted message is not there
+     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function replyCall(string $userId, array $arguments): array {
         $message = $this->message($arguments);
         $replyTo = $this->replyTo($arguments);
+        $reference = $this->reference($arguments);
+        $conversation = $this->writable($userId, $arguments);
 
-        return $this->writer->reply($this->writable($userId, $arguments), $userId, $message, $replyTo);
+        // The reference is resolved again on the confirmed call instead of trusted from the draft: access is
+        // checked at the moment of sending, and a title that changed since the draft changes the text, which the
+        // approval then refuses because the user never saw it.
+        $item = $reference === null ? null : $this->references->resolve($userId, $reference);
+        if ($item !== null) {
+            $message = ReferenceLinker::append($message, $item);
+        }
+
+        if (!$this->confirmed($arguments)) {
+            $draft = $this->draftApproval->reply($conversation, $userId, $message, $replyTo);
+
+            return $item === null ? $draft : $draft + ['reference' => $item];
+        }
+        $this->draftApproval->approveReply($conversation, $userId, $this->approvalId($arguments), $message, $replyTo);
+
+        return $this->writer->reply($conversation, $userId, $message, $replyTo);
     }
 
     /**
      * @param string $userId Authenticated user
      * @param array<string, mixed> $arguments Validated arguments
-     * @return array<string, mixed> Result data of talk_attach_file
+     * @return array<string, mixed> Result data of talk_attach_file, or the draft when confirm is absent
      * @throws InvalidArgumentException When the path is missing
-     * @throws ConversationAccessException When the conversation or the file cannot be reached
+     * @throws ConversationAccessException When the conversation cannot be reached for writing
+     * @throws FileAccessException When the file is missing, not shareable or already shared in this conversation
+     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function attachCall(string $userId, array $arguments): array {
         $path = $this->path($arguments);
         $caption = $this->optionalMessage($arguments);
+        $conversation = $this->writable($userId, $arguments);
 
-        return $this->sharer->attach($this->writable($userId, $arguments), $userId, $path, $caption);
+        if (!$this->confirmed($arguments)) {
+            return $this->draftApproval->attach($conversation, $userId, $path, $caption);
+        }
+        $this->draftApproval->approveAttach($conversation, $userId, $this->approvalId($arguments), $path, $caption);
+
+        $attached = $this->sharer->attach($conversation, $userId, $path, $caption);
+        if (($attached['captionSent'] ?? null) === false) {
+            // The card is already in the room, so this is a real failure of the call even though it is not an
+            // error result: an operator has to be able to see that the caption was lost.
+            $this->logger->error('Talk caption was not sent after the attachment was published', [
+                'app' => 'mcp',
+                'tool' => self::TOOL_ATTACH,
+                'attachmentId' => $attached['attachmentId'],
+                'exception' => 'CaptionFailed',
+            ]);
+        }
+
+        return $attached;
     }
 
     /**
      * @param string $userId Authenticated user
      * @param array<string, mixed> $arguments Validated arguments
-     * @return array<string, mixed> Result data of talk_quote_file
+     * @return array<string, mixed> Result data of talk_quote_file, or the draft when confirm is absent
      * @throws InvalidArgumentException When the attachment id is missing
-     * @throws ConversationAccessException When the conversation or the attachment cannot be reached
+     * @throws ConversationAccessException When the conversation cannot be reached for writing, or the attachment is not a share of it
+     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function quoteCall(string $userId, array $arguments): array {
         $attachmentId = $this->attachmentId($arguments);
         $caption = $this->optionalMessage($arguments);
+        $conversation = $this->writable($userId, $arguments);
 
-        return $this->writer->quoteAttachment(
-            $this->writable($userId, $arguments),
-            $userId,
-            $attachmentId,
-            $caption,
-        );
+        if (!$this->confirmed($arguments)) {
+            return $this->draftApproval->quote($conversation, $userId, $attachmentId, $caption);
+        }
+        $this->draftApproval->approveQuote($conversation, $userId, $this->approvalId($arguments), $attachmentId, $caption);
+
+        return $this->writer->quoteAttachment($conversation, $userId, $attachmentId, $caption);
+    }
+
+    /**
+     * A direct message to an account. The draft resolves the target and stops there, so a user who never approves
+     * is not left with an empty conversation; the room is created by the approved call, and only through the same
+     * call the Talk UI uses, which keeps the product's own rule about who may talk to whom.
+     *
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> Result data of talk_message_user, or the draft when confirm is absent
+     * @throws InvalidArgumentException When the account id or the message is missing
+     * @throws ConversationAccessException When the target is out of reach or the conversation cannot be written in
+     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
+     * @throws TalkUnavailableException When spreed is unavailable
+     */
+    private function messageUserCall(string $userId, array $arguments): array {
+        $targetId = $this->targetUser($arguments);
+        $message = $this->message($arguments);
+
+        if (!$this->confirmed($arguments)) {
+            return $this->draftApproval->directMessage($this->userConversations->target($userId, $targetId), $userId, $message);
+        }
+
+        // The approval comes first: it binds the target account and the text, and it is spent before the room
+        // exists, so a confirmed call cannot create a conversation the user never approved.
+        $this->draftApproval->approveDirectMessage($userId, $this->approvalId($arguments), $targetId, $message);
+
+        $conversation = $this->userConversations->conversation($userId, $targetId);
+        $result = $this->writer->reply($conversation, $userId, $message, null);
+
+        return $result + ['user' => ['id' => $targetId, 'displayName' => $conversation->displayName($userId)]];
+    }
+
+    /**
+     * A batch of messages in one conversation. The draft carries the whole list, because the approval of a batch is
+     * the approval of that list: a tool that let the agent send the approved list with one item changed would be
+     * sending something else. Every quoted id is resolved while the draft is built, so a wrong citation fails
+     * before anything is published rather than halfway through.
+     *
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> Result data of talk_send_batch, or the draft when confirm is absent
+     * @throws InvalidArgumentException When the batch is empty, too long, or an item is malformed
+     * @throws ConversationAccessException When the conversation cannot be written in or a citation does not exist
+     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
+     * @throws TalkUnavailableException When spreed is unavailable
+     */
+    private function sendBatchCall(string $userId, array $arguments): array {
+        // The shape of the list is a client mistake, so it is checked before any conversation is looked up.
+        $items = $this->batchItems($arguments);
+        $conversation = $this->resolver->resolveForWriting($userId, $this->token($arguments));
+
+        if (!$this->confirmed($arguments)) {
+            return $this->draftApproval->batch($conversation, $userId, $items);
+        }
+
+        $this->draftApproval->approveBatch($conversation, $userId, $this->approvalId($arguments), $items);
+        $result = $this->writer->replyMany($conversation, $userId, $items);
+
+        if ($result['failed'] !== []) {
+            // Part of the batch is in the room now, so the result has to tell which: a generic failure would invite
+            // a retry that republishes what already went out.
+            $this->logger->warning('Talk sent only part of the batch in conversation {token}', [
+                'token' => $conversation->token(),
+                'sent' => count($result['sent']),
+                'failed' => count($result['failed']),
+            ]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * A new group. Both steps of the product's API happen only here, in the approved call: the draft resolves the
+     * people who would be invited and stops, so an abandoned preview leaves no room behind.
+     *
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> Result data of talk_create_group, or the draft when confirm is absent
+     * @throws InvalidArgumentException When the name or the participant list is not usable
+     * @throws ConversationAccessException When an account is out of reach or the product refuses the creation
+     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
+     * @throws TalkUnavailableException When spreed is unavailable
+     */
+    private function createGroupCall(string $userId, array $arguments): array {
+        $name = GroupCreator::normalizeName((string)($arguments['name'] ?? ''));
+        $participants = $this->participantIds($arguments);
+
+        if (!$this->confirmed($arguments)) {
+            return $this->draftApproval->group(
+                $userId,
+                $name,
+                $this->userConversations->contacts($userId, $participants, true),
+            );
+        }
+
+        $this->draftApproval->approveGroup($userId, $this->approvalId($arguments), $name, $participants);
+
+        return $this->groups->create($userId, $name, $participants);
+    }
+
+    /**
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed>|null Reference object of talk_reply, or null when absent
+     * @throws InvalidArgumentException When reference is not an object
+     */
+    private function reference(array $arguments): ?array {
+        $reference = $arguments['reference'] ?? null;
+        if ($reference !== null && !is_array($reference)) {
+            throw new InvalidArgumentException(Messages::INVALID_REFERENCE);
+        }
+
+        return $reference;
+    }
+
+    /**
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return list<string> Accounts the call would invite, in the order received
+     * @throws InvalidArgumentException When participants is not a list of account ids
+     */
+    private function participantIds(array $arguments): array {
+        $participants = $arguments['participants'] ?? [];
+        if (!is_array($participants) || !array_is_list($participants)) {
+            throw new InvalidArgumentException(Messages::INVALID_USER);
+        }
+
+        $ids = [];
+        foreach ($participants as $participantId) {
+            if (!is_string($participantId)) {
+                throw new InvalidArgumentException(Messages::INVALID_USER);
+            }
+            $ids[] = $participantId;
+        }
+
+        return $ids;
+    }
+
+    /**
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return list<array{message:string, replyTo?:int|null>} Messages of the batch, in the order received
+     * @throws InvalidArgumentException When messages is not a list of items with a message
+     */
+    private function batchItems(array $arguments): array {
+        $messages = $arguments['messages'] ?? throw new InvalidArgumentException(Messages::EMPTY_BATCH);
+        if (!is_array($messages) || !array_is_list($messages) || $messages === []) {
+            throw new InvalidArgumentException(Messages::EMPTY_BATCH);
+        }
+
+        $items = [];
+        foreach ($messages as $item) {
+            if (!is_array($item) || !isset($item['message']) || !is_string($item['message'])) {
+                throw new InvalidArgumentException(Messages::EMPTY_MESSAGE);
+            }
+            $replyTo = $item['reply_to'] ?? null;
+            $items[] = ['message' => $item['message'], 'replyTo' => $replyTo === null ? null : (int)$replyTo];
+        }
+
+        return $items;
+    }
+
+    /**
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return string Account id of the message target
+     * @throws InvalidArgumentException When the account is missing
+     */
+    private function targetUser(array $arguments): string {
+        return (string)($arguments['user'] ?? throw new InvalidArgumentException(Messages::INVALID_USER));
+    }
+
+    /**
+     * Only an explicit true publishes; confirm: false is the same call as no confirm at all.
+     *
+     * @param array<string, mixed> $arguments Validated arguments
+     */
+    private function confirmed(array $arguments): bool {
+        return ($arguments['confirm'] ?? false) === true;
+    }
+
+    /**
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return string|null Id of the draft being approved, or null when the caller sent none
+     */
+    private function approvalId(array $arguments): ?string {
+        return isset($arguments['approval_id']) ? (string)$arguments['approval_id'] : null;
     }
 
     /**

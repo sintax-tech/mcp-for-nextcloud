@@ -35,7 +35,7 @@ final class DeleteCardHandlerTest extends TestCase {
 			$expectation->willReturn($this->card(['id' => 7, 'deletedAt' => 1_700_000_900]));
 		}
 
-		return new DeleteCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		return new DeleteCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 	}
 
 	public function testHappyPathDeletesForTheAuthenticatedUser(): void {
@@ -44,7 +44,7 @@ final class DeleteCardHandlerTest extends TestCase {
 			->method('deleteCard')
 			->with('alice', 7)
 			->willReturn($this->card(['id' => 7, 'deletedAt' => 1_700_000_900]));
-		$handler = new DeleteCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new DeleteCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$payload = $this->payload($handler->handle(['cardId' => 7, 'confirm' => true], 'alice'));
 
@@ -88,7 +88,7 @@ final class DeleteCardHandlerTest extends TestCase {
 			->with('alice', 7)
 			->willReturn($this->ownershipOf('pedro', 'Comercial'));
 		$gateway->expects(self::never())->method('deleteCard');
-		$handler = new DeleteCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new DeleteCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->assertSharedConfirmation($handler->handle(['cardId' => 7, 'confirm' => true], 'alice'));
 	}
@@ -100,7 +100,7 @@ final class DeleteCardHandlerTest extends TestCase {
 			->method('deleteCard')
 			->with('alice', 7)
 			->willReturn($this->card(['id' => 7, 'deletedAt' => 1_700_000_900]));
-		$handler = new DeleteCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new DeleteCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$payload = $this->payload($handler->handle([
 			'cardId' => 7,
@@ -115,7 +115,7 @@ final class DeleteCardHandlerTest extends TestCase {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->method('cardOwnership')->willThrowException(new NoPermissionException('Permission denied'));
 		$gateway->expects(self::never())->method('deleteCard');
-		$handler = new DeleteCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new DeleteCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$result = $handler->handle(['cardId' => 7, 'confirm' => true], 'alice');
 

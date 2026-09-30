@@ -61,4 +61,15 @@ class AttachmentMessageTest extends TestCase {
 
         $this->assertSame($caption, $envelope['parameters']['metaData']['caption']);
     }
+
+    public function testNoCaptionIsReportedAsNoneRatherThanAsAnEmptyText(): void {
+        // The draft and the card have to agree on what "no caption" means, or the preview would show a text
+        // the confirmed call never publishes.
+        $this->assertNull(AttachmentMessage::normalizeCaption(null));
+        $this->assertSame('a figura', AttachmentMessage::normalizeCaption('  a figura  '));
+
+        $envelope = json_decode($this->attachmentMessage->build(77, AttachmentMessage::normalizeCaption(null)), true);
+
+        $this->assertArrayNotHasKey('metaData', $envelope['parameters']);
+    }
 }

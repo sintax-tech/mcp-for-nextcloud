@@ -31,14 +31,15 @@ AI assistants are most useful when they can reach the tools a team already uses.
 |---|---|---|
 | **Files** | list, search by name, read text (TXT/MD, PDF, DOCX, ODT) | edit text files, with a verified backup in `/MCP backups` and a Nextcloud version before every write. **Never deletes.** |
 | **Notes** | list, read | create, edit, move between categories, delete (only when the trash bin can recover it) |
-| **Calendar** | list calendars and events (recurrence, time zones, all-day) | create, edit, move between calendars, delete, transfer to another owner's calendar |
-| **Deck** | boards, stacks, cards | create, edit, move, delete cards |
-| **Talk** | conversations and messages (never marks anything as read) | reply (optionally quoting a message), share a file into a conversation, quote an already shared file |
+| **Calendar** | list calendars and events (recurrence, time zones, all-day) | *temporarily read-only*: writes stay hidden until they are validated against a real Nextcloud 33 CalDAV setup |
+| **Deck** | boards, stacks, cards, and a **follow-up** of the boards you manage: cards grouped by assignee, with due date, overdue flag (in your own time zone) and a link to the card | create, edit, move, delete cards |
+| **Talk** | conversations and messages (never marks anything as read) | reply (optionally quoting a message or linking a Deck card or calendar event you can see), direct message to a user, batch of messages, share or quote a file, create a group conversation (separate grant, off by default). **Nothing is sent before the user approves the exact draft.** |
 
 Plus:
 
 - **Friendly tool titles** in the client ("Search files", "List calendars") and MCP annotations (`readOnlyHint`, `destructiveHint`) so clients can ask before risky actions.
-- **Safety confirmations** for resources that belong to someone else: shared folders, team folders, other people's Deck boards and calendars. The server refuses the first call and returns a ready-made message, and the assistant must ask the user before repeating it with `confirm_shared: true`. *(rolling out in 0.7)*
+- **Safety confirmations** for resources that belong to someone else: shared folders, team folders, other people's Deck boards and calendars. The server refuses the first call and returns a ready-made message, and the assistant must ask the user before repeating it with `confirm_shared: true`. *(Deck and Calendar since 0.6.6; Files and Notes in 0.7)*
+- **Optional apps respected**: tools and admin matrix columns of an app that is disabled (for everyone or for a given user) are hidden.
 - **Localized UI**: admin matrix, personal page and consent screen follow the user's Nextcloud language. English and Brazilian Portuguese are included.
 - **Both MCP eras**: stateless MCP `2026-07-28` (`server/discover`) and the classic `initialize` flow (`2025-06-18` and earlier) on the same endpoint.
 
@@ -46,7 +47,7 @@ Plus:
 
 - Nextcloud **33**
 - PHP **8.2+** with `zip`, `mbstring` and `dom`
-- Optional apps, only for their own tools: Notes, Calendar, Deck, Talk (`spreed`), Versions (`files_versions`, required for edits), Deleted files (`files_trashbin`, required for deletes)
+- Optional apps, only for their own tools (hidden while the app is disabled): Notes, Calendar, Deck, Talk (`spreed`), Versions (`files_versions`, required for edits), Deleted files (`files_trashbin`, required for deletes)
 
 ## Installation
 
@@ -117,6 +118,10 @@ vendor/bin/phpunit          # unit tests with OCP mocks, no Nextcloud needed
 Code layout: `lib/Tools/<Module>` (one `ToolModule` per app), `lib/OAuth` (authorization server), `lib/Service` (MCP protocol, grant policy), `lib/Controller`, `templates`, `js`, `css`, `l10n`. Detailed technical notes live in [`mcp/README.md`](mcp/README.md) (Portuguese).
 
 The repository root also keeps the original **Node.js stdio prototype** (`src/`, `tests/`), a read-only MCP server used as the behavioural reference for the native app.
+
+## Changelog
+
+See [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Roadmap
 

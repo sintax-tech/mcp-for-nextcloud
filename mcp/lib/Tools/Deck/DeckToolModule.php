@@ -8,20 +8,25 @@ use OCA\Mcp\Tools\Deck\Handler\AbstractHandler;
 use OCA\Mcp\Tools\Deck\Handler\CreateCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\DeleteCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\EditCardHandler;
+use OCA\Mcp\Tools\Deck\Handler\FollowupCardsHandler;
 use OCA\Mcp\Tools\Deck\Handler\ListBoardsHandler;
 use OCA\Mcp\Tools\Deck\Handler\ListCardsHandler;
 use OCA\Mcp\Tools\Deck\Handler\ListStacksHandler;
 use OCA\Mcp\Tools\Deck\Handler\MoveCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\ReadCardHandler;
+use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\ToolModule;
 use OCP\App\IAppManager;
+use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IConfig;
+use OCP\IURLGenerator;
 use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use stdClass;
 
 /**
- * The Deck tool module: eight tools that read, create, edit, move and delete Deck cards.
+ * The Deck tool module: nine tools that read, follow up, create, edit, move and delete Deck cards.
  *
  * This class only declares the tools and routes a call to a handler. It holds no Deck logic and
  * resolves no Deck class at construction time, because the Deck app may not be installed: the
@@ -46,13 +51,19 @@ final class DeckToolModule implements ToolModule {
 	 * @param ContainerInterface $container Nextcloud server container, resolves the Deck services lazily.
 	 * @param IAppManager $appManager Tells whether the Deck app is enabled for the caller.
 	 * @param LoggerInterface $logger Receives tool name and exception class on failure.
+	 * @param IURLGenerator $urlGenerator Builds the absolute link to a card, which every card payload carries.
+	 * @param ITimeFactory $timeFactory Clock the `overdue` flag of a card is read from.
 	 * @param IUserManager|null $userManager Resolves the UID to the IUser that IAppManager::isEnabledForUser() expects.
+	 * @param IConfig|null $config Reads the caller's timezone, so due dates speak the day they see.
 	 */
 	public function __construct(
 		private ContainerInterface $container,
 		private IAppManager $appManager,
 		private LoggerInterface $logger,
+		private IURLGenerator $urlGenerator,
+		private ITimeFactory $timeFactory,
 		private ?IUserManager $userManager = null,
+		private ?IConfig $config = null,
 	) {
 	}
 
@@ -179,6 +190,34 @@ final class DeckToolModule implements ToolModule {
 				'operation' => 'delete',
 				'app' => self::DECK_APP,
 			],
+			[
+				'name' => FollowupCardsHandler::TOOL,
+				'description' => DeckMessages::TOOL_FOLLOWUP_CARDS_DESCRIPTION,
+				// Every argument is optional: the defaults answer the question the tool exists for.
+				'inputSchema' => $this->schema(
+					[
+						'status' => [
+							'type' => 'string',
+							'enum' => CardCriteria::STATUSES,
+							'default' => CardCriteria::STATUS_OVERDUE,
+							'description' => DeckMessages::PARAM_STATUS,
+						],
+						'assignee' => $this->string(DeckMessages::PARAM_ASSIGNEE, 1, 64),
+						'boardId' => $this->integer(DeckMessages::PARAM_BOARD_ID),
+						'dueBefore' => ['type' => 'string', 'description' => DeckMessages::PARAM_DUE_BEFORE],
+						'limit' => $this->integer(
+							DeckMessages::PARAM_LIMIT,
+							1,
+							FollowupCardsHandler::MAX_LIMIT,
+							FollowupCardsHandler::DEFAULT_LIMIT,
+						),
+					],
+					[],
+				),
+				'module' => self::MODULE,
+				'operation' => 'read',
+				'app' => self::DECK_APP,
+			],
 		];
 	}
 
@@ -192,7 +231,7 @@ final class DeckToolModule implements ToolModule {
 	 * @throws InvalidArgumentException For an unknown tool or when the Deck app is unavailable, mapped to -32602.
 	 */
 	public function call(string $name, array $arguments, string $userId): array {
-		$handler = $this->handlerFor($name);
+		$handler = $this->handlerFor($name, $userId);
 		if ($handler === null) {
 			throw new InvalidArgumentException(DeckMessages::ERROR_UNKNOWN_TOOL);
 		}
@@ -211,15 +250,17 @@ final class DeckToolModule implements ToolModule {
 	 * Builds the handler of a tool, or null when the name is unknown.
 	 *
 	 * @param string $name Tool name as sent by the client.
+	 * @param string $userId UID of the authenticated caller, whose timezone the payload speaks.
 	 * @return AbstractHandler|null Handler bound to this module's dependencies.
 	 */
-	private function handlerFor(string $name): ?AbstractHandler {
-		$formatter = new CardFormatter();
+	private function handlerFor(string $name, string $userId): ?AbstractHandler {
+		$formatter = new CardFormatter($this->urlGenerator, $this->timeFactory, $this->userManager, $this->zones()?->forUser($userId));
 
 		return match ($name) {
 			ListBoardsHandler::TOOL => new ListBoardsHandler($this->gateway(), $this->logger, $formatter),
 			ListStacksHandler::TOOL => new ListStacksHandler($this->gateway(), $this->logger, $formatter),
 			ListCardsHandler::TOOL => new ListCardsHandler($this->gateway(), $this->logger, $formatter),
+			FollowupCardsHandler::TOOL => new FollowupCardsHandler($this->gateway(), $this->logger, $formatter),
 			ReadCardHandler::TOOL => new ReadCardHandler($this->gateway(), $this->logger, $formatter),
 			CreateCardHandler::TOOL => new CreateCardHandler($this->gateway(), $this->logger, $formatter),
 			EditCardHandler::TOOL => new EditCardHandler($this->gateway(), $this->logger, $formatter),
@@ -235,7 +276,14 @@ final class DeckToolModule implements ToolModule {
 	 * @return DeckGatewayInterface Gateway that resolves Deck services through the container.
 	 */
 	private function gateway(): DeckGatewayInterface {
-		return $this->gateway ??= new DeckServiceGateway($this->container);
+		return $this->gateway ??= new DeckServiceGateway($this->container, $this->timeFactory, $this->zones());
+	}
+
+	/**
+	 * @return UserTimezone|null Resolver of the caller's timezone, or null when no config was given.
+	 */
+	private function zones(): ?UserTimezone {
+		return $this->config === null ? null : new UserTimezone($this->config);
 	}
 
 	/**
@@ -250,17 +298,25 @@ final class DeckToolModule implements ToolModule {
 	/**
 	 * Builds an object schema that rejects unknown properties.
 	 *
+	 * A tool whose arguments are all optional leaves `required` out entirely: the MCP contract test
+	 * refuses an empty array there, and "absent" is the correct way to say "nothing is demanded".
+	 *
 	 * @param array<string, array<string, mixed>> $properties Declared properties.
 	 * @param list<string> $required Property names that must be present.
 	 * @return array<string, mixed> JSON Schema for the tool arguments.
 	 */
 	private function schema(array $properties, array $required): array {
-		return [
+		$schema = [
 			'type' => 'object',
 			'properties' => $properties,
-			'required' => $required,
 			'additionalProperties' => false,
 		];
+
+		if ($required !== []) {
+			$schema['required'] = $required;
+		}
+
+		return $schema;
 	}
 
 	/**

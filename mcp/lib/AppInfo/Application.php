@@ -4,7 +4,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\AppInfo;
 
 use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\Calendar\CalendarModule;
+use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Tools\Deck\DeckServiceGateway;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCA\Mcp\Tools\Talk\TalkModule;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
@@ -17,6 +20,8 @@ use OCP\AppFramework\App;
 use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
+use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IConfig;
 use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -48,6 +53,12 @@ class Application extends App implements IBootstrap {
         }
         // DavCalendarStore resolves CalDavBackend lazily (the app container falls back to the server one) on first use.
         $context->registerService(CalendarStore::class, static fn (ContainerInterface $c): CalendarStore => new DavCalendarStore($c));
+        // The Talk references read Deck cards through the same gateway the Deck tools use; it resolves Deck lazily.
+        $context->registerService(DeckGatewayInterface::class, static fn (ContainerInterface $c): DeckGatewayInterface => new DeckServiceGateway(
+            $c,
+            $c->get(ITimeFactory::class),
+            new UserTimezone($c->get(IConfig::class)),
+        ));
         $context->registerService(ToolRegistry::class, static fn (ContainerInterface $c): ToolRegistry => new ToolRegistry(
             array_map(static fn (string $class) => $c->get($class), self::MODULES),
             $c->get(GrantPolicy::class),

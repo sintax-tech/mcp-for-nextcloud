@@ -6,7 +6,6 @@ namespace OCA\Mcp\Tools\Talk;
 use DateTimeInterface;
 use InvalidArgumentException;
 use OCP\Comments\IComment;
-use OCP\IUserManager;
 use Throwable;
 
 /**
@@ -23,7 +22,7 @@ class ConversationReader {
     public function __construct(
         private TalkServices $talkServices,
         private ConversationResolver $resolver,
-        private IUserManager $userManager,
+        private ActorNames $actorNames,
     ) {}
 
     /**
@@ -128,18 +127,10 @@ class ConversationReader {
             'text' => $text,
             'actorType' => (string)$comment->getActorType(),
             'actorId' => $actorId,
-            'actorDisplayName' => $this->displayNameOf($actorId),
+            'actorDisplayName' => $this->actorNames->displayName($actorId),
             'timestamp' => $created instanceof DateTimeInterface ? $created->getTimestamp() : 0,
             'parentId' => ($parentId === '' || $parentId === '0') ? null : $parentId,
             'attachmentId' => $attachmentId,
         ];
-    }
-
-    /**
-     * Best-effort name for the author: real users are resolved through the account backend, and anything else
-     * (guest, federated actor, external contact) keeps its raw identifier, which is what Talk shows as well.
-     */
-    private function displayNameOf(string $actorId): string {
-        return $this->userManager->get($actorId)?->getDisplayName() ?? $actorId;
     }
 }

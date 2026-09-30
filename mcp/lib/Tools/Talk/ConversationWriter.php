@@ -8,8 +8,6 @@ use InvalidArgumentException;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Comments\IComment;
 use OCP\Comments\NotFoundException as CommentNotFoundException;
-use OCP\Share\IManager as IShareManager;
-use OCP\Share\IShare;
 use Throwable;
 
 /**
@@ -24,7 +22,7 @@ class ConversationWriter {
         private TalkServices $talkServices,
         private ITimeFactory $timeFactory,
         private AttachmentMessage $attachmentMessage,
-        private IShareManager $shareManager,
+        private AttachmentAccess $attachmentAccess,
     ) {}
 
     /**
@@ -40,7 +38,7 @@ class ConversationWriter {
      * @throws TalkUnavailableException When spreed is unavailable
      */
     public function reply(Conversation $conversation, string $userId, string $message, ?int $replyTo = null): array {
-        $body = $this->assertMessage($message);
+        $body = self::normalizeMessage($message);
         if ($replyTo !== null && $replyTo < 1) {
             throw new InvalidArgumentException(Messages::INVALID_IDENTIFIER);
         }
@@ -49,17 +47,7 @@ class ConversationWriter {
         $chatManager = $this->talkServices->chatManager($userId);
         $room = $conversation->room;
 
-        $parent = null;
-        if ($replyTo !== null) {
-            try {
-                $parent = $chatManager->getParentComment($room, (string)$replyTo);
-            } catch (CommentNotFoundException $e) {
-                // A missing id and an id from another conversation are the same answer.
-                throw new ConversationAccessException(Messages::REPLY_TARGET_NOT_FOUND, $e);
-            } catch (Throwable $e) {
-                throw new ConversationAccessException(Messages::REPLY_TARGET_NOT_FOUND, $e);
-            }
-        }
+        $parent = $replyTo === null ? null : $this->quoteTarget($conversation, $userId, $replyTo);
 
         try {
             // A one to one room only has a real participant pair after Talk fills it in.
@@ -80,9 +68,72 @@ class ConversationWriter {
         }
 
         return [
-            'conversation_token' => $room->getToken(),
+            'conversation_token' => $conversation->token(),
             'messageId' => (int)$comment->getId(),
         ];
+    }
+
+    /**
+     * Sends several messages in the same conversation, reporting each one separately.
+     *
+     * A batch is sent in order and stops nothing: an item Talk refuses is reported as failed and the next one is
+     * still attempted, because a user asking for three messages wants the two that work and to know about the third.
+     * Nothing is retried here. A failure that follows a successful item must not make the caller repeat the whole
+     * batch, and the sent list is what tells them what already exists.
+     *
+     * @param Conversation $conversation Conversation already validated for writing
+     * @param string $userId Authenticated user, the author of the messages
+     * @param list<array{message:string, replyTo?:int|null}> $items Messages to send, in order
+     * @return array{conversation_token:string, sent:list<array{index:int, messageId:int}>, failed:list<array{index:int, error:string}>}
+     * @throws InvalidArgumentException When an item is blank or too long, or a quoted id is not a positive integer
+     * @throws TalkUnavailableException When spreed is unavailable
+     */
+    public function replyMany(Conversation $conversation, string $userId, array $items): array {
+        $sent = [];
+        $failed = [];
+
+        foreach (array_values($items) as $index => $item) {
+            $replyTo = $item['replyTo'] ?? null;
+            try {
+                $result = $this->reply($conversation, $userId, $item['message'], $replyTo);
+                $sent[] = ['index' => $index, 'messageId' => $result['messageId']];
+            } catch (ConversationAccessException|InvalidArgumentException $e) {
+                $failed[] = ['index' => $index, 'error' => $e->getMessage()];
+            }
+        }
+
+        return [
+            'conversation_token' => $conversation->token(),
+            'sent' => $sent,
+            'failed' => $failed,
+        ];
+    }
+
+    /**
+     * Resolves the message a reply quotes, so the draft can show what the user is answering before it exists.
+     *
+     * @param Conversation $conversation Conversation the reply would land in
+     * @param string $userId Authenticated user
+     * @param int $replyTo Id of the quoted message, as talk_read_messages reports it
+     * @return IComment The parent comment Talk will attach the reply to
+     * @throws InvalidArgumentException When the id is not a positive integer
+     * @throws ConversationAccessException When the message is not in this conversation
+     * @throws TalkUnavailableException When spreed is unavailable
+     */
+    public function quoteTarget(Conversation $conversation, string $userId, int $replyTo): IComment {
+        if ($replyTo < 1) {
+            throw new InvalidArgumentException(Messages::INVALID_IDENTIFIER);
+        }
+
+        try {
+            return $this->talkServices->chatManager($userId)
+                ->getParentComment($conversation->room, (string)$replyTo);
+        } catch (CommentNotFoundException $e) {
+            // A missing id and an id from another conversation are the same answer.
+            throw new ConversationAccessException(Messages::REPLY_TARGET_NOT_FOUND, $e);
+        } catch (Throwable $e) {
+            throw new ConversationAccessException(Messages::REPLY_TARGET_NOT_FOUND, $e);
+        }
     }
 
     /**
@@ -103,7 +154,7 @@ class ConversationWriter {
     public function quoteAttachment(Conversation $conversation, string $userId, int $attachmentId, ?string $caption = null): array {
         $envelope = $this->attachmentMessage->build($attachmentId, $caption);
         $room = $conversation->room;
-        $this->assertAttachmentIsInRoom($userId, $room->getToken(), $attachmentId);
+        $this->attachmentAccess->requireRoomShareOf($conversation, $userId, $attachmentId);
 
         try {
             $chatManager = $this->talkServices->chatManager($userId);
@@ -123,7 +174,7 @@ class ConversationWriter {
         }
 
         return [
-            'conversation_token' => $room->getToken(),
+            'conversation_token' => $conversation->token(),
             'messageId' => (int)$comment->getId(),
             'attachmentId' => $attachmentId,
         ];
@@ -145,33 +196,14 @@ class ConversationWriter {
     }
 
     /**
-     * Checks that the id really is a room share of this conversation, and not a link share, a file of another
-     * conversation or something the user cannot see. All of them are the same answer, so the module never reveals
-     * that an id exists elsewhere.
+     * The message body as Talk will store it. A draft has to show the very text that will be sent, so the
+     * preview normalizes with the same rule instead of trimming a second time on its own.
      *
-     * @param string $userId Authenticated user
-     * @param string $token Token of the conversation
-     * @param int $attachmentId Room share id reported by talk_read_messages
-     * @throws ConversationAccessException When the id is not a share of this conversation
-     */
-    private function assertAttachmentIsInRoom(string $userId, string $token, int $attachmentId): void {
-        try {
-            $share = $this->shareManager->getShareById((string)$attachmentId, $userId);
-        } catch (Throwable $e) {
-            throw new ConversationAccessException(Messages::ATTACHMENT_NOT_FOUND, $e);
-        }
-
-        if ($share->getShareType() !== IShare::TYPE_ROOM || $share->getSharedWith() !== $token) {
-            throw new ConversationAccessException(Messages::ATTACHMENT_NOT_FOUND);
-        }
-    }
-
-    /**
      * @param string $message Message body as received from the client
      * @return string The trimmed body
      * @throws InvalidArgumentException When the message is blank or longer than self::MAX_MESSAGE_LENGTH
      */
-    private function assertMessage(string $message): string {
+    public static function normalizeMessage(string $message): string {
         $trimmed = trim($message);
         if ($trimmed === '') {
             throw new InvalidArgumentException(Messages::EMPTY_MESSAGE);

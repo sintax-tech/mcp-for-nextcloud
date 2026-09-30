@@ -50,6 +50,35 @@ interface DeckGatewayInterface {
 	public function listCards(string $userId, int $stackId, int $limit, int $offset): array;
 
 	/**
+	 * Cards a manager follows up, from the boards that caller may manage.
+	 *
+	 * The deck has no such query, so the gateway walks the boards the caller may manage (owner or
+	 * `PERMISSION_MANAGE`), reads their stacks and cards in batch, and filters with
+	 * {@see CardCriteria} while it goes: a board costs four queries plus one permission lookup and
+	 * a card never costs a query of its own. At most 100 visible boards are examined, and
+	 * `truncated` reports both a scan cut short by the limit and one cut short by that board
+	 * ceiling.
+	 *
+	 * @param string $userId UID of the authenticated caller, who must be able to manage the boards.
+	 * @param string $status One of {@see CardCriteria::STATUSES}.
+	 * @param int|null $boardId Restrict the scan to this board, or null for every managed board.
+	 * @param string|null $assignee Keep only cards assigned to this UID, or null for any assignee.
+	 * @param string|null $dueBefore Keep only cards due on or before this `YYYY-MM-DD`, or null.
+	 * @param int $limit Maximum number of cards to answer with.
+	 * @return array{items: list<array{card: Card, boardId: int}>, truncated: bool} Matching cards,
+	 *     each with the board it came from, and whether the answer may be incomplete.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 */
+	public function followupCards(
+		string $userId,
+		string $status,
+		?int $boardId,
+		?string $assignee,
+		?string $dueBefore,
+		int $limit,
+	): array;
+
+	/**
 	 * One card, with attachments and counters enriched by the Deck.
 	 *
 	 * @param string $userId UID of the authenticated caller.
@@ -66,7 +95,7 @@ interface DeckGatewayInterface {
 	 * @param int $stackId Stack that receives the card.
 	 * @param string $title Card title.
 	 * @param string $description Card description, possibly empty.
-	 * @param string|null $duedate Due date as `YYYY-MM-DD`, or null for no date.
+	 * @param string|null $duedate Due date as `YYYY-MM-DD` (midnight for the caller), or null for no date.
 	 * @return Card Created card.
 	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
 	 */
@@ -79,7 +108,8 @@ interface DeckGatewayInterface {
 	 * @param Card $card Card as previously read, source of the fields the caller did not change.
 	 * @param string $title New title.
 	 * @param string $description New description.
-	 * @param string|null $duedate New due date as `YYYY-MM-DD`, or null to clear it.
+	 * @param string|null $duedate New due date as `YYYY-MM-DD` (midnight for the caller), the current
+	 *     ISO 8601 instant to keep it untouched, or null to clear it.
 	 * @return Card Updated card.
 	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
 	 */
@@ -133,4 +163,17 @@ interface DeckGatewayInterface {
 	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
 	 */
 	public function cardOwnership(string $userId, int $cardId): array;
+
+	/**
+	 * Board a card belongs to, after the read check a link to the card needs.
+	 *
+	 * Talk cites a card by its canonical URL, which carries the board id; the check comes first so a
+	 * caller without read access learns nothing, not even which board the card is on.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $cardId Card whose board is looked up.
+	 * @return int Board id.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 */
+	public function cardBoardId(string $userId, int $cardId): int;
 }

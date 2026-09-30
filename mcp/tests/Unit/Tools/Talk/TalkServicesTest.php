@@ -6,6 +6,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 use OCA\Mcp\Tools\Talk\TalkServices;
 use OCA\Mcp\Tools\Talk\TalkUnavailableException;
 use OCP\App\IAppManager;
+use PHPUnit\Framework\Attributes\PreserveGlobalState;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
@@ -84,6 +86,53 @@ class TalkServicesTest extends TestCase {
         $this->expectException(TalkUnavailableException::class);
         $services->probeResolve(\stdClass::class, 'alice');
     }
+
+    public function testConversationConstantsRefuseWhenSpreedIsDisabled(): void {
+        $this->appManager->method('isEnabledForUser')->willReturn(false);
+
+        $this->expectException(TalkUnavailableException::class);
+        $this->services->conversationConstants('alice');
+    }
+
+    public function testConversationConstantsRefuseWhenTheTalkClassesAreAbsent(): void {
+        $this->appManager->method('isEnabledForUser')->willReturn(true);
+
+        // With no spreed app installed none of the OCA\Talk classes exist, so the constants cannot be read.
+        $this->expectException(TalkUnavailableException::class);
+        $this->services->conversationConstants('alice');
+    }
+
+    /** Runs apart so the OCA\Talk aliases created here cannot leak into the test that needs them absent. */
+    #[RunInSeparateProcess]
+    #[PreserveGlobalState(false)]
+    public function testConversationConstantsAreReadFromTheTalkClassesInsteadOfBeingCopied(): void {
+        $this->appManager->method('isEnabledForUser')->willReturn(true);
+        $this->aliasTalkConstantFixtures();
+
+        $constants = $this->services->conversationConstants('alice');
+
+        // The fixtures carry values that are not the ones upstream uses: a copy of hardcoded numbers would fail here.
+        $this->assertSame([
+            'chatPermission' => 512,
+            'lobbyIgnorePermission' => 3,
+            'readOnly' => 7,
+            'changelogType' => 9,
+            'lobbyNone' => 11,
+        ], $constants);
+    }
+
+    /** Makes the OCA\Talk constant holders resolvable in a test run where the spreed app is not installed. */
+    private function aliasTalkConstantFixtures(): void {
+        foreach ([
+            'OCA\\Talk\\Model\\Attendee' => TalkAttendeeFixture::class,
+            'OCA\\Talk\\Room' => TalkRoomFixture::class,
+            'OCA\\Talk\\Webinary' => TalkWebinaryFixture::class,
+        ] as $talkClass => $fixture) {
+            if (!class_exists($talkClass)) {
+                class_alias($fixture, $talkClass);
+            }
+        }
+    }
 }
 
 /** Exposes the protected resolution seam so the success path can be covered without the spreed app installed. */
@@ -97,4 +146,21 @@ class TalkServicesWithProbe extends TalkServices {
     public function probeResolve(string $class, string $userId): object {
         return $this->resolve($class, $userId);
     }
+}
+
+/** Stand-in for the permission bits of OCA\Talk\Model\Attendee, with values no upstream release uses. */
+final class TalkAttendeeFixture {
+    public const PERMISSIONS_CHAT = 512;
+    public const PERMISSIONS_LOBBY_IGNORE = 3;
+}
+
+/** Stand-in for the room markers of OCA\Talk\Room, with values no upstream release uses. */
+final class TalkRoomFixture {
+    public const READ_ONLY = 7;
+    public const TYPE_CHANGELOG = 9;
+}
+
+/** Stand-in for the lobby states of OCA\Talk\Webinary, with values no upstream release uses. */
+final class TalkWebinaryFixture {
+    public const LOBBY_NONE = 11;
 }

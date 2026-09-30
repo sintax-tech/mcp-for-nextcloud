@@ -3,7 +3,7 @@ import { listConversations, readMessages } from "../../src/capabilities/talk/too
 import { NextcloudClient } from "../../src/core/nextcloudClient.js";
 import type { NcConfig } from "../../src/config.js";
 
-const cfg: NcConfig = { baseUrl: "https://nc.example.com", username: "alice", appPassword: "p", timeoutMs: 5000, maxReadChars: 1000 };
+const cfg: NcConfig = { baseUrl: "https://nc.example.com", username: "alice", appPassword: "p", timeoutMs: 5000, maxReadChars: 1000, maxReadBytes: 20 * 1024 * 1024 };
 function ocs(data: unknown, status = 200) { return new Response(JSON.stringify({ ocs: { data } }), { status, headers: { "content-type": "application/json" } }); }
 
 describe("talk", () => {

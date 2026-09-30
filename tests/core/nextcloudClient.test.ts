@@ -8,7 +8,7 @@ const cfg: NcConfig = {
   username: "alice",
   appPassword: "secret-pass",
   timeoutMs: 5000,
-  maxReadChars: 1000,
+  maxReadChars: 1000, maxReadBytes: 20 * 1024 * 1024,
 };
 
 function jsonResponse(body: unknown, status = 200): Response {
@@ -41,6 +41,27 @@ describe("NextcloudClient", () => {
     await expect(client.ocsGet("/x")).rejects.toSatisfy((e: unknown) => {
       return e instanceof NcError && e.code === "AUTH" && !(e as Error).message.includes("secret-pass");
     });
+  });
+
+  it("rejects a Content-Length over the byte limit before reading", async () => {
+    let canceled = false;
+    const body = new ReadableStream({ cancel() { canceled = true; } });
+    const client = new NextcloudClient({ ...cfg, maxReadBytes: 2 }, async () =>
+      new Response(body, { headers: { "content-length": "3" } }));
+    await expect(client.getBytes("/large")).rejects.toMatchObject({ code: "READ_TOO_LARGE" });
+    expect(canceled).toBe(true);
+  });
+
+  it("aborts a stream that exceeds the byte limit", async () => {
+    const body = new ReadableStream({ start(c) { c.enqueue(new Uint8Array([1, 2, 3])); } });
+    const client = new NextcloudClient({ ...cfg, maxReadBytes: 2 }, async () => new Response(body));
+    await expect(client.getBytes("/large")).rejects.toMatchObject({ code: "READ_TOO_LARGE" });
+  });
+
+  it("times out while reading a slow body", async () => {
+    const body = new ReadableStream({ start() {} });
+    const client = new NextcloudClient({ ...cfg, timeoutMs: 20 }, async () => new Response(body));
+    await expect(client.getBytes("/slow")).rejects.toMatchObject({ code: "TIMEOUT" });
   });
 
   it("webdavFilesRoot returns the per-user dav path", () => {

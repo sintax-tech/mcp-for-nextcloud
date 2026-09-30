@@ -4,7 +4,7 @@ import { listFiles, searchFiles, readFile } from "../../src/capabilities/files/t
 import { NextcloudClient } from "../../src/core/nextcloudClient.js";
 import type { NcConfig } from "../../src/config.js";
 
-const cfg: NcConfig = { baseUrl: "https://nc.example.com", username: "alice", appPassword: "p", timeoutMs: 5000, maxReadChars: 1000 };
+const cfg: NcConfig = { baseUrl: "https://nc.example.com", username: "alice", appPassword: "p", timeoutMs: 5000, maxReadChars: 1000, maxReadBytes: 20 * 1024 * 1024 };
 const propfind = readFileSync(new URL("../fixtures/propfind.xml", import.meta.url), "utf8");
 
 describe("files listFiles", () => {
@@ -39,6 +39,11 @@ describe("files access control (Review Focus)", () => {
 });
 
 describe("files readFile (Review Focus)", () => {
+  it("returns a clear limit message without extracting a large file", async () => {
+    const client = new NextcloudClient({ ...cfg, maxReadBytes: 2 }, async () =>
+      new Response("abc", { headers: { "content-length": "3", "content-type": "application/pdf" } }));
+    expect(await readFile(client, "/large.pdf", 1000)).toMatch(/excede.*limite/i);
+  });
   it("truncates content longer than maxChars", async () => {
     const big = "x".repeat(5000);
     const fetchFn = vi.fn(async () => new Response(big, { status: 200, headers: { "content-type": "text/plain" } }));

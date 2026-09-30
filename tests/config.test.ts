@@ -15,6 +15,11 @@ describe("loadConfig", () => {
     const c = loadConfig(base);
     expect(c.timeoutMs).toBe(15000);
     expect(c.maxReadChars).toBe(100000);
+    expect(c.maxReadBytes).toBe(20 * 1024 * 1024);
+  });
+  it.each(["NEXTCLOUD_TIMEOUT_MS", "NEXTCLOUD_MAX_READ_CHARS", "NEXTCLOUD_MAX_READ_BYTES"])("rejects invalid %s", key => {
+    for (const value of ["0", "-1", "1.5", "Infinity", "abc", "9999999999999999999"])
+      expect(() => loadConfig({ ...base, [key]: value })).toThrowError(new RegExp(key));
   });
   it("throws a message WITHOUT the password when a field is missing", () => {
     expect(() => loadConfig({ ...base, NEXTCLOUD_USERNAME: "" }))

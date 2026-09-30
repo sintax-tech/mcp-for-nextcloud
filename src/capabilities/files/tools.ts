@@ -33,7 +33,13 @@ export async function searchFiles(client: NextcloudClient, query: string, limit:
 
 export async function readFile(client: NextcloudClient, path: string, maxChars: number): Promise<string> {
   const root = client.webdavFilesRoot();
-  const { buffer, contentType } = await client.getBytes(`${root}${encodePath(path)}`);
+  let data: Awaited<ReturnType<NextcloudClient["getBytes"]>>;
+  try { data = await client.getBytes(`${root}${encodePath(path)}`); }
+  catch (err) {
+    if (err instanceof NcError && err.code === "READ_TOO_LARGE") return err.message;
+    throw err;
+  }
+  const { buffer, contentType } = data;
   const text = await extractText(buffer, path, contentType);
   if (text.length > maxChars) return text.slice(0, maxChars) + "\n\n[conteúdo truncado]";
   return text;

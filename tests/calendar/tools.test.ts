@@ -4,7 +4,7 @@ import { listCalendars, listEvents } from "../../src/capabilities/calendar/tools
 import { NextcloudClient } from "../../src/core/nextcloudClient.js";
 import type { NcConfig } from "../../src/config.js";
 
-const cfg: NcConfig = { baseUrl: "https://nc.example.com", username: "alice", appPassword: "p", timeoutMs: 5000, maxReadChars: 1000 };
+const cfg: NcConfig = { baseUrl: "https://nc.example.com", username: "alice", appPassword: "p", timeoutMs: 5000, maxReadChars: 1000, maxReadBytes: 20 * 1024 * 1024 };
 const calendars = readFileSync(new URL("../fixtures/calendars.xml", import.meta.url), "utf8");
 const events = readFileSync(new URL("../fixtures/events.xml", import.meta.url), "utf8");
 

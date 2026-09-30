@@ -23,6 +23,12 @@ final class FakeTree {
     /** Paths whose copy() must fail, or produce a truncated copy. */
     public array $failCopy = [];
     public array $shortCopy = [];
+    /** Display name of the owner returned for every node. */
+    public string $ownerName = 'Alice';
+    /** Display name of whoever shared a node whose scope is 'shared'. */
+    public string $sharedByName = 'Pedro Almeida';
+    /** Absolute path of the mount a node lives in; null means "the node's own folder". */
+    public ?string $mountPath = null;
     public bool $failWrite = false;
     /** @var list<\OCP\Files\Search\ISearchQuery> queries received by Folder::search */
     public array $searches = [];
@@ -74,11 +80,11 @@ final class FakeTree {
         $mock->method('isReadable')->willReturnCallback(fn () => $this->nodes[$path]['readable']);
         $mock->method('isUpdateable')->willReturnCallback(fn () => $this->nodes[$path]['updateable']);
         $mock->method('isDeletable')->willReturnCallback(fn () => $this->nodes[$path]['deletable']);
-        $mock->method('getStorage')->willReturnCallback(function () use ($path) {
-            $storage = $this->mock(\OCP\Files\Storage\IStorage::class);
-            $storage->method('instanceOfStorage')->willReturnCallback(fn (string $class) => $class === 'OCA\Files_Trashbin\Storage' && ($this->nodes[$path]['trash'] ?? true));
-            return $storage;
-        });
+        $mock->method('getStorage')->willReturnCallback(fn () => $this->storage($path));
+        $mock->method('getMountPoint')->willReturnCallback(fn () => $this->mount($path));
+        $mock->method('getOwner')->willReturnCallback(fn () => $this->owner($path));
+        $mock->method('getPermissions')->willReturnCallback(fn () => $this->nodes[$path]['permissions'] ?? \OCP\Constants::PERMISSION_ALL);
+        $mock->method('isShared')->willReturnCallback(fn () => ($this->nodes[$path]['scope'] ?? 'personal') === 'shared');
         $mock->method('getParent')->willReturnCallback(fn () => $this->node(dirname($path)));
         $mock->method('delete')->willReturnCallback(function () use ($path): void {
             $this->ops[] = "delete $path";
@@ -159,6 +165,45 @@ final class FakeTree {
         $folder->method('getById')->willReturnCallback(fn (int $id) => array_values(array_map(fn ($p) => $this->node($p),
             array_filter(array_keys($this->nodes), fn ($p) => str_starts_with($p, $path . '/') && $this->nodes[$p]['id'] === $id))));
         return $folder;
+    }
+
+    /**
+     * The storage a node sits on. Home storage only when the node is personal, and the trash wrapper is
+     * still what decides whether a deletion is recoverable.
+     */
+    private function storage(string $path): object {
+        $storage = $this->mock(\OCP\Files\Storage\IStorage::class);
+        $storage->method('instanceOfStorage')->willReturnCallback(function (string $class) use ($path): bool {
+            if ($class === 'OCA\Files_Trashbin\Storage') {
+                return $this->nodes[$path]['trash'] ?? true;
+            }
+            return $class === \OCP\Files\IHomeStorage::class && ($this->nodes[$path]['scope'] ?? 'personal') === 'personal';
+        });
+        return $storage;
+    }
+
+    /** The mount point a node lives in: only the three shared mounts carry a mount type. */
+    private function mount(string $path): object {
+        $scope = $this->nodes[$path]['scope'] ?? 'personal';
+        $mount = $this->mock(\OCP\Files\Mount\IMountPoint::class);
+        $mount->method('getMountType')->willReturn(match ($scope) {
+            'team' => 'group',
+            'shared' => 'shared',
+            'external' => 'external',
+            default => '',
+        });
+        $mount->method('getMountPoint')->willReturn($this->mountPath ?? dirname($path));
+        return $mount;
+    }
+
+    /** The owner of a node: the viewer for a personal file, the share owner otherwise. */
+    private function owner(string $path): object {
+        $scope = $this->nodes[$path]['scope'] ?? 'personal';
+        $uid = $scope === 'personal' ? 'alice' : 'pedro';
+        $user = $this->mock(\OCP\IUser::class);
+        $user->method('getUID')->willReturn($uid);
+        $user->method('getDisplayName')->willReturn($scope === 'personal' ? $this->ownerName : $this->sharedByName);
+        return $user;
     }
 
     /** @return list<string> */

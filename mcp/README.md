@@ -72,9 +72,9 @@ Os arquivos de licença acompanham cada pacote em `vendor/`. O `vendor/autoload.
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-0.6.6.tar.gz <servidor>:/tmp/
+scp build/mcp-0.6.7.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-0.6.6.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-0.6.7.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp
@@ -90,14 +90,14 @@ Para atualizar: `occ app:disable mcp`, remover `<apps>/mcp`, extrair o novo paco
    - A busca procura por nome, ID ou e-mail, e há um filtro por grupo; a tabela mostra 50 usuários por página.
    - Cada checkbox salva na hora: *Pode conectar* libera o usuário, e as demais colunas são as operações por módulo.
    - Os botões ✓/✕ no cabeçalho aplicam a coluna aos usuários ativos da página, com confirmação.
-   - Usuários desativados aparecem marcados e não podem ser editados. Módulos cujo app está desativado no servidor aparecem esmaecidos, e as permissões ficam guardadas.
+   - Usuários desativados aparecem marcados e não podem ser editados. Módulos cujo app não está disponível no servidor não aparecem na matriz; para um usuário sem acesso ao app, a célula fica desativada. As permissões salvas são preservadas.
    - O e-mail só serve para a busca e nunca é exibido.
    - Serviço, elegibilidade e conexão pessoal começam desligados para todos, inclusive administradores. Leitura começa permitida; escrita, exclusão e transferência começam negadas.
    - A página usa a API JSON admin-only `GET /apps/mcp/api/grants`, `PUT /apps/mcp/api/grants/{uid}`, `POST /apps/mcp/api/grants/bulk` e `PUT /apps/mcp/api/service`.
 2. **Configurações pessoais → Informações pessoais → MCP connection**: o próprio usuário clica em *Connect*.
 3. Em **Configurações pessoais → Segurança**, o usuário cria uma senha de app. O cliente MCP usa autenticação HTTP Basic com o ID do usuário e essa senha de app. O app nunca pede nem guarda a senha principal.
 
-Login pelo navegador (Login Flow v2/OAuth) ainda não está disponível.
+O login pelo navegador via OAuth está descrito em [Conectar pelo claude.ai (OAuth)](#conectar-pelo-claudeai-oauth).
 
 ### Chaves de configuração
 

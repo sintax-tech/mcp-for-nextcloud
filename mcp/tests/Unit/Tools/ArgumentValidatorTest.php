@@ -33,6 +33,43 @@ final class ArgumentValidatorTest extends TestCase {
         }
     }
 
+    /** The batch tool needs a list of {from,to} objects, so the registry validates them, not the handler. */
+    public function testValidatesAListOfObjects(): void {
+        $schema = ['type' => 'object', 'additionalProperties' => false, 'properties' => [
+            'moves' => ['type' => 'array', 'minItems' => 1, 'maxItems' => 200, 'items' => [
+                'type' => 'object', 'additionalProperties' => false,
+                'properties' => ['from' => ['type' => 'string'], 'to' => ['type' => 'string']],
+                'required' => ['from', 'to'],
+            ]],
+        ]];
+        $this->assertSame([['from' => '/a', 'to' => '/b']], ArgumentValidator::validate($schema, ['moves' => [['from' => '/a', 'to' => '/b']]])['moves']);
+        foreach ([[['from' => '/a']], [['from' => '/a', 'to' => '/b', 'extra' => 1]], [['from' => 1, 'to' => '/b']], 'nao-lista'] as $moves) {
+            try {
+                ArgumentValidator::validate($schema, ['moves' => $moves]);
+                $this->fail('accepted ' . json_encode($moves));
+            } catch (InvalidArgumentException $e) {
+                $this->assertMatchesRegularExpression('/^(Invalid|Missing) argument: moves$/', $e->getMessage());
+            }
+        }
+    }
+
+    public function testEnforcesItemCountBounds(): void {
+        $schema = ['type' => 'object', 'properties' => ['paths' => ['type' => 'array', 'maxItems' => 2]]];
+        $this->assertSame(['paths' => ['/a', '/b']], ArgumentValidator::validate($schema, ['paths' => ['/a', '/b']]));
+        $this->expectException(InvalidArgumentException::class);
+        ArgumentValidator::validate($schema, ['paths' => ['/a', '/b', '/c']]);
+    }
+
+    /** An object property applies defaults and rejects unknown keys, exactly like a top-level schema. */
+    public function testValidatesAnObjectProperty(): void {
+        $schema = ['type' => 'object', 'properties' => ['payload' => [
+            'type' => 'object', 'additionalProperties' => false, 'properties' => ['name' => ['type' => 'string']],
+        ]]];
+        $this->assertSame(['payload' => ['name' => 'x']], ArgumentValidator::validate($schema, ['payload' => ['name' => 'x']]));
+        $this->expectException(InvalidArgumentException::class);
+        ArgumentValidator::validate($schema, ['payload' => ['outro' => 'x']]);
+    }
+
     public function testConstStillApplies(): void {
         $schema = ['properties' => ['confirm' => ['type' => 'boolean', 'const' => true]], 'required' => ['confirm']];
         $this->assertSame(['confirm' => true], ArgumentValidator::validate($schema, ['confirm' => true]));

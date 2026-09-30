@@ -1,6 +1,6 @@
 # App MCP para Nextcloud
 
-Versão de teste interno para **Nextcloud 33**. Expõe MCP `2025-06-18` via Streamable HTTP sem sessão e sem SSE, na rota do próprio app:
+Versão de teste interno para **Nextcloud 33**. O endpoint atende clientes MCP 2026-07-28, sem estado, via `server/discover` e `_meta` por requisição, e também clientes anteriores, que usam `initialize` com 2025-06-18. Expõe MCP `2025-06-18` via Streamable HTTP sem sessão e sem SSE, na rota do próprio app:
 
 - `https://<instância>/apps/mcp/` com URLs limpas;
 - `https://<instância>/index.php/apps/mcp/` sem URLs limpas.
@@ -77,9 +77,9 @@ Os arquivos de licença acompanham cada pacote em `vendor/`. O `vendor/autoload.
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-0.6.1.tar.gz <servidor>:/tmp/
+scp build/mcp-0.6.2.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-0.6.1.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-0.6.2.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp
@@ -150,7 +150,7 @@ Respostas esperadas:
 | Serviço desligado, usuário inelegível ou desconectado | 403 |
 | `Origin` de outro host | 403 |
 | Faltando `Accept: application/json, text/event-stream` ou `Content-Type: application/json` | 406 |
-| `MCP-Protocol-Version` desconhecida ou malformada depois do `initialize` (aceitas: 2025-03-26, 2025-06-18, 2025-11-25; ausente vale 2025-03-26; no `initialize` o header é ignorado). O motivo de cada 400 vai para o log em nível debug. | 400 |
+| `MCP-Protocol-Version` desconhecida ou malformada: responde `UnsupportedProtocolVersionError` (`-32022`, `data.supported`). As versões legadas aceitas depois do `initialize` são 2025-03-26, 2025-06-18 e 2025-11-25; header ausente vale 2025-03-26, e no `initialize` o header é ignorado. Também dá 400 quando `MCP-Protocol-Version`, `Mcp-Method` ou `Mcp-Name` divergem do corpo (`-32020`). O motivo de cada 400 vai para o log em nível debug. | 400 |
 | JSON inválido (`-32700`), lote ou envelope inválido (`-32600`) | 400 |
 | Método desconhecido (`-32601`) ou parâmetros inválidos (`-32602`) | 200 com erro JSON-RPC |
 | GET ou DELETE | 405 |

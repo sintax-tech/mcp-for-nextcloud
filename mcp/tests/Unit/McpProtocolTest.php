@@ -58,8 +58,11 @@ final class McpProtocolTest extends TestCase {
         $logger->method('debug')->willReturnCallback(function (string $message, array $context) use (&$logged): void { $logged[] = [$message, $context]; });
         $protocol = self::protocol($this, $logger);
         $list = json_encode(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list']);
-        $this->assertSame(['status' => 400, 'body' => null], $protocol->handle($list, '2024-11-05', 'alice'));
-        $this->assertSame(['status' => 400, 'body' => null], $protocol->handle($list, 'Bearer secret-token', 'alice'));
+        $old = $protocol->handle($list, '2024-11-05', 'alice');
+        $this->assertSame([400, -32022, '2024-11-05'], [$old['status'], $old['body']['error']['code'], $old['body']['error']['data']['requested']]);
+        $bad = $protocol->handle($list, 'Bearer secret-token', 'alice');
+        $this->assertSame([400, 'malformed'], [$bad['status'], $bad['body']['error']['data']['requested']]);
+        $this->assertStringNotContainsString('secret', json_encode($bad));
         $this->assertSame(400, $protocol->handle('{nope', '', 'alice')['status']);
         $this->assertSame([
             ['MCP request rejected: unsupported MCP-Protocol-Version', ['app' => 'mcp', 'method' => 'tools/list', 'version' => '2024-11-05']],

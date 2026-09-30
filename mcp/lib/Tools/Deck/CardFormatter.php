@@ -19,9 +19,6 @@ use OCP\IUserManager;
  * card in the Deck web interface.
  */
 final class CardFormatter {
-	/** Duedate is a Deck `datetime` column; the tools speak plain `YYYY-MM-DD`. */
-	private const DATE_FORMAT = 'Y-m-d';
-
 	/** Route of the Deck card page, Deck `appinfo/routes.php` `page#indexCard`. */
 	private const CARD_ROUTE = 'deck.page.indexCard';
 
@@ -33,12 +30,16 @@ final class CardFormatter {
 	 * @param ITimeFactory $time Clock the `overdue` flag is read from, so it can be pinned in a test.
 	 * @param IUserManager|null $users Resolves an assigned UID to its display name; without it the
 	 *     UID is answered as is.
+	 * @param \DateTimeZone|null $zone Timezone of the caller, deciding which day `duedate` and
+	 *     `overdue` speak of; PHP's default when absent.
 	 */
 	public function __construct(
 		private IURLGenerator $urls,
 		private ITimeFactory $time,
 		private ?IUserManager $users = null,
+		private ?\DateTimeZone $zone = null,
 	) {
+		$this->zone ??= new \DateTimeZone(date_default_timezone_get());
 	}
 
 	/**
@@ -97,11 +98,11 @@ final class CardFormatter {
 			'order' => $card->getOrder(),
 			'archived' => (bool)$card->getArchived(),
 			'done' => $this->dateToTimestamp($card->getDone()),
-			'duedate' => $this->dateToString($card->getDuedate()),
+			'duedate' => CardCriteria::dueDay($card, $this->zone),
 			'lastModified' => $card->getLastModified(),
 			'attachmentCount' => $card->getAttachmentCount(),
 			'assignedUsers' => $assignedUsers,
-			'overdue' => CardCriteria::isOverdue($card, $this->time->getTime()),
+			'overdue' => CardCriteria::isOverdue($card, $this->time->getTime(), $this->zone),
 			'url' => $boardId === null
 				? null
 				: $this->urls->linkToRouteAbsolute(self::CARD_ROUTE, ['boardId' => $boardId, 'cardId' => $card->getId()]),
@@ -143,17 +144,5 @@ final class CardFormatter {
 	 */
 	private function dateToTimestamp(?\DateTime $date): ?int {
 		return $date?->getTimestamp();
-	}
-
-	/**
-	 * @param mixed $date Deck stores `duedate` as `datetime`, but a stub or a fresh entity may still hold the raw string.
-	 * @return string|null Date formatted as `YYYY-MM-DD`, or null.
-	 */
-	private function dateToString(mixed $date): ?string {
-		if ($date instanceof \DateTime) {
-			return $date->format(self::DATE_FORMAT);
-		}
-
-		return is_string($date) && $date !== '' ? $date : null;
 	}
 }

@@ -51,7 +51,7 @@ final class EditCardHandlerTest extends TestCase {
 			'id' => 7,
 			'title' => 'Título atual',
 			'description' => 'Descrição atual',
-			'duedate' => new \DateTime('2026-01-05 00:00:00'),
+			'duedate' => new \DateTime('2026-01-05 00:00:00', new \DateTimeZone('UTC')),
 			'type' => 'note',
 			'owner' => 'alice',
 			'order' => 3,
@@ -59,7 +59,7 @@ final class EditCardHandlerTest extends TestCase {
 		$gateway->method('findCard')->willReturn($current);
 		$gateway->expects(self::once())
 			->method('updateCard')
-			->with('alice', $current, 'Novo título', 'Descrição atual', '2026-01-05')
+			->with('alice', $current, 'Novo título', 'Descrição atual', '2026-01-05T00:00:00+00:00')
 			->willReturn($current);
 		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
@@ -82,7 +82,7 @@ final class EditCardHandlerTest extends TestCase {
 	}
 
 	public function testExplicitNullClearsTheDateAndOmissionKeepsIt(): void {
-		$current = $this->card(['id' => 7, 'duedate' => new \DateTime('2026-01-05 00:00:00')]);
+		$current = $this->card(['id' => 7, 'duedate' => new \DateTime('2026-01-05 00:00:00', new \DateTimeZone('UTC'))]);
 
 		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->method('findCard')->willReturn($current);
@@ -97,7 +97,7 @@ final class EditCardHandlerTest extends TestCase {
 		$gateway->method('findCard')->willReturn($current);
 		$gateway->expects(self::once())
 			->method('updateCard')
-			->with('alice', $current, 'Card', '', '2026-01-05')
+			->with('alice', $current, 'Card', '', '2026-01-05T00:00:00+00:00')
 			->willReturn($current);
 		(new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter()))
 			->handle(['cardId' => 7, 'title' => 'Card', 'description' => ''], 'alice');

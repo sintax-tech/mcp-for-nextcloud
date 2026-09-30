@@ -206,4 +206,15 @@ final class CardFormatterTest extends TestCase {
 			$this->formatter->card($this->card(['id' => 7]), 4)['url'],
 		);
 	}
+
+	public function testDuedateAndOverdueSpeakTheCallerDayNearMidnight(): void {
+		// 23:30 of 2026-09-30 in São Paulo; the card is due at 22:00 that same local day.
+		$this->time->method('getTime')->willReturn((new \DateTimeImmutable('2026-10-01 02:30:00', new \DateTimeZone('UTC')))->getTimestamp());
+		$formatter = new CardFormatter($this->urls, $this->time, $this->users, new \DateTimeZone('America/Sao_Paulo'));
+
+		$formatted = $formatter->card($this->card(['duedate' => new \DateTime('2026-10-01 01:00:00', new \DateTimeZone('UTC'))]), 4);
+
+		self::assertSame('2026-09-30', $formatted['duedate']);
+		self::assertFalse($formatted['overdue']);
+	}
 }

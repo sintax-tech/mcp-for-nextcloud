@@ -17,9 +17,11 @@ use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
 use OCA\Deck\Service\StackService;
+use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\Deck\CardCriteria;
 use OCA\Mcp\Tools\Deck\DeckServiceGateway;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IConfig;
 use OCP\IUser;
 use OCP\IUserManager;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -176,10 +178,39 @@ final class DeckServiceGatewayTest extends TestCase {
 		$this->services[CardService::class]
 			->expects(self::once())
 			->method('create')
-			->with('Fechar', 10, 'note', 99999, 'alice', 'Com o cliente', '2026-03-01')
+			->with('Fechar', 10, 'note', 99999, 'alice', 'Com o cliente', CardCriteria::localMidnight('2026-03-01', new \DateTimeZone(date_default_timezone_get())))
 			->willReturn($card);
 
 		self::assertSame($card, $this->gateway->createCard('alice', 10, 'Fechar', 'Com o cliente', '2026-03-01'));
+	}
+
+	public function testDayWrittenByTheToolsIsMidnightInTheCallerTimezone(): void {
+		$config = $this->createMock(IConfig::class);
+		$config->method('getUserValue')->willReturn('America/Sao_Paulo');
+		$gateway = new DeckServiceGateway($this->container, $this->time, new UserTimezone($config));
+		$this->recordSetUserId();
+		$this->services[CardService::class]
+			->expects(self::once())
+			->method('create')
+			->with('Fechar', 10, 'note', 99999, 'alice', '', '2026-10-01T00:00:00-03:00')
+			->willReturn($this->card());
+
+		$gateway->createCard('alice', 10, 'Fechar', '', '2026-10-01');
+	}
+
+	public function testUpdateKeepsAFullTimestampUntouched(): void {
+		$config = $this->createMock(IConfig::class);
+		$config->method('getUserValue')->willReturn('America/Sao_Paulo');
+		$gateway = new DeckServiceGateway($this->container, $this->time, new UserTimezone($config));
+		$card = $this->card(['id' => 7, 'duedate' => new \DateTime('2026-10-01 18:30:00', new \DateTimeZone('UTC'))]);
+		$this->recordSetUserId();
+		$this->services[CardService::class]
+			->expects(self::once())
+			->method('update')
+			->with(7, 'Card', 10, 'note', 'alice', '', 0, '2026-10-01T18:30:00+00:00')
+			->willReturn($card);
+
+		$gateway->updateCard('alice', $card, 'Card', '', '2026-10-01T18:30:00+00:00');
 	}
 
 	public function testUpdateCardPreservesEveryFieldTheCallerDidNotChange(): void {

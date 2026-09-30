@@ -16,6 +16,7 @@ use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
 use OCA\Deck\Service\StackService;
+use OCA\Mcp\Service\UserTimezone;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
@@ -42,10 +43,13 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	/**
 	 * @param ContainerInterface $container Nextcloud server container, resolves Deck services by FQCN.
 	 * @param ITimeFactory $time Clock the follow-up reads `overdue` from, so it can be pinned in a test.
+	 * @param UserTimezone|null $zones Timezone of the caller, deciding which day a due date falls on;
+	 *     PHP's default when absent.
 	 */
 	public function __construct(
 		private ContainerInterface $container,
 		private ITimeFactory $time,
+		private ?UserTimezone $zones = null,
 	) {
 	}
 
@@ -109,6 +113,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		// `listBoards()` binds the caller to the Deck before anything is read for them.
 		$managed = $this->managedBoards($userId, $boardId);
 		$now = $this->time->getTime();
+		$zone = $this->zone($userId);
 
 		/** @var StackMapper $stackMapper */
 		$stackMapper = $this->service(StackMapper::class);
@@ -136,7 +141,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 			$matching = [];
 			foreach ($cardMapper->findAllForStacks($stackIds) ?: [] as $cardsOfStack) {
 				foreach ($cardsOfStack ?? [] as $card) {
-					if (CardCriteria::matches($card, $status, $dueBefore, $now)) {
+					if (CardCriteria::matches($card, $status, $dueBefore, $now, $zone)) {
 						$matching[] = $card;
 					}
 				}
@@ -187,7 +192,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		$cardService = $this->service(CardService::class);
 
 		// `type` is free text in Deck (only length-checked), so the tools always write `note`.
-		return $cardService->create($title, $stackId, 'note', self::LAST_ORDER, $userId, $description, $duedate);
+		return $cardService->create($title, $stackId, 'note', self::LAST_ORDER, $userId, $description, $this->instant($userId, $duedate));
 	}
 
 	/**
@@ -209,7 +214,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 			(string)$card->getOwner(),
 			$description,
 			$card->getOrder(),
-			$duedate,
+			$this->instant($userId, $duedate),
 			null,
 			null,
 			new OptionalNullableValue($card->getDone()),
@@ -352,6 +357,36 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		}
 
 		return ['boards' => $managed, 'capped' => $capped];
+	}
+
+	/**
+	 * Timezone the caller reads due dates in.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @return \DateTimeZone Their preference, or PHP's default when no resolver was given.
+	 */
+	private function zone(string $userId): \DateTimeZone {
+		return $this->zones?->forUser($userId) ?? new \DateTimeZone(date_default_timezone_get());
+	}
+
+	/**
+	 * Due date as Deck should store it.
+	 *
+	 * A bare `YYYY-MM-DD` from the tools becomes midnight of that day for the caller, since Deck would
+	 * otherwise read it as UTC midnight and the card would show up a day early west of Greenwich. A
+	 * full timestamp (the current date kept by an edit that did not touch it) is passed through, so
+	 * the time set in the Deck web interface survives.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param string|null $duedate Day, ISO 8601 timestamp, or null to clear the date.
+	 * @return string|null Value for `CardService`.
+	 */
+	private function instant(string $userId, ?string $duedate): ?string {
+		if ($duedate === null || preg_match('/^\d{4}-\d{2}-\d{2}$/', $duedate) !== 1) {
+			return $duedate;
+		}
+
+		return CardCriteria::localMidnight($duedate, $this->zone($userId));
 	}
 
 	/**

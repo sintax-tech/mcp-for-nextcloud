@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
+use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\App\IAppManager;
@@ -99,25 +100,12 @@ class FileBackup {
     }
 
     /**
-     * Resolves the timezone for backup names: the user's own preference, then the system default, then
-     * PHP's default. Same precedence Nextcloud uses in lib/private/DateTimeZone.php — an unknown or empty
-     * name does not fail, it falls through to the next source.
+     * Resolves the timezone for backup names, with the precedence of {@see UserTimezone}.
      *
      * @param string $userId authenticated user
      * @return \DateTimeZone timezone to render the stamp in
      */
     private function timezone(string $userId): \DateTimeZone {
-        $candidates = [
-            $this->config->getUserValue($userId, 'core', 'timezone', ''),
-            $this->config->getSystemValueString('default_timezone', ''),
-        ];
-        foreach ($candidates as $candidate) {
-            try {
-                return new \DateTimeZone($candidate);
-            } catch (\Exception) {
-                // empty or unknown zone: try the next source in the precedence list
-            }
-        }
-        return new \DateTimeZone(date_default_timezone_get());
+        return (new UserTimezone($this->config))->forUser($userId);
     }
 }

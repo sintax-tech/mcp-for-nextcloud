@@ -95,7 +95,7 @@ interface DeckGatewayInterface {
 	 * @param int $stackId Stack that receives the card.
 	 * @param string $title Card title.
 	 * @param string $description Card description, possibly empty.
-	 * @param string|null $duedate Due date as `YYYY-MM-DD`, or null for no date.
+	 * @param string|null $duedate Due date as `YYYY-MM-DD` (midnight for the caller), or null for no date.
 	 * @return Card Created card.
 	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
 	 */
@@ -108,7 +108,8 @@ interface DeckGatewayInterface {
 	 * @param Card $card Card as previously read, source of the fields the caller did not change.
 	 * @param string $title New title.
 	 * @param string $description New description.
-	 * @param string|null $duedate New due date as `YYYY-MM-DD`, or null to clear it.
+	 * @param string|null $duedate New due date as `YYYY-MM-DD` (midnight for the caller), the current
+	 *     ISO 8601 instant to keep it untouched, or null to clear it.
 	 * @return Card Updated card.
 	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
 	 */

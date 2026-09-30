@@ -14,9 +14,11 @@ use OCA\Mcp\Tools\Deck\Handler\ListCardsHandler;
 use OCA\Mcp\Tools\Deck\Handler\ListStacksHandler;
 use OCA\Mcp\Tools\Deck\Handler\MoveCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\ReadCardHandler;
+use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\ToolModule;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IConfig;
 use OCP\IURLGenerator;
 use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
@@ -52,6 +54,7 @@ final class DeckToolModule implements ToolModule {
 	 * @param IURLGenerator $urlGenerator Builds the absolute link to a card, which every card payload carries.
 	 * @param ITimeFactory $timeFactory Clock the `overdue` flag of a card is read from.
 	 * @param IUserManager|null $userManager Resolves the UID to the IUser that IAppManager::isEnabledForUser() expects.
+	 * @param IConfig|null $config Reads the caller's timezone, so due dates speak the day they see.
 	 */
 	public function __construct(
 		private ContainerInterface $container,
@@ -60,6 +63,7 @@ final class DeckToolModule implements ToolModule {
 		private IURLGenerator $urlGenerator,
 		private ITimeFactory $timeFactory,
 		private ?IUserManager $userManager = null,
+		private ?IConfig $config = null,
 	) {
 	}
 
@@ -227,7 +231,7 @@ final class DeckToolModule implements ToolModule {
 	 * @throws InvalidArgumentException For an unknown tool or when the Deck app is unavailable, mapped to -32602.
 	 */
 	public function call(string $name, array $arguments, string $userId): array {
-		$handler = $this->handlerFor($name);
+		$handler = $this->handlerFor($name, $userId);
 		if ($handler === null) {
 			throw new InvalidArgumentException(DeckMessages::ERROR_UNKNOWN_TOOL);
 		}
@@ -246,10 +250,11 @@ final class DeckToolModule implements ToolModule {
 	 * Builds the handler of a tool, or null when the name is unknown.
 	 *
 	 * @param string $name Tool name as sent by the client.
+	 * @param string $userId UID of the authenticated caller, whose timezone the payload speaks.
 	 * @return AbstractHandler|null Handler bound to this module's dependencies.
 	 */
-	private function handlerFor(string $name): ?AbstractHandler {
-		$formatter = new CardFormatter($this->urlGenerator, $this->timeFactory, $this->userManager);
+	private function handlerFor(string $name, string $userId): ?AbstractHandler {
+		$formatter = new CardFormatter($this->urlGenerator, $this->timeFactory, $this->userManager, $this->zones()?->forUser($userId));
 
 		return match ($name) {
 			ListBoardsHandler::TOOL => new ListBoardsHandler($this->gateway(), $this->logger, $formatter),
@@ -271,7 +276,14 @@ final class DeckToolModule implements ToolModule {
 	 * @return DeckGatewayInterface Gateway that resolves Deck services through the container.
 	 */
 	private function gateway(): DeckGatewayInterface {
-		return $this->gateway ??= new DeckServiceGateway($this->container, $this->timeFactory);
+		return $this->gateway ??= new DeckServiceGateway($this->container, $this->timeFactory, $this->zones());
+	}
+
+	/**
+	 * @return UserTimezone|null Resolver of the caller's timezone, or null when no config was given.
+	 */
+	private function zones(): ?UserTimezone {
+		return $this->config === null ? null : new UserTimezone($this->config);
 	}
 
 	/**

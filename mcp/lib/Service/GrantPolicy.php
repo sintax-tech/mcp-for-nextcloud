@@ -14,7 +14,8 @@ use OCP\IConfig;
 class GrantPolicy {
     /** Operations an admin can grant per module; Files deliberately has no delete. */
     public const CATALOG = [
-        'files' => ['read', 'edit'],
+        // 'restore' rolls a file back to a stored version; like delete it starts denied.
+        'files' => ['read', 'edit', 'restore'],
         'notes' => ['read', 'create', 'edit', 'move', 'delete'],
         'deck' => ['read', 'create', 'edit', 'move', 'delete'],
         'calendar' => ['read', 'create', 'edit', 'move', 'delete', 'transfer'],

@@ -58,7 +58,7 @@ final class GrantPolicyTest extends TestCase {
     }
 
     public function testCatalogMatchesContractAndFilesHasNoDelete(): void {
-        $this->assertSame(['read', 'edit'], GrantPolicy::CATALOG['files']);
+        $this->assertSame(['read', 'edit', 'restore'], GrantPolicy::CATALOG['files']);
         $this->assertSame(['read', 'create', 'edit', 'move', 'delete', 'transfer'], GrantPolicy::CATALOG['calendar']);
         $this->assertSame(['read', 'reply', 'attach', 'quote'], GrantPolicy::CATALOG['talk']);
         $this->expectException(InvalidArgumentException::class);
@@ -119,7 +119,7 @@ final class GrantPolicyTest extends TestCase {
         $this->assertTrue($state['alice']['eligible']);
         $this->assertFalse($state['alice']['grants']['files']['read']);
         $this->assertTrue($state['bob']['grants']['notes']['delete']);
-        $this->assertSame(['read' => true, 'edit' => false], $state['carol']['grants']['files']);
+        $this->assertSame(['read' => true, 'edit' => false, 'restore' => false], $state['carol']['grants']['files']);
         foreach (['alice', 'bob', 'carol'] as $uid) {
             foreach (GrantPolicy::CATALOG as $module => $operations) {
                 foreach ($operations as $operation) {

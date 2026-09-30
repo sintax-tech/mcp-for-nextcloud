@@ -81,6 +81,22 @@ final class GrantMatrixTest extends TestCase {
         $this->assertFalse($page['serviceEnabled']);
     }
 
+    /**
+     * The matrix renders whatever the catalog says, so files.restore becomes a column with no template
+     * change at all, and it starts denied like every operation but read.
+     */
+    public function testTheNewFilesRestoreColumnArrivesWithTheCatalog(): void {
+        $page = $this->fx->matrix()->page('', '', 1);
+        $this->assertSame(['read', 'edit', 'restore'], $page['catalog']['files']);
+        $this->assertNotSame([], $page['users']);
+        foreach ($page['users'] as $user) {
+            $this->assertArrayHasKey('restore', $user['grants']['files']);
+            $this->assertFalse($user['grants']['files']['restore']);
+        }
+        $this->fx->policy->setGrant($page['users'][0]['uid'], 'files', 'restore', true);
+        $this->assertTrue($this->fx->matrix()->page('', '', 1)['users'][0]['grants']['files']['restore']);
+    }
+
     public function testRejectsBadInput(): void {
         foreach ([['', '', 0], ['', '', GrantMatrix::MAX_PAGE + 1], [str_repeat('a', 101), '', 1], ['', 'ghosts', 1]] as [$search, $group, $page]) {
             try {

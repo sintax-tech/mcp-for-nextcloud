@@ -4,9 +4,9 @@
     <name>MCP</name>
     <summary>Instance-local MCP endpoint with per-user grants</summary>
     <summary lang="pt-br">Endpoint MCP local na instância com concessões por usuário</summary>
-    <description>Native MCP endpoint for Nextcloud. Test release with per-user grants, Files (read and backed-up edit, never delete), Notes, Calendar, Deck and Talk tools. Sign-in from Claude with OAuth.</description>
-    <description lang="pt-br">Endpoint MCP nativo para o Nextcloud. Versão de teste com concessões por usuário e ferramentas de Arquivos (leitura e edição com backup, nunca exclusão), Notas, Calendário, Deck e Talk. Login pelo Claude com OAuth.</description>
-    <version>0.6.6</version>
+    <description>Native MCP endpoint for Nextcloud. Test release with per-user grants, Files (read, backed-up edit, local checkout and version restore, never delete), Notes, Calendar, Deck and Talk tools. Sign-in from Claude with OAuth.</description>
+    <description lang="pt-br">Endpoint MCP nativo para o Nextcloud. Versão de teste com concessões por usuário e ferramentas de Arquivos (leitura, edição com backup, edição local e restauração de versão, nunca exclusão), Notas, Calendário, Deck e Talk. Login pelo Claude com OAuth.</description>
+    <version>0.7.0</version>
     <licence>AGPL-3.0-or-later</licence>
     <author>Sintax Tech</author>
     <namespace>Mcp</namespace>

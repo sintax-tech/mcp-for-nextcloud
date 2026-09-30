@@ -29,4 +29,14 @@ final class AdminAssetsTest extends TestCase {
             $this->assertContains($kept, $routes);
         }
     }
+
+    /** Both checkout routes must exist, and the upload one has to answer PUT and POST. */
+    public function testCheckoutRoutesExistAndAcceptPutAndPost(): void {
+        $routes = (require dirname(__DIR__, 3) . '/appinfo/routes.php')['routes'];
+        $checkout = array_values(array_filter($routes, static fn (array $route) => str_starts_with((string)$route['name'], 'checkout#')));
+        $this->assertSame(['checkout#download', 'checkout#upload', 'checkout#uploadPost'],
+            array_column($checkout, 'name'));
+        $this->assertSame(['/checkout/{token}', '/checkout/{token}', '/checkout/{token}'], array_column($checkout, 'url'));
+        $this->assertSame(['GET', 'PUT', 'POST'], array_column($checkout, 'verb'));
+    }
 }

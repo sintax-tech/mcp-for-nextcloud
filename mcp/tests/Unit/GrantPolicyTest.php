@@ -60,7 +60,7 @@ final class GrantPolicyTest extends TestCase {
     public function testCatalogMatchesContractAndFilesHasNoDelete(): void {
         $this->assertSame(['read', 'edit'], GrantPolicy::CATALOG['files']);
         $this->assertSame(['read', 'create', 'edit', 'move', 'delete', 'transfer'], GrantPolicy::CATALOG['calendar']);
-        $this->assertSame(['read', 'reply', 'attach', 'quote'], GrantPolicy::CATALOG['talk']);
+        $this->assertSame(['read', 'reply', 'attach', 'quote', 'create'], GrantPolicy::CATALOG['talk']);
         $this->expectException(InvalidArgumentException::class);
         $this->policy->setGrant('alice', 'files', 'delete', true);
     }

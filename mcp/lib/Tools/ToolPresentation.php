@@ -18,8 +18,18 @@ final class ToolPresentation {
 
     /** Operations that only read; every other operation may change data. */
     private const READ_OPERATION = 'read';
-    /** Operations whose whole point is to destroy, overwrite or relocate data. */
-    private const DESTRUCTIVE_OPERATIONS = ['delete', 'restore', 'transfer', 'move'];
+    /**
+     * Operations a user cannot take back from the client: the ones that replace or remove what exists, and the
+     * ones that publish a message under their own name in a room full of other people. Replying, sharing a file
+     * and quoting an attachment only add rows nobody deletes for them, but once sent the user has to ask somebody
+     * else to remove them, which is exactly the confirmation a client offers on a destructive tool.
+     */
+    private const DESTRUCTIVE_OPERATIONS = ['delete', 'restore', 'transfer', 'move', 'reply', 'attach', 'quote'];
+    /**
+     * Tools whose operation is harmless elsewhere but not for them. Creating a note adds a file only its owner sees;
+     * creating a Talk group invites other people, and the client cannot take an invitation back.
+     */
+    private const DESTRUCTIVE_TOOLS = ['talk_create_group'];
 
     /** Technical tool name to human-readable pt-BR title. A tool missing here falls back to a humanized name. */
     private const TITLES = [
@@ -72,6 +82,9 @@ final class ToolPresentation {
         'talk_reply' => 'Responder no Talk',
         'talk_attach_file' => 'Anexar arquivo no Talk',
         'talk_quote_file' => 'Citar arquivo no Talk',
+        'talk_message_user' => 'Mensagem direta no Talk',
+        'talk_send_batch' => 'Enviar lote no Talk',
+        'talk_create_group' => 'Criar grupo no Talk',
     ];
 
     private function __construct() {
@@ -100,7 +113,8 @@ final class ToolPresentation {
         return [
             'title' => self::title($name),
             'readOnlyHint' => $readOnly,
-            'destructiveHint' => in_array($operation, self::DESTRUCTIVE_OPERATIONS, true),
+            'destructiveHint' => in_array($operation, self::DESTRUCTIVE_OPERATIONS, true)
+                || in_array($name, self::DESTRUCTIVE_TOOLS, true),
             'idempotentHint' => $readOnly,
             'openWorldHint' => false,
         ];

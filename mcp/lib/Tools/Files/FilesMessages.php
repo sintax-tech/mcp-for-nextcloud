@@ -42,7 +42,7 @@ final class FilesMessages {
             . 'próprio lote criou; uma pasta com conteúdo é preservada e vem em kept_dirs.';
     }
 
-    /** @return string a batch that does not exist, is not this user's, or is past its retention */
+    /** @return string a batch that does not exist, is not this user's, or is past its lifetime */
     public static function batchNotFound(): string {
         return 'Lote não encontrado.';
     }

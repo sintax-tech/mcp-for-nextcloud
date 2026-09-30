@@ -88,15 +88,14 @@ final class NoFileDeletionTest extends TestCase {
 
     /**
      * The /MCP backups folder only ever grows. A purge, a rotation or a retention window would delete
-     * something the user may be relying on to recover an edit, so the code that writes backups may not even
-     * name one. The words are allowed elsewhere — a batch of its own has a retention, and that is a row in a
-     * table, not a file of the user.
+     * something the user may be relying on to recover an edit, so no source of Files may even name one.
+     *
+     * The rule is deliberately blunt and applies to every file in the namespace, with no exception for the
+     * batch store: a row of the app's own table that expires is written with different words, so that this
+     * ban keeps catching a future cleanup that would touch a file of the user.
      */
     public function testBackupsAreNeverPurgedNorRotated(): void {
         foreach ($this->filesSources() as $file) {
-            if (!str_ends_with($file, 'FileBackup.php')) {
-                continue;
-            }
             $source = (string)file_get_contents($file);
             foreach (['purge', 'rotate', 'retention', 'prune', 'cleanup', 'cleanupBackup'] as $word) {
                 $this->assertStringNotContainsStringIgnoringCase($word, $source,

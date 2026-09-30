@@ -19,21 +19,22 @@ class BatchStore {
     /** Table holding the batches. */
     public const TABLE = 'mcp_file_batches';
     /** How long a batch stays undoable. */
-    public const RETENTION_SECONDS = 2592000;
+    public const LIFETIME_SECONDS = 2592000;
 
     public function __construct(private IDBConnection $db) {}
 
     /**
-     * Stores a batch, first purging the ones past their retention.
+     * Stores a batch, first dropping the ones whose lifetime has ended. It is a row that goes, not a file
+     * of the user: /MCP backups never gets a window like this one.
      *
      * @param Batch $batch the batch that ran
      * @return int the id of the stored row
      */
     public function insert(Batch $batch): int {
-        $cutoff = $batch->createdAt - self::RETENTION_SECONDS;
-        $purge = $this->db->getQueryBuilder();
-        $purge->delete(self::TABLE)
-            ->where($purge->expr()->lt('created_at', $purge->createNamedParameter($cutoff, IQueryBuilder::PARAM_INT)))
+        $cutoff = $batch->createdAt - self::LIFETIME_SECONDS;
+        $expired = $this->db->getQueryBuilder();
+        $expired->delete(self::TABLE)
+            ->where($expired->expr()->lt('created_at', $expired->createNamedParameter($cutoff, IQueryBuilder::PARAM_INT)))
             ->executeStatement();
         $qb = $this->db->getQueryBuilder();
         $qb->insert(self::TABLE);

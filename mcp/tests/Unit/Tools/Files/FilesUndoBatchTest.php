@@ -111,10 +111,10 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
         $this->tool('files_undo_batch', ['batch_id' => 9999, 'confirm' => true]);
     }
 
-    /** Older than the retention: answered exactly like one that never existed. */
-    public function testABatchPastItsRetentionIsNotFound(): void {
+    /** Older than the lifetime: answered exactly like one that never existed. */
+    public function testABatchPastItsLifetimeIsNotFound(): void {
         $id = $this->runBatch();
-        $this->batches->rows[$id]['created_at'] = 1790000000 - BatchStore::RETENTION_SECONDS - 1;
+        $this->batches->rows[$id]['created_at'] = 1790000000 - BatchStore::LIFETIME_SECONDS - 1;
         $this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
         $this->expectExceptionMessage('Lote não encontrado.');
         $this->tool('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
@@ -184,7 +184,59 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
         $this->assertSame('/Documentos/ata.md', $out['conflicts'][0]['from']);
         $this->assertArrayHasKey('/alice/files/Documentos/plano.md', $this->tree->nodes);
         $this->assertArrayHasKey('/alice/files/Arquivado/ata.md', $this->tree->nodes);
-        $this->assertNull($this->batches->find($id, 'alice')->undoneAt, 'o lote continua desfazível');
+        $this->assertNull($this->batches->find($id, 'alice')->undoneAt, 'o lote continua aberto');
+    }
+
+    /**
+     * The case that made the first fix necessary: an undo that stopped halfway used to be a dead end, because
+     * the items already back were not in their destination any more and the next attempt read that absence
+     * as a conflict and refused the whole batch for good. It now keeps only what is left, so the retry
+     * finishes the job and the tree ends exactly where it started.
+     */
+    public function testAnUndoThatStoppedHalfwayCanBeRetriedUntilTheBatchIsWhole(): void {
+        $this->tree->addFile('/alice/files/Documentos/notas.md', 'notas', 'text/markdown');
+        $id = $this->json('files_move_batch', [
+            'moves' => [
+                ['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md'],
+                ['from' => '/Documentos/plano.md', 'to' => '/Arquivado/plano.md'],
+                ['from' => '/Documentos/notas.md', 'to' => '/Arquivado/notas.md'],
+            ],
+            'mkdirs' => ['/Arquivado/2026'],
+            'dry_run' => false,
+            'confirm' => true,
+        ])['batch_id'];
+        // Reverse order is notas, plano, ata: the middle one breaks.
+        $this->tree->failMove = ['/alice/files/Arquivado/plano.md'];
+
+        $first = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
+        $this->assertSame(1, $first['undone']);
+        $this->assertSame('/Documentos/plano.md', $first['conflicts'][0]['from']);
+        $this->assertNull($this->batches->find($id, 'alice')->undoneAt, 'o lote continua aberto');
+
+        $this->tree->failMove = [];
+        $second = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
+        $this->assertSame([], $second['conflicts'], 'a segunda tentativa não vê conflito: o que já voltou sumiu da fila');
+        $this->assertSame(2, $second['undone']);
+        $this->assertSame(['/Arquivado/2026'], $second['removed_dirs']);
+        foreach (['ata.md', 'plano.md', 'notas.md'] as $name) {
+            $this->assertArrayHasKey("/alice/files/Documentos/$name", $this->tree->nodes, "$name voltou para casa");
+            $this->assertArrayNotHasKey("/alice/files/Arquivado/$name", $this->tree->nodes);
+        }
+        $this->assertArrayNotHasKey('/alice/files/Arquivado/2026', $this->tree->nodes);
+        $finished = $this->batches->find($id, 'alice');
+        $this->assertNotNull($finished->undoneAt, 'o lote terminou');
+        // The row still holds the two it reverted on the retry; the one that went back on the first attempt
+        // was narrowed out then. undone_at, not the list, is what stops the batch being replayed.
+        $this->assertCount(2, $finished->moves);
+        $this->assertTrue($finished->isUndone());
+    }
+
+    /** Once the batch is whole there is nothing left to undo, and saying so beats moving things twice. */
+    public function testAFinishedBatchCannotBeUndoneAgain(): void {
+        $id = $this->runBatch();
+        $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
+        $this->assertSame('Este lote já foi desfeito.',
+            $this->failure('files_undo_batch', ['batch_id' => $id, 'confirm' => true]));
     }
 
     /**

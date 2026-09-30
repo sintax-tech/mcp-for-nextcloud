@@ -373,9 +373,9 @@ final class Reorganization {
      */
     public function undoBatch(Folder $root, string $userId, int $batchId, BatchStore $store, int $now): array {
         $batch = $store->find($batchId, $userId);
-        // A batch of somebody else and a batch past its retention answer the same way, so nothing leaks about
+        // A batch of somebody else and one past its lifetime answer the same way, so nothing leaks about
         // which ids ever existed.
-        if ($batch === null || $batch->createdAt < $now - BatchStore::RETENTION_SECONDS) {
+        if ($batch === null || $batch->createdAt < $now - BatchStore::LIFETIME_SECONDS) {
             throw new ToolFailure(FilesMessages::batchNotFound());
         }
         if ($batch->isUndone()) {
@@ -395,8 +395,10 @@ final class Reorganization {
                 NodeAccess::run(fn () => $node->move($this->absolute($root, $move['from'])));
             } catch (ToolFailure $e) {
                 // Every condition was checked above, so this is a lock or a permission that changed in
-                // between. The count says how much already went back and the batch stays undoable, so the
-                // user can retry instead of finding out later that half of it is in the wrong place.
+                // between. The row keeps only what did not go back: an item that already moved is no longer
+                // in its destination, and leaving it there would make the next attempt read that absence as
+                // a conflict and refuse the batch for good. So the retry picks up exactly the rest.
+                $store->keepRemaining($batchId, $userId, array_slice($batch->moves, 0, count($batch->moves) - $undone));
                 return ['batch_id' => $batchId, 'undone' => $undone, 'removed_dirs' => [], 'kept_dirs' => [],
                     'conflicts' => [['from' => $move['from'], 'to' => $move['to'], 'reason' => $e->getMessage()]]];
             }

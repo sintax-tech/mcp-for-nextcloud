@@ -32,6 +32,12 @@ final class InMemoryBatchStore extends BatchStore {
         return $row === null || $row['user_id'] !== $userId ? null : Batch::fromRow($row);
     }
 
+    public function keepRemaining(int $id, string $userId, array $moves): void {
+        if (isset($this->rows[$id]) && $this->rows[$id]['user_id'] === $userId && $this->rows[$id]['undone_at'] === null) {
+            $this->rows[$id]['moves_json'] = json_encode($moves, JSON_THROW_ON_ERROR);
+        }
+    }
+
     public function markUndone(int $id, string $userId, int $now): bool {
         $row = $this->rows[$id] ?? null;
         if ($row === null || $row['user_id'] !== $userId || $row['undone_at'] !== null) {

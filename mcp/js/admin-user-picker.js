@@ -1,3 +1,17 @@
+/**
+ * Autocomplete for the admin page user-ID field.
+ *
+ * Debounces typing by 250 ms, calls GET /apps/mcp/api/users?search=<term> with
+ * the Nextcloud requesttoken header, and fills the datalist the field points
+ * at. Picking an option, or typing a full display name, writes the matching uid
+ * back into the input. Failed or superseded requests leave the list empty.
+ *
+ * Depends on the markup rendered by templates/admin.php:
+ *   - #mcp_uid      the user-ID input
+ *   - #mcp_uid_list the <datalist> bound to that input
+ * and on the global Nextcloud helpers OC.generateUrl() and OC.requestToken.
+ * Plain JS: no build step, no npm dependency.
+ */
 (function () {
 	'use strict';
 

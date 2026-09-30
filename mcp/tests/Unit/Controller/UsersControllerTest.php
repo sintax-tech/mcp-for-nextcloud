@@ -19,6 +19,7 @@ final class UsersControllerTest extends TestCase {
     public function testEmptyTermReturnsEmptyListWithoutQuerying(): void {
         $users = $this->createMock(IUserManager::class);
         $users->expects($this->never())->method('searchDisplayName');
+        $users->expects($this->never())->method('search');
         $response = $this->controller($users)->index('   ');
         $this->assertSame(200, $response->getStatus());
         $this->assertSame([], $response->getData());
@@ -30,6 +31,10 @@ final class UsersControllerTest extends TestCase {
             ->method('searchDisplayName')
             ->with('ali', 20)
             ->willReturn([$this->user('alice', 'Alice'), $this->user('aline', 'Aline')]);
+        $users->expects($this->once())
+            ->method('search')
+            ->with('ali', 20)
+            ->willReturn([]);
         $data = $this->controller($users)->index('ali')->getData();
         $this->assertSame([
             ['uid' => 'alice', 'displayName' => 'Alice'],
@@ -38,6 +43,37 @@ final class UsersControllerTest extends TestCase {
         foreach ($data as $row) {
             $this->assertSame(['uid', 'displayName'], array_keys($row));
         }
+    }
+
+    public function testUserFoundByBothSourcesIsListedOnce(): void {
+        $users = $this->createMock(IUserManager::class);
+        $users->method('searchDisplayName')->willReturn([$this->user('alice', 'Alice')]);
+        $users->method('search')->willReturn([
+            $this->user('alice', 'Alice'),
+            $this->user('albert', 'Albert'),
+        ]);
+        $this->assertSame([
+            ['uid' => 'alice', 'displayName' => 'Alice'],
+            ['uid' => 'albert', 'displayName' => 'Albert'],
+        ], $this->controller($users)->index('al')->getData());
+    }
+
+    public function testResultsAreCappedAtTwenty(): void {
+        $byDisplayName = [];
+        for ($i = 0; $i < 15; $i++) {
+            $byDisplayName[] = $this->user('u' . $i, 'User ' . $i);
+        }
+        $byUid = [];
+        for ($i = 0; $i < 30; $i++) {
+            $byUid[] = $this->user('v' . $i, 'Visitor ' . $i);
+        }
+        $users = $this->createMock(IUserManager::class);
+        $users->method('searchDisplayName')->willReturn($byDisplayName);
+        $users->method('search')->willReturn($byUid);
+        $data = $this->controller($users)->index('u')->getData();
+        $this->assertCount(20, $data);
+        $this->assertSame('u14', $data[14]['uid']);
+        $this->assertSame('v4', $data[19]['uid']);
     }
 
     private function controller(IUserManager $users): UsersController {

@@ -15,10 +15,7 @@ use OCP\Files\Node;
  * The payload shape and the message wording live here so that Files, Notes, Deck and Calendar return
  * byte-identical JSON.
  */
-final class SharedWriteGuard {
-    /** Suffix shared by every confirmation message, in every module. */
-    private const ADVICE = 'Alterações afetam outras pessoas. Confirme com o usuário antes de continuar e repita a chamada com confirm_shared: true.';
-
+class SharedWriteGuard {
     public function __construct(private NodeAccessInfo $access) {}
 
     /**
@@ -62,7 +59,7 @@ final class SharedWriteGuard {
         }
         return $payload + [
             'resource' => $resource,
-            'message' => $this->message($info) . ' ' . self::ADVICE,
+            'message' => $this->message($info) . ' ' . CommonMessages::CONFIRM_ADVICE,
         ];
     }
 
@@ -72,9 +69,9 @@ final class SharedWriteGuard {
      */
     private function message(array $info): string {
         return match ($info['scope']) {
-            NodeAccessInfo::TEAM => sprintf('Este arquivo está na pasta de time "%s" (Team Folder).', (string)$info['teamFolder']),
-            NodeAccessInfo::SHARED => sprintf('Este arquivo foi compartilhado por %s.', (string)$info['sharedBy']),
-            default => 'Este arquivo está em um armazenamento externo.',
+            NodeAccessInfo::TEAM => CommonMessages::teamFolder((string)$info['teamFolder']),
+            NodeAccessInfo::SHARED => CommonMessages::sharedBy((string)$info['sharedBy']),
+            default => CommonMessages::externalStorage(),
         };
     }
 }

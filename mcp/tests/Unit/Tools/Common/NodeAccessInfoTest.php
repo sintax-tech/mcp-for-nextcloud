@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Common;
 
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
+use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use PHPUnit\Framework\TestCase;
@@ -121,14 +122,28 @@ final class NodeAccessInfoTest extends TestCase {
         $this->assertSame('fantasma', $this->access->describe($this->tree->node('/alice/files/Compartilhado/plano.md'), 'alice')['sharedBy']);
     }
 
-    /** A link share has no sharer at all; the description still has to carry something usable. */
-    public function testAShareWithoutASharerStillNamesSomeone(): void {
+    /** No sharer at all is not a deleted account, just a share that answers nothing: neutral wording. */
+    public function testAShareWithoutASharerIsNamedNeutrally(): void {
         $this->tree->addFile('/alice/files/Compartilhado/plano.md', 'x', 'text/markdown',
             ['scope' => 'shared', 'sharedBy' => null]);
         $info = $this->access->describe($this->tree->node('/alice/files/Compartilhado/plano.md'), 'alice');
         $this->assertSame('shared', $info['scope']);
-        $this->assertNotSame('', $info['sharedBy']);
-        $this->assertStringNotContainsString('getDisplayName', json_encode($info, JSON_THROW_ON_ERROR));
+        $this->assertSame(CommonMessages::UNIDENTIFIED, $info['sharedBy']);
+    }
+
+    /**
+     * No pt-BR sentence may live outside a Messages class, because IL10N will have to find every one of
+     * them. This is the assertion that keeps SharedWriteGuard and NodeAccessInfo honest.
+     */
+    public function testNoUserFacingSentenceLivesOutsideTheMessagesClass(): void {
+        foreach (['NodeAccessInfo', 'SharedWriteGuard'] as $class) {
+            $source = (string)file_get_contents(__DIR__ . '/../../../../lib/Tools/Common/' . $class . '.php');
+            preg_match_all("/'((?:[^'\\\\]|\\\\.)*)'/", $source, $matches);
+            foreach ($matches[1] as $literal) {
+                $this->assertDoesNotMatchRegularExpression('/[áàâãéêíóôõúç]/u', $literal,
+                    "$class has a Portuguese sentence outside CommonMessages: '$literal'");
+            }
+        }
     }
 
     /** The description must never carry anything the client could use to reach the file another way. */

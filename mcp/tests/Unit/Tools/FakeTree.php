@@ -188,8 +188,11 @@ final class FakeTree {
         $storage->method('getId')->willReturn($this->storageId($path));
         if ($scope === 'shared') {
             $share = $this->mock(\OCP\Share\IShare::class);
-            // getSharedBy() is documented as returning the sharer's UID string in stable33.
-            $share->method('getSharedBy')->willReturn($this->nodes[$path]['sharedBy'] ?? $this->sharedByUid);
+            // getSharedBy() is documented as returning the sharer's UID string in stable33; an explicit
+            // null means the share carries no sharer, which is different from an absent flag.
+            $share->method('getSharedBy')->willReturn(array_key_exists('sharedBy', $this->nodes[$path])
+                ? $this->nodes[$path]['sharedBy']
+                : $this->sharedByUid);
             $share->method('getShareOwner')->willReturn($this->sharedByUid);
             $storage->method('getShare')->willReturn($share);
         }

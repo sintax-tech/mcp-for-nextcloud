@@ -82,16 +82,17 @@ class NodeAccessInfo {
     }
 
     /**
-     * IShare::getSharedBy() returns the sharer's UID, not an IUser (stable33,
-     * lib/public/Share/IShare.php:440), so the display name has to be looked up. A share whose sharer was
-     * deleted, or a link share, answers null and falls back to whatever the interface gave us.
+     * IShare::getSharedBy() is documented as returning the sharer's UID and not an IUser (stable33,
+     * lib/public/Share/IShare.php:440, `@return string`), so the display name has to be looked up. What was
+     * verified there and nothing more: a UID the user manager no longer knows falls back to the UID itself,
+     * and an empty or absent UID has no name to show at all.
      *
      * @param string|null $uid sharer UID as IShare::getSharedBy() returns it
-     * @return string a display name when the user still exists, otherwise the UID
+     * @return string a display name, else the UID, else a neutral word when there is no UID
      */
     private function sharerName(?string $uid): string {
         if ($uid === null || $uid === '') {
-            return 'uma conta removida';
+            return CommonMessages::UNIDENTIFIED;
         }
         return $this->userManager->get($uid)?->getDisplayName() ?? $uid;
     }

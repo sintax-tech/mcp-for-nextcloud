@@ -251,11 +251,18 @@ class FilesModule implements ToolModule {
     }
 
     /**
+     * The backup folder is refused here for the same reason files_edit refuses it: a restore would roll a
+     * backup copy back and then take another backup of that backup, growing the folder on every attempt and
+     * editing the very folder a user recovers from.
+     *
      * @return array{content: list<array{type:string, text:string}>}
      * @throws ToolFailure when the write is refused or the rollback fails
      */
     private function restore(Folder $root, string $userId, string $path, string $version, bool $confirmed): array {
         $path = PathGuard::normalize($path);
+        if (FileBackup::isBackupPath($path)) {
+            throw new ToolFailure(FilesMessages::backupPath());
+        }
         $file = $this->file($root, $path);
         if (($payload = $this->guard->guard($file, $userId, $path, $confirmed)) !== null) {
             return ToolResult::json($payload);

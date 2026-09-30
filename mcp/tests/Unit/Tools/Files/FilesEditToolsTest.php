@@ -68,6 +68,32 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
             $this->failure('files_replace', ['path' => '/Documentos/pessoas.csv', 'old' => 'Rio', 'new' => 'x']));
     }
 
+    /**
+     * Restoring a file that lives inside /MCP backups would roll a recovery copy back and then back up that
+     * copy, so the folder would grow on every attempt and the user would be editing their own safety net.
+     */
+    public function testVersionRestoreRefusesAFileInsideTheBackupFolder(): void {
+        $copy = '/alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak';
+        $this->tree->addFile($copy, '# Ata', 'text/markdown');
+        $this->assertSame('Arquivos em "/MCP backups" não podem ser editados pelo MCP.', $this->failure(
+            'files_version_restore',
+            ['path' => '/MCP backups/Documentos/ata.md.20260921-141320.bak', 'version' => '1759100000', 'confirm' => true],
+        ));
+        $this->assertSame([], $this->tree->ops, 'nem backup do backup, nem escrita, nem remoção');
+        $this->assertSame('# Ata', $this->tree->nodes[$copy]['content']);
+    }
+
+    /** The restore path is guarded exactly like the edit path, before the guard and before any backup. */
+    public function testTheBackupFolderIsRefusedForEveryWriteTool(): void {
+        $this->tree->addFile('/MCP backups/ata.md', '# Ata', 'text/markdown');
+        foreach (['files_edit', 'files_replace', 'files_checkout'] as $tool) {
+            $arguments = $tool === 'files_replace' ? ['old' => 'Ata', 'new' => 'x'] : ($tool === 'files_edit' ? ['content' => 'x'] : []);
+            $this->assertSame('Arquivos em "/MCP backups" não podem ser editados pelo MCP.',
+                $this->failure($tool, ['path' => '/MCP backups/ata.md'] + $arguments), $tool);
+        }
+        $this->assertSame([], $this->tree->ops);
+    }
+
     public function testReplaceRefusesASnippetThatIsNotThere(): void {
         $this->assertSame('O trecho informado não aparece no arquivo.',
             $this->failure('files_replace', ['path' => '/Documentos/ata.md', 'old' => 'inexistente', 'new' => 'x']));

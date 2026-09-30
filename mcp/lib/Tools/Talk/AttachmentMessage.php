@@ -33,7 +33,7 @@ class AttachmentMessage {
         );
 
         if ($envelope === false) {
-            throw new InvalidArgumentException(Messages::INVALID_IDENTIFIER);
+            throw new InvalidArgumentException(Messages::invalidIdentifier());
         }
 
         return $envelope;
@@ -54,10 +54,10 @@ class AttachmentMessage {
         }
         $trimmed = trim($caption);
         if ($trimmed === '') {
-            throw new InvalidArgumentException(Messages::EMPTY_MESSAGE);
+            throw new InvalidArgumentException(Messages::emptyMessage());
         }
         if (mb_strlen($trimmed) > self::MAX_CAPTION) {
-            throw new InvalidArgumentException(Messages::MESSAGE_TOO_LONG);
+            throw new InvalidArgumentException(Messages::messageTooLong());
         }
 
         return $trimmed;

@@ -305,7 +305,7 @@ class TalkModule implements ToolModule {
                 self::TOOL_MESSAGE_USER => ToolResult::success($this->messageUserCall($userId, $arguments)),
                 self::TOOL_SEND_BATCH => ToolResult::success($this->sendBatchCall($userId, $arguments)),
                 self::TOOL_CREATE_GROUP => ToolResult::success($this->createGroupCall($userId, $arguments)),
-                default => throw new InvalidArgumentException(Messages::UNKNOWN_TOOL),
+                default => throw new InvalidArgumentException(Messages::unknownTool()),
             };
         } catch (InvalidArgumentException $e) {
             // The registry turns this into -32602, and it is a client mistake, not an error worth logging.
@@ -330,11 +330,11 @@ class TalkModule implements ToolModule {
      */
     private function messageFor(Throwable $e): string {
         return match (true) {
-            $e instanceof TalkUnavailableException => Messages::TALK_UNAVAILABLE,
+            $e instanceof TalkUnavailableException => Messages::talkUnavailable(),
             $e instanceof ConversationAccessException,
             $e instanceof FileAccessException,
             $e instanceof ApprovalException => $e->getMessage(),
-            default => Messages::UNEXPECTED,
+            default => Messages::unexpected(),
         };
     }
 
@@ -355,7 +355,7 @@ class TalkModule implements ToolModule {
      * @throws InvalidArgumentException When the token is missing
      */
     private function token(array $arguments): string {
-        return (string)($arguments['conversation_token'] ?? throw new InvalidArgumentException(Messages::INVALID_TOKEN));
+        return (string)($arguments['conversation_token'] ?? throw new InvalidArgumentException(Messages::invalidToken()));
     }
 
     /**
@@ -372,7 +372,7 @@ class TalkModule implements ToolModule {
      * @throws InvalidArgumentException When the message is missing
      */
     private function message(array $arguments): string {
-        return (string)($arguments['message'] ?? throw new InvalidArgumentException(Messages::EMPTY_MESSAGE));
+        return (string)($arguments['message'] ?? throw new InvalidArgumentException(Messages::emptyMessage()));
     }
 
     /**
@@ -389,7 +389,7 @@ class TalkModule implements ToolModule {
      * @throws InvalidArgumentException When the path is missing
      */
     private function path(array $arguments): string {
-        return (string)($arguments['path'] ?? throw new InvalidArgumentException(Messages::INVALID_PATH));
+        return (string)($arguments['path'] ?? throw new InvalidArgumentException(Messages::invalidPath()));
     }
 
     /**
@@ -407,7 +407,7 @@ class TalkModule implements ToolModule {
      */
     private function attachmentId(array $arguments): int {
         if (!isset($arguments['attachment_id'])) {
-            throw new InvalidArgumentException(Messages::INVALID_IDENTIFIER);
+            throw new InvalidArgumentException(Messages::invalidIdentifier());
         }
 
         return (int)$arguments['attachment_id'];
@@ -613,7 +613,7 @@ class TalkModule implements ToolModule {
     private function reference(array $arguments): ?array {
         $reference = $arguments['reference'] ?? null;
         if ($reference !== null && !is_array($reference)) {
-            throw new InvalidArgumentException(Messages::INVALID_REFERENCE);
+            throw new InvalidArgumentException(Messages::invalidReference());
         }
 
         return $reference;
@@ -627,13 +627,13 @@ class TalkModule implements ToolModule {
     private function participantIds(array $arguments): array {
         $participants = $arguments['participants'] ?? [];
         if (!is_array($participants) || !array_is_list($participants)) {
-            throw new InvalidArgumentException(Messages::INVALID_USER);
+            throw new InvalidArgumentException(Messages::invalidUser());
         }
 
         $ids = [];
         foreach ($participants as $participantId) {
             if (!is_string($participantId)) {
-                throw new InvalidArgumentException(Messages::INVALID_USER);
+                throw new InvalidArgumentException(Messages::invalidUser());
             }
             $ids[] = $participantId;
         }
@@ -647,15 +647,15 @@ class TalkModule implements ToolModule {
      * @throws InvalidArgumentException When messages is not a list of items with a message
      */
     private function batchItems(array $arguments): array {
-        $messages = $arguments['messages'] ?? throw new InvalidArgumentException(Messages::EMPTY_BATCH);
+        $messages = $arguments['messages'] ?? throw new InvalidArgumentException(Messages::emptyBatch());
         if (!is_array($messages) || !array_is_list($messages) || $messages === []) {
-            throw new InvalidArgumentException(Messages::EMPTY_BATCH);
+            throw new InvalidArgumentException(Messages::emptyBatch());
         }
 
         $items = [];
         foreach ($messages as $item) {
             if (!is_array($item) || !isset($item['message']) || !is_string($item['message'])) {
-                throw new InvalidArgumentException(Messages::EMPTY_MESSAGE);
+                throw new InvalidArgumentException(Messages::emptyMessage());
             }
             $replyTo = $item['reply_to'] ?? null;
             $items[] = ['message' => $item['message'], 'replyTo' => $replyTo === null ? null : (int)$replyTo];
@@ -670,7 +670,7 @@ class TalkModule implements ToolModule {
      * @throws InvalidArgumentException When the account is missing
      */
     private function targetUser(array $arguments): string {
-        return (string)($arguments['user'] ?? throw new InvalidArgumentException(Messages::INVALID_USER));
+        return (string)($arguments['user'] ?? throw new InvalidArgumentException(Messages::invalidUser()));
     }
 
     /**

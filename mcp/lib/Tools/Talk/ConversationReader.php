@@ -80,7 +80,7 @@ class ConversationReader {
      */
     public function readMessages(string $userId, string $token, int $limit): array {
         if ($limit < 1 || $limit > self::MAX_MESSAGES) {
-            throw new InvalidArgumentException(Messages::INVALID_LIMIT);
+            throw new InvalidArgumentException(Messages::invalidLimit());
         }
 
         $conversation = $this->resolver->resolveForReading($userId, $token);

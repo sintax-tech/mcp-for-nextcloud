@@ -146,7 +146,7 @@ final class L10nTest extends TestCase {
     /** @return list<string> Translator calls whose first argument does not start with a quoted literal or continues after it */
     private function nonLiteralCalls(string $source): array {
         $bad = [];
-        preg_match_all("/Translator::([tn])\\s*\\((.{0,400})/s", $source, $calls, PREG_SET_ORDER);
+        preg_match_all("/Translator::([tn])\\s*\\((.{0,4000})/s", $source, $calls, PREG_SET_ORDER);
         foreach ($calls as $call) {
             $literal = "/^\\s*(?:'(?:[^'\\\\]|\\\\.)*'|\"(?:[^\"\\\\]|\\\\.)*\")\\s*[,)]/s";
             if (!preg_match($literal, $call[2])) {

@@ -45,14 +45,14 @@ class GroupCreator {
     public function create(string $userId, string $name, array $participantIds): array {
         $title = self::normalizeName($name);
         if ($participantIds !== [] && count($participantIds) > self::MAX_PARTICIPANTS) {
-            throw new InvalidArgumentException(sprintf(Messages::TOO_MANY_PARTICIPANTS, self::MAX_PARTICIPANTS));
+            throw new InvalidArgumentException(Messages::tooManyParticipants(self::MAX_PARTICIPANTS));
         }
         // Resolved before anything is created: a group that already exists cannot be un-invited by this tool.
         $contacts = $this->userConversations->contacts($userId, $participantIds, true);
 
         $owner = $this->userManager->get($userId);
         if ($owner === null) {
-            throw new ConversationAccessException(Messages::CONVERSATION_NOT_CREATED);
+            throw new ConversationAccessException(Messages::conversationNotCreated());
         }
 
         // Every service is resolved before the room exists: an unavailable Talk discovered after the creation
@@ -68,7 +68,7 @@ class GroupCreator {
             throw $e;
         } catch (Throwable $e) {
             // Nothing was created, so there is nothing half built to clean up and nothing to report but a refusal.
-            throw new ConversationAccessException(Messages::CONVERSATION_NOT_CREATED, $e);
+            throw new ConversationAccessException(Messages::conversationNotCreated(), $e);
         }
 
         $result = [
@@ -94,7 +94,7 @@ class GroupCreator {
                 // The room exists from here on and this tool cannot undo it, so the guest is reported by name
                 // instead of turning the whole call into a refusal that hides a conversation the user will find
                 // in their own list. The product's own message stays in the log: it may name internals.
-                $failed[] = $contact->describe() + ['error' => Messages::INVITATION_FAILED];
+                $failed[] = $contact->describe() + ['error' => Messages::invitationFailed()];
                 $this->logger->warning('Talk created the group {token} but could not invite {guest}', [
                     'token' => $result['conversation_token'],
                     'guest' => $contact->id,
@@ -117,10 +117,10 @@ class GroupCreator {
     public static function normalizeName(string $name): string {
         $title = trim($name);
         if ($title === '') {
-            throw new InvalidArgumentException(Messages::INVALID_GROUP_NAME);
+            throw new InvalidArgumentException(Messages::invalidGroupName());
         }
         if (mb_strlen($title) > self::MAX_NAME_LENGTH) {
-            throw new InvalidArgumentException(Messages::GROUP_NAME_TOO_LONG);
+            throw new InvalidArgumentException(Messages::groupNameTooLong());
         }
 
         return $title;

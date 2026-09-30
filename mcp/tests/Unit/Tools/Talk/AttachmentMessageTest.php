@@ -44,13 +44,13 @@ class AttachmentMessageTest extends TestCase {
 
     public function testBlankCaptionIsAnArgumentError(): void {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::EMPTY_MESSAGE);
+        $this->expectExceptionMessage(Messages::emptyMessage());
         $this->attachmentMessage->build(77, "  \n ");
     }
 
     public function testCaptionAboveTheLimitIsAnArgumentError(): void {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::MESSAGE_TOO_LONG);
+        $this->expectExceptionMessage(Messages::messageTooLong());
         $this->attachmentMessage->build(77, str_repeat('a', AttachmentMessage::MAX_CAPTION + 1));
     }
 

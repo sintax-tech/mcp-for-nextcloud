@@ -58,7 +58,7 @@ class FileSharer {
             $created = $this->shareManager->createShare($share);
         } catch (Throwable $e) {
             // Read-only, federated and permission failures are all refused by the Talk provider in here.
-            throw new FileAccessException(Messages::FILE_NOT_SHARED, $e);
+            throw new FileAccessException(Messages::fileNotShared(), $e);
         }
 
         $result = [
@@ -80,7 +80,7 @@ class FileSharer {
             // The attachment is published either way, so this is a partial success and says so, in the payload
             // and in the message the agent reads: the card is in the room, only the text is missing.
             $result['captionSent'] = false;
-            $result['message'] = Messages::CAPTION_NOT_SENT;
+            $result['message'] = Messages::captionNotSent();
         }
 
         return $result;
@@ -116,7 +116,7 @@ class FileSharer {
 
         if ($this->isAlreadySharedIn($userId, $conversation->token(), $file)) {
             // Sharing again would make Talk post a second card and then refuse with a 403.
-            throw new FileAccessException(Messages::FILE_ALREADY_SHARED);
+            throw new FileAccessException(Messages::fileAlreadyShared());
         }
 
         return $file;

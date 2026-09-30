@@ -67,7 +67,7 @@ class ReferenceLinker {
         return match ($reference['type'] ?? null) {
             self::TYPE_DECK_CARD => $this->deckCard($userId, $reference),
             self::TYPE_CALENDAR_EVENT => $this->calendarEvent($userId, $reference),
-            default => throw new InvalidArgumentException(Messages::INVALID_REFERENCE),
+            default => throw new InvalidArgumentException(Messages::invalidReference()),
         };
     }
 
@@ -80,7 +80,7 @@ class ReferenceLinker {
      * @throws InvalidArgumentException When the message is blank or the whole text passes the message limit
      */
     public static function append(string $message, array $item): string {
-        $label = $item['type'] === self::TYPE_DECK_CARD ? Messages::REFERENCE_LABEL_DECK : Messages::REFERENCE_LABEL_CALENDAR;
+        $label = $item['type'] === self::TYPE_DECK_CARD ? Messages::referenceLabelDeck() : Messages::referenceLabelCalendar();
         // The body is normalized on its own first, so a blank message is still a blank message with a link.
         $body = ConversationWriter::normalizeMessage($message);
 
@@ -94,13 +94,13 @@ class ReferenceLinker {
     private function deckCard(string $userId, array $reference): array {
         $cardId = $reference['card_id'] ?? null;
         if (!is_int($cardId) || $cardId < 1 || isset($reference['calendar']) || isset($reference['uid'])) {
-            throw new InvalidArgumentException(Messages::INVALID_REFERENCE);
+            throw new InvalidArgumentException(Messages::invalidReference());
         }
         $boardId = $reference['board_id'] ?? null;
         if ($boardId !== null && (!is_int($boardId) || $boardId < 1)) {
-            throw new InvalidArgumentException(Messages::INVALID_REFERENCE);
+            throw new InvalidArgumentException(Messages::invalidReference());
         }
-        $this->assertModuleUsable($userId, 'deck', DeckToolModule::DECK_APP, Messages::REFERENCE_DECK_OFF);
+        $this->assertModuleUsable($userId, 'deck', DeckToolModule::DECK_APP, Messages::referenceDeckOff());
 
         try {
             // The same read the deck_read_card tool does: CardService::find() checks the permission and refuses a
@@ -108,11 +108,11 @@ class ReferenceLinker {
             $card = $this->deck->findCard($userId, $cardId);
             $actualBoard = $this->deck->cardBoardId($userId, $cardId);
         } catch (Throwable $e) {
-            throw new ConversationAccessException(Messages::REFERENCE_NOT_FOUND, $e);
+            throw new ConversationAccessException(Messages::referenceNotFound(), $e);
         }
         // A board id that does not match is a card the caller did not mean; saying so would confirm where it is.
         if ($boardId !== null && $boardId !== $actualBoard) {
-            throw new ConversationAccessException(Messages::REFERENCE_NOT_FOUND);
+            throw new ConversationAccessException(Messages::referenceNotFound());
         }
 
         return [
@@ -134,9 +134,9 @@ class ReferenceLinker {
         $uid = $reference['uid'] ?? null;
         if (!is_string($path) || $path === '' || !is_string($uid) || trim($uid) === ''
             || isset($reference['card_id']) || isset($reference['board_id'])) {
-            throw new InvalidArgumentException(Messages::INVALID_REFERENCE);
+            throw new InvalidArgumentException(Messages::invalidReference());
         }
-        $this->assertModuleUsable($userId, 'calendar', CalendarSchema::APP, Messages::REFERENCE_CALENDAR_OFF);
+        $this->assertModuleUsable($userId, 'calendar', CalendarSchema::APP, Messages::referenceCalendarOff());
 
         try {
             // The calendar tools' own rules: the path must be one of the caller's visible calendars, and the
@@ -145,14 +145,14 @@ class ReferenceLinker {
             $row = $this->calendarStore->objectByUid($calendar->id, $uid);
             $vcalendar = ($row === null || $row['deleted']) ? null : $this->events->parse($row['data']);
         } catch (CalendarException $e) {
-            throw new ConversationAccessException(Messages::REFERENCE_NOT_FOUND, $e);
+            throw new ConversationAccessException(Messages::referenceNotFound(), $e);
         }
         if ($row === null || $vcalendar === null) {
-            throw new ConversationAccessException(Messages::REFERENCE_NOT_FOUND);
+            throw new ConversationAccessException(Messages::referenceNotFound());
         }
         $visibility = $this->classification->visibility($vcalendar, $calendar, $userId);
         if ($visibility === Classification::HIDDEN) {
-            throw new ConversationAccessException(Messages::REFERENCE_NOT_FOUND);
+            throw new ConversationAccessException(Messages::referenceNotFound());
         }
 
         $summary = '';
@@ -170,7 +170,7 @@ class ReferenceLinker {
 
         return [
             'type' => self::TYPE_CALENDAR_EVENT,
-            'title' => self::oneLine($title === '' ? Messages::REFERENCE_UNTITLED : $title),
+            'title' => self::oneLine($title === '' ? Messages::referenceUntitled() : $title),
             'url' => $this->urlGenerator->getAbsoluteURL(
                 $this->urlGenerator->linkToRoute('calendar.view.index') . 'edit/' . base64_encode($davUrl),
             ),

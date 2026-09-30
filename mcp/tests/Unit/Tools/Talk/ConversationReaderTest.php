@@ -37,13 +37,13 @@ class ConversationReaderTest extends TestCase {
         $this->resolver->expects($this->never())->method('resolveForReading');
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::INVALID_LIMIT);
+        $this->expectExceptionMessage(Messages::invalidLimit());
         $this->reader->readMessages('alice', 'abcd', 0);
     }
 
     public function testLimitAboveTheMaximumIsAnArgumentError(): void {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::INVALID_LIMIT);
+        $this->expectExceptionMessage(Messages::invalidLimit());
         $this->reader->readMessages('alice', 'abcd', ConversationReader::MAX_MESSAGES + 1);
     }
 

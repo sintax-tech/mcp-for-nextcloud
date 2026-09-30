@@ -76,7 +76,7 @@ class UserConversationResolver {
         try {
             $actor = $this->userManager->get($userId);
             if ($actor === null) {
-                throw new ConversationAccessException(Messages::USER_NOT_REACHABLE);
+                throw new ConversationAccessException(Messages::userNotReachable());
             }
 
             foreach ($wanted as $targetId) {
@@ -93,7 +93,7 @@ class UserConversationResolver {
         } catch (ConversationAccessException|InvalidArgumentException $e) {
             throw $e;
         } catch (Throwable $e) {
-            throw new ConversationAccessException(Messages::USER_NOT_REACHABLE, $e);
+            throw new ConversationAccessException(Messages::userNotReachable(), $e);
         }
 
         return array_values($contacts);
@@ -129,7 +129,7 @@ class UserConversationResolver {
         } catch (Throwable $e) {
             // Includes the product's own InvalidArgumentException for talking to yourself and the RoomNotFoundException
             // it throws for a target the caller cannot enumerate: all of them are the same refusal to the caller.
-            throw new ConversationAccessException(Messages::USER_NOT_REACHABLE, $e);
+            throw new ConversationAccessException(Messages::userNotReachable(), $e);
         }
 
         $conversation = new Conversation($room, $participant);
@@ -152,10 +152,10 @@ class UserConversationResolver {
         if ($room->isFederatedConversation()
             || $room->getReadOnly() === $constants['readOnly']
             || $room->getType() === $constants['changelogType']) {
-            throw new ConversationAccessException(Messages::CONVERSATION_NOT_WRITABLE);
+            throw new ConversationAccessException(Messages::conversationNotWritable());
         }
         if (((int)$participant->getPermissions() & $constants['chatPermission']) === 0) {
-            throw new ConversationAccessException(Messages::CONVERSATION_NOT_WRITABLE);
+            throw new ConversationAccessException(Messages::conversationNotWritable());
         }
     }
 
@@ -164,12 +164,12 @@ class UserConversationResolver {
      */
     private function assertValidTarget(string $targetId): void {
         if ($targetId === '' || mb_strlen($targetId) > self::MAX_TARGET_LENGTH || preg_match('/[\/\\\\\x00-\x1F]/', $targetId) === 1) {
-            throw new InvalidArgumentException(Messages::INVALID_USER);
+            throw new InvalidArgumentException(Messages::invalidUser());
         }
     }
 
     /** The same refusal for a missing and an unreachable account, optionally naming the id the caller sent. */
     private static function unreachable(string $targetId, bool $nameTheAccount): string {
-        return $nameTheAccount ? sprintf(Messages::PARTICIPANT_NOT_REACHABLE, $targetId) : Messages::USER_NOT_REACHABLE;
+        return $nameTheAccount ? Messages::participantNotReachable($targetId) : Messages::userNotReachable();
     }
 }

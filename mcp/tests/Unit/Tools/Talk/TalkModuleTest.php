@@ -275,8 +275,8 @@ class TalkModuleTest extends TestCase {
         // lives in the sentence itself and not only in this test.
         foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch', 'talk_create_group'] as $name) {
             $this->assertStringContainsString(
-                'Antes de enviar, o agente DEVE chamar a tool sem confirm, mostrar o rascunho devolvido ao usuário'
-                    . ' e obter aprovação explícita; só então repetir com confirm: true e o approval_id da prévia.',
+                'Before sending, the agent MUST call the tool without confirm, show the draft returned to the user'
+                    . ' and get an explicit approval; only then repeat it with confirm: true and the approval_id of the preview.',
                 $descriptions[$name],
                 $name,
             );
@@ -360,7 +360,7 @@ class TalkModuleTest extends TestCase {
             $this->module->call(TalkModule::TOOL_CREATE_GROUP, ['name' => '   '], 'alice');
             $this->fail('a group without a name was accepted');
         } catch (InvalidArgumentException $e) {
-            $this->assertSame(Messages::INVALID_GROUP_NAME, $e->getMessage());
+            $this->assertSame(Messages::invalidGroupName(), $e->getMessage());
         }
     }
 
@@ -375,7 +375,7 @@ class TalkModuleTest extends TestCase {
         // The draft is of the text that will be sent, link included: the user approves what the room will read.
         $this->draftApproval->expects($this->once())
             ->method('reply')
-            ->with($conversation, 'alice', "veja\n\nCard do Deck: Proposta ACME\nhttps://cloud.example/apps/deck/board/4/card/7", null)
+            ->with($conversation, 'alice', "veja\n\nDeck card: Proposta ACME\nhttps://cloud.example/apps/deck/board/4/card/7", null)
             ->willReturn(['requiresConfirmation' => true]);
         $this->writer->expects($this->never())->method('reply');
 
@@ -394,7 +394,7 @@ class TalkModuleTest extends TestCase {
         $this->references->expects($this->once())
             ->method('resolve')
             ->willReturn(['type' => 'calendar_event', 'title' => 'Reunião', 'url' => 'https://cloud.example/apps/calendar/edit/x']);
-        $text = "pauta\n\nEvento do Calendar: Reunião\nhttps://cloud.example/apps/calendar/edit/x";
+        $text = "pauta\n\nCalendar event: Reunião\nhttps://cloud.example/apps/calendar/edit/x";
         $this->draftApproval->expects($this->once())
             ->method('approveReply')
             ->with($conversation, 'alice', 'APR-5', $text, null);
@@ -421,7 +421,7 @@ class TalkModuleTest extends TestCase {
     public function testAReferenceOutOfReachSendsNothingAndShowsNoTitle(): void {
         $this->resolver->method('resolveForWriting')->willReturn($this->givenConversation());
         $this->references->method('resolve')
-            ->willThrowException(new ConversationAccessException(Messages::REFERENCE_NOT_FOUND));
+            ->willThrowException(new ConversationAccessException(Messages::referenceNotFound()));
         $this->draftApproval->expects($this->never())->method('reply');
         $this->draftApproval->expects($this->never())->method('approveReply');
         $this->writer->expects($this->never())->method('reply');
@@ -433,7 +433,7 @@ class TalkModuleTest extends TestCase {
         );
 
         $this->assertTrue($result['isError']);
-        $this->assertSame(Messages::REFERENCE_NOT_FOUND, $result['content'][0]['text']);
+        $this->assertSame(Messages::referenceNotFound(), $result['content'][0]['text']);
     }
 
     public function testAReplyWithoutReferenceNeverAsksForOne(): void {
@@ -458,7 +458,7 @@ class TalkModuleTest extends TestCase {
         // The approval is spent by the first confirmed call, so a second one with the same id is refused and the
         // group is not created twice.
         $this->draftApproval->method('approveGroup')
-            ->willThrowException(new ApprovalException(Messages::APPROVAL_INVALID));
+            ->willThrowException(new ApprovalException(Messages::approvalInvalid()));
         $this->groups->expects($this->never())->method('create');
 
         $result = $this->module->call(
@@ -468,7 +468,7 @@ class TalkModuleTest extends TestCase {
         );
 
         $this->assertTrue($result['isError']);
-        $this->assertSame(Messages::APPROVAL_INVALID, $result['content'][0]['text']);
+        $this->assertSame(Messages::approvalInvalid(), $result['content'][0]['text']);
     }
 
     public function testAGroupWithSomeGuestsRefusedIsASuccessThatNamesThem(): void {
@@ -476,7 +476,7 @@ class TalkModuleTest extends TestCase {
             'conversation_token' => 'wxyz',
             'name' => 'Projeto X',
             'participants' => [['id' => 'bob', 'displayName' => 'Bob Souza']],
-            'invitations_failed' => [['id' => 'carol', 'displayName' => 'Carol Lima', 'error' => Messages::INVITATION_FAILED]],
+            'invitations_failed' => [['id' => 'carol', 'displayName' => 'Carol Lima', 'error' => Messages::invitationFailed()]],
         ];
         $this->groups->method('create')->willReturn($created);
 
@@ -494,7 +494,7 @@ class TalkModuleTest extends TestCase {
         $this->userConversations->expects($this->once())
             ->method('contacts')
             ->with('alice', ['bob', 'ghost'], true)
-            ->willThrowException(new ConversationAccessException(sprintf(Messages::PARTICIPANT_NOT_REACHABLE, 'ghost')));
+            ->willThrowException(new ConversationAccessException(Messages::participantNotReachable('ghost')));
         $this->draftApproval->expects($this->never())->method('group');
 
         $result = $this->module->call(
@@ -504,7 +504,7 @@ class TalkModuleTest extends TestCase {
         );
 
         $this->assertTrue($result['isError']);
-        $this->assertSame(sprintf(Messages::PARTICIPANT_NOT_REACHABLE, 'ghost'), $result['content'][0]['text']);
+        $this->assertSame(Messages::participantNotReachable('ghost'), $result['content'][0]['text']);
     }
 
     public function testAGuestThatIsNotAnAccountIdIsAClientMistake(): void {
@@ -514,7 +514,7 @@ class TalkModuleTest extends TestCase {
             $this->module->call(TalkModule::TOOL_CREATE_GROUP, ['name' => 'Projeto X', 'participants' => [42]], 'alice');
             $this->fail('a participant that is not an account id was accepted');
         } catch (InvalidArgumentException $e) {
-            $this->assertSame(Messages::INVALID_USER, $e->getMessage());
+            $this->assertSame(Messages::invalidUser(), $e->getMessage());
         }
     }
 
@@ -536,7 +536,7 @@ class TalkModuleTest extends TestCase {
             ->willReturn([
                 'conversation_token' => 'abcd',
                 'sent' => [['index' => 0, 'messageId' => 61]],
-                'failed' => [['index' => 1, 'error' => Messages::MESSAGE_NOT_SENT]],
+                'failed' => [['index' => 1, 'error' => Messages::messageNotSent()]],
             ]);
         $this->writer->expects($this->never())->method('reply');
 
@@ -559,7 +559,7 @@ class TalkModuleTest extends TestCase {
             [
                 'conversation_token' => 'abcd',
                 'sent' => [['index' => 0, 'messageId' => 61]],
-                'failed' => [['index' => 1, 'error' => Messages::MESSAGE_NOT_SENT]],
+                'failed' => [['index' => 1, 'error' => Messages::messageNotSent()]],
             ],
             $this->payloadOf($result),
         );
@@ -594,7 +594,7 @@ class TalkModuleTest extends TestCase {
                 );
                 $this->fail('accepted ' . json_encode($messages));
             } catch (InvalidArgumentException $e) {
-                $this->assertContains($e->getMessage(), [Messages::EMPTY_BATCH, Messages::EMPTY_MESSAGE]);
+                $this->assertContains($e->getMessage(), [Messages::emptyBatch(), Messages::emptyMessage()]);
             }
         }
     }
@@ -657,7 +657,7 @@ class TalkModuleTest extends TestCase {
             $this->module->call(TalkModule::TOOL_MESSAGE_USER, ['message' => 'oi'], 'alice');
             $this->fail('a message without a target was accepted');
         } catch (InvalidArgumentException $e) {
-            $this->assertSame(Messages::INVALID_USER, $e->getMessage());
+            $this->assertSame(Messages::invalidUser(), $e->getMessage());
         }
     }
 
@@ -723,7 +723,7 @@ class TalkModuleTest extends TestCase {
 
         foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch', 'talk_create_group'] as $name) {
             $this->assertStringContainsString(
-                'Antes de enviar, o agente DEVE chamar a tool sem confirm, mostrar o rascunho devolvido ao usuário',
+                'Before sending, the agent MUST call the tool without confirm, show the draft returned to the user',
                 $descriptions[$name],
                 $name,
             );
@@ -746,7 +746,7 @@ class TalkModuleTest extends TestCase {
     public function testAConfirmedCallWithoutAnApprovalIdPublishesNothing(): void {
         $this->resolver->method('resolveForWriting')->willReturn($this->givenConversation());
         $this->draftApproval->method('approveReply')
-            ->willThrowException(new ApprovalException(Messages::APPROVAL_MISSING));
+            ->willThrowException(new ApprovalException(Messages::approvalMissing()));
         // confirm: true without a draft behind it is the case the review pointed at: nothing may go out.
         $this->writer->expects($this->never())->method('reply');
         $this->sharer->expects($this->never())->method('attach');
@@ -759,13 +759,13 @@ class TalkModuleTest extends TestCase {
         );
 
         $this->assertTrue($result['isError']);
-        $this->assertSame(Messages::APPROVAL_MISSING, $result['content'][0]['text']);
+        $this->assertSame(Messages::approvalMissing(), $result['content'][0]['text']);
     }
 
     public function testAnApprovalRefusedByTheDraftBuilderKeepsTheWriteFromHappening(): void {
         $this->resolver->method('resolveForWriting')->willReturn($this->givenConversation());
         $this->draftApproval->method('approveQuote')
-            ->willThrowException(new ApprovalException(Messages::APPROVAL_INVALID));
+            ->willThrowException(new ApprovalException(Messages::approvalInvalid()));
         $this->writer->expects($this->never())->method('quoteAttachment');
 
         $result = $this->module->call(
@@ -775,7 +775,7 @@ class TalkModuleTest extends TestCase {
         );
 
         $this->assertTrue($result['isError']);
-        $this->assertSame(Messages::APPROVAL_INVALID, $result['content'][0]['text']);
+        $this->assertSame(Messages::approvalInvalid(), $result['content'][0]['text']);
     }
 
     public function testTheApprovalIsCheckedBeforeTheFileIsShared(): void {
@@ -783,7 +783,7 @@ class TalkModuleTest extends TestCase {
         $this->draftApproval->expects($this->once())
             ->method('approveAttach')
             ->with($this->anything(), 'alice', 'APR-2', 'relatorio.pdf', null)
-            ->willThrowException(new ApprovalException(Messages::APPROVAL_INVALID));
+            ->willThrowException(new ApprovalException(Messages::approvalInvalid()));
         // Ordering, not just refusal: an invalid approval must not leave a share behind.
         $this->sharer->expects($this->never())->method('attach');
 
@@ -810,7 +810,7 @@ class TalkModuleTest extends TestCase {
             'file' => ['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 1],
             'caption' => 'legenda',
             'captionSent' => false,
-            'message' => Messages::CAPTION_NOT_SENT,
+            'message' => Messages::captionNotSent(),
         ]);
         // The card is in the room, so the result answers what happened and the log keeps the failure visible.
         $this->logger->expects($this->once())
@@ -851,10 +851,10 @@ class TalkModuleTest extends TestCase {
         $descriptions = array_column($this->module->definitions(), 'description', 'name');
 
         foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch', 'talk_create_group'] as $name) {
-            $this->assertStringContainsString('approval_id da prévia', $descriptions[$name], $name);
+            $this->assertStringContainsString('approval_id of the preview', $descriptions[$name], $name);
             // The server can prove it showed the draft; it cannot prove a human said yes. Say so.
             $this->assertStringContainsString(
-                'a aprovação em si depende de o agente mostrar o rascunho e de o usuário confirmar no cliente',
+                'the approval itself depends on the agent showing the draft and on the user confirming in the client',
                 $descriptions[$name],
                 $name,
             );
@@ -863,7 +863,7 @@ class TalkModuleTest extends TestCase {
 
     public function testRefusalKeepsTheMessageWrittenForTheUser(): void {
         $this->resolver->method('resolveForWriting')
-            ->willThrowException(new ConversationAccessException(Messages::CONVERSATION_NOT_WRITABLE));
+            ->willThrowException(new ConversationAccessException(Messages::conversationNotWritable()));
         // A conversation the user cannot write in is refused even in a draft: there is nothing to approve.
         $this->draftApproval->expects($this->never())->method('reply');
         // A refusal is audited too, so an operator can tell a refused call from one that never arrived.
@@ -877,17 +877,17 @@ class TalkModuleTest extends TestCase {
         $result = $this->module->call(TalkModule::TOOL_REPLY, ['conversation_token' => 'abcd', 'message' => 'oi'], 'alice');
 
         $this->assertTrue($result['isError']);
-        $this->assertSame(Messages::CONVERSATION_NOT_WRITABLE, $result['content'][0]['text']);
+        $this->assertSame(Messages::conversationNotWritable(), $result['content'][0]['text']);
     }
 
     public function testUnavailableSpreedIsAnsweredWithItsOwnMessage(): void {
         $this->resolver->method('resolveForWriting')
-            ->willThrowException(new TalkUnavailableException(Messages::TALK_UNAVAILABLE));
+            ->willThrowException(new TalkUnavailableException(Messages::talkUnavailable()));
 
         $result = $this->module->call(TalkModule::TOOL_REPLY, ['conversation_token' => 'abcd', 'message' => 'oi'], 'alice');
 
         $this->assertTrue($result['isError']);
-        $this->assertSame(Messages::TALK_UNAVAILABLE, $result['content'][0]['text']);
+        $this->assertSame(Messages::talkUnavailable(), $result['content'][0]['text']);
     }
 
     public function testUnexpectedFailureIsGenericAndLoggedWithTheToolAndTheExceptionClass(): void {
@@ -912,15 +912,15 @@ class TalkModuleTest extends TestCase {
         );
 
         $this->assertTrue($result['isError']);
-        $this->assertSame(Messages::UNEXPECTED, $result['content'][0]['text']);
+        $this->assertSame(Messages::unexpected(), $result['content'][0]['text']);
     }
 
     public function testFileRefusalIsAnsweredWithoutReachingTheClient(): void {
-        $this->resolver->method('resolveForWriting')->willThrowException(new FileAccessException(Messages::FILE_NOT_FOUND));
+        $this->resolver->method('resolveForWriting')->willThrowException(new FileAccessException(Messages::fileNotFound()));
 
         $result = $this->module->call(TalkModule::TOOL_ATTACH, ['conversation_token' => 'abcd', 'path' => 'a.pdf'], 'alice');
 
-        $this->assertSame(Messages::FILE_NOT_FOUND, $result['content'][0]['text']);
+        $this->assertSame(Messages::fileNotFound(), $result['content'][0]['text']);
     }
 
     public function testClientMistakeIsRaisedForTheProtocolToAnswer(): void {
@@ -934,20 +934,20 @@ class TalkModuleTest extends TestCase {
     public function testMissingAttachmentIdIsAClientMistake(): void {
         $this->resolver->expects($this->never())->method('resolveForWriting');
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::INVALID_IDENTIFIER);
+        $this->expectExceptionMessage(Messages::invalidIdentifier());
         $this->module->call(TalkModule::TOOL_QUOTE, ['conversation_token' => 'abcd'], 'alice');
     }
 
     public function testMissingPathIsAClientMistake(): void {
         $this->resolver->expects($this->never())->method('resolveForWriting');
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::INVALID_PATH);
+        $this->expectExceptionMessage(Messages::invalidPath());
         $this->module->call(TalkModule::TOOL_ATTACH, ['conversation_token' => 'abcd'], 'alice');
     }
 
     public function testUnknownToolNameIsAClientMistake(): void {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::UNKNOWN_TOOL);
+        $this->expectExceptionMessage(Messages::unknownTool());
         $this->module->call('talk_delete_conversation', ['conversation_token' => 'abcd'], 'alice');
     }
 

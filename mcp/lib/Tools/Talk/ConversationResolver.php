@@ -44,7 +44,7 @@ class ConversationResolver {
             // so the module says why it cannot try at all.
             throw $e;
         } catch (Throwable $e) {
-            throw new ConversationAccessException(Messages::CONVERSATION_NOT_FOUND, $e);
+            throw new ConversationAccessException(Messages::conversationNotFound(), $e);
         }
 
         return new Conversation($room, $participant);
@@ -69,16 +69,16 @@ class ConversationResolver {
         if ($room->isFederatedConversation()
             || $room->getReadOnly() === $constants['readOnly']
             || $room->getType() === $constants['changelogType']) {
-            throw new ConversationAccessException(Messages::CONVERSATION_NOT_WRITABLE);
+            throw new ConversationAccessException(Messages::conversationNotWritable());
         }
 
         $permissions = (int)$participant->getPermissions();
         if (($permissions & $constants['chatPermission']) === 0) {
-            throw new ConversationAccessException(Messages::CONVERSATION_NOT_WRITABLE);
+            throw new ConversationAccessException(Messages::conversationNotWritable());
         }
         if ($room->getLobbyState() !== $constants['lobbyNone']
             && ($permissions & $constants['lobbyIgnorePermission']) === 0) {
-            throw new ConversationAccessException(Messages::CONVERSATION_NOT_WRITABLE);
+            throw new ConversationAccessException(Messages::conversationNotWritable());
         }
 
         return $conversation;
@@ -89,7 +89,7 @@ class ConversationResolver {
      */
     private function assertValidToken(string $token): void {
         if (preg_match(self::TOKEN_PATTERN, $token) !== 1) {
-            throw new InvalidArgumentException(Messages::INVALID_TOKEN);
+            throw new InvalidArgumentException(Messages::invalidToken());
         }
     }
 }

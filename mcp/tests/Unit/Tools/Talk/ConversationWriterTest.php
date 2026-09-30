@@ -95,7 +95,7 @@ class ConversationWriterTest extends TestCase {
         $this->talkServices = $this->createMock(TalkServices::class);
         $this->talkServices->expects($this->never())->method('chatManager');
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::EMPTY_MESSAGE);
+        $this->expectExceptionMessage(Messages::emptyMessage());
         $this->writer->reply($this->givenConversation(), 'alice', "   \n ");
     }
 
@@ -103,7 +103,7 @@ class ConversationWriterTest extends TestCase {
         $this->talkServices->expects($this->never())->method('chatManager');
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::MESSAGE_TOO_LONG);
+        $this->expectExceptionMessage(Messages::messageTooLong());
         $this->writer->reply(
             $this->givenConversation(),
             'alice',
@@ -117,7 +117,7 @@ class ConversationWriterTest extends TestCase {
         $chatManager->expects($this->never())->method('sendMessage');
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::INVALID_IDENTIFIER);
+        $this->expectExceptionMessage(Messages::invalidIdentifier());
         $this->writer->reply($this->givenConversation(), 'alice', 'oi', 0);
     }
 
@@ -148,7 +148,7 @@ class ConversationWriterTest extends TestCase {
         $chatManager->expects($this->never())->method('sendMessage');
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::REPLY_TARGET_NOT_FOUND);
+        $this->expectExceptionMessage(Messages::replyTargetNotFound());
         $this->writer->reply($this->givenConversation(), 'alice', 'concordo', 42);
     }
 
@@ -162,7 +162,7 @@ class ConversationWriterTest extends TestCase {
             $this->writer->reply($this->givenConversation(), 'alice', 'concordo', 42);
             $this->fail('A quoted id of another conversation must be refused.');
         } catch (ConversationAccessException $e) {
-            $this->assertSame(Messages::REPLY_TARGET_NOT_FOUND, $e->getMessage());
+            $this->assertSame(Messages::replyTargetNotFound(), $e->getMessage());
             $this->assertStringNotContainsString('another room', $e->getMessage());
         }
     }
@@ -171,7 +171,7 @@ class ConversationWriterTest extends TestCase {
         // The unavailable answer must survive: answering "not permitted" would send the user after a grant problem.
         $services = $this->createMock(TalkServices::class);
         $services->method('participantService')
-            ->willThrowException(new TalkUnavailableException(Messages::TALK_UNAVAILABLE));
+            ->willThrowException(new TalkUnavailableException(Messages::talkUnavailable()));
         $writer = new ConversationWriter($services, $this->timeFactory, new AttachmentMessage(), $this->attachmentAccess);
 
         $this->expectException(TalkUnavailableException::class);
@@ -187,7 +187,7 @@ class ConversationWriterTest extends TestCase {
             $this->writer->reply($this->givenConversation(), 'alice', 'bom dia');
             $this->fail('A failed send must become a refusal.');
         } catch (ConversationAccessException $e) {
-            $this->assertSame(Messages::MESSAGE_NOT_SENT, $e->getMessage());
+            $this->assertSame(Messages::messageNotSent(), $e->getMessage());
             $this->assertStringNotContainsString('10.0.0.9', $e->getMessage());
         }
     }
@@ -227,7 +227,7 @@ class ConversationWriterTest extends TestCase {
 
     public function testQuotePublishesNothingWhenTheAttachmentIsNotOfTheConversation(): void {
         $this->attachmentAccess->method('requireRoomShareOf')
-            ->willThrowException(new ConversationAccessException(Messages::ATTACHMENT_NOT_FOUND));
+            ->willThrowException(new ConversationAccessException(Messages::attachmentNotFound()));
         $chatManager = $this->givenChatManager();
         $chatManager->expects($this->never())->method('addSystemMessage');
 
@@ -235,7 +235,7 @@ class ConversationWriterTest extends TestCase {
             $this->writer->quoteAttachment($this->givenConversation(), 'alice', 77);
             $this->fail('An attachment of another conversation must be refused.');
         } catch (ConversationAccessException $e) {
-            $this->assertSame(Messages::ATTACHMENT_NOT_FOUND, $e->getMessage());
+            $this->assertSame(Messages::attachmentNotFound(), $e->getMessage());
         }
     }
 
@@ -316,7 +316,7 @@ class ConversationWriterTest extends TestCase {
 
         $this->assertSame(['primeiro', 'segundo', 'terceiro'], $bodies);
         $this->assertSame([['index' => 0, 'messageId' => 51], ['index' => 2, 'messageId' => 53]], $result['sent']);
-        $this->assertSame([['index' => 1, 'error' => Messages::MESSAGE_NOT_SENT]], $result['failed']);
+        $this->assertSame([['index' => 1, 'error' => Messages::messageNotSent()]], $result['failed']);
     }
 
     public function testABatchWhereEveryItemFailsStillAnswersWithTheList(): void {
@@ -331,8 +331,8 @@ class ConversationWriterTest extends TestCase {
         $this->assertSame([], $result['sent']);
         $this->assertSame(
             [
-                ['index' => 0, 'error' => Messages::MESSAGE_NOT_SENT],
-                ['index' => 1, 'error' => Messages::MESSAGE_NOT_SENT],
+                ['index' => 0, 'error' => Messages::messageNotSent()],
+                ['index' => 1, 'error' => Messages::messageNotSent()],
             ],
             $result['failed'],
         );

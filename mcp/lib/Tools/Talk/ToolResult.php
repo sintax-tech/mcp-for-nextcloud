@@ -45,6 +45,6 @@ final class ToolResult {
     private static function encode(array $payload): string {
         $json = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-        return $json === false ? Messages::UNEXPECTED : $json;
+        return $json === false ? Messages::unexpected() : $json;
     }
 }

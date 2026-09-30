@@ -31,12 +31,12 @@ class AttachmentAccess {
         try {
             $share = $this->shareManager->getShareById((string)$attachmentId, $userId);
         } catch (Throwable $e) {
-            throw new ConversationAccessException(Messages::ATTACHMENT_NOT_FOUND, $e);
+            throw new ConversationAccessException(Messages::attachmentNotFound(), $e);
         }
 
         if ($share->getShareType() !== IShare::TYPE_ROOM
             || (string)$share->getSharedWith() !== $conversation->token()) {
-            throw new ConversationAccessException(Messages::ATTACHMENT_NOT_FOUND);
+            throw new ConversationAccessException(Messages::attachmentNotFound());
         }
 
         return $share;

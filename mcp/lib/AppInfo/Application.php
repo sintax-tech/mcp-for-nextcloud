@@ -12,6 +12,8 @@ use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCA\Mcp\Tools\Talk\TalkModule;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
 use OCA\Mcp\Tools\Calendar\DavCalendarStore;
+use OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher;
+use OCA\Mcp\Tools\Calendar\Session;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Notes\NotesModule;
 use OCA\Mcp\Tools\ToolRegistry;
@@ -23,6 +25,7 @@ use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;
 use OCP\IUserManager;
+use OCP\IUserSession;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 
@@ -53,6 +56,16 @@ class Application extends App implements IBootstrap {
         }
         // DavCalendarStore resolves CalDavBackend lazily (the app container falls back to the server one) on first use.
         $context->registerService(CalendarStore::class, static fn (ContainerInterface $c): CalendarStore => new DavCalendarStore($c));
+        // The dispatcher builds one embedded CalDAV server per operation, so building the module never
+        // loads the DAV app; a DAV app that fails to load only breaks the calendar writes.
+        $context->registerService(EmbeddedDavDispatcher::class, static fn (ContainerInterface $c): EmbeddedDavDispatcher => new EmbeddedDavDispatcher(
+            // EmbeddedCalDavServer(false) is the non-public server, the one that takes a principal from
+            // CustomPrincipalPlugin instead of answering with principals/system/public.
+            static fn (): \Sabre\DAV\Server => (new \OCA\DAV\CalDAV\EmbeddedCalDavServer(false))->getServer(),
+            new Session($c->get(IUserSession::class)),
+            $c->get(IConfig::class),
+            $c->get(LoggerInterface::class),
+        ));
         // The Talk references read Deck cards through the same gateway the Deck tools use; it resolves Deck lazily.
         $context->registerService(DeckGatewayInterface::class, static fn (ContainerInterface $c): DeckGatewayInterface => new DeckServiceGateway(
             $c,

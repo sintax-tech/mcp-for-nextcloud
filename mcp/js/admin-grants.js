@@ -258,8 +258,8 @@
 			return
 		}
 		const question = granted
-			? t('mcp', 'Allow "{permission}" for the {count} users on this page?', { permission: label, count: uids.length })
-			: t('mcp', 'Deny "{permission}" for the {count} users on this page?', { permission: label, count: uids.length })
+			? t('mcp', 'Allow “{permission}” for the {count} users on this page?', { permission: label, count: uids.length })
+			: t('mcp', 'Deny “{permission}” for the {count} users on this page?', { permission: label, count: uids.length })
 		if (!window.confirm(question)) {
 			return
 		}

@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Controller;
 
 use OCA\Mcp\Http\McpResponse;
+use OCA\Mcp\OAuth\AccessTokenAuthenticator;
+use OCA\Mcp\OAuth\ResourceUrl;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\McpProtocol;
 use OCP\AppFramework\Controller;
@@ -17,7 +19,8 @@ use OCP\IUserSession;
 /**
  * The MCP Streamable HTTP endpoint (stateless, no SSE). Authentication happens inside the controller so that
  * anonymous callers get a 401 with WWW-Authenticate instead of a login redirect; the connection policy is
- * re-checked on every request.
+ * re-checked on every request. Identity comes from Nextcloud (Basic + app password, Nextcloud token) or from an
+ * OAuth access token issued by this app; without credentials the 401 carries the OAuth Bearer challenge.
  */
 class McpController extends Controller {
     public function __construct(
@@ -27,6 +30,8 @@ class McpController extends Controller {
         private IURLGenerator $urlGenerator,
         private GrantPolicy $policy,
         private McpProtocol $protocol,
+        private ResourceUrl $resourceUrl,
+        private AccessTokenAuthenticator $tokens,
     ) {
         parent::__construct($appName, $request);
     }
@@ -97,14 +102,35 @@ class McpController extends Controller {
             }
         }
         $user = $this->userSession->getUser();
+        $authorization = $this->request->getHeader('Authorization');
+        if ($user === null && AccessTokenAuthenticator::isOwnBearer($authorization)) {
+            $user = $this->tokens->authenticate($authorization, $this->resourceUrl->base());
+            if ($user === null) {
+                return $this->unauthorized('Bearer error="invalid_token", ' . $this->bearerParameters());
+            }
+            $this->userSession->setVolatileActiveUser($user);
+        }
         if ($user === null || !$user->isEnabled()) {
-            $response = new McpResponse('', 401);
-            $response->addHeader('WWW-Authenticate', 'Basic realm="Nextcloud MCP"');
-            return $response;
+            // Basic stays the challenge for clients that sent Basic; everyone else is pointed to OAuth discovery.
+            return $this->unauthorized(str_starts_with($authorization, 'Basic ')
+                ? 'Basic realm="Nextcloud MCP"'
+                : 'Bearer ' . $this->bearerParameters());
         }
         if (!$this->policy->canConnect($user->getUID())) {
             return new McpResponse('', 403);
         }
         return null;
+    }
+
+    /** @return McpResponse a 401 without body carrying the given WWW-Authenticate challenge */
+    private function unauthorized(string $challenge): McpResponse {
+        $response = new McpResponse('', 401);
+        $response->addHeader('WWW-Authenticate', $challenge);
+        return $response;
+    }
+
+    /** @return string resource_metadata and scope parameters of the Bearer challenge (RFC 9728 section 5.1) */
+    private function bearerParameters(): string {
+        return 'resource_metadata="' . $this->resourceUrl->resourceMetadata() . '", scope="mcp"';
     }
 }

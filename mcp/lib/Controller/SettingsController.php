@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Controller;
 
 use InvalidArgumentException;
+use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Service\GrantPolicy;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
@@ -25,6 +26,7 @@ class SettingsController extends Controller {
         private IURLGenerator $urlGenerator,
         private IUserSession $userSession,
         private GrantPolicy $policy,
+        private TokenService $oauthTokens,
     ) {
         parent::__construct($appName, $request);
     }
@@ -54,6 +56,10 @@ class SettingsController extends Controller {
             throw new InvalidArgumentException('Connection not allowed');
         }
         $this->policy->setConnected($uid, $enabled === '1');
+        if ($enabled === '0') {
+            // Disconnecting also revokes every OAuth access and refresh token of the user.
+            $this->oauthTokens->revokeUser($uid);
+        }
         return new RedirectResponse($this->urlGenerator->linkToRoute('settings.PersonalSettings.index', ['section' => 'personal-info']));
     }
 }

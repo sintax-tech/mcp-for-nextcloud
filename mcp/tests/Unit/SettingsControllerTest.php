@@ -5,6 +5,7 @@ namespace OCA\Mcp\Tests\Unit;
 
 use OCA\Mcp\Controller\McpController;
 use OCA\Mcp\Controller\SettingsController;
+use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Service\GrantPolicy;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
@@ -12,31 +13,29 @@ use OCP\AppFramework\Http\Attribute\PublicPage;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\IUser;
-use OCP\IUserManager;
 use OCP\IUserSession;
 use PHPUnit\Framework\TestCase;
 
 final class SettingsControllerTest extends TestCase {
     private GrantPolicy $policy;
     private SettingsController $controller;
+    private TokenService $tokens;
 
     protected function setUp(): void {
         $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this));
         $alice = $this->createMock(IUser::class);
         $alice->method('getUID')->willReturn('alice');
         $alice->method('isEnabled')->willReturn(true);
-        $users = $this->createMock(IUserManager::class);
-        $users->method('get')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $alice : null);
         $session = $this->createMock(IUserSession::class);
         $session->method('getUser')->willReturn($alice);
+        $this->tokens = $this->createMock(TokenService::class);
         $this->controller = new SettingsController('mcp', $this->createMock(IRequest::class),
-            $this->createMock(IURLGenerator::class), $users, $session, $this->policy);
+            $this->createMock(IURLGenerator::class), $session, $this->policy, $this->tokens);
     }
 
-    public function testAdminEndpointsAreAdminOnlyAndCsrfProtected(): void {
-        foreach (['global', 'user'] as $method) {
-            $this->assertSame([], $this->attributes(SettingsController::class, $method), $method);
-        }
+    public function testOnlyThePersonalFormRemainsAndItNeedsNoAdmin(): void {
+        $this->assertFalse(method_exists(SettingsController::class, 'global'));
+        $this->assertFalse(method_exists(SettingsController::class, 'user'));
         $this->assertSame([NoAdminRequired::class], $this->attributes(SettingsController::class, 'personal'));
     }
 
@@ -45,22 +44,12 @@ final class SettingsControllerTest extends TestCase {
             $this->attributes(McpController::class, 'post'));
     }
 
-    public function testAdminChangesEligibilityAndGrants(): void {
-        $this->assertSame(400, $this->controller->global('x')->getStatus());
-        $this->assertFalse($this->policy->globalEnabled());
-        $this->controller->global('1');
-        $this->controller->user('alice', '', '', '1', 'eligible');
-        $this->controller->user('alice', 'calendar', 'transfer', '1');
-        $this->assertTrue($this->policy->globalEnabled());
-        $this->assertTrue($this->policy->eligible('alice'));
-        $this->assertTrue($this->policy->granted('alice', 'calendar', 'transfer'));
-    }
-
-    public function testAdminInputIsValidated(): void {
-        foreach ([['ghost', 'files', 'read', '1', 'grant'], ['alice', 'files', 'delete', '1', 'grant'], ['alice', '', '', 'yes', 'eligible'], ['alice', '', '', '1', 'other']] as $args) {
-            $response = $this->controller->user(...$args);
-            $this->assertSame([400, 'Invalid request'], [$response->getStatus(), $response->render()], implode(',', $args));
-        }
+    public function testDisconnectRevokesOAuthTokens(): void {
+        $this->policy->setGlobalEnabled(true);
+        $this->policy->setEligible('alice', true);
+        $this->controller->personal('1');
+        $this->tokens->expects($this->once())->method('revokeUser')->with('alice');
+        $this->controller->personal('0');
     }
 
     public function testPersonalActivationNeedsServiceAndEligibility(): void {

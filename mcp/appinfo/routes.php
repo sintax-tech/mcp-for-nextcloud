@@ -11,4 +11,11 @@ return ['routes' => [
     ['name' => 'grants#bulk', 'url' => '/api/grants/bulk', 'verb' => 'POST'],
     ['name' => 'grants#update', 'url' => '/api/grants/{uid}', 'verb' => 'PUT'],
     ['name' => 'grants#service', 'url' => '/api/service', 'verb' => 'PUT'],
+    ['name' => 'metadata#protectedResource', 'url' => '/.well-known/oauth-protected-resource', 'verb' => 'GET'],
+    ['name' => 'metadata#authorizationServer', 'url' => '/.well-known/openid-configuration', 'verb' => 'GET'],
+    ['name' => 'metadata#oauthServer', 'url' => '/.well-known/oauth-authorization-server', 'verb' => 'GET'],
+    ['name' => 'metadata#jwks', 'url' => '/.well-known/jwks.json', 'verb' => 'GET'],
+    ['name' => 'o_auth#authorize', 'url' => '/oauth/authorize', 'verb' => 'GET'],
+    ['name' => 'o_auth#consent', 'url' => '/oauth/authorize', 'verb' => 'POST'],
+    ['name' => 'o_auth#token', 'url' => '/oauth/token', 'verb' => 'POST'],
 ]];

@@ -19,7 +19,7 @@
         <label for="mcp-service"><?php p($l->t('MCP service enabled')); ?></label>
         <span class="mcp-status" id="mcp-service-status" aria-live="polite"></span>
     </p>
-    <p class="mcp-hint"><?php p($l->t('Users need "Can connect" and must activate the connection in their personal settings. Read permissions start allowed; write, delete and transfer start denied. Nextcloud permissions and shares still apply.')); ?></p>
+    <p class="mcp-hint"><?php p($l->t('Users need “Can connect” and must activate the connection in their personal settings. Read permissions start allowed; write, delete and transfer start denied. Nextcloud permissions and shares still apply.')); ?></p>
 
     <div class="mcp-toolbar">
         <input type="search" id="mcp-search" placeholder="<?php p($l->t('Search user (name, user ID or e-mail)')); ?>" aria-label="<?php p($l->t('Search user')); ?>">

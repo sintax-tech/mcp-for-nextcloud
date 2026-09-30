@@ -48,6 +48,8 @@ abstract class CalendarTestCase extends TestCase {
 
     protected FakeCalendarStore $store;
     protected CalendarModule $module;
+    /** @var array<string, \OCA\Mcp\Tools\Calendar\CalendarTool> write handlers exercised directly by domain tests */
+    protected array $writeHandlers = [];
     /** Value returned by dav/calendarRetentionObligation. */
     protected string $retention = '';
 
@@ -75,14 +77,28 @@ abstract class CalendarTestCase extends TestCase {
         $builder = new EventBuilder();
         $relocator = new EventRelocator($access, $this->store, $repository);
         $guard = new SharedGuard($this->users());
+        $listCalendars = new ListCalendars($access);
+        $listEvents = new ListEvents($access, $this->store, $repository, $classification, new EventExpander(), $mapper, $dates, $time, $logger);
+        $createEvent = new CreateEvent($access, $guard, $this->store, $repository, $builder, $mapper, $dates, $time);
+        $updateEvent = new UpdateEvent($access, $guard, $this->store, $repository, $builder, $mapper, $dates, $time);
+        $moveEvent = new MoveEvent($access, $relocator, $guard);
+        $deleteEvent = new DeleteEvent($access, $guard, $this->store, $repository, new TrashPolicy($config));
+        $transferEvent = new TransferEvent($relocator);
+        $this->writeHandlers = [
+            'calendar_create_event' => $createEvent,
+            'calendar_update_event' => $updateEvent,
+            'calendar_move_event' => $moveEvent,
+            'calendar_delete_event' => $deleteEvent,
+            'calendar_transfer_event' => $transferEvent,
+        ];
         $this->module = new CalendarModule(
-            new ListCalendars($access),
-            new ListEvents($access, $this->store, $repository, $classification, new EventExpander(), $mapper, $dates, $time, $logger),
-            new CreateEvent($access, $guard, $this->store, $repository, $builder, $mapper, $dates, $time),
-            new UpdateEvent($access, $guard, $this->store, $repository, $builder, $mapper, $dates, $time),
-            new MoveEvent($access, $relocator, $guard),
-            new DeleteEvent($access, $guard, $this->store, $repository, new TrashPolicy($config)),
-            new TransferEvent($relocator),
+            $listCalendars,
+            $listEvents,
+            $createEvent,
+            $updateEvent,
+            $moveEvent,
+            $deleteEvent,
+            $transferEvent,
         );
     }
 
@@ -123,6 +139,14 @@ abstract class CalendarTestCase extends TestCase {
      * @return array{content: list<array{type:string, text:string}>, isError?: bool}
      */
     protected function call(string $name, array $arguments = []): array {
+        // Write-handler tests stay useful while public module calls are fail-closed pending DAV proof.
+        if (isset($this->writeHandlers[$name])) {
+            try {
+                return $this->writeHandlers[$name]->execute($arguments, 'alice');
+            } catch (\OCA\Mcp\Tools\Calendar\CalendarException $exception) {
+                return \OCA\Mcp\Tools\Calendar\ToolSchema::error($exception->getMessage());
+            }
+        }
         return $this->module->call($name, $arguments, 'alice');
     }
 

@@ -108,6 +108,16 @@ Login pelo navegador (Login Flow v2/OAuth) ainda não está disponível.
 
 A chave `enabled` do app `mcp` pertence ao Nextcloud, que a usa para marcar o app como habilitado (`yes`), e não é o liga/desliga do MCP. O app nunca lê nem grava `enabled`, `installed_version`, `types`, `levels` ou `ocsid`. Para diagnóstico: `occ config:app:get mcp service_enabled`.
 
+## Conectar pelo claude.ai (OAuth)
+
+No claude.ai, em **Personalizar > Conectores > Adicionar conector personalizado**, cole a URL exibida na página pessoal (ex.: `https://<instância>/apps/mcp/`), com a barra final, e deixe o cliente OAuth em **identidade publicada do Claude (CIMD)**. O Claude abre o login do Nextcloud e a tela "Permitir"; permitir equivale a ativar a conexão pessoal. Tudo fica sob `/apps/mcp`, sem mudança de Apache/DNS:
+
+- `401` com `WWW-Authenticate: Bearer resource_metadata=".../apps/mcp/.well-known/oauth-protected-resource"`;
+- metadata do servidor de autorização em `/apps/mcp/.well-known/openid-configuration` e `/apps/mcp/.well-known/oauth-authorization-server` (issuer `https://<instância>/apps/mcp`);
+- `oauth/authorize` (consentimento) e `oauth/token` (PKCE S256, refresh com rotação). Access token 1 h, refresh 30 dias; só hashes vão ao banco.
+
+Só clientes CIMD com host na allowlist são aceitos (padrão `claude.ai`): `occ config:app:set mcp oauth_client_hosts --value="claude.ai"`. Disconnect pessoal, perda de elegibilidade ou serviço desligado revogam access e refresh. O Claude sai de `160.79.104.0/21`; se a proteção brute force do Nextcloud atrasar o endpoint de token, libere essa faixa. Basic + app password continua valendo para outros clientes.
+
 ## Revogar
 
 *Disconnect* na página pessoal bloqueia a próxima requisição MCP, inclusive com a mesma senha de app. A senha de app continua válida no Nextcloud e deve ser revogada em **Segurança**. O administrador também pode remover a elegibilidade do usuário ou desativar o serviço; ambos valem na próxima requisição.

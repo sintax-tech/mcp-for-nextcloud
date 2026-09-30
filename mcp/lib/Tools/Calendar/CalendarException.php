@@ -3,13 +3,14 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Calendar;
 
-use RuntimeException;
+
+use OCA\Mcp\Tools\ToolFailure;
 
 /**
  * Domain failure whose message is safe to show to the user (Portuguese, no internals).
- * The module turns it into an MCP result with isError.
+ * The module turns it into an MCP result with isError; as a ToolFailure the registry would do the same.
  */
-final class CalendarException extends RuntimeException {
+final class CalendarException extends ToolFailure {
     /**
      * @return self calendar or event missing, or not visible to the user
      */

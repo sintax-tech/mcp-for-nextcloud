@@ -6,6 +6,7 @@ namespace OCA\Mcp\Tools\Calendar;
 use DateTime;
 use DateTimeImmutable;
 use OCA\DAV\CalDAV\CalDavBackend;
+use Psr\Container\ContainerInterface;
 
 /**
  * Thin adapter from CalendarStore to OCA\DAV\CalDAV\CalDavBackend (nextcloud/server stable33).
@@ -23,10 +24,21 @@ class DavCalendarStore implements CalendarStore {
     /** Row key of the supported component set. */
     private const COMPONENTS = '{urn:ietf:params:xml:ns:caldav}supported-calendar-component-set';
 
+    /** Backend resolved on first use, so a DAV app that fails to load only breaks calendar calls. */
+    private ?CalDavBackend $backend = null;
+
     /**
-     * @param CalDavBackend $backend the DAV app's CalDAV backend
+     * @param ContainerInterface $container server container that provides the DAV app's CalDavBackend
      */
-    public function __construct(private CalDavBackend $backend) {}
+    public function __construct(private ContainerInterface $container) {}
+
+    /**
+     * @return CalDavBackend the DAV app's CalDAV backend
+     * @throws \Psr\Container\ContainerExceptionInterface when the DAV app cannot provide it
+     */
+    private function backend(): CalDavBackend {
+        return $this->backend ??= $this->container->get(CalDavBackend::class);
+    }
 
     /**
      * Assumes `public function getCalendarsForUser($principalUri)` (line 320), which returns owned
@@ -37,7 +49,7 @@ class DavCalendarStore implements CalendarStore {
      */
     public function calendarsForPrincipal(string $principalUri): array {
         $out = [];
-        foreach ($this->backend->getCalendarsForUser($principalUri) as $row) {
+        foreach ($this->backend()->getCalendarsForUser($principalUri) as $row) {
             $components = $row[self::COMPONENTS] ?? null;
             $out[] = [
                 'id' => (int)$row['id'],
@@ -75,7 +87,7 @@ class DavCalendarStore implements CalendarStore {
             'is-not-defined' => false,
             'time-range' => null,
         ];
-        return array_values(array_map('strval', $this->backend->calendarQuery($calendarId, $filters)));
+        return array_values(array_map('strval', $this->backend()->calendarQuery($calendarId, $filters)));
     }
 
     /**
@@ -90,7 +102,7 @@ class DavCalendarStore implements CalendarStore {
         if ($uris === []) {
             return [];
         }
-        return array_values(array_map([$this, 'objectRow'], $this->backend->getMultipleCalendarObjects($calendarId, $uris)));
+        return array_values(array_map([$this, 'objectRow'], $this->backend()->getMultipleCalendarObjects($calendarId, $uris)));
     }
 
     /**
@@ -102,7 +114,7 @@ class DavCalendarStore implements CalendarStore {
      * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null
      */
     public function object(int $calendarId, string $uri): ?array {
-        $row = $this->backend->getCalendarObject($calendarId, $uri);
+        $row = $this->backend()->getCalendarObject($calendarId, $uri);
         return $row === null ? null : $this->objectRow($row);
     }
 
@@ -115,7 +127,7 @@ class DavCalendarStore implements CalendarStore {
      * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null
      */
     public function objectByUid(int $calendarId, string $uid): ?array {
-        $row = $this->backend->findCalendarObjectByUid($calendarId, $uid);
+        $row = $this->backend()->findCalendarObjectByUid($calendarId, $uid);
         return $row === null ? null : $this->objectRow($row);
     }
 
@@ -129,7 +141,7 @@ class DavCalendarStore implements CalendarStore {
      * @return string new ETag
      */
     public function create(int $calendarId, string $uri, string $data): string {
-        return (string)$this->backend->createCalendarObject($calendarId, $uri, $data);
+        return (string)$this->backend()->createCalendarObject($calendarId, $uri, $data);
     }
 
     /**
@@ -142,7 +154,7 @@ class DavCalendarStore implements CalendarStore {
      * @return string new ETag
      */
     public function update(int $calendarId, string $uri, string $data): string {
-        return (string)$this->backend->updateCalendarObject($calendarId, $uri, $data);
+        return (string)$this->backend()->updateCalendarObject($calendarId, $uri, $data);
     }
 
     /**
@@ -158,7 +170,7 @@ class DavCalendarStore implements CalendarStore {
      * @return bool false when the backend could not complete the move
      */
     public function move(string $sourceOwnerPrincipal, int $objectId, string $targetOwnerPrincipal, int $targetCalendarId, string $uri): bool {
-        return $this->backend->moveCalendarObject($sourceOwnerPrincipal, $objectId, $targetOwnerPrincipal, $targetCalendarId, $uri);
+        return $this->backend()->moveCalendarObject($sourceOwnerPrincipal, $objectId, $targetOwnerPrincipal, $targetCalendarId, $uri);
     }
 
     /**
@@ -169,7 +181,7 @@ class DavCalendarStore implements CalendarStore {
      * @param string $uri object URI
      */
     public function delete(int $calendarId, string $uri): void {
-        $this->backend->deleteCalendarObject($calendarId, $uri);
+        $this->backend()->deleteCalendarObject($calendarId, $uri);
     }
 
     /**

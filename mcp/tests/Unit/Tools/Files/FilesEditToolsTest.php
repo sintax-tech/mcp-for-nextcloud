@@ -111,6 +111,26 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
         $this->assertSame('v3', $this->tree->nodes['/alice/files' . $second]['content'], 'cada guarda o conteúdo que existia na sua hora');
     }
 
+    /**
+     * The upload always takes a backup, so a checkout without files_versions would hand out two links that
+     * cannot work — and the agent would only find out after editing the file locally.
+     */
+    public function testCheckoutIsRefusedWhenVersioningIsOff(): void {
+        $this->enabled = [];
+        $this->assertSame('O versionamento de arquivos (files_versions) não está ativo nesta conta.',
+            $this->failure('files_checkout', ['path' => '/Documentos/ata.md']));
+        $this->assertSame([], $this->store->rows, 'nenhum link pode ser emitido');
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    /** substr_count does not count overlaps, and neither does str_replace; the two must agree. */
+    public function testReplaceWithAnOverlappingSnippetFollowsNonOverlappingSemantics(): void {
+        $this->tree->addFile('/alice/files/Documentos/aaa.txt', 'aaa', 'text/plain');
+        $out = $this->json('files_replace', ['path' => '/Documentos/aaa.txt', 'old' => 'aa', 'new' => 'b']);
+        $this->assertSame('ba', $this->tree->nodes['/alice/files/Documentos/aaa.txt']['content']);
+        $this->assertStringContainsString('-aaa', $out['diff']);
+    }
+
     public function testReplaceRefusesASnippetThatIsNotThere(): void {
         $this->assertSame('O trecho informado não aparece no arquivo.',
             $this->failure('files_replace', ['path' => '/Documentos/ata.md', 'old' => 'inexistente', 'new' => 'x']));

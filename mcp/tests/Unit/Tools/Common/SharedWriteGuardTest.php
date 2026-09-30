@@ -20,8 +20,8 @@ final class SharedWriteGuardTest extends TestCase {
     private FakeTree $tree;
 
     protected function setUp(): void {
-        $this->guard = new SharedWriteGuard(new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS)));
         $this->tree = new FakeTree($this);
+        $this->guard = new SharedWriteGuard(new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()));
     }
 
     private function node(string $scope, string $path, int $permissions = Constants::PERMISSION_ALL): object {

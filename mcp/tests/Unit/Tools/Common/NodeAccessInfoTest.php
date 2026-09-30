@@ -18,8 +18,8 @@ final class NodeAccessInfoTest extends TestCase {
     private FakeTree $tree;
 
     protected function setUp(): void {
-        $this->access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS));
         $this->tree = new FakeTree($this);
+        $this->access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
     }
 
     public function testPersonalFileIsOwnedByTheViewerWithEveryPermission(): void {
@@ -110,8 +110,21 @@ final class NodeAccessInfoTest extends TestCase {
      */
     public function testSharedByIsResolvedFromTheUidStringTheShareReturns(): void {
         $this->tree->addFile('/alice/files/Compartilhado/plano.md', 'x', 'text/markdown', ['scope' => 'shared']);
-        $share = $this->tree->node('/alice/files/Compartilhado/plano.md')->getStorage()->getShare();
+        $share = $this->tree->shareOf('/alice/files/Compartilhado/plano.md');
         $this->assertSame('pedro', $share->getSharedBy(), 'IShare::getSharedBy() must be a string in this fixture');
+        $this->assertSame('Pedro Almeida', $this->access->describe($this->tree->node('/alice/files/Compartilhado/plano.md'), 'alice')['sharedBy']);
+    }
+
+    /**
+     * A share mount jails the shared storage, so the node holds a wrapper that is not an ISharedStorage.
+     * instanceOfStorage() sees through it; instanceof does not, and the sharer has to come from the share
+     * manager. The FakeTree reproduces exactly that shape.
+     */
+    public function testAWrappedShareStorageIsStillRecognised(): void {
+        $this->tree->addFile('/alice/files/Compartilhado/plano.md', 'x', 'text/markdown', ['scope' => 'shared']);
+        $storage = $this->tree->node('/alice/files/Compartilhado/plano.md')->getStorage();
+        $this->assertNotInstanceOf(\OCP\Files\Storage\ISharedStorage::class, $storage, 'o fixture tem que embrulhar');
+        $this->assertTrue($storage->instanceOfStorage(\OCP\Files\Storage\ISharedStorage::class));
         $this->assertSame('Pedro Almeida', $this->access->describe($this->tree->node('/alice/files/Compartilhado/plano.md'), 'alice')['sharedBy']);
     }
 

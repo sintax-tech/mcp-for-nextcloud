@@ -43,6 +43,8 @@ abstract class FilesToolsTestCase extends TestCase {
     protected FilesModule $module;
     /** @var list<string> tokens handed out per route, in order */
     protected array $issued = [];
+    /** @var list<string> apps enabled for alice; a test can empty it to simulate files_versions being off */
+    protected array $enabled = ['files_versions'];
 
     protected function setUp(): void {
         $this->tree = new FakeTree($this);
@@ -56,9 +58,12 @@ abstract class FilesToolsTestCase extends TestCase {
             : throw new \LogicException('other user'));
         $this->temp = $this->createMock(ITempManager::class);
         $this->temp->method('getTemporaryFile')->willReturnCallback(fn () => tempnam(sys_get_temp_dir(), 'mcp'));
-        $enabled = ['files_versions'];
         $this->apps = $this->createMock(IAppManager::class);
-        $this->apps->method('isEnabledForUser')->willReturnCallback(fn (string $app) => in_array($app, $enabled, true));
+        // Bound by reference on purpose: a test flips $this->enabled to simulate an app being turned off.
+        $enabled = &$this->enabled;
+        $this->apps->method('isEnabledForUser')->willReturnCallback(function (string $app) use (&$enabled): bool {
+            return in_array($app, $enabled, true);
+        });
         $this->user = $this->createMock(IUser::class);
         $this->user->method('getUID')->willReturn('alice');
         $this->users = $this->createMock(IUserManager::class);
@@ -74,7 +79,7 @@ abstract class FilesToolsTestCase extends TestCase {
             return 'https://cloud.test/apps/mcp/' . ($args['token'] ?? '');
         });
 
-        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS));
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
         $extractor = new TextExtractor($this->temp);
         $backup = new FileBackup($this->apps, $this->users, $this->time, $config);
         $this->module = new FilesModule(
@@ -85,7 +90,7 @@ abstract class FilesToolsTestCase extends TestCase {
             $db,
             $access,
             new SharedWriteGuard($access),
-            new CheckoutService($urls, $config, $this->time, new TokenHasher($config), $this->store),
+            new CheckoutService($urls, $config, $this->time, new TokenHasher($config), $this->store, $this->apps, $this->users),
             new VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class)),
         );
     }

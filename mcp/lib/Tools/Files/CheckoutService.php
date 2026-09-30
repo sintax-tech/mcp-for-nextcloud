@@ -7,9 +7,12 @@ use OCA\Mcp\Checkout\CheckoutToken;
 use OCA\Mcp\Checkout\CheckoutTokenStore;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
+use OCA\Mcp\Tools\ToolFailure;
+use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;
 use OCP\IConfig;
+use OCP\IUserManager;
 use OCP\IURLGenerator;
 
 /**
@@ -27,6 +30,8 @@ final class CheckoutService {
     public const DEFAULT_MAX_BYTES = 50 * 1024 * 1024;
     /** App config key holding the upload limit in bytes. */
     public const MAX_BYTES_KEY = 'checkout_max_bytes';
+    /** The app whose versions the upload depends on, checked at checkout so no unusable link is issued. */
+    public const VERSIONS_APP = 'files_versions';
     /** Token prefix, so a leaked URL is recognisable as this app's and not an OAuth token. */
     private const TOKEN_PREFIX = 'ncmcp_co_';
     /** Route each kind of token is spent on; a token presented on the other one is refused. */
@@ -41,6 +46,8 @@ final class CheckoutService {
         private ITimeFactory $time,
         private TokenHasher $hasher,
         private CheckoutTokenStore $store,
+        private IAppManager $appManager,
+        private IUserManager $userManager,
     ) {}
 
     /**
@@ -52,8 +59,15 @@ final class CheckoutService {
      * @param array<string, mixed> $access ownership description from NodeAccessInfo
      * @param bool $confirmed whether the caller passed confirm_shared; stored so the upload trusts the checkout
      * @return array{path:string, etag:string, size:int, mime:string, access:array<string, mixed>, download_url:string, upload_url:string, expires_at:string}
+     * @throws \OCA\Mcp\Tools\ToolFailure when versioning is off, which the upload would refuse later
      */
     public function issue(string $userId, File $file, string $path, array $access, bool $confirmed): array {
+        // The upload always takes a backup, so a checkout without files_versions would hand out two links
+        // that cannot work. Better to say so now, with both links still unused.
+        $user = $this->userManager->get($userId);
+        if ($user === null || !$this->appManager->isEnabledForUser(self::VERSIONS_APP, $user)) {
+            throw new ToolFailure(FilesMessages::versionsOff());
+        }
         $now = $this->time->getTime();
         [$downloadToken, $uploadToken] = [$this->mint(CheckoutToken::KIND_DOWNLOAD), $this->mint(CheckoutToken::KIND_UPLOAD)];
         $row = [

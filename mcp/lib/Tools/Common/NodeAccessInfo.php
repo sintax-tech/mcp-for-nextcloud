@@ -8,6 +8,8 @@ use OCP\Files\IHomeStorage;
 use OCP\Files\Node;
 use OCP\Files\Storage\ISharedStorage;
 use OCP\IUserManager;
+use OCP\Share\IManager as IShareManager;
+use OCP\Share\IShare;
 
 /**
  * Ownership awareness of a file node: in which scope it lives (personal, shared, team folder or external
@@ -30,7 +32,10 @@ class NodeAccessInfo {
     /** IMountPoint::getMountType() of an external storage mount. */
     private const MOUNT_EXTERNAL = 'external';
 
-    public function __construct(private IUserManager $userManager) {}
+    public function __construct(
+        private IUserManager $userManager,
+        private ?IShareManager $shareManager = null,
+    ) {}
 
     /**
      * Describes a node for a given viewer.
@@ -42,7 +47,7 @@ class NodeAccessInfo {
     public function describe(Node $node, string $viewerUid): array {
         $owner = $node->getOwner();
         $storage = $node->getStorage();
-        $share = $storage instanceof ISharedStorage ? $storage->getShare() : null;
+        $share = $this->shareOf($node, $viewerUid);
         $scope = $this->scope($node, $viewerUid, $share !== null);
         $info = [
             'scope' => $scope,
@@ -57,6 +62,29 @@ class NodeAccessInfo {
             $info['sharedBy'] = $share === null ? $info['ownerDisplayName'] : $this->sharerName($share->getSharedBy());
         }
         return $info;
+    }
+
+        /**
+     * A share mount jails the shared storage, so the object a node holds is a wrapper and
+     * `instanceof ISharedStorage` never matches — instanceOfStorage() does, because it unwraps on its own.
+     * When the storage really is the share the share comes from it; otherwise the share manager is asked,
+     * which resolves by node and so survives any wrapping. The manager is only consulted for a node already
+     * known to be shared, so listing personal files costs nothing extra.
+     *
+     * @param Node $node node whose storage may be a share
+     * @param string $viewerUid authenticated user, for the share lookup
+     * @return IShare|null the share behind the node, when there is one
+     */
+    private function shareOf(Node $node, string $viewerUid): ?IShare {
+        $storage = $node->getStorage();
+        if (!$storage->instanceOfStorage(ISharedStorage::class)) {
+            return null;
+        }
+        if ($storage instanceof ISharedStorage) {
+            return $storage->getShare();
+        }
+        $shares = $this->shareManager?->getSharesBy($viewerUid, IShare::TYPE_USER, $node, false, 1, 0, true) ?? [];
+        return $shares === [] ? null : $shares[0];
     }
 
     /**

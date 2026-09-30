@@ -59,7 +59,7 @@ final class VersionToolsTest extends TestCase {
         $config = (new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this);
         $this->backup = new FileBackup($this->apps, $this->users, $time, $config);
         $this->tools = new VersionTools($this->apps, $this->users, new TextExtractor($temp), $this->backup,
-            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS)), $container);
+            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $container);
     }
 
     private function file(): \OCP\Files\File {
@@ -86,7 +86,7 @@ final class VersionToolsTest extends TestCase {
         $apps = $this->createMock(IAppManager::class);
         $apps->method('isEnabledForUser')->willReturn(false);
         $tools = new VersionTools($apps, $this->users, $this->createMock(TextExtractor::class), $this->backup,
-            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS)), $this->createMock(ContainerInterface::class));
+            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $this->createMock(ContainerInterface::class));
         $this->expectException(ToolFailure::class);
         $this->expectExceptionMessage('O versionamento de arquivos (files_versions) não está ativo nesta conta.');
         $tools->list($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', 50, 'alice');
@@ -101,7 +101,7 @@ final class VersionToolsTest extends TestCase {
             return true;
         });
         $tools = new VersionTools($apps, $this->users, $this->createMock(TextExtractor::class), $this->backup,
-            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS)), $this->createMock(ContainerInterface::class));
+            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $this->createMock(ContainerInterface::class));
         try {
             $tools->list($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', 50, 'alice');
         } catch (ToolFailure) {
@@ -158,7 +158,7 @@ final class VersionToolsTest extends TestCase {
         $this->apps = $this->createMock(IAppManager::class);
         $this->apps->method('isEnabledForUser')->willReturn(false);
         $tools = new VersionTools($this->apps, $this->users, $this->createMock(TextExtractor::class), $this->backup,
-            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS)), $this->createMock(ContainerInterface::class));
+            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $this->createMock(ContainerInterface::class));
         try {
             $tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
             $this->fail('a restore without versioning must not proceed');

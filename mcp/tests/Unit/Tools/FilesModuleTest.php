@@ -58,13 +58,13 @@ final class FilesModuleTest extends TestCase {
         // Alice's own timezone stamps every backup below; the stamps are local, never UTC.
         $this->config->user['alice']['core']['timezone'] = 'America/Sao_Paulo';
         $appConfig = $this->config->mock($this);
-        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS));
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturnCallback(fn (string $route, array $args = []) => 'https://cloud.test/apps/mcp/' . ($args['token'] ?? ''));
         $versions = new VersionTools($apps, $users, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $access, $this->createMock(\Psr\Container\ContainerInterface::class));
         $this->module = new FilesModule($root, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $users, $db,
             $access, new SharedWriteGuard($access),
-            new CheckoutService($urls, $appConfig, $time, new TokenHasher($appConfig), $this->createMock(CheckoutTokenStore::class)),
+            new CheckoutService($urls, $appConfig, $time, new TokenHasher($appConfig), $this->createMock(CheckoutTokenStore::class), $apps, $users),
             $versions);
         $this->versions = $versions;
     }

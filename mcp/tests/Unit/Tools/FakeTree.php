@@ -177,25 +177,20 @@ final class FakeTree {
      */
     private function storage(string $path): object {
         $scope = $this->nodes[$path]['scope'] ?? 'personal';
-        $storage = $this->mock($scope === 'shared' ? \OCP\Files\Storage\ISharedStorage::class : \OCP\Files\Storage\IStorage::class);
+        // A share mount jails the shared storage, so the object the node holds is a wrapper: it reports
+        // itself as a shared storage through instanceOfStorage() and is not an ISharedStorage by instanceof.
+        $storage = $this->mock(\OCP\Files\Storage\IStorage::class);
         $storage->method('instanceOfStorage')->willReturnCallback(function (string $class) use ($path, $scope): bool {
             if ($class === 'OCA\Files_Trashbin\Storage') {
                 return $this->nodes[$path]['trash'] ?? true;
+            }
+            if ($class === \OCP\Files\Storage\ISharedStorage::class) {
+                return $scope === 'shared';
             }
             return $class === \OCP\Files\IHomeStorage::class && $scope === 'personal';
         });
         // IStorage::getId() is what the move guard compares to keep a move inside one storage.
         $storage->method('getId')->willReturn($this->storageId($path));
-        if ($scope === 'shared') {
-            $share = $this->mock(\OCP\Share\IShare::class);
-            // getSharedBy() is documented as returning the sharer's UID string in stable33; an explicit
-            // null means the share carries no sharer, which is different from an absent flag.
-            $share->method('getSharedBy')->willReturn(array_key_exists('sharedBy', $this->nodes[$path])
-                ? $this->nodes[$path]['sharedBy']
-                : $this->sharedByUid);
-            $share->method('getShareOwner')->willReturn($this->sharedByUid);
-            $storage->method('getShare')->willReturn($share);
-        }
         return $storage;
     }
 
@@ -203,10 +198,47 @@ final class FakeTree {
      * The identifier IStorage::getId() reports, so a test can put two nodes on different storages.
      *
      * @param string $path node path
-     * @return string the storage id, defaulting to a single storage for the whole tree
+     * @return string the storage id, a single one for the whole tree unless a node says otherwise
      */
     public function storageId(string $path): string {
         return (string)($this->nodes[$path]['storageId'] ?? 'home');
+    }
+
+    /**
+     * IShareManager double that answers with whatever shareOf() says for a node, so the wrapped-storage
+     * path of NodeAccessInfo is exercised the way a real share mount would exercise it.
+     *
+     * @return \OCP\Share\IManager the manager
+     */
+    public function shareManager(): \OCP\Share\IManager {
+        $manager = $this->mock(\OCP\Share\IManager::class);
+        $manager->method('getSharesBy')->willReturnCallback(function (string $uid, int $type, ?Node $path = null): array {
+            if ($type !== \OCP\Share\IShare::TYPE_USER || $path === null) {
+                return [];
+            }
+            $share = $this->shareOf($path->getPath());
+            return $share === null ? [] : [$share];
+        });
+        return $manager;
+    }
+
+    /**
+     * The share a node belongs to, as IShare::getSharedBy() reports it in stable33: a UID string, and an
+     * explicit null for a share with no sharer at all.
+     *
+     * @param string $path node path
+     * @return \OCP\Share\IShare|null the share, when the node is shared
+     */
+    public function shareOf(string $path): ?\OCP\Share\IShare {
+        if (($this->nodes[$path]['scope'] ?? 'personal') !== 'shared') {
+            return null;
+        }
+        $share = $this->mock(\OCP\Share\IShare::class);
+        $share->method('getSharedBy')->willReturn(array_key_exists('sharedBy', $this->nodes[$path])
+            ? $this->nodes[$path]['sharedBy']
+            : $this->sharedByUid);
+        $share->method('getShareOwner')->willReturn($this->sharedByUid);
+        return $share;
     }
 
     /** The mount point a node lives in: only the three shared mounts carry a mount type. */

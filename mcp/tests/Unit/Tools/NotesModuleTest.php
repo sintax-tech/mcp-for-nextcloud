@@ -40,7 +40,7 @@ final class NotesModuleTest extends TestCase {
         $apps->method('isEnabledForUser')->willReturnCallback(fn (string $app) => in_array($app, $this->apps, true));
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturn($this->createMock(IUser::class));
-        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS));
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
         $this->module = new NotesModule(new NotesRepository($root, $this->config->mock($this)), $apps, $users,
             new SharedWriteGuard($access), $access);
     }

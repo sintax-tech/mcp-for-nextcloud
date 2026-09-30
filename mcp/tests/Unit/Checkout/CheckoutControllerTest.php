@@ -120,7 +120,7 @@ final class CheckoutControllerTest extends TestCase {
         $this->users->method('get')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $alice : null);
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturnCallback(fn (string $route, array $args = []) => '/apps/mcp/' . ($args['token'] ?? ''));
-        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS));
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
         $backup = new FileBackup($this->apps, $this->users, $this->time, $config);
 
         $controller = $this->build($root, $session ?? $this->session, $config, $urls, $backup, $access);
@@ -143,7 +143,7 @@ final class CheckoutControllerTest extends TestCase {
         $request->method('getMethod')->willReturn('PUT');
         return new TestableCheckoutController('mcp', $request, $root, $session,
             $this->temp, $this->time, $this->policy, $this->store, $this->hasher,
-            new CheckoutService($urls, $config, $this->time, $this->hasher, $this->store), $backup,
+            new CheckoutService($urls, $config, $this->time, $this->hasher, $this->store, $this->apps, $this->users), $backup,
             new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class));
     }
 
@@ -537,7 +537,7 @@ final class CheckoutControllerTest extends TestCase {
         $config = $this->config->mock($this);
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturn('/apps/mcp/x');
-        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS));
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
         $controller = $this->build($root, $this->session, $config, $urls,
             new FileBackup($this->apps, $this->users, $this->time, $config), $access);
         $controller->route = ['token' => self::TOKEN];

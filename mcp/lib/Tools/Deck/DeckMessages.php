@@ -3,92 +3,172 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Deck;
 
+use OCA\Mcp\L10n\Translator;
+
 /**
- * Every user-facing string of the Deck module.
+ * Every string of the Deck module.
  *
- * Tool descriptions, parameter descriptions and error messages live here as constants so the app
- * can later be translated through IL10N without touching handlers. The values are Portuguese for
- * now; the keys and the code around them are language-neutral.
+ * Tool and parameter descriptions are read by the model, not by the person, so they are fixed English constants.
+ * What the user can see (errors, the shared-board confirmation) is a static method that translates an English
+ * source text through {@see Translator}, in the language of the authenticated user.
  */
 final class DeckMessages {
 	/* Tool descriptions, exposed to MCP clients in tools/list. */
 	public const TOOL_LIST_BOARDS_DESCRIPTION
-		= 'Lista os boards do Deck compartilhados com você, sem os arquivados.';
+		= 'Lists the Deck boards shared with you, excluding archived ones.';
 	public const TOOL_LIST_STACKS_DESCRIPTION
-		= 'Lista as listas (stacks) de um board do Deck, com a quantidade de cards de cada uma.';
+		= 'Lists the lists (stacks) of a Deck board, with the number of cards in each.';
 	public const TOOL_LIST_CARDS_DESCRIPTION
-		= 'Lista os cards ativos de uma lista (stack) do Deck, com paginação.';
+		= 'Lists the active cards of a Deck list (stack), paginated.';
 	public const TOOL_READ_CARD_DESCRIPTION
-		= 'Lê um card do Deck com descrição, datas e contadores.';
+		= 'Reads a Deck card with its description, dates and counters.';
 	public const TOOL_CREATE_CARD_DESCRIPTION
-		= 'Cria um card do Deck no fim de uma lista (stack). O card fica com você como responsável.';
+		= 'Creates a Deck card at the end of a list (stack). You are set as the card assignee.';
 	public const TOOL_EDIT_CARD_DESCRIPTION
-		= 'Edita título, descrição e data prevista de um card do Deck. Use lastModified para não sobrescrever uma edição concorrente.';
+		= 'Edits the title, description and due date of a Deck card. Use lastModified to avoid overwriting a concurrent edit.';
 	public const TOOL_MOVE_CARD_DESCRIPTION
-		= 'Move um card do Deck para outra lista (stack), inclusive de outro board. Sem order, o card vai para o fim.';
+		= 'Moves a Deck card to another list (stack), including one on another board. Without order, the card goes to the end.';
 	public const TOOL_DELETE_CARD_DESCRIPTION
-		= 'Exclui um card do Deck, do mesmo modo que a interface web: a exclusão é reversível pelo Deck. Exige confirm.';
+		= 'Deletes a Deck card the same way the web interface does: the deletion can be undone in Deck. Requires confirm.';
 	public const TOOL_FOLLOWUP_CARDS_DESCRIPTION
-		= 'Lista os cards dos quadros que você pode gerenciar (dono ou permissão de gerenciar), agrupados por responsável, com link direto para cada card. Por padrão devolve só os vencidos; a varredura cobre no máximo 100 quadros visíveis.';
+		= 'Lists the cards of the boards you can manage (owner or manage permission), grouped by assignee, with a direct link to each card. By default it returns only overdue cards; the scan covers at most 100 visible boards.';
 
 	/* Parameter descriptions. */
-	public const PARAM_BOARD_ID = 'Id do board do Deck.';
-	public const PARAM_STACK_ID = 'Id da lista (stack) do Deck.';
-	public const PARAM_CARD_ID = 'Id do card do Deck.';
-	public const PARAM_STATUS = 'Filtro de situação: overdue (vencido antes de hoje), open (em aberto), done (concluído) ou all (todos). Padrão: overdue.';
-	public const PARAM_ASSIGNEE = 'UID da pessoa responsável; devolve somente os cards atribuídos a ela.';
-	public const PARAM_DUE_BEFORE = 'Devolve somente cards com data prevista até esta data, no formato AAAA-MM-DD.';
-	public const PARAM_TITLE = 'Título do card.';
-	public const PARAM_DESCRIPTION = 'Descrição do card, em texto simples.';
-	public const PARAM_DUEDATE = 'Data prevista no formato AAAA-MM-DD, ou null para remover.';
-	public const PARAM_LIMIT = 'Quantidade máxima de cards a devolver.';
-	public const PARAM_OFFSET = 'Quantidade de cards a ignorar, para paginar.';
-	public const PARAM_ORDER = 'Posição do card na lista, de 0 a 99999.';
-	public const PARAM_LAST_MODIFIED = 'lastModified do card no momento da leitura; se tiver mudado, a edição é recusada.';
-	public const PARAM_CONFIRM = 'Precisa ser true para confirmar a exclusão.';
-	public const PARAM_CONFIRM_SHARED = 'Marque como true apenas depois que o usuário confirmar a alteração em um quadro de outra pessoa.';
+	public const PARAM_BOARD_ID = 'Id of the Deck board.';
+	public const PARAM_STACK_ID = 'Id of the Deck list (stack).';
+	public const PARAM_CARD_ID = 'Id of the Deck card.';
+	public const PARAM_STATUS = 'Status filter: overdue (due before today), open, done or all. Default: overdue.';
+	public const PARAM_ASSIGNEE = 'UID of the assignee; returns only the cards assigned to that person.';
+	public const PARAM_DUE_BEFORE = 'Returns only cards due on or before this date, in YYYY-MM-DD format.';
+	public const PARAM_TITLE = 'Card title.';
+	public const PARAM_DESCRIPTION = 'Card description, in plain text.';
+	public const PARAM_DUEDATE = 'Due date in YYYY-MM-DD format, or null to remove it.';
+	public const PARAM_LIMIT = 'Maximum number of cards to return.';
+	public const PARAM_OFFSET = 'Number of cards to skip, for pagination.';
+	public const PARAM_ORDER = 'Position of the card in the list, from 0 to 99999.';
+	public const PARAM_LAST_MODIFIED = 'lastModified of the card at the time it was read; if it has changed, the edit is refused.';
+	public const PARAM_CONFIRM = 'Must be true to confirm the deletion.';
+	public const PARAM_CONFIRM_SHARED = 'Set to true only after the user has confirmed the change on somebody else\'s board.';
 
 	/* Shared-resource confirmation (confirm_shared). */
 	/** Sentence appended to the description of every write tool of the module. */
 	public const CONFIRM_SHARED_DESCRIPTION
-		= ' Se o recurso for de outra pessoa, o agente DEVE perguntar ao usuário antes de enviar confirm_shared: true.';
-	/** Message returned, without error, instead of writing on somebody else\'s board. */
-	public const SHARED_CONFIRMATION
-		= "O quadro '%s' pertence a %s e é compartilhado com você. Alterações afetam outras pessoas. Confirme com o usuário antes de continuar e repita a chamada com confirm_shared: true.";
+		= ' If the resource belongs to somebody else, the agent MUST ask the user before sending confirm_shared: true.';
 
-	/* Error messages. */
-	/** Shared by "not found" and "no permission": the Deck answers both with the same exception. */
-	public const ERROR_NOT_FOUND_OR_FORBIDDEN = 'Card, lista ou quadro não encontrado ou sem permissão.';
-	/** Board or card archived. */
-	public const ERROR_NOT_ALLOWED = 'Operação não permitida neste board ou card do Deck.';
-	/** The Deck validator rejected the payload. */
-	public const ERROR_INVALID = 'Dados inválidos para o Deck.';
-	/** The card changed between the read and the write. */
-	public const ERROR_CONFLICT = 'O item do Deck mudou durante a operação. Tente de novo.';
-	/** Fallback for anything unexpected. */
-	public const ERROR_GENERIC = 'Não foi possível concluir a operação no Deck.';
+	private function __construct() {
+	}
 
-	/** Raised when deck_edit_card is called without a single editable field. */
-	public const ERROR_NO_FIELD_TO_EDIT = 'Informe ao menos um campo para editar: title, description ou duedate.';
+	/**
+	 * Shared by "not found" and "no permission": the Deck answers both with the same exception.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorNotFoundOrForbidden(): string {
+		return Translator::t('Card, list or board not found, or no permission.');
+	}
 
-	/** Raised when a date is not a real calendar date in AAAA-MM-DD form. */
-	public const ERROR_INVALID_DUEDATE = 'A data prevista deve ser uma data válida no formato AAAA-MM-DD.';
+	/**
+	 * Board or card archived.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorNotAllowed(): string {
+		return Translator::t('Operation not allowed on this Deck board or card.');
+	}
 
-	/** Raised when `dueBefore` is not a real calendar date in AAAA-MM-DD form. */
-	public const ERROR_INVALID_DUE_BEFORE = 'A data de dueBefore deve ser uma data válida no formato AAAA-MM-DD.';
+	/**
+	 * The Deck validator rejected the payload.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorInvalid(): string {
+		return Translator::t('Invalid data for Deck.');
+	}
 
-	/** Raised when `deck_followup_cards` is called with a status the Deck does not group by. */
-	public const ERROR_INVALID_STATUS = 'Status inválido para o acompanhamento. Use overdue, open, done ou all.';
+	/**
+	 * The card changed between the read and the write.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorConflict(): string {
+		return Translator::t('The Deck item changed during the operation. Try again.');
+	}
 
-	/** Raised when a description is longer than the module accepts. */
-	public const ERROR_DESCRIPTION_TOO_LONG = 'A descrição do card excede o tamanho máximo de 100000 caracteres.';
+	/**
+	 * Fallback for anything unexpected.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorGeneric(): string {
+		return Translator::t('Could not complete the operation in Deck.');
+	}
 
-	/** Raised when the title is empty once trimmed. */
-	public const ERROR_TITLE_REQUIRED = 'O título do card não pode ficar vazio.';
+	/**
+	 * Raised when deck_edit_card is called without a single editable field.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorNoFieldToEdit(): string {
+		return Translator::t('Provide at least one field to edit: title, description or duedate.');
+	}
 
-	/** Raised for a tool name this module does not serve. */
-	public const ERROR_UNKNOWN_TOOL = 'Ferramenta do Deck desconhecida.';
+	/**
+	 * Raised when a date is not a real calendar date in YYYY-MM-DD form.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorInvalidDuedate(): string {
+		return Translator::t('The due date must be a valid date in YYYY-MM-DD format.');
+	}
 
-	/** Raised when the Deck app is not available to the caller. */
-	public const ERROR_DECK_APP_UNAVAILABLE = 'O app Deck não está disponível para este usuário.';
+	/**
+	 * Raised when `dueBefore` is not a real calendar date in YYYY-MM-DD form.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorInvalidDueBefore(): string {
+		return Translator::t('The dueBefore date must be a valid date in YYYY-MM-DD format.');
+	}
+
+	/**
+	 * Raised when `deck_followup_cards` is called with a status the Deck does not group by.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorInvalidStatus(): string {
+		return Translator::t('Invalid status for the follow-up. Use overdue, open, done or all.');
+	}
+
+	/**
+	 * Raised when a description is longer than the module accepts.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorDescriptionTooLong(): string {
+		return Translator::t('The card description exceeds the maximum size of 100000 characters.');
+	}
+
+	/**
+	 * Raised when the title is empty once trimmed.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorTitleRequired(): string {
+		return Translator::t('The card title cannot be empty.');
+	}
+
+	/**
+	 * Raised for a tool name this module does not serve.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorUnknownTool(): string {
+		return Translator::t('Unknown Deck tool.');
+	}
+
+	/**
+	 * Raised when the Deck app is not available to the caller.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorDeckAppUnavailable(): string {
+		return Translator::t('The Deck app is not available for this user.');
+	}
+
+	/**
+	 * Message returned, without error, instead of writing on somebody else's board.
+	 * @param string $board Name of the board.
+	 * @param string $owner Display name of its owner.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function sharedConfirmation(string $board, string $owner): string {
+		return Translator::t('The board \'%s\' belongs to %s and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true.', [$board, $owner]);
+	}
 }

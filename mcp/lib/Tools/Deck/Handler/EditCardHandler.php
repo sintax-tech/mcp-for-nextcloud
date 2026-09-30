@@ -51,7 +51,7 @@ final class EditCardHandler extends AbstractHandler {
 	public function handle(array $arguments, string $userId): array {
 		$given = array_intersect_key($arguments, array_flip(self::EDITABLE_FIELDS));
 		if ($given === []) {
-			throw new InvalidArgumentException(DeckMessages::ERROR_NO_FIELD_TO_EDIT);
+			throw new InvalidArgumentException(DeckMessages::errorNoFieldToEdit());
 		}
 
 		return $this->run(function () use ($arguments, $given, $userId): array {
@@ -70,7 +70,7 @@ final class EditCardHandler extends AbstractHandler {
 
 			$expected = $arguments['lastModified'] ?? null;
 			if ($expected !== null && (int)$expected !== $card->getLastModified()) {
-				throw new DeckConflictException(DeckMessages::ERROR_CONFLICT);
+				throw new DeckConflictException(DeckMessages::errorConflict());
 			}
 
 			$title = array_key_exists('title', $given)

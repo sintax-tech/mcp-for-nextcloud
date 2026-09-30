@@ -92,7 +92,7 @@ final class ListStacksHandlerTest extends TestCase {
 		$result = $handler->handle(['boardId' => 4], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN, $this->text($result));
+		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 
 	public function testArchivedBoardBecomesTheNotAllowedMessage(): void {
@@ -100,7 +100,7 @@ final class ListStacksHandlerTest extends TestCase {
 		$gateway->method('listStacks')->willThrowException(new StatusException('Operation not allowed.'));
 		$handler = new ListStacksHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
-		self::assertSame(DeckMessages::ERROR_NOT_ALLOWED, $this->text($handler->handle(['boardId' => 4], 'alice')));
+		self::assertSame(DeckMessages::errorNotAllowed(), $this->text($handler->handle(['boardId' => 4], 'alice')));
 	}
 
 	public function testBackendFailureBecomesTheGenericMessage(): void {
@@ -111,6 +111,6 @@ final class ListStacksHandlerTest extends TestCase {
 		$result = $handler->handle(['boardId' => 4], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_GENERIC, $this->text($result));
+		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
 	}
 }

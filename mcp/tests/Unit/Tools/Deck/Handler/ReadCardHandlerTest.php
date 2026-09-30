@@ -71,21 +71,21 @@ final class ReadCardHandlerTest extends TestCase {
 		$missing = $this->handler(new DoesNotExistException('gone'))->handle(['cardId' => 7], 'alice');
 
 		self::assertTrue($denied['isError']);
-		self::assertSame(DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN, $this->text($denied));
+		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($denied));
 		self::assertSame($this->text($denied), $this->text($missing));
 	}
 
 	public function testDeckValidationFailureBecomesTheInvalidMessage(): void {
 		$result = $this->handler(new BadRequestException('title too long'))->handle(['cardId' => 7], 'alice');
 
-		self::assertSame(DeckMessages::ERROR_INVALID, $this->text($result));
+		self::assertSame(DeckMessages::errorInvalid(), $this->text($result));
 	}
 
 	public function testBackendFailureBecomesTheGenericMessage(): void {
 		$result = $this->handler(new RuntimeException('boom'))->handle(['cardId' => 7], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_GENERIC, $this->text($result));
+		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
 	}
 
 	/**

@@ -75,7 +75,7 @@ final class CreateCardHandlerTest extends TestCase {
 		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::ERROR_TITLE_REQUIRED);
+		$this->expectExceptionMessage(DeckMessages::errorTitleRequired());
 
 		$handler->handle(['stackId' => 10, 'title' => '   '], 'alice');
 	}
@@ -86,7 +86,7 @@ final class CreateCardHandlerTest extends TestCase {
 		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::ERROR_INVALID_DUEDATE);
+		$this->expectExceptionMessage(DeckMessages::errorInvalidDuedate());
 
 		$handler->handle(['stackId' => 10, 'title' => 'Fechar', 'duedate' => '2026-02-31'], 'alice');
 	}
@@ -97,7 +97,7 @@ final class CreateCardHandlerTest extends TestCase {
 		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::ERROR_DESCRIPTION_TOO_LONG);
+		$this->expectExceptionMessage(DeckMessages::errorDescriptionTooLong());
 
 		$handler->handle([
 			'stackId' => 10,
@@ -111,14 +111,14 @@ final class CreateCardHandlerTest extends TestCase {
 			->handle(['stackId' => 10, 'title' => 'Fechar'], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN, $this->text($result));
+		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 
 	public function testArchivedBoardBecomesTheNotAllowedMessage(): void {
 		$result = $this->handler(new StatusException('Operation not allowed. This board is archived.'))
 			->handle(['stackId' => 10, 'title' => 'Fechar'], 'alice');
 
-		self::assertSame(DeckMessages::ERROR_NOT_ALLOWED, $this->text($result));
+		self::assertSame(DeckMessages::errorNotAllowed(), $this->text($result));
 	}
 
 	public function testBackendFailureBecomesTheGenericMessage(): void {
@@ -126,7 +126,7 @@ final class CreateCardHandlerTest extends TestCase {
 			->handle(['stackId' => 10, 'title' => 'Fechar'], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_GENERIC, $this->text($result));
+		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
 		self::assertStringNotContainsString('foreign key', $this->text($result));
 	}
 
@@ -172,6 +172,6 @@ final class CreateCardHandlerTest extends TestCase {
 		$result = $handler->handle(['stackId' => 10, 'title' => 'Fechar contrato'], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN, $this->text($result));
+		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 }

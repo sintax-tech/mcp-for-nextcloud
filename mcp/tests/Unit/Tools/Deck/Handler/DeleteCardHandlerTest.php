@@ -63,14 +63,14 @@ final class DeleteCardHandlerTest extends TestCase {
 			->handle(['cardId' => 7, 'confirm' => true], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN, $this->text($result));
+		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 
 	public function testArchivedBoardBecomesTheNotAllowedMessage(): void {
 		$result = $this->handler(new StatusException('Operation not allowed. This board is archived.'))
 			->handle(['cardId' => 7, 'confirm' => true], 'alice');
 
-		self::assertSame(DeckMessages::ERROR_NOT_ALLOWED, $this->text($result));
+		self::assertSame(DeckMessages::errorNotAllowed(), $this->text($result));
 	}
 
 	public function testBackendFailureBecomesTheGenericMessage(): void {
@@ -78,7 +78,7 @@ final class DeleteCardHandlerTest extends TestCase {
 			->handle(['cardId' => 7, 'confirm' => true], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_GENERIC, $this->text($result));
+		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
 	}
 
 	public function testSharedBoardWithoutConfirmationDeletesNothing(): void {
@@ -120,6 +120,6 @@ final class DeleteCardHandlerTest extends TestCase {
 		$result = $handler->handle(['cardId' => 7, 'confirm' => true], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN, $this->text($result));
+		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 }

@@ -126,6 +126,20 @@ OC.L10N.register(
     "Quote file in Talk" : "Citar arquivo no Talk",
     "Direct message in Talk" : "Mensagem direta no Talk",
     "Send batch in Talk" : "Enviar lote no Talk",
-    "Create group in Talk" : "Criar grupo no Talk"
+    "Create group in Talk" : "Criar grupo no Talk",
+    "Card, list or board not found, or no permission." : "Card, lista ou quadro não encontrado ou sem permissão.",
+    "Operation not allowed on this Deck board or card." : "Operação não permitida neste board ou card do Deck.",
+    "Invalid data for Deck." : "Dados inválidos para o Deck.",
+    "The Deck item changed during the operation. Try again." : "O item do Deck mudou durante a operação. Tente de novo.",
+    "Could not complete the operation in Deck." : "Não foi possível concluir a operação no Deck.",
+    "Provide at least one field to edit: title, description or duedate." : "Informe ao menos um campo para editar: title, description ou duedate.",
+    "The due date must be a valid date in YYYY-MM-DD format." : "A data prevista deve ser uma data válida no formato AAAA-MM-DD.",
+    "The dueBefore date must be a valid date in YYYY-MM-DD format." : "A data de dueBefore deve ser uma data válida no formato AAAA-MM-DD.",
+    "Invalid status for the follow-up. Use overdue, open, done or all." : "Status inválido para o acompanhamento. Use overdue, open, done ou all.",
+    "The card description exceeds the maximum size of 100000 characters." : "A descrição do card excede o tamanho máximo de 100000 caracteres.",
+    "The card title cannot be empty." : "O título do card não pode ficar vazio.",
+    "Unknown Deck tool." : "Ferramenta do Deck desconhecida.",
+    "The Deck app is not available for this user." : "O app Deck não está disponível para este usuário.",
+    "The board '%s' belongs to %s and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true." : "O quadro '%s' pertence a %s e é compartilhado com você. Alterações afetam outras pessoas. Confirme com o usuário antes de continuar e repita a chamada com confirm_shared: true."
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

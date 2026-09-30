@@ -124,6 +124,20 @@
     "Quote file in Talk" : "Citar archivo en Talk",
     "Direct message in Talk" : "Mensaje directo en Talk",
     "Send batch in Talk" : "Enviar lote en Talk",
-    "Create group in Talk" : "Crear grupo en Talk"
+    "Create group in Talk" : "Crear grupo en Talk",
+    "Card, list or board not found, or no permission." : "Tarjeta, lista o tablero no encontrado, o sin permiso.",
+    "Operation not allowed on this Deck board or card." : "Operación no permitida en este tablero o tarjeta de Deck.",
+    "Invalid data for Deck." : "Datos no válidos para Deck.",
+    "The Deck item changed during the operation. Try again." : "El elemento de Deck cambió durante la operación. Inténtelo de nuevo.",
+    "Could not complete the operation in Deck." : "No se pudo completar la operación en Deck.",
+    "Provide at least one field to edit: title, description or duedate." : "Indique al menos un campo para editar: title, description o duedate.",
+    "The due date must be a valid date in YYYY-MM-DD format." : "La fecha prevista debe ser una fecha válida con el formato AAAA-MM-DD.",
+    "The dueBefore date must be a valid date in YYYY-MM-DD format." : "La fecha de dueBefore debe ser una fecha válida con el formato AAAA-MM-DD.",
+    "Invalid status for the follow-up. Use overdue, open, done or all." : "Estado no válido para el seguimiento. Use overdue, open, done o all.",
+    "The card description exceeds the maximum size of 100000 characters." : "La descripción de la tarjeta supera el tamaño máximo de 100000 caracteres.",
+    "The card title cannot be empty." : "El título de la tarjeta no puede estar vacío.",
+    "Unknown Deck tool." : "Herramienta de Deck desconocida.",
+    "The Deck app is not available for this user." : "La aplicación Deck no está disponible para este usuario.",
+    "The board '%s' belongs to %s and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true." : "El tablero '%s' pertenece a %s y está compartido con usted. Los cambios afectan a otras personas. Confirme con el usuario antes de continuar y repita la llamada con confirm_shared: true."
 },"pluralForm" :"nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

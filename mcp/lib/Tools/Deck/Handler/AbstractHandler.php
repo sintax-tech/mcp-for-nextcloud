@@ -93,7 +93,7 @@ abstract class AbstractHandler {
 			'owner' => $ownership['owner'],
 			'ownerDisplayName' => $ownership['ownerDisplayName'],
 			'resource' => $ownership['name'],
-			'message' => sprintf(DeckMessages::SHARED_CONFIRMATION, $ownership['name'], $ownership['ownerDisplayName']),
+			'message' => DeckMessages::sharedConfirmation($ownership['name'], $ownership['ownerDisplayName']),
 		];
 	}
 

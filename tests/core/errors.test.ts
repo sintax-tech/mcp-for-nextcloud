@@ -10,9 +10,9 @@ describe("mapHttpError", () => {
   });
   it("403 -> FORBIDDEN", () => { expect(mapHttpError(403, "x").code).toBe("FORBIDDEN"); });
   it("404 -> NOT_FOUND", () => { expect(mapHttpError(404, "x").code).toBe("NOT_FOUND"); });
-  it("500 -> HTTP, includes context but no secret", () => {
+  it("500 -> HTTP, omits unsafe context", () => {
     const e = mapHttpError(500, "talk_list");
     expect(e.code).toBe("HTTP");
-    expect(e.message).toContain("talk_list");
+    expect(e.message).not.toContain("talk_list");
   });
 });

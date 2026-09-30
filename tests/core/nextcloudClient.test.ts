@@ -64,6 +64,20 @@ describe("NextcloudClient", () => {
     await expect(client.getBytes("/slow")).rejects.toMatchObject({ code: "TIMEOUT" });
   });
 
+  it("treats Talk 304 as an empty message list", async () => {
+    const client = new NextcloudClient(cfg, async () => new Response(null, { status: 304 }));
+    expect(await client.ocsGet("/chat/abc")).toEqual([]);
+  });
+  it("maps OCS application status to a safe error", async () => {
+    const client = new NextcloudClient(cfg, async () => jsonResponse({ ocs: { meta: { statuscode: 403, message: "secret" }, data: [] } }));
+    await expect(client.ocsGet("/x")).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+  it("does not allow callers to replace Authorization", async () => {
+    const fetchFn = vi.fn(async () => jsonResponse({}));
+    await new NextcloudClient(cfg, fetchFn as any).request("/x", { headers: { authorization: "attacker" } });
+    expect(new Headers(fetchFn.mock.calls[0][1].headers).get("authorization"))
+      .toBe("Basic " + Buffer.from("alice:secret-pass").toString("base64"));
+  });
   it("webdavFilesRoot returns the per-user dav path", () => {
     const client = new NextcloudClient(cfg, (async () => jsonResponse({})) as any);
     expect(client.webdavFilesRoot()).toBe("/remote.php/dav/files/alice");

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 
 use OCA\Mcp\Tools\Talk\Conversation;
+use OCA\Mcp\Tools\Talk\ConversationAccessException;
 use OCA\Mcp\Tools\Talk\ConversationWriter;
 use OCA\Mcp\Tools\Talk\FileAccessException;
 use OCA\Mcp\Tools\Talk\FileSharer;
@@ -58,6 +59,8 @@ class FileSharerTest extends TestCase {
                 'name' => 'relatorio.pdf',
                 'size' => 2048,
             ],
+            'caption' => null,
+            'captionSent' => null,
         ], $result);
         $this->assertSame($this->file, $share->node);
         $this->assertSame(IShare::TYPE_ROOM, $share->type);
@@ -90,6 +93,38 @@ class FileSharerTest extends TestCase {
         $result = $this->sharer->attach($this->givenConversation('abcd'), 'alice', 'relatorio.pdf', 'olha o relatório');
 
         $this->assertSame(88, $result['messageId']);
+        $this->assertTrue($result['captionSent']);
+    }
+
+    public function testACaptionThatFailsAfterTheCardIsPublishedIsReportedAsAPartialSuccess(): void {
+        $this->givenNoExistingShare();
+        $this->fileResolver->method('resolveShareableFile')->willReturn($this->file);
+        $this->givenCreatedShare(77);
+        $this->writer->method('sendText')
+            ->willThrowException(new ConversationAccessException(Messages::MESSAGE_NOT_SENT));
+
+        // The share is already in the room: an error result would hide an attachment that really was published,
+        // and the caller would retry an attach that can only end in "already shared" with the caption lost.
+        $result = $this->sharer->attach($this->givenConversation('abcd'), 'alice', 'relatorio.pdf', 'olha o relatório');
+
+        $this->assertSame(77, $result['attachmentId']);
+        $this->assertFalse($result['captionSent']);
+        $this->assertSame('olha o relatório', $result['caption']);
+        $this->assertArrayNotHasKey('messageId', $result);
+        $this->assertSame(Messages::CAPTION_NOT_SENT, $result['message']);
+        $this->assertStringContainsString('talk_reply', $result['message']);
+    }
+
+    public function testAPartialSuccessNeverDeletesTheShareItJustCreated(): void {
+        $this->givenNoExistingShare();
+        $this->fileResolver->method('resolveShareableFile')->willReturn($this->file);
+        $this->givenCreatedShare(77);
+        $this->writer->method('sendText')->willThrowException(new RuntimeException('room went read-only'));
+        // Compensation would be worse than the failure: other participants may already have seen the card, and
+        // a delete of a room share can fail on its own. So nothing is removed here.
+        $this->shareManager->expects($this->never())->method('deleteShare');
+
+        $this->sharer->attach($this->givenConversation('abcd'), 'alice', 'relatorio.pdf', 'legenda');
     }
 
     public function testFileAlreadySharedByAnotherParticipantIsRefusedBeforeCreatingAnything(): void {

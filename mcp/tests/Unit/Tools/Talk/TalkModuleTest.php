@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 
 use InvalidArgumentException;
+use OCA\Mcp\Tools\Talk\ApprovalException;
 use OCA\Mcp\Tools\Talk\Conversation;
 use OCA\Mcp\Tools\Talk\ConversationAccessException;
 use OCA\Mcp\Tools\Talk\ConversationReader;
@@ -145,9 +146,19 @@ class TalkModuleTest extends TestCase {
             ->with($conversation, 'alice', 'bom dia', 42)
             ->willReturn(['conversation_token' => 'abcd', 'messageId' => 55]);
 
+        $this->draftApproval->expects($this->once())
+            ->method('approveReply')
+            ->with($conversation, 'alice', 'APR-1', 'bom dia', 42);
+
         $result = $this->module->call(
             TalkModule::TOOL_REPLY,
-            ['conversation_token' => 'abcd', 'message' => 'bom dia', 'reply_to' => 42, 'confirm' => true],
+            [
+                'conversation_token' => 'abcd',
+                'message' => 'bom dia',
+                'reply_to' => 42,
+                'confirm' => true,
+                'approval_id' => 'APR-1',
+            ],
             'alice',
         );
 
@@ -160,9 +171,13 @@ class TalkModuleTest extends TestCase {
             ->method('reply')
             ->with($this->anything(), 'alice', 'bom dia', null);
 
+        $this->draftApproval->expects($this->once())
+            ->method('approveReply')
+            ->with($this->anything(), 'alice', 'APR-1', 'bom dia', null);
+
         $this->module->call(
             TalkModule::TOOL_REPLY,
-            ['conversation_token' => 'abcd', 'message' => 'bom dia', 'confirm' => true],
+            ['conversation_token' => 'abcd', 'message' => 'bom dia', 'confirm' => true, 'approval_id' => 'APR-1'],
             'alice',
         );
     }
@@ -191,9 +206,13 @@ class TalkModuleTest extends TestCase {
             ->method('attach')
             ->with($this->anything(), 'alice', 'relatorio.pdf', null);
 
+        $this->draftApproval->expects($this->once())
+            ->method('approveAttach')
+            ->with($this->anything(), 'alice', 'APR-2', 'relatorio.pdf', null);
+
         $this->module->call(
             TalkModule::TOOL_ATTACH,
-            ['conversation_token' => 'abcd', 'path' => 'relatorio.pdf', 'confirm' => true],
+            ['conversation_token' => 'abcd', 'path' => 'relatorio.pdf', 'confirm' => true, 'approval_id' => 'APR-2'],
             'alice',
         );
     }
@@ -206,10 +225,19 @@ class TalkModuleTest extends TestCase {
             ->with($conversation, 'alice', 77, 'a figura')
             ->willReturn(['conversation_token' => 'abcd', 'messageId' => 88, 'attachmentId' => 77]);
         $this->sharer->expects($this->never())->method('attach');
+        $this->draftApproval->expects($this->once())
+            ->method('approveQuote')
+            ->with($conversation, 'alice', 'APR-3', 77, 'a figura');
 
         $result = $this->module->call(
             TalkModule::TOOL_QUOTE,
-            ['conversation_token' => 'abcd', 'attachment_id' => 77, 'message' => 'a figura', 'confirm' => true],
+            [
+                'conversation_token' => 'abcd',
+                'attachment_id' => 77,
+                'message' => 'a figura',
+                'confirm' => true,
+                'approval_id' => 'APR-3',
+            ],
             'alice',
         );
 
@@ -223,8 +251,8 @@ class TalkModuleTest extends TestCase {
         // lives in the sentence itself and not only in this test.
         foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file'] as $name) {
             $this->assertStringContainsString(
-                'Antes de enviar, o agente DEVE mostrar o rascunho ao usuário e obter aprovação explícita;'
-                    . ' só então repetir com confirm: true.',
+                'Antes de enviar, o agente DEVE chamar a tool sem confirm, mostrar o rascunho devolvido ao usuário'
+                    . ' e obter aprovação explícita; só então repetir com confirm: true e o approval_id da prévia.',
                 $descriptions[$name],
                 $name,
             );
@@ -292,6 +320,18 @@ class TalkModuleTest extends TestCase {
         $this->assertSame(['requiresConfirmation' => true, 'action' => 'talk_quote_file'], $this->payloadOf($result));
     }
 
+    public function testTheDraftInstructionTellsTheAgentWhichIdToSendBack(): void {
+        $descriptions = array_column($this->module->definitions(), 'description', 'name');
+
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file'] as $name) {
+            $this->assertStringContainsString(
+                'Antes de enviar, o agente DEVE chamar a tool sem confirm, mostrar o rascunho devolvido ao usuário',
+                $descriptions[$name],
+                $name,
+            );
+        }
+    }
+
     public function testAnExplicitFalseIsTheSameAsNoConfirmationAtAll(): void {
         $conversation = $this->givenConversation();
         $this->resolver->method('resolveForWriting')->willReturn($conversation);
@@ -303,6 +343,124 @@ class TalkModuleTest extends TestCase {
             ['conversation_token' => 'abcd', 'message' => 'bom dia', 'confirm' => false],
             'alice',
         );
+    }
+
+    public function testAConfirmedCallWithoutAnApprovalIdPublishesNothing(): void {
+        $this->resolver->method('resolveForWriting')->willReturn($this->givenConversation());
+        $this->draftApproval->method('approveReply')
+            ->willThrowException(new ApprovalException(Messages::APPROVAL_MISSING));
+        // confirm: true without a draft behind it is the case the review pointed at: nothing may go out.
+        $this->writer->expects($this->never())->method('reply');
+        $this->sharer->expects($this->never())->method('attach');
+        $this->writer->expects($this->never())->method('quoteAttachment');
+
+        $result = $this->module->call(
+            TalkModule::TOOL_REPLY,
+            ['conversation_token' => 'abcd', 'message' => 'bom dia', 'confirm' => true],
+            'alice',
+        );
+
+        $this->assertTrue($result['isError']);
+        $this->assertSame(Messages::APPROVAL_MISSING, $result['content'][0]['text']);
+    }
+
+    public function testAnApprovalRefusedByTheDraftBuilderKeepsTheWriteFromHappening(): void {
+        $this->resolver->method('resolveForWriting')->willReturn($this->givenConversation());
+        $this->draftApproval->method('approveQuote')
+            ->willThrowException(new ApprovalException(Messages::APPROVAL_INVALID));
+        $this->writer->expects($this->never())->method('quoteAttachment');
+
+        $result = $this->module->call(
+            TalkModule::TOOL_QUOTE,
+            ['conversation_token' => 'abcd', 'attachment_id' => 77, 'confirm' => true, 'approval_id' => 'APR-3'],
+            'alice',
+        );
+
+        $this->assertTrue($result['isError']);
+        $this->assertSame(Messages::APPROVAL_INVALID, $result['content'][0]['text']);
+    }
+
+    public function testTheApprovalIsCheckedBeforeTheFileIsShared(): void {
+        $this->resolver->method('resolveForWriting')->willReturn($this->givenConversation());
+        $this->draftApproval->expects($this->once())
+            ->method('approveAttach')
+            ->with($this->anything(), 'alice', 'APR-2', 'relatorio.pdf', null)
+            ->willThrowException(new ApprovalException(Messages::APPROVAL_INVALID));
+        // Ordering, not just refusal: an invalid approval must not leave a share behind.
+        $this->sharer->expects($this->never())->method('attach');
+
+        $this->module->call(
+            TalkModule::TOOL_ATTACH,
+            ['conversation_token' => 'abcd', 'path' => 'relatorio.pdf', 'confirm' => true, 'approval_id' => 'APR-2'],
+            'alice',
+        );
+    }
+
+    public function testADraftWithoutConfirmIsNeverCheckedAsAnApproval(): void {
+        $this->resolver->method('resolveForWriting')->willReturn($this->givenConversation());
+        $this->draftApproval->expects($this->never())->method('approveReply');
+        $this->draftApproval->method('reply')->willReturn(['requiresConfirmation' => true]);
+
+        $this->module->call(TalkModule::TOOL_REPLY, ['conversation_token' => 'abcd', 'message' => 'oi'], 'alice');
+    }
+
+    public function testACaptionLostAfterTheAttachmentIsNotAnErrorButIsAudited(): void {
+        $this->resolver->method('resolveForWriting')->willReturn($this->givenConversation());
+        $this->sharer->method('attach')->willReturn([
+            'conversation_token' => 'abcd',
+            'attachmentId' => 77,
+            'file' => ['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 1],
+            'caption' => 'legenda',
+            'captionSent' => false,
+            'message' => Messages::CAPTION_NOT_SENT,
+        ]);
+        // The card is in the room, so the result answers what happened and the log keeps the failure visible.
+        $this->logger->expects($this->once())
+            ->method('error')
+            ->with($this->anything(), $this->callback(static fn (array $context): bool => $context['attachmentId'] === 77));
+
+        $result = $this->module->call(
+            TalkModule::TOOL_ATTACH,
+            [
+                'conversation_token' => 'abcd',
+                'path' => 'relatorio.pdf',
+                'message' => 'legenda',
+                'confirm' => true,
+                'approval_id' => 'APR-2',
+            ],
+            'alice',
+        );
+
+        $this->assertArrayNotHasKey('isError', $result);
+        $this->assertFalse($this->payloadOf($result)['captionSent']);
+    }
+
+    public function testTheSchemasTellTheAgentWhichIdTheApprovalIs(): void {
+        $schemas = array_column($this->module->definitions(), 'inputSchema', 'name');
+
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file'] as $name) {
+            $this->assertSame(
+                ['type' => 'string', 'minLength' => 1, 'maxLength' => 64],
+                $schemas[$name]['properties']['approval_id'],
+                $name,
+            );
+            // Optional on its own: only the draft call needs it absent.
+            $this->assertArrayNotHasKey('approval_id', $schemas[$name]['required'], $name);
+        }
+    }
+
+    public function testTheDescriptionTellsTheAgentHowToApproveAndWhoHasToApprove(): void {
+        $descriptions = array_column($this->module->definitions(), 'description', 'name');
+
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file'] as $name) {
+            $this->assertStringContainsString('approval_id da prévia', $descriptions[$name], $name);
+            // The server can prove it showed the draft; it cannot prove a human said yes. Say so.
+            $this->assertStringContainsString(
+                'a aprovação em si depende de o agente mostrar o rascunho e de o usuário confirmar no cliente',
+                $descriptions[$name],
+                $name,
+            );
+        }
     }
 
     public function testRefusalKeepsTheMessageWrittenForTheUser(): void {

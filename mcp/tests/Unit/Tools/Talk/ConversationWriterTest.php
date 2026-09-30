@@ -322,4 +322,3 @@ final class WriterParticipantStub {
         return 128;
     }
 }
-

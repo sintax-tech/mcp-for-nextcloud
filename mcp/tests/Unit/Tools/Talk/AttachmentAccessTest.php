@@ -7,6 +7,9 @@ use OCA\Mcp\Tools\Talk\AttachmentAccess;
 use OCA\Mcp\Tools\Talk\Conversation;
 use OCA\Mcp\Tools\Talk\ConversationAccessException;
 use OCA\Mcp\Tools\Talk\Messages;
+use OCP\Files\File;
+use OCP\Files\Folder;
+use OCP\Files\NotFoundException;
 use OCP\Share\IManager as IShareManager;
 use OCP\Share\IShare;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -34,6 +37,52 @@ class AttachmentAccessTest extends TestCase {
         $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
 
         $this->addToAssertionCount(1);
+    }
+
+    public function testTheValidatedShareComesBackSoTheDraftCanNameTheFile(): void {
+        $this->givenShare(IShare::TYPE_ROOM, 'abcd');
+
+        $share = $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
+
+        $this->assertSame(77, (int)$share->getId());
+    }
+
+    public function testTheDescriptionNamesTheFileTheCardWillCarry(): void {
+        $node = $this->createMock(File::class);
+        $node->method('getName')->willReturn('relatorio.pdf');
+        $node->method('getSize')->willReturn(2048);
+        $node->method('getMimeType')->willReturn('application/pdf');
+        $share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
+        $share->method('getNode')->willReturn($node);
+
+        // An id alone tells the user nothing about what is about to be cited in their name.
+        $this->assertSame(
+            ['attachmentId' => 77, 'name' => 'relatorio.pdf', 'size' => 2048, 'mimeType' => 'application/pdf'],
+            $this->access->describe($share),
+        );
+    }
+
+    public function testAFileDeletedSinceTheShareIsReportedWithoutAName(): void {
+        $share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
+        $share->method('getNode')->willThrowException(new NotFoundException());
+
+        $description = $this->access->describe($share);
+
+        // Inventing a name for a file that is gone is worse than reporting none: the send will fail on its own.
+        $this->assertSame(['attachmentId' => 77, 'name' => null, 'size' => null, 'mimeType' => null], $description);
+    }
+
+    public function testAFolderShareHasNoMimeType(): void {
+        $folder = $this->createMock(Folder::class);
+        $folder->method('getName')->willReturn('fotos');
+        $folder->method('getSize')->willReturn(null);
+        $share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
+        $share->method('getNode')->willReturn($folder);
+
+        $this->assertSame(
+            ['attachmentId' => 77, 'name' => 'fotos', 'size' => null, 'mimeType' => null],
+            $this->access->describe($share),
+        );
     }
 
     public function testTheShareIsOnlyReadAndNeverWritten(): void {
@@ -83,6 +132,7 @@ class AttachmentAccessTest extends TestCase {
 
     private function givenShare(int $shareType, string $sharedWith): IShare&MockObject {
         $share = $this->createMock(IShare::class);
+        $share->method('getId')->willReturn('77');
         $share->method('getShareType')->willReturn($shareType);
         $share->method('getSharedWith')->willReturn($sharedWith);
         $this->shareManager->method('getShareById')->willReturn($share);

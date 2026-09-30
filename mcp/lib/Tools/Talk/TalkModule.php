@@ -15,9 +15,10 @@ use Throwable;
  * resource decision belongs to ConversationResolver, UserFileResolver or the share lookup. What it does own is the
  * translation of a failure into an MCP result, keeping every user-facing string in Messages.
  *
- * Every writing tool stops at a draft until the user approves it: confirm: true is the only way to publish, and
- * the arguments of the confirmed call are the text that goes out, so an approved draft cannot be changed in
- * between. Without confirm the tool answers with a payload, never with an error, and writes nothing.
+ * Every writing tool stops at a draft until the user approves it: a call without confirm answers with the draft
+ * and an approvalId, and a call with confirm: true only publishes when that id proves a draft of this same account,
+ * conversation, action and payload was already shown and has not been spent. Without confirm the tool answers with
+ * a payload, never with an error, and writes nothing.
  */
 class TalkModule implements ToolModule {
     public const TOOL_LIST = 'talk_list_conversations';
@@ -31,6 +32,8 @@ class TalkModule implements ToolModule {
 
     /** Optional on purpose: a call without it is the draft, a call with it true is the approved send. */
     private const CONFIRM_SCHEMA = ['type' => 'boolean'];
+    /** Id of the draft being approved; meaningful only together with confirm: true. */
+    private const APPROVAL_ID_SCHEMA = ['type' => 'string', 'minLength' => 1, 'maxLength' => 64];
 
     public function __construct(
         private TalkServices $talkServices,
@@ -90,6 +93,7 @@ class TalkModule implements ToolModule {
                         ],
                         'reply_to' => ['type' => 'integer', 'minimum' => 1],
                         'confirm' => self::CONFIRM_SCHEMA,
+                        'approval_id' => self::APPROVAL_ID_SCHEMA,
                     ],
                     'required' => ['conversation_token', 'message'],
                     'additionalProperties' => false,
@@ -112,6 +116,7 @@ class TalkModule implements ToolModule {
                             'maxLength' => ConversationWriter::MAX_MESSAGE_LENGTH,
                         ],
                         'confirm' => self::CONFIRM_SCHEMA,
+                        'approval_id' => self::APPROVAL_ID_SCHEMA,
                     ],
                     'required' => ['conversation_token', 'path'],
                     'additionalProperties' => false,
@@ -134,6 +139,7 @@ class TalkModule implements ToolModule {
                             'maxLength' => AttachmentMessage::MAX_CAPTION,
                         ],
                         'confirm' => self::CONFIRM_SCHEMA,
+                        'approval_id' => self::APPROVAL_ID_SCHEMA,
                     ],
                     'required' => ['conversation_token', 'attachment_id'],
                     'additionalProperties' => false,
@@ -197,7 +203,9 @@ class TalkModule implements ToolModule {
     private function messageFor(Throwable $e): string {
         return match (true) {
             $e instanceof TalkUnavailableException => Messages::TALK_UNAVAILABLE,
-            $e instanceof ConversationAccessException, $e instanceof FileAccessException => $e->getMessage(),
+            $e instanceof ConversationAccessException,
+            $e instanceof FileAccessException,
+            $e instanceof ApprovalException => $e->getMessage(),
             default => Messages::UNEXPECTED,
         };
     }
@@ -286,6 +294,7 @@ class TalkModule implements ToolModule {
      * @return array<string, mixed> Result data of talk_reply, or the draft when confirm is absent
      * @throws InvalidArgumentException When an argument is missing
      * @throws ConversationAccessException When the conversation is missing, not writable, or the quoted message is not there
+     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function replyCall(string $userId, array $arguments): array {
@@ -293,9 +302,12 @@ class TalkModule implements ToolModule {
         $replyTo = $this->replyTo($arguments);
         $conversation = $this->writable($userId, $arguments);
 
-        return $this->confirmed($arguments)
-            ? $this->writer->reply($conversation, $userId, $message, $replyTo)
-            : $this->draftApproval->reply($conversation, $userId, $message, $replyTo);
+        if (!$this->confirmed($arguments)) {
+            return $this->draftApproval->reply($conversation, $userId, $message, $replyTo);
+        }
+        $this->draftApproval->approveReply($conversation, $userId, $this->approvalId($arguments), $message, $replyTo);
+
+        return $this->writer->reply($conversation, $userId, $message, $replyTo);
     }
 
     /**
@@ -305,6 +317,7 @@ class TalkModule implements ToolModule {
      * @throws InvalidArgumentException When the path is missing
      * @throws ConversationAccessException When the conversation cannot be reached for writing
      * @throws FileAccessException When the file is missing, not shareable or already shared in this conversation
+     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function attachCall(string $userId, array $arguments): array {
@@ -312,9 +325,24 @@ class TalkModule implements ToolModule {
         $caption = $this->optionalMessage($arguments);
         $conversation = $this->writable($userId, $arguments);
 
-        return $this->confirmed($arguments)
-            ? $this->sharer->attach($conversation, $userId, $path, $caption)
-            : $this->draftApproval->attach($conversation, $userId, $path, $caption);
+        if (!$this->confirmed($arguments)) {
+            return $this->draftApproval->attach($conversation, $userId, $path, $caption);
+        }
+        $this->draftApproval->approveAttach($conversation, $userId, $this->approvalId($arguments), $path, $caption);
+
+        $attached = $this->sharer->attach($conversation, $userId, $path, $caption);
+        if (($attached['captionSent'] ?? null) === false) {
+            // The card is already in the room, so this is a real failure of the call even though it is not an
+            // error result: an operator has to be able to see that the caption was lost.
+            $this->logger->error('Talk caption was not sent after the attachment was published', [
+                'app' => 'mcp',
+                'tool' => self::TOOL_ATTACH,
+                'attachmentId' => $attached['attachmentId'],
+                'exception' => 'CaptionFailed',
+            ]);
+        }
+
+        return $attached;
     }
 
     /**
@@ -323,6 +351,7 @@ class TalkModule implements ToolModule {
      * @return array<string, mixed> Result data of talk_quote_file, or the draft when confirm is absent
      * @throws InvalidArgumentException When the attachment id is missing
      * @throws ConversationAccessException When the conversation cannot be reached for writing, or the attachment is not a share of it
+     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function quoteCall(string $userId, array $arguments): array {
@@ -330,9 +359,12 @@ class TalkModule implements ToolModule {
         $caption = $this->optionalMessage($arguments);
         $conversation = $this->writable($userId, $arguments);
 
-        return $this->confirmed($arguments)
-            ? $this->writer->quoteAttachment($conversation, $userId, $attachmentId, $caption)
-            : $this->draftApproval->quote($conversation, $userId, $attachmentId, $caption);
+        if (!$this->confirmed($arguments)) {
+            return $this->draftApproval->quote($conversation, $userId, $attachmentId, $caption);
+        }
+        $this->draftApproval->approveQuote($conversation, $userId, $this->approvalId($arguments), $attachmentId, $caption);
+
+        return $this->writer->quoteAttachment($conversation, $userId, $attachmentId, $caption);
     }
 
     /**
@@ -342,6 +374,14 @@ class TalkModule implements ToolModule {
      */
     private function confirmed(array $arguments): bool {
         return ($arguments['confirm'] ?? false) === true;
+    }
+
+    /**
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return string|null Id of the draft being approved, or null when the caller sent none
+     */
+    private function approvalId(array $arguments): ?string {
+        return isset($arguments['approval_id']) ? (string)$arguments['approval_id'] : null;
     }
 
     /**

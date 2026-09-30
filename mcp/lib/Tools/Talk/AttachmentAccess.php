@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Talk;
 
+use OCP\Files\File;
 use OCP\Share\IManager as IShareManager;
 use OCP\Share\IShare;
 use Throwable;
@@ -23,9 +24,10 @@ class AttachmentAccess {
      * @param Conversation $conversation Conversation the card would be published in
      * @param string $userId Authenticated user
      * @param int $attachmentId Room share id reported by talk_read_messages
+     * @return IShare The validated share, so a draft can name the file the card will carry
      * @throws ConversationAccessException When the id is not a share of this conversation
      */
-    public function requireRoomShareOf(Conversation $conversation, string $userId, int $attachmentId): void {
+    public function requireRoomShareOf(Conversation $conversation, string $userId, int $attachmentId): IShare {
         try {
             $share = $this->shareManager->getShareById((string)$attachmentId, $userId);
         } catch (Throwable $e) {
@@ -36,5 +38,37 @@ class AttachmentAccess {
             || (string)$share->getSharedWith() !== $conversation->token()) {
             throw new ConversationAccessException(Messages::ATTACHMENT_NOT_FOUND);
         }
+
+        return $share;
+    }
+
+    /**
+     * Names the file behind a room share, so a user approving a quote knows which file will be cited instead of
+     * trusting an id. A file deleted between the share and the quote keeps its share but has no node to read, so
+     * only the id is reported then: the name of a file that no longer exists is worse than none.
+     *
+     * @param IShare $share Room share already validated by requireRoomShareOf
+     * @return array{attachmentId:int, name:string|null, size:int|null, mimeType:string|null}
+     */
+    public function describe(IShare $share): array {
+        $description = [
+            'attachmentId' => (int)$share->getId(),
+            'name' => null,
+            'size' => null,
+            'mimeType' => null,
+        ];
+
+        try {
+            $node = $share->getNode();
+        } catch (Throwable) {
+            return $description;
+        }
+
+        return [
+            'attachmentId' => $description['attachmentId'],
+            'name' => (string)$node->getName(),
+            'size' => $node->getSize() === null ? null : (int)$node->getSize(),
+            'mimeType' => $node instanceof File ? $node->getMimeType() : null,
+        ];
     }
 }

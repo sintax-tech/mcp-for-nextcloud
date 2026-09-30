@@ -16,6 +16,13 @@ use Throwable;
  * message, so writing an envelope as well would show the attachment twice. A caption cannot ride inside that card
  * either, because the listener reads it from an HTTP request parameter a JSON-RPC call does not have, so it goes
  * out right after as a normal message.
+ *
+ * That order has a consequence this class owns: the share exists the moment the card is in the room, so a caption
+ * that fails afterwards cannot be taken back with an error. Reporting the failure would hide a share that is
+ * really published, and sharing again would only earn the duplicate refusal with the caption lost for good. So
+ * the answer says what happened instead: the attachment id that was created, the caption that did not go out and
+ * how to finish it. Nothing is deleted to paper over the failure, because removing a card other participants have
+ * already seen is worse than a missing caption, and it would fail for its own reasons half the time.
  */
 class FileSharer {
     public function __construct(
@@ -31,10 +38,10 @@ class FileSharer {
      * @param string $userId Authenticated user, the owner of the file and of the share
      * @param string $path Path of the file relative to the user folder
      * @param string|null $caption Optional text sent after the attachment card
-     * @return array{conversation_token:string, attachmentId:int, file:array{path:string, name:string, size:int}, messageId?:int}
+     * @return array{conversation_token:string, attachmentId:int, file:array{path:string, name:string, size:int}, caption:string|null, captionSent:bool|null, messageId?:int, message?:string}
      * @throws InvalidArgumentException When the path or the caption is not usable
      * @throws FileAccessException When the file is missing, not shareable or already shared in this conversation
-     * @throws ConversationAccessException When the share cannot be created or the caption cannot be sent
+     * @throws ConversationAccessException When the share cannot be created
      * @throws TalkUnavailableException When spreed is unavailable
      */
     public function attach(Conversation $conversation, string $userId, string $path, ?string $caption = null): array {
@@ -58,10 +65,22 @@ class FileSharer {
             'conversation_token' => $token,
             'attachmentId' => (int)$created->getId(),
             'file' => self::describe($file),
+            'caption' => $caption,
+            'captionSent' => null,
         ];
 
-        if ($caption !== null) {
+        if ($caption === null) {
+            return $result;
+        }
+
+        try {
             $result['messageId'] = $this->writer->sendText($conversation, $userId, $caption);
+            $result['captionSent'] = true;
+        } catch (Throwable $e) {
+            // The attachment is published either way, so this is a partial success and says so, in the payload
+            // and in the message the agent reads: the card is in the room, only the text is missing.
+            $result['captionSent'] = false;
+            $result['message'] = Messages::CAPTION_NOT_SENT;
         }
 
         return $result;

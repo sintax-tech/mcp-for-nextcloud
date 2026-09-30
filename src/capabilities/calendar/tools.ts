@@ -41,27 +41,32 @@ function parseDate(input: string, label: string): Date {
   return date;
 }
 
-function eventInfo(e: any, start: Date, end: Date): EventInfo {
+function localDate(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function eventInfo(e: any, start: Date, end: Date, timeZone?: string): EventInfo {
   const allDay = e.datetype === "date";
-  const tz = (e.start as any)?.tz;
+  const tz = timeZone ?? (e.start as any)?.tz ?? e.rrule?.origOptions?.tzid;
   return {
     uid: String(e.uid ?? ""), summary: String(e.summary ?? ""),
-    start: allDay ? start.toISOString().slice(0, 10) : start.toISOString(),
-    end: allDay ? end.toISOString().slice(0, 10) : end.toISOString(),
+    start: allDay ? localDate(start) : start.toISOString(),
+    end: allDay ? localDate(end) : end.toISOString(),
     location: String(e.location ?? ""), allDay,
     ...(tz && !allDay ? { timeZone: String(tz) } : {}),
   };
 }
 
-function eventsInWindow(e: any, from: Date, to: Date): EventInfo[] {
+function eventsInWindow(e: any, from: Date, to: Date, timeZone?: string): EventInfo[] {
   const start = e.start instanceof Date ? e.start : undefined;
   const end = e.end instanceof Date ? e.end : start;
   if (!start || !end) return [];
   const duration = end.getTime() - start.getTime();
   const overlaps = (a: Date, b: Date) => a < to && b > from;
-  if (!e.rrule) return overlaps(start, end) ? [eventInfo(e, start, end)] : [];
+  if (!e.rrule) return overlaps(start, end) ? [eventInfo(e, start, end, timeZone)] : [];
   const exclusions = new Set(Object.values(e.exdate ?? {}).map((d: any) => new Date(d).getTime()));
-  const overrides = Object.values(e.recurrences ?? {}) as any[];
+  const overrides = [...new Map((Object.values(e.recurrences ?? {}) as any[])
+    .map(o => [new Date(o.recurrenceid).getTime(), o] as const)).values()];
   const overridden = new Set(overrides.map(o => new Date(o.recurrenceid).getTime()));
   const occurrences: EventInfo[] = [];
   const begin = new Date(from.getTime() - Math.max(duration, 0));
@@ -69,12 +74,12 @@ function eventsInWindow(e: any, from: Date, to: Date): EventInfo[] {
     const time = date.getTime();
     if (exclusions.has(time) || overridden.has(time)) continue;
     const occurrenceEnd = new Date(time + duration);
-    if (overlaps(date, occurrenceEnd)) occurrences.push(eventInfo(e, date, occurrenceEnd));
+    if (overlaps(date, occurrenceEnd)) occurrences.push(eventInfo(e, date, occurrenceEnd, timeZone));
   }
   for (const override of overrides) {
     if (override.status === "CANCELLED" || !(override.start instanceof Date)) continue;
     const overrideEnd = override.end instanceof Date ? override.end : override.start;
-    if (overlaps(override.start, overrideEnd)) occurrences.push(eventInfo(override, override.start, overrideEnd));
+    if (overlaps(override.start, overrideEnd)) occurrences.push(eventInfo(override, override.start, overrideEnd, timeZone));
   }
   return occurrences;
 }
@@ -99,9 +104,16 @@ export async function listEvents(client: NextcloudClient, calendarPath?: string,
     for (const r of asArray<any>(doc?.multistatus?.response)) {
       const data = successfulProp(r)?.["calendar-data"];
       if (!data) continue;
-      const parsed = ical.sync.parseICS(String(data));
+      const ics = String(data).replace(/\r?\n[ \t]/g, "");
+      const timeZones = new Map<string, string>();
+      for (const block of ics.match(/BEGIN:VEVENT[\s\S]*?END:VEVENT/g) ?? []) {
+        const uid = /^UID:(.+)$/m.exec(block)?.[1]?.trim();
+        const tz = /^DTSTART;[^\r\n]*?TZID=([^;:]+)[^\r\n]*:/m.exec(block)?.[1];
+        if (uid && tz && !timeZones.has(uid)) timeZones.set(uid, tz);
+      }
+      const parsed = ical.sync.parseICS(ics);
       for (const v of Object.values(parsed)) if ((v as any).type === "VEVENT")
-        out.push(...eventsInWindow(v, from, to));
+        out.push(...eventsInWindow(v, from, to, timeZones.get(String((v as any).uid))));
     }
   }
   return out;

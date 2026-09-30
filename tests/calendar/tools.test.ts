@@ -62,4 +62,11 @@ describe("calendar", () => {
     await listEvents(new NextcloudClient({ ...cfg, username: "a # %" }, fetchFn as any), undefined, "2026-09-30", "2026-10-01");
     expect(fetchFn.mock.calls.filter(c => c[1].method === "REPORT").every(c => String(c[0]).includes("a%20%23%20%25"))).toBe(true);
   });
+  it("retains TZID for a non-recurring event with node-ical 0.26", async () => {
+    const data = events.replace('DTSTART:20260930T130000Z', 'DTSTART;TZID=America/Sao_Paulo:20260930T100000')
+      .replace('DTEND:20260930T140000Z', 'DTEND;TZID=America/Sao_Paulo:20260930T110000');
+    const client = new NextcloudClient(cfg, async () => new Response(data, { status: 207 }));
+    const result = await listEvents(client, "/remote.php/dav/calendars/alice/personal/", "2026-09-30", "2026-10-01");
+    expect(result[0]).toMatchObject({ start: "2026-09-30T13:00:00.000Z", timeZone: "America/Sao_Paulo" });
+  });
 });

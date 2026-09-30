@@ -24,6 +24,8 @@ final class FakeTree {
     public array $failCopy = [];
     public array $shortCopy = [];
     public bool $failWrite = false;
+    /** @var list<\OCP\Files\Search\ISearchQuery> queries received by Folder::search */
+    public array $searches = [];
     private int $nextId = 100;
 
     public function __construct(private TestCase $test, public string $root = '/alice/files') {
@@ -140,8 +142,15 @@ final class FakeTree {
             $this->addFile("$path/$name", (string)$content, 'text/markdown');
             return $this->file("$path/$name");
         });
-        $folder->method('search')->willReturnCallback(fn (string $query) => array_values(array_map(fn ($p) => $this->node($p),
-            array_filter(array_keys($this->nodes), fn ($p) => str_starts_with($p, $path . '/') && stripos(basename($p), $query) !== false))));
+        $folder->method('search')->willReturnCallback(function ($query) use ($path): array {
+            $this->searches[] = $query;
+            // Evaluates the escaped LIKE pattern like the database would, then applies the query limit.
+            $regex = '/^' . preg_replace_callback('/\\\\(.)|%|_|[^%_\\\\]+/', static fn ($m) => match (true) {
+                isset($m[1]) => preg_quote($m[1], '/'), $m[0] === '%' => '.*', $m[0] === '_' => '.', default => preg_quote($m[0], '/'),
+            }, $query->getSearchOperation()->getValue()) . '$/iu';
+            $matches = array_filter(array_keys($this->nodes), fn ($p) => str_starts_with($p, $path . '/') && preg_match($regex, basename($p)) === 1);
+            return array_slice(array_values(array_map(fn ($p) => $this->node($p), $matches)), 0, $query->getLimit());
+        });
         $folder->method('getById')->willReturnCallback(fn (int $id) => array_values(array_map(fn ($p) => $this->node($p),
             array_filter(array_keys($this->nodes), fn ($p) => str_starts_with($p, $path . '/') && $this->nodes[$p]['id'] === $id))));
         return $folder;

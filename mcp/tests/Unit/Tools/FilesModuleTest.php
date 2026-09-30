@@ -11,6 +11,8 @@ use OCA\Mcp\Tools\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\IRootFolder;
+use OCP\Files\Search\ISearchComparison;
+use OCP\IDBConnection;
 use OCP\ITempManager;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -37,7 +39,9 @@ final class FilesModuleTest extends TestCase {
         $users->method('get')->willReturn($this->createMock(IUser::class));
         $time = $this->createMock(ITimeFactory::class);
         $time->method('getTime')->willReturn(1790000000);
-        $this->module = new FilesModule($root, new TextExtractor($temp), $apps, $users, $time);
+        $db = $this->createMock(IDBConnection::class);
+        $db->method('escapeLikeParameter')->willReturnCallback(fn (string $s) => addcslashes($s, '\\_%'));
+        $this->module = new FilesModule($root, new TextExtractor($temp), $apps, $users, $time, $db);
     }
 
     /** Runs a tool the way the registry does: schema validation first, then the handler. */
@@ -100,6 +104,25 @@ final class FilesModuleTest extends TestCase {
         $this->assertCount(1, $this->json('files_search', ['query' => 'ata', 'limit' => 1]));
         $this->expectException(InvalidArgumentException::class);
         $this->tool('files_search', ['query' => '']);
+    }
+
+    public function testSearchPushesAnEscapedLikeAndTheLimitIntoTheQuery(): void {
+        $this->tree->addFile('/alice/files/100%_real.txt', 'x');
+        $this->tree->addFile('/alice/files/100abreal.txt', 'x');
+        $this->assertSame(['/100%_real.txt'], array_column($this->json('files_search', ['query' => '100%_r', 'limit' => 7]), 'path'));
+        $query = $this->tree->searches[0];
+        $this->assertSame(7 + FilesModule::SEARCH_OVERFETCH, $query->getLimit());
+        $this->assertSame(0, $query->getOffset());
+        $comparison = $query->getSearchOperation();
+        $this->assertSame([ISearchComparison::COMPARE_LIKE, 'name', '%100\\%\\_r%'], [$comparison->getType(), $comparison->getField(), $comparison->getValue()]);
+    }
+
+    public function testSearchSkipsUnreadableMatchesAndTrimsToLimit(): void {
+        $this->tree->addFile('/alice/files/ata-1.txt', 'x', 'text/plain', ['readable' => false]);
+        $this->tree->addFile('/alice/files/ata-2.txt', 'x');
+        $this->tree->addFile('/alice/files/ata-3.txt', 'x');
+        $paths = array_column($this->json('files_search', ['query' => 'ata-', 'limit' => 2]), 'path');
+        $this->assertSame(['/ata-2.txt', '/ata-3.txt'], $paths);
     }
 
     public function testReadsTextPdfDocxAndOdt(): void {

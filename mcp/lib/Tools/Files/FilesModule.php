@@ -14,6 +14,7 @@ use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\Node;
+use OCP\IDBConnection;
 use OCP\IUserManager;
 
 /** Files tools: list, search, read and protected edit. There is deliberately no delete, move or rename. */
@@ -24,6 +25,8 @@ class FilesModule implements ToolModule {
     public const MAX_EDIT_BYTES = 10 * 1024 * 1024;
     /** Folder in the user's root that receives a copy of every file before files_edit writes it. */
     public const BACKUP_FOLDER = 'MCP backups';
+    /** Extra rows fetched by files_search to make up for unreadable matches filtered out afterwards. */
+    public const SEARCH_OVERFETCH = 10;
 
     public function __construct(
         private IRootFolder $rootFolder,
@@ -31,6 +34,7 @@ class FilesModule implements ToolModule {
         private IAppManager $appManager,
         private IUserManager $userManager,
         private ITimeFactory $time,
+        private IDBConnection $db,
     ) {}
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string}> */
@@ -70,7 +74,7 @@ class FilesModule implements ToolModule {
         $root = $this->rootFolder->getUserFolder($userId);
         return NodeAccess::run(fn () => match ($name) {
             'files_list' => ToolResult::json($this->list($root, $arguments['path'])),
-            'files_search' => ToolResult::json($this->search($root, $arguments['query'], $arguments['limit'])),
+            'files_search' => ToolResult::json($this->search($root, $userId, $arguments['query'], $arguments['limit'])),
             'files_read' => ToolResult::text($this->read($root, $arguments['path'])),
             'files_edit' => ToolResult::json($this->edit($root, $userId, $arguments['path'], $arguments['content'], $arguments['etag'] ?? null)),
             default => throw new \InvalidArgumentException('Unknown tool'),
@@ -89,9 +93,12 @@ class FilesModule implements ToolModule {
     }
 
     /** @return list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string}> */
-    private function search(Folder $root, string $query, int $limit): array {
+    private function search(Folder $root, string $userId, string $query, int $limit): array {
+        // %, _ and \ in the term are literal: escaped the way core's own file search escapes LIKE terms.
+        $pattern = '%' . $this->db->escapeLikeParameter($query) . '%';
+        $search = new NameSearchQuery(new NameLikeComparison($pattern), $limit + self::SEARCH_OVERFETCH, $this->userManager->get($userId));
         $out = [];
-        foreach ($root->search($query) as $node) {
+        foreach ($root->search($search) as $node) {
             if ($node->getPath() === $root->getPath() || !$node->isReadable()) {
                 continue;
             }

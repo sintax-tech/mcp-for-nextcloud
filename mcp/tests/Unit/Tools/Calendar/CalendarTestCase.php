@@ -20,9 +20,12 @@ use OCA\Mcp\Tools\Calendar\Handler\ListEvents;
 use OCA\Mcp\Tools\Calendar\Handler\MoveEvent;
 use OCA\Mcp\Tools\Calendar\Handler\TransferEvent;
 use OCA\Mcp\Tools\Calendar\Handler\UpdateEvent;
+use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\TrashPolicy;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;
+use OCP\IUser;
+use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -71,15 +74,37 @@ abstract class CalendarTestCase extends TestCase {
         $mapper = new EventMapper();
         $builder = new EventBuilder();
         $relocator = new EventRelocator($access, $this->store, $repository);
+        $guard = new SharedGuard($this->users());
         $this->module = new CalendarModule(
             new ListCalendars($access),
             new ListEvents($access, $this->store, $repository, $classification, new EventExpander(), $mapper, $dates, $time, $logger),
-            new CreateEvent($access, $this->store, $repository, $builder, $mapper, $dates, $time),
-            new UpdateEvent($access, $this->store, $repository, $builder, $mapper, $dates, $time),
-            new MoveEvent($relocator),
-            new DeleteEvent($access, $this->store, $repository, new TrashPolicy($config)),
+            new CreateEvent($access, $guard, $this->store, $repository, $builder, $mapper, $dates, $time),
+            new UpdateEvent($access, $guard, $this->store, $repository, $builder, $mapper, $dates, $time),
+            new MoveEvent($access, $relocator, $guard),
+            new DeleteEvent($access, $guard, $this->store, $repository, new TrashPolicy($config)),
             new TransferEvent($relocator),
         );
+    }
+
+    /**
+     * User manager resolving alice and bob for the shared-calendar confirmation messages.
+     *
+     * @return IUserManager double
+     */
+    private function users(): IUserManager {
+        $users = $this->createMock(IUserManager::class);
+        $users->method('get')->willReturnCallback(function ($uid): ?IUser {
+            $names = ['alice' => 'Alice Silva', 'bob' => 'Roberto Almeida'];
+            if (!is_string($uid) || !isset($names[$uid])) {
+                return null;
+            }
+            $user = $this->createMock(IUser::class);
+            $user->method('getDisplayName')->willReturn($names[$uid]);
+
+            return $user;
+        });
+
+        return $users;
     }
 
     /**

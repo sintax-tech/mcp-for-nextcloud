@@ -32,9 +32,32 @@ final class DeleteEventTest extends CalendarTestCase {
         $this->store->addObject(4, 'x.ics', self::ics("UID:x\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z"));
         $this->store->addObject(3, 'c.ics', self::ics("UID:c\nCLASS:CONFIDENTIAL\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z"));
         self::assertToolError($this->delete(['calendar' => self::READONLY, 'uid' => 'x']), 'Sem permissão');
-        self::assertToolError($this->delete(['calendar' => self::TEAM, 'uid' => 'c']), 'Sem permissão');
+        self::assertToolError($this->delete(['calendar' => self::TEAM, 'uid' => 'c', 'confirm_shared' => true]), 'Sem permissão');
         self::assertToolError($this->delete(['calendar' => '/remote.php/dav/calendars/bob/personal/']), 'não encontrado');
         $this->assertNoWrites();
+    }
+
+    public function testSharedCalendarWithoutConfirmationDeletesNothing(): void {
+        $payload = self::json($this->delete(['calendar' => self::TEAM, 'uid' => 'c']));
+
+        $this->assertTrue($payload['requiresConfirmation']);
+        $this->assertSame(['shared', 'bob', 'Roberto Almeida', 'Equipe (bob)'], [
+            $payload['scope'], $payload['owner'], $payload['ownerDisplayName'], $payload['resource'],
+        ]);
+        $this->assertSame(
+            "O calendário 'Equipe (bob)' pertence a Roberto Almeida e é compartilhado com você. Alterações afetam outras pessoas."
+            . ' Confirme com o usuário antes de continuar e repita a chamada com confirm_shared: true.',
+            $payload['message'],
+        );
+        $this->assertNoWrites();
+    }
+
+    public function testSharedCalendarWithConfirmationDeletesTheEvent(): void {
+        $this->store->addObject(3, 'c.ics', self::ics("UID:c\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z"));
+
+        self::json($this->delete(['calendar' => self::TEAM, 'uid' => 'c', 'confirm_shared' => true]));
+
+        $this->assertSame([['delete', [3, 'c.ics']]], $this->store->writes);
     }
 
     public function testDivergentEtagOrUnknownUidDeletesNothing(): void {

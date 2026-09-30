@@ -44,6 +44,22 @@ final class CalendarModuleTest extends CalendarTestCase {
         }
     }
 
+    public function testWriteToolsOfferConfirmSharedAndWarnAboutItInTheDescription(): void {
+        $writes = ['create', 'edit', 'move', 'delete'];
+        foreach ($this->module->definitions() as $definition) {
+            $properties = (array)$definition['inputSchema']['properties'];
+            if (in_array($definition['operation'], $writes, true)) {
+                $this->assertArrayHasKey('confirm_shared', $properties, $definition['name']);
+                $this->assertSame('boolean', $properties['confirm_shared']['type'], $definition['name']);
+                $this->assertNotContains('confirm_shared', $definition['inputSchema']['required'] ?? [], $definition['name']);
+                $this->assertStringContainsString('confirm_shared: true', $definition['description'], $definition['name']);
+            } else {
+                $this->assertArrayNotHasKey('confirm_shared', $properties, $definition['name']);
+                $this->assertStringNotContainsString('confirm_shared', $definition['description'], $definition['name']);
+            }
+        }
+    }
+
     public function testUnknownToolIsInvalidParams(): void {
         $this->expectException(InvalidArgumentException::class);
         $this->call('calendar_nope');

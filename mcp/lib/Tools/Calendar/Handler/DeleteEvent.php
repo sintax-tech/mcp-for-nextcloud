@@ -8,6 +8,7 @@ use OCA\Mcp\Tools\Calendar\CalendarException;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
 use OCA\Mcp\Tools\Calendar\CalendarTool;
 use OCA\Mcp\Tools\Calendar\EventRepository;
+use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCA\Mcp\Tools\Calendar\TrashPolicy;
 
@@ -17,12 +18,14 @@ use OCA\Mcp\Tools\Calendar\TrashPolicy;
 final class DeleteEvent implements CalendarTool {
     /**
      * @param CalendarAccess $access calendar visibility and ACL
+     * @param SharedGuard $guard confirmation gate for calendars of somebody else
      * @param CalendarStore $store calendar storage port
      * @param EventRepository $events event lookup with classification and ETag checks
      * @param TrashPolicy $trash CalDAV trash retention
      */
     public function __construct(
         private CalendarAccess $access,
+        private SharedGuard $guard,
         private CalendarStore $store,
         private EventRepository $events,
         private TrashPolicy $trash,
@@ -34,21 +37,24 @@ final class DeleteEvent implements CalendarTool {
     public function definition(): array {
         return ToolSchema::definition(
             'calendar_delete_event',
-            'Exclui um evento (a série inteira), que vai para a lixeira do calendário. Exige confirm: true.' . ToolSchema::NO_NOTIFICATION,
+            'Exclui um evento (a série inteira), que vai para a lixeira do calendário. Exige confirm: true.' . ToolSchema::NO_NOTIFICATION . SharedGuard::DESCRIPTION_SUFFIX,
             'delete',
-            ['calendar' => ToolSchema::calendar(), 'uid' => ToolSchema::uid(), 'confirm' => ToolSchema::confirm(), 'etag' => ToolSchema::etag()],
+            ['calendar' => ToolSchema::calendar(), 'uid' => ToolSchema::uid(), 'confirm' => ToolSchema::confirm(), 'etag' => ToolSchema::etag(), 'confirm_shared' => SharedGuard::property()],
             ['calendar', 'uid', 'confirm'],
         );
     }
 
     /**
-     * @param array{calendar: string, uid: string, confirm: true, etag?: string} $arguments
+     * @param array{calendar: string, uid: string, confirm: true, etag?: string, confirm_shared?: bool} $arguments
      * @param string $userId authenticated UID
      * @return array{content: list<array{type:string, text:string}>} {uid, calendar, deleted, recoverable}
      * @throws CalendarException when not writable, protected, changed meanwhile or the trash is disabled
      */
     public function execute(array $arguments, string $userId): array {
         $calendar = $this->access->resolveWritable($userId, $arguments['calendar']);
+        if (($confirmation = $this->guard->confirm($calendar, $userId, $arguments)) !== null) {
+            return $confirmation;
+        }
         if (!$this->trash->recoverable()) {
             throw CalendarException::blocked('Exclusão bloqueada: a lixeira do calendário está desativada e o evento não poderia ser recuperado.');
         }

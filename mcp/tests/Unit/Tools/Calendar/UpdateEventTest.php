@@ -65,10 +65,38 @@ final class UpdateEventTest extends CalendarTestCase {
         $this->store->addObject(3, 'p.ics', self::ics("UID:p\nCLASS:PRIVATE\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z"));
         $this->store->addObject(3, 'c.ics', self::ics("UID:c\nCLASS:CONFIDENTIAL\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z"));
         self::assertToolError($this->call('calendar_update_event', ['calendar' => self::READONLY, 'uid' => 'ro', 'summary' => 'x']), 'Sem permissão');
-        self::assertToolError($this->call('calendar_update_event', ['calendar' => self::TEAM, 'uid' => 'p', 'summary' => 'x']), 'não encontrado');
-        self::assertToolError($this->call('calendar_update_event', ['calendar' => self::TEAM, 'uid' => 'c', 'summary' => 'x']), 'Sem permissão');
+        self::assertToolError($this->call('calendar_update_event', ['calendar' => self::TEAM, 'uid' => 'p', 'summary' => 'x', 'confirm_shared' => true]), 'não encontrado');
+        self::assertToolError($this->call('calendar_update_event', ['calendar' => self::TEAM, 'uid' => 'c', 'summary' => 'x', 'confirm_shared' => true]), 'Sem permissão');
         self::assertToolError($this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'missing', 'summary' => 'x']), 'não encontrado');
         $this->assertNoWrites();
+    }
+
+    public function testSharedCalendarWithoutConfirmationUpdatesNothing(): void {
+        $payload = self::json($this->call('calendar_update_event', ['calendar' => self::TEAM, 'uid' => 'c', 'summary' => 'Novo']));
+
+        $this->assertTrue($payload['requiresConfirmation']);
+        $this->assertSame(['shared', 'bob', 'Roberto Almeida', 'Equipe (bob)'], [
+            $payload['scope'], $payload['owner'], $payload['ownerDisplayName'], $payload['resource'],
+        ]);
+        $this->assertSame(
+            "O calendário 'Equipe (bob)' pertence a Roberto Almeida e é compartilhado com você. Alterações afetam outras pessoas."
+            . ' Confirme com o usuário antes de continuar e repita a chamada com confirm_shared: true.',
+            $payload['message'],
+        );
+        $this->assertNoWrites();
+    }
+
+    public function testSharedCalendarWithConfirmationUpdatesTheEvent(): void {
+        $this->store->addObject(3, 'g.ics', self::ics("UID:g\nSUMMARY:Antigo\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z"));
+
+        $item = self::json($this->call('calendar_update_event', [
+            'calendar' => self::TEAM, 'uid' => 'g', 'summary' => 'Novo', 'confirm_shared' => true,
+        ]));
+
+        $this->assertSame('Novo', $item['summary']);
+        $this->assertSame(['update', 3, 'g.ics'], [
+            $this->store->writes[0][0], $this->store->writes[0][1][0], $this->store->writes[0][1][1],
+        ]);
     }
 
     public function testTrashedObjectIsNotFound(): void {

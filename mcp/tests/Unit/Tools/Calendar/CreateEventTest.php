@@ -27,10 +27,36 @@ final class CreateEventTest extends CalendarTestCase {
     }
 
     public function testCreatesAllDayEventInSharedWritableCalendar(): void {
-        $item = self::json($this->call('calendar_create_event', ['calendar' => self::TEAM, 'summary' => 'Feriado', 'start' => '2026-04-21', 'end' => '2026-04-22', 'allDay' => true]));
+        $item = self::json($this->call('calendar_create_event', ['calendar' => self::TEAM, 'summary' => 'Feriado', 'start' => '2026-04-21', 'end' => '2026-04-22', 'allDay' => true, 'confirm_shared' => true]));
         $this->assertSame(['2026-04-21', '2026-04-22', true], [$item['start'], $item['end'], $item['allDay']]);
         $event = Reader::read($this->store->writes[0][1][2])->VEVENT;
         $this->assertSame(['DATE', '20260421'], [(string)$event->DTSTART['VALUE'], $event->DTSTART->getValue()]);
+    }
+
+    public function testSharedCalendarWithoutConfirmationWritesNothing(): void {
+        $payload = self::json($this->call('calendar_create_event', [
+            'calendar' => self::TEAM, 'summary' => 'Feriado', 'start' => '2026-04-21', 'end' => '2026-04-22', 'allDay' => true,
+        ]));
+
+        $this->assertTrue($payload['requiresConfirmation']);
+        $this->assertSame(['shared', 'bob', 'Roberto Almeida', 'Equipe (bob)'], [
+            $payload['scope'], $payload['owner'], $payload['ownerDisplayName'], $payload['resource'],
+        ]);
+        $this->assertSame(
+            "O calendário 'Equipe (bob)' pertence a Roberto Almeida e é compartilhado com você. Alterações afetam outras pessoas."
+            . ' Confirme com o usuário antes de continuar e repita a chamada com confirm_shared: true.',
+            $payload['message'],
+        );
+        $this->assertNoWrites();
+    }
+
+    public function testSharedCalendarWithConfirmationCreatesTheEvent(): void {
+        $item = self::json($this->call('calendar_create_event', [
+            'calendar' => self::TEAM, 'summary' => 'Feriado', 'start' => '2026-04-21', 'end' => '2026-04-22', 'allDay' => true, 'confirm_shared' => true,
+        ]));
+
+        $this->assertSame(['create', 3], [$this->store->writes[0][0], $this->store->writes[0][1][0]]);
+        $this->assertSame(self::TEAM, $item['calendar']);
     }
 
     public function testReadOnlyBirthdayAndForeignCalendarsAreRefused(): void {
@@ -38,6 +64,8 @@ final class CreateEventTest extends CalendarTestCase {
         self::assertToolError($this->call('calendar_create_event', ['calendar' => self::READONLY] + $args), 'Sem permissão');
         self::assertToolError($this->call('calendar_create_event', ['calendar' => self::BIRTHDAYS] + $args), 'Sem permissão');
         self::assertToolError($this->call('calendar_create_event', ['calendar' => '/remote.php/dav/calendars/bob/team/'] + $args), 'não encontrado');
+        // The shared-resource confirmation never replaces the ACL: a refused calendar stays refused.
+        self::assertToolError($this->call('calendar_create_event', ['calendar' => self::READONLY, 'confirm_shared' => true] + $args), 'Sem permissão');
         $this->assertNoWrites();
     }
 

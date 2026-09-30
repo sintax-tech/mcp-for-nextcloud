@@ -13,6 +13,7 @@ use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileBackup;
+use OCA\Mcp\Tools\Files\MoveReport;
 use OCA\Mcp\Tools\Files\Reorganization;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
@@ -63,10 +64,11 @@ final class FilesModuleTest extends TestCase {
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturnCallback(fn (string $route, array $args = []) => 'https://cloud.test/apps/mcp/' . ($args['token'] ?? ''));
         $versions = new VersionTools($apps, $users, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $access, $this->createMock(\Psr\Container\ContainerInterface::class));
+        $report = new MoveReport($this->createMock(\Psr\Container\ContainerInterface::class), $this->tree->shareManager(), $apps);
         $this->module = new FilesModule($root, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $users, $db,
             $access, new SharedWriteGuard($access),
             new CheckoutService($urls, $appConfig, $time, new TokenHasher($appConfig), $this->createMock(CheckoutTokenStore::class), $apps, $users),
-            $versions, new Reorganization($access, new SharedWriteGuard($access)));
+            $versions, new Reorganization($access, new SharedWriteGuard($access), $report, $users));
         $this->versions = $versions;
     }
 
@@ -95,11 +97,12 @@ final class FilesModuleTest extends TestCase {
 
     public function testDefinitionsKeepPrototypeNamesAndGrants(): void {
         $defs = array_column($this->module->definitions(), null, 'name');
-        $this->assertSame(['files_list', 'files_search', 'files_tree', 'files_mkdir', 'files_read', 'files_edit',
-            'files_replace', 'files_checkout', 'files_versions_list', 'files_version_read', 'files_version_restore'],
+        $this->assertSame(['files_list', 'files_search', 'files_tree', 'files_mkdir', 'files_copy', 'files_move',
+            'files_read', 'files_edit', 'files_replace', 'files_checkout', 'files_versions_list',
+            'files_version_read', 'files_version_restore'],
             array_keys($defs));
-        $this->assertSame(['read', 'read', 'read', 'create', 'read', 'edit', 'edit', 'edit', 'read', 'read', 'restore'],
-            array_column($defs, 'operation'));
+        $this->assertSame(['read', 'read', 'read', 'create', 'create', 'move', 'read', 'edit', 'edit', 'edit',
+            'read', 'read', 'restore'], array_column($defs, 'operation'));
         $this->assertSame(['files_versions', 'files_versions', 'files_versions'],
             array_values(array_filter(array_column($defs, 'app', 'name'))));
         $this->assertArrayNotHasKey('app', $defs['files_tree'], 'a árvore só depende de arquivos, que sempre existem');
@@ -287,8 +290,18 @@ final class FilesModuleTest extends TestCase {
     }
 
     public function testFilesCodeNeverDeletesMovesOrRenames(): void {
-        foreach (['/../../../lib/Tools/Files/FilesModule.php', '/../../../lib/Tools/Files/TextExtractor.php'] as $file) {
-            $this->assertDoesNotMatchRegularExpression('/->(delete|move|rename|unlink)\s*\(/', (string)file_get_contents(__DIR__ . $file), $file);
+        foreach (glob(__DIR__ . '/../../../lib/Tools/Files/*.php') ?: [] as $file) {
+            // Deleting is out of the question for Files, and a move is only allowed where the guards live.
+            $this->assertDoesNotMatchRegularExpression('/->(delete|unlink)\s*\(/', (string)file_get_contents($file), $file);
+            $this->assertDoesNotMatchRegularExpression('/->(rename)\s*\(/', (string)file_get_contents($file), $file);
+        }
+        foreach (glob(__DIR__ . '/../../../lib/Tools/Files/*.php') ?: [] as $file) {
+            if (basename($file) === 'Reorganization.php') {
+                continue;
+            }
+            // Delegating to Reorganization is the point; any other receiver moving a node is not.
+            $code = str_replace('$this->reorganization->', '', (string)file_get_contents($file));
+            $this->assertDoesNotMatchRegularExpression('/->(move)\s*\(/', $code, $file);
         }
         $this->json('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'x']);
         $this->assertSame([], array_filter($this->tree->ops, fn ($op) => preg_match('/^(delete|move) /', $op) === 1));

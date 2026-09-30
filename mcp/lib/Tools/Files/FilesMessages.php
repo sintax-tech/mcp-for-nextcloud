@@ -42,6 +42,24 @@ final class FilesMessages {
             . 'pergunte ao usuário antes e repita com confirm_shared.';
     }
 
+    /** @return string description of files_copy */
+    public static function copyTool(): string {
+        return 'Copia um arquivo ou uma pasta para outro caminho, criando um nó novo com id novo. Nunca '
+            . 'sobrescreve o destino. A cópia é um nó independente: não promete manter id, versões nem '
+            . 'compartilhamentos da origem. Tem teto de ' . ReorganizationLimits::NODES . ' itens e '
+            . ReorganizationLimits::BYTES . ' bytes, medidos antes de copiar. Se a origem ou o destino '
+            . 'estiverem fora da sua pasta pessoal, pergunte ao usuário antes e repita com confirm_shared.';
+    }
+
+    /** @return string description of files_move */
+    public static function moveTool(): string {
+        return 'Move ou renomeia um arquivo ou uma pasta dentro da mesma área de arquivos, sem sobrescrever o '
+            . 'destino. Reporta o id antes e depois e as contagens de versões e compartilhamentos quando os '
+            . 'apps correspondentes estão ligados. Não move entre storages diferentes: lá o Nextcloud trata '
+            . 'como cópia e o id muda. Se a origem ou o destino estiverem fora da sua pasta pessoal, pergunte '
+            . 'ao usuário antes e repita com confirm_shared.';
+    }
+
     /** @return string description of files_edit */
     public static function editTool(): string {
         return 'Substitui o conteúdo de um arquivo de texto existente e devolve o diff. Antes de gravar, exige '
@@ -184,6 +202,32 @@ final class FilesMessages {
     /** @return string the snippet given to files_replace is not text we can locate in the file */
     public static function snippetNotUtf8(): string {
         return 'O trecho informado não é UTF-8 válido; envie-o exatamente como aparece no arquivo.';
+    }
+
+    /** @return string something already sits where a folder would go */
+    public static function crossStorage(): string {
+        return 'Mover entre storages diferentes não é suportado nesta versão; mova dentro da mesma área de arquivos.';
+    }
+
+    /** @return string a folder moved into itself or into one of its own subfolders */
+    public static function folderIntoItself(): string {
+        return 'Não é possível mover uma pasta para dentro dela mesma.';
+    }
+
+    /**
+     * @param int $limit ceiling in nodes
+     * @return string a copy whose source is larger than the node ceiling
+     */
+    public static function copyTooManyNodes(int $limit): string {
+        return 'A cópia passaria de ' . $limit . ' itens; nada foi copiado. Escolha uma pasta menor.';
+    }
+
+    /**
+     * @param int $limit ceiling in bytes
+     * @return string a copy whose source is larger than the byte ceiling
+     */
+    public static function copyTooLarge(int $limit): string {
+        return 'A cópia passaria de ' . $limit . ' bytes; nada foi copiado. Escolha uma pasta menor.';
     }
 
     /** @return string something already sits where a folder would go */

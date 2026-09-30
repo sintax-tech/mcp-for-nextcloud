@@ -95,8 +95,7 @@ final class FakeTree {
         });
         $mock->method('move')->willReturnCallback(function (string $target) use ($path): Node {
             $this->ops[] = "move $path $target";
-            $this->nodes[$target] = $this->nodes[$path];
-            unset($this->nodes[$path]);
+            $this->reparent($path, $target);
             return $this->node($target);
         });
         $mock->method('copy')->willReturnCallback(function (string $target) use ($path): Node {
@@ -104,12 +103,36 @@ final class FakeTree {
             if (in_array($path, $this->failCopy, true)) {
                 throw new NotPermittedException();
             }
-            $this->nodes[$target] = ['id' => $this->nextId++] + $this->nodes[$path];
+            $this->duplicate($path, $target);
+            return $this->node($target);
+        });
+    }
+
+    /**
+     * Nextcloud moves the whole subtree, and the ids of everything under it survive; only the entries move
+     * from one parent to the other.
+     */
+    private function reparent(string $path, string $target): void {
+        $children = $this->children($path);
+        $this->nodes[$target] = $this->nodes[$path];
+        unset($this->nodes[$path]);
+        foreach ($children as $child) {
+            $this->reparent($child, $target . '/' . basename($child));
+        }
+    }
+
+    /** A copy duplicates the subtree, and every duplicated node gets an id of its own. */
+    private function duplicate(string $path, string $target): void {
+        $this->nodes[$target] = ['id' => $this->nextId++] + $this->nodes[$path];
+        if ($this->nodes[$path]['type'] !== 'dir') {
             if (in_array($path, $this->shortCopy, true)) {
                 $this->nodes[$target]['content'] = '';
             }
-            return $this->node($target);
-        });
+            return;
+        }
+        foreach ($this->children($path) as $child) {
+            $this->duplicate($child, $target . '/' . basename($child));
+        }
     }
 
     private function file(string $path): File {

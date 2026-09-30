@@ -14,6 +14,7 @@ use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileBackup;
+use OCA\Mcp\Tools\Files\MoveReport;
 use OCA\Mcp\Tools\Files\Reorganization;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
@@ -93,8 +94,19 @@ abstract class FilesToolsTestCase extends TestCase {
             new SharedWriteGuard($access),
             new CheckoutService($urls, $config, $this->time, new TokenHasher($config), $this->store, $this->apps, $this->users),
             new VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class)),
-            new Reorganization($access, new SharedWriteGuard($access)),
+            new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users),
         );
+    }
+
+    /** The post-condition report, wired against the same version and share doubles the module uses. */
+    protected function report(): MoveReport {
+        $manager = new class {
+            /** @return list<object> an empty version list */
+            public function getVersionsForFile(): array {
+                return [];
+            }
+        };
+        return new MoveReport($this->createMock(\Psr\Container\ContainerInterface::class), $this->tree->shareManager(), $this->apps);
     }
 
     /** Runs a tool the way the registry does: schema validation first, then the handler. */

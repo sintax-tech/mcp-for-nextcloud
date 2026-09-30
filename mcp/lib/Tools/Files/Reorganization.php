@@ -31,6 +31,8 @@ final class Reorganization {
     public function __construct(
         private NodeAccessInfo $access,
         private SharedWriteGuard $guard,
+        private MoveReport $report,
+        private \OCP\IUserManager $userManager,
     ) {}
 
     /**
@@ -161,6 +163,241 @@ final class Reorganization {
             }
         }
         return $missing;
+    }
+
+    /**
+     * Copies a file or a folder to a free path, refusing before anything is copied when the source is over
+     * the ceilings.
+     *
+     * A copy is a new node: it gets a new id and the description promises nothing about the shares or the
+     * versions of the original, which the Nextcloud copy flow does not carry over.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param string $from source path, user-relative
+     * @param string $to destination path, user-relative
+     * @param string|null $etag ETag the caller read before, null to skip the check
+     * @param bool $confirmedShared whether the caller passed confirm_shared
+     * @return array{from:string, to:string, idBefore:int, idAfter:int, nodes:int, bytes:int, access:array<string, mixed>}|array<string, mixed>
+     *   the receipt, or the shared-write confirmation instead of a receipt when one is still missing
+     * @throws \InvalidArgumentException for a path with traversal or control characters
+     * @throws ToolFailure for an occupied destination, a stale ETag, a ceiling or a denied write
+     */
+    public function copy(Folder $root, string $userId, string $from, string $to, ?string $etag, bool $confirmedShared): array {
+        $from = $this->writable($root, $from);
+        NodeAccess::checkEtag($from, $etag);
+        $to = PathGuard::normalize($to);
+        $this->assertFree($root, $to);
+        $measured = $this->measure($from);
+        if (($payload = $this->confirmBoth($root, $userId, $from, $to, $confirmedShared)) !== null) {
+            return $payload;
+        }
+        $receipt = $root->getRelativePath($from->getPath()) ?? '';
+        $copy = $from->copy($this->absolute($root, $to));
+        return [
+            'from' => $receipt,
+            'to' => $to,
+            'idBefore' => (int)$from->getId(),
+            'idAfter' => (int)$copy->getId(),
+            'nodes' => $measured['nodes'],
+            'bytes' => $measured['bytes'],
+            'access' => $this->access->describe($copy, $userId),
+        ];
+    }
+
+    /**
+     * Moves or renames a node inside the same storage, refusing before anything changes when the guards
+     * say no, and reporting afterwards what could be measured.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param string $from source path, user-relative
+     * @param string $to destination path, user-relative
+     * @param string|null $etag ETag the caller read before, null to skip the check
+     * @param bool $confirmedShared whether the caller passed confirm_shared
+     * @return array{from:string, to:string, idBefore:int, idAfter:int, idPreserved:bool, versionsBefore:int|null, versionsAfter:int|null, sharesBefore:int|null, sharesAfter:int|null, access:array<string, mixed>}|array<string, mixed>
+     *   the report, or the shared-write confirmation instead of a report when one is still missing
+     * @throws \InvalidArgumentException for a path with traversal or control characters
+     * @throws ToolFailure for an occupied destination, a stale ETag, another storage, a folder into itself or a denied write
+     */
+    public function move(Folder $root, string $userId, string $from, string $to, ?string $etag, bool $confirmedShared): array {
+        $from = $this->writable($root, $from);
+        NodeAccess::checkEtag($from, $etag);
+        $to = PathGuard::normalize($to);
+        // A folder landing inside itself is refused before the destination check, so the user hears the real
+        // reason instead of "something is already there" for a subfolder of the folder they are moving.
+        $this->assertNotIntoItself($root, $from, $to);
+        $this->assertFree($root, $to);
+        $this->assertSameStorage($root, $from, $to);
+        if (($payload = $this->confirmBoth($root, $userId, $from, $to, $confirmedShared)) !== null) {
+            return $payload;
+        }
+        // Everything is read before the move: afterwards the node answers from its new path, and a receipt
+        // read too late is a claim about nothing.
+        $receipt = $root->getRelativePath($from->getPath()) ?? '';
+        $idBefore = (int)$from->getId();
+        $versionsBefore = $this->versions($from, $userId);
+        $sharesBefore = $this->report->shares($from, $userId);
+        $moved = $from->move($this->absolute($root, $to));
+        $idAfter = (int)$moved->getId();
+        return [
+            'from' => $receipt,
+            'to' => $to,
+            'idBefore' => $idBefore,
+            'idAfter' => $idAfter,
+            'idPreserved' => $idAfter === $idBefore,
+            'versionsBefore' => $versionsBefore,
+            'versionsAfter' => $this->versions($moved, $userId),
+            'sharesBefore' => $sharesBefore,
+            'sharesAfter' => $this->report->shares($moved, $userId),
+            'access' => $this->access->describe($moved, $userId),
+        ];
+    }
+
+    /**
+     * Counts the nodes and bytes a copy would bring, stopping as soon as a ceiling is passed so a huge
+     * tree is not measured to the end just to be refused.
+     *
+     * @param Node $node the node a copy would start from, a file or a whole folder
+     * @return array{nodes:int, bytes:int}
+     * @throws ToolFailure when the source is over either ceiling
+     */
+    public function measure(Node $node): array {
+        $nodes = $bytes = 0;
+        $pending = [$node];
+        while ($pending !== []) {
+            $current = array_pop($pending);
+            $nodes++;
+            if ($nodes > ReorganizationLimits::NODES) {
+                throw new ToolFailure(FilesMessages::copyTooManyNodes(ReorganizationLimits::NODES));
+            }
+            if ($current instanceof Folder) {
+                foreach ($this->sorted($current) as $child) {
+                    $pending[] = $child;
+                }
+                continue;
+            }
+            $bytes += (int)$current->getSize();
+            if ($bytes > ReorganizationLimits::BYTES) {
+                throw new ToolFailure(FilesMessages::copyTooLarge(ReorganizationLimits::BYTES));
+            }
+        }
+        return ['nodes' => $nodes, 'bytes' => $bytes];
+    }
+
+    /**
+     * @param Folder $root the user's folder
+     * @param string $path source path to resolve and check
+     * @return Node the readable, writable source
+     * @throws ToolFailure when it does not exist, cannot be read or cannot be changed
+     */
+    private function writable(Folder $root, string $path): Node {
+        $node = NodeAccess::get($root, PathGuard::normalize($path));
+        if (!$node->isUpdateable()) {
+            throw new ToolFailure(ToolFailure::FORBIDDEN);
+        }
+        return $node;
+    }
+
+    /**
+     * @param Folder $root the user's folder
+     * @param string $to destination path, user-relative
+     * @throws ToolFailure when anything already sits there
+     */
+    private function assertFree(Folder $root, string $to): void {
+        if ($to === '/' || $root->nodeExists(ltrim($to, '/'))) {
+            throw new ToolFailure(FilesMessages::destinationExists());
+        }
+    }
+
+    /**
+     * @param Folder $root the user's folder
+     * @param Node $from the node being moved
+     * @param string $to destination path, user-relative
+     * @throws ToolFailure when a folder would land inside itself
+     */
+    private function assertNotIntoItself(Folder $root, Node $from, string $to): void {
+        $source = $root->getRelativePath($from->getPath()) ?? '';
+        if ($from instanceof Folder && ($to === $source || str_starts_with($to, rtrim($source, '/') . '/'))) {
+            throw new ToolFailure(FilesMessages::folderIntoItself());
+        }
+    }
+
+    /**
+     * Nextcloud moves across storages by copying and deleting, which changes the id and re-versions the
+     * file; the first scope of this sprint stays inside one storage so that the reported id is meaningful.
+     *
+     * @param Folder $root the user's folder
+     * @param Node $from the node being moved
+     * @param string $to destination path, user-relative
+     * @throws ToolFailure when source and destination are on different storages
+     */
+    private function assertSameStorage(Folder $root, Node $from, string $to): void {
+        $parent = $this->destination($root, $to);
+        if ($from->getStorage()->getId() !== $parent->getStorage()->getId()) {
+            throw new ToolFailure(FilesMessages::crossStorage());
+        }
+    }
+
+    /**
+     * @param Folder $root the user's folder
+     * @param string $path destination path, user-relative
+     * @return Folder the destination folder, which must already exist
+     * @throws ToolFailure when it does not exist or cannot take new entries
+     */
+    private function destination(Folder $root, string $path): Folder {
+        $segments = array_values(array_filter(explode('/', $path)));
+        array_pop($segments);
+        $parent = NodeAccess::run(fn () => NodeAccess::get($root, '/' . implode('/', $segments)));
+        if (!$parent instanceof Folder || !$parent->isCreatable()) {
+            throw new ToolFailure(ToolFailure::FORBIDDEN);
+        }
+        return $parent;
+    }
+
+    /**
+     * Both ends of the operation go through the guard: moving a file out of a team folder changes what the
+     * team sees, and moving one into it adds something they did not put there.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param Node $from the node being moved or copied
+     * @param string $to destination path, user-relative
+     * @param bool $confirmedShared whether the caller passed confirm_shared
+     * @return array<string, mixed>|null the confirmation payload, or null when the change may proceed
+     */
+    private function confirmBoth(Folder $root, string $userId, Node $from, string $to, bool $confirmedShared): ?array {
+        return $this->guard->guard($from, $userId, $root->getRelativePath($from->getPath()) ?? '', $confirmedShared)
+            ?? $this->guard->guard($this->destination($root, $to), $userId, $to, $confirmedShared);
+    }
+
+    /**
+     * Versions belong to files: a folder has none of its own, and asking anyway would report a count nobody
+     * could check.
+     *
+     * @param Node $node the node to count versions of
+     * @param string $userId authenticated user
+     * @return int|null the version count, or null for a folder or when versioning is off
+     */
+    private function versions(Node $node, string $userId): ?int {
+        return $node instanceof File ? $this->report->versions($node, $this->user($userId)) : null;
+    }
+
+    /**
+     * @param Folder $root the user's folder
+     * @param string $path user-relative path
+     * @return string the absolute path in the user's own storage, which is what Node::move() takes
+     */
+    private function absolute(Folder $root, string $path): string {
+        return $root->getPath() . '/' . ltrim($path, '/');
+    }
+
+    /**
+     * @param string $userId authenticated user
+     * @return \OCP\IUser|null the user, when the manager knows them
+     */
+    private function user(string $userId): ?\OCP\IUser {
+        return $this->userManager->get($userId);
     }
 
     /**

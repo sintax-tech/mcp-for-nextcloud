@@ -316,9 +316,13 @@ class McpProtocol {
         // The argument name is a path into the arguments the client itself sent: keys, and the [n] and
         // . separators the validator joins them with. That is why dots and brackets are allowed here — a
         // nested field has to survive to the client as itself, or "Invalid argument: items[1].reply_to"
-        // collapses into a message that says nothing about which item to fix. The charset stays strict so
-        // nothing built from server state (a path, a file name, an exception) can slip through.
-        return preg_match('/^(Unknown tool|Invalid arguments|(Unknown|Missing|Invalid) argument: [a-z_0-9]+(?:[.\[][a-z_0-9]+\]?)*)$/', $message) === 1
+        // collapses into a message that says nothing about which item to fix.
+        //
+        // Case is part of a name, not decoration: the Deck tools declare boardId, stackId, cardId and
+        // dueBefore, and a lowercase-only charset turned every one of them into "Invalid arguments". The
+        // charset stays strict otherwise, so nothing built from server state (a path, a file name, an
+        // exception) can slip through: no slash, no space, no quote, no backslash.
+        return preg_match('/^(Unknown tool|Invalid arguments|(Unknown|Missing|Invalid) argument: [A-Za-z_0-9]+(?:[.\[][A-Za-z_0-9]+\]?)*)$/', $message) === 1
             ? $message
             : 'Invalid arguments';
     }

@@ -16,7 +16,7 @@ class ConversationResolver {
     /**
      * Talk tokens are lowercase alphanumerics; anything else is a malformed argument, not a missing conversation.
      */
-    private const TOKEN_PATTERN = '/^[a-z0-9]{4,32}$/';
+    private const TOKEN_PATTERN = '/^[a-z0-9]{4,30}$/';
 
     public function __construct(
         private TalkServices $talkServices,

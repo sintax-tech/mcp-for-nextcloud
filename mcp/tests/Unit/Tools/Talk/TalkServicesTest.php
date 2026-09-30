@@ -118,6 +118,7 @@ class TalkServicesTest extends TestCase {
             'readOnly' => 7,
             'changelogType' => 9,
             'lobbyNone' => 11,
+            'actorUsers' => 'personas',
         ], $constants);
     }
 
@@ -152,6 +153,7 @@ class TalkServicesWithProbe extends TalkServices {
 final class TalkAttendeeFixture {
     public const PERMISSIONS_CHAT = 512;
     public const PERMISSIONS_LOBBY_IGNORE = 3;
+    public const ACTOR_USERS = 'personas';
 }
 
 /** Stand-in for the room markers of OCA\Talk\Room, with values no upstream release uses. */

@@ -32,8 +32,9 @@ final class Messages {
     public const MESSAGE_TOO_LONG = 'message excede o limite de caracteres';
     public const INVALID_PATH = 'path inválido';
     public const INVALID_IDENTIFIER = 'identificador inválido';
-    public const INVALID_LIMIT = 'limit deve ser um número entre 1 e 100';
+    public const INVALID_LIMIT = 'limit deve ser um número entre 1 e 200';
     public const REPLY_TARGET_NOT_FOUND = 'mensagem citada não encontrada nesta conversa';
+    public const UNKNOWN_TOOL = 'ferramenta desconhecida';
 
     private function __construct() {
     }

@@ -64,9 +64,11 @@ class ConversationReaderTest extends TestCase {
         $chatManager = $this->createMock(ReaderChatGateway::class);
         $chatManager->expects($this->never())->method('sendMessage');
         $chatManager->expects($this->never())->method('addSystemMessage');
+        $chatManager->expects($this->never())->method('getParentComment');
         $chatManager->method('getHistory')->willReturn([]);
         $participant = $this->createMock(ReaderParticipantGateway::class);
         $participant->expects($this->never())->method('markAsRead');
+        $participant->expects($this->never())->method('ensureOneToOneRoomIsFilled');
         $this->resolver->method('resolveForReading')->willReturn(
             new \OCA\Mcp\Tools\Talk\Conversation($room, $participant),
         );
@@ -263,6 +265,8 @@ interface ReaderChatGateway {
     public function sendMessage(object $room, string $message): void;
 
     public function addSystemMessage(object $room, string $message, ?int $timestamp = null): void;
+
+    public function getParentComment(object $room, string $parentId): object;
 }
 
 /** The participant surface the reader uses, plus the read-marking call it must never make. */
@@ -270,6 +274,8 @@ interface ReaderParticipantGateway {
     public function getAttendee(): object;
 
     public function markAsRead(): void;
+
+    public function ensureOneToOneRoomIsFilled(object $room): void;
 }
 
 /** Room double with the values the reader normalizes. */
@@ -325,5 +331,9 @@ final class ReaderParticipantStub implements ReaderParticipantGateway {
 
     public function markAsRead(): void {
         throw new RuntimeException('Reading must not mark anything as read.');
+    }
+
+    public function ensureOneToOneRoomIsFilled(object $room): void {
+        throw new RuntimeException('Reading must not fill a one to one room.');
     }
 }

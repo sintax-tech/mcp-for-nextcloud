@@ -15,7 +15,10 @@ use Throwable;
  * Nothing here marks anything as read: reading must not change unread counters, notifications or room activity.
  */
 class ConversationReader {
-    public const MAX_MESSAGES = 100;
+    public const MAX_MESSAGES = 200;
+
+    /** Default amount of messages when the caller does not ask for a number, matching the module schema. */
+    public const DEFAULT_MESSAGES = 50;
 
     public function __construct(
         private TalkServices $talkServices,

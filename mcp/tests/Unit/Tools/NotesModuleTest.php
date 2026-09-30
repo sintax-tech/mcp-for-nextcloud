@@ -7,6 +7,7 @@ use InvalidArgumentException;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\ArgumentValidator;
 use OCA\Mcp\Tools\Notes\NotesModule;
+use OCA\Mcp\Tools\Notes\NotesRepository;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
@@ -36,7 +37,7 @@ final class NotesModuleTest extends TestCase {
         $apps->method('isEnabledForUser')->willReturnCallback(fn (string $app) => in_array($app, $this->apps, true));
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturn($this->createMock(IUser::class));
-        $this->module = new NotesModule($root, $this->config->mock($this), $apps, $users);
+        $this->module = new NotesModule(new NotesRepository($root, $this->config->mock($this)), $apps, $users);
     }
 
     private function tool(string $name, array $arguments = []): array {

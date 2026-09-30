@@ -10,6 +10,8 @@ use PHPUnit\Framework\TestCase;
 final class InMemoryConfig {
     public array $app = [];
     public array $user = [];
+    /** @var array<string, string> system values served by getSystemValueString */
+    public array $system = [];
     /** @var list<array{string, string, string}> every [scope, app, key] read or written ('app' or 'user') */
     public array $accessed = [];
     /** Number of getUserValueForUsers calls. */
@@ -17,6 +19,9 @@ final class InMemoryConfig {
 
     public function mock(TestCase $test): IConfig {
         $config = (new \ReflectionMethod($test, 'createMock'))->invoke($test, IConfig::class);
+        $config->method('getSystemValueString')->willReturnCallback(function ($key, $default = '') {
+            return $this->system[$key] ?? $default;
+        });
         $config->method('getAppValue')->willReturnCallback(function ($app, $key, $default = '') {
             $this->accessed[] = ['app', $app, $key];
             return $this->app[$app][$key] ?? $default;

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools;
 
 use InvalidArgumentException;
+use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\ArgumentValidator;
 use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Tools\Files\FilesModule;
@@ -22,6 +23,7 @@ use PHPUnit\Framework\TestCase;
 final class FilesModuleTest extends TestCase {
     private FakeTree $tree;
     private array $apps = ['files_versions'];
+    private InMemoryConfig $config;
     private FilesModule $module;
 
     protected function setUp(): void {
@@ -42,7 +44,10 @@ final class FilesModuleTest extends TestCase {
         $time->method('getTime')->willReturn(1790000000);
         $db = $this->createMock(IDBConnection::class);
         $db->method('escapeLikeParameter')->willReturnCallback(fn (string $s) => addcslashes($s, '\\_%'));
-        $this->module = new FilesModule($root, new TextExtractor($temp), new FileBackup($apps, $users, $time), $users, $db);
+        $this->config = new InMemoryConfig();
+        // Alice's own timezone stamps every backup below; the stamps are local, never UTC.
+        $this->config->user['alice']['core']['timezone'] = 'America/Sao_Paulo';
+        $this->module = new FilesModule($root, new TextExtractor($temp), new FileBackup($apps, $users, $time, $this->config->mock($this)), $users, $db);
     }
 
     /** Runs a tool the way the registry does: schema validation first, then the handler. */
@@ -166,7 +171,8 @@ final class FilesModuleTest extends TestCase {
     public function testEditBacksUpThenWrites(): void {
         $etag = $this->tree->nodes['/alice/files/Documentos/ata.md']['etag'];
         $out = $this->json('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'novo', 'etag' => $etag]);
-        $backup = '/MCP backups/Documentos/ata.md.20260921-141320.bak';
+        // 1790000000 is 2026-09-21 14:13:20 UTC; America/Sao_Paulo is UTC-3, so 11:13:20 local.
+        $backup = '/MCP backups/Documentos/ata.md.20260921-111320.bak';
         $this->assertSame(['path' => '/Documentos/ata.md', 'size' => 4, 'etag' => $etag . '+', 'backup' => $backup], $out);
         $this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files' . $backup]['content']);
         $this->assertSame('novo', $this->tree->nodes['/alice/files/Documentos/ata.md']['content']);
@@ -177,6 +183,39 @@ final class FilesModuleTest extends TestCase {
     public function testSecondBackupInTheSameSecondGetsASuffix(): void {
         $this->tool('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'v2']);
         $this->assertStringEndsWith('-2.bak', $this->json('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'v3'])['backup']);
+    }
+
+    /**
+     * Backup stamp of 1790000000 (2026-09-21 14:13:20 UTC) under each timezone source, in precedence order.
+     *
+     * @return iterable<string, array{0: string|null, 1: string|null, 2: string}>
+     *         the user's `core`/`timezone`, the system `default_timezone` (null = unset) and the stamp that must win
+     */
+    public static function timezoneSources(): iterable {
+        yield 'user timezone, not the system one' => ['America/Sao_Paulo', 'Europe/Berlin', '20260921-111320'];
+        yield 'system timezone when the user has none' => [null, 'Europe/Berlin', '20260921-161320'];
+        yield 'invalid user timezone falls back to the system' => ['Marte/Cratera', 'Europe/Berlin', '20260921-161320'];
+        yield 'invalid timezone everywhere falls back to php' => ['Marte/Cratera', 'Marte/Cratera',
+            (new \DateTimeImmutable('@1790000000'))->setTimezone(new \DateTimeZone(date_default_timezone_get()))->format('Ymd-His')];
+    }
+
+    /**
+     * @dataProvider timezoneSources
+     * @param string|null $userZone value of the user's core/timezone preference, null when unset
+     * @param string|null $systemZone value of the default_timezone system setting, null when unset
+     * @param string $expected `Ymd-His` stamp the backup must carry
+     */
+    public function testBackupStampFollowsTheTimezonePrecedence(?string $userZone, ?string $systemZone, string $expected): void {
+        $this->config->user = [];
+        if ($userZone !== null) {
+            $this->config->user['alice']['core']['timezone'] = $userZone;
+        }
+        $this->config->system = [];
+        if ($systemZone !== null) {
+            $this->config->system['default_timezone'] = $systemZone;
+        }
+        $backup = $this->json('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'x'])['backup'];
+        $this->assertSame('/MCP backups/Documentos/ata.md.' . $expected . '.bak', $backup);
     }
 
     /** @return iterable<string, array{0: callable(self):void, 1: string}> */

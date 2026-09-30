@@ -20,6 +20,6 @@ describe("talk", () => {
     const client = new NextcloudClient(cfg, fetchFn as any);
     const msgs = await readMessages(client, "abc", 10);
     expect(msgs[0].message).toBe("oi");
-    expect(String(fetchFn.mock.calls[0][0])).toContain("/apps/spreed/api/v1/chat/abc");
+    expect(String(fetchFn.mock.calls[0][0])).toBe("https://nc.example.com/ocs/v2.php/apps/spreed/api/v1/chat/abc?lookIntoFuture=0&limit=10&setReadMarker=0&markNotificationsAsRead=0&noStatusUpdate=1");
   });
 });

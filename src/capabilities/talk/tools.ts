@@ -13,7 +13,7 @@ export async function listConversations(client: NextcloudClient): Promise<any[]>
 export async function readMessages(client: NextcloudClient, token: string, limit: number): Promise<any[]> {
   const safeToken = encodeURIComponent(token);
   // Talk chat API is v1; lookIntoFuture=0 returns the latest messages.
-  return client.ocsGet(`${CHAT_API}/chat/${safeToken}`, { lookIntoFuture: "0", limit: String(limit) });
+  return client.ocsGet(`${CHAT_API}/chat/${safeToken}`, { lookIntoFuture: "0", limit: String(Math.min(200, limit)), setReadMarker: "0", markNotificationsAsRead: "0", noStatusUpdate: "1" });
 }
 
 export function registerTalkTools(server: McpServer, client: NextcloudClient): void {

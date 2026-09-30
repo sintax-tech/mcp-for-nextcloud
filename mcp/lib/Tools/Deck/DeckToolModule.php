@@ -15,6 +15,7 @@ use OCA\Mcp\Tools\Deck\Handler\MoveCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\ReadCardHandler;
 use OCA\Mcp\Tools\ToolModule;
 use OCP\App\IAppManager;
+use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use stdClass;
@@ -45,11 +46,13 @@ final class DeckToolModule implements ToolModule {
 	 * @param ContainerInterface $container Nextcloud server container, resolves the Deck services lazily.
 	 * @param IAppManager $appManager Tells whether the Deck app is enabled for the caller.
 	 * @param LoggerInterface $logger Receives tool name and exception class on failure.
+	 * @param IUserManager|null $userManager Resolves the UID to the IUser that IAppManager::isEnabledForUser() expects.
 	 */
 	public function __construct(
 		private ContainerInterface $container,
 		private IAppManager $appManager,
 		private LoggerInterface $logger,
+		private ?IUserManager $userManager = null,
 	) {
 	}
 
@@ -195,7 +198,9 @@ final class DeckToolModule implements ToolModule {
 		}
 
 		// The registry already filters by app; this is the safety net for any other caller.
-		if (!$this->appManager->isEnabledForUser(self::DECK_APP, $userId)) {
+		// isEnabledForUser() takes an IUser, never the UID string: passing the string breaks at runtime.
+		$user = $this->userManager?->get($userId);
+		if (($this->userManager !== null && $user === null) || !$this->appManager->isEnabledForUser(self::DECK_APP, $user)) {
 			throw new InvalidArgumentException(DeckMessages::ERROR_DECK_APP_UNAVAILABLE);
 		}
 

@@ -1,85 +1,130 @@
-# mcp-for-nextcloud
+<div align="center">
 
-Servidor **MCP (Model Context Protocol)** que permite a uma IA (Claude, ChatGPT/OpenAI, Gemini — qualquer cliente compatível com MCP) **ler e responder sobre o conteúdo do seu Nextcloud**, restrito **exatamente ao que o seu usuário tem acesso**.
+# MCP for Nextcloud
 
-> **v1 — somente leitura.** O servidor autentica *como você* (app-password) e usa as APIs normais do Nextcloud, então herda todas as permissões: se você não vê na interface, o MCP também não vê.
+**A native Nextcloud app that turns your Nextcloud into an MCP server.**
+Let Claude and other MCP clients work with your files, notes, calendars, Deck boards and Talk conversations, with each user's own permissions, and nothing leaves your server that the admin did not allow.
 
-## Fontes suportadas (v1)
+[![Nextcloud 33](https://img.shields.io/badge/Nextcloud-33-0082c9?logo=nextcloud&logoColor=white)](https://nextcloud.com)
+[![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777bb4?logo=php&logoColor=white)](https://www.php.net)
+[![MCP](https://img.shields.io/badge/MCP-2025--06--18%20%7C%202026--07--28-111)](https://modelcontextprotocol.io)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue)](#license)
 
-| Ferramenta | O que faz |
-|---|---|
-| `files_list` | Lista arquivos/pastas de um diretório |
-| `files_search` | Consulta arquivos via WebDAV; os resultados dependem do comportamento de busca do servidor |
-| `files_read` | Lê o texto de um arquivo (txt/md direto; PDF/DOCX com extração de texto) |
-| `notes_list` / `notes_read` | Lista e lê notas do app **Notes** |
-| `calendar_list_calendars` / `calendar_list_events` | Lista calendários e eventos (CalDAV) |
-| `talk_list_conversations` / `talk_read_messages` | Lista conversas e lê mensagens do **Talk** |
+English · [Português (Brasil)](README.pt-BR.md)
 
-São **9 ferramentas** de leitura na v1. Em um teste real, `files_search` retornou um arquivo cujo nome não continha o termo pesquisado, embora seu conteúdo o contivesse. O mecanismo dessa correspondência ainda não foi verificado.
+</div>
 
-## Pré-requisitos
+---
 
-- **Node 20+**
-- Um **app-password** do Nextcloud: *Configurações → Segurança → Dispositivos e sessões → Criar nova senha de app*.
+## Why
 
-## Instalação
+AI assistants are most useful when they can reach the tools a team already uses. Plugging them into Nextcloud usually means scripts with shared passwords, broad API tokens or data copied elsewhere. **MCP for Nextcloud** runs **inside** your Nextcloud:
+
+- **One URL per instance.** `https://cloud.example.com/apps/mcp/`. No subdomain, no extra service, no Node/Docker/AppAPI.
+- **Sign in with Nextcloud.** Clients such as claude.ai use OAuth ("Sign in"): the user logs into their own Nextcloud and clicks **Allow**. App passwords (HTTP Basic) still work for other clients.
+- **Admin in control.** Service on/off switch, per-user eligibility and a **user × permission matrix**. Reading is on by default for eligible users; every write, move, delete, transfer or restore is **off until the admin grants it**.
+- **Nextcloud ACLs always apply.** The app never widens what a user can already do in Nextcloud.
+
+## Features
+
+| Module | Read | Write (each one needs an admin grant) |
+|---|---|---|
+| **Files** | list, search by name, read text (TXT/MD, PDF, DOCX, ODT) | edit text files, with a verified backup in `/MCP backups` and a Nextcloud version before every write. **Never deletes.** |
+| **Notes** | list, read | create, edit, move between categories, delete (only when the trash bin can recover it) |
+| **Calendar** | list calendars and events (recurrence, time zones, all-day) | create, edit, move between calendars, delete, transfer to another owner's calendar |
+| **Deck** | boards, stacks, cards | create, edit, move, delete cards |
+| **Talk** | conversations and messages (never marks anything as read) | reply (optionally quoting a message), share a file into a conversation, quote an already shared file |
+
+Plus:
+
+- **Friendly tool titles** in the client ("Search files", "List calendars") and MCP annotations (`readOnlyHint`, `destructiveHint`) so clients can ask before risky actions.
+- **Safety confirmations** for resources that belong to someone else: shared folders, team folders, other people's Deck boards and calendars. The server refuses the first call and returns a ready-made message, and the assistant must ask the user before repeating it with `confirm_shared: true`. *(rolling out in 0.7)*
+- **Localized UI**: admin matrix, personal page and consent screen follow the user's Nextcloud language. English and Brazilian Portuguese are included.
+- **Both MCP eras**: stateless MCP `2026-07-28` (`server/discover`) and the classic `initialize` flow (`2025-06-18` and earlier) on the same endpoint.
+
+## Requirements
+
+- Nextcloud **33**
+- PHP **8.2+** with `zip`, `mbstring` and `dom`
+- Optional apps, only for their own tools: Notes, Calendar, Deck, Talk (`spreed`), Versions (`files_versions`, required for edits), Deleted files (`files_trashbin`, required for deletes)
+
+## Installation
+
+1. **Build the package** (on any machine with PHP and Composer):
+
+   ```bash
+   cd mcp
+   ./scripts/package.sh          # creates build/mcp-<version>.tar.gz
+   ```
+
+   The script bundles only production files and checks the archive, including macOS metadata (`._*`), extra top-level folders and missing assets.
+
+2. **Copy and enable it on the server:**
+
+   ```bash
+   scp build/mcp-<version>.tar.gz user@server:/tmp/
+   ssh user@server
+   sudo tar -xzf /tmp/mcp-<version>.tar.gz -C /var/www/nextcloud/apps/
+   sudo chown -R www-data:www-data /var/www/nextcloud/apps/mcp
+   sudo -u www-data php /var/www/nextcloud/occ app:enable mcp
+   ```
+
+   Adjust paths and the web server user to your setup. With Docker, run `occ` inside the container.
+
+3. **Configure** in *Administration settings → Additional settings → MCP*: turn the service on, mark who may connect, and grant write permissions where needed.
+
+## Connecting a client
+
+### claude.ai / Claude Desktop (recommended)
+
+1. *Settings → Connectors → Add custom connector*.
+2. URL: `https://cloud.example.com/apps/mcp/`.
+3. Authentication: **Sign in** (OAuth), client: **Claude's published identity** (CIMD). No headers needed.
+4. **Connect**: your Nextcloud opens, you log in and click **Allow**.
+
+### Other MCP clients (app password)
+
+Create an app password in *Personal settings → Security*, enable the connection in *Personal settings → MCP*, then configure the client with the URL above and HTTP Basic auth (`username:app-password`). Quick check:
 
 ```bash
-npm install
-npm run build
+curl -u 'alice:APP-PASSWORD' \
+  -H 'Content-Type: application/json' -H 'Accept: application/json, text/event-stream' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"curl","version":"0"}}}' \
+  https://cloud.example.com/apps/mcp/
 ```
 
-## Configuração
+### Revoking access
 
-Variáveis de ambiente (veja `.env.example`):
+- **User**: *Personal settings → MCP → Disconnect* blocks the next request and revokes OAuth tokens. App passwords are revoked in *Security*.
+- **Admin**: remove eligibility or turn the service off. Both apply on the next request.
 
-| Variável | Descrição |
-|---|---|
-| `NEXTCLOUD_BASE_URL` | URL base, ex.: `https://dalcomad.cloud` |
-| `NEXTCLOUD_USERNAME` | seu usuário |
-| `NEXTCLOUD_APP_PASSWORD` | o app-password gerado |
-| `NEXTCLOUD_TIMEOUT_MS` | opcional (default 15000) |
-| `NEXTCLOUD_MAX_READ_CHARS` | opcional (default 100000) |
-| `NEXTCLOUD_MAX_READ_BYTES` | opcional (default 20971520 = 20 MiB); arquivos maiores são recusados antes da extração |
+## Security
 
-Valores numéricos inválidos ou fora dos limites causam erro na inicialização. Limites: timeout até 300000 ms, caracteres até 10000000 e bytes até 104857600.
+- Every call re-checks, in this order: authenticated identity, service switch, user eligibility, personal connection, the admin grant for that exact operation, and the Nextcloud ACL of the concrete resource.
+- OAuth: PKCE S256, exact redirect URI match, allow-listed CIMD client hosts (default `claude.ai`), tokens stored only as HMAC hashes, one-time rotating refresh tokens.
+- No passwords, tokens or file contents in logs. Errors returned to clients are generic.
+- The consent screen is CSRF-protected and cannot be framed.
+- Found a vulnerability? Please report it privately to the maintainers instead of opening a public issue.
 
-## Uso no Claude Desktop / Claude Code
-
-Adicione ao `mcp.json`:
-
-```json
-{
-  "mcpServers": {
-    "nextcloud": {
-      "command": "node",
-      "args": ["/ABS/PATH/mcp-for-nextcloud/dist/index.js"],
-      "env": {
-        "NEXTCLOUD_BASE_URL": "https://dalcomad.cloud",
-        "NEXTCLOUD_USERNAME": "seu-usuario",
-        "NEXTCLOUD_APP_PASSWORD": "xxxxx-xxxxx-xxxxx-xxxxx-xxxxx"
-      }
-    }
-  }
-}
-```
-
-O mesmo servidor funciona em outros clientes MCP (ChatGPT em modo desenvolvedor / Responses API, Gemini) apontando para o binário via stdio.
-
-## Segurança
-
-- O app-password fica só nas variáveis de ambiente — **nunca** é logado nem gravado em disco.
-- Todo acesso é feito como o usuário autenticado; nada além do que ele já pode ver é exposto.
-- 401/403/404 do Nextcloud viram mensagens seguras, sem vazar segredo.
-
-## Desenvolvimento
+## Development
 
 ```bash
-npm test          # roda a suíte (vitest)
-npm run dev       # roda via tsx (sem build)
+cd mcp
+composer install
+vendor/bin/phpunit          # unit tests with OCP mocks, no Nextcloud needed
 ```
+
+Code layout: `lib/Tools/<Module>` (one `ToolModule` per app), `lib/OAuth` (authorization server), `lib/Service` (MCP protocol, grant policy), `lib/Controller`, `templates`, `js`, `css`, `l10n`. Detailed technical notes live in [`mcp/README.md`](mcp/README.md) (Portuguese).
+
+The repository root also keeps the original **Node.js stdio prototype** (`src/`, `tests/`), a read-only MCP server used as the behavioural reference for the native app.
 
 ## Roadmap
 
-- **v2:** escrita com confirmação (criar nota/evento, postar no Talk) + auditoria.
-- **Próxima fase do produto:** app PHP nativo do Nextcloud, com endpoint gerado por instância no formato `/apps/mcp` (ou `/index.php/apps/mcp` sem URLs limpas) e login no navegador do Nextcloud; sem subdomínio dedicado. A compatibilidade de autorização MCP ainda precisa de protótipo e validação.
+- Local-style editing for agents with a shell: checkout/check-in links, file versions (list, read, restore), diffs and partial replacements
+- Folder reorganization: tree scan, create folders, move/copy, dry-run batches with undo. Still no deletes.
+- Tool titles and messages in each user's language
+- Nextcloud App Store release
+
+## License
+
+AGPL-3.0-or-later. Bundled dependency: [`smalot/pdfparser`](https://github.com/smalot/pdfparser) (LGPL-3.0).

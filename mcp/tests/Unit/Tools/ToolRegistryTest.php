@@ -66,7 +66,18 @@ final class ToolRegistryTest extends TestCase {
     }
 
     public function testListedDefinitionsExposeOnlyMcpFields(): void {
-        $this->assertSame(['name', 'description', 'inputSchema'], array_keys($this->registry()->list('alice')[0]));
+        $this->assertSame(['name', 'title', 'description', 'inputSchema', 'annotations'], array_keys($this->registry()->list('alice')[0]));
+    }
+
+    public function testListedDefinitionsCarryTitleAndAnnotations(): void {
+        $listed = array_column($this->registry()->list('alice'), null, 'name');
+        // a_read/n_read are unmapped fixtures, so they must land on the humanized fallback, never on a raw name.
+        $this->assertSame('Read', $listed['a_read']['title']);
+        $this->assertSame(['title' => 'Read', 'readOnlyHint' => true, 'destructiveHint' => false, 'idempotentHint' => true, 'openWorldHint' => false], $listed['a_read']['annotations']);
+        $this->assertSame('Read', $listed['n_read']['annotations']['title']);
+        $this->policy->setGrant('alice', 'files', 'edit', true);
+        $edit = array_column($this->registry()->list('alice'), null, 'name')['a_edit'];
+        $this->assertSame(['title' => 'Edit', 'readOnlyHint' => false, 'destructiveHint' => false, 'idempotentHint' => false, 'openWorldHint' => false], $edit['annotations']);
     }
 
     public function testCallRechecksGrantAndAppWithoutReachingTheHandler(): void {

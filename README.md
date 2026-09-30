@@ -40,7 +40,7 @@ Plus:
 - **Friendly tool titles** in the client ("Search files", "List calendars") and MCP annotations (`readOnlyHint`, `destructiveHint`) so clients can ask before risky actions.
 - **Safety confirmations** for resources that belong to someone else: shared folders, team folders, other people's Deck boards and calendars. The server refuses the first call and returns a ready-made message, and the assistant must ask the user before repeating it with `confirm_shared: true`. *(Deck and Calendar since 0.6.6; Files and Notes in 0.7)*
 - **Optional apps respected**: tools and admin matrix columns of an app that is disabled (for everyone or for a given user) are hidden.
-- **Localized UI**: admin matrix, personal page and consent screen follow the user's Nextcloud language. English and Brazilian Portuguese are included.
+- **Localized UI**: admin matrix, personal page, consent screen and every message a tool shows follow the user's Nextcloud language. English, Brazilian Portuguese and Spanish are included (Spanish is a first translation and still needs a native review); tool descriptions stay English, because the model is what reads them.
 - **Both MCP eras**: stateless MCP `2026-07-28` (`server/discover`) and the classic `initialize` flow (`2025-06-18` and earlier) on the same endpoint.
 
 ## Requirements
@@ -127,7 +127,7 @@ See [`CHANGELOG.md`](CHANGELOG.md).
 
 - Local-style editing for agents with a shell: checkout/check-in links, file versions (list, read, restore), diffs and partial replacements
 - Folder reorganization: tree scan, create folders, move/copy, dry-run batches with undo. Still no deletes.
-- Tool titles and messages in each user's language
+- Tool messages in each user's language for the remaining modules (Files, Calendar and the shared messages; Deck, Notes and Talk are done)
 - Nextcloud App Store release
 
 ## License

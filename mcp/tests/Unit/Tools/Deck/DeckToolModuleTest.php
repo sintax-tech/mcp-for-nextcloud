@@ -151,6 +151,43 @@ final class DeckToolModuleTest extends TestCase {
 		self::assertSame('boolean', $confirm['type']);
 	}
 
+	public function testEveryWriteToolOffersConfirmSharedAndWarnsAboutItInTheDescription(): void {
+		$writeTools = [
+			CreateCardHandler::TOOL,
+			EditCardHandler::TOOL,
+			MoveCardHandler::TOOL,
+			DeleteCardHandler::TOOL,
+		];
+
+		foreach ($writeTools as $name) {
+			$definition = $this->definitionOf($name);
+			$property = $definition['inputSchema']['properties']['confirm_shared'] ?? null;
+
+			self::assertIsArray($property, $name);
+			self::assertSame('boolean', $property['type'], $name);
+			self::assertNotContains('confirm_shared', $definition['inputSchema']['required'], $name);
+			self::assertStringContainsString('confirm_shared: true', $definition['description'], $name);
+		}
+	}
+
+	public function testReadToolsDoNotDeclareConfirmShared(): void {
+		$readTools = [
+			ListBoardsHandler::TOOL,
+			ListStacksHandler::TOOL,
+			ListCardsHandler::TOOL,
+			ReadCardHandler::TOOL,
+		];
+
+		foreach ($readTools as $name) {
+			self::assertStringNotContainsString(
+				'confirm_shared',
+				(string)json_encode($this->definitionOf($name)['inputSchema']['properties']),
+				$name,
+			);
+			self::assertStringNotContainsString('confirm_shared', $this->definitionOf($name)['description'], $name);
+		}
+	}
+
 	public function testEditLeavesDuedateWithoutDefaultSoAbsenceIsDistinctFromNull(): void {
 		$properties = $this->definitionOf(EditCardHandler::TOOL)['inputSchema']['properties'];
 

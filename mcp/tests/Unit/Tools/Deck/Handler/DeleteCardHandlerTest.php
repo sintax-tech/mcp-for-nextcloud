@@ -27,7 +27,7 @@ final class DeleteCardHandlerTest extends TestCase {
 	 * @return DeleteCardHandler Handler under test.
 	 */
 	private function handler(?\Throwable $failure = null): DeleteCardHandler {
-		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway = $this->gatewayOwnedBy('alice');
 		$expectation = $gateway->method('deleteCard');
 		if ($failure !== null) {
 			$expectation->willThrowException($failure);
@@ -39,7 +39,7 @@ final class DeleteCardHandlerTest extends TestCase {
 	}
 
 	public function testHappyPathDeletesForTheAuthenticatedUser(): void {
-		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::once())
 			->method('deleteCard')
 			->with('alice', 7)
@@ -79,5 +79,47 @@ final class DeleteCardHandlerTest extends TestCase {
 
 		self::assertTrue($result['isError']);
 		self::assertSame(DeckMessages::ERROR_GENERIC, $this->text($result));
+	}
+
+	public function testSharedBoardWithoutConfirmationDeletesNothing(): void {
+		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway->expects(self::once())
+			->method('cardOwnership')
+			->with('alice', 7)
+			->willReturn($this->ownershipOf('pedro', 'Comercial'));
+		$gateway->expects(self::never())->method('deleteCard');
+		$handler = new DeleteCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+
+		$this->assertSharedConfirmation($handler->handle(['cardId' => 7, 'confirm' => true], 'alice'));
+	}
+
+	public function testSharedBoardWithConfirmationDeletesTheCard(): void {
+		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway->method('cardOwnership')->willReturn($this->ownershipOf('pedro', 'Comercial'));
+		$gateway->expects(self::once())
+			->method('deleteCard')
+			->with('alice', 7)
+			->willReturn($this->card(['id' => 7, 'deletedAt' => 1_700_000_900]));
+		$handler = new DeleteCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+
+		$payload = $this->payload($handler->handle([
+			'cardId' => 7,
+			'confirm' => true,
+			'confirm_shared' => true,
+		], 'alice'));
+
+		self::assertSame(7, $payload['id']);
+	}
+
+	public function testOwnershipDeniedIsRefusedBeforeTheCardIsDeleted(): void {
+		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway->method('cardOwnership')->willThrowException(new NoPermissionException('Permission denied'));
+		$gateway->expects(self::never())->method('deleteCard');
+		$handler = new DeleteCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+
+		$result = $handler->handle(['cardId' => 7, 'confirm' => true], 'alice');
+
+		self::assertTrue($result['isError']);
+		self::assertSame(DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN, $this->text($result));
 	}
 }

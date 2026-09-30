@@ -110,13 +110,14 @@ final class DeckToolModule implements ToolModule {
 			],
 			[
 				'name' => CreateCardHandler::TOOL,
-				'description' => DeckMessages::TOOL_CREATE_CARD_DESCRIPTION,
+				'description' => DeckMessages::TOOL_CREATE_CARD_DESCRIPTION . DeckMessages::CONFIRM_SHARED_DESCRIPTION,
 				'inputSchema' => $this->schema(
 					[
 						'stackId' => $this->integer(DeckMessages::PARAM_STACK_ID),
 						'title' => $this->string(DeckMessages::PARAM_TITLE, 1, 255),
 						'description' => $this->string(DeckMessages::PARAM_DESCRIPTION, 0, null, ''),
 						'duedate' => $this->nullableString(DeckMessages::PARAM_DUEDATE, null),
+						'confirm_shared' => $this->confirmShared(),
 					],
 					['stackId', 'title'],
 				),
@@ -126,7 +127,7 @@ final class DeckToolModule implements ToolModule {
 			],
 			[
 				'name' => EditCardHandler::TOOL,
-				'description' => DeckMessages::TOOL_EDIT_CARD_DESCRIPTION,
+				'description' => DeckMessages::TOOL_EDIT_CARD_DESCRIPTION . DeckMessages::CONFIRM_SHARED_DESCRIPTION,
 				// `duedate` has no default here on purpose: absent means "keep the current date",
 				// while an explicit null clears it.
 				'inputSchema' => $this->schema(
@@ -136,6 +137,7 @@ final class DeckToolModule implements ToolModule {
 						'description' => $this->string(DeckMessages::PARAM_DESCRIPTION, 0),
 						'duedate' => $this->nullableString(DeckMessages::PARAM_DUEDATE),
 						'lastModified' => $this->integer(DeckMessages::PARAM_LAST_MODIFIED, 0),
+						'confirm_shared' => $this->confirmShared(),
 					],
 					['cardId'],
 				),
@@ -145,12 +147,13 @@ final class DeckToolModule implements ToolModule {
 			],
 			[
 				'name' => MoveCardHandler::TOOL,
-				'description' => DeckMessages::TOOL_MOVE_CARD_DESCRIPTION,
+				'description' => DeckMessages::TOOL_MOVE_CARD_DESCRIPTION . DeckMessages::CONFIRM_SHARED_DESCRIPTION,
 				'inputSchema' => $this->schema(
 					[
 						'cardId' => $this->integer(DeckMessages::PARAM_CARD_ID),
 						'stackId' => $this->integer(DeckMessages::PARAM_STACK_ID),
 						'order' => $this->integer(DeckMessages::PARAM_ORDER, 0, self::MAX_ORDER),
+						'confirm_shared' => $this->confirmShared(),
 					],
 					['cardId', 'stackId'],
 				),
@@ -160,11 +163,12 @@ final class DeckToolModule implements ToolModule {
 			],
 			[
 				'name' => DeleteCardHandler::TOOL,
-				'description' => DeckMessages::TOOL_DELETE_CARD_DESCRIPTION,
+				'description' => DeckMessages::TOOL_DELETE_CARD_DESCRIPTION . DeckMessages::CONFIRM_SHARED_DESCRIPTION,
 				'inputSchema' => $this->schema(
 					[
 						'cardId' => $this->integer(DeckMessages::PARAM_CARD_ID),
 						'confirm' => ['type' => 'boolean', 'const' => true, 'description' => DeckMessages::PARAM_CONFIRM],
+						'confirm_shared' => $this->confirmShared(),
 					],
 					['cardId', 'confirm'],
 				),
@@ -274,6 +278,13 @@ final class DeckToolModule implements ToolModule {
 		}
 
 		return $property;
+	}
+
+	/**
+	 * @return array<string, mixed> Optional shared-resource confirmation property of a write tool.
+	 */
+	private function confirmShared(): array {
+		return ['type' => 'boolean', 'description' => DeckMessages::PARAM_CONFIRM_SHARED];
 	}
 
 	/**

@@ -41,6 +41,24 @@ final class MoveCardHandler extends AbstractHandler {
 	 */
 	public function handle(array $arguments, string $userId): array {
 		return $this->run(function () use ($arguments, $userId): array {
+			// Origin and destination are two boards and either can belong to somebody else; both
+			// are gated before the card moves anywhere, and the origin is checked first.
+			$confirmation = $this->confirmShared(
+				$arguments,
+				$userId,
+				$this->gateway->cardOwnership($userId, (int)$arguments['cardId']),
+			);
+			if ($confirmation === null) {
+				$confirmation = $this->confirmShared(
+					$arguments,
+					$userId,
+					$this->gateway->stackOwnership($userId, (int)$arguments['stackId']),
+				);
+			}
+			if ($confirmation !== null) {
+				return $confirmation;
+			}
+
 			$order = array_key_exists('order', $arguments) ? (int)$arguments['order'] : null;
 
 			return $this->formatter->card(

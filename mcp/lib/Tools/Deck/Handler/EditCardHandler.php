@@ -55,6 +55,17 @@ final class EditCardHandler extends AbstractHandler {
 		}
 
 		return $this->run(function () use ($arguments, $given, $userId): array {
+			// Owned by somebody else and not confirmed yet: answer with the shared-resource payload
+			// and leave the card untouched, before it is even read.
+			$confirmation = $this->confirmShared(
+				$arguments,
+				$userId,
+				$this->gateway->cardOwnership($userId, (int)$arguments['cardId']),
+			);
+			if ($confirmation !== null) {
+				return $confirmation;
+			}
+
 			$card = $this->gateway->findCard($userId, (int)$arguments['cardId']);
 
 			$expected = $arguments['lastModified'] ?? null;

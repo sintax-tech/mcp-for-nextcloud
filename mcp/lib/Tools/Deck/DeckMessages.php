@@ -41,6 +41,15 @@ final class DeckMessages {
 	public const PARAM_ORDER = 'Posição do card na lista, de 0 a 99999.';
 	public const PARAM_LAST_MODIFIED = 'lastModified do card no momento da leitura; se tiver mudado, a edição é recusada.';
 	public const PARAM_CONFIRM = 'Precisa ser true para confirmar a exclusão.';
+	public const PARAM_CONFIRM_SHARED = 'Marque como true apenas depois que o usuário confirmar a alteração em um quadro de outra pessoa.';
+
+	/* Shared-resource confirmation (confirm_shared). */
+	/** Sentence appended to the description of every write tool of the module. */
+	public const CONFIRM_SHARED_DESCRIPTION
+		= ' Se o recurso for de outra pessoa, o agente DEVE perguntar ao usuário antes de enviar confirm_shared: true.';
+	/** Message returned, without error, instead of writing on somebody else\'s board. */
+	public const SHARED_CONFIRMATION
+		= "O quadro '%s' pertence a %s e é compartilhado com você. Alterações afetam outras pessoas. Confirme com o usuário antes de continuar e repita a chamada com confirm_shared: true.";
 
 	/* Error messages. */
 	/** Shared by "not found" and "no permission": the Deck answers both with the same exception. */

@@ -10,10 +10,12 @@ use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Db\Stack;
 use OCA\Deck\Db\StackMapper;
 use OCA\Deck\Model\OptionalNullableValue;
+use OCA\Deck\NoPermissionException;
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
 use OCA\Deck\Service\StackService;
+use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -186,6 +188,42 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 */
+	public function stackOwnership(string $userId, int $stackId): array {
+		$this->bindUser($userId);
+
+		/** @var PermissionService $permissionService */
+		$permissionService = $this->service(PermissionService::class);
+		/** @var StackMapper $stackMapper */
+		$stackMapper = $this->service(StackMapper::class);
+
+		// Check first: Deck answers a missing or unreadable stack with the same exception it uses
+		// for a denied one, so no owner or title is read before the caller may write there.
+		$permissionService->checkPermission($stackMapper, $stackId, Acl::PERMISSION_EDIT);
+
+		return $this->boardOwnership($stackMapper->findBoardId($stackId));
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function cardOwnership(string $userId, int $cardId): array {
+		$this->bindUser($userId);
+
+		/** @var PermissionService $permissionService */
+		$permissionService = $this->service(PermissionService::class);
+		/** @var CardMapper $cardMapper */
+		$cardMapper = $this->service(CardMapper::class);
+
+		// The same check `CardService::update()` and `CardService::delete()` run, taken before the
+		// read so a caller without edit access never learns who owns the board.
+		$permissionService->checkPermission($cardMapper, $cardId, Acl::PERMISSION_EDIT);
+
+		return $this->boardOwnership($cardMapper->findBoardId($cardId));
+	}
+
+	/**
 	 * Resolves the Deck board service and binds it to the caller.
 	 *
 	 * `BoardService::setUserId()` also calls `PermissionService::setUserId()`, which clears the
@@ -215,6 +253,47 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		}
 
 		return $this->resolved[$class];
+	}
+
+	/**
+	 * Owner, display name and title of a board, read after its permission check succeeded.
+	 *
+	 * @param mixed $boardId Board id resolved by a Deck mapper, or null when the entity is gone.
+	 * @return array{owner: string, ownerDisplayName: string, name: string} Ownership of the board.
+	 * @throws NoPermissionException When the board cannot be resolved, as the Deck answers it.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 */
+	private function boardOwnership(mixed $boardId): array {
+		if ($boardId === null) {
+			// Reached only if Deck and this lookup disagree; answer like Deck does, without leaking.
+			throw new NoPermissionException('Permission denied');
+		}
+
+		/** @var BoardService $boardService */
+		$boardService = $this->service(BoardService::class);
+		// `fullDetails: false` skips the ACL and session enrichment; `allowDeleted: true` keeps an
+		// archived board answerable here, because the write itself is what refuses it.
+		$board = $boardService->find((int)$boardId, false, true);
+		$owner = (string)$board->getOwner();
+
+		return [
+			'owner' => $owner,
+			'ownerDisplayName' => $this->displayName($owner),
+			'name' => (string)$board->getTitle(),
+		];
+	}
+
+	/**
+	 * Display name of a user, falling back to the uid when the account is gone or has none.
+	 *
+	 * @param string $userId UID whose name is shown to the caller.
+	 * @return string Name to put in a confirmation message.
+	 */
+	private function displayName(string $userId): string {
+		/** @var IUserManager $userManager */
+		$userManager = $this->service(IUserManager::class);
+
+		return $userManager->get($userId)?->getDisplayName() ?: $userId;
 	}
 
 	/**

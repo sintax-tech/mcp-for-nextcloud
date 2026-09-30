@@ -27,7 +27,7 @@ final class MoveCardHandlerTest extends TestCase {
 	 * @return MoveCardHandler Handler under test.
 	 */
 	private function handler(?\Throwable $failure = null): MoveCardHandler {
-		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway = $this->gatewayOwnedBy('alice');
 		$expectation = $gateway->method('moveCard');
 		if ($failure !== null) {
 			$expectation->willThrowException($failure);
@@ -39,7 +39,7 @@ final class MoveCardHandlerTest extends TestCase {
 	}
 
 	public function testHappyPathWithoutOrderLetsTheGatewayAppend(): void {
-		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::once())
 			->method('moveCard')
 			->with('alice', 7, 11, null)
@@ -52,7 +52,7 @@ final class MoveCardHandlerTest extends TestCase {
 	}
 
 	public function testExplicitOrderIsForwardedAsZeroToo(): void {
-		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::once())
 			->method('moveCard')
 			->with('alice', 7, 11, 0)
@@ -63,7 +63,7 @@ final class MoveCardHandlerTest extends TestCase {
 	}
 
 	public function testMovingToAnotherBoardIsTheSameCall(): void {
-		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::once())
 			->method('moveCard')
 			->with('alice', 7, 42, 3)
@@ -96,5 +96,63 @@ final class MoveCardHandlerTest extends TestCase {
 		self::assertTrue($result['isError']);
 		self::assertSame(DeckMessages::ERROR_GENERIC, $this->text($result));
 		self::assertStringNotContainsString('deck_cards', $this->text($result));
+	}
+
+	public function testSharedOriginBoardWithoutConfirmationMovesNothing(): void {
+		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway->expects(self::once())
+			->method('cardOwnership')
+			->with('alice', 7)
+			->willReturn($this->ownershipOf('pedro', 'Comercial'));
+		$gateway->expects(self::never())->method('stackOwnership');
+		$gateway->expects(self::never())->method('moveCard');
+		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+
+		$this->assertSharedConfirmation($handler->handle(['cardId' => 7, 'stackId' => 11], 'alice'));
+	}
+
+	public function testSharedDestinationStackAlsoNeedsTheConfirmation(): void {
+		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway->method('cardOwnership')->willReturn($this->ownershipOf('alice'));
+		$gateway->expects(self::once())
+			->method('stackOwnership')
+			->with('alice', 11)
+			->willReturn($this->ownershipOf('pedro', 'Comercial'));
+		$gateway->expects(self::never())->method('moveCard');
+		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+
+		$this->assertSharedConfirmation($handler->handle(['cardId' => 7, 'stackId' => 11], 'alice'));
+	}
+
+	public function testSharedBoardsWithConfirmationMoveTheCard(): void {
+		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway->method('cardOwnership')->willReturn($this->ownershipOf('pedro', 'Comercial'));
+		$gateway->method('stackOwnership')->willReturn($this->ownershipOf('pedro', 'Comercial'));
+		$gateway->expects(self::once())
+			->method('moveCard')
+			->with('alice', 7, 11, null)
+			->willReturn($this->card(['id' => 7, 'stackId' => 11]));
+		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+
+		$payload = $this->payload($handler->handle([
+			'cardId' => 7,
+			'stackId' => 11,
+			'confirm_shared' => true,
+		], 'alice'));
+
+		self::assertSame(11, $payload['stackId']);
+	}
+
+	public function testOwnershipDeniedIsRefusedBeforeTheCardMoves(): void {
+		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway->method('cardOwnership')->willThrowException(new NoPermissionException('Permission denied'));
+		$gateway->expects(self::never())->method('stackOwnership');
+		$gateway->expects(self::never())->method('moveCard');
+		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+
+		$result = $handler->handle(['cardId' => 7, 'stackId' => 11], 'alice');
+
+		self::assertTrue($result['isError']);
+		self::assertSame(DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN, $this->text($result));
 	}
 }

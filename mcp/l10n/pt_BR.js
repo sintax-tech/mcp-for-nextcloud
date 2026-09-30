@@ -1,0 +1,19 @@
+OC.L10N.register(
+    "mcp",
+    {
+    "enabled" : "ativado",
+    "disabled" : "desativado",
+    "allowed" : "permitida",
+    "not allowed" : "não permitida",
+    "active" : "ativa",
+    "disconnected" : "desconectada",
+    "MCP connection" : "Conexão MCP",
+    "Endpoint: %s" : "Endpoint: %s",
+    "Service: %s. Administrator eligibility: %s." : "Serviço: %s. Elegibilidade do administrador: %s.",
+    "Your connection: %s." : "Sua conexão: %s.",
+    "Disconnect" : "Desconectar",
+    "Connect" : "Conectar",
+    "Create an individual app password in Nextcloud Settings → Security, then use it with your Nextcloud user ID in a client that supports HTTP Basic authentication and Streamable HTTP MCP 2025-06-18. This app never asks for your Nextcloud password." : "Crie uma senha de aplicativo individual em Configurações → Segurança do Nextcloud e use-a com seu ID de usuário do Nextcloud em um cliente que suporte autenticação HTTP Basic e Streamable HTTP MCP 2025-06-18. Este app nunca solicita sua senha do Nextcloud.",
+    "Disconnecting blocks access to this app on the next request. It does not revoke the app password; revoke that separately in Nextcloud Settings → Security." : "Desconectar bloqueia o acesso a este app na próxima solicitação. Isso não revoga a senha de aplicativo; revogue-a separadamente em Configurações → Segurança do Nextcloud."
+},
+"nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

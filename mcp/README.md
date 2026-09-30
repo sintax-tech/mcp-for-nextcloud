@@ -28,7 +28,7 @@ Cada tool só aparece em `tools/list` e só pode ser chamada quando o usuário t
 | `calendar_list_calendars` `{}` | calendar.read | Calendários visíveis ao usuário, próprios e compartilhados. |
 | `calendar_list_events` `{calendar?, from?, to?}` | calendar.read | Eventos no intervalo (padrão: próximos 7 dias), com recorrência expandida. |
 
-Por enquanto, Calendar oferece apenas leitura: as cinco tools de escrita estão ocultas de `tools/list` e chamadas diretas falham fechadas até ser provado o caminho oficial DAV do Nextcloud. Os grants de escrita continuam no catálogo interno para eventual reativação depois da validação. As tools de leitura exigem o app Calendar habilitado para o usuário e usam o backend CalDAV do app DAV, carregado só quando uma tool de calendário é chamada. O runtime/plugins do Nextcloud 33 não foram validados; antes de reativar escrita, é obrigatório testar PUT/DELETE/MOVE, ACL compartilhada, convites e efeitos num ambiente de integração Nextcloud 33 real. `sabre/vobject` vem do core e não está no `vendor/` do pacote.
+Por enquanto, Calendar oferece apenas leitura: as cinco tools de escrita estão ocultas de `tools/list`, chamadas diretas falham fechadas e suas colunas não aparecem na matriz administrativa até ser provado o caminho oficial DAV do Nextcloud. Os grants de escrita já salvos são preservados internamente para eventual reativação depois da validação. As tools de leitura exigem o app Calendar habilitado para o usuário e usam o backend CalDAV do app DAV, carregado só quando uma tool de calendário é chamada. O runtime/plugins do Nextcloud 33 não foram validados; antes de reativar escrita, é obrigatório testar PUT/DELETE/MOVE, ACL compartilhada, convites e efeitos num ambiente de integração Nextcloud 33 real. `sabre/vobject` vem do core e não está no `vendor/` do pacote.
 
 Tools de Notes exigem o app Notes habilitado para o usuário. Leitura começa permitida; criação, edição, movimentação e exclusão começam negadas até o administrador liberar. Não há timeout próprio: a leitura é local ao PHP e o limite de bytes protege contra arquivos grandes. Storage externo lento fica limitado ao `max_execution_time` do PHP.
 
@@ -72,9 +72,9 @@ Os arquivos de licença acompanham cada pacote em `vendor/`. O `vendor/autoload.
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-0.6.7.tar.gz <servidor>:/tmp/
+scp build/mcp-0.6.8.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-0.6.7.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-0.6.8.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp

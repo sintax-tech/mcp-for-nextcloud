@@ -19,16 +19,8 @@ use RuntimeException;
  * The registry has already checked grant, app and input schema for exposed tools.
  */
 final class CalendarModule implements ToolModule {
-    /** Tool names whose read path is currently proved and enabled. */
-    private const ENABLED_TOOLS = ['calendar_list_calendars', 'calendar_list_events'];
-    /** @var list<string> write tool names kept for later reactivation after DAV proof */
-    private const DISABLED_WRITES = [
-        'calendar_create_event',
-        'calendar_update_event',
-        'calendar_move_event',
-        'calendar_delete_event',
-        'calendar_transfer_event',
-    ];
+    /** Operations available in tools/list, tools/call and the admin grant matrix. */
+    public const ENABLED_OPERATIONS = ['read'];
 
     /** @var array<string, CalendarTool> handlers by tool name */
     private array $tools = [];
@@ -62,7 +54,7 @@ final class CalendarModule implements ToolModule {
     public function definitions(): array {
         return array_values(array_map(
             static fn (CalendarTool $tool) => $tool->definition(),
-            array_intersect_key($this->tools, array_flip(self::ENABLED_TOOLS)),
+            array_filter($this->tools, static fn (CalendarTool $tool): bool => in_array($tool->definition()['operation'], self::ENABLED_OPERATIONS, true)),
         ));
     }
 
@@ -75,10 +67,10 @@ final class CalendarModule implements ToolModule {
      * @throws RuntimeException wrapping any other failure, which the registry reports generically
      */
     public function call(string $name, array $arguments, string $userId): array {
-        if (in_array($name, self::DISABLED_WRITES, true)) {
+        $tool = $this->tools[$name] ?? throw new InvalidArgumentException('Unknown tool');
+        if (!in_array($tool->definition()['operation'], self::ENABLED_OPERATIONS, true)) {
             throw new InvalidArgumentException('Unknown tool');
         }
-        $tool = $this->tools[$name] ?? throw new InvalidArgumentException('Unknown tool');
         try {
             return $tool->execute($arguments, $userId);
         } catch (CalendarException $e) {

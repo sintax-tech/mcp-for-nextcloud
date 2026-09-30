@@ -76,9 +76,18 @@ final class GrantMatrixTest extends TestCase {
 
     public function testCatalogAppsAndService(): void {
         $page = $this->fx->matrix()->page('', '', 1);
-        $this->assertSame(['files' => GrantPolicy::CATALOG['files'], 'notes' => GrantPolicy::CATALOG['notes'], 'calendar' => GrantPolicy::CATALOG['calendar']], $page['catalog']);
+        $this->assertSame(['files' => GrantPolicy::CATALOG['files'], 'notes' => GrantPolicy::CATALOG['notes'], 'calendar' => ['read']], $page['catalog']);
         $this->assertSame(['files' => true, 'notes' => true, 'deck' => false, 'calendar' => true, 'talk' => false], $page['appsEnabled']);
         $this->assertFalse($page['serviceEnabled']);
+    }
+
+    public function testDisabledCalendarWritesAreAbsentFromMatrixButSavedGrantsRemain(): void {
+        $this->fx->policy->setGrant('bruno', 'calendar', 'create', true);
+
+        $page = $this->fx->matrix()->page('Bruno', '', 1);
+
+        $this->assertSame(['read'], $page['catalog']['calendar']);
+        $this->assertTrue($page['users'][0]['grants']['calendar']['create']);
     }
 
     public function testMissingOptionalAppsAreOmittedWhileTheirGrantsRemainStored(): void {

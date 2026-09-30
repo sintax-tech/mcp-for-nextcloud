@@ -157,24 +157,9 @@ class TalkModule implements ToolModule {
                         $this->limit($arguments),
                     ),
                 ]),
-                self::TOOL_REPLY => ToolResult::success($this->writer->reply(
-                    $this->writable($userId, $arguments),
-                    $userId,
-                    $this->message($arguments),
-                    $this->replyTo($arguments),
-                )),
-                self::TOOL_ATTACH => ToolResult::success($this->sharer->attach(
-                    $this->writable($userId, $arguments),
-                    $userId,
-                    $this->path($arguments),
-                    $this->optionalMessage($arguments),
-                )),
-                self::TOOL_QUOTE => ToolResult::success($this->writer->quoteAttachment(
-                    $this->writable($userId, $arguments),
-                    $userId,
-                    $this->attachmentId($arguments),
-                    $this->optionalMessage($arguments),
-                )),
+                self::TOOL_REPLY => ToolResult::success($this->replyCall($userId, $arguments)),
+                self::TOOL_ATTACH => ToolResult::success($this->attachCall($userId, $arguments)),
+                self::TOOL_QUOTE => ToolResult::success($this->quoteCall($userId, $arguments)),
                 default => throw new InvalidArgumentException(Messages::UNKNOWN_TOOL),
             };
         } catch (InvalidArgumentException $e) {
@@ -279,6 +264,59 @@ class TalkModule implements ToolModule {
         }
 
         return (int)$arguments['attachment_id'];
+    }
+
+    /**
+     * Every writing tool reads and checks its arguments before the conversation is resolved, so a malformed call is
+     * reported as the client mistake it is instead of reaching a lookup it should never have started.
+     *
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> Result data of talk_reply
+     * @throws InvalidArgumentException When an argument is missing
+     * @throws ConversationAccessException When the conversation is missing or not writable
+     * @throws TalkUnavailableException When spreed is unavailable
+     */
+    private function replyCall(string $userId, array $arguments): array {
+        $message = $this->message($arguments);
+        $replyTo = $this->replyTo($arguments);
+
+        return $this->writer->reply($this->writable($userId, $arguments), $userId, $message, $replyTo);
+    }
+
+    /**
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> Result data of talk_attach_file
+     * @throws InvalidArgumentException When the path is missing
+     * @throws ConversationAccessException When the conversation or the file cannot be reached
+     * @throws TalkUnavailableException When spreed is unavailable
+     */
+    private function attachCall(string $userId, array $arguments): array {
+        $path = $this->path($arguments);
+        $caption = $this->optionalMessage($arguments);
+
+        return $this->sharer->attach($this->writable($userId, $arguments), $userId, $path, $caption);
+    }
+
+    /**
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> Result data of talk_quote_file
+     * @throws InvalidArgumentException When the attachment id is missing
+     * @throws ConversationAccessException When the conversation or the attachment cannot be reached
+     * @throws TalkUnavailableException When spreed is unavailable
+     */
+    private function quoteCall(string $userId, array $arguments): array {
+        $attachmentId = $this->attachmentId($arguments);
+        $caption = $this->optionalMessage($arguments);
+
+        return $this->writer->quoteAttachment(
+            $this->writable($userId, $arguments),
+            $userId,
+            $attachmentId,
+            $caption,
+        );
     }
 
     /**

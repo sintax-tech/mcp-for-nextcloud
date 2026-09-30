@@ -56,7 +56,9 @@ class UserFileResolver {
      * @throws InvalidArgumentException When the path is empty, has a null byte, a backslash or a relative segment
      */
     private function assertUsablePath(string $path): string {
-        if ($path === '' || str_contains($path, "\0") || str_contains($path, '\\')) {
+        // Only a path made of nothing but spaces is refused here. The path itself is never trimmed, because a file
+        // name may legitimately end with a space.
+        if (trim($path) === '' || str_contains($path, "\0") || str_contains($path, '\\')) {
             throw new InvalidArgumentException(Messages::INVALID_PATH);
         }
 

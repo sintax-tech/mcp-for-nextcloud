@@ -49,6 +49,8 @@ class CheckoutController extends Controller {
     /** Grant the whole checkout flow needs; checkout, upload and replace all use files.edit. */
     private const MODULE = 'files';
     private const OPERATION = 'edit';
+    /** The only body type the upload accepts: the raw bytes of the file, nothing interpreted. */
+    private const CONTENT_TYPE = 'application/octet-stream';
 
     public function __construct(
         string $appName,
@@ -72,25 +74,30 @@ class CheckoutController extends Controller {
     /**
      * Streams the file the checkout was issued for, spending the download token.
      *
-     * @param string $token single-use token from the download URL
      * @return Response the raw bytes, or 404/410/403 without a body
      */
     #[PublicPage]
     #[NoAdminRequired]
     #[NoCSRFRequired]
-    public function download(string $token): Response {
-        $opened = $this->open($token, CheckoutToken::KIND_DOWNLOAD);
+    public function download(): Response {
+        $opened = $this->resolve(CheckoutToken::KIND_DOWNLOAD);
         if ($opened instanceof Response) {
             return $opened;
         }
-        [, $file] = $opened;
+        [$row, $file] = $opened;
+        if ($failure = $this->spend($row)) {
+            return $failure;
+        }
         $handle = $file->fopen('r');
         if ($handle === false) {
             return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
         }
+        // filename*=UTF-8'' is the form that survives a name with spaces or accents; the plain filename
+        // is the percent-encoded fallback for clients that only understand RFC 6266.
+        $name = $file->getName();
         return new StreamResponse($handle, Http::STATUS_OK, [
             'Content-Type' => (string)$file->getMimetype(),
-            'Content-Disposition' => 'attachment; filename="' . rawurlencode($file->getName()) . '"',
+            'Content-Disposition' => sprintf('attachment; filename="%s"; filename*=UTF-8\'\'%s', rawurlencode($name), rawurlencode($name)),
             'Cache-Control' => 'no-store',
         ]);
     }
@@ -98,46 +105,106 @@ class CheckoutController extends Controller {
     /**
      * Replaces the file with the uploaded bytes, spending the upload token.
      *
-     * The token is spent on arrival, so every answer other than the receipt is final: an agent that has to
-     * try again must make a new files_checkout, which is what the message says. A 2xx here would be read as
-     * "it worked" and the retry would be a 410.
+     * The body is checked before the token is spent, so a call the agent got wrong — wrong content type, an
+     * empty body, a body over the limit — still leaves the link usable. Everything from the guard on leaves
+     * it spent, because from there the write may or may not have happened and a retry would be ambiguous.
      *
-     * @param string $token single-use token from the upload URL
-     * @return Response the JSON receipt, or 409 for a file that changed, 403 for a refused write, and
-     *         404/410/413/500 for the rest, all without a body
+     * The token is read from the route only, never as a method argument: Request::decodeContent() merges a
+     * JSON or urlencoded body into the same parameter array (lib/private/AppFramework/Http/Request.php:388-425),
+     * so an argument would let a body choose which file it writes.
+     *
+     * @return Response the JSON receipt, or 409 for a conflict, 403 for a refused write, and
+     *         400/404/410/413/415/500 for the rest
      */
     #[PublicPage]
     #[NoAdminRequired]
     #[NoCSRFRequired]
-    public function upload(string $token): Response {
-        $opened = $this->open($token, CheckoutToken::KIND_UPLOAD);
+    public function upload(): Response {
+        if ($failure = $this->checkBodyType()) {
+            return $failure;
+        }
+        $token = $this->routeToken();
+        if ($token === null) {
+            return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
+        }
+        $limit = $this->checkout->maxBytes();
+        $body = $this->storeBody($limit);
+        if ($failure = $this->checkBody($limit)) {
+            if ($body !== null) {
+                @unlink($body);
+            }
+            return $failure;
+        }
+        $opened = $this->resolve(CheckoutToken::KIND_UPLOAD);
         if ($opened instanceof Response) {
+            @unlink((string)$body);
             return $opened;
         }
         [$row, $file] = $opened;
-        $limit = $this->checkout->maxBytes();
-        $body = $this->storeBody($limit);
-        if ($body === null) {
-            return $this->refuse(Http::STATUS_REQUEST_ENTITY_TOO_LARGE, FilesMessages::uploadTooLarge($limit));
+        // The link is spent here, immediately before anything that can change the file. Everything above is
+        // a refusal the agent can fix without a new checkout; everything below may already have written.
+        if ($failure = $this->spend($row)) {
+            @unlink((string)$body);
+            return $failure;
         }
         try {
-            return $this->write($row, $file, $body);
+            return $this->write($row, $file, (string)$body);
         } finally {
-            @unlink($body);
+            @unlink((string)$body);
         }
+    }
+
+    /**
+     * Only the raw bytes of the file are accepted. A multipart body is called out separately with 400
+     * because `curl -F` is the obvious mistake and the generic 415 would not say what was wrong.
+     *
+     * @return Response|null the refusal, or null when the body type is acceptable
+     */
+    private function checkBodyType(): ?Response {
+        $type = strtolower(trim(explode(';', $this->request->getHeader('Content-Type'))[0]));
+        if ($type === self::CONTENT_TYPE) {
+            return null;
+        }
+        if ($type === 'multipart/form-data') {
+            return $this->refuse(Http::STATUS_BAD_REQUEST, FilesMessages::uploadMultipart());
+        }
+        $this->logger->debug('MCP checkout upload refused its content type', ['app' => 'mcp', 'type' => mb_substr($type, 0, 32)]);
+        return $this->refuse(Http::STATUS_UNSUPPORTED_MEDIA_TYPE, FilesMessages::uploadWrongType());
+    }
+
+    /**
+     * @param int $limit effective upload limit in bytes
+     * @return Response|null the refusal, or null when the body is usable
+     */
+    private function checkBody(int $limit): ?Response {
+        $declared = (int)$this->request->getHeader('Content-Length');
+        if ($declared === 0) {
+            return $this->refuse(Http::STATUS_BAD_REQUEST, FilesMessages::uploadEmpty());
+        }
+        if ($declared > $limit) {
+            return $this->refuse(Http::STATUS_REQUEST_ENTITY_TOO_LARGE, FilesMessages::uploadTooLarge($limit));
+        }
+        return null;
+    }
+
+    /**
+     * @return string|null the token as the route delivered it, and nothing a body could have injected
+     */
+    protected function routeToken(): ?string {
+        $token = $this->request->urlParams['token'] ?? null;
+        return is_string($token) && $token !== '' ? $token : null;
     }
 
     /**
      * POST alias of upload(): the same raw body, for clients that do not use PUT.
      *
-     * @param string $token single-use token from the upload URL
      * @return Response the JSON receipt, or a refusal
      */
     #[PublicPage]
     #[NoAdminRequired]
     #[NoCSRFRequired]
-    public function uploadPost(string $token): Response {
-        return $this->upload($token);
+    public function uploadPost(): Response {
+        return $this->upload();
     }
 
     /**
@@ -158,6 +225,7 @@ class CheckoutController extends Controller {
         if (!$file->isUpdateable()) {
             return $this->refuse(Http::STATUS_FORBIDDEN, ToolFailure::FORBIDDEN);
         }
+        $copy = '';
         try {
             NodeAccess::checkEtag($file, $row->etag);
             $copy = $this->backup->prepare($root, $file, $row->path, $row->userId, $row->etag);
@@ -169,7 +237,8 @@ class CheckoutController extends Controller {
             return $this->refuse($conflict ? Http::STATUS_CONFLICT : Http::STATUS_BAD_REQUEST, $message);
         } catch (\Throwable) {
             $this->logger->error('MCP checkout upload failed', ['app' => 'mcp']);
-            return $this->refuse(Http::STATUS_INTERNAL_SERVER_ERROR, FilesMessages::uploadFailed());
+            // The copy exists by now, so the message can point at the one thing that still holds the original.
+            return $this->refuse(Http::STATUS_INTERNAL_SERVER_ERROR, FilesMessages::uploadFailed($copy));
         }
         return $this->json(Http::STATUS_OK, [
             'path' => $row->path,
@@ -181,29 +250,26 @@ class CheckoutController extends Controller {
     }
 
     /**
-     * Validates the token, spends it and re-reads the policy and the node it points at.
+     * Everything a request has to pass before the link stops being reusable: the token exists, the session
+     * agrees with it, the policy still allows it, and the node it names is still there with the same id.
+     * None of these has touched the file, so none of them may cost the agent its link.
      *
-     * @param string $token token as presented in the URL
      * @param string $kind CheckoutToken::KIND_DOWNLOAD or KIND_UPLOAD
-     * @return array{0: CheckoutToken, 1: File}|Response the spent token with its node, or the refusal
+     * @return array{0: CheckoutToken, 1: File}|Response the token with its node, or the refusal
      */
-    private function open(string $token, string $kind): array|Response {
-        $row = $this->store->find($this->hasher->hash($token));
+    private function resolve(string $kind): array|Response {
+        $row = $this->store->find($this->hasher->hash($this->routeToken() ?? ''));
         if ($row === null || $row->kind !== $kind) {
             return $this->refuse(Http::STATUS_NOT_FOUND, $kind === CheckoutToken::KIND_UPLOAD ? FilesMessages::tokenWrongKind() : FilesMessages::tokenInvalid());
         }
-        // Spending before anything else is what makes a token single use even under concurrent requests.
-        if (!$this->store->consume($row, $this->time->getTime())) {
-            return $this->refuse(Http::STATUS_GONE, FilesMessages::tokenSpent());
+        // A link is the credential, so the session may only ever agree with it.
+        $session = $this->userSession->getUser();
+        if ($session !== null && $session->getUID() !== $row->userId) {
+            return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
         }
         $uid = $row->userId;
         if (!$this->policy->canConnect($uid) || !$this->policy->granted($uid, self::MODULE, self::OPERATION)) {
             return $this->refuse(Http::STATUS_FORBIDDEN, FilesMessages::checkoutRevoked());
-        }
-        // A link is the credential, so the session may only ever agree with it.
-        $session = $this->userSession->getUser();
-        if ($session !== null && $session->getUID() !== $uid) {
-            return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
         }
         try {
             $file = NodeAccess::requireFile(NodeAccess::get($this->rootFolder->getUserFolder($uid), $row->path));
@@ -214,6 +280,14 @@ class CheckoutController extends Controller {
             return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
         }
         return [$row, $file];
+    }
+
+    /**
+     * @param CheckoutToken $row the token about to be used
+     * @return Response|null 410 when another request spent it first, which is what makes the token single use
+     */
+    private function spend(CheckoutToken $row): ?Response {
+        return $this->store->consume($row, $this->time->getTime()) ? null : $this->refuse(Http::STATUS_GONE, FilesMessages::tokenSpent());
     }
 
     /**

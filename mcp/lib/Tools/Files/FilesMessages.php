@@ -289,8 +289,28 @@ final class FilesMessages {
         return 'O arquivo mudou depois do checkout; nada foi gravado. Releia o arquivo e faça um novo files_checkout antes de enviar de novo.';
     }
 
-    /** @return string the upload could not be stored */
-    public static function uploadFailed(): string {
-        return 'Falha ao gravar o arquivo; o original foi preservado.';
+    /** @return string a multipart body, the shape `curl -F` produces instead of raw bytes */
+    public static function uploadMultipart(): string {
+        return 'Envie os bytes do arquivo como corpo bruto (curl -T), não como formulário multipart.';
+    }
+
+    /** @return string a body the upload route does not interpret */
+    public static function uploadWrongType(): string {
+        return 'Envie o corpo como application/octet-stream com os bytes do arquivo.';
+    }
+
+    /** @return string a body that carried nothing at all */
+    public static function uploadEmpty(): string {
+        return 'O corpo enviado está vazio; nada foi gravado.';
+    }
+
+    /**
+     * @param string $backup path of the verified copy of the original, '' when the failure came before it
+     * @return string a failed write, naming where the original still is
+     */
+    public static function uploadFailed(string $backup): string {
+        return $backup === ''
+            ? 'Falha ao gravar o arquivo.'
+            : 'Falha ao gravar o arquivo; o original foi preservado em ' . $backup . '.';
     }
 }

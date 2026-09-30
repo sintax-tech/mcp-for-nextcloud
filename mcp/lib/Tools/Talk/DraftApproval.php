@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Talk;
 
+use InvalidArgumentException;
 use OCP\Comments\IComment;
 
 /**
@@ -15,14 +16,17 @@ use OCP\Comments\IComment;
  * never a field the call would not publish.
  *
  * The confirmation is not a boolean the caller can assert out of thin air: each draft stores a fingerprint of its
- * own content and hands back an id, and approveReply, approveAttach and approveQuote recompute that fingerprint
- * from the arguments of the confirmed call. Publishing therefore requires a draft of this same account, this same
+ * own content and hands back an id, and approveReply, approveAttach, approveQuote and approveDirectMessage
+ * recompute that fingerprint from the arguments of the confirmed call. Publishing therefore requires a draft of this same account, this same
  * conversation, this same action and this same payload, still inside its TTL and not spent yet. What the server
  * can prove is that it showed the draft; that a human read and accepted it is the client's promise to keep.
  */
 class DraftApproval {
     /** Longest excerpt of the quoted message a draft carries; the id is there to read the rest. */
     public const EXCERPT_MAX_LENGTH = 200;
+
+    /** Largest batch a single call may carry; past this the answer stops being something a user can read. */
+    public const MAX_BATCH = 50;
 
     public function __construct(
         private ConversationWriter $writer,
@@ -59,6 +63,52 @@ class DraftApproval {
             'conversation' => $conversation->token(),
             'message' => $text,
             'replyTo' => $replyTo,
+        ]);
+    }
+
+    /**
+     * Draft of a whole batch. Every item is shown with the very text that will be stored and, when the item quotes
+     * something, with who is being answered: a user approving a list has to see the list, not a promise of one.
+     *
+     * @param Conversation $conversation Conversation already validated for writing
+     * @param string $userId Authenticated user, the author of the messages
+     * @param list<array{message:string, replyTo?:int|null}> $items Messages as received from the client
+     * @return array{requiresConfirmation:true, approvalId:string, action:string, conversation:array{token:string, displayName:string}, draft:array{messages:list<array{message:string, replyTo?:array{id:int, author:string, excerpt:string}}>}, message:string}
+     * @throws InvalidArgumentException When the batch is empty, too long, or an item is not usable
+     * @throws ConversationAccessException When a quoted message does not exist in this conversation
+     * @throws TalkUnavailableException When spreed is unavailable
+     */
+    public function batch(Conversation $conversation, string $userId, array $items): array {
+        if ($items === []) {
+            throw new InvalidArgumentException(Messages::EMPTY_BATCH);
+        }
+        if (count($items) > self::MAX_BATCH) {
+            throw new InvalidArgumentException(sprintf(Messages::TOO_MANY_MESSAGES, self::MAX_BATCH));
+        }
+
+        // Everything that only needs the payload is checked first: a list with a blank item is a mistake in the
+        // call, and no conversation lookup should have been started for it.
+        $approved = self::normalizedBatch($items);
+
+        $draft = [];
+        foreach ($approved as $item) {
+            $shown = ['message' => $item['message']];
+            // A quoted id that does not exist is a mistake in the batch, not one failed item: sending the rest
+            // would show the user something different from what they approved.
+            if ($item['replyTo'] !== null) {
+                $comment = $this->writer->quoteTarget($conversation, $userId, $item['replyTo']);
+                $shown['replyTo'] = [
+                    'id' => (int)$comment->getId(),
+                    'author' => $this->actorNames->displayName((string)$comment->getActorId()),
+                    'excerpt' => $this->excerptOf($comment),
+                ];
+            }
+            $draft[] = $shown;
+        }
+
+        return $this->payload('talk_send_batch', $conversation, $userId, ['messages' => $draft], [
+            'conversation' => $conversation->token(),
+            'messages' => $approved,
         ]);
     }
 
@@ -111,6 +161,48 @@ class DraftApproval {
     }
 
     /**
+     * Draft of a direct message. It carries the target account instead of a conversation token, because the room
+     * may not exist yet and showing a draft must not create it: the confirmed call is what opens the conversation.
+     *
+     * @param DirectContact $target Account the message is addressed to, already checked for reachability
+     * @param string $userId Authenticated user, the author of the message
+     * @param string $message Message body, normalized exactly as it will be sent
+     * @return array{requiresConfirmation:true, approvalId:string, action:string, target:array{id:string, displayName:string}, draft:array{message:string}, message:string}
+     * @throws InvalidArgumentException When the message is blank or too long
+     */
+    public function directMessage(DirectContact $target, string $userId, string $message): array {
+        $text = ConversationWriter::normalizeMessage($message);
+
+        return [
+            'requiresConfirmation' => true,
+            'approvalId' => $this->approvals->issue($userId, [
+                'action' => 'talk_message_user',
+                'target' => $target->id,
+                'message' => $text,
+            ]),
+            'action' => 'talk_message_user',
+            'target' => $target->describe(),
+            'draft' => ['message' => $text],
+            'message' => sprintf(Messages::CONFIRMATION_INSTRUCTION_TARGET, $target->displayName),
+        ];
+    }
+
+    /**
+     * @param string $userId Authenticated user, the author of the message
+     * @param string|null $approvalId Id returned by the draft call
+     * @param string $targetId Account the approved call writes to
+     * @param string $message Message body of the approved call
+     * @throws ApprovalException When no pending draft of this call can be approved
+     */
+    public function approveDirectMessage(string $userId, ?string $approvalId, string $targetId, string $message): void {
+        $this->approvals->consume($userId, $approvalId, [
+            'action' => 'talk_message_user',
+            'target' => $targetId,
+            'message' => ConversationWriter::normalizeMessage($message),
+        ]);
+    }
+
+    /**
      * @param Conversation $conversation Conversation already validated for writing
      * @param string $userId Authenticated user, the author of the message
      * @param string|null $approvalId Id returned by the draft call
@@ -125,6 +217,47 @@ class DraftApproval {
             'message' => ConversationWriter::normalizeMessage($message),
             'replyTo' => $replyTo,
         ]);
+    }
+
+    /**
+     * @param Conversation $conversation Conversation already validated for writing
+     * @param string $userId Authenticated user, the author of the messages
+     * @param string|null $approvalId Id returned by the draft call
+     * @param list<array{message:string, replyTo?:int|null}> $items Messages of the approved call
+     * @throws ApprovalException When no pending draft of this call can be approved
+     */
+    public function approveBatch(Conversation $conversation, string $userId, ?string $approvalId, array $items): void {
+        $this->approvals->consume($userId, $approvalId, [
+            'action' => 'talk_send_batch',
+            'conversation' => $conversation->token(),
+            'messages' => self::normalizedBatch($items),
+        ]);
+    }
+
+    /**
+     * The same normalization the draft did, so the approved call is compared to what the user saw.
+     *
+     * @param list<array{message:string, replyTo?:int|null}> $items Messages of a confirmed call
+     * @return list<array{message:string, replyTo:int|null}>
+     * @throws InvalidArgumentException When the batch is empty, too long, or an item is not usable
+     */
+    private static function normalizedBatch(array $items): array {
+        if ($items === []) {
+            throw new InvalidArgumentException(Messages::EMPTY_BATCH);
+        }
+        if (count($items) > self::MAX_BATCH) {
+            throw new InvalidArgumentException(sprintf(Messages::TOO_MANY_MESSAGES, self::MAX_BATCH));
+        }
+
+        $normalized = [];
+        foreach (array_values($items) as $item) {
+            $normalized[] = [
+                'message' => ConversationWriter::normalizeMessage($item['message'] ?? ''),
+                'replyTo' => $item['replyTo'] ?? null,
+            ];
+        }
+
+        return $normalized;
     }
 
     /**

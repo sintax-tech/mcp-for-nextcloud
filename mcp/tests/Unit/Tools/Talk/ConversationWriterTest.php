@@ -259,6 +259,85 @@ class ConversationWriterTest extends TestCase {
         $this->writer->quoteAttachment($this->givenConversation(), 'alice', 77);
     }
 
+    public function testABatchSendsEveryItemInOrderAndReportsTheIds(): void {
+        $bodies = [];
+        $chatManager = $this->givenChatManager();
+        $chatManager->method('sendMessage')->willReturnCallback(
+            function (object $room, object $participant, string $actorType, string $actorId, string $message) use (&$bodies): object {
+                $bodies[] = $message;
+                $comment = $this->createMock(IComment::class);
+                $comment->method('getId')->willReturn((string)(50 + count($bodies)));
+
+                return $comment;
+            },
+        );
+
+        $result = $this->writer->replyMany($this->givenConversation(), 'alice', [
+            ['message' => 'primeiro'],
+            ['message' => 'segundo', 'replyTo' => null],
+            ['message' => 'terceiro'],
+        ]);
+
+        $this->assertSame(['primeiro', 'segundo', 'terceiro'], $bodies);
+        $this->assertSame(
+            [
+                ['index' => 0, 'messageId' => 51],
+                ['index' => 1, 'messageId' => 52],
+                ['index' => 2, 'messageId' => 53],
+            ],
+            $result['sent'],
+        );
+        $this->assertSame([], $result['failed']);
+        $this->assertSame('abcd', $result['conversation_token']);
+    }
+
+    public function testAnItemTalkRefusesIsReportedAndTheNextOneStillGoes(): void {
+        $bodies = [];
+        $chatManager = $this->givenChatManager();
+        $chatManager->method('sendMessage')->willReturnCallback(
+            function (object $room, object $participant, string $actorType, string $actorId, string $message) use (&$bodies): object {
+                $bodies[] = $message;
+                if ($message === 'segundo') {
+                    // What Talk itself does when it refuses a message.
+                    throw new RuntimeException('too long for the room');
+                }
+                $comment = $this->createMock(IComment::class);
+                $comment->method('getId')->willReturn((string)(50 + count($bodies)));
+
+                return $comment;
+            },
+        );
+
+        $result = $this->writer->replyMany($this->givenConversation(), 'alice', [
+            ['message' => 'primeiro'],
+            ['message' => 'segundo'],
+            ['message' => 'terceiro'],
+        ]);
+
+        $this->assertSame(['primeiro', 'segundo', 'terceiro'], $bodies);
+        $this->assertSame([['index' => 0, 'messageId' => 51], ['index' => 2, 'messageId' => 53]], $result['sent']);
+        $this->assertSame([['index' => 1, 'error' => Messages::MESSAGE_NOT_SENT]], $result['failed']);
+    }
+
+    public function testABatchWhereEveryItemFailsStillAnswersWithTheList(): void {
+        $chatManager = $this->givenChatManager();
+        $chatManager->method('sendMessage')->willThrowException(new RuntimeException('sem permissão'));
+
+        $result = $this->writer->replyMany($this->givenConversation(), 'alice', [
+            ['message' => 'primeiro'],
+            ['message' => 'segundo'],
+        ]);
+
+        $this->assertSame([], $result['sent']);
+        $this->assertSame(
+            [
+                ['index' => 0, 'error' => Messages::MESSAGE_NOT_SENT],
+                ['index' => 1, 'error' => Messages::MESSAGE_NOT_SENT],
+            ],
+            $result['failed'],
+        );
+    }
+
     private function givenConversation(): Conversation {
         return new Conversation($this->room, new WriterParticipantStub());
     }

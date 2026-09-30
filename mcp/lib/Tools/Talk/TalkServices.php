@@ -18,6 +18,7 @@ class TalkServices {
     private const MANAGER_CLASS = 'OCA\\Talk\\Manager';
     private const CHAT_MANAGER_CLASS = 'OCA\\Talk\\Chat\\ChatManager';
     private const PARTICIPANT_SERVICE_CLASS = 'OCA\\Talk\\Service\\ParticipantService';
+    private const ROOM_SERVICE_CLASS = 'OCA\\Talk\\Service\\RoomService';
     private const ATTENDEE_CLASS = 'OCA\\Talk\\Model\\Attendee';
     private const ROOM_CLASS = 'OCA\\Talk\\Room';
     private const WEBINARY_CLASS = 'OCA\\Talk\\Webinary';
@@ -74,10 +75,20 @@ class TalkServices {
     }
 
     /**
+     * OCA\Talk\Service\RoomService: creation of conversations, the one path the product itself uses for it.
+     *
+     * @return object OCA\Talk\Service\RoomService
+     * @throws TalkUnavailableException When spreed is disabled for the user or the class is not loaded
+     */
+    public function roomService(string $userId): object {
+        return $this->resolve(self::ROOM_SERVICE_CLASS, $userId);
+    }
+
+    /**
      * Talk constants the permission checks depend on, read from the loaded classes instead of being copied here,
      * so a change of value upstream cannot silently loosen or break the ACL.
      *
-     * @return array{chatPermission:int, lobbyIgnorePermission:int, readOnly:int, changelogType:int, lobbyNone:int, actorUsers:string}
+     * @return array{chatPermission:int, lobbyIgnorePermission:int, readOnly:int, changelogType:int, lobbyNone:int, actorUsers:string, groupType:int}
      * @throws TalkUnavailableException When spreed is disabled for the user or a class is not loaded
      */
     public function conversationConstants(string $userId): array {
@@ -97,6 +108,7 @@ class TalkServices {
             'changelogType' => (int)constant(self::ROOM_CLASS . '::TYPE_CHANGELOG'),
             'lobbyNone' => (int)constant(self::WEBINARY_CLASS . '::LOBBY_NONE'),
             'actorUsers' => (string)constant(self::ATTENDEE_CLASS . '::ACTOR_USERS'),
+            'groupType' => (int)constant(self::ROOM_CLASS . '::TYPE_GROUP'),
         ];
     }
 

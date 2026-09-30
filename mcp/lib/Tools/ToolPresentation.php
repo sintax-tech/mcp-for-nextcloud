@@ -76,6 +76,8 @@ final class ToolPresentation {
         'talk_reply' => 'Responder no Talk',
         'talk_attach_file' => 'Anexar arquivo no Talk',
         'talk_quote_file' => 'Citar arquivo no Talk',
+        'talk_message_user' => 'Mensagem direta no Talk',
+        'talk_send_batch' => 'Enviar lote no Talk',
     ];
 
     private function __construct() {

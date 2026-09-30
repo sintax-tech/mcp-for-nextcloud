@@ -11,6 +11,7 @@ use OCA\Mcp\Tools\Talk\AttachmentAccess;
 use OCA\Mcp\Tools\Talk\Conversation;
 use OCA\Mcp\Tools\Talk\ConversationAccessException;
 use OCA\Mcp\Tools\Talk\ConversationWriter;
+use OCA\Mcp\Tools\Talk\DirectContact;
 use OCA\Mcp\Tools\Talk\DraftApproval;
 use OCA\Mcp\Tools\Talk\FileAccessException;
 use OCA\Mcp\Tools\Talk\FileSharer;
@@ -68,6 +69,141 @@ class DraftApprovalTest extends TestCase {
         // The trimmed text is what the confirmed call will store, so the draft cannot differ from the send.
         $this->assertSame('bom dia', $draft['draft']['message']);
         $this->assertArrayNotHasKey('replyTo', $draft['draft']);
+    }
+
+    public function testADirectMessageDraftNamesThePersonAndCarriesNoConversation(): void {
+        $draft = $this->drafts->directMessage(new DirectContact('bob', 'Bob Souza'), 'alice', "  oi \n");
+
+        $this->assertTrue($draft['requiresConfirmation']);
+        $this->assertSame('talk_message_user', $draft['action']);
+        // The room may not exist yet: naming a token the draft has not created would be inventing one.
+        $this->assertArrayNotHasKey('conversation', $draft);
+        $this->assertSame(['id' => 'bob', 'displayName' => 'Bob Souza'], $draft['target']);
+        $this->assertSame('oi', $draft['draft']['message']);
+    }
+
+    public function testABatchDraftShowsEveryItemWithTheExactTextAndTheQuotedAnswer(): void {
+        $this->userManager->method('get')->with('bob')->willReturn($this->givenUser('Bob Souza'));
+        $this->givenQuotedComment('42', 'bob', 'concordo com o envio');
+
+        $draft = $this->drafts->batch($this->givenConversation(), 'alice', [
+            ['message' => "  primeiro \n"],
+            ['message' => 'segundo', 'replyTo' => 42],
+        ]);
+
+        $this->assertSame('talk_send_batch', $draft['action']);
+        $this->assertSame(
+            [
+                ['message' => 'primeiro'],
+                [
+                    'message' => 'segundo',
+                    'replyTo' => ['id' => 42, 'author' => 'Bob Souza', 'excerpt' => 'concordo com o envio'],
+                ],
+            ],
+            $draft['draft']['messages'],
+        );
+    }
+
+    public function testABatchApprovalCoversTheWholeListAndNothingElse(): void {
+        $conversation = $this->givenConversation();
+        $items = [['message' => 'primeiro'], ['message' => 'segundo', 'replyTo' => 7]];
+        $draft = $this->drafts->batch($conversation, 'alice', $items);
+
+        // Same list: the batch is approved.
+        $this->drafts->approveBatch($conversation, 'alice', $draft['approvalId'], $items);
+
+        // A shorter batch is not that draft: dropping an item is exactly what the approval forbids.
+        $this->expectException(ApprovalException::class);
+        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->drafts->approveBatch($conversation, 'alice', $draft['approvalId'], [['message' => 'primeiro']]);
+    }
+
+    public function testABatchApprovalIsSpentByTheFirstConfirmedCall(): void {
+        $conversation = $this->givenConversation();
+        $items = [['message' => 'primeiro']];
+        $draft = $this->drafts->batch($conversation, 'alice', $items);
+        $this->drafts->approveBatch($conversation, 'alice', $draft['approvalId'], $items);
+
+        try {
+            $this->drafts->approveBatch($conversation, 'alice', $draft['approvalId'], $items);
+            $this->fail('a spent batch approval was accepted twice');
+        } catch (ApprovalException $e) {
+            $this->assertSame(Messages::APPROVAL_INVALID, $e->getMessage());
+        }
+    }
+
+    public function testAnEmptyOrOversizedBatchIsAClientMistake(): void {
+        $conversation = $this->givenConversation();
+
+        try {
+            $this->drafts->batch($conversation, 'alice', []);
+            $this->fail('an empty batch was accepted');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame(Messages::EMPTY_BATCH, $e->getMessage());
+        }
+
+        $tooMany = array_fill(0, DraftApproval::MAX_BATCH + 1, ['message' => 'oi']);
+        try {
+            $this->drafts->batch($conversation, 'alice', $tooMany);
+            $this->fail('a batch over the limit was accepted');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame(sprintf(Messages::TOO_MANY_MESSAGES, DraftApproval::MAX_BATCH), $e->getMessage());
+        }
+    }
+
+    public function testABatchWithABlankItemIsRefusedBeforeAnyCitationIsRead(): void {
+        $conversation = $this->givenConversation();
+        $this->writer->expects($this->never())->method('quoteTarget');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(Messages::EMPTY_MESSAGE);
+        $this->drafts->batch($conversation, 'alice', [
+            ['message' => 'primeiro', 'replyTo' => 7],
+            ['message' => '   '],
+        ]);
+    }
+
+    public function testTheDirectMessageDraftNamesThePersonInTheInstruction(): void {
+        $draft = $this->drafts->directMessage(new DirectContact('bob', 'Bob Souza'), 'alice', 'oi');
+
+        $this->assertSame(sprintf(Messages::CONFIRMATION_INSTRUCTION_TARGET, 'Bob Souza'), $draft['message']);
+        $this->assertStringContainsString('approval_id', $draft['message']);
+    }
+
+    public function testAnApprovedDirectMessageHasToMatchTheTargetAndTheTextOfItsDraft(): void {
+        $draft = $this->drafts->directMessage(new DirectContact('bob', 'Bob Souza'), 'alice', 'oi');
+        $id = $draft['approvalId'];
+
+        // Same draft, same arguments: the approval is spent by the first one.
+        $this->drafts->approveDirectMessage('alice', $id, 'bob', 'oi');
+
+        try {
+            $this->drafts->approveDirectMessage('alice', $id, 'bob', 'oi');
+            $this->fail('a spent approval was accepted twice');
+        } catch (ApprovalException $e) {
+            $this->assertSame(Messages::APPROVAL_INVALID, $e->getMessage());
+        }
+    }
+
+    public function testADirectMessageDraftCannotBeApprovedWithAnotherTargetOrAnotherText(): void {
+        foreach ([['carol', 'oi'], ['bob', 'outro texto']] as [$target, $text]) {
+            $draft = $this->drafts->directMessage(new DirectContact('bob', 'Bob Souza'), 'alice', 'oi');
+
+            try {
+                $this->drafts->approveDirectMessage('alice', $draft['approvalId'], $target, $text);
+                $this->fail("a draft of bob was approved for $target with text '$text'");
+            } catch (ApprovalException $e) {
+                $this->assertSame(Messages::APPROVAL_INVALID, $e->getMessage());
+            }
+        }
+    }
+
+    public function testADirectMessageDraftOfOneUserIsNoApprovalForAnother(): void {
+        $draft = $this->drafts->directMessage(new DirectContact('bob', 'Bob Souza'), 'alice', 'oi');
+
+        $this->expectException(ApprovalException::class);
+        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->drafts->approveDirectMessage('mallory', $draft['approvalId'], 'bob', 'oi');
     }
 
     public function testTheDraftTellsTheAgentToShowItAndToWaitForTheApproval(): void {

@@ -9,7 +9,7 @@ use Psr\Log\LoggerInterface;
 use Throwable;
 
 /**
- * The five tools of the talk module, routed by name.
+ * The tools of the talk module, routed by name.
  *
  * The module holds no access rule of its own: the registry checks the grant and the app enablement, and every
  * resource decision belongs to ConversationResolver, UserFileResolver or the share lookup. What it does own is the
@@ -26,6 +26,8 @@ class TalkModule implements ToolModule {
     public const TOOL_REPLY = 'talk_reply';
     public const TOOL_ATTACH = 'talk_attach_file';
     public const TOOL_QUOTE = 'talk_quote_file';
+    public const TOOL_MESSAGE_USER = 'talk_message_user';
+    public const TOOL_SEND_BATCH = 'talk_send_batch';
 
     private const MODULE = 'talk';
     private const APP = TalkServices::APP_ID;
@@ -34,6 +36,8 @@ class TalkModule implements ToolModule {
     private const CONFIRM_SCHEMA = ['type' => 'boolean'];
     /** Id of the draft being approved; meaningful only together with confirm: true. */
     private const APPROVAL_ID_SCHEMA = ['type' => 'string', 'minLength' => 1, 'maxLength' => 64];
+    /** Public conversation token; Talk tokens are 30 characters at most, so this only bounds the payload. */
+    private const TOKEN_SCHEMA = ['type' => 'string', 'minLength' => 1, 'maxLength' => 30];
 
     public function __construct(
         private TalkServices $talkServices,
@@ -42,6 +46,7 @@ class TalkModule implements ToolModule {
         private ConversationWriter $writer,
         private FileSharer $sharer,
         private DraftApproval $draftApproval,
+        private UserConversationResolver $userConversations,
         private LoggerInterface $logger,
     ) {}
 
@@ -64,7 +69,7 @@ class TalkModule implements ToolModule {
                 'inputSchema' => [
                     'type' => 'object',
                     'properties' => [
-                        'conversation_token' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 30],
+                        'conversation_token' => self::TOKEN_SCHEMA,
                         'limit' => [
                             'type' => 'integer',
                             'minimum' => 1,
@@ -85,7 +90,7 @@ class TalkModule implements ToolModule {
                 'inputSchema' => [
                     'type' => 'object',
                     'properties' => [
-                        'conversation_token' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 30],
+                        'conversation_token' => self::TOKEN_SCHEMA,
                         'message' => [
                             'type' => 'string',
                             'minLength' => 1,
@@ -108,7 +113,7 @@ class TalkModule implements ToolModule {
                 'inputSchema' => [
                     'type' => 'object',
                     'properties' => [
-                        'conversation_token' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 30],
+                        'conversation_token' => self::TOKEN_SCHEMA,
                         'path' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 4000],
                         'message' => [
                             'type' => 'string',
@@ -131,7 +136,7 @@ class TalkModule implements ToolModule {
                 'inputSchema' => [
                     'type' => 'object',
                     'properties' => [
-                        'conversation_token' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 30],
+                        'conversation_token' => self::TOKEN_SCHEMA,
                         'attachment_id' => ['type' => 'integer', 'minimum' => 1],
                         'message' => [
                             'type' => 'string',
@@ -146,6 +151,70 @@ class TalkModule implements ToolModule {
                 ],
                 'module' => self::MODULE,
                 'operation' => 'quote',
+                'app' => self::APP,
+            ],
+            [
+                'name' => self::TOOL_MESSAGE_USER,
+                'description' => Messages::TOOL_MESSAGE_USER,
+                'inputSchema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'user' => [
+                            'type' => 'string',
+                            'minLength' => 1,
+                            'maxLength' => UserConversationResolver::MAX_TARGET_LENGTH,
+                        ],
+                        'message' => [
+                            'type' => 'string',
+                            'minLength' => 1,
+                            'maxLength' => ConversationWriter::MAX_MESSAGE_LENGTH,
+                        ],
+                        'confirm' => self::CONFIRM_SCHEMA,
+                        'approval_id' => self::APPROVAL_ID_SCHEMA,
+                    ],
+                    'required' => ['user', 'message'],
+                    'additionalProperties' => false,
+                ],
+                'module' => self::MODULE,
+                'operation' => 'reply',
+                'app' => self::APP,
+            ],
+            [
+                'name' => self::TOOL_SEND_BATCH,
+                'description' => Messages::TOOL_SEND_BATCH,
+                'inputSchema' => [
+                    'type' => 'object',
+                    'properties' => [
+                        'conversation_token' => self::TOKEN_SCHEMA,
+                        'messages' => [
+                            'type' => 'array',
+                            'minItems' => 1,
+                            'maxItems' => DraftApproval::MAX_BATCH,
+                            'items' => [
+                                'type' => 'object',
+                                'properties' => [
+                                    'message' => [
+                                        'type' => 'string',
+                                        'minLength' => 1,
+                                        'maxLength' => ConversationWriter::MAX_MESSAGE_LENGTH,
+                                    ],
+                                    'reply_to' => [
+                                        'type' => 'integer',
+                                        'minimum' => 1,
+                                    ],
+                                ],
+                                'required' => ['message'],
+                                'additionalProperties' => false,
+                            ],
+                        ],
+                        'confirm' => self::CONFIRM_SCHEMA,
+                        'approval_id' => self::APPROVAL_ID_SCHEMA,
+                    ],
+                    'required' => ['conversation_token', 'messages'],
+                    'additionalProperties' => false,
+                ],
+                'module' => self::MODULE,
+                'operation' => 'reply',
                 'app' => self::APP,
             ],
         ];
@@ -177,6 +246,8 @@ class TalkModule implements ToolModule {
                 self::TOOL_REPLY => ToolResult::success($this->replyCall($userId, $arguments)),
                 self::TOOL_ATTACH => ToolResult::success($this->attachCall($userId, $arguments)),
                 self::TOOL_QUOTE => ToolResult::success($this->quoteCall($userId, $arguments)),
+                self::TOOL_MESSAGE_USER => ToolResult::success($this->messageUserCall($userId, $arguments)),
+                self::TOOL_SEND_BATCH => ToolResult::success($this->sendBatchCall($userId, $arguments)),
                 default => throw new InvalidArgumentException(Messages::UNKNOWN_TOOL),
             };
         } catch (InvalidArgumentException $e) {
@@ -286,7 +357,7 @@ class TalkModule implements ToolModule {
     }
 
     /**
-     * Every writing tool reads and checks its arguments before the conversation is resolved, so a malformed call is
+     * Every writing tool reads and checks its arguments before anything is resolved, so a malformed call is
      * reported as the client mistake it is instead of reaching a lookup it should never have started.
      *
      * @param string $userId Authenticated user
@@ -365,6 +436,108 @@ class TalkModule implements ToolModule {
         $this->draftApproval->approveQuote($conversation, $userId, $this->approvalId($arguments), $attachmentId, $caption);
 
         return $this->writer->quoteAttachment($conversation, $userId, $attachmentId, $caption);
+    }
+
+    /**
+     * A direct message to an account. The draft resolves the target and stops there, so a user who never approves
+     * is not left with an empty conversation; the room is created by the approved call, and only through the same
+     * call the Talk UI uses, which keeps the product's own rule about who may talk to whom.
+     *
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> Result data of talk_message_user, or the draft when confirm is absent
+     * @throws InvalidArgumentException When the account id or the message is missing
+     * @throws ConversationAccessException When the target is out of reach or the conversation cannot be written in
+     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
+     * @throws TalkUnavailableException When spreed is unavailable
+     */
+    private function messageUserCall(string $userId, array $arguments): array {
+        $targetId = $this->targetUser($arguments);
+        $message = $this->message($arguments);
+
+        if (!$this->confirmed($arguments)) {
+            return $this->draftApproval->directMessage($this->userConversations->target($userId, $targetId), $userId, $message);
+        }
+
+        // The approval comes first: it binds the target account and the text, and it is spent before the room
+        // exists, so a confirmed call cannot create a conversation the user never approved.
+        $this->draftApproval->approveDirectMessage($userId, $this->approvalId($arguments), $targetId, $message);
+
+        $conversation = $this->userConversations->conversation($userId, $targetId);
+        $result = $this->writer->reply($conversation, $userId, $message, null);
+
+        return $result + ['user' => ['id' => $targetId, 'displayName' => $conversation->displayName($userId)]];
+    }
+
+    /**
+     * A batch of messages in one conversation. The draft carries the whole list, because the approval of a batch is
+     * the approval of that list: a tool that let the agent send the approved list with one item changed would be
+     * sending something else. Every quoted id is resolved while the draft is built, so a wrong citation fails
+     * before anything is published rather than halfway through.
+     *
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> Result data of talk_send_batch, or the draft when confirm is absent
+     * @throws InvalidArgumentException When the batch is empty, too long, or an item is malformed
+     * @throws ConversationAccessException When the conversation cannot be written in or a citation does not exist
+     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
+     * @throws TalkUnavailableException When spreed is unavailable
+     */
+    private function sendBatchCall(string $userId, array $arguments): array {
+        // The shape of the list is a client mistake, so it is checked before any conversation is looked up.
+        $items = $this->batchItems($arguments);
+        $conversation = $this->resolver->resolveForWriting($userId, $this->token($arguments));
+
+        if (!$this->confirmed($arguments)) {
+            return $this->draftApproval->batch($conversation, $userId, $items);
+        }
+
+        $this->draftApproval->approveBatch($conversation, $userId, $this->approvalId($arguments), $items);
+        $result = $this->writer->replyMany($conversation, $userId, $items);
+
+        if ($result['failed'] !== []) {
+            // Part of the batch is in the room now, so the result has to tell which: a generic failure would invite
+            // a retry that republishes what already went out.
+            $this->logger->warning('Talk sent only part of the batch in conversation {token}', [
+                'token' => $conversation->token(),
+                'sent' => count($result['sent']),
+                'failed' => count($result['failed']),
+            ]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return list<array{message:string, replyTo?:int|null>} Messages of the batch, in the order received
+     * @throws InvalidArgumentException When messages is not a list of items with a message
+     */
+    private function batchItems(array $arguments): array {
+        $messages = $arguments['messages'] ?? throw new InvalidArgumentException(Messages::EMPTY_BATCH);
+        if (!is_array($messages) || !array_is_list($messages) || $messages === []) {
+            throw new InvalidArgumentException(Messages::EMPTY_BATCH);
+        }
+
+        $items = [];
+        foreach ($messages as $item) {
+            if (!is_array($item) || !isset($item['message']) || !is_string($item['message'])) {
+                throw new InvalidArgumentException(Messages::EMPTY_MESSAGE);
+            }
+            $replyTo = $item['reply_to'] ?? null;
+            $items[] = ['message' => $item['message'], 'replyTo' => $replyTo === null ? null : (int)$replyTo];
+        }
+
+        return $items;
+    }
+
+    /**
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return string Account id of the message target
+     * @throws InvalidArgumentException When the account is missing
+     */
+    private function targetUser(array $arguments): string {
+        return (string)($arguments['user'] ?? throw new InvalidArgumentException(Messages::INVALID_USER));
     }
 
     /**

@@ -10,6 +10,7 @@ use OCA\Mcp\Tools\Talk\ConversationAccessException;
 use OCA\Mcp\Tools\Talk\ConversationReader;
 use OCA\Mcp\Tools\Talk\ConversationResolver;
 use OCA\Mcp\Tools\Talk\ConversationWriter;
+use OCA\Mcp\Tools\Talk\DirectContact;
 use OCA\Mcp\Tools\Talk\DraftApproval;
 use OCA\Mcp\Tools\Talk\FileAccessException;
 use OCA\Mcp\Tools\Talk\FileSharer;
@@ -17,6 +18,7 @@ use OCA\Mcp\Tools\Talk\Messages;
 use OCA\Mcp\Tools\Talk\TalkModule;
 use OCA\Mcp\Tools\Talk\TalkServices;
 use OCA\Mcp\Tools\Talk\TalkUnavailableException;
+use OCA\Mcp\Tools\Talk\UserConversationResolver;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -28,6 +30,7 @@ class TalkModuleTest extends TestCase {
     private ConversationWriter&MockObject $writer;
     private FileSharer&MockObject $sharer;
     private DraftApproval&MockObject $draftApproval;
+    private UserConversationResolver&MockObject $userConversations;
     private LoggerInterface&MockObject $logger;
     private TalkModule $module;
 
@@ -38,6 +41,7 @@ class TalkModuleTest extends TestCase {
         $this->writer = $this->createMock(ConversationWriter::class);
         $this->sharer = $this->createMock(FileSharer::class);
         $this->draftApproval = $this->createMock(DraftApproval::class);
+        $this->userConversations = $this->createMock(UserConversationResolver::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->module = new TalkModule(
             $this->createMock(TalkServices::class),
@@ -46,11 +50,12 @@ class TalkModuleTest extends TestCase {
             $this->writer,
             $this->sharer,
             $this->draftApproval,
+            $this->userConversations,
             $this->logger,
         );
     }
 
-    public function testTheModuleAdvertisesExactlyTheFiveToolsOfTheContract(): void {
+    public function testTheModuleAdvertisesExactlyTheToolsOfTheContract(): void {
         $this->assertSame(
             [
                 'talk_list_conversations' => 'read',
@@ -58,6 +63,8 @@ class TalkModuleTest extends TestCase {
                 'talk_reply' => 'reply',
                 'talk_attach_file' => 'attach',
                 'talk_quote_file' => 'quote',
+                'talk_message_user' => 'reply',
+                'talk_send_batch' => 'reply',
             ],
             array_column($this->module->definitions(), 'operation', 'name'),
         );
@@ -86,11 +93,17 @@ class TalkModuleTest extends TestCase {
         $this->assertSame(['conversation_token', 'message'], $schemas['talk_reply']['required']);
         $this->assertSame(['conversation_token', 'path'], $schemas['talk_attach_file']['required']);
         $this->assertSame(['conversation_token', 'attachment_id'], $schemas['talk_quote_file']['required']);
+        $this->assertSame(['user', 'message'], $schemas['talk_message_user']['required']);
+        // The account id goes through the same bound as a token, and the text through the same bound as a message.
+        $this->assertSame(64, $schemas['talk_message_user']['properties']['user']['maxLength']);
+        $this->assertSame(ConversationWriter::MAX_MESSAGE_LENGTH, $schemas['talk_message_user']['properties']['message']['maxLength']);
+        // No conversation_token: the room is the product's to find, and it is not created to show a draft.
+        $this->assertArrayNotHasKey('conversation_token', $schemas['talk_message_user']['properties']);
         $this->assertArrayNotHasKey('message', $schemas['talk_attach_file']['required']);
         $this->assertArrayNotHasKey('message', $schemas['talk_quote_file']['required']);
         // confirm is what turns a draft into a send, so it is a boolean the caller may omit: an absent one is
         // the draft, never an error, and only an explicit true publishes.
-        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file'] as $name) {
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch'] as $name) {
             $this->assertSame(['type' => 'boolean'], $schemas[$name]['properties']['confirm'], $name);
             $this->assertArrayNotHasKey('confirm', $schemas[$name]['required'], $name);
         }
@@ -249,7 +262,7 @@ class TalkModuleTest extends TestCase {
 
         // The description is the only thing the agent reads before it decides to call the tool, so the rule
         // lives in the sentence itself and not only in this test.
-        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file'] as $name) {
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch'] as $name) {
             $this->assertStringContainsString(
                 'Antes de enviar, o agente DEVE chamar a tool sem confirm, mostrar o rascunho devolvido ao usuário'
                     . ' e obter aprovação explícita; só então repetir com confirm: true e o approval_id da prévia.',
@@ -260,6 +273,176 @@ class TalkModuleTest extends TestCase {
 
         foreach (['talk_list_conversations', 'talk_read_messages'] as $name) {
             $this->assertStringNotContainsString('confirm: true', $descriptions[$name], $name);
+        }
+    }
+
+    public function testADirectMessageIsResolvedFromTheAccountAndSentThroughTheProductCall(): void {
+        $conversation = $this->givenConversation('zzzz');
+        $this->userConversations->expects($this->once())
+            ->method('conversation')
+            ->with('alice', 'bob')
+            ->willReturn($conversation);
+        $this->writer->expects($this->once())
+            ->method('reply')
+            ->with($conversation, 'alice', 'oi', null)
+            ->willReturn(['conversation_token' => 'zzzz', 'messageId' => 91]);
+        $this->draftApproval->expects($this->once())
+            ->method('approveDirectMessage')
+            ->with('alice', 'APR-9', 'bob', 'oi');
+
+        $result = $this->module->call(
+            TalkModule::TOOL_MESSAGE_USER,
+            ['user' => 'bob', 'message' => 'oi', 'confirm' => true, 'approval_id' => 'APR-9'],
+            'alice',
+        );
+
+        // The room comes and goes inside the call: only the target and the id of the sent message are worth showing.
+        $this->assertSame(
+            ['conversation_token' => 'zzzz', 'messageId' => 91, 'user' => ['id' => 'bob', 'displayName' => 'Comercial']],
+            $this->payloadOf($result),
+        );
+    }
+
+    public function testABatchIsApprovedAsAWholeAndTheWriterReportsEachItem(): void {
+        $conversation = $this->givenConversation();
+        $this->resolver->method('resolveForWriting')->willReturn($conversation);
+        $this->draftApproval->expects($this->once())
+            ->method('approveBatch')
+            ->with($conversation, 'alice', 'APR-2', [
+                ['message' => 'primeiro', 'replyTo' => null],
+                ['message' => 'segundo', 'replyTo' => 42],
+            ]);
+        $this->writer->expects($this->once())
+            ->method('replyMany')
+            ->with($conversation, 'alice', [
+                ['message' => 'primeiro', 'replyTo' => null],
+                ['message' => 'segundo', 'replyTo' => 42],
+            ])
+            ->willReturn([
+                'conversation_token' => 'abcd',
+                'sent' => [['index' => 0, 'messageId' => 61]],
+                'failed' => [['index' => 1, 'error' => Messages::MESSAGE_NOT_SENT]],
+            ]);
+        $this->writer->expects($this->never())->method('reply');
+
+        $result = $this->module->call(
+            TalkModule::TOOL_SEND_BATCH,
+            [
+                'conversation_token' => 'abcd',
+                'messages' => [
+                    ['message' => 'primeiro'],
+                    ['message' => 'segundo', 'reply_to' => 42],
+                ],
+                'confirm' => true,
+                'approval_id' => 'APR-2',
+            ],
+            'alice',
+        );
+
+        // Part of the batch is in the room: the answer has to say which part, so the caller does not repeat it.
+        $this->assertSame(
+            [
+                'conversation_token' => 'abcd',
+                'sent' => [['index' => 0, 'messageId' => 61]],
+                'failed' => [['index' => 1, 'error' => Messages::MESSAGE_NOT_SENT]],
+            ],
+            $this->payloadOf($result),
+        );
+    }
+
+    public function testABatchWithoutConfirmationStopsAtTheDraftAndSendsNothing(): void {
+        $conversation = $this->givenConversation();
+        $this->resolver->method('resolveForWriting')->willReturn($conversation);
+        $this->draftApproval->expects($this->once())
+            ->method('batch')
+            ->with($conversation, 'alice', [['message' => 'primeiro', 'replyTo' => null]])
+            ->willReturn(['requiresConfirmation' => true, 'action' => 'talk_send_batch']);
+        $this->writer->expects($this->never())->method('replyMany');
+
+        $result = $this->module->call(
+            TalkModule::TOOL_SEND_BATCH,
+            ['conversation_token' => 'abcd', 'messages' => [['message' => 'primeiro']]],
+            'alice',
+        );
+
+        $this->assertSame(['requiresConfirmation' => true, 'action' => 'talk_send_batch'], $this->payloadOf($result));
+    }
+
+    public function testAMalformedBatchIsRefusedBeforeTheConversationIsResolved(): void {
+        foreach ([[], 'primeiro', [['reply_to' => 1]]] as $messages) {
+            $this->resolver->expects($this->never())->method('resolveForWriting');
+            try {
+                $this->module->call(
+                    TalkModule::TOOL_SEND_BATCH,
+                    ['conversation_token' => 'abcd', 'messages' => $messages],
+                    'alice',
+                );
+                $this->fail('accepted ' . json_encode($messages));
+            } catch (InvalidArgumentException $e) {
+                $this->assertContains($e->getMessage(), [Messages::EMPTY_BATCH, Messages::EMPTY_MESSAGE]);
+            }
+        }
+    }
+
+    public function testADirectMessageWithoutConfirmationStopsAtTheDraftAndCreatesNoRoom(): void {
+        $contact = new DirectContact('bob', 'Bob Souza');
+        $this->userConversations->expects($this->once())
+            ->method('target')
+            ->with('alice', 'bob')
+            ->willReturn($contact);
+        $this->draftApproval->expects($this->once())
+            ->method('directMessage')
+            ->with($contact, 'alice', 'oi')
+            ->willReturn(['requiresConfirmation' => true, 'action' => 'talk_message_user']);
+        // A preview that opened a conversation would leave an empty room in the user's Talk list.
+        $this->userConversations->expects($this->never())->method('conversation');
+        $this->writer->expects($this->never())->method('reply');
+
+        $result = $this->module->call(
+            TalkModule::TOOL_MESSAGE_USER,
+            ['user' => 'bob', 'message' => 'oi'],
+            'alice',
+        );
+
+        $this->assertSame(['requiresConfirmation' => true, 'action' => 'talk_message_user'], $this->payloadOf($result));
+        $this->assertArrayNotHasKey('isError', $result);
+    }
+
+    public function testADirectMessageIsApprovedBeforeTheRoomExists(): void {
+        $this->userConversations->method('conversation')->willReturn($this->givenConversation('zzzz'));
+        $this->writer->method('reply')->willReturn(['conversation_token' => 'zzzz', 'messageId' => 91]);
+        $calls = [];
+        $this->draftApproval->method('approveDirectMessage')->willReturnCallback(
+            function () use (&$calls): void {
+                $calls[] = 'approved';
+            },
+        );
+        $this->userConversations->method('conversation')->willReturnCallback(
+            function () use (&$calls): Conversation {
+                $calls[] = 'room';
+                return $this->givenConversation('zzzz');
+            },
+        );
+
+        $this->module->call(
+            TalkModule::TOOL_MESSAGE_USER,
+            ['user' => 'bob', 'message' => 'oi', 'confirm' => true, 'approval_id' => 'APR-9'],
+            'alice',
+        );
+
+        // An approval that is spent after the room exists would leave a conversation nobody approved.
+        $this->assertSame(['approved', 'room'], $calls);
+    }
+
+    public function testADirectMessageWithoutATargetIsAClientMistakeBeforeAnythingIsLookedUp(): void {
+        $this->userConversations->expects($this->never())->method('target');
+        $this->userConversations->expects($this->never())->method('conversation');
+
+        try {
+            $this->module->call(TalkModule::TOOL_MESSAGE_USER, ['message' => 'oi'], 'alice');
+            $this->fail('a message without a target was accepted');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame(Messages::INVALID_USER, $e->getMessage());
         }
     }
 
@@ -323,7 +506,7 @@ class TalkModuleTest extends TestCase {
     public function testTheDraftInstructionTellsTheAgentWhichIdToSendBack(): void {
         $descriptions = array_column($this->module->definitions(), 'description', 'name');
 
-        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file'] as $name) {
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch'] as $name) {
             $this->assertStringContainsString(
                 'Antes de enviar, o agente DEVE chamar a tool sem confirm, mostrar o rascunho devolvido ao usuário',
                 $descriptions[$name],
@@ -438,7 +621,7 @@ class TalkModuleTest extends TestCase {
     public function testTheSchemasTellTheAgentWhichIdTheApprovalIs(): void {
         $schemas = array_column($this->module->definitions(), 'inputSchema', 'name');
 
-        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file'] as $name) {
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch'] as $name) {
             $this->assertSame(
                 ['type' => 'string', 'minLength' => 1, 'maxLength' => 64],
                 $schemas[$name]['properties']['approval_id'],
@@ -452,7 +635,7 @@ class TalkModuleTest extends TestCase {
     public function testTheDescriptionTellsTheAgentHowToApproveAndWhoHasToApprove(): void {
         $descriptions = array_column($this->module->definitions(), 'description', 'name');
 
-        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file'] as $name) {
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file', 'talk_message_user', 'talk_send_batch'] as $name) {
             $this->assertStringContainsString('approval_id da prévia', $descriptions[$name], $name);
             // The server can prove it showed the draft; it cannot prove a human said yes. Say so.
             $this->assertStringContainsString(
@@ -564,8 +747,8 @@ class TalkModuleTest extends TestCase {
         $this->assertSame(['conversations' => []], json_decode($result['content'][0]['text'], true));
     }
 
-    private function givenConversation(): Conversation {
-        return new Conversation(new ModuleRoomStub('abcd'), new ModuleParticipantStub());
+    private function givenConversation(string $token = 'abcd'): Conversation {
+        return new Conversation(new ModuleRoomStub($token), new ModuleParticipantStub());
     }
 
     /**
@@ -584,6 +767,10 @@ final class ModuleRoomStub {
 
     public function getToken(): string {
         return $this->token;
+    }
+
+    public function getDisplayName(string $userId): string {
+        return 'Comercial';
     }
 }
 

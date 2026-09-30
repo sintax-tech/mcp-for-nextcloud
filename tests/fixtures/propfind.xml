@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<d:multistatus xmlns:d="DAV:" xmlns:oc="http://owncloud.org/ns" xmlns:nc="http://nextcloud.org/ns">
+  <d:response>
+    <d:href>/remote.php/dav/files/alice/</d:href>
+    <d:propstat><d:prop><d:resourcetype><d:collection/></d:resourcetype></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat>
+  </d:response>
+  <d:response>
+    <d:href>/remote.php/dav/files/alice/Documentos/</d:href>
+    <d:propstat><d:prop>
+      <d:getlastmodified>Mon, 29 Sep 2026 10:00:00 GMT</d:getlastmodified>
+      <d:resourcetype><d:collection/></d:resourcetype>
+    </d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat>
+  </d:response>
+  <d:response>
+    <d:href>/remote.php/dav/files/alice/relatorio.pdf</d:href>
+    <d:propstat><d:prop>
+      <d:getlastmodified>Tue, 30 Sep 2026 08:00:00 GMT</d:getlastmodified>
+      <d:getcontentlength>12345</d:getcontentlength>
+      <d:getcontenttype>application/pdf</d:getcontenttype>
+      <d:resourcetype/>
+    </d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat>
+  </d:response>
+</d:multistatus>

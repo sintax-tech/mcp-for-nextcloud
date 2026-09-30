@@ -205,7 +205,7 @@ final class FilesModuleTest extends TestCase {
             'access' => ['scope' => 'personal', 'owner' => 'alice', 'ownerDisplayName' => 'Alice',
                 'permissions' => ['read' => true, 'update' => true, 'create' => true, 'delete' => true, 'share' => true]],
             'backup' => $backup,
-            'diff' => "--- antes\n+++ depois\n@@ -1,2 +1,1 @@\n-# Ata\n-olá\n+novo\n"], $out);
+            'diff' => "--- antes\n+++ depois\n@@ -1,2 +1,1 @@\n-# Ata\n-olá\n\\ No newline at end of file\n+novo\n\\ No newline at end of file\n"], $out);
         $this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files' . $backup]['content']);
         $this->assertSame('novo', $this->tree->nodes['/alice/files/Documentos/ata.md']['content']);
         $this->assertSame(['mkdir /alice/files/MCP backups', 'mkdir /alice/files/MCP backups/Documentos',

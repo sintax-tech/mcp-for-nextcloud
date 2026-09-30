@@ -13,7 +13,8 @@ final class UnifiedDiffTest extends TestCase {
     }
 
     public function testFullReplacementNumbersBothSidesFromOne(): void {
-        $this->assertSame("--- antes\n+++ depois\n@@ -1,2 +1,1 @@\n-# Ata\n-olá\n+novo\n",
+        $this->assertSame(
+            "--- antes\n+++ depois\n@@ -1,2 +1,1 @@\n-# Ata\n-olá\n\\ No newline at end of file\n+novo\n\\ No newline at end of file\n",
             UnifiedDiff::between("# Ata\nolá", 'novo'));
     }
 
@@ -31,11 +32,41 @@ final class UnifiedDiffTest extends TestCase {
     }
 
     public function testAddedLinesOnly(): void {
-        $this->assertSame("--- antes\n+++ depois\n@@ -1,1 +1,2 @@\n a\n+b\n", UnifiedDiff::between('a', "a\nb"));
+        $this->assertSame(
+            "--- antes\n+++ depois\n@@ -1,1 +1,2 @@\n a\n\\ No newline at end of file\n+b\n\\ No newline at end of file\n",
+            UnifiedDiff::between('a', "a\nb"));
     }
 
     public function testCarriageReturnsAreNormalizedBeforeDiffing(): void {
         $this->assertSame('', UnifiedDiff::between("a\r\nb", "a\nb"));
+    }
+
+    /** A terminated file used to grow a phantom empty line, which showed up as a "+" with nothing in it. */
+    public function testATerminatedFileDoesNotGrowAPhantomLine(): void {
+        $this->assertSame("--- antes\n+++ depois\n@@ -1,2 +1,3 @@\n a\n b\n+c\n",
+            UnifiedDiff::between("a\nb\n", "a\nb\nc\n"));
+        $this->assertStringNotContainsString("+\n", UnifiedDiff::between("a\nb\n", "a\nb\nc\n"));
+    }
+
+    /** The terminator is a byte like any other, so the diff says so instead of hiding it. */
+    public function testAMissingTrailingNewlineIsMarked(): void {
+        $this->assertSame("--- antes\n+++ depois\n@@ -1,1 +1,1 @@\n-a\n\\ No newline at end of file\n+a\n",
+            UnifiedDiff::between('a', "a\n"));
+        $this->assertSame("--- antes\n+++ depois\n@@ -1,1 +1,1 @@\n-a\n+a\n\\ No newline at end of file\n",
+            UnifiedDiff::between("a\n", 'a'));
+    }
+
+    public function testTheMarkerLandsOnTheLastLineOfEachSide(): void {
+        $this->assertSame(
+            "--- antes\n+++ depois\n@@ -1,1 +1,2 @@\n a\n+b\n\\ No newline at end of file\n",
+            UnifiedDiff::between("a\n", "a\nb"));
+        $this->assertSame(
+            "--- antes\n+++ depois\n@@ -1,1 +1,2 @@\n a\n\\ No newline at end of file\n+b\n\\ No newline at end of file\n",
+            UnifiedDiff::between('a', "a\nb"));
+    }
+
+    public function testFullyTerminatedFilesCarryNoMarker(): void {
+        $this->assertStringNotContainsString(UnifiedDiff::NO_NEWLINE, UnifiedDiff::between("a\nb\n", "a\nc\n"));
     }
 
     public function testBomIsPartOfTheFirstLine(): void {

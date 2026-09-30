@@ -10,6 +10,10 @@ namespace OCA\Mcp\Tools\Files;
  * file cheap; the remaining middles are compared with a longest-common-subsequence table bounded by
  * BUDGET_CELLS. Above that bound, or above MAX_LINES on either side, no table is built at all and a
  * summary is returned instead — a 10 MiB file must not be able to exhaust memory.
+ *
+ * Line endings are normalized before anything else, so a pure CRLF change is not a change. Whether each side
+ * ended with a newline is kept and reported the way git does, with the "\ No newline at end of file"
+ * marker, because a diff that hid that would tell the agent the file changed when only its terminator did.
  */
 final class UnifiedDiff {
     /** Characters kept in the rendered diff before it is cut. */
@@ -22,6 +26,8 @@ final class UnifiedDiff {
     private const CONTEXT = 3;
     /** Appended to a diff cut by MAX_CHARS. */
     public const TRUNCATED = '[diff truncado]';
+    /** Git's marker for a side whose last line has no terminator. */
+    public const NO_NEWLINE = '\\ No newline at end of file';
 
     /**
      * @param string $before content as read
@@ -31,14 +37,17 @@ final class UnifiedDiff {
     public static function between(string $before, string $after): string {
         $old = self::lines($before);
         $new = self::lines($after);
-        // Line endings are normalized first, so a pure CRLF change is not a change at all.
-        if ($old === $new) {
+        $oldTerminated = str_ends_with($before, "\n");
+        $newTerminated = str_ends_with($after, "\n");
+        // Line endings are normalized first, so a pure CRLF change is not a change — but a missing trailing
+        // newline is, and it has to show up as the marker rather than disappear.
+        if ($old === $new && $oldTerminated === $newTerminated) {
             return '';
         }
         if (count($old) > self::MAX_LINES || count($new) > self::MAX_LINES) {
             return self::summary(count($old), count($new));
         }
-        $diff = self::render($old, $new);
+        $diff = self::render($old, $new, $oldTerminated, $newTerminated);
         return mb_strlen($diff) > self::MAX_CHARS ? mb_substr($diff, 0, self::MAX_CHARS) . "\n" . self::TRUNCATED : $diff;
     }
 
@@ -49,9 +58,25 @@ final class UnifiedDiff {
      *
      * @param list<string> $old previous lines
      * @param list<string> $new new lines
+     * @param bool $oldTerminated whether the previous content ended with a newline
+     * @param bool $newTerminated whether the new content ends with a newline
      * @return string the unified diff of both sides
      */
-    private static function render(array $old, array $new): string {
+    private static function render(array $old, array $new, bool $oldTerminated, bool $newTerminated): string {
+        // Same lines, different terminator: the only change is the last line losing or gaining its newline,
+        // and no amount of line comparison will ever produce a hunk for it.
+        if ($old === $new) {
+            $ops = [];
+            foreach ($old as $index => $line) {
+                if ($index === count($old) - 1) {
+                    $ops[] = ['-', $line, !$oldTerminated];
+                    $ops[] = ['+', $line, !$newTerminated];
+                } else {
+                    $ops[] = [' ', $line, false];
+                }
+            }
+            return $old === [] ? '' : "--- antes\n+++ depois\n" . implode('', self::hunks($ops));
+        }
         $head = 0;
         $limit = min(count($old), count($new));
         while ($head < $limit && $old[$head] === $new[$head]) {
@@ -66,20 +91,47 @@ final class UnifiedDiff {
         if (count($oldMiddle) * count($newMiddle) > self::BUDGET_CELLS) {
             return self::summary(count($old), count($new));
         }
-        $context = static fn (int $from, int $to): array => $from >= $to ? [] : array_map(static fn (int $i) => [' ', $old[$i]], range($from, $to - 1));
-        $ops = array_merge(
+        $context = static fn (int $from, int $to): array => $from >= $to ? [] : array_map(static fn (int $i) => [' ', $old[$i], false], range($from, $to - 1));
+        $ops = self::markMissingTerminators(array_merge(
             $context(0, $head),
             self::ops($oldMiddle, $newMiddle),
             $context(count($old) - $tail, count($old)),
-        );
+        ), $newTerminated, $oldTerminated);
         $hunks = self::hunks($ops);
         return $hunks === [] ? '' : "--- antes\n+++ depois\n" . implode('', $hunks);
     }
 
     /**
+     * Flags the last op of each side when that side has no trailing newline, the way git marks it.
+     *
+     * @param list<array{0:string, 1:string, 2:bool}> $ops edit script
+     * @param bool $newTerminated whether the new content ends with a newline
+     * @param bool $oldTerminated whether the previous content ended with a newline
+     * @return list<array{0:string, 1:string, 2:bool}> the same script with the marker set
+     */
+    private static function markMissingTerminators(array $ops, bool $newTerminated, bool $oldTerminated): array {
+        // The last line of a side is the last op that side contributes: for the new side that is the last
+        // op which is not a removal, and for the old side the last op which is not an addition.
+        $flag = static function (array $ops, string $skip, bool $terminated): array {
+            if ($terminated) {
+                return $ops;
+            }
+            for ($i = count($ops) - 1; $i >= 0; $i--) {
+                if ($ops[$i][0] !== $skip) {
+                    $ops[$i][2] = true;
+                    return $ops;
+                }
+            }
+            return $ops;
+        };
+        $ops = $flag($ops, '-', $newTerminated);
+        return $flag($ops, '+', $oldTerminated);
+    }
+
+    /**
      * Groups the changed lines into unified hunks with CONTEXT lines around each one.
      *
-     * @param list<array{0:string, 1:string}> $ops edit script over the whole file
+     * @param list<array{0:string, 1:string, 2:bool}> $ops edit script over the whole file
      * @return list<string> rendered hunks, each ending with a newline
      */
     private static function hunks(array $ops): array {
@@ -111,8 +163,8 @@ final class UnifiedDiff {
             $oldStart = $newStart = $oldCount = $newCount = 0;
             $body = '';
             for ($i = $from; $i <= $to; $i++) {
-                [$mark, $text] = $ops[$i];
-                $body .= $mark . $text . "\n";
+                [$mark, $text, $noTerminator] = $ops[$i];
+                $body .= $mark . $text . "\n" . ($noTerminator ? self::NO_NEWLINE . "\n" : '');
                 // A line survives in the old file unless an earlier op added one, and in the new file
                 // unless an earlier op removed one.
                 if ($mark !== '+') {
@@ -130,7 +182,7 @@ final class UnifiedDiff {
     }
 
     /**
-     * @param list<array{0:string, 1:string}> $ops edit script
+     * @param list<array{0:string, 1:string, 2:bool}> $ops edit script
      * @param int $index op index
      * @return int how many removed lines come before it
      */
@@ -143,7 +195,7 @@ final class UnifiedDiff {
     }
 
     /**
-     * @param list<array{0:string, 1:string}> $ops edit script
+     * @param list<array{0:string, 1:string, 2:bool}> $ops edit script
      * @param int $index op index
      * @return int how many added lines come before it
      */
@@ -160,7 +212,7 @@ final class UnifiedDiff {
      *
      * @param list<string> $old previous lines
      * @param list<string> $new new lines
-     * @return list<array{0:string, 1:string}> per-line marks (' ', '-', '+') with the line text
+     * @return list<array{0:string, 1:string, 2:bool}> per-line marks (' ', '-', '+') with the line text
      */
     private static function ops(array $old, array $new): array {
         $rows = count($old);
@@ -177,22 +229,22 @@ final class UnifiedDiff {
         $i = $j = 0;
         while ($i < $rows && $j < $columns) {
             if ($old[$i] === $new[$j]) {
-                $ops[] = [' ', $old[$i]];
+                $ops[] = [' ', $old[$i], false];
                 $i++;
                 $j++;
             } elseif ($table[$i + 1][$j] >= $table[$i][$j + 1]) {
-                $ops[] = ['-', $old[$i]];
+                $ops[] = ['-', $old[$i], false];
                 $i++;
             } else {
-                $ops[] = ['+', $new[$j]];
+                $ops[] = ['+', $new[$j], false];
                 $j++;
             }
         }
         while ($i < $rows) {
-            $ops[] = ['-', $old[$i++]];
+            $ops[] = ['-', $old[$i++], false];
         }
         while ($j < $columns) {
-            $ops[] = ['+', $new[$j++]];
+            $ops[] = ['+', $new[$j++], false];
         }
         return $ops;
     }
@@ -208,12 +260,18 @@ final class UnifiedDiff {
 
     /**
      * @param string $content text to split
-     * @return list<string> lines without their terminator
+     * @return list<string> lines without their terminator, without a phantom empty last line
      */
     private static function lines(string $content): array {
         if ($content === '') {
             return [];
         }
-        return explode("\n", str_replace(["\r\n", "\r"], "\n", $content));
+        $normalized = str_replace(["\r\n", "\r"], "\n", $content);
+        $lines = explode("\n", $normalized);
+        // explode leaves an empty last element for a terminated file, which would show up as a phantom line.
+        if (str_ends_with($normalized, "\n")) {
+            array_pop($lines);
+        }
+        return $lines;
     }
 }

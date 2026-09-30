@@ -16,7 +16,8 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
     public function testReplaceSwapsTheOnlyOccurrenceAndReturnsTheDiff(): void {
         $out = $this->json('files_replace', ['path' => '/Documentos/ata.md', 'old' => 'Ata', 'new' => 'Ata de']);
         $this->assertSame("# Ata de\nolá", $this->tree->nodes[self::FILE]['content']);
-        $this->assertSame("--- antes\n+++ depois\n@@ -1,2 +1,2 @@\n-# Ata\n+# Ata de\n olá\n", $out['diff']);
+        $this->assertSame(
+            "--- antes\n+++ depois\n@@ -1,2 +1,2 @@\n-# Ata\n+# Ata de\n olá\n\\ No newline at end of file\n", $out['diff']);
         $this->assertStringStartsWith('/MCP backups/Documentos/ata.md.', $out['backup']);
         $this->assertSame('personal', $out['access']['scope']);
     }
@@ -92,6 +93,22 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
                 $this->failure($tool, ['path' => '/MCP backups/ata.md'] + $arguments), $tool);
         }
         $this->assertSame([], $this->tree->ops);
+    }
+
+    /**
+     * The rule is "the MCP never loses a file", and a backup overwrite would lose one. Two edits inside the
+     * same second land on the same base name, so the second has to get its own file and the first has to
+     * still be readable.
+     */
+    public function testTwoBackupsInTheSameSecondKeepBothCopies(): void {
+        $first = $this->json('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'v2'])['backup'];
+        $this->json('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'v3']);
+        $second = $this->json('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'v4'])['backup'];
+        $this->assertNotSame($first, $second);
+        $this->assertStringEndsWith('.bak', $first);
+        $this->assertStringEndsWith('-3.bak', $second, 'a terceira cópia precisa de sufixo próprio');
+        $this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files' . $first]['content'], 'a primeira cópia não pode ser sobrescrita');
+        $this->assertSame('v3', $this->tree->nodes['/alice/files' . $second]['content'], 'cada guarda o conteúdo que existia na sua hora');
     }
 
     public function testReplaceRefusesASnippetThatIsNotThere(): void {

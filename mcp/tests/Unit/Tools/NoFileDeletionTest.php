@@ -15,8 +15,13 @@ use PHPUnit\Framework\TestCase;
  * expensive to notice, so they are assertions rather than conventions.
  */
 final class NoFileDeletionTest extends TestCase {
-    /** The only place a node may be removed, once the reorganization lands. */
+    /**
+     * The one allowance the reorganization has, named explicitly so it cannot spread: files_undo_batch may
+     * remove an empty folder the batch itself created, and nothing else. Until that tool lands there is no
+     * allowance at all, so the Files module currently has to contain no removal of any kind.
+     */
     private const ALLOWED_EMPTY_FOLDER_REMOVAL = 'lib/Tools/Files/Reorganization.php';
+    private const BATCH_UNDO = 'undoBatch';
 
     /**
      * @return list<string> every source file of the Files module
@@ -27,18 +32,38 @@ final class NoFileDeletionTest extends TestCase {
         return $found;
     }
 
-    /** A Files handler must never call Node::delete(): there is no tool in this module that removes a node. */
+    /**
+     * A Files handler must never call Node::delete(). The single allowance is a call inside the batch undo,
+     * and it has to sit there and nowhere else: a removal anywhere else in the module fails the test.
+     */
     public function testNoFilesHandlerDeletesANode(): void {
         foreach ($this->filesSources() as $file) {
             $source = (string)file_get_contents($file);
-            if (basename($file) === basename(self::ALLOWED_EMPTY_FOLDER_REMOVAL)) {
-                // The reorganization is allowed to remove an empty folder it created; nothing else is.
-                $this->assertDoesNotMatchRegularExpression('/->delete\(\)/', $source, basename($file));
+            $allowed = basename($file) === basename(self::ALLOWED_EMPTY_FOLDER_REMOVAL)
+                && $this->undoHasTheRemoval($source);
+            if ($allowed) {
+                $this->assertSame(1, preg_match_all('/->delete\(\)/', $source),
+                    'a remoção do lote é uma só, dentro do desfazer');
                 continue;
             }
             $this->assertDoesNotMatchRegularExpression('/->delete\(\)/', $source,
                 basename($file) . ' calls Node::delete(); the MCP removes no file and no folder');
         }
+    }
+
+    /**
+     * @param string $source the reorganization source
+     * @return bool whether the only deletion sits inside the batch undo
+     */
+    private function undoHasTheRemoval(string $source): bool {
+        if (str_contains($source, '->delete()')) {
+            $undo = strpos($source, 'function ' . self::BATCH_UNDO);
+            $first = strpos($source, '->delete()');
+            $this->assertNotFalse($undo, 'a remoção precisa estar dentro de ' . self::BATCH_UNDO . '()');
+            $this->assertGreaterThan($undo, $first, 'a remoção está antes de ' . self::BATCH_UNDO . '()');
+            return true;
+        }
+        return false;
     }
 
     /**

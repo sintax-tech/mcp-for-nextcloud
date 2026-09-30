@@ -14,6 +14,7 @@ use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileBackup;
+use OCA\Mcp\Tools\Files\Reorganization;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Files\VersionTools;
@@ -92,6 +93,7 @@ abstract class FilesToolsTestCase extends TestCase {
             new SharedWriteGuard($access),
             new CheckoutService($urls, $config, $this->time, new TokenHasher($config), $this->store, $this->apps, $this->users),
             new VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class)),
+            new Reorganization($access),
         );
     }
 

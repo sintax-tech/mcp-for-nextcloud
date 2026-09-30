@@ -13,6 +13,7 @@ use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileBackup;
+use OCA\Mcp\Tools\Files\Reorganization;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Files\VersionTools;
@@ -65,7 +66,7 @@ final class FilesModuleTest extends TestCase {
         $this->module = new FilesModule($root, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $users, $db,
             $access, new SharedWriteGuard($access),
             new CheckoutService($urls, $appConfig, $time, new TokenHasher($appConfig), $this->createMock(CheckoutTokenStore::class), $apps, $users),
-            $versions);
+            $versions, new Reorganization($access));
         $this->versions = $versions;
     }
 
@@ -94,11 +95,13 @@ final class FilesModuleTest extends TestCase {
 
     public function testDefinitionsKeepPrototypeNamesAndGrants(): void {
         $defs = array_column($this->module->definitions(), null, 'name');
-        $this->assertSame(['files_list', 'files_search', 'files_read', 'files_edit', 'files_replace',
+        $this->assertSame(['files_list', 'files_search', 'files_tree', 'files_read', 'files_edit', 'files_replace',
             'files_checkout', 'files_versions_list', 'files_version_read', 'files_version_restore'], array_keys($defs));
-        $this->assertSame(['read', 'read', 'read', 'edit', 'edit', 'edit', 'read', 'read', 'restore'], array_column($defs, 'operation'));
+        $this->assertSame(['read', 'read', 'read', 'read', 'edit', 'edit', 'edit', 'read', 'read', 'restore'],
+            array_column($defs, 'operation'));
         $this->assertSame(['files_versions', 'files_versions', 'files_versions'],
             array_values(array_filter(array_column($defs, 'app', 'name'))));
+        $this->assertArrayNotHasKey('app', $defs['files_tree'], 'a árvore só depende de arquivos, que sempre existem');
         $this->assertSame(['path', 'old', 'new'], $defs['files_replace']['inputSchema']['required']);
         $this->assertSame(['path', 'version', 'confirm'], $defs['files_version_restore']['inputSchema']['required']);
         $this->assertSame('/', $defs['files_list']['inputSchema']['properties']['path']['default']);

@@ -45,6 +45,7 @@ class FilesModule implements ToolModule {
         private SharedWriteGuard $guard,
         private CheckoutService $checkout,
         private VersionTools $versions,
+        private Reorganization $reorganization,
     ) {}
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app?:string}> */
@@ -63,6 +64,13 @@ class FilesModule implements ToolModule {
                     'query' => ['type' => 'string', 'minLength' => 1, 'description' => 'Termo a buscar'],
                     'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100, 'default' => 25],
                 ], ['query'])],
+            ['name' => 'files_tree', 'module' => 'files', 'operation' => 'read',
+                'description' => FilesMessages::treeTool(),
+                'inputSchema' => self::schema([
+                    'path' => ['type' => 'string', 'default' => '/', 'description' => FilesMessages::path()],
+                    'depth' => ['type' => 'integer', 'minimum' => 1, 'maximum' => Reorganization::MAX_DEPTH, 'default' => Reorganization::MAX_DEPTH],
+                    'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => Reorganization::MAX_ENTRIES, 'default' => Reorganization::MAX_ENTRIES],
+                ])],
             ['name' => 'files_read', 'module' => 'files', 'operation' => 'read',
                 'description' => FilesMessages::readTool(),
                 'inputSchema' => self::schema(['path' => $path], ['path'])],
@@ -119,6 +127,7 @@ class FilesModule implements ToolModule {
         $confirmed = (bool)($arguments['confirm_shared'] ?? false);
         return NodeAccess::run(fn (): array => match ($name) {
             'files_list' => ToolResult::json($this->list($root, $userId, $arguments['path'])),
+            'files_tree' => ToolResult::json($this->reorganization->tree($root, $userId, $arguments['path'], $arguments['depth'], $arguments['limit'])),
             'files_search' => ToolResult::json($this->search($root, $userId, $arguments['query'], $arguments['limit'])),
             'files_read' => $this->read($root, $userId, $arguments['path']),
             'files_edit' => $this->write($root, $userId, $arguments['path'], $arguments['content'], $arguments['etag'] ?? null, $confirmed),

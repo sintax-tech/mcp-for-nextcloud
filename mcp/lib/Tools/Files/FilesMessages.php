@@ -28,6 +28,13 @@ final class FilesMessages {
         return 'Lê o texto de um arquivo do Nextcloud (txt/md direto; PDF/DOCX/ODT com extração de texto).';
     }
 
+    /** @return string description of files_tree */
+    public static function treeTool(): string {
+        return 'Lista a árvore de arquivos de uma pasta, com o dono de cada item e quantas entradas cabem. '
+            . 'Use para planejar uma reorganização sem uma chamada por pasta. Tem limite de profundidade e de '
+            . 'entradas, e avisa quando cortou.';
+    }
+
     /** @return string description of files_edit */
     public static function editTool(): string {
         return 'Substitui o conteúdo de um arquivo de texto existente e devolve o diff. Antes de gravar, exige '

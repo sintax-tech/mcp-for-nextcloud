@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
-    "fast-xml-parser": "^4.4.0",
+    "fast-xml-parser": "^5.11.2",
     "mammoth": "^1.8.0",
     "node-ical": "^0.18.0",
     "unpdf": "^0.12.2",

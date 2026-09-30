@@ -14,6 +14,18 @@ OC.L10N.register(
     "Disconnect" : "Desconectar",
     "Connect" : "Conectar",
     "Create an individual app password in Nextcloud Settings → Security, then use it with your Nextcloud user ID in a client that supports HTTP Basic authentication and Streamable HTTP MCP 2025-06-18. This app never asks for your Nextcloud password." : "Crie uma senha de aplicativo individual em Configurações → Segurança do Nextcloud e use-a com seu ID de usuário do Nextcloud em um cliente que suporte autenticação HTTP Basic e Streamable HTTP MCP 2025-06-18. Este app nunca solicita sua senha do Nextcloud.",
-    "Disconnecting blocks access to this app on the next request. It does not revoke the app password; revoke that separately in Nextcloud Settings → Security." : "Desconectar bloqueia o acesso a este app na próxima solicitação. Isso não revoga a senha de aplicativo; revogue-a separadamente em Configurações → Segurança do Nextcloud."
+    "Disconnecting blocks access to this app on the next request. It does not revoke the app password; revoke that separately in Nextcloud Settings → Security." : "Desconectar bloqueia o acesso a este app na próxima solicitação. Isso não revoga a senha de aplicativo; revogue-a separadamente em Configurações → Segurança do Nextcloud.",
+    "%s cannot be connected because an administrator has not enabled MCP for your account." : "%s não pode ser conectado porque um administrador não habilitou o MCP para a sua conta.",
+    "Allow" : "Permitir",
+    "Allow %s to access MCP with your account?" : "Permitir que %s acesse o MCP com a sua conta?",
+    "Cancel" : "Cancelar",
+    "Client: %s" : "Cliente: %s",
+    "Connection not possible" : "Conexão não é possível",
+    "MCP is not available for your account" : "O MCP não está disponível para a sua conta",
+    "Returns to: %s" : "Retorna para: %s",
+    "Signed in as %s." : "Conectado como %s.",
+    "The app will be able to use the MCP tools your administrator enabled for you. You can disconnect it at any time in your personal settings." : "O aplicativo poderá usar as ferramentas MCP que o administrador liberou para você. Você pode desconectá-lo a qualquer momento nas configurações pessoais.",
+    "The authorization request is invalid." : "A solicitação de autorização é inválida.",
+    "This client returns to a program on your own computer. Only continue if you started this connection yourself." : "Este cliente retorna para um programa no seu próprio computador. Só continue se foi você quem iniciou esta conexão."
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

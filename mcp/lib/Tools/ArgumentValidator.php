@@ -43,11 +43,31 @@ final class ArgumentValidator {
     }
 
     /**
-     * @param array<string, mixed> $rule property schema (type, minLength, maxLength, minimum, maximum, const)
+     * @param array<string, mixed> $rule property schema (type as string or list of types, minLength, maxLength, minimum, maximum, const)
      * @throws InvalidArgumentException when the value breaks the rule
      */
     private static function check(string $key, array $rule, mixed $value): mixed {
-        $valid = match ($rule['type'] ?? null) {
+        $types = is_array($rule['type'] ?? null) ? $rule['type'] : [$rule['type'] ?? null];
+        foreach ($types as $type) {
+            if (self::matches($type, $rule, $value)) {
+                if (array_key_exists('const', $rule) && $value !== $rule['const']) {
+                    break;
+                }
+                return $value;
+            }
+        }
+        throw new InvalidArgumentException("Invalid argument: $key");
+    }
+
+    /**
+     * @param mixed $type one JSON Schema type name
+     * @param array<string, mixed> $rule property schema with the type's constraints
+     * @param mixed $value argument value
+     * @return bool whether the value is of that type and within its constraints
+     */
+    private static function matches(mixed $type, array $rule, mixed $value): bool {
+        return match ($type) {
+            'null' => $value === null,
             'string' => is_string($value)
                 && mb_strlen($value) >= ($rule['minLength'] ?? 0)
                 && (!isset($rule['maxLength']) || mb_strlen($value) <= $rule['maxLength']),
@@ -57,9 +77,5 @@ final class ArgumentValidator {
             'boolean' => is_bool($value),
             default => false,
         };
-        if (!$valid || (array_key_exists('const', $rule) && $value !== $rule['const'])) {
-            throw new InvalidArgumentException("Invalid argument: $key");
-        }
-        return $value;
     }
 }

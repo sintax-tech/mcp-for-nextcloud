@@ -22,9 +22,6 @@ class NotesModule implements ToolModule {
     public const MAX_BYTES = 1024 * 1024;
     /** Storage wrapper files_trashbin puts around storages whose deletions go to the trash bin. */
     public const TRASH_STORAGE = 'OCA\\Files_Trashbin\\Storage';
-    /** Message for deletions that would not be recoverable. */
-    public const NOT_RECOVERABLE = 'Exclusão bloqueada: a lixeira (files_trashbin) não está ativa para esta nota, então ela não seria recuperável.';
-
     public function __construct(
         private NotesRepository $notes,
         private IAppManager $appManager,
@@ -33,30 +30,30 @@ class NotesModule implements ToolModule {
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}> */
     public function definitions(): array {
-        $id = ['type' => 'integer', 'minimum' => 1, 'description' => 'id da nota'];
-        $etag = ['type' => 'string', 'description' => 'ETag lido antes; se divergir, nada é alterado'];
+        $id = ['type' => 'integer', 'minimum' => 1, 'description' => NotesMessages::PARAM_ID];
+        $etag = ['type' => 'string', 'description' => NotesMessages::PARAM_ETAG];
         return [
-            self::tool('notes_list', 'read', 'Lista as notas (app Notes) do usuário.', []),
-            self::tool('notes_read', 'read', 'Lê o conteúdo de uma nota pelo id.', ['id' => $id], ['id']),
-            self::tool('notes_create', 'create', 'Cria uma nota; nunca sobrescreve uma existente.', [
-                'title' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 200, 'description' => 'Título (nome do arquivo)'],
-                'content' => ['type' => 'string', 'default' => '', 'description' => 'Conteúdo em Markdown'],
-                'category' => ['type' => 'string', 'default' => '', 'description' => 'Categoria (subpasta); vazio para a raiz'],
+            self::tool('notes_list', 'read', NotesMessages::TOOL_LIST_DESCRIPTION, []),
+            self::tool('notes_read', 'read', NotesMessages::TOOL_READ_DESCRIPTION, ['id' => $id], ['id']),
+            self::tool('notes_create', 'create', NotesMessages::TOOL_CREATE_DESCRIPTION, [
+                'title' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 200, 'description' => NotesMessages::PARAM_TITLE],
+                'content' => ['type' => 'string', 'default' => '', 'description' => NotesMessages::PARAM_CONTENT],
+                'category' => ['type' => 'string', 'default' => '', 'description' => NotesMessages::PARAM_CATEGORY],
             ], ['title']),
-            self::tool('notes_edit', 'edit', 'Altera o conteúdo e/ou o título de uma nota.', [
+            self::tool('notes_edit', 'edit', NotesMessages::TOOL_EDIT_DESCRIPTION, [
                 'id' => $id,
-                'content' => ['type' => 'string', 'description' => 'Novo conteúdo completo'],
-                'title' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 200, 'description' => 'Novo título'],
+                'content' => ['type' => 'string', 'description' => NotesMessages::PARAM_NEW_CONTENT],
+                'title' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 200, 'description' => NotesMessages::PARAM_NEW_TITLE],
                 'etag' => $etag,
             ], ['id']),
-            self::tool('notes_move', 'move', 'Move uma nota para outra categoria.', [
+            self::tool('notes_move', 'move', NotesMessages::TOOL_MOVE_DESCRIPTION, [
                 'id' => $id,
-                'category' => ['type' => 'string', 'description' => 'Categoria de destino; vazio para a raiz'],
+                'category' => ['type' => 'string', 'description' => NotesMessages::PARAM_CATEGORY_TARGET],
                 'etag' => $etag,
             ], ['id', 'category']),
-            self::tool('notes_delete', 'delete', 'Exclui uma nota para a lixeira do Nextcloud. Exige confirm=true.', [
+            self::tool('notes_delete', 'delete', NotesMessages::TOOL_DELETE_DESCRIPTION, [
                 'id' => $id,
-                'confirm' => ['type' => 'boolean', 'const' => true, 'description' => 'Precisa ser true para confirmar a exclusão'],
+                'confirm' => ['type' => 'boolean', 'const' => true, 'description' => NotesMessages::PARAM_CONFIRM],
                 'etag' => $etag,
             ], ['id', 'confirm']),
         ];
@@ -99,7 +96,7 @@ class NotesModule implements ToolModule {
     private function read(?Folder $root, int $id): array {
         $note = $this->notes->find($root, $id);
         if ($note->getSize() > self::MAX_BYTES) {
-            throw new ToolFailure('Nota excede o limite de leitura de ' . self::MAX_BYTES . ' bytes.');
+            throw new ToolFailure(NotesMessages::noteTooLargeForReading(self::MAX_BYTES));
         }
         return $this->notes->info($note, $root) + ['content' => mb_scrub((string)$note->getContent(), 'UTF-8')];
     }
@@ -129,7 +126,7 @@ class NotesModule implements ToolModule {
             if ($name !== $note->getName()) {
                 $parent = $note->getParent();
                 if ($parent->nodeExists($name)) {
-                    throw new ToolFailure('Já existe uma nota com este título nesta categoria.');
+                    throw new ToolFailure(NotesMessages::titleExistsInCategory());
                 }
                 $note->move($parent->getPath() . '/' . $name);
             }
@@ -146,7 +143,7 @@ class NotesModule implements ToolModule {
         $target = $this->notes->category($root, $arguments['category']);
         if ($target->getPath() !== $note->getParent()->getPath()) {
             if ($target->nodeExists($note->getName())) {
-                throw new ToolFailure('Já existe uma nota com este título na categoria de destino.');
+                throw new ToolFailure(NotesMessages::titleExistsInTargetCategory());
             }
             $note->move($target->getPath() . '/' . $note->getName());
         }
@@ -163,7 +160,7 @@ class NotesModule implements ToolModule {
         }
         $user = $this->userManager->get($userId);
         if ($user === null || !$this->appManager->isEnabledForUser('files_trashbin', $user)) {
-            throw new ToolFailure(self::NOT_RECOVERABLE);
+            throw new ToolFailure(NotesMessages::notRecoverable());
         }
         $note = $this->writable($root, $arguments);
         if (!$note->isDeletable()) {
@@ -171,7 +168,7 @@ class NotesModule implements ToolModule {
         }
         // An enabled app does not cover every mount: external or excluded storages delete permanently.
         if (!$note->getStorage()->instanceOfStorage(self::TRASH_STORAGE)) {
-            throw new ToolFailure(self::NOT_RECOVERABLE);
+            throw new ToolFailure(NotesMessages::notRecoverable());
         }
         $note->delete();
         return ['id' => $arguments['id'], 'deleted' => true, 'trash' => true];
@@ -190,7 +187,7 @@ class NotesModule implements ToolModule {
     /** @throws ToolFailure when the content is over MAX_BYTES */
     private static function checkSize(string $content): void {
         if (strlen($content) > self::MAX_BYTES) {
-            throw new ToolFailure('Nota excede o limite de ' . self::MAX_BYTES . ' bytes.');
+            throw new ToolFailure(NotesMessages::noteTooLarge(self::MAX_BYTES));
         }
     }
 

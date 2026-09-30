@@ -6,6 +6,7 @@ namespace OCA\Mcp\Tests\Unit\Tools;
 use InvalidArgumentException;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\ArgumentValidator;
+use OCA\Mcp\Tools\Notes\NotesMessages;
 use OCA\Mcp\Tools\Notes\NotesModule;
 use OCA\Mcp\Tools\Notes\NotesRepository;
 use OCA\Mcp\Tools\ToolFailure;
@@ -96,7 +97,7 @@ final class NotesModuleTest extends TestCase {
 
     public function testReadEnforcesSizeLimit(): void {
         $id = $this->tree->addFile('/alice/files/Notes/grande.md', 'x', 'text/markdown', ['size' => NotesModule::MAX_BYTES + 1]);
-        $this->assertStringContainsString('limite', $this->failure('notes_read', ['id' => $id]));
+        $this->assertSame(NotesMessages::noteTooLargeForReading(NotesModule::MAX_BYTES), $this->failure('notes_read', ['id' => $id]));
     }
 
     public function testCreateNeverOverwrites(): void {
@@ -125,7 +126,7 @@ final class NotesModuleTest extends TestCase {
     public function testEditRefusesConflictsAndEmptyChanges(): void {
         $this->assertSame(ToolFailure::CONFLICT, $this->failure('notes_edit', ['id' => $this->ata, 'content' => 'x', 'etag' => 'velho']));
         $this->tree->addFile('/alice/files/Notes/Reuniões/Outra.md', 'o');
-        $this->assertStringContainsString('Já existe', $this->failure('notes_edit', ['id' => $this->ata, 'title' => 'Outra']));
+        $this->assertSame(NotesMessages::titleExistsInCategory(), $this->failure('notes_edit', ['id' => $this->ata, 'title' => 'Outra']));
         $this->assertSame(ToolFailure::NOT_FOUND, $this->failure('notes_edit', ['id' => $this->outside, 'content' => 'x']));
         $this->invalid('notes_edit', ['id' => $this->ata]);
         $this->tree->nodes['/alice/files/Notes/Reuniões/Ata.md']['updateable'] = false;
@@ -139,7 +140,7 @@ final class NotesModuleTest extends TestCase {
         $this->assertSame('Arquivo/2026', $moved['category']);
         $this->assertArrayHasKey('/alice/files/Notes/Arquivo/2026/Ata.md', $this->tree->nodes);
         $this->tree->addFile('/alice/files/Notes/Ata.md', 'raiz');
-        $this->assertStringContainsString('Já existe', $this->failure('notes_move', ['id' => $this->ata, 'category' => '']));
+        $this->assertSame(NotesMessages::titleExistsInTargetCategory(), $this->failure('notes_move', ['id' => $this->ata, 'category' => '']));
         $this->invalid('notes_move', ['id' => $this->ata, 'category' => '../../Documentos']);
     }
 
@@ -147,7 +148,7 @@ final class NotesModuleTest extends TestCase {
         $this->invalid('notes_delete', ['id' => $this->ata]);
         $this->invalid('notes_delete', ['id' => $this->ata, 'confirm' => false]);
         $this->apps = ['notes'];
-        $this->assertStringContainsString('files_trashbin', $this->failure('notes_delete', ['id' => $this->ata, 'confirm' => true]));
+        $this->assertSame(NotesMessages::notRecoverable(), $this->failure('notes_delete', ['id' => $this->ata, 'confirm' => true]));
         $this->assertArrayHasKey('/alice/files/Notes/Reuniões/Ata.md', $this->tree->nodes);
         $this->apps = ['notes', 'files_trashbin'];
         $this->assertSame(ToolFailure::NOT_FOUND, $this->failure('notes_delete', ['id' => $this->outside, 'confirm' => true]));
@@ -158,7 +159,7 @@ final class NotesModuleTest extends TestCase {
 
     public function testDeleteIsBlockedOnStorageWithoutTrashWrapper(): void {
         $this->tree->nodes['/alice/files/Notes/Reuniões/Ata.md']['trash'] = false;
-        $this->assertSame(NotesModule::NOT_RECOVERABLE, $this->failure('notes_delete', ['id' => $this->ata, 'confirm' => true]));
+        $this->assertSame(NotesMessages::notRecoverable(), $this->failure('notes_delete', ['id' => $this->ata, 'confirm' => true]));
         $this->assertArrayHasKey('/alice/files/Notes/Reuniões/Ata.md', $this->tree->nodes);
         $this->assertSame([], $this->tree->ops);
     }

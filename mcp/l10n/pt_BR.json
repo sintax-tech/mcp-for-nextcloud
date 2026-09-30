@@ -179,6 +179,12 @@
     "invalid identifier" : "identificador inválido",
     "limit must be a number between 1 and 200" : "limit deve ser um número entre 1 e 200",
     "quoted message not found in this conversation" : "mensagem citada não encontrada nesta conversa",
-    "unknown tool" : "ferramenta desconhecida"
+    "unknown tool" : "ferramenta desconhecida",
+    "Note exceeds the read limit of %d bytes." : "Nota excede o limite de leitura de %d bytes.",
+    "Note exceeds the limit of %d bytes." : "Nota excede o limite de %d bytes.",
+    "A note with this title already exists in this category." : "Já existe uma nota com este título nesta categoria.",
+    "A note with this title already exists in the destination category." : "Já existe uma nota com este título na categoria de destino.",
+    "There are already too many notes with this title." : "Já existem notas demais com este título.",
+    "Deletion blocked: the trash bin (files_trashbin) is not active for this note, so it would not be recoverable." : "Exclusão bloqueada: a lixeira (files_trashbin) não está ativa para esta nota, então ela não seria recuperável."
 },"pluralForm" :"nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

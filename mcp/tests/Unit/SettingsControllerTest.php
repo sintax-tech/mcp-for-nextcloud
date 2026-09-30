@@ -5,6 +5,7 @@ namespace OCA\Mcp\Tests\Unit;
 
 use OCA\Mcp\Controller\McpController;
 use OCA\Mcp\Controller\SettingsController;
+use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Service\GrantPolicy;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
@@ -30,7 +31,7 @@ final class SettingsControllerTest extends TestCase {
         $session = $this->createMock(IUserSession::class);
         $session->method('getUser')->willReturn($alice);
         $this->controller = new SettingsController('mcp', $this->createMock(IRequest::class),
-            $this->createMock(IURLGenerator::class), $users, $session, $this->policy);
+            $this->createMock(IURLGenerator::class), $users, $session, $this->policy, $this->createMock(TokenService::class));
     }
 
     public function testAdminEndpointsAreAdminOnlyAndCsrfProtected(): void {

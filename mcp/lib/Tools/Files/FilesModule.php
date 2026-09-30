@@ -195,6 +195,14 @@ class FilesModule implements ToolModule {
     }
 
     /**
+     * Replaces one snippet, counting and substituting over the RAW bytes.
+     *
+     * The extracted text is only for the diff: it went through mb_scrub, which drops a BOM and turns every
+     * byte of a Latin-1 file into "?", so writing it back would silently corrupt the whole file when the
+     * snippet touches one line. `old` therefore has to be valid UTF-8, because a byte sequence the client
+     * cannot express as text is not something we can locate safely, and the substitution happens on
+     * whatever the file actually holds.
+     *
      * @return array{content: list<array{type:string, text:string}>}
      * @throws ToolFailure when the snippet is absent or ambiguous, or the write is refused
      */
@@ -204,19 +212,27 @@ class FilesModule implements ToolModule {
         if (strlen($new) > self::MAX_EDIT_BYTES) {
             throw new ToolFailure(FilesMessages::editTooLarge(self::MAX_EDIT_BYTES));
         }
+        if (!mb_check_encoding($old, 'UTF-8')) {
+            throw new ToolFailure(FilesMessages::snippetNotUtf8());
+        }
         $file = $this->file($root, $path);
         if (($payload = $this->guard->guard($file, $userId, $path, $confirmed)) !== null) {
             return ToolResult::json($payload);
         }
-        $before = $this->extractor->extract($file);
-        $occurrences = substr_count($before, $old);
+        $raw = (string)$file->getContent();
+        $occurrences = substr_count($raw, $old);
         if ($occurrences === 0) {
             throw new ToolFailure(FilesMessages::snippetMissing());
         }
         if ($occurrences > 1) {
             throw new ToolFailure(FilesMessages::snippetAmbiguous($occurrences));
         }
-        return ToolResult::json($this->commit($root, $userId, $file, $path, str_replace($old, $new, $before), $etag, $before));
+        // str_replace with a count of 1 cannot touch anything but the single occurrence we just verified.
+        $updated = str_replace($old, $new, $raw, $count);
+        if ($count !== 1) {
+            throw new ToolFailure(FilesMessages::snippetAmbiguous($occurrences));
+        }
+        return ToolResult::json($this->commit($root, $userId, $file, $path, $updated, $etag, $this->extractor->extract($file)));
     }
 
     /**

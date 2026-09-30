@@ -167,6 +167,11 @@ final class FilesMessages {
         return 'O trecho informado não aparece no arquivo.';
     }
 
+    /** @return string the snippet given to files_replace is not text we can locate in the file */
+    public static function snippetNotUtf8(): string {
+        return 'O trecho informado não é UTF-8 válido; envie-o exatamente como aparece no arquivo.';
+    }
+
     /**
      * @param int $occurrences how many times the snippet occurs
      * @return string the snippet given to files_replace is ambiguous

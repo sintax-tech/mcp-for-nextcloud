@@ -21,6 +21,53 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
         $this->assertSame('personal', $out['access']['scope']);
     }
 
+    /**
+     * A Latin-1 CSV has bytes that mb_scrub cannot decode. Replacing an ASCII snippet must leave every one
+     * of those bytes exactly as it was: writing back the extracted text would have turned each into "?".
+     */
+    public function testReplaceLeavesBytesOutsideTheSnippetUntouched(): void {
+        $latin1 = "nome;cidade\nJo\xE3o;S\xE3o Paulo\nMaria;Rio\n";
+        $this->tree->addFile('/alice/files/Documentos/pessoas.csv', $latin1, 'text/csv');
+        $this->json('files_replace', ['path' => '/Documentos/pessoas.csv', 'old' => 'Rio', 'new' => 'Recife']);
+        $written = $this->tree->nodes['/alice/files/Documentos/pessoas.csv']['content'];
+        $this->assertSame(str_replace('Rio', 'Recife', $latin1), $written);
+        $this->assertSame(2, substr_count($written, "\xE3"), 'os acentos Latin-1 precisam sobreviver byte a byte');
+        $this->assertStringNotContainsString('?', $written);
+    }
+
+    /** A UTF-8 file with a BOM keeps its BOM: mb_scrub and the extractor drop it, the bytes do not. */
+    public function testReplaceKeepsTheByteOrderMark(): void {
+        $withBom = "\u{FEFF}# Ata\n";
+        $this->tree->addFile('/alice/files/Documentos/bom.md', $withBom, 'text/markdown');
+        $this->json('files_replace', ['path' => '/Documentos/bom.md', 'old' => 'Ata', 'new' => 'Ata de']);
+        $written = $this->tree->nodes['/alice/files/Documentos/bom.md']['content'];
+        $this->assertSame("\u{FEFF}# Ata de\n", $written);
+        $this->assertStringStartsWith("\u{FEFF}", $written);
+    }
+
+    /** Line endings are bytes too: CRLF in, CRLF out, without the extractor normalising them. */
+    public function testReplaceKeepsCarriageReturns(): void {
+        $this->tree->addFile('/alice/files/Documentos/crlf.txt', "um\r\ndois\r\n", 'text/plain');
+        $this->json('files_replace', ['path' => '/Documentos/crlf.txt', 'old' => 'dois', 'new' => 'tres']);
+        $this->assertSame("um\r\ntres\r\n", $this->tree->nodes['/alice/files/Documentos/crlf.txt']['content']);
+    }
+
+    /** A snippet that is not valid UTF-8 cannot be located safely, so it is refused before anything else. */
+    public function testReplaceRefusesASnippetThatIsNotValidUtf8(): void {
+        $this->tree->addFile('/alice/files/Documentos/pessoas.csv', "a;\xE3o\n", 'text/csv');
+        $this->assertSame('O trecho informado não é UTF-8 válido; envie-o exatamente como aparece no arquivo.',
+            $this->failure('files_replace', ['path' => '/Documentos/pessoas.csv', 'old' => "\xE3", 'new' => 'x']));
+        $this->assertSame("a;\xE3o\n", $this->tree->nodes['/alice/files/Documentos/pessoas.csv']['content']);
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    /** The count is over bytes, so the same snippet twice in a Latin-1 file is still ambiguous. */
+    public function testReplaceCountsOccurrencesOverBytes(): void {
+        $this->tree->addFile('/alice/files/Documentos/pessoas.csv', "Rio\nS\xE3o\nRio\n", 'text/csv');
+        $this->assertSame('O trecho informado aparece 2 vezes no arquivo; informe um trecho único.',
+            $this->failure('files_replace', ['path' => '/Documentos/pessoas.csv', 'old' => 'Rio', 'new' => 'x']));
+    }
+
     public function testReplaceRefusesASnippetThatIsNotThere(): void {
         $this->assertSame('O trecho informado não aparece no arquivo.',
             $this->failure('files_replace', ['path' => '/Documentos/ata.md', 'old' => 'inexistente', 'new' => 'x']));

@@ -20,4 +20,9 @@ describe("parsePropfind", () => {
     expect(pdf.size).toBe(12345);
     expect(pdf.contentType).toBe("application/pdf");
   });
+  it("tolerates malformed percent escapes and ignores href outside DAV root", () => {
+    const mixed = xml.replace('</d:multistatus>', '<d:response><d:href>/remote.php/dav/files/alice/bad%name</d:href><d:propstat><d:prop><d:resourcetype/></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response><d:response><d:href>/elsewhere/file</d:href><d:propstat><d:prop><d:resourcetype/></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response></d:multistatus>');
+    expect(parsePropfind(mixed, "/remote.php/dav/files/alice").map(e => e.name)).toContain("bad%name");
+    expect(parsePropfind(mixed, "/remote.php/dav/files/alice").some(e => e.name === "file")).toBe(false);
+  });
 });

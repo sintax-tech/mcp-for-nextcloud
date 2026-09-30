@@ -11,6 +11,14 @@ export interface DavEntry {
 
 const parser = new XMLParser({ ignoreAttributes: true, removeNSPrefix: true });
 
+export function safeDecode(value: string): string {
+  try { return decodeURIComponent(value); } catch { return value; }
+}
+
+export function successfulProp(response: any): any | undefined {
+  return asArray<any>(response?.propstat).find(p => /\s200(?:\s|$)/.test(String(p?.status ?? "")))?.prop;
+}
+
 function asArray<T>(v: T | T[] | undefined): T[] {
   if (v === undefined) return [];
   return Array.isArray(v) ? v : [v];
@@ -19,14 +27,14 @@ function asArray<T>(v: T | T[] | undefined): T[] {
 export function parsePropfind(xml: string, davRoot: string): DavEntry[] {
   const doc = parser.parse(xml);
   const responses = asArray<any>(doc?.multistatus?.response);
-  const rootDecoded = decodeURIComponent(davRoot).replace(/\/+$/, "");
+  const rootDecoded = safeDecode(davRoot).replace(/\/+$/, "");
   const out: DavEntry[] = [];
   for (const r of responses) {
-    const href = decodeURIComponent(String(r.href ?? "")).replace(/\/+$/, "");
+    const href = safeDecode(String(r.href ?? "")).replace(/\/+$/, "");
     if (href === rootDecoded) continue; // self
-    const propstats = asArray<any>(r.propstat);
-    const propstat = propstats.find((p) => String(p?.status ?? "").includes("200")) ?? propstats[0];
-    const prop = propstat?.prop ?? {};
+    if (!href.startsWith(`${rootDecoded}/`)) continue;
+    const prop = successfulProp(r);
+    if (!prop) continue;
     const rt = prop.resourcetype;
     const isDir = rt !== undefined && rt !== "" && typeof rt === "object" && "collection" in rt;
     const rel = href.slice(rootDecoded.length) || "/";

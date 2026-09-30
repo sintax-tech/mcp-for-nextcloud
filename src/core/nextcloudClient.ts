@@ -20,9 +20,9 @@ export class NextcloudClient {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.cfg.timeoutMs);
     try {
-      const headers = Object.fromEntries(new Headers(init.headers).entries());
-      for (const key of Object.keys(headers)) if (key.toLowerCase() === "authorization") delete headers[key];
-      Object.assign(headers, init.headers instanceof Headers ? {} : init.headers);
+      const headers: Record<string, string> = init.headers && !(init.headers instanceof Headers) && !Array.isArray(init.headers)
+        ? { ...init.headers as Record<string, string> }
+        : Object.fromEntries(new Headers(init.headers).entries());
       for (const key of Object.keys(headers)) if (key.toLowerCase() === "authorization") delete headers[key];
       headers.Authorization = this.authHeader();
       const res = await this.fetchFn(`${this.cfg.baseUrl}${path}`, { ...init, signal: controller.signal, headers });

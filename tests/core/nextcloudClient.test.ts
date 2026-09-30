@@ -78,6 +78,11 @@ describe("NextcloudClient", () => {
     expect(new Headers(fetchFn.mock.calls[0][1].headers).get("authorization"))
       .toBe("Basic " + Buffer.from("alice:secret-pass").toString("base64"));
   });
+  it("encodes reserved characters in the WebDAV username", () => {
+    const client = new NextcloudClient({ ...cfg, username: "a # %" }, async () => jsonResponse({}));
+    expect(client.webdavFilesRoot()).toBe("/remote.php/dav/files/a%20%23%20%25");
+  });
+
   it("webdavFilesRoot returns the per-user dav path", () => {
     const client = new NextcloudClient(cfg, (async () => jsonResponse({})) as any);
     expect(client.webdavFilesRoot()).toBe("/remote.php/dav/files/alice");

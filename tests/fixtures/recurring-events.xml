@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<d:multistatus xmlns:d="DAV:" xmlns:cal="urn:ietf:params:xml:ns:caldav">
+  <d:response><d:href>/remote.php/dav/calendars/alice/personal/weekly.ics</d:href>
+    <d:propstat><d:prop><cal:calendar-data>bad</cal:calendar-data></d:prop><d:status>HTTP/1.1 404 Not Found</d:status></d:propstat>
+    <d:propstat><d:prop><cal:calendar-data>BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+UID:weekly
+DTSTART;TZID=America/Sao_Paulo:20260901T090000
+DTEND;TZID=America/Sao_Paulo:20260901T100000
+RRULE:FREQ=WEEKLY;COUNT=5
+EXDATE;TZID=America/Sao_Paulo:20260915T090000
+SUMMARY:Weekly meet
+ ing
+END:VEVENT
+BEGIN:VEVENT
+UID:weekly
+RECURRENCE-ID;TZID=America/Sao_Paulo:20260922T090000
+DTSTART;TZID=America/Sao_Paulo:20260922T110000
+DTEND;TZID=America/Sao_Paulo:20260922T120000
+SUMMARY:Moved
+END:VEVENT
+BEGIN:VEVENT
+UID:holiday
+DTSTART;VALUE=DATE:20260910
+DTEND;VALUE=DATE:20260911
+SUMMARY:Holiday
+END:VEVENT
+END:VCALENDAR</cal:calendar-data></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat>
+  </d:response>
+</d:multistatus>

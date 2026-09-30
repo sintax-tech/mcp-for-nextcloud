@@ -21,16 +21,30 @@ class GrantPolicy {
         'talk' => ['read', 'reply', 'attach', 'quote'],
     ];
 
+    /** App id under which every value of this policy is stored. */
+    public const APP = 'mcp';
+    /** App config key of the global service switch; never core's reserved 'enabled'. */
+    public const SERVICE_KEY = 'service_enabled';
+    /** User config key of the admin eligibility. */
+    public const ELIGIBLE_KEY = 'eligible';
+    /** User config key of the personal connection. */
+    public const CONNECTED_KEY = 'connected';
+    /**
+     * App config keys core stable33 owns for every app (AppManager, OC_App, AppConfig lexicon bypass)
+     * plus legacy ones; this app must never read or write them.
+     */
+    public const RESERVED_APP_KEYS = ['enabled', 'installed_version', 'types', 'levels', 'ocsid'];
+
     public function __construct(private IConfig $config) {}
 
     /** @return bool whether the administrator enabled the MCP service (off by default) */
     public function globalEnabled(): bool {
-        return $this->config->getAppValue('mcp', 'enabled', '0') === '1';
+        return $this->config->getAppValue(self::APP, self::SERVICE_KEY, '0') === '1';
     }
 
     /** @param bool $enabled new state of the global service switch */
     public function setGlobalEnabled(bool $enabled): void {
-        $this->config->setAppValue('mcp', 'enabled', $enabled ? '1' : '0');
+        $this->config->setAppValue(self::APP, self::SERVICE_KEY, $enabled ? '1' : '0');
     }
 
     /**
@@ -38,7 +52,7 @@ class GrantPolicy {
      * @return bool whether an administrator allowed this user to connect (off by default, admins included)
      */
     public function eligible(string $uid): bool {
-        return $this->config->getUserValue($uid, 'mcp', 'eligible', '0') === '1';
+        return $this->config->getUserValue($uid, self::APP, self::ELIGIBLE_KEY, '0') === '1';
     }
 
     /**
@@ -46,7 +60,7 @@ class GrantPolicy {
      * @param bool $enabled new eligibility
      */
     public function setEligible(string $uid, bool $enabled): void {
-        $this->config->setUserValue($uid, 'mcp', 'eligible', $enabled ? '1' : '0');
+        $this->config->setUserValue($uid, self::APP, self::ELIGIBLE_KEY, $enabled ? '1' : '0');
     }
 
     /**
@@ -54,7 +68,7 @@ class GrantPolicy {
      * @return bool whether the user activated their own connection (off by default)
      */
     public function connected(string $uid): bool {
-        return $this->config->getUserValue($uid, 'mcp', 'connected', '0') === '1';
+        return $this->config->getUserValue($uid, self::APP, self::CONNECTED_KEY, '0') === '1';
     }
 
     /**
@@ -62,7 +76,7 @@ class GrantPolicy {
      * @param bool $enabled new personal connection state
      */
     public function setConnected(string $uid, bool $enabled): void {
-        $this->config->setUserValue($uid, 'mcp', 'connected', $enabled ? '1' : '0');
+        $this->config->setUserValue($uid, self::APP, self::CONNECTED_KEY, $enabled ? '1' : '0');
     }
 
     /**
@@ -82,7 +96,7 @@ class GrantPolicy {
      */
     public function granted(string $uid, string $module, string $operation): bool {
         $key = self::grantKey($module, $operation);
-        return $this->config->getUserValue($uid, 'mcp', $key, $operation === 'read' ? '1' : '0') === '1';
+        return $this->config->getUserValue($uid, self::APP, $key, $operation === 'read' ? '1' : '0') === '1';
     }
 
     /**
@@ -93,7 +107,7 @@ class GrantPolicy {
      * @throws InvalidArgumentException for a module or operation outside CATALOG
      */
     public function setGrant(string $uid, string $module, string $operation, bool $enabled): void {
-        $this->config->setUserValue($uid, 'mcp', self::grantKey($module, $operation), $enabled ? '1' : '0');
+        $this->config->setUserValue($uid, self::APP, self::grantKey($module, $operation), $enabled ? '1' : '0');
     }
 
     /** @throws InvalidArgumentException for a module or operation outside CATALOG */

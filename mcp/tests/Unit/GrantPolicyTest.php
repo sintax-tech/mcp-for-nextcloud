@@ -83,6 +83,30 @@ final class GrantPolicyTest extends TestCase {
         $this->assertTrue($fresh->granted('alice', 'deck', 'move'));
     }
 
+    public function testServiceSwitchUsesItsOwnKeyAndNeverCoreReservedKeys(): void {
+        // Core stores the app's own enablement as 'yes' under mcp/enabled; it must not read as the MCP service.
+        $this->store->app['mcp']['enabled'] = 'yes';
+        $this->assertFalse($this->policy->globalEnabled());
+        $this->policy->setGlobalEnabled(true);
+        $this->assertSame(['enabled' => 'yes', 'service_enabled' => '1'], $this->store->app['mcp']);
+
+        $this->policy->canConnect('alice');
+        $this->policy->setEligible('alice', true);
+        $this->policy->setConnected('alice', true);
+        foreach (GrantPolicy::CATALOG as $module => $operations) {
+            foreach ($operations as $operation) {
+                $this->policy->granted('alice', $module, $operation);
+                $this->policy->setGrant('alice', $module, $operation, true);
+            }
+        }
+        $this->policy->setGlobalEnabled(false);
+        $keys = array_map(static fn (array $a) => $a[2], $this->store->accessed);
+        $this->assertSame([], array_values(array_intersect($keys, GrantPolicy::RESERVED_APP_KEYS)));
+        $this->assertSame(['mcp'], array_values(array_unique(array_map(static fn (array $a) => $a[1], $this->store->accessed))));
+        $this->assertSame(['service_enabled'], array_values(array_unique(array_map(static fn (array $a) => $a[2],
+            array_filter($this->store->accessed, static fn (array $a) => $a[0] === 'app')))));
+    }
+
     public function testUnknownModuleIsRejected(): void {
         $this->expectException(InvalidArgumentException::class);
         $this->policy->granted('alice', 'mail', 'read');

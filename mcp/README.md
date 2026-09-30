@@ -1,4 +1,4 @@
-# App MCP para Nextcloud — Sprint 02
+# App MCP para Nextcloud
 
 Versão de teste interno para **Nextcloud 33**. Expõe MCP `2025-06-18` via Streamable HTTP sem sessão e sem SSE, na rota do próprio app:
 
@@ -24,6 +24,16 @@ Cada tool só aparece em `tools/list` e só pode ser chamada quando o usuário t
 | `notes_edit` `{id, content?, title?, etag?}` | notes.edit | Conteúdo e/ou título. |
 | `notes_move` `{id, category, etag?}` | notes.move | Troca de categoria (subpasta), sem sobrescrever. |
 | `notes_delete` `{id, confirm: true, etag?}` | notes.delete | Exige `confirm: true`, a lixeira (`files_trashbin`) ativa e o storage da nota coberto por ela; em storage externo sem lixeira, a exclusão é bloqueada. |
+
+| `calendar_list_calendars` `{}` | calendar.read | Calendários visíveis ao usuário, próprios e compartilhados. |
+| `calendar_list_events` `{calendar?, from?, to?}` | calendar.read | Eventos no intervalo (padrão: próximos 7 dias), com recorrência expandida. |
+| `calendar_create_event` | calendar.create | Evento simples, sem recorrência, em calendário com permissão de escrita. |
+| `calendar_update_event` | calendar.edit | Título, local, descrição ou datas; datas de série recorrente não mudam. |
+| `calendar_move_event` | calendar.move | Para outro calendário do mesmo dono, sem sobrescrever. |
+| `calendar_delete_event` | calendar.delete | Série inteira para a lixeira do calendário; exige `confirm: true`. |
+| `calendar_transfer_event` | calendar.transfer | Para um calendário de outro usuário, compartilhado com permissão de escrita; exige `confirm: true`. |
+
+Tools de Calendar exigem o app Calendar habilitado para o usuário e usam o `CalDavBackend` do app DAV do core, carregado só quando uma tool de calendário é chamada. Escritas não enviam convites nem notificações aos participantes. `sabre/vobject` vem do core e não está no `vendor/` do pacote.
 
 Tools de Notes exigem o app Notes habilitado para o usuário. Leitura começa permitida; criação, edição, movimentação e exclusão começam negadas até o administrador liberar. Não há timeout próprio: a leitura é local ao PHP e o limite de bytes protege contra arquivos grandes. Storage externo lento fica limitado ao `max_execution_time` do PHP.
 
@@ -67,9 +77,9 @@ Os arquivos de licença acompanham cada pacote em `vendor/`. O `vendor/autoload.
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-0.2.3.tar.gz <servidor>:/tmp/
+scp build/mcp-0.3.0.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-0.2.3.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-0.3.0.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp

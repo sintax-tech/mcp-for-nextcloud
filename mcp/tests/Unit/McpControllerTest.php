@@ -54,7 +54,7 @@ final class McpControllerTest extends TestCase {
         $session->method('getUser')->willReturnCallback(fn () => $this->user);
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->with('mcp.mcp.post')->willReturn('https://cloud.example.org/nc/index.php/apps/mcp/');
-        $controller = new TestableMcpController('mcp', $request, $session, $urls, $this->policy, new McpProtocol());
+        $controller = new TestableMcpController('mcp', $request, $session, $urls, $this->policy, McpProtocolTest::protocol($this));
         $controller->body = $body;
         return $controller;
     }

@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Service;
 
+use OCA\Mcp\Tools\ToolRegistry;
+
 /**
  * Stateless MCP 2025-06-18 JSON-RPC handling for a single POSTed message.
  * Authentication and connection policy are enforced by the controller before this runs.
@@ -11,8 +13,10 @@ class McpProtocol {
     public const VERSION = '2025-06-18';
     public const TOOL = 'mcp_status';
 
+    public function __construct(private ToolRegistry $tools) {}
+
     /** @return array{status:int,body:?array} */
-    public function handle(string $raw, string $headerVersion): array {
+    public function handle(string $raw, string $headerVersion, string $userId): array {
         try {
             $message = json_decode($raw, true, 64, JSON_THROW_ON_ERROR);
         } catch (\JsonException) {
@@ -60,16 +64,31 @@ class McpProtocol {
                 'name' => self::TOOL,
                 'description' => 'Reports whether the MCP diagnostic endpoint is running; does not access user data.',
                 'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'additionalProperties' => false],
-            ]]]);
+            ], ...$this->tools->list($userId)]]);
         }
         if ($method === 'tools/call') {
+            $name = $params['name'] ?? null;
             $arguments = $params['arguments'] ?? [];
-            if (($params['name'] ?? null) !== self::TOOL || $arguments !== []) {
-                return $this->error($id, -32602, 'Unknown tool or invalid arguments');
+            if (!is_string($name) || !is_array($arguments)) {
+                return $this->error($id, -32602, 'Invalid params');
             }
-            return $this->result($id, ['content' => [['type' => 'text', 'text' => 'MCP endpoint available']]]);
+            if ($name === self::TOOL) {
+                return $arguments === []
+                    ? $this->result($id, ['content' => [['type' => 'text', 'text' => 'MCP endpoint available']]])
+                    : $this->error($id, -32602, 'Invalid arguments');
+            }
+            try {
+                return $this->result($id, $this->tools->call($name, $arguments, $userId));
+            } catch (\InvalidArgumentException $e) {
+                return $this->error($id, -32602, $this->safeMessage($e->getMessage()));
+            }
         }
         return $this->error($id, -32601, 'Method not found');
+    }
+
+    /** Only the registry's fixed validation messages reach the client. */
+    private function safeMessage(string $message): string {
+        return preg_match('/^(Unknown tool|Invalid arguments|(Unknown|Missing|Invalid) argument: [a-z_]{1,64})$/', $message) === 1 ? $message : 'Invalid arguments';
     }
 
     private function result(int|string $id, array|\stdClass $result): array {

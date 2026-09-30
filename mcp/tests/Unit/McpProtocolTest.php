@@ -11,7 +11,7 @@ final class McpProtocolTest extends TestCase {
 
     private function call(array|string $message, string $version = self::V): array {
         $raw = is_string($message) ? $message : json_encode($message);
-        return (new McpProtocol())->handle($raw, $version);
+        return self::protocol($this)->handle($raw, $version, 'alice');
     }
 
     public function testInitializeNegotiatesSupportedVersion(): void {
@@ -74,6 +74,13 @@ final class McpProtocolTest extends TestCase {
         $out = $this->call('{"jsonrpc":"2.0","id":1,"method":');
         $this->assertSame('Parse error', $out['body']['error']['message']);
         $this->assertArrayNotHasKey('data', $out['body']['error']);
+    }
+
+    /** Protocol with an empty module list: only the diagnostic tool exists. */
+    public static function protocol(TestCase $test): McpProtocol {
+        $mock = fn (string $class) => (new \ReflectionMethod($test, 'createMock'))->invoke($test, $class);
+        return new McpProtocol(new \OCA\Mcp\Tools\ToolRegistry([], new \OCA\Mcp\Service\GrantPolicy((new InMemoryConfig())->mock($test)),
+            $mock(\OCP\App\IAppManager::class), $mock(\OCP\IUserManager::class), $mock(\Psr\Log\LoggerInterface::class)));
     }
 
     private function codes(array $out): array {

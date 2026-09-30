@@ -42,7 +42,7 @@ class McpController extends Controller {
         if (!is_string($raw) || strlen($raw) > 1048576) {
             return new McpResponse('', 413);
         }
-        $result = $this->protocol->handle($raw, $this->request->getHeader('MCP-Protocol-Version'));
+        $result = $this->protocol->handle($raw, $this->request->getHeader('MCP-Protocol-Version'), $this->userSession->getUser()->getUID());
         return new McpResponse($result['body'] === null ? '' : json_encode($result['body'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $result['status']);
     }
 

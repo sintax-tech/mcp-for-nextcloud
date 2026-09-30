@@ -63,7 +63,7 @@ export function registerFilesTools(server: McpServer, client: NextcloudClient, m
   );
   server.tool(
     "files_search",
-    "Busca arquivos somente por nome no Nextcloud do usuário.",
+    "Consulta arquivos via busca WebDAV do Nextcloud; a correspondência depende do servidor.",
     { query: z.string().describe("Termo a buscar"), limit: z.number().int().positive().max(100).default(25) },
     async ({ query, limit }) => wrap(async () => JSON.stringify(await searchFiles(client, query, limit), null, 2)),
   );

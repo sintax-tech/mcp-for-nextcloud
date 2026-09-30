@@ -9,13 +9,13 @@ Servidor **MCP (Model Context Protocol)** que permite a uma IA (Claude, ChatGPT/
 | Ferramenta | O que faz |
 |---|---|
 | `files_list` | Lista arquivos/pastas de um diretório |
-| `files_search` | Busca arquivos somente por nome |
+| `files_search` | Consulta arquivos via WebDAV; os resultados dependem do comportamento de busca do servidor |
 | `files_read` | Lê o texto de um arquivo (txt/md direto; PDF/DOCX com extração de texto) |
 | `notes_list` / `notes_read` | Lista e lê notas do app **Notes** |
 | `calendar_list_calendars` / `calendar_list_events` | Lista calendários e eventos (CalDAV) |
 | `talk_list_conversations` / `talk_read_messages` | Lista conversas e lê mensagens do **Talk** |
 
-São **9 ferramentas** de leitura na v1.
+São **9 ferramentas** de leitura na v1. Em um teste real, `files_search` retornou um arquivo cujo nome não continha o termo pesquisado, embora seu conteúdo o contivesse. O mecanismo dessa correspondência ainda não foi verificado.
 
 ## Pré-requisitos
 

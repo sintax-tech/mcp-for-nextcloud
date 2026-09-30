@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { readFileSync } from "node:fs";
-import { listFiles, searchFiles } from "../../src/capabilities/files/tools.js";
+import { listFiles, searchFiles, readFile } from "../../src/capabilities/files/tools.js";
 import { NextcloudClient } from "../../src/core/nextcloudClient.js";
 import type { NcConfig } from "../../src/config.js";
 
@@ -35,5 +35,16 @@ describe("files access control (Review Focus)", () => {
     const fetchFn = vi.fn(async () => new Response("no", { status: 403 }));
     const client = new NextcloudClient(cfg, fetchFn as any);
     await expect(listFiles(client, "/segredo")).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+});
+
+describe("files readFile (Review Focus)", () => {
+  it("truncates content longer than maxChars", async () => {
+    const big = "x".repeat(5000);
+    const fetchFn = vi.fn(async () => new Response(big, { status: 200, headers: { "content-type": "text/plain" } }));
+    const client = new NextcloudClient(cfg, fetchFn as any);
+    const out = await readFile(client, "/big.txt", 1000);
+    expect(out.endsWith("[conteúdo truncado]")).toBe(true);
+    expect(out.length).toBeLessThan(1100);
   });
 });

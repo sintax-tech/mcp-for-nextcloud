@@ -3,6 +3,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { NextcloudClient } from "../../core/nextcloudClient.js";
 import { parsePropfind, type DavEntry } from "../../core/xml.js";
 import { NcError } from "../../core/errors.js";
+import { extractText } from "./extract.js";
 
 export function encodePath(p: string): string {
   return "/" + p.split("/").filter(Boolean).map(encodeURIComponent).join("/");
@@ -30,6 +31,14 @@ export async function searchFiles(client: NextcloudClient, query: string, limit:
   return parsePropfind(xml, root).slice(0, limit);
 }
 
+export async function readFile(client: NextcloudClient, path: string, maxChars: number): Promise<string> {
+  const root = client.webdavFilesRoot();
+  const { buffer, contentType } = await client.getBytes(`${root}${encodePath(path)}`);
+  const text = await extractText(buffer, path, contentType);
+  if (text.length > maxChars) return text.slice(0, maxChars) + "\n\n[conteúdo truncado]";
+  return text;
+}
+
 export async function wrap(fn: () => Promise<string>) {
   try {
     return { content: [{ type: "text" as const, text: await fn() }] };
@@ -39,7 +48,7 @@ export async function wrap(fn: () => Promise<string>) {
   }
 }
 
-export function registerFilesTools(server: McpServer, client: NextcloudClient): void {
+export function registerFilesTools(server: McpServer, client: NextcloudClient, maxReadChars: number): void {
   server.tool(
     "files_list",
     "Lista arquivos e pastas de um diretório do Nextcloud do usuário.",
@@ -51,5 +60,11 @@ export function registerFilesTools(server: McpServer, client: NextcloudClient): 
     "Busca arquivos por nome no Nextcloud do usuário (conteúdo depende do fulltextsearch).",
     { query: z.string().describe("Termo a buscar"), limit: z.number().int().positive().max(100).default(25) },
     async ({ query, limit }) => wrap(async () => JSON.stringify(await searchFiles(client, query, limit), null, 2)),
+  );
+  server.tool(
+    "files_read",
+    "Lê o texto de um arquivo do Nextcloud (txt/md direto; PDF/DOCX com extração de texto).",
+    { path: z.string().describe("Caminho do arquivo, ex.: /Documentos/relatorio.pdf") },
+    async ({ path }) => wrap(async () => readFile(client, path, maxReadChars)),
   );
 }

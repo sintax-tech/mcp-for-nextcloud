@@ -82,4 +82,4 @@ npm run dev       # roda via tsx (sem build)
 ## Roadmap
 
 - **v2:** escrita com confirmação (criar nota/evento, postar no Talk) + auditoria.
-- **v3:** transporte HTTP remoto + OAuth/Login Flow v2 (multi-usuário, hospedado).
+- **Próxima fase do produto:** app PHP nativo do Nextcloud, com endpoint público `/mcp` no domínio existente e login no navegador do Nextcloud. A compatibilidade de autorização MCP ainda precisa de protótipo e validação.

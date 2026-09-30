@@ -22,6 +22,7 @@ final class Messages {
     public const ATTACHMENT_NOT_FOUND = 'anexo não encontrado nesta conversa';
     public const MESSAGE_NOT_SENT = 'não foi possível enviar a mensagem';
     public const FILE_NOT_SHARED = 'não foi possível compartilhar o arquivo';
+    public const FILE_ALREADY_SHARED = 'o arquivo já está compartilhado nesta conversa';
     public const TALK_UNAVAILABLE = 'o app de conversas não está disponível';
     public const UNEXPECTED = 'erro inesperado ao acessar o Talk';
 
@@ -31,6 +32,7 @@ final class Messages {
     public const MESSAGE_TOO_LONG = 'message excede o limite de caracteres';
     public const INVALID_PATH = 'path inválido';
     public const INVALID_IDENTIFIER = 'identificador inválido';
+    public const REPLY_TARGET_NOT_FOUND = 'mensagem citada não encontrada nesta conversa';
 
     private function __construct() {
     }

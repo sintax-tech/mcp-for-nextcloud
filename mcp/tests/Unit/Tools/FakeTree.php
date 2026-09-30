@@ -74,6 +74,11 @@ final class FakeTree {
         $mock->method('isReadable')->willReturnCallback(fn () => $this->nodes[$path]['readable']);
         $mock->method('isUpdateable')->willReturnCallback(fn () => $this->nodes[$path]['updateable']);
         $mock->method('isDeletable')->willReturnCallback(fn () => $this->nodes[$path]['deletable']);
+        $mock->method('getStorage')->willReturnCallback(function () use ($path) {
+            $storage = $this->mock(\OCP\Files\Storage\IStorage::class);
+            $storage->method('instanceOfStorage')->willReturnCallback(fn (string $class) => $class === 'OCA\Files_Trashbin\Storage' && ($this->nodes[$path]['trash'] ?? true));
+            return $storage;
+        });
         $mock->method('getParent')->willReturnCallback(fn () => $this->node(dirname($path)));
         $mock->method('delete')->willReturnCallback(function () use ($path): void {
             $this->ops[] = "delete $path";

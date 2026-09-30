@@ -155,6 +155,13 @@ final class NotesModuleTest extends TestCase {
         $this->assertSame(['delete /alice/files/Notes/Reuniões/Ata.md'], $this->tree->ops);
     }
 
+    public function testDeleteIsBlockedOnStorageWithoutTrashWrapper(): void {
+        $this->tree->nodes['/alice/files/Notes/Reuniões/Ata.md']['trash'] = false;
+        $this->assertSame(NotesModule::NOT_RECOVERABLE, $this->failure('notes_delete', ['id' => $this->ata, 'confirm' => true]));
+        $this->assertArrayHasKey('/alice/files/Notes/Reuniões/Ata.md', $this->tree->nodes);
+        $this->assertSame([], $this->tree->ops);
+    }
+
     public function testDeleteRespectsAclAndEtag(): void {
         $this->assertSame(ToolFailure::CONFLICT, $this->failure('notes_delete', ['id' => $this->ata, 'confirm' => true, 'etag' => 'x']));
         $this->tree->nodes['/alice/files/Notes/Reuniões/Ata.md']['deletable'] = false;

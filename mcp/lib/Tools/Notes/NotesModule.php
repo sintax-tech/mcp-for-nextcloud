@@ -28,6 +28,10 @@ class NotesModule implements ToolModule {
     public const MAX_BYTES = 1024 * 1024;
     /** Notes app default folder when the user never changed the setting. */
     public const DEFAULT_FOLDER = 'Notes';
+    /** Storage wrapper files_trashbin puts around storages whose deletions go to the trash bin. */
+    public const TRASH_STORAGE = 'OCA\\Files_Trashbin\\Storage';
+    /** Message for deletions that would not be recoverable. */
+    public const NOT_RECOVERABLE = 'Exclusão bloqueada: a lixeira (files_trashbin) não está ativa para esta nota, então ela não seria recuperável.';
     /** File extensions the Notes app treats as notes. */
     private const EXTENSIONS = ['md', 'txt'];
 
@@ -196,11 +200,15 @@ class NotesModule implements ToolModule {
         }
         $user = $this->userManager->get($userId);
         if ($user === null || !$this->appManager->isEnabledForUser('files_trashbin', $user)) {
-            throw new ToolFailure('Exclusão bloqueada: a lixeira (files_trashbin) não está ativa, então a nota não seria recuperável.');
+            throw new ToolFailure(self::NOT_RECOVERABLE);
         }
         $note = $this->writable($root, $arguments);
         if (!$note->isDeletable()) {
             throw new ToolFailure(ToolFailure::FORBIDDEN);
+        }
+        // An enabled app does not cover every mount: external or excluded storages delete permanently.
+        if (!$note->getStorage()->instanceOfStorage(self::TRASH_STORAGE)) {
+            throw new ToolFailure(self::NOT_RECOVERABLE);
         }
         $note->delete();
         return ['id' => $arguments['id'], 'deleted' => true, 'trash' => true];

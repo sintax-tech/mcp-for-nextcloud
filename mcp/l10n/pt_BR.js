@@ -49,6 +49,7 @@ OC.L10N.register(
     "create" : "criar",
     "move" : "mover",
     "delete" : "excluir",
+    "restore" : "restaurar",
     "transfer" : "transferir",
     "reply" : "responder",
     "attach" : "anexar",

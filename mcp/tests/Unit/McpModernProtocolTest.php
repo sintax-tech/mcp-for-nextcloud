@@ -30,9 +30,11 @@ final class McpModernProtocolTest extends TestCase {
         $this->assertSame(McpProtocol::SUPPORTED_VERSIONS, $result->supportedVersions);
         $this->assertSame(self::MODERN, $result->supportedVersions[0]);
         $this->assertEquals(new \stdClass(), $result->capabilities->tools);
+        // The prompt set never changes at runtime, so no listChanged notification is advertised.
+        $this->assertFalse($result->capabilities->prompts->listChanged);
         $this->assertSame(['name' => 'nextcloud-mcp', 'version' => McpProtocol::SERVER_INFO['version']], (array)$result->_meta->{'io.modelcontextprotocol/serverInfo'});
         $this->assertSame([0, 'private'], [$result->ttlMs, $result->cacheScope]);
-        $this->assertStringContainsString('"capabilities":{"tools":{}}', json_encode($out['json']));
+        $this->assertStringContainsString('"capabilities":{"tools":{},"prompts":{"listChanged":false}}', json_encode($out['json']));
     }
 
     public function testFullModernFlowWithoutInitialize(): void {

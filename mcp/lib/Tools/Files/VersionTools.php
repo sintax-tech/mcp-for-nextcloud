@@ -1,0 +1,187 @@
+<?php
+declare(strict_types=1);
+
+namespace OCA\Mcp\Tools\Files;
+
+use OCA\Mcp\Tools\Common\NodeAccess;
+use OCA\Mcp\Tools\Common\NodeAccessInfo;
+use OCA\Mcp\Tools\ToolFailure;
+use OCP\App\IAppManager;
+use OCP\Files\File;
+use OCP\Files\Folder;
+use OCP\IUser;
+use OCP\IUserManager;
+use Psr\Container\ContainerInterface;
+use Psr\Container\NotFoundExceptionInterface;
+
+/**
+ * The three version tools, built on the files_versions app.
+ *
+ * Nextcloud 33 exposes no OCP for versions (`lib/public/Files/` has no `Versions/`), so the internal
+ * `OCA\Files_Versions\Versions\IVersionManager` is resolved through the container — injecting it in a
+ * constructor would break the `mcp` container wherever files_versions is disabled. Every signature used
+ * here was read from stable33: getVersionsForFile and rollback and read in
+ * `apps/files_versions/lib/Versions/IVersionBackend.php`, the accessors in `IVersion.php`.
+ */
+final class VersionTools {
+    /** Nextcloud app that owns the versions, and therefore the gate for these tools. */
+    public const APP = 'files_versions';
+    /** Versions returned when the caller asks for no limit. */
+    public const DEFAULT_LIMIT = 50;
+    /** Characters returned by files_version_read before the text is truncated. */
+    public const MAX_CHARS = 100000;
+    /** Class resolved lazily; a string so this file autoloads with files_versions absent. */
+    private const MANAGER = 'OCA\Files_Versions\Versions\IVersionManager';
+
+    public function __construct(
+        private IAppManager $appManager,
+        private IUserManager $userManager,
+        private TextExtractor $extractor,
+        private FileBackup $backup,
+        private NodeAccessInfo $access,
+        private ContainerInterface $container,
+    ) {}
+
+    /**
+     * @param Folder $root the user's folder
+     * @param File $file file whose versions are listed
+     * @param string $path normalized user-relative path of $file
+     * @param int $limit maximum number of versions
+     * @param string $viewerUid authenticated user
+     * @return array{path:string, access:array<string, mixed>, versions:list<array{revision:string, timestamp:string, size:int, mime:string, name:string}>, truncated:bool}
+     * @throws ToolFailure when versioning is off or unreadable
+     */
+    public function list(Folder $root, File $file, string $path, int $limit, string $viewerUid): array {
+        $user = $this->requireVersioning($viewerUid);
+        $versions = $this->manager()->getVersionsForFile($user, $file);
+        $out = [];
+        foreach (array_slice($versions, 0, $limit) as $version) {
+            $out[] = [
+                'revision' => (string)$version->getRevisionId(),
+                'timestamp' => gmdate('Y-m-d\TH:i:s\Z', $version->getTimestamp()),
+                'size' => (int)$version->getSize(),
+                'mime' => $version->getMimeType(),
+                'name' => $version->getSourceFileName(),
+            ];
+        }
+        return [
+            'path' => $path,
+            'access' => $this->access->describe($file, $viewerUid),
+            'versions' => $out,
+            'truncated' => count($versions) > count($out),
+        ];
+    }
+
+    /**
+     * @param File $file file the version belongs to
+     * @param string $path normalized user-relative path of $file
+     * @param string $revision version identifier as returned by list()
+     * @param string $viewerUid authenticated user
+     * @return array{path:string, version:string, size:int, mime:string, text:string, truncated:bool}
+     * @throws ToolFailure when versioning is off, the version does not exist or cannot be read
+     */
+    public function read(File $file, string $path, string $revision, string $viewerUid): array {
+        $user = $this->requireVersioning($viewerUid);
+        $version = $this->find($user, $file, $revision);
+        $handle = $this->manager()->read($version);
+        if (!is_resource($handle)) {
+            throw new ToolFailure(FilesMessages::versionUnreadable());
+        }
+        try {
+            $bytes = (string)stream_get_contents($handle, TextExtractor::MAX_BYTES + 1);
+        } finally {
+            fclose($handle);
+        }
+        if (strlen($bytes) > TextExtractor::MAX_BYTES) {
+            throw new ToolFailure(FilesMessages::readTooLarge(TextExtractor::MAX_BYTES));
+        }
+        $mime = $version->getMimeType();
+        $text = $this->extractor->extractBytes($bytes, $version->getSourceFileName() ?: $path, $mime);
+        return [
+            'path' => $path,
+            'version' => $revision,
+            'size' => strlen($bytes),
+            'mime' => $mime,
+            'text' => mb_strlen($text) > self::MAX_CHARS ? mb_substr($text, 0, self::MAX_CHARS) . "\n\n" . FilesMessages::textTruncated() : $text,
+            'truncated' => mb_strlen($text) > self::MAX_CHARS,
+        ];
+    }
+
+    /**
+     * Rolls the file back to a stored version, after the same backup files_edit performs.
+     *
+     * The shared-write guard runs in the module before this call, so the confirmation payload is a
+     * non-error result produced there and never reaches this class.
+     *
+     * @param Folder $root the user's folder
+     * @param File $file file to roll back
+     * @param string $path normalized user-relative path of $file
+     * @param string $revision version identifier as returned by list()
+     * @param string $viewerUid authenticated user
+     * @return array{path:string, size:int, etag:string, access:array<string, mixed>, backup:string, version:string}
+     * @throws ToolFailure when versioning is off, the version does not exist, the backup fails or the rollback reports failure
+     */
+    public function restore(Folder $root, File $file, string $path, string $revision, string $viewerUid): array {
+        $user = $this->requireVersioning($viewerUid);
+        $version = $this->find($user, $file, $revision);
+        $copy = $this->backup->prepare($root, $file, $path, $viewerUid, null);
+        $result = $this->manager()->rollback($version);
+        if ($result === false) {
+            throw new ToolFailure(FilesMessages::versionRestoreFailed());
+        }
+        $node = NodeAccess::requireFile(NodeAccess::get($root, $path));
+        return [
+            'path' => $path,
+            'size' => (int)$node->getSize(),
+            'etag' => (string)$node->getEtag(),
+            'access' => $this->access->describe($node, $viewerUid),
+            'backup' => $copy,
+            'version' => $revision,
+        ];
+    }
+
+    /**
+     * @param string $viewerUid authenticated user
+     * @return IUser the user the versions belong to
+     * @throws ToolFailure when files_versions is not enabled for them
+     */
+    private function requireVersioning(string $viewerUid): IUser {
+        $user = $this->userManager->get($viewerUid);
+        if ($user === null || !$this->appManager->isEnabledForUser(self::APP, $user)) {
+            throw new ToolFailure(FilesMessages::versionsOff());
+        }
+        return $user;
+    }
+
+    /**
+     * @param IUser $user owner of the versions
+     * @param File $file file the version belongs to
+     * @param string $revision version identifier
+     * @return object the IVersion whose revision matches
+     * @throws ToolFailure when no version carries that identifier
+     */
+    private function find(IUser $user, File $file, string $revision): object {
+        foreach ($this->manager()->getVersionsForFile($user, $file) as $version) {
+            if ((string)$version->getRevisionId() === $revision) {
+                return $version;
+            }
+        }
+        throw new ToolFailure(FilesMessages::versionMissing($revision));
+    }
+
+    /**
+     * @return object the files_versions manager, resolved on first use
+     * @throws ToolFailure when the app is enabled but its classes cannot be resolved
+     */
+    private function manager(): object {
+        try {
+            $manager = $this->container->get(self::MANAGER);
+        } catch (NotFoundExceptionInterface | \RuntimeException) {
+            $manager = null;
+        }
+        if (!is_object($manager)) {
+            throw new ToolFailure(FilesMessages::versionsOff());
+        }
+        return $manager;
+    }
+}

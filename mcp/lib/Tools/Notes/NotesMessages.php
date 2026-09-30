@@ -31,6 +31,8 @@ final class NotesMessages {
     public const PARAM_NEW_TITLE = 'New title.';
     public const PARAM_CATEGORY_TARGET = 'Destination category; empty for the root.';
     public const PARAM_CONFIRM = 'Must be true to confirm the deletion.';
+    public const PARAM_CONFIRM_SHARED = 'Required only when the note is outside your personal folder '
+        . '(shared, team folder, or external storage). Send only after confirming with the user.';
 
     private function __construct() {
     }

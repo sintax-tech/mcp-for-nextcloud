@@ -81,6 +81,24 @@ final class GrantMatrixTest extends TestCase {
         $this->assertFalse($page['serviceEnabled']);
     }
 
+    /**
+     * The matrix renders whatever the catalog says, so every new files operation becomes a column with no
+     * template change at all, and each starts denied like every operation but read.
+     */
+    public function testTheNewFilesRestoreColumnArrivesWithTheCatalog(): void {
+        $page = $this->fx->matrix()->page('', '', 1);
+        $this->assertSame(['read', 'edit', 'create', 'move', 'restore'], $page['catalog']['files']);
+        $this->assertNotSame([], $page['users']);
+        foreach ($page['users'] as $user) {
+            foreach (['restore', 'create', 'move'] as $operation) {
+                $this->assertArrayHasKey($operation, $user['grants']['files']);
+                $this->assertFalse($user['grants']['files'][$operation], "$operation nasce desligado");
+            }
+        }
+        $this->fx->policy->setGrant($page['users'][0]['uid'], 'files', 'restore', true);
+        $this->assertTrue($this->fx->matrix()->page('', '', 1)['users'][0]['grants']['files']['restore']);
+    }
+
     public function testDisabledCalendarWritesAreAbsentFromMatrixButSavedGrantsRemain(): void {
         $this->fx->policy->setGrant('bruno', 'calendar', 'create', true);
 

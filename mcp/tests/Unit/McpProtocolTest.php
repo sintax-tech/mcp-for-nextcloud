@@ -115,10 +115,75 @@ final class McpProtocolTest extends TestCase {
 
     /** Protocol with an empty module list: only the diagnostic tool exists. */
     public static function protocol(TestCase $test, ?\Psr\Log\LoggerInterface $logger = null): McpProtocol {
+        return self::withModules($test, [], $logger);
+    }
+
+    /**
+     * The error message is filtered before it leaves the server, so what a bad argument looks like to the
+     * client is a question about this layer and not only about the validator. A camelCase name and a nested
+     * path have to survive as themselves; anything shaped like server state has to be dropped.
+     */
+    public function testArgumentErrorsReachTheClientNamingTheField(): void {
+        $module = new class implements \OCA\Mcp\Tools\ToolModule {
+            public function definitions(): array {
+                return [['name' => 'exemplo', 'description' => 'x', 'module' => 'files', 'operation' => 'read',
+                    'inputSchema' => ['type' => 'object', 'additionalProperties' => false, 'properties' => [
+                        'boardId' => ['type' => 'string'],
+                        'moves' => ['type' => 'array', 'minItems' => 1, 'maxItems' => 200, 'items' => [
+                            'type' => 'object', 'additionalProperties' => false,
+                            'properties' => ['from' => ['type' => 'string'], 'to' => ['type' => 'string']],
+                            'required' => ['from', 'to'],
+                        ]],
+                    ]]]];
+            }
+            public function call(string $name, array $arguments, string $userId): array {
+                return \OCA\Mcp\Tools\ToolResult::json(['ok' => true]);
+            }
+        };
+        $casos = [
+            [['boardId' => 1], 'Invalid argument: boardId'],
+            [['moves' => [['from' => '/a', 'to' => '/b'], ['from' => '/a']]], 'Missing argument: moves[1].to'],
+        ];
+        foreach ($casos as [$arguments, $esperado]) {
+            $out = $this->callWith($module, ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call',
+                'params' => ['name' => 'exemplo', 'arguments' => $arguments]]);
+            $this->assertSame($esperado, $out['body']['error']['message'], json_encode($arguments));
+        }
+    }
+
+    /**
+     * The filter exists so a path, a file name or a fragment of server state cannot ride out inside an error
+     * message. Anything outside the argument-name charset has to come back as the generic answer.
+     */
+    public function testServerStateNeverRidesOutInsideAnErrorMessage(): void {
+        foreach (['/etc/passwd', '/home/pedro/Documentos/ata.md', 'a b', 'a;b', 'a\\b', "a'; DROP TABLE users;--", '<script>'] as $vazamento) {
+            $out = $this->call(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call',
+                'params' => ['name' => 'mcp_status', 'arguments' => ['a' => 1]]]);
+            // The registry only ever builds a message from declared keys, so the charset is exercised directly.
+            $this->assertSame('Invalid arguments', $this->filtered('Invalid argument: ' . $vazamento), $vazamento);
+            $this->assertSame([200, -32602], $this->codes($out));
+        }
+    }
+
+    /** What the client is told for a message the validator produced. */
+    private function filtered(string $message): string {
+        $method = (new \ReflectionMethod(McpProtocol::class, 'safeMessage'));
+        $protocol = self::protocol($this);
+        return $method->invoke($protocol, $message);
+    }
+
+    /** @param \OCA\Mcp\Tools\ToolModule $module the single tool this protocol exposes */
+    private function callWith(\OCA\Mcp\Tools\ToolModule $module, array|string $message): array {
+        return self::withModules($this, [$module])->handle(json_encode($message), self::V, 'alice');
+    }
+
+    /** @param list<\OCA\Mcp\Tools\ToolModule> $modules tools the protocol may expose */
+    private static function withModules(TestCase $test, array $modules, ?\Psr\Log\LoggerInterface $logger = null): McpProtocol {
         $mock = fn (string $class) => (new \ReflectionMethod($test, 'createMock'))->invoke($test, $class);
-        return new McpProtocol(new \OCA\Mcp\Tools\ToolRegistry([], new \OCA\Mcp\Service\GrantPolicy((new InMemoryConfig())->mock($test)),
+        $policy = new \OCA\Mcp\Service\GrantPolicy((new InMemoryConfig())->mock($test));
+        return new McpProtocol(new \OCA\Mcp\Tools\ToolRegistry($modules, $policy,
             $mock(\OCP\App\IAppManager::class), $mock(\OCP\IUserManager::class), $mock(\Psr\Log\LoggerInterface::class)),
-            $logger ?? $mock(\Psr\Log\LoggerInterface::class));
+            new \OCA\Mcp\Service\PromptCatalog(), $policy, $logger ?? $mock(\Psr\Log\LoggerInterface::class));
     }
 
     private function codes(array $out): array {

@@ -8,6 +8,8 @@ use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Tools\Notes\NotesMessages;
 use OCA\Mcp\Tools\Notes\NotesModule;
 use OCA\Mcp\Tools\Notes\NotesRepository;
+use OCA\Mcp\Tools\Common\NodeAccessInfo;
+use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
 use OCP\IUserManager;
@@ -74,6 +76,8 @@ final class NotesTranslationTest extends TestCase {
             $this->createMock(NotesRepository::class),
             $this->createMock(IAppManager::class),
             $this->createMock(IUserManager::class),
+            $this->createMock(SharedWriteGuard::class),
+            $this->createMock(NodeAccessInfo::class),
         );
         Translator::use(new JsonL10n('pt_BR'));
         $definitions = $module->definitions();
@@ -83,7 +87,7 @@ final class NotesTranslationTest extends TestCase {
                 $texts[] = $value;
             }
         });
-        self::assertCount(20, $texts);
+        self::assertCount(23, $texts);
         foreach ($texts as $text) {
             self::assertDoesNotMatchRegularExpression('/[À-ÿ]/u', $text);
         }

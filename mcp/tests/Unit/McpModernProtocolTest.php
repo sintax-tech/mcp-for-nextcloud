@@ -30,7 +30,7 @@ final class McpModernProtocolTest extends TestCase {
         $this->assertSame(McpProtocol::SUPPORTED_VERSIONS, $result->supportedVersions);
         $this->assertSame(self::MODERN, $result->supportedVersions[0]);
         $this->assertEquals(new \stdClass(), $result->capabilities->tools);
-        $this->assertSame(['name' => 'nextcloud-mcp', 'version' => '0.6.2'], (array)$result->_meta->{'io.modelcontextprotocol/serverInfo'});
+        $this->assertSame(['name' => 'nextcloud-mcp', 'version' => McpProtocol::SERVER_INFO['version']], (array)$result->_meta->{'io.modelcontextprotocol/serverInfo'});
         $this->assertSame([0, 'private'], [$result->ttlMs, $result->cacheScope]);
         $this->assertStringContainsString('"capabilities":{"tools":{}}', json_encode($out['json']));
     }

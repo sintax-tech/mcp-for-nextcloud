@@ -33,7 +33,7 @@ AI assistants are most useful when they can reach the tools a team already uses.
 | **Notes** | list, read | create, edit, move between categories, delete (only when the trash bin can recover it) |
 | **Calendar** | list calendars and events (recurrence, time zones, all-day) | *temporarily read-only*: writes stay hidden until they are validated against a real Nextcloud 33 CalDAV setup |
 | **Deck** | boards, stacks, cards, and a **follow-up** of the boards you manage: cards grouped by assignee, with due date, overdue flag (in your own time zone) and a link to the card | create, edit, move, delete cards |
-| **Talk** | conversations and messages (never marks anything as read) | reply (optionally quoting a message), share a file into a conversation, quote an already shared file |
+| **Talk** | conversations and messages (never marks anything as read) | reply (optionally quoting a message or linking a Deck card or calendar event you can see), direct message to a user, batch of messages, share or quote a file, create a group conversation (separate grant, off by default). **Nothing is sent before the user approves the exact draft.** |
 
 Plus:
 

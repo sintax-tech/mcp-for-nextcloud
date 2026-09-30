@@ -25,13 +25,24 @@ class TalkServicesTest extends TestCase {
         $this->services = new TalkServices($this->appManager, $this->container);
     }
 
-    public function testIsEnabledForAsksAboutSpreedForTheUser(): void {
+    public function testIsEnabledForAsksAboutSpreedWithTheIUserNotTheUid(): void {
+        $user = $this->createMock(\OCP\IUser::class);
+        $users = $this->createMock(\OCP\IUserManager::class);
+        $users->method('get')->with('alice')->willReturn($user);
         $this->appManager->expects($this->once())
             ->method('isEnabledForUser')
-            ->with(TalkServices::APP_ID, 'alice')
+            ->with(TalkServices::APP_ID, $this->identicalTo($user))
             ->willReturn(true);
 
-        $this->assertTrue($this->services->isEnabledFor('alice'));
+        $this->assertTrue((new TalkServices($this->appManager, $this->container, $users))->isEnabledFor('alice'));
+    }
+
+    public function testUnknownUserIsNeverEnabled(): void {
+        $users = $this->createMock(\OCP\IUserManager::class);
+        $users->method('get')->willReturn(null);
+        $this->appManager->expects($this->never())->method('isEnabledForUser');
+
+        $this->assertFalse((new TalkServices($this->appManager, $this->container, $users))->isEnabledFor('ghost'));
     }
 
     public function testManagerRefusesToResolveWhenSpreedIsDisabled(): void {

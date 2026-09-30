@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Talk;
 
 use OCP\App\IAppManager;
+use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -21,14 +22,25 @@ class TalkServices {
     private const ROOM_CLASS = 'OCA\\Talk\\Room';
     private const WEBINARY_CLASS = 'OCA\\Talk\\Webinary';
 
+    /**
+     * @param IAppManager $appManager app enablement, checked per user on every call
+     * @param ContainerInterface $container resolves the Talk services lazily by class name
+     * @param IUserManager|null $userManager resolves the UID to the IUser that IAppManager::isEnabledForUser() expects
+     */
     public function __construct(
         private IAppManager $appManager,
         private ContainerInterface $container,
+        private ?IUserManager $userManager = null,
     ) {}
 
     /** Whether the optional spreed app is enabled for the user on this very call. */
     public function isEnabledFor(string $userId): bool {
-        return $this->appManager->isEnabledForUser(self::APP_ID, $userId);
+        // isEnabledForUser() takes an IUser, never the UID string: passing the string breaks at runtime.
+        $user = $this->userManager?->get($userId);
+        if ($this->userManager !== null && $user === null) {
+            return false;
+        }
+        return $this->appManager->isEnabledForUser(self::APP_ID, $user);
     }
 
     /**

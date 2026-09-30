@@ -182,15 +182,19 @@ final class DeckToolModuleTest extends TestCase {
 	}
 
 	public function testDeckAppIsRecheckedEvenThoughTheRegistryFiltersFirst(): void {
+		$user = $this->createMock(\OCP\IUser::class);
+		$users = $this->createMock(\OCP\IUserManager::class);
+		$users->method('get')->with('alice')->willReturn($user);
 		$appManager = $this->createMock(IAppManager::class);
 		$appManager->expects(self::once())
 			->method('isEnabledForUser')
-			->with('deck', 'alice')
+			->with('deck', self::identicalTo($user))
 			->willReturn(false);
 		$module = new DeckToolModule(
 			$this->createMock(ContainerInterface::class),
 			$appManager,
 			$this->createMock(LoggerInterface::class),
+			$users,
 		);
 
 		$this->expectException(InvalidArgumentException::class);

@@ -279,6 +279,16 @@ final class FilesMessages {
         return 'Conteúdo excede o limite de upload de ' . $limit . ' bytes.';
     }
 
+    /**
+     * The ETag no longer matches. The token is already spent, so the agent cannot retry it: it has to read
+     * the file again and make a new checkout, which is what this message asks for.
+     *
+     * @return string the client-safe reason for a 409 on the upload
+     */
+    public static function uploadConflict(): string {
+        return 'O arquivo mudou depois do checkout; nada foi gravado. Releia o arquivo e faça um novo files_checkout antes de enviar de novo.';
+    }
+
     /** @return string the upload could not be stored */
     public static function uploadFailed(): string {
         return 'Falha ao gravar o arquivo; o original foi preservado.';

@@ -8,6 +8,7 @@ use OCA\Mcp\Checkout\CheckoutTokenStore;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tools\Common\NodeAccess;
+use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\CheckoutService;
@@ -97,8 +98,13 @@ class CheckoutController extends Controller {
     /**
      * Replaces the file with the uploaded bytes, spending the upload token.
      *
+     * The token is spent on arrival, so every answer other than the receipt is final: an agent that has to
+     * try again must make a new files_checkout, which is what the message says. A 2xx here would be read as
+     * "it worked" and the retry would be a 410.
+     *
      * @param string $token single-use token from the upload URL
-     * @return Response the JSON receipt, or 404/410/403/409/413/500 without a body
+     * @return Response the JSON receipt, or 409 for a file that changed, 403 for a refused write, and
+     *         404/410/413/500 for the rest, all without a body
      */
     #[PublicPage]
     #[NoAdminRequired]
@@ -147,7 +153,7 @@ class CheckoutController extends Controller {
         $access = $this->accessInfo->describe($file, $row->userId);
         // The scope recorded at checkout can be stale: a file may have moved into a share in between.
         if ($access['scope'] !== NodeAccessInfo::PERSONAL && !$row->sharedConfirmed) {
-            return $this->json(Http::STATUS_OK, $this->guard->request($access, $row->path));
+            return $this->json(Http::STATUS_CONFLICT, $this->guard->request($access, $row->path, CommonMessages::CONFIRM_ADVICE_CHECKOUT));
         }
         if (!$file->isUpdateable()) {
             return $this->refuse(Http::STATUS_FORBIDDEN, ToolFailure::FORBIDDEN);
@@ -158,7 +164,9 @@ class CheckoutController extends Controller {
             $file->putContent((string)file_get_contents($body));
             $node = NodeAccess::requireFile(NodeAccess::get($root, $row->path));
         } catch (ToolFailure $e) {
-            return $this->refuse($e->getMessage() === ToolFailure::CONFLICT ? Http::STATUS_CONFLICT : Http::STATUS_BAD_REQUEST, $e->getMessage());
+            $conflict = $e->getMessage() === ToolFailure::CONFLICT;
+            $message = $conflict ? FilesMessages::uploadConflict() : $e->getMessage();
+            return $this->refuse($conflict ? Http::STATUS_CONFLICT : Http::STATUS_BAD_REQUEST, $message);
         } catch (\Throwable) {
             $this->logger->error('MCP checkout upload failed', ['app' => 'mcp']);
             return $this->refuse(Http::STATUS_INTERNAL_SERVER_ERROR, FilesMessages::uploadFailed());

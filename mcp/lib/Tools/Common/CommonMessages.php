@@ -15,6 +15,11 @@ final class CommonMessages {
     public const UNIDENTIFIED = 'não identificado';
     /** Suffix shared by every confirmation message, in every module. */
     public const CONFIRM_ADVICE = 'Alterações afetam outras pessoas. Confirme com o usuário antes de continuar e repita a chamada com confirm_shared: true.';
+    /**
+     * Same advice for the checkout upload, where the call cannot simply be repeated: the link is single
+     * use and is already spent by the time the confirmation is produced.
+     */
+    public const CONFIRM_ADVICE_CHECKOUT = 'Alterações afetam outras pessoas. Confirme com o usuário antes de continuar e faça um novo files_checkout com confirm_shared: true, porque este link de edição já foi gasto.';
 
     /**
      * @param string $teamFolder name of the team folder the node lives in

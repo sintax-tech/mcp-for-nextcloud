@@ -321,13 +321,39 @@ final class CheckoutControllerTest extends TestCase {
         $this->tree->addFile('/alice/files/Compartilhado/plano.md', 'plano', 'text/markdown', ['scope' => 'shared']);
         $this->issue(CheckoutToken::KIND_UPLOAD, 'personal', false, '/Compartilhado/plano.md');
         $response = $this->controller->upload(self::TOKEN);
-        $this->assertSame(200, $this->code($response));
+        // Not a 2xx: the link is spent, so "try again" would be a 410. The status has to say so.
+        $this->assertSame(409, $this->code($response));
         $out = $this->payload($response);
         $this->assertTrue($out['requiresConfirmation']);
         $this->assertSame('shared', $out['scope']);
         $this->assertSame('/Compartilhado/plano.md', $out['resource']);
         $this->assertSame('plano', $this->tree->nodes['/alice/files/Compartilhado/plano.md']['content']);
         $this->assertSame([], $this->tree->ops);
+    }
+
+    /**
+     * The token is spent before the guards run, so the message cannot tell the agent to repeat the call:
+     * it has to ask for a new checkout. Wording and status are asserted together, because a 200 with this
+     * text is exactly the bug the review found.
+     */
+    public function testTheConfirmationAsksForANewCheckoutBecauseTheLinkIsSpent(): void {
+        $this->tree->addFile('/alice/files/Compartilhado/plano.md', 'plano', 'text/markdown', ['scope' => 'shared']);
+        $this->issue(CheckoutToken::KIND_UPLOAD, 'personal', false, '/Compartilhado/plano.md');
+        $message = $this->payload($this->controller->upload(self::TOKEN))['message'];
+        $this->assertStringContainsString('novo files_checkout', $message);
+        $this->assertStringContainsString('confirm_shared: true', $message);
+        $this->assertStringNotContainsString('repite a chamada', $message);
+        $this->assertSame(410, $this->code($this->controller->upload(self::TOKEN)), 'o link já foi gasto');
+    }
+
+    /** Same for the conflict: the file moved on, so the agent rereads and checks out again. */
+    public function testTheConflictSaysToCheckOutAgainInsteadOfRetryingTheLink(): void {
+        $this->issue();
+        $this->store->moveEtag('e-outro');
+        $response = $this->controller->upload(self::TOKEN);
+        $this->assertSame(409, $this->code($response));
+        $this->assertStringContainsString('novo files_checkout', (string)$response->render());
+        $this->assertStringNotContainsString('etag', (string)$response->render());
     }
 
     public function testAConfirmedSharedCheckoutWrites(): void {

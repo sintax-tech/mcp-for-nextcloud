@@ -42,9 +42,10 @@ class SharedWriteGuard {
      *
      * @param array<string, mixed> $info result of NodeAccessInfo::describe()
      * @param string $resource how the tool names the node
+     * @param string|null $advice closing sentence, for the caller whose retry is not "the same call again"
      * @return array{requiresConfirmation:bool, scope:string, owner:string, ownerDisplayName:string, teamFolder?:string, sharedBy?:string, resource:string, message:string}
      */
-    public function request(array $info, string $resource): array {
+    public function request(array $info, string $resource, ?string $advice = null): array {
         $payload = [
             'requiresConfirmation' => true,
             'scope' => $info['scope'],
@@ -59,7 +60,7 @@ class SharedWriteGuard {
         }
         return $payload + [
             'resource' => $resource,
-            'message' => $this->message($info) . ' ' . CommonMessages::CONFIRM_ADVICE,
+            'message' => $this->message($info) . ' ' . ($advice ?? CommonMessages::CONFIRM_ADVICE),
         ];
     }
 

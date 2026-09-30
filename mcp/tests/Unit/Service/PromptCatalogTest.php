@@ -80,7 +80,7 @@ final class PromptCatalogTest extends TestCase {
         $text = $this->catalog->get(PromptCatalog::EDIT_LOCALLY, $this->policy, 'alice')['messages'][0]['content']['text'];
         $this->assertSame('user', $this->catalog->get(PromptCatalog::EDIT_LOCALLY, $this->policy, 'alice')['messages'][0]['role']);
         foreach (['files_checkout', 'curl -sS -o', 'curl -sS -T', 'files_replace', 'files_edit',
-            'requiresConfirmation', 'confirm_shared', 'files_version_restore'] as $needle) {
+            'requiresConfirmation', 'confirm_shared', 'files_version_restore', 'uso único', 'faça o files_checkout'] as $needle) {
             $this->assertStringContainsString($needle, $text, $needle);
         }
         $this->assertStringNotContainsString('ncmcp_co_', $text);

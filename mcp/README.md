@@ -39,6 +39,20 @@ No diretório `mcp/`:
 
 Gera `build/mcp-<versão>.tar.gz` com raiz `mcp/` contendo `appinfo/`, `lib/`, `templates/`, as pastas de assets que existirem (`js/`, `css/`, `img/`, `l10n/`), este README e um `vendor/` só de produção, criado com `composer install --no-dev`. Testes e dependências de desenvolvimento ficam fora. O script falha, e não deixa pacote, quando um `Util::addScript('mcp', X)` ou `Util::addStyle('mcp', X)` em `templates/` ou `lib/` aponta para `js/X.js` ou `css/X.css` ausente do pacote. O script precisa de `composer` na máquina que empacota.
 
+### Regra do pacote: sem metadados do macOS
+
+Um pacote com `._*` (AppleDouble), `.DS_Store` ou cabeçalhos PAX com xattrs `com.apple.*` é recusado pela App Store e pode quebrar a instalação. Por isso:
+
+- o tar roda como `COPYFILE_DISABLE=1 tar --no-xattrs --exclude='._*' --exclude='.DS_Store'`. O `--no-xattrs` foi acrescentado porque, sem ele, o bsdtar grava `com.apple.provenance` em cabeçalhos PAX de todas as entradas;
+- a conferência é feita por `scripts/check_package.py`, com o `tarfile` do Python, porque o `tar -tzf` do macOS esconde as entradas `._*`;
+- o pacote é recusado, apagado, e o script termina com código 1, se tiver:
+  - entrada `._*` ou `.DS_Store`;
+  - entrada PaxHeader ou cabeçalho PAX estendido;
+  - entrada de topo diferente de `mcp/`;
+  - script ou estilo referenciado por `Util::addScript('mcp', X)`/`Util::addStyle('mcp', X)` ausente do pacote.
+
+Para conferir um pacote avulso: `python3 scripts/check_package.py build/mcp-<versão>.tar.gz`.
+
 ### Dependências de runtime
 
 | Pacote | Uso | Licença |
@@ -53,9 +67,9 @@ Os arquivos de licença acompanham cada pacote em `vendor/`. O `vendor/autoload.
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-0.2.2.tar.gz <servidor>:/tmp/
+scp build/mcp-0.2.3.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-0.2.2.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-0.2.3.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp

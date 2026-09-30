@@ -4,7 +4,7 @@
     <name>MCP</name>
     <summary>Instance-local MCP endpoint with per-user grants</summary>
     <description>Native MCP endpoint for Nextcloud. Test release with per-user grants, Files (read and backed-up edit, never delete) and Notes tools.</description>
-    <version>0.2.2</version>
+    <version>0.2.3</version>
     <licence>AGPL-3.0-or-later</licence>
     <author>Sintax Tech</author>
     <namespace>Mcp</namespace>

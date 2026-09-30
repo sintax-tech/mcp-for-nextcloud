@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Calendar;
 
-
 use OCA\Mcp\Tools\ToolFailure;
 
 /**
@@ -15,14 +14,14 @@ final class CalendarException extends ToolFailure {
      * @return self calendar or event missing, or not visible to the user
      */
     public static function notFound(): self {
-        return new self('Calendário ou evento não encontrado.');
+        return new self(CalendarMessages::NOT_FOUND);
     }
 
     /**
      * @return self the user cannot write to the resource
      */
     public static function forbidden(): self {
-        return new self('Sem permissão para alterar este calendário ou evento.');
+        return new self(CalendarMessages::FORBIDDEN);
     }
 
     /**

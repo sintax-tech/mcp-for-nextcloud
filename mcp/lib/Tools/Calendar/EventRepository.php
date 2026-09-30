@@ -37,7 +37,7 @@ class EventRepository {
         }
         $vcalendar = $this->parse($row['data']);
         if ($vcalendar === null) {
-            throw CalendarException::blocked('O evento tem dados inválidos e não pode ser alterado.');
+            throw CalendarException::blocked(CalendarMessages::EVENT_UNREADABLE);
         }
         $this->classification->assertModifiable($vcalendar, $calendar, $userId);
         if ($etag !== null && trim($etag, '"') !== trim($row['etag'], '"')) {

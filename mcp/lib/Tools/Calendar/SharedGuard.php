@@ -14,11 +14,6 @@ use OCP\IUserManager;
  * nothing until the call is repeated with `confirm_shared: true`.
  */
 final class SharedGuard {
-    /** Sentence appended to the description of every write tool this gate protects. */
-    public const DESCRIPTION_SUFFIX = ' Se o recurso for de outra pessoa, o agente DEVE perguntar ao usuário antes de enviar confirm_shared: true.';
-
-    /** Message of the non-error result returned instead of writing. */
-    public const MESSAGE = "O calendário '%s' pertence a %s e é compartilhado com você. Alterações afetam outras pessoas. Confirme com o usuário antes de continuar e repita a chamada com confirm_shared: true.";
 
     /**
      * @param IUserManager $users resolves the display name of the calendar owner
@@ -29,7 +24,7 @@ final class SharedGuard {
      * @return array<string, mixed> optional `confirm_shared` property of a write tool
      */
     public static function property(): array {
-        return ['type' => 'boolean', 'description' => 'marque como true apenas depois que o usuário confirmar a alteração em um calendário de outra pessoa'];
+        return ['type' => 'boolean', 'description' => CalendarMessages::CONFIRM_SHARED_PROPERTY];
     }
 
     /**
@@ -49,7 +44,7 @@ final class SharedGuard {
             'owner' => $calendar->ownerId,
             'ownerDisplayName' => $displayName,
             'resource' => $calendar->name,
-            'message' => sprintf(self::MESSAGE, $calendar->name, $displayName),
+            'message' => sprintf(CalendarMessages::SHARED_CONFIRMATION, $calendar->name, $displayName),
         ]);
     }
 }

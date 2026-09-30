@@ -23,7 +23,7 @@ final class TransferEvent implements CalendarTool {
     public function definition(): array {
         return ToolSchema::definition(
             'calendar_transfer_event',
-            'Transfere um evento para um calendário de outro usuário compartilhado com você com permissão de escrita. Exige confirm: true. Eventos com participantes são recusados: o organizador continua sendo você e o Nextcloud não avisa ninguém nessa operação.' . CalendarMessages::PARTICIPANTS_NOT_NOTIFIED,
+            CalendarMessages::TOOL_TRANSFER_EVENT . CalendarMessages::PARTICIPANTS_NOT_NOTIFIED,
             'transfer',
             [
                 'calendar' => ToolSchema::calendar('path do calendário de origem'),

@@ -68,8 +68,8 @@ final class UpdateEvent implements CalendarTool {
     public function definition(): array {
         return ToolSchema::definition(
             'calendar_update_event',
-            'Altera título, local, descrição, datas ou participantes de um evento. Datas de série recorrente não podem ser alteradas.'
-            . CalendarMessages::INVITES_OTHERS . CalendarMessages::SEND_INVITATIONS_NOTE . SharedGuard::DESCRIPTION_SUFFIX,
+            CalendarMessages::TOOL_UPDATE_EVENT
+            . CalendarMessages::INVITES_OTHERS . CalendarMessages::SEND_INVITATIONS_NOTE . CalendarMessages::SHARED_CONFIRMATION_SUFFIX,
             'edit',
             [
                 'calendar' => ToolSchema::calendar(),
@@ -102,7 +102,7 @@ final class UpdateEvent implements CalendarTool {
         $textChanges = array_intersect_key($arguments, array_flip(self::TEXT_FIELDS));
         $guestChanges = array_key_exists('attendees', $arguments);
         if ($timingChanges === [] && $textChanges === [] && !$guestChanges) {
-            throw new CalendarArgumentException('Informe ao menos um campo para alterar.');
+            throw new CalendarArgumentException(CalendarMessages::NO_FIELD_GIVEN);
         }
         $calendar = $this->access->resolveWritable($userId, $arguments['calendar']);
         if (($confirmation = $this->guard->confirm($calendar, $userId, $arguments)) !== null) {
@@ -185,7 +185,7 @@ final class UpdateEvent implements CalendarTool {
         $current = $this->builder->timing($master);
         $allDay = $changes['allDay'] ?? $current['allDay'];
         if ($allDay !== $current['allDay'] && (!isset($changes['start']) || !isset($changes['end']))) {
-            throw new CalendarArgumentException('Informe start e end ao alterar allDay.');
+            throw new CalendarArgumentException(CalendarMessages::ALL_DAY_NEEDS_DATES);
         }
         $parse = fn (string $value, string $label) => $allDay ? $this->dates->day($value, $label) : $this->dates->parse($value, $label);
         $start = isset($changes['start']) ? $parse($changes['start'], 'start') : $current['start'];

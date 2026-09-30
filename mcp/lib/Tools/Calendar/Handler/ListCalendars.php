@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Calendar\Handler;
 
 use OCA\Mcp\Tools\Calendar\CalendarAccess;
+use OCA\Mcp\Tools\Calendar\CalendarMessages;
 use OCA\Mcp\Tools\Calendar\CalendarTool;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
 
@@ -20,7 +21,7 @@ final class ListCalendars implements CalendarTool {
      * @return array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}
      */
     public function definition(): array {
-        return ToolSchema::definition('calendar_list_calendars', 'Lista os calendários visíveis ao usuário.', 'read', []);
+        return ToolSchema::definition('calendar_list_calendars', CalendarMessages::TOOL_LIST_CALENDARS, 'read', []);
     }
 
     /**

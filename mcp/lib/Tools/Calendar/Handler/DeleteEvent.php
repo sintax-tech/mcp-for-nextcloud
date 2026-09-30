@@ -47,8 +47,8 @@ final class DeleteEvent implements CalendarTool {
     public function definition(): array {
         return ToolSchema::definition(
             'calendar_delete_event',
-            'Exclui um evento (a série inteira), que vai para a lixeira do calendário. Exige confirm: true.'
-            . CalendarMessages::SEND_INVITATIONS_NOTE . SharedGuard::DESCRIPTION_SUFFIX,
+            CalendarMessages::TOOL_DELETE_EVENT
+            . CalendarMessages::SEND_INVITATIONS_NOTE . CalendarMessages::SHARED_CONFIRMATION_SUFFIX,
             'delete',
             [
                 'calendar' => ToolSchema::calendar(),

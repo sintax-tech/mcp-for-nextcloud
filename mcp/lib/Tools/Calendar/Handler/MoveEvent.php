@@ -31,7 +31,7 @@ final class MoveEvent implements CalendarTool {
     public function definition(): array {
         return ToolSchema::definition(
             'calendar_move_event',
-            'Move um evento para outro calendário do mesmo dono, sem sobrescrever.' . CalendarMessages::PARTICIPANTS_NOT_NOTIFIED . SharedGuard::DESCRIPTION_SUFFIX,
+            CalendarMessages::TOOL_MOVE_EVENT . CalendarMessages::PARTICIPANTS_NOT_NOTIFIED . CalendarMessages::SHARED_CONFIRMATION_SUFFIX,
             'move',
             ['calendar' => ToolSchema::calendar('path do calendário de origem'), 'uid' => ToolSchema::uid(), 'targetCalendar' => ToolSchema::calendar('path do calendário de destino'), 'etag' => ToolSchema::etag(), 'confirm_shared' => SharedGuard::property()],
             ['calendar', 'uid', 'targetCalendar'],

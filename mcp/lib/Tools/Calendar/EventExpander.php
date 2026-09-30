@@ -81,7 +81,7 @@ final class EventExpander {
                 $event = $iterator->getEventObject();
                 if ($end > $from && !$this->cancelledOverride($event)) {
                     if (count($out) >= self::MAX_OCCURRENCES_PER_SERIES) {
-                        throw CalendarException::limit('Limite de 500 ocorrências por série atingido; reduza a janela do calendário.');
+                        throw CalendarException::limit(CalendarMessages::OCCURRENCE_LIMIT);
                     }
                     $out[] = ['event' => $event, 'start' => $start, 'end' => $end];
                 }

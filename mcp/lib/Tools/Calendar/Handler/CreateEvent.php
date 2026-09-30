@@ -62,8 +62,8 @@ final class CreateEvent implements CalendarTool {
     public function definition(): array {
         return ToolSchema::definition(
             'calendar_create_event',
-            'Cria um evento simples (sem recorrência) num calendário com permissão de escrita.'
-            . CalendarMessages::INVITES_OTHERS . SharedGuard::DESCRIPTION_SUFFIX,
+            CalendarMessages::TOOL_CREATE_EVENT
+            . CalendarMessages::INVITES_OTHERS . CalendarMessages::SHARED_CONFIRMATION_SUFFIX,
             'create',
             [
                 'calendar' => ToolSchema::calendar(),

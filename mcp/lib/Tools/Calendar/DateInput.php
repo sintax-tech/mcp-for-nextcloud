@@ -48,7 +48,7 @@ final class DateInput {
                 return (new DateTimeImmutable($input))->setTimezone($utc);
             }
         }
-        throw new CalendarArgumentException("Data ISO inválida em {$label}.");
+        throw new CalendarArgumentException(sprintf(CalendarMessages::INVALID_ISO_DATE, $label));
     }
 
     /**
@@ -61,7 +61,7 @@ final class DateInput {
      */
     public function day(string $input, string $label): DateTimeImmutable {
         if (!$this->isDateOnly($input)) {
-            throw new CalendarArgumentException("Use o formato AAAA-MM-DD em {$label} para evento de dia inteiro.");
+            throw new CalendarArgumentException(sprintf(CalendarMessages::INVALID_ALL_DAY_FORMAT, $label));
         }
         return $this->parse($input, $label);
     }
@@ -80,10 +80,10 @@ final class DateInput {
         $start = $from === null ? $now->setTimezone(new DateTimeZone('UTC')) : $this->parse($from, 'from');
         $end = $to === null ? $start->modify('+' . self::DEFAULT_WINDOW_SECONDS . ' seconds') : $this->parse($to, 'to');
         if ($start >= $end) {
-            throw new CalendarArgumentException('Intervalo inválido: from deve ser anterior a to.');
+            throw new CalendarArgumentException(CalendarMessages::RANGE_FROM_AFTER_TO);
         }
         if ($end->getTimestamp() - $start->getTimestamp() > self::MAX_WINDOW_SECONDS) {
-            throw CalendarException::limit('Janela do calendário excede o limite de 366 dias.');
+            throw CalendarException::limit(CalendarMessages::WINDOW_TOO_WIDE);
         }
         return [$start, $end];
     }
@@ -113,7 +113,7 @@ final class DateInput {
      */
     public function timeZone(string $name): DateTimeZone {
         if (!in_array($name, DateTimeZone::listIdentifiers(DateTimeZone::ALL_WITH_BC), true)) {
-            throw new CalendarArgumentException('Fuso horário inválido em timeZone.');
+            throw new CalendarArgumentException(CalendarMessages::INVALID_TIME_ZONE);
         }
         return new DateTimeZone($name);
     }

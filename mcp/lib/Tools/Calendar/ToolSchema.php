@@ -47,21 +47,21 @@ final class ToolSchema {
      * @return array<string, mixed> event UID property
      */
     public static function uid(): array {
-        return ['type' => 'string', 'minLength' => 1, 'maxLength' => 255, 'description' => 'UID do evento'];
+        return ['type' => 'string', 'minLength' => 1, 'maxLength' => 255, 'description' => CalendarMessages::PROP_UID];
     }
 
     /**
      * @return array<string, mixed> optional ETag property for optimistic concurrency
      */
     public static function etag(): array {
-        return ['type' => 'string', 'minLength' => 1, 'maxLength' => 128, 'description' => 'etag esperado; se divergir, nada é alterado'];
+        return ['type' => 'string', 'minLength' => 1, 'maxLength' => 128, 'description' => CalendarMessages::PROP_ETAG];
     }
 
     /**
      * @return array<string, mixed> mandatory confirmation property
      */
     public static function confirm(): array {
-        return ['type' => 'boolean', 'const' => true, 'description' => 'precisa ser true para confirmar a operação'];
+        return ['type' => 'boolean', 'const' => true, 'description' => CalendarMessages::PROP_CONFIRM];
     }
 
     /**
@@ -92,7 +92,7 @@ final class ToolSchema {
             'minItems' => 1,
             'maxItems' => AttendeeResolver::MAX_ATTENDEES,
             'uniqueItems' => true,
-            'description' => 'IDs de conta do Nextcloud (não e-mails). Substitui a lista de participantes do evento.',
+            'description' => CalendarMessages::PROP_ATTENDEES,
         ];
     }
 
@@ -103,7 +103,7 @@ final class ToolSchema {
         return [
             'type' => 'boolean',
             'default' => false,
-            'description' => 'true entrega o convite ao agendamento do Nextcloud; o e-mail depende da configuração do servidor e o envio não confirma recebimento',
+            'description' => CalendarMessages::PROP_SEND_INVITATIONS,
         ];
     }
 

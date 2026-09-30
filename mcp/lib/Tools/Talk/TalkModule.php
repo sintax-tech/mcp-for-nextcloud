@@ -49,6 +49,7 @@ class TalkModule implements ToolModule {
         private DraftApproval $draftApproval,
         private UserConversationResolver $userConversations,
         private GroupCreator $groups,
+        private ReferenceLinker $references,
         private LoggerInterface $logger,
     ) {}
 
@@ -99,6 +100,29 @@ class TalkModule implements ToolModule {
                             'maxLength' => ConversationWriter::MAX_MESSAGE_LENGTH,
                         ],
                         'reply_to' => ['type' => 'integer', 'minimum' => 1],
+                        'reference' => [
+                            'type' => 'object',
+                            'properties' => [
+                                'type' => [
+                                    'type' => 'string',
+                                    'enum' => [ReferenceLinker::TYPE_DECK_CARD, ReferenceLinker::TYPE_CALENDAR_EVENT],
+                                ],
+                                'card_id' => ['type' => 'integer', 'minimum' => 1],
+                                'board_id' => ['type' => 'integer', 'minimum' => 1],
+                                'calendar' => [
+                                    'type' => 'string',
+                                    'minLength' => 1,
+                                    'maxLength' => ReferenceLinker::MAX_CALENDAR_LENGTH,
+                                ],
+                                'uid' => [
+                                    'type' => 'string',
+                                    'minLength' => 1,
+                                    'maxLength' => ReferenceLinker::MAX_UID_LENGTH,
+                                ],
+                            ],
+                            'required' => ['type'],
+                            'additionalProperties' => false,
+                        ],
                         'confirm' => self::CONFIRM_SCHEMA,
                         'approval_id' => self::APPROVAL_ID_SCHEMA,
                     ],
@@ -404,10 +428,21 @@ class TalkModule implements ToolModule {
     private function replyCall(string $userId, array $arguments): array {
         $message = $this->message($arguments);
         $replyTo = $this->replyTo($arguments);
+        $reference = $this->reference($arguments);
         $conversation = $this->writable($userId, $arguments);
 
+        // The reference is resolved again on the confirmed call instead of trusted from the draft: access is
+        // checked at the moment of sending, and a title that changed since the draft changes the text, which the
+        // approval then refuses because the user never saw it.
+        $item = $reference === null ? null : $this->references->resolve($userId, $reference);
+        if ($item !== null) {
+            $message = ReferenceLinker::append($message, $item);
+        }
+
         if (!$this->confirmed($arguments)) {
-            return $this->draftApproval->reply($conversation, $userId, $message, $replyTo);
+            $draft = $this->draftApproval->reply($conversation, $userId, $message, $replyTo);
+
+            return $item === null ? $draft : $draft + ['reference' => $item];
         }
         $this->draftApproval->approveReply($conversation, $userId, $this->approvalId($arguments), $message, $replyTo);
 
@@ -568,6 +603,20 @@ class TalkModule implements ToolModule {
         $this->draftApproval->approveGroup($userId, $this->approvalId($arguments), $name, $participants);
 
         return $this->groups->create($userId, $name, $participants);
+    }
+
+    /**
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed>|null Reference object of talk_reply, or null when absent
+     * @throws InvalidArgumentException When reference is not an object
+     */
+    private function reference(array $arguments): ?array {
+        $reference = $arguments['reference'] ?? null;
+        if ($reference !== null && !is_array($reference)) {
+            throw new InvalidArgumentException(Messages::INVALID_REFERENCE);
+        }
+
+        return $reference;
     }
 
     /**

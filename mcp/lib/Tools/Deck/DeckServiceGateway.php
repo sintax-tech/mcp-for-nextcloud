@@ -224,6 +224,23 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	}
 
 	/**
+	 * {@inheritDoc}
+	 */
+	public function cardBoardId(string $userId, int $cardId): int {
+		$this->bindUser($userId);
+
+		/** @var PermissionService $permissionService */
+		$permissionService = $this->service(PermissionService::class);
+		/** @var CardMapper $cardMapper */
+		$cardMapper = $this->service(CardMapper::class);
+
+		// `CardMapper::findBoardId()` is a plain query, so the read check the card itself needs comes first.
+		$permissionService->checkPermission($cardMapper, $cardId, Acl::PERMISSION_READ);
+
+		return (int)$cardMapper->findBoardId($cardId);
+	}
+
+	/**
 	 * Resolves the Deck board service and binds it to the caller.
 	 *
 	 * `BoardService::setUserId()` also calls `PermissionService::setUserId()`, which clears the

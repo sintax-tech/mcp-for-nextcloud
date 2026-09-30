@@ -133,4 +133,17 @@ interface DeckGatewayInterface {
 	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
 	 */
 	public function cardOwnership(string $userId, int $cardId): array;
+
+	/**
+	 * Board a card belongs to, after the read check a link to the card needs.
+	 *
+	 * Talk cites a card by its canonical URL, which carries the board id; the check comes first so a
+	 * caller without read access learns nothing, not even which board the card is on.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $cardId Card whose board is looked up.
+	 * @return int Board id.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 */
+	public function cardBoardId(string $userId, int $cardId): int;
 }

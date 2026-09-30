@@ -377,6 +377,43 @@ final class DeckServiceGatewayTest extends TestCase {
 		);
 	}
 
+	public function testTheBoardOfACardIsReadOnlyAfterTheReadCheck(): void {
+		$this->recordSetUserId();
+		$this->services[PermissionService::class]
+			->expects(self::once())
+			->method('checkPermission')
+			->with(self::isInstanceOf(CardMapper::class), 7, Acl::PERMISSION_READ)
+			->willReturnCallback(function (): bool {
+				$this->calls[] = 'checkPermission';
+
+				return true;
+			});
+		$this->services[CardMapper::class]
+			->expects(self::once())
+			->method('findBoardId')
+			->with(7)
+			->willReturnCallback(function (): int {
+				$this->calls[] = 'findBoardId';
+
+				return 4;
+			});
+
+		self::assertSame(4, $this->gateway->cardBoardId('alice', 7));
+		$calls = array_values(array_filter($this->calls, static fn (string $call): bool => !str_starts_with($call, 'get:')));
+		self::assertSame(['setUserId:alice', 'checkPermission', 'findBoardId'], $calls);
+	}
+
+	public function testTheBoardOfACardIsNotReadWithoutAccess(): void {
+		$this->recordSetUserId();
+		$this->services[PermissionService::class]
+			->method('checkPermission')
+			->willThrowException(new NoPermissionException('Permission denied'));
+		$this->services[CardMapper::class]->expects(self::never())->method('findBoardId');
+
+		$this->expectException(NoPermissionException::class);
+		$this->gateway->cardBoardId('alice', 7);
+	}
+
 	public function testOwnershipIsRefusedBeforeAnyOwnerIsReadWhenAccessIsDenied(): void {
 		$this->recordSetUserId();
 		$this->services[PermissionService::class]

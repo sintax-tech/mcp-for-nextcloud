@@ -16,6 +16,7 @@ use OCA\Mcp\Tools\Talk\FileAccessException;
 use OCA\Mcp\Tools\Talk\GroupCreator;
 use OCA\Mcp\Tools\Talk\FileSharer;
 use OCA\Mcp\Tools\Talk\Messages;
+use OCA\Mcp\Tools\Talk\ReferenceLinker;
 use OCA\Mcp\Tools\Talk\TalkModule;
 use OCA\Mcp\Tools\Talk\TalkServices;
 use OCA\Mcp\Tools\Talk\TalkUnavailableException;
@@ -33,6 +34,7 @@ class TalkModuleTest extends TestCase {
     private DraftApproval&MockObject $draftApproval;
     private UserConversationResolver&MockObject $userConversations;
     private GroupCreator&MockObject $groups;
+    private ReferenceLinker&MockObject $references;
     private LoggerInterface&MockObject $logger;
     private TalkModule $module;
 
@@ -45,6 +47,7 @@ class TalkModuleTest extends TestCase {
         $this->draftApproval = $this->createMock(DraftApproval::class);
         $this->userConversations = $this->createMock(UserConversationResolver::class);
         $this->groups = $this->createMock(GroupCreator::class);
+        $this->references = $this->createMock(ReferenceLinker::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->module = new TalkModule(
             $this->createMock(TalkServices::class),
@@ -55,6 +58,7 @@ class TalkModuleTest extends TestCase {
             $this->draftApproval,
             $this->userConversations,
             $this->groups,
+            $this->references,
             $this->logger,
         );
     }
@@ -358,6 +362,96 @@ class TalkModuleTest extends TestCase {
         } catch (InvalidArgumentException $e) {
             $this->assertSame(Messages::INVALID_GROUP_NAME, $e->getMessage());
         }
+    }
+
+    public function testAReferenceIsDraftedAsTheFinalTextWithTheItemShown(): void {
+        $conversation = $this->givenConversation();
+        $this->resolver->method('resolveForWriting')->willReturn($conversation);
+        $item = ['type' => 'deck_card', 'title' => 'Proposta ACME', 'url' => 'https://cloud.example/apps/deck/board/4/card/7'];
+        $this->references->expects($this->once())
+            ->method('resolve')
+            ->with('alice', ['type' => 'deck_card', 'card_id' => 7])
+            ->willReturn($item);
+        // The draft is of the text that will be sent, link included: the user approves what the room will read.
+        $this->draftApproval->expects($this->once())
+            ->method('reply')
+            ->with($conversation, 'alice', "veja\n\nCard do Deck: Proposta ACME\nhttps://cloud.example/apps/deck/board/4/card/7", null)
+            ->willReturn(['requiresConfirmation' => true]);
+        $this->writer->expects($this->never())->method('reply');
+
+        $result = $this->module->call(
+            TalkModule::TOOL_REPLY,
+            ['conversation_token' => 'abcd', 'message' => 'veja', 'reference' => ['type' => 'deck_card', 'card_id' => 7]],
+            'alice',
+        );
+
+        $this->assertSame(['requiresConfirmation' => true, 'reference' => $item], $this->payloadOf($result));
+    }
+
+    public function testAConfirmedReferenceIsCheckedAgainAndSendsTheApprovedText(): void {
+        $conversation = $this->givenConversation();
+        $this->resolver->method('resolveForWriting')->willReturn($conversation);
+        $this->references->expects($this->once())
+            ->method('resolve')
+            ->willReturn(['type' => 'calendar_event', 'title' => 'Reunião', 'url' => 'https://cloud.example/apps/calendar/edit/x']);
+        $text = "pauta\n\nEvento do Calendar: Reunião\nhttps://cloud.example/apps/calendar/edit/x";
+        $this->draftApproval->expects($this->once())
+            ->method('approveReply')
+            ->with($conversation, 'alice', 'APR-5', $text, null);
+        $this->writer->expects($this->once())
+            ->method('reply')
+            ->with($conversation, 'alice', $text, null)
+            ->willReturn(['conversation_token' => 'abcd', 'messageId' => 12]);
+
+        $result = $this->module->call(
+            TalkModule::TOOL_REPLY,
+            [
+                'conversation_token' => 'abcd',
+                'message' => 'pauta',
+                'reference' => ['type' => 'calendar_event', 'calendar' => '/remote.php/dav/calendars/alice/pessoal/', 'uid' => 'ev-1'],
+                'confirm' => true,
+                'approval_id' => 'APR-5',
+            ],
+            'alice',
+        );
+
+        $this->assertSame(['conversation_token' => 'abcd', 'messageId' => 12], $this->payloadOf($result));
+    }
+
+    public function testAReferenceOutOfReachSendsNothingAndShowsNoTitle(): void {
+        $this->resolver->method('resolveForWriting')->willReturn($this->givenConversation());
+        $this->references->method('resolve')
+            ->willThrowException(new ConversationAccessException(Messages::REFERENCE_NOT_FOUND));
+        $this->draftApproval->expects($this->never())->method('reply');
+        $this->draftApproval->expects($this->never())->method('approveReply');
+        $this->writer->expects($this->never())->method('reply');
+
+        $result = $this->module->call(
+            TalkModule::TOOL_REPLY,
+            ['conversation_token' => 'abcd', 'message' => 'veja', 'reference' => ['type' => 'deck_card', 'card_id' => 7], 'confirm' => true, 'approval_id' => 'APR-5'],
+            'alice',
+        );
+
+        $this->assertTrue($result['isError']);
+        $this->assertSame(Messages::REFERENCE_NOT_FOUND, $result['content'][0]['text']);
+    }
+
+    public function testAReplyWithoutReferenceNeverAsksForOne(): void {
+        $this->resolver->method('resolveForWriting')->willReturn($this->givenConversation());
+        $this->references->expects($this->never())->method('resolve');
+        $this->draftApproval->method('reply')->willReturn(['requiresConfirmation' => true]);
+
+        $result = $this->module->call(TalkModule::TOOL_REPLY, ['conversation_token' => 'abcd', 'message' => 'oi'], 'alice');
+
+        $this->assertArrayNotHasKey('reference', $this->payloadOf($result));
+    }
+
+    public function testTheReferenceSchemaNamesBothKindsAndNothingElse(): void {
+        $reference = array_column($this->module->definitions(), 'inputSchema', 'name')['talk_reply']['properties']['reference'];
+
+        $this->assertSame(['deck_card', 'calendar_event'], $reference['properties']['type']['enum']);
+        $this->assertSame(['type'], $reference['required']);
+        $this->assertFalse($reference['additionalProperties']);
     }
 
     public function testAReusedGroupDraftCreatesNothing(): void {

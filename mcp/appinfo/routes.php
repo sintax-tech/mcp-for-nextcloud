@@ -5,8 +5,10 @@ return ['routes' => [
     ['name' => 'mcp#post', 'url' => '/', 'verb' => 'POST'],
     ['name' => 'mcp#get', 'url' => '/', 'verb' => 'GET'],
     ['name' => 'mcp#delete', 'url' => '/', 'verb' => 'DELETE'],
-    ['name' => 'settings#global', 'url' => '/settings/global', 'verb' => 'POST'],
-    ['name' => 'settings#user', 'url' => '/settings/user', 'verb' => 'POST'],
     ['name' => 'settings#personal', 'url' => '/settings/personal', 'verb' => 'POST'],
-    ['name' => 'users#index', 'url' => '/api/users', 'verb' => 'GET'],
+    ['name' => 'grants#index', 'url' => '/api/grants', 'verb' => 'GET'],
+    // POST keeps "bulk" from colliding with a user whose uid is "bulk" on PUT /api/grants/{uid}.
+    ['name' => 'grants#bulk', 'url' => '/api/grants/bulk', 'verb' => 'POST'],
+    ['name' => 'grants#update', 'url' => '/api/grants/{uid}', 'verb' => 'PUT'],
+    ['name' => 'grants#service', 'url' => '/api/service', 'verb' => 'PUT'],
 ]];

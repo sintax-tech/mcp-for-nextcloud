@@ -110,9 +110,53 @@ class GrantPolicy {
         $this->config->setUserValue($uid, self::APP, self::grantKey($module, $operation), $enabled ? '1' : '0');
     }
 
+    /**
+     * Reads eligibility, connection and every grant of many users with one query per key
+     * (IConfig::getUserValueForUsers, backed by IUserConfig::getValuesByUsers in stable33),
+     * so the cost does not grow with the number of users.
+     *
+     * @param list<string> $uids Nextcloud user ids
+     * @return array<string, array{eligible:bool, connected:bool, grants:array<string, array<string, bool>>}> state by uid, defaults applied
+     */
+    public function forUsers(array $uids): array {
+        $uids = array_values(array_unique($uids));
+        if ($uids === []) {
+            return [];
+        }
+        $load = fn (string $key): array => $this->config->getUserValueForUsers(self::APP, $key, $uids);
+        $eligible = $load(self::ELIGIBLE_KEY);
+        $connected = $load(self::CONNECTED_KEY);
+        $grants = [];
+        foreach (self::CATALOG as $module => $operations) {
+            foreach ($operations as $operation) {
+                $grants[$module][$operation] = $load(self::grantKey($module, $operation));
+            }
+        }
+        $out = [];
+        foreach ($uids as $uid) {
+            $state = ['eligible' => ($eligible[$uid] ?? '0') === '1', 'connected' => ($connected[$uid] ?? '0') === '1', 'grants' => []];
+            foreach (self::CATALOG as $module => $operations) {
+                foreach ($operations as $operation) {
+                    $state['grants'][$module][$operation] = ($grants[$module][$operation][$uid] ?? ($operation === 'read' ? '1' : '0')) === '1';
+                }
+            }
+            $out[$uid] = $state;
+        }
+        return $out;
+    }
+
+    /**
+     * @param string $module candidate module
+     * @param string $operation candidate operation
+     * @return bool whether the pair exists in CATALOG
+     */
+    public static function inCatalog(string $module, string $operation): bool {
+        return isset(self::CATALOG[$module]) && in_array($operation, self::CATALOG[$module], true);
+    }
+
     /** @throws InvalidArgumentException for a module or operation outside CATALOG */
     private static function grantKey(string $module, string $operation): string {
-        if (!isset(self::CATALOG[$module]) || !in_array($operation, self::CATALOG[$module], true)) {
+        if (!self::inCatalog($module, $operation)) {
             throw new InvalidArgumentException('Unknown module or operation');
         }
         return 'grant_' . $module . '_' . $operation;

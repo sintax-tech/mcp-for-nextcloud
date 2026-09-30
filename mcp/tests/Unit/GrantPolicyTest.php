@@ -99,12 +99,36 @@ final class GrantPolicyTest extends TestCase {
                 $this->policy->setGrant('alice', $module, $operation, true);
             }
         }
+        $this->policy->forUsers(['alice', 'bob']);
         $this->policy->setGlobalEnabled(false);
         $keys = array_map(static fn (array $a) => $a[2], $this->store->accessed);
         $this->assertSame([], array_values(array_intersect($keys, GrantPolicy::RESERVED_APP_KEYS)));
         $this->assertSame(['mcp'], array_values(array_unique(array_map(static fn (array $a) => $a[1], $this->store->accessed))));
         $this->assertSame(['service_enabled'], array_values(array_unique(array_map(static fn (array $a) => $a[2],
             array_filter($this->store->accessed, static fn (array $a) => $a[0] === 'app')))));
+    }
+
+    public function testForUsersLoadsOneQueryPerKeyAndAppliesDefaults(): void {
+        $this->policy->setEligible('alice', true);
+        $this->policy->setGrant('alice', 'files', 'read', false);
+        $this->policy->setGrant('bob', 'notes', 'delete', true);
+        $state = $this->policy->forUsers(['alice', 'bob', 'carol', 'alice']);
+        $keys = 2 + array_sum(array_map('count', GrantPolicy::CATALOG));
+        $this->assertSame($keys, $this->store->batchCalls);
+        $this->assertSame(['alice', 'bob', 'carol'], array_keys($state));
+        $this->assertTrue($state['alice']['eligible']);
+        $this->assertFalse($state['alice']['grants']['files']['read']);
+        $this->assertTrue($state['bob']['grants']['notes']['delete']);
+        $this->assertSame(['read' => true, 'edit' => false], $state['carol']['grants']['files']);
+        foreach (['alice', 'bob', 'carol'] as $uid) {
+            foreach (GrantPolicy::CATALOG as $module => $operations) {
+                foreach ($operations as $operation) {
+                    $this->assertSame($this->policy->granted($uid, $module, $operation), $state[$uid]['grants'][$module][$operation]);
+                }
+            }
+            $this->assertSame($this->policy->connected($uid), $state[$uid]['connected']);
+        }
+        $this->assertSame([], $this->policy->forUsers([]));
     }
 
     public function testUnknownModuleIsRejected(): void {

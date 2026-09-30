@@ -1,62 +1,41 @@
 <?php
-/** @var array $_ */
-\OCP\Util::addScript('mcp', 'admin-user-picker');
-$escape = static fn ($value): string => htmlspecialchars((string)$value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+/**
+ * Admin section: endpoint, service switch and the users × permissions matrix rendered by js/admin-grants.js.
+ *
+ * @var array{endpoint:string, serviceEnabled:bool} $_
+ * @var \OCP\IL10N $l
+ */
+\OCP\Util::addScript('mcp', 'admin-grants');
+\OCP\Util::addStyle('mcp', 'admin');
 ?>
-<div class="section" id="mcp-admin">
-    <h2>MCP</h2>
-    <p>Endpoint: <code><?= $escape($_['endpoint']) ?></code></p>
-    <p>Nextcloud 33 test release. Only the diagnostic tool is available in this sprint.</p>
-    <form method="post" action="<?= $escape($_['globalAction']) ?>">
-        <input type="hidden" name="requesttoken" value="<?= $escape($_['token']) ?>">
-        <input type="hidden" name="enabled" value="<?= $_['enabled'] ? '0' : '1' ?>">
-        <p>Service: <strong><?= $_['enabled'] ? 'enabled' : 'disabled' ?></strong></p>
-        <button type="submit"><?= $_['enabled'] ? 'Disable' : 'Enable' ?> MCP</button>
-    </form>
-    <h3>User access and grants</h3>
-    <p>New users, including administrators, cannot connect until enabled here. Write grants are disabled by default.</p>
-    <form method="get" action="<?= $escape($_['settingsUrl']) ?>">
-        <label for="mcp_uid">Nextcloud user ID</label>
-        <input id="mcp_uid" name="mcp_uid" list="mcp_uid_list" value="<?= $escape($_['selectedUid']) ?>" autocomplete="off" required>
-        <datalist id="mcp_uid_list"></datalist>
-        <button type="submit">Load user</button>
-    </form>
-    <?php if ($_['selectedUid'] !== ''): ?>
-        <p>Selected: <strong><?= $escape($_['selectedUid']) ?></strong></p>
-        <form method="post" action="<?= $escape($_['userAction']) ?>">
-            <input type="hidden" name="requesttoken" value="<?= $escape($_['token']) ?>">
-            <input type="hidden" name="uid" value="<?= $escape($_['selectedUid']) ?>">
-            <input type="hidden" name="kind" value="eligible">
-            <input type="hidden" name="enabled" value="<?= $_['selectedEligible'] ? '0' : '1' ?>">
-            <p>Connection eligibility: <strong><?= $_['selectedEligible'] ? 'enabled' : 'disabled' ?></strong></p>
-            <button type="submit"><?= $_['selectedEligible'] ? 'Remove eligibility' : 'Allow connection' ?></button>
-        </form>
-        <table>
-            <thead><tr><th>Module</th><th>Operation</th><th>Grant</th><th>Action</th></tr></thead>
-            <tbody>
-            <?php foreach ($_['catalog'] as $module => $operations): ?>
-                <?php foreach ($operations as $operation): ?>
-                    <?php $granted = $_['grants'][$module][$operation]; ?>
-                    <tr>
-                        <td><?= $escape($module) ?></td>
-                        <td><?= $escape($operation) ?></td>
-                        <td><?= $granted ? 'allowed' : 'denied' ?></td>
-                        <td>
-                            <form method="post" action="<?= $escape($_['userAction']) ?>">
-                                <input type="hidden" name="requesttoken" value="<?= $escape($_['token']) ?>">
-                                <input type="hidden" name="uid" value="<?= $escape($_['selectedUid']) ?>">
-                                <input type="hidden" name="kind" value="grant">
-                                <input type="hidden" name="module" value="<?= $escape($module) ?>">
-                                <input type="hidden" name="operation" value="<?= $escape($operation) ?>">
-                                <input type="hidden" name="enabled" value="<?= $granted ? '0' : '1' ?>">
-                                <button type="submit"><?= $granted ? 'Revoke' : 'Grant' ?></button>
-                            </form>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
-            <?php endforeach; ?>
-            </tbody>
+<div class="section" id="mcp-admin" data-service-enabled="<?php p($_['serviceEnabled'] ? '1' : '0'); ?>">
+    <h2><?php p($l->t('MCP')); ?></h2>
+    <p class="mcp-endpoint">
+        <?php p($l->t('Endpoint')); ?>: <code id="mcp-endpoint"><?php p($_['endpoint']); ?></code>
+        <button type="button" class="mcp-copy" data-copy="mcp-endpoint"><?php p($l->t('Copy')); ?></button>
+    </p>
+    <p>
+        <input type="checkbox" class="checkbox" id="mcp-service" <?php if ($_['serviceEnabled']) { print_unescaped('checked'); } ?>>
+        <label for="mcp-service"><?php p($l->t('MCP service enabled')); ?></label>
+        <span class="mcp-status" id="mcp-service-status" aria-live="polite"></span>
+    </p>
+    <p class="mcp-hint"><?php p($l->t('Users need "Can connect" and must activate the connection in their personal settings. Read permissions start allowed; write, delete and transfer start denied. Nextcloud permissions and shares still apply.')); ?></p>
+
+    <div class="mcp-toolbar">
+        <input type="search" id="mcp-search" placeholder="<?php p($l->t('Search user (name, user ID or e-mail)')); ?>" aria-label="<?php p($l->t('Search user')); ?>">
+        <select id="mcp-group" aria-label="<?php p($l->t('Group')); ?>">
+            <option value=""><?php p($l->t('All users')); ?></option>
+        </select>
+        <span class="mcp-pager">
+            <button type="button" id="mcp-prev"><?php p($l->t('Previous')); ?></button>
+            <span id="mcp-page-info"></span>
+            <button type="button" id="mcp-next"><?php p($l->t('Next')); ?></button>
+        </span>
+    </div>
+    <div class="mcp-matrix-wrap">
+        <table class="mcp-matrix" id="mcp-matrix" aria-busy="true">
+            <thead></thead>
+            <tbody><tr><td class="mcp-empty"><?php p($l->t('Loading…')); ?></td></tr></tbody>
         </table>
-        <p>These are app grants. Nextcloud resource ACLs will also be checked when data tools are implemented.</p>
-    <?php endif; ?>
+    </div>
 </div>

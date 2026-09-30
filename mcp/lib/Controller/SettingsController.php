@@ -7,7 +7,9 @@ use InvalidArgumentException;
 use OCA\Mcp\Service\GrantPolicy;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
+use OCP\AppFramework\Http\DataDisplayResponse;
 use OCP\AppFramework\Http\RedirectResponse;
+use OCP\AppFramework\Http\Response;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\IUserManager;
@@ -25,12 +27,35 @@ class SettingsController extends Controller {
         parent::__construct($appName, $request);
     }
 
-    public function global(string $enabled = '0'): RedirectResponse {
-        $this->policy->setGlobalEnabled($enabled === '1');
-        return $this->adminRedirect();
+    public function global(string $enabled = '0'): Response {
+        return $this->guard(function () use ($enabled): Response {
+            if (!in_array($enabled, ['0', '1'], true)) {
+                throw new InvalidArgumentException('Invalid value');
+            }
+            $this->policy->setGlobalEnabled($enabled === '1');
+            return $this->adminRedirect();
+        });
     }
 
-    public function user(string $uid = '', string $module = '', string $operation = '', string $enabled = '0', string $kind = 'grant'): RedirectResponse {
+    public function user(string $uid = '', string $module = '', string $operation = '', string $enabled = '0', string $kind = 'grant'): Response {
+        return $this->guard(fn (): Response => $this->applyUser($uid, $module, $operation, $enabled, $kind));
+    }
+
+    #[NoAdminRequired]
+    public function personal(string $enabled = '0'): Response {
+        return $this->guard(fn (): Response => $this->applyPersonal($enabled));
+    }
+
+    /** Validation failures become a generic 400 instead of an unhandled 500. */
+    private function guard(callable $action): Response {
+        try {
+            return $action();
+        } catch (InvalidArgumentException) {
+            return new DataDisplayResponse('Invalid request', 400, ['Content-Type' => 'text/plain; charset=utf-8']);
+        }
+    }
+
+    private function applyUser(string $uid, string $module, string $operation, string $enabled, string $kind): Response {
         if ($uid === '' || $this->userManager->get($uid) === null || !in_array($enabled, ['0', '1'], true)) {
             throw new InvalidArgumentException('Invalid user or value');
         }
@@ -44,8 +69,7 @@ class SettingsController extends Controller {
         return $this->adminRedirect();
     }
 
-    #[NoAdminRequired]
-    public function personal(string $enabled = '0'): RedirectResponse {
+    private function applyPersonal(string $enabled): Response {
         $user = $this->userSession->getUser();
         if ($user === null || !$user->isEnabled() || !in_array($enabled, ['0', '1'], true)) {
             throw new InvalidArgumentException('Invalid user or value');

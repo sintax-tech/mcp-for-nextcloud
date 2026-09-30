@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit;
 
-use InvalidArgumentException;
 use OCA\Mcp\Controller\McpController;
 use OCA\Mcp\Controller\SettingsController;
 use OCA\Mcp\Service\GrantPolicy;
@@ -47,6 +46,8 @@ final class SettingsControllerTest extends TestCase {
     }
 
     public function testAdminChangesEligibilityAndGrants(): void {
+        $this->assertSame(400, $this->controller->global('x')->getStatus());
+        $this->assertFalse($this->policy->globalEnabled());
         $this->controller->global('1');
         $this->controller->user('alice', '', '', '1', 'eligible');
         $this->controller->user('alice', 'calendar', 'transfer', '1');
@@ -57,21 +58,13 @@ final class SettingsControllerTest extends TestCase {
 
     public function testAdminInputIsValidated(): void {
         foreach ([['ghost', 'files', 'read', '1', 'grant'], ['alice', 'files', 'delete', '1', 'grant'], ['alice', '', '', 'yes', 'eligible'], ['alice', '', '', '1', 'other']] as $args) {
-            try {
-                $this->controller->user(...$args);
-                $this->fail('accepted ' . implode(',', $args));
-            } catch (InvalidArgumentException) {
-                $this->addToAssertionCount(1);
-            }
+            $response = $this->controller->user(...$args);
+            $this->assertSame([400, 'Invalid request'], [$response->getStatus(), $response->render()], implode(',', $args));
         }
     }
 
     public function testPersonalActivationNeedsServiceAndEligibility(): void {
-        try {
-            $this->controller->personal('1');
-            $this->fail('connected without eligibility');
-        } catch (InvalidArgumentException) {
-        }
+        $this->assertSame(400, $this->controller->personal('1')->getStatus());
         $this->assertFalse($this->policy->connected('alice'));
         $this->policy->setGlobalEnabled(true);
         $this->policy->setEligible('alice', true);

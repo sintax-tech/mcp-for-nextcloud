@@ -1,0 +1,64 @@
+<?php
+declare(strict_types=1);
+
+namespace OCA\Mcp\Tests\Unit\Tools\Talk;
+
+use InvalidArgumentException;
+use OCA\Mcp\Tools\Talk\AttachmentMessage;
+use OCA\Mcp\Tools\Talk\Messages;
+use PHPUnit\Framework\TestCase;
+
+class AttachmentMessageTest extends TestCase {
+    private AttachmentMessage $attachmentMessage;
+
+    protected function setUp(): void {
+        parent::setUp();
+        $this->attachmentMessage = new AttachmentMessage();
+    }
+
+    public function testEnvelopeIsTheOneTalkRendersAsACard(): void {
+        $envelope = $this->attachmentMessage->build(77);
+
+        $this->assertSame('{"message":"file_shared","parameters":{"share":"77"}}', $envelope);
+    }
+
+    public function testShareIdTravelsAsTextBecauseThatIsHowTalkStoresIt(): void {
+        $envelope = json_decode($this->attachmentMessage->build(77), true);
+
+        $this->assertSame('77', $envelope['parameters']['share']);
+    }
+
+    public function testCaptionIsTrimmedAndPlacedInMetaData(): void {
+        $envelope = json_decode($this->attachmentMessage->build(77, "  a figura  "), true);
+
+        $this->assertSame('a figura', $envelope['parameters']['metaData']['caption']);
+    }
+
+    public function testTextIsNotEscapedSoAccentsAndSlashesSurvive(): void {
+        $envelope = $this->attachmentMessage->build(77, 'relatório da equipe/chefe');
+
+        $this->assertStringContainsString('relatório da equipe/chefe', $envelope);
+        $this->assertStringNotContainsString('\\/', $envelope);
+        $this->assertStringNotContainsString('\\u', $envelope);
+    }
+
+    public function testBlankCaptionIsAnArgumentError(): void {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(Messages::EMPTY_MESSAGE);
+        $this->attachmentMessage->build(77, "  \n ");
+    }
+
+    public function testCaptionAboveTheLimitIsAnArgumentError(): void {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(Messages::MESSAGE_TOO_LONG);
+        $this->attachmentMessage->build(77, str_repeat('a', AttachmentMessage::MAX_CAPTION + 1));
+    }
+
+    public function testCaptionOfExactlyTheLimitIsAccepted(): void {
+        $caption = str_repeat('a', AttachmentMessage::MAX_CAPTION);
+
+        $envelope = json_decode($this->attachmentMessage->build(77, $caption), true);
+
+        $this->assertSame($caption, $envelope['parameters']['metaData']['caption']);
+    }
+}

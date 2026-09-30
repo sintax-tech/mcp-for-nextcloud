@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Service;
 
 use InvalidArgumentException;
+use OCA\Mcp\Tools\Calendar\CalendarModule;
 use OCP\App\IAppManager;
 use OCP\IGroupManager;
 use OCP\IUser;
@@ -37,7 +38,7 @@ class GrantMatrix {
      * @param string $search term matched by the user backends against uid, display name and e-mail
      * @param string $group group id to restrict to, '' for every user
      * @param int $page 1-based page number
-     * @return array{users: list<array{uid:string, displayName:string, enabled:bool, eligible:bool, connected:bool, grants:array<string, array<string, bool>>}>, page:int, pageSize:int, hasMore:bool, total:int|null, catalog:array<string, list<string>>, appsEnabled:array<string, bool>, groups:list<array{id:string, displayName:string}>, serviceEnabled:bool}
+     * @return array{users: list<array{uid:string, displayName:string, enabled:bool, eligible:bool, connected:bool, grants:array<string, array<string, bool>>, appsEnabled:array<string, bool>}>, page:int, pageSize:int, hasMore:bool, total:int|null, catalog:array<string, list<string>>, appsEnabled:array<string, bool>, groups:list<array{id:string, displayName:string}>, serviceEnabled:bool}
      * @throws InvalidArgumentException for a page out of range, an oversized term or an unknown group
      */
     public function page(string $search, string $group, int $page): array {
@@ -49,14 +50,19 @@ class GrantMatrix {
         [$users, $total] = $group === '' ? $this->allUsers($search, $offset) : $this->groupUsers($group, $search, $offset);
         $hasMore = count($users) > self::PAGE_SIZE;
         $users = array_slice($users, 0, self::PAGE_SIZE);
+        $appsEnabled = $this->appsEnabled();
+        $catalog = array_filter(GrantPolicy::CATALOG, static fn (string $module) => $appsEnabled[$module], ARRAY_FILTER_USE_KEY);
+        if (isset($catalog['calendar'])) {
+            $catalog['calendar'] = array_values(array_intersect($catalog['calendar'], CalendarModule::ENABLED_OPERATIONS));
+        }
         return [
             'users' => $this->rows($users),
             'page' => $page,
             'pageSize' => self::PAGE_SIZE,
             'hasMore' => $hasMore,
             'total' => $total,
-            'catalog' => GrantPolicy::CATALOG,
-            'appsEnabled' => $this->appsEnabled(),
+            'catalog' => $catalog,
+            'appsEnabled' => $appsEnabled,
             'groups' => $this->groups(),
             'serviceEnabled' => $this->policy->globalEnabled(),
         ];
@@ -64,15 +70,22 @@ class GrantMatrix {
 
     /**
      * @param list<IUser> $users users to render
-     * @return list<array{uid:string, displayName:string, enabled:bool, eligible:bool, connected:bool, grants:array<string, array<string, bool>>}>
+     * @return list<array{uid:string, displayName:string, enabled:bool, eligible:bool, connected:bool, grants:array<string, array<string, bool>>, appsEnabled:array<string, bool>}>
      */
     public function rows(array $users): array {
         $state = $this->policy->forUsers(array_map(static fn (IUser $user) => $user->getUID(), $users));
-        return array_map(static fn (IUser $user) => [
-            'uid' => $user->getUID(),
-            'displayName' => $user->getDisplayName(),
-            'enabled' => $user->isEnabled(),
-        ] + $state[$user->getUID()], $users);
+        return array_map(function (IUser $user) use ($state): array {
+            $appsEnabled = [];
+            foreach (self::MODULE_APPS as $module => $app) {
+                $appsEnabled[$module] = $app === 'files' || $this->appManager->isEnabledForUser($app, $user);
+            }
+            return [
+                'uid' => $user->getUID(),
+                'displayName' => $user->getDisplayName(),
+                'enabled' => $user->isEnabled(),
+                'appsEnabled' => $appsEnabled,
+            ] + $state[$user->getUID()];
+        }, $users);
     }
 
     /** @return array<string, bool> whether each module's app is enabled for anyone on the server */

@@ -40,7 +40,7 @@ final class GrantMatrixTest extends TestCase {
         $json = json_encode($page);
         $this->assertStringNotContainsString('@', $json);
         $this->assertStringNotContainsString('corp.example', $json);
-        $this->assertSame(['uid', 'displayName', 'enabled', 'eligible', 'connected', 'grants'], array_keys($page['users'][0]));
+        $this->assertSame(['uid', 'displayName', 'enabled', 'appsEnabled', 'eligible', 'connected', 'grants'], array_keys($page['users'][0]));
     }
 
     public function testGroupFilterUsesGroupMembersAndGroupSize(): void {
@@ -76,7 +76,7 @@ final class GrantMatrixTest extends TestCase {
 
     public function testCatalogAppsAndService(): void {
         $page = $this->fx->matrix()->page('', '', 1);
-        $this->assertSame(GrantPolicy::CATALOG, $page['catalog']);
+        $this->assertSame(['files' => GrantPolicy::CATALOG['files'], 'notes' => GrantPolicy::CATALOG['notes'], 'calendar' => ['read']], $page['catalog']);
         $this->assertSame(['files' => true, 'notes' => true, 'deck' => false, 'calendar' => true, 'talk' => false], $page['appsEnabled']);
         $this->assertFalse($page['serviceEnabled']);
     }
@@ -95,6 +95,39 @@ final class GrantMatrixTest extends TestCase {
         }
         $this->fx->policy->setGrant($page['users'][0]['uid'], 'files', 'restore', true);
         $this->assertTrue($this->fx->matrix()->page('', '', 1)['users'][0]['grants']['files']['restore']);
+    }
+
+    public function testDisabledCalendarWritesAreAbsentFromMatrixButSavedGrantsRemain(): void {
+        $this->fx->policy->setGrant('bruno', 'calendar', 'create', true);
+
+        $page = $this->fx->matrix()->page('Bruno', '', 1);
+
+        $this->assertSame(['read'], $page['catalog']['calendar']);
+        $this->assertTrue($page['users'][0]['grants']['calendar']['create']);
+    }
+
+    public function testMissingOptionalAppsAreOmittedWhileTheirGrantsRemainStored(): void {
+        $this->fx->enabledApps = [];
+        $this->fx->policy->setGrant('bruno', 'notes', 'edit', true);
+
+        $page = $this->fx->matrix()->page('Bruno', '', 1);
+
+        $this->assertSame(['files' => GrantPolicy::CATALOG['files']], $page['catalog']);
+        $this->assertSame(['files' => true, 'notes' => false, 'deck' => false, 'calendar' => false, 'talk' => false], $page['appsEnabled']);
+        $this->assertTrue($page['users'][0]['grants']['notes']['edit']);
+    }
+
+    public function testRestrictedAppIsUnavailableForUsersWithoutClearingTheirGrant(): void {
+        $this->fx->appUsers['notes'] = ['ana'];
+        $this->fx->policy->setGrant('bruno', 'notes', 'edit', true);
+
+        $ana = $this->fx->matrix()->page('Ana', '', 1)['users'][0];
+        $bruno = $this->fx->matrix()->page('Bruno', '', 1)['users'][0];
+
+        $this->assertSame('ana', $ana['uid']);
+        $this->assertTrue($ana['appsEnabled']['notes'], json_encode($ana['appsEnabled']));
+        $this->assertFalse($bruno['appsEnabled']['notes']);
+        $this->assertTrue($bruno['grants']['notes']['edit']);
     }
 
     public function testRejectsBadInput(): void {

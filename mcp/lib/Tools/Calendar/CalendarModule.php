@@ -15,10 +15,13 @@ use OCA\Mcp\Tools\ToolModule;
 use RuntimeException;
 
 /**
- * Calendar tool module: declares the seven calendar tools and routes each call to its handler.
- * The registry has already checked grant, app and input schema.
+ * Calendar tool module: exposes reads and keeps unproved writes fail-closed behind the module boundary.
+ * The registry has already checked grant, app and input schema for exposed tools.
  */
 final class CalendarModule implements ToolModule {
+    /** Operations available in tools/list, tools/call and the admin grant matrix. */
+    public const ENABLED_OPERATIONS = ['read'];
+
     /** @var array<string, CalendarTool> handlers by tool name */
     private array $tools = [];
 
@@ -49,7 +52,10 @@ final class CalendarModule implements ToolModule {
      * @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}>
      */
     public function definitions(): array {
-        return array_values(array_map(static fn (CalendarTool $tool) => $tool->definition(), $this->tools));
+        return array_values(array_map(
+            static fn (CalendarTool $tool) => $tool->definition(),
+            array_filter($this->tools, static fn (CalendarTool $tool): bool => in_array($tool->definition()['operation'], self::ENABLED_OPERATIONS, true)),
+        ));
     }
 
     /**
@@ -62,6 +68,9 @@ final class CalendarModule implements ToolModule {
      */
     public function call(string $name, array $arguments, string $userId): array {
         $tool = $this->tools[$name] ?? throw new InvalidArgumentException('Unknown tool');
+        if (!in_array($tool->definition()['operation'], self::ENABLED_OPERATIONS, true)) {
+            throw new InvalidArgumentException('Unknown tool');
+        }
         try {
             return $tool->execute($arguments, $userId);
         } catch (CalendarException $e) {

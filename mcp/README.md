@@ -27,13 +27,8 @@ Cada tool só aparece em `tools/list` e só pode ser chamada quando o usuário t
 
 | `calendar_list_calendars` `{}` | calendar.read | Calendários visíveis ao usuário, próprios e compartilhados. |
 | `calendar_list_events` `{calendar?, from?, to?}` | calendar.read | Eventos no intervalo (padrão: próximos 7 dias), com recorrência expandida. |
-| `calendar_create_event` | calendar.create | Evento simples, sem recorrência, em calendário com permissão de escrita. |
-| `calendar_update_event` | calendar.edit | Título, local, descrição ou datas; datas de série recorrente não mudam. |
-| `calendar_move_event` | calendar.move | Para outro calendário do mesmo dono, sem sobrescrever. |
-| `calendar_delete_event` | calendar.delete | Série inteira para a lixeira do calendário; exige `confirm: true`. |
-| `calendar_transfer_event` | calendar.transfer | Para um calendário de outro usuário, compartilhado com permissão de escrita; exige `confirm: true`. |
 
-Tools de Calendar exigem o app Calendar habilitado para o usuário e usam o `CalDavBackend` do app DAV do core, carregado só quando uma tool de calendário é chamada. Escritas não enviam convites nem notificações aos participantes. `sabre/vobject` vem do core e não está no `vendor/` do pacote.
+Por enquanto, Calendar oferece apenas leitura: as cinco tools de escrita estão ocultas de `tools/list`, chamadas diretas falham fechadas e suas colunas não aparecem na matriz administrativa até ser provado o caminho oficial DAV do Nextcloud. Os grants de escrita já salvos são preservados internamente para eventual reativação depois da validação. As tools de leitura exigem o app Calendar habilitado para o usuário e usam o backend CalDAV do app DAV, carregado só quando uma tool de calendário é chamada. O runtime/plugins do Nextcloud 33 não foram validados; antes de reativar escrita, é obrigatório testar PUT/DELETE/MOVE, ACL compartilhada, convites e efeitos num ambiente de integração Nextcloud 33 real. `sabre/vobject` vem do core e não está no `vendor/` do pacote.
 
 Tools de Notes exigem o app Notes habilitado para o usuário. Leitura começa permitida; criação, edição, movimentação e exclusão começam negadas até o administrador liberar. Não há timeout próprio: a leitura é local ao PHP e o limite de bytes protege contra arquivos grandes. Storage externo lento fica limitado ao `max_execution_time` do PHP.
 
@@ -77,9 +72,9 @@ Os arquivos de licença acompanham cada pacote em `vendor/`. O `vendor/autoload.
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-0.6.6.tar.gz <servidor>:/tmp/
+scp build/mcp-0.6.9.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-0.6.6.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-0.6.9.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp
@@ -95,14 +90,14 @@ Para atualizar: `occ app:disable mcp`, remover `<apps>/mcp`, extrair o novo paco
    - A busca procura por nome, ID ou e-mail, e há um filtro por grupo; a tabela mostra 50 usuários por página.
    - Cada checkbox salva na hora: *Pode conectar* libera o usuário, e as demais colunas são as operações por módulo.
    - Os botões ✓/✕ no cabeçalho aplicam a coluna aos usuários ativos da página, com confirmação.
-   - Usuários desativados aparecem marcados e não podem ser editados. Módulos cujo app está desativado no servidor aparecem esmaecidos, e as permissões ficam guardadas.
+   - Usuários desativados aparecem marcados e não podem ser editados. Módulos cujo app não está disponível no servidor não aparecem na matriz; para um usuário sem acesso ao app, a célula fica desativada. As permissões salvas são preservadas.
    - O e-mail só serve para a busca e nunca é exibido.
    - Serviço, elegibilidade e conexão pessoal começam desligados para todos, inclusive administradores. Leitura começa permitida; escrita, exclusão e transferência começam negadas.
    - A página usa a API JSON admin-only `GET /apps/mcp/api/grants`, `PUT /apps/mcp/api/grants/{uid}`, `POST /apps/mcp/api/grants/bulk` e `PUT /apps/mcp/api/service`.
 2. **Configurações pessoais → Informações pessoais → MCP connection**: o próprio usuário clica em *Connect*.
 3. Em **Configurações pessoais → Segurança**, o usuário cria uma senha de app. O cliente MCP usa autenticação HTTP Basic com o ID do usuário e essa senha de app. O app nunca pede nem guarda a senha principal.
 
-Login pelo navegador (Login Flow v2/OAuth) ainda não está disponível.
+O login pelo navegador via OAuth está descrito em [Conectar pelo claude.ai (OAuth)](#conectar-pelo-claudeai-oauth).
 
 ### Chaves de configuração
 

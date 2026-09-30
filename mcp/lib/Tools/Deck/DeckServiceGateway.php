@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Deck;
 
 use OCA\Deck\Db\Acl;
+use OCA\Deck\Db\AssignmentMapper;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\CardMapper;
@@ -15,6 +16,8 @@ use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
 use OCA\Deck\Service\StackService;
+use OCA\Mcp\Service\UserTimezone;
+use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
 
@@ -31,13 +34,23 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	/** Last position of a stack, so a created card lands at the bottom like the Deck web UI. */
 	private const LAST_ORDER = 99999;
 
+	/** Visible boards a follow-up scans at most, so one call stays a bounded number of queries. */
+	private const MAX_BOARDS = 100;
+
 	/** @var array<string, object> Services resolved so far in this request. */
 	private array $resolved = [];
 
 	/**
 	 * @param ContainerInterface $container Nextcloud server container, resolves Deck services by FQCN.
+	 * @param ITimeFactory $time Clock the follow-up reads `overdue` from, so it can be pinned in a test.
+	 * @param UserTimezone|null $zones Timezone of the caller, deciding which day a due date falls on;
+	 *     PHP's default when absent.
 	 */
-	public function __construct(private ContainerInterface $container) {
+	public function __construct(
+		private ContainerInterface $container,
+		private ITimeFactory $time,
+		private ?UserTimezone $zones = null,
+	) {
 	}
 
 	/**
@@ -81,11 +94,79 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		$permissionService->checkPermission($stackMapper, $stackId, Acl::PERMISSION_READ);
 
 		$items = $cardMapper->findAll($stackId, $limit, $offset);
+		$items = is_array($items) ? array_values($items) : [];
+
+		// Deck embeds the assignments of a card only on the detail read, so the listing loads them
+		// in one query for the whole page instead of one query per card.
+		$this->attachAssignments($items);
 
 		return [
-			'items' => is_array($items) ? array_values($items) : [],
+			'items' => $items,
 			'boardId' => $stackMapper->findBoardId($stackId),
 		];
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function followupCards(string $userId, string $status, ?int $boardId, ?string $assignee, ?string $dueBefore, int $limit): array {
+		// `listBoards()` binds the caller to the Deck before anything is read for them.
+		$managed = $this->managedBoards($userId, $boardId);
+		$now = $this->time->getTime();
+		$zone = $this->zone($userId);
+
+		/** @var StackMapper $stackMapper */
+		$stackMapper = $this->service(StackMapper::class);
+		/** @var CardMapper $cardMapper */
+		$cardMapper = $this->service(CardMapper::class);
+
+		$truncated = $managed['capped'];
+		$items = [];
+
+		foreach ($managed['boards'] as $board) {
+			// One card past the limit is proof the answer is incomplete, so the scan stops there.
+			if (count($items) > $limit) {
+				break;
+			}
+
+			$stackIds = array_map(
+				static fn (Stack $stack): int => (int)$stack->getId(),
+				$stackMapper->findAll((int)$board->getId()),
+			);
+			if ($stackIds === []) {
+				continue;
+			}
+
+			// One query for the whole board; Deck already leaves archived and deleted cards out.
+			$matching = [];
+			foreach ($cardMapper->findAllForStacks($stackIds) ?: [] as $cardsOfStack) {
+				foreach ($cardsOfStack ?? [] as $card) {
+					if (CardCriteria::matches($card, $status, $dueBefore, $now, $zone)) {
+						$matching[] = $card;
+					}
+				}
+			}
+			if ($matching === []) {
+				continue;
+			}
+
+			$this->attachAssignments($matching);
+
+			foreach ($matching as $card) {
+				if ($assignee !== null && !in_array($assignee, CardCriteria::assignedUids($card), true)) {
+					continue;
+				}
+
+				$items[] = ['card' => $card, 'boardId' => (int)$board->getId()];
+			}
+		}
+
+		if (count($items) > $limit) {
+			$truncated = true;
+			$items = array_slice($items, 0, $limit);
+		}
+
+		return ['items' => $items, 'truncated' => $truncated];
 	}
 
 	/**
@@ -111,7 +192,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		$cardService = $this->service(CardService::class);
 
 		// `type` is free text in Deck (only length-checked), so the tools always write `note`.
-		return $cardService->create($title, $stackId, 'note', self::LAST_ORDER, $userId, $description, $duedate);
+		return $cardService->create($title, $stackId, 'note', self::LAST_ORDER, $userId, $description, $this->instant($userId, $duedate));
 	}
 
 	/**
@@ -133,7 +214,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 			(string)$card->getOwner(),
 			$description,
 			$card->getOrder(),
-			$duedate,
+			$this->instant($userId, $duedate),
 			null,
 			null,
 			new OptionalNullableValue($card->getDone()),
@@ -256,6 +337,96 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		$boardService->setUserId($userId);
 
 		return $boardService;
+	}
+
+	/**
+	 * Boards a follow-up scans: the ones the caller may manage, never the ones merely shared with
+	 * them, capped at {@see self::MAX_BOARDS} so the walk stays a bounded number of queries.
+	 *
+	 * `PermissionService::getPermissions()` already answers the owner as allowed
+	 * (`lib/Service/PermissionService.php:80` on Deck v1.17.5), so an explicit ACL lookup and
+	 * ownership are the same check here.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int|null $boardId Restrict the scan to this board, or null for all of them.
+	 * @return array{boards: list<Board>, capped: bool} Boards to scan, and whether visible boards
+	 *     were left unexamined by the ceiling.
+	 */
+	private function managedBoards(string $userId, ?int $boardId): array {
+		/** @var PermissionService $permissionService */
+		$permissionService = $this->service(PermissionService::class);
+
+		$boards = $this->listBoards($userId);
+		if ($boardId !== null) {
+			$boards = array_values(array_filter(
+				$boards,
+				static fn (Board $board): bool => (int)$board->getId() === $boardId,
+			));
+		}
+
+		$capped = count($boards) > self::MAX_BOARDS;
+		$managed = [];
+		foreach (array_slice($boards, 0, self::MAX_BOARDS) as $board) {
+			$permissions = $permissionService->getPermissions((int)$board->getId(), $userId);
+			if (($permissions[Acl::PERMISSION_MANAGE] ?? false) === true) {
+				$managed[] = $board;
+			}
+		}
+
+		return ['boards' => $managed, 'capped' => $capped];
+	}
+
+	/**
+	 * Timezone the caller reads due dates in.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @return \DateTimeZone Their preference, or PHP's default when no resolver was given.
+	 */
+	private function zone(string $userId): \DateTimeZone {
+		return $this->zones?->forUser($userId) ?? new \DateTimeZone(date_default_timezone_get());
+	}
+
+	/**
+	 * Due date as Deck should store it.
+	 *
+	 * A bare `YYYY-MM-DD` from the tools becomes midnight of that day for the caller, since Deck would
+	 * otherwise read it as UTC midnight and the card would show up a day early west of Greenwich. A
+	 * full timestamp (the current date kept by an edit that did not touch it) is passed through, so
+	 * the time set in the Deck web interface survives.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param string|null $duedate Day, ISO 8601 timestamp, or null to clear the date.
+	 * @return string|null Value for `CardService`.
+	 */
+	private function instant(string $userId, ?string $duedate): ?string {
+		if ($duedate === null || preg_match('/^\d{4}-\d{2}-\d{2}$/', $duedate) !== 1) {
+			return $duedate;
+		}
+
+		return CardCriteria::localMidnight($duedate, $this->zone($userId));
+	}
+
+	/**
+	 * Embeds the assignments of a batch of cards, in one query for all of them.
+	 *
+	 * @param list<Card> $cards Cards of one stack, board or page, mutated in place.
+	 */
+	private function attachAssignments(array $cards): void {
+		if ($cards === []) {
+			return;
+		}
+
+		/** @var AssignmentMapper $assignmentMapper */
+		$assignmentMapper = $this->service(AssignmentMapper::class);
+
+		$byCardId = [];
+		foreach ($assignmentMapper->findIn(array_map(static fn (Card $card): int => $card->getId(), $cards)) as $assignment) {
+			$byCardId[(int)$assignment->getCardId()][] = $assignment;
+		}
+
+		foreach ($cards as $card) {
+			$card->setAssignedUsers($byCardId[$card->getId()] ?? []);
+		}
 	}
 
 	/**

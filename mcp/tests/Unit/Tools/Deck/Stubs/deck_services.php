@@ -192,5 +192,15 @@ namespace OCA\Deck\Service {
 		public function checkPermission(?IPermissionMapper $mapper, $id, int $permission, $userId = null, bool $allowDeletedCard = false, bool $allowDeletedBoard = false): bool {
 			throw new \LogicException('Stub: expected a PHPUnit mock.');
 		}
+
+		/**
+		 * @param int $boardId Board whose permissions are read.
+		 * @param string|null $userId User to check, null for the bound user.
+		 * @param bool $allowDeletedBoard Allow a board marked as deleted.
+		 * @return array<int, bool> Permission level to flag, see `Acl::PERMISSION_*`.
+		 */
+		public function getPermissions(int $boardId, ?string $userId = null, bool $allowDeletedBoard = false): array {
+			throw new \LogicException('Stub: expected a PHPUnit mock.');
+		}
 	}
 }

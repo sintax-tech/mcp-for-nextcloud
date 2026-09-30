@@ -30,7 +30,7 @@ final class ListCardsHandlerTest extends TestCase {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->method('listCards')->willReturn(['items' => $items, 'boardId' => $boardId]);
 
-		return new ListCardsHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		return new ListCardsHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 	}
 
 	public function testHappyPathForwardsStackAndPagination(): void {
@@ -39,7 +39,7 @@ final class ListCardsHandlerTest extends TestCase {
 			->method('listCards')
 			->with('alice', 10, 25, 50)
 			->willReturn(['items' => [$this->card(['id' => 1])], 'boardId' => 4]);
-		$handler = new ListCardsHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new ListCardsHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$payload = $this->payload($handler->handle(['stackId' => 10, 'limit' => 25, 'offset' => 50], 'alice'));
 
@@ -55,7 +55,7 @@ final class ListCardsHandlerTest extends TestCase {
 			->method('listCards')
 			->with('alice', 10, ListCardsHandler::DEFAULT_LIMIT, 0)
 			->willReturn(['items' => [], 'boardId' => 4]);
-		$handler = new ListCardsHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new ListCardsHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		self::assertSame(ListCardsHandler::DEFAULT_LIMIT, $this->payload($handler->handle(['stackId' => 10], 'alice'))['limit']);
 	}
@@ -91,7 +91,7 @@ final class ListCardsHandlerTest extends TestCase {
 	public function testDeniedAccessBecomesTheGenericMessage(): void {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->method('listCards')->willThrowException(new NoPermissionException('Permission denied'));
-		$handler = new ListCardsHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new ListCardsHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$result = $handler->handle(['stackId' => 10], 'alice');
 
@@ -102,7 +102,7 @@ final class ListCardsHandlerTest extends TestCase {
 	public function testBackendFailureBecomesTheGenericMessage(): void {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->method('listCards')->willThrowException(new RuntimeException('deadlock'));
-		$handler = new ListCardsHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new ListCardsHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$result = $handler->handle(['stackId' => 10], 'alice');
 

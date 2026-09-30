@@ -35,7 +35,7 @@ final class MoveCardHandlerTest extends TestCase {
 			$expectation->willReturn($this->card(['id' => 7, 'stackId' => 11]));
 		}
 
-		return new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		return new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 	}
 
 	public function testHappyPathWithoutOrderLetsTheGatewayAppend(): void {
@@ -44,7 +44,7 @@ final class MoveCardHandlerTest extends TestCase {
 			->method('moveCard')
 			->with('alice', 7, 11, null)
 			->willReturn($this->card(['id' => 7, 'stackId' => 11]));
-		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$payload = $this->payload($handler->handle(['cardId' => 7, 'stackId' => 11], 'alice'));
 
@@ -57,7 +57,7 @@ final class MoveCardHandlerTest extends TestCase {
 			->method('moveCard')
 			->with('alice', 7, 11, 0)
 			->willReturn($this->card(['id' => 7, 'stackId' => 11]));
-		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$handler->handle(['cardId' => 7, 'stackId' => 11, 'order' => 0], 'alice');
 	}
@@ -68,7 +68,7 @@ final class MoveCardHandlerTest extends TestCase {
 			->method('moveCard')
 			->with('alice', 7, 42, 3)
 			->willReturn($this->card(['id' => 7, 'stackId' => 42]));
-		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		self::assertSame(42, $this->payload($handler->handle(['cardId' => 7, 'stackId' => 42, 'order' => 3], 'alice'))['stackId']);
 	}
@@ -106,7 +106,7 @@ final class MoveCardHandlerTest extends TestCase {
 			->willReturn($this->ownershipOf('pedro', 'Comercial'));
 		$gateway->expects(self::never())->method('stackOwnership');
 		$gateway->expects(self::never())->method('moveCard');
-		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->assertSharedConfirmation($handler->handle(['cardId' => 7, 'stackId' => 11], 'alice'));
 	}
@@ -119,7 +119,7 @@ final class MoveCardHandlerTest extends TestCase {
 			->with('alice', 11)
 			->willReturn($this->ownershipOf('pedro', 'Comercial'));
 		$gateway->expects(self::never())->method('moveCard');
-		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->assertSharedConfirmation($handler->handle(['cardId' => 7, 'stackId' => 11], 'alice'));
 	}
@@ -132,7 +132,7 @@ final class MoveCardHandlerTest extends TestCase {
 			->method('moveCard')
 			->with('alice', 7, 11, null)
 			->willReturn($this->card(['id' => 7, 'stackId' => 11]));
-		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$payload = $this->payload($handler->handle([
 			'cardId' => 7,
@@ -148,7 +148,7 @@ final class MoveCardHandlerTest extends TestCase {
 		$gateway->method('cardOwnership')->willThrowException(new NoPermissionException('Permission denied'));
 		$gateway->expects(self::never())->method('stackOwnership');
 		$gateway->expects(self::never())->method('moveCard');
-		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new MoveCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$result = $handler->handle(['cardId' => 7, 'stackId' => 11], 'alice');
 

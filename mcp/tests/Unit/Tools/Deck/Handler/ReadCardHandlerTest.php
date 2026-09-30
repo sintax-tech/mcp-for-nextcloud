@@ -41,7 +41,7 @@ final class ReadCardHandlerTest extends TestCase {
 			]));
 		}
 
-		return new ReadCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		return new ReadCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 	}
 
 	public function testHappyPathForwardsTheCardAndTheCaller(): void {
@@ -50,7 +50,7 @@ final class ReadCardHandlerTest extends TestCase {
 			->method('findCard')
 			->with('alice', 7)
 			->willReturn($this->card(['id' => 7, 'title' => 'Fechar contrato']));
-		$handler = new ReadCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new ReadCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$payload = $this->payload($handler->handle(['cardId' => 7], 'alice'));
 
@@ -96,6 +96,6 @@ final class ReadCardHandlerTest extends TestCase {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->method('findCard')->willReturn($this->card(['id' => 7, 'description' => $description]));
 
-		return new ReadCardHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		return new ReadCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 	}
 }

@@ -6,6 +6,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 use DateTime;
 use DateTimeZone;
 use InvalidArgumentException;
+use OCA\Mcp\Tools\Talk\AttachmentAccess;
 use OCA\Mcp\Tools\Talk\AttachmentMessage;
 use OCA\Mcp\Tools\Talk\Conversation;
 use OCA\Mcp\Tools\Talk\ConversationAccessException;
@@ -16,8 +17,6 @@ use OCA\Mcp\Tools\Talk\TalkUnavailableException;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Comments\IComment;
 use OCP\Comments\NotFoundException as CommentNotFoundException;
-use OCP\Share\IManager as IShareManager;
-use OCP\Share\IShare;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -25,7 +24,7 @@ use RuntimeException;
 class ConversationWriterTest extends TestCase {
     private TalkServices&MockObject $talkServices;
     private ITimeFactory&MockObject $timeFactory;
-    private IShareManager&MockObject $shareManager;
+    private AttachmentAccess&MockObject $attachmentAccess;
     private WriterParticipantGateway&MockObject $participantService;
     private ConversationWriter $writer;
     private WriterRoomStub $room;
@@ -34,12 +33,12 @@ class ConversationWriterTest extends TestCase {
         parent::setUp();
         $this->talkServices = $this->createMock(TalkServices::class);
         $this->timeFactory = $this->createMock(ITimeFactory::class);
-        $this->shareManager = $this->createMock(IShareManager::class);
+        $this->attachmentAccess = $this->createMock(AttachmentAccess::class);
         $this->writer = new ConversationWriter(
             $this->talkServices,
             $this->timeFactory,
             new AttachmentMessage(),
-            $this->shareManager,
+            $this->attachmentAccess,
         );
         $this->room = new WriterRoomStub('abcd');
         $this->participantService = $this->createMock(WriterParticipantGateway::class);
@@ -74,7 +73,8 @@ class ConversationWriterTest extends TestCase {
                 null,
             )
             ->willReturn($this->givenSentComment('55'));
-        $this->shareManager->expects($this->never())->method('createShare');
+        // A text reply has nothing to share, so it must not even ask the share rule.
+        $this->attachmentAccess->expects($this->never())->method('requireRoomShareOf');
 
         $result = $this->writer->reply($this->givenConversation(), 'alice', 'bom dia');
 
@@ -122,7 +122,8 @@ class ConversationWriterTest extends TestCase {
     }
 
     public function testQuotedMessageIsResolvedThroughTheChatManagerOfTheConversation(): void {
-        $parent = new WriterCommentStub('42');
+        // The parent comment goes to Talk untouched, and the writer only passes it through.
+        $parent = $this->createMock(IComment::class);
         $chatManager = $this->givenChatManager();
         $chatManager->expects($this->once())->method('getParentComment')->with($this->room, '42')->willReturn($parent);
         $chatManager->expects($this->once())->method('sendMessage')
@@ -171,7 +172,7 @@ class ConversationWriterTest extends TestCase {
         $services = $this->createMock(TalkServices::class);
         $services->method('participantService')
             ->willThrowException(new TalkUnavailableException(Messages::TALK_UNAVAILABLE));
-        $writer = new ConversationWriter($services, $this->timeFactory, new AttachmentMessage(), $this->shareManager);
+        $writer = new ConversationWriter($services, $this->timeFactory, new AttachmentMessage(), $this->attachmentAccess);
 
         $this->expectException(TalkUnavailableException::class);
         $writer->reply($this->givenConversation(), 'alice', 'bom dia');
@@ -191,7 +192,8 @@ class ConversationWriterTest extends TestCase {
         }
     }
 
-    public function testQuotePublishesTheEnvelopeOnceAndCreatesNoShare(): void {
+    public function testQuotePublishesTheEnvelopeOnceAskingOnlyForTheShareRule(): void {
+        $conversation = $this->givenConversation();
         $chatManager = $this->givenChatManager();
         $chatManager->expects($this->once())
             ->method('addSystemMessage')
@@ -211,14 +213,10 @@ class ConversationWriterTest extends TestCase {
                 true,
             )
             ->willReturn($this->givenSentComment('88'));
-        $this->shareManager->method('getShareById')
-            ->with('77', 'alice')
-            ->willReturn($this->givenRoomShare(IShare::TYPE_ROOM, 'abcd'));
-        // The card is a message, never a new share: a share here would publish the attachment twice.
-        $this->shareManager->expects($this->never())->method('createShare');
-        $this->shareManager->expects($this->never())->method('newShare');
+        // The card is a message, never a new share: the rule only reads the share, so nothing can post twice.
+        $this->attachmentAccess->expects($this->once())->method('requireRoomShareOf')->with($conversation, 'alice', 77);
 
-        $result = $this->writer->quoteAttachment($this->givenConversation(), 'alice', 77, 'a figura');
+        $result = $this->writer->quoteAttachment($conversation, 'alice', 77, 'a figura');
 
         $this->assertSame([
             'conversation_token' => 'abcd',
@@ -227,38 +225,17 @@ class ConversationWriterTest extends TestCase {
         ], $result);
     }
 
-    public function testQuoteRefusesAnAttachmentOfAnotherConversation(): void {
-        $this->shareManager->method('getShareById')->willReturn($this->givenRoomShare(IShare::TYPE_ROOM, 'zzzz'));
-        $chatManager = $this->givenChatManager();
-        $chatManager->expects($this->never())->method('addSystemMessage');
-
-        $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::ATTACHMENT_NOT_FOUND);
-        $this->writer->quoteAttachment($this->givenConversation(), 'alice', 77);
-    }
-
-    public function testQuoteRefusesAShareThatIsNotOfTheConversationKind(): void {
-        $this->shareManager->method('getShareById')->willReturn($this->givenRoomShare(IShare::TYPE_LINK, 'abcd'));
-        $chatManager = $this->givenChatManager();
-        $chatManager->expects($this->never())->method('addSystemMessage');
-
-        $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::ATTACHMENT_NOT_FOUND);
-        $this->writer->quoteAttachment($this->givenConversation(), 'alice', 77);
-    }
-
-    public function testQuoteOfSomethingTheUserCannotSeeIsRefusedBeforeAnyWrite(): void {
-        $this->shareManager->method('getShareById')
-            ->willThrowException(new RuntimeException('Share 77 is not visible to alice'));
+    public function testQuotePublishesNothingWhenTheAttachmentIsNotOfTheConversation(): void {
+        $this->attachmentAccess->method('requireRoomShareOf')
+            ->willThrowException(new ConversationAccessException(Messages::ATTACHMENT_NOT_FOUND));
         $chatManager = $this->givenChatManager();
         $chatManager->expects($this->never())->method('addSystemMessage');
 
         try {
             $this->writer->quoteAttachment($this->givenConversation(), 'alice', 77);
-            $this->fail('An attachment the user cannot see must be refused.');
+            $this->fail('An attachment of another conversation must be refused.');
         } catch (ConversationAccessException $e) {
             $this->assertSame(Messages::ATTACHMENT_NOT_FOUND, $e->getMessage());
-            $this->assertStringNotContainsString('not visible', $e->getMessage());
         }
     }
 
@@ -278,7 +255,6 @@ class ConversationWriterTest extends TestCase {
                 true,
             )
             ->willReturn($this->givenSentComment('89'));
-        $this->shareManager->method('getShareById')->willReturn($this->givenRoomShare(IShare::TYPE_ROOM, 'abcd'));
 
         $this->writer->quoteAttachment($this->givenConversation(), 'alice', 77);
     }
@@ -301,13 +277,6 @@ class ConversationWriterTest extends TestCase {
         return $comment;
     }
 
-    private function givenRoomShare(int $shareType, string $sharedWith): IShare&MockObject {
-        $share = $this->createMock(IShare::class);
-        $share->method('getShareType')->willReturn($shareType);
-        $share->method('getSharedWith')->willReturn($sharedWith);
-
-        return $share;
-    }
 }
 
 /** The chat surface the writer uses. */
@@ -354,11 +323,3 @@ final class WriterParticipantStub {
     }
 }
 
-/** Comment double identified only by its id, which is all the writer passes along. */
-final class WriterCommentStub {
-    public function __construct(private string $id) {}
-
-    public function getId(): string {
-        return $this->id;
-    }
-}

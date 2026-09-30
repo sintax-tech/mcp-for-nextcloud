@@ -14,6 +14,10 @@ use Throwable;
  * The module holds no access rule of its own: the registry checks the grant and the app enablement, and every
  * resource decision belongs to ConversationResolver, UserFileResolver or the share lookup. What it does own is the
  * translation of a failure into an MCP result, keeping every user-facing string in Messages.
+ *
+ * Every writing tool stops at a draft until the user approves it: confirm: true is the only way to publish, and
+ * the arguments of the confirmed call are the text that goes out, so an approved draft cannot be changed in
+ * between. Without confirm the tool answers with a payload, never with an error, and writes nothing.
  */
 class TalkModule implements ToolModule {
     public const TOOL_LIST = 'talk_list_conversations';
@@ -25,12 +29,16 @@ class TalkModule implements ToolModule {
     private const MODULE = 'talk';
     private const APP = TalkServices::APP_ID;
 
+    /** Optional on purpose: a call without it is the draft, a call with it true is the approved send. */
+    private const CONFIRM_SCHEMA = ['type' => 'boolean'];
+
     public function __construct(
         private TalkServices $talkServices,
         private ConversationReader $reader,
         private ConversationResolver $resolver,
         private ConversationWriter $writer,
         private FileSharer $sharer,
+        private DraftApproval $draftApproval,
         private LoggerInterface $logger,
     ) {}
 
@@ -81,6 +89,7 @@ class TalkModule implements ToolModule {
                             'maxLength' => ConversationWriter::MAX_MESSAGE_LENGTH,
                         ],
                         'reply_to' => ['type' => 'integer', 'minimum' => 1],
+                        'confirm' => self::CONFIRM_SCHEMA,
                     ],
                     'required' => ['conversation_token', 'message'],
                     'additionalProperties' => false,
@@ -102,6 +111,7 @@ class TalkModule implements ToolModule {
                             'minLength' => 1,
                             'maxLength' => ConversationWriter::MAX_MESSAGE_LENGTH,
                         ],
+                        'confirm' => self::CONFIRM_SCHEMA,
                     ],
                     'required' => ['conversation_token', 'path'],
                     'additionalProperties' => false,
@@ -123,6 +133,7 @@ class TalkModule implements ToolModule {
                             'minLength' => 1,
                             'maxLength' => AttachmentMessage::MAX_CAPTION,
                         ],
+                        'confirm' => self::CONFIRM_SCHEMA,
                     ],
                     'required' => ['conversation_token', 'attachment_id'],
                     'additionalProperties' => false,
@@ -272,51 +283,65 @@ class TalkModule implements ToolModule {
      *
      * @param string $userId Authenticated user
      * @param array<string, mixed> $arguments Validated arguments
-     * @return array<string, mixed> Result data of talk_reply
+     * @return array<string, mixed> Result data of talk_reply, or the draft when confirm is absent
      * @throws InvalidArgumentException When an argument is missing
-     * @throws ConversationAccessException When the conversation is missing or not writable
+     * @throws ConversationAccessException When the conversation is missing, not writable, or the quoted message is not there
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function replyCall(string $userId, array $arguments): array {
         $message = $this->message($arguments);
         $replyTo = $this->replyTo($arguments);
+        $conversation = $this->writable($userId, $arguments);
 
-        return $this->writer->reply($this->writable($userId, $arguments), $userId, $message, $replyTo);
+        return $this->confirmed($arguments)
+            ? $this->writer->reply($conversation, $userId, $message, $replyTo)
+            : $this->draftApproval->reply($conversation, $userId, $message, $replyTo);
     }
 
     /**
      * @param string $userId Authenticated user
      * @param array<string, mixed> $arguments Validated arguments
-     * @return array<string, mixed> Result data of talk_attach_file
+     * @return array<string, mixed> Result data of talk_attach_file, or the draft when confirm is absent
      * @throws InvalidArgumentException When the path is missing
-     * @throws ConversationAccessException When the conversation or the file cannot be reached
+     * @throws ConversationAccessException When the conversation cannot be reached for writing
+     * @throws FileAccessException When the file is missing, not shareable or already shared in this conversation
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function attachCall(string $userId, array $arguments): array {
         $path = $this->path($arguments);
         $caption = $this->optionalMessage($arguments);
+        $conversation = $this->writable($userId, $arguments);
 
-        return $this->sharer->attach($this->writable($userId, $arguments), $userId, $path, $caption);
+        return $this->confirmed($arguments)
+            ? $this->sharer->attach($conversation, $userId, $path, $caption)
+            : $this->draftApproval->attach($conversation, $userId, $path, $caption);
     }
 
     /**
      * @param string $userId Authenticated user
      * @param array<string, mixed> $arguments Validated arguments
-     * @return array<string, mixed> Result data of talk_quote_file
+     * @return array<string, mixed> Result data of talk_quote_file, or the draft when confirm is absent
      * @throws InvalidArgumentException When the attachment id is missing
-     * @throws ConversationAccessException When the conversation or the attachment cannot be reached
+     * @throws ConversationAccessException When the conversation cannot be reached for writing, or the attachment is not a share of it
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function quoteCall(string $userId, array $arguments): array {
         $attachmentId = $this->attachmentId($arguments);
         $caption = $this->optionalMessage($arguments);
+        $conversation = $this->writable($userId, $arguments);
 
-        return $this->writer->quoteAttachment(
-            $this->writable($userId, $arguments),
-            $userId,
-            $attachmentId,
-            $caption,
-        );
+        return $this->confirmed($arguments)
+            ? $this->writer->quoteAttachment($conversation, $userId, $attachmentId, $caption)
+            : $this->draftApproval->quote($conversation, $userId, $attachmentId, $caption);
+    }
+
+    /**
+     * Only an explicit true publishes; confirm: false is the same call as no confirm at all.
+     *
+     * @param array<string, mixed> $arguments Validated arguments
+     */
+    private function confirmed(array $arguments): bool {
+        return ($arguments['confirm'] ?? false) === true;
     }
 
     /**

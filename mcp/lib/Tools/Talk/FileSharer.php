@@ -38,13 +38,8 @@ class FileSharer {
      * @throws TalkUnavailableException When spreed is unavailable
      */
     public function attach(Conversation $conversation, string $userId, string $path, ?string $caption = null): array {
-        $file = $this->fileResolver->resolveShareableFile($userId, $path);
-        $token = $conversation->room->getToken();
-
-        if ($this->isAlreadySharedIn($userId, $token, $file)) {
-            // Sharing again would make Talk post a second card and then refuse with a 403.
-            throw new FileAccessException(Messages::FILE_ALREADY_SHARED);
-        }
+        $file = $this->resolveShareable($conversation, $userId, $path);
+        $token = $conversation->token();
 
         try {
             $share = $this->shareManager->newShare();
@@ -62,11 +57,7 @@ class FileSharer {
         $result = [
             'conversation_token' => $token,
             'attachmentId' => (int)$created->getId(),
-            'file' => [
-                'path' => $file->getPath(),
-                'name' => $file->getName(),
-                'size' => (int)$file->getSize(),
-            ],
+            'file' => self::describe($file),
         ];
 
         if ($caption !== null) {
@@ -74,6 +65,54 @@ class FileSharer {
         }
 
         return $result;
+    }
+
+    /**
+     * Resolves the file a draft would attach, applying every rule the share itself applies, so what the user
+     * approves is exactly what can be shared.
+     *
+     * @param Conversation $conversation Conversation already validated for writing
+     * @param string $userId Authenticated user, the owner of the file and of the share
+     * @param string $path Path of the file relative to the user folder
+     * @return array{path:string, name:string, size:int} The file as it will be reported after the share
+     * @throws InvalidArgumentException When the path is not usable
+     * @throws FileAccessException When the file is missing, not shareable or already shared in this conversation
+     */
+    public function previewFile(Conversation $conversation, string $userId, string $path): array {
+        return self::describe($this->resolveShareable($conversation, $userId, $path));
+    }
+
+    /**
+     * The file the share would carry, with the duplicate check that a confirmed call would hit anyway.
+     *
+     * @param Conversation $conversation Conversation already validated for writing
+     * @param string $userId Authenticated user, the owner of the file and of the share
+     * @param string $path Path of the file relative to the user folder
+     * @return object The file node, as an OCA\Files\File
+     * @throws InvalidArgumentException When the path is not usable
+     * @throws FileAccessException When the file is missing, not shareable or already shared in this conversation
+     */
+    private function resolveShareable(Conversation $conversation, string $userId, string $path): object {
+        $file = $this->fileResolver->resolveShareableFile($userId, $path);
+
+        if ($this->isAlreadySharedIn($userId, $conversation->token(), $file)) {
+            // Sharing again would make Talk post a second card and then refuse with a 403.
+            throw new FileAccessException(Messages::FILE_ALREADY_SHARED);
+        }
+
+        return $file;
+    }
+
+    /**
+     * @param object $file The file node, as an OCA\Files\File
+     * @return array{path:string, name:string, size:int}
+     */
+    private static function describe(object $file): array {
+        return [
+            'path' => $file->getPath(),
+            'name' => $file->getName(),
+            'size' => (int)$file->getSize(),
+        ];
     }
 
     /**

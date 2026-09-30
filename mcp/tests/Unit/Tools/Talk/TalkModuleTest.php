@@ -9,6 +9,7 @@ use OCA\Mcp\Tools\Talk\ConversationAccessException;
 use OCA\Mcp\Tools\Talk\ConversationReader;
 use OCA\Mcp\Tools\Talk\ConversationResolver;
 use OCA\Mcp\Tools\Talk\ConversationWriter;
+use OCA\Mcp\Tools\Talk\DraftApproval;
 use OCA\Mcp\Tools\Talk\FileAccessException;
 use OCA\Mcp\Tools\Talk\FileSharer;
 use OCA\Mcp\Tools\Talk\Messages;
@@ -25,6 +26,7 @@ class TalkModuleTest extends TestCase {
     private ConversationResolver&MockObject $resolver;
     private ConversationWriter&MockObject $writer;
     private FileSharer&MockObject $sharer;
+    private DraftApproval&MockObject $draftApproval;
     private LoggerInterface&MockObject $logger;
     private TalkModule $module;
 
@@ -34,6 +36,7 @@ class TalkModuleTest extends TestCase {
         $this->resolver = $this->createMock(ConversationResolver::class);
         $this->writer = $this->createMock(ConversationWriter::class);
         $this->sharer = $this->createMock(FileSharer::class);
+        $this->draftApproval = $this->createMock(DraftApproval::class);
         $this->logger = $this->createMock(LoggerInterface::class);
         $this->module = new TalkModule(
             $this->createMock(TalkServices::class),
@@ -41,6 +44,7 @@ class TalkModuleTest extends TestCase {
             $this->resolver,
             $this->writer,
             $this->sharer,
+            $this->draftApproval,
             $this->logger,
         );
     }
@@ -83,6 +87,12 @@ class TalkModuleTest extends TestCase {
         $this->assertSame(['conversation_token', 'attachment_id'], $schemas['talk_quote_file']['required']);
         $this->assertArrayNotHasKey('message', $schemas['talk_attach_file']['required']);
         $this->assertArrayNotHasKey('message', $schemas['talk_quote_file']['required']);
+        // confirm is what turns a draft into a send, so it is a boolean the caller may omit: an absent one is
+        // the draft, never an error, and only an explicit true publishes.
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file'] as $name) {
+            $this->assertSame(['type' => 'boolean'], $schemas[$name]['properties']['confirm'], $name);
+            $this->assertArrayNotHasKey('confirm', $schemas[$name]['required'], $name);
+        }
         foreach ($schemas as $name => $schema) {
             // The listing tool takes no arguments at all, so it has no token to bound.
             if (isset($schema['properties']) && is_array($schema['properties'])
@@ -137,7 +147,7 @@ class TalkModuleTest extends TestCase {
 
         $result = $this->module->call(
             TalkModule::TOOL_REPLY,
-            ['conversation_token' => 'abcd', 'message' => 'bom dia', 'reply_to' => 42],
+            ['conversation_token' => 'abcd', 'message' => 'bom dia', 'reply_to' => 42, 'confirm' => true],
             'alice',
         );
 
@@ -150,7 +160,11 @@ class TalkModuleTest extends TestCase {
             ->method('reply')
             ->with($this->anything(), 'alice', 'bom dia', null);
 
-        $this->module->call(TalkModule::TOOL_REPLY, ['conversation_token' => 'abcd', 'message' => 'bom dia'], 'alice');
+        $this->module->call(
+            TalkModule::TOOL_REPLY,
+            ['conversation_token' => 'abcd', 'message' => 'bom dia', 'confirm' => true],
+            'alice',
+        );
     }
 
     public function testAttachingForwardsThePathAndTheOptionalCaption(): void {
@@ -164,7 +178,7 @@ class TalkModuleTest extends TestCase {
 
         $result = $this->module->call(
             TalkModule::TOOL_ATTACH,
-            ['conversation_token' => 'abcd', 'path' => 'relatorio.pdf', 'message' => 'olha o relatório'],
+            ['conversation_token' => 'abcd', 'path' => 'relatorio.pdf', 'message' => 'olha o relatório', 'confirm' => true],
             'alice',
         );
 
@@ -177,7 +191,11 @@ class TalkModuleTest extends TestCase {
             ->method('attach')
             ->with($this->anything(), 'alice', 'relatorio.pdf', null);
 
-        $this->module->call(TalkModule::TOOL_ATTACH, ['conversation_token' => 'abcd', 'path' => 'relatorio.pdf'], 'alice');
+        $this->module->call(
+            TalkModule::TOOL_ATTACH,
+            ['conversation_token' => 'abcd', 'path' => 'relatorio.pdf', 'confirm' => true],
+            'alice',
+        );
     }
 
     public function testQuotingForwardsTheAttachmentIdAndTheOptionalCaption(): void {
@@ -191,16 +209,107 @@ class TalkModuleTest extends TestCase {
 
         $result = $this->module->call(
             TalkModule::TOOL_QUOTE,
-            ['conversation_token' => 'abcd', 'attachment_id' => 77, 'message' => 'a figura'],
+            ['conversation_token' => 'abcd', 'attachment_id' => 77, 'message' => 'a figura', 'confirm' => true],
             'alice',
         );
 
         $this->assertSame(77, $this->payloadOf($result)['attachmentId']);
     }
 
+    public function testEveryWritingToolAsksTheAgentForTheApprovalInItsDescription(): void {
+        $descriptions = array_column($this->module->definitions(), 'description', 'name');
+
+        // The description is the only thing the agent reads before it decides to call the tool, so the rule
+        // lives in the sentence itself and not only in this test.
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file'] as $name) {
+            $this->assertStringContainsString(
+                'Antes de enviar, o agente DEVE mostrar o rascunho ao usuário e obter aprovação explícita;'
+                    . ' só então repetir com confirm: true.',
+                $descriptions[$name],
+                $name,
+            );
+        }
+
+        foreach (['talk_list_conversations', 'talk_read_messages'] as $name) {
+            $this->assertStringNotContainsString('confirm: true', $descriptions[$name], $name);
+        }
+    }
+
+    public function testReplyWithoutConfirmationStopsAtTheDraftAndWritesNothing(): void {
+        $conversation = $this->givenConversation();
+        $this->resolver->method('resolveForWriting')->willReturn($conversation);
+        // The whole point of the confirmation: a call that was not approved must not reach Talk.
+        $this->writer->expects($this->never())->method('reply');
+        $this->draftApproval->expects($this->once())
+            ->method('reply')
+            ->with($conversation, 'alice', 'bom dia', 42)
+            ->willReturn(['requiresConfirmation' => true, 'action' => 'talk_reply']);
+
+        $result = $this->module->call(
+            TalkModule::TOOL_REPLY,
+            ['conversation_token' => 'abcd', 'message' => 'bom dia', 'reply_to' => 42],
+            'alice',
+        );
+
+        // A draft is an answer, not a failure: the agent has to be able to show it and ask.
+        $this->assertSame(['requiresConfirmation' => true, 'action' => 'talk_reply'], $this->payloadOf($result));
+        $this->assertArrayNotHasKey('isError', $result);
+    }
+
+    public function testAttachingWithoutConfirmationStopsAtTheDraft(): void {
+        $conversation = $this->givenConversation();
+        $this->resolver->method('resolveForWriting')->willReturn($conversation);
+        $this->sharer->expects($this->never())->method('attach');
+        $this->draftApproval->expects($this->once())
+            ->method('attach')
+            ->with($conversation, 'alice', 'relatorio.pdf', 'olha o relatório')
+            ->willReturn(['requiresConfirmation' => true, 'action' => 'talk_attach_file']);
+
+        $result = $this->module->call(
+            TalkModule::TOOL_ATTACH,
+            ['conversation_token' => 'abcd', 'path' => 'relatorio.pdf', 'message' => 'olha o relatório'],
+            'alice',
+        );
+
+        $this->assertSame(['requiresConfirmation' => true, 'action' => 'talk_attach_file'], $this->payloadOf($result));
+    }
+
+    public function testQuotingWithoutConfirmationStopsAtTheDraft(): void {
+        $conversation = $this->givenConversation();
+        $this->resolver->method('resolveForWriting')->willReturn($conversation);
+        $this->writer->expects($this->never())->method('quoteAttachment');
+        $this->draftApproval->expects($this->once())
+            ->method('quote')
+            ->with($conversation, 'alice', 77, 'a figura')
+            ->willReturn(['requiresConfirmation' => true, 'action' => 'talk_quote_file']);
+
+        $result = $this->module->call(
+            TalkModule::TOOL_QUOTE,
+            ['conversation_token' => 'abcd', 'attachment_id' => 77, 'message' => 'a figura'],
+            'alice',
+        );
+
+        $this->assertSame(['requiresConfirmation' => true, 'action' => 'talk_quote_file'], $this->payloadOf($result));
+    }
+
+    public function testAnExplicitFalseIsTheSameAsNoConfirmationAtAll(): void {
+        $conversation = $this->givenConversation();
+        $this->resolver->method('resolveForWriting')->willReturn($conversation);
+        $this->writer->expects($this->never())->method('reply');
+        $this->draftApproval->expects($this->once())->method('reply')->willReturn(['requiresConfirmation' => true]);
+
+        $this->module->call(
+            TalkModule::TOOL_REPLY,
+            ['conversation_token' => 'abcd', 'message' => 'bom dia', 'confirm' => false],
+            'alice',
+        );
+    }
+
     public function testRefusalKeepsTheMessageWrittenForTheUser(): void {
         $this->resolver->method('resolveForWriting')
             ->willThrowException(new ConversationAccessException(Messages::CONVERSATION_NOT_WRITABLE));
+        // A conversation the user cannot write in is refused even in a draft: there is nothing to approve.
+        $this->draftApproval->expects($this->never())->method('reply');
         // A refusal is audited too, so an operator can tell a refused call from one that never arrived.
         $this->logger->expects($this->once())
             ->method('error')
@@ -240,7 +349,11 @@ class TalkModuleTest extends TestCase {
                 }),
             );
 
-        $result = $this->module->call(TalkModule::TOOL_ATTACH, ['conversation_token' => 'abcd', 'path' => 'a.pdf'], 'alice');
+        $result = $this->module->call(
+            TalkModule::TOOL_ATTACH,
+            ['conversation_token' => 'abcd', 'path' => 'a.pdf', 'confirm' => true],
+            'alice',
+        );
 
         $this->assertTrue($result['isError']);
         $this->assertSame(Messages::UNEXPECTED, $result['content'][0]['text']);

@@ -22,8 +22,9 @@ class AttachmentMessage {
      */
     public function build(int $shareId, ?string $caption = null): string {
         $parameters = ['share' => (string)$shareId];
-        if ($caption !== null) {
-            $parameters['metaData'] = ['caption' => $this->assertCaption($caption)];
+        $text = self::normalizeCaption($caption);
+        if ($text !== null) {
+            $parameters['metaData'] = ['caption' => $text];
         }
 
         $envelope = json_encode(
@@ -39,11 +40,18 @@ class AttachmentMessage {
     }
 
     /**
-     * @param string $caption Caption as received from the client
-     * @return string The caption with surrounding whitespace removed
+     * The caption as the card will render it: surrounding whitespace removed, absent caption reported as null so
+     * the caller does not have to distinguish "no caption" from "empty caption". A draft asks for the very text
+     * that will be published, so the rule lives here and the preview uses it too.
+     *
+     * @param string|null $caption Caption as received from the client
+     * @return string|null The trimmed caption, or null when there is none
      * @throws InvalidArgumentException When the caption is blank or too long
      */
-    private function assertCaption(string $caption): string {
+    public static function normalizeCaption(?string $caption): ?string {
+        if ($caption === null) {
+            return null;
+        }
         $trimmed = trim($caption);
         if ($trimmed === '') {
             throw new InvalidArgumentException(Messages::EMPTY_MESSAGE);

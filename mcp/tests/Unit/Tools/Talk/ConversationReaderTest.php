@@ -5,6 +5,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 
 use DateTimeImmutable;
 use InvalidArgumentException;
+use OCA\Mcp\Tools\Talk\ActorNames;
 use OCA\Mcp\Tools\Talk\ConversationReader;
 use OCA\Mcp\Tools\Talk\ConversationResolver;
 use OCA\Mcp\Tools\Talk\Messages;
@@ -27,7 +28,8 @@ class ConversationReaderTest extends TestCase {
         $this->talkServices = $this->createMock(TalkServices::class);
         $this->resolver = $this->createMock(ConversationResolver::class);
         $this->userManager = $this->createMock(IUserManager::class);
-        $this->reader = new ConversationReader($this->talkServices, $this->resolver, $this->userManager);
+        // The real ActorNames over the mocked accounts: the reader still owns the reading, not the naming rule.
+        $this->reader = new ConversationReader($this->talkServices, $this->resolver, new ActorNames($this->userManager));
     }
 
     public function testLimitZeroIsAnArgumentErrorBeforeAnyTalkCall(): void {

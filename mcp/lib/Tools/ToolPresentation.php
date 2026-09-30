@@ -18,8 +18,13 @@ final class ToolPresentation {
 
     /** Operations that only read; every other operation may change data. */
     private const READ_OPERATION = 'read';
-    /** Operations whose whole point is to destroy, overwrite or relocate data. */
-    private const DESTRUCTIVE_OPERATIONS = ['delete', 'restore', 'transfer', 'move'];
+    /**
+     * Operations a user cannot take back from the client: the ones that replace or remove what exists, and the
+     * ones that publish a message under their own name in a room full of other people. Replying, sharing a file
+     * and quoting an attachment only add rows nobody deletes for them, but once sent the user has to ask somebody
+     * else to remove them, which is exactly the confirmation a client offers on a destructive tool.
+     */
+    private const DESTRUCTIVE_OPERATIONS = ['delete', 'restore', 'transfer', 'move', 'reply', 'attach', 'quote'];
 
     /** Technical tool name to human-readable pt-BR title. A tool missing here falls back to a humanized name. */
     private const TITLES = [

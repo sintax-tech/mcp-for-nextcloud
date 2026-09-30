@@ -131,6 +131,31 @@ final class ToolsListContractTest extends TestCase {
     }
 
     /**
+     * The writing tools of the talk module publish a message under the user's own name: they change nothing
+     * that exists, but nothing in the client takes them back, so they must be flagged the way the destructive
+     * ones are and must never be presented as read-only.
+     */
+    public function testTalkWritingToolsAreAdvertisedAsDestructiveAndNotReadOnly(): void {
+        $tools = array_column(
+            json_decode($this->toolsListJson(), false, 512, JSON_THROW_ON_ERROR)->result->tools,
+            null,
+            'name',
+        );
+
+        foreach (['talk_reply', 'talk_attach_file', 'talk_quote_file'] as $name) {
+            $annotations = $tools[$name]->annotations;
+            $this->assertFalse($annotations->readOnlyHint, "$name: publishing a message is not reading");
+            $this->assertTrue($annotations->destructiveHint, "$name: a sent message cannot be unsent by the client");
+            $this->assertFalse($annotations->idempotentHint, "$name: repeating the call sends a second message");
+            // The approval the description asks for is the same gate a client offers on a destructive tool.
+            $this->assertSame(['type' => 'boolean'], json_decode(json_encode($tools[$name]->inputSchema->properties->confirm), true), $name);
+        }
+
+        $this->assertTrue($tools['talk_list_conversations']->annotations->readOnlyHint);
+        $this->assertTrue($tools['talk_read_messages']->annotations->readOnlyHint);
+    }
+
+    /**
      * The title map is the source of truth for the display layer; the humanized fallback only keeps a
      * new tool from breaking at runtime, so a missing entry must fail here instead.
      */

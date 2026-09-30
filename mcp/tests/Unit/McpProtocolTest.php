@@ -33,11 +33,45 @@ final class McpProtocolTest extends TestCase {
         $this->assertSame(['status' => 202, 'body' => null], $this->call(['jsonrpc' => '2.0', 'method' => 'notifications/initialized']));
     }
 
-    public function testLaterRequestsRequireProtocolHeader(): void {
+    public function testInitializeIgnoresTheVersionHeader(): void {
+        $init = ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'initialize', 'params' => [
+            'protocolVersion' => '2025-11-25', 'capabilities' => [], 'clientInfo' => ['name' => 'Claude-User', 'version' => '1'],
+        ]];
+        foreach (['', '2025-11-25', '2099-01-01', 'garbage'] as $header) {
+            $out = $this->call($init, $header);
+            $this->assertSame(200, $out['status'], $header);
+            $this->assertSame('2025-06-18', $out['body']['result']['protocolVersion']);
+        }
+    }
+
+    public function testLaterRequestsAcceptKnownVersionsOrNoHeader(): void {
         $list = ['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list'];
-        $this->assertSame(400, $this->call($list, '')['status']);
-        $this->assertSame(400, $this->call($list, '2024-11-05')['status']);
-        $this->assertSame(200, $this->call($list)['status']);
+        foreach (['', '2025-03-26', '2025-06-18', '2025-11-25'] as $header) {
+            $this->assertSame(200, $this->call($list, $header)['status'], $header);
+        }
+        $this->assertSame(202, $this->call(['jsonrpc' => '2.0', 'method' => 'notifications/initialized'], '2025-11-25')['status']);
+    }
+
+    public function testUnknownOrMalformedVersionIs400AndLoggedAtDebug(): void {
+        $logged = [];
+        $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
+        $logger->method('debug')->willReturnCallback(function (string $message, array $context) use (&$logged): void { $logged[] = [$message, $context]; });
+        $protocol = self::protocol($this, $logger);
+        $list = json_encode(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list']);
+        $this->assertSame(['status' => 400, 'body' => null], $protocol->handle($list, '2024-11-05', 'alice'));
+        $this->assertSame(['status' => 400, 'body' => null], $protocol->handle($list, 'Bearer secret-token', 'alice'));
+        $this->assertSame(400, $protocol->handle('{nope', '', 'alice')['status']);
+        $this->assertSame([
+            ['MCP request rejected: unsupported MCP-Protocol-Version', ['app' => 'mcp', 'method' => 'tools/list', 'version' => '2024-11-05']],
+            ['MCP request rejected: unsupported MCP-Protocol-Version', ['app' => 'mcp', 'method' => 'tools/list', 'version' => 'malformed']],
+            ['MCP request rejected: parse error', ['app' => 'mcp']],
+        ], $logged);
+        $this->assertStringNotContainsString('secret', json_encode($logged));
+    }
+
+    public function testAnyClientNotificationIsAcknowledged(): void {
+        $this->assertSame(['status' => 202, 'body' => null], $this->call(['jsonrpc' => '2.0', 'method' => 'notifications/cancelled', 'params' => ['requestId' => 1]]));
+        $this->assertSame(400, $this->call(['jsonrpc' => '2.0', 'method' => 'tools/list'])['status']);
     }
 
     public function testToolsListExposesOnlyTheDiagnosticTool(): void {
@@ -77,10 +111,11 @@ final class McpProtocolTest extends TestCase {
     }
 
     /** Protocol with an empty module list: only the diagnostic tool exists. */
-    public static function protocol(TestCase $test): McpProtocol {
+    public static function protocol(TestCase $test, ?\Psr\Log\LoggerInterface $logger = null): McpProtocol {
         $mock = fn (string $class) => (new \ReflectionMethod($test, 'createMock'))->invoke($test, $class);
         return new McpProtocol(new \OCA\Mcp\Tools\ToolRegistry([], new \OCA\Mcp\Service\GrantPolicy((new InMemoryConfig())->mock($test)),
-            $mock(\OCP\App\IAppManager::class), $mock(\OCP\IUserManager::class), $mock(\Psr\Log\LoggerInterface::class)));
+            $mock(\OCP\App\IAppManager::class), $mock(\OCP\IUserManager::class), $mock(\Psr\Log\LoggerInterface::class)),
+            $logger ?? $mock(\Psr\Log\LoggerInterface::class));
     }
 
     private function codes(array $out): array {

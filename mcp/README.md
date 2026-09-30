@@ -77,9 +77,9 @@ Os arquivos de licença acompanham cada pacote em `vendor/`. O `vendor/autoload.
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-0.3.0.tar.gz <servidor>:/tmp/
+scp build/mcp-0.6.1.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-0.3.0.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-0.6.1.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp
@@ -91,11 +91,39 @@ Para atualizar: `occ app:disable mcp`, remover `<apps>/mcp`, extrair o novo paco
 
 ## Configurar
 
-1. **Administração → Configurações adicionais → MCP**: ativar o serviço, carregar o ID do usuário e clicar em *Allow connection*. A matriz de grants por módulo e operação fica na mesma tela. Para usar edição de arquivos ou escrita em notas, libere `files.edit` e `notes.create/edit/move/delete` para o usuário. Serviço, elegibilidade e conexão pessoal começam desligados para todos, inclusive administradores. Leitura começa permitida e escrita, exclusão e transferência começam negadas.
+1. **Administração → Configurações adicionais → MCP**: marcar *Serviço MCP ativado* e usar a matriz de usuários × permissões.
+   - A busca procura por nome, ID ou e-mail, e há um filtro por grupo; a tabela mostra 50 usuários por página.
+   - Cada checkbox salva na hora: *Pode conectar* libera o usuário, e as demais colunas são as operações por módulo.
+   - Os botões ✓/✕ no cabeçalho aplicam a coluna aos usuários ativos da página, com confirmação.
+   - Usuários desativados aparecem marcados e não podem ser editados. Módulos cujo app está desativado no servidor aparecem esmaecidos, e as permissões ficam guardadas.
+   - O e-mail só serve para a busca e nunca é exibido.
+   - Serviço, elegibilidade e conexão pessoal começam desligados para todos, inclusive administradores. Leitura começa permitida; escrita, exclusão e transferência começam negadas.
+   - A página usa a API JSON admin-only `GET /apps/mcp/api/grants`, `PUT /apps/mcp/api/grants/{uid}`, `POST /apps/mcp/api/grants/bulk` e `PUT /apps/mcp/api/service`.
 2. **Configurações pessoais → Informações pessoais → MCP connection**: o próprio usuário clica em *Connect*.
 3. Em **Configurações pessoais → Segurança**, o usuário cria uma senha de app. O cliente MCP usa autenticação HTTP Basic com o ID do usuário e essa senha de app. O app nunca pede nem guarda a senha principal.
 
 Login pelo navegador (Login Flow v2/OAuth) ainda não está disponível.
+
+### Chaves de configuração
+
+| Escopo | Chave | Valores |
+| --- | --- | --- |
+| app `mcp` | `service_enabled` | `1` ligado, `0` ou ausente desligado |
+| usuário, app `mcp` | `eligible` | `1` liberado pelo administrador |
+| usuário, app `mcp` | `connected` | `1` conexão pessoal ativa |
+| usuário, app `mcp` | `grant_<módulo>_<operação>` | `1`/`0`; ausente vale `1` para `read` e `0` para as demais |
+
+A chave `enabled` do app `mcp` pertence ao Nextcloud, que a usa para marcar o app como habilitado (`yes`), e não é o liga/desliga do MCP. O app nunca lê nem grava `enabled`, `installed_version`, `types`, `levels` ou `ocsid`. Para diagnóstico: `occ config:app:get mcp service_enabled`.
+
+## Conectar pelo claude.ai (OAuth)
+
+No claude.ai, em **Personalizar > Conectores > Adicionar conector personalizado**, cole a URL exibida na página pessoal (ex.: `https://<instância>/apps/mcp/`), com a barra final, e deixe o cliente OAuth em **identidade publicada do Claude (CIMD)**. O Claude abre o login do Nextcloud e a tela "Permitir"; permitir equivale a ativar a conexão pessoal. Tudo fica sob `/apps/mcp`, sem mudança de Apache/DNS:
+
+- `401` com `WWW-Authenticate: Bearer resource_metadata=".../apps/mcp/.well-known/oauth-protected-resource"`;
+- metadata do servidor de autorização em `/apps/mcp/.well-known/openid-configuration` e `/apps/mcp/.well-known/oauth-authorization-server` (issuer `https://<instância>/apps/mcp`);
+- `oauth/authorize` (consentimento) e `oauth/token` (PKCE S256, refresh com rotação). Access token 1 h, refresh 30 dias; só hashes vão ao banco.
+
+Só clientes CIMD com host na allowlist são aceitos (padrão `claude.ai`): `occ config:app:set mcp oauth_client_hosts --value="claude.ai"`. Disconnect pessoal, perda de elegibilidade ou serviço desligado revogam access e refresh. O Claude sai de `160.79.104.0/21`; se a proteção brute force do Nextcloud atrasar o endpoint de token, libere essa faixa. Basic + app password continua valendo para outros clientes.
 
 ## Revogar
 
@@ -122,7 +150,7 @@ Respostas esperadas:
 | Serviço desligado, usuário inelegível ou desconectado | 403 |
 | `Origin` de outro host | 403 |
 | Faltando `Accept: application/json, text/event-stream` ou `Content-Type: application/json` | 406 |
-| Falta `MCP-Protocol-Version: 2025-06-18` depois do `initialize`, ou versão diferente | 400 |
+| `MCP-Protocol-Version` desconhecida ou malformada depois do `initialize` (aceitas: 2025-03-26, 2025-06-18, 2025-11-25; ausente vale 2025-03-26; no `initialize` o header é ignorado). O motivo de cada 400 vai para o log em nível debug. | 400 |
 | JSON inválido (`-32700`), lote ou envelope inválido (`-32600`) | 400 |
 | Método desconhecido (`-32601`) ou parâmetros inválidos (`-32602`) | 200 com erro JSON-RPC |
 | GET ou DELETE | 405 |

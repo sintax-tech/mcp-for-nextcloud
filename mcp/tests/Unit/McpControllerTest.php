@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit;
 
 use OCA\Mcp\Controller\McpController;
+use OCA\Mcp\OAuth\AccessTokenAuthenticator;
+use OCA\Mcp\OAuth\ResourceUrl;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\McpProtocol;
 use OCP\IRequest;
@@ -22,6 +24,9 @@ final class McpControllerTest extends TestCase {
     private GrantPolicy $policy;
     private ?IUser $user = null;
     private array $headers = [];
+    /** @var AccessTokenAuthenticator&\PHPUnit\Framework\MockObject\MockObject */
+    private AccessTokenAuthenticator $authenticator;
+    private ?IUser $volatileUser = null;
 
     protected function setUp(): void {
         $this->store = new InMemoryConfig();
@@ -32,6 +37,7 @@ final class McpControllerTest extends TestCase {
             $this->policy->setConnected($uid, true);
         }
         $this->login('alice');
+        $this->authenticator = $this->createMock(AccessTokenAuthenticator::class);
         $this->headers = [
             'Content-Type' => 'application/json',
             'Accept' => 'application/json, text/event-stream',
@@ -51,10 +57,16 @@ final class McpControllerTest extends TestCase {
         $request = $this->createMock(IRequest::class);
         $request->method('getHeader')->willReturnCallback(fn (string $name) => $this->headers[$name] ?? '');
         $session = $this->createMock(IUserSession::class);
-        $session->method('getUser')->willReturnCallback(fn () => $this->user);
+        $session->method('getUser')->willReturnCallback(fn () => $this->volatileUser ?? $this->user);
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->with('mcp.mcp.post')->willReturn('https://cloud.example.org/nc/index.php/apps/mcp/');
-        $controller = new TestableMcpController('mcp', $request, $session, $urls, $this->policy, McpProtocolTest::protocol($this));
+        $session->method('setVolatileActiveUser')->willReturnCallback(function (?IUser $user): void { $this->volatileUser = $user; });
+        $resourceRequest = $this->createMock(IRequest::class);
+        $resourceRequest->method('getRequestUri')->willReturn('/nc/index.php/apps/mcp/');
+        $resourceRequest->method('getServerProtocol')->willReturn('https');
+        $resourceRequest->method('getServerHost')->willReturn('cloud.example.org');
+        $controller = new TestableMcpController('mcp', $request, $session, $urls, $this->policy, McpProtocolTest::protocol($this),
+            new ResourceUrl($resourceRequest), $this->authenticator);
         $controller->body = $body;
         return $controller;
     }
@@ -78,7 +90,8 @@ final class McpControllerTest extends TestCase {
         $response = $this->controller('{}')->post();
         $this->assertSame(401, $response->getStatus());
         $this->assertSame('', $response->render());
-        $this->assertStringStartsWith('Basic', self::headers($response)['WWW-Authenticate']);
+        $this->assertSame('Bearer resource_metadata="https://cloud.example.org/nc/index.php/apps/mcp/.well-known/oauth-protected-resource", scope="mcp"',
+            self::headers($response)['WWW-Authenticate']);
         $this->login('alice', false);
         $this->assertSame(401, $this->listTools()[0]);
     }
@@ -150,5 +163,32 @@ final class McpControllerTest extends TestCase {
     /** Response::getHeaders() needs the server container; read the explicitly set headers instead. */
     private static function headers(\OCP\AppFramework\Http\Response $response): array {
         return (new \ReflectionProperty(\OCP\AppFramework\Http\Response::class, 'headers'))->getValue($response);
+    }
+
+    public function testBasicClientsKeepTheBasicChallenge(): void {
+        $this->login(null);
+        $this->headers['Authorization'] = 'Basic Zm9vOmJhcg==';
+        $this->assertStringStartsWith('Basic', self::headers($this->controller('{}')->post())['WWW-Authenticate']);
+    }
+
+    public function testValidBearerRunsAsTheTokenOwner(): void {
+        $this->login('bob');
+        $bob = $this->user;
+        $this->login(null);
+        $this->headers['Authorization'] = 'Bearer ncmcp_at_valid';
+        $this->authenticator->expects($this->once())->method('authenticate')
+            ->with('Bearer ncmcp_at_valid', 'https://cloud.example.org/nc/index.php/apps/mcp/')->willReturn($bob);
+        $response = $this->controller('{"jsonrpc":"2.0","id":1,"method":"tools/list"}')->post();
+        $this->assertSame(200, $response->getStatus());
+        $this->assertSame($bob, $this->volatileUser);
+    }
+
+    public function testInvalidBearerGetsInvalidTokenChallenge(): void {
+        $this->login(null);
+        $this->headers['Authorization'] = 'Bearer ncmcp_at_expired';
+        $this->authenticator->method('authenticate')->willReturn(null);
+        $response = $this->controller('{}')->post();
+        $this->assertSame(401, $response->getStatus());
+        $this->assertStringStartsWith('Bearer error="invalid_token", resource_metadata=', self::headers($response)['WWW-Authenticate']);
     }
 }

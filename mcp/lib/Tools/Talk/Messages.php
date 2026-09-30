@@ -12,7 +12,7 @@ final class Messages {
     public const TOOL_LIST_CONVERSATIONS = 'Lista as conversas de Talks em que o usuário autenticado participa, com contagem de mensagens não lidas. Não altera estado: não marca como lido, não muda notificações e não muda atividade.';
     public const TOOL_READ_MESSAGES = 'Lê as últimas mensagens de uma conversa, sem marcar como lido, sem ler notificações e sem registrar atividade. Use o id retornado em reply_to para responder e o attachmentId para citar um anexo.';
     public const TOOL_REPLY = 'Envia uma mensagem em uma conversa, opcionalmente citando outra mensagem da mesma conversa com reply_to.';
-    public const TOOL_ATTACH_FILE = 'Compartilha na conversa um arquivo que já existe no Nextcloud do usuário e publica a mensagem do anexo, com legenda opcional em message.';
+    public const TOOL_ATTACH_FILE = 'Compartilha na conversa um arquivo que já existe no Nextcloud do usuário; o cartão do anexo é publicado pelo próprio Talk. Quando message é preenchida, ela é enviada como uma segunda mensagem de texto logo após o anexo, e messageId traz o id dessa mensagem. Se o arquivo já estiver compartilhado nesta conversa, nada é publicado.';
     public const TOOL_QUOTE_FILE = 'Publica uma mensagem citando um anexo já presente na conversa, identificado por attachment_id, com legenda opcional em message.';
 
     // Failure messages returned as MCP result with isError.

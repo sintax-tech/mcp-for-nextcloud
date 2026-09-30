@@ -72,8 +72,8 @@ final class CalendarMessages {
 
     /** Attendee list is empty, empty or above the cap. */
     public const ATTENDEES_INVALID = 'Informe de 1 a 50 participantes, sem repetição.';
-    /** An attendee UID cannot be resolved to an internal account with an e-mail. */
-    public const ATTENDEE_NOT_FOUND = 'participante não encontrado ou sem endereço de e-mail';
+    /** An attendee UID cannot be resolved to an internal account with an e-mail; %s is the UID. */
+    public const ATTENDEE_NOT_FOUND = 'participante \'%s\' não encontrado ou sem endereço de e-mail';
     /** The organizer account has no e-mail, so an invited event could not be scheduled. */
     public const ORGANIZER_WITHOUT_EMAIL = 'a sua conta não tem endereço de e-mail, então o evento não pode ter participantes.';
 

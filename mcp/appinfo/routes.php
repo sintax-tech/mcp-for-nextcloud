@@ -8,4 +8,5 @@ return ['routes' => [
     ['name' => 'settings#global', 'url' => '/settings/global', 'verb' => 'POST'],
     ['name' => 'settings#user', 'url' => '/settings/user', 'verb' => 'POST'],
     ['name' => 'settings#personal', 'url' => '/settings/personal', 'verb' => 'POST'],
+    ['name' => 'users#index', 'url' => '/api/users', 'verb' => 'GET'],
 ]];

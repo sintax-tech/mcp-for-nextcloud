@@ -10,6 +10,7 @@ use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolModule;
 use OCA\Mcp\Tools\ToolResult;
+use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
@@ -18,9 +19,13 @@ use OCP\IDBConnection;
 use OCP\IUserManager;
 
 /**
- * Files tools: list, search, read, protected edit, snippet replace, local checkout and versions.
- * There is deliberately no delete, move or rename; the only removal in the module is a version rollback,
- * which is a write of new content and therefore always creates a version.
+ * Files tools: list, search, tree, mkdir, copy, move, batch, read, protected edit, snippet replace, local
+ * checkout, versions and undo.
+ *
+ * There is deliberately no delete. Moving a node is allowed and happens in Reorganization, behind the
+ * storage, destination and shared-write guards; the only removal in the module is the empty folder a batch
+ * itself created when it is undone, plus a version rollback, which is a write of new content and therefore
+ * always creates a version.
  *
  * Every result that names a node also carries its `access` description, and every write outside the
  * personal scope goes through SharedWriteGuard first.
@@ -46,6 +51,9 @@ class FilesModule implements ToolModule {
         private CheckoutService $checkout,
         private VersionTools $versions,
         private Reorganization $reorganization,
+        private MovePlanner $planner,
+        private BatchStore $batches,
+        private ITimeFactory $time,
     ) {}
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app?:string}> */
@@ -90,6 +98,26 @@ class FilesModule implements ToolModule {
                     'etag' => $etag,
                     'confirm_shared' => $confirmShared,
                 ], ['from', 'to'])],
+            ['name' => 'files_move_batch', 'module' => 'files', 'operation' => 'move',
+                'description' => FilesMessages::batchTool(),
+                'inputSchema' => self::schema([
+                    'moves' => ['type' => 'array', 'minItems' => 1, 'maxItems' => ReorganizationLimits::BATCH_ITEMS,
+                        'description' => 'Movimentos na ordem em que serão executados.',
+                        'items' => ['type' => 'object',
+                            'properties' => [
+                                'from' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::path()],
+                                'to' => ['type' => 'string', 'minLength' => 1, 'description' => 'Caminho de destino.'],
+                            ],
+                            'required' => ['from', 'to']]],
+                    'mkdirs' => ['type' => 'array', 'maxItems' => ReorganizationLimits::BATCH_ITEMS,
+                        'items' => ['type' => 'string', 'minLength' => 1],
+                        'description' => 'Pastas a criar antes dos movimentos.'],
+                    'dry_run' => ['type' => 'boolean', 'default' => true,
+                        'description' => 'Com true devolve só o plano; com false executa e exige confirm: true.'],
+                    'confirm' => ['type' => 'boolean', 'const' => true,
+                        'description' => 'precisa ser true para executar o lote'],
+                    'confirm_shared' => $confirmShared,
+                ], ['moves'])],
             ['name' => 'files_read', 'module' => 'files', 'operation' => 'read',
                 'description' => FilesMessages::readTool(),
                 'inputSchema' => self::schema(['path' => $path], ['path'])],
@@ -150,6 +178,18 @@ class FilesModule implements ToolModule {
             'files_mkdir' => ToolResult::json($this->reorganization->mkdir($root, $userId, $arguments['path'], $confirmed)),
             'files_copy' => ToolResult::json($this->reorganization->copy($root, $userId, $arguments['from'], $arguments['to'], $arguments['etag'] ?? null, $confirmed)),
             'files_move' => ToolResult::json($this->reorganization->move($root, $userId, $arguments['from'], $arguments['to'], $arguments['etag'] ?? null, $confirmed)),
+            'files_move_batch' => ToolResult::json($this->reorganization->batch(
+                $root,
+                $userId,
+                $arguments['moves'],
+                $arguments['mkdirs'] ?? [],
+                (bool)($arguments['dry_run'] ?? true),
+                $arguments['confirm'] ?? null,
+                $confirmed,
+                $this->planner,
+                $this->batches,
+                $this->time->getTime(),
+            )),
             'files_search' => ToolResult::json($this->search($root, $userId, $arguments['query'], $arguments['limit'])),
             'files_read' => $this->read($root, $userId, $arguments['path']),
             'files_edit' => $this->write($root, $userId, $arguments['path'], $arguments['content'], $arguments['etag'] ?? null, $confirmed),

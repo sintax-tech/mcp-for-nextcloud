@@ -6,6 +6,7 @@ namespace OCA\Mcp\Tests\Unit;
 use OCA\Mcp\Controller\McpController;
 use OCA\Mcp\Controller\SettingsController;
 use OCA\Mcp\Checkout\CheckoutTokenStore;
+use OCA\Mcp\Tools\Files\BatchStore;
 use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Service\GrantPolicy;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
@@ -22,6 +23,7 @@ final class SettingsControllerTest extends TestCase {
     private SettingsController $controller;
     private TokenService $tokens;
     private CheckoutTokenStore $checkoutTokens;
+    private BatchStore $batches;
 
     protected function setUp(): void {
         $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this));
@@ -32,8 +34,10 @@ final class SettingsControllerTest extends TestCase {
         $session->method('getUser')->willReturn($alice);
         $this->tokens = $this->createMock(TokenService::class);
         $this->checkoutTokens = $this->createMock(CheckoutTokenStore::class);
+        $this->batches = $this->createMock(BatchStore::class);
         $this->controller = new SettingsController('mcp', $this->createMock(IRequest::class),
-            $this->createMock(IURLGenerator::class), $session, $this->policy, $this->tokens, $this->checkoutTokens);
+            $this->createMock(IURLGenerator::class), $session, $this->policy, $this->tokens, $this->checkoutTokens,
+            $this->batches);
     }
 
     public function testOnlyThePersonalFormRemainsAndItNeedsNoAdmin(): void {
@@ -51,6 +55,19 @@ final class SettingsControllerTest extends TestCase {
     public function testDisconnectAlsoDropsThePendingCheckoutLinks(): void {
         $this->checkoutTokens->expects($this->once())->method('deleteForUser')->with('alice');
         $this->controller->personal('0');
+    }
+
+    /** A batch waiting to be undone must not outlive the connection that moved the files. */
+    public function testDisconnectAlsoDropsTheBatchesWaitingToBeUndone(): void {
+        $this->batches->expects($this->once())->method('deleteForUser')->with('alice');
+        $this->controller->personal('0');
+    }
+
+    public function testConnectingDoesNotTouchTheBatches(): void {
+        $this->policy->setGlobalEnabled(true);
+        $this->policy->setEligible('alice', true);
+        $this->batches->expects($this->never())->method('deleteForUser');
+        $this->controller->personal('1');
     }
 
     public function testConnectingDoesNotTouchTheCheckoutLinks(): void {

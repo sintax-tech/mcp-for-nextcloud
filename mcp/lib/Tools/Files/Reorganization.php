@@ -184,20 +184,20 @@ final class Reorganization {
      * @throws ToolFailure for an occupied destination, a stale ETag, a ceiling or a denied write
      */
     public function copy(Folder $root, string $userId, string $from, string $to, ?string $etag, bool $confirmedShared): array {
-        $from = $this->writable($root, $from);
-        NodeAccess::checkEtag($from, $etag);
+        $source = $this->writable($root, $from);
+        NodeAccess::checkEtag($source, $etag);
         $to = PathGuard::normalize($to);
         $this->assertFree($root, $to);
-        $measured = $this->measure($from);
-        if (($payload = $this->confirmBoth($root, $userId, $from, $to, $confirmedShared)) !== null) {
+        $measured = $this->measure($source);
+        if (($payload = $this->confirmBoth($source, $from, $this->destination($root, $to), $to, $userId, $confirmedShared)) !== null) {
             return $payload;
         }
-        $receipt = $root->getRelativePath($from->getPath()) ?? '';
-        $copy = $from->copy($this->absolute($root, $to));
+        $receipt = $root->getRelativePath($source->getPath()) ?? '';
+        $copy = $source->copy($this->absolute($root, $to));
         return [
             'from' => $receipt,
             'to' => $to,
-            'idBefore' => (int)$from->getId(),
+            'idBefore' => (int)$source->getId(),
             'idAfter' => (int)$copy->getId(),
             'nodes' => $measured['nodes'],
             'bytes' => $measured['bytes'],
@@ -221,28 +221,21 @@ final class Reorganization {
      * @throws ToolFailure for an occupied destination, a stale ETag, another storage, a folder into itself or a denied write
      */
     public function move(Folder $root, string $userId, string $from, string $to, ?string $etag, bool $confirmedShared): array {
-        $from = $this->writable($root, $from);
-        NodeAccess::checkEtag($from, $etag);
-        $to = PathGuard::normalize($to);
-        // A folder landing inside itself is refused before the destination check, so the user hears the real
-        // reason instead of "something is already there" for a subfolder of the folder they are moving.
-        $this->assertNotIntoItself($root, $from, $to);
-        $this->assertFree($root, $to);
-        $this->assertSameStorage($root, $from, $to);
-        if (($payload = $this->confirmBoth($root, $userId, $from, $to, $confirmedShared)) !== null) {
+        $check = $this->inspect($root, $from, $to, $etag);
+        if (($payload = $this->confirmBoth($check->source, $from, $check->destination, $check->to, $userId, $confirmedShared)) !== null) {
             return $payload;
         }
         // Everything is read before the move: afterwards the node answers from its new path, and a receipt
         // read too late is a claim about nothing.
-        $receipt = $root->getRelativePath($from->getPath()) ?? '';
-        $idBefore = (int)$from->getId();
-        $versionsBefore = $this->versions($from, $userId);
-        $sharesBefore = $this->report->shares($from, $userId);
-        $moved = $from->move($this->absolute($root, $to));
+        $receipt = $root->getRelativePath($check->source->getPath()) ?? '';
+        $idBefore = (int)$check->source->getId();
+        $versionsBefore = $this->versions($check->source, $userId);
+        $sharesBefore = $this->report->shares($check->source, $userId);
+        $moved = $check->source->move($this->absolute($root, $check->to));
         $idAfter = (int)$moved->getId();
         return [
             'from' => $receipt,
-            'to' => $to,
+            'to' => $check->to,
             'idBefore' => $idBefore,
             'idAfter' => $idAfter,
             'idPreserved' => $idAfter === $idBefore,
@@ -252,6 +245,151 @@ final class Reorganization {
             'sharesAfter' => $this->report->shares($moved, $userId),
             'access' => $this->access->describe($moved, $userId),
         ];
+    }
+
+    /**
+     * Resolves a move and runs every check on it, without moving anything.
+     *
+     * A single move and a batch plan both come through here on purpose: a plan that accepted a move the
+     * tool would later refuse would send the user to approve something that cannot happen.
+     *
+     * @param Folder $root the user's folder
+     * @param string $from source path, user-relative
+     * @param string $to destination path, user-relative
+     * @param string|null $etag ETag the caller read before, null to skip the check
+     * @return Inspection the node, the receiving folder and the normalized destination
+     * @throws \InvalidArgumentException for a path with traversal or control characters
+     * @throws MoveConflict when the destination is taken, the folder would land inside itself, or the two ends are on different storages
+     * @throws ToolFailure when the source is missing, unreadable or not changeable, or the destination cannot receive
+     */
+    public function inspect(Folder $root, string $from, string $to, ?string $etag = null): Inspection {
+        $source = $this->writable($root, $from);
+        NodeAccess::checkEtag($source, $etag);
+        $to = PathGuard::normalize($to);
+        // A folder landing inside itself is refused before the destination check, so the user hears the real
+        // reason instead of "something is already there" for a subfolder of the folder they are moving.
+        $this->assertNotIntoItself($root, $source, $to);
+        $this->assertFree($root, $to);
+        $destination = $this->destination($root, $to);
+        $this->assertSameStorage($source, $destination);
+        return new Inspection($source, $destination, $to);
+    }
+
+    /**
+     * Plans or runs a batch. Planning writes nothing and records nothing; running needs the user's
+     * confirmation, stops at the first failure and records what it did so the batch can be undone.
+     *
+     * A batch whose plan is not ok is refused rather than partly run: the user approved a plan, and
+     * quietly dropping the item that conflicts would leave a state neither they nor the agent asked for.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param list<array{from:string, to:string}> $moves requested moves
+     * @param list<string> $mkdirs folders to create before moving
+     * @param bool $dryRun true to only plan
+     * @param bool|null $confirmed the user's confirm, required to run
+     * @param bool $confirmedShared whether the caller passed confirm_shared
+     * @param MovePlanner $planner the plan builder
+     * @param BatchStore $store where a run batch is recorded
+     * @param int $now current time
+     * @return array<string, mixed> the plan, the confirmation, or the outcome of the run
+     * @throws \InvalidArgumentException for a malformed path, or a run without confirm
+     * @throws ToolFailure when the plan is not ok, or the run itself failed
+     */
+    public function batch(
+        Folder $root,
+        string $userId,
+        array $moves,
+        array $mkdirs,
+        bool $dryRun,
+        ?bool $confirmed,
+        bool $confirmedShared,
+        MovePlanner $planner,
+        BatchStore $store,
+        int $now,
+    ): array {
+        $result = $planner->plan($root, $userId, $moves, $mkdirs);
+        if ($dryRun) {
+            // A non-personal item asks for confirmation in the plan as well: the agent shows the user the
+            // list either way, and the code path is the same one files_move already has.
+            return $result->confirmation === null ? $result->plan : array_merge($result->confirmation, $result->plan);
+        }
+        if ($confirmed !== true) {
+            throw new \InvalidArgumentException('files_move_batch com dry_run: false exige confirm: true.');
+        }
+        if (!$result->isOk()) {
+            throw new ToolFailure(FilesMessages::batchNotOk(
+                count($result->plan['conflicts']),
+                count($result->plan['denied']),
+            ));
+        }
+        if ($result->confirmation !== null && !$confirmedShared) {
+            // The plan travels with the confirmation: the agent shows the user the same list either way.
+            return array_merge($result->confirmation, $result->plan, ['dryRun' => false]);
+        }
+        $created = $this->createFolders($root, $mkdirs);
+        $moved = [];
+        foreach ($result->planned as $index => $item) {
+            try {
+                $check = $this->inspect($root, $item['from'], $item['to']);
+                $movedNode = NodeAccess::run(fn () => $check->source->move($this->absolute($root, $check->to)));
+                $moved[] = ['from' => $item['from'], 'to' => $check->to, 'toId' => (int)$movedNode->getId()];
+            } catch (\Throwable $e) {
+                $failure = $e instanceof ToolFailure ? $e->getMessage() : 'Falha ao mover o item.';
+                $batchId = $store->insert(new Batch(null, $userId, $now, $moved, $created, null));
+                return [
+                    'batch_id' => $batchId,
+                    'moved' => $moved,
+                    'created_dirs' => $created,
+                    'failed' => ['from' => $item['from'], 'to' => $item['to'], 'reason' => $failure],
+                    'not_attempted' => array_slice($result->planned, $index + 1),
+                ];
+            }
+        }
+        $batchId = $store->insert(new Batch(null, $userId, $now, $moved, $created, null));
+        return [
+            'batch_id' => $batchId,
+            'moved' => $moved,
+            'created_dirs' => $created,
+            'undos' => count($moved),
+        ];
+    }
+
+    /**
+     * Creates the folders a batch asked for and answers which ones it really made.
+     *
+     * Every folder created counts, including a parent created on the way, because the undo removes what the
+     * batch made and a folder it only implied is still one it made.
+     *
+     * @param Folder $root the user's folder
+     * @param list<string> $paths requested folders
+     * @return list<string> the created folders, shallowest first
+     * @throws \InvalidArgumentException for a malformed path
+     * @throws ToolFailure when a file already uses one of the folder names, or the folder cannot be created
+     */
+    public function createFolders(Folder $root, array $paths): array {
+        $created = [];
+        foreach ($paths as $path) {
+            $relative = ltrim(PathGuard::normalize($path), '/');
+            if ($relative === '') {
+                continue;
+            }
+            $walk = [];
+            foreach (array_filter(explode('/', $relative)) as $segment) {
+                $walk[] = $segment;
+                $below = implode('/', $walk);
+                if ($root->nodeExists($below)) {
+                    $existing = $root->get($below);
+                    if (!$existing instanceof Folder) {
+                        throw new ToolFailure(FilesMessages::destinationExists());
+                    }
+                    continue;
+                }
+                NodeAccess::run(fn () => $root->newFolder($below));
+                $created[] = '/' . $below;
+            }
+        }
+        return $created;
     }
 
     /**
@@ -292,7 +430,9 @@ final class Reorganization {
      * @throws ToolFailure when it does not exist, cannot be read or cannot be changed
      */
     private function writable(Folder $root, string $path): Node {
-        $node = NodeAccess::get($root, PathGuard::normalize($path));
+        // run() turns a missing node into a ToolFailure here, so a batch plan can put the item in its
+        // denied list instead of the whole call failing.
+        $node = NodeAccess::run(fn () => NodeAccess::get($root, PathGuard::normalize($path)));
         if (!$node->isUpdateable()) {
             throw new ToolFailure(ToolFailure::FORBIDDEN);
         }
@@ -306,7 +446,7 @@ final class Reorganization {
      */
     private function assertFree(Folder $root, string $to): void {
         if ($to === '/' || $root->nodeExists(ltrim($to, '/'))) {
-            throw new ToolFailure(FilesMessages::destinationExists());
+            throw new MoveConflict(FilesMessages::destinationExists());
         }
     }
 
@@ -319,7 +459,7 @@ final class Reorganization {
     private function assertNotIntoItself(Folder $root, Node $from, string $to): void {
         $source = $root->getRelativePath($from->getPath()) ?? '';
         if ($from instanceof Folder && ($to === $source || str_starts_with($to, rtrim($source, '/') . '/'))) {
-            throw new ToolFailure(FilesMessages::folderIntoItself());
+            throw new MoveConflict(FilesMessages::folderIntoItself());
         }
     }
 
@@ -327,15 +467,13 @@ final class Reorganization {
      * Nextcloud moves across storages by copying and deleting, which changes the id and re-versions the
      * file; the first scope of this sprint stays inside one storage so that the reported id is meaningful.
      *
-     * @param Folder $root the user's folder
-     * @param Node $from the node being moved
-     * @param string $to destination path, user-relative
-     * @throws ToolFailure when source and destination are on different storages
+     * @param Node $source the node being moved
+     * @param Folder $destination the folder that would receive it
+     * @throws MoveConflict when source and destination are on different storages
      */
-    private function assertSameStorage(Folder $root, Node $from, string $to): void {
-        $parent = $this->destination($root, $to);
-        if ($from->getStorage()->getId() !== $parent->getStorage()->getId()) {
-            throw new ToolFailure(FilesMessages::crossStorage());
+    private function assertSameStorage(Node $source, Folder $destination): void {
+        if ($source->getStorage()->getId() !== $destination->getStorage()->getId()) {
+            throw new MoveConflict(FilesMessages::crossStorage());
         }
     }
 
@@ -359,16 +497,24 @@ final class Reorganization {
      * Both ends of the operation go through the guard: moving a file out of a team folder changes what the
      * team sees, and moving one into it adds something they did not put there.
      *
-     * @param Folder $root the user's folder
+     * @param Node $source the node being moved or copied
+     * @param string $sourcePath the source, as the user wrote it
+     * @param Folder $destination the folder that would receive it
+     * @param string $destinationPath the destination, as the user wrote it
      * @param string $userId authenticated user
-     * @param Node $from the node being moved or copied
-     * @param string $to destination path, user-relative
      * @param bool $confirmedShared whether the caller passed confirm_shared
      * @return array<string, mixed>|null the confirmation payload, or null when the change may proceed
      */
-    private function confirmBoth(Folder $root, string $userId, Node $from, string $to, bool $confirmedShared): ?array {
-        return $this->guard->guard($from, $userId, $root->getRelativePath($from->getPath()) ?? '', $confirmedShared)
-            ?? $this->guard->guard($this->destination($root, $to), $userId, $to, $confirmedShared);
+    private function confirmBoth(
+        Node $source,
+        string $sourcePath,
+        Folder $destination,
+        string $destinationPath,
+        string $userId,
+        bool $confirmedShared,
+    ): ?array {
+        return $this->guard->guard($source, $userId, $sourcePath, $confirmedShared)
+            ?? $this->guard->guard($destination, $userId, $destinationPath, $confirmedShared);
     }
 
     /**

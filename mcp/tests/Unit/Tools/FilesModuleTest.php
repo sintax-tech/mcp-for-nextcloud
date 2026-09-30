@@ -13,6 +13,8 @@ use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileBackup;
+use OCA\Mcp\Tools\Files\BatchStore;
+use OCA\Mcp\Tools\Files\MovePlanner;
 use OCA\Mcp\Tools\Files\MoveReport;
 use OCA\Mcp\Tools\Files\Reorganization;
 use OCA\Mcp\Tools\Files\FilesModule;
@@ -65,10 +67,13 @@ final class FilesModuleTest extends TestCase {
         $urls->method('linkToRouteAbsolute')->willReturnCallback(fn (string $route, array $args = []) => 'https://cloud.test/apps/mcp/' . ($args['token'] ?? ''));
         $versions = new VersionTools($apps, $users, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $access, $this->createMock(\Psr\Container\ContainerInterface::class));
         $report = new MoveReport($this->createMock(\Psr\Container\ContainerInterface::class), $this->tree->shareManager(), $apps);
+        $reorganization = new Reorganization($access, new SharedWriteGuard($access), $report, $users);
+        $planner = new MovePlanner($reorganization, $access, new SharedWriteGuard($access));
+        $store = new BatchStore($db);
         $this->module = new FilesModule($root, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $users, $db,
             $access, new SharedWriteGuard($access),
             new CheckoutService($urls, $appConfig, $time, new TokenHasher($appConfig), $this->createMock(CheckoutTokenStore::class), $apps, $users),
-            $versions, new Reorganization($access, new SharedWriteGuard($access), $report, $users));
+            $versions, $reorganization, $planner, $store, $time);
         $this->versions = $versions;
     }
 
@@ -98,11 +103,11 @@ final class FilesModuleTest extends TestCase {
     public function testDefinitionsKeepPrototypeNamesAndGrants(): void {
         $defs = array_column($this->module->definitions(), null, 'name');
         $this->assertSame(['files_list', 'files_search', 'files_tree', 'files_mkdir', 'files_copy', 'files_move',
-            'files_read', 'files_edit', 'files_replace', 'files_checkout', 'files_versions_list',
-            'files_version_read', 'files_version_restore'],
+            'files_move_batch', 'files_read', 'files_edit', 'files_replace', 'files_checkout',
+            'files_versions_list', 'files_version_read', 'files_version_restore'],
             array_keys($defs));
-        $this->assertSame(['read', 'read', 'read', 'create', 'create', 'move', 'read', 'edit', 'edit', 'edit',
-            'read', 'read', 'restore'], array_column($defs, 'operation'));
+        $this->assertSame(['read', 'read', 'read', 'create', 'create', 'move', 'move', 'read', 'edit', 'edit',
+            'edit', 'read', 'read', 'restore'], array_column($defs, 'operation'));
         $this->assertSame(['files_versions', 'files_versions', 'files_versions'],
             array_values(array_filter(array_column($defs, 'app', 'name'))));
         $this->assertArrayNotHasKey('app', $defs['files_tree'], 'a árvore só depende de arquivos, que sempre existem');
@@ -291,9 +296,14 @@ final class FilesModuleTest extends TestCase {
 
     public function testFilesCodeNeverDeletesMovesOrRenames(): void {
         foreach (glob(__DIR__ . '/../../../lib/Tools/Files/*.php') ?: [] as $file) {
-            // Deleting is out of the question for Files, and a move is only allowed where the guards live.
-            $this->assertDoesNotMatchRegularExpression('/->(delete|unlink)\s*\(/', (string)file_get_contents($file), $file);
-            $this->assertDoesNotMatchRegularExpression('/->(rename)\s*\(/', (string)file_get_contents($file), $file);
+            $code = (string)file_get_contents($file);
+            // Deleting a node is out of the question for Files. BatchStore deletes rows, not files, and the
+            // one allowed Node::delete() lives in Reorganization's undoBatch() — NoFileDeletionTest pins that
+            // one down; no other file in the namespace may call delete() at all.
+            if (!in_array(basename($file), ['Reorganization.php', 'BatchStore.php'], true)) {
+                $this->assertDoesNotMatchRegularExpression('/->(delete|unlink)\s*\(/', $code, $file);
+            }
+            $this->assertDoesNotMatchRegularExpression('/->(rename)\s*\(/', $code, $file);
         }
         foreach (glob(__DIR__ . '/../../../lib/Tools/Files/*.php') ?: [] as $file) {
             if (basename($file) === 'Reorganization.php') {

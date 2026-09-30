@@ -23,6 +23,16 @@ final class FilesMessages {
         return 'Busca arquivos pelo nome na pasta do usuário no Nextcloud.';
     }
 
+    /** @return string description of files_move_batch */
+    public static function batchTool(): string {
+        return 'Planeja ou executa um lote de Movements e criação de pastas, na ordem dada. Com dry_run: true '
+            . '(padrão) não escreve nada e devolve o plano inteiro: o que passaria, o que conflita, o que o '
+            . 'Nextcloud nega, o que é de outra pessoa e quais pastas seriam criadas. Com dry_run: false '
+            . 'exige confirm: true, executa na ordem, cria as pastas antes e devolve o batch_id para desfazer '
+            . 'com files_undo_batch. Um item que falhar no meio interrompe o lote: o que já foi movido fica '
+            . 'gravado e pode ser desfeito, e o que faltou é devolvido como not_attempted.';
+    }
+
     /** @return string description of files_read */
     public static function readTool(): string {
         return 'Lê o texto de um arquivo do Nextcloud (txt/md direto; PDF/DOCX/ODT com extração de texto).';
@@ -207,6 +217,16 @@ final class FilesMessages {
     /** @return string something already sits where a folder would go */
     public static function crossStorage(): string {
         return 'Mover entre storages diferentes não é suportado nesta versão; mova dentro da mesma área de arquivos.';
+    }
+
+    /**
+     * @param int $conflicts how many items clash with what is already there
+     * @param int $denied how many items Nextcloud will not let the user touch
+     * @return string a batch whose plan still has blocked items
+     */
+    public static function batchNotOk(int $conflicts, int $denied): string {
+        return 'O plano tem ' . $conflicts . ' conflito(s) e ' . $denied . ' item(ns) sem permissão; '
+            . 'rode com dry_run: true, corrija e tente de novo. Nada foi movido.';
     }
 
     /** @return string a folder moved into itself or into one of its own subfolders */

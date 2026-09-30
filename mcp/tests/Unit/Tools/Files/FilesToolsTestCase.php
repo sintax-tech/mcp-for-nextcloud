@@ -14,6 +14,7 @@ use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileBackup;
+use OCA\Mcp\Tools\Files\MovePlanner;
 use OCA\Mcp\Tools\Files\MoveReport;
 use OCA\Mcp\Tools\Files\Reorganization;
 use OCA\Mcp\Tools\Files\FilesModule;
@@ -41,6 +42,7 @@ abstract class FilesToolsTestCase extends TestCase {
     protected IUserManager $users;
     protected IUser $user;
     protected ITimeFactory $time;
+    protected InMemoryBatchStore $batches;
     protected ITempManager $temp;
     protected FilesModule $module;
     /** @var list<string> tokens handed out per route, in order */
@@ -73,6 +75,7 @@ abstract class FilesToolsTestCase extends TestCase {
         $this->time = $this->createMock(ITimeFactory::class);
         $this->time->method('getTime')->willReturn(1790000000);
         $db = $this->createMock(IDBConnection::class);
+        $this->batches = new InMemoryBatchStore($db);
         $db->method('escapeLikeParameter')->willReturnCallback(fn (string $s) => addcslashes($s, '\\_%'));
         $config = (new InMemoryConfig())->mock($this);
         $urls = $this->createMock(IURLGenerator::class);
@@ -95,6 +98,9 @@ abstract class FilesToolsTestCase extends TestCase {
             new CheckoutService($urls, $config, $this->time, new TokenHasher($config), $this->store, $this->apps, $this->users),
             new VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class)),
             new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users),
+            new MovePlanner(new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users), $access, new SharedWriteGuard($access)),
+            $this->batches,
+            $this->time,
         );
     }
 

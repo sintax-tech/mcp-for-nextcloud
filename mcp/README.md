@@ -1,11 +1,33 @@
-# App MCP para Nextcloud — Sprint 01
+# App MCP para Nextcloud — Sprint 02
 
 Versão de teste interno para **Nextcloud 33**. Expõe MCP `2025-06-18` via Streamable HTTP sem sessão e sem SSE, na rota do próprio app:
 
 - `https://<instância>/apps/mcp/` com URLs limpas;
 - `https://<instância>/index.php/apps/mcp/` sem URLs limpas.
 
-A URL exata da instância aparece nas páginas de administração e pessoal. Nesta versão existe apenas a tool `mcp_status`, que informa se o endpoint está disponível e não lê dados do usuário. Os grants de Files, Notes, Deck, Calendar e Talk já são configuráveis e persistidos, mas nenhuma tool de dados está disponível.
+A URL exata da instância aparece nas páginas de administração e pessoal.
+
+## Tools
+
+Cada tool só aparece em `tools/list` e só pode ser chamada quando o usuário tem o grant da operação, e o app exigido está habilitado para ele. Grant e app são verificados de novo a cada chamada. Tudo roda como o usuário autenticado, pela pasta dele no Nextcloud, e as permissões e compartilhamentos do Nextcloud continuam valendo.
+
+| Tool | Grant | Observações |
+| --- | --- | --- |
+| `mcp_status` | — | Diagnóstico; não lê dados do usuário. |
+| `files_list` `{path="/"}` | files.read | Filhos diretos da pasta, no formato `{name, path, isDir, size, mtime, contentType}`. |
+| `files_search` `{query, limit=25}` | files.read | Busca por nome; de 1 a 100 resultados. |
+| `files_read` `{path}` | files.read | Texto puro, PDF, DOCX e ODT. Arquivo acima de 20 MiB é recusado antes da leitura, e o texto é truncado em 100 000 caracteres. |
+| `files_edit` `{path, content, etag?}` | files.edit | Só arquivo de texto existente, com no máximo 10 MiB. Antes de gravar, exige o `files_versions` ativo e copia o original para `/MCP backups/<caminho>/<nome>.<AAAAmmdd-HHMMSS>.bak`; se qualquer passo falhar, nada é gravado. Com `etag` divergente, nada é gravado. Não cria, move nem exclui. |
+| `notes_list` `{}` | notes.read | Notas `.md`/`.txt` da pasta do app Notes (preferência `notesPath`, padrão `Notes`). |
+| `notes_read` `{id}` | notes.read | Nota com conteúdo; limite de 1 MiB. |
+| `notes_create` `{title, content="", category=""}` | notes.create | Nunca sobrescreve; em colisão, usa `Título (2)`. |
+| `notes_edit` `{id, content?, title?, etag?}` | notes.edit | Conteúdo e/ou título. |
+| `notes_move` `{id, category, etag?}` | notes.move | Troca de categoria (subpasta), sem sobrescrever. |
+| `notes_delete` `{id, confirm: true, etag?}` | notes.delete | Exige `confirm: true` e a lixeira (`files_trashbin`) ativa. |
+
+Tools de Notes exigem o app Notes habilitado para o usuário. Leitura começa permitida; criação, edição, movimentação e exclusão começam negadas até o administrador liberar. Não há timeout próprio: a leitura é local ao PHP e o limite de bytes protege contra arquivos grandes. Storage externo lento fica limitado ao `max_execution_time` do PHP.
+
+Argumentos inválidos, tool inexistente ou sem grant retornam o erro JSON-RPC `-32602`, sem distinguir o motivo. Falhas de execução retornam `isError: true` com uma mensagem genérica, sem caminho físico, conteúdo ou stack trace.
 
 ## Empacotar
 
@@ -15,16 +37,25 @@ No diretório `mcp/`:
 ./scripts/package.sh
 ```
 
-Gera `build/mcp-<versão>.tar.gz` com raiz `mcp/` contendo apenas `appinfo/`, `lib/`, `templates/` e este README. O app não tem dependências de runtime além do Nextcloud; `composer.json` e `vendor/` servem só aos testes.
+Gera `build/mcp-<versão>.tar.gz` com raiz `mcp/` contendo `appinfo/`, `lib/`, `templates/`, este README e um `vendor/` só de produção, criado com `composer install --no-dev`. Testes e dependências de desenvolvimento ficam fora. O script precisa de `composer` na máquina que empacota.
+
+### Dependências de runtime
+
+| Pacote | Uso | Licença |
+| --- | --- | --- |
+| `smalot/pdfparser` | Extração de texto de PDF em `files_read` | LGPL-3.0 |
+| `symfony/polyfill-mbstring` | Dependência do pdfparser; inativo quando a extensão `mbstring` existe | MIT |
+
+Os arquivos de licença acompanham cada pacote em `vendor/`. O `vendor/autoload.php` é carregado pelo `lib/AppInfo/Application.php`.
 
 ## Instalar via SSH
 
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-0.1.0.tar.gz <servidor>:/tmp/
+scp build/mcp-0.2.0.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-0.1.0.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-0.2.0.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp
@@ -32,11 +63,11 @@ sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp
 
 Em Docker, rode os comandos `occ` dentro do container como o usuário do servidor web. Se o PHP usa OPcache com `validate_timestamps=0`, reinicie o PHP-FPM após copiar os arquivos.
 
-Para atualizar: `occ app:disable mcp`, substituir `<apps>/mcp` pelo novo conteúdo e `occ app:enable mcp`. Para remover: `occ app:remove mcp`.
+Para atualizar: `occ app:disable mcp`, remover `<apps>/mcp`, extrair o novo pacote, `occ app:enable mcp` e `occ upgrade` se o Nextcloud pedir. A pasta precisa ser trocada inteira, para não sobrarem arquivos antigos em `vendor/`. Para remover: `occ app:remove mcp`.
 
 ## Configurar
 
-1. **Administração → Configurações adicionais → MCP**: ativar o serviço, carregar o ID do usuário e clicar em *Allow connection*. A matriz de grants por módulo e operação fica na mesma tela. Serviço, elegibilidade e conexão pessoal começam desligados para todos, inclusive administradores. Leitura começa permitida e escrita, exclusão e transferência começam negadas.
+1. **Administração → Configurações adicionais → MCP**: ativar o serviço, carregar o ID do usuário e clicar em *Allow connection*. A matriz de grants por módulo e operação fica na mesma tela. Para usar edição de arquivos ou escrita em notas, libere `files.edit` e `notes.create/edit/move/delete` para o usuário. Serviço, elegibilidade e conexão pessoal começam desligados para todos, inclusive administradores. Leitura começa permitida e escrita, exclusão e transferência começam negadas.
 2. **Configurações pessoais → Informações pessoais → MCP connection**: o próprio usuário clica em *Connect*.
 3. Em **Configurações pessoais → Segurança**, o usuário cria uma senha de app. O cliente MCP usa autenticação HTTP Basic com o ID do usuário e essa senha de app. O app nunca pede nem guarda a senha principal.
 
@@ -79,4 +110,4 @@ composer install
 vendor/bin/phpunit
 ```
 
-Os testes são unitários, com mocks das interfaces OCP (`nextcloud/ocp` stable33). Eles não substituem a instalação num Nextcloud real.
+Os testes são unitários, com mocks das interfaces OCP (`nextcloud/ocp` stable33) e uma árvore de arquivos em memória (`tests/Unit/Tools/FakeTree.php`). Eles não substituem a instalação num Nextcloud real, que é o único lugar onde se verificam ACL de compartilhamento, criação de versão, lixeira e storages externos.

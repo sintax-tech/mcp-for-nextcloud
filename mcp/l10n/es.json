@@ -185,6 +185,7 @@
     "A note with this title already exists in this category." : "Ya existe una nota con este título en esta categoría.",
     "A note with this title already exists in the destination category." : "Ya existe una nota con este título en la categoría de destino.",
     "There are already too many notes with this title." : "Ya hay demasiadas notas con este título.",
-    "Deletion blocked: the trash bin (files_trashbin) is not active for this note, so it would not be recoverable." : "Eliminación bloqueada: la papelera (files_trashbin) no está activa para esta nota, por lo que no sería recuperable."
+    "Deletion blocked: the trash bin (files_trashbin) is not active for this note, so it would not be recoverable." : "Eliminación bloqueada: la papelera (files_trashbin) no está activa para esta nota, por lo que no sería recuperable.",
+    "Unexpected error while accessing Nextcloud." : "Error inesperado al acceder a Nextcloud."
 },"pluralForm" :"nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

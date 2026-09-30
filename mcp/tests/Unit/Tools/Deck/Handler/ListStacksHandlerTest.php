@@ -32,7 +32,7 @@ final class ListStacksHandlerTest extends TestCase {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->method('listStacks')->willReturn($stacks);
 
-		return new ListStacksHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		return new ListStacksHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 	}
 
 	public function testHappyPathForwardsTheBoardAndTheCaller(): void {
@@ -41,7 +41,7 @@ final class ListStacksHandlerTest extends TestCase {
 			->method('listStacks')
 			->with('alice', 4)
 			->willReturn([new Stack(['id' => 10, 'boardId' => 4, 'title' => 'A fazer', 'order' => 1])]);
-		$handler = new ListStacksHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new ListStacksHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$payload = $this->payload($handler->handle(['boardId' => 4], 'alice'));
 
@@ -87,7 +87,7 @@ final class ListStacksHandlerTest extends TestCase {
 	public function testDeniedAccessBecomesTheGenericMessage(): void {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->method('listStacks')->willThrowException(new NoPermissionException('Permission denied'));
-		$handler = new ListStacksHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new ListStacksHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$result = $handler->handle(['boardId' => 4], 'alice');
 
@@ -98,7 +98,7 @@ final class ListStacksHandlerTest extends TestCase {
 	public function testArchivedBoardBecomesTheNotAllowedMessage(): void {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->method('listStacks')->willThrowException(new StatusException('Operation not allowed.'));
-		$handler = new ListStacksHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new ListStacksHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		self::assertSame(DeckMessages::ERROR_NOT_ALLOWED, $this->text($handler->handle(['boardId' => 4], 'alice')));
 	}
@@ -106,7 +106,7 @@ final class ListStacksHandlerTest extends TestCase {
 	public function testBackendFailureBecomesTheGenericMessage(): void {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->method('listStacks')->willThrowException(new RuntimeException('SQLSTATE'));
-		$handler = new ListStacksHandler($gateway, $this->createMock(LoggerInterface::class), new CardFormatter());
+		$handler = new ListStacksHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$result = $handler->handle(['boardId' => 4], 'alice');
 

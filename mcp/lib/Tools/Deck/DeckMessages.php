@@ -28,11 +28,16 @@ final class DeckMessages {
 		= 'Move um card do Deck para outra lista (stack), inclusive de outro board. Sem order, o card vai para o fim.';
 	public const TOOL_DELETE_CARD_DESCRIPTION
 		= 'Exclui um card do Deck, do mesmo modo que a interface web: a exclusão é reversível pelo Deck. Exige confirm.';
+	public const TOOL_FOLLOWUP_CARDS_DESCRIPTION
+		= 'Lista os cards dos quadros que você pode gerenciar (dono ou permissão de gerenciar), agrupados por responsável, com link direto para cada card. Por padrão devolve só os vencidos; a varredura cobre no máximo 100 quadros visíveis.';
 
 	/* Parameter descriptions. */
 	public const PARAM_BOARD_ID = 'Id do board do Deck.';
 	public const PARAM_STACK_ID = 'Id da lista (stack) do Deck.';
 	public const PARAM_CARD_ID = 'Id do card do Deck.';
+	public const PARAM_STATUS = 'Filtro de situação: overdue (vencido antes de hoje), open (em aberto), done (concluído) ou all (todos). Padrão: overdue.';
+	public const PARAM_ASSIGNEE = 'UID da pessoa responsável; devolve somente os cards atribuídos a ela.';
+	public const PARAM_DUE_BEFORE = 'Devolve somente cards com data prevista até esta data, no formato AAAA-MM-DD.';
 	public const PARAM_TITLE = 'Título do card.';
 	public const PARAM_DESCRIPTION = 'Descrição do card, em texto simples.';
 	public const PARAM_DUEDATE = 'Data prevista no formato AAAA-MM-DD, ou null para remover.';
@@ -68,6 +73,12 @@ final class DeckMessages {
 
 	/** Raised when a date is not a real calendar date in AAAA-MM-DD form. */
 	public const ERROR_INVALID_DUEDATE = 'A data prevista deve ser uma data válida no formato AAAA-MM-DD.';
+
+	/** Raised when `dueBefore` is not a real calendar date in AAAA-MM-DD form. */
+	public const ERROR_INVALID_DUE_BEFORE = 'A data de dueBefore deve ser uma data válida no formato AAAA-MM-DD.';
+
+	/** Raised when `deck_followup_cards` is called with a status the Deck does not group by. */
+	public const ERROR_INVALID_STATUS = 'Status inválido para o acompanhamento. Use overdue, open, done ou all.';
 
 	/** Raised when a description is longer than the module accepts. */
 	public const ERROR_DESCRIPTION_TOO_LONG = 'A descrição do card excede o tamanho máximo de 100000 caracteres.';

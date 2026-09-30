@@ -6,16 +6,40 @@ namespace OCA\Mcp\Tools\Deck;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\Stack;
+use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IURLGenerator;
+use OCP\IUserManager;
 
 /**
  * Converts Deck entities into the plain arrays returned by the Deck tools.
  *
  * Only fields the contract lists are exposed; Deck internals such as `shareToken`, ACL rows or
- * physical storage paths are never copied into the response.
+ * physical storage paths are never copied into the response. The card carries what a follow-up
+ * needs to be actionable: who is responsible, whether it is late, and the absolute link to the
+ * card in the Deck web interface.
  */
 final class CardFormatter {
 	/** Duedate is a Deck `datetime` column; the tools speak plain `YYYY-MM-DD`. */
 	private const DATE_FORMAT = 'Y-m-d';
+
+	/** Route of the Deck card page, Deck `appinfo/routes.php` `page#indexCard`. */
+	private const CARD_ROUTE = 'deck.page.indexCard';
+
+	/** @var array<string, string> Display names already resolved in this request. */
+	private array $names = [];
+
+	/**
+	 * @param IURLGenerator $urls Builds the absolute link to the card in the Deck web interface.
+	 * @param ITimeFactory $time Clock the `overdue` flag is read from, so it can be pinned in a test.
+	 * @param IUserManager|null $users Resolves an assigned UID to its display name; without it the
+	 *     UID is answered as is.
+	 */
+	public function __construct(
+		private IURLGenerator $urls,
+		private ITimeFactory $time,
+		private ?IUserManager $users = null,
+	) {
+	}
 
 	/**
 	 * @param Board $board Board as returned by `BoardService::findAll()`.
@@ -49,13 +73,23 @@ final class CardFormatter {
 	/**
 	 * @param Card $card Card as returned by the Deck services.
 	 * @param int|null $boardId Board the card belongs to, resolved once by the gateway for listings.
-	 * @return array{id: int, stackId: int, boardId: int|null, title: string, description: string, type: string, owner: string, order: int, archived: bool, done: int|null, duedate: string|null, lastModified: int, attachmentCount: int|null}
+	 * @return array{id: int, stackId: int, boardId: int|null, title: string, description: string, type: string, owner: string, order: int, archived: bool, done: int|null, duedate: string|null, lastModified: int, attachmentCount: int|null, assignedUsers: list<array{uid: string, displayName: string}>, overdue: bool, url: string|null}
 	 */
 	public function card(Card $card, ?int $boardId = null): array {
+		$boardId ??= $card->getRelatedBoard()?->getId();
+
+		$assignedUsers = [];
+		foreach (CardCriteria::assignedUids($card) as $uid) {
+			$assignedUsers[] = [
+				'uid' => $uid,
+				'displayName' => $this->displayName($uid),
+			];
+		}
+
 		return [
 			'id' => $card->getId(),
 			'stackId' => $card->getStackId(),
-			'boardId' => $boardId ?? $card->getRelatedBoard()?->getId(),
+			'boardId' => $boardId,
 			'title' => $card->getTitle(),
 			'description' => (string)$card->getDescription(),
 			'type' => $card->getType(),
@@ -66,6 +100,11 @@ final class CardFormatter {
 			'duedate' => $this->dateToString($card->getDuedate()),
 			'lastModified' => $card->getLastModified(),
 			'attachmentCount' => $card->getAttachmentCount(),
+			'assignedUsers' => $assignedUsers,
+			'overdue' => CardCriteria::isOverdue($card, $this->time->getTime()),
+			'url' => $boardId === null
+				? null
+				: $this->urls->linkToRouteAbsolute(self::CARD_ROUTE, ['boardId' => $boardId, 'cardId' => $card->getId()]),
 		];
 	}
 
@@ -82,6 +121,20 @@ final class CardFormatter {
 	 */
 	public function isListed(Card $card): bool {
 		return $card->getDeletedAt() === 0 && !$card->getArchived();
+	}
+
+	/**
+	 * Display name of an assigned user, resolved once per request.
+	 *
+	 * @param string $userId UID whose name the caller sees.
+	 * @return string Name of the account, or the UID when it is gone or has none.
+	 */
+	private function displayName(string $userId): string {
+		if (!isset($this->names[$userId])) {
+			$this->names[$userId] = $this->users?->get($userId)?->getDisplayName() ?: $userId;
+		}
+
+		return $this->names[$userId];
 	}
 
 	/**

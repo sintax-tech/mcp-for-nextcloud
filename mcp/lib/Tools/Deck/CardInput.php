@@ -57,13 +57,34 @@ final class CardInput {
 	 * @throws InvalidArgumentException When the string is not a real calendar date.
 	 */
 	public static function duedate(mixed $value): ?string {
+		return self::date($value, DeckMessages::ERROR_INVALID_DUEDATE);
+	}
+
+	/**
+	 * Validates the upper due-date bound of the follow-up.
+	 *
+	 * @param mixed $value Raw value: a `YYYY-MM-DD` string, or null for no bound.
+	 * @return string|null The date, or null when there is no bound.
+	 * @throws InvalidArgumentException When the string is not a real calendar date.
+	 */
+	public static function dueBefore(mixed $value): ?string {
+		return self::date($value, DeckMessages::ERROR_INVALID_DUE_BEFORE);
+	}
+
+	/**
+	 * @param mixed $value Raw value: a `YYYY-MM-DD` string, or null for none.
+	 * @param string $error Message the rejection carries, chosen by the caller.
+	 * @return string|null The date, or null when there is none.
+	 * @throws InvalidArgumentException When the string is not a real calendar date.
+	 */
+	private static function date(mixed $value, string $error): ?string {
 		if ($value === null) {
 			return null;
 		}
 
 		$date = \DateTimeImmutable::createFromFormat('!' . self::DATE_FORMAT, (string)$value);
 		if ($date === false || $date->format(self::DATE_FORMAT) !== (string)$value) {
-			throw new InvalidArgumentException(DeckMessages::ERROR_INVALID_DUEDATE);
+			throw new InvalidArgumentException($error);
 		}
 
 		return (string)$value;

@@ -50,6 +50,35 @@ interface DeckGatewayInterface {
 	public function listCards(string $userId, int $stackId, int $limit, int $offset): array;
 
 	/**
+	 * Cards a manager follows up, from the boards that caller may manage.
+	 *
+	 * The deck has no such query, so the gateway walks the boards the caller may manage (owner or
+	 * `PERMISSION_MANAGE`), reads their stacks and cards in batch, and filters with
+	 * {@see CardCriteria} while it goes: a board costs four queries plus one permission lookup and
+	 * a card never costs a query of its own. At most 100 visible boards are examined, and
+	 * `truncated` reports both a scan cut short by the limit and one cut short by that board
+	 * ceiling.
+	 *
+	 * @param string $userId UID of the authenticated caller, who must be able to manage the boards.
+	 * @param string $status One of {@see CardCriteria::STATUSES}.
+	 * @param int|null $boardId Restrict the scan to this board, or null for every managed board.
+	 * @param string|null $assignee Keep only cards assigned to this UID, or null for any assignee.
+	 * @param string|null $dueBefore Keep only cards due on or before this `YYYY-MM-DD`, or null.
+	 * @param int $limit Maximum number of cards to answer with.
+	 * @return array{items: list<array{card: Card, boardId: int}>, truncated: bool} Matching cards,
+	 *     each with the board it came from, and whether the answer may be incomplete.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 */
+	public function followupCards(
+		string $userId,
+		string $status,
+		?int $boardId,
+		?string $assignee,
+		?string $dueBefore,
+		int $limit,
+	): array;
+
+	/**
 	 * One card, with attachments and counters enriched by the Deck.
 	 *
 	 * @param string $userId UID of the authenticated caller.

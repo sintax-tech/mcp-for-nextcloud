@@ -8,9 +8,6 @@ use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolModule;
 use OCA\Mcp\Tools\ToolResult;
-use OCP\App\IAppManager;
-use OCP\AppFramework\Utility\ITimeFactory;
-use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\Node;
@@ -24,16 +21,15 @@ class FilesModule implements ToolModule {
     /** Maximum size of the new content accepted by files_edit, in bytes. */
     public const MAX_EDIT_BYTES = 10 * 1024 * 1024;
     /** Folder in the user's root that receives a copy of every file before files_edit writes it. */
-    public const BACKUP_FOLDER = 'MCP backups';
+    public const BACKUP_FOLDER = FileBackup::FOLDER;
     /** Extra rows fetched by files_search to make up for unreadable matches filtered out afterwards. */
     public const SEARCH_OVERFETCH = 10;
 
     public function __construct(
         private IRootFolder $rootFolder,
         private TextExtractor $extractor,
-        private IAppManager $appManager,
+        private FileBackup $backup,
         private IUserManager $userManager,
-        private ITimeFactory $time,
         private IDBConnection $db,
     ) {}
 
@@ -118,7 +114,7 @@ class FilesModule implements ToolModule {
     /** @return array{path:string, size:int, etag:string, backup:string} */
     private function edit(Folder $root, string $userId, string $path, string $content, ?string $etag): array {
         $path = PathGuard::normalize($path);
-        if ($path === '/' . self::BACKUP_FOLDER || str_starts_with($path, '/' . self::BACKUP_FOLDER . '/')) {
+        if (FileBackup::isBackupPath($path)) {
             throw new ToolFailure('Arquivos em "/' . self::BACKUP_FOLDER . '" não podem ser editados pelo MCP.');
         }
         $file = NodeAccess::requireFile(NodeAccess::get($root, $path));
@@ -128,44 +124,13 @@ class FilesModule implements ToolModule {
         if (strlen($content) > self::MAX_EDIT_BYTES) {
             throw new ToolFailure('Conteúdo excede o limite de edição de ' . self::MAX_EDIT_BYTES . ' bytes.');
         }
-        // Preconditions, in order; any failure leaves the original untouched.
-        $user = $this->userManager->get($userId);
-        if ($user === null || !$this->appManager->isEnabledForUser('files_versions', $user)) {
-            throw new ToolFailure('Edição bloqueada: o versionamento de arquivos (files_versions) não está ativo.');
-        }
-        if (!$file->isUpdateable()) {
-            throw new ToolFailure(ToolFailure::FORBIDDEN);
-        }
-        NodeAccess::checkEtag($file, $etag);
-        $backup = $this->backup($root, $file, $path);
-
+        $backup = $this->backup->prepare($root, $file, $path, $userId, $etag);
         try {
             $file->putContent($content);
         } catch (\Throwable) {
             throw new ToolFailure('Falha ao gravar o arquivo; o original foi preservado em ' . $backup . '.');
         }
-        $saved = $root->get(ltrim($path, '/'));
-        return ['path' => $path, 'size' => strlen($content), 'etag' => $saved->getEtag(), 'backup' => $backup];
-    }
-
-    /** Copies the original into the user's backup folder and verifies the copy before any write. */
-    private function backup(Folder $root, File $file, string $path): string {
-        try {
-            $folder = NodeAccess::ensureFolder($root, self::BACKUP_FOLDER . dirname($path));
-            $base = $file->getName() . '.' . gmdate('Ymd-His', $this->time->getTime());
-            $name = $base . '.bak';
-            for ($i = 2; $folder->nodeExists($name); $i++) {
-                $name = $base . '-' . $i . '.bak';
-            }
-            $copy = $file->copy($folder->getPath() . '/' . $name);
-            $valid = $copy instanceof File && $copy->getSize() === $file->getSize();
-        } catch (\Throwable) {
-            $valid = false;
-        }
-        if (!$valid) {
-            throw new ToolFailure('Edição bloqueada: não foi possível criar a cópia de segurança do original.');
-        }
-        return $root->getRelativePath($copy->getPath()) ?? '';
+        return ['path' => $path, 'size' => strlen($content), 'etag' => $root->get(ltrim($path, '/'))->getEtag(), 'backup' => $backup];
     }
 
     /** @return array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string} */

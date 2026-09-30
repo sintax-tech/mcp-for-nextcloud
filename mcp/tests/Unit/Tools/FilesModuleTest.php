@@ -5,6 +5,7 @@ namespace OCA\Mcp\Tests\Unit\Tools;
 
 use InvalidArgumentException;
 use OCA\Mcp\Tools\ArgumentValidator;
+use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\ToolFailure;
@@ -41,7 +42,7 @@ final class FilesModuleTest extends TestCase {
         $time->method('getTime')->willReturn(1790000000);
         $db = $this->createMock(IDBConnection::class);
         $db->method('escapeLikeParameter')->willReturnCallback(fn (string $s) => addcslashes($s, '\\_%'));
-        $this->module = new FilesModule($root, new TextExtractor($temp), $apps, $users, $time, $db);
+        $this->module = new FilesModule($root, new TextExtractor($temp), new FileBackup($apps, $users, $time), $users, $db);
     }
 
     /** Runs a tool the way the registry does: schema validation first, then the handler. */

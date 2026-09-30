@@ -6,6 +6,7 @@ namespace OCA\Mcp\AppInfo;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tools\Calendar\CalendarModule;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
+use OCA\Mcp\Tools\Talk\TalkModule;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
 use OCA\Mcp\Tools\Calendar\DavCalendarStore;
 use OCA\Mcp\Tools\Files\FilesModule;
@@ -31,6 +32,7 @@ class Application extends App implements IBootstrap {
         NotesModule::class,
         CalendarModule::class,
         DeckToolModule::class,
+        TalkModule::class,
     ];
 
     public function __construct() {

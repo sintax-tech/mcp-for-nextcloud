@@ -91,7 +91,14 @@ Para atualizar: `occ app:disable mcp`, remover `<apps>/mcp`, extrair o novo paco
 
 ## Configurar
 
-1. **Administração → Configurações adicionais → MCP**: ativar o serviço, carregar o ID do usuário e clicar em *Allow connection*. A matriz de grants por módulo e operação fica na mesma tela. Para usar edição de arquivos ou escrita em notas, libere `files.edit` e `notes.create/edit/move/delete` para o usuário. Serviço, elegibilidade e conexão pessoal começam desligados para todos, inclusive administradores. Leitura começa permitida e escrita, exclusão e transferência começam negadas.
+1. **Administração → Configurações adicionais → MCP**: marcar *Serviço MCP ativado* e usar a matriz de usuários × permissões.
+   - A busca procura por nome, ID ou e-mail, e há um filtro por grupo; a tabela mostra 50 usuários por página.
+   - Cada checkbox salva na hora: *Pode conectar* libera o usuário, e as demais colunas são as operações por módulo.
+   - Os botões ✓/✕ no cabeçalho aplicam a coluna aos usuários ativos da página, com confirmação.
+   - Usuários desativados aparecem marcados e não podem ser editados. Módulos cujo app está desativado no servidor aparecem esmaecidos, e as permissões ficam guardadas.
+   - O e-mail só serve para a busca e nunca é exibido.
+   - Serviço, elegibilidade e conexão pessoal começam desligados para todos, inclusive administradores. Leitura começa permitida; escrita, exclusão e transferência começam negadas.
+   - A página usa a API JSON admin-only `GET /apps/mcp/api/grants`, `PUT /apps/mcp/api/grants/{uid}`, `POST /apps/mcp/api/grants/bulk` e `PUT /apps/mcp/api/service`.
 2. **Configurações pessoais → Informações pessoais → MCP connection**: o próprio usuário clica em *Connect*.
 3. Em **Configurações pessoais → Segurança**, o usuário cria uma senha de app. O cliente MCP usa autenticação HTTP Basic com o ID do usuário e essa senha de app. O app nunca pede nem guarda a senha principal.
 

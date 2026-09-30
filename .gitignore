@@ -1,0 +1,59 @@
+# ---- Dependencies / build ----
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+coverage/
+.cache/
+
+# ---- Secrets / credentials (NUNCA versionar) ----
+.env
+.env.*
+!.env.example
+*.local
+config.local.*
+secrets.*
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+app-password*
+credentials*
+auth.json
+tokens.json
+mcp.json
+
+# ---- Dados do usuário / cache de conteúdo (NUNCA versionar) ----
+data/
+cache/
+tmp/
+downloads/
+*.sqlite
+*.sqlite3
+*.db
+extracted/
+attachments/
+
+# ---- Logs ----
+*.log
+logs/
+npm-debug.log*
+
+# ---- OS / editores ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# ---- Artefatos internos / de trabalho / assistentes de IA (NAO versionar) ----
+docs/
+.claude/
+.superpowers/
+.remember/
+.cursor/
+.aider*
+.windsurf/
+CLAUDE.md
+AGENTS.md

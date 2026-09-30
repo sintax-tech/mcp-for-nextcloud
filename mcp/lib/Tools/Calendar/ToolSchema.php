@@ -11,8 +11,6 @@ final class ToolSchema {
     public const MODULE = 'calendar';
     /** Nextcloud app that must be enabled for the user. */
     public const APP = 'calendar';
-    /** Warning appended to the description of every write tool (no iTIP scheduling). */
-    public const NO_NOTIFICATION = ' Os participantes do evento não são notificados.';
 
     /**
      * @param string $name tool name
@@ -82,6 +80,31 @@ final class ToolSchema {
      */
     public static function text(string $description, int $minLength, int $maxLength): array {
         return ['type' => 'string', 'minLength' => $minLength, 'maxLength' => $maxLength, 'description' => $description];
+    }
+
+    /**
+     * @return array<string, mixed> guest list property: internal account ids only
+     */
+    public static function attendees(): array {
+        return [
+            'type' => 'array',
+            'items' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 64],
+            'minItems' => 1,
+            'maxItems' => AttendeeResolver::MAX_ATTENDEES,
+            'uniqueItems' => true,
+            'description' => 'IDs de conta do Nextcloud (não e-mails). Substitui a lista de participantes do evento.',
+        ];
+    }
+
+    /**
+     * @return array<string, mixed> opt-in invitation property, defaulting to sending nothing
+     */
+    public static function sendInvitations(): array {
+        return [
+            'type' => 'boolean',
+            'default' => false,
+            'description' => 'true entrega o convite ao agendamento do Nextcloud; o e-mail depende da configuração do servidor e o envio não confirma recebimento',
+        ];
     }
 
     /**

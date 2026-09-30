@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Calendar\Handler;
 
+use OCA\Mcp\Tools\Calendar\CalendarMessages;
 use OCA\Mcp\Tools\Calendar\CalendarTool;
 use OCA\Mcp\Tools\Calendar\EventRelocator;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
@@ -22,7 +23,7 @@ final class TransferEvent implements CalendarTool {
     public function definition(): array {
         return ToolSchema::definition(
             'calendar_transfer_event',
-            'Transfere um evento para um calendário de outro usuário compartilhado com você com permissão de escrita. Exige confirm: true.' . ToolSchema::NO_NOTIFICATION,
+            'Transfere um evento para um calendário de outro usuário compartilhado com você com permissão de escrita. Exige confirm: true. Eventos com participantes são recusados: o organizador continua sendo você e o Nextcloud não avisa ninguém nessa operação.' . CalendarMessages::PARTICIPANTS_NOT_NOTIFIED,
             'transfer',
             [
                 'calendar' => ToolSchema::calendar('path do calendário de origem'),

@@ -21,9 +21,13 @@ final class MoveEventTest extends CalendarTestCase {
     }
 
     public function testMovesBetweenCalendarsOfTheSameOwner(): void {
-        $this->assertSame(['uid' => 'm', 'from' => self::PERSONAL, 'to' => self::WORK], self::json($this->move([])));
-        $id = $this->store->objects[1]['m.ics']['id'];
-        $this->assertSame([['move', [self::ALICE, $id, self::ALICE, 2, 'm.ics']]], $this->store->writes);
+        $this->assertSame(
+            ['uid' => 'm', 'from' => self::PERSONAL, 'to' => self::WORK, 'participantsNotified' => false, 'note' => 'Os participantes do evento não são avisados, como ao mover no app Calendar.'],
+            self::json($this->move([])),
+        );
+        $this->assertSame([['move', ['personal', 'm.ics', 'work', '"' . md5(self::ics("UID:m\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z")) . '"']]], $this->dav->calls);
+        $this->assertArrayNotHasKey('m.ics', $this->store->objects[1]);
+        $this->assertArrayHasKey('m.ics', $this->store->objects[2]);
     }
 
     public function testDifferentOwnersRequireTransfer(): void {
@@ -50,11 +54,10 @@ final class MoveEventTest extends CalendarTestCase {
 
     public function testSharedCalendarsWithConfirmationMoveTheEvent(): void {
         $this->assertSame(
-            ['uid' => 't', 'from' => self::TEAM, 'to' => self::SPRINT],
+            ['uid' => 't', 'from' => self::TEAM, 'to' => self::SPRINT, 'participantsNotified' => false, 'note' => 'Os participantes do evento não são avisados, como ao mover no app Calendar.'],
             self::json($this->move(['calendar' => self::TEAM, 'uid' => 't', 'targetCalendar' => self::SPRINT, 'confirm_shared' => true])),
         );
-        $id = $this->store->objects[3]['t.ics']['id'];
-        $this->assertSame([['move', [self::BOB, $id, self::BOB, 8, 't.ics']]], $this->store->writes);
+        $this->assertSame([['move', ['team_shared_by_bob', 't.ics', 'sprint_shared_by_bob', '"' . md5(self::ics("UID:t\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z")) . '"']]], $this->dav->calls);
     }
 
     public function testAclRefusals(): void {
@@ -78,9 +81,11 @@ final class MoveEventTest extends CalendarTestCase {
     }
 
     public function testBackendRefusalAndFailure(): void {
-        $this->store->moveResult = false;
-        self::assertToolError($this->move([]), 'Não foi possível mover');
-        $this->store->failure = new RuntimeException('boom');
+        // A MOVE the pipeline reports as done but that left the object in the source is never
+        // reported as success: the re-read of both calendars is what decides.
+        $this->dav->statusFor['move'] = 201;
+        $this->expectException(RuntimeException::class);
+        $this->move([]);
         $this->expectException(RuntimeException::class);
         $this->move([]);
     }

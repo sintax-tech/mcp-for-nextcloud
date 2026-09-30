@@ -56,44 +56,4 @@ interface CalendarStore {
      * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null
      */
     public function objectByUid(int $calendarId, string $uid): ?array;
-
-    /**
-     * Creates an object.
-     *
-     * @param int $calendarId backend calendar id
-     * @param string $uri new object URI
-     * @param string $data serialized iCalendar
-     * @return string new ETag
-     */
-    public function create(int $calendarId, string $uri, string $data): string;
-
-    /**
-     * Replaces an object's data.
-     *
-     * @param int $calendarId backend calendar id
-     * @param string $uri object URI
-     * @param string $data serialized iCalendar
-     * @return string new ETag
-     */
-    public function update(int $calendarId, string $uri, string $data): string;
-
-    /**
-     * Moves an object to another calendar, keeping its URI.
-     *
-     * @param string $sourceOwnerPrincipal owner principal of the source calendar
-     * @param int $objectId backend object id
-     * @param string $targetOwnerPrincipal owner principal of the target calendar
-     * @param int $targetCalendarId backend calendar id of the target
-     * @param string $uri object URI in the target
-     * @return bool false when the backend could not complete the move
-     */
-    public function move(string $sourceOwnerPrincipal, int $objectId, string $targetOwnerPrincipal, int $targetCalendarId, string $uri): bool;
-
-    /**
-     * Deletes an object; the backend moves it to the CalDAV trash unless retention is disabled.
-     *
-     * @param int $calendarId backend calendar id
-     * @param string $uri object URI
-     */
-    public function delete(int $calendarId, string $uri): void;
 }

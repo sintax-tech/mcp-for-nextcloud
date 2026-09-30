@@ -132,59 +132,6 @@ class DavCalendarStore implements CalendarStore {
     }
 
     /**
-     * Assumes `public function createCalendarObject($calendarId, $objectUri, $calendarData, $calendarType = self::CALENDAR_TYPE_CALENDAR)`
-     * (line 1538), which returns the quoted ETag and throws UidConflict on a duplicate UID.
-     *
-     * @param int $calendarId backend calendar id
-     * @param string $uri new object URI
-     * @param string $data serialized iCalendar
-     * @return string new ETag
-     */
-    public function create(int $calendarId, string $uri, string $data): string {
-        return (string)$this->backend()->createCalendarObject($calendarId, $uri, $data);
-    }
-
-    /**
-     * Assumes `public function updateCalendarObject($calendarId, $objectUri, $calendarData, $calendarType = self::CALENDAR_TYPE_CALENDAR)`
-     * (line 1615), which returns the quoted ETag.
-     *
-     * @param int $calendarId backend calendar id
-     * @param string $uri object URI
-     * @param string $data serialized iCalendar
-     * @return string new ETag
-     */
-    public function update(int $calendarId, string $uri, string $data): string {
-        return (string)$this->backend()->updateCalendarObject($calendarId, $uri, $data);
-    }
-
-    /**
-     * Assumes `public function moveCalendarObject(string $sourcePrincipalUri, int $sourceObjectId, string $targetPrincipalUri, int $targetCalendarId, string $tragetObjectUri, int $calendarType = self::CALENDAR_TYPE_CALENDAR): bool`
-     * (line 1671). The principals must be the calendar owners: the object is looked up with
-     * getCalendarObjectById($principalUri, $id) (line 2661), which filters on calendars.principaluri.
-     *
-     * @param string $sourceOwnerPrincipal owner principal of the source calendar
-     * @param int $objectId backend object id
-     * @param string $targetOwnerPrincipal owner principal of the target calendar
-     * @param int $targetCalendarId backend calendar id of the target
-     * @param string $uri object URI in the target
-     * @return bool false when the backend could not complete the move
-     */
-    public function move(string $sourceOwnerPrincipal, int $objectId, string $targetOwnerPrincipal, int $targetCalendarId, string $uri): bool {
-        return $this->backend()->moveCalendarObject($sourceOwnerPrincipal, $objectId, $targetOwnerPrincipal, $targetCalendarId, $uri);
-    }
-
-    /**
-     * Assumes `public function deleteCalendarObject($calendarId, $objectUri, $calendarType = self::CALENDAR_TYPE_CALENDAR, bool $forceDeletePermanently = false)`
-     * (line 1735). It deletes permanently only when dav/calendarRetentionObligation is '0' (line 1745).
-     *
-     * @param int $calendarId backend calendar id
-     * @param string $uri object URI
-     */
-    public function delete(int $calendarId, string $uri): void {
-        $this->backend()->deleteCalendarObject($calendarId, $uri);
-    }
-
-    /**
      * @param array<string, mixed> $row backend calendar object row
      * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}
      */

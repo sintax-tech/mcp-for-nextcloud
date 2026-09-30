@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
 use DateTimeImmutable;
+use OCA\Mcp\Tools\Calendar\AttendeeResolver;
 use OCA\Mcp\Tools\Calendar\CalendarAccess;
 use OCA\Mcp\Tools\Calendar\CalendarModule;
 use OCA\Mcp\Tools\Calendar\Classification;
@@ -20,9 +21,11 @@ use OCA\Mcp\Tools\Calendar\Handler\ListEvents;
 use OCA\Mcp\Tools\Calendar\Handler\MoveEvent;
 use OCA\Mcp\Tools\Calendar\Handler\TransferEvent;
 use OCA\Mcp\Tools\Calendar\Handler\UpdateEvent;
+use OCA\Mcp\Tools\Calendar\Scheduling;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\TrashPolicy;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IAppConfig;
 use OCP\IConfig;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -47,11 +50,16 @@ abstract class CalendarTestCase extends TestCase {
     protected const NOW = '2026-03-10T12:00:00Z';
 
     protected FakeCalendarStore $store;
+    protected FakeCalendarDav $dav;
     protected CalendarModule $module;
     /** @var array<string, \OCA\Mcp\Tools\Calendar\CalendarTool> write handlers exercised directly by domain tests */
     protected array $writeHandlers = [];
     /** Value returned by dav/calendarRetentionObligation. */
     protected string $retention = '';
+    /** Value returned by dav/sendInvitations. */
+    protected string $sendInvitations = 'yes';
+    /** E-mail addresses per account id, for the guest list. */
+    protected array $emails = ['alice' => 'alice@example.invalid', 'bob' => 'bob@example.invalid', 'carla' => 'carla@example.invalid', 'dave' => 'dave@example.invalid'];
 
     protected function setUp(): void {
         $this->store = new FakeCalendarStore();
@@ -62,9 +70,14 @@ abstract class CalendarTestCase extends TestCase {
         $this->store->addCalendar(self::ALICE, 5, 'contact_birthdays', self::ALICE, ['components' => ['VEVENT']]);
         $this->store->addCalendar(self::ALICE, 6, 'tasks', self::ALICE, ['components' => ['VTODO']]);
         $this->store->addCalendar(self::ALICE, 7, 'old', self::ALICE, ['deleted' => true]);
+        $this->dav = new FakeCalendarDav($this->store);
 
         $time = $this->createMock(ITimeFactory::class);
         $time->method('now')->willReturnCallback(static fn () => new DateTimeImmutable(self::NOW));
+        $appConfig = $this->createMock(IAppConfig::class);
+        $appConfig->method('getValueString')->willReturnCallback(
+            fn (string $app, string $key, string $default = '') => $app === 'dav' && $key === 'sendInvitations' ? $this->sendInvitations : $default,
+        );
         $config = $this->createMock(IConfig::class);
         $config->method('getAppValue')->willReturnCallback(fn (string $app, string $key) => $app === 'dav' && $key === 'calendarRetentionObligation' ? $this->retention : '');
         $logger = $this->createMock(LoggerInterface::class);
@@ -75,14 +88,16 @@ abstract class CalendarTestCase extends TestCase {
         $dates = new DateInput();
         $mapper = new EventMapper();
         $builder = new EventBuilder();
-        $relocator = new EventRelocator($access, $this->store, $repository);
+        $relocator = new EventRelocator($access, $this->store, $this->dav, $repository);
         $guard = new SharedGuard($this->users());
+        $attendees = new AttendeeResolver($this->users());
+        $scheduling = new Scheduling($appConfig);
         $listCalendars = new ListCalendars($access);
         $listEvents = new ListEvents($access, $this->store, $repository, $classification, new EventExpander(), $mapper, $dates, $time, $logger);
-        $createEvent = new CreateEvent($access, $guard, $this->store, $repository, $builder, $mapper, $dates, $time);
-        $updateEvent = new UpdateEvent($access, $guard, $this->store, $repository, $builder, $mapper, $dates, $time);
+        $createEvent = new CreateEvent($access, $guard, $this->dav, $this->store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time);
+        $updateEvent = new UpdateEvent($access, $guard, $this->dav, $this->store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time);
         $moveEvent = new MoveEvent($access, $relocator, $guard);
-        $deleteEvent = new DeleteEvent($access, $guard, $this->store, $repository, new TrashPolicy($config));
+        $deleteEvent = new DeleteEvent($access, $guard, $this->dav, $this->store, $repository, new TrashPolicy($config), $scheduling);
         $transferEvent = new TransferEvent($relocator);
         $this->writeHandlers = [
             'calendar_create_event' => $createEvent,
@@ -103,19 +118,22 @@ abstract class CalendarTestCase extends TestCase {
     }
 
     /**
-     * User manager resolving alice and bob for the shared-calendar confirmation messages.
+     * User manager resolving alice, bob and carla, for the guest list and the shared-calendar messages.
      *
      * @return IUserManager double
      */
     private function users(): IUserManager {
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturnCallback(function ($uid): ?IUser {
-            $names = ['alice' => 'Alice Silva', 'bob' => 'Roberto Almeida'];
+            $names = ['alice' => 'Alice Silva', 'bob' => 'Roberto Almeida', 'carla' => 'Carla Dias', 'dave' => 'Dave Lima'];
             if (!is_string($uid) || !isset($names[$uid])) {
                 return null;
             }
             $user = $this->createMock(IUser::class);
             $user->method('getDisplayName')->willReturn($names[$uid]);
+            $user->method('getUID')->willReturn($uid);
+            $user->method('isEnabled')->willReturn(true);
+            $user->method('getEMailAddress')->willReturn($this->emails[$uid] ?? null);
 
             return $user;
         });
@@ -170,9 +188,11 @@ abstract class CalendarTestCase extends TestCase {
     }
 
     /**
-     * Asserts that no write method of the store was called.
+     * Asserts that no CalDAV request was dispatched at all.
+     *
+     * @return void
      */
     protected function assertNoWrites(): void {
-        self::assertSame([], $this->store->writes);
+        self::assertSame([], $this->dav->calls);
     }
 }

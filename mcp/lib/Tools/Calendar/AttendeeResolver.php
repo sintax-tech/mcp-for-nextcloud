@@ -60,6 +60,20 @@ final class AttendeeResolver {
     }
 
     /**
+     * @param string $uid UID of the acting user, who cannot also be a guest
+     * @return array{email:string, displayName:string} the acting account, ready to be the ORGANIZER
+     * @throws CalendarArgumentException when the account has no usable e-mail
+     */
+    public function organizer(string $uid): array {
+        $email = $this->email($uid);
+        if ($email === null) {
+            throw new CalendarArgumentException(CalendarMessages::ORGANIZER_WITHOUT_EMAIL);
+        }
+        $user = $this->users->get($uid);
+        return ['email' => $email, 'displayName' => $user?->getDisplayName() ?: $uid];
+    }
+
+    /**
      * @param string $uid account id
      * @return string|null the account e-mail, or null when it is unknown, disabled or has none
      */

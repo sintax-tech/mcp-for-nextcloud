@@ -3,9 +3,12 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Calendar\Handler;
 
+use OCA\Mcp\Tools\Calendar\AttendeeResolver;
 use OCA\Mcp\Tools\Calendar\CalendarAccess;
 use OCA\Mcp\Tools\Calendar\CalendarArgumentException;
+use OCA\Mcp\Tools\Calendar\CalendarDav;
 use OCA\Mcp\Tools\Calendar\CalendarException;
+use OCA\Mcp\Tools\Calendar\CalendarMessages;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
 use OCA\Mcp\Tools\Calendar\CalendarTool;
 use OCA\Mcp\Tools\Calendar\Classification;
@@ -14,6 +17,7 @@ use OCA\Mcp\Tools\Calendar\EventBuilder;
 use OCA\Mcp\Tools\Calendar\EventMapper;
 use OCA\Mcp\Tools\Calendar\EventRepository;
 use OCA\Mcp\Tools\Calendar\EventTiming;
+use OCA\Mcp\Tools\Calendar\Scheduling;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -21,6 +25,9 @@ use Sabre\VObject\Component\VEvent;
 
 /**
  * calendar_update_event: changes text and, for non-recurring events, timing of the master VEVENT.
+ *
+ * The write itself goes through the CalDAV pipeline (CalendarDav) with If-Match always set to the
+ * ETag that was just read, so a concurrent edit by somebody else loses instead of overwriting.
  */
 final class UpdateEvent implements CalendarTool {
     /** Arguments that change the event text. */
@@ -31,31 +38,38 @@ final class UpdateEvent implements CalendarTool {
     /**
      * @param CalendarAccess $access calendar visibility and ACL
      * @param SharedGuard $guard confirmation gate for calendars of somebody else
-     * @param CalendarStore $store calendar storage port
+     * @param CalendarDav $dav the official write pipeline
+     * @param CalendarStore $store calendar storage port, used to read the event back
      * @param EventRepository $events event lookup with classification and ETag checks
      * @param EventBuilder $builder VEVENT changes
      * @param EventMapper $mapper output mapping
      * @param DateInput $dates date parsing
+     * @param AttendeeResolver $attendees internal guest list
+     * @param Scheduling $scheduling honest report of what was scheduled
      * @param ITimeFactory $time clock
      */
     public function __construct(
         private CalendarAccess $access,
         private SharedGuard $guard,
+        private CalendarDav $dav,
         private CalendarStore $store,
         private EventRepository $events,
         private EventBuilder $builder,
         private EventMapper $mapper,
         private DateInput $dates,
+        private AttendeeResolver $attendees,
+        private Scheduling $scheduling,
         private ITimeFactory $time,
     ) {}
 
     /**
-     * @return array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}
+     * @return array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string, destructiveHint:bool}
      */
     public function definition(): array {
         return ToolSchema::definition(
             'calendar_update_event',
-            'Altera título, local, descrição ou datas de um evento. Datas de série recorrente não podem ser alteradas.' . ToolSchema::NO_NOTIFICATION . SharedGuard::DESCRIPTION_SUFFIX,
+            'Altera título, local, descrição, datas ou participantes de um evento. Datas de série recorrente não podem ser alteradas.'
+            . CalendarMessages::INVITES_OTHERS . CalendarMessages::SEND_INVITATIONS_NOTE . SharedGuard::DESCRIPTION_SUFFIX,
             'edit',
             [
                 'calendar' => ToolSchema::calendar(),
@@ -67,24 +81,27 @@ final class UpdateEvent implements CalendarTool {
                 'timeZone' => ToolSchema::text('fuso IANA, ex.: America/Sao_Paulo', 1, 64),
                 'location' => ToolSchema::text('novo local; vazio remove', 0, 255),
                 'description' => ToolSchema::text('nova descrição; vazio remove', 0, 65536),
+                'attendees' => ToolSchema::attendees(),
+                'send_invitations' => ToolSchema::sendInvitations(),
                 'etag' => ToolSchema::etag(),
                 'confirm_shared' => SharedGuard::property(),
             ],
             ['calendar', 'uid'],
-        );
+        ) + ['destructiveHint' => true];
     }
 
     /**
-     * @param array{calendar: string, uid: string, summary?: string, start?: string, end?: string, allDay?: bool, timeZone?: string, location?: string, description?: string, etag?: string, confirm_shared?: bool} $arguments
+     * @param array{calendar: string, uid: string, summary?: string, start?: string, end?: string, allDay?: bool, timeZone?: string, location?: string, description?: string, attendees?: list<string>, send_invitations?: bool, etag?: string, confirm_shared?: bool} $arguments
      * @param string $userId authenticated UID
-     * @return array{content: list<array{type:string, text:string}>} updated event item plus etag
+     * @return array{content: list<array{type:string, text:string}>} updated event item plus etag and scheduling
      * @throws CalendarException when not visible, not writable, changed meanwhile or a recurring timing change
-     * @throws CalendarArgumentException when no field is given or dates are invalid
+     * @throws CalendarArgumentException when nothing is given, dates are invalid or the guest list is refused
      */
     public function execute(array $arguments, string $userId): array {
         $timingChanges = array_intersect_key($arguments, array_flip(self::TIMING_FIELDS));
         $textChanges = array_intersect_key($arguments, array_flip(self::TEXT_FIELDS));
-        if ($timingChanges === [] && $textChanges === []) {
+        $guestChanges = array_key_exists('attendees', $arguments);
+        if ($timingChanges === [] && $textChanges === [] && !$guestChanges) {
             throw new CalendarArgumentException('Informe ao menos um campo para alterar.');
         }
         $calendar = $this->access->resolveWritable($userId, $arguments['calendar']);
@@ -95,16 +112,67 @@ final class UpdateEvent implements CalendarTool {
         $master = $stored->master() ?? throw CalendarException::notFound();
         if ($timingChanges !== []) {
             if ($stored->recurring()) {
-                throw CalendarException::conflict('alterar datas de uma série recorrente não é suportado.');
+                throw CalendarException::conflict(CalendarMessages::RECURRING_TIMING);
             }
             $this->builder->setTiming($master, $this->mergeTiming($master, $timingChanges));
         }
         $this->builder->setText($master, $textChanges);
+        if ($guestChanges) {
+            $this->replaceGuests($master, $stored, $arguments['attendees'] ?? [], $userId);
+        }
         $this->builder->touch($master, $this->time->now());
-        $etag = $this->store->update($calendar->id, $stored->uri, $stored->vcalendar->serialize());
-        $timing = $this->builder->timing($master);
-        $item = $this->mapper->toItem($master, $timing['start'], $timing['end'], $calendar, Classification::FULL);
-        return ToolSchema::result($item + ['etag' => $etag]);
+        $notify = (bool)($arguments['send_invitations'] ?? false);
+        // If-Match always carries the ETag just read, even when the client sent none, so a change
+        // made between the read and the write loses instead of being overwritten (D3, seção 2).
+        $this->dav->update($userId, $calendar->uri, $stored->uri, $stored->etag, $stored->vcalendar->serialize(), $notify);
+        $row = $this->store->object($calendar->id, $stored->uri)
+            ?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
+        $written = $this->events->parse($row['data']) ?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
+        $timing = $this->builder->timing($written->VEVENT);
+        $item = $this->mapper->toItem($written->VEVENT, $timing['start'], $timing['end'], $calendar, Classification::FULL);
+        return ToolSchema::result($item + [
+            'etag' => $row['etag'],
+            'scheduling' => $this->scheduling->report($notify, $written),
+        ]);
+    }
+
+    /**
+     * Replaces the guest list of a series or of somebody else's event only when the caller may.
+     *
+     * @param VEvent $master event being changed
+     * @param \OCA\Mcp\Tools\Calendar\StoredEvent $stored event as read from the store
+     * @param list<string> $uids internal account ids sent by the caller; an empty list removes every guest
+     * @param string $userId acting user
+     * @return void
+     * @throws CalendarArgumentException when a UID cannot be invited
+     * @throws CalendarException when the guest list may not be changed here
+     */
+    private function replaceGuests(VEvent $master, \OCA\Mcp\Tools\Calendar\StoredEvent $stored, array $uids, string $userId): void {
+        if ($uids === []) {
+            unset($master->ATTENDEE);
+            return;
+        }
+        if ($stored->recurring()) {
+            throw CalendarException::blocked(CalendarMessages::RECURRING_ATTENDEES);
+        }
+        if (!$this->isOrganizer($master, $userId)) {
+            throw CalendarException::blocked(CalendarMessages::NOT_ORGANIZER);
+        }
+        $guests = $this->attendees->resolve($uids, $userId);
+        $this->builder->setAttendees($master, $guests, $this->attendees->organizer($userId)['email'], $this->attendees->organizer($userId)['displayName']);
+    }
+
+    /**
+     * @param VEvent $event event to inspect
+     * @param string $userId acting user
+     * @return bool whether the acting account is the ORGANIZER of the event; an event with no
+     *                ORGANIZER is treated as the organizer's, since that is what the server stores
+     */
+    private function isOrganizer(VEvent $event, string $userId): bool {
+        if (!isset($event->ORGANIZER)) {
+            return true;
+        }
+        return strtolower((string)$event->ORGANIZER) === 'mailto:' . strtolower($this->attendees->organizer($userId)['email']);
     }
 
     /**

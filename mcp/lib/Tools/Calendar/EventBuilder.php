@@ -73,6 +73,48 @@ final class EventBuilder {
     }
 
     /**
+     * Replaces ORGANIZER and the whole ATTENDEE list.
+     *
+     * Each guest is written the way the Calendar app writes one, so the Nextcloud scheduler sees
+     * the same object it sees when a person types the invitation in: `mailto:` with the account
+     * e-mail, the display name in CN, CUTYPE=INDIVIDUAL, ROLE=REQ-PARTICIPANT, PARTSTAT=NEEDS-ACTION
+     * and RSVP=TRUE. A guest already on the list keeps the PARTSTAT it had, so answering an
+     * invitation and then changing the guest list does not reset the answer.
+     *
+     * @param VEvent $event event to change
+     * @param list<array{uid:string, email:string, displayName:string}> $attendees guests, in order
+     * @param string $organizerEmail e-mail of the acting user
+     * @param string $organizerDisplayName display name of the acting user
+     * @return void
+     */
+    public function setAttendees(VEvent $event, array $attendees, string $organizerEmail, string $organizerDisplayName): void {
+        $previous = $this->partStats($event);
+        unset($event->ORGANIZER, $event->ATTENDEE);
+        $event->add('ORGANIZER', 'mailto:' . $organizerEmail, ['CN' => $organizerDisplayName]);
+        foreach ($attendees as $attendee) {
+            $parameters = ['CN' => $attendee['displayName'], 'CUTYPE' => 'INDIVIDUAL', 'ROLE' => 'REQ-PARTICIPANT'];
+            $parameters['PARTSTAT'] = $previous['mailto:' . strtolower($attendee['email'])] ?? 'NEEDS-ACTION';
+            $parameters['RSVP'] = 'TRUE';
+            $event->add('ATTENDEE', 'mailto:' . $attendee['email'], $parameters);
+        }
+    }
+
+    /**
+     * @param VEvent $event event whose guests are read
+     * @return array<string, string> PARTSTAT per normalized attendee address
+     */
+    private function partStats(VEvent $event): array {
+        if (!isset($event->ATTENDEE)) {
+            return [];
+        }
+        $out = [];
+        foreach ($event->select('ATTENDEE') as $attendee) {
+            $out[strtolower((string)$attendee)] = (string)($attendee['PARTSTAT'] ?? 'NEEDS-ACTION');
+        }
+        return $out;
+    }
+
+    /**
      * Reads the current timing of an event; a missing DTEND follows RFC 5545 defaults.
      *
      * @param VEvent $event event with DTSTART

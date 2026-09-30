@@ -18,7 +18,7 @@ final class UpdateEventTest extends CalendarTestCase {
     }
 
     private function written(): \Sabre\VObject\Component\VEvent {
-        return Reader::read($this->store->writes[0][1][2])->VEVENT;
+        return Reader::read($this->dav->calls[0][1][3])->VEVENT;
     }
 
     public function testChangesTextAndPreservesEverythingElse(): void {
@@ -31,8 +31,20 @@ final class UpdateEventTest extends CalendarTestCase {
         ]);
         $this->assertFalse(isset($event->LOCATION));
         $this->assertSame('20260310T120000Z', (string)$event->DTSTAMP);
-        $this->assertSame(['update', 1, 'e.ics'], [$this->store->writes[0][0], $this->store->writes[0][1][0], $this->store->writes[0][1][1]]);
+        $this->assertSame(['update', 'personal', 'e.ics'], [$this->dav->calls[0][0], $this->dav->calls[0][1][0], $this->dav->calls[0][1][1]]);
+        // If-Match always carries the ETag that was read before the write, even when the client sent
+        // none: a concurrent change between the read and the write has to lose, not win.
+        self::assertNotSame($item['etag'], $this->dav->calls[0][1][2]);
+        $this->assertFalse($this->dav->calls[0][1][4], 'scheduling is off by default');
         $this->assertSame($this->store->objects[1]['e.ics']['etag'], $item['etag']);
+        // With scheduling suppressed the guest is still reported, and it carries no SCHEDULE-STATUS:
+        // that absence is the proof that the Nextcloud scheduler was told not to send anything.
+        $this->assertSame([
+            'requested' => false,
+            'imipEnabled' => true,
+            'message' => 'nenhum convite foi agendado',
+            'participants' => [['email' => 'mailto:bob@example.com', 'scheduleStatus' => null, 'meaning' => 'sem registro de envio']],
+        ], $item['scheduling']);
     }
 
     public function testChangesTimingKeepingMissingBound(): void {
@@ -94,8 +106,8 @@ final class UpdateEventTest extends CalendarTestCase {
         ]));
 
         $this->assertSame('Novo', $item['summary']);
-        $this->assertSame(['update', 3, 'g.ics'], [
-            $this->store->writes[0][0], $this->store->writes[0][1][0], $this->store->writes[0][1][1],
+        $this->assertSame(['update', 'team_shared_by_bob', 'g.ics'], [
+            $this->dav->calls[0][0], $this->dav->calls[0][1][0], $this->dav->calls[0][1][1],
         ]);
     }
 
@@ -108,6 +120,62 @@ final class UpdateEventTest extends CalendarTestCase {
         $this->store->addObject(2, 'bad.ics', "BEGIN:VCALENDAR\r\nUID:bad\r\nBROKEN");
         $this->store->objects[2]['bad.ics']['data'] = "not ical\r\nUID:bad\r\n";
         self::assertToolError($this->call('calendar_update_event', ['calendar' => self::WORK, 'uid' => 'bad', 'summary' => 'x']), 'dados inválidos');
+    }
+
+    public function testAttendeesReplaceTheListAndKeepTheAnswersOfThoseWhoStay(): void {
+        $this->store->addObject(1, 'g.ics', self::ics(
+            "UID:g\nSUMMARY:Revisao\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z\n"
+            . "ORGANIZER:mailto:alice@example.invalid\n"
+            . "ATTENDEE;CN=Bob;PARTSTAT=ACCEPTED:mailto:bob@example.invalid\n"
+            . "ATTENDEE;CN=Carla;PARTSTAT=DECLINED:mailto:carla@example.invalid"
+        ));
+
+        $item = self::json($this->call('calendar_update_event', [
+            'calendar' => self::PERSONAL, 'uid' => 'g', 'attendees' => ['bob', 'dave'],
+        ]));
+
+        $event = $this->written();
+        $this->assertSame(['mailto:alice@example.invalid', 2], [(string)$event->ORGANIZER, count($event->select('ATTENDEE'))]);
+        // Bob stays and keeps his answer; Carla is out and Dave arrives needing an answer.
+        $this->assertSame(['mailto:bob@example.invalid', 'ACCEPTED'], [(string)$event->select('ATTENDEE')[0], (string)$event->select('ATTENDEE')[0]['PARTSTAT']]);
+        $this->assertSame(['mailto:dave@example.invalid', 'NEEDS-ACTION'], [(string)$event->select('ATTENDEE')[1], (string)$event->select('ATTENDEE')[1]['PARTSTAT']]);
+        $this->assertSame(['dave' => true], ['dave' => isset($item['scheduling']['participants'])]);
+    }
+
+    public function testAnEmptyGuestListRemovesEveryone(): void {
+        $item = self::json($this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'e', 'attendees' => []]));
+
+        $this->assertFalse(isset($this->written()->ATTENDEE));
+        $this->assertArrayNotHasKey('participants', $item['scheduling']);
+    }
+
+    public function testGuestChangesAreRefusedOnASeriesAndBySomebodyWhoIsNotTheOrganizer(): void {
+        $this->store->addObject(1, 'r.ics', self::ics("UID:r\nDTSTART:20260302T100000Z\nDTEND:20260302T110000Z\nRRULE:FREQ=WEEKLY"));
+        self::assertToolError($this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'r', 'attendees' => ['bob']]), 'série recorrente');
+        self::assertNoWrites();
+
+        // The event of the fixture is organized by alice@example.com, which is not alice@...invalid.
+        self::assertToolError($this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'e', 'attendees' => ['carla']]), 'organizador');
+        $this->assertNoWrites();
+    }
+
+    public function testRefusedGuestListWritesNothing(): void {
+        $this->store->addObject(1, 'o.ics', self::ics("UID:o\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z\nORGANIZER:mailto:alice@example.invalid"));
+
+        // An unresolvable guest is a bad argument (-32602), not a tool error result.
+        try {
+            $this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'o', 'attendees' => ['ghost']]);
+            $this->fail('expected CalendarArgumentException');
+        } catch (CalendarArgumentException $exception) {
+            $this->assertStringContainsString('ghost', $exception->getMessage());
+        }
+        $this->assertNoWrites();
+    }
+
+    public function testTheOrganizerIsCheckedBeforeTheGuestListIsResolved(): void {
+        // Somebody who does not organize the event learns nothing about which accounts exist.
+        self::assertToolError($this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'e', 'attendees' => ['ghost']]), 'organizador');
+        $this->assertNoWrites();
     }
 
     /** @return array<string, array{0: array<string, mixed>}> */
@@ -131,7 +199,7 @@ final class UpdateEventTest extends CalendarTestCase {
     }
 
     public function testBackendFailurePropagates(): void {
-        $this->store->failure = new RuntimeException('boom');
+        $this->dav->failureFor['update'] = new RuntimeException('boom');
         $this->expectException(RuntimeException::class);
         $this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'e', 'summary' => 'x']);
     }

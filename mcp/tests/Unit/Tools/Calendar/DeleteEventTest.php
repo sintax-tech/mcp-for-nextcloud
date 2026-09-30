@@ -16,8 +16,12 @@ final class DeleteEventTest extends CalendarTestCase {
     }
 
     public function testDeletesWholeSeriesIntoTheTrash(): void {
-        $this->assertSame(['uid' => 'd', 'calendar' => self::PERSONAL, 'deleted' => true, 'recoverable' => true], self::json($this->delete([])));
-        $this->assertSame([['delete', [1, 'd.ics']]], $this->store->writes);
+        $this->assertSame(
+            ['uid' => 'd', 'calendar' => self::PERSONAL, 'deleted' => true, 'recoverable' => true, 'scheduling' => ['requested' => false, 'imipEnabled' => true, 'message' => 'nenhum convite foi agendado']],
+            self::json($this->delete([])),
+        );
+        $this->assertSame([['delete', ['personal', 'd.ics', '"' . md5(self::ics("UID:d\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z\nRRULE:FREQ=DAILY")) . '"', false]]], $this->dav->calls);
+        $this->assertTrue($this->store->objects[1]['d.ics']['deleted'], 'the object must be in the trash');
     }
 
     public function testBlockedWhenTrashRetentionIsDisabled(): void {
@@ -57,7 +61,8 @@ final class DeleteEventTest extends CalendarTestCase {
 
         self::json($this->delete(['calendar' => self::TEAM, 'uid' => 'c', 'confirm_shared' => true]));
 
-        $this->assertSame([['delete', [3, 'c.ics']]], $this->store->writes);
+        $this->assertSame('delete', $this->dav->calls[0][0]);
+        $this->assertSame(['team_shared_by_bob', 'c.ics'], [$this->dav->calls[0][1][0], $this->dav->calls[0][1][1]]);
     }
 
     public function testDivergentEtagOrUnknownUidDeletesNothing(): void {
@@ -67,7 +72,7 @@ final class DeleteEventTest extends CalendarTestCase {
     }
 
     public function testBackendFailurePropagates(): void {
-        $this->store->failure = new RuntimeException('boom');
+        $this->dav->failureFor['delete'] = new RuntimeException('boom');
         $this->expectException(RuntimeException::class);
         $this->delete([]);
     }

@@ -9,11 +9,13 @@ Servidor **MCP (Model Context Protocol)** que permite a uma IA (Claude, ChatGPT/
 | Ferramenta | O que faz |
 |---|---|
 | `files_list` | Lista arquivos/pastas de um diretório |
-| `files_search` | Busca arquivos por nome (busca por conteúdo requer o app **fulltextsearch**) |
+| `files_search` | Busca arquivos somente por nome |
 | `files_read` | Lê o texto de um arquivo (txt/md direto; PDF/DOCX com extração de texto) |
 | `notes_list` / `notes_read` | Lista e lê notas do app **Notes** |
 | `calendar_list_calendars` / `calendar_list_events` | Lista calendários e eventos (CalDAV) |
 | `talk_list_conversations` / `talk_read_messages` | Lista conversas e lê mensagens do **Talk** |
+
+São **9 ferramentas** de leitura na v1.
 
 ## Pré-requisitos
 
@@ -38,6 +40,9 @@ Variáveis de ambiente (veja `.env.example`):
 | `NEXTCLOUD_APP_PASSWORD` | o app-password gerado |
 | `NEXTCLOUD_TIMEOUT_MS` | opcional (default 15000) |
 | `NEXTCLOUD_MAX_READ_CHARS` | opcional (default 100000) |
+| `NEXTCLOUD_MAX_READ_BYTES` | opcional (default 20971520 = 20 MiB); arquivos maiores são recusados antes da extração |
+
+Valores numéricos inválidos ou fora dos limites causam erro na inicialização. Limites: timeout até 300000 ms, caracteres até 10000000 e bytes até 104857600.
 
 ## Uso no Claude Desktop / Claude Code
 
@@ -59,7 +64,7 @@ Adicione ao `mcp.json`:
 }
 ```
 
-O mesmo servidor funciona em outros clientes MCP (ChatGPT em modo desenvolvedor / Responses API, Gemini) apontando para o binário/endpoint.
+O mesmo servidor funciona em outros clientes MCP (ChatGPT em modo desenvolvedor / Responses API, Gemini) apontando para o binário via stdio.
 
 ## Segurança
 

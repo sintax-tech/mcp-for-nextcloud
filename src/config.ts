@@ -32,7 +32,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     username: required(env, "NEXTCLOUD_USERNAME"),
     appPassword: required(env, "NEXTCLOUD_APP_PASSWORD"),
     timeoutMs: positiveInt(env, "NEXTCLOUD_TIMEOUT_MS", 15000, 300000),
-    maxReadChars: positiveInt(env, "NEXTCLOUD_MAX_READ_CHARS", 100000, 10000000)
-    ,maxReadBytes: positiveInt(env, "NEXTCLOUD_MAX_READ_BYTES", 20 * 1024 * 1024, 100 * 1024 * 1024),
+    maxReadChars: positiveInt(env, "NEXTCLOUD_MAX_READ_CHARS", 100000, 10000000),
+    maxReadBytes: positiveInt(env, "NEXTCLOUD_MAX_READ_BYTES", 20 * 1024 * 1024, 100 * 1024 * 1024),
   };
 }

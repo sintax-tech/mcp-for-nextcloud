@@ -11,3 +11,4 @@ spl_autoload_register(static function (string $class): void {
         }
     }
 });
+require __DIR__ . '/stubs/OcStubs.php';

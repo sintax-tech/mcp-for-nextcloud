@@ -6,6 +6,7 @@ namespace OCA\Mcp\Tests\Unit\Contract;
 use OCA\Mcp\AppInfo\Application;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\McpProtocol;
+use OCA\Mcp\Service\PromptCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\ToolPresentation;
 use OCA\Mcp\Tools\ToolRegistry;
@@ -75,7 +76,8 @@ final class ToolsListContractTest extends TestCase {
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturn($this->createMock(IUser::class));
         $modules = array_map(fn (string $class) => $this->build($class), Application::MODULES);
-        $protocol = new McpProtocol(new ToolRegistry($modules, $policy, $apps, $users, $this->createMock(LoggerInterface::class)), $this->createMock(LoggerInterface::class));
+        $protocol = new McpProtocol(new ToolRegistry($modules, $policy, $apps, $users, $this->createMock(LoggerInterface::class)),
+            new PromptCatalog(), $policy, $this->createMock(LoggerInterface::class));
         $out = $protocol->handle($request, $version, 'alice', json_decode($headers, true));
         return json_encode($out['body'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
@@ -153,13 +155,15 @@ final class ToolsListContractTest extends TestCase {
     }
 
     public function testInitializeEncodesCapabilitiesAsObjects(): void {
-        $protocol = new McpProtocol(new ToolRegistry([], new GrantPolicy((new InMemoryConfig())->mock($this)), $this->createMock(IAppManager::class),
-            $this->createMock(IUserManager::class), $this->createMock(LoggerInterface::class)), $this->createMock(LoggerInterface::class));
+        $policy = new GrantPolicy((new InMemoryConfig())->mock($this));
+        $protocol = new McpProtocol(new ToolRegistry([], $policy, $this->createMock(IAppManager::class),
+            $this->createMock(IUserManager::class), $this->createMock(LoggerInterface::class)),
+            new PromptCatalog(), $policy, $this->createMock(LoggerInterface::class));
         $out = $protocol->handle(json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'initialize', 'params' => [
             'protocolVersion' => '2025-11-25', 'capabilities' => new \stdClass(), 'clientInfo' => ['name' => 'Claude-User', 'version' => '1.0'],
         ]]), '', 'alice');
         $json = json_encode($out['body']);
-        $this->assertStringContainsString('"capabilities":{"tools":{}}', $json);
+        $this->assertStringContainsString('"capabilities":{"tools":{},"prompts":{}}', $json);
         $result = json_decode($json)->result;
         $this->assertSame('2025-06-18', $result->protocolVersion);
         $this->assertIsString($result->serverInfo->name);

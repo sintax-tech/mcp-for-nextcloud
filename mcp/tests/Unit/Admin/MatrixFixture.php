@@ -27,6 +27,8 @@ final class MatrixFixture {
     /** @var list<array{string, ?int, ?int}> searchDisplayName calls: pattern, limit, offset */
     public array $searches = [];
     public array $enabledApps = ['notes', 'calendar'];
+    /** @var array<string, list<string>> optional per-app user allowlists */
+    public array $appUsers = [];
 
     public function __construct(private TestCase $test) {
         $this->config = new InMemoryConfig();
@@ -78,6 +80,9 @@ final class MatrixFixture {
     private function appManager(): IAppManager {
         $apps = $this->mock(IAppManager::class);
         $apps->method('isEnabledForAnyone')->willReturnCallback(fn (string $app) => in_array($app, $this->enabledApps, true));
+        $apps->method('isEnabledForUser')->willReturnCallback(fn (string $app, IUser $user) =>
+            in_array($app, $this->enabledApps, true)
+            && (!isset($this->appUsers[$app]) || in_array($user->getUID(), $this->appUsers[$app], true)));
         return $apps;
     }
 

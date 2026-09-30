@@ -17,6 +17,8 @@ use Psr\Log\LoggerInterface;
 final class ToolRegistryTest extends TestCase {
     private GrantPolicy $policy;
     private array $enabledApps = ['notes'];
+    /** @var array<string, list<string>> per-user enabled apps for restricted-app cases */
+    private array $userEnabledApps = [];
     public array $calls = [];
     public ?\Throwable $throw = null;
     private LoggerInterface $logger;
@@ -39,6 +41,9 @@ final class ToolRegistryTest extends TestCase {
                     ['name' => 'a_read', 'description' => 'r', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'files', 'operation' => 'read'],
                     ['name' => 'a_edit', 'description' => 'e', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'files', 'operation' => 'edit'],
                     ['name' => 'n_read', 'description' => 'n', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'notes', 'operation' => 'read', 'app' => 'notes'],
+                    ['name' => 'c_read', 'description' => 'c', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'calendar', 'operation' => 'read', 'app' => 'calendar'],
+                    ['name' => 'd_read', 'description' => 'd', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'deck', 'operation' => 'read', 'app' => 'deck'],
+                    ['name' => 't_read', 'description' => 't', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'talk', 'operation' => 'read', 'app' => 'spreed'],
                 ];
             }
             public function call(string $name, array $arguments, string $userId): array {
@@ -50,9 +55,16 @@ final class ToolRegistryTest extends TestCase {
             }
         };
         $apps = $this->createMock(IAppManager::class);
-        $apps->method('isEnabledForUser')->willReturnCallback(fn (string $app) => in_array($app, $this->enabledApps, true));
+        $apps->method('isEnabledForUser')->willReturnCallback(fn (string $app, IUser $user) =>
+            isset($this->userEnabledApps[$user->getUID()])
+                ? in_array($app, $this->userEnabledApps[$user->getUID()], true)
+                : in_array($app, $this->enabledApps, true));
         $users = $this->createMock(IUserManager::class);
-        $users->method('get')->willReturnCallback(fn (string $uid) => $this->createMock(IUser::class));
+        $users->method('get')->willReturnCallback(function (string $uid): IUser {
+            $user = $this->createMock(IUser::class);
+            $user->method('getUID')->willReturn($uid);
+            return $user;
+        });
         return new ToolRegistry([$module], $this->policy, $apps, $users, $this->logger);
     }
 
@@ -81,13 +93,24 @@ final class ToolRegistryTest extends TestCase {
     }
 
     public function testCallRechecksGrantAndAppWithoutReachingTheHandler(): void {
-        foreach (['a_edit', 'missing'] as $name) {
+        foreach (['a_edit', 'c_read', 'd_read', 't_read', 'missing'] as $name) {
             $this->assertUnknown($name);
         }
         $this->enabledApps = [];
-        $this->assertUnknown('n_read');
+        foreach (['n_read', 'c_read', 'd_read', 't_read'] as $name) {
+            $this->assertUnknown($name);
+        }
         $this->policy->setGrant('alice', 'files', 'read', false);
         $this->assertUnknown('a_read');
+        $this->assertSame([], $this->calls);
+    }
+
+    public function testToolsStayHiddenForUsersOutsideAnAppAllowlist(): void {
+        $this->userEnabledApps['alice'] = [];
+
+        $this->assertNotContains('n_read', array_column($this->registry()->list('alice'), 'name'));
+        $this->assertContains('n_read', array_column($this->registry()->list('bob'), 'name'));
+        $this->assertUnknown('n_read');
         $this->assertSame([], $this->calls);
     }
 

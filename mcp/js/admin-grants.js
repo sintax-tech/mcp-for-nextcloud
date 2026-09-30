@@ -158,16 +158,11 @@
 		top.append(el('th', { rowSpan: 2, className: 'mcp-user-col', scope: 'col', textContent: t('mcp', 'User') }))
 		top.append(el('th', { rowSpan: 2, scope: 'col' }, [t('mcp', 'Can connect'), el('br'), bulkButtons('eligible', null, t('mcp', 'Can connect'))]))
 		for (const [module, ops] of Object.entries(data.catalog)) {
-			const enabled = data.appsEnabled[module]
-			const head = el('th', { colSpan: ops.length, scope: 'colgroup', className: enabled ? 'mcp-module' : 'mcp-module mcp-dim', textContent: modules[module] || module })
-			if (!enabled) {
-				head.title = t('mcp', 'The app for this module is disabled on the server; permissions are kept for when it is enabled.')
-				head.append(el('span', { className: 'mcp-dim-hint', textContent: ' ⓘ' }))
-			}
+			const head = el('th', { colSpan: ops.length, scope: 'colgroup', className: 'mcp-module', textContent: modules[module] || module })
 			top.append(head)
 			for (const operation of ops) {
 				const label = (modules[module] || module) + ': ' + (operations[operation] || operation)
-				sub.append(el('th', { scope: 'col', className: enabled ? '' : 'mcp-dim' }, [operations[operation] || operation, el('br'), bulkButtons(operation, module, label)]))
+				sub.append(el('th', { scope: 'col' }, [operations[operation] || operation, el('br'), bulkButtons(operation, module, label)]))
 			}
 		}
 		top.append(el('th', { rowSpan: 2, scope: 'col', textContent: t('mcp', 'Connected') }))
@@ -205,7 +200,16 @@
 		row.append(checkboxCell(user, !user.enabled, user.eligible, t('mcp', 'Can connect'), { eligible: null }))
 		for (const [module, ops] of Object.entries(state.data.catalog)) {
 			for (const operation of ops) {
-				row.append(checkboxCell(user, !user.enabled || !user.eligible, user.grants[module][operation], module + ':' + operation, { module, operation, granted: null }))
+				const available = user.appsEnabled[module]
+				const cell = checkboxCell(user, !user.enabled || !user.eligible || !available, user.grants[module][operation], module + ':' + operation, { module, operation, granted: null })
+				if (!available) {
+					cell.title = t('mcp', 'This app is unavailable for this user; the saved permission is kept.')
+					cell.classList.add('mcp-dim')
+					const hint = el('span', { className: 'mcp-dim-hint', textContent: ' ⓘ' })
+					hint.setAttribute('aria-label', cell.title)
+					cell.append(hint)
+				}
+				row.append(cell)
 			}
 		}
 		row.append(el('td', { className: 'mcp-connected', textContent: user.connected ? t('mcp', 'yes') : t('mcp', 'no') }))
@@ -253,13 +257,17 @@
 	 * @param {string} label permission name
 	 */
 	async function bulk(module, operation, granted, label) {
-		const uids = state.data.users.filter((u) => u.enabled).map((u) => u.uid)
+		const uids = state.data.users.filter((u) => u.enabled && (module === null || u.appsEnabled[module])).map((u) => u.uid)
 		if (uids.length === 0) {
 			return
 		}
-		const question = granted
-			? t('mcp', 'Allow “{permission}” for the {count} users on this page?', { permission: label, count: uids.length })
-			: t('mcp', 'Deny “{permission}” for the {count} users on this page?', { permission: label, count: uids.length })
+		const question = module === null
+			? (granted
+				? t('mcp', 'Allow “{permission}” for the {count} users on this page?', { permission: label, count: uids.length })
+				: t('mcp', 'Deny “{permission}” for the {count} users on this page?', { permission: label, count: uids.length }))
+			: (granted
+				? t('mcp', 'Allow “{permission}” for {count} users with this app available on this page?', { permission: label, count: uids.length })
+				: t('mcp', 'Deny “{permission}” for {count} users with this app available on this page?', { permission: label, count: uids.length }))
 		if (!window.confirm(question)) {
 			return
 		}

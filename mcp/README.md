@@ -15,7 +15,7 @@ Cada tool só aparece em `tools/list` e só pode ser chamada quando o usuário t
 | --- | --- | --- |
 | `mcp_status` | — | Diagnóstico; não lê dados do usuário. |
 | `files_list` `{path="/"}` | files.read | Filhos diretos da pasta, no formato `{name, path, isDir, size, mtime, contentType}`. |
-| `files_search` `{query, limit=25}` | files.read | Busca por nome; de 1 a 100 resultados. |
+| `files_search` `{query, limit=25}` | files.read | Busca por nome (`%`, `_` e `\` são literais), de 1 a 100 resultados; o limite vai para a própria consulta ao cache de arquivos. |
 | `files_read` `{path}` | files.read | Texto puro, PDF, DOCX e ODT. Arquivo acima de 20 MiB é recusado antes da leitura, e o texto é truncado em 100 000 caracteres. |
 | `files_edit` `{path, content, etag?}` | files.edit | Só arquivo de texto existente, com no máximo 10 MiB. Antes de gravar, exige o `files_versions` ativo e copia o original para `/MCP backups/<caminho>/<nome>.<AAAAmmdd-HHMMSS>.bak`; se qualquer passo falhar, nada é gravado. Com `etag` divergente, nada é gravado. Não cria, move nem exclui. |
 | `notes_list` `{}` | notes.read | Notas `.md`/`.txt` da pasta do app Notes (preferência `notesPath`, padrão `Notes`). |
@@ -23,7 +23,7 @@ Cada tool só aparece em `tools/list` e só pode ser chamada quando o usuário t
 | `notes_create` `{title, content="", category=""}` | notes.create | Nunca sobrescreve; em colisão, usa `Título (2)`. |
 | `notes_edit` `{id, content?, title?, etag?}` | notes.edit | Conteúdo e/ou título. |
 | `notes_move` `{id, category, etag?}` | notes.move | Troca de categoria (subpasta), sem sobrescrever. |
-| `notes_delete` `{id, confirm: true, etag?}` | notes.delete | Exige `confirm: true` e a lixeira (`files_trashbin`) ativa. |
+| `notes_delete` `{id, confirm: true, etag?}` | notes.delete | Exige `confirm: true`, a lixeira (`files_trashbin`) ativa e o storage da nota coberto por ela; em storage externo sem lixeira, a exclusão é bloqueada. |
 
 Tools de Notes exigem o app Notes habilitado para o usuário. Leitura começa permitida; criação, edição, movimentação e exclusão começam negadas até o administrador liberar. Não há timeout próprio: a leitura é local ao PHP e o limite de bytes protege contra arquivos grandes. Storage externo lento fica limitado ao `max_execution_time` do PHP.
 
@@ -53,9 +53,9 @@ Os arquivos de licença acompanham cada pacote em `vendor/`. O `vendor/autoload.
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-0.2.0.tar.gz <servidor>:/tmp/
+scp build/mcp-0.2.1.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-0.2.0.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-0.2.1.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp

@@ -27,13 +27,8 @@ Cada tool só aparece em `tools/list` e só pode ser chamada quando o usuário t
 
 | `calendar_list_calendars` `{}` | calendar.read | Calendários visíveis ao usuário, próprios e compartilhados. |
 | `calendar_list_events` `{calendar?, from?, to?}` | calendar.read | Eventos no intervalo (padrão: próximos 7 dias), com recorrência expandida. |
-| `calendar_create_event` | calendar.create | Evento simples, sem recorrência, em calendário com permissão de escrita. |
-| `calendar_update_event` | calendar.edit | Título, local, descrição ou datas; datas de série recorrente não mudam. |
-| `calendar_move_event` | calendar.move | Para outro calendário do mesmo dono, sem sobrescrever. |
-| `calendar_delete_event` | calendar.delete | Série inteira para a lixeira do calendário; exige `confirm: true`. |
-| `calendar_transfer_event` | calendar.transfer | Para um calendário de outro usuário, compartilhado com permissão de escrita; exige `confirm: true`. |
 
-Tools de Calendar exigem o app Calendar habilitado para o usuário e usam o `CalDavBackend` do app DAV do core, carregado só quando uma tool de calendário é chamada. Escritas não enviam convites nem notificações aos participantes. `sabre/vobject` vem do core e não está no `vendor/` do pacote.
+Por enquanto, Calendar oferece apenas leitura: as cinco tools de escrita estão ocultas de `tools/list` e chamadas diretas falham fechadas até ser provado o caminho oficial DAV do Nextcloud. Os grants de escrita continuam no catálogo interno para eventual reativação depois da validação. As tools de leitura exigem o app Calendar habilitado para o usuário e usam o backend CalDAV do app DAV, carregado só quando uma tool de calendário é chamada. O runtime/plugins do Nextcloud 33 não foram validados; antes de reativar escrita, é obrigatório testar PUT/DELETE/MOVE, ACL compartilhada, convites e efeitos num ambiente de integração Nextcloud 33 real. `sabre/vobject` vem do core e não está no `vendor/` do pacote.
 
 Tools de Notes exigem o app Notes habilitado para o usuário. Leitura começa permitida; criação, edição, movimentação e exclusão começam negadas até o administrador liberar. Não há timeout próprio: a leitura é local ao PHP e o limite de bytes protege contra arquivos grandes. Storage externo lento fica limitado ao `max_execution_time` do PHP.
 

@@ -15,10 +15,21 @@ use OCA\Mcp\Tools\ToolModule;
 use RuntimeException;
 
 /**
- * Calendar tool module: declares the seven calendar tools and routes each call to its handler.
- * The registry has already checked grant, app and input schema.
+ * Calendar tool module: exposes reads and keeps unproved writes fail-closed behind the module boundary.
+ * The registry has already checked grant, app and input schema for exposed tools.
  */
 final class CalendarModule implements ToolModule {
+    /** Tool names whose read path is currently proved and enabled. */
+    private const ENABLED_TOOLS = ['calendar_list_calendars', 'calendar_list_events'];
+    /** @var list<string> write tool names kept for later reactivation after DAV proof */
+    private const DISABLED_WRITES = [
+        'calendar_create_event',
+        'calendar_update_event',
+        'calendar_move_event',
+        'calendar_delete_event',
+        'calendar_transfer_event',
+    ];
+
     /** @var array<string, CalendarTool> handlers by tool name */
     private array $tools = [];
 
@@ -49,7 +60,10 @@ final class CalendarModule implements ToolModule {
      * @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}>
      */
     public function definitions(): array {
-        return array_values(array_map(static fn (CalendarTool $tool) => $tool->definition(), $this->tools));
+        return array_values(array_map(
+            static fn (CalendarTool $tool) => $tool->definition(),
+            array_intersect_key($this->tools, array_flip(self::ENABLED_TOOLS)),
+        ));
     }
 
     /**
@@ -61,6 +75,9 @@ final class CalendarModule implements ToolModule {
      * @throws RuntimeException wrapping any other failure, which the registry reports generically
      */
     public function call(string $name, array $arguments, string $userId): array {
+        if (in_array($name, self::DISABLED_WRITES, true)) {
+            throw new InvalidArgumentException('Unknown tool');
+        }
         $tool = $this->tools[$name] ?? throw new InvalidArgumentException('Unknown tool');
         try {
             return $tool->execute($arguments, $userId);

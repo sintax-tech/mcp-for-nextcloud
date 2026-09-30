@@ -145,6 +145,34 @@ final class ToolsListContractTest extends TestCase {
         $this->assertSame([], $missing, 'these tools are missing a friendly title in ToolPresentation');
     }
 
+    /** @return void */
+    public function testCalendarWritesAreHiddenFromListAndRejectedByCall(): void {
+        $writes = [
+            'calendar_create_event',
+            'calendar_update_event',
+            'calendar_move_event',
+            'calendar_delete_event',
+            'calendar_transfer_event',
+        ];
+        $list = json_decode($this->toolsListJson(), true, 512, JSON_THROW_ON_ERROR);
+        $listedNames = array_column($list['result']['tools'], 'name');
+
+        foreach ($writes as $name) {
+            $this->assertNotContains($name, $listedNames, $name . ' must stay hidden from tools/list');
+
+            $request = json_encode([
+                'jsonrpc' => '2.0',
+                'id' => $name,
+                'method' => 'tools/call',
+                'params' => ['name' => $name, 'arguments' => new \stdClass()],
+            ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+            $call = json_decode($this->handle($request, McpProtocol::VERSION), true, 512, JSON_THROW_ON_ERROR);
+
+            $this->assertSame(-32602, $call['error']['code'], $name . ' direct tools/call must fail as an unknown tool');
+            $this->assertArrayNotHasKey('result', $call, $name . ' must not execute a write handler');
+        }
+    }
+
     public function testInitializeSendsDisplayInstructions(): void {
         $result = json_decode($this->initializeJson())->result;
         $this->assertSame(ToolPresentation::INSTRUCTIONS, $result->instructions);

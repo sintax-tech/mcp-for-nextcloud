@@ -7,6 +7,7 @@ use OCA\Mcp\AppInfo\Application;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\McpProtocol;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCA\Mcp\Tools\ToolPresentation;
 use OCA\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\IUser;
@@ -40,6 +41,28 @@ final class ToolsListContractTest extends TestCase {
 
     /** @return string tools/list response body exactly as the endpoint encodes it */
     private function toolsListJson(): string {
+        return $this->handle('{"jsonrpc":"2.0","id":1,"method":"tools/list"}', McpProtocol::VERSION);
+    }
+
+    /** @return string initialize result body of the legacy era */
+    private function initializeJson(): string {
+        return $this->handle(json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'initialize', 'params' => [
+            'protocolVersion' => '2025-06-18', 'capabilities' => new \stdClass(), 'clientInfo' => ['name' => 'Claude-User', 'version' => '1.0'],
+        ]]), '', '{"method":"","name":""}');
+    }
+
+    /** @return string server/discover result body of the modern era */
+    private function discoverJson(): string {
+        return $this->handle('{"jsonrpc":"2.0","id":"discover-1","method":"server/discover","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28"}}}',
+            McpProtocol::MODERN_VERSION, '{"method":"server/discover","name":""}');
+    }
+
+    /**
+     * Runs one request against the real modules with every grant granted and every app enabled.
+     *
+     * @return string response body exactly as the endpoint encodes it
+     */
+    private function handle(string $request, string $version, string $headers = '{}'): string {
         $config = new InMemoryConfig();
         $policy = new GrantPolicy($config->mock($this));
         foreach (GrantPolicy::CATALOG as $module => $operations) {
@@ -53,7 +76,7 @@ final class ToolsListContractTest extends TestCase {
         $users->method('get')->willReturn($this->createMock(IUser::class));
         $modules = array_map(fn (string $class) => $this->build($class), Application::MODULES);
         $protocol = new McpProtocol(new ToolRegistry($modules, $policy, $apps, $users, $this->createMock(LoggerInterface::class)), $this->createMock(LoggerInterface::class));
-        $out = $protocol->handle('{"jsonrpc":"2.0","id":1,"method":"tools/list"}', McpProtocol::VERSION, 'alice');
+        $out = $protocol->handle($request, $version, 'alice', json_decode($headers, true));
         return json_encode($out['body'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
 
@@ -82,6 +105,51 @@ final class ToolsListContractTest extends TestCase {
             }
         }
         $this->assertSame(count($names), count(array_unique($names)), 'tool names must be unique');
+    }
+
+    /**
+     * Clients show Tool.title and annotations.title instead of the technical name, so every tool must
+     * carry both, and the hints must be present and consistent (a read tool is idempotent, a
+     * destructive operation is flagged, and no tool reaches outside the caller's Nextcloud).
+     */
+    public function testEveryToolHasAFriendlyTitleAndValidAnnotations(): void {
+        $tools = json_decode($this->toolsListJson(), false, 512, JSON_THROW_ON_ERROR)->result->tools;
+        foreach ($tools as $tool) {
+            $this->assertIsString($tool->title ?? null, "$tool->name: title must be a string");
+            $this->assertNotSame('', trim($tool->title), "$tool->name: title must not be empty");
+            $this->assertNotSame($tool->name, $tool->title, "$tool->name: title must not repeat the technical name");
+            $this->assertSame($tool->title, $tool->annotations->title ?? null, "$tool->name: annotations.title must match title");
+            foreach (['readOnlyHint', 'destructiveHint', 'idempotentHint', 'openWorldHint'] as $hint) {
+                $this->assertIsBool($tool->annotations->$hint ?? null, "$tool->name: annotations.$hint must be a boolean");
+            }
+            $this->assertFalse($tool->annotations->openWorldHint, "$tool->name: tools stay inside the caller's Nextcloud");
+            if ($tool->annotations->readOnlyHint) {
+                $this->assertTrue($tool->annotations->idempotentHint, "$tool->name: a read-only tool is idempotent");
+                $this->assertFalse($tool->annotations->destructiveHint, "$tool->name: a read-only tool cannot be destructive");
+            }
+        }
+    }
+
+    /**
+     * The title map is the source of truth for the display layer; the humanized fallback only keeps a
+     * new tool from breaking at runtime, so a missing entry must fail here instead.
+     */
+    public function testEveryRegisteredToolIsInTheTitleMap(): void {
+        $tools = json_decode($this->toolsListJson(), false, 512, JSON_THROW_ON_ERROR)->result->tools;
+        $missing = [];
+        foreach ($tools as $tool) {
+            if (ToolPresentation::title($tool->name) === ToolPresentation::humanized($tool->name)) {
+                $missing[] = $tool->name;
+            }
+        }
+        $this->assertSame([], $missing, 'these tools are missing a friendly title in ToolPresentation');
+    }
+
+    public function testInitializeSendsDisplayInstructions(): void {
+        $result = json_decode($this->initializeJson())->result;
+        $this->assertSame(ToolPresentation::INSTRUCTIONS, $result->instructions);
+        $discover = json_decode($this->discoverJson())->result;
+        $this->assertSame(ToolPresentation::INSTRUCTIONS, $discover->instructions);
     }
 
     public function testInitializeEncodesCapabilitiesAsObjects(): void {

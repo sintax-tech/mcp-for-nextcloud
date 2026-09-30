@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Service;
 
+use OCA\Mcp\Tools\ToolPresentation;
 use OCA\Mcp\Tools\ToolRegistry;
 use Psr\Log\LoggerInterface;
 
@@ -107,6 +108,7 @@ class McpProtocol {
                 'protocolVersion' => self::VERSION,
                 'capabilities' => ['tools' => new \stdClass()],
                 'serverInfo' => self::SERVER_INFO,
+                'instructions' => ToolPresentation::INSTRUCTIONS,
             ]);
         }
         if ($method === 'ping') {
@@ -157,6 +159,8 @@ class McpProtocol {
                 'resultType' => 'complete',
                 'supportedVersions' => self::SUPPORTED_VERSIONS,
                 'capabilities' => ['tools' => new \stdClass()],
+                // DiscoverResult carries the same display guidance the legacy initialize does.
+                'instructions' => ToolPresentation::INSTRUCTIONS,
                 // Discovery is only answered to an authenticated user, so shared caches must not keep it.
                 'ttlMs' => 0,
                 'cacheScope' => 'private',
@@ -179,8 +183,11 @@ class McpProtocol {
     private function toolList(string $userId): array {
         return [[
             'name' => self::TOOL,
+            'title' => ToolPresentation::title(self::TOOL),
             'description' => 'Reports whether the MCP diagnostic endpoint is running; does not access user data.',
             'inputSchema' => ['type' => 'object', 'properties' => new \stdClass(), 'additionalProperties' => false],
+            // The diagnostic tool only reads its own endpoint, hence the read-only annotations.
+            'annotations' => ToolPresentation::annotations(self::TOOL, 'read'),
         ], ...$this->tools->list($userId)];
     }
 

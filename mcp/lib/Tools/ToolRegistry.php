@@ -21,8 +21,11 @@ class ToolRegistry {
     ) {}
 
     /**
+     * Every tool carries the display metadata clients show instead of the technical name:
+     * `title` (Tool.title) and `annotations` derived from the tool's grant operation.
+     *
      * @param string $userId authenticated user
-     * @return list<array{name:string, description:string, inputSchema:array<string, mixed>}> tools the user may call now
+     * @return list<array{name:string, title:string, description:string, inputSchema:array<string, mixed>, annotations:array<string, bool|string>}> tools the user may call now
      */
     public function list(string $userId): array {
         $tools = [];
@@ -31,8 +34,10 @@ class ToolRegistry {
                 if ($this->allowed($definition, $userId)) {
                     $tools[] = [
                         'name' => $definition['name'],
+                        'title' => ToolPresentation::title($definition['name']),
                         'description' => $definition['description'],
                         'inputSchema' => $definition['inputSchema'],
+                        'annotations' => ToolPresentation::annotations($definition['name'], $definition['operation']),
                     ];
                 }
             }

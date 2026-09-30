@@ -40,15 +40,15 @@ final class ToolsListContractTest extends TestCase {
     }
 
     /** @return string tools/list response body exactly as the endpoint encodes it */
-    private function toolsListJson(): string {
-        return $this->handle('{"jsonrpc":"2.0","id":1,"method":"tools/list"}', McpProtocol::VERSION);
+    private function toolsListJson(bool $optionalAppsEnabled = true): string {
+        return $this->handle('{"jsonrpc":"2.0","id":1,"method":"tools/list"}', McpProtocol::VERSION, '{}', $optionalAppsEnabled);
     }
 
     /** @return string initialize result body of the legacy era */
-    private function initializeJson(): string {
+    private function initializeJson(bool $optionalAppsEnabled = true): string {
         return $this->handle(json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'initialize', 'params' => [
             'protocolVersion' => '2025-06-18', 'capabilities' => new \stdClass(), 'clientInfo' => ['name' => 'Claude-User', 'version' => '1.0'],
-        ]]), '', '{"method":"","name":""}');
+        ]]), '', '{"method":"","name":""}', $optionalAppsEnabled);
     }
 
     /** @return string server/discover result body of the modern era */
@@ -62,7 +62,7 @@ final class ToolsListContractTest extends TestCase {
      *
      * @return string response body exactly as the endpoint encodes it
      */
-    private function handle(string $request, string $version, string $headers = '{}'): string {
+    private function handle(string $request, string $version, string $headers = '{}', bool $optionalAppsEnabled = true): string {
         $config = new InMemoryConfig();
         $policy = new GrantPolicy($config->mock($this));
         foreach (GrantPolicy::CATALOG as $module => $operations) {
@@ -71,7 +71,7 @@ final class ToolsListContractTest extends TestCase {
             }
         }
         $apps = $this->createMock(IAppManager::class);
-        $apps->method('isEnabledForUser')->willReturn(true);
+        $apps->method('isEnabledForUser')->willReturn($optionalAppsEnabled);
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturn($this->createMock(IUser::class));
         $modules = array_map(fn (string $class) => $this->build($class), Application::MODULES);
@@ -105,6 +105,18 @@ final class ToolsListContractTest extends TestCase {
             }
         }
         $this->assertSame(count($names), count(array_unique($names)), 'tool names must be unique');
+    }
+
+    public function testAppInitializesAndListsFilesWhenOptionalAppsAreUnavailable(): void {
+        $tools = json_decode($this->toolsListJson(false), false, 512, JSON_THROW_ON_ERROR)->result->tools;
+
+        $this->assertNotEmpty($tools);
+        $names = array_column($tools, 'name');
+        $this->assertContains('files_list', $names);
+        $this->assertContains('mcp_status', $names);
+        $this->assertSame([], array_values(array_filter($names, static fn (string $name) => preg_match('/^(notes|calendar|deck|talk)_/', $name) === 1)));
+        $initialize = json_decode($this->initializeJson(false), false, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame(ToolPresentation::INSTRUCTIONS, $initialize->result->instructions);
     }
 
     /**

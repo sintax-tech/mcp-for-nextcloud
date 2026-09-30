@@ -8,6 +8,8 @@ import { wrap } from "../files/tools.js";
 import { NcError } from "../../core/errors.js";
 
 const parser = new XMLParser({ ignoreAttributes: true, removeNSPrefix: true });
+const MAX_WINDOW_MS = 366 * 864e5;
+const MAX_OCCURRENCES_PER_SERIES = 500;
 function asArray<T>(v: T | T[] | undefined): T[] { return v === undefined ? [] : Array.isArray(v) ? v : [v]; }
 
 export interface CalInfo { name: string; path: string; }
@@ -45,6 +47,15 @@ function localDate(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 }
 
+function civilDays(start: Date, end: Date): number {
+  const day = (d: Date) => Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+  return Math.round((day(end) - day(start)) / 864e5);
+}
+
+function addCivilDays(date: Date, days: number): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
+}
+
 function eventInfo(e: any, start: Date, end: Date, timeZone?: string): EventInfo {
   const allDay = e.datetype === "date";
   const tz = timeZone ?? (e.start as any)?.tz ?? e.rrule?.origOptions?.tzid;
@@ -61,7 +72,9 @@ function eventsInWindow(e: any, from: Date, to: Date, timeZone?: string): EventI
   const start = e.start instanceof Date ? e.start : undefined;
   const end = e.end instanceof Date ? e.end : start;
   if (!start || !end) return [];
+  const allDay = e.datetype === "date";
   const duration = end.getTime() - start.getTime();
+  const durationDays = allDay ? civilDays(start, end) : 0;
   const overlaps = (a: Date, b: Date) => a < to && b > from;
   if (!e.rrule) return overlaps(start, end) ? [eventInfo(e, start, end, timeZone)] : [];
   const exclusions = new Set(Object.values(e.exdate ?? {}).map((d: any) => new Date(d).getTime()));
@@ -69,11 +82,28 @@ function eventsInWindow(e: any, from: Date, to: Date, timeZone?: string): EventI
     .map(o => [new Date(o.recurrenceid).getTime(), o] as const)).values()];
   const overridden = new Set(overrides.map(o => new Date(o.recurrenceid).getTime()));
   const occurrences: EventInfo[] = [];
-  const begin = new Date(from.getTime() - Math.max(duration, 0));
-  for (const date of e.rrule.between(begin, to, true) as Date[]) {
+  const begin = new Date(from.getTime() - Math.max(duration, 0) - (allDay ? 864e5 : 0));
+  const dates: Date[] = [];
+  const seenDates = new Set<number>();
+  let limitReached = false;
+  try {
+    e.rrule.all((date: Date) => {
+      if (date >= to) return false;
+      if (date >= begin && !seenDates.has(date.getTime())) {
+        if (dates.length >= MAX_OCCURRENCES_PER_SERIES) { limitReached = true; return false; }
+        seenDates.add(date.getTime());
+        dates.push(date);
+      }
+      return true;
+    });
+  } catch {
+    throw new NcError("RECURRENCE_LIMIT", "Limite de expansão de ocorrências atingido; reduza a janela do calendário.");
+  }
+  if (limitReached) throw new NcError("RECURRENCE_LIMIT", "Limite de 500 ocorrências por série atingido; reduza a janela do calendário.");
+  for (const date of dates) {
     const time = date.getTime();
     if (exclusions.has(time) || overridden.has(time)) continue;
-    const occurrenceEnd = new Date(time + duration);
+    const occurrenceEnd = allDay ? addCivilDays(date, durationDays) : new Date(time + duration);
     if (overlaps(date, occurrenceEnd)) occurrences.push(eventInfo(e, date, occurrenceEnd, timeZone));
   }
   for (const override of overrides) {
@@ -88,6 +118,8 @@ export async function listEvents(client: NextcloudClient, calendarPath?: string,
   const from = fromISO ? parseDate(fromISO, "from") : new Date();
   const to = toISO ? parseDate(toISO, "to") : new Date(from.getTime() + 7 * 864e5);
   if (from >= to) throw new NcError("INVALID_DATE", "Intervalo inválido: from deve ser anterior a to.");
+  if (to.getTime() - from.getTime() > MAX_WINDOW_MS)
+    throw new NcError("CALENDAR_WINDOW_LIMIT", "Janela do calendário excede o limite de 366 dias.");
   const fmt = (d: Date) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
   const body = `<?xml version="1.0"?>
 <c:calendar-query xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav">

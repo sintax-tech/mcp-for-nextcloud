@@ -69,4 +69,32 @@ describe("calendar", () => {
     const result = await listEvents(client, "/remote.php/dav/calendars/alice/personal/", "2026-09-30", "2026-10-01");
     expect(result[0]).toMatchObject({ start: "2026-09-30T13:00:00.000Z", timeZone: "America/Sao_Paulo" });
   });
+  it("rejects a calendar window longer than one year before REPORT", async () => {
+    const fetchFn = vi.fn();
+    const client = new NextcloudClient(cfg, fetchFn as any);
+    await expect(listEvents(client, "/remote.php/dav/calendars/alice/personal/", "2026-01-01", "2027-02-01"))
+      .rejects.toThrow(/janela|intervalo|limite/i);
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+  it("caps dense SECONDLY recurrences instead of returning thousands of events", async () => {
+    const dense = events.replace('DTSTART:20260930T130000Z', 'DTSTART:20260930T000000Z')
+      .replace('DTEND:20260930T140000Z', 'DTEND:20260930T000001Z')
+      .replace('LOCATION:Sala 1', 'RRULE:FREQ=SECONDLY\nLOCATION:Sala 1');
+    const client = new NextcloudClient(cfg, async () => new Response(dense, { status: 207 }));
+    await expect(listEvents(client, "/remote.php/dav/calendars/alice/personal/", "2026-09-30", "2026-10-01"))
+      .rejects.toThrow(/ocorrência|limite/i);
+  });
+  it("preserves civil duration of recurring all-day events across DST", async () => {
+    const originalTZ = process.env.TZ;
+    process.env.TZ = "America/New_York";
+    try {
+      const multi = events.replace('DTSTART:20260930T130000Z', 'DTSTART;VALUE=DATE:20260307')
+        .replace('DTEND:20260930T140000Z', 'DTEND;VALUE=DATE:20260310')
+        .replace('LOCATION:Sala 1', 'RRULE:FREQ=WEEKLY;COUNT=2\nLOCATION:Sala 1');
+      const client = new NextcloudClient(cfg, async () => new Response(multi, { status: 207 }));
+      const result = await listEvents(client, "/remote.php/dav/calendars/alice/personal/", "2026-03-14", "2026-03-18");
+      expect(result).toHaveLength(1);
+      expect(result[0]).toMatchObject({ start: "2026-03-14", end: "2026-03-17", allDay: true });
+    } finally { process.env.TZ = originalTZ; }
+  });
 });

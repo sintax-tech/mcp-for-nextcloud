@@ -314,6 +314,9 @@ final class FilesPlanRenderer {
             return null;
         }
         $isDir = ($plan['isDir'] ?? false) === true;
+        if (($with['type'] ?? null) === 'link') {
+            return self::link($plan, $path, $action, $before, $after, $isDir);
+        }
         $who = ($with['type'] ?? null) === 'group' ? Translator::t('the group %s', [self::bold($name)]) : self::bold($name);
         $lines = [match ($action) {
             'create' => Translator::t('Share %s with %s.', [self::bold($path), $who]),
@@ -329,30 +332,91 @@ final class FilesPlanRenderer {
         if ($action === 'update' && ($before['reshare'] ?? false) === true) {
             $lines[] = '- ' . Translator::t('Passing it on: %s can share it with other people today and will no longer be able to.', [self::bold($name)]);
         }
-        $until = self::until($after['expires'] ?? null);
-        if ($action === 'update' && ($before['expires'] ?? null) !== ($after['expires'] ?? null)) {
-            $lines[] = '- ' . Translator::t('Valid until: %s → %s.', [self::until($before['expires'] ?? null), $until]);
-        } elseif ($action === 'create' && ($plan['expiresSource'] ?? null) === 'default') {
-            $lines[] = '- ' . Translator::t('Valid until: %s (the administrator\'s default).', [$until]);
-        } else {
-            $lines[] = '- ' . Translator::t('Valid until: %s.', [$until]);
-        }
-        $note = is_string($after['note'] ?? null) ? $after['note'] : '';
-        $old = is_string($before['note'] ?? null) ? $before['note'] : '';
-        if ($action === 'create' && $note !== '') {
-            $lines[] = '- ' . Translator::t('Note for the recipient: %s', [self::quote($note)]);
-        } elseif ($action === 'update' && $note !== $old) {
-            $lines[] = '- ' . Translator::t('Note for the recipient: %s → %s', [
-                $old === '' ? Translator::t('none') : self::quote($old),
-                $note === '' ? Translator::t('none') : self::quote($note),
-            ]);
-        }
+        $lines[] = self::validityLine($plan, $action, $before, $after);
+        array_push($lines, ...self::noteLines($action, $before, $after));
         if ($action === 'create') {
             $lines[] = '- ' . (($with['type'] ?? null) === 'group'
                 ? Translator::t('Nextcloud notifies the members of %s.', [self::bold($name)])
                 : Translator::t('Nextcloud notifies %s.', [self::bold($name)]));
         }
         return $lines;
+    }
+
+    /**
+     * The plan of a public link: what anyone with it can do, until when, and what happens to the password. The plan
+     * never holds a password, only whether one will be generated; the warning that anyone can open it is in the
+     * envelope with the other warnings.
+     *
+     * @param array<string, mixed> $plan the plan
+     * @param string $path path of the node, as the plan carries it
+     * @param string $action create, update or none
+     * @param array<string, mixed>|null $before the link as it is, null for a new one
+     * @param array<string, mixed> $after the link as it will be
+     * @param bool $isDir whether the node is a folder
+     * @return list<string>
+     */
+    private static function link(array $plan, string $path, string $action, ?array $before, array $after, bool $isDir): array {
+        $lines = [match ($action) {
+            'create' => Translator::t('Create a public link to %s.', [self::bold($path)]),
+            'update' => Translator::t('Change the public link of %s.', [self::bold($path)]),
+            'none' => Translator::t('%s already has a public link exactly like this: nothing to change.', [self::bold($path)]),
+        }, ''];
+        $access = self::access($after['permission'] ?? null, $isDir);
+        $lines[] = '- ' . ($action === 'update' && ($before['permission'] ?? null) !== ($after['permission'] ?? null)
+            ? Translator::t('Access: %s → %s', [self::access($before['permission'] ?? null, $isDir), $access])
+            : Translator::t('Access: %s', [$access]));
+        $lines[] = self::validityLine($plan, $action, $before, $after);
+        $password = is_array($plan['password'] ?? null) ? $plan['password'] : [];
+        $lines[] = '- ' . match (true) {
+            ($password['after'] ?? null) === 'new' && ($password['before'] ?? null) === true
+                => Translator::t('Password: the current one will be replaced by a new one, shown only once, in the result.'),
+            ($password['after'] ?? null) === 'new' && ($password['required'] ?? false) === true
+                => Translator::t('Password: required by the administrator; a new one will be generated and shown only once, in the result.'),
+            ($password['after'] ?? null) === 'new' => Translator::t('Password: a new one will be generated and shown only once, in the result.'),
+            ($password['after'] ?? null) === 'kept' => Translator::t('Password: unchanged; it is never shown.'),
+            default => Translator::t('Password: none.'),
+        };
+        array_push($lines, ...self::noteLines($action, $before, $after));
+        return $lines;
+    }
+
+    /**
+     * @param array<string, mixed> $plan the plan, for `expiresSource`
+     * @param string $action create, update or none
+     * @param array<string, mixed>|null $before the share as it is
+     * @param array<string, mixed> $after the share as it will be
+     * @return string the line with the last day of the share, before → after on a change
+     */
+    private static function validityLine(array $plan, string $action, ?array $before, array $after): string {
+        $until = self::until($after['expires'] ?? null);
+        if ($action === 'update' && ($before['expires'] ?? null) !== ($after['expires'] ?? null)) {
+            return '- ' . Translator::t('Valid until: %s → %s.', [self::until($before['expires'] ?? null), $until]);
+        }
+        if ($action === 'create' && ($plan['expiresSource'] ?? null) === 'default') {
+            return '- ' . Translator::t('Valid until: %s (the administrator\'s default).', [$until]);
+        }
+        return '- ' . Translator::t('Valid until: %s.', [$until]);
+    }
+
+    /**
+     * @param string $action create, update or none
+     * @param array<string, mixed>|null $before the share as it is
+     * @param array<string, mixed> $after the share as it will be
+     * @return list<string> the note for the recipient on a new share, or its change on an update
+     */
+    private static function noteLines(string $action, ?array $before, array $after): array {
+        $note = is_string($after['note'] ?? null) ? $after['note'] : '';
+        $old = is_string($before['note'] ?? null) ? $before['note'] : '';
+        if ($action === 'create' && $note !== '') {
+            return ['- ' . Translator::t('Note for the recipient: %s', [self::quote($note)])];
+        }
+        if ($action === 'update' && $note !== $old) {
+            return ['- ' . Translator::t('Note for the recipient: %s → %s', [
+                $old === '' ? Translator::t('none') : self::quote($old),
+                $note === '' ? Translator::t('none') : self::quote($note),
+            ])];
+        }
+        return [];
     }
 
     /** @return string what a share level lets the recipient do, in words */

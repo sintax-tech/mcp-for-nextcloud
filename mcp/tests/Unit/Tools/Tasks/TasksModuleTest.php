@@ -317,6 +317,20 @@ final class TasksModuleTest extends TestCase {
         self::assertSame($uids[0] . '.ics', $uris[0]);
     }
 
+    /** The uid of a new task exists only after the write, so no field of the plan may carry the provisional one, not even inside a blob. */
+    public function testCreationPlanExposesNoUidInAnyField(): void {
+        $plan = $this->module->preview('tasks_create_task', ['calendar' => self::PATH, 'summary' => 'Buy milk'], 'alice');
+        self::assertArrayNotHasKey('icalendar', $plan['after']);
+        self::assertStringNotContainsStringIgnoringCase('UID', json_encode($plan, JSON_THROW_ON_ERROR));
+        self::assertSame('Buy milk', $plan['after']['summary']);
+    }
+
+    /** Editing keeps the blob: its uid is the real one of a task that already exists. */
+    public function testEditPlanKeepsTheCalendarBlobOfAnExistingTask(): void {
+        $plan = $this->module->preview('tasks_edit_task', ['calendar' => self::PATH, 'uid' => 't1', 'summary' => 'Novo'], 'alice');
+        self::assertStringContainsString('UID:t1', $plan['after']['icalendar']);
+    }
+
     public function testRemovingStartCannotLeaveDurationWithoutStart(): void {
         $this->data = str_replace(
             'SUMMARY:Work',

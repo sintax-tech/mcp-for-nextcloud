@@ -80,6 +80,8 @@ abstract class CalendarTestCase extends TestCase {
         $appConfig->method('getValueString')->willReturnCallback(
             fn (string $app, string $key, string $default = '') => $app === 'mcp' && $key === 'calendar_writes_verified' ? $this->verification : ($app === 'dav' && $key === 'sendInvitations' ? $this->sendInvitations : $default),
         );
+        $appConfig->method('setValueString')->willReturnCallback(function (string $app, string $key, string $value): bool { $this->verification = $value; return true; });
+        $appConfig->method('deleteKey')->willReturnCallback(function (): void { $this->verification = ''; });
         $config = $this->createMock(IConfig::class);
         $config->method('getAppValue')->willReturnCallback(fn (string $app, string $key) => $app === 'dav' && $key === 'calendarRetentionObligation' ? $this->retention : '');
         $config->method('getSystemValueString')->willReturn('33.0.2.2');

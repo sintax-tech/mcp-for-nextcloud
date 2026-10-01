@@ -28,6 +28,7 @@ final class MatrixFixture {
     public array $groups = ['sales' => [], 'admin' => []];
     /** @var list<array{string, ?int, ?int}> searchDisplayName calls: pattern, limit, offset */
     public array $searches = [];
+    public string $calendarVerification = '';
     public array $enabledApps = ['notes', 'calendar'];
     /** @var array<string, list<string>> optional per-app user allowlists */
     public array $appUsers = [];
@@ -55,11 +56,11 @@ final class MatrixFixture {
      */
     public function calendarGate(): CalendarWriteGate {
         $appConfig = $this->mock(IAppConfig::class);
-        $appConfig->method('getValueString')->willReturn('');
+        $appConfig->method('getValueString')->willReturnCallback(fn () => $this->calendarVerification);
         $appManager = $this->mock(IAppManager::class);
-        $appManager->method('getAppVersion')->willReturn('');
+        $appManager->method('getAppVersion')->willReturn('0.6.10');
         $config = $this->mock(\OCP\IConfig::class);
-        $config->method('getSystemValueString')->willReturn('');
+        $config->method('getSystemValueString')->willReturn('33.0.2.2');
         return new CalendarWriteGate($appConfig, $appManager, $config);
     }
 

@@ -90,4 +90,10 @@ interface CalendarDav {
      * @throws CalendarException when the pipeline refuses the deletion
      */
     public function deleteCalendar(string $userId, string $calendarUri): DavResult;
+    /**
+     * Selftest only: tries to create its generated object as another internal account in the
+     * organizer's newly created calendar. No MCP handler exposes the owner/actor pair.
+     * @return DavResult success is an ACL proof failure; callers expect 403 or 404
+     */
+    public function probeWrite(string $actorUid, string $ownerUid, string $calendarUri, string $objectUri, string $ics): DavResult;
 }

@@ -103,6 +103,7 @@ final class EmbeddedDavDispatcherTest extends TestCase {
             $this->dispatcher->update('alice', 'personal', 'e.ics', '"stale"', $this->ics('again'));
             self::fail('Expected a stale If-Match to be refused.');
         } catch (CalendarException $exception) {
+            self::assertSame(412, $exception->getCode());
             self::assertStringContainsString('alterado por outra pessoa', $exception->getMessage());
         }
 
@@ -374,9 +375,27 @@ final class EmbeddedDavDispatcherTest extends TestCase {
         self::assertContains('createCalendar', $this->backend->calls);
         self::assertContains('mcp-selftest-a', array_column($this->backend->calendars, 'uri'));
 
+        $this->watchNextRequest();
         $removed = $this->dispatcher->deleteCalendar('alice', 'mcp-selftest-a');
+        self::assertSame('false', $this->observed?->getHeader('x-nc-scheduling'));
 
         self::assertSame(204, $removed->status);
+    }
+
+    /** @return void */
+    public function testAclProbeTargetsTheOrganizerHomeWhilePinnedToAnotherUser(): void {
+        $server = $this->serverFor(self::ALICE);
+        $server->on('beforeMethod:*', function (Request $request): void { $this->observed = $request; });
+        $dispatcher = new EmbeddedDavDispatcher(fn () => $server, new Session($this->sessionFor('bob')), $this->configFor(''), new NullLogger());
+        try {
+            $dispatcher->probeWrite('bob', 'alice', 'personal', 'probe.ics', $this->ics('probe'));
+            self::fail('Expected ACL refusal');
+        } catch (CalendarException $error) {
+            self::assertContains($error->getCode(), [403, 404]);
+        }
+        self::assertSame('calendars/alice/personal/probe.ics', $this->observed->getPath());
+        self::assertSame('principals/users/bob', $server->getPlugin('auth')->getCurrentPrincipal());
+        self::assertArrayNotHasKey('probe.ics', $this->backend->objects[$this->personalId] ?? []);
     }
 
     /** @return void */

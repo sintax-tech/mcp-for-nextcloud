@@ -62,6 +62,18 @@ final class ApplicationRegistrationTest extends TestCase {
         $this->assertNotNull($zones);
     }
 
+    public function testCalendarDavIsBoundToTheDispatcherAndReaderStaysLazy(): void {
+        $factories = $this->registeredFactories();
+        $dispatcher = new \OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher(
+            static fn () => throw new \RuntimeException('must stay lazy'),
+            new \OCA\Mcp\Tools\Calendar\Session($this->createMock(\OCP\IUserSession::class)),
+            $this->createMock(IConfig::class), new \Psr\Log\NullLogger());
+        $container = $this->createMock(ContainerInterface::class);
+        $container->expects($this->once())->method('get')->with(\OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher::class)->willReturn($dispatcher);
+        self::assertSame($dispatcher, $factories[\OCA\Mcp\Tools\Calendar\CalendarDav::class]($container));
+        self::assertInstanceOf(\OCA\Mcp\Service\Calendar\DavCalendarSelftestReader::class, $factories[\OCA\Mcp\Service\Calendar\CalendarSelftestReader::class]($container));
+    }
+
     public function testTheCalendarStoreFactoryBuildsTheDavStore(): void {
         $factories = $this->registeredFactories();
 

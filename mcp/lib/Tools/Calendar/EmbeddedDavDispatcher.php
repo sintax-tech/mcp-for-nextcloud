@@ -129,7 +129,14 @@ class EmbeddedDavDispatcher implements CalendarDav {
      */
     public function deleteCalendar(string $userId, string $calendarUri): DavResult {
         $path = DavPathBuilder::calendarPath($userId, $calendarUri);
-        return $this->dispatch('DELETE', $path, $userId, [], null, [204]);
+        return $this->dispatch('DELETE', $path, $userId, $this->schedulingHeaders(false), null, [204]);
+    }
+
+    /** @inheritDoc */
+    public function probeWrite(string $actorUid, string $ownerUid, string $calendarUri, string $objectUri, string $ics): DavResult {
+        $this->assertWithinSizeLimit($ics, null);
+        return $this->dispatch('PUT', DavPathBuilder::objectPath($ownerUid, $calendarUri, $objectUri), $actorUid,
+            ['Content-Type' => 'text/calendar; charset=utf-8', 'If-None-Match' => '*'] + $this->schedulingHeaders(false), $ics, [201]);
     }
 
     /**
@@ -264,7 +271,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
      */
     private function translate(DavException $exception, Request $request): CalendarException {
         $this->logger->error('MCP calendar: DAV write refused', ['app' => 'mcp', 'exception_class' => $exception::class, 'http_code' => $exception->getHTTPCode()]);
-        return match ($exception->getHTTPCode()) {
+        $mapped = match ($exception->getHTTPCode()) {
             // 403 Forbidden and 403 NeedPrivileges: the ACL plugin refused bind, unbind or write.
             403 => CalendarException::forbidden(),
             404 => CalendarException::notFound(),
@@ -277,5 +284,6 @@ class EmbeddedDavDispatcher implements CalendarDav {
             400, 415 => CalendarException::blocked(CalendarMessages::DATA_REFUSED),
             default => new CalendarException(CalendarMessages::DAV_FAILURE),
         };
+        return new CalendarException($mapped->getMessage(), $exception->getHTTPCode(), $exception);
     }
 }

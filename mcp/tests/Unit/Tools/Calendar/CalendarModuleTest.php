@@ -71,6 +71,15 @@ final class CalendarModuleTest extends CalendarTestCase {
         self::assertSame('put', $this->dav->calls[0][0]);
     }
 
+    public function testUnverifiedExistingGuestsAndCancellationDispatchNothing(): void {
+        $this->verification = json_encode(['app' => '0.6.10', 'nextcloud' => '33.0', 'operations' => ['edit', 'delete'], 'invitations' => false]);
+        $this->store->addObject(1, 'guest.ics', self::ics("UID:guest\nDTSTART:20261001T120000Z\nDTEND:20261001T130000Z\nATTENDEE:mailto:bob@example.invalid"));
+        foreach (['calendar_update_event', 'calendar_delete_event'] as $tool) {
+            self::assertToolError($this->module->call($tool, ['calendar' => self::PERSONAL, 'uid' => 'guest', 'summary' => 'Changed', 'confirm' => true, 'send_invitations' => true], 'alice'), 'ainda não verificado');
+        }
+        $this->assertNoWrites();
+    }
+
     public function testUnknownToolIsInvalidParams(): void {
         $this->expectException(InvalidArgumentException::class);
         $this->call('calendar_nope');

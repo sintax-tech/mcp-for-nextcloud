@@ -109,7 +109,7 @@ Todos os clientes falam com a mesma URL, `https://cloud.example.com/apps/mcp/`, 
 3. Autenticação: **Entrar agora** (OAuth). Cliente: **identidade publicada do Claude** (CIMD). Não precisa de cabeçalho.
 4. **Vincular**: o seu Nextcloud abre, você faz login e clica em **Permitir**.
 
-O `claude.ai` já está na lista de hosts de clientes permitidos, então nada precisa ser mudado no servidor. Se um administrador restringiu essa lista, o Claude é recusado com `invalid_client` antes mesmo de a tela de login abrir: peça para ele recolocar o `claude.ai` em *Configurações de administração → Configurações adicionais → MCP → Clientes OAuth → Hosts de clientes permitidos*.
+O `claude.ai` já está na lista de hosts de clientes permitidos, então nada precisa ser mudado no servidor. Se um administrador restringiu essa lista, o Claude é recusado com `invalid_client` antes mesmo de a tela de login abrir: peça para ele recolocar o `claude.ai` em *Configurações de administração → MCP for Nextcloud → Clientes OAuth → Hosts de clientes permitidos*.
 
 ### ChatGPT
 
@@ -119,7 +119,7 @@ O `claude.ai` já está na lista de hosts de clientes permitidos, então nada pr
 2. Autenticação: **Sign in** (OAuth). O ChatGPT se identifica com o documento de identidade de cliente publicado em `chatgpt.com`; o app baixa esse documento para descobrir os redirect URIs registrados. Não precisa de cabeçalho nem de senha de app.
 3. **Conectar**: o seu Nextcloud abre, você faz login e clica em **Permitir**.
 
-O `chatgpt.com` é permitido por padrão, então uma instalação nunca configurada já aceita o ChatGPT. Se um administrador restringiu a lista para outros hosts, o ChatGPT é recusado com `invalid_client` antes da tela de login — peça para ele recolocar o `chatgpt.com` em *Configurações de administração → Configurações adicionais → MCP → Clientes OAuth → Hosts de clientes permitidos*.
+O `chatgpt.com` é permitido por padrão, então uma instalação nunca configurada já aceita o ChatGPT. Se um administrador restringiu a lista para outros hosts, o ChatGPT é recusado com `invalid_client` antes da tela de login — peça para ele recolocar o `chatgpt.com` em *Configurações de administração → MCP for Nextcloud → Clientes OAuth → Hosts de clientes permitidos*.
 
 ### Gemini CLI
 
@@ -127,7 +127,7 @@ O `chatgpt.com` é permitido por padrão, então uma instalação nunca configur
 
 Dois passos, um do administrador e um do usuário, sem nenhum passo no terminal do servidor.
 
-**Administrador** — *Configurações de administração → Configurações adicionais → MCP → Clientes OAuth*:
+**Administrador** — *Configurações de administração → MCP for Nextcloud → Clientes OAuth*:
 
 1. Marque **Permitir programas locais (cliente nativo)**. Por padrão está desligado.
 2. A seção passa a mostrar o `client_id` para copiar — `nextcloud-mcp-native` — e os redirect URIs aceitos.
@@ -154,7 +154,7 @@ Por que um cliente embutido: o Gemini CLI não publica documento de identidade d
 
 ### Administradores: Clientes OAuth
 
-*Configurações de administração → Configurações adicionais → MCP → Clientes OAuth* decide quais clientes podem conectar, sem nenhum passo no terminal:
+*Configurações de administração → MCP for Nextcloud → Clientes OAuth* decide quais clientes podem conectar, sem nenhum passo no terminal:
 
 - **Hosts de clientes permitidos** — os hosts cujo documento de identidade de cliente publicado o app aceita baixar, separados por vírgula; `claude.ai` e `chatgpt.com` por padrão. Só nome de host exato: sem `https://`, sem porta, sem caminho, sem `*`, e é preciso deixar pelo menos um. O host é o que está na URL que o cliente usa como `client_id`. Salvar substitui a lista inteira, e remover um host recusa aquele cliente na hora, mesmo que o documento dele já esteja em cache.
 - **Permitir programas locais (cliente nativo)** — liga o cliente `nextcloud-mcp-native` descrito acima e mostra o `client_id` e os redirect URIs aceitos para copiar.

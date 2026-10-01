@@ -84,6 +84,13 @@ class TagsController extends Controller {
             return new JSONResponse(['error' => 'Invalid request'], Http::STATUS_BAD_REQUEST);
         }
 
+        foreach ($tagIds as $id) {
+            $str = (string)$id;
+            if (!ctype_digit($str) || (int)$str <= 0) {
+                return new JSONResponse(['error' => 'Invalid tag ID: ' . $str], Http::STATUS_BAD_REQUEST);
+            }
+        }
+
         try {
             $this->visibilityGuard->setHiddenTagIds($tagIds);
             return new JSONResponse([

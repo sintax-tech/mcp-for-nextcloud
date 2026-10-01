@@ -89,4 +89,36 @@ final class TagsControllerTest extends TestCase {
         $res = $this->controller()->update();
         $this->assertSame(Http::STATUS_BAD_REQUEST, $res->getStatus());
     }
+
+    public function testUpdateRejectsNonPositiveInteger(): void {
+        $this->request->method('getParam')->with('tagIds')->willReturn(['10', 'invalid']);
+        $res = $this->controller()->update();
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $res->getStatus());
+    }
+
+    public function testUpdateRejectsZeroOrNegative(): void {
+        $this->request->method('getParam')->with('tagIds')->willReturn(['0']);
+        $res = $this->controller()->update();
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $res->getStatus());
+
+        $this->request = $this->createMock(IRequest::class);
+        $this->request->method('getParam')->with('tagIds')->willReturn(['-1']);
+        $res = $this->controller()->update();
+        $this->assertSame(Http::STATUS_BAD_REQUEST, $res->getStatus());
+    }
+
+    public function testUpdateFiltersOutNonExistentTagsWhenTagManagerPresent(): void {
+        $tag1 = $this->createMock(ISystemTag::class);
+        $tag1->method('getId')->willReturn('10');
+        $this->tagManager->method('getTagsByIds')->willReturn(['10' => $tag1]);
+
+        $guardWithManager = new VisibilityGuard($this->config->mock($this), $this->tagMapper, null, $this->tagManager);
+        $controller = new TagsController('mcp', $this->request, $guardWithManager, $this->tagManager);
+
+        $this->request->method('getParam')->with('tagIds')->willReturn(['10', '99']);
+        $res = $controller->update();
+        $this->assertSame(Http::STATUS_OK, $res->getStatus());
+        $this->assertSame(['10'], $res->getData()['selected']);
+        $this->assertSame(['10'], $guardWithManager->getHiddenTagIds());
+    }
 }

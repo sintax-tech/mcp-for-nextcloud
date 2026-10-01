@@ -149,4 +149,40 @@ final class VisibilityGuardTest extends TestCase {
         $this->assertFalse($guard->isPathAllowedForWrite($root, '/Private/sub/newfile.txt'));
         $this->assertTrue($guard->isPathAllowedForWrite($root, '/Public/newfile.txt'));
     }
+
+    public function testSetHiddenTagIdsRejectsNonPositiveInteger(): void {
+        $guard = $this->guard();
+        $this->expectException(\InvalidArgumentException::class);
+        $guard->setHiddenTagIds(['not-an-int']);
+    }
+
+    public function testSetHiddenTagIdsRejectsZero(): void {
+        $guard = $this->guard();
+        $this->expectException(\InvalidArgumentException::class);
+        $guard->setHiddenTagIds(['0']);
+    }
+
+    public function testSetHiddenTagIdsRejectsNegative(): void {
+        $guard = $this->guard();
+        $this->expectException(\InvalidArgumentException::class);
+        $guard->setHiddenTagIds(['-4']);
+    }
+
+    public function testSetHiddenTagIdsFiltersOutNonExistentTagsWhenTagManagerPresent(): void {
+        $tagManager = $this->createMock(\OCP\SystemTag\ISystemTagManager::class);
+        $tag1 = $this->createMock(\OCP\SystemTag\ISystemTag::class);
+        $tag1->method('getId')->willReturn('10');
+
+        $tagManager->method('getTagsByIds')->willReturn(['10' => $tag1]);
+
+        $guard = new VisibilityGuard(
+            $this->config->mock($this),
+            $this->tagMapper,
+            null,
+            $tagManager
+        );
+
+        $guard->setHiddenTagIds(['10', '99']);
+        $this->assertSame(['10'], $guard->getHiddenTagIds());
+    }
 }

@@ -11,6 +11,7 @@ use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\Node;
 use OCP\IConfig;
+use OCP\SystemTag\ISystemTag;
 use OCP\SystemTag\ISystemTagManager;
 use OCP\SystemTag\ISystemTagObjectMapper;
 
@@ -278,14 +279,48 @@ final class VisibilityGuard {
 
     /**
      * Saves the configured hidden system tag IDs.
+     * Validates that each ID is a positive integer and corresponds to an existing system tag if tagManager is set.
      *
      * @param list<string|int> $tagIds
+     * @throws \InvalidArgumentException when an ID is not a positive integer
      */
     public function setHiddenTagIds(array $tagIds): void {
-        $sanitized = array_values(array_unique(array_filter(
-            array_map(static fn (mixed $id): string => (string)$id, $tagIds),
-            static fn (string $id): bool => $id !== '' && $id !== '0'
-        )));
+        $sanitized = [];
+        foreach ($tagIds as $id) {
+            $str = (string)$id;
+            if (!ctype_digit($str) || (int)$str <= 0) {
+                throw new \InvalidArgumentException('Tag ID must be a positive integer: ' . $str);
+            }
+            $sanitized[] = $str;
+        }
+        $sanitized = array_values(array_unique($sanitized));
+
+        if ($this->tagManager !== null && $sanitized !== []) {
+            try {
+                $tags = $this->tagManager->getTagsByIds($sanitized);
+                $existing = [];
+                foreach ($tags as $tag) {
+                    if ($tag instanceof ISystemTag) {
+                        $existing[] = (string)$tag->getId();
+                    }
+                }
+                $sanitized = array_values(array_intersect($sanitized, $existing));
+            } catch (\Throwable) {
+                try {
+                    $all = $this->tagManager->getAllTags(null, false);
+                    $valid = [];
+                    foreach ($all as $t) {
+                        if ($t instanceof ISystemTag) {
+                            $valid[(string)$t->getId()] = true;
+                        }
+                    }
+                    $sanitized = array_values(array_filter($sanitized, static fn (string $id): bool => isset($valid[$id])));
+                } catch (\Throwable) {
+                    $sanitized = [];
+                }
+            }
+        }
+
         $this->config->setAppValue('mcp', self::CONFIG_KEY, json_encode($sanitized));
         $this->hiddenTagIds = $sanitized;
         $this->cache = [];

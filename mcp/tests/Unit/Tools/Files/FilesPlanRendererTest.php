@@ -114,8 +114,10 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
             'mkdirs' => ['/Novo'],
         ]);
 
-        $this->assertStringContainsString('Mover 2 itens', $body);
+        $this->assertStringContainsString('Mover 1 item:', $body);
         $this->assertStringContainsString('**/Documentos/ata.md** → **/Arquivo/ata.md**', $body);
+        $this->assertSame(2, substr_count($body, '**/Documentos/nada.md**'), 'the denied item shows once in its heading, not in the move list');
+        $this->assertStringNotContainsString("- **/Documentos/nada.md** → **/Arquivo/nada.md**\n\nPastas", $body);
         $this->assertStringContainsString('**/Novo**', $body);
         $this->assertStringContainsString('desfazer', $body);
     }

@@ -149,9 +149,21 @@ final class FilesPlanRenderer {
         if (!is_array($order)) {
             return null;
         }
-        $lines = [Translator::n('Move %n item:', 'Move %n items:', count($order)), ''];
-        foreach ($order as $item) {
-            if (is_array($item) && isset($item['from'], $item['to'])) {
+        // A blocked item is listed once, under its own heading below, and is not counted as a move.
+        $blocked = [];
+        foreach (['conflicts', 'denied'] as $key) {
+            foreach ((array)($plan[$key] ?? []) as $item) {
+                if (is_array($item)) {
+                    $blocked[(string)($item['from'] ?? '') . "\0" . (string)($item['to'] ?? '')] = true;
+                }
+            }
+        }
+        $moving = array_values(array_filter($order, static fn ($item): bool => is_array($item) && isset($item['from'], $item['to'])
+            && !isset($blocked[(string)$item['from'] . "\0" . (string)$item['to']])));
+        $lines = [];
+        if ($moving !== []) {
+            $lines = [Translator::n('Move %n item:', 'Move %n items:', count($moving)), ''];
+            foreach ($moving as $item) {
                 $lines[] = '- ' . self::bold((string)$item['from']) . ' → ' . self::bold((string)$item['to']);
             }
         }
@@ -187,8 +199,13 @@ final class FilesPlanRenderer {
                 $lines[] = '- ' . self::bold((string)($item['from'] ?? '')) . ' → ' . self::bold((string)($item['to'] ?? ''));
             }
         }
-        $lines[] = '';
-        $lines[] = Translator::t('You can undo the whole batch afterwards.');
+        if ($moving !== []) {
+            $lines[] = '';
+            $lines[] = Translator::t('You can undo the whole batch afterwards.');
+        }
+        if (($lines[0] ?? null) === '') {
+            array_shift($lines);
+        }
         return $lines;
     }
 

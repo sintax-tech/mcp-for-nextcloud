@@ -57,7 +57,7 @@ final class ShareRemover {
     }
 
     /**
-     * @param array{share:IShare, path:string, folder:bool, recipient:ShareRecipient} $target what {@see self::prepare()} returned
+     * @param array{share:IShare, node:Node, path:string, folder:bool, recipient:ShareRecipient} $target what {@see self::prepare()} returned
      * @param string $uid authenticated user, part of the state
      * @param bool $changed whether the confirmed call found this share instead of the approved one: a warning says so
      * @return array<string, mixed> the plan, in the shape {@see self::plan()} documents, plus `warnings` when changed
@@ -74,12 +74,21 @@ final class ShareRemover {
     }
 
     /**
-     * @param array{share:IShare} $target what {@see self::prepare()} returned
+     * @param array{share:IShare, node:Node, path:string, recipient:ShareRecipient} $target what {@see self::prepare()} returned
      * @param string $uid authenticated user, so the value never confirms for another account
-     * @return string the opaque {@see PlanState} of the share to remove: its id and its fields as they are now
+     * @return string the opaque {@see PlanState} of the share to remove: its id, type, node (id and path), recipient
+     *   (kind and id) and its fields as they are now, everything that names what the removal takes away
      */
     private function stateOf(array $target, string $uid): string {
-        return $this->states->of('files_unshare', $uid, ['action' => 'remove', 'before' => ShareAccess::snapshot($target['share'])]);
+        $share = $target['share'];
+        return $this->states->of('files_unshare', $uid, [
+            'action' => 'remove',
+            'shareId' => (string)$share->getFullId(),
+            'type' => (int)$share->getShareType(),
+            'node' => ['id' => $target['node']->getId(), 'path' => $target['path']],
+            'recipient' => ['kind' => $target['recipient']->kind, 'id' => $target['recipient']->id],
+            'before' => ShareAccess::snapshot($share),
+        ]);
     }
 
     /**
@@ -120,7 +129,7 @@ final class ShareRemover {
      * @param Folder $userFolder the user's folder
      * @param string $uid authenticated user
      * @param array<string, mixed> $arguments validated arguments
-     * @return array{share:IShare, path:string, folder:bool, recipient:ShareRecipient}
+     * @return array{share:IShare, node:Node, path:string, folder:bool, recipient:ShareRecipient}
      * @throws ArgumentValidationException|ToolFailure for any refusal
      */
     private function prepare(Folder $userFolder, string $uid, array $arguments): array {
@@ -135,7 +144,7 @@ final class ShareRemover {
             [$share, $node] = $this->byRecipient($userFolder, $uid, (string)$path, (string)$with);
             $shown = PathGuard::normalize((string)$path);
         }
-        return ['share' => $share, 'path' => $shown, 'folder' => NodeAccess::isFolder($node), 'recipient' => $this->recipients->ofShare($share)];
+        return ['share' => $share, 'node' => $node, 'path' => $shown, 'folder' => NodeAccess::isFolder($node), 'recipient' => $this->recipients->ofShare($share)];
     }
 
     /**

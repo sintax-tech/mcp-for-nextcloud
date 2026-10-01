@@ -29,7 +29,7 @@ use Psr\Log\LoggerInterface;
  *
  * {@see self::plan()} and {@see self::apply()} run the same {@see self::prepare()}, so the confirmed call checks
  * everything again (invariant 1), and it executes only what the plan showed: the plan carries the {@see PlanState} of
- * its action, share and fields before and after, and a confirmed call that finds another state writes nothing and
+ * its action, share and fields before and after, node, recipient and every argument that changes the effect, and a confirmed call that finds another state writes nothing and
  * answers with the new plan ({@see PlanChanged}). The rest it checks again: grant of the type, own and visible node, the
  * administrator's sharing rules, the permission the user has on the node and the validity. The rules the core would refuse with an untranslated
  * exception are checked first through the public IShareManager getters, so the person reads why in their language;
@@ -119,8 +119,11 @@ final class ShareWriter {
     }
 
     /**
-     * The fingerprint of what the plan shows: the action, the share and its fields before (permission bits, validity,
-     * note, whether it has a password), the node and what it becomes. No password is part of it.
+     * The fingerprint of what the plan shows and of everything the call asked for: the action, the share and its fields
+     * before (permission bits, validity, note, whether it has a password), the node (id and path), the recipient (kind
+     * and id), what the share becomes, and every argument that changes the effect as the call gave it (permission,
+     * expires, note, whether to generate a password). A confirmed call for another recipient, path or field therefore
+     * never matches the plan of this one. No password is part of it.
      *
      * @param array<string, mixed> $change what {@see self::prepare()} returned
      * @param string $uid authenticated user, so the value never confirms for another account
@@ -130,12 +133,30 @@ final class ShareWriter {
         return $this->states->of('files_share', $uid, [
             'action' => $change['action'],
             'shareId' => $change['existing']?->getFullId(),
-            'node' => $change['node']->getId(),
+            'node' => ['id' => $change['node']->getId(), 'path' => $change['path']],
+            'recipient' => ['kind' => $change['recipient']->kind, 'id' => $change['recipient']->id],
             'before' => ShareAccess::snapshot($change['existing']),
             'bits' => $change['bits'],
             'after' => $change['after'],
             'password' => $change['passwordPlan'],
+            'requested' => $change['requested'],
         ]);
+    }
+
+    /**
+     * The arguments that change the effect, as the call gave them, for {@see self::stateOf()}: two calls that differ in
+     * any of them are two different approvals even when they would end in the same snapshot.
+     *
+     * @param array<string, mixed> $arguments validated arguments
+     * @return array{permission:string, expires:string|null, note:string|null, password:bool|null}
+     */
+    private static function requested(array $arguments): array {
+        return [
+            'permission' => (string)($arguments['permission'] ?? SharePermission::VIEW),
+            'expires' => isset($arguments['expires']) ? (string)$arguments['expires'] : null,
+            'note' => isset($arguments['note']) ? (string)$arguments['note'] : null,
+            'password' => isset($arguments['password']) ? $arguments['password'] === true : null,
+        ];
     }
 
     /**
@@ -189,7 +210,7 @@ final class ShareWriter {
      * @param Folder $userFolder the user's folder
      * @param string $uid authenticated user
      * @param array<string, mixed> $arguments validated arguments
-     * @return array{action:string, node:Node, path:string, folder:bool, recipient:ShareRecipient, existing:IShare|null, bits:int, expires:\DateTime|null, note:string|null, before:array<string, mixed>|null, after:array<string, mixed>, expiresSource:string, timezone:\DateTimeZone, warnings:list<string>, generatePassword:bool, passwordPlan:array{before:bool|null, after:string, required:bool}|null}
+     * @return array{action:string, node:Node, path:string, folder:bool, recipient:ShareRecipient, existing:IShare|null, bits:int, expires:\DateTime|null, note:string|null, before:array<string, mixed>|null, after:array<string, mixed>, expiresSource:string, timezone:\DateTimeZone, warnings:list<string>, generatePassword:bool, passwordPlan:array{before:bool|null, after:string, required:bool}|null, requested:array{permission:string, expires:string|null, note:string|null, password:bool|null}}
      * @throws ArgumentValidationException|ToolFailure for any refusal
      */
     private function prepare(Folder $userFolder, string $uid, array $arguments): array {
@@ -261,6 +282,7 @@ final class ShareWriter {
             'warnings' => $this->warnings($recipient, $folder, $level),
             'generatePassword' => false,
             'passwordPlan' => null,
+            'requested' => self::requested($arguments),
         ];
     }
 
@@ -354,6 +376,7 @@ final class ShareWriter {
                 'after' => $generate ? 'new' : ($hadPassword === true ? 'kept' : 'none'),
                 'required' => $required,
             ],
+            'requested' => self::requested($arguments),
         ];
     }
 

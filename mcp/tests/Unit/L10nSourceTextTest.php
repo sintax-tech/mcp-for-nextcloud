@@ -26,6 +26,7 @@ final class L10nSourceTextTest extends TestCase {
      */
     private const ALLOWED = [
         'lib/Tools/Calendar/',
+        'lib/Service/Calendar/',
         'lib/Service/PromptCatalog.php',
     ];
 

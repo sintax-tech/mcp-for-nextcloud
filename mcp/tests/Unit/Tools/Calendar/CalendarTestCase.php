@@ -52,6 +52,8 @@ abstract class CalendarTestCase extends TestCase {
     protected FakeCalendarStore $store;
     protected FakeCalendarDav $dav;
     protected CalendarModule $module;
+    protected \OCA\Mcp\Tools\Calendar\CalendarWriteGate $gate;
+    protected string $verification = '';
     /** @var array<string, \OCA\Mcp\Tools\Calendar\CalendarTool> write handlers exercised directly by domain tests */
     protected array $writeHandlers = [];
     /** Value returned by dav/calendarRetentionObligation. */
@@ -76,10 +78,14 @@ abstract class CalendarTestCase extends TestCase {
         $time->method('now')->willReturnCallback(static fn () => new DateTimeImmutable(self::NOW));
         $appConfig = $this->createMock(IAppConfig::class);
         $appConfig->method('getValueString')->willReturnCallback(
-            fn (string $app, string $key, string $default = '') => $app === 'dav' && $key === 'sendInvitations' ? $this->sendInvitations : $default,
+            fn (string $app, string $key, string $default = '') => $app === 'mcp' && $key === 'calendar_writes_verified' ? $this->verification : ($app === 'dav' && $key === 'sendInvitations' ? $this->sendInvitations : $default),
         );
         $config = $this->createMock(IConfig::class);
         $config->method('getAppValue')->willReturnCallback(fn (string $app, string $key) => $app === 'dav' && $key === 'calendarRetentionObligation' ? $this->retention : '');
+        $config->method('getSystemValueString')->willReturn('33.0.2.2');
+        $appManager = $this->createMock(\OCP\App\IAppManager::class);
+        $appManager->method('getAppVersion')->willReturn('0.6.10');
+        $this->gate = new \OCA\Mcp\Tools\Calendar\CalendarWriteGate($appConfig, $appManager, $config);
         $logger = $this->createMock(LoggerInterface::class);
 
         $access = new CalendarAccess($this->store);
@@ -114,6 +120,7 @@ abstract class CalendarTestCase extends TestCase {
             $moveEvent,
             $deleteEvent,
             $transferEvent,
+            $this->gate,
         );
     }
 

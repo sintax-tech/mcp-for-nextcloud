@@ -42,6 +42,35 @@ final class CalendarModuleTest extends CalendarTestCase {
         }
     }
 
+    public function testVerifiedOperationsAreExposedAndRevokeTakesEffectImmediately(): void {
+        $this->verification = json_encode(['app' => '0.6.10', 'nextcloud' => '33.0', 'operations' => ['create', 'edit'], 'invitations' => false]);
+        self::assertCount(4, $this->module->definitions());
+        $this->verification = '';
+        self::assertCount(2, $this->module->definitions());
+    }
+
+    public function testUnverifiedInvitationRequestDispatchesNothing(): void {
+        $this->verification = json_encode(['app' => '0.6.10', 'nextcloud' => '33.0', 'operations' => ['create'], 'invitations' => false]);
+        $result = $this->module->call('calendar_create_event', [
+            'calendar' => self::PERSONAL, 'summary' => 'Meet',
+            'start' => '2026-10-02', 'end' => '2026-10-03', 'allDay' => true,
+            'attendees' => ['bob'], 'send_invitations' => true,
+        ], 'alice');
+        self::assertToolError($result, 'ainda não verificado');
+        $this->assertNoWrites();
+    }
+
+    public function testVerifiedInvitationsUseTheRealHandler(): void {
+        $this->verification = json_encode(['app' => '0.6.10', 'nextcloud' => '33.0', 'operations' => ['create'], 'invitations' => true]);
+        $result = self::json($this->module->call('calendar_create_event', [
+            'calendar' => self::PERSONAL, 'summary' => 'Meet',
+            'start' => '2026-10-02', 'end' => '2026-10-03', 'allDay' => true,
+            'attendees' => ['bob'], 'send_invitations' => true,
+        ], 'alice'));
+        self::assertTrue($result['scheduling']['requested']);
+        self::assertSame('put', $this->dav->calls[0][0]);
+    }
+
     public function testUnknownToolIsInvalidParams(): void {
         $this->expectException(InvalidArgumentException::class);
         $this->call('calendar_nope');

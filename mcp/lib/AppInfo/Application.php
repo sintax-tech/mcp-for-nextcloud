@@ -11,6 +11,7 @@ use OCA\Mcp\Tools\Deck\DeckServiceGateway;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCA\Mcp\Tools\Talk\TalkModule;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
+use OCA\Mcp\Tools\Calendar\CalendarDav;
 use OCA\Mcp\Tools\Calendar\DavCalendarStore;
 use OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher;
 use OCA\Mcp\Tools\Calendar\Session;
@@ -54,6 +55,7 @@ class Application extends App implements IBootstrap {
         if (is_file($autoload)) {
             require_once $autoload;
         }
+        $context->registerService(CalendarDav::class, static fn (ContainerInterface $c): CalendarDav => $c->get(EmbeddedDavDispatcher::class));
         // DavCalendarStore resolves CalDavBackend lazily (the app container falls back to the server one) on first use.
         $context->registerService(CalendarStore::class, static fn (ContainerInterface $c): CalendarStore => new DavCalendarStore($c));
         // The dispatcher builds one embedded CalDAV server per operation, so building the module never

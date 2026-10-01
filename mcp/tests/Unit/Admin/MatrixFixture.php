@@ -6,6 +6,8 @@ namespace OCA\Mcp\Tests\Unit\Admin;
 use OCA\Mcp\Service\GrantMatrix;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCA\Mcp\Tools\Calendar\CalendarWriteGate;
+use OCP\IAppConfig;
 use OCP\App\IAppManager;
 use OCP\IGroup;
 use OCP\IGroupManager;
@@ -43,7 +45,22 @@ final class MatrixFixture {
     }
 
     public function matrix(): GrantMatrix {
-        return new GrantMatrix($this->policy, $this->userManager(), $this->groupManager(), $this->appManager());
+        return new GrantMatrix($this->policy, $this->userManager(), $this->groupManager(), $this->appManager(), $this->calendarGate());
+    }
+
+    /**
+     * Gate with no verification stored, so the admin catalog only offers reading by default.
+     *
+     * @return CalendarWriteGate
+     */
+    public function calendarGate(): CalendarWriteGate {
+        $appConfig = $this->mock(IAppConfig::class);
+        $appConfig->method('getValueString')->willReturn('');
+        $appManager = $this->mock(IAppManager::class);
+        $appManager->method('getAppVersion')->willReturn('');
+        $config = $this->mock(\OCP\IConfig::class);
+        $config->method('getSystemValueString')->willReturn('');
+        return new CalendarWriteGate($appConfig, $appManager, $config);
     }
 
     public function userManager(): IUserManager {

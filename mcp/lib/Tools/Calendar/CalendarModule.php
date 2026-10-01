@@ -15,13 +15,11 @@ use OCA\Mcp\Tools\ToolModule;
 use RuntimeException;
 
 /**
- * Calendar tool module: exposes reads and keeps unproved writes fail-closed behind the module boundary.
- * The registry has already checked grant, app and input schema for exposed tools.
+ * Calendar tool module: reads are always exposed, writes only after the selftest proved the DAV
+ * pipeline on this server (see CalendarWriteGate). The registry has already checked grant, app and
+ * input schema for exposed tools.
  */
 final class CalendarModule implements ToolModule {
-    /** Operations available in tools/list, tools/call and the admin grant matrix. */
-    public const ENABLED_OPERATIONS = ['read'];
-
     /** @var array<string, CalendarTool> handlers by tool name */
     private array $tools = [];
 
@@ -33,6 +31,7 @@ final class CalendarModule implements ToolModule {
      * @param MoveEvent $moveEvent calendar_move_event
      * @param DeleteEvent $deleteEvent calendar_delete_event
      * @param TransferEvent $transferEvent calendar_transfer_event
+     * @param CalendarWriteGate $gate which operations the verification opened
      */
     public function __construct(
         ListCalendars $listCalendars,
@@ -42,6 +41,7 @@ final class CalendarModule implements ToolModule {
         MoveEvent $moveEvent,
         DeleteEvent $deleteEvent,
         TransferEvent $transferEvent,
+        private CalendarWriteGate $gate,
     ) {
         foreach ([$listCalendars, $listEvents, $createEvent, $updateEvent, $moveEvent, $deleteEvent, $transferEvent] as $tool) {
             $this->tools[$tool->definition()['name']] = $tool;
@@ -52,9 +52,10 @@ final class CalendarModule implements ToolModule {
      * @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}>
      */
     public function definitions(): array {
+        $operations = $this->gate->operations();
         return array_values(array_map(
             static fn (CalendarTool $tool) => $tool->definition(),
-            array_filter($this->tools, static fn (CalendarTool $tool): bool => in_array($tool->definition()['operation'], self::ENABLED_OPERATIONS, true)),
+            array_filter($this->tools, static fn (CalendarTool $tool): bool => in_array($tool->definition()['operation'], $operations, true)),
         ));
     }
 
@@ -68,8 +69,13 @@ final class CalendarModule implements ToolModule {
      */
     public function call(string $name, array $arguments, string $userId): array {
         $tool = $this->tools[$name] ?? throw new InvalidArgumentException('Unknown tool');
-        if (!in_array($tool->definition()['operation'], self::ENABLED_OPERATIONS, true)) {
+        if (!in_array($tool->definition()['operation'], $this->gate->operations(), true)) {
             throw new InvalidArgumentException('Unknown tool');
+        }
+        // Fail closed for explicit scheduling until the optional internal-delivery proof passed.
+        // This also covers cancellation and existing guests not present in the arguments.
+        if (($arguments['send_invitations'] ?? false) === true && !$this->gate->invitationsVerified()) {
+            return ToolSchema::error(CalendarMessages::INVITATIONS_UNVERIFIED);
         }
         try {
             return $tool->execute($arguments, $userId);

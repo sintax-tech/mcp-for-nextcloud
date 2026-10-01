@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Service;
 
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Calendar\CalendarModule;
+use OCA\Mcp\Tools\Calendar\CalendarWriteGate;
 use OCP\App\IAppManager;
 use OCP\IGroupManager;
 use OCP\IUser;
@@ -32,6 +32,7 @@ class GrantMatrix {
         private IUserManager $userManager,
         private IGroupManager $groupManager,
         private IAppManager $appManager,
+        private CalendarWriteGate $calendarGate,
     ) {}
 
     /**
@@ -53,7 +54,9 @@ class GrantMatrix {
         $appsEnabled = $this->appsEnabled();
         $catalog = array_filter(GrantPolicy::CATALOG, static fn (string $module) => $appsEnabled[$module], ARRAY_FILTER_USE_KEY);
         if (isset($catalog['calendar'])) {
-            $catalog['calendar'] = array_values(array_intersect($catalog['calendar'], CalendarModule::ENABLED_OPERATIONS));
+            // The admin only sees a calendar grant the selftest has proved on this server; the
+            // grants already stored are untouched, they are simply not offered again.
+            $catalog['calendar'] = array_values(array_intersect($catalog['calendar'], $this->calendarGate->operations()));
         }
         return [
             'users' => $this->rows($users),

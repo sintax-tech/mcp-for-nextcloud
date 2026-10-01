@@ -179,6 +179,31 @@ final class ShareAccessTest extends TestCase {
         self::assertFalse($second['hasMore']);
     }
 
+    /**
+     * A share the user created of a file somebody else owns (a re-share made in another interface) is not the user's
+     * to list: it neither appears nor takes a place on a page, for a person and for a link alike.
+     */
+    public function testListMineSkipsSharesTheUserCreatedOfAReceivedFile(): void {
+        $received = $this->id('/Recebido.pdf');
+        $own = $this->id('/Relatorio.pdf');
+        $kept = [];
+        for ($i = 0; $i < 30; $i++) {
+            $this->shares->add(['node' => $received, 'with' => 'r' . $i, 'owner' => 'bruno']);
+            $kept[] = $this->shares->add(['node' => $own, 'with' => 'v' . $i]);
+        }
+        for ($i = 30; $i < 55; $i++) {
+            $kept[] = $this->shares->add(['node' => $own, 'with' => 'v' . $i]);
+        }
+        $this->shares->add(['node' => $received, 'type' => IShare::TYPE_LINK, 'with' => null, 'owner' => 'bruno', 'token' => 'TOK']);
+
+        $first = $this->access->listMine($this->tree->rootFolder(), 'alice', 0);
+        self::assertSame(array_slice($kept, 0, 50), array_column($first['items'], 'share'));
+        self::assertTrue($first['hasMore']);
+        $second = $this->access->listMine($this->tree->rootFolder(), 'alice', 50);
+        self::assertSame(array_slice($kept, 50), array_column($second['items'], 'share'));
+        self::assertFalse($second['hasMore'], 'o link do arquivo recebido não conta como mais uma página');
+    }
+
     /** The path of a listed share is the user's own view of it, never the owner's tree. */
     public function testNodeOfUsesTheUsersView(): void {
         $share = $this->shares->add(['node' => $this->id('/Recebido.pdf'), 'owner' => 'pedro']);

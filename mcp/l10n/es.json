@@ -1,5 +1,9 @@
 { "translations": {
     "%s: %s" : "%s: %s",
+    "The search for people failed; try again." : "La búsqueda de personas falló; inténtelo de nuevo.",
+    "required with confirm: true; send the plan_state of the plan" : "obligatorio con confirm: true; envíe el plan_state del plan",
+    "The share changed since the plan; check it again." : "El recurso compartido cambió desde el plan; revíselo de nuevo.",
+    "To confirm, repeat the call with plan_state %s." : "Para confirmar, repita la llamada con plan_state %s.",
     "unknown property; use only declared arguments" : "propiedad desconocida; use solo argumentos declarados",
     "must stay inside your folder: no parent (..) segments or control characters" : "debe quedarse dentro de su carpeta: sin segmentos de carpeta superior (..) ni caracteres de control",
     "unknown tool; use one listed by tools/list" : "herramienta desconocida; use una listada en tools/list",

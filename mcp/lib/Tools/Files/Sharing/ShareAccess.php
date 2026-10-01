@@ -105,8 +105,8 @@ final class ShareAccess {
     /**
      * One page of every share the user created, all types concatenated in {@see self::LISTED_TYPES} order.
      *
-     * The offset counts listed shares only: a share whose node is hidden or out of the user's reach is skipped
-     * before paging, so it neither appears nor shortens a page. The core counts nothing per type, so each type
+     * The offset counts listed shares only: a share whose node is hidden, out of the user's reach or owned by
+     * somebody else is skipped before paging, so it neither appears nor shortens a page. The core counts nothing per type, so each type
      * is read from its start up to what the page needs; MAX_OFFSET bounds that cost.
      *
      * @param Folder $userFolder the user's folder, for the user's own view of each node
@@ -125,7 +125,9 @@ final class ShareAccess {
                 $batch = $this->sharesBy($uid, $type, null, $need, $from);
                 foreach ($batch as $share) {
                     $node = $this->nodeOf($userFolder, $share);
-                    if ($node !== null && count($found) < $need) {
+                    // A share the user created of a received file (a re-share made elsewhere) is not of an own file:
+                    // the global listing never shows it, and it takes no place on a page (decision 4, invariant 7).
+                    if ($node !== null && $node->getOwner()?->getUID() === $uid && count($found) < $need) {
                         $found[] = ['share' => $share, 'node' => $node];
                     }
                 }
@@ -170,6 +172,32 @@ final class ShareAccess {
         return isset(self::OPERATIONS[$share->getShareType()])
             && $share->getSharedBy() === $uid
             && $share->getShareOwner() === $uid;
+    }
+
+    /**
+     * The fields of a share a plan shows and a confirmed write depends on, for the {@see \OCA\Mcp\Tools\PlanState} of
+     * files_share and files_unshare. Whether a password exists, never the stored hash.
+     *
+     * @param IShare|null $share the share as read now, null when there is none
+     * @return array{id:string, bits:int, expires:string|null, note:string, hasPassword:bool}|null null for no share
+     */
+    public static function snapshot(?IShare $share): ?array {
+        if ($share === null) {
+            return null;
+        }
+        return [
+            'id' => (string)$share->getFullId(),
+            'bits' => (int)$share->getPermissions(),
+            'expires' => $share->getExpirationDate()?->format(\DateTimeInterface::ATOM),
+            'note' => (string)$share->getNote(),
+            'hasPassword' => self::hasPassword($share),
+        ];
+    }
+
+    /** @return bool whether the share is protected by a password; the stored value is a hash and is never read further */
+    public static function hasPassword(IShare $share): bool {
+        $password = $share->getPassword();
+        return $password !== null && $password !== '';
     }
 
     /**

@@ -95,6 +95,18 @@ final class WriteGate {
         $plan = $module instanceof PreviewsWrites
             ? $module->preview($definition['name'], $arguments, $userId)
             : self::generic($definition, $arguments);
+        return self::envelope($definition, $plan);
+    }
+
+    /**
+     * The envelope of every plan, the one a call without `confirm` gets and the one a confirmed call whose state
+     * changed gets ({@see PlanChanged}): `requiresConfirmation` first and always true, whatever the module put there.
+     *
+     * @param array{name:string} $definition tool definition
+     * @param array<string, mixed> $plan the module's plan
+     * @return array<string, mixed> the structured content of a non-error result
+     */
+    public static function envelope(array $definition, array $plan): array {
         return [
             'requiresConfirmation' => true,
             'tool' => $definition['name'],

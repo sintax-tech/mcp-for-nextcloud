@@ -10,6 +10,8 @@ use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Files\FilesMessages;
+use OCA\Mcp\Tools\PlanChanged;
+use OCA\Mcp\Tools\PlanState;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\Folder;
@@ -26,8 +28,10 @@ use Psr\Log\LoggerInterface;
  * (plan 0.10, decisions 5, 6 and 10).
  *
  * {@see self::plan()} and {@see self::apply()} run the same {@see self::prepare()}, so the confirmed call checks
- * everything again (invariant 1): grant of the type, own and visible node, the administrator's sharing rules, the
- * permission the user has on the node and the validity. The rules the core would refuse with an untranslated
+ * everything again (invariant 1), and it executes only what the plan showed: the plan carries the {@see PlanState} of
+ * its action, share and fields before and after, and a confirmed call that finds another state writes nothing and
+ * answers with the new plan ({@see PlanChanged}). The rest it checks again: grant of the type, own and visible node, the
+ * administrator's sharing rules, the permission the user has on the node and the validity. The rules the core would refuse with an untranslated
  * exception are checked first through the public IShareManager getters, so the person reads why in their language;
  * whatever the core still refuses becomes a safe message, and only the exception class is logged.
  *
@@ -62,6 +66,7 @@ final class ShareWriter {
         private ITimeFactory $time,
         private LoggerInterface $logger,
         private LinkPassword $passwords,
+        private PlanState $states,
     ) {}
 
     /**
@@ -70,16 +75,32 @@ final class ShareWriter {
      * @param Folder $userFolder the user's folder
      * @param string $uid authenticated user
      * @param array{path:string, with:string, permission?:string, expires?:string, note?:string} $arguments validated arguments
-     * @return array{action:string, path:string, isDir:bool, with:array{type:string, id:string, displayName:string}, shareId:string|null, before:array{permission:string, reshare:bool, expires:string|null, note:string}|null, after:array{permission:string, reshare:bool, expires:string|null, note:string|null}, expiresSource:string, notifies:bool, timezone:string, warnings:list<array{message:string}>, message:string, password?:array{before:bool|null, after:string, required:bool}}
-     *   `expiresSource` says where `after.expires` comes from: requested, kept, default (the administrator's, applied by
-     *   the core) or none. `password` exists for a link only and never holds a password: `before` is whether the link
+     * @return array{action:string, path:string, isDir:bool, with:array{type:string, id:string, displayName:string}, shareId:string|null, before:array{permission:string, reshare:bool, expires:string|null, note:string}|null, after:array{permission:string, reshare:bool, expires:string|null, note:string|null}, expiresSource:string, notifies:bool, timezone:string, warnings:list<array{message:string}>, message:string, plan_state:string, password?:array{before:bool|null, after:string, required:bool}}
+     *   `plan_state` is what the confirmed call gives back ({@see PlanState}). `expiresSource` says where `after.expires`
+     *   comes from: requested, kept, default (the administrator's, applied by the core) or none. `password` exists for a link only and never holds a password: `before` is whether the link
      *   has one (null for a new link), `after` is new (generated on the confirmed call), kept or none, and `required`
      *   whether the administrator enforces it
      * @throws ArgumentValidationException for an unknown recipient, a level outside view/edit or an unusable date
      * @throws ToolFailure for every other refusal, with a translated reason
      */
     public function plan(Folder $userFolder, string $uid, array $arguments): array {
-        $change = $this->prepare($userFolder, $uid, $arguments);
+        return $this->planOf($this->prepare($userFolder, $uid, $arguments), $uid);
+    }
+
+    /**
+     * The plan of one prepared change, with its {@see PlanState}.
+     *
+     * @param array<string, mixed> $change what {@see self::prepare()} returned
+     * @param string $uid authenticated user, part of the state
+     * @param bool $changed whether the confirmed call found this state instead of the approved one: the warning that
+     *   says so comes first
+     * @return array<string, mixed> the plan, in the shape {@see self::plan()} documents
+     */
+    private function planOf(array $change, string $uid, bool $changed = false): array {
+        $warnings = $change['warnings'];
+        if ($changed) {
+            array_unshift($warnings, FilesMessages::sharePlanChanged());
+        }
         return [
             'action' => $change['action'],
             'path' => $change['path'],
@@ -91,25 +112,53 @@ final class ShareWriter {
             'expiresSource' => $change['expiresSource'],
             'notifies' => $change['action'] === self::CREATE && $change['recipient']->kind !== ShareRecipient::LINK,
             'timezone' => $change['timezone']->getName(),
-            'warnings' => array_map(static fn (string $message): array => ['message' => $message], $change['warnings']),
+            'warnings' => array_map(static fn (string $message): array => ['message' => $message], $warnings),
             'message' => $change['action'] === self::NONE ? FilesMessages::planShareNothing() : CommonMessages::planNothingChanged(),
+            PlanState::ARGUMENT => $this->stateOf($change, $uid),
         ] + ($change['passwordPlan'] === null ? [] : ['password' => $change['passwordPlan']]);
     }
 
     /**
-     * Applies the plan after checking everything again: createShare, updateShare, or nothing when nothing changes.
+     * The fingerprint of what the plan shows: the action, the share and its fields before (permission bits, validity,
+     * note, whether it has a password), the node and what it becomes. No password is part of it.
+     *
+     * @param array<string, mixed> $change what {@see self::prepare()} returned
+     * @param string $uid authenticated user, so the value never confirms for another account
+     * @return string the opaque {@see PlanState} of the change
+     */
+    private function stateOf(array $change, string $uid): string {
+        return $this->states->of('files_share', $uid, [
+            'action' => $change['action'],
+            'shareId' => $change['existing']?->getFullId(),
+            'node' => $change['node']->getId(),
+            'before' => ShareAccess::snapshot($change['existing']),
+            'bits' => $change['bits'],
+            'after' => $change['after'],
+            'password' => $change['passwordPlan'],
+        ]);
+    }
+
+    /**
+     * Applies the plan after checking everything again: createShare, updateShare, or nothing when nothing changes. The
+     * call gives back the `plan_state` of the plan it confirms, and nothing is written unless it is still this state.
      *
      * @param Folder $userFolder the user's folder
      * @param string $uid authenticated user
      * @param array{path:string, with:string, permission?:string, expires?:string, note?:string} $arguments validated arguments
      * @return array<string, mixed> the share as {@see ShareFormatter::item()} shows it, plus `action` and `changed`; when
      *   this call generated a link password, also `password` (the only place it is ever returned) and `passwordNotice`
-     * @throws ArgumentValidationException as {@see self::plan()}
+     * @throws ArgumentValidationException as {@see self::plan()}, and without `plan_state` once nothing else refuses
+     * @throws PlanChanged when the share is not in the state the plan showed; nothing is written
      * @throws ToolFailure as {@see self::plan()}, when no acceptable password can be generated, and with a translated
-     *   reason when the core refuses
+     *   reason when the core refuses; once a password may exist, every unexpected Throwable becomes one of these too, so
+     *   nothing carrying it reaches the registry, which logs the message of what escapes
      */
     public function apply(Folder $userFolder, string $uid, array $arguments): array {
         $change = $this->prepare($userFolder, $uid, $arguments);
+        PlanState::require($arguments);
+        if (!PlanState::matches($this->stateOf($change, $uid), $arguments)) {
+            throw new PlanChanged($this->planOf($change, $uid, true));
+        }
         $share = $change['existing'];
         $password = null;
         if ($change['action'] !== self::NONE) {
@@ -117,8 +166,14 @@ final class ShareWriter {
             $password = $change['generatePassword'] ? $this->passwords->generate() : null;
             $share = $this->write($change, $uid, $password);
         }
-        $result = ['action' => $change['action'], 'changed' => $change['action'] !== self::NONE]
-            + $this->formatter->item($share, $change['path'], $this->access->isRemovable($share, $uid));
+        try {
+            $item = $this->formatter->item($share, $change['path'], $this->access->isRemovable($share, $uid));
+        } catch (\Throwable $e) {
+            // A password may exist by now: nothing unexpected reaches the registry, whose log keeps the message.
+            $this->logger->warning('MCP share result failed', ['app' => 'mcp', 'exception_class' => $e::class]);
+            throw new ToolFailure(FilesMessages::shareRefused());
+        }
+        $result = ['action' => $change['action'], 'changed' => $change['action'] !== self::NONE] + $item;
         if ($password !== null) {
             $result['password'] = $password;
             $result['passwordNotice'] = FilesMessages::linkPasswordShownOnce();
@@ -245,7 +300,7 @@ final class ShareWriter {
         $zone = $this->zones->forUser($uid);
         $expires = isset($arguments['expires']) ? $this->expiry((string)$arguments['expires'], $zone, true) : null;
         $note = isset($arguments['note']) ? (string)$arguments['note'] : null;
-        $hadPassword = $existing === null ? null : self::hasPassword($existing);
+        $hadPassword = $existing === null ? null : ShareAccess::hasPassword($existing);
         $required = $this->shareManager->shareApiLinkEnforcePassword();
         $generate = ($arguments['password'] ?? false) === true || ($required && $hadPassword !== true);
 
@@ -319,12 +374,6 @@ final class ShareWriter {
         if (!$this->shareManager->shareApiAllowLinks($this->userManager->get($uid))) {
             throw new ToolFailure(FilesMessages::shareLinksDisabled());
         }
-    }
-
-    /** @return bool whether the share is protected by a password; the stored value is a hash and is never read further */
-    private static function hasPassword(IShare $share): bool {
-        $password = $share->getPassword();
-        return $password !== null && $password !== '';
     }
 
     /**
@@ -421,7 +470,8 @@ final class ShareWriter {
 
     /**
      * The write itself, through IShareManager so the administrator's rules apply (invariant 3). A refusal of the core
-     * becomes a translated message; the log keeps the exception class only, never its message, which can name paths.
+     * becomes a translated message; the log keeps the exception class only, never its message, which can name paths or
+     * carry the new link password. Any Throwable counts, an Error included, so none of them reaches the registry's log.
      *
      * The plain link password is handed to setPassword() only: the core validates it with the password policy and
      * stores its hash (Manager::createShare and updateSharePasswordIfNeeded). Without a new password an update leaves
@@ -467,7 +517,7 @@ final class ShareWriter {
                 $share->setNote($change['note']);
             }
             return $this->shareManager->createShare($share);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->warning('MCP share refused by Nextcloud', ['app' => 'mcp', 'exception_class' => $e::class]);
             throw new ToolFailure($e instanceof AlreadySharedException ? FilesMessages::shareAlreadyHasAccess() : FilesMessages::shareRefused());
         }

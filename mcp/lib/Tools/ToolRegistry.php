@@ -86,7 +86,9 @@ class ToolRegistry {
 
     /**
      * A write without `confirm: true` answers with its plan and never reaches the module; with it, the module
-     * runs and every guard it holds — ACL, ETag, ownership — is checked again at that moment.
+     * runs and every guard it holds — ACL, ETag, ownership, {@see PlanState} — is checked again at that moment. A
+     * module that finds a state other than the one its plan showed throws {@see PlanChanged} and the answer is the
+     * new plan, in the same envelope.
      *
      * @param string $name tool name
      * @param array<string, mixed> $arguments raw arguments from tools/call
@@ -119,6 +121,10 @@ class ToolRegistry {
                     return $module->call($name, $arguments, $userId);
                 } catch (InvalidArgumentException $e) {
                     throw $e;
+                } catch (PlanChanged $e) {
+                    // Nothing was written: the person approved another state, so the answer is the new plan to approve.
+                    $plan = WriteGate::envelope($definition, $e->plan);
+                    return ToolResult::structured(PlanRenderer::render($module, $name, $plan), $plan);
                 } catch (ToolFailure $e) {
                     return ToolResult::error($e->getMessage());
                 } catch (\Throwable $e) {

@@ -2,6 +2,10 @@ OC.L10N.register(
     "mcp",
     {
     "%s: %s" : "%s: %s",
+    "The search for people failed; try again." : "A busca de pessoas falhou; tente de novo.",
+    "required with confirm: true; send the plan_state of the plan" : "obrigatório com confirm: true; envie o plan_state do plano",
+    "The share changed since the plan; check it again." : "O compartilhamento mudou desde o plano; confira de novo.",
+    "To confirm, repeat the call with plan_state %s." : "Para confirmar, repita a chamada com plan_state %s.",
     "unknown property; use only declared arguments" : "propriedade desconhecida; use apenas argumentos declarados",
     "must stay inside your folder: no parent (..) segments or control characters" : "deve ficar dentro da sua pasta: sem segmentos de pasta pai (..) nem caracteres de controle",
     "unknown tool; use one listed by tools/list" : "ferramenta desconhecida; use uma listada em tools/list",

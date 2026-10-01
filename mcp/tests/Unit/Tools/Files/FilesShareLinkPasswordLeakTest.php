@@ -36,6 +36,18 @@ final class FilesShareLinkPasswordLeakTest extends FilesToolsTestCase {
         return json_encode($result, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
+    /**
+     * The confirmed call as the model makes it: the plan through the registry first, then the same arguments with
+     * confirm and the plan_state of that plan.
+     *
+     * @param array<string, mixed> $arguments arguments of files_share
+     * @return array<string, mixed> the result of the confirmed call
+     */
+    private function confirmed(array $arguments): array {
+        $plan = $this->registry->call('files_share', $arguments, 'alice');
+        return $this->registry->call('files_share', $arguments + ['confirm' => true, 'plan_state' => $plan['structuredContent']['plan_state']], 'alice');
+    }
+
     private function assertNoPassword(string $where, string $haystack): void {
         self::assertStringNotContainsString(self::PASSWORD, $haystack, "a senha vazou em: $where");
     }
@@ -51,7 +63,7 @@ final class FilesShareLinkPasswordLeakTest extends FilesToolsTestCase {
         $this->assertNoPassword('plano (structuredContent)', self::all($plan['structuredContent']));
         self::assertSame([self::PASSWORD], $this->linkPasswords, 'o plano não gera senha');
 
-        $result = $this->registry->call('files_share', $arguments + ['confirm' => true], 'alice');
+        $result = $this->registry->call('files_share', $arguments + ['confirm' => true, 'plan_state' => $plan['structuredContent']['plan_state']], 'alice');
         self::assertArrayNotHasKey('isError', $result);
         self::assertStringContainsString(self::PASSWORD, $result['content'][0]['text']);
         self::assertSame(self::PASSWORD, $result['structuredContent']['password']);
@@ -63,7 +75,7 @@ final class FilesShareLinkPasswordLeakTest extends FilesToolsTestCase {
         $again = ['path' => self::FILE, 'with' => 'link', 'expires' => '2026-10-10'];
         $secondPlan = $this->registry->call('files_share', $again, 'alice');
         $this->assertNoPassword('segundo plano', self::all($secondPlan));
-        $second = $this->registry->call('files_share', $again + ['confirm' => true], 'alice');
+        $second = $this->registry->call('files_share', $again + ['confirm' => true, 'plan_state' => $secondPlan['structuredContent']['plan_state']], 'alice');
         self::assertArrayNotHasKey('isError', $second);
         self::assertSame('update', $second['structuredContent']['action']);
         $this->assertNoPassword('segundo files_share', self::all($second));
@@ -76,10 +88,40 @@ final class FilesShareLinkPasswordLeakTest extends FilesToolsTestCase {
     public function testACoreRefusalAfterGeneratingLeaksNothing(): void {
         $this->linkPasswords = [self::PASSWORD];
         $this->shares->failWrite = new \OCP\HintException('Password ' . self::PASSWORD . ' is too weak');
-        $result = $this->registry->call('files_share', ['path' => self::FILE, 'with' => 'link', 'password' => true, 'confirm' => true], 'alice');
+        $result = $this->confirmed(['path' => self::FILE, 'with' => 'link', 'password' => true]);
         self::assertTrue($result['isError'] ?? false);
         $this->assertNoPassword('erro', self::all($result));
         $this->assertNoPassword('log', self::all($this->logged));
         self::assertNotSame([], $this->logged, 'a recusa fica registrada, só com a classe');
+    }
+
+    /**
+     * The scenario of the review: a policy listener breaks with an unexpected exception whose message carries the
+     * candidate. The call fails with the safe message, and no log call and no part of the answer has the password.
+     */
+    public function testAnUnexpectedPolicyFailureWithThePasswordLeaksNothing(): void {
+        $this->linkPasswords = [self::PASSWORD];
+        $this->passwordPolicyFailure = static fn (string $candidate): \Throwable => new \RuntimeException('failed validating ' . $candidate);
+        $result = $this->confirmed(['path' => self::FILE, 'with' => 'link', 'password' => true]);
+
+        self::assertTrue($result['isError'] ?? false);
+        self::assertSame(\OCA\Mcp\Tools\Files\FilesMessages::linkPasswordRefused(), $result['content'][0]['text']);
+        $this->assertNoPassword('erro', self::all($result));
+        $this->assertNoPassword('log', self::all($this->logged));
+        self::assertSame([], $this->shares->writes, 'nada é gravado');
+        self::assertContains(\RuntimeException::class, array_column(array_column($this->logged, 1), 'exception_class'));
+    }
+
+    /** An Error of the core while saving, with the password in its message, is caught like any refusal. */
+    public function testAnErrorOfTheCoreAfterGeneratingLeaksNothing(): void {
+        $this->linkPasswords = [self::PASSWORD];
+        $this->shares->failWrite = new \TypeError('cannot hash ' . self::PASSWORD);
+        $result = $this->confirmed(['path' => self::FILE, 'with' => 'link', 'password' => true]);
+
+        self::assertTrue($result['isError'] ?? false);
+        self::assertSame(\OCA\Mcp\Tools\Files\FilesMessages::shareRefused(), $result['content'][0]['text']);
+        $this->assertNoPassword('erro', self::all($result));
+        $this->assertNoPassword('log', self::all($this->logged));
+        self::assertSame([['app' => 'mcp', 'exception_class' => \TypeError::class]], array_column($this->logged, 1));
     }
 }

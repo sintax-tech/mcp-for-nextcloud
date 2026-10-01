@@ -832,6 +832,11 @@ final class FilesMessages {
         return Translator::t('This recipient already has access to this item through another share.');
     }
 
+    /** @return string the warning of a plan a confirmed files_share or files_unshare answers with, because the share changed */
+    public static function sharePlanChanged(): string {
+        return Translator::t('The share changed since the plan; check it again.');
+    }
+
     /** @return string any other refusal of the core, without its message */
     public static function shareRefused(): string {
         return Translator::t('Nextcloud refused this share because of a sharing rule of this server.');

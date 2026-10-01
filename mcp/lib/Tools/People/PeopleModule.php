@@ -4,11 +4,14 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\People;
 
 use InvalidArgumentException;
+use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolGuideNotes;
 use OCA\Mcp\Tools\ToolModule;
 use OCA\Mcp\Tools\ToolResult;
 use OCP\Collaboration\Collaborators\ISearch;
 use OCP\Share\IShare;
+use Psr\Log\LoggerInterface;
 
 /**
  * People lookup: finds Nextcloud account IDs by name, ID or e-mail, so the model never has to guess who to
@@ -19,6 +22,9 @@ use OCP\Share\IShare;
  * group restrictions (group sharing off, enumeration, sharing restricted to the groups of the caller, hidden
  * groups) are the ones of the GroupPlugin, because that is the plugin the core runs. An account is published as
  * it always was plus its type; a group carries the group ID a share needs.
+ *
+ * A failure of the core search becomes a fixed message and the log keeps the exception class only: its message may
+ * carry the term, which is user text, and nothing else must reach the registry, whose log keeps what escapes.
  */
 class PeopleModule implements ToolModule, ToolGuideNotes {
     /** Shortest accepted search term, in characters. */
@@ -36,7 +42,10 @@ class PeopleModule implements ToolModule, ToolGuideNotes {
     /** Result sets of the core search, by the type of row they hold. */
     private const RESULT_SETS = [self::TYPE_USER => 'users', self::TYPE_GROUP => 'groups'];
 
-    public function __construct(private ISearch $search) {}
+    public function __construct(
+        private ISearch $search,
+        private LoggerInterface $logger,
+    ) {}
 
     /** @return list<string> short behaviour notes about this module */
     public function guideNotes(): array {
@@ -83,6 +92,7 @@ class PeopleModule implements ToolModule, ToolGuideNotes {
      * @param string $userId authenticated user (unused: the sharing search reads the current session)
      * @return array{content: list<array{type:string, text:string}>, isError?: bool}
      * @throws InvalidArgumentException for an unknown tool, a term out of bounds or a limit out of range
+     * @throws ToolFailure when the core search fails, with a fixed message that never carries the term
      */
     public function call(string $name, array $arguments, string $userId): array {
         if ($name !== 'users_search') {
@@ -96,7 +106,12 @@ class PeopleModule implements ToolModule, ToolGuideNotes {
         }
         $includeGroups = (bool)($arguments['include_groups'] ?? false);
         $types = $includeGroups ? [IShare::TYPE_USER, IShare::TYPE_GROUP] : [IShare::TYPE_USER];
-        [$result] = $this->search->search($term, $types, false, $limit, 0);
+        try {
+            [$result] = $this->search->search($term, $types, false, $limit, 0);
+        } catch (\Throwable $e) {
+            $this->logger->warning('MCP people search failed', ['app' => 'mcp', 'exception_class' => $e::class]);
+            throw new ToolFailure(Translator::t('The search for people failed; try again.'));
+        }
         $rows = [];
         foreach ($this->matches($result, $includeGroups) as [$type, $match]) {
             $id = (string)($match['value']['shareWith'] ?? '');

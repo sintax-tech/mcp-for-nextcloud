@@ -41,6 +41,16 @@ final class CommonMessages {
     }
 
     /**
+     * The `plan_state` argument of a write that binds its confirmation to the state its plan showed ({@see \OCA\Mcp\Tools\PlanState}).
+     * Fixed English, like every description of a module schema; only the `confirm` the registry adds is translated.
+     *
+     * @return string the description the model reads in the schema
+     */
+    public static function planStateParameter(): string {
+        return 'Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan.';
+    }
+
+    /**
      * Closing sentence of the plan of a tool whose module does not describe its own writes.
      *
      * @return string what the model is asked to do with the plan

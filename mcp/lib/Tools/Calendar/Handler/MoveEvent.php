@@ -13,7 +13,7 @@ use OCA\Mcp\Tools\Calendar\ToolSchema;
 /**
  * calendar_move_event: moves an event between two writable calendars of the same owner.
  */
-final class MoveEvent implements CalendarTool {
+final class MoveEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
     /**
      * @param CalendarAccess $access calendar visibility and ACL
      * @param EventRelocator $relocator shared move/transfer logic
@@ -45,6 +45,12 @@ final class MoveEvent implements CalendarTool {
      * @throws \OCA\Mcp\Tools\Calendar\CalendarException when the move is not allowed or conflicts
      */
     public function execute(array $arguments, string $userId): array {
+        $prepared = $this->prepare($arguments, $userId);
+        return is_array($prepared) ? $prepared : ToolSchema::result($prepared->dispatch());
+    }
+
+    /** Prepare without performing a MOVE. */
+    public function prepare(array $arguments, string $userId): \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite|array {
         $source = $this->access->resolveWritable($userId, $arguments['calendar']);
         $target = $this->access->resolveWritable($userId, $arguments['targetCalendar']);
         // A move never crosses owners: when it would, relocate() still answers with the transfer
@@ -57,6 +63,6 @@ final class MoveEvent implements CalendarTool {
                 return $confirmation;
             }
         }
-        return ToolSchema::result($this->relocator->relocate($userId, $arguments['calendar'], $arguments['uid'], $arguments['targetCalendar'], $arguments['etag'] ?? null, false));
+        return $this->relocator->prepare($userId, $arguments['calendar'], $arguments['uid'], $arguments['targetCalendar'], $arguments['etag'] ?? null, false);
     }
 }

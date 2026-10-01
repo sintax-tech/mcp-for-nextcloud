@@ -10,6 +10,14 @@ namespace OCA\Mcp\Tools\Calendar;
  * handler carries a literal of its own.
  */
 final class CalendarMessages {
+    public const APPROVAL_PROMPT = 'Mostre este rascunho ao usuário e aguarde sua aprovação explícita. Só depois repita os mesmos argumentos com confirm: true (e o etag deste plano, quando houver).';
+    public const APPROVAL_SHARED = 'O plano altera um calendário compartilhado de outra pessoa. A execução exige também confirm_shared: true.';
+    public const PREVIEW_SUPPRESSED = 'Nenhum convite ou cancelamento será agendado nesta mudança.';
+    public const PREVIEW_INVITATIONS = 'Após a aprovação, o Nextcloud poderá agendar convites, atualizações ou CANCEL para participantes removidos. O envio e o recebimento não são garantidos.';
+    public const PREVIEW_CANCEL = 'Após aprovação, o evento irá à lixeira e o Nextcloud poderá agendar CANCEL aos participantes. O envio e o recebimento não são garantidos.';
+    public const PREVIEW_TRASH = 'Após aprovação, o evento irá à lixeira recuperável do Calendar.';
+    public const PREVIEW_INVITATION_PROOF = 'A prova do servidor cobre entrega interna e supressão pelo pipeline DAV; não comprova recebimento de e-mail externo.';
+
     // ---- Tool descriptions shown in tools/list ----
 
     public const TOOL_LIST_CALENDARS = 'Lista os calendários visíveis ao usuário.';

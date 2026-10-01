@@ -29,7 +29,7 @@ use Sabre\VObject\Component\VEvent;
  * The write itself goes through the CalDAV pipeline (CalendarDav) with If-Match always set to the
  * ETag that was just read, so a concurrent edit by somebody else loses instead of overwriting.
  */
-final class UpdateEvent implements CalendarTool {
+final class UpdateEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
     /** Arguments that change the event text. */
     private const TEXT_FIELDS = ['summary', 'location', 'description'];
     /** Arguments that change the event timing. */
@@ -98,6 +98,12 @@ final class UpdateEvent implements CalendarTool {
      * @throws CalendarArgumentException when nothing is given, dates are invalid or the guest list is refused
      */
     public function execute(array $arguments, string $userId): array {
+        $prepared = $this->prepare($arguments, $userId);
+        return is_array($prepared) ? $prepared : $prepared->dispatch();
+    }
+
+    /** Validate and construct the write without dispatching; direct callers retain SharedGuard. */
+    public function prepare(array $arguments, string $userId): \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite|array {
         $timingChanges = array_intersect_key($arguments, array_flip(self::TIMING_FIELDS));
         $textChanges = array_intersect_key($arguments, array_flip(self::TEXT_FIELDS));
         $guestChanges = array_key_exists('attendees', $arguments);
@@ -109,6 +115,7 @@ final class UpdateEvent implements CalendarTool {
             return $confirmation;
         }
         $stored = $this->events->forChange($calendar, $arguments['uid'], $userId, $arguments['etag'] ?? null);
+        $before = new \OCA\Mcp\Tools\Calendar\StoredEvent($stored->id, $stored->uri, $stored->etag, clone $stored->vcalendar);
         $master = $stored->master() ?? throw CalendarException::notFound();
         if ($timingChanges !== []) {
             if ($stored->recurring()) {
@@ -124,16 +131,18 @@ final class UpdateEvent implements CalendarTool {
         $notify = (bool)($arguments['send_invitations'] ?? false);
         // If-Match always carries the ETag just read, even when the client sent none, so a change
         // made between the read and the write loses instead of being overwritten (D3, seção 2).
-        $this->dav->update($userId, $calendar->uri, $stored->uri, $stored->etag, $stored->vcalendar->serialize(), $notify);
-        $row = $this->store->object($calendar->id, $stored->uri)
-            ?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
-        $written = $this->events->parse($row['data']) ?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
-        $timing = $this->builder->timing($written->VEVENT);
-        $item = $this->mapper->toItem($written->VEVENT, $timing['start'], $timing['end'], $calendar, Classification::FULL);
-        return ToolSchema::result($item + [
-            'etag' => $row['etag'],
-            'scheduling' => $this->scheduling->report($notify, $written),
-        ]);
+        return new \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite($calendar, null, $before, $stored->vcalendar, function () use ($calendar, $stored, $notify, $userId): array {
+            $this->dav->update($userId, $calendar->uri, $stored->uri, $stored->etag, $stored->vcalendar->serialize(), $notify);
+            $row = $this->store->object($calendar->id, $stored->uri)
+                ?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
+            $written = $this->events->parse($row['data']) ?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
+            $timing = $this->builder->timing($written->VEVENT);
+            $item = $this->mapper->toItem($written->VEVENT, $timing['start'], $timing['end'], $calendar, Classification::FULL);
+            return ToolSchema::result($item + [
+                'etag' => $row['etag'],
+                'scheduling' => $this->scheduling->report($notify, $written),
+            ]);
+        });
     }
 
     /**

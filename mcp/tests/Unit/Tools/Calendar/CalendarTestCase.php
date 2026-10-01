@@ -123,6 +123,7 @@ abstract class CalendarTestCase extends TestCase {
             $deleteEvent,
             $transferEvent,
             $this->gate,
+            new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($this->gate, $scheduling, $builder, $guard),
         );
     }
 

@@ -16,18 +16,22 @@ final class SearchOrder implements ISearchOrder {
         private string $extra = '',
     ) {}
 
+    /** {@inheritDoc} */
     public function getDirection(): string {
         return $this->direction;
     }
 
+    /** {@inheritDoc} */
     public function getField(): string {
         return $this->field;
     }
 
+    /** {@inheritDoc} */
     public function getExtra(): string {
         return $this->extra;
     }
 
+    /** {@inheritDoc} */
     public function sortFileInfo(FileInfo $a, FileInfo $b): int {
         if ($this->field === 'mtime') {
             $cmp = $a->getMTime() <=> $b->getMTime();

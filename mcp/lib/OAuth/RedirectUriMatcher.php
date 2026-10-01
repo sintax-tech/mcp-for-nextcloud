@@ -34,6 +34,13 @@ class RedirectUriMatcher {
             && in_array(strtolower($parts['host'] ?? ''), self::LOOPBACK_HOSTS, true);
     }
 
+    /**
+     * Matches loopback redirect URIs while allowing the client to choose an ephemeral port.
+     *
+     * @param string $a requested redirect URI
+     * @param string $b registered redirect URI
+     * @return bool true when both are loopback URIs with equal non-port components
+     */
     private static function sameLoopback(string $a, string $b): bool {
         if (!self::isLoopback($a) || !self::isLoopback($b)) {
             return false;

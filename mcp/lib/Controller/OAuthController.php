@@ -139,6 +139,12 @@ class OAuthController extends Controller {
         ], TemplateResponse::RENDER_AS_GUEST);
     }
 
+    /**
+     * Builds an OAuth error redirect after the authorization request has validated its redirect URI.
+     *
+     * @param OAuthException $e safe protocol error to return to the client
+     * @return string redirect URI with error details and any supplied state
+     */
     private function redirectableError(OAuthException $e): string {
         $params = $this->request->getParams();
         $redirectUri = (string)$params['redirect_uri'];
@@ -149,6 +155,12 @@ class OAuthController extends Controller {
         return $redirectUri . (str_contains($redirectUri, '?') ? '&' : '?') . http_build_query($query);
     }
 
+    /**
+     * Extracts the origin used to scope consent and authorization decisions.
+     *
+     * @param string $uri absolute URI whose scheme, host, and port form the origin
+     * @return string URI origin, defaulting to HTTPS when the scheme is absent
+     */
     private function origin(string $uri): string {
         $parts = parse_url($uri);
         return ($parts['scheme'] ?? 'https') . '://' . ($parts['host'] ?? '') . (isset($parts['port']) ? ':' . $parts['port'] : '');

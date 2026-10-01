@@ -62,6 +62,13 @@ class ClientMetadataFetcher {
         return in_array(strtolower($parts['host'] ?? ''), $hosts, true);
     }
 
+    /**
+     * Downloads an allowlisted client metadata document without following redirects.
+     *
+     * @param string $clientId validated HTTPS metadata document URL
+     * @return string metadata document body within the configured size limit
+     * @throws OAuthException when the document cannot be fetched or exceeds the size limit
+     */
     private function download(string $clientId): string {
         try {
             $response = $this->clientService->newClient()->get($clientId, [
@@ -80,6 +87,14 @@ class ClientMetadataFetcher {
         return $body;
     }
 
+    /**
+     * Validates the metadata document identity, redirect list, and public-client authentication method.
+     *
+     * @param string $clientId expected client identifier from the authorization request
+     * @param string $document downloaded JSON metadata document
+     * @return ClientMetadata validated client metadata
+     * @throws OAuthException when the document is malformed or does not describe this client
+     */
     private function parse(string $clientId, string $document): ClientMetadata {
         $data = json_decode($document, true);
         if (!is_array($data) || ($data['client_id'] ?? null) !== $clientId

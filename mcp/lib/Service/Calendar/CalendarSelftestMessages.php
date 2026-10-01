@@ -23,30 +23,37 @@ final class CalendarSelftestMessages {
     public const OPTIONAL = 'Option not provided; capability not verified.';
     public const SUMMARY = 'Confirm Activity, CalDAV clients, and email delivery manually; the report does not confirm email delivery.';
 
+    /** @return string translated preflight failure for an ineligible organizer account */
     public static function invalidUser(): string {
         return Translator::t('The account must exist, be enabled, have an email, and have the Calendar app enabled.');
     }
 
+    /** @return string translated preflight failure for an ineligible attendee or ACL probe */
     public static function invalidAttendee(): string {
         return Translator::t('The attendee and the ACL probe user must be enabled internal accounts, distinct from the organizer.');
     }
 
+    /** @return string translated refusal when cleanup could permanently delete test data */
     public static function trashRequired(): string {
         return Translator::t('Calendar retention is set to 0. The test was refused before creating objects because cleanup would be permanent.');
     }
 
+    /** @return string translated summary for a failed diagnostic run */
     public static function failed(): string {
         return Translator::t('Diagnostic failed; see the failed step above. Calendar tools are not affected.');
     }
 
+    /** @return string translated summary for a successful diagnostic and cleanup */
     public static function passed(): string {
         return Translator::t('Diagnostic passed and cleanup confirmed.');
     }
 
+    /** @return string translated status for an optional check that was not requested */
     public static function optional(): string {
         return Translator::t('Option not provided; capability not verified.');
     }
 
+    /** @return string translated reminder of checks that require manual verification */
     public static function summary(): string {
         return Translator::t('Confirm Activity, CalDAV clients, and email delivery manually; the report does not confirm email delivery.');
     }
@@ -76,6 +83,10 @@ final class CalendarSelftestMessages {
         return sprintf($format, ...$values);
     }
 
+    /**
+     * @param string $check internal assertion key emitted by the diagnostic runner
+     * @return string translated human-readable label, or the original key when it is unknown
+     */
     public static function checkLabel(string $check): string {
         return match ($check) {
             'shared-owner' => Translator::t('shared calendar of another owner'),

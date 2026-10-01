@@ -23,6 +23,7 @@ final class SearchBinaryOperator implements ISearchBinaryOperator {
         private array $arguments,
     ) {}
 
+    /** {@inheritDoc} */
     public function getType(): string {
         return $this->type;
     }
@@ -32,10 +33,12 @@ final class SearchBinaryOperator implements ISearchBinaryOperator {
         return $this->arguments;
     }
 
+    /** {@inheritDoc} */
     public function getQueryHint(string $name, $default) {
         return $this->hints[$name] ?? $default;
     }
 
+    /** {@inheritDoc} */
     public function setQueryHint(string $name, $value): void {
         $this->hints[$name] = $value;
     }

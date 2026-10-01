@@ -130,146 +130,201 @@ final class CalendarMessages {
         return Translator::t('Conflict: %s', [$reason]);
     }
 
+    /** @return string translated conflict message for an event changed by another person */
     public static function conflictEtag(): string {
         return Translator::t('the event was changed by another person (etag diverged).');
     }
 
+    /** @return string translated conflict message for a UID already present in the destination */
     public static function conflictUid(): string {
         return Translator::t('an event with the same UID already exists in the destination calendar.');
     }
 
+    /** @return string translated conflict message for a duplicate event name */
     public static function conflictName(): string {
         return Translator::t('an event with the same name already exists in the destination calendar.');
     }
 
+    /** @return string translated conflict message when source and destination are the same calendar */
     public static function conflictSameCalendar(): string {
         return Translator::t('source and destination are the same calendar.');
     }
 
+    /** @return string translated guidance to use transfer when calendar owners differ */
     public static function moveNeedsTransfer(): string {
         return Translator::t('The calendars have different owners; use calendar_transfer_event.');
     }
 
+    /** @return string translated guidance to use move when calendar owners match */
     public static function transferNeedsMove(): string {
         return Translator::t('The calendars have the same owner; use calendar_move_event.');
     }
 
+    /** @return string translated refusal explaining why attendee events cannot be transferred */
     public static function transferWithAttendees(): string {
         return Translator::t('Cannot transfer an event with attendees to someone else\'s calendar: you remain the organizer and Nextcloud does not notify anyone in this operation. Move the event within your calendars or remove attendees first.');
     }
 
+    /** @return string translated message for event data refused by Nextcloud */
     public static function dataRefused(): string {
         return Translator::t('Nextcloud refused the event data.');
     }
 
+    /** @return string translated message for an event whose data cannot be changed */
     public static function eventUnreadable(): string {
         return Translator::t('The event has invalid data and cannot be changed.');
     }
 
+    /** @return string translated retry message when a move cannot be confirmed */
     public static function moveNotConfirmed(): string {
         return Translator::t('Could not move the event; try again.');
     }
 
+    /** @return string translated refusal when deletion would not be recoverable */
     public static function trashDisabled(): string {
         return Translator::t('Deletion blocked: the calendar trash bin is disabled and the event would not be recoverable.');
     }
 
+    /** @return string translated refusal for changing dates in a recurring series */
     public static function recurringTiming(): string {
         return Translator::t('changing dates of a recurring series is not supported.');
     }
 
+    /** @return string translated refusal for changing attendees in a recurring series */
     public static function recurringAttendees(): string {
         return Translator::t('attendees cannot be changed in a recurring series.');
     }
 
+    /** @return string translated refusal when the user is not the event organizer */
     public static function notOrganizer(): string {
         return Translator::t('only the event organizer can change attendees.');
     }
 
+    /** @return string translated validation message for an invalid attendee list */
     public static function attendeesInvalid(): string {
         return Translator::t('Provide 1 to 50 attendees, without duplicates.');
     }
 
+    /**
+     * @param string $uid attendee account id that could not be resolved to an email address
+     * @return string translated message naming the unresolved attendee
+     */
     public static function attendeeNotFound(string $uid): string {
         return Translator::t('attendee \'%s\' not found or has no email address', [$uid]);
     }
 
+    /** @return string translated message when the organizer has no email address */
     public static function organizerWithoutEmail(): string {
         return Translator::t('your account has no email address, so the event cannot have attendees.');
     }
 
+    /** @return string translated message when a calendar or event is not visible */
     public static function notFound(): string {
         return Translator::t('Calendar or event not found.');
     }
 
+    /** @return string translated message when the user cannot change a calendar or event */
     public static function forbidden(): string {
         return Translator::t('No permission to change this calendar or event.');
     }
 
+    /** @return string translated validation message when a range end is not after its start */
     public static function rangeEndBeforeStart(): string {
         return Translator::t('Invalid range: end must be after start.');
     }
 
+    /** @return string translated validation message when the range start is not before its end */
     public static function rangeFromAfterTo(): string {
         return Translator::t('Invalid range: from must be before to.');
     }
 
+    /**
+     * @param string $arg name of the date argument that failed validation
+     * @return string translated validation message naming the invalid argument
+     */
     public static function invalidIsoDate(string $arg): string {
         return Translator::t('Invalid ISO date in %s.', [$arg]);
     }
 
+    /**
+     * @param string $arg name of the all-day date argument that failed validation
+     * @return string translated validation message naming the argument that needs YYYY-MM-DD
+     */
     public static function invalidAllDayFormat(string $arg): string {
         return Translator::t('Use YYYY-MM-DD format in %s for all-day event.', [$arg]);
     }
 
+    /** @return string translated validation message for an unknown time zone */
     public static function invalidTimeZone(): string {
         return Translator::t('Invalid time zone in timeZone.');
     }
 
+    /** @return string translated validation message when the requested calendar window exceeds its limit */
     public static function windowTooWide(): string {
         return Translator::t('Calendar window exceeds the limit of 366 days.');
     }
 
+    /** @return string translated message when series expansion reaches its occurrence limit */
     public static function occurrenceLimit(): string {
         return Translator::t('Limit of 500 occurrences per series reached; reduce the calendar window.');
     }
 
+    /** @return string translated message when calendar occurrence expansion reaches its limit */
     public static function expansionLimit(): string {
         return Translator::t('Occurrence expansion limit reached; reduce the calendar window.');
     }
 
+    /** @return string translated validation message when an update contains no changes */
     public static function noFieldGiven(): string {
         return Translator::t('Provide at least one field to change.');
     }
 
+    /** @return string translated validation message when changing allDay without supplying dates */
     public static function allDayNeedsDates(): string {
         return Translator::t('Provide start and end when changing allDay.');
     }
 
+    /**
+     * @param string $calendar name of the shared calendar being changed
+     * @param string $owner display name or account id of its owner
+     * @return string translated confirmation prompt describing the shared-calendar change
+     */
     public static function sharedConfirmation(string $calendar, string $owner): string {
         return Translator::t('The calendar \'%s\' belongs to %s and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true.', [$calendar, $owner]);
     }
 
+    /** @return string translated note that moving an event does not notify its attendees */
     public static function participantsNotNotified(): string {
         return Translator::t('Event attendees are not notified, just like when moving in the Calendar app.');
     }
 
+    /** @return string translated scheduling status when server-side email sending is disabled */
     public static function imipDisabled(): string {
         return Translator::t('server has email invitation sending disabled');
     }
 
+    /** @return string translated scheduling status when an invitation is handed to Nextcloud */
     public static function schedulingHandedOver(): string {
         return Translator::t('invitation delivered to Nextcloud scheduling');
     }
 
+    /** @return string translated scheduling status when no invitation is sent */
     public static function schedulingSuppressed(): string {
         return Translator::t('no invitations were scheduled');
     }
 
+    /**
+     * @param int $limit maximum event size accepted by the server, in bytes
+     * @return string translated message reporting the event size limit
+     */
     public static function eventTooLarge(int $limit): string {
         return Translator::t('The event exceeds the limit of %d bytes accepted by the server.', [$limit]);
     }
 
+    /**
+     * @param string $code iTIP schedule status code
+     * @return string translated explanation of the delivery status
+     */
     public static function scheduleStatus(string $code): string {
         return match (true) {
             str_starts_with($code, '1.1') => Translator::t('delivered to Nextcloud email sending; receipt is not confirmed'),
@@ -280,34 +335,45 @@ final class CalendarMessages {
         };
     }
 
+    /**
+     * @param string $label human-readable name of the path segment
+     * @return string translated validation message for an invalid identifier
+     */
     public static function invalidPathSegment(string $label): string {
         return Translator::t('Invalid %s identifier.', [$label]);
     }
 
+    /** @return string translated instruction to obtain approval before repeating a write */
     public static function approvalPrompt(): string {
         return Translator::t('Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).');
     }
 
+    /** @return string translated warning that a shared-calendar write needs separate confirmation */
     public static function approvalShared(): string {
         return Translator::t('The plan changes a shared calendar belonging to someone else. Execution also requires confirm_shared: true.');
     }
 
+    /** @return string translated preview note that this write schedules no invitations or cancellations */
     public static function previewSuppressed(): string {
         return Translator::t('No invitations or cancellations will be scheduled in this change.');
     }
 
+    /** @return string translated preview note about invitations that may follow approval */
     public static function previewInvitations(): string {
         return Translator::t('After approval, Nextcloud may schedule invitations, updates or CANCEL for removed attendees. Sending and delivery are not guaranteed.');
     }
 
+    /** @return string translated preview note about deletion and possible attendee cancellations */
     public static function previewCancel(): string {
         return Translator::t('After approval, the event will go to the trash bin and Nextcloud may schedule CANCEL to attendees. Sending and delivery are not guaranteed.');
     }
 
+    /** @return string translated preview note that deletion moves an event to recoverable trash */
     public static function previewTrash(): string {
         return Translator::t('After approval, the event will go to the recoverable Calendar trash bin.');
     }
 
+    /** @return string translated note describing the limits of server-side invitation proof */
     public static function previewInvitationProof(): string {
         return Translator::t('Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved.');
     }

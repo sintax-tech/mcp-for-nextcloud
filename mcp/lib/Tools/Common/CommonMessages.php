@@ -24,6 +24,7 @@ final class CommonMessages {
      */
     public const CONFIRM_ADVICE_CHECKOUT = 'Changes affect other people. Confirm with the user before continuing and run a new files_checkout with confirm_shared: true, because this edit link has already been used.';
 
+    /** @return string translated fallback label when a share has no identifiable sharer */
     public static function unidentified(): string {
         return Translator::t('unidentified');
     }
@@ -48,26 +49,32 @@ final class CommonMessages {
         return Translator::t('Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.');
     }
 
+    /** @return string translated shared-write instruction requiring user confirmation */
     public static function confirmAdvice(): string {
         return Translator::t('Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true.');
     }
 
+    /** @return string translated confirmation instruction for a consumed single-use checkout link */
     public static function confirmAdviceCheckout(): string {
         return Translator::t('Changes affect other people. Confirm with the user before continuing and run a new files_checkout with confirm_shared: true, because this edit link has already been used.');
     }
 
+    /** @return string translated message when a resource cannot be found in Nextcloud */
     public static function notFound(): string {
         return Translator::t('Resource not found in Nextcloud.');
     }
 
+    /** @return string translated message when the user has no access to a resource */
     public static function forbidden(): string {
         return Translator::t('No access to this resource in Nextcloud.');
     }
 
+    /** @return string translated retry message when another operation holds the resource lock */
     public static function locked(): string {
         return Translator::t('Resource locked by another operation; try again.');
     }
 
+    /** @return string translated message when the resource ETag changed since it was read */
     public static function conflict(): string {
         return Translator::t('The resource has changed since the last read (etag differs); nothing was written.');
     }

@@ -50,6 +50,12 @@ class ResourceUrl {
         return self::normalize($a) !== '' && self::normalize($a) === self::normalize($b);
     }
 
+    /**
+     * Normalizes a resource URL for comparison while ignoring scheme/host case and front-controller formatting.
+     *
+     * @param string $url resource URL to normalize
+     * @return string normalized origin and path, or an empty string for an invalid URL
+     */
     private static function normalize(string $url): string {
         $parts = parse_url($url);
         if (!is_array($parts) || !isset($parts['scheme'], $parts['host']) || isset($parts['fragment'])) {

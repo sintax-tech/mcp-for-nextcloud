@@ -32,6 +32,17 @@ final class GrantMatrixTest extends TestCase {
         }
     }
 
+    public function testContactsAndCoreTasksColumnsAreOffByDefault(): void {
+        $this->fx->enabledApps[] = 'contacts';
+        $this->fx->enabledApps[] = 'dav';
+        $page=$this->fx->matrix()->page('', '', 1);
+        foreach (['contacts','tasks'] as $module) {
+            self::assertSame(['read','create','edit','delete'], $page['catalog'][$module]);
+            self::assertTrue($page['users'][0]['grants'][$module]['read']);
+            foreach (['create','edit','delete'] as $operation) { self::assertFalse($page['users'][0]['grants'][$module][$operation]); }
+        }
+    }
+
     public function testPagesOfFiftyWithOffsetHasMoreAndTotal(): void {
         $first = $this->fx->matrix()->page('', '', 1);
         $this->assertCount(GrantMatrix::PAGE_SIZE, $first['users']);
@@ -89,7 +100,7 @@ final class GrantMatrixTest extends TestCase {
     public function testCatalogAppsAndService(): void {
         $page = $this->fx->matrix()->page('', '', 1);
         $this->assertSame(['files' => GrantPolicy::CATALOG['files'], 'notes' => GrantPolicy::CATALOG['notes'], 'calendar' => GrantPolicy::CATALOG['calendar']], $page['catalog']);
-        $this->assertSame(['files' => true, 'notes' => true, 'deck' => false, 'calendar' => true, 'talk' => false], $page['appsEnabled']);
+        $this->assertSame(['files' => true, 'notes' => true, 'deck' => false, 'calendar' => true, 'talk' => false, 'contacts' => false, 'tasks' => false], $page['appsEnabled']);
         $this->assertFalse($page['serviceEnabled']);
     }
 
@@ -127,7 +138,7 @@ final class GrantMatrixTest extends TestCase {
         $page = $this->fx->matrix()->page('Bruno', '', 1);
 
         $this->assertSame(['files' => GrantPolicy::CATALOG['files']], $page['catalog']);
-        $this->assertSame(['files' => true, 'notes' => false, 'deck' => false, 'calendar' => false, 'talk' => false], $page['appsEnabled']);
+        $this->assertSame(['files' => true, 'notes' => false, 'deck' => false, 'calendar' => false, 'talk' => false, 'contacts' => false, 'tasks' => false], $page['appsEnabled']);
         $this->assertTrue($page['users'][0]['grants']['notes']['edit']);
     }
 

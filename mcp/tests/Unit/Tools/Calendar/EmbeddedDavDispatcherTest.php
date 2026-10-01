@@ -63,6 +63,17 @@ final class EmbeddedDavDispatcherTest extends TestCase {
     }
 
     /** @return void */
+    public function testVtodoCreationAndCompletionUseTheSameCalDavPipeline(): void {
+        $data=new \OCA\Mcp\Tools\Tasks\TaskData();
+        $now=new \DateTimeImmutable('2026-10-01T12:00:00Z');
+        $task=$data->create(['summary'=>'Undated task'],$now);
+        $created=$this->dispatcher->put('alice','personal','task.ics',$task->serialize());
+        self::assertSame(201,$created->status);
+        $completed=$data->patch($task,[],$now,true);
+        self::assertSame(204,$this->dispatcher->update('alice','personal','task.ics',$created->etag,$completed->serialize())->status);
+        self::assertStringContainsString('STATUS:COMPLETED',$this->backend->objects[$this->personalId]['task.ics']['calendardata']);
+    }
+
     public function testPutCreatesThroughTheServerAndReports201WithTheEtag(): void {
         $result = $this->dispatcher->put('alice', 'personal', 'new.ics', $this->ics('new'));
 

@@ -141,6 +141,21 @@ final class WriteGateContractTest extends TestCase {
      * Every module of the app writes something, so every one describes its own plan and none falls back to the
      * generic one. Read from the class, because Calendar only lists its writes after the selftest.
      */
+    public function testContactsAndTasksWritesAreRegisteredWithCorrectGrantOperations(): void {
+        $definitions=[];
+        foreach(Application::MODULES as $class) {
+            foreach($this->build($class)->definitions() as $definition) { $definitions[$definition['name']]=$definition; }
+        }
+        foreach([
+            'contacts_create_contact'=>'create','contacts_edit_contact'=>'edit','contacts_delete_contact'=>'delete',
+            'tasks_create_task'=>'create','tasks_edit_task'=>'edit','tasks_complete_task'=>'edit','tasks_delete_task'=>'delete',
+        ] as $name=>$operation) {
+            self::assertArrayHasKey($name,$definitions);
+            self::assertSame($operation,$definitions[$name]['operation']);
+            self::assertTrue(WriteGate::isWrite($definitions[$name]));
+        }
+    }
+
     public function testEveryModuleDescribesItsOwnPlan(): void {
         foreach (Application::MODULES as $moduleClass) {
             $this->assertTrue(is_subclass_of($moduleClass, PreviewsWrites::class), "$moduleClass must implement PreviewsWrites");

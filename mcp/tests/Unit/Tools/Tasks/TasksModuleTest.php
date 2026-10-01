@@ -1,0 +1,169 @@
+<?php
+declare(strict_types=1);
+namespace OCA\Mcp\Tests\Unit\Tools\Tasks;
+
+use OCA\Mcp\Tools\Tasks\{TasksModule,TaskStore,TaskData};
+use OCA\Mcp\Tools\Calendar\{CalendarAccess,CalendarDav,CalendarStore,SharedGuard,TrashPolicy,DavResult};
+use OCP\{IConfig,IUserManager};
+use OCP\AppFramework\Utility\ITimeFactory;
+use PHPUnit\Framework\TestCase;
+
+final class TasksModuleTest extends TestCase {
+    private const PATH='/remote.php/dav/calendars/alice/tasks/';
+    private string $data="BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:t1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Work\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n";
+    private CalendarDav $dav;
+    private CalendarStore $store;
+    private TasksModule $module;
+    private string $retention='';
+    private bool $deleted=false;
+    private string $owner='principals/users/alice';
+
+    protected function setUp(): void {
+        $this->store=$this->createMock(CalendarStore::class);
+        $this->store->method('calendarsForPrincipal')->willReturnCallback(fn()=>[
+            ['id'=>1,'uri'=>'tasks','displayName'=>'Tasks','ownerPrincipal'=>$this->owner,'readOnly'=>false,'components'=>['VTODO'],'deleted'=>false],
+            ['id'=>2,'uri'=>'events','displayName'=>'Events','ownerPrincipal'=>'principals/users/alice','readOnly'=>false,'components'=>['VEVENT'],'deleted'=>false],
+        ]);
+        $row=fn()=>['id'=>1,'uri'=>'t1.ics','etag'=>'"v1"','data'=>$this->data,'deleted'=>$this->deleted];
+        $this->store->method('objectByUid')->willReturnCallback($row);
+        $this->store->method('object')->willReturnCallback($row);
+        $this->store->method('objects')->willReturnCallback(fn()=>[$row()]);
+        $tasks=$this->createMock(TaskStore::class);
+        $tasks->method('uris')->willReturn(['t1.ics']);
+        $this->dav=$this->createMock(CalendarDav::class);
+        $config=$this->createMock(IConfig::class);
+        $config->method('getAppValue')->willReturnCallback(fn()=> $this->retention);
+        $time=$this->createMock(ITimeFactory::class);
+        $time->method('now')->willReturn(new \DateTimeImmutable('2026-10-01T12:00:00Z'));
+        $this->module=new TasksModule(new CalendarAccess($this->store),$this->store,$tasks,$this->dav,new TaskData(),new SharedGuard($this->createMock(IUserManager::class)),new TrashPolicy($config),$time);
+    }
+
+    public function testOnlyVtodoCalendarsAreListedAndTasksAppIsNotRequired(): void {
+        $items=$this->json($this->module->call('tasks_list_calendars',[],'alice'));
+        self::assertCount(1,$items);
+        self::assertSame(self::PATH,$items[0]['path']);
+        foreach($this->module->definitions() as $definition) { self::assertSame('dav',$definition['app']); }
+    }
+
+    public function testCompletionPlanAndWritePreserveOtherFields(): void {
+        $args=['calendar'=>self::PATH,'uid'=>'t1'];
+        $plan=$this->module->preview('tasks_complete_task',$args,'alice');
+        self::assertSame('NEEDS-ACTION',$plan['before']['status']);
+        self::assertSame('COMPLETED',$plan['after']['status']);
+        self::assertSame(100,$plan['after']['percentComplete']);
+        $this->dav->expects(self::once())->method('update')->with('alice','tasks','t1.ics','"v1"',self::callback(function($data) { self::assertStringContainsString('X-CUSTOM:keep',$data); self::assertStringContainsString('COMPLETED:20261001T120000Z',$data); return true; }),false)->willReturnCallback(function($user,$calendar,$uri,$etag,$data) { $this->data=$data; return new DavResult(204); });
+        $this->module->call('tasks_complete_task',$args+['confirm'=>true],'alice');
+    }
+
+    public function testDisabledTrashRefusesDeleteBeforeAnyDispatch(): void {
+        $this->retention='0';
+        $this->dav->expects(self::never())->method('delete');
+        $this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
+        $this->module->preview('tasks_delete_task',['calendar'=>self::PATH,'uid'=>'t1'],'alice');
+    }
+
+    public function testDeleteProvesRecoveryAndUsesCurrentEtag(): void {
+        $args=['calendar'=>self::PATH,'uid'=>'t1'];
+        self::assertTrue($this->module->preview('tasks_delete_task',$args,'alice')['recoverable']);
+        $this->dav->expects(self::once())->method('delete')->with('alice','tasks','t1.ics','"v1"',false)->willReturnCallback(function() { $this->deleted=true; return new DavResult(204); });
+        self::assertTrue($this->json($this->module->call('tasks_delete_task',$args+['confirm'=>true],'alice'))['recoverable']);
+    }
+
+    public function testPrivateSharedTaskIsHidden(): void {
+        $this->owner='principals/users/bob';
+        $this->data=str_replace('SUMMARY:Work','CLASS:PRIVATE' . "\r\n" . 'SUMMARY:Work',$this->data);
+        self::assertSame([],$this->json($this->module->call('tasks_list_tasks',['calendar'=>self::PATH],'alice'))['tasks']);
+        $this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
+        $this->module->call('tasks_read_task',['calendar'=>self::PATH,'uid'=>'t1'],'alice');
+    }
+
+    public function testRecurringTaskWriteIsRefusedWithoutDamagingSeries(): void {
+        $this->data=str_replace('SUMMARY:Work','RRULE:FREQ=DAILY' . "\r\n" . 'SUMMARY:Work',$this->data);
+        $this->dav->expects(self::never())->method('update');
+        $this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
+        $this->module->preview('tasks_complete_task',['calendar'=>self::PATH,'uid'=>'t1'],'alice');
+    }
+
+    public function testStaleEtagAndForeignCalendarCannotBeChanged(): void {
+        $this->dav->expects(self::never())->method('update');
+        $this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
+        $this->module->preview('tasks_edit_task',['calendar'=>self::PATH,'uid'=>'t1','summary'=>'New','etag'=>'old'],'alice');
+    }
+
+    public function testDateAndProgressValidation(): void {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->module->preview('tasks_create_task',['calendar'=>self::PATH,'summary'=>'New','start'=>'2026-10-02','due'=>'2026-10-01'],'alice');
+    }
+
+    public function testUndatedTasksAreListedAndCompletionReopensWithProgress(): void {
+        self::assertCount(1,$this->json($this->module->call('tasks_list_tasks',['calendar'=>self::PATH],'alice'))['tasks']);
+        $this->data=str_replace('STATUS:NEEDS-ACTION','STATUS:COMPLETED' . "\r\n" . 'PERCENT-COMPLETE:100' . "\r\n" . 'COMPLETED:20261001T110000Z',$this->data);
+        self::assertCount(0,$this->json($this->module->call('tasks_list_tasks',['calendar'=>self::PATH],'alice'))['tasks']);
+        $plan=$this->module->preview('tasks_edit_task',['calendar'=>self::PATH,'uid'=>'t1','percentComplete'=>30],'alice');
+        self::assertSame('IN-PROCESS',$plan['after']['status']);
+        self::assertNull($plan['after']['completed']);
+    }
+
+    public function testSharedTaskWriteCannotRunWithoutAcknowledgement(): void {
+        $this->owner='principals/users/bob';
+        $args=['calendar'=>self::PATH,'uid'=>'t1'];
+        self::assertNotEmpty($this->module->preview('tasks_complete_task',$args,'alice')['shared']);
+        $this->dav->expects(self::never())->method('update');
+        $this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
+        $this->module->call('tasks_complete_task',$args+['confirm'=>true],'alice');
+    }
+
+    public function testForeignCalendarAndDeletedTaskAreNotReadable(): void {
+        $this->deleted=true;
+        $this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
+        $this->module->call('tasks_read_task',['calendar'=>self::PATH,'uid'=>'t1'],'alice');
+    }
+
+    public function testForeignCalendarCannotBeUsed(): void {
+        $this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
+        $this->module->preview('tasks_create_task',['calendar'=>'/remote.php/dav/calendars/bob/tasks/','summary'=>'New'],'alice');
+    }
+
+    public function testCreationDispatchesOnceAndContainsVtodoOnly(): void {
+        $this->dav->expects(self::once())->method('put')->with('alice','tasks',self::stringEndsWith('.ics'),self::callback(function($data) {
+            self::assertStringContainsString('BEGIN:VTODO',$data);
+            self::assertStringNotContainsString('BEGIN:VEVENT',$data);
+            $this->data=$data;
+            return true;
+        }),false)->willReturn(new DavResult(201));
+        $result=$this->json($this->module->call('tasks_create_task',['calendar'=>self::PATH,'summary'=>'New','due'=>'2026-10-05','confirm'=>true],'alice'));
+        self::assertSame('2026-10-05',$result['due']);
+        self::assertSame('New',$result['summary']);
+    }
+
+    public function testRemovingStartCannotLeaveDurationWithoutStart(): void {
+        $this->data=str_replace('SUMMARY:Work','DTSTART:20261001T100000Z' . "\r\n" . 'DURATION:PT1H' . "\r\n" . 'SUMMARY:Work',$this->data);
+        $this->dav->expects(self::never())->method('update');
+        $this->expectException(\InvalidArgumentException::class);
+        $this->module->preview('tasks_edit_task',['calendar'=>self::PATH,'uid'=>'t1','start'=>null],'alice');
+    }
+
+    public function testSettingDueDateReplacesDurationBeforeClearingStart(): void {
+        $this->data=str_replace('SUMMARY:Work','DTSTART:20261001T100000Z' . "\r\n" . 'DURATION:PT1H' . "\r\n" . 'SUMMARY:Work',$this->data);
+        $plan=$this->module->preview('tasks_edit_task',['calendar'=>self::PATH,'uid'=>'t1','start'=>null,'due'=>'2026-10-02'],'alice');
+        self::assertStringNotContainsString('DURATION:',$plan['after']['icalendar']);
+        self::assertNull($plan['after']['start']);
+        self::assertSame('2026-10-02',$plan['after']['due']);
+    }
+
+    public function testClearingDueCannotBreakRelativeReminder(): void {
+        $this->data=str_replace('END:VTODO','DUE:20261002T120000Z' . "\r\n" . 'BEGIN:VALARM' . "\r\n" . 'ACTION:DISPLAY' . "\r\n" . 'DESCRIPTION:Reminder' . "\r\n" . 'TRIGGER;RELATED=END:-PT15M' . "\r\n" . 'END:VALARM' . "\r\n" . 'END:VTODO',$this->data);
+        $this->dav->expects(self::never())->method('update');
+        $this->expectException(\InvalidArgumentException::class);
+        $this->module->preview('tasks_edit_task',['calendar'=>self::PATH,'uid'=>'t1','due'=>null],'alice');
+    }
+
+    public function testAbsoluteReminderSurvivesClearedDueDate(): void {
+        $this->data=str_replace('END:VTODO','DUE:20261002T120000Z' . "\r\n" . 'BEGIN:VALARM' . "\r\n" . 'ACTION:DISPLAY' . "\r\n" . 'DESCRIPTION:Reminder' . "\r\n" . 'TRIGGER;VALUE=DATE-TIME:20261002T110000Z' . "\r\n" . 'END:VALARM' . "\r\n" . 'END:VTODO',$this->data);
+        $plan=$this->module->preview('tasks_edit_task',['calendar'=>self::PATH,'uid'=>'t1','due'=>null],'alice');
+        self::assertNull($plan['after']['due']);
+        self::assertStringContainsString('TRIGGER;VALUE=DATE-TIME:20261002T110000Z',$plan['after']['icalendar']);
+    }
+
+    private function json(array $result): array { return json_decode($result['content'][0]['text'],true,512,JSON_THROW_ON_ERROR); }
+}

@@ -726,7 +726,7 @@ final class FilesMessages {
 
     /** @return string advice for the model when the share already is what was asked */
     public static function planShareNothing(): string {
-        return 'Nothing was changed. The share already is exactly like this, so a confirmed call changes nothing either.';
+        return Translator::t('Nothing was changed. The share already is exactly like this, so a confirmed call changes nothing either.');
     }
 
     /** @return string a share whose recipient is the user */

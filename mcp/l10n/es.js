@@ -764,6 +764,7 @@ OC.L10N.register(
     "expected a date as YYYY-MM-DD" : "se esperaba una fecha con el formato AAAA-MM-DD",
     "tomorrow or later" : "mañana o después",
     "at most %s days from today (administrator rule)" : "como máximo %s días desde hoy (regla del administrador)",
-    "Share file or folder" : "Compartir archivo o carpeta"
+    "Share file or folder" : "Compartir archivo o carpeta",
+    "Nothing was changed. The share already is exactly like this, so a confirmed call changes nothing either." : "No se cambió nada. El recurso compartido ya está exactamente así, así que confirmar tampoco cambia nada."
 },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

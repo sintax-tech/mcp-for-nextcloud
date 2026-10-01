@@ -108,6 +108,29 @@ final class ToolRegistryTest extends TestCase {
         }
     }
 
+    /**
+     * A confirmed write whose state changed since the plan answers with the new plan, in the very envelope of a call
+     * without confirm: not an error, nothing logged, and the person reads it again before saying yes.
+     */
+    public function testAChangedPlanIsAnsweredAsAPlanToConfirmAgain(): void {
+        $this->policy->setGrant('alice', 'files', 'edit', true);
+        $this->throw = new \OCA\Mcp\Tools\PlanChanged(['requiresConfirmation' => false, 'action' => 'update', 'plan_state' => 'abc123',
+            'warnings' => [['message' => 'It changed.']], 'message' => 'Show it again.']);
+        $this->logger->expects($this->never())->method('error');
+
+        $result = $this->registry()->call('a_edit', ['confirm' => true], 'alice');
+
+        self::assertArrayNotHasKey('isError', $result);
+        self::assertSame('requiresConfirmation', array_key_first($result['structuredContent']));
+        self::assertTrue($result['structuredContent']['requiresConfirmation'], 'o módulo não desliga a confirmação');
+        self::assertSame('a_edit', $result['structuredContent']['tool']);
+        self::assertSame('abc123', $result['structuredContent']['plan_state']);
+        $text = $result['content'][0]['text'];
+        self::assertStringContainsString('- It changed.', $text);
+        self::assertStringContainsString('Nothing was changed.', $text);
+        self::assertStringContainsString('repeat the call with plan_state `abc123`', $text);
+    }
+
     /** Rendering cannot strip the preview payload or let a module override confirmation. */
     public function testPreviewPayloadIsPreservedAndConfirmationCannotBeOverridden(): void {
         $plan = ['requiresConfirmation' => false, 'message' => 'Review this.', 'custom' => ['value' => 7]];

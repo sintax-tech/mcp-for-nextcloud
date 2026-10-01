@@ -17,6 +17,7 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 
 - files: `files_list_shares` without `path` lists only shares of files the user owns. A share the user created of a received file (a re-share made in another interface) no longer appears, with its link URL or recipient, and takes no place on a page.
 - files: an unexpected failure while the link password is validated (a policy listener throwing something other than a refusal, whose message may carry the candidate) or while the share is saved (an `Error` included) becomes the safe "password refused" or "share refused" message. The log keeps the exception class only, so the generated password never reaches it.
+- files: the confirmed `files_share` and `files_unshare` execute exactly what the plan showed. The plan carries `plan_state`, an opaque HMAC (with the instance secret) of the action, the share and its fields before and after, never a password, also cited in the line for the model at the end of the plan. The confirmed call gives it back: when the share appeared, changed or went away in the meantime (create → update, update → create, update → nothing, nothing → update, a share removed and made again), nothing is written and the answer is the new plan with "the share changed since the plan; check it again". A confirmed call without `plan_state` is an argument error. The helper (`PlanState`, `PlanChanged`) is generic, for other writes later.
 
 ## 0.9.1
 

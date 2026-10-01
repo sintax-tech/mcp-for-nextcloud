@@ -56,7 +56,7 @@ final class FilesShareTest extends FilesToolsTestCase {
         self::assertSame(['view', 'edit'], $properties['permission']['enum']);
         self::assertSame('view', $properties['permission']['default']);
         self::assertSame(500, $properties['note']['maxLength']);
-        self::assertSame(['path', 'with', 'permission', 'expires', 'note', 'password'], array_keys($properties));
+        self::assertSame(['path', 'with', 'permission', 'expires', 'note', 'password', 'plan_state'], array_keys($properties));
     }
 
     public function testThePlanOfANewShareWritesNothing(): void {

@@ -8,7 +8,7 @@ use OCA\Mcp\L10n\Translator;
 /** Common confirmation envelope, with an optional module body and a bounded generic fallback. */
 final class PlanRenderer {
     /** Metadata rendered separately from the generic body. */
-    private const ENVELOPE_KEYS = ['tool', 'title', 'requiresConfirmation', 'message', 'action', 'etag', 'warnings', 'sharedCalendars', 'suggestedCalendar'];
+    private const ENVELOPE_KEYS = ['tool', 'title', 'requiresConfirmation', 'message', 'action', 'etag', PlanState::ARGUMENT, 'warnings', 'sharedCalendars', 'suggestedCalendar'];
     /** Text writes show their size rather than disclosing complete contents through a diff or snippet. */
     private const CONTENT_KEYS = ['content', 'old', 'new', 'diff'];
     /** Longest generic value shown to the person. */
@@ -95,8 +95,8 @@ final class PlanRenderer {
     }
 
     /**
-     * What a client that shows only this text still needs to repeat the call: the etag of the plan and the calendars
-     * it can use. The person sees names; the exact values appear here, in the line meant for the model.
+     * What a client that shows only this text still needs to repeat the call: the etag or the plan_state of the plan
+     * and the calendars it can use. The person sees names; the exact values appear here, in the line meant for the model.
      *
      * @param array<string, mixed> $plan complete structured plan
      * @return string one italic line with the values in inline code, or an empty string when there is nothing to add
@@ -106,6 +106,10 @@ final class PlanRenderer {
         $etag = isset($plan['etag']) && is_scalar($plan['etag']) ? PlanText::code((string)$plan['etag']) : '';
         if ($etag !== '') {
             $sentences[] = Translator::t('To confirm, repeat the call with etag %s.', [$etag]);
+        }
+        $state = isset($plan[PlanState::ARGUMENT]) && is_scalar($plan[PlanState::ARGUMENT]) ? PlanText::code((string)$plan[PlanState::ARGUMENT]) : '';
+        if ($state !== '') {
+            $sentences[] = Translator::t('To confirm, repeat the call with plan_state %s.', [$state]);
         }
         $candidates = [];
         foreach ((array)($plan['sharedCalendars'] ?? []) as $calendar) {

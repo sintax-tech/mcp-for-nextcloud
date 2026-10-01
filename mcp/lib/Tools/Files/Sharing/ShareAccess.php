@@ -175,6 +175,32 @@ final class ShareAccess {
     }
 
     /**
+     * The fields of a share a plan shows and a confirmed write depends on, for the {@see \OCA\Mcp\Tools\PlanState} of
+     * files_share and files_unshare. Whether a password exists, never the stored hash.
+     *
+     * @param IShare|null $share the share as read now, null when there is none
+     * @return array{id:string, bits:int, expires:string|null, note:string, hasPassword:bool}|null null for no share
+     */
+    public static function snapshot(?IShare $share): ?array {
+        if ($share === null) {
+            return null;
+        }
+        return [
+            'id' => (string)$share->getFullId(),
+            'bits' => (int)$share->getPermissions(),
+            'expires' => $share->getExpirationDate()?->format(\DateTimeInterface::ATOM),
+            'note' => (string)$share->getNote(),
+            'hasPassword' => self::hasPassword($share),
+        ];
+    }
+
+    /** @return bool whether the share is protected by a password; the stored value is a hash and is never read further */
+    public static function hasPassword(IShare $share): bool {
+        $password = $share->getPassword();
+        return $password !== null && $password !== '';
+    }
+
+    /**
      * @param int $shareType IShare::TYPE_* of the share to create, change or remove
      * @return string the `files` grant operation it needs: `share` for USER and GROUP, `link` for LINK
      * @throws ToolFailure for any other type, a Talk attachment included

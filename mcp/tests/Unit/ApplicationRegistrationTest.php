@@ -142,7 +142,8 @@ final class ApplicationRegistrationTest extends TestCase {
         $lister = $container->get(\OCA\Mcp\Tools\Files\Sharing\ShareLister::class);
         $this->assertInstanceOf(\OCA\Mcp\Tools\Files\Sharing\ShareLister::class, $lister);
         foreach ([\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class, \OCA\Mcp\Tools\Files\Sharing\ShareFormatter::class,
-            \OCA\Mcp\Tools\Files\Sharing\ShareRecipientResolver::class, \OCA\Mcp\Tools\Files\Sharing\ShareWriter::class, \OCA\Mcp\Tools\Files\Sharing\ShareRemover::class] as $service) {
+            \OCA\Mcp\Tools\Files\Sharing\ShareRecipientResolver::class, \OCA\Mcp\Tools\Files\Sharing\ShareWriter::class, \OCA\Mcp\Tools\Files\Sharing\ShareRemover::class,
+            \OCA\Mcp\Tools\Files\Sharing\LinkPassword::class, \OCA\Mcp\Tools\PlanState::class] as $service) {
             $this->assertInstanceOf($service, $container->get($service));
         }
         // Invariant 1: a hidden node is never listed nor shared, so the guard cannot be left out by the container.

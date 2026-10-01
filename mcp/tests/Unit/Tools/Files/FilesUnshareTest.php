@@ -78,7 +78,7 @@ final class FilesUnshareTest extends FilesToolsTestCase {
         $definition = array_column($this->module->definitions(), null, 'name')['files_unshare'];
         self::assertSame(['files', 'share', ['share', 'link'], true],
             [$definition['module'], $definition['operation'], $definition['grantAnyOf'], $definition['destructiveHint']]);
-        self::assertSame(['shareId', 'path', 'with'], array_keys($definition['inputSchema']['properties']));
+        self::assertSame(['shareId', 'path', 'with', 'plan_state'], array_keys($definition['inputSchema']['properties']));
         self::assertSame([], $definition['inputSchema']['required'] ?? []);
         self::assertStringContainsString('files_list_shares', $definition['description']);
     }

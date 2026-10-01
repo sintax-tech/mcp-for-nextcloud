@@ -9,6 +9,8 @@ use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Files\FilesMessages;
+use OCA\Mcp\Tools\PlanChanged;
+use OCA\Mcp\Tools\PlanState;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\Files\Folder;
 use OCP\Files\Node;
@@ -22,7 +24,9 @@ use Psr\Log\LoggerInterface;
  * The share is named by the `shareId` files_list_shares returns, or by `path` plus `with` (`user:`, `group:`, `link`).
  *
  * {@see self::plan()} and {@see self::apply()} run the same {@see self::prepare()}, so the confirmed call checks
- * everything again. What is not the user's own answers exactly like what does not exist: a share of somebody else,
+ * everything again, and removes only the share the plan named, as the plan showed it: the plan carries its
+ * {@see PlanState}, and a confirmed call that finds the share changed, or another share for the same recipient,
+ * removes nothing and answers with the new plan ({@see PlanChanged}). What is not the user's own answers exactly like what does not exist: a share of somebody else,
  * a share of a file somebody else owns, a type this app does not manage, an unknown id and a hidden node are all
  * "not found". The only exception is the user's own Talk attachment, which gets the Talk message because the
  * person already knows it exists. The grant of the removed type is checked last, so a missing grant cannot reveal a
@@ -34,6 +38,7 @@ final class ShareRemover {
         private ShareRecipientResolver $recipients,
         private IShareManager $shareManager,
         private LoggerInterface $logger,
+        private PlanState $states,
     ) {}
 
     /**
@@ -42,33 +47,58 @@ final class ShareRemover {
      * @param Folder $userFolder the user's folder
      * @param string $uid authenticated user
      * @param array{shareId?:string, path?:string, with?:string} $arguments validated arguments
-     * @return array{shareId:string, path:string, isDir:bool, with:array{type:string, id:string, displayName:string}, message:string}
+     * @return array{shareId:string, path:string, isDir:bool, with:array{type:string, id:string, displayName:string}, message:string, plan_state:string}
+     *   `plan_state` is what the confirmed call gives back ({@see PlanState})
      * @throws ArgumentValidationException when the share is not named by an id or by a path with a recipient, or for an unknown recipient
      * @throws ToolFailure not found, a Talk attachment, or a type the administrator did not grant
      */
     public function plan(Folder $userFolder, string $uid, array $arguments): array {
-        $target = $this->prepare($userFolder, $uid, $arguments);
+        return $this->planOf($this->prepare($userFolder, $uid, $arguments));
+    }
+
+    /**
+     * @param array{share:IShare, path:string, folder:bool, recipient:ShareRecipient} $target what {@see self::prepare()} returned
+     * @param bool $changed whether the confirmed call found this share instead of the approved one: a warning says so
+     * @return array<string, mixed> the plan, in the shape {@see self::plan()} documents, plus `warnings` when changed
+     */
+    private function planOf(array $target, bool $changed = false): array {
         return [
             'shareId' => (string)$target['share']->getFullId(),
             'path' => $target['path'],
             'isDir' => $target['folder'],
             'with' => $target['recipient']->toArray(),
             'message' => CommonMessages::planNothingChanged(),
-        ];
+            PlanState::ARGUMENT => $this->stateOf($target),
+        ] + ($changed ? ['warnings' => [['message' => FilesMessages::sharePlanChanged()]]] : []);
     }
 
     /**
-     * Removes the share after checking everything again. A refusal of the core becomes a translated message; the log
+     * @param array{share:IShare} $target what {@see self::prepare()} returned
+     * @return string the opaque {@see PlanState} of the share to remove: its id and its fields as they are now
+     */
+    private function stateOf(array $target): string {
+        return $this->states->of('files_unshare', ['action' => 'remove', 'before' => ShareAccess::snapshot($target['share'])]);
+    }
+
+    /**
+     * Removes the share after checking everything again, when the call gives back the `plan_state` of the share as it
+     * is now. A refusal of the core becomes a translated message; the log
      * keeps the exception class only, never its message, which can name paths.
      *
      * @param Folder $userFolder the user's folder
      * @param string $uid authenticated user
      * @param array{shareId?:string, path?:string, with?:string} $arguments validated arguments
      * @return array{removed:string, path:string, with:array{type:string, id:string, displayName:string}} the share removed
-     * @throws ArgumentValidationException|ToolFailure as {@see self::plan()}, and when the core refuses to remove it
+     * @throws ArgumentValidationException|ToolFailure as {@see self::plan()}, and when the core refuses to remove it; an
+     *   argument error too without `plan_state`, once nothing else refuses
+     * @throws PlanChanged when the share is not the one, or not in the state, the plan showed; nothing is removed
      */
     public function apply(Folder $userFolder, string $uid, array $arguments): array {
         $target = $this->prepare($userFolder, $uid, $arguments);
+        PlanState::require($arguments);
+        if (!PlanState::matches($this->stateOf($target), $arguments)) {
+            throw new PlanChanged($this->planOf($target, true));
+        }
         try {
             $this->shareManager->deleteShare($target['share']);
         } catch (\Exception $e) {

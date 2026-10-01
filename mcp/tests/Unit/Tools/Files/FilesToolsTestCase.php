@@ -42,6 +42,8 @@ use PHPUnit\Framework\TestCase;
  * a real time, plus the tools built exactly the way the registry builds them.
  */
 abstract class FilesToolsTestCase extends TestCase {
+    /** Tools whose confirmed call gives back the plan_state of its plan. */
+    protected const STATEFUL_PLANS = ['files_share', 'files_unshare'];
     protected FakeTree $tree;
     protected InMemoryCheckoutTokenStore $store;
     protected IAppManager $apps;
@@ -195,11 +197,12 @@ abstract class FilesToolsTestCase extends TestCase {
         $recipients = new \OCA\Mcp\Tools\Files\Sharing\ShareRecipientResolver($accounts, $groups);
         $formatter = new \OCA\Mcp\Tools\Files\Sharing\ShareFormatter($recipients, $urls);
         $this->shareLogger = $this->createMock(\Psr\Log\LoggerInterface::class);
+        $states = new \OCA\Mcp\Tools\PlanState($this->config->mock($this));
         return [
             'shareLister' => new \OCA\Mcp\Tools\Files\Sharing\ShareLister($access, $formatter),
             'shareWriter' => new \OCA\Mcp\Tools\Files\Sharing\ShareWriter($access, $recipients, $formatter, $manager, $accounts, $groups,
-                new \OCA\Mcp\Service\UserTimezone($this->config->mock($this)), $this->time, $this->shareLogger, $this->linkPassword()),
-            'shareRemover' => new \OCA\Mcp\Tools\Files\Sharing\ShareRemover($access, $recipients, $manager, $this->shareLogger),
+                new \OCA\Mcp\Service\UserTimezone($this->config->mock($this)), $this->time, $this->shareLogger, $this->linkPassword(), $states),
+            'shareRemover' => new \OCA\Mcp\Tools\Files\Sharing\ShareRemover($access, $recipients, $manager, $this->shareLogger, $states),
         ];
     }
 
@@ -240,9 +243,15 @@ abstract class FilesToolsTestCase extends TestCase {
      *
      * The registry is what refuses an unconfirmed write, and {@see WriteGateContractTest} covers that refusal
      * for every module; here the call goes straight to the module so a test can state what the write does
-     * without repeating the confirmation on every line.
+     * without repeating the confirmation on every line. The tools of {@see self::STATEFUL_PLANS} get the plan_state of
+     * their plan, read just before, unless the test gives one.
      */
     protected function tool(string $name, array $arguments = []): array {
+        if (in_array($name, self::STATEFUL_PLANS, true) && !array_key_exists(\OCA\Mcp\Tools\PlanState::ARGUMENT, $arguments)) {
+            // These confirm only the state their plan showed: like the model, the test reads the plan first and gives
+            // its plan_state back. A test about a changed state or a missing one passes plan_state itself.
+            $arguments[\OCA\Mcp\Tools\PlanState::ARGUMENT] = $this->plan($name, $arguments)[\OCA\Mcp\Tools\PlanState::ARGUMENT];
+        }
         return $this->module->call($name, $this->validated($name, $arguments), 'alice');
     }
 

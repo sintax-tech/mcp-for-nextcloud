@@ -38,6 +38,7 @@
 			contacts: t('mcp', 'Contacts'),
 			tasks: t('mcp', 'Tasks'),
 			talk: t('mcp', 'Talk'),
+			people: t('mcp', 'People'),
 		}
 	}
 

@@ -26,6 +26,8 @@ class GrantPolicy {
         'calendar' => ['read', 'create', 'edit', 'move', 'delete', 'transfer'],
         // 'create' is what talk_create_group asks for: opening a conversation invites people, so it is denied by
         // default like every other operation that is not a read.
+        // Account search; read only, so the model can find who to invite or message.
+        'people' => ['read'],
         'talk' => ['read', 'reply', 'attach', 'quote', 'create'],
     ];
 

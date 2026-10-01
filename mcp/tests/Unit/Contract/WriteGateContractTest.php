@@ -158,6 +158,11 @@ final class WriteGateContractTest extends TestCase {
 
     public function testEveryModuleDescribesItsOwnPlan(): void {
         foreach (Application::MODULES as $moduleClass) {
+            // A module whose tools only read (people search) has no plan to describe.
+            $writes = array_filter($this->build($moduleClass)->definitions(), static fn (array $definition) => WriteGate::isWrite($definition));
+            if ($writes === []) {
+                continue;
+            }
             $this->assertTrue(is_subclass_of($moduleClass, PreviewsWrites::class), "$moduleClass must implement PreviewsWrites");
         }
     }

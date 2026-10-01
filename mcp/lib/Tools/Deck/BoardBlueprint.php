@@ -107,12 +107,14 @@ final class BoardBlueprint {
 	}
 
 	/**
+	 * Validates a board or list title, which Deck limits to {@see self::MAX_TITLE_LENGTH} characters.
+	 *
 	 * @param string $raw Title as sent.
 	 * @param string $field Field named in a refusal.
 	 * @return string The title, trimmed.
 	 * @throws ArgumentValidationException When it is blank once trimmed or longer than Deck accepts.
 	 */
-	private static function title(string $raw, string $field): string {
+	public static function title(string $raw, string $field): string {
 		$title = trim($raw);
 		if ($title === '' || mb_strlen($title) > self::MAX_TITLE_LENGTH) {
 			throw new ArgumentValidationException('Invalid argument: ' . $field, $field,

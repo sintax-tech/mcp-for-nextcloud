@@ -89,7 +89,7 @@ final class ShareWriter {
             'before' => $change['before'],
             'after' => $change['after'],
             'expiresSource' => $change['expiresSource'],
-            'notifies' => $change['action'] === self::CREATE,
+            'notifies' => $change['action'] === self::CREATE && $change['recipient']->kind !== ShareRecipient::LINK,
             'timezone' => $change['timezone']->getName(),
             'warnings' => array_map(static fn (string $message): array => ['message' => $message], $change['warnings']),
             'message' => $change['action'] === self::NONE ? FilesMessages::planShareNothing() : CommonMessages::planNothingChanged(),

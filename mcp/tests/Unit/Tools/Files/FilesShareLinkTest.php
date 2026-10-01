@@ -73,6 +73,7 @@ final class FilesShareLinkTest extends FilesToolsTestCase {
         self::assertSame('create', $plan['action']);
         self::assertSame('link', $plan['with']['type']);
         self::assertSame(['before' => null, 'after' => 'none', 'required' => false], $plan['password']);
+        self::assertFalse($plan['notifies'], 'um link não tem destinatário a notificar');
         self::assertSame([], $this->shares->writes);
     }
 

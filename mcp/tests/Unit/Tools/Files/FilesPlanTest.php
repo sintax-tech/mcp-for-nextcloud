@@ -207,6 +207,19 @@ final class FilesPlanTest extends FilesToolsTestCase {
         $this->assertSame([], $this->store->rows);
     }
 
+    /** The plan, the tool description and the guide say any file type goes through the checkout and text has a shorter way. */
+    public function testCheckoutWordingCoversAnyFileTypeAndPointsTextToEdit(): void {
+        $this->tree->addFile('/alice/files/Documentos/contrato.docx', 'PK', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        $plan = $this->plan('files_checkout', ['path' => '/Documentos/contrato.docx']);
+        $guide = implode("\n", $this->module->guideNotes());
+        foreach ([$plan['message'], \OCA\Mcp\Tools\Files\FilesMessages::checkoutTool(), $guide] as $text) {
+            $this->assertStringContainsString('any file', $text);
+            $this->assertStringContainsString('files_edit', $text);
+            $this->assertStringContainsString('files_replace', $text);
+        }
+        $this->assertStringContainsString('scanned PDF', $guide);
+    }
+
     /** The checkout plan still refuses the backup folder, binary or not. */
     public function testCheckoutPlanRefusesTheBackupFolder(): void {
         $this->tree->addFile('/alice/files/MCP backups/contrato.docx.20260921-141320.bak', 'bin', 'application/octet-stream');

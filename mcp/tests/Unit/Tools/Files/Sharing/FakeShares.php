@@ -69,6 +69,14 @@ final class FakeShares {
         return $manager;
     }
 
+    /** @return \OCA\Mcp\Service\VisibilityGuard a guard that hides nothing, for tests where visibility is not the point */
+    public function guardShowingAll(): \OCA\Mcp\Service\VisibilityGuard {
+        $guard = $this->mock(\OCA\Mcp\Service\VisibilityGuard::class);
+        $guard->method('isVisible')->willReturn(true);
+        $guard->method('filter')->willReturnCallback(static fn (iterable $nodes): array => is_array($nodes) ? array_values($nodes) : iterator_to_array($nodes, false));
+        return $guard;
+    }
+
     private function mock(string $interface): object {
         return (new \ReflectionMethod($this->test, 'createMock'))->invoke($this->test, $interface);
     }

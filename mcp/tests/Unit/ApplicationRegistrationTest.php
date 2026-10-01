@@ -142,6 +142,12 @@ final class ApplicationRegistrationTest extends TestCase {
             \OCA\Mcp\Tools\Files\Sharing\ShareRecipientResolver::class] as $service) {
             $this->assertInstanceOf($service, $container->get($service));
         }
+        // Invariant 1: a hidden node is never listed nor shared, so the guard cannot be left out by the container.
+        $guard = (new \ReflectionProperty(\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class, 'visibilityGuard'))
+            ->getValue($container->get(\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class));
+        $this->assertInstanceOf(\OCA\Mcp\Service\VisibilityGuard::class, $guard);
+        $this->assertFalse((new \ReflectionMethod(\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class, '__construct'))
+            ->getParameters()[2]->allowsNull(), 'o guard de visibilidade é obrigatório');
 
         $parameters = array_column(array_map(
             static fn (\ReflectionParameter $p): array => ['name' => $p->getName(), 'type' => (string)$p->getType()],

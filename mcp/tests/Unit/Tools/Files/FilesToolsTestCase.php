@@ -147,7 +147,7 @@ abstract class FilesToolsTestCase extends TestCase {
         $this->shares = new \OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeShares($this);
         $policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         return new \OCA\Mcp\Tools\Files\Sharing\ShareLister(
-            new \OCA\Mcp\Tools\Files\Sharing\ShareAccess($this->shares->manager(), $policy, $this->visibilityGuard),
+            new \OCA\Mcp\Tools\Files\Sharing\ShareAccess($this->shares->manager(), $policy, $this->visibilityGuard ?? $this->shares->guardShowingAll()),
             new \OCA\Mcp\Tools\Files\Sharing\ShareFormatter(
                 new \OCA\Mcp\Tools\Files\Sharing\ShareRecipientResolver($this->users, $this->createMock(\OCP\IGroupManager::class)),
                 $urls,

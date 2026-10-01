@@ -43,7 +43,8 @@ final class ShareAccess {
     public function __construct(
         private IShareManager $shareManager,
         private GrantPolicy $policy,
-        private ?VisibilityGuard $visibilityGuard = null,
+        // Required on purpose (invariant 1): without it a hidden node would be listed and shareable.
+        private VisibilityGuard $visibilityGuard,
     ) {}
 
     /**
@@ -149,7 +150,7 @@ final class ShareAccess {
         } catch (NotFoundException) {
             return null;
         }
-        if ($node === null || ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($node))) {
+        if ($node === null || !$this->visibilityGuard->isVisible($node)) {
             return null;
         }
         return $node;

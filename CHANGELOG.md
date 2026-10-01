@@ -2,46 +2,78 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
-## Unreleased (0.8.0)
+## 0.8.0
 
 ### Added
-- OAuth: ChatGPT (`chatgpt.com`) is allowed by default next to `claude.ai`; an explicit `oauth_client_hosts` value is kept.
-- OAuth: optional built-in native client `nextcloud-mcp-native` for local programs such as Gemini CLI (loopback redirects, PKCE, off by default; key `oauth_native_client_enabled`). The consent screen labels it "Local program (native client)".
-- Admin: "OAuth clients" section to edit the allowed `client_id` hosts (default `claude.ai`, `chatgpt.com`) and to enable the native client for local programs, showing its `client_id` to copy and the accepted loopback redirects.
-- Docs: per-client connection instructions (Claude, ChatGPT, Gemini CLI, app password) in both READMEs, plus the admin "OAuth clients" section and what OAuth enforces. ChatGPT and Gemini CLI are compatible by code and are not yet proven against a real client: the end-to-end test happens after 0.8.0 is deployed.
-- Contacts: list personal/shared address books, search and read contacts, create/edit through the native CardDAV pipeline, preserving unknown vCard fields, parameters, groups and version. The system user directory is excluded; tools and admin columns follow Contacts app availability.
-- Contacts: permanent deletion through native CardDAV, with an explicit no-trash warning and the full vCard in the plan. After confirmation, a verified `.vcf` backup is saved in the acting user's `/MCP backups/Contacts/<address-book>/` before DELETE; backup failure prevents deletion and the result gives the backup path for import through Contacts.
-- Tasks: list VTODO calendars, list/read/create/edit/complete/delete simple tasks through core CalDAV, independent of the optional Tasks app. Undated tasks are included; private/confidential shared tasks are hidden. Deletion uses calendar trash and refuses zero retention. Recurring tasks can be read; writes to series or tasks with participants are refused.
-- Contacts and Tasks: separate admin read/create/edit/delete grants with writes off by default; actual before/after plans, central `confirm: true`, shared-owner acknowledgement, optional client ETag and mandatory current `If-Match` for edit/delete, pagination, friendly localized titles/messages and English tool guides.
-- OCR: detects the Workflow OCR app (`workflow_ocr`), with no terminal step and nothing that blocks the app. It writes the recognised text into the PDF as a new version, so `files_read` already reads it. A PDF or image with no text layer now comes back as a normal answer with `text_layer: false` and a notice that depends on whether the app is active (ask the admin to install it or view the page as an image; or wait, since it processes in the background by the admin's rule). `files_version_read` does the same.
-- Admin: an "OCR" block shows whether Workflow OCR is active and, when it is not, a link to the App Store and the note that it needs `ocrmypdf` on the server.
-- Tool guide: the Files notes explain `text_layer` and OCR.
-- MCP Resources: capability advertised as `resources: {}` in both legacy `initialize` (2025-06-18) and modern `server/discover` (2026-07-28) eras.
-- MCP Resources: `resources/list` exposes `mcp://guide`, rendering the tool guide in Markdown dynamically filtered by the authenticated user's active grants and enabled apps.
-- MCP Resources: `resources/templates/list` exposes URI templates `nc://files/{path}` (when `files.read` is granted) and `nc://notes/{id}` (when `notes.read` is granted and the Notes app is enabled).
-- MCP Resources: `resources/read` fetches file contents (with text extraction and truncation up to 100,000 characters; small binary files returned as base64 blobs up to 512 KiB) and note contents (up to 1 MiB).
-- MCP Resources: non-existent, ungranted, or hidden resources return standard JSON-RPC errors (`-32602` in modern era, `-32002` in legacy era) and never return empty content.
-- Files: content search with excerpts via `files_search`. When `fulltextsearch` and `files_fulltextsearch` are enabled and indexed, searches file contents (`search_mode: content`) and returns excerpts with node resolution. Gracefully falls back to file name search (`search_mode: name_only`) with an internationalized notice when fulltextsearch is not active or encounters an error. An optional `mode` parameter (`auto` | `name`) allows callers to force name-only search.
-- Notes: content search via `notes_search`. Searches note title and Markdown content (up to 1 MiB), returning contextual snippets around query matches, optionally filtered by category.
-- Files: hide sensitive files and folders by Nextcloud system tag. The administrator can select system tags in the admin settings; any file or folder bearing those tags (or inside a tagged folder) is completely hidden from MCP tools, behaving as if it does not exist (read, search, list, tree, image view/search, notes, talk attachments, and checkout token usage all return "not found", and write destinations report forbidden without leaking existence).
-- Files: automatic system tag propagation to backups created under `/MCP backups`. VisibilityGuard also mirrors visibility if the original file still exists.
-- Admin UI: dedicated "Hidden files & tags" section in the MCP admin settings with badge indicators for tag types (invisible, restricted, collaborative) and warning if collaborative tags are selected.
+
+#### Files
+- Content search with excerpts via `files_search`. When `fulltextsearch` and `files_fulltextsearch` are enabled and indexed, searches file contents (`search_mode: content`) and returns excerpts with node resolution. Gracefully falls back to file name search (`search_mode: name_only`) with an internationalized notice when fulltextsearch is not active or encounters an error. An optional `mode` parameter (`auto` | `name`) allows callers to force name-only search.
+
+#### Notes
+- Content search via `notes_search`. Searches note title and Markdown content (up to 1 MiB), returning contextual snippets around query matches, optionally filtered by category.
+
+#### Contacts
+- List personal/shared address books, search and read contacts, create/edit through the native CardDAV pipeline, preserving unknown vCard fields, parameters, groups and version. The system user directory is excluded; tools and admin columns follow Contacts app availability.
+- Permanent deletion through native CardDAV, with an explicit no-trash warning and the full vCard in the plan. After confirmation, a verified `.vcf` backup is saved in the acting user's `/MCP backups/Contacts/<address-book>/` before DELETE; backup failure prevents deletion and the result gives the backup path for import through Contacts.
+
+#### Tasks
+- List VTODO calendars, list/read/create/edit/complete/delete simple tasks through core CalDAV, independent of the optional Tasks app. Undated tasks are included; private/confidential shared tasks are hidden. Deletion uses calendar trash and refuses zero retention. Recurring tasks can be read; writes to series or tasks with participants are refused.
+
+#### Contacts and Tasks
+- Separate admin read/create/edit/delete grants with writes off by default; actual before/after plans, central `confirm: true`, shared-owner acknowledgement, optional client ETag and mandatory current `If-Match` for edit/delete, pagination, friendly localized titles/messages and English tool guides.
+
+#### OCR
+- Detects the Workflow OCR app (`workflow_ocr`), with no terminal step and nothing that blocks the app. It writes the recognised text into the PDF as a new version, so `files_read` already reads it. A PDF or image with no text layer now comes back as a normal answer with `text_layer: false` and a notice that depends on whether the app is active (ask the admin to install it or view the page as an image; or wait, since it processes in the background by the admin's rule). `files_version_read` does the same.
+
+#### MCP Resources
+- Capability advertised as `resources: {}` in both legacy `initialize` (2025-06-18) and modern `server/discover` (2026-07-28) eras.
+- `resources/list` exposes `mcp://guide`, rendering the tool guide in Markdown dynamically filtered by the authenticated user's active grants and enabled apps.
+- `resources/templates/list` exposes URI templates `nc://files/{path}` (when `files.read` is granted) and `nc://notes/{id}` (when `notes.read` is granted and the Notes app is enabled).
+- `resources/read` fetches file contents (with text extraction and truncation up to 100,000 characters; small binary files returned as base64 blobs up to 512 KiB) and note contents (up to 1 MiB).
+- Non-existent, ungranted, or hidden resources return standard JSON-RPC errors (`-32602` in modern era, `-32002` in legacy era) and never return empty content.
+
+#### Hidden files and tags
+- Hide sensitive files and folders by Nextcloud system tag. The administrator can select system tags in the admin settings; any file or folder bearing those tags (or inside a tagged folder) is completely hidden from MCP tools, behaving as if it does not exist (read, search, list, tree, image view/search, notes, talk attachments, and checkout token usage all return "not found", and write destinations report forbidden without leaking existence).
+- Automatic system tag propagation to backups created under `/MCP backups`. VisibilityGuard also mirrors visibility if the original file still exists.
 - Zero cost when no hidden tags are configured (default behavior unchanged).
-- Settings: own "MCP for Nextcloud" entry with the app icon (`img/app.svg`, `img/app-dark.svg`) in both the administration and the personal settings menus.
-- Admin: "Status" block with the endpoint to copy, the service switch, the app version, eligible and connected users and active OAuth connections.
-- Admin: the `files_checkout` upload limit is edited in whole MiB in the "Status" block (`GET`/`PUT /api/checkout-limit`), next to the effective limit and PHP's `post_max_size` ceiling; before, it only changed with `occ`.
-- Admin: "Active connections" block lists every OAuth connection (user, client host or local program, signed in, expires) with search and paging, and revokes one connection or every connection of a user at once (`GET /api/connections`, `DELETE /api/connections/{id}`, `DELETE /api/connections/users/{uid}`). Token hashes are never returned.
+
+#### OAuth and clients
+- ChatGPT (`chatgpt.com`) is allowed by default next to `claude.ai`; an explicit `oauth_client_hosts` value is kept.
+- Optional built-in native client `nextcloud-mcp-native` for local programs such as Gemini CLI (loopback redirects, PKCE, off by default; key `oauth_native_client_enabled`). The consent screen labels it "Local program (native client)".
+
+#### Admin and personal settings
+- "OAuth clients" section to edit the allowed `client_id` hosts (default `claude.ai`, `chatgpt.com`) and to enable the native client for local programs, showing its `client_id` to copy and the accepted loopback redirects.
+- Own "MCP for Nextcloud" entry with the app icon (`img/app.svg`, `img/app-dark.svg`) in both the administration and the personal settings menus.
+- "Status" block with the endpoint to copy, the service switch, the app version, eligible and connected users and active OAuth connections.
+- The `files_checkout` upload limit is edited in whole MiB in the "Status" block (`GET`/`PUT /api/checkout-limit`), next to the effective limit and PHP's `post_max_size` ceiling; before, it only changed with `occ`.
+- "Active connections" block lists every OAuth connection (user, client host or local program, signed in, expires) with search and paging, and revokes one connection or every connection of a user at once (`GET /api/connections`, `DELETE /api/connections/{id}`, `DELETE /api/connections/users/{uid}`). Token hashes are never returned.
 - Personal: the user sees their own OAuth clients and revokes any of them (`GET /api/my/connections`, `DELETE /api/my/connections/{id}`, restricted to the signed-in user).
 - Admin matrix: filters "only users who can connect" and "only connected users" (server-side, exact total), user counter, pagers on top and bottom, a "connected" badge, optional compact rows, column tooltips and a retry when loading fails.
+- Dedicated "Hidden files & tags" section in the MCP admin settings with badge indicators for tag types (invisible, restricted, collaborative) and warning if collaborative tags are selected.
+- "OCR" block shows whether Workflow OCR is active and, when it is not, a link to the App Store and the note that it needs `ocrmypdf` on the server.
+
+#### Docs and tool guide
+- The Files notes in the tool guide explain `text_layer` and OCR.
+- Per-client connection instructions (Claude, ChatGPT, Gemini CLI, app password) in both READMEs, plus the admin "OAuth clients" section and what OAuth enforces. ChatGPT and Gemini CLI are compatible by code and are not yet proven against a real client: the end-to-end test happens after 0.8.0 is deployed.
 
 ### Changed
-- Settings: the admin page left *Additional settings* and the personal page left *Personal info*; both now live in the app's own section. The admin page is split into blocks (status, OAuth clients, hidden files & tags, OCR, permissions, active connections), each a core settings section.
+
+#### Files
+- `files_checkout` accepts any file type (DOCX, XLSX, PDF, images) up to the upload limit instead of refusing non-text files; `files_edit` and `files_replace` stay text-only.
+- `files_read` and `resources/read` share one text reader, so the 20 MiB limit is checked before any extraction on both paths.
+
+#### OCR
+- `files_read` of an image no longer fails as unsupported; it answers with `text_layer: false` and the notice.
+
+#### OAuth and clients
+- Client metadata documents are accepted when `token_endpoint_auth_methods_supported` is a non-empty list of strings containing `none` (the singular `token_endpoint_auth_method` is only used when the list is missing), as ChatGPT publishes `private_key_jwt` as its singular value.
+
+#### Admin and personal settings
+- The admin page left *Additional settings* and the personal page left *Personal info*; both now live in the app's own section. The admin page is split into blocks (status, OAuth clients, hidden files & tags, OCR, permissions, active connections), each a core settings section.
 - Admin matrix: sticky header rows, modules in alternating bands, and one "All" menu per module (allow or deny one operation, or every operation of the module, for the users on the page) instead of the ✓/✕ buttons under each column.
-- OAuth: client metadata documents are accepted when `token_endpoint_auth_methods_supported` is a non-empty list of strings containing `none` (the singular `token_endpoint_auth_method` is only used when the list is missing), as ChatGPT publishes `private_key_jwt` as its singular value.
-- Files: `files_read` of an image no longer fails as unsupported; it answers with `text_layer: false` and the notice.
-- Files: `files_read` and `resources/read` share one text reader, so the 20 MiB limit is checked before any extraction on both paths.
-- Tool guide: the obsolete `approval_id` gate is gone from the guide's list of extra gates.
-- Files: `files_checkout` accepts any file type (DOCX, XLSX, PDF, images) up to the upload limit instead of refusing non-text files; `files_edit` and `files_replace` stay text-only.
+
+#### Tool guide
+- The obsolete `approval_id` gate is gone from the guide's list of extra gates.
 
 ### Security
 - OAuth: turning the native client off now also invalidates its already-issued access tokens (checked on every request) and deletes its grants, codes and refresh history immediately.

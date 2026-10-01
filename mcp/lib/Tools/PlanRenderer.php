@@ -148,6 +148,8 @@ final class PlanRenderer {
             'count' => Translator::t('Count'),
             'name' => Translator::t('Name'),
             'description' => Translator::t('Description'),
+            'enabled' => Translator::t('Enabled'),
+            'tags' => Translator::t('Tags'),
             default => self::text(ucfirst(strtolower(preg_replace('/([a-z])([A-Z])/', '$1 $2', str_replace(['_', '-'], ' ', $key)) ?? $key))),
         };
     }

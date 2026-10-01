@@ -1,6 +1,8 @@
 OC.L10N.register(
     "mcp",
     {
+    "Enabled" : "Activado",
+    "Tags" : "Etiquetas",
     "Warnings" : "Advertencias",
     "Calendars shared with participants" : "Calendarios compartidos con los participantes",
     "Suggestion: use %s" : "Sugerencia: usar %s",

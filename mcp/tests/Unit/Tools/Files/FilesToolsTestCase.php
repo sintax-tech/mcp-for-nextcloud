@@ -67,6 +67,10 @@ abstract class FilesToolsTestCase extends TestCase {
     protected array $groups = ['finance' => ['name' => 'Financeiro', 'members' => ['alice', 'bruno']], 'board' => ['name' => 'Diretoria', 'members' => ['carla']]];
     /** Grants of the sharing tools: read only until a test allows share or link. */
     protected \OCA\Mcp\Service\GrantPolicy $sharePolicy;
+    /** @var list<string> passwords the password_policy generator hands out for links, in order; empty means no generator */
+    protected array $linkPasswords = [];
+    /** Whether the password policy refuses every password, as one no generated password can meet. */
+    protected bool $refuseAllPasswords = false;
     /** Logger of the share writer, to check that only the exception class is logged. */
     protected \Psr\Log\LoggerInterface $shareLogger;
     /** Shares alice created, behind the IShareManager double of files_list_shares. */
@@ -192,9 +196,26 @@ abstract class FilesToolsTestCase extends TestCase {
         return [
             'shareLister' => new \OCA\Mcp\Tools\Files\Sharing\ShareLister($access, $formatter),
             'shareWriter' => new \OCA\Mcp\Tools\Files\Sharing\ShareWriter($access, $recipients, $formatter, $manager, $accounts, $groups,
-                new \OCA\Mcp\Service\UserTimezone($this->config->mock($this)), $this->time, $this->shareLogger),
+                new \OCA\Mcp\Service\UserTimezone($this->config->mock($this)), $this->time, $this->shareLogger, $this->linkPassword()),
             'shareRemover' => new \OCA\Mcp\Tools\Files\Sharing\ShareRemover($access, $recipients, $manager, $this->shareLogger),
         ];
+    }
+
+    /**
+     * The link password generator over {@see self::$linkPasswords} and {@see self::$refuseAllPasswords}, read at call time,
+     * with a reproducible ISecureRandom as the fallback.
+     */
+    private function linkPassword(): \OCA\Mcp\Tools\Files\Sharing\LinkPassword {
+        $events = $this->createMock(\OCP\EventDispatcher\IEventDispatcher::class);
+        $events->method('dispatchTyped')->willReturnCallback(function (object $event): void {
+            if ($event instanceof \OCP\Security\Events\GenerateSecurePasswordEvent && $this->linkPasswords !== []) {
+                $event->setPassword(array_shift($this->linkPasswords));
+            }
+            if ($event instanceof \OCP\Security\Events\ValidatePasswordPolicyEvent && $this->refuseAllPasswords) {
+                throw new \OCP\HintException('Password is too weak', 'Password is too weak');
+            }
+        });
+        return new \OCA\Mcp\Tools\Files\Sharing\LinkPassword($events, new \OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeSecureRandom());
     }
 
     /** The post-condition report, wired against the same version and share doubles the module uses. */

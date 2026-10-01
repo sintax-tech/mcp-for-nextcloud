@@ -726,7 +726,6 @@
     "This kind of share is not managed here; a Talk attachment is removed in Talk." : "Este tipo de compartilhamento não é gerenciado aqui; um anexo do Talk se remove no Talk.",
     "List shares" : "Listar compartilhamentos",
     "You already have this item; choose another person to share it with." : "Este item já é seu; escolha outra pessoa para compartilhar.",
-    "Public links are not available yet; they arrive with the “link” permission in a coming update." : "Links públicos ainda não estão disponíveis; eles chegam com a permissão “link” numa próxima atualização.",
     "Sharing is turned off on this server." : "O compartilhamento está desligado neste servidor.",
     "Your administrator turned sharing off for your account." : "O administrador desligou o compartilhamento para a sua conta.",
     "Sharing with groups is turned off on this server." : "O compartilhamento com grupos está desligado neste servidor.",
@@ -771,6 +770,20 @@
     "Nothing is deleted: the folder and everything in it stay exactly as they are." : "Nada é apagado: a pasta e tudo o que há nela continuam exatamente como estão.",
     "Nothing is deleted: the file stays exactly as it is." : "Nada é apagado: o arquivo continua exatamente como está.",
     "give either shareId, or path together with with" : "informe shareId, ou path junto com with",
-    "Stop sharing file or folder" : "Parar de compartilhar arquivo ou pasta"
+    "Stop sharing file or folder" : "Parar de compartilhar arquivo ou pasta",
+    "The server could not generate a password that meets the password policy, so no link was created. Ask your administrator to check the password policy." : "O servidor não conseguiu gerar uma senha que atenda à política de senhas, por isso nenhum link foi criado. Peça ao administrador para conferir a política de senhas.",
+    "Your administrator turned public links off for your account." : "O administrador desativou os links públicos para a sua conta.",
+    "Anyone who has the link can open this, without signing in." : "Qualquer pessoa que tiver o link poderá abrir isto, sem entrar no Nextcloud.",
+    "Save this password now and send it separately from the link: it will not be shown again. To change it later, share the link again with password: true." : "Guarde esta senha agora e envie-a separada do link: ela não será mostrada de novo. Para trocá-la depois, compartilhe o link de novo com password: true.",
+    "only view for a public link" : "um link público só aceita view",
+    "only for a public link" : "só para link público",
+    "Create a public link to %s." : "Criar um link público para %s.",
+    "Change the public link of %s." : "Alterar o link público de %s.",
+    "%s already has a public link exactly like this: nothing to change." : "%s já tem um link público exatamente assim: nada a alterar.",
+    "Password: the current one will be replaced by a new one, shown only once, in the result." : "Senha: a atual será trocada por uma nova, mostrada uma única vez, no resultado.",
+    "Password: required by the administrator; a new one will be generated and shown only once, in the result." : "Senha: exigida pelo administrador; uma nova será gerada e mostrada uma única vez, no resultado.",
+    "Password: a new one will be generated and shown only once, in the result." : "Senha: uma nova será gerada e mostrada uma única vez, no resultado.",
+    "Password: unchanged; it is never shown." : "Senha: sem alteração; ela nunca é mostrada.",
+    "Password: none." : "Senha: nenhuma."
 },"pluralForm" :"nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

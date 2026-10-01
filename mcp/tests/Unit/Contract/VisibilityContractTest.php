@@ -69,6 +69,7 @@ final class VisibilityContractTest extends TestCase {
         'files_image_search' => 'image_search',
         'files_list_shares' => 'list_shares',
         'files_share' => 'share',
+        'files_unshare' => 'unshare',
         'notes_list' => 'notes_list',
         'notes_search' => 'notes_search',
         'notes_read' => 'notes_read',
@@ -88,6 +89,8 @@ final class VisibilityContractTest extends TestCase {
     private VisibilityGuard $guard;
     /** @var list<\OCP\Share\IShare> what getSharesBy() answers for a listing of every share (no node) */
     private array $listedShares = [];
+    /** @var array<string, \OCP\Share\IShare> what getShareById() answers, by full share id */
+    private array $sharesById = [];
 
     protected function setUp(): void {
         parent::setUp();
@@ -168,6 +171,8 @@ final class VisibilityContractTest extends TestCase {
                 $shares = $this->createMock(\OCP\Share\IManager::class);
                 $shares->method('getSharesBy')->willReturnCallback(fn (string $uid, int $type, ?\OCP\Files\Node $node = null): array
                     => $node === null && $type === \OCP\Share\IShare::TYPE_USER ? $this->listedShares : []);
+                $shares->method('getShareById')->willReturnCallback(fn (string $id): \OCP\Share\IShare
+                    => $this->sharesById[$id] ?? throw new \OCP\Share\Exceptions\ShareNotFound());
                 $args[] = $shares;
                 continue;
             }
@@ -181,6 +186,26 @@ final class VisibilityContractTest extends TestCase {
             $args[] = str_starts_with($name, 'OCA\\Mcp\\') && $reflection->isInstantiable() ? $this->build($name) : $this->createMock($name);
         }
         return new $class(...$args);
+    }
+
+    /**
+     * A user share of alice's own file, as the core would hand it back by id.
+     *
+     * @param string $path user-relative path of the node
+     * @param int $nodeId id of the node
+     * @param string $id provider id of the share
+     * @return \OCP\Share\IShare share created and owned by alice, for bruno
+     */
+    private function ownShareOf(string $path, int $nodeId, string $id): \OCP\Share\IShare {
+        $share = $this->createMock(\OCP\Share\IShare::class);
+        $share->method('getShareType')->willReturn(\OCP\Share\IShare::TYPE_USER);
+        $share->method('getSharedWith')->willReturn('bruno');
+        $share->method('getSharedBy')->willReturn('alice');
+        $share->method('getShareOwner')->willReturn('alice');
+        $share->method('getNodeId')->willReturn($nodeId);
+        $share->method('getNode')->willReturn($this->tree->node('/alice/files' . $path));
+        $share->method('getFullId')->willReturn('ocinternal:' . $id);
+        return $share;
     }
 
     private function registry(array $modules): ToolRegistry {
@@ -478,6 +503,24 @@ final class VisibilityContractTest extends TestCase {
                 $assertNoLeak($res['content'][0]['text']);
             }
         }
+
+        // 18d. files_unshare: the share of a hidden node is not found by id, in the plan or in the confirmed call, and
+        //      the share of a node that is visible still is (so the refusal is the guard's, not a broken fixture)
+        $nodes = ['/secret_direct.txt' => $directFileId, '/SecretFolder/secret_ancestral.txt' => $ancestralFileId];
+        foreach ($nodes as $p => $nodeId) {
+            $this->sharesById['ocinternal:s' . $nodeId] = $this->ownShareOf($p, $nodeId, 's' . $nodeId);
+            foreach ([[], ['confirm' => true]] as $confirm) {
+                $res = $registry->call('files_unshare', ['shareId' => 'ocinternal:s' . $nodeId] + $confirm, 'alice');
+                $this->assertTrue($res['isError'] ?? false);
+                $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+                $assertNoLeak($res['content'][0]['text']);
+            }
+        }
+        $visibleId = $this->tree->nodes['/alice/files/shared_visible.txt']['id'];
+        $this->sharesById['ocinternal:visible'] = $this->ownShareOf('/shared_visible.txt', $visibleId, 'visible');
+        $res = $registry->call('files_unshare', ['shareId' => 'ocinternal:visible'], 'alice');
+        $this->assertArrayNotHasKey('isError', $res);
+        $this->assertSame('/shared_visible.txt', $res['structuredContent']['path']);
 
         // 19. notes_list
         $res = $registry->call('notes_list', [], 'alice');

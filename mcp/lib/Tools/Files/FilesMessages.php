@@ -724,6 +724,36 @@ final class FilesMessages {
         return 'Note shown to the recipient with the share; an empty string removes the current note.';
     }
 
+    /** @return string description of files_unshare */
+    public static function unshareTool(): string {
+        return 'Stop sharing a file or folder of yours: removes one share you created, so that person, group or public link '
+            . 'loses access. Name the share with the shareId from files_list_shares, or with path plus with (user:<uid>, '
+            . 'group:<gid> or link). Nothing is deleted: the file or folder and its content stay as they are. Only your own '
+            . 'shares of your own files can be removed; a Talk attachment is removed in Talk. Without confirm: true it '
+            . 'returns the plan and changes nothing. Needs the "share" permission; removing a public link needs "link".';
+    }
+
+    /** @return string description of the shareId parameter of files_unshare */
+    public static function unshareIdParam(): string {
+        return 'The shareId of the share to remove, exactly as files_list_shares returns it (for example ocinternal:123). '
+            . 'Use it alone, or use path with with instead.';
+    }
+
+    /** @return string description of the path parameter of files_unshare */
+    public static function unsharePathParam(): string {
+        return 'File or folder of yours, e.g. /Documents/report.pdf. Use it together with with.';
+    }
+
+    /** @return string description of the with parameter of files_unshare */
+    public static function unshareWithParam(): string {
+        return 'Whose share to remove from path: user:<uid>, group:<gid> or link. Use it together with path.';
+    }
+
+    /** @return string the core refused to remove a share */
+    public static function unshareRefused(): string {
+        return Translator::t('Nextcloud could not remove this share.');
+    }
+
     /** @return string advice for the model when the share already is what was asked */
     public static function planShareNothing(): string {
         return Translator::t('Nothing was changed. The share already is exactly like this, so a confirmed call changes nothing either.');

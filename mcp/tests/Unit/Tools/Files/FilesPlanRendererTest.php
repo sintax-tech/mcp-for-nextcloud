@@ -163,7 +163,7 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
     }
 
     public function testMissingKeysGiveNull(): void {
-        foreach (['files_edit', 'files_replace', 'files_checkout', 'files_copy', 'files_mkdir', 'files_move', 'files_move_batch', 'files_undo_batch', 'files_version_restore', 'files_list', 'files_share'] as $tool) {
+        foreach (['files_edit', 'files_replace', 'files_checkout', 'files_copy', 'files_mkdir', 'files_move', 'files_move_batch', 'files_undo_batch', 'files_version_restore', 'files_list', 'files_share', 'files_unshare'] as $tool) {
             $this->assertNull(FilesPlanRenderer::render($tool, []), $tool);
             $this->assertNull($this->module->renderPlan($tool, ['unknown' => 1]), $tool);
         }
@@ -190,6 +190,9 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
         $this->shares->add(['node' => $this->tree->nodes['/alice/files/Documentos/ata.md']['id'], 'with' => 'bruno', 'permissions' => 19,
             'note' => 'antes', 'nodeObject' => $this->tree->node('/alice/files/Documentos/ata.md')]);
         $plans['files_share'] = $this->plan('files_share', ['path' => '/Documentos/ata.md', 'with' => 'user:bruno', 'note' => 'depois', 'expires' => '2026-12-31']);
+        // The removal of a share names the recipient and the file, the two texts other people can write.
+        $this->sharePolicy->setGrant('alice', 'files', 'link', true);
+        $plans['files_unshare'] = $this->plan('files_unshare', ['path' => '/Documentos/ata.md', 'with' => 'user:bruno']);
         $this->assertEveryWriteToolHasAReadablePlan($this->module, $plans);
     }
 

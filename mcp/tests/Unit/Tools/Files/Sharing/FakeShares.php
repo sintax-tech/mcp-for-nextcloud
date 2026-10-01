@@ -24,6 +24,8 @@ final class FakeShares {
     public array $calls = [];
     /** @var list<array{0:string, 1:IShare}> createShare, updateShare and deleteShare calls, in order */
     public array $writes = [];
+    /** @var list<string> ids asked of getShareById(), in order */
+    public array $lookups = [];
     /** Whether the room provider is missing, as when Talk is disabled: getSharesBy throws for TYPE_ROOM. */
     public bool $roomUnavailable = false;
     /** Exception createShare() or updateShare() throws instead of writing, as the core would. */
@@ -92,6 +94,15 @@ final class FakeShares {
                 return array_slice($found, $offset, $limit < 0 ? null : $limit);
             },
         );
+        $manager->method('getShareById')->willReturnCallback(function (string $id, ?string $recipient = null, bool $onlyValid = true): IShare {
+            $this->lookups[] = $id;
+            foreach ($this->shares as $share) {
+                if ($share->getFullId() === $id) {
+                    return $share;
+                }
+            }
+            throw new \OCP\Share\Exceptions\ShareNotFound();
+        });
         $manager->method('newShare')->willReturnCallback(fn (): IShare => $this->share([]));
         $manager->method('createShare')->willReturnCallback(function (IShare $share): IShare {
             $this->writes[] = ['create', $share];

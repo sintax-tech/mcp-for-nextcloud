@@ -84,6 +84,7 @@ final class ToolPresentation {
             'files_image_search' => Translator::t('Search images'),
             'files_list_shares' => Translator::t('List shares'),
             'files_share' => Translator::t('Share file or folder'),
+            'files_unshare' => Translator::t('Stop sharing file or folder'),
             // Notes
             'notes_list' => Translator::t('List notes'),
             'notes_search' => Translator::t('Search notes'),

@@ -70,6 +70,9 @@ final class ToolPresentation {
             'files_versions_list' => Translator::t('List file versions'),
             'files_version_read' => Translator::t('Read file version'),
             'files_version_restore' => Translator::t('Restore file version'),
+            'files_image_view' => Translator::t('View image'),
+            'files_images_view' => Translator::t('View several images'),
+            'files_image_search' => Translator::t('Search images'),
             // Notes
             'notes_list' => Translator::t('List notes'),
             'notes_read' => Translator::t('Read note'),

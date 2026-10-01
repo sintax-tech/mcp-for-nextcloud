@@ -28,6 +28,7 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 - Files: `files_read` of an image no longer fails as unsupported; it answers with `text_layer: false` and the notice.
 - Files: `files_read` and `resources/read` share one text reader, so the 20 MiB limit is checked before any extraction on both paths.
 - Tool guide: the obsolete `approval_id` gate is gone from the guide's list of extra gates.
+- Files: `files_checkout` accepts any file type (DOCX, XLSX, PDF, images) up to the upload limit instead of refusing non-text files; `files_edit` and `files_replace` stay text-only.
 
 ### Security
 - Checkout downloads reject changed file ETags with HTTP 409 before spending the token or opening the content stream.

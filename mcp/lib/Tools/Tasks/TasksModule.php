@@ -5,6 +5,7 @@ namespace OCA\Mcp\Tools\Tasks;
 
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\Calendar\Calendar;
 use OCA\Mcp\Tools\Calendar\CalendarAccess;
 use OCA\Mcp\Tools\Calendar\CalendarDav;
@@ -15,6 +16,7 @@ use OCA\Mcp\Tools\Calendar\TrashPolicy;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Dav\CollectionSchema as Schema;
 use OCA\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolGuideNotes;
 use OCA\Mcp\Tools\ToolModule;
@@ -25,7 +27,7 @@ use RuntimeException;
 use Sabre\VObject\Component\VCalendar;
 
 /** VTODO tools independent of the optional Tasks UI app. */
-final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
+final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, RendersPlans {
     /**
      * Receives VTODO queries, calendar access, native CalDAV writes and retention policy.
      *
@@ -37,6 +39,7 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
      * @param SharedGuard $guard shared-owner confirmation policy
      * @param TrashPolicy $trash calendar retention policy
      * @param ITimeFactory $time clock for timestamps
+     * @param UserTimezone|null $zones timezone of the account, so a plan shows the dates the user reads
      * @return void
      */
     public function __construct(
@@ -48,6 +51,7 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
         private SharedGuard $guard,
         private TrashPolicy $trash,
         private ITimeFactory $time,
+        private ?UserTimezone $zones = null,
     ) {}
 
     /**
@@ -179,6 +183,20 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
      */
     public function preview(string $name, array $arguments, string $userId): array {
         return $this->prepare($name, $arguments, $userId)['plan'];
+    }
+
+    /**
+     * Describes the plan as the text the person confirms, in the language of the request.
+     *
+     * Stateless on purpose: this module is a shared container service, so the timezone comes from the
+     * plan {@see self::preview()} built, not from anything this object remembers about the caller.
+     *
+     * @param string $name registered write tool name
+     * @param array<string, mixed> $plan the plan preview() returned for that tool
+     * @return string|null Markdown body, or null when this renderer has nothing to say about it
+     */
+    public function renderPlan(string $name, array $plan): ?string {
+        return (new TasksPlanRenderer())->render($name, $plan);
     }
 
     /**
@@ -352,6 +370,9 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
             'shared' => $shared,
             'recoverable' => $deleting,
             'consequence' => $deleting ? Translator::t('The task will be moved to the calendar trash.') : null,
+            // The timezone travels with the plan, so whoever renders it later reads the dates of the
+            // account that asked, without this module having to remember who that was.
+            'timezone' => $this->zones?->forUser($userId)->getName(),
         ];
         return compact('calendar', 'row', 'after', 'plan');
     }

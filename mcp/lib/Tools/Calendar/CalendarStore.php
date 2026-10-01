@@ -56,4 +56,12 @@ interface CalendarStore {
      * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null
      */
     public function objectByUid(int $calendarId, string $uid): ?array;
+
+    /**
+     * Lists the sharees of a calendar.
+     *
+     * @param int $calendarId backend calendar id
+     * @return list<array{principal:string, readOnly:bool}> principal is "principals/users/<uid>" or "principals/groups/<gid>"
+     */
+    public function sharesOf(int $calendarId): array;
 }

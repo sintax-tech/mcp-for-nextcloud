@@ -18,6 +18,8 @@ final class FakeCalendarStore implements CalendarStore {
     public array $calendars = [];
     /** @var array<int, array<string, array{id:int, uri:string, etag:string, data:string, deleted:bool}>> objects by calendar id and URI */
     public array $objects = [];
+    /** @var array<int, list<array{principal:string, readOnly:bool}>> shares by calendar id */
+    public array $shares = [];
     /** Failure thrown by every read method when set. */
     public ?Throwable $failure = null;
     /** Result returned by moveCalendarObject in the fake DAV. */
@@ -42,6 +44,15 @@ final class FakeCalendarStore implements CalendarStore {
             'deleted' => $options['deleted'] ?? false,
         ];
         $this->objects[$id] ??= [];
+    }
+
+    /**
+     * @param int $calendarId calendar id
+     * @param string $principal sharee principal, "principals/users/<uid>" or "principals/groups/<gid>"
+     * @param bool $readOnly whether the share is read-only
+     */
+    public function addShare(int $calendarId, string $principal, bool $readOnly = false): void {
+        $this->shares[$calendarId][] = ['principal' => $principal, 'readOnly' => $readOnly];
     }
 
     /**
@@ -87,6 +98,12 @@ final class FakeCalendarStore implements CalendarStore {
             }
         }
         return null;
+    }
+
+    /** @return list<array{principal:string, readOnly:bool}> */
+    public function sharesOf(int $calendarId): array {
+        $this->fail();
+        return $this->shares[$calendarId] ?? [];
     }
 
     /**

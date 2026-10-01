@@ -81,11 +81,18 @@
 
 	/**
 	 * @param {object} client client of a connection from the API
+	 * @return {string} what people call it: the host, or a fixed label for the native client
+	 */
+	function clientName(client) {
+		return client.kind === 'native' ? t('mcp', 'Local program (native client)') : client.host
+	}
+
+	/**
+	 * @param {object} client client of a connection from the API
 	 * @return {HTMLElement} its name, with the full client_id as tooltip
 	 */
 	function clientCell(client) {
-		const text = client.kind === 'native' ? t('mcp', 'Local program (native client)') : client.host
-		return el('td', { title: client.id, textContent: text })
+		return el('td', { title: client.id, textContent: clientName(client) })
 	}
 
 	/** @param {{counts?: {connections?: number}}} result DELETE response; refreshes the Status card when it carries the new total */
@@ -111,6 +118,12 @@
 		}
 		try {
 			state.data = await api('GET', base + '?' + query.toString())
+			if (state.data.connections.length === 0 && state.page > 1) {
+				// The last row of the last page was revoked: show the previous page instead of an empty one.
+				state.page -= 1
+				await load()
+				return
+			}
 			render()
 		} catch (e) {
 			const retry = el('button', { type: 'button', textContent: t('mcp', 'Retry'), onclick: load })
@@ -135,17 +148,24 @@
 			cells.push(clientCell(connection.client))
 			cells.push(el('td', { textContent: when(connection.createdAt) }))
 			cells.push(el('td', { textContent: when(connection.expiresAt) }))
+			// Every row has the same visible button text, so the accessible name says which connection it revokes.
+			const client = clientName(connection.client)
 			const actions = el('td', { className: 'mcp-actions' }, [el('button', {
 				type: 'button',
 				textContent: t('mcp', 'Revoke'),
 				onclick: () => revoke(connection),
 			})])
+			actions.firstChild.setAttribute('aria-label', admin
+				? t('mcp', 'Revoke {client} for {user}', { client, user: connection.displayName }, undefined, PLAIN_TEXT)
+				: t('mcp', 'Revoke {client}', { client }, undefined, PLAIN_TEXT))
 			if (admin) {
-				actions.append(' ', el('button', {
+				const all = el('button', {
 					type: 'button',
 					textContent: t('mcp', 'Revoke all of this user'),
 					onclick: () => revokeUser(connection),
-				}))
+				})
+				all.setAttribute('aria-label', t('mcp', 'Revoke all connections of {user}', { user: connection.displayName }, undefined, PLAIN_TEXT))
+				actions.append(' ', all)
 			}
 			cells.push(actions)
 			return el('tr', {}, cells)
@@ -164,7 +184,7 @@
 
 	/** @param {object} connection row from the API */
 	async function revoke(connection) {
-		const name = connection.client.kind === 'native' ? t('mcp', 'Local program (native client)') : connection.client.host
+		const name = clientName(connection.client)
 		const question = admin
 			? t('mcp', 'Revoke the connection of {user} through {client}? The client is signed out at once.', { user: connection.displayName, client: name }, undefined, PLAIN_TEXT)
 			: t('mcp', 'Revoke the connection through {client}? The client is signed out at once.', { client: name }, undefined, PLAIN_TEXT)

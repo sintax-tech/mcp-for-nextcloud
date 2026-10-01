@@ -96,6 +96,21 @@ final class AdminAssetsTest extends TestCase {
         $this->assertSame(preg_match_all('/<div\b/', $template), preg_match_all('/<\/div>/', $template), 'div tags must balance');
     }
 
+    /** Revoke buttons name their connection, an emptied last page steps back, and narrow screens have a layout. */
+    public function testConnectionsScriptAndStylesCoverAccessibilityAndNarrowScreens(): void {
+        $app = dirname(__DIR__, 3);
+        $script = (string)file_get_contents($app . '/js/connections.js');
+        foreach (["'Revoke {client} for {user}'", "'Revoke {client}'", "'Revoke all connections of {user}'"] as $label) {
+            $this->assertStringContainsString($label, $script);
+        }
+        $this->assertStringContainsString('state.page > 1', $script);
+        $css = (string)file_get_contents($app . '/css/admin.css');
+        $this->assertStringContainsString('@media (max-width: 768px)', $css);
+        $narrow = substr($css, (int)strpos($css, '@media (max-width: 768px)'));
+        $this->assertStringNotContainsString('#', preg_replace('/#mcp-admin/', '', $narrow), 'only theme variables and no fixed colors');
+        $this->assertStringContainsString('overflow-x: auto', $narrow);
+    }
+
     /** The checkout limit field repeats the controller's ceiling in its max attribute; the two must not drift apart. */
     public function testCheckoutLimitFieldMaxMatchesTheController(): void {
         $app = dirname(__DIR__, 3);

@@ -493,6 +493,9 @@
     "Could not load the checkout upload limit." : "No se pudo cargar el límite de subida del checkout.",
     "Enter a whole number of MiB, at least 1." : "Indique un número entero de MiB, como mínimo 1.",
     "Could not save the checkout upload limit." : "No se pudo guardar el límite de subida del checkout.",
-    "Eligible users who activated their connection." : "Usuarios elegibles que activaron su propia conexión."
+    "Eligible users who activated their connection." : "Usuarios elegibles que activaron su propia conexión.",
+    "Revoke {client} for {user}" : "Revocar {client} de {user}",
+    "Revoke {client}" : "Revocar {client}",
+    "Revoke all connections of {user}" : "Revocar todas las conexiones de {user}"
 },"pluralForm" : "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

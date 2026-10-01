@@ -110,22 +110,23 @@ class DavCalendarStore implements CalendarStore {
     }
 
     /**
-     * Assumes `public function getCalendarObject($calendarId, $objectUri, int $calendarType = self::CALENDAR_TYPE_CALENDAR)`
-     * (line 1398), which also returns trashed objects.
+     * Reads the row straight from `calendarobjects`, trashed ones included. `CalDavBackend::getCalendarObject()`
+     * (line 1398) memoizes rows per backend instance and the write goes through another instance (the DAV
+     * server), so after a write it would hand back the row as it was before: the read-back that proves a write
+     * must not use that cache.
      *
      * @param int $calendarId backend calendar id
      * @param string $uri object URI
      * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null
+     * @throws \Psr\Container\ContainerExceptionInterface when the database cannot be resolved
      */
     public function object(int $calendarId, string $uri): ?array {
-        $row = $this->backend()->getCalendarObject($calendarId, $uri);
-        return $row === null ? null : $this->objectRow($row);
+        return $this->freshRow($calendarId, 'uri', $uri, false);
     }
 
     /**
-     * Looks the live object up by its UID inside one calendar. `CalDavBackend::findCalendarObjectByUid()`
-     * is not part of every Nextcloud 33 release (it is missing in 33.0.2), so the URI comes from a query on
-     * `calendarobjects` and the row from the stable `getCalendarObject()` (line 1398).
+     * Looks the live object up by its UID inside one calendar, straight from `calendarobjects`
+     * (`CalDavBackend::findCalendarObjectByUid()` is missing in 33.0.2, and `getCalendarObject()` is cached).
      *
      * @param int $calendarId backend calendar id
      * @param string $uid iCalendar UID
@@ -133,22 +134,41 @@ class DavCalendarStore implements CalendarStore {
      * @throws \Psr\Container\ContainerExceptionInterface when the DAV app or the database cannot be resolved
      */
     public function objectByUid(int $calendarId, string $uid): ?array {
+        return $this->freshRow($calendarId, 'uid', $uid, true);
+    }
+
+    /**
+     * @param int $calendarId backend calendar id
+     * @param string $column "uri" or "uid"
+     * @param string $value value the column must equal
+     * @param bool $liveOnly whether trashed rows are excluded
+     * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null
+     * @throws \Psr\Container\ContainerExceptionInterface when the database cannot be resolved
+     */
+    private function freshRow(int $calendarId, string $column, string $value, bool $liveOnly): ?array {
         $qb = $this->container->get(IDBConnection::class)->getQueryBuilder();
-        $result = $qb->select('uri')
+        $qb->select(['id', 'uri', 'etag', 'calendardata', 'deleted_at'])
             ->from('calendarobjects')
             ->where($qb->expr()->eq('calendarid', $qb->createNamedParameter($calendarId, IQueryBuilder::PARAM_INT)))
-            ->andWhere($qb->expr()->eq('uid', $qb->createNamedParameter($uid)))
-            ->andWhere($qb->expr()->eq('calendartype', $qb->createNamedParameter(self::CALENDAR_TYPE_CALENDAR, IQueryBuilder::PARAM_INT)))
-            ->andWhere($qb->expr()->isNull('deleted_at'))
-            ->setMaxResults(1)
-            ->executeQuery();
-        $uri = $result->fetchOne();
+            ->andWhere($qb->expr()->eq($column, $qb->createNamedParameter($value)))
+            ->andWhere($qb->expr()->eq('calendartype', $qb->createNamedParameter(self::CALENDAR_TYPE_CALENDAR, IQueryBuilder::PARAM_INT)));
+        if ($liveOnly) {
+            $qb->andWhere($qb->expr()->isNull('deleted_at'));
+        }
+        $result = $qb->setMaxResults(1)->executeQuery();
+        $row = $result->fetchAssociative();
         $result->closeCursor();
-        if ($uri === false || $uri === null) {
+        if ($row === false || $row === null) {
             return null;
         }
-        $row = $this->backend()->getCalendarObject($calendarId, (string)$uri);
-        return $row === null ? null : $this->objectRow($row);
+        $data = $row['calendardata'];
+        return [
+            'id' => (int)$row['id'],
+            'uri' => (string)$row['uri'],
+            'etag' => '"' . $row['etag'] . '"',
+            'data' => is_resource($data) ? (string)stream_get_contents($data) : (string)$data,
+            'deleted' => $row['deleted_at'] !== null,
+        ];
     }
 
     /**

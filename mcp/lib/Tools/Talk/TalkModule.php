@@ -15,10 +15,9 @@ use Throwable;
  * resource decision belongs to ConversationResolver, UserFileResolver or the share lookup. What it does own is the
  * translation of a failure into an MCP result, keeping every user-facing string in Messages.
  *
- * Every writing tool stops at a draft until the user approves it: a call without confirm answers with the draft
- * and an approvalId, and a call with confirm: true only publishes when that id proves a draft of this same account,
- * conversation, action and payload was already shown and has not been spent. Without confirm the tool answers with
- * a payload, never with an error, and writes nothing.
+ * Every writing tool stops at a plan until the user says yes: a call without confirm answers with the plan and
+ * writes nothing, and a call with confirm: true revalidates and publishes. Nothing is persisted between the two
+ * calls, so the conversation is the client's promise to show the plan and to report the answer.
  */
 class TalkModule implements ToolModule {
     public const TOOL_LIST = 'talk_list_conversations';
@@ -33,10 +32,8 @@ class TalkModule implements ToolModule {
     private const MODULE = 'talk';
     private const APP = TalkServices::APP_ID;
 
-    /** Optional on purpose: a call without it is the draft, a call with it true is the approved send. */
+    /** Optional on purpose: a call without it is the plan, a call with it true publishes. */
     private const CONFIRM_SCHEMA = ['type' => 'boolean'];
-    /** Id of the draft being approved; meaningful only together with confirm: true. */
-    private const APPROVAL_ID_SCHEMA = ['type' => 'string', 'minLength' => 1, 'maxLength' => 64];
     /** Public conversation token; Talk tokens are 30 characters at most, so this only bounds the payload. */
     private const TOKEN_SCHEMA = ['type' => 'string', 'minLength' => 1, 'maxLength' => 30];
 
@@ -46,7 +43,7 @@ class TalkModule implements ToolModule {
         private ConversationResolver $resolver,
         private ConversationWriter $writer,
         private FileSharer $sharer,
-        private DraftApproval $draftApproval,
+        private WritePreview $preview,
         private UserConversationResolver $userConversations,
         private GroupCreator $groups,
         private ReferenceLinker $references,
@@ -124,7 +121,6 @@ class TalkModule implements ToolModule {
                             'additionalProperties' => false,
                         ],
                         'confirm' => self::CONFIRM_SCHEMA,
-                        'approval_id' => self::APPROVAL_ID_SCHEMA,
                     ],
                     'required' => ['conversation_token', 'message'],
                     'additionalProperties' => false,
@@ -147,7 +143,6 @@ class TalkModule implements ToolModule {
                             'maxLength' => ConversationWriter::MAX_MESSAGE_LENGTH,
                         ],
                         'confirm' => self::CONFIRM_SCHEMA,
-                        'approval_id' => self::APPROVAL_ID_SCHEMA,
                     ],
                     'required' => ['conversation_token', 'path'],
                     'additionalProperties' => false,
@@ -170,7 +165,6 @@ class TalkModule implements ToolModule {
                             'maxLength' => AttachmentMessage::MAX_CAPTION,
                         ],
                         'confirm' => self::CONFIRM_SCHEMA,
-                        'approval_id' => self::APPROVAL_ID_SCHEMA,
                     ],
                     'required' => ['conversation_token', 'attachment_id'],
                     'additionalProperties' => false,
@@ -196,7 +190,6 @@ class TalkModule implements ToolModule {
                             'maxLength' => ConversationWriter::MAX_MESSAGE_LENGTH,
                         ],
                         'confirm' => self::CONFIRM_SCHEMA,
-                        'approval_id' => self::APPROVAL_ID_SCHEMA,
                     ],
                     'required' => ['user', 'message'],
                     'additionalProperties' => false,
@@ -215,7 +208,7 @@ class TalkModule implements ToolModule {
                         'messages' => [
                             'type' => 'array',
                             'minItems' => 1,
-                            'maxItems' => DraftApproval::MAX_BATCH,
+                            'maxItems' => WritePreview::MAX_BATCH,
                             'items' => [
                                 'type' => 'object',
                                 'properties' => [
@@ -234,7 +227,6 @@ class TalkModule implements ToolModule {
                             ],
                         ],
                         'confirm' => self::CONFIRM_SCHEMA,
-                        'approval_id' => self::APPROVAL_ID_SCHEMA,
                     ],
                     'required' => ['conversation_token', 'messages'],
                     'additionalProperties' => false,
@@ -264,7 +256,6 @@ class TalkModule implements ToolModule {
                             ],
                         ],
                         'confirm' => self::CONFIRM_SCHEMA,
-                        'approval_id' => self::APPROVAL_ID_SCHEMA,
                     ],
                     'required' => ['name'],
                     'additionalProperties' => false,
@@ -274,6 +265,46 @@ class TalkModule implements ToolModule {
                 'app' => self::APP,
             ],
         ];
+    }
+
+    /**
+     * Builds the plan of a writing tool without executing anything, for whoever enforces the confirmation.
+     *
+     * This is the only entry point a central gate needs: the plan comes from the same resolution the call does,
+     * so a gate that refuses a write without confirm: true can show the very plan the confirmed call would act on
+     * instead of a second, weaker description of it.
+     *
+     * @param string $name Name of a writing tool of this module
+     * @param array<string, mixed> $arguments Validated arguments, without confirm
+     * @param string $userId Authenticated user
+     * @return array<string, mixed> The plan, ready to be shown to the user
+     * @throws InvalidArgumentException For an unknown tool name or a malformed argument
+     */
+    public function preview(string $name, array $arguments, string $userId): array {
+        return match ($name) {
+            self::TOOL_REPLY => $this->replyPreview($userId, $arguments),
+            self::TOOL_ATTACH => $this->attachPreview($userId, $arguments),
+            self::TOOL_QUOTE => $this->quotePreview($userId, $arguments),
+            self::TOOL_MESSAGE_USER => $this->messageUserPreview($userId, $arguments),
+            self::TOOL_SEND_BATCH => $this->sendBatchPreview($userId, $arguments),
+            self::TOOL_CREATE_GROUP => $this->createGroupPreview($userId, $arguments),
+            default => throw new InvalidArgumentException(Messages::unknownTool()),
+        };
+    }
+
+    /**
+     * @param string $name Name of a writing tool of this module
+     * @return bool Whether the tool publishes something, so a central gate can hold it back without confirm
+     */
+    public static function writesSomething(string $name): bool {
+        return in_array($name, [
+            self::TOOL_REPLY,
+            self::TOOL_ATTACH,
+            self::TOOL_QUOTE,
+            self::TOOL_MESSAGE_USER,
+            self::TOOL_SEND_BATCH,
+            self::TOOL_CREATE_GROUP,
+        ], true);
     }
 
     /**
@@ -332,8 +363,7 @@ class TalkModule implements ToolModule {
         return match (true) {
             $e instanceof TalkUnavailableException => Messages::talkUnavailable(),
             $e instanceof ConversationAccessException,
-            $e instanceof FileAccessException,
-            $e instanceof ApprovalException => $e->getMessage(),
+            $e instanceof FileAccessException => $e->getMessage(),
             default => Messages::unexpected(),
         };
     }
@@ -419,44 +449,77 @@ class TalkModule implements ToolModule {
      *
      * @param string $userId Authenticated user
      * @param array<string, mixed> $arguments Validated arguments
-     * @return array<string, mixed> Result data of talk_reply, or the draft when confirm is absent
+     * @return array<string, mixed> Result data of talk_reply, or the plan when confirm is absent
      * @throws InvalidArgumentException When an argument is missing
      * @throws ConversationAccessException When the conversation is missing, not writable, or the quoted message is not there
-     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function replyCall(string $userId, array $arguments): array {
+        if (!$this->confirmed($arguments)) {
+            return $this->replyPreview($userId, $arguments);
+        }
+
+        $resolved = $this->resolveReply($userId, $arguments);
+
+        return $this->writer->reply($resolved['conversation'], $userId, $resolved['message'], $resolved['replyTo']);
+    }
+
+    /**
+     * The plan of a reply, including the final text: the reference is resolved here too, so what the user reads
+     * is the text with the title and the link that will actually be published.
+     *
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> The plan
+     */
+    private function replyPreview(string $userId, array $arguments): array {
+        $resolved = $this->resolveReply($userId, $arguments);
+        $plan = $this->preview->reply(
+            $resolved['conversation'],
+            $userId,
+            $resolved['message'],
+            $resolved['replyTo'],
+        );
+
+        return $resolved['item'] === null ? $plan : $plan + ['reference' => $resolved['item']];
+    }
+
+    /**
+     * Everything a reply needs, resolved the same way on the plan and on the confirmed call.
+     *
+     * The reference is resolved again on the confirmed call instead of trusted from the plan: access is checked
+     * at the moment of sending, and a title that changed since the plan changes the text, so the plan the user
+     * saw is no longer the text that would go out.
+     *
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array{conversation:Conversation, message:string, replyTo:int|null, item:array<string, mixed>|null}
+     */
+    private function resolveReply(string $userId, array $arguments): array {
         $message = $this->message($arguments);
-        $replyTo = $this->replyTo($arguments);
         $reference = $this->reference($arguments);
         $conversation = $this->writable($userId, $arguments);
 
-        // The reference is resolved again on the confirmed call instead of trusted from the draft: access is
-        // checked at the moment of sending, and a title that changed since the draft changes the text, which the
-        // approval then refuses because the user never saw it.
         $item = $reference === null ? null : $this->references->resolve($userId, $reference);
         if ($item !== null) {
             $message = ReferenceLinker::append($message, $item);
         }
 
-        if (!$this->confirmed($arguments)) {
-            $draft = $this->draftApproval->reply($conversation, $userId, $message, $replyTo);
-
-            return $item === null ? $draft : $draft + ['reference' => $item];
-        }
-        $this->draftApproval->approveReply($conversation, $userId, $this->approvalId($arguments), $message, $replyTo);
-
-        return $this->writer->reply($conversation, $userId, $message, $replyTo);
+        return [
+            'conversation' => $conversation,
+            'message' => $message,
+            'replyTo' => $this->replyTo($arguments),
+            'item' => $item,
+        ];
     }
 
     /**
      * @param string $userId Authenticated user
      * @param array<string, mixed> $arguments Validated arguments
-     * @return array<string, mixed> Result data of talk_attach_file, or the draft when confirm is absent
+     * @return array<string, mixed> Result data of talk_attach_file, or the plan when confirm is absent
      * @throws InvalidArgumentException When the path is missing
      * @throws ConversationAccessException When the conversation cannot be reached for writing
      * @throws FileAccessException When the file is missing, not shareable or already shared in this conversation
-     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function attachCall(string $userId, array $arguments): array {
@@ -465,10 +528,8 @@ class TalkModule implements ToolModule {
         $conversation = $this->writable($userId, $arguments);
 
         if (!$this->confirmed($arguments)) {
-            return $this->draftApproval->attach($conversation, $userId, $path, $caption);
+            return $this->attachPreview($userId, $arguments);
         }
-        $this->draftApproval->approveAttach($conversation, $userId, $this->approvalId($arguments), $path, $caption);
-
         $attached = $this->sharer->attach($conversation, $userId, $path, $caption);
         if (($attached['captionSent'] ?? null) === false) {
             // The card is already in the room, so this is a real failure of the call even though it is not an
@@ -487,10 +548,26 @@ class TalkModule implements ToolModule {
     /**
      * @param string $userId Authenticated user
      * @param array<string, mixed> $arguments Validated arguments
-     * @return array<string, mixed> Result data of talk_quote_file, or the draft when confirm is absent
+     * @return array<string, mixed> The plan of talk_attach_file
+     * @throws InvalidArgumentException When the path is missing
+     * @throws ConversationAccessException When the conversation cannot be reached for writing
+     * @throws FileAccessException When the file is missing, not shareable or already shared in this conversation
+     */
+    private function attachPreview(string $userId, array $arguments): array {
+        return $this->preview->attach(
+            $this->writable($userId, $arguments),
+            $userId,
+            $this->path($arguments),
+            $this->optionalMessage($arguments),
+        );
+    }
+
+    /**
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> Result data of talk_quote_file, or the plan when confirm is absent
      * @throws InvalidArgumentException When the attachment id is missing
      * @throws ConversationAccessException When the conversation cannot be reached for writing, or the attachment is not a share of it
-     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function quoteCall(string $userId, array $arguments): array {
@@ -499,24 +576,37 @@ class TalkModule implements ToolModule {
         $conversation = $this->writable($userId, $arguments);
 
         if (!$this->confirmed($arguments)) {
-            return $this->draftApproval->quote($conversation, $userId, $attachmentId, $caption);
+            return $this->quotePreview($userId, $arguments);
         }
-        $this->draftApproval->approveQuote($conversation, $userId, $this->approvalId($arguments), $attachmentId, $caption);
-
         return $this->writer->quoteAttachment($conversation, $userId, $attachmentId, $caption);
     }
 
     /**
-     * A direct message to an account. The draft resolves the target and stops there, so a user who never approves
-     * is not left with an empty conversation; the room is created by the approved call, and only through the same
-     * call the Talk UI uses, which keeps the product's own rule about who may talk to whom.
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> The plan of talk_quote_file
+     * @throws InvalidArgumentException When the attachment id is missing
+     * @throws ConversationAccessException When the conversation cannot be reached for writing, or the attachment is not a share of it
+     */
+    private function quotePreview(string $userId, array $arguments): array {
+        return $this->preview->quote(
+            $this->writable($userId, $arguments),
+            $userId,
+            $this->attachmentId($arguments),
+            $this->optionalMessage($arguments),
+        );
+    }
+
+    /**
+     * A direct message to an account. The plan resolves the target and stops there, so a user who says no is not
+     * left with an empty conversation; the room is created by the confirmed call, and only through the same call
+     * the Talk UI uses, which keeps the product's own rule about who may talk to whom.
      *
      * @param string $userId Authenticated user
      * @param array<string, mixed> $arguments Validated arguments
-     * @return array<string, mixed> Result data of talk_message_user, or the draft when confirm is absent
+     * @return array<string, mixed> Result data of talk_message_user, or the plan when confirm is absent
      * @throws InvalidArgumentException When the account id or the message is missing
      * @throws ConversationAccessException When the target is out of reach or the conversation cannot be written in
-     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function messageUserCall(string $userId, array $arguments): array {
@@ -524,12 +614,8 @@ class TalkModule implements ToolModule {
         $message = $this->message($arguments);
 
         if (!$this->confirmed($arguments)) {
-            return $this->draftApproval->directMessage($this->userConversations->target($userId, $targetId), $userId, $message);
+            return $this->messageUserPreview($userId, $arguments);
         }
-
-        // The approval comes first: it binds the target account and the text, and it is spent before the room
-        // exists, so a confirmed call cannot create a conversation the user never approved.
-        $this->draftApproval->approveDirectMessage($userId, $this->approvalId($arguments), $targetId, $message);
 
         $conversation = $this->userConversations->conversation($userId, $targetId);
         $result = $this->writer->reply($conversation, $userId, $message, null);
@@ -538,17 +624,31 @@ class TalkModule implements ToolModule {
     }
 
     /**
-     * A batch of messages in one conversation. The draft carries the whole list, because the approval of a batch is
-     * the approval of that list: a tool that let the agent send the approved list with one item changed would be
-     * sending something else. Every quoted id is resolved while the draft is built, so a wrong citation fails
-     * before anything is published rather than halfway through.
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> The plan of talk_message_user
+     * @throws InvalidArgumentException When the account id or the message is missing
+     * @throws ConversationAccessException When the target is out of reach
+     */
+    private function messageUserPreview(string $userId, array $arguments): array {
+        return $this->preview->directMessage(
+            $this->userConversations->target($userId, $this->targetUser($arguments)),
+            $userId,
+            $this->message($arguments),
+        );
+    }
+
+    /**
+     * A batch of messages in one conversation. The plan carries the whole list, because a batch is approved
+     * as a list: a tool that let the agent send that list with one item changed would be sending something
+     * else. Every quoted id is resolved while the plan is built, so a wrong citation fails before anything is
+     * published rather than halfway through.
      *
      * @param string $userId Authenticated user
      * @param array<string, mixed> $arguments Validated arguments
-     * @return array<string, mixed> Result data of talk_send_batch, or the draft when confirm is absent
+     * @return array<string, mixed> Result data of talk_send_batch, or the plan when confirm is absent
      * @throws InvalidArgumentException When the batch is empty, too long, or an item is malformed
      * @throws ConversationAccessException When the conversation cannot be written in or a citation does not exist
-     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function sendBatchCall(string $userId, array $arguments): array {
@@ -557,10 +657,9 @@ class TalkModule implements ToolModule {
         $conversation = $this->resolver->resolveForWriting($userId, $this->token($arguments));
 
         if (!$this->confirmed($arguments)) {
-            return $this->draftApproval->batch($conversation, $userId, $items);
+            return $this->sendBatchPreview($userId, $arguments);
         }
 
-        $this->draftApproval->approveBatch($conversation, $userId, $this->approvalId($arguments), $items);
         $result = $this->writer->replyMany($conversation, $userId, $items);
 
         if ($result['failed'] !== []) {
@@ -577,15 +676,29 @@ class TalkModule implements ToolModule {
     }
 
     /**
-     * A new group. Both steps of the product's API happen only here, in the approved call: the draft resolves the
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> The plan of talk_send_batch
+     * @throws InvalidArgumentException When the batch is empty, too long, or an item is malformed
+     * @throws ConversationAccessException When the conversation cannot be written in or a citation does not exist
+     */
+    private function sendBatchPreview(string $userId, array $arguments): array {
+        return $this->preview->batch(
+            $this->resolver->resolveForWriting($userId, $this->token($arguments)),
+            $userId,
+            $this->batchItems($arguments),
+        );
+    }
+
+    /**
+     * A new group. Both steps of the product's API happen only here, in the confirmed call: the plan resolves the
      * people who would be invited and stops, so an abandoned preview leaves no room behind.
      *
      * @param string $userId Authenticated user
      * @param array<string, mixed> $arguments Validated arguments
-     * @return array<string, mixed> Result data of talk_create_group, or the draft when confirm is absent
+     * @return array<string, mixed> Result data of talk_create_group, or the plan when confirm is absent
      * @throws InvalidArgumentException When the name or the participant list is not usable
      * @throws ConversationAccessException When an account is out of reach or the product refuses the creation
-     * @throws ApprovalException When the confirmed call carries no usable approval of this draft
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function createGroupCall(string $userId, array $arguments): array {
@@ -593,16 +706,25 @@ class TalkModule implements ToolModule {
         $participants = $this->participantIds($arguments);
 
         if (!$this->confirmed($arguments)) {
-            return $this->draftApproval->group(
-                $userId,
-                $name,
-                $this->userConversations->contacts($userId, $participants, true),
-            );
+            return $this->createGroupPreview($userId, $arguments);
         }
 
-        $this->draftApproval->approveGroup($userId, $this->approvalId($arguments), $name, $participants);
-
         return $this->groups->create($userId, $name, $participants);
+    }
+
+    /**
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> The plan of talk_create_group
+     * @throws InvalidArgumentException When the name or the participant list is not usable
+     * @throws ConversationAccessException When an account is out of reach
+     */
+    private function createGroupPreview(string $userId, array $arguments): array {
+        return $this->preview->group(
+            $userId,
+            GroupCreator::normalizeName((string)($arguments['name'] ?? '')),
+            $this->userConversations->contacts($userId, $this->participantIds($arguments), true),
+        );
     }
 
     /**
@@ -651,6 +773,11 @@ class TalkModule implements ToolModule {
         if (!is_array($messages) || !array_is_list($messages) || $messages === []) {
             throw new InvalidArgumentException(Messages::emptyBatch());
         }
+        // A list longer than a user can read is a mistake in the call, and it is refused here so that neither
+        // the plan nor the conversation behind it is built for something nobody could have approved.
+        if (count($messages) > WritePreview::MAX_BATCH) {
+            throw new InvalidArgumentException(Messages::tooManyMessages(WritePreview::MAX_BATCH));
+        }
 
         $items = [];
         foreach ($messages as $item) {
@@ -680,14 +807,6 @@ class TalkModule implements ToolModule {
      */
     private function confirmed(array $arguments): bool {
         return ($arguments['confirm'] ?? false) === true;
-    }
-
-    /**
-     * @param array<string, mixed> $arguments Validated arguments
-     * @return string|null Id of the draft being approved, or null when the caller sent none
-     */
-    private function approvalId(array $arguments): ?string {
-        return isset($arguments['approval_id']) ? (string)$arguments['approval_id'] : null;
     }
 
     /**

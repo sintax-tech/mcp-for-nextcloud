@@ -208,17 +208,13 @@ final class ToolsListContractTest extends TestCase {
             $this->assertFalse($annotations->readOnlyHint, "$name: publishing a message is not reading");
             $this->assertTrue($annotations->destructiveHint, "$name: a sent message cannot be unsent by the client");
             $this->assertFalse($annotations->idempotentHint, "$name: repeating the call sends a second message");
-            // The approval the description asks for is the same gate a client offers on a destructive tool,
-            // and it is not a boolean the caller can assert: it is the id of a draft the server already showed.
+            // The confirmation is a plain boolean the caller may set: nothing is stored between the plan and
+            // the send, so there is no id, no token and no fingerprint for the client to carry back.
             $this->assertSame(['type' => 'boolean'], json_decode(json_encode($tools[$name]->inputSchema->properties->confirm), true), $name);
-            $this->assertSame(
-                ['type' => 'string', 'minLength' => 1, 'maxLength' => 64],
-                json_decode(json_encode($tools[$name]->inputSchema->properties->approval_id), true),
-                $name,
-            );
+            $this->assertObjectNotHasProperty('approval_id', $tools[$name]->inputSchema->properties, $name);
             $this->assertFalse(
                 in_array('approval_id', $tools[$name]->inputSchema->required ?? [], true),
-                "$name: the draft call must not be forced to carry an approval",
+                "$name: no call is forced to carry an approval",
             );
         }
 

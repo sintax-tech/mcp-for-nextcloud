@@ -57,6 +57,42 @@ final class VisibilityGuardTest extends TestCase {
         $this->assertSame([$file], $guard->filter([$file]));
     }
 
+    public function testTagLookupFailureIsHiddenAndRetriedWithoutLeakingNames(): void {
+        $this->config->app['mcp'][VisibilityGuard::CONFIG_KEY] = '["42"]';
+        $mapper = $this->createMock(ISystemTagObjectMapper::class);
+        $calls = 0;
+        $mapper->expects($this->exactly(2))->method('getTagIdsForObjects')->willReturnCallback(
+            function () use (&$calls): array {
+                if (++$calls === 1) {
+                    throw new \RuntimeException('secret.txt');
+                }
+                return [];
+            }
+        );
+        $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
+        $logger->expects($this->once())->method('warning')->with(
+            'MCP visibility check failed; access refused', ['app' => 'mcp']
+        );
+        $node = $this->createMock(Node::class);
+        $node->method('getId')->willReturn(123);
+        $node->method('getParent')->willReturn($node);
+        $guard = new VisibilityGuard($this->config->mock($this), $mapper, null, null, $logger);
+        $this->assertFalse($guard->isVisible($node));
+        $this->assertTrue($guard->isVisible($node));
+    }
+
+    public function testParentFailureIsHiddenAndNeverCachedAsVisible(): void {
+        $this->config->app['mcp'][VisibilityGuard::CONFIG_KEY] = '["42"]';
+        $node = $this->createMock(Node::class);
+        $node->method('getId')->willReturn(123);
+        $node->expects($this->exactly(2))->method('getParent')->willThrowException(new \RuntimeException());
+        $mapper = $this->createMock(ISystemTagObjectMapper::class);
+        $mapper->expects($this->never())->method('getTagIdsForObjects');
+        $guard = new VisibilityGuard($this->config->mock($this), $mapper);
+        $this->assertFalse($guard->isVisible($node));
+        $this->assertFalse($guard->isVisible($node));
+    }
+
     public function testDirectlyTaggedFileIsHidden(): void {
         $this->config->app['mcp'][VisibilityGuard::CONFIG_KEY] = json_encode(['42', '99']);
         $guard = $this->guard();

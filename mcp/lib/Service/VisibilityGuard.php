@@ -11,6 +11,7 @@ use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\Node;
 use OCP\IConfig;
+use Psr\Log\LoggerInterface;
 use OCP\SystemTag\ISystemTag;
 use OCP\SystemTag\ISystemTagManager;
 use OCP\SystemTag\ISystemTagObjectMapper;
@@ -38,6 +39,7 @@ class VisibilityGuard {
         private ISystemTagObjectMapper $tagMapper,
         private ?IRootFolder $rootFolder = null,
         private ?ISystemTagManager $tagManager = null,
+        private ?LoggerInterface $logger = null,
     ) {}
 
     /**
@@ -85,7 +87,8 @@ class VisibilityGuard {
                 }
                 $current = $parent;
             } catch (\Throwable) {
-                break;
+                $this->warnVisibilityFailure();
+                return false;
             }
         }
 
@@ -95,7 +98,8 @@ class VisibilityGuard {
             try {
                 $tagsByObject = $this->tagMapper->getTagIdsForObjects($idsToCheck, 'files');
             } catch (\Throwable) {
-                $tagsByObject = [];
+                $this->warnVisibilityFailure();
+                return false;
             }
 
             // Check from root down to node
@@ -139,6 +143,11 @@ class VisibilityGuard {
             $this->cache[$nodeId] = true;
         }
         return true;
+    }
+
+    /** Logs a privacy refusal without node names, paths or exception details. */
+    private function warnVisibilityFailure(): void {
+        $this->logger?->warning('MCP visibility check failed; access refused', ['app' => 'mcp']);
     }
 
     /**
@@ -358,7 +367,8 @@ class VisibilityGuard {
                 }
                 $current = $parent;
             } catch (\Throwable) {
-                break;
+                $this->warnVisibilityFailure();
+                return true;
             }
         }
 
@@ -369,7 +379,8 @@ class VisibilityGuard {
         try {
             $userFolder = $backupAncestor->getParent();
         } catch (\Throwable) {
-            $userFolder = null;
+            $this->warnVisibilityFailure();
+            return true;
         }
 
         if (!$userFolder instanceof Folder) {
@@ -393,7 +404,8 @@ class VisibilityGuard {
             $originalNode = $userFolder->get($originalRelPath);
             return !$this->isVisible($originalNode);
         } catch (\Throwable) {
-            return false;
+            $this->warnVisibilityFailure();
+            return true;
         }
     }
 }

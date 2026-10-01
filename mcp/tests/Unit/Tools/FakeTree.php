@@ -100,7 +100,7 @@ final class FakeTree {
         $mock->method('getOwner')->willReturnCallback(fn () => $this->owner($path));
         $mock->method('getPermissions')->willReturnCallback(fn () => $this->nodes[$path]['permissions'] ?? \OCP\Constants::PERMISSION_ALL);
         $mock->method('isShared')->willReturnCallback(fn () => ($this->nodes[$path]['scope'] ?? 'personal') === 'shared');
-        $mock->method('getParent')->willReturnCallback(fn () => $this->node(dirname($path)));
+        $mock->method('getParent')->willReturnCallback(fn () => $this->node($path === $this->root ? $path : dirname($path)));
         $mock->method('delete')->willReturnCallback(function () use ($path): void {
             $this->ops[] = "delete $path";
             unset($this->nodes[$path]);

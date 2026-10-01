@@ -9,6 +9,7 @@ use OCA\Mcp\Service\GrantPolicy;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
+use OCP\IConfig;
 use OCP\IRequest;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -21,6 +22,16 @@ use OCP\IUserManager;
 class GrantsController extends Controller {
     /** Pseudo-operation of the bulk endpoint that toggles eligibility instead of a grant. */
     public const ELIGIBLE = 'eligible';
+    /** App config key: comma-separated CIMD client_id hosts; absent means DEFAULT_HOSTS. */
+    public const HOSTS_KEY = 'oauth_client_hosts';
+    /** App config key: '1' when the static native client is accepted, '0' (default) otherwise. */
+    public const NATIVE_KEY = 'oauth_native_client_enabled';
+    /** Hosts trusted when HOSTS_KEY is absent. */
+    public const DEFAULT_HOSTS = ['claude.ai', 'chatgpt.com'];
+    // TODO(merge): NativeClient::CLIENT_ID
+    public const NATIVE_CLIENT_ID = 'nextcloud-mcp-native';
+    // TODO(merge): NativeClient::REDIRECT_URIS
+    public const NATIVE_REDIRECT_URIS = ['http://localhost/oauth/callback', 'http://127.0.0.1/oauth/callback', 'http://[::1]/oauth/callback'];
 
     public function __construct(
         string $appName,
@@ -28,6 +39,7 @@ class GrantsController extends Controller {
         private GrantMatrix $matrix,
         private GrantPolicy $policy,
         private IUserManager $userManager,
+        private IConfig $config,
     ) {
         parent::__construct($appName, $request);
     }
@@ -102,6 +114,75 @@ class GrantsController extends Controller {
             $this->policy->setGlobalEnabled(self::bool($this->request->getParam('enabled')));
             return ['enabled' => $this->policy->globalEnabled()];
         });
+    }
+
+    /**
+     * Current OAuth client settings for the admin page.
+     *
+     * @return JSONResponse {hosts, hostsDefault, nativeClientEnabled, nativeClientId, nativeRedirectUris}
+     */
+    public function oauthClients(): JSONResponse {
+        return $this->guard(fn (): array => $this->oauthState());
+    }
+
+    /**
+     * Body {hosts?: list<string>, nativeClientEnabled?: bool}. Everything is validated before anything is written;
+     * an empty host list is rejected because at least one host must stay trusted.
+     *
+     * @return JSONResponse the same shape as oauthClients(), or 400
+     */
+    public function updateOauthClients(): JSONResponse {
+        return $this->guard(function (): array {
+            $hosts = $this->request->getParam('hosts');
+            $native = $this->request->getParam('nativeClientEnabled');
+            if ($hosts === null && $native === null) {
+                throw new InvalidArgumentException('Invalid request');
+            }
+            if ($hosts !== null) {
+                $hosts = self::hosts($hosts);
+            }
+            if ($native !== null) {
+                $native = self::bool($native);
+            }
+            if ($hosts !== null) {
+                $this->config->setAppValue($this->appName, self::HOSTS_KEY, implode(',', $hosts));
+            }
+            if ($native !== null) {
+                $this->config->setAppValue($this->appName, self::NATIVE_KEY, $native ? '1' : '0');
+            }
+            return $this->oauthState();
+        });
+    }
+
+    /** @return array{hosts:list<string>, hostsDefault:bool, nativeClientEnabled:bool, nativeClientId:string, nativeRedirectUris:list<string>} */
+    private function oauthState(): array {
+        $raw = $this->config->getAppValue($this->appName, self::HOSTS_KEY, '');
+        $hosts = array_values(array_filter(array_map('trim', explode(',', $raw)), static fn (string $h) => $h !== ''));
+        $default = $hosts === [];
+        return [
+            'hosts' => $default ? self::DEFAULT_HOSTS : $hosts,
+            'hostsDefault' => $default,
+            'nativeClientEnabled' => $this->config->getAppValue($this->appName, self::NATIVE_KEY, '0') === '1',
+            'nativeClientId' => self::NATIVE_CLIENT_ID,
+            'nativeRedirectUris' => self::NATIVE_REDIRECT_URIS,
+        ];
+    }
+
+    /**
+     * @param mixed $value request value, which must be a non-empty list of bare lowercase host names
+     * @return list<string> validated hosts without duplicates
+     * @throws InvalidArgumentException for an empty list, a non-string or a host with scheme, port, path, wildcard or space
+     */
+    private static function hosts(mixed $value): array {
+        if (!is_array($value) || $value === [] || !array_is_list($value)) {
+            throw new InvalidArgumentException('Invalid request');
+        }
+        foreach ($value as $host) {
+            if (!is_string($host) || preg_match('/^[a-z0-9-]+(\.[a-z0-9-]+)*$/D', $host) !== 1 || strlen($host) > 253) {
+                throw new InvalidArgumentException('Invalid request');
+            }
+        }
+        return array_values(array_unique($value));
     }
 
     /** @param callable():array<string, mixed> $action */

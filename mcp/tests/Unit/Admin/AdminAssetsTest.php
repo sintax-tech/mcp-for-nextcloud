@@ -37,12 +37,39 @@ final class AdminAssetsTest extends TestCase {
         $this->assertSame(preg_match_all('/<div\b/', $template), preg_match_all('/<\/div>/', $template), 'div tags must balance');
     }
 
+    /** The OAuth clients section sits between OCR and the matrix toolbar, and each new string is translated. */
+    public function testOauthClientsSectionIsPlacedAndTranslated(): void {
+        $app = dirname(__DIR__, 3);
+        $template = (string)file_get_contents($app . '/templates/admin.php');
+        $ocr = strpos($template, "t('OCR')");
+        $oauth = strpos($template, "t('OAuth clients')");
+        $toolbar = strpos($template, 'class="mcp-toolbar"');
+        $this->assertTrue($ocr < $oauth && $oauth < $toolbar);
+        foreach (['mcp-oauth-hosts', 'mcp-oauth-hosts-status', 'mcp-native-client', 'mcp-native-client-status', 'mcp-native-client-details'] as $id) {
+            $this->assertSame(1, substr_count($template, 'id="' . $id . '"'), $id);
+        }
+        $this->assertStringContainsString('data-copy="mcp-native-client-id"', $template);
+        $section = substr($template, $oauth, $toolbar - $oauth);
+        preg_match_all("/\\\$l->t\\('([^']+)'\\)/", $section, $fromTemplate);
+        $script = (string)file_get_contents($app . '/js/admin-grants.js');
+        $oauthScript = substr($script, (int)strpos($script, 'async function initOauthClients'));
+        preg_match_all("/t\\('mcp', '([^']+)'/", $oauthScript, $fromScript);
+        $strings = array_unique(array_merge($fromTemplate[1], $fromScript[1]));
+        $this->assertGreaterThan(8, count($strings));
+        foreach (['pt_BR', 'es'] as $lang) {
+            $translations = json_decode((string)file_get_contents("$app/l10n/$lang.json"), true)['translations'];
+            foreach ($strings as $text) {
+                $this->assertArrayHasKey($text, $translations, "$lang: $text");
+            }
+        }
+    }
+
     public function testRoutesDropTheOldAdminFormsAndKeepOAuth(): void {
         $routes = array_column((require dirname(__DIR__, 3) . '/appinfo/routes.php')['routes'], 'name');
         foreach (['settings#global', 'settings#user', 'users#index'] as $gone) {
             $this->assertNotContains($gone, $routes);
         }
-        foreach (['settings#personal', 'grants#index', 'grants#update', 'grants#bulk', 'grants#service', 'o_auth#token', 'metadata#protectedResource'] as $kept) {
+        foreach (['settings#personal', 'grants#index', 'grants#update', 'grants#bulk', 'grants#service', 'grants#oauthClients', 'grants#updateOauthClients', 'o_auth#token', 'metadata#protectedResource'] as $kept) {
             $this->assertContains($kept, $routes);
         }
     }

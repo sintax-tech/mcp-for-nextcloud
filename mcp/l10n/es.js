@@ -420,6 +420,16 @@ OC.L10N.register(
     "Workflow OCR is not active. Scanned PDFs and images have no text for the AI; it is told to ask you or to view the page as an image." : "Workflow OCR no está activo. Los PDF escaneados y las imágenes no tienen texto para la IA; se le indica que se lo pida a usted o que vea la página como imagen.",
     "yes" : "sí",
     "your account has no email address, so the event cannot have attendees." : "su cuenta no tiene dirección de correo, por lo que el evento no puede tener participantes.",
+    "OAuth clients" : "Clientes OAuth",
+    "Allowed client hosts" : "Hosts de clientes permitidos",
+    "Save" : "Guardar",
+    "Hosts separated by commas. claude.ai and chatgpt.com are the default. The host is the one in the URL the client uses as its client_id." : "Hosts separados por comas. claude.ai y chatgpt.com son el valor predeterminado. El host es el de la URL que el cliente usa como client_id.",
+    "Allow local programs (native client)" : "Permitir programas locales (cliente nativo)",
+    "Accepted redirect URIs" : "URI de redirección aceptadas",
+    "Paste this client_id in the client settings, for example Gemini CLI settings.json → mcpServers.<name>.oauth.clientId." : "Pegue este client_id en la configuración del cliente, por ejemplo en el settings.json de Gemini CLI → mcpServers.<nombre>.oauth.clientId.",
+    "Could not load the OAuth client settings." : "No se pudo cargar la configuración de clientes OAuth.",
+    "Invalid host list: use lowercase host names only, without https://, port, path or *, and keep at least one." : "Lista de hosts no válida: use solo nombres de host en minúsculas, sin https://, puerto, ruta ni *, y mantenga al menos uno.",
+    "Could not change the native client." : "No se pudo cambiar el cliente nativo.",
     "Your connection: %s." : "Su conexión: %s."
 },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

@@ -1,6 +1,6 @@
 <?php
 /**
- * Admin section: endpoint, service switch, OCR status, the users × permissions matrix rendered by
+ * Admin section: endpoint, service switch, OCR status, OAuth clients (filled by js/admin-grants.js), the users × permissions matrix rendered by
  * js/admin-grants.js, and the hidden system tags picker.
  *
  * @var array{endpoint:string, serviceEnabled:bool, ocrActive:bool, ocrUrl:string} $_
@@ -32,6 +32,29 @@
             <?php p($l->t('It needs ocrmypdf installed on the server. Nothing else in MCP depends on it.')); ?>
         </p>
     <?php } ?>
+
+    <h3><?php p($l->t('OAuth clients')); ?></h3>
+    <p>
+        <label for="mcp-oauth-hosts"><?php p($l->t('Allowed client hosts')); ?></label>
+        <input type="text" id="mcp-oauth-hosts" class="mcp-oauth-hosts" placeholder="claude.ai, chatgpt.com" spellcheck="false" autocomplete="off">
+        <button type="button" id="mcp-oauth-hosts-save"><?php p($l->t('Save')); ?></button>
+        <span class="mcp-status" id="mcp-oauth-hosts-status" aria-live="polite"></span>
+    </p>
+    <p class="mcp-hint"><?php p($l->t('Hosts separated by commas. claude.ai and chatgpt.com are the default. The host is the one in the URL the client uses as its client_id.')); ?></p>
+    <p>
+        <input type="checkbox" class="checkbox" id="mcp-native-client">
+        <label for="mcp-native-client"><?php p($l->t('Allow local programs (native client)')); ?></label>
+        <span class="mcp-status" id="mcp-native-client-status" aria-live="polite"></span>
+    </p>
+    <div id="mcp-native-client-details" class="mcp-native-client-details" hidden>
+        <p>
+            client_id: <code id="mcp-native-client-id"></code>
+            <button type="button" class="mcp-copy" data-copy="mcp-native-client-id"><?php p($l->t('Copy')); ?></button>
+        </p>
+        <p><?php p($l->t('Accepted redirect URIs')); ?>:</p>
+        <ul id="mcp-native-redirects" class="mcp-native-redirects"></ul>
+        <p class="mcp-hint"><?php p($l->t('Paste this client_id in the client settings, for example Gemini CLI settings.json → mcpServers.<name>.oauth.clientId.')); ?></p>
+    </div>
 
     <div class="mcp-toolbar">
         <input type="search" id="mcp-search" placeholder="<?php p($l->t('Search user (name, user ID or e-mail)')); ?>" aria-label="<?php p($l->t('Search user')); ?>">

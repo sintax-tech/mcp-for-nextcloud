@@ -24,7 +24,7 @@ final class GrantsControllerTest extends TestCase {
         $this->body = $body;
         $request = $this->createMock(IRequest::class);
         $request->method('getParam')->willReturnCallback(fn (string $key, $default = null) => array_key_exists($key, $this->body) ? $this->body[$key] : $default);
-        return new GrantsController('mcp', $request, $this->fx->matrix(), $this->fx->policy, $this->fx->userManager());
+        return new GrantsController('mcp', $request, $this->fx->matrix(), $this->fx->policy, $this->fx->userManager(), $this->fx->config->mock($this));
     }
 
     private static function assertBad(JSONResponse $response): void {
@@ -32,7 +32,7 @@ final class GrantsControllerTest extends TestCase {
     }
 
     public function testEveryEndpointIsAdminOnlyAndCsrfProtected(): void {
-        foreach (['index', 'update', 'bulk', 'service'] as $method) {
+        foreach (['index', 'update', 'bulk', 'service', 'oauthClients', 'updateOauthClients'] as $method) {
             $this->assertSame([], (new \ReflectionMethod(GrantsController::class, $method))->getAttributes(), $method);
         }
     }
@@ -117,5 +117,61 @@ final class GrantsControllerTest extends TestCase {
         $this->assertArrayNotHasKey('enabled', $this->fx->config->app['mcp']);
         self::assertBad($this->controller(['enabled' => '1'])->service());
         $this->assertTrue($this->fx->policy->globalEnabled());
+    }
+
+    public function testOauthClientsShowsTheDefaultHostsWhenUnset(): void {
+        $data = $this->controller()->oauthClients()->getData();
+        $this->assertSame([
+            'hosts' => ['claude.ai', 'chatgpt.com'],
+            'hostsDefault' => true,
+            'nativeClientEnabled' => false,
+            'nativeClientId' => 'nextcloud-mcp-native',
+            'nativeRedirectUris' => ['http://localhost/oauth/callback', 'http://127.0.0.1/oauth/callback', 'http://[::1]/oauth/callback'],
+        ], $data);
+    }
+
+    public function testOauthClientsReadsExplicitConfig(): void {
+        $this->fx->config->app['mcp']['oauth_client_hosts'] = 'claude.ai,gemini.example.com';
+        $this->fx->config->app['mcp']['oauth_native_client_enabled'] = '1';
+        $data = $this->controller()->oauthClients()->getData();
+        $this->assertSame(['claude.ai', 'gemini.example.com'], $data['hosts']);
+        $this->assertFalse($data['hostsDefault']);
+        $this->assertTrue($data['nativeClientEnabled']);
+    }
+
+    public function testUpdateOauthClientsStoresHostsAndToggle(): void {
+        $data = $this->controller(['hosts' => ['claude.ai', 'my-host.example.org', 'claude.ai']])->updateOauthClients()->getData();
+        $this->assertSame('claude.ai,my-host.example.org', $this->fx->config->app['mcp']['oauth_client_hosts']);
+        $this->assertSame(['claude.ai', 'my-host.example.org'], $data['hosts']);
+        $this->assertFalse($data['hostsDefault']);
+        $this->assertArrayNotHasKey('oauth_native_client_enabled', $this->fx->config->app['mcp']);
+
+        $data = $this->controller(['nativeClientEnabled' => true])->updateOauthClients()->getData();
+        $this->assertSame('1', $this->fx->config->app['mcp']['oauth_native_client_enabled']);
+        $this->assertTrue($data['nativeClientEnabled']);
+        $this->controller(['nativeClientEnabled' => false])->updateOauthClients();
+        $this->assertSame('0', $this->fx->config->app['mcp']['oauth_native_client_enabled']);
+    }
+
+    public function testUpdateOauthClientsRejectsInvalidInputWithoutWriting(): void {
+        foreach ([
+            [],
+            ['hosts' => []],
+            ['hosts' => 'claude.ai'],
+            ['hosts' => ['Claude.ai']],
+            ['hosts' => ['https://claude.ai']],
+            ['hosts' => ['claude.ai:443']],
+            ['hosts' => ['claude.ai/path']],
+            ['hosts' => ['*.claude.ai']],
+            ['hosts' => ['claude .ai']],
+            ['hosts' => ['']],
+            ['hosts' => ['claude..ai']],
+            ['hosts' => [42]],
+            ['hosts' => ['claude.ai'], 'nativeClientEnabled' => 'yes'],
+            ['nativeClientEnabled' => 1],
+        ] as $body) {
+            self::assertBad($this->controller($body)->updateOauthClients());
+        }
+        $this->assertSame([], array_intersect_key($this->fx->config->app['mcp'] ?? [], ['oauth_client_hosts' => 1, 'oauth_native_client_enabled' => 1]));
     }
 }

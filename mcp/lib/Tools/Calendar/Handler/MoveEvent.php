@@ -33,7 +33,7 @@ final class MoveEvent implements CalendarTool {
             'calendar_move_event',
             CalendarMessages::TOOL_MOVE_EVENT . CalendarMessages::PARTICIPANTS_NOT_NOTIFIED . CalendarMessages::SHARED_CONFIRMATION_SUFFIX,
             'move',
-            ['calendar' => ToolSchema::calendar('path do calendário de origem'), 'uid' => ToolSchema::uid(), 'targetCalendar' => ToolSchema::calendar('path do calendário de destino'), 'etag' => ToolSchema::etag(), 'confirm_shared' => SharedGuard::property()],
+            ['calendar' => ToolSchema::calendar(CalendarMessages::propertyDescription('source-calendar')), 'uid' => ToolSchema::uid(), 'targetCalendar' => ToolSchema::calendar(CalendarMessages::propertyDescription('target-calendar')), 'etag' => ToolSchema::etag(), 'confirm_shared' => SharedGuard::property()],
             ['calendar', 'uid', 'targetCalendar'],
         );
     }

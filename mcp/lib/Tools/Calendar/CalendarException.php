@@ -29,7 +29,7 @@ final class CalendarException extends ToolFailure {
      * @return self concurrent change, duplicate UID or unsupported change
      */
     public static function conflict(string $reason): self {
-        return new self('Conflito: ' . $reason);
+        return new self(CalendarMessages::conflict($reason));
     }
 
     /**

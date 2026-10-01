@@ -39,7 +39,7 @@ final class ToolSchema {
      * @param string $description Portuguese description
      * @return array<string, mixed> calendar path property
      */
-    public static function calendar(string $description = 'path do calendário, como retornado por calendar_list_calendars'): array {
+    public static function calendar(string $description = CalendarMessages::PROP_CALENDAR): array {
         return ['type' => 'string', 'minLength' => 1, 'maxLength' => 1024, 'description' => $description];
     }
 

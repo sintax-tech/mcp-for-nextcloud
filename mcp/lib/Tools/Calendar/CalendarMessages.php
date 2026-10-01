@@ -20,6 +20,29 @@ final class CalendarMessages {
     public const TOOL_MOVE_EVENT = 'Move um evento para outro calendário do mesmo dono, sem sobrescrever.';
     public const TOOL_TRANSFER_EVENT = 'Transfere um evento para um calendário de outro usuário compartilhado com você com permissão de escrita. Exige confirm: true. Eventos com participantes são recusados: o organizador continua sendo você e o Nextcloud não avisa ninguém nessa operação.';
 
+    public const PROP_CALENDAR = 'path do calendário, como retornado por calendar_list_calendars';
+    public const PROP_ALL_DAY = 'evento de dia inteiro';
+    public const EXPANSION_LIMIT = 'Limite de expansão de ocorrências atingido; reduza a janela do calendário.';
+    private const PROPERTY_DESCRIPTIONS = [
+        'summary' => 'título do evento',
+        'start' => 'início: AAAA-MM-DD (dia inteiro) ou ISO com Z/offset',
+        'end' => 'fim exclusivo, no mesmo formato de start',
+        'timezone' => 'fuso IANA, ex.: America/Sao_Paulo',
+        'location' => 'local',
+        'description' => 'descrição',
+        'calendar-optional' => 'path do calendário (opcional)',
+        'from' => 'ISO date início',
+        'to' => 'ISO date fim',
+        'updated-summary' => 'novo título',
+        'updated-start' => 'novo início: AAAA-MM-DD (dia inteiro) ou ISO com Z/offset',
+        'updated-end' => 'novo fim exclusivo',
+        'updated-location' => 'novo local; vazio remove',
+        'updated-description' => 'nova descrição; vazio remove',
+        'source-calendar' => 'path do calendário de origem',
+        'target-calendar' => 'path do calendário de destino',
+        'transfer-calendar' => 'path do calendário de destino, de outro dono',
+    ];
+
     // ---- Fixed property descriptions of the schema helpers ----
 
     public const PROP_UID = 'UID do evento';
@@ -135,6 +158,16 @@ final class CalendarMessages {
     private function __construct() {
     }
 
+    /** @return string schema property text, unchanged by the mechanical relocation */
+    public static function propertyDescription(string $key): string {
+        return self::PROPERTY_DESCRIPTIONS[$key];
+    }
+
+    /** @return string safe conflict message with the original prefix */
+    public static function conflict(string $reason): string {
+        return 'Conflito: ' . $reason;
+    }
+
     /**
      * @param int $limit configured size limit in bytes
      * @return string the event is larger than the server accepts
@@ -158,7 +191,6 @@ final class CalendarMessages {
     }
 
     /**
-     * @param string $identifier refused path segment
      * @param string $label Portuguese noun of the segment
      * @return string the message of the refusal
      */

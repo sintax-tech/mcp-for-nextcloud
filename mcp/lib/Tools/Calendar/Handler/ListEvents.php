@@ -51,9 +51,9 @@ final class ListEvents implements CalendarTool {
      */
     public function definition(): array {
         return ToolSchema::definition('calendar_list_events', CalendarMessages::TOOL_LIST_EVENTS, 'read', [
-            'calendar' => ToolSchema::calendar('path do calendário (opcional)'),
-            'from' => ToolSchema::date('ISO date início'),
-            'to' => ToolSchema::date('ISO date fim'),
+            'calendar' => ToolSchema::calendar(CalendarMessages::propertyDescription('calendar-optional')),
+            'from' => ToolSchema::date(CalendarMessages::propertyDescription('from')),
+            'to' => ToolSchema::date(CalendarMessages::propertyDescription('to')),
         ]);
     }
 

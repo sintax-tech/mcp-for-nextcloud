@@ -29,7 +29,7 @@ final class DavPathBuilder {
      * @throws CalendarException when a segment is empty, reserved or contains a separator
      */
     public static function objectPath(string $userId, string $calendarUri, string $objectUri): string {
-        return self::calendarPath($userId, $calendarUri) . '/' . self::segment($objectUri, 'objeto');
+        return self::calendarPath($userId, $calendarUri) . '/' . self::segment($objectUri, CalendarMessages::PATH_OBJECT);
     }
 
     /**
@@ -39,7 +39,7 @@ final class DavPathBuilder {
      * @throws CalendarException when a segment is empty, reserved or contains a separator
      */
     public static function calendarPath(string $userId, string $calendarUri): string {
-        return self::ROOT . self::segment($userId, 'usuário') . '/' . self::segment($calendarUri, 'calendário');
+        return self::ROOT . self::segment($userId, CalendarMessages::PATH_USER) . '/' . self::segment($calendarUri, CalendarMessages::PATH_CALENDAR);
     }
 
     /**
@@ -50,7 +50,7 @@ final class DavPathBuilder {
      */
     private static function segment(string $value, string $label): string {
         if ($value === '' || in_array($value, self::REFUSED, true) || str_contains($value, '/') || str_contains($value, '\\') || str_contains($value, "\0")) {
-            throw CalendarException::blocked('Identificador de ' . $label . ' inválido.');
+            throw CalendarException::blocked(CalendarMessages::invalidPathSegment($label));
         }
         return rawurlencode($value);
     }

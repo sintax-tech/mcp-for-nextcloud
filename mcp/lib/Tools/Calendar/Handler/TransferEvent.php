@@ -26,9 +26,9 @@ final class TransferEvent implements CalendarTool {
             CalendarMessages::TOOL_TRANSFER_EVENT . CalendarMessages::PARTICIPANTS_NOT_NOTIFIED,
             'transfer',
             [
-                'calendar' => ToolSchema::calendar('path do calendário de origem'),
+                'calendar' => ToolSchema::calendar(CalendarMessages::propertyDescription('source-calendar')),
                 'uid' => ToolSchema::uid(),
-                'targetCalendar' => ToolSchema::calendar('path do calendário de destino, de outro dono'),
+                'targetCalendar' => ToolSchema::calendar(CalendarMessages::propertyDescription('transfer-calendar')),
                 'confirm' => ToolSchema::confirm(),
                 'etag' => ToolSchema::etag(),
             ],

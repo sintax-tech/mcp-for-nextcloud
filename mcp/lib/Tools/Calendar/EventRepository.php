@@ -54,7 +54,7 @@ class EventRepository {
      */
     public function assertFree(Calendar $calendar, string $uid, string $uri): void {
         if ($this->store->objectByUid($calendar->id, $uid) !== null || $this->store->object($calendar->id, $uri) !== null) {
-            throw CalendarException::conflict('já existe um evento com o mesmo UID no calendário de destino.');
+            throw CalendarException::conflict(CalendarMessages::CONFLICT_UID);
         }
     }
 

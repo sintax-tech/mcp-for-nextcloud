@@ -2,6 +2,12 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 0.8.1
+
+### Fixed
+
+- resources: the server failed to boot (HTTP 500 on every request) because the resource registry built the tool guide without its modules; the guide now comes from the tool registry, and a test boots every registered service factory.
+
 ## 0.8.0
 
 ### Added

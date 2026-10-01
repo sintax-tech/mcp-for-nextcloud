@@ -14,10 +14,26 @@ use Throwable;
  * already approved.
  */
 class AttachmentAccess {
+    /** Share provider id the manager needs as prefix of every share id; from spreed's RoomShareProvider::identifier(). */
+    private const ROOM_PROVIDER_ID = 'ocRoomShare';
+
     public function __construct(
         private IShareManager $shareManager,
         private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
     ) {}
+
+    /**
+     * The id the share manager resolves: "<provider>:<id>". An id that already carries a provider is kept as is,
+     * so it is never prefixed twice.
+     *
+     * @param int|string $id Bare share id, or an already full one
+     * @return string Full share id
+     */
+    public static function fullShareId(int|string $id): string {
+        $id = (string)$id;
+
+        return str_contains($id, ':') ? $id : self::ROOM_PROVIDER_ID . ':' . $id;
+    }
 
     /**
      * Checks that the id really is a room share of this conversation, and not a link share, a file of another
@@ -26,13 +42,14 @@ class AttachmentAccess {
      *
      * @param Conversation $conversation Conversation the card would be published in
      * @param string $userId Authenticated user
-     * @param int $attachmentId Room share id reported by talk_read_messages
+     * @param int $attachmentId Bare room share id as talk_attach_file and talk_read_messages report it; the share
+     *                          manager only resolves "<provider>:<id>", so the provider prefix is added here
      * @return IShare The validated share, so a draft can name the file the card will carry
      * @throws ConversationAccessException When the id is not a share of this conversation
      */
     public function requireRoomShareOf(Conversation $conversation, string $userId, int $attachmentId): IShare {
         try {
-            $share = $this->shareManager->getShareById((string)$attachmentId, $userId);
+            $share = $this->shareManager->getShareById(self::fullShareId($attachmentId), $userId);
         } catch (Throwable $e) {
             throw new ConversationAccessException(Messages::attachmentNotFound(), $e);
         }

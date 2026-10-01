@@ -724,9 +724,10 @@ class TalkModuleTest extends TestCase {
         $this->assertSame(Messages::talkUnavailable(), $result['content'][0]['text']);
     }
 
-    public function testUnexpectedFailureIsGenericAndLoggedWithTheToolAndTheExceptionClass(): void {
+    public function testUnexpectedFailureIsGenericForTheClientAndLoggedWithClassAndSanitizedMessage(): void {
+        $this->resolver->method('resolveForWriting')->willReturn($this->givenConversation());
         $this->sharer->method('attach')
-            ->willThrowException(new RuntimeException('SQLSTATE[42S02] at 10.0.0.9'));
+            ->willThrowException(new RuntimeException('SQLSTATE[42S02] at /var/www/html/x.php'));
         $this->logger->expects($this->once())
             ->method('error')
             ->with(
@@ -734,8 +735,8 @@ class TalkModuleTest extends TestCase {
                 $this->callback(static function (array $context): bool {
                     return $context['tool'] === TalkModule::TOOL_ATTACH
                         && str_ends_with($context['exception'], 'RuntimeException')
-                        && !str_contains(json_encode($context), 'SQLSTATE')
-                        && !str_contains(json_encode($context), '10.0.0.9');
+                        && str_contains($context['exception_message'], 'SQLSTATE')
+                        && !str_contains($context['exception_message'], '/var/www/html/x.php');
                 }),
             );
 

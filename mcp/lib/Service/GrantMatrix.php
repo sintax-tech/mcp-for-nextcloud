@@ -26,7 +26,7 @@ class GrantMatrix {
     /** Matrix filters: '' every user, 'eligible' the eligible ones, 'connected' the eligible ones who also connected. */
     public const FILTERS = ['' => null, 'eligible' => GrantPolicy::ELIGIBLE_KEY, 'connected' => GrantPolicy::CONNECTED_KEY];
     /** Nextcloud app that provides each module of GrantPolicy::CATALOG. */
-    public const MODULE_APPS = ['files' => 'files', 'notes' => 'notes', 'deck' => 'deck', 'calendar' => 'calendar', 'talk' => 'spreed', 'contacts' => 'contacts', 'tasks' => 'dav'];
+    public const MODULE_APPS = ['files' => 'files', 'notes' => 'notes', 'deck' => 'deck', 'calendar' => 'calendar', 'talk' => 'spreed', 'contacts' => 'contacts', 'tasks' => 'dav', 'people' => ''];
 
     public function __construct(
         private GrantPolicy $policy,
@@ -80,7 +80,7 @@ class GrantMatrix {
         return array_map(function (IUser $user) use ($state): array {
             $appsEnabled = [];
             foreach (self::MODULE_APPS as $module => $app) {
-                $appsEnabled[$module] = $app === 'files' || $this->appManager->isEnabledForUser($app, $user);
+                $appsEnabled[$module] = $app === 'files' || $app === '' || $this->appManager->isEnabledForUser($app, $user);
             }
             return [
                 'uid' => $user->getUID(),
@@ -93,7 +93,7 @@ class GrantMatrix {
 
     /** @return array<string, bool> whether each module's app is enabled for anyone on the server */
     public function appsEnabled(): array {
-        return array_map(fn (string $app) => $app === 'files' || $this->appManager->isEnabledForAnyone($app), self::MODULE_APPS);
+        return array_map(fn (string $app) => $app === 'files' || $app === '' || $this->appManager->isEnabledForAnyone($app), self::MODULE_APPS);
     }
 
     /** @return list<array{id:string, displayName:string}> groups for the filter, at most MAX_GROUPS */

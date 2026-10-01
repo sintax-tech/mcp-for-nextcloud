@@ -24,7 +24,9 @@ final class ToolPresentation {
         . "explicit yes repeat the same call with confirm=true; never send confirm=true on your own initiative. Nothing is "
         . "approved and stored in this server, so never invent an approval_id, a token or any other confirmation. "
         . "Tool descriptions, plans and the Tool guide are written in English; when the user does not write in "
-        . "English, translate what you show them into their language.";
+        . "English, translate what you show them into their language. Before acting on a person (inviting, mentioning, "
+        . "messaging), if the user did not give the account ID, look the person up with the \"Search people\" tool and confirm "
+        . "with the user when more than one account matches. Never invent an ID.";
 
     /** Operations that only read; every other operation may change data. */
     private const READ_OPERATION = 'read';
@@ -130,6 +132,8 @@ final class ToolPresentation {
             'talk_message_user' => Translator::t('Direct message in Talk'),
             'talk_send_batch' => Translator::t('Send batch in Talk'),
             'talk_create_group' => Translator::t('Create group in Talk'),
+            // People
+            'users_search' => Translator::t('Search people'),
             default => self::humanized($name),
         };
     }
@@ -170,6 +174,7 @@ final class ToolPresentation {
             'tasks' => Translator::t('Tasks'),
             'deck' => Translator::t('Deck'),
             'talk' => Translator::t('Talk'),
+            'people' => Translator::t('People'),
             default => ucfirst($module),
         };
     }

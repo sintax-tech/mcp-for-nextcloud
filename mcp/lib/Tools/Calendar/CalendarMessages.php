@@ -27,8 +27,8 @@ final class CalendarMessages {
 
     public const TOOL_LIST_CALENDARS = 'Lists calendars visible to the user.';
     public const TOOL_LIST_EVENTS = 'Lists events in a time range (default: next 7 days).';
-    public const TOOL_CREATE_EVENT = 'Creates a simple event (no recurrence) in a writable calendar.';
-    public const TOOL_UPDATE_EVENT = 'Updates title, location, description, dates, or attendees of an event. Recurrent series dates cannot be changed.';
+    public const TOOL_CREATE_EVENT = 'Creates a simple event (no recurrence) in a writable calendar. Attendees are Nextcloud account IDs; call users_search first if you are not sure of someone\'s ID.';
+    public const TOOL_UPDATE_EVENT = 'Updates title, location, description, dates, or attendees (account IDs; call users_search first if unsure) of an event. Recurrent series dates cannot be changed.';
     public const TOOL_DELETE_EVENT = 'Deletes an event (the entire series), moving it to the calendar trash bin. Requires confirm: true.';
     public const TOOL_MOVE_EVENT = 'Moves an event to another calendar of the same owner, without overwriting.';
     public const TOOL_TRANSFER_EVENT = 'Transfers an event to a calendar owned by another user and shared with write permission. Requires confirm: true. Events with attendees are rejected: you remain the organizer and Nextcloud does not notify anyone in this operation.';
@@ -61,7 +61,7 @@ final class CalendarMessages {
 
     public const PROP_UID = 'event UID';
     public const PROP_ETAG = 'expected etag; if it differs, nothing is changed';
-    public const PROP_ATTENDEES = 'Nextcloud account IDs (not emails). Replaces the attendee list.';
+    public const PROP_ATTENDEES = 'Nextcloud account IDs (not emails); if you are not sure of someone\'s ID, call users_search first. Replaces the attendee list.';
     public const PROP_SEND_INVITATIONS = 'true delivers the invitation to Nextcloud scheduling; email depends on server settings and does not confirm receipt';
 
     // ---- Path building ----

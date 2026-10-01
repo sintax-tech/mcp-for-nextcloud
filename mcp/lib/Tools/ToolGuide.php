@@ -58,7 +58,7 @@ final class ToolGuide {
                 'type' => 'object',
                 'properties' => [
                     'module' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 64,
-                        'description' => 'Module to detail, as named in the list: files, notes, calendar, contacts, tasks, deck, talk. '
+                        'description' => 'Module to detail, as named in the list: files, notes, calendar, contacts, tasks, deck, talk, people. '
                             . 'Only the modules available to this user are accepted.'],
                     'tool' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 64,
                         'description' => 'Single tool to detail, by its technical name (for example files_edit). '

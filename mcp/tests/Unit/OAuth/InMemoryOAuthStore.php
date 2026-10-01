@@ -61,6 +61,12 @@ final class InMemoryOAuthStore extends OAuthStore {
         $this->spent = array_filter($this->spent, fn (array $r) => $r['user_id'] !== $uid);
     }
 
+    public function deleteForClient(string $clientId): void {
+        $this->tokens = array_filter($this->tokens, fn (array $r) => ($r['client_id'] ?? null) !== $clientId);
+        $this->codes = array_filter($this->codes, fn (array $r) => ($r['client_id'] ?? null) !== $clientId);
+        $this->spent = array_filter($this->spent, fn (array $r) => ($r['client_id'] ?? null) !== $clientId);
+    }
+
     private function find(string $column, string $value): ?array {
         foreach ($this->tokens as $row) {
             if (($row[$column] ?? null) === $value) { return $row; }

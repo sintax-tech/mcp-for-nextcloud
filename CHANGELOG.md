@@ -36,6 +36,7 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 - Files: `files_checkout` accepts any file type (DOCX, XLSX, PDF, images) up to the upload limit instead of refusing non-text files; `files_edit` and `files_replace` stay text-only.
 
 ### Security
+- OAuth: turning the native client off now also invalidates its already-issued access tokens (checked on every request) and deletes its grants, codes and refresh history immediately.
 - OAuth: every redirect back to a client (authorization code, `access_denied`, redirectable errors) now carries `iss` (RFC 9207) exactly once, built in one place; required by clients such as Gemini CLI. Disabling the native client also stops it from exchanging codes or refreshing tokens.
 - Checkout downloads reject changed file ETags with HTTP 409 before spending the token or opening the content stream.
 - CIMD metadata downloads use streaming, reject oversized Content-Length and read at most 64 KiB plus one byte before closing the response.

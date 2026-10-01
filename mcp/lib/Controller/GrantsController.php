@@ -7,6 +7,7 @@ use InvalidArgumentException;
 use OCA\Mcp\OAuth\ClientMetadataFetcher;
 use OCA\Mcp\OAuth\ClientResolver;
 use OCA\Mcp\OAuth\NativeClient;
+use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\Service\GrantMatrix;
 use OCA\Mcp\Service\GrantPolicy;
 use OCP\AppFramework\Controller;
@@ -32,6 +33,7 @@ class GrantsController extends Controller {
         private GrantPolicy $policy,
         private IUserManager $userManager,
         private IConfig $config,
+        private OAuthStore $oauth,
     ) {
         parent::__construct($appName, $request);
     }
@@ -137,10 +139,19 @@ class GrantsController extends Controller {
                 $native = self::bool($native);
             }
             if ($hosts !== null) {
-                $this->config->setAppValue($this->appName, ClientMetadataFetcher::HOSTS_KEY, implode(',', $hosts));
+                $default = explode(',', ClientMetadataFetcher::DEFAULT_HOSTS);
+                if (count($hosts) === count($default) && array_diff($hosts, $default) === []) {
+                    // The default is not frozen into the config, so a later release can change it.
+                    $this->config->deleteAppValue($this->appName, ClientMetadataFetcher::HOSTS_KEY);
+                } else {
+                    $this->config->setAppValue($this->appName, ClientMetadataFetcher::HOSTS_KEY, implode(',', $hosts));
+                }
             }
             if ($native !== null) {
                 $this->config->setAppValue($this->appName, NativeClient::CONFIG_KEY, $native ? '1' : '0');
+                if (!$native) {
+                    $this->oauth->deleteForClient(NativeClient::CLIENT_ID);
+                }
             }
             return $this->oauthState();
         });

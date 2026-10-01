@@ -4,11 +4,12 @@ declare(strict_types=1);
 namespace OCA\Mcp\OAuth;
 
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IConfig;
 use OCP\IUser;
 
 /**
  * Resolves an `Authorization: Bearer` access token issued by this app into its user: the hash must exist, the token
- * must not be expired, its audience must be this MCP server and the owner must pass the TokenOwnerGate.
+ * must not be expired, a native-client token needs the native client enabled, its audience must be this MCP server and the owner must pass the TokenOwnerGate.
  */
 class AccessTokenAuthenticator {
     public function __construct(
@@ -16,6 +17,7 @@ class AccessTokenAuthenticator {
         private TokenHasher $hasher,
         private ITimeFactory $time,
         private TokenOwnerGate $gate,
+        private IConfig $config,
     ) {}
 
     /** @return bool true when the header carries a token issued by this app */
@@ -36,6 +38,9 @@ class AccessTokenAuthenticator {
         if ($row === null || !in_array('mcp', explode(' ', (string)$row['scope']), true)
             || (int)$row['access_expires'] < $this->time->getTime()
             || !ResourceUrl::sameResource((string)$row['resource'], $resource)) {
+            return null;
+        }
+        if ($row['client_id'] === NativeClient::CLIENT_ID && !ClientResolver::nativeEnabled($this->config)) {
             return null;
         }
         return $this->gate->owner((string)$row['user_id']);

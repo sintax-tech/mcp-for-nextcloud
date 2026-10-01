@@ -30,6 +30,10 @@ final class InMemoryConfig {
             $this->accessed[] = ['app', $app, $key];
             $this->app[$app][$key] = $value;
         });
+        $config->method('deleteAppValue')->willReturnCallback(function ($app, $key): void {
+            $this->accessed[] = ['app', $app, $key];
+            unset($this->app[$app][$key]);
+        });
         $config->method('getUserValue')->willReturnCallback(function ($uid, $app, $key, $default = '') {
             $this->accessed[] = ['user', $app, $key];
             return $this->user[$uid][$app][$key] ?? $default;

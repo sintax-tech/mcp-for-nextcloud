@@ -53,7 +53,7 @@ final class TokenFlowTest extends TestCase {
         $users->method('get')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $alice : null);
         $gate = new TokenOwnerGate($users, $this->policy, $this->store);
         $this->service = new TokenService($this->store, $hasher, $time, $gate, $appConfigMock);
-        $this->authenticator = new AccessTokenAuthenticator($this->store, $hasher, $time, $gate);
+        $this->authenticator = new AccessTokenAuthenticator($this->store, $hasher, $time, $gate, $appConfigMock);
     }
 
     private function code(): string {
@@ -95,6 +95,33 @@ final class TokenFlowTest extends TestCase {
         $tokens = $this->nativeExchange($this->nativeCode());
         $this->appConfig->app['mcp'][NativeClient::CONFIG_KEY] = '0';
         $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $tokens['refresh_token'], 'client_id' => NativeClient::CLIENT_ID]));
+    }
+
+    public function testDisabledNativeClientAccessTokenStopsAuthenticating(): void {
+        $this->appConfig->app['mcp'][NativeClient::CONFIG_KEY] = '1';
+        $native = $this->nativeExchange($this->nativeCode());
+        $this->assertNotNull($this->authenticator->authenticate('Bearer ' . $native['access_token'], self::RESOURCE));
+        $this->appConfig->app['mcp'][NativeClient::CONFIG_KEY] = '0';
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $native['access_token'], self::RESOURCE));
+    }
+
+    public function testDisabledNativeClientDoesNotAffectCimdTokens(): void {
+        $tokens = $this->exchange($this->code());
+        $this->appConfig->app['mcp'][NativeClient::CONFIG_KEY] = '0';
+        $this->assertNotNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE));
+    }
+
+    public function testDeleteForClientRemovesOnlyThatClientsRows(): void {
+        $this->appConfig->app['mcp'][NativeClient::CONFIG_KEY] = '1';
+        $this->nativeExchange($this->nativeCode());
+        $this->nativeCode();
+        $this->exchange($this->code());
+        $this->store->spent['x'] = ['client_id' => NativeClient::CLIENT_ID, 'id' => 99];
+        $this->store->spent['y'] = ['client_id' => self::CLIENT, 'id' => 98];
+        $this->store->deleteForClient(NativeClient::CLIENT_ID);
+        $this->assertSame([self::CLIENT], array_values(array_column($this->store->tokens, 'client_id')));
+        $this->assertSame([], $this->store->codes);
+        $this->assertSame(['y'], array_keys($this->store->spent));
     }
 
     private function exchange(string $code, array $override = []): array {

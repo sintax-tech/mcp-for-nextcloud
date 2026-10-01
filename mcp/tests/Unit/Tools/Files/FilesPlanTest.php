@@ -270,7 +270,7 @@ final class FilesPlanTest extends FilesToolsTestCase {
         $this->snapshot();
         $result = $this->registry()->call('files_move', ['from' => '/Documentos/ata.md', 'to' => '/Arquivo/ata.md'] + $confirm, 'alice');
 
-        $out = json_decode($result['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR);
+        $out = $result['structuredContent'];
         $this->assertTrue($out['requiresConfirmation']);
         $this->assertSame('files_move', $out['action']);
         $this->assertNothingWritten();

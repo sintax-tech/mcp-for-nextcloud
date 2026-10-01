@@ -214,14 +214,15 @@ final class WriteGateContractTest extends TestCase {
                 $this->assertFalse($calledSpy, "Tool $name must NOT invoke module call() without confirm: true");
                 $this->assertArrayNotHasKey('isError', $result, "Tool $name plan must not be an error");
 
-                $body = json_decode($result['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR);
+                $body = $result['structuredContent'];
+                $this->assertNull(json_decode($result['content'][0]['text'], true), $name . ' plan text must not be JSON');
                 $this->assertTrue($body['requiresConfirmation'] ?? false, "Tool $name response must contain requiresConfirmation: true");
                 $this->assertSame($name, $body['tool'] ?? $body['action'] ?? null, "Tool $name response must identify the tool");
 
                 // Call with confirm => false
                 $resultFalse = $registry->call($name, $dummyArgs + ['confirm' => false], 'alice');
                 $this->assertFalse($calledSpy, "Tool $name must NOT invoke module call() with confirm: false");
-                $bodyFalse = json_decode($resultFalse['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR);
+                $bodyFalse = $resultFalse['structuredContent'];
                 $this->assertTrue($bodyFalse['requiresConfirmation'] ?? false, "Tool $name response with confirm: false must contain requiresConfirmation: true");
             }
         }
@@ -269,7 +270,7 @@ final class WriteGateContractTest extends TestCase {
         // 2. Call without confirm: should NOT execute and should return plan
         $result = $registry->call('fake_write_tool', ['item' => 'test-item'], 'alice');
         $this->assertFalse($executed, 'Execution must not happen without confirm: true');
-        $body = json_decode($result['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR);
+        $body = $result['structuredContent'];
         $this->assertTrue($body['requiresConfirmation']);
         $this->assertSame('fake_write_tool', $body['tool']);
         $this->assertSame('test-item', $body['arguments']['item']);
@@ -278,7 +279,7 @@ final class WriteGateContractTest extends TestCase {
         // 3. Call with confirm: false: should NOT execute
         $resultFalse = $registry->call('fake_write_tool', ['item' => 'test-item', 'confirm' => false], 'alice');
         $this->assertFalse($executed, 'Execution must not happen with confirm: false');
-        $bodyFalse = json_decode($resultFalse['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR);
+        $bodyFalse = $resultFalse['structuredContent'];
         $this->assertTrue($bodyFalse['requiresConfirmation']);
 
         // 4. Call with confirm: true: should execute!

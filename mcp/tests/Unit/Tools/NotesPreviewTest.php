@@ -145,7 +145,7 @@ final class NotesPreviewTest extends TestCase {
     public function testRegistryAnswersWithThePlanUnlessConfirmed(array $confirm): void {
         $result = $this->registry()->call('notes_edit', ['id' => $this->ata, 'content' => 'novo'] + $confirm, 'alice');
 
-        $out = json_decode($result['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR);
+        $out = $result['structuredContent'];
         $this->assertTrue($out['requiresConfirmation']);
         $this->assertSame('notes_edit', $out['action']);
         $this->assertNothingWritten();

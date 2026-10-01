@@ -113,7 +113,8 @@ class ToolRegistry {
                 $arguments = ArgumentValidator::validate($published['inputSchema'], $arguments);
                 try {
                     if (WriteGate::isWrite($definition) && !WriteGate::confirmed($arguments)) {
-                        return ToolResult::json(WriteGate::plan($module, $definition, $arguments, $userId));
+                        $plan = WriteGate::plan($module, $definition, $arguments, $userId);
+                        return ToolResult::structured(PlanRenderer::render($module, $name, $plan), $plan);
                     }
                     return $module->call($name, $arguments, $userId);
                 } catch (InvalidArgumentException $e) {

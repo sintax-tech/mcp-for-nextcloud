@@ -96,9 +96,9 @@ final class WriteGate {
             ? $module->preview($definition['name'], $arguments, $userId)
             : self::generic($definition, $arguments);
         return [
+            'requiresConfirmation' => true,
             'tool' => $definition['name'],
             'title' => ToolPresentation::title($definition['name']),
-            'requiresConfirmation' => true,
         ] + $plan;
     }
 

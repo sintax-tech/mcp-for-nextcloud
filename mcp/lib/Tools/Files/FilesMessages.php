@@ -124,8 +124,9 @@ final class FilesMessages {
 
     /** @return string description of files_checkout */
     public static function checkoutTool(): string {
-        return 'Provide temporary download and upload links to edit a file with local tools '
-            . '(curl) without passing content through the model. Links are valid for 5 to 15 minutes, single-use, '
+        return 'Provide temporary download and upload links to edit any file type (document, spreadsheet, PDF, '
+            . 'image) with local tools (curl) without passing content through the model, up to the upload limit. '
+            . 'A text file can also be edited directly with files_edit or files_replace. Links are valid for 5 to 15 minutes, single-use, '
             . 'and bound to you, the file, and current ETag: if the file changes before upload, nothing is '
             . 'written. Upload creates the same backup as files_edit. If the file is outside your personal '
             . 'folder, only issue links after asking the user and retrying with confirm_shared.';
@@ -291,7 +292,7 @@ final class FilesMessages {
      * @return string the plan of files_checkout
      */
     public static function planCheckout(): string {
-        return Translator::t('Nothing was changed. After your approval a single-use download link and a single-use upload link are issued for this file; the upload only succeeds while the ETag below is the current one.');
+        return Translator::t('Nothing was changed. After your approval a single-use download link and a single-use upload link are issued for this file, which can be any file type (document, spreadsheet, PDF, image) up to the upload limit below; the upload only succeeds while the ETag below is the current one. A text file can also be edited directly with files_edit or files_replace.');
     }
 
     /**

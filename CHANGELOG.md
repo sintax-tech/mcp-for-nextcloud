@@ -13,6 +13,10 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 - tools: a tool may list alternative grants (`grantAnyOf`); it is listed and callable with any of them, and checks the one each call needs.
 - grants: two new Files operations, `share` (people and groups) and `link` (public links), both denied by default, appear as columns of the admin matrix.
 
+### Security
+
+- files: `files_list_shares` without `path` lists only shares of files the user owns. A share the user created of a received file (a re-share made in another interface) no longer appears, with its link URL or recipient, and takes no place on a page.
+
 ## 0.9.1
 
 ### Fixed

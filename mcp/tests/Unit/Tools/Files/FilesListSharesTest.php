@@ -94,6 +94,23 @@ final class FilesListSharesTest extends FilesToolsTestCase {
         }
     }
 
+    /**
+     * The scenario of the review: Alice received a file of Bruno and made a public link of it elsewhere. The listing
+     * without path is of her own files only, so that link, its token and its recipient never come out.
+     */
+    public function testALinkTheUserMadeOfAReceivedFileIsNotListed(): void {
+        $this->tree->addFile('/alice/files/Compartilhado/relatorio.pdf', 'pdf', 'application/pdf', ['scope' => 'shared']);
+        $this->shares->add(['node' => $this->id('/Compartilhado/relatorio.pdf'), 'type' => IShare::TYPE_LINK, 'with' => null,
+            'owner' => 'bruno', 'token' => 'TOKDOBRUNO']);
+        $this->shares->add(['node' => $this->id('/Compartilhado/relatorio.pdf'), 'with' => 'carla', 'owner' => 'bruno']);
+        $own = $this->shares->add(['node' => $this->id('/Documentos/ata.md'), 'with' => 'bruno']);
+
+        $page = $this->json('files_list_shares');
+        self::assertSame([$own->getFullId()], array_column($page['shares'], 'shareId'));
+        self::assertFalse($page['hasMore']);
+        self::assertStringNotContainsString('TOKDOBRUNO', json_encode($page, JSON_THROW_ON_ERROR));
+    }
+
     /** Invariant 7: only the user's own shares are asked for, never as reshares of somebody else. */
     public function testOnlySharesTheUserInitiatedAreRead(): void {
         $this->shares->add(['node' => $this->id('/Documentos/ata.md'), 'by' => 'bruno']);

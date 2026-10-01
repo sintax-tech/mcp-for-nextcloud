@@ -77,6 +77,32 @@ final class DeckMessages {
 	}
 
 	/**
+	 * A list is deleted only when it holds no card, active or archived.
+	 * @param int $cards Cards the list holds.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorStackNotEmpty(int $cards): string {
+		return Translator::n('The list has %n card; move or delete it first.', 'The list has %n cards; move or delete them first.', $cards);
+	}
+
+	/**
+	 * A board is deleted only when none of its lists holds a card, active or archived.
+	 * @param int $cards Cards the board holds.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorBoardNotEmpty(int $cards): string {
+		return Translator::n('The board has %n card; move or delete it first.', 'The board has %n cards; move or delete them first.', $cards);
+	}
+
+	/**
+	 * Only the owner deletes a board, even when others may manage it.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorBoardNotOwned(): string {
+		return Translator::t('Only the owner of a board can delete it.');
+	}
+
+	/**
 	 * The Deck validator rejected the payload.
 	 * @return string The message in the language of the current user.
 	 */

@@ -126,10 +126,11 @@ interface DeckGatewayInterface {
 	 * @param string $title Card title.
 	 * @param string $description Card description, possibly empty.
 	 * @param string|null $duedate Due date as `YYYY-MM-DD` (midnight for the caller), or null for no date.
+	 * @param int|null $order Position in the stack, or null to go after the last card.
 	 * @return Card Created card.
 	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
 	 */
-	public function createCard(string $userId, int $stackId, string $title, string $description, ?string $duedate): Card;
+	public function createCard(string $userId, int $stackId, string $title, string $description, ?string $duedate, ?int $order = null): Card;
 
 	/**
 	 * Writes the full card form, as `CardService::update()` requires it.
@@ -206,4 +207,85 @@ interface DeckGatewayInterface {
 	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
 	 */
 	public function cardBoardId(string $userId, int $cardId): int;
+
+	/**
+	 * Creates a board owned by the caller, with the default labels Deck gives every new board.
+	 *
+	 * @param string $userId UID of the authenticated caller, the owner of the new board.
+	 * @param string $title Board title, 1 to 100 characters.
+	 * @param string $color Six hexadecimal digits, without `#`.
+	 * @return Board Created board.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 */
+	public function createBoard(string $userId, string $title, string $color): Board;
+
+	/**
+	 * Creates a list on a board the caller manages.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $boardId Board that receives the list.
+	 * @param string $title List title.
+	 * @param int|null $order Position among the lists, or null to go after the last one.
+	 * @return Stack Created list.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 */
+	public function createStack(string $userId, int $boardId, string $title, ?int $order): Stack;
+
+	/**
+	 * Ownership of a board, after the manage check a structure change needs.
+	 *
+	 * Same contract as {@see self::stackOwnership()}, starting from the board: the check comes first, so a
+	 * caller who may not manage it learns neither its owner nor its title.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $boardId Board whose owner is looked up.
+	 * @return array{owner: string, ownerDisplayName: string, name: string} Owner uid, its display name and the board title.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 */
+	public function boardOwnership(string $userId, int $boardId): array;
+
+	/**
+	 * Cards a list holds, active and archived (the Deck trash is not counted).
+	 *
+	 * @param string $userId UID of the authenticated caller, who must manage the board of the list.
+	 * @param int $stackId List to count.
+	 * @return int Number of cards.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 */
+	public function stackCardCount(string $userId, int $stackId): int;
+
+	/**
+	 * Cards a board holds in all its lists, active and archived (the Deck trash is not counted).
+	 *
+	 * @param string $userId UID of the authenticated caller, who must manage the board.
+	 * @param int $boardId Board to count.
+	 * @return int Number of cards.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 */
+	public function boardCardCount(string $userId, int $boardId): int;
+
+	/**
+	 * Soft deletes a list, but only while it holds no card.
+	 *
+	 * Deck itself deletes a list whatever it holds, so the cards are counted again here, right before the
+	 * delete, and a card that appeared since the plan was shown stops it.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $stackId List to delete.
+	 * @return Stack Deleted list, still recoverable in Deck.
+	 * @throws DeckRefusalException When the list holds any card.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 */
+	public function deleteEmptyStack(string $userId, int $stackId): Stack;
+
+	/**
+	 * Soft deletes a board, but only for its owner and only while none of its lists holds a card.
+	 *
+	 * @param string $userId UID of the authenticated caller, who must own the board.
+	 * @param int $boardId Board to delete.
+	 * @return Board Deleted board, still recoverable in Deck.
+	 * @throws DeckRefusalException When the caller is not the owner or any list holds a card.
+	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
+	 */
+	public function deleteEmptyBoard(string $userId, int $boardId): Board;
 }

@@ -48,6 +48,11 @@ final class DeckErrors {
 	 * @return string One of the error messages of {@see DeckMessages}, in the language of the current user.
 	 */
 	public static function messageFor(\Throwable $exception): string {
+		// A refusal of this module carries its own, already translated and Deck-free message.
+		if ($exception instanceof DeckRefusalException) {
+			return $exception->getMessage();
+		}
+
 		foreach (self::MAPPING as [$classes, $method]) {
 			foreach ($classes as $class) {
 				if (is_a($exception, $class)) {

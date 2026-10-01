@@ -17,7 +17,7 @@ final class TransferEventTest extends CalendarTestCase {
 
     public function testTransfersToAnotherOwnersWritableCalendar(): void {
         $this->assertSame(
-            ['uid' => 't', 'from' => self::PERSONAL, 'to' => self::TEAM, 'participantsNotified' => false, 'note' => 'Os participantes do evento não são avisados, como ao mover no app Calendar.'],
+            ['uid' => 't', 'etag' => '"' . md5(self::ics("UID:t\nCLASS:PRIVATE\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z")) . '"', 'from' => self::PERSONAL, 'to' => self::TEAM, 'participantsNotified' => false, 'note' => 'Os participantes do evento não são avisados, como ao mover no app Calendar.'],
             self::json($this->transfer([])),
         );
         $this->assertSame([['move', ['personal', 't.ics', 'team_shared_by_bob', '"' . md5(self::ics("UID:t\nCLASS:PRIVATE\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z")) . '"']]], $this->dav->calls);

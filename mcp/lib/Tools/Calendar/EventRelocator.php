@@ -38,7 +38,7 @@ class EventRelocator {
      * @param string $targetPath target calendar path
      * @param string|null $etag expected ETag
      * @param bool $crossOwner true for transfer (owners must differ), false for move (same owner)
-     * @return array{uid:string, from:string, to:string, participantsNotified:bool, note:string}
+     * @return array{uid:string, etag:string, from:string, to:string, participantsNotified:bool, note:string} etag is the one the event has in the target calendar
      * @throws CalendarException when a calendar is not writable, the mode does not match the owners,
      *                           the event is protected or changed, the target already has it,
      *                           or a transfer would carry the guests to another owner
@@ -71,11 +71,13 @@ class EventRelocator {
             // Tree::move falls back to copy plus delete when the target declines moveInto
             // (sabre/dav/lib/DAV/Tree.php:163-187), and that fallback swallows exceptions
             // (apps/dav/lib/CalDAV/Calendar.php:416-432), so the 201 alone proves nothing.
-            if ($this->store->objectByUid($target->id, $uid) === null || $this->store->objectByUid($source->id, $uid) !== null) {
+            $moved = $this->store->objectByUid($target->id, $uid);
+            if ($moved === null || $this->store->objectByUid($source->id, $uid) !== null) {
                 throw new \RuntimeException(CalendarMessages::moveNotConfirmed());
             }
             return [
                 'uid' => $uid,
+                'etag' => $moved['etag'],
                 'from' => $source->path,
                 'to' => $target->path,
                 'participantsNotified' => false,

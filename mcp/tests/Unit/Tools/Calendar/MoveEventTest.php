@@ -22,12 +22,20 @@ final class MoveEventTest extends CalendarTestCase {
 
     public function testMovesBetweenCalendarsOfTheSameOwner(): void {
         $this->assertSame(
-            ['uid' => 'm', 'from' => self::PERSONAL, 'to' => self::WORK, 'participantsNotified' => false, 'note' => 'Os participantes do evento não são avisados, como ao mover no app Calendar.'],
+            ['uid' => 'm', 'etag' => '"' . md5(self::ics("UID:m\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z")) . '"', 'from' => self::PERSONAL, 'to' => self::WORK, 'participantsNotified' => false, 'note' => 'Os participantes do evento não são avisados, como ao mover no app Calendar.'],
             self::json($this->move([])),
         );
         $this->assertSame([['move', ['personal', 'm.ics', 'work', '"' . md5(self::ics("UID:m\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z")) . '"']]], $this->dav->calls);
         $this->assertArrayNotHasKey('m.ics', $this->store->objects[1]);
         $this->assertArrayHasKey('m.ics', $this->store->objects[2]);
+    }
+
+    /** The move answers with the etag the event has now, so it can be changed or moved again without asking for a plan first. */
+    public function testTheMoveReturnsTheEtagTheEventHasNow(): void {
+        $payload = self::json($this->move([]));
+        self::assertSame($this->store->objects[2]['m.ics']['etag'], $payload['etag']);
+        $again = self::json($this->move(['calendar' => self::WORK, 'targetCalendar' => self::PERSONAL, 'etag' => $payload['etag']]));
+        self::assertSame($this->store->objects[1]['m.ics']['etag'], $again['etag']);
     }
 
     public function testDifferentOwnersRequireTransfer(): void {
@@ -54,7 +62,7 @@ final class MoveEventTest extends CalendarTestCase {
 
     public function testSharedCalendarsWithConfirmationMoveTheEvent(): void {
         $this->assertSame(
-            ['uid' => 't', 'from' => self::TEAM, 'to' => self::SPRINT, 'participantsNotified' => false, 'note' => 'Os participantes do evento não são avisados, como ao mover no app Calendar.'],
+            ['uid' => 't', 'etag' => '"' . md5(self::ics("UID:t\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z")) . '"', 'from' => self::TEAM, 'to' => self::SPRINT, 'participantsNotified' => false, 'note' => 'Os participantes do evento não são avisados, como ao mover no app Calendar.'],
             self::json($this->move(['calendar' => self::TEAM, 'uid' => 't', 'targetCalendar' => self::SPRINT, 'confirm_shared' => true])),
         );
         $this->assertSame([['move', ['team_shared_by_bob', 't.ics', 'sprint_shared_by_bob', '"' . md5(self::ics("UID:t\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z")) . '"']]], $this->dav->calls);

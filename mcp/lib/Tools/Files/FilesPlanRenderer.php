@@ -41,6 +41,7 @@ final class FilesPlanRenderer {
                 'files_undo_batch' => self::undo($plan),
                 'files_version_restore' => self::restore($plan),
                 'files_share' => self::share($plan),
+                'files_unshare' => self::unshare($plan),
                 default => null,
             };
         } catch (\Throwable) {
@@ -417,6 +418,29 @@ final class FilesPlanRenderer {
             ])];
         }
         return [];
+    }
+
+    /**
+     * The plan of files_unshare: who loses access to what, in words by kind of recipient, and that the file stays.
+     *
+     * @return list<string>|null
+     */
+    private static function unshare(array $plan): ?array {
+        $path = self::text($plan, 'path');
+        $with = is_array($plan['with'] ?? null) ? $plan['with'] : [];
+        $name = self::text($with, 'displayName');
+        if ($path === null || $name === null) {
+            return null;
+        }
+        $what = self::bold($path);
+        $who = self::bold($name);
+        return [match ($with['type'] ?? null) {
+            'link' => Translator::t('The link to %s will stop working; anyone who has the link loses access.', [$what]),
+            'group' => Translator::t('Every member of the group %s will lose access to %s.', [$who, $what]),
+            default => Translator::t('%s will no longer have access to %s.', [$who, $what]),
+        }, '', '- ' . (($plan['isDir'] ?? false) === true
+            ? Translator::t('Nothing is deleted: the folder and everything in it stay exactly as they are.')
+            : Translator::t('Nothing is deleted: the file stays exactly as it is.'))];
     }
 
     /** @return string what a share level lets the recipient do, in words */

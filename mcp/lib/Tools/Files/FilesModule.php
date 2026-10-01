@@ -9,6 +9,7 @@ use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\Sharing\ShareAccess;
 use OCA\Mcp\Tools\Files\Sharing\ShareLister;
+use OCA\Mcp\Tools\Files\Sharing\ShareRemover;
 use OCA\Mcp\Tools\Files\Sharing\SharePermission;
 use OCA\Mcp\Tools\Files\Sharing\ShareWriter;
 use OCA\Mcp\Service\UserTimezone;
@@ -32,7 +33,7 @@ use OCP\IUserManager;
 
 /**
  * Files tools: list, search, tree, mkdir, copy, move, batch, read, protected edit, snippet replace, local
- * checkout, versions, undo, and the list and creation of the user's own shares.
+ * checkout, versions, undo, and the list, creation and removal of the user's own shares.
  *
  * There is deliberately no delete. Moving a node is allowed and happens in Reorganization, behind the
  * storage, destination and shared-write guards; the only removal in the module is the empty folder a batch
@@ -79,6 +80,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
         private ?UserTimezone $timezone = null,
         private ?ShareLister $shareLister = null,
         private ?ShareWriter $shareWriter = null,
+        private ?ShareRemover $shareRemover = null,
     ) {}
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app?:string}> */
@@ -234,6 +236,16 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
                     'note' => ['type' => 'string', 'maxLength' => ShareWriter::NOTE_MAX, 'description' => FilesMessages::shareNoteParam()],
                     'password' => ['type' => 'boolean', 'description' => FilesMessages::sharePasswordParam()],
                 ], ['path', 'with'])],
+            // Same grants as files_share: the type of the share removed decides which one the call needs, and
+            // ShareRemover checks it after it knows whose share it is.
+            ['name' => 'files_unshare', 'module' => 'files', 'operation' => 'share', 'grantAnyOf' => ['share', 'link'],
+                'destructiveHint' => true,
+                'description' => FilesMessages::unshareTool(),
+                'inputSchema' => self::schema([
+                    'shareId' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 128, 'description' => FilesMessages::unshareIdParam()],
+                    'path' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::unsharePathParam()],
+                    'with' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::unshareWithParam()],
+                ])],
         ];
     }
 
@@ -278,6 +290,10 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
                 . 'cannot be re-shared here. A password is never shown, only hasPassword. A room share is a Talk '
                 . 'attachment and is removed in Talk. Sharing with people or groups needs the "share" permission and '
                 . 'public links the separate "link" permission, both granted by the administrator.',
+            'files_unshare removes one share you created (by the shareId of files_list_shares, or by path plus '
+                . 'with); the plan says who loses access, and the file itself is never touched. It cannot remove what '
+                . 'somebody else shared, a share of a file you do not own or a Talk attachment, and answers "not found" '
+                . 'for all of them.',
         ];
     }
 
@@ -328,6 +344,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             'files_image_search' => ToolResult::json($this->images->search($root, $userId, $arguments)),
             'files_list_shares' => ToolResult::json($this->listShares($root, $userId, $arguments['path'] ?? null, (int)$arguments['offset'])),
             'files_share' => self::shareResult($this->shareWriter()->apply($root, $userId, $arguments)),
+            'files_unshare' => ToolResult::json($this->shareRemover()->apply($root, $userId, $arguments)),
             default => throw new \InvalidArgumentException('Unknown tool'),
         });
     }
@@ -363,6 +380,11 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
         return $this->shareWriter ?? throw new \LogicException('ShareWriter is not wired');
     }
 
+    /** @return ShareRemover the remover of files_unshare, which the container always injects */
+    private function shareRemover(): ShareRemover {
+        return $this->shareRemover ?? throw new \LogicException('ShareRemover is not wired');
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -384,6 +406,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             'files_checkout' => $this->planCheckout($root, $userId, $arguments['path'], $etag),
             'files_version_restore' => $this->planRestore($root, $userId, $arguments['path'], $arguments['version']),
             'files_share' => $this->shareWriter()->plan($root, $userId, $arguments),
+            'files_unshare' => $this->shareRemover()->plan($root, $userId, $arguments),
             default => throw new \InvalidArgumentException('Unknown tool'),
         });
     }

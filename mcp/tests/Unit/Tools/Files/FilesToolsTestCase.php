@@ -155,12 +155,12 @@ abstract class FilesToolsTestCase extends TestCase {
     }
 
     /**
-     * The sharing services of files_list_shares and files_share over {@see self::$shares}, with the same tree and guard.
+     * The sharing services of files_list_shares, files_share and files_unshare over {@see self::$shares}, with the same tree and guard.
      *
      * The accounts and groups they know are {@see self::$people} and {@see self::$groups}, read at call time so a test
      * can add one; the grants are in {@see self::$sharePolicy}, all denied but read, as on a fresh install.
      *
-     * @return array{shareLister: \OCA\Mcp\Tools\Files\Sharing\ShareLister, shareWriter: \OCA\Mcp\Tools\Files\Sharing\ShareWriter}
+     * @return array{shareLister: \OCA\Mcp\Tools\Files\Sharing\ShareLister, shareWriter: \OCA\Mcp\Tools\Files\Sharing\ShareWriter, shareRemover: \OCA\Mcp\Tools\Files\Sharing\ShareRemover}
      */
     private function sharing(IURLGenerator $urls): array {
         $this->shares = new \OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeShares($this);
@@ -197,6 +197,7 @@ abstract class FilesToolsTestCase extends TestCase {
             'shareLister' => new \OCA\Mcp\Tools\Files\Sharing\ShareLister($access, $formatter),
             'shareWriter' => new \OCA\Mcp\Tools\Files\Sharing\ShareWriter($access, $recipients, $formatter, $manager, $accounts, $groups,
                 new \OCA\Mcp\Service\UserTimezone($this->config->mock($this)), $this->time, $this->shareLogger, $this->linkPassword()),
+            'shareRemover' => new \OCA\Mcp\Tools\Files\Sharing\ShareRemover($access, $recipients, $manager, $this->shareLogger),
         ];
     }
 

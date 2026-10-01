@@ -256,6 +256,7 @@ final class ToolErrorsLanguagesTest extends TestCase {
             $deleteEvent,
             $transferEvent,
             $gate,
+            new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($gate, $scheduling, $builder, $guard),
         );
     }
 }

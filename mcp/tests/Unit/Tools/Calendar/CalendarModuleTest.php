@@ -65,7 +65,7 @@ final class CalendarModuleTest extends CalendarTestCase {
         $result = self::json($this->module->call('calendar_create_event', [
             'calendar' => self::PERSONAL, 'summary' => 'Meet',
             'start' => '2026-10-02', 'end' => '2026-10-03', 'allDay' => true,
-            'attendees' => ['bob'], 'send_invitations' => true,
+            'attendees' => ['bob'], 'send_invitations' => true, 'confirm' => true,
         ], 'alice'));
         self::assertTrue($result['scheduling']['requested']);
         self::assertSame('put', $this->dav->calls[0][0]);

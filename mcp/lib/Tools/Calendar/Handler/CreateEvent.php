@@ -28,7 +28,7 @@ use OCP\AppFramework\Utility\ITimeFactory;
  * would if the user had created it in the Calendar app: same ACL, same validation, same trash, same
  * sync. Only the read-back goes through the store.
  */
-final class CreateEvent implements CalendarTool {
+final class CreateEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
     /**
      * @param CalendarAccess $access calendar visibility and ACL
      * @param SharedGuard $guard confirmation gate for calendars of somebody else
@@ -90,6 +90,12 @@ final class CreateEvent implements CalendarTool {
      * @throws CalendarArgumentException on invalid dates, time zone or guest list
      */
     public function execute(array $arguments, string $userId): array {
+        $prepared = $this->prepare($arguments, $userId);
+        return is_array($prepared) ? $prepared : $prepared->dispatch();
+    }
+
+    /** Validate and construct the write without dispatching; direct callers retain SharedGuard. */
+    public function prepare(array $arguments, string $userId): \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite|array {
         $calendar = $this->access->resolveWritable($userId, $arguments['calendar']);
         if (($confirmation = $this->guard->confirm($calendar, $userId, $arguments)) !== null) {
             return $confirmation;
@@ -106,17 +112,19 @@ final class CreateEvent implements CalendarTool {
             $this->builder->setAttendees($vcalendar->VEVENT, $guests, $organizer['email'], $organizer['displayName']);
         }
         $notify = (bool)($arguments['send_invitations'] ?? false);
-        $this->dav->put($userId, $calendar->uri, $uri, $vcalendar->serialize(), $notify);
-        // The ETag comes from the re-read: Sabre omits it in the response once a plugin has
-        // rewritten the data (sabre/dav/lib/DAV/CorePlugin.php:428-518).
-        $row = $this->store->object($calendar->id, $uri)
-            ?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
-        $written = $this->events->parse($row['data']) ?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
-        $item = $this->mapper->toItem($written->VEVENT, $timing->start, $timing->end, $calendar, Classification::FULL);
-        return ToolSchema::result($item + [
-            'etag' => $row['etag'],
-            'scheduling' => $this->scheduling->report($notify, $written),
-        ]);
+        return new \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite($calendar, null, null, $vcalendar, function () use ($calendar, $uid, $uri, $vcalendar, $notify, $userId, $timing): array {
+            $this->dav->put($userId, $calendar->uri, $uri, $vcalendar->serialize(), $notify);
+            // The ETag comes from the re-read: Sabre omits it in the response once a plugin has
+            // rewritten the data (sabre/dav/lib/DAV/CorePlugin.php:428-518).
+            $row = $this->store->object($calendar->id, $uri)
+                ?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
+            $written = $this->events->parse($row['data']) ?? throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
+            $item = $this->mapper->toItem($written->VEVENT, $timing->start, $timing->end, $calendar, Classification::FULL);
+            return ToolSchema::result($item + [
+                'etag' => $row['etag'],
+                'scheduling' => $this->scheduling->report($notify, $written),
+            ]);
+        });
     }
 
     /**

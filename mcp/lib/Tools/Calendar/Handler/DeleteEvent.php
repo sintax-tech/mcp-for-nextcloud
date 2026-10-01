@@ -21,7 +21,7 @@ use OCA\Mcp\Tools\Calendar\TrashPolicy;
  * The DELETE goes through the CalDAV pipeline with If-Match set to the ETag that was just read, so
  * the node carries the event to the trash exactly as it does when the user deletes it in the app.
  */
-final class DeleteEvent implements CalendarTool {
+final class DeleteEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
     /**
      * @param CalendarAccess $access calendar visibility and ACL
      * @param SharedGuard $guard confirmation gate for calendars of somebody else
@@ -69,6 +69,12 @@ final class DeleteEvent implements CalendarTool {
      * @throws CalendarException when not writable, protected, changed meanwhile or the trash is disabled
      */
     public function execute(array $arguments, string $userId): array {
+        $prepared = $this->prepare($arguments, $userId);
+        return is_array($prepared) ? $prepared : $prepared->dispatch();
+    }
+
+    /** Validate and construct the write without dispatching; direct callers retain SharedGuard. */
+    public function prepare(array $arguments, string $userId): \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite|array {
         $calendar = $this->access->resolveWritable($userId, $arguments['calendar']);
         if (($confirmation = $this->guard->confirm($calendar, $userId, $arguments)) !== null) {
             return $confirmation;
@@ -78,20 +84,22 @@ final class DeleteEvent implements CalendarTool {
         }
         $stored = $this->events->forChange($calendar, $arguments['uid'], $userId, $arguments['etag'] ?? null);
         $notify = (bool)($arguments['send_invitations'] ?? false);
-        $this->dav->delete($userId, $calendar->uri, $stored->uri, $stored->etag, $notify);
-        // The re-read proves the node really went to the trash instead of being purged: the backend
-        // keeps the row with a deleted-at timestamp (apps/dav/lib/CalDAV/CalDavBackend.php:1735-1745).
-        $row = $this->store->object($calendar->id, $stored->uri);
-        if ($row === null || !$row['deleted']) {
-            throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
-        }
-        // There is no object left to read a SCHEDULE-STATUS from, so only the request is reported.
-        return ToolSchema::result([
-            'uid' => $arguments['uid'],
-            'calendar' => $calendar->path,
-            'deleted' => true,
-            'recoverable' => true,
-            'scheduling' => $this->scheduling->report($notify, null),
-        ]);
+        return new \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite($calendar, null, $stored, null, function () use ($calendar, $stored, $notify, $userId, $arguments): array {
+            $this->dav->delete($userId, $calendar->uri, $stored->uri, $stored->etag, $notify);
+            // The re-read proves the node really went to the trash instead of being purged: the backend
+            // keeps the row with a deleted-at timestamp (apps/dav/lib/CalDAV/CalDavBackend.php:1735-1745).
+            $row = $this->store->object($calendar->id, $stored->uri);
+            if ($row === null || !$row['deleted']) {
+                throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
+            }
+            // There is no object left to read a SCHEDULE-STATUS from, so only the request is reported.
+            return ToolSchema::result([
+                'uid' => $arguments['uid'],
+                'calendar' => $calendar->path,
+                'deleted' => true,
+                'recoverable' => true,
+                'scheduling' => $this->scheduling->report($notify, null),
+            ]);
+        });
     }
 }

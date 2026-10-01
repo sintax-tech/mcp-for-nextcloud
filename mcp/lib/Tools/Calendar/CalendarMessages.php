@@ -13,6 +13,16 @@ use OCA\Mcp\L10n\Translator;
  * literal sources in via Translator.
  */
 final class CalendarMessages {
+    // ---- Approval and draft messages ----
+
+    public const APPROVAL_PROMPT = 'Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).';
+    public const APPROVAL_SHARED = 'The plan changes a shared calendar belonging to someone else. Execution also requires confirm_shared: true.';
+    public const PREVIEW_SUPPRESSED = 'No invitations or cancellations will be scheduled in this change.';
+    public const PREVIEW_INVITATIONS = 'After approval, Nextcloud may schedule invitations, updates or CANCEL for removed attendees. Sending and delivery are not guaranteed.';
+    public const PREVIEW_CANCEL = 'After approval, the event will go to the trash bin and Nextcloud may schedule CANCEL to attendees. Sending and delivery are not guaranteed.';
+    public const PREVIEW_TRASH = 'After approval, the event will go to the recoverable Calendar trash bin.';
+    public const PREVIEW_INVITATION_PROOF = 'Server proof covers internal delivery and suppression by the DAV pipeline; it does not prove receipt of external email.';
+
     // ---- Tool descriptions shown in tools/list (fixed English) ----
 
     public const TOOL_LIST_CALENDARS = 'Lists calendars visible to the user.';
@@ -278,5 +288,33 @@ final class CalendarMessages {
 
     public static function invalidPathSegment(string $label): string {
         return Translator::t('Invalid %s identifier.', [$label]);
+    }
+
+    public static function approvalPrompt(): string {
+        return Translator::t('Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).');
+    }
+
+    public static function approvalShared(): string {
+        return Translator::t('The plan changes a shared calendar belonging to someone else. Execution also requires confirm_shared: true.');
+    }
+
+    public static function previewSuppressed(): string {
+        return Translator::t('No invitations or cancellations will be scheduled in this change.');
+    }
+
+    public static function previewInvitations(): string {
+        return Translator::t('After approval, Nextcloud may schedule invitations, updates or CANCEL for removed attendees. Sending and delivery are not guaranteed.');
+    }
+
+    public static function previewCancel(): string {
+        return Translator::t('After approval, the event will go to the trash bin and Nextcloud may schedule CANCEL to attendees. Sending and delivery are not guaranteed.');
+    }
+
+    public static function previewTrash(): string {
+        return Translator::t('After approval, the event will go to the recoverable Calendar trash bin.');
+    }
+
+    public static function previewInvitationProof(): string {
+        return Translator::t('Server proof covers internal delivery and suppression by the DAV pipeline; it does not prove receipt of external email.');
     }
 }

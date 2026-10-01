@@ -42,6 +42,7 @@ final class CalendarModule implements ToolModule {
         DeleteEvent $deleteEvent,
         TransferEvent $transferEvent,
         private CalendarWriteGate $gate,
+        private CalendarDraftApproval $approval,
     ) {
         foreach ([$listCalendars, $listEvents, $createEvent, $updateEvent, $moveEvent, $deleteEvent, $transferEvent] as $tool) {
             $this->tools[$tool->definition()['name']] = $tool;
@@ -54,7 +55,7 @@ final class CalendarModule implements ToolModule {
     public function definitions(): array {
         $operations = $this->gate->operations();
         return array_values(array_map(
-            static fn (CalendarTool $tool) => $tool->definition(),
+            fn (CalendarTool $tool) => $this->publicDefinition($tool),
             array_filter($this->tools, static fn (CalendarTool $tool): bool => in_array($tool->definition()['operation'], $operations, true)),
         ));
     }
@@ -78,7 +79,7 @@ final class CalendarModule implements ToolModule {
             return ToolSchema::error(CalendarMessages::invitationsUnverified());
         }
         try {
-            return $tool->execute($arguments, $userId);
+            return $tool instanceof CalendarWriteTool ? $this->approval->call($tool, $arguments, $userId) : $tool->execute($arguments, $userId);
         } catch (CalendarException $e) {
             return ToolSchema::error($e->getMessage());
         } catch (CalendarArgumentException $e) {
@@ -88,4 +89,18 @@ final class CalendarModule implements ToolModule {
             throw new RuntimeException('Calendar backend failure', 0, $e);
         }
     }
+    /** Public approval controls are distinct from the direct selftest handler schemas. */
+    private function publicDefinition(CalendarTool $tool): array {
+        $definition = $tool->definition();
+        if (!$tool instanceof CalendarWriteTool) { return $definition; }
+        $schema = &$definition['inputSchema'];
+        $properties = (array)$schema['properties'];
+        $properties['confirm'] = ['type' => 'boolean', 'default' => false, 'description' => 'Set true only after the plan was shown to the user and the user explicitly said yes. Without it nothing is written.'];
+        $properties['confirm_shared'] = SharedGuard::property();
+        $schema['properties'] = (object)$properties;
+        $schema['required'] = array_values(array_diff($schema['required'] ?? [], ['confirm']));
+        $definition['description'] .= ' First returns a detailed plan without writing. Show it to the user and wait for explicit approval; then repeat the same arguments with confirm=true, adding the etag returned in the plan when it has one.';
+        return $definition;
+    }
+
 }

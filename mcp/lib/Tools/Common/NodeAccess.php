@@ -44,9 +44,12 @@ final class NodeAccess {
      * @throws \OCP\Files\NotFoundException when the node does not exist
      * @throws ToolFailure when the node is not readable
      */
-    public static function get(Folder $root, string $path): Node {
+    public static function get(Folder $root, string $path, ?\OCA\Mcp\Service\VisibilityGuard $guard = null): Node {
         $path = PathGuard::normalize($path);
         $node = $path === '/' ? $root : $root->get(ltrim($path, '/'));
+        if ($guard !== null) {
+            $guard->assertVisible($node);
+        }
         if (!$node->isReadable()) {
             throw new ToolFailure(CommonMessages::forbidden());
         }

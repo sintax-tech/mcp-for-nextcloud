@@ -164,4 +164,36 @@ final class FilesTreeTest extends FilesToolsTestCase {
         $this->expectExceptionMessage('Invalid argument: path');
         $this->tool('files_tree', ['path' => '/../etc']);
     }
+
+    public function testHiddenFilesAndFoldersAreOmittedFromTreeAndHiddenFolderFailsNotFound(): void {
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $this->visibilityGuard = new \OCA\Mcp\Service\VisibilityGuard($this->config->mock($this), $tagMapper);
+        $this->setUp();
+
+        $hiddenFileId = $this->tree->addFile('/alice/files/Documentos/secret.txt', 'secret');
+        $hiddenFolderId = $this->tree->addFolder('/alice/files/Documentos/SecretFolder');
+        $this->tree->addFile('/alice/files/Documentos/SecretFolder/nested.txt', 'nested');
+
+        $tagMapper->method('getTagIdsForObjects')->willReturnCallback(function (array $ids) use ($hiddenFileId, $hiddenFolderId): array {
+            $res = [];
+            foreach ($ids as $id) {
+                if ($id === (string)$hiddenFileId || $id === (string)$hiddenFolderId) {
+                    $res[$id] = ['999'];
+                } else {
+                    $res[$id] = [];
+                }
+            }
+            return $res;
+        });
+
+        $out = $this->tree(['path' => '/Documentos']);
+        $paths = array_column($out['entries'], 'path');
+        $this->assertNotContains('/Documentos/secret.txt', $paths);
+        $this->assertNotContains('/Documentos/SecretFolder', $paths);
+        $this->assertNotContains('/Documentos/SecretFolder/nested.txt', $paths);
+
+        // Accessing the hidden folder directly fails with not found
+        $this->assertSame(CommonMessages::notFound(), $this->failure('files_tree', ['path' => '/Documentos/SecretFolder']));
+    }
 }

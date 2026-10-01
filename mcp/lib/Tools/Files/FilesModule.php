@@ -67,14 +67,10 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
         private ITimeFactory $time,
         private ImageTools $images,
         private OcrSupport $ocr,
-        ?VisibilityGuard $visibilityGuard = null,
+        private ?VisibilityGuard $visibilityGuard = null,
         private ?IAppManager $appManager = null,
         private ?IFullTextSearchManager $ftsManager = null,
-    ) {
-        $this->visibilityGuard = $visibilityGuard ?? new VisibilityGuard();
-    }
-
-    private VisibilityGuard $visibilityGuard;
+    ) {}
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app?:string}> */
     public function definitions(): array {
@@ -483,11 +479,15 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
 
     /** @return list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string, access:array<string, mixed>}> */
     private function list(Folder $root, string $userId, string $path): array {
-        $folder = NodeAccess::get($root, $path);
+        $folder = NodeAccess::get($root, $path, $this->visibilityGuard);
         if (!$folder instanceof Folder) {
             throw new ToolFailure(FilesMessages::notAFolder());
         }
-        $entries = array_map(fn (Node $node) => $this->entry($root, $userId, $node), $folder->getDirectoryListing());
+        $listing = $folder->getDirectoryListing();
+        if ($this->visibilityGuard !== null) {
+            $listing = $this->visibilityGuard->filter($listing);
+        }
+        $entries = array_map(fn (Node $node) => $this->entry($root, $userId, $node), $listing);
         usort($entries, static fn (array $a, array $b) => [$b['isDir'], $a['name']] <=> [$a['isDir'], $b['name']]);
         return $entries;
     }
@@ -536,7 +536,7 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
                     if ($nodes === []) {
                         continue;
                     }
-                    $visibleNodes = $this->visibilityGuard->filter($nodes);
+                    $visibleNodes = ($this->visibilityGuard?->filter($nodes) ?? array_values($nodes));
                     if ($visibleNodes === []) {
                         continue;
                     }
@@ -605,19 +605,52 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     private function searchByName(Folder $root, string $userId, string $query, int $limit): array {
         // %, _ and \ in the term are literal: escaped the way core's own file search escapes LIKE terms.
         $pattern = '%' . $this->db->escapeLikeParameter($query) . '%';
-        $search = new NameSearchQuery(new NameLikeComparison($pattern), $limit + self::SEARCH_OVERFETCH, $this->userManager->get($userId));
+        $user = $this->userManager->get($userId);
         $out = [];
-        $nodes = $root->search($search);
-        $visibleNodes = $this->visibilityGuard->filter($nodes);
-        foreach ($visibleNodes as $node) {
-            if ($node->getPath() === $root->getPath() || !$node->isReadable()) {
-                continue;
+        $seenIds = [];
+        $batchSize = $limit + self::SEARCH_OVERFETCH;
+        $maxInspected = 500;
+        $offset = 0;
+        $totalInspected = 0;
+
+        while (count($out) < $limit && $totalInspected < $maxInspected) {
+            $fetchLimit = min($batchSize, $maxInspected - $totalInspected);
+            $search = new NameSearchQuery(new NameLikeComparison($pattern), $fetchLimit, $user, [], $offset);
+            $batch = $root->search($search);
+            $batchCount = 0;
+            $newInBatch = 0;
+
+            foreach ($batch as $node) {
+                $batchCount++;
+                $totalInspected++;
+                $id = (int)$node->getId();
+                if ($id > 0) {
+                    if (isset($seenIds[$id])) {
+                        continue;
+                    }
+                    $seenIds[$id] = true;
+                }
+                $newInBatch++;
+
+                if ($node->getPath() === $root->getPath() || !$node->isReadable()) {
+                    continue;
+                }
+                if ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($node)) {
+                    continue;
+                }
+                $out[] = $this->entry($root, $userId, $node);
+                if (count($out) >= $limit) {
+                    break 2;
+                }
             }
-            $out[] = $this->entry($root, $userId, $node);
-            if (count($out) >= $limit) {
+
+            if ($batchCount === 0 || $newInBatch === 0 || $batchCount < $fetchLimit) {
                 break;
             }
+
+            $offset += $batchCount;
         }
+
         return $out;
     }
 
@@ -810,7 +843,7 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
      * @throws ToolFailure when it is not a file
      */
     private function file(Folder $root, string $path): File {
-        return NodeAccess::requireFile(NodeAccess::get($root, $path));
+        return NodeAccess::requireFile(NodeAccess::get($root, $path, $this->visibilityGuard));
     }
 
     /**

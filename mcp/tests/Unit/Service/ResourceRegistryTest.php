@@ -68,7 +68,7 @@ final class ResourceRegistryTest extends TestCase {
         $this->rootFolder = $this->createMock(IRootFolder::class);
         $this->rootFolder->method('getUserFolder')->willReturnCallback(fn () => $this->tree->rootFolder());
 
-        $this->visibilityGuard = new VisibilityGuard();
+        $this->visibilityGuard = $this->openGuard();
 
         $temp = $this->createMock(ITempManager::class);
         $temp->method('getTemporaryFile')->willReturnCallback(fn () => tempnam(sys_get_temp_dir(), 'mcp'));
@@ -267,8 +267,8 @@ final class ResourceRegistryTest extends TestCase {
         $this->registry->read('nc://unknown/resource', 'alice');
     }
 
-    public function testVisibilityGuardStubBehavior(): void {
-        $stub = new VisibilityGuard();
+    public function testOpenVisibilityGuardShowsEverything(): void {
+        $stub = $this->openGuard();
         $file = $this->tree->node('/alice/files/Documentos/texto.txt');
         $this->assertTrue($stub->isVisible($file));
         $stub->assertVisible($file);
@@ -465,5 +465,12 @@ final class ResourceRegistryTest extends TestCase {
         $this->assertArrayNotHasKey('result', $out['body']);
         $this->assertSame(-32602, $out['body']['error']['code']);
         $this->assertSame(CommonMessages::notFound(), $out['body']['error']['message']);
+    }
+
+    /** A real guard with no hidden tag configured: every node is visible. */
+    private function openGuard(): VisibilityGuard {
+        $config = $this->createMock(\OCP\IConfig::class);
+        $config->method('getAppValue')->willReturnCallback(static fn (string $app, string $key, string $default = '') => $default);
+        return new VisibilityGuard($config, $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class));
     }
 }

@@ -138,3 +138,73 @@
 	from { background-color: var(--color-error); }
 	to { background-color: var(--color-main-background); }
 }
+
+/* Hidden tags settings */
+#mcp-admin .mcp-hidden-tags {
+	margin-top: 12px;
+	margin-bottom: 24px;
+}
+
+#mcp-admin .mcp-tags-container {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin: 12px 0;
+	min-height: 36px;
+	align-items: center;
+}
+
+#mcp-admin .mcp-tag-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px;
+	background-color: var(--color-background-hover);
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-pill, var(--border-radius));
+	font-size: 0.9em;
+	cursor: pointer;
+	user-select: none;
+}
+
+#mcp-admin .mcp-tag-item:hover {
+	background-color: var(--color-background-dark);
+}
+
+#mcp-admin .mcp-tag-item input[type="checkbox"] {
+	margin: 0;
+	cursor: pointer;
+}
+
+#mcp-admin .mcp-tag-type {
+	font-size: 0.8em;
+	padding: 1px 5px;
+	border-radius: var(--border-radius-pill, var(--border-radius));
+	font-weight: 500;
+}
+
+#mcp-admin .mcp-tag-type-invisible {
+	background-color: var(--color-primary-element);
+	color: var(--color-primary-element-text);
+}
+
+#mcp-admin .mcp-tag-type-restricted {
+	background-color: var(--color-background-darker);
+	color: var(--color-main-text);
+}
+
+#mcp-admin .mcp-tag-type-collaborative {
+	background-color: var(--color-warning);
+	color: var(--color-primary-element-text, #000);
+}
+
+#mcp-admin .mcp-tags-warning {
+	margin: 8px 0;
+	padding: 8px 12px;
+	background-color: var(--color-warning-background, #fff3cd);
+	color: var(--color-warning-text, #856404);
+	border: 1px solid var(--color-warning);
+	border-radius: var(--border-radius);
+	max-width: 900px;
+	font-size: 0.9em;
+}

@@ -331,5 +331,108 @@
 		})
 	}
 
+
+	async function initTagsSection() {
+		const container = document.getElementById('mcp-tags-list')
+		const warning = document.getElementById('mcp-tags-warning')
+		const status = document.getElementById('mcp-tags-status')
+		if (!container) {
+			return
+		}
+
+		try {
+			const res = await api('GET', '/api/admin/tags')
+			container.innerHTML = ''
+			container.setAttribute('aria-busy', 'false')
+
+			if (!res.tags || res.tags.length === 0) {
+				container.appendChild(el('p', { className: 'mcp-empty' }, [t('mcp', 'No system tags found. Create tags in Files settings.')]))
+				return
+			}
+
+			const selectedSet = new Set((res.selected || []).map(String))
+
+			function updateWarning() {
+				if (!warning) {
+					return
+				}
+				const hasCollab = res.tags.some(tag => tag.type === 'collaborative' && selectedSet.has(String(tag.id)))
+				warning.style.display = hasCollab ? 'block' : 'none'
+			}
+
+			updateWarning()
+
+			for (const tag of res.tags) {
+				const tagId = String(tag.id)
+				const isChecked = selectedSet.has(tagId)
+
+				const checkbox = el('input', {
+					type: 'checkbox',
+					className: 'checkbox',
+					id: 'mcp-tag-' + tagId,
+					value: tagId,
+					checked: isChecked,
+				})
+
+				const typeBadge = el('span', {
+					className: 'mcp-tag-type mcp-tag-type-' + tag.type,
+					title: tag.type === 'invisible'
+						? t('mcp', 'Visible and assignable only by administrators')
+						: (tag.type === 'restricted'
+							? t('mcp', 'Visible to users, assignable only by administrators')
+							: t('mcp', 'Users can assign and remove this tag')),
+				}, [
+					tag.type === 'invisible' ? t('mcp', 'Invisible') : (tag.type === 'restricted' ? t('mcp', 'Restricted') : t('mcp', 'Collaborative'))
+				])
+
+				const label = el('label', { htmlFor: 'mcp-tag-' + tagId, className: 'mcp-tag-item' }, [
+					checkbox,
+					tag.name,
+					typeBadge,
+				])
+
+				checkbox.addEventListener('change', async () => {
+					if (checkbox.checked) {
+						selectedSet.add(tagId)
+					} else {
+						selectedSet.delete(tagId)
+					}
+					updateWarning()
+
+					checkbox.disabled = true
+					if (status) {
+						status.textContent = t('mcp', 'Saving…')
+					}
+
+					try {
+						await api('PUT', '/api/admin/tags', { tagIds: Array.from(selectedSet) })
+						if (status) {
+							status.textContent = t('mcp', 'Saved')
+							setTimeout(() => { if (status.textContent === t('mcp', 'Saved')) status.textContent = '' }, 2000)
+						}
+					} catch {
+						notifyError(t('mcp', 'Could not update hidden tags.'))
+						if (checkbox.checked) {
+							selectedSet.delete(tagId)
+						} else {
+							selectedSet.add(tagId)
+						}
+						checkbox.checked = selectedSet.has(tagId)
+						updateWarning()
+					} finally {
+						checkbox.disabled = false
+					}
+				})
+
+				container.appendChild(label)
+			}
+		} catch {
+			container.innerHTML = ''
+			container.setAttribute('aria-busy', 'false')
+			container.appendChild(el('p', { className: 'mcp-empty' }, [t('mcp', 'Could not load system tags.')]))
+		}
+	}
+
 	load()
+	initTagsSection()
 })()

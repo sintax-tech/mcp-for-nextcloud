@@ -46,8 +46,14 @@ final class FakeTree {
         $this->addFolder($root);
     }
 
-    public function addFolder(string $path, array $flags = []): void {
-        $this->nodes[$path] = ['type' => 'dir', 'id' => $this->nextId++, 'mtime' => 1759200000, 'etag' => 'e' . $this->nextId] + $flags + self::defaults();
+    public function addFolder(string $path, array $flags = []): int {
+        $parent = dirname($path);
+        if ($parent !== $path && !isset($this->nodes[$parent]) && str_starts_with($path, $this->root . "/")) {
+            $this->addFolder($parent);
+        }
+        $id = $this->nextId++;
+        $this->nodes[$path] = ['type' => 'dir', 'id' => $id, 'mtime' => 1759200000, 'etag' => 'e' . $id] + $flags + self::defaults();
+        return $id;
     }
 
     public function addFile(string $path, string $content, string $mime = 'text/plain', array $flags = []): int {
@@ -289,7 +295,8 @@ final class FakeTree {
                 });
             }
 
-            return array_slice(array_values(array_map(fn ($p) => $this->node($p), $matches)), 0, $query->getLimit());
+            $offset = method_exists($query, 'getOffset') ? (int)$query->getOffset() : 0;
+            return array_slice(array_values(array_map(fn ($p) => $this->node($p), $matches)), $offset, $query->getLimit());
         });
         $folder->method('getById')->willReturnCallback(fn (int $id) => array_values(array_map(fn ($p) => $this->node($p),
             array_filter(array_keys($this->nodes), fn ($p) => str_starts_with($p, $path . '/') && $this->nodes[$p]['id'] === $id))));

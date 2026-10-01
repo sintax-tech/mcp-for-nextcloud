@@ -24,6 +24,7 @@ Assistentes de IA rendem mais quando alcançam as ferramentas que o time já usa
 - **Login pelo Nextcloud.** Clientes como o claude.ai usam OAuth ("Entrar agora"): a pessoa faz login no próprio Nextcloud e clica em **Permitir**. Senha de app (HTTP Basic) continua valendo para outros clientes.
 - **O admin no controle.** Liga e desliga o serviço, define quem pode conectar e mantém uma **matriz usuário × permissão**. Leitura vem ligada para usuários autorizados. Escrever, mover, excluir, transferir e restaurar ficam **desligados até o admin liberar**.
 - **As permissões do Nextcloud sempre valem.** O app nunca amplia o que o usuário já pode fazer no Nextcloud.
+- **Ocultação de arquivos sensíveis por etiqueta.** O administrador pode escolher etiquetas de sistema (preferencialmente restritas ou invisíveis) para ocultar completamente arquivos e pastas das ferramentas MCP.
 
 ## Funcionalidades
 
@@ -87,7 +88,7 @@ A exclusão de tarefas usa a lixeira nativa do calendário e é recusada com `da
 
    Ajuste os caminhos e o usuário do servidor web ao seu ambiente. Com Docker, rode o `occ` dentro do container. Esse caminho manual é só uma alternativa: instalando pela App Store do Nextcloud não há passo no terminal.
 
-3. **Configure** em *Configurações de administração → Configurações adicionais → MCP*: ligue o serviço, marque quem pode conectar e libere as permissões de escrita necessárias.
+3. **Configure** em *Configurações de administração → Configurações adicionais → MCP*: ligue o serviço, marque quem pode conectar, libere as permissões de escrita necessárias e selecione etiquetas de sistema para ocultar arquivos sensíveis.
 
 ## Conectando um cliente
 

@@ -27,6 +27,7 @@ class FileBackup {
         private IUserManager $userManager,
         private ITimeFactory $time,
         private IConfig $config,
+        private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
     ) {}
 
     /**
@@ -79,6 +80,9 @@ class FileBackup {
             }
             $copy = $file->copy($folder->getPath() . '/' . $name);
             $valid = $copy instanceof File && $copy->getSize() === $file->getSize();
+            if ($valid && $copy instanceof File) {
+                $this->visibilityGuard?->copyHiddenTags($file, $copy);
+            }
         } catch (\Throwable) {
             $valid = false;
         }

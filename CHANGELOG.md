@@ -20,6 +20,10 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 - Visibility: stub and integration for `VisibilityGuard::assertVisible` on all file and note resource reads to respect hidden tags.
 - Files: content search with excerpts via `files_search`. When `fulltextsearch` and `files_fulltextsearch` are enabled and indexed, searches file contents (`search_mode: content`) and returns excerpts with node resolution. Gracefully falls back to file name search (`search_mode: name_only`) with an internationalized notice when fulltextsearch is not active or encounters an error. An optional `mode` parameter (`auto` | `name`) allows callers to force name-only search.
 - Notes: content search via `notes_search`. Searches note title and Markdown content (up to 1 MiB), returning contextual snippets around query matches, optionally filtered by category.
+- Files: hide sensitive files and folders by Nextcloud system tag. The administrator can select system tags in the admin settings; any file or folder bearing those tags (or inside a tagged folder) is completely hidden from MCP tools, behaving as if it does not exist (read, search, list, tree, image view/search, notes, talk attachments, and checkout token usage all return "not found", and write destinations report forbidden without leaking existence).
+- Files: automatic system tag propagation to backups created under `/MCP backups`. VisibilityGuard also mirrors visibility if the original file still exists.
+- Admin UI: dedicated "Hidden files & tags" section in the MCP admin settings with badge indicators for tag types (invisible, restricted, collaborative) and warning if collaborative tags are selected.
+- Zero cost when no hidden tags are configured (default behavior unchanged).
 
 ### Changed
 - Files: `files_read` of an image no longer fails as unsupported; it answers with `text_layer: false` and the notice.

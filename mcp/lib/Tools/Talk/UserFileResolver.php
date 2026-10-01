@@ -18,6 +18,7 @@ use Throwable;
 class UserFileResolver {
     public function __construct(
         private IRootFolder $rootFolder,
+        private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
     ) {}
 
     /**
@@ -41,7 +42,8 @@ class UserFileResolver {
 
         if (!$node instanceof File
             || !$node->isReadable()
-            || ($node->getPermissions() & Constants::PERMISSION_SHARE) !== Constants::PERMISSION_SHARE) {
+            || ($node->getPermissions() & Constants::PERMISSION_SHARE) !== Constants::PERMISSION_SHARE
+            || ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($node))) {
             throw new FileAccessException(Messages::fileNotFound());
         }
 

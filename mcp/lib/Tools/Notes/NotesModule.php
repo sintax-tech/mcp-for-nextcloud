@@ -35,7 +35,6 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     public const TRASH_STORAGE = 'OCA\\Files_Trashbin\\Storage';
     /** Characters of the content a plan shows, so the user reads the note and not a wall of text. */
     private const EXCERPT_CHARS = 400;
-    private VisibilityGuard $visibilityGuard;
 
     public function __construct(
         private NotesRepository $notes,
@@ -43,10 +42,8 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
         private IUserManager $userManager,
         private SharedWriteGuard $guard,
         private NodeAccessInfo $accessInfo,
-        ?VisibilityGuard $visibilityGuard = null,
-    ) {
-        $this->visibilityGuard = $visibilityGuard ?? new VisibilityGuard();
-    }
+        private ?VisibilityGuard $visibilityGuard = null,
+    ) {}
 
     /**
      * What the schemas cannot say: how a note is named and what the module refuses to do.
@@ -64,6 +61,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
                 . 'instead of removing it for good.',
             'Notes are capped at ' . self::MAX_BYTES . ' bytes read or written, and a title at 200 characters.',
             'Pass `etag` to make a change fail instead of overwriting somebody else\'s version of the same note.',
+            'Some notes or categories may be hidden by administrator policy and will appear as if they do not exist.',
         ];
     }
 
@@ -155,7 +153,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
 
         $allNotes = $this->notes->all($targetFolder);
         usort($allNotes, static fn (File $a, File $b) => $b->getMTime() <=> $a->getMTime());
-        $visibleNotes = $this->visibilityGuard->filter($allNotes);
+        $visibleNotes = ($this->visibilityGuard?->filter($allNotes) ?? array_values($allNotes));
 
         $results = [];
         foreach ($visibleNotes as $note) {
@@ -322,6 +320,19 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     private function previewCreate(?Folder $root, array $arguments): array {
         self::checkSize((string)($arguments['content'] ?? ''));
         $category = (string)($arguments['category'] ?? '');
+        if ($root !== null && trim($category, '/') !== '') {
+            try {
+                $relative = ltrim(PathGuard::normalize($category), '/');
+                if ($root->nodeExists($relative)) {
+                    $node = $root->get($relative);
+                    if ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($node)) {
+                        throw new ToolFailure(CommonMessages::notFound());
+                    }
+                }
+            } catch (InvalidArgumentException) {
+                throw new InvalidArgumentException('Invalid argument: category');
+            }
+        }
         $folder = $this->existingCategory($root, $category);
         if ($root === null || $folder === null) {
             // The category folder itself does not exist yet: the write creates it, and the plan says so
@@ -402,6 +413,19 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
             throw new ToolFailure(CommonMessages::forbidden());
         }
         $category = (string)$arguments['category'];
+        if ($root !== null && trim($category, '/') !== '') {
+            try {
+                $relative = ltrim(PathGuard::normalize($category), '/');
+                if ($root->nodeExists($relative)) {
+                    $node = $root->get($relative);
+                    if ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($node)) {
+                        throw new ToolFailure(CommonMessages::notFound());
+                    }
+                }
+            } catch (InvalidArgumentException) {
+                throw new InvalidArgumentException('Invalid argument: category');
+            }
+        }
         $folder = $this->existingCategory($root, $category);
         return [
             'action' => 'notes_move',
@@ -409,7 +433,13 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
             'from' => $this->snapshot($root, $note)['category'],
             'to' => trim($category, '/'),
             'categoryCreated' => $folder === null && trim($category, '/') !== '',
-            'titleTaken' => $folder !== null && $folder->nodeExists($note->getName()),
+            'titleTaken' => (function () use ($folder, $note): bool {
+                if ($folder === null || !$folder->nodeExists($note->getName())) {
+                    return false;
+                }
+                $existing = $folder->get($note->getName());
+                return $this->visibilityGuard === null || $this->visibilityGuard->isVisible($existing);
+            })(),
             'access' => $this->accessInfo->describe($note, $userId),
             'shared' => $this->shared($note, $userId),
             'recoverable' => true,
@@ -481,7 +511,13 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
         } catch (InvalidArgumentException) {
             throw new InvalidArgumentException('Invalid argument: category');
         }
-        $found = $root->nodeExists($relative) ? $root->get($relative) : null;
+        $found = null;
+        if ($root->nodeExists($relative)) {
+            $node = $root->get($relative);
+            if ($this->visibilityGuard === null || $this->visibilityGuard->isVisible($node)) {
+                $found = $node;
+            }
+        }
         return $found instanceof Folder ? $found : null;
     }
 

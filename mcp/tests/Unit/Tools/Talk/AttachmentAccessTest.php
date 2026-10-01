@@ -129,6 +129,46 @@ class AttachmentAccessTest extends TestCase {
             $this->assertInstanceOf(RuntimeException::class, $e->getPrevious());
         }
     }
+    public function testHiddenAttachmentIsRefusedAsNotFound(): void {
+        $node = $this->createMock(File::class);
+        $node->method('getId')->willReturn(777);
+        $share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
+        $share->method('getNode')->willReturn($node);
+
+        $config = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
+        $config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $tagMapper->method('getTagIdsForObjects')->willReturn(['777' => ['999']]);
+        $guard = new \OCA\Mcp\Service\VisibilityGuard($config->mock($this), $tagMapper);
+
+        $access = new AttachmentAccess($this->shareManager, $guard);
+
+        $this->expectException(ConversationAccessException::class);
+        $this->expectExceptionMessage(Messages::attachmentNotFound());
+        $access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
+    }
+
+    public function testDescribeOmitsInfoWhenNodeIsHidden(): void {
+        $node = $this->createMock(File::class);
+        $node->method('getId')->willReturn(777);
+        $node->method('getName')->willReturn('secret.pdf');
+        $node->method('getSize')->willReturn(2048);
+        $node->method('getMimeType')->willReturn('application/pdf');
+        $share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
+        $share->method('getNode')->willReturn($node);
+
+        $config = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
+        $config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $tagMapper->method('getTagIdsForObjects')->willReturn(['777' => ['999']]);
+        $guard = new \OCA\Mcp\Service\VisibilityGuard($config->mock($this), $tagMapper);
+
+        $access = new AttachmentAccess($this->shareManager, $guard);
+        $desc = $access->describe($share);
+
+        $this->assertSame(['attachmentId' => 77, 'name' => null, 'size' => null, 'mimeType' => null], $desc);
+    }
+
 
     private function givenShare(int $shareType, string $sharedWith): IShare&MockObject {
         $share = $this->createMock(IShare::class);

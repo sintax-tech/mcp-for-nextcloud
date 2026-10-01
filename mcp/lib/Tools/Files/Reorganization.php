@@ -34,6 +34,7 @@ final class Reorganization {
         private SharedWriteGuard $guard,
         private MoveReport $report,
         private \OCP\IUserManager $userManager,
+        private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
     ) {}
 
     /**
@@ -55,7 +56,7 @@ final class Reorganization {
      */
     public function tree(Folder $root, string $userId, string $path, int $depth, int $limit): array {
         $path = PathGuard::normalize($path);
-        $start = NodeAccess::get($root, $path);
+        $start = NodeAccess::get($root, $path, $this->visibilityGuard);
         if (!$start instanceof Folder) {
             throw new ToolFailure(FilesMessages::notAFolder());
         }
@@ -67,6 +68,9 @@ final class Reorganization {
             $next = [];
             foreach ($level as [$folder, $levelBelow]) {
                 foreach ($this->sorted($folder) as $node) {
+                    if ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($node)) {
+                        continue;
+                    }
                     $relative = $root->getRelativePath($node->getPath()) ?? '';
                     $entries[] = $this->entry($root, $userId, $node, $relative);
                     if (count($entries) >= $limit) {
@@ -109,13 +113,24 @@ final class Reorganization {
         if (FileBackup::isBackupPath($path)) {
             throw new ToolFailure(FilesMessages::backupPath());
         }
-        if ($root->nodeExists(ltrim($path, '/'))) {
+        $relPath = ltrim($path, '/');
+        if ($root->nodeExists($relPath)) {
+            if ($this->visibilityGuard !== null) {
+                try {
+                    $existing = $root->get($relPath);
+                    if (!$this->visibilityGuard->isVisible($existing)) {
+                        throw new ToolFailure(CommonMessages::forbidden());
+                    }
+                } catch (ToolFailure $e) {
+                    throw $e;
+                } catch (\Throwable) {}
+            }
             throw new ToolFailure(FilesMessages::destinationExists());
         }
-        // The guard and the permission check run against the closest folder that already exists. Creating
-        // the missing levels first and only then asking would leave the tree changed on a refusal, and
-        // would ask about the wrong folder: the scope that matters is the one the new folder lands in.
         $parent = $this->existingAncestor($root, $path);
+        if ($this->visibilityGuard !== null) {
+            $this->visibilityGuard->assertVisible($parent);
+        }
         if (($payload = $this->guard->guard($parent, $userId, $path, $confirmedShared)) !== null) {
             return ['path' => $path, 'created' => false, 'created_paths' => []] + $payload;
         }
@@ -365,10 +380,24 @@ final class Reorganization {
         if (FileBackup::isBackupPath($path)) {
             throw new ToolFailure(FilesMessages::backupPath());
         }
-        if ($root->nodeExists(ltrim($path, '/'))) {
+        $rel = ltrim($path, '/');
+        if ($root->nodeExists($rel)) {
+            if ($this->visibilityGuard !== null) {
+                try {
+                    $existing = $root->get($rel);
+                    if (!$this->visibilityGuard->isVisible($existing)) {
+                        throw new ToolFailure(CommonMessages::forbidden());
+                    }
+                } catch (ToolFailure $e) {
+                    throw $e;
+                } catch (\Throwable) {}
+            }
             throw new ToolFailure(FilesMessages::destinationExists());
         }
         $parent = $this->existingAncestor($root, $path);
+        if ($this->visibilityGuard !== null) {
+            $this->visibilityGuard->assertVisible($parent);
+        }
         if (!$parent->isCreatable()) {
             throw new ToolFailure(CommonMessages::forbidden());
         }
@@ -825,7 +854,7 @@ final class Reorganization {
     private function writable(Folder $root, string $path): Node {
         // run() turns a missing node into a ToolFailure here, so a batch plan can put the item in its
         // denied list instead of the whole call failing.
-        $node = NodeAccess::run(fn () => NodeAccess::get($root, PathGuard::normalize($path)));
+        $node = NodeAccess::run(fn () => NodeAccess::get($root, PathGuard::normalize($path), $this->visibilityGuard));
         if (!$node->isUpdateable()) {
             throw new ToolFailure(CommonMessages::forbidden());
         }
@@ -838,7 +867,18 @@ final class Reorganization {
      * @throws ToolFailure when anything already sits there
      */
     private function assertFree(Folder $root, string $to): void {
-        if ($to === '/' || $root->nodeExists(ltrim($to, '/'))) {
+        $rel = ltrim($to, '/');
+        if ($to === '/' || $root->nodeExists($rel)) {
+            if ($to !== '/' && $this->visibilityGuard !== null) {
+                try {
+                    $existing = $root->get($rel);
+                    if (!$this->visibilityGuard->isVisible($existing)) {
+                        throw new ToolFailure(CommonMessages::forbidden());
+                    }
+                } catch (ToolFailure $e) {
+                    throw $e;
+                } catch (\Throwable) {}
+            }
             throw new MoveConflict(FilesMessages::destinationExists());
         }
     }
@@ -879,7 +919,7 @@ final class Reorganization {
     private function destination(Folder $root, string $path): Folder {
         $segments = array_values(array_filter(explode('/', $path)));
         array_pop($segments);
-        $parent = NodeAccess::run(fn () => NodeAccess::get($root, '/' . implode('/', $segments)));
+        $parent = NodeAccess::run(fn () => NodeAccess::get($root, '/' . implode('/', $segments), $this->visibilityGuard));
         if (!$parent instanceof Folder || !$parent->isCreatable()) {
             throw new ToolFailure(CommonMessages::forbidden());
         }

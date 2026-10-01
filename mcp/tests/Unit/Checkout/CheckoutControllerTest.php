@@ -594,4 +594,34 @@ final class CheckoutControllerTest extends TestCase {
         $controller->route = ['token' => self::TOKEN];
         $this->controller = $controller;
     }
+
+    public function testHiddenFileAfterCheckoutReturnsNotFound(): void {
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $tagMapper->method('getTagIdsForObjects')->willReturn([(string)$this->tree->nodes['/alice/files/Documentos/ata.md']['id'] => ['999']]);
+        $guard = new \OCA\Mcp\Service\VisibilityGuard($this->config->mock($this), $tagMapper);
+
+        $root = $this->createMock(IRootFolder::class);
+        $root->method('getUserFolder')->willReturnCallback(fn (string $uid) => $uid === 'alice'
+            ? $this->tree->rootFolder()
+            : throw new \LogicException('other user'));
+
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
+        $backup = new FileBackup($this->apps, $this->users, $this->time, $this->config->mock($this), $guard);
+
+        $request = $this->createMock(IRequest::class);
+        $request->method('getHeader')->willReturnCallback(fn (string $name): string => $this->headers[$name] ?? '');
+        $request->method('getMethod')->willReturn('GET');
+
+        $controller = new TestableCheckoutController('mcp', $request, $root, $this->session,
+            $this->temp, $this->time, $this->policy, $this->store, $this->hasher,
+            new CheckoutService($this->createMock(IURLGenerator::class), $this->config->mock($this), $this->time, $this->hasher, $this->store, $this->apps, $this->users),
+            $backup, new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class),
+            null, $this->users, $guard);
+        $controller->route = ['token' => self::TOKEN];
+
+        $this->issue(CheckoutToken::KIND_DOWNLOAD);
+        $res = $controller->download();
+        $this->assertSame(404, $this->code($res));
+    }
 }

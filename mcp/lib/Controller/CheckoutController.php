@@ -72,6 +72,7 @@ class CheckoutController extends Controller {
         private LoggerInterface $logger,
         private ?UserL10n $l10n = null,
         private ?IUserManager $userManager = null,
+        private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
     ) {
         parent::__construct($appName, $request);
     }
@@ -319,11 +320,14 @@ class CheckoutController extends Controller {
             }
         }
         try {
-            $file = NodeAccess::requireFile(NodeAccess::get($this->rootFolder->getUserFolder($uid), $row->path));
+            $file = NodeAccess::requireFile(NodeAccess::get($this->rootFolder->getUserFolder($uid), $row->path, $this->visibilityGuard));
         } catch (\Throwable) {
             return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
         }
         if ((int)$file->getId() !== $row->fileId) {
+            return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
+        }
+        if ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($file)) {
             return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
         }
         return [$row, $file];

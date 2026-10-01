@@ -107,4 +107,17 @@ final class FilesMkdirTest extends FilesToolsTestCase {
     public function testTheRootIsRefused(): void {
         $this->assertSame(FilesMessages::destinationExists(), $this->failure('files_mkdir', ['path' => '/']));
     }
+
+    public function testItRefusesAnExistingHiddenFileWithForbiddenRatherThanDestinationExists(): void {
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $this->visibilityGuard = new \OCA\Mcp\Service\VisibilityGuard($this->config->mock($this), $tagMapper);
+        $this->setUp();
+
+        $id = $this->tree->addFile('/alice/files/secret.txt', 'secret');
+        $tagMapper->method('getTagIdsForObjects')->willReturn([(string)$id => ['999']]);
+
+        $this->assertSame(CommonMessages::forbidden(), $this->failure('files_mkdir', ['path' => '/secret.txt']));
+        $this->assertSame([], $this->tree->ops);
+    }
 }

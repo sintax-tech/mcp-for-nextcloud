@@ -101,7 +101,6 @@ class Application extends App implements IBootstrap {
             $c->get(IUserManager::class),
             $c->get(LoggerInterface::class),
         ));
-        $context->registerService(VisibilityGuard::class, static fn (ContainerInterface $c): VisibilityGuard => new VisibilityGuard());
         $context->registerService(ResourceRegistry::class, static fn (ContainerInterface $c): ResourceRegistry => new ResourceRegistry(
             $c->get(ToolRegistry::class),
             $c->get(GrantPolicy::class),

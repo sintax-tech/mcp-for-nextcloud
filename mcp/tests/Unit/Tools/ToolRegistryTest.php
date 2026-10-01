@@ -44,6 +44,7 @@ final class ToolRegistryTest extends TestCase {
                     ['name' => 'c_read', 'description' => 'c', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'calendar', 'operation' => 'read', 'app' => 'calendar'],
                     ['name' => 'd_read', 'description' => 'd', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'deck', 'operation' => 'read', 'app' => 'deck'],
                     ['name' => 't_read', 'description' => 't', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'talk', 'operation' => 'read', 'app' => 'spreed'],
+                    ['name' => 's_share', 'description' => 's', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'files', 'operation' => 'share', 'grantAnyOf' => ['share', 'link']],
                 ];
             }
             public function call(string $name, array $arguments, string $userId): array {
@@ -135,6 +136,26 @@ final class ToolRegistryTest extends TestCase {
         $this->enabledApps = [];
         $this->assertSame(['mcp_guide', 'a_edit'], array_column($this->registry()->list('alice'), 'name'));
         $this->assertSame(['mcp_guide', 'a_read'], array_column($this->registry()->list('bob'), 'name'));
+    }
+
+    /**
+     * A tool whose kind of write depends on its arguments (files_share: a person or a public link) is reachable with any
+     * of the operations it lists; the module then checks the one the call really needs.
+     */
+    public function testAToolWithAlternativeGrantsIsReachableWithAnyOfThem(): void {
+        $names = fn (string $uid): array => array_column($this->registry()->list($uid), 'name');
+        $this->assertNotContains('s_share', $names('alice'), 'nenhuma das duas liberada');
+        $this->assertUnknown('s_share');
+        $this->policy->setGrant('alice', 'files', 'link', true);
+        $this->assertContains('s_share', $names('alice'));
+        $this->policy->setGrant('alice', 'files', 'link', false);
+        $this->policy->setGrant('alice', 'files', 'share', true);
+        $this->assertContains('s_share', $names('alice'));
+        $this->registry()->call('s_share', ['confirm' => true], 'alice');
+        $this->assertSame('s_share', $this->calls[0][0]);
+        $this->assertSame('share', array_column($this->registry()->definitions('alice'), null, 'name')['s_share']['operation']);
+        $guide = $this->registry()->call('mcp_guide', ['tool' => 's_share'], 'alice')['content'][0]['text'];
+        $this->assertStringContainsString('Grant operation: `share` or `link`.', $guide);
     }
 
     public function testListedDefinitionsExposeOnlyMcpFields(): void {

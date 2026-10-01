@@ -164,7 +164,7 @@ class ToolRegistry {
      * guide both describe the `confirm` argument of every write.
      *
      * @param array<string, mixed> $definition a tool definition of a module, or of the guide itself
-     * @return array{name:string, title:string, description:string, inputSchema:array<string, mixed>, annotations:array<string, bool|string>, module:string, operation:string, app?:string}
+     * @return array{name:string, title:string, description:string, inputSchema:array<string, mixed>, annotations:array<string, bool|string>, module:string, operation:string, app?:string, grantAnyOf?:list<string>}
      */
     private function present(array $definition): array {
         $definition = WriteGate::publish($definition);
@@ -176,7 +176,8 @@ class ToolRegistry {
             'annotations' => ToolPresentation::annotations($definition['name'], $definition['operation'], ($definition['destructiveHint'] ?? false) === true),
             'module' => $definition['module'],
             'operation' => $definition['operation'],
-        ] + (isset($definition['app']) ? ['app' => $definition['app']] : []);
+        ] + (isset($definition['app']) ? ['app' => $definition['app']] : [])
+            + (isset($definition['grantAnyOf']) ? ['grantAnyOf' => $definition['grantAnyOf']] : []);
     }
 
     /**
@@ -189,13 +190,24 @@ class ToolRegistry {
         return $this->guide ??= new ToolGuide($this->modules);
     }
 
-    /** @param array{module:string, operation:string, app?:string} $definition */
+    /**
+     * The grant decides first: the tool's operation, or any of the alternatives it lists in `grantAnyOf` when the kind
+     * of write depends on the arguments (files_share shares with a person under `share` and creates a public link
+     * under `link`). A tool listing alternatives must check the one each call needs itself, before planning and again
+     * before writing; the registry only lets the call in.
+     *
+     * @param array{module:string, operation:string, grantAnyOf?:list<string>, app?:string} $definition
+     */
     private function allowed(array $definition, string $userId): bool {
-        try {
-            if (!$this->policy->granted($userId, $definition['module'], $definition['operation'])) {
+        $granted = false;
+        foreach ($definition['grantAnyOf'] ?? [$definition['operation']] as $operation) {
+            try {
+                $granted = $granted || $this->policy->granted($userId, $definition['module'], $operation);
+            } catch (InvalidArgumentException) {
                 return false;
             }
-        } catch (InvalidArgumentException) {
+        }
+        if (!$granted) {
             return false;
         }
         if (isset($definition['app'])) {

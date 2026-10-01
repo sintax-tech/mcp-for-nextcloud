@@ -126,6 +126,29 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
         $this->assertSame([], $this->tree->ops);
     }
 
+    /** The plan tells the agent to repeat with the etag, so the checkout has to declare it and compare it with the file. */
+    public function testCheckoutAcceptsTheEtagItsPlanAsksFor(): void {
+        $etag = $this->plan('files_checkout', ['path' => '/Documentos/ata.md'])['etag'];
+        $out = $this->json('files_checkout', ['path' => '/Documentos/ata.md', 'etag' => $etag]);
+        $this->assertSame($etag, $out['etag']);
+        $this->assertArrayHasKey('download_url', $out);
+    }
+
+    /** A different etag aborts the checkout, so no link is minted for a file somebody else changed after the plan. */
+    public function testCheckoutWithAStaleEtagMintsNothing(): void {
+        $this->assertSame(CommonMessages::conflict(),
+            $this->failure('files_checkout', ['path' => '/Documentos/ata.md', 'etag' => 'outro']));
+        $this->assertSame([], $this->store->rows, 'nenhum link pode ser emitido');
+        $this->assertSame([], $this->issued);
+    }
+
+    /** The plan checks the etag too, so a stale one is refused before the user is asked. */
+    public function testCheckoutPlanWithAStaleEtagIsRefused(): void {
+        $this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
+        $this->expectExceptionMessage(CommonMessages::conflict());
+        $this->plan('files_checkout', ['path' => '/Documentos/ata.md', 'etag' => 'outro']);
+    }
+
     /** substr_count does not count overlaps, and neither does str_replace; the two must agree. */
     public function testReplaceWithAnOverlappingSnippetFollowsNonOverlappingSemantics(): void {
         $this->tree->addFile('/alice/files/Documentos/aaa.txt', 'aaa', 'text/plain');

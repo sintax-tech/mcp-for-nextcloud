@@ -75,7 +75,7 @@ final class CalDavBackendContractTest extends TestCase {
 
     public function testTheScannerSeesTheKnownAdapterCalls(): void {
         $cases = self::calledMethods();
-        foreach (['CalDavBackend::getCalendarsForUser', 'CalDavBackend::calendarQuery', 'CalDavBackend::getCalendarObject', 'CalDavBackend::getMultipleCalendarObjects', 'CardDavBackend::getCards'] as $known) {
+        foreach (['CalDavBackend::getCalendarsForUser', 'CalDavBackend::calendarQuery', 'CalDavBackend::getShares', 'CalDavBackend::getMultipleCalendarObjects', 'CardDavBackend::getCards'] as $known) {
             self::assertArrayHasKey($known, $cases, "scanner no longer finds $known");
         }
     }

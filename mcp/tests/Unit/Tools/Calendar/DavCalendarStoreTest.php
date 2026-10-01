@@ -18,16 +18,15 @@ final class DavCalendarStoreTest extends TestCase {
     }
 
     /**
-     * @param string|false|null $fetched what the `uri` query returns
-     * @param \Closure|null $backendSetup receives the CalDavBackend mock before the call
-     * @return array{store: DavCalendarStore, qb: IQueryBuilder&\PHPUnit\Framework\MockObject\MockObject}
+     * @param array<string, mixed>|false $fetched row the `calendarobjects` query returns
+     * @return array{store: DavCalendarStore, qb: IQueryBuilder&\PHPUnit\Framework\MockObject\MockObject, backend: \PHPUnit\Framework\MockObject\MockObject}
      */
-    private function storeWithUriQuery(string|false|null $fetched, ?\Closure $backendSetup = null): array {
+    private function storeWithRowQuery(array|false $fetched): array {
         $expr = $this->createMock(IExpressionBuilder::class);
         $expr->method('eq')->willReturnCallback(static fn ($a, $b): string => "$a=$b");
         $expr->method('isNull')->willReturnCallback(static fn ($a): string => "$a IS NULL");
         $result = $this->createMock(\OCP\DB\IResult::class);
-        $result->method('fetchOne')->willReturn($fetched);
+        $result->method('fetchAssociative')->willReturn($fetched);
         $result->expects($this->once())->method('closeCursor');
         $qb = $this->createMock(IQueryBuilder::class);
         $qb->method('expr')->willReturn($expr);
@@ -39,21 +38,15 @@ final class DavCalendarStoreTest extends TestCase {
         $db = $this->createMock(IDBConnection::class);
         $db->method('getQueryBuilder')->willReturn($qb);
         $backend = $this->createMock(\OCA\DAV\CalDAV\CalDavBackend::class);
-        if ($backendSetup !== null) {
-            $backendSetup($backend);
-        }
         $container = $this->createMock(ContainerInterface::class);
         $container->method('get')->willReturnMap([[IDBConnection::class, $db], ['OCA\DAV\CalDAV\CalDavBackend', $backend]]);
-        return ['store' => new DavCalendarStore($container), 'qb' => $qb];
+        return ['store' => new DavCalendarStore($container), 'qb' => $qb, 'backend' => $backend];
     }
 
-    public function testObjectByUidQueriesOnlyLiveObjectsOfThatCalendarAndLoadsTheRowByUri(): void {
+    public function testObjectByUidQueriesOnlyLiveObjectsOfThatCalendarAndBypassesTheBackendCache(): void {
         $wheres = [];
-        $built = $this->storeWithUriQuery('ev.ics', function ($backend): void {
-            $backend->expects($this->once())->method('getCalendarObject')->with(7, 'ev.ics')->willReturn([
-                'id' => 11, 'uri' => 'ev.ics', 'etag' => '"e"', 'calendardata' => 'ICS',
-            ]);
-        });
+        $built = $this->storeWithRowQuery(['id' => '11', 'uri' => 'ev.ics', 'etag' => 'e', 'calendardata' => 'ICS', 'deleted_at' => null]);
+        $built['backend']->expects($this->never())->method('getCalendarObject');
         $built['qb']->method('where')->willReturnCallback(function ($c) use (&$wheres, $built) {
             $wheres[] = $c;
             return $built['qb'];
@@ -69,13 +62,30 @@ final class DavCalendarStoreTest extends TestCase {
         self::assertSame(['calendarid=:7', 'uid=:uid-1', 'calendartype=:0', 'deleted_at IS NULL'], $wheres);
     }
 
-    public function testObjectByUidReturnsNullWithoutTouchingTheBackendWhenNoRowMatches(): void {
-        foreach ([false, null] as $fetched) {
-            $built = $this->storeWithUriQuery($fetched, function ($backend): void {
-                $backend->expects($this->never())->method('getCalendarObject');
-            });
-            self::assertNull($built['store']->objectByUid(7, 'missing'));
-        }
+    public function testObjectReadsTheCurrentRowFromTheDatabaseNotTheBackendCache(): void {
+        // The backend memoizes getCalendarObject(); after a write through the DAV server it still holds the old row.
+        $built = $this->storeWithRowQuery(['id' => 11, 'uri' => 'ev.ics', 'etag' => 'new', 'calendardata' => 'NEW', 'deleted_at' => null]);
+        $built['backend']->expects($this->never())->method('getCalendarObject');
+        self::assertSame(
+            ['id' => 11, 'uri' => 'ev.ics', 'etag' => '"new"', 'data' => 'NEW', 'deleted' => false],
+            $built['store']->object(7, 'ev.ics'),
+        );
+    }
+
+    public function testObjectFlagsTrashedRowsAndReadsBlobStreams(): void {
+        $stream = fopen('php://memory', 'r+');
+        fwrite($stream, 'ICS');
+        rewind($stream);
+        $built = $this->storeWithRowQuery(['id' => 1, 'uri' => 'ev-deleted.ics', 'etag' => 'e', 'calendardata' => $stream, 'deleted_at' => '1790000000']);
+        self::assertSame(
+            ['id' => 1, 'uri' => 'ev-deleted.ics', 'etag' => '"e"', 'data' => 'ICS', 'deleted' => true],
+            $built['store']->object(7, 'ev-deleted.ics'),
+        );
+    }
+
+    public function testObjectAndObjectByUidReturnNullWhenNoRowMatches(): void {
+        self::assertNull($this->storeWithRowQuery(false)['store']->objectByUid(7, 'missing'));
+        self::assertNull($this->storeWithRowQuery(false)['store']->object(7, 'missing.ics'));
     }
 
     public function testBuildingTheStoreDoesNotResolveTheDavBackend(): void {

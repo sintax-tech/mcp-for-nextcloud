@@ -92,9 +92,8 @@ final class DeleteEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
         return new \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite($calendar, null, $stored, null, function () use ($calendar, $stored, $notify, $userId, $arguments): array {
             $this->dav->delete($userId, $calendar->uri, $stored->uri, $stored->etag, $notify);
             // The re-read proves the node really went to the trash instead of being purged: the backend
-            // keeps the row with a deleted-at timestamp (apps/dav/lib/CalDAV/CalDavBackend.php:1735-1745).
-            $row = $this->store->object($calendar->id, $stored->uri);
-            if ($row === null || !$row['deleted']) {
+            // keeps the row with a deleted-at timestamp under a renamed "-deleted" URI.
+            if (!\OCA\Mcp\Tools\Calendar\TrashedObject::exists($this->store, $calendar->id, $stored->uri)) {
                 throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
             }
             // There is no object left to read a SCHEDULE-STATUS from, so only the request is reported.

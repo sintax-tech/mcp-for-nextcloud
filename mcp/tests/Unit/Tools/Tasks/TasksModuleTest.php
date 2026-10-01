@@ -73,7 +73,12 @@ final class TasksModuleTest extends TestCase {
             'deleted' => $this->deleted,
         ];
         $this->store->method('objectByUid')->willReturnCallback($row);
-        $this->store->method('object')->willReturnCallback($row);
+        // Like the core: once trashed, the row lives under "<name>-deleted.ics" and the original URI is free.
+        $this->store->method('object')->willReturnCallback(
+            fn (int $calendar, string $uri) => $this->deleted
+                ? ($uri === 't1-deleted.ics' ? ['uri' => $uri] + $row() : null)
+                : $row()
+        );
         $this->store->method('objects')->willReturnCallback(fn () => [$row()]);
         $tasks = $this->createMock(TaskStore::class);
         $tasks->method('uris')->willReturn(['t1.ics']);
@@ -152,6 +157,13 @@ final class TasksModuleTest extends TestCase {
                 $this->module->call('tasks_delete_task', $args + ['confirm' => true], 'alice')
             )['recoverable']
         );
+    }
+
+    public function testDeleteFailsWhenTheTaskIsNotInTheTrashAfterwards(): void {
+        $args = ['calendar' => self::PATH, 'uid' => 't1'];
+        $this->dav->method('delete')->willReturn(new DavResult(204));
+        $this->expectException(\RuntimeException::class);
+        $this->module->call('tasks_delete_task', $args + ['confirm' => true], 'alice');
     }
 
     public function testPrivateSharedTaskIsHidden(): void {
@@ -283,6 +295,26 @@ final class TasksModuleTest extends TestCase {
         );
         self::assertSame('2026-10-05', $result['due']);
         self::assertSame('New', $result['summary']);
+    }
+
+    public function testCreationPlanHasNoUidAndIdenticalCreationsMakeDistinctTasks(): void {
+        $args = ['calendar' => self::PATH, 'summary' => 'Buy milk'];
+        self::assertArrayNotHasKey('uid', $this->module->preview('tasks_create_task', $args, 'alice')['after']);
+        $uris = [];
+        $this->dav->method('put')->willReturnCallback(
+            function ($user, $calendar, $uri, $data) use (&$uris) {
+                $uris[] = $uri;
+                $this->data = $data;
+                return new DavResult(201);
+            }
+        );
+        $uids = [];
+        for ($i = 0; $i < 2; $i++) {
+            $uids[] = $this->json($this->module->call('tasks_create_task', $args + ['confirm' => true], 'alice'))['uid'];
+        }
+        self::assertNotSame($uids[0], $uids[1]);
+        self::assertNotSame($uris[0], $uris[1]);
+        self::assertSame($uids[0] . '.ics', $uris[0]);
     }
 
     public function testRemovingStartCannotLeaveDurationWithoutStart(): void {

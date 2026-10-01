@@ -145,7 +145,13 @@ final class FakeCalendarStore implements CalendarStore {
      * @return void
      */
     public function applyDelete(int $calendarId, string $uri): void {
-        $this->objects[$calendarId][$uri]['deleted'] = true;
+        // Like CalDavBackend::deleteCalendarObject (stable33): the trashed row is renamed to "<name>-deleted.<ext>"
+        // to free the original URI, so a lookup by the old URI finds nothing.
+        $row = $this->objects[$calendarId][$uri];
+        unset($this->objects[$calendarId][$uri]);
+        $info = pathinfo($uri);
+        $trashed = isset($info['extension']) ? $info['filename'] . '-deleted.' . $info['extension'] : $info['filename'] . '-deleted';
+        $this->objects[$calendarId][$trashed] = ['uri' => $trashed, 'deleted' => true] + $row;
     }
 
     /**

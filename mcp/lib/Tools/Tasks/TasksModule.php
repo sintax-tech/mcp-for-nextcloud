@@ -12,6 +12,7 @@ use OCA\Mcp\Tools\Calendar\CalendarDav;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
+use OCA\Mcp\Tools\Calendar\TrashedObject;
 use OCA\Mcp\Tools\Calendar\TrashPolicy;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Dav\CollectionSchema as Schema;
@@ -281,8 +282,7 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
                 );
             }
             $this->dav->delete($userId, $calendar->uri, $row['uri'], $row['etag'], false);
-            $deleted = $this->store->object($calendar->id, $row['uri']);
-            if ($deleted === null || !$deleted['deleted']) {
+            if (!TrashedObject::exists($this->store, $calendar->id, $row['uri'])) {
                 throw new RuntimeException('Task trash verification failed');
             }
             return ToolResult::json(
@@ -366,7 +366,8 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
             'calendar' => (array) $calendar,
             'etag' => $row['etag'] ?? null,
             'before' => $before,
-            'after' => $after === null ? null : $this->data->item($after),
+            // A new task has no uid the person could use yet: the confirmed call generates a random one and returns it.
+            'after' => $after === null ? null : array_diff_key($this->data->item($after), $name === 'tasks_create_task' ? ['uid' => 1] : []),
             'shared' => $shared,
             'recoverable' => $deleting,
             'consequence' => $deleting ? Translator::t('The task will be moved to the calendar trash.') : null,

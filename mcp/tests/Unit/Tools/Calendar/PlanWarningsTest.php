@@ -143,6 +143,8 @@ final class PlanWarningsTest extends CalendarTestCase {
         $result = $this->registry->call('calendar_create_event', ['calendar' => self::PERSONAL, 'attendees' => ['bob']] + self::EVENT, 'alice');
         $text = $result['content'][0]['text'];
         self::assertStringContainsString('### Avisos', $text);
+        self::assertStringContainsString('- Participantes: Roberto Almeida', $text);
+        self::assertStringNotContainsStringIgnoringCase('mailto', $text);
         self::assertStringContainsString('Sobrepõe Dentista', $text);
         self::assertStringContainsString('Roberto Almeida está ocupado(a) neste horário.', $text);
         self::assertStringContainsString('### Calendários compartilhados com os participantes', $text);

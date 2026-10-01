@@ -86,7 +86,7 @@ final class CalendarDraftApproval {
      * @param string $name registered Calendar write tool name
      * @param PreparedCalendarWrite $prepared proposed source, target, and before/after event data
      * @param array<string, mixed> $arguments validated write arguments used to describe scheduling
-     * @return array{action:string, calendar:array{id:int, uri:string, name:string, ownerId:string, ownerPrincipal:string, writable:bool, path:string}, destination:array{id:int, uri:string, name:string, ownerId:string, ownerPrincipal:string, writable:bool, path:string}|null, uid:string|null, etag:string|null, before:array{summary:string, location:string, description:string, start:string, end:string, allDay:bool, timeZone:string|null, attendees:list<string>, organizer:string|null, recurring:bool}|null, after:array{summary:string, location:string, description:string, start:string, end:string, allDay:bool, timeZone:string|null, attendees:list<string>, organizer:string|null, recurring:bool}|null, participants:array{current:list<string>, proposed:list<string>, added:list<string>, removed:list<string>}, recoverable:bool, consequence:string|null, scheduling:array{requested:bool, imipEnabled:bool, participantsNotified:bool, message:string, proofScope:string}} review data shown before the user approves the write
+     * @return array{action:string, calendar:array{id:int, uri:string, name:string, ownerId:string, ownerPrincipal:string, writable:bool, path:string}, destination:array{id:int, uri:string, name:string, ownerId:string, ownerPrincipal:string, writable:bool, path:string}|null, uid:string|null, etag:string|null, before:array{summary:string, location:string, description:string, start:string, end:string, allDay:bool, timeZone:string|null, attendees:list<string>, organizer:string|null, recurring:bool}|null, after:array{summary:string, location:string, description:string, start:string, end:string, allDay:bool, timeZone:string|null, attendees:list<string>, organizer:string|null, recurring:bool}|null, participants:array{current:list<string>, proposed:list<string>, added:list<string>, removed:list<string>, names:array<string, string>}, recoverable:bool, consequence:string|null, scheduling:array{requested:bool, imipEnabled:bool, participantsNotified:bool, message:string, proofScope:string}} review data shown before the user approves the write
      * @throws CalendarException when event data has no master VEVENT
      */
     private function plan(string $name, PreparedCalendarWrite $prepared, array $arguments): array {
@@ -100,11 +100,34 @@ final class CalendarDraftApproval {
         return ['action' => $name, 'calendar' => (array)$prepared->source, 'destination' => $prepared->target === null ? null : (array)$prepared->target,
             'uid' => $prepared->before === null ? null : (string)$prepared->before->master()?->UID,
             'etag' => $prepared->before?->etag, 'before' => $before, 'after' => $after,
-            'participants' => ['current' => $old, 'proposed' => $new, 'added' => array_values(array_diff($new, $old)), 'removed' => array_values(array_diff($old, $new))],
+            'participants' => ['current' => $old, 'proposed' => $new, 'added' => array_values(array_diff($new, $old)), 'removed' => array_values(array_diff($old, $new)),
+                'names' => $this->names($prepared->before?->vcalendar, $prepared->after)],
             'recoverable' => $deleting, 'consequence' => $deleting ? CalendarMessages::previewTrash() : null,
             'scheduling' => ['requested' => $notify, 'imipEnabled' => $this->scheduling->imipEnabled(), 'participantsNotified' => false,
                 'message' => $moving ? CalendarMessages::participantsNotNotified() : ($notify ? ($deleting ? CalendarMessages::previewCancel() : CalendarMessages::previewInvitations()) : CalendarMessages::previewSuppressed()),
                 'proofScope' => CalendarMessages::previewInvitationProof()]];
+    }
+
+    /**
+     * Reads the name each guest goes by (the CN of the ATTENDEE), so the plan can show a person instead of an address.
+     *
+     * @param VCalendar|null $before event as stored, or null when the write creates it
+     * @param VCalendar|null $after event as proposed
+     * @return array<string, string> CN by lower-case address without the `mailto:` prefix; guests without a CN are left out
+     */
+    private function names(?VCalendar $before, ?VCalendar $after): array {
+        $names = [];
+        foreach (array_filter([$before, $after]) as $calendar) {
+            foreach ($calendar->select('VEVENT') as $event) {
+                foreach ($event->select('ATTENDEE') as $attendee) {
+                    $name = trim((string)($attendee['CN'] ?? ''));
+                    if ($name !== '') {
+                        $names[strtolower(preg_replace('/^mailto:/i', '', (string)$attendee) ?? '')] = $name;
+                    }
+                }
+            }
+        }
+        return $names;
     }
 
     /**

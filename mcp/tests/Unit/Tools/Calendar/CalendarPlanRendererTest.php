@@ -482,4 +482,43 @@ final class CalendarPlanRendererTest extends TestCase {
         $markdown = $this->renderer->renderPlan('calendar_create_event', $plan);
         $this->assertStringContainsString('- Participantes: Alice (alice@example.com), bob, Charlie (charlie)', (string)$markdown);
     }
+
+    public function testParticipantsAreShownByNameAndNeverWithTheMailtoPrefix(): void {
+        Translator::use(new JsonL10n('pt_BR'));
+        $plan = [
+            'action' => 'calendar_create_event',
+            'calendar' => ['name' => 'Agenda'],
+            'after' => ['summary' => 'Reunião', 'start' => '2026-10-01T17:00:00Z', 'end' => '2026-10-01T18:00:00Z', 'allDay' => false, 'timeZone' => 'America/Sao_Paulo'],
+            'participants' => [
+                'proposed' => ['mailto:bob@example.invalid', 'mailto:carla@example.invalid', 'MAILTO:dave@example.invalid'],
+                'names' => ['bob@example.invalid' => 'Roberto Almeida', 'dave@example.invalid' => 'Dave Lima'],
+            ],
+        ];
+
+        $markdown = (string)$this->renderer->renderPlan('calendar_create_event', $plan);
+
+        $this->assertStringContainsString('- Participantes: Roberto Almeida, carla@example.invalid, Dave Lima', $markdown);
+        $this->assertStringNotContainsStringIgnoringCase('mailto', $markdown);
+    }
+
+    public function testUpdateShowsTheParticipantChangeByNameWithoutMailto(): void {
+        Translator::use(new JsonL10n('pt_BR'));
+        $event = ['summary' => 'Reunião', 'start' => '2026-10-01T17:00:00Z', 'end' => '2026-10-01T18:00:00Z', 'allDay' => false, 'timeZone' => 'America/Sao_Paulo'];
+        $plan = [
+            'action' => 'calendar_update_event',
+            'calendar' => ['name' => 'Agenda'],
+            'before' => $event,
+            'after' => $event,
+            'participants' => [
+                'current' => ['mailto:bob@example.invalid'],
+                'proposed' => ['mailto:carla@example.invalid'],
+                'names' => ['bob@example.invalid' => 'Roberto Almeida', 'carla@example.invalid' => 'Carla Dias'],
+            ],
+        ];
+
+        $markdown = (string)$this->renderer->renderPlan('calendar_update_event', $plan);
+
+        $this->assertStringContainsString('- Participantes: Roberto Almeida → Carla Dias', $markdown);
+        $this->assertStringNotContainsStringIgnoringCase('mailto', $markdown);
+    }
 }

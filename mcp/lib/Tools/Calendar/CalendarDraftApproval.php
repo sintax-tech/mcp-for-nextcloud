@@ -75,6 +75,15 @@ final class CalendarDraftApproval {
         return [$prepared, $shared];
     }
 
+    /**
+     * Builds the review payload from the prepared event change and its notification consequences.
+     *
+     * @param string $name registered Calendar write tool name
+     * @param PreparedCalendarWrite $prepared proposed source, target, and before/after event data
+     * @param array<string, mixed> $arguments validated write arguments used to describe scheduling
+     * @return array{action:string, calendar:array{id:int, uri:string, name:string, ownerId:string, ownerPrincipal:string, writable:bool, path:string}, destination:array{id:int, uri:string, name:string, ownerId:string, ownerPrincipal:string, writable:bool, path:string}|null, uid:string|null, etag:string|null, before:array{summary:string, location:string, description:string, start:string, end:string, allDay:bool, timeZone:string|null, attendees:list<string>, organizer:string|null, recurring:bool}|null, after:array{summary:string, location:string, description:string, start:string, end:string, allDay:bool, timeZone:string|null, attendees:list<string>, organizer:string|null, recurring:bool}|null, participants:array{current:list<string>, proposed:list<string>, added:list<string>, removed:list<string>}, recoverable:bool, consequence:string|null, scheduling:array{requested:bool, imipEnabled:bool, participantsNotified:bool, message:string, proofScope:string}} review data shown before the user approves the write
+     * @throws CalendarException when event data has no master VEVENT
+     */
     private function plan(string $name, PreparedCalendarWrite $prepared, array $arguments): array {
         $before = $this->event($prepared->before?->vcalendar);
         $after = $this->event($prepared->after);
@@ -93,6 +102,13 @@ final class CalendarDraftApproval {
                 'proofScope' => CalendarMessages::previewInvitationProof()]];
     }
 
+    /**
+     * Extracts the master event fields and all attendees needed to describe a proposed change.
+     *
+     * @param VCalendar|null $calendar event calendar, or null when the write creates a new event
+     * @return array{summary:string, location:string, description:string, start:string, end:string, allDay:bool, timeZone:string|null, attendees:list<string>, organizer:string|null, recurring:bool}|null event details for the review payload
+     * @throws CalendarException when a calendar has no master VEVENT
+     */
     private function event(?VCalendar $calendar): ?array {
         if ($calendar === null) { return null; }
         $stored = new StoredEvent(0, '', '', $calendar);

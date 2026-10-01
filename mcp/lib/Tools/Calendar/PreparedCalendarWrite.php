@@ -15,6 +15,12 @@ final class PreparedCalendarWrite {
         private Closure $write,
     ) {}
 
+    /**
+     * Runs the prepared write callback after the caller has completed its confirmation checks.
+     *
+     * @return array<string, mixed> result produced by the handler callback
+     * @throws \Throwable when the underlying write callback fails
+     */
     public function dispatch(): array {
         return ($this->write)();
     }

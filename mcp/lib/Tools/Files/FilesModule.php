@@ -267,6 +267,10 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
                 . 'again later; otherwise view the page as an image with the image tools.',
             'There is no delete: files_undo_batch is the way back from files_move_batch, and files_version_restore '
                 . 'restores content as a new version.',
+            'files_share shares a file or folder of yours with a person (with: user:<uid>) or a group (group:<gid>); '
+                . 'find the id with users_search (include_groups: true for groups) and never guess it. Sharing again '
+                . 'with the same recipient changes that share; the plan shows before → after, including a re-share '
+                . 'right a web-made share loses. Nextcloud notifies the recipient.',
             'files_list_shares shows only the shares you created and only of your own files; a file you received '
                 . 'cannot be re-shared here. A password is never shown, only hasPassword. A room share is a Talk '
                 . 'attachment and is removed in Talk. Sharing with people or groups needs the "share" permission and '

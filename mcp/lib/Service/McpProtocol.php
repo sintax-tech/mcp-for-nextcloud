@@ -274,6 +274,7 @@ class McpProtocol {
             $read = $this->resources->read($params['uri'], $userId);
             return $this->result($id, $read);
         } catch (ToolFailure $e) {
+            // MCP 2025-06-18 server/resources, Error Handling: resource not found = -32002.
             return $this->error($id, -32002, $e->getMessage());
         } catch (InvalidArgumentException $e) {
             return $this->error($id, -32602, $this->safeMessage($e->getMessage()));

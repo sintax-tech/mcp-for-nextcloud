@@ -26,7 +26,7 @@ final class CollectionSchema {
      * @param string $app required Nextcloud app ID
      * @param string $name tool name
      * @param string $description English tool description
-     * @param string $operation read, create, edit or delete for the write gate
+     * @param string $operation read, create, edit or delete, deciding whether the call needs confirmation
      * @param array<string, mixed> $properties input schema fields
      * @param list<string> $required required input field names
      * @return array<string, mixed>

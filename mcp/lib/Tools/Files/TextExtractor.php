@@ -96,7 +96,7 @@ class TextExtractor {
 
     /**
      * @param File $file readable file within the byte limit
-     * @return string extracted text; a "[não foi possível extrair...]" notice for corrupt PDF/DOCX/ODT
+     * @return string extracted text; a localized extraction-failure notice (see FilesMessages::notExtracted) for corrupt PDF/DOCX/ODT
      * @throws ToolFailure over the byte limit, unreadable or unsupported format
      */
     public function extract(File $file): string {
@@ -109,7 +109,7 @@ class TextExtractor {
      * @param string $bytes raw content within MAX_BYTES
      * @param string $name file name the content came from, whose extension counts as text
      * @param string $mime MIME type the content came from
-     * @return string extracted text; a "[não foi possível extrair...]" notice for a corrupt PDF/DOCX/ODT
+     * @return string extracted text; a localized extraction-failure notice (see FilesMessages::notExtracted) for a corrupt PDF/DOCX/ODT
      * @throws ToolFailure for an unsupported format
      */
     public function extractBytes(string $bytes, string $name, string $mime): string {

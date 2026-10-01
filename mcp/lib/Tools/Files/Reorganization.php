@@ -729,6 +729,12 @@ final class Reorganization {
         return $shared;
     }
 
+    /**
+     * Orders paths deepest first so undo removes empty children before their parents.
+     *
+     * @param list<string> $paths user-relative folder paths
+     * @return list<string> paths sorted by descending depth
+     */
     private function byDepth(array $paths): array {
         $byDepth = $paths;
         usort($byDepth, fn (string $a, string $b) => substr_count($b, '/') <=> substr_count($a, '/'));

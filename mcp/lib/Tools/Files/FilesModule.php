@@ -585,6 +585,12 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
         }
     }
 
+    /**
+     * Checks whether the user's full-text apps and indexed Files provider are available.
+     *
+     * @param string $userId authenticated user whose enabled apps are checked
+     * @return bool false when the service is absent or its availability check fails
+     */
     private function isFullTextAvailable(string $userId): bool {
         if ($this->appManager === null || $this->ftsManager === null) {
             return false;

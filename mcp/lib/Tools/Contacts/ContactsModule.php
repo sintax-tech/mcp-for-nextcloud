@@ -42,7 +42,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
     ) {}
 
     /**
-     * Declares the tool schemas and their operations for the central write gate.
+     * Declares tool schemas and operation kinds used to decide whether calls need confirmation.
      *
      * @return list<array<string, mixed>>
      */

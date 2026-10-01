@@ -208,6 +208,8 @@ Para atualizar: `occ app:disable mcp`, remover `<apps>/mcp`, extrair o novo paco
 2. **Configurações pessoais → Informações pessoais → MCP connection**: o próprio usuário clica em *Connect*.
 3. Em **Configurações pessoais → Segurança**, o usuário cria uma senha de app. O cliente MCP usa autenticação HTTP Basic com o ID do usuário e essa senha de app. O app nunca pede nem guarda a senha principal.
 
+Risco residual nas escritas: colisões com destinos ocultos usam a mesma recusa genérica de destinos sem permissão, mas a diferença entre recusa e criação possível ainda permite inferir que um caminho está indisponível.
+
 O login pelo navegador via OAuth está descrito em [Conectar pelo claude.ai (OAuth)](#conectar-pelo-claudeai-oauth).
 
 ### Chaves de configuração

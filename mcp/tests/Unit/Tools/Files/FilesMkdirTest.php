@@ -118,6 +118,15 @@ final class FilesMkdirTest extends FilesToolsTestCase {
         $tagMapper->method('getTagIdsForObjects')->willReturn([(string)$id => ['999']]);
 
         $this->assertSame(CommonMessages::forbidden(), $this->failure('files_mkdir', ['path' => '/secret.txt']));
+        $this->tree->addFolder('/alice/files/ReadOnly', ['permissions' => \OCP\Constants::PERMISSION_READ]);
+        foreach (['/secret.txt', '/ReadOnly/new'] as $path) {
+            try {
+                $this->plan('files_mkdir', ['path' => $path]);
+                $this->fail('The unavailable destination must be refused');
+            } catch (\OCA\Mcp\Tools\ToolFailure $e) {
+                $this->assertSame(CommonMessages::forbidden(), $e->getMessage());
+            }
+        }
         $this->assertSame([], $this->tree->ops);
     }
 }

@@ -268,12 +268,15 @@ interface DeckGatewayInterface {
 	 * Soft deletes a list, but only while it holds no card.
 	 *
 	 * Deck itself deletes a list whatever it holds, so the cards are counted again here, right before the
-	 * delete, and a card that appeared since the plan was shown stops it.
+	 * delete, and a card that appeared since the plan was shown stops it. They are counted once more after the
+	 * delete: a card created in between brings the list back (Deck has no undo for a list, so it is updated with
+	 * `deletedAt: 0`) and the call is refused.
 	 *
 	 * @param string $userId UID of the authenticated caller.
 	 * @param int $stackId List to delete.
 	 * @return Stack Deleted list, still recoverable in Deck.
-	 * @throws DeckRefusalException When the list holds any card.
+	 * @throws DeckRefusalException When the list holds any card, before or during the delete; when the restore itself
+	 *     failed the message says the list is in the Deck trash.
 	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
 	 */
 	public function deleteEmptyStack(string $userId, int $stackId): Stack;
@@ -284,7 +287,9 @@ interface DeckGatewayInterface {
 	 * @param string $userId UID of the authenticated caller, who must own the board.
 	 * @param int $boardId Board to delete.
 	 * @return Board Deleted board, still recoverable in Deck.
-	 * @throws DeckRefusalException When the caller is not the owner or any list holds a card.
+	 * @throws DeckRefusalException When the caller is not the owner or any list holds a card, before or during the
+	 *     delete (the delete is then undone with `BoardService::deleteUndo()`; if that fails the message says the board
+	 *     is in the Deck trash).
 	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
 	 */
 	public function deleteEmptyBoard(string $userId, int $boardId): Board;

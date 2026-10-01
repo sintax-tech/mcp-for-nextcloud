@@ -17,6 +17,9 @@ Cada tool só aparece em `tools/list` e só pode ser chamada quando o usuário t
 | `files_list` `{path="/"}` | files.read | Filhos diretos da pasta, no formato `{name, path, isDir, size, mtime, contentType}`. |
 | `files_search` `{query, limit=25}` | files.read | Busca por nome (`%`, `_` e `\` são literais), de 1 a 100 resultados; o limite vai para a própria consulta ao cache de arquivos. |
 | `files_read` `{path}` | files.read | Texto puro, PDF, DOCX e ODT. Arquivo acima de 20 MiB é recusado antes da leitura, e o texto é truncado em 100 000 caracteres. |
+| `files_image_view` `{path, max_size=1568}` | files.read | Preview reduzido em base64 (JPEG/PNG/WebP/GIF/TIFF/PDF) sob limite de bytes (padrão 1 MB), com fallback ao original para formatos seguros. Inclui metadados breves. |
+| `files_images_view` `{paths?, folder?, limit=6, max_size=1568}` | files.read | Pré-visualização de várias imagens (até 6) sob orçamento total de bytes (padrão 4 MB); itens descartados são informados no sumário. |
+| `files_image_search` `{query?, folder?, modified_after?, modified_before?, tag?, limit=25}` | files.read | Busca exclusiva por arquivos de imagem (`image/%`), com filtros de nome, pasta, datas ISO e system tags (inclui tags automáticas do Recognize). |
 | `files_edit` `{path, content, etag?}` | files.edit | Só arquivo de texto existente, com no máximo 10 MiB. Antes de gravar, exige o `files_versions` ativo e copia o original para `/MCP backups/<caminho>/<nome>.<AAAAmmdd-HHMMSS>.bak`; se qualquer passo falhar, nada é gravado. Com `etag` divergente, nada é gravado. Não cria, move nem exclui. |
 | `notes_list` `{}` | notes.read | Notas `.md`/`.txt` da pasta do app Notes (preferência `notesPath`, padrão `Notes`). |
 | `notes_read` `{id}` | notes.read | Nota com conteúdo; limite de 1 MiB. |
@@ -87,6 +90,14 @@ sudo -u www-data php occ config:app:delete mcp calendar_writes_verified
 ```
 
 Tools de Notes exigem o app Notes habilitado para o usuário. Leitura começa permitida; criação, edição, movimentação e exclusão começam negadas até o administrador liberar. Não há timeout próprio: a leitura é local ao PHP e o limite de bytes protege contra arquivos grandes. Storage externo lento fica limitado ao `max_execution_time` do PHP.
+
+### Imagens (`files_image_view`, `files_images_view`, `files_image_search`)
+
+Ferramentas somente leitura (`files.read`) que respeitam a pasta do usuário e as permissões nativas do Nextcloud:
+
+- **`files_image_view`**: Gera uma pré-visualização reduzida da imagem via `OCP\IPreview` com dimensão máxima configurável (`max_size`, padrão 1568 px). Se o preview exceder o limite de bytes (configurável em `image_single_max_bytes`, padrão 1 MB), a resolução é reduzida progressivamente até caber. Se não houver preview disponível para o formato, recorre ao arquivo original para formatos comuns (JPEG, PNG, WebP, GIF) desde que esteja dentro do limite de bytes. Retorna bloco `image` (base64) e bloco `text` com metadados (`path`, `mime`, dimensões originais se disponíveis, `size`, `mtime`, `access`, `captured_at`).
+- **`files_images_view`**: Recebe uma lista de `paths` (até 6) ou uma pasta `folder` (com `limit`, padrão 6) e retorna múltiplos blocos de imagem sob um orçamento compartilhado (`image_batch_max_bytes`, padrão 4 MB). Arquivos que excedem o orçamento ou falham são listados no sumário `skipped`.
+- **`files_image_search`**: Busca arquivos com mimetype `image/%`, com filtros opcionais por texto (`query`), pasta (`folder`), intervalo de modificação ISO 8601 (`modified_after`/`modified_before`) e tag de sistema (`tag`, incluindo tags automáticas geradas pelo app Recognize). Retorna apenas metadados ordenados por `mtime` decrescente.
 
 Argumentos inválidos, tool inexistente ou sem grant retornam o erro JSON-RPC `-32602`, sem distinguir o motivo. Falhas de execução retornam `isError: true` com uma mensagem genérica, sem caminho físico, conteúdo ou stack trace.
 

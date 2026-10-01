@@ -29,7 +29,7 @@ Assistentes de IA rendem mais quando alcançam as ferramentas que o time já usa
 
 | Módulo | Leitura | Escrita (cada uma exige liberação do admin) |
 |---|---|---|
-| **Arquivos** | listar, buscar por nome, ler texto (TXT/MD, PDF, DOCX, ODT) | editar arquivos de texto, com backup conferido em `/MCP backups` e versão do Nextcloud antes de cada gravação. **Nunca exclui.** |
+| **Arquivos** | listar, buscar por nome, buscar imagens por tag/data, ver imagens e prévias em lote (JPEG, PNG, WebP, GIF, TIFF, PDF), ler texto (TXT/MD, PDF, DOCX, ODT) | editar arquivos de texto, com backup conferido em `/MCP backups` e versão do Nextcloud antes de cada gravação. **Nunca exclui.** |
 | **Notas** | listar, ler | criar, editar, mover entre categorias, excluir (só quando a lixeira permite recuperar) |
 | **Calendário** | listar calendários e eventos (recorrência, fusos, dia inteiro) | *temporariamente só leitura*: as escritas ficam ocultas até serem validadas num CalDAV real do Nextcloud 33 |
 | **Deck** | quadros, listas, cards e **acompanhamento** dos quadros que você gerencia: cards por responsável, com prazo, indicação de atraso (no seu fuso) e link do card | criar, editar, mover e excluir cards |

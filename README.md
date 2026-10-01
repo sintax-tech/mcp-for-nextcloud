@@ -29,7 +29,7 @@ AI assistants are most useful when they can reach the tools a team already uses.
 
 | Module | Read | Write (each one needs an admin grant) |
 |---|---|---|
-| **Files** | list, search by name, read text (TXT/MD, PDF, DOCX, ODT) | edit text files, with a verified backup in `/MCP backups` and a Nextcloud version before every write. **Never deletes.** |
+| **Files** | list, search by name, search images by tag/date, view images and batch previews (JPEG, PNG, WebP, GIF, TIFF, PDF), read text (TXT/MD, PDF, DOCX, ODT) | edit text files, with a verified backup in `/MCP backups` and a Nextcloud version before every write. **Never deletes.** |
 | **Notes** | list, read | create, edit, move between categories, delete (only when the trash bin can recover it) |
 | **Calendar** | list calendars and events (recurrence, time zones, all-day) | *temporarily read-only*: writes stay hidden until they are validated against a real Nextcloud 33 CalDAV setup |
 | **Deck** | boards, stacks, cards, and a **follow-up** of the boards you manage: cards grouped by assignee, with due date, overdue flag (in your own time zone) and a link to the card | create, edit, move, delete cards |

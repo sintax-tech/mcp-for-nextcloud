@@ -53,6 +53,25 @@ final class InMemoryOAuthStore extends OAuthStore {
         }
     }
 
+    public function listGrants(?string $uid, string $search, int $limit, int $offset, int $now): array {
+        $rows = array_filter($this->tokens, fn (array $r) => $r['refresh_expires'] >= $now && ($uid === null || $r['user_id'] === $uid)
+            && ($search === '' || stripos($r['user_id'], $search) !== false || stripos($r['client_id'], $search) !== false));
+        usort($rows, fn (array $a, array $b) => [$b['created_at'], $b['id']] <=> [$a['created_at'], $a['id']]);
+        return array_map(fn (array $r) => ['id' => $r['id'], 'user_id' => $r['user_id'], 'client_id' => $r['client_id'], 'scope' => $r['scope'],
+            'created_at' => $r['created_at'], 'access_expires' => $r['access_expires'], 'refresh_expires' => $r['refresh_expires']],
+            array_slice($rows, $offset, $limit));
+    }
+
+    public function countGrants(int $now): int {
+        return count(array_filter($this->tokens, fn (array $r) => $r['refresh_expires'] >= $now));
+    }
+
+    public function deleteGrant(int $id, ?string $uid): bool {
+        if (!isset($this->tokens[$id]) || ($uid !== null && $this->tokens[$id]['user_id'] !== $uid)) { return false; }
+        $this->deleteToken($id);
+        return true;
+    }
+
     public function deleteAll(): void { $this->tokens = []; $this->codes = []; $this->spent = []; }
 
     public function deleteForUser(string $uid): void {

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Admin;
 
+use OCA\Mcp\Service\ConnectionList;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Settings\AdminSettings;
 use OCA\Mcp\Tools\Files\OcrSupport;
@@ -19,7 +20,13 @@ final class AdminOcrStatusTest extends TestCase {
         $policy->method('globalEnabled')->willReturn(true);
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturn('https://cloud.test/mcp');
-        return (new AdminSettings($policy, $urls, new OcrSupport($apps)))->getForm()->getParams();
+        return (new AdminSettings($policy, $urls, new OcrSupport($apps), $apps, $this->connections()))->getForm()->getParams();
+    }
+
+    private function connections(): ConnectionList {
+        $connections = $this->createMock(ConnectionList::class);
+        $connections->method('count')->willReturn(4);
+        return $connections;
     }
 
     public function testStatusFollowsTheApp(): void {
@@ -27,6 +34,21 @@ final class AdminOcrStatusTest extends TestCase {
         $inactive = $this->params(false);
         $this->assertFalse($inactive['ocrActive']);
         $this->assertSame('https://apps.nextcloud.com/apps/workflow_ocr', $inactive['ocrUrl']);
+    }
+
+    /** The status block counts eligible users and, among them, those who activated their connection. */
+    public function testStatusSummaryCountsEligibleAndConnectedUsers(): void {
+        $apps = $this->createMock(IAppManager::class);
+        $apps->method('getAppVersion')->with('mcp')->willReturn('0.8.0');
+        $policy = $this->createMock(GrantPolicy::class);
+        $policy->method('flaggedUsers')->willReturnMap([
+            [GrantPolicy::ELIGIBLE_KEY, ['ana', 'bob', 'carl']],
+            [GrantPolicy::CONNECTED_KEY, ['bob', 'dave']],
+        ]);
+        $urls = $this->createMock(IURLGenerator::class);
+        $urls->method('linkToRouteAbsolute')->willReturn('https://cloud.test/mcp');
+        $params = (new AdminSettings($policy, $urls, new OcrSupport($apps), $apps, $this->connections()))->getForm()->getParams();
+        $this->assertSame(['0.8.0', 3, 1, 4], [$params['version'], $params['eligibleUsers'], $params['connectedUsers'], $params['activeConnections']]);
     }
 
     public function testTemplateShowsTheWarningLinkAndOcrmypdfNote(): void {

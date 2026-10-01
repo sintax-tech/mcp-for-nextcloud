@@ -117,10 +117,20 @@ final class CheckoutService {
      * @return int effective upload limit in bytes: the configured one, never above what php.ini accepts
      */
     public function maxBytes(): int {
-        $configured = (int)$this->config->getAppValue('mcp', self::MAX_BYTES_KEY, (string)self::DEFAULT_MAX_BYTES);
-        $limit = $configured > 0 ? $configured : self::DEFAULT_MAX_BYTES;
-        $post = self::iniBytes((string)ini_get('post_max_size'));
+        $limit = $this->configuredMaxBytes();
+        $post = $this->phpMaxBytes();
         return $post > 0 ? min($limit, $post) : $limit;
+    }
+
+    /** @return int upload limit the administrator set, in bytes; DEFAULT_MAX_BYTES when none or an invalid one is stored */
+    public function configuredMaxBytes(): int {
+        $configured = (int)$this->config->getAppValue('mcp', self::MAX_BYTES_KEY, (string)self::DEFAULT_MAX_BYTES);
+        return $configured > 0 ? $configured : self::DEFAULT_MAX_BYTES;
+    }
+
+    /** @return int request body ceiling of php.ini (post_max_size) in bytes, 0 when unlimited or unreadable */
+    public function phpMaxBytes(): int {
+        return self::iniBytes((string)ini_get('post_max_size'));
     }
 
     /** @return string 32 random bytes as base64url, prefixed to be recognisable in a leaked URL */

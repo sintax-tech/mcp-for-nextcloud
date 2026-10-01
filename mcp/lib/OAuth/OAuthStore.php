@@ -14,6 +14,8 @@ class OAuthStore {
     private const CODES = 'mcp_oauth_codes';
     private const TOKENS = 'mcp_oauth_tokens';
     private const SPENT = 'mcp_oauth_spent';
+    /** Columns the connection lists may read; never the token hashes. */
+    private const LISTED = ['id', 'user_id', 'client_id', 'scope', 'created_at', 'access_expires', 'refresh_expires'];
 
     public function __construct(private IDBConnection $db) {}
 
@@ -123,6 +125,81 @@ class OAuthStore {
         $qb->delete(self::TOKENS)->where($qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)))->executeStatement();
         $qb = $this->db->getQueryBuilder();
         $qb->delete(self::SPENT)->where($qb->expr()->eq('grant_id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)))->executeStatement();
+    }
+
+    /**
+     * Live grants for the connection lists, newest first. Only the columns below are read: the token hashes
+     * never leave this class through this method.
+     *
+     * @param string|null $uid owner to restrict to, null for every user (admin list)
+     * @param string $search case-insensitive part of the user id or client_id, '' for none
+     * @param int $limit rows to return
+     * @param int $offset rows to skip
+     * @param int $now current time; grants whose refresh token expired are not live
+     * @return list<array{id:int, user_id:string, client_id:string, scope:string, created_at:int, access_expires:int, refresh_expires:int}>
+     */
+    public function listGrants(?string $uid, string $search, int $limit, int $offset, int $now): array {
+        $qb = $this->db->getQueryBuilder();
+        $qb->select(...self::LISTED)->from(self::TOKENS)
+            ->where($qb->expr()->gte('refresh_expires', $qb->createNamedParameter($now, IQueryBuilder::PARAM_INT)));
+        if ($uid !== null) {
+            $qb->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($uid)));
+        }
+        if ($search !== '') {
+            $like = '%' . $this->db->escapeLikeParameter($search) . '%';
+            $qb->andWhere($qb->expr()->orX(
+                $qb->expr()->iLike('user_id', $qb->createNamedParameter($like)),
+                $qb->expr()->iLike('client_id', $qb->createNamedParameter($like)),
+            ));
+        }
+        $result = $qb->orderBy('created_at', 'DESC')->addOrderBy('id', 'DESC')
+            ->setMaxResults($limit)->setFirstResult($offset)->executeQuery();
+        $rows = $result->fetchAll();
+        $result->closeCursor();
+        return array_map(static fn (array $row): array => [
+            'id' => (int)$row['id'],
+            'user_id' => (string)$row['user_id'],
+            'client_id' => (string)$row['client_id'],
+            'scope' => (string)$row['scope'],
+            'created_at' => (int)$row['created_at'],
+            'access_expires' => (int)$row['access_expires'],
+            'refresh_expires' => (int)$row['refresh_expires'],
+        ], $rows);
+    }
+
+    /**
+     * @param int $now current time; grants whose refresh token expired are not counted
+     * @return int number of live grants of every user
+     */
+    public function countGrants(int $now): int {
+        $qb = $this->db->getQueryBuilder();
+        $result = $qb->select($qb->func()->count('id', 'grants'))->from(self::TOKENS)
+            ->where($qb->expr()->gte('refresh_expires', $qb->createNamedParameter($now, IQueryBuilder::PARAM_INT)))
+            ->executeQuery();
+        $count = $result->fetchOne();
+        $result->closeCursor();
+        return (int)$count;
+    }
+
+    /**
+     * Deletes one grant, optionally only when it belongs to $uid, so a user can never revoke someone else's.
+     *
+     * @param int $id grant id
+     * @param string|null $uid required owner, null for an administrator
+     * @return bool true when this call deleted the grant
+     */
+    public function deleteGrant(int $id, ?string $uid): bool {
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete(self::TOKENS)->where($qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)));
+        if ($uid !== null) {
+            $qb->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($uid)));
+        }
+        if ($qb->executeStatement() !== 1) {
+            return false;
+        }
+        $spent = $this->db->getQueryBuilder();
+        $spent->delete(self::SPENT)->where($spent->expr()->eq('grant_id', $spent->createNamedParameter($id, IQueryBuilder::PARAM_INT)))->executeStatement();
+        return true;
     }
 
     /** Deletes all credentials immediately when the service is disabled. */

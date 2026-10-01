@@ -72,6 +72,7 @@ final class MatrixFixture {
         $manager = $this->mock(IGroupManager::class);
         $manager->method('get')->willReturnCallback(fn (string $gid) => isset($this->groups[$gid]) ? $this->group($gid) : null);
         $manager->method('search')->willReturnCallback(fn () => array_map(fn ($gid) => $this->group($gid), array_keys($this->groups)));
+        $manager->method('isInGroup')->willReturnCallback(fn (string $uid, string $gid) => in_array($uid, $this->groups[$gid] ?? [], true));
         $manager->method('displayNamesInGroup')->willReturnCallback(function ($gid, $search = '', $limit = -1, $offset = 0): array {
             $uids = array_values(array_intersect($this->matching($search), $this->groups[$gid] ?? []));
             $uids = array_slice($uids, $offset, $limit === -1 ? null : $limit);

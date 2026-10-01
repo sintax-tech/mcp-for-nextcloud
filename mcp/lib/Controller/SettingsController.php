@@ -8,6 +8,7 @@ use OCA\Mcp\Checkout\CheckoutTokenStore;
 use OCA\Mcp\Tools\Files\BatchStore;
 use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Settings\PersonalSection;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\DataDisplayResponse;
@@ -68,6 +69,6 @@ class SettingsController extends Controller {
             // And every batch still waiting to be undone: it must not outlive the connection that made it.
             $this->batches->deleteForUser($uid);
         }
-        return new RedirectResponse($this->urlGenerator->linkToRoute('settings.PersonalSettings.index', ['section' => 'personal-info']));
+        return new RedirectResponse($this->urlGenerator->linkToRoute('settings.PersonalSettings.index', ['section' => PersonalSection::ID]));
     }
 }

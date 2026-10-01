@@ -16,6 +16,8 @@
     <commands><command>OCA\Mcp\Command\CalendarSelftest</command></commands>
     <settings>
         <admin>OCA\Mcp\Settings\AdminSettings</admin>
+        <admin-section>OCA\Mcp\Settings\AdminSection</admin-section>
         <personal>OCA\Mcp\Settings\PersonalSettings</personal>
+        <personal-section>OCA\Mcp\Settings\PersonalSection</personal-section>
     </settings>
 </info>

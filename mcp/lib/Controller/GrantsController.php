@@ -42,10 +42,11 @@ class GrantsController extends Controller {
      * @param string $search term matched against uid, display name and e-mail
      * @param string $group group id, '' for every user
      * @param int $page 1-based page
+     * @param string $filter '' for every user, 'eligible' or 'connected' (see GrantMatrix::FILTERS)
      * @return JSONResponse one matrix page (see GrantMatrix::page), or 400
      */
-    public function index(string $search = '', string $group = '', int $page = 1): JSONResponse {
-        return $this->guard(fn () => $this->matrix->page($search, $group, $page));
+    public function index(string $search = '', string $group = '', int $page = 1, string $filter = ''): JSONResponse {
+        return $this->guard(fn () => $this->matrix->page($search, $group, $page, $filter));
     }
 
     /**

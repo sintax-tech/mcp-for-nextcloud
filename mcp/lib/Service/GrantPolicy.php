@@ -93,6 +93,22 @@ class GrantPolicy {
     }
 
     /**
+     * Users whose eligibility or connection flag is on, for the admin filters and the status summary.
+     *
+     * @param string $key ELIGIBLE_KEY or CONNECTED_KEY
+     * @return list<string> uids with that flag set to '1', sorted
+     * @throws InvalidArgumentException for any other key
+     */
+    public function flaggedUsers(string $key): array {
+        if (!in_array($key, [self::ELIGIBLE_KEY, self::CONNECTED_KEY], true)) {
+            throw new InvalidArgumentException('Invalid request');
+        }
+        $uids = array_map('strval', $this->config->getUsersForUserValue(self::APP, $key, '1'));
+        sort($uids);
+        return array_values(array_unique($uids));
+    }
+
+    /**
      * @param string $uid Nextcloud user id
      * @return bool true only when the service is on, the user is eligible and connected
      */

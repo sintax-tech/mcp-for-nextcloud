@@ -1,4 +1,4 @@
-/* Admin permission matrix. Only Nextcloud theme variables are used, so light, dark and high-contrast themes work. */
+/* MCP for Nextcloud settings (admin and personal). Only Nextcloud theme variables are used, so light, dark and high-contrast themes work. */
 #mcp-admin .mcp-hint {
 	color: var(--color-text-maxcontrast);
 	max-width: 900px;
@@ -30,8 +30,10 @@
 }
 
 #mcp-admin .mcp-matrix-wrap {
-	overflow-x: auto;
+	overflow: auto;
 	max-width: 100%;
+	/* Vertical scrolling inside the wrapper is what lets the header rows stick. */
+	max-height: 70vh;
 	border: 1px solid var(--color-border);
 	border-radius: var(--border-radius-large);
 }
@@ -53,8 +55,50 @@
 }
 
 #mcp-admin .mcp-matrix thead th {
-	background-color: var(--color-background-hover);
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	background-color: var(--color-background-dark);
 	font-weight: bold;
+}
+
+#mcp-admin .mcp-matrix thead th[title] {
+	cursor: help;
+}
+
+/* Modules alternate between two soft bands so their columns read as groups. */
+#mcp-admin .mcp-matrix thead th.mcp-band-1 {
+	background-color: var(--color-primary-element-light);
+	color: var(--color-primary-element-light-text, var(--color-main-text));
+}
+
+#mcp-admin .mcp-matrix tbody td.mcp-band-1 {
+	background-color: var(--color-primary-element-light-hover, var(--color-background-hover));
+}
+
+#mcp-admin .mcp-matrix tbody tr:nth-child(even) > * {
+	background-color: var(--color-background-hover);
+}
+
+#mcp-admin .mcp-matrix tbody tr:hover > * {
+	background-color: var(--color-background-dark);
+}
+
+#mcp-admin .mcp-matrix.mcp-compact th,
+#mcp-admin .mcp-matrix.mcp-compact td {
+	padding: 1px 6px;
+}
+
+#mcp-admin .mcp-matrix.mcp-compact .mcp-uid {
+	display: none;
+}
+
+#mcp-admin .mcp-matrix.mcp-loading tbody {
+	opacity: 0.5;
+}
+
+#mcp-admin .mcp-load-error {
+	color: var(--color-error-text, var(--color-error));
 }
 
 #mcp-admin .mcp-matrix .mcp-module {
@@ -70,7 +114,7 @@
 }
 
 #mcp-admin .mcp-matrix thead .mcp-user-col {
-	z-index: 2;
+	z-index: 3;
 }
 
 #mcp-admin .mcp-name {
@@ -102,16 +146,80 @@
 	opacity: 0.55;
 }
 
-#mcp-admin .mcp-bulk-group {
-	display: inline-flex;
-	gap: 2px;
+#mcp-admin .mcp-badge-connected {
+	background-color: var(--color-success);
+	color: var(--color-success-text, var(--color-primary-element-text));
+}
+
+/* Header "All" menus: a native <details>, so it works without a build step and with the keyboard. */
+#mcp-admin .mcp-bulk-menu {
+	display: inline-block;
+	position: relative;
+	font-weight: normal;
+}
+
+#mcp-admin .mcp-bulk-summary {
+	display: inline-block;
+	padding: 0 8px;
+	border: 1px solid var(--color-border-dark);
+	border-radius: var(--border-radius-pill, var(--border-radius));
+	font-size: 0.85em;
+	cursor: pointer;
+	list-style: none;
+}
+
+#mcp-admin .mcp-bulk-summary::-webkit-details-marker {
+	display: none;
+}
+
+#mcp-admin .mcp-bulk-summary::after {
+	content: ' ▾';
+}
+
+#mcp-admin .mcp-bulk-summary:focus-visible {
+	outline: 2px solid var(--color-primary-element);
+	outline-offset: 2px;
+}
+
+#mcp-admin .mcp-bulk-list {
+	position: absolute;
+	inset-inline-start: 0;
+	top: 100%;
+	z-index: 10;
+	min-width: 260px;
+	margin-top: 4px;
+	padding: 6px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-large);
+	background-color: var(--color-main-background);
+	box-shadow: 0 2px 8px var(--color-box-shadow);
+	text-align: start;
+}
+
+#mcp-admin .mcp-bulk-line {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 2px 0;
+}
+
+#mcp-admin .mcp-bulk-name {
+	flex: 1;
 }
 
 #mcp-admin .mcp-bulk {
 	min-height: 0;
-	padding: 0 6px;
+	padding: 0 8px;
 	font-size: 0.85em;
 	font-weight: normal;
+}
+
+#mcp-admin .mcp-count {
+	color: var(--color-text-maxcontrast);
+}
+
+#mcp-admin .mcp-toolbar-bottom {
+	margin-top: 8px;
 }
 
 #mcp-admin .mcp-empty {
@@ -207,4 +315,103 @@
 	border-radius: var(--border-radius);
 	max-width: 900px;
 	font-size: 0.9em;
+}
+
+/* Blocks and status cards, shared by the admin and personal pages. */
+.mcp-settings .mcp-block h2 {
+	margin-bottom: 8px;
+}
+
+.mcp-settings .mcp-cards {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+	gap: 12px;
+	max-width: 1100px;
+	margin: 8px 0;
+}
+
+.mcp-settings .mcp-card {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 10px 14px;
+	border: 1px solid var(--color-border);
+	border-radius: var(--border-radius-large);
+	background-color: var(--color-main-background);
+}
+
+.mcp-settings .mcp-card-wide {
+	grid-column: 1 / -1;
+}
+
+.mcp-settings .mcp-card-label {
+	color: var(--color-text-maxcontrast);
+	font-size: 0.9em;
+}
+
+.mcp-settings .mcp-card-value {
+	font-size: 1.4em;
+	font-weight: bold;
+}
+
+.mcp-settings .mcp-endpoint code {
+	padding: 2px 6px;
+	border-radius: var(--border-radius);
+	background-color: var(--color-background-dark);
+	word-break: break-all;
+}
+
+.mcp-settings .mcp-hint {
+	color: var(--color-text-maxcontrast);
+	max-width: 900px;
+}
+
+.mcp-settings button:focus-visible,
+.mcp-settings select:focus-visible,
+.mcp-settings input:focus-visible {
+	outline: 2px solid var(--color-primary-element);
+	outline-offset: 2px;
+}
+
+/* Active connections table (admin and personal). */
+.mcp-settings .mcp-connections-table {
+	border-collapse: collapse;
+	max-width: 1100px;
+	width: 100%;
+}
+
+.mcp-settings .mcp-connections-table th,
+.mcp-settings .mcp-connections-table td {
+	padding: 6px 10px;
+	border-bottom: 1px solid var(--color-border);
+	text-align: start;
+	vertical-align: middle;
+}
+
+.mcp-settings .mcp-connections-table thead th {
+	color: var(--color-text-maxcontrast);
+	font-weight: normal;
+}
+
+.mcp-settings .mcp-connections-table tbody tr:hover > * {
+	background-color: var(--color-background-hover);
+}
+
+.mcp-settings .mcp-connections-table .mcp-name,
+.mcp-settings .mcp-connections-table .mcp-uid {
+	display: block;
+}
+
+.mcp-settings .mcp-connections-table .mcp-uid,
+.mcp-settings .mcp-connections-table .mcp-empty {
+	color: var(--color-text-maxcontrast);
+}
+
+.mcp-settings .mcp-actions {
+	text-align: end;
+	white-space: nowrap;
+}
+
+.mcp-settings .mcp-checkout-limit {
+	width: 8em;
 }

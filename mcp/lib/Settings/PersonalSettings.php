@@ -10,7 +10,7 @@ use OCP\IURLGenerator;
 use OCP\IUserSession;
 use OCP\Settings\ISettings;
 
-/** Personal page (Personal info): endpoint URL, availability, own connection switch and app password guidance. */
+/** Personal page in the app's own "MCP for Nextcloud" section: status, own connection switch, own OAuth connections (js/connections.js) and app password guidance. */
 class PersonalSettings implements ISettings {
     public function __construct(
         private GrantPolicy $policy,
@@ -31,8 +31,8 @@ class PersonalSettings implements ISettings {
         ], '');
     }
 
-    /** @return string settings section id ('personal-info') */
-    public function getSection(): string { return 'personal-info'; }
+    /** @return string settings section id, the app's own "MCP for Nextcloud" entry */
+    public function getSection(): string { return PersonalSection::ID; }
     /** @return int ordering within the section */
     public function getPriority(): int { return 50; }
 }

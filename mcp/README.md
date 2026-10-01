@@ -198,17 +198,19 @@ Para atualizar: `occ app:disable mcp`, remover `<apps>/mcp`, extrair o novo paco
 
 ## Configurar
 
-1. **Administração → Configurações adicionais → MCP**: marcar *Serviço MCP ativado* e usar a matriz de usuários × permissões.
-   - A busca procura por nome, ID ou e-mail, e há um filtro por grupo; a tabela mostra 50 usuários por página.
-   - Cada checkbox salva na hora: *Pode conectar* libera o usuário, e as demais colunas são as operações por módulo.
-   - Os botões ✓/✕ no cabeçalho aplicam a coluna aos usuários ativos da página, com confirmação.
+1. **Administração → MCP for Nextcloud** (entrada própria, com ícone, no menu de configurações): no bloco **Status**, marcar *Serviço MCP ativado*; no bloco **Permissões**, usar a matriz de usuários × permissões.
+   - O bloco **Status** mostra o endpoint (com copiar), o serviço, a versão do app, quantos usuários podem conectar e quantos estão conectados, as conexões OAuth ativas e o **limite de envio do checkout** (`files_checkout`), editável em MiB, com o limite efetivo e o teto `post_max_size` do PHP ao lado. Antes isso só mudava por `occ`.
+   - Os demais blocos, na ordem: **Clientes OAuth**, **Arquivos e etiquetas ocultas**, **OCR**, **Permissões** e **Conexões ativas**.
+   - A busca procura por nome, ID ou e-mail, e há filtro por grupo e por "só quem pode conectar / só conectados" (feito no servidor, com total exato); a tabela mostra 50 usuários por página, com contador e paginação em cima e embaixo. Há linhas compactas opcionais (lembradas no navegador).
+   - Cada checkbox salva na hora: *Pode conectar* libera o usuário, e as demais colunas são as operações por módulo; o cabeçalho fica fixo ao rolar, os módulos se alternam em faixas e cada operação tem dica do que permite.
+   - O menu **Todos** no cabeçalho de cada módulo (e de *Pode conectar*) permite ou nega uma operação, ou todas do módulo, para os usuários ativos da página, com confirmação. Usuários conectados aparecem com a marca *conectado*.
    - Usuários desativados aparecem marcados e não podem ser editados. Módulos cujo app não está disponível no servidor não aparecem na matriz; para um usuário sem acesso ao app, a célula fica desativada. As permissões salvas são preservadas.
    - O e-mail só serve para a busca e nunca é exibido.
 2. **Arquivos e etiquetas ocultas**: selecione etiquetas de sistema para que arquivos e pastas etiquetados fiquem totalmente invisíveis às ferramentas do MCP (leitura, busca, listagem, imagens, notas, talk e checkout). Recomenda-se o uso de etiquetas restritas ou invisíveis.
    - Serviço, elegibilidade e conexão pessoal começam desligados para todos, inclusive administradores. Leitura começa permitida; escrita, exclusão e transferência começam negadas.
-   - A página usa a API JSON admin-only `GET /apps/mcp/api/grants`, `PUT /apps/mcp/api/grants/{uid}`, `POST /apps/mcp/api/grants/bulk` e `PUT /apps/mcp/api/service`.
-2. **Clientes OAuth**: a mesma tela de admin edita os hosts de cliente permitidos e liga o cliente nativo para programas locais, sem passo de terminal. A API é `GET /apps/mcp/api/oauth-clients` e `PUT /apps/mcp/api/oauth-clients` (admin-only, com CSRF do Nextcloud), aceita `hosts` e/ou `nativeClientEnabled`, valida tudo antes de gravar e recusa uma lista de hosts inválida em vez de escrevê-la.
-3. **Configurações pessoais → Informações pessoais → MCP connection**: o próprio usuário clica em *Connect*.
+   - A página usa a API JSON admin-only `GET /apps/mcp/api/grants` (`search`, `group`, `filter` = `eligible`/`connected`, `page`), `PUT /apps/mcp/api/grants/{uid}`, `POST /apps/mcp/api/grants/bulk`, `PUT /apps/mcp/api/service`, `GET`/`PUT /apps/mcp/api/checkout-limit` (`{mib}` inteiro ≥ 1) e, para as conexões, `GET /apps/mcp/api/connections`, `DELETE /apps/mcp/api/connections/{id}` e `DELETE /apps/mcp/api/connections/users/{uid}`. Nenhuma resposta traz hash de token.
+2. **Clientes OAuth**: o bloco *OAuth clients* da seção **MCP for Nextcloud** edita os hosts de cliente permitidos e liga o cliente nativo para programas locais, sem passo de terminal. A API é `GET /apps/mcp/api/oauth-clients` e `PUT /apps/mcp/api/oauth-clients` (admin-only, com CSRF do Nextcloud), aceita `hosts` e/ou `nativeClientEnabled`, valida tudo antes de gravar e recusa uma lista de hosts inválida em vez de escrevê-la. Desligar o cliente nativo revoga na hora os tokens já emitidos para ele.
+3. **Configurações pessoais → MCP for Nextcloud**: o próprio usuário clica em *Connect*. A página mostra o estado (serviço, permissão do administrador, conexão) e a lista **Seus clientes conectados** (cliente, conectado em, expira em) com *Revogar*, pela API `GET /apps/mcp/api/my/connections` e `DELETE /apps/mcp/api/my/connections/{id}`, restrita às conexões do próprio usuário.
 4. Em **Configurações pessoais → Segurança**, o usuário cria uma senha de app. O cliente MCP usa autenticação HTTP Basic com o ID do usuário e essa senha de app. O app nunca pede nem guarda a senha principal.
 
 Risco residual nas escritas: colisões com destinos ocultos usam a mesma recusa genérica de destinos sem permissão, mas a diferença entre recusa e criação possível ainda permite inferir que um caminho está indisponível.
@@ -225,6 +227,7 @@ O login pelo navegador via OAuth está descrito em [Conectar pelo claude.ai (OAu
 | usuário, app `mcp` | `grant_<módulo>_<operação>` | `1`/`0`; ausente vale `1` para `read` e `0` para as demais |
 | app `mcp` | `oauth_client_hosts` | lista de hosts separados por vírgula; ausente ou vazia vale o padrão `claude.ai,chatgpt.com` |
 | app `mcp` | `oauth_native_client_enabled` | `1` habilita o cliente nativo local `nextcloud-mcp-native`, `0` ou ausente desabilitado |
+| app `mcp` | `checkout_max_bytes` | limite de envio do `files_checkout` em bytes; padrão 50 MiB; editável no bloco Status em MiB; nunca acima do `post_max_size` do PHP |
 
 As duas chaves OAuth são editáveis pela seção **Clientes OAuth** da tela de admin e não precisam de `occ`; ver [Conectar pelo claude.ai (OAuth)](#conectar-pelo-claudeai-oauth).
 
@@ -255,7 +258,7 @@ Ambos estão **compatíveis por código, ainda não comprovados em cliente real*
 
 ## Revogar
 
-*Disconnect* na página pessoal bloqueia a próxima requisição MCP, inclusive com a mesma senha de app. A senha de app continua válida no Nextcloud e deve ser revogada em **Segurança**. O administrador também pode remover a elegibilidade do usuário ou desativar o serviço; ambos valem na próxima requisição.
+*Disconnect* na página pessoal bloqueia a próxima requisição MCP, inclusive com a mesma senha de app. A senha de app continua válida no Nextcloud e deve ser revogada em **Segurança**. Na mesma página, *Revogar* corta um cliente OAuth específico do próprio usuário. O administrador também pode remover a elegibilidade do usuário ou desativar o serviço; ambos valem na próxima requisição. No bloco **Conexões ativas**, o administrador revoga uma conexão OAuth específica, ou todas de um usuário, na hora; o usuário continua habilitado e pode entrar de novo.
 
 ## Teste manual após a instalação
 

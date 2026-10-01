@@ -89,7 +89,7 @@ Task deletion uses native calendar trash and is refused when `dav/calendarRetent
 
    Adjust paths and the web server user to your setup. With Docker, run `occ` inside the container. This manual route is only an alternative: installing from the Nextcloud App Store needs no terminal at all.
 
-3. **Configure** in *Administration settings → Additional settings → MCP*: turn the service on, mark who may connect, grant write permissions where needed, and select system tags for hiding sensitive files.
+3. **Configure** in *Administration settings → MCP for Nextcloud* (the app has its own entry with an icon in the settings menu): turn the service on, mark who may connect, grant write permissions where needed, and select system tags for hiding sensitive files. The page is split into blocks: **Status** (endpoint to copy, service switch, app version, eligible/connected users, active connections and the editable checkout upload limit in MiB, shown next to PHP's `post_max_size` ceiling), **OAuth clients**, **Hidden files & tags**, **OCR**, **Permissions** (the users × permissions matrix, with search, group and "can connect / connected" filters, an "All" menu per module for the users on the page, and pagers on top and bottom) and **Active connections**.
 
 ## Connecting a client
 
@@ -163,7 +163,7 @@ Both controls are administrator-only and CSRF-protected, and they report a refus
 
 ### Other MCP clients (app password)
 
-Create an app password in *Personal settings → Security*, enable the connection in *Personal settings → MCP*, then configure the client with the URL above and HTTP Basic auth (`username:app-password`). Quick check:
+Create an app password in *Personal settings → Security*, enable the connection in *Personal settings → MCP for Nextcloud*, then configure the client with the URL above and HTTP Basic auth (`username:app-password`). Quick check:
 
 ```bash
 curl -u 'alice:APP-PASSWORD' \
@@ -174,8 +174,8 @@ curl -u 'alice:APP-PASSWORD' \
 
 ### Revoking access
 
-- **User**: *Personal settings → MCP → Disconnect* blocks the next request and revokes OAuth tokens. App passwords are revoked in *Security*.
-- **Admin**: remove eligibility or turn the service off. Both apply on the next request.
+- **User**: *Personal settings → MCP for Nextcloud → Disconnect* blocks the next request and revokes OAuth tokens. The same page lists the user's own OAuth clients (client, signed in, expires) with **Revoke** for each one. App passwords are revoked in *Security*.
+- **Admin**: remove eligibility or turn the service off. Both apply on the next request. *Administration settings → MCP for Nextcloud → Active connections* lists every OAuth connection (user, client, signed in, expires) and revokes one, or all of a user, at once; the user can sign in again while they may connect.
 
 ## Security
 

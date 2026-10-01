@@ -12,7 +12,6 @@ use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarStore;
 use OCA\Mcp\Tools\Calendar\AttendeeResolver;
 use OCA\Mcp\Tools\Calendar\CalendarAccess;
 use OCA\Mcp\Tools\Calendar\CalendarModule;
-use OCA\Mcp\Tools\Calendar\CalendarWriteGate;
 use OCA\Mcp\Tools\Calendar\Classification;
 use OCA\Mcp\Tools\Calendar\DateInput;
 use OCA\Mcp\Tools\Calendar\EventBuilder;
@@ -232,7 +231,6 @@ final class ToolErrorsLanguagesTest extends TestCase {
         $appConfig = $this->createMock(IAppConfig::class);
         $appConfig->method('getValueString')->willReturn('');
         $config = $this->createMock(IConfig::class);
-        $gate = new CalendarWriteGate($appConfig, $this->appManager(), $config);
         $listCalendars = new ListCalendars($access);
         $listEvents = new ListEvents($access, $store, $repository, $classification, new EventExpander(), $mapper, $dates, $time, $logger);
         $users = $this->userManager();
@@ -255,8 +253,7 @@ final class ToolErrorsLanguagesTest extends TestCase {
             $moveEvent,
             $deleteEvent,
             $transferEvent,
-            $gate,
-            new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($gate, $scheduling, $builder, $guard),
+            new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($scheduling, $builder, $guard),
         );
     }
 }

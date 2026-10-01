@@ -6,7 +6,6 @@ use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\L10n\UserL10n;
 use OCA\Mcp\Service\Calendar\CalendarSelftestMessages as Messages;
 use OCA\Mcp\Service\Calendar\CalendarSelftestService;
-use OCA\Mcp\Tools\Calendar\CalendarWriteGate;
 use OCP\IUserManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,37 +18,28 @@ use Symfony\Component\Console\Formatter\OutputFormatter;
 final class CalendarSelftest extends Command {
     /**
      * @param CalendarSelftestService $service real server proof
-     * @param CalendarWriteGate $gate revocation
      * @param UserL10n|null $l10n language resolver
      * @param IUserManager|null $userManager user lookup
      */
     public function __construct(
         private CalendarSelftestService $service,
-        private CalendarWriteGate $gate,
         private ?UserL10n $l10n = null,
         private ?IUserManager $userManager = null,
     ) {
         parent::__construct('mcp:calendar-selftest');
     }
 
-    /** @return void declares the command and explicit opt-in side effects */
+    /** @return void declares the command ; optional diagnostic only */
     protected function configure(): void {
         $this->setDescription(Messages::DESCRIPTION)
             ->addArgument('uid', InputArgument::OPTIONAL, Messages::UID)
             ->addOption('attendee-uid', null, InputOption::VALUE_REQUIRED, Messages::ATTENDEE)
             ->addOption('shared-calendar', null, InputOption::VALUE_REQUIRED, Messages::SHARED)
-            ->addOption('acl-probe-user', null, InputOption::VALUE_REQUIRED, Messages::ACL)
-            ->addOption('no-enable', null, InputOption::VALUE_NONE, Messages::NO_ENABLE)
-            ->addOption('revoke', null, InputOption::VALUE_NONE, Messages::REVOKE);
+            ->addOption('acl-probe-user', null, InputOption::VALUE_REQUIRED, Messages::ACL);
     }
 
-    /** @return int zero only for a successful proof or revocation; failures keep writes hidden */
+    /** @return int zero only when every check passed; it never changes what is exposed */
     protected function execute(InputInterface $input, OutputInterface $output): int {
-        if ($input->getOption('revoke')) {
-            $this->gate->revoke();
-            $output->writeln(Messages::revoked());
-            return self::SUCCESS;
-        }
         $uid = $input->getArgument('uid');
         if (!is_string($uid) || $uid === '') {
             $output->writeln(Messages::UID);
@@ -62,7 +52,7 @@ final class CalendarSelftest extends Command {
             }
         }
         try {
-            $options = ['no-enable' => (bool)$input->getOption('no-enable')];
+            $options = [];
             foreach (['attendee-uid', 'shared-calendar', 'acl-probe-user'] as $option) {
                 $value = $input->getOption($option);
                 if (is_string($value) && $value !== '') { $options[$option] = $value; }
@@ -73,7 +63,6 @@ final class CalendarSelftest extends Command {
             $output->writeln(Messages::summary());
             return $passed ? self::SUCCESS : self::FAILURE;
         } catch (\Throwable) {
-            $this->gate->revoke();
             $output->writeln(Messages::failed());
             return self::FAILURE;
         } finally {

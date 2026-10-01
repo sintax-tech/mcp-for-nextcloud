@@ -8,7 +8,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 final class CalendarApprovalTest extends CalendarTestCase {
     protected function setUp(): void {
         parent::setUp();
-        $this->verification = json_encode(['app' => '0.6.10', 'nextcloud' => '33.0', 'operations' => ['create', 'edit', 'delete', 'move', 'transfer'], 'invitations' => true]);
         $this->store->addObject(1, 'event.ics', self::ics("UID:event\nSUMMARY:Before\nDTSTART:20261001T120000Z\nDTEND:20261001T130000Z"));
     }
 
@@ -120,21 +119,10 @@ final class CalendarApprovalTest extends CalendarTestCase {
         self::assertCount(1, $this->dav->calls);
     }
 
-    public function testPreparingNeverSchedulesAndUnverifiedInvitationsRemainBlocked(): void {
+    public function testPreparingNeverSchedules(): void {
         $args = ['calendar' => self::PERSONAL, 'uid' => 'event', 'summary' => 'After', 'send_invitations' => true];
         self::json($this->module->call('calendar_update_event', $args, 'alice'));
         $this->assertNoWrites();
-        $this->verification = json_encode(['app' => '0.6.10', 'nextcloud' => '33.0', 'operations' => ['edit'], 'invitations' => false]);
-        self::assertToolError($this->module->call('calendar_update_event', $args, 'alice'), 'ainda não verificado');
-        self::assertToolError($this->module->call('calendar_update_event', $args + ['confirm' => true], 'alice'), 'ainda não verificado');
-        $this->assertNoWrites();
-    }
-
-    public function testClosedGateHidesAndBlocksTheWholePlanFlow(): void {
-        $this->verification = '';
-        self::assertSame([], array_filter(array_column($this->module->definitions(), 'name'), static fn (string $n): bool => $n !== 'calendar_list_calendars' && $n !== 'calendar_list_events'));
-        $this->expectException(\InvalidArgumentException::class);
-        $this->module->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'event', 'summary' => 'After'], 'alice');
     }
 
     public function testPublicSchemasExposeConfirmWithoutApprovalIdAndTellTheAiToAskFirst(): void {

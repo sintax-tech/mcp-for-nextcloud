@@ -277,30 +277,17 @@ final class ToolsListContractTest extends TestCase {
     }
 
     /** @return void */
-    public function testCalendarWritesAreHiddenFromListAndRejectedByCall(): void {
-        $writes = [
-            'calendar_create_event',
-            'calendar_update_event',
-            'calendar_move_event',
-            'calendar_delete_event',
-            'calendar_transfer_event',
-        ];
-        $list = json_decode($this->toolsListJson(), true, 512, JSON_THROW_ON_ERROR);
-        $listedNames = array_column($list['result']['tools'], 'name');
+    public function testCalendarWritesFollowTheAdminGrantWithoutAnySelftest(): void {
+        $writes = ['calendar_create_event', 'calendar_update_event', 'calendar_move_event', 'calendar_delete_event', 'calendar_transfer_event'];
+        $list = static fn (string $json): array => array_column(json_decode($json, true, 512, JSON_THROW_ON_ERROR)['result']['tools'], 'name');
+        $request = json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list', 'params' => new \stdClass()], JSON_THROW_ON_ERROR);
+
+        $granted = $list($this->toolsListJson());
+        $denied = $list($this->handle($request, McpProtocol::VERSION, '{}', true, static fn (string $module, string $operation): bool => $module !== 'calendar' || $operation === 'read'));
 
         foreach ($writes as $name) {
-            $this->assertNotContains($name, $listedNames, $name . ' must stay hidden from tools/list');
-
-            $request = json_encode([
-                'jsonrpc' => '2.0',
-                'id' => $name,
-                'method' => 'tools/call',
-                'params' => ['name' => $name, 'arguments' => new \stdClass()],
-            ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
-            $call = json_decode($this->handle($request, McpProtocol::VERSION), true, 512, JSON_THROW_ON_ERROR);
-
-            $this->assertSame(-32602, $call['error']['code'], $name . ' direct tools/call must fail as an unknown tool');
-            $this->assertArrayNotHasKey('result', $call, $name . ' must not execute a write handler');
+            $this->assertContains($name, $granted, $name . ' must be listed when granted');
+            $this->assertNotContains($name, $denied, $name . ' must stay hidden when the grant is off');
         }
     }
 

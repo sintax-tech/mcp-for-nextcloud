@@ -10,7 +10,7 @@ use Sabre\VObject\Component\VEvent;
  * Nothing is stored; the server cannot prove the user said yes, it only refuses to write before the AI asked.
  */
 final class CalendarDraftApproval {
-    public function __construct(private CalendarWriteGate $gate, private Scheduling $scheduling, private EventBuilder $builder, private SharedGuard $sharedGuard) {}
+    public function __construct(private Scheduling $scheduling, private EventBuilder $builder, private SharedGuard $sharedGuard) {}
 
     /**
      * @param CalendarWriteTool $tool write handler
@@ -54,7 +54,7 @@ final class CalendarDraftApproval {
             'etag' => $prepared->before?->etag, 'before' => $before, 'after' => $after,
             'participants' => ['current' => $old, 'proposed' => $new, 'added' => array_values(array_diff($new, $old)), 'removed' => array_values(array_diff($old, $new))],
             'recoverable' => $deleting, 'consequence' => $deleting ? CalendarMessages::previewTrash() : null,
-            'scheduling' => ['requested' => $notify, 'imipEnabled' => $this->scheduling->imipEnabled(), 'invitationsVerified' => $this->gate->invitationsVerified(), 'participantsNotified' => false,
+            'scheduling' => ['requested' => $notify, 'imipEnabled' => $this->scheduling->imipEnabled(), 'participantsNotified' => false,
                 'message' => $moving ? CalendarMessages::participantsNotNotified() : ($notify ? ($deleting ? CalendarMessages::previewCancel() : CalendarMessages::previewInvitations()) : CalendarMessages::previewSuppressed()),
                 'proofScope' => CalendarMessages::previewInvitationProof()]];
     }

@@ -8,28 +8,20 @@ use OCA\Mcp\L10n\Translator;
 /** Messages of the Calendar selftest command and runner. */
 final class CalendarSelftestMessages {
     public const ASSERTION_PREFIX = 'Unconfirmed effect:';
-    public const DESCRIPTION = 'Verifies Calendar writes through real DAV and opens the gate after cleanup.';
+    public const DESCRIPTION = 'Optional diagnostic: exercises Calendar writes through real DAV and reports. It changes nothing about what the app exposes.';
     public const UID = 'Internal UID of the test organizer (enabled account with email and Calendar).';
     public const ATTENDEE = 'Another internal UID: proves iTIP on calendar and CalDAV inbox; may generate email according to dav/sendInvitations.';
     public const SHARED = 'Writable shared calendar path from another owner; proves transfer and deletes only the test event.';
     public const ACL = 'Another UID without access to test calendars; proves write refusal.';
-    public const NO_ENABLE = 'Runs the proof and cleanup without recording enablement; revokes prior enablement.';
-    public const REVOKE = 'Deletes verification and hides all writes, without creating objects.';
-    public const REVOKED = 'Verification revoked; Calendar writes hidden.';
     public const INVALID_USER = 'The account must exist, be enabled, have an email, and have the Calendar app enabled.';
     public const INVALID_ATTENDEE = 'The attendee and the ACL probe user must be enabled internal accounts, distinct from the organizer.';
     public const TRASH_REQUIRED = 'Calendar retention is set to 0. The test was refused before creating objects because cleanup would be permanent.';
-    public const FAILED = 'Verification failed; no writes were enabled.';
-    public const PASSED = 'Proof completed and cleanup confirmed; verification recorded.';
-    public const PASSED_NO_ENABLE = 'Proof completed and cleanup confirmed; verification not recorded (--no-enable).';
+    public const FAILED = 'Diagnostic failed; see the failed step above. Calendar tools are not affected.';
+    public const PASSED = 'Diagnostic passed and cleanup confirmed.';
     public const EVENT = 'MCP Calendar selftest';
     public const EVENT_EDITED = 'MCP Calendar selftest edited';
     public const OPTIONAL = 'Option not provided; capability not verified.';
     public const SUMMARY = 'Confirm Activity, CalDAV clients, and email delivery manually; the report does not confirm email delivery.';
-
-    public static function revoked(): string {
-        return Translator::t('Verification revoked; Calendar writes hidden.');
-    }
 
     public static function invalidUser(): string {
         return Translator::t('The account must exist, be enabled, have an email, and have the Calendar app enabled.');
@@ -44,15 +36,11 @@ final class CalendarSelftestMessages {
     }
 
     public static function failed(): string {
-        return Translator::t('Verification failed; no writes were enabled.');
+        return Translator::t('Diagnostic failed; see the failed step above. Calendar tools are not affected.');
     }
 
     public static function passed(): string {
-        return Translator::t('Proof completed and cleanup confirmed; verification recorded.');
-    }
-
-    public static function passedNoEnable(): string {
-        return Translator::t('Proof completed and cleanup confirmed; verification not recorded (--no-enable).');
+        return Translator::t('Diagnostic passed and cleanup confirmed.');
     }
 
     public static function optional(): string {

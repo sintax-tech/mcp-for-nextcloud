@@ -8,7 +8,6 @@ use OCA\Mcp\Tools\Calendar\CalendarArgumentException;
 use OCA\Mcp\Tools\Calendar\CalendarDav;
 use OCA\Mcp\Tools\Calendar\CalendarException;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
-use OCA\Mcp\Tools\Calendar\CalendarWriteGate;
 use OCA\Mcp\Tools\Calendar\Handler\CreateEvent;
 use OCA\Mcp\Tools\Calendar\Handler\UpdateEvent;
 use OCA\Mcp\Tools\Calendar\Handler\MoveEvent;
@@ -23,7 +22,7 @@ use OCP\IUserSession;
 use Sabre\VObject\Component\VCalendar;
 use Sabre\VObject\Reader;
 
-/** Runs real handlers and DAV, then records evidence only after recoverable cleanup passed. */
+/** Optional diagnostic: runs real handlers and DAV and reports; it records nothing and changes no exposure. */
 final class CalendarSelftestService {
     /** All collaborators are ports or ordinary tool handlers; nothing writes via the backend. */
     public function __construct(
@@ -33,7 +32,6 @@ final class CalendarSelftestService {
         private MoveEvent $moveEvent,
         private DeleteEvent $deleteEvent,
         private TransferEvent $transferEvent,
-        private CalendarWriteGate $gate,
         private CalendarAccess $access,
         private CalendarStore $store,
         private ITimeFactory $time,
@@ -46,19 +44,17 @@ final class CalendarSelftestService {
 
     /**
      * @param string $uid internal organizer account; never obtained from MCP arguments
-     * @param array{attendee-uid?:string, shared-calendar?:string, acl-probe-user?:string, no-enable?:bool} $options CLI options
+     * @param array{attendee-uid?:string, shared-calendar?:string, acl-probe-user?:string} $options CLI options
      * @param callable(array{step:string,status:string,detail:string}):void $report safe per-step report
      * @return bool whether every requested check and cleanup succeeded
      */
     public function run(string $uid, array $options, callable $report): bool {
-        $this->gate->revoke();
         $previous = $this->session->getUser();
         $owned = [];
         $external = [];
         $invitation = null;
         $operations = ['create', 'edit', 'move', 'delete'];
         $passed = false;
-        $invitations = false;
         $step = 'preflight';
         try {
             $user = $this->account($uid);
@@ -169,7 +165,6 @@ final class CalendarSelftestService {
                 $this->require(count($statuses) === 1 && str_starts_with($statuses[0], '1.2'), CalendarSelftestMessages::assertion('internal-status'));
                 $this->require($this->copies($attendee->getUID(), $invite['uid']) !== [], CalendarSelftestMessages::assertion('internal-copy'));
                 $this->require($this->inbox($attendee->getUID(), $invite['uid'], 'REQUEST') !== [], CalendarSelftestMessages::assertion('internal-inbox'));
-                $invitations = true;
                 $this->ok($report, $step, CalendarSelftestMessages::detail('invitations'));
             }
 
@@ -182,7 +177,6 @@ final class CalendarSelftestService {
                 $this->tool($this->transferEvent->execute(['calendar' => $a->path, 'uid' => $transfer['uid'], 'targetCalendar' => $shared->path, 'confirm' => true], $uid));
                 $this->live($shared, $transfer['uid']);
                 $this->delete($uid, $shared, $transfer['uid']);
-                $operations[] = 'transfer';
                 $this->ok($report, $step, CalendarSelftestMessages::detail('transfer'));
             }
 
@@ -244,10 +238,7 @@ final class CalendarSelftestService {
             $report(['step' => 'cleanup', 'status' => $clean ? 'OK' : 'FAIL', 'detail' => $clean ? CalendarSelftestMessages::detail($owned === [] ? 'cleanup-empty' : 'cleanup') : CalendarSelftestMessages::FAILED]);
             $passed = $passed && $clean;
         }
-        if ($passed && !($options['no-enable'] ?? false)) {
-            $this->gate->recordVerification($operations, $uid, $this->time->now()->format(DATE_ATOM), $invitations);
-        }
-        $report(['step' => 'gate', 'status' => $passed ? 'OK' : 'FAIL', 'detail' => !$passed ? CalendarSelftestMessages::FAILED : (($options['no-enable'] ?? false) ? CalendarSelftestMessages::PASSED_NO_ENABLE : CalendarSelftestMessages::PASSED)]);
+        $report(['step' => 'result', 'status' => $passed ? 'OK' : 'FAIL', 'detail' => $passed ? CalendarSelftestMessages::PASSED : CalendarSelftestMessages::FAILED]);
         return $passed;
     }
 

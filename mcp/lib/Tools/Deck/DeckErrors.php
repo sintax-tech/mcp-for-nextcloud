@@ -17,6 +17,10 @@ final class DeckErrors {
 			'errorConflict',
 		],
 		[
+			[DeckSessionException::class],
+			'errorSessionNotBound',
+		],
+		[
 			['OCA\Deck\NoPermissionException', 'OCP\AppFramework\Db\DoesNotExistException', 'OCP\AppFramework\Db\IMapperException'],
 			'errorNotFoundOrForbidden',
 		],

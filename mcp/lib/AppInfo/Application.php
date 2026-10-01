@@ -95,6 +95,7 @@ class Application extends App implements IBootstrap {
             $c,
             $c->get(ITimeFactory::class),
             new UserTimezone($c->get(IConfig::class)),
+            $c->get(\OCP\ISession::class),
         ));
         $context->registerService(ToolRegistry::class, static fn (ContainerInterface $c): ToolRegistry => new ToolRegistry(
             array_map(static fn (string $class) => $c->get($class), self::MODULES),

@@ -119,6 +119,7 @@
     "Copy file" : "Copiar archivo",
     "copy in attendee calendar" : "copia en el calendario del participante",
     "Could not change the MCP service." : "No se pudo cambiar el servicio MCP.",
+    "The Deck could not be bound to the authenticated account. Nothing was changed; try again." : "No se pudo vincular Deck a la cuenta autenticada. No se modificó nada; inténtelo de nuevo.",
     "Could not complete the operation in Deck." : "No se pudo completar la operación en Deck.",
     "Could not copy the endpoint." : "No se pudo copiar el endpoint.",
     "Could not load system tags." : "No se pudieron cargar las etiquetas de sistema.",

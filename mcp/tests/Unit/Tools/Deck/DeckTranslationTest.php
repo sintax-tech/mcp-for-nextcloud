@@ -36,6 +36,7 @@ final class DeckTranslationTest extends TestCase {
 		'errorTitleRequired' => 'O título do card não pode ficar vazio.',
 		'errorUnknownTool' => 'Ferramenta do Deck desconhecida.',
 		'errorDeckAppUnavailable' => 'O app Deck não está disponível para este usuário.',
+		'errorSessionNotBound' => 'Não foi possível vincular o Deck à conta autenticada. Nada foi alterado; tente de novo.',
 	];
 
 	protected function tearDown(): void {

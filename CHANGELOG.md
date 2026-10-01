@@ -13,6 +13,13 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 - tools: a tool may list alternative grants (`grantAnyOf`); it is listed and callable with any of them, and checks the one each call needs.
 - grants: two new Files operations, `share` (people and groups) and `link` (public links), both denied by default, appear as columns of the admin matrix.
 
+## 0.9.1
+
+### Fixed
+
+- oauth: a request authenticated with an OAuth access token now has the token owner in the session (`user_id`) while it is handled, through `IUserSession::setUser()`, and the uid is removed again when the request ends. The apps whose services receive the injected `userId` saw a null user before: creating or deleting a Deck card was written and then answered with an error, so the client retried and the card was created twice. The trash bin reads the same session value, so the versions of a note deleted under OAuth could be filed outside the trash of the user. Requests with Basic and an app password keep the session of the core login untouched.
+- deck: the tools refuse a call before anything is written when the session the Deck services read is not the authenticated caller, with a clear message instead of an error after the write.
+
 ## 0.9.0
 
 ### Added

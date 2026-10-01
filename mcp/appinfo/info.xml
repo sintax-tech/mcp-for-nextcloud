@@ -6,7 +6,7 @@
     <summary lang="pt-br">Endpoint MCP local na instância com concessões por usuário</summary>
     <description>Native MCP endpoint for Nextcloud. Test release with per-user grants, Files (read, content search, backed-up edit, tree, mkdir, copy, move, batch with undo, local checkout and version restore, never delete), Notes, Calendar, Contacts, Tasks, Deck and Talk tools, OCR through Workflow OCR and MCP Resources. Sign-in from Claude, ChatGPT and Gemini CLI with OAuth. Sensitive files can be hidden by system tag, and the app has its own "MCP for Nextcloud" settings section.</description>
     <description lang="pt-br">Endpoint MCP nativo para o Nextcloud. Versão de teste com concessões por usuário, ferramentas de Arquivos (leitura, busca por conteúdo, edição com backup, árvore, mkdir, cópia, movimentação, lote com desfazer, edição local e restauração de versão, nunca exclusão), Notas, Calendário, Contatos, Tarefas, Deck e Talk, OCR pelo Workflow OCR e MCP Resources. Login pelo Claude, ChatGPT e Gemini CLI com OAuth. Arquivos sensíveis podem ser ocultados por etiqueta do sistema, e o app tem uma seção própria "MCP for Nextcloud" nas configurações.</description>
-    <version>0.9.0</version>
+    <version>0.9.1</version>
     <licence>AGPL-3.0-or-later</licence>
     <author>Sintax Tech</author>
     <namespace>Mcp</namespace>

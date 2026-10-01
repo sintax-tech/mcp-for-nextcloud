@@ -497,6 +497,16 @@ final class FilesMessages {
         return Translator::t('[could not extract text from %s]', [$name]);
     }
 
+    /** @return string notice for a PDF or image without text when Workflow OCR is not available */
+    public static function noTextOcrInactive(): string {
+        return Translator::t('This file has no text layer. Ask the administrator to install the Workflow OCR app, or view the page as an image with the image tools.');
+    }
+
+    /** @return string notice for a PDF or image without text when Workflow OCR is active */
+    public static function noTextOcrActive(): string {
+        return Translator::t('This file still has no text. Workflow OCR processes files in the background, following the rule the administrator configured.');
+    }
+
     /** @return string appends to text cut by files_read */
     public static function textTruncated(): string {
         return Translator::t('[content truncated]');

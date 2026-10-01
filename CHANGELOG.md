@@ -2,6 +2,16 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased (0.8.0)
+
+### Added
+- OCR: detects the Workflow OCR app (`workflow_ocr`), with no terminal step and nothing that blocks the app. It writes the recognised text into the PDF as a new version, so `files_read` already reads it. A PDF or image with no text layer now comes back as a normal answer with `text_layer: false` and a notice that depends on whether the app is active (ask the admin to install it or view the page as an image; or wait, since it processes in the background by the admin's rule). `files_version_read` does the same.
+- Admin: an "OCR" block shows whether Workflow OCR is active and, when it is not, a link to the App Store and the note that it needs `ocrmypdf` on the server.
+- Tool guide: the Files notes explain `text_layer` and OCR.
+
+### Changed
+- Files: `files_read` of an image no longer fails as unsupported; it answers with `text_layer: false` and the notice.
+
 ## 0.7.0
 
 ### Added

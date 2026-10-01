@@ -61,7 +61,7 @@ final class VersionToolsTest extends TestCase {
         $config = (new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this);
         $this->backup = new FileBackup($this->apps, $this->users, $time, $config);
         $this->tools = new VersionTools($this->apps, $this->users, new TextExtractor($temp), $this->backup,
-            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $container);
+            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $container, new \OCA\Mcp\Tools\Files\OcrSupport($this->apps));
     }
 
     private function file(): \OCP\Files\File {
@@ -88,7 +88,7 @@ final class VersionToolsTest extends TestCase {
         $apps = $this->createMock(IAppManager::class);
         $apps->method('isEnabledForUser')->willReturn(false);
         $tools = new VersionTools($apps, $this->users, $this->createMock(TextExtractor::class), $this->backup,
-            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $this->createMock(ContainerInterface::class));
+            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $this->createMock(ContainerInterface::class), new \OCA\Mcp\Tools\Files\OcrSupport($apps));
         $this->expectException(ToolFailure::class);
         $this->expectExceptionMessage(FilesMessages::versionsOff());
         $tools->list($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', 50, 'alice');
@@ -103,7 +103,7 @@ final class VersionToolsTest extends TestCase {
             return true;
         });
         $tools = new VersionTools($apps, $this->users, $this->createMock(TextExtractor::class), $this->backup,
-            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $this->createMock(ContainerInterface::class));
+            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $this->createMock(ContainerInterface::class), new \OCA\Mcp\Tools\Files\OcrSupport($apps));
         try {
             $tools->list($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', 50, 'alice');
         } catch (ToolFailure) {
@@ -121,6 +121,17 @@ final class VersionToolsTest extends TestCase {
         $this->assertFalse($out['truncated']);
         $this->assertSame(14, $out['size']);
         $this->assertContains('read', $this->manager->ops);
+    }
+
+    public function testReadOfAnImageVersionWarnsThereIsNoText(): void {
+        $this->manager->versions[0]->withContent("\xFF\xD8");
+        $this->manager->versions[0] = new FakeVersion(1759200000, 1759200000, 2, 'image/jpeg', 'foto.jpg');
+        $this->manager->versions[0]->withContent("\xFF\xD8");
+        $out = $this->tools->read($this->file(), '/Documentos/foto.jpg', '1759200000', 'alice');
+        $this->assertFalse($out['text_layer']);
+        $this->assertFalse($out['ocr_active']);
+        $this->assertSame(FilesMessages::noTextOcrInactive(), $out['notice']);
+        $this->assertSame($out['notice'], $out['text']);
     }
 
     public function testReadRefusesAnUnknownVersion(): void {
@@ -160,7 +171,7 @@ final class VersionToolsTest extends TestCase {
         $this->apps = $this->createMock(IAppManager::class);
         $this->apps->method('isEnabledForUser')->willReturn(false);
         $tools = new VersionTools($this->apps, $this->users, $this->createMock(TextExtractor::class), $this->backup,
-            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $this->createMock(ContainerInterface::class));
+            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $this->createMock(ContainerInterface::class), new \OCA\Mcp\Tools\Files\OcrSupport($this->apps));
         try {
             $tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
             $this->fail('a restore without versioning must not proceed');

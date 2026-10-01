@@ -89,7 +89,7 @@ final class ToolRegistryTest extends TestCase {
         $this->assertSame('Read', $listed['n_read']['annotations']['title']);
         $this->policy->setGrant('alice', 'files', 'edit', true);
         $edit = array_column($this->registry()->list('alice'), null, 'name')['a_edit'];
-        $this->assertSame(['title' => 'Edit', 'readOnlyHint' => false, 'destructiveHint' => false, 'idempotentHint' => false, 'openWorldHint' => false], $edit['annotations']);
+        $this->assertSame(['title' => 'Edit', 'readOnlyHint' => false, 'destructiveHint' => true, 'idempotentHint' => false, 'openWorldHint' => false], $edit['annotations']);
     }
 
     public function testCallRechecksGrantAndAppWithoutReachingTheHandler(): void {

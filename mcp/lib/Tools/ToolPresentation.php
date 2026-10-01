@@ -16,7 +16,11 @@ use OCA\Mcp\L10n\Translator;
 final class ToolPresentation {
     /** Guidance sent in `initialize` and in `server/discover`; read by the model, so it is fixed English. */
     public const INSTRUCTIONS = "Reply in the user's language. When you mention a tool to the user, use its title "
-        . "(for example \"Search files\"), never its technical name. Show file paths and names in a readable way.";
+        . "(for example \"Search files\"), never its technical name. Show file paths and names in a readable way. "
+        . "A tool that changes something (every tool whose schema has the confirm argument) does nothing when called "
+        . "without it: the answer is a plan and requiresConfirmation is true. Call it that way first, show the plan to "
+        . "the user, ask whether they want it done, and only repeat the same call with confirm=true after the user has "
+        . "explicitly said yes. Never send confirm=true on your own initiative.";
 
     /** Operations that only read; every other operation may change data. */
     private const READ_OPERATION = 'read';
@@ -24,9 +28,15 @@ final class ToolPresentation {
      * Operations a user cannot take back from the client: the ones that replace or remove what exists, and the
      * ones that publish a message under their own name in a room full of other people. Replying, sharing a file
      * and quoting an attachment only add rows nobody deletes for them, but once sent the user has to ask somebody
-     * else to remove them, which is exactly the confirmation a client offers on a destructive tool.
+     * else to remove them, which is exactly the confirmation a client offers on a destructive tool. Editing is in
+     * the list for the same reason a client marks it: what is written over the old content is gone from the file.
      */
-    private const DESTRUCTIVE_OPERATIONS = ['delete', 'restore', 'transfer', 'move', 'reply', 'attach', 'quote'];
+    private const DESTRUCTIVE_OPERATIONS = ['delete', 'restore', 'transfer', 'move', 'edit', 'replace', 'reply', 'attach', 'quote'];
+    /**
+     * Operations a client may repeat with the same result. A read obviously, and a rollback: restoring the same
+     * version twice leaves the same content, however many versions the second attempt adds to the history.
+     */
+    private const IDEMPOTENT_OPERATIONS = ['restore'];
     /**
      * Tools whose operation is harmless elsewhere but not for them. Creating a note adds a file only its owner sees;
      * creating a Talk group invites other people, and the client cannot take an invitation back.
@@ -117,7 +127,7 @@ final class ToolPresentation {
             'readOnlyHint' => $readOnly,
             'destructiveHint' => $destructiveHint || in_array($operation, self::DESTRUCTIVE_OPERATIONS, true)
                 || in_array($name, self::DESTRUCTIVE_TOOLS, true),
-            'idempotentHint' => $readOnly,
+            'idempotentHint' => $readOnly || in_array($operation, self::IDEMPOTENT_OPERATIONS, true),
             'openWorldHint' => false,
         ];
     }

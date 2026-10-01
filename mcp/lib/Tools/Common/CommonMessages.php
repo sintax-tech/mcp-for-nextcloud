@@ -28,6 +28,26 @@ final class CommonMessages {
         return Translator::t('unidentified');
     }
 
+    /**
+     * The `confirm` argument of every writing tool, published by the registry itself.
+     *
+     * It says what the model has to do, not what the server stores: nothing is kept between the two calls.
+     *
+     * @return string the description the model reads in the schema
+     */
+    public static function confirmParameter(): string {
+        return Translator::t('Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan.');
+    }
+
+    /**
+     * Closing sentence of the plan of a tool whose module does not describe its own writes.
+     *
+     * @return string what the model is asked to do with the plan
+     */
+    public static function planNothingChanged(): string {
+        return Translator::t('Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.');
+    }
+
     public static function confirmAdvice(): string {
         return Translator::t('Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true.');
     }

@@ -10,7 +10,13 @@ use OCP\App\IAppManager;
 use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
 
-/** Single policy point for tools/list and tools/call: grant and app availability are re-read on every request. */
+/**
+ * Single policy point for tools/list and tools/call: grant and app availability are re-read on every
+ * request, and no tool that changes something runs without `confirm: true`.
+ *
+ * The two decisions are here and not in the modules on purpose. A module that forgets the check cannot
+ * write anything by accident, and a new module is gated by writing `operation: 'create'` and nothing else.
+ */
 class ToolRegistry {
     /** @param list<ToolModule> $modules explicit module list, in tools/list order */
     public function __construct(
@@ -25,6 +31,9 @@ class ToolRegistry {
      * Every tool carries the display metadata clients show instead of the technical name:
      * `title` (Tool.title) and `annotations` derived from the tool's grant operation.
      *
+     * A writing tool is published with the `confirm` argument {@see WriteGate} adds, so the model reads the
+     * rule in the schema of every write it may call; a read tool is published exactly as the module wrote it.
+     *
      * @param string $userId authenticated user
      * @return list<array{name:string, title:string, description:string, inputSchema:array<string, mixed>, annotations:array<string, bool|string>}> tools the user may call now
      */
@@ -33,12 +42,13 @@ class ToolRegistry {
         foreach ($this->modules as $module) {
             foreach ($module->definitions() as $definition) {
                 if ($this->allowed($definition, $userId)) {
+                    $published = WriteGate::publish($definition);
                     $tools[] = [
-                        'name' => $definition['name'],
-                        'title' => ToolPresentation::title($definition['name']),
-                        'description' => $definition['description'],
-                        'inputSchema' => $definition['inputSchema'],
-                        'annotations' => ToolPresentation::annotations($definition['name'], $definition['operation'], ($definition['destructiveHint'] ?? false) === true),
+                        'name' => $published['name'],
+                        'title' => ToolPresentation::title($published['name']),
+                        'description' => $published['description'],
+                        'inputSchema' => $published['inputSchema'],
+                        'annotations' => ToolPresentation::annotations($published['name'], $published['operation'], ($published['destructiveHint'] ?? false) === true),
                     ];
                 }
             }
@@ -47,6 +57,9 @@ class ToolRegistry {
     }
 
     /**
+     * A write without `confirm: true` answers with its plan and never reaches the module; with it, the module
+     * runs and every guard it holds — ACL, ETag, ownership — is checked again at that moment.
+     *
      * @param string $name tool name
      * @param array<string, mixed> $arguments raw arguments from tools/call
      * @param string $userId authenticated user
@@ -62,8 +75,12 @@ class ToolRegistry {
                 if (!$this->allowed($definition, $userId)) {
                     break 2;
                 }
-                $arguments = ArgumentValidator::validate($definition['inputSchema'], $arguments);
+                $published = WriteGate::publish($definition);
+                $arguments = ArgumentValidator::validate($published['inputSchema'], $arguments);
                 try {
+                    if (WriteGate::isWrite($definition) && !WriteGate::confirmed($arguments)) {
+                        return ToolResult::json(WriteGate::plan($module, $definition, $arguments, $userId));
+                    }
                     return $module->call($name, $arguments, $userId);
                 } catch (InvalidArgumentException $e) {
                     throw $e;

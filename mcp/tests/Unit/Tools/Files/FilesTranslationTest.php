@@ -61,6 +61,7 @@ final class FilesTranslationTest extends TestCase {
         self::assertSame('O versionamento de arquivos (files_versions) não está ativo nesta conta.', FilesMessages::versionsOff());
         self::assertSame('Envie os bytes do arquivo como corpo bruto (curl -T), não como formulário multipart.', FilesMessages::uploadMultipart());
         self::assertSame('O corpo enviado está vazio; nada foi gravado.', FilesMessages::uploadEmpty());
+        self::assertSame('Recurso excede o limite de leitura binária de 524288 bytes.', FilesMessages::binaryResourceTooLarge(524288));
     }
 
     public function testSpanishUserGetsSpanishTexts(): void {
@@ -99,6 +100,7 @@ final class FilesTranslationTest extends TestCase {
         self::assertSame('Ya existe un archivo o carpeta en este destino.', FilesMessages::destinationExists());
         self::assertSame('Envíe los bytes del archivo como cuerpo sin procesar (curl -T), no como formulario multiparte.', FilesMessages::uploadMultipart());
         self::assertSame('El versionado de archivos (files_versions) no está activo en esta cuenta.', FilesMessages::versionsOff());
+        self::assertSame('El recurso excede el límite de lectura binaria de 524288 bytes.', FilesMessages::binaryResourceTooLarge(524288));
     }
 
     public function testWithoutTranslatorOrWithUnknownLanguageTheMessagesAreEnglish(): void {

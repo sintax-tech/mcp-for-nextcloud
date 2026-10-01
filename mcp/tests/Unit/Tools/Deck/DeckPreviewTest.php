@@ -12,6 +12,7 @@ use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCA\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IConfig;
 use OCP\IURLGenerator;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -60,7 +61,7 @@ final class DeckPreviewTest extends TestCase {
 		return $gateway;
 	}
 
-	private function moduleWith(DeckGatewayInterface $gateway, ?IUserManager $users = null): DeckToolModule {
+	private function moduleWith(DeckGatewayInterface $gateway, ?IUserManager $users = null, ?IConfig $config = null): DeckToolModule {
 		$apps = $this->createMock(IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(true);
 		$module = new DeckToolModule(
@@ -70,6 +71,7 @@ final class DeckPreviewTest extends TestCase {
 			$this->createMock(IURLGenerator::class),
 			$this->createMock(ITimeFactory::class),
 			$users,
+			$config,
 		);
 		// The gateway is built lazily from the Deck container; the test hands its double in its place.
 		(new \ReflectionProperty(DeckToolModule::class, 'gateway'))->setValue($module, $gateway);
@@ -119,6 +121,35 @@ final class DeckPreviewTest extends TestCase {
 		self::assertSame(['current' => 1_700_000_123, 'sent' => 5], $plan['lastModified']);
 		self::assertSame([], $plan['shared']);
 		self::assertTrue($plan['recoverable']);
+	}
+
+	/** The stored instant and the day the call sends are the same date for the user, so nothing changes. */
+	public function testEditPlanDoesNotReportTheSameDueDateAsAChange(): void {
+		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway->expects(self::never())->method('updateCard');
+		$gateway->method('cardOwnership')->willReturn($this->ownershipOf('alice'));
+		// Deck keeps the date in UTC: local midnight of 1 October in São Paulo is 03:00 UTC.
+		$gateway->method('findCard')->willReturn($this->card([
+			'id' => 7,
+			'title' => 'Antes',
+			'duedate' => new \DateTime('2026-10-01 03:00:00', new \DateTimeZone('UTC')),
+		]));
+		$config = $this->createMock(IConfig::class);
+		$config->method('getUserValue')->willReturn('America/Sao_Paulo');
+		$module = $this->moduleWith($gateway, null, $config);
+
+		$same = $module->preview('deck_edit_card', ['cardId' => 7, 'title' => 'Depois', 'duedate' => '2026-10-01'], 'alice');
+		self::assertSame('2026-10-01T00:00:00-03:00', $same['card']['before']['duedate']);
+		self::assertSame('2026-10-01T00:00:00-03:00', $same['card']['after']['duedate']);
+		self::assertSame(['title'], $same['changed']);
+
+		$other = $module->preview('deck_edit_card', ['cardId' => 7, 'duedate' => '2026-10-02'], 'alice');
+		self::assertSame('2026-10-02T00:00:00-03:00', $other['card']['after']['duedate']);
+		self::assertSame(['duedate'], $other['changed']);
+
+		$cleared = $module->preview('deck_edit_card', ['cardId' => 7, 'duedate' => null], 'alice');
+		self::assertNull($cleared['card']['after']['duedate']);
+		self::assertSame(['duedate'], $cleared['changed']);
 	}
 
 	public function testEditPlanOnASharedBoardNamesItsOwner(): void {

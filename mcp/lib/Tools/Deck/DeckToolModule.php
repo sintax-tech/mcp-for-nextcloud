@@ -348,7 +348,10 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 			throw new InvalidArgumentException(DeckMessages::errorNoFieldToEdit());
 		}
 		$card = $this->gateway()->findCard($userId, (int)$arguments['cardId']);
-		$before = $this->fields($card);
+		// Both dates are instants in the caller's zone, the day the write turns into local midnight
+		// included, so the same date is never reported as a change only because it is spelled otherwise.
+		$zone = $this->zones()?->forUser($userId) ?? new \DateTimeZone(date_default_timezone_get());
+		$before = $this->fields($card, $zone);
 		$after = [
 			'title' => array_key_exists('title', $given) ? CardInput::requireTitle((string)$given['title']) : $before['title'],
 			'description' => array_key_exists('description', $given)
@@ -356,8 +359,8 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 				: $before['description'],
 			// Absent keeps the date as it is; an explicit null clears it, exactly as the write reads it.
 			'duedate' => array_key_exists('duedate', $given)
-				? CardInput::duedate($given['duedate'])
-				: $this->instant($card->getDuedate()),
+				? $this->day(CardInput::duedate($given['duedate']), $zone)
+				: $before['duedate'],
 		];
 		$board = $this->gateway()->cardOwnership($userId, (int)$arguments['cardId']);
 
@@ -483,22 +486,40 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	 * The fields a write can change, as the plan shows them.
 	 *
 	 * @param \OCA\Deck\Db\Card $card Card as the gateway read it.
+	 * @param \DateTimeZone|null $zone Zone the due date is shown in, or null to keep the stored one.
 	 * @return array{title: string, description: string, duedate: string|null}
 	 */
-	private function fields(\OCA\Deck\Db\Card $card): array {
+	private function fields(\OCA\Deck\Db\Card $card, ?\DateTimeZone $zone = null): array {
 		return [
 			'title' => (string)$card->getTitle(),
 			'description' => (string)$card->getDescription(),
-			'duedate' => $this->instant($card->getDuedate()),
+			'duedate' => $this->instant($card->getDuedate(), $zone),
 		];
 	}
 
 	/**
 	 * @param mixed $value Value of a Deck `datetime` column.
+	 * @param \DateTimeZone|null $zone Zone the instant is shown in, or null to keep the stored one.
 	 * @return string|null ISO 8601 instant, or null when the card has no date.
 	 */
-	private function instant(mixed $value): ?string {
-		return $value instanceof \DateTimeInterface ? $value->format(\DateTimeInterface::ATOM) : null;
+	private function instant(mixed $value, ?\DateTimeZone $zone = null): ?string {
+		if (!$value instanceof \DateTimeInterface) {
+			return null;
+		}
+
+		return ($zone === null ? $value : \DateTimeImmutable::createFromInterface($value)->setTimezone($zone))
+			->format(\DateTimeInterface::ATOM);
+	}
+
+	/**
+	 * The instant a due date sent as a day becomes, exactly as the gateway writes it.
+	 *
+	 * @param string|null $day `YYYY-MM-DD`, or null to clear the date.
+	 * @param \DateTimeZone $zone Timezone of the caller.
+	 * @return string|null ISO 8601 instant at local midnight, or null.
+	 */
+	private function day(?string $day, \DateTimeZone $zone): ?string {
+		return $day === null ? null : CardCriteria::localMidnight($day, $zone);
 	}
 
 	/**

@@ -26,6 +26,21 @@ AI assistants are most useful when they can reach the tools a team already uses.
 - **Nextcloud ACLs always apply.** The app never widens what a user can already do in Nextcloud.
 - **Hide sensitive files by system tag.** Administrators can configure system tags (recommended: restricted or invisible) to make tagged files and folders completely invisible to MCP tools and resources, including every folder below them. It fails closed: if a tag lookup errors, the item stays hidden. Backups taken by the app inherit the tag before they receive any content.
 
+## What's new in 0.8.0
+
+If you are upgrading from 0.7.0, this is what the new release adds. The full list, including the security fixes, is in [`CHANGELOG.md`](CHANGELOG.md).
+
+- **Contacts and Tasks.** Address books and contacts (`contacts_list_addressbooks`, `contacts_search_contacts`, `contacts_read_contact`, `contacts_create_contact`, `contacts_edit_contact`, `contacts_delete_contact`) and VTODO tasks (`tasks_list_calendars`, `tasks_list_tasks`, `tasks_read_task`, `tasks_create_task`, `tasks_edit_task`, `tasks_complete_task`, `tasks_delete_task`). Contacts go through core CardDAV and preserve unknown vCard fields; tasks need no optional app. Both modules have their own `read`/`create`/`edit`/`delete` grants, all writes off by default. See [Contacts and tasks](#contacts-and-tasks) for the deletion and backup rules.
+- **Search by content.** `files_search` searches inside files and returns excerpts when the `fulltextsearch` app is active and indexed, and falls back to name search with a notice when it is not. `notes_search` searches note titles and Markdown.
+- **OCR through Workflow OCR.** When that optional app is installed, a scanned PDF gains a text layer that `files_read` reads normally. Without it, a page with no text comes back as `text_layer: false` plus a notice, and the admin page shows the OCR status. Nothing is blocked.
+- **MCP Resources.** Clients can list `mcp://guide` to read the tool guide, discover the templates `nc://files/{path}` and `nc://notes/{id}`, and read files and notes as resources. Granted, missing and hidden resources fail closed.
+- **Hide sensitive files by system tag.** Administrators pick system tags in the admin settings and anything carrying them, including everything below a tagged folder, becomes invisible to the tools — read, search, listing, image view and write destinations all behave as if it did not exist. It fails closed on error, and app backups inherit the tag before receiving any content.
+- **Sign in from ChatGPT and Gemini CLI.** `chatgpt.com` is allowed next to `claude.ai`, and an optional built-in native client (`nextcloud-mcp-native`, off by default) covers local programs like Gemini CLI. Both are configurable in the new admin **OAuth clients** section, with no terminal step. *Compatible by code, not yet proven against a live client* — see [Connecting a client](#connecting-a-client).
+- **A real settings section.** The app has its own **MCP for Nextcloud** entry, with an icon, in both the administration and the personal settings menus, and the admin page is split into blocks: Status, OAuth clients, Hidden files & tags, OCR, Permissions and Active connections.
+- **Check out any file type.** `files_checkout` now accepts DOCX, XLSX, PDF and images up to the upload limit, not just text. The limit itself is editable in MiB from the admin page instead of only through `occ`.
+
+Upgrading from an earlier release? Take a backup of `config/config.php` first, and read the [CHANGELOG](CHANGELOG.md) for the security changes in this release.
+
 ## Features
 
 | Module | Read | Write (each one needs an admin grant) |

@@ -5,6 +5,7 @@ namespace OCA\Mcp\Tools\Tasks;
 
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\Calendar\Calendar;
 use OCA\Mcp\Tools\Calendar\CalendarAccess;
 use OCA\Mcp\Tools\Calendar\CalendarDav;
@@ -15,6 +16,7 @@ use OCA\Mcp\Tools\Calendar\TrashPolicy;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Dav\CollectionSchema as Schema;
 use OCA\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolGuideNotes;
 use OCA\Mcp\Tools\ToolModule;
@@ -25,7 +27,7 @@ use RuntimeException;
 use Sabre\VObject\Component\VCalendar;
 
 /** VTODO tools independent of the optional Tasks UI app. */
-final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
+final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, RendersPlans {
     /**
      * Receives VTODO queries, calendar access, native CalDAV writes and retention policy.
      *
@@ -37,6 +39,7 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
      * @param SharedGuard $guard shared-owner confirmation policy
      * @param TrashPolicy $trash calendar retention policy
      * @param ITimeFactory $time clock for timestamps
+     * @param UserTimezone|null $zones timezone of the account, so a plan shows the dates the user reads
      * @return void
      */
     public function __construct(
@@ -48,7 +51,11 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
         private SharedGuard $guard,
         private TrashPolicy $trash,
         private ITimeFactory $time,
+        private ?UserTimezone $zones = null,
     ) {}
+
+    /** The account of the request in flight, whose timezone the plan text is read in. */
+    private ?string $userId = null;
 
     /**
      * Declares the tool schemas and their operations for the central write gate.
@@ -178,7 +185,28 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
      * @throws InvalidArgumentException when the tool or supplied fields are invalid
      */
     public function preview(string $name, array $arguments, string $userId): array {
+        $this->userId = $userId;
+
         return $this->prepare($name, $arguments, $userId)['plan'];
+    }
+
+    /**
+     * Describes the plan as the text the person confirms, in their own language and timezone.
+     *
+     * The account is the one {@see self::preview()} ran for: the registry builds the plan and renders
+     * it in the same request, so the timezone of the user who asked is the one the dates speak.
+     *
+     * @param string $name registered write tool name
+     * @param array<string, mixed> $plan the plan preview() returned for that tool
+     * @return string|null Markdown body, or null when this renderer has nothing to say about it
+     */
+    public function renderPlan(string $name, array $plan): ?string {
+        // A plan rendered before any preview, or without a timezone to read dates in, stays generic.
+        if ($this->zones === null || $this->userId === null) {
+            return null;
+        }
+
+        return (new TasksPlanRenderer($this->zones))->render($name, $plan, $this->userId);
     }
 
     /**
@@ -193,6 +221,7 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
      * @throws RuntimeException when the native write or its read-back verification fails
      */
     public function call(string $name, array $arguments, string $userId): array {
+        $this->userId = $userId;
         if ($name === 'tasks_list_calendars') {
             return ToolResult::json(
                 array_map(static fn ($calendar) => (array) $calendar, $this->access->visible($userId, 'VTODO'))

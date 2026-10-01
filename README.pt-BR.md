@@ -24,7 +24,7 @@ Assistentes de IA rendem mais quando alcançam as ferramentas que o time já usa
 - **Login pelo Nextcloud.** Clientes como o claude.ai usam OAuth ("Entrar agora"): a pessoa faz login no próprio Nextcloud e clica em **Permitir**. Senha de app (HTTP Basic) continua valendo para outros clientes.
 - **O admin no controle.** Liga e desliga o serviço, define quem pode conectar e mantém uma **matriz usuário × permissão**. Leitura vem ligada para usuários autorizados. Escrever, mover, excluir, transferir e restaurar ficam **desligados até o admin liberar**.
 - **As permissões do Nextcloud sempre valem.** O app nunca amplia o que o usuário já pode fazer no Nextcloud.
-- **Ocultação de arquivos sensíveis por etiqueta.** O administrador pode escolher etiquetas de sistema (preferencialmente restritas ou invisíveis) para ocultar completamente arquivos e pastas das ferramentas MCP.
+- **Ocultação de arquivos sensíveis por etiqueta.** O administrador pode escolher etiquetas de sistema (preferencialmente restritas ou invisíveis) para ocultar completamente arquivos e pastas das ferramentas e dos recursos MCP, incluindo tudo o que estiver dentro deles. Em caso de dúvida, oculta: se a consulta da etiqueta falhar, o item continua oculto. Os backups feitos pelo app recebem a etiqueta antes de receber qualquer conteúdo.
 
 ## Funcionalidades
 
@@ -42,6 +42,7 @@ E também:
 
 - **Confirmação conversacional antes de qualquer escrita (`confirm: true`)**: qualquer ferramenta que altera dados (`operation != 'read'`) só executa quando chamada com `confirm: true`. Sem isso, o servidor apenas devolve o plano (`requiresConfirmation: true`) sem modificar nada. O assistente deve apresentar o plano ao usuário e só repetir a chamada com `confirm: true` após aprovação explícita. Nenhum estado ou token de aprovação é gravado no servidor.
 - **Recursos MCP (MCP Resources)**: suporte nas duas gerações do protocolo (`resources: {}`). Clientes podem listar `mcp://guide` para ler o guia das ferramentas diretamente, descobrir templates de recursos (`nc://files/{path}` e `nc://notes/{id}`) filtrados pelos grants e apps do usuário, e ler arquivos de texto (com extração automática de texto), notas e pequenos binários em base64 (<= 512 KiB). Recursos sem permissão, inexistentes ou ocultos falham com código padrão.
+- **OCR pelo Workflow OCR**: com o app Workflow OCR instalado, os PDFs escaneados ganham uma camada de texto que o `files_read` lê normalmente. Sem ele, um PDF ou imagem sem texto volta com `text_layer: false` e um aviso, e a página de admin mostra o status do OCR com o link para instalar. Nada fica bloqueado.
 - **Guia das ferramentas** (`mcp_guide`): o modelo pergunta ao servidor o que cada ferramenta faz, seus parâmetros, limites e se exige confirmação. O guia é montado das mesmas definições que o `tools/list` entrega, filtrado pelas permissões e apps do usuário. Ele é escrito em inglês e o modelo repassa no idioma do usuário.
 - **Nomes amigáveis das ferramentas** no cliente ("Buscar arquivos", "Listar calendários") e anotações MCP (`readOnlyHint`, `destructiveHint`), para o cliente pedir confirmação em ações de risco.
 - **Confirmação de segurança** em recursos de outras pessoas: pastas compartilhadas, pastas de time, quadros do Deck e calendários de outro dono. O servidor recusa a primeira chamada e devolve uma mensagem pronta. O assistente precisa perguntar ao usuário antes de repetir com `confirm_shared: true`. *(Deck e Calendário desde a 0.6.6; Arquivos e Notas desde a 0.7.0)*
@@ -141,6 +142,8 @@ Veja o [`CHANGELOG.md`](CHANGELOG.md) (em inglês).
 
 ## Roadmap
 
+- Hosts de clientes OAuth permitidos editáveis na página de admin (hoje só o `claude.ai` funciona sem mudar a configuração do app)
+- Revisão nativa da tradução para o espanhol
 - Publicação na App Store do Nextcloud
 
 ## Licença

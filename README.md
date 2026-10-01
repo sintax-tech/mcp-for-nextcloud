@@ -24,7 +24,7 @@ AI assistants are most useful when they can reach the tools a team already uses.
 - **Sign in with Nextcloud.** Clients such as claude.ai use OAuth ("Sign in"): the user logs into their own Nextcloud and clicks **Allow**. App passwords (HTTP Basic) still work for other clients.
 - **Admin in control.** Service on/off switch, per-user eligibility and a **user × permission matrix**. Reading is on by default for eligible users; every write, move, delete, transfer or restore is **off until the admin grants it**.
 - **Nextcloud ACLs always apply.** The app never widens what a user can already do in Nextcloud.
-- **Hide sensitive files by system tag.** Administrators can configure system tags (recommended: restricted or invisible) to make tagged files and folders completely invisible to MCP tools.
+- **Hide sensitive files by system tag.** Administrators can configure system tags (recommended: restricted or invisible) to make tagged files and folders completely invisible to MCP tools and resources, including every folder below them. It fails closed: if a tag lookup errors, the item stays hidden. Backups taken by the app inherit the tag before they receive any content.
 
 ## Features
 
@@ -42,6 +42,7 @@ Plus:
 
 - **Conversational confirmation before every write (`confirm: true`)**: any tool that changes data (`operation != 'read'`) only executes when called with `confirm: true`. Without it, the server returns the plan (`requiresConfirmation: true`) and makes no changes. The assistant must present the plan to the user and only repeat the call with `confirm: true` after explicit approval. No approval state or tokens are kept on the server.
 - **MCP Resources**: dual-era support for Model Context Protocol resources (`resources: {}`). Clients can list `mcp://guide` to read the tool guide directly, discover resource templates (`nc://files/{path}`, `nc://notes/{id}`) filtered by user grants and apps, and read text files (with automatic text extraction), notes, and small binary blobs (<= 512 KiB). Ungranted, missing, or hidden resources fail closed.
+- **OCR through Workflow OCR**: when the Workflow OCR app is installed, scanned PDFs gain a text layer that `files_read` reads normally. Without it, a PDF or image with no text comes back with `text_layer: false` and a notice, and the admin page shows the OCR status with a link to install it. Nothing is blocked.
 - **Tool guide** (`mcp_guide`): the model asks the server what each tool does, its parameters, limits and whether it needs confirmation, built from the same definitions `tools/list` serves, filtered by the user's grants and apps. The guide is in English and the model relays it in the user's language.
 - **Friendly tool titles** in the client ("Search files", "List calendars") and MCP annotations (`readOnlyHint`, `destructiveHint`) so clients can ask before risky actions.
 - **Safety confirmations** for resources that belong to someone else: shared folders, team folders, other people's Deck boards and calendars. The server refuses the first call and returns a ready-made message, and the assistant must ask the user before repeating it with `confirm_shared: true`. *(Deck and Calendar since 0.6.6; Files and Notes since 0.7.0)*
@@ -141,6 +142,8 @@ See [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Roadmap
 
+- Allowed OAuth client hosts editable in the admin page (today only `claude.ai` works without changing the app configuration)
+- Native review of the Spanish translation
 - Nextcloud App Store release
 
 ## License

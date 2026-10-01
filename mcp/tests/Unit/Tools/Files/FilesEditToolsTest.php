@@ -162,6 +162,46 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
             $this->failure('files_replace', ['path' => '/MCP backups/ata.md', 'old' => 'Ata', 'new' => 'x']));
     }
 
+    /**
+     * @return array<string, array{string, string}> binary files a client downloads, edits locally and uploads back
+     */
+    public static function binaryProvider(): array {
+        return [
+            'docx' => ['/Documentos/contrato.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+            'xls' => ['/Documentos/planilha.xls', 'application/vnd.ms-excel'],
+            'pdf' => ['/Documentos/relatorio.pdf', 'application/pdf'],
+            'png' => ['/Documentos/foto.png', 'image/png'],
+        ];
+    }
+
+    /** The checkout never reads the bytes, so any file up to the size limit can be checked out. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('binaryProvider')]
+    public function testCheckoutIssuesLinksForABinaryFile(string $path, string $mime): void {
+        $this->tree->addFile('/alice/files' . $path, "PK\x03\x04\x00\xFF", $mime);
+        $out = $this->json('files_checkout', ['path' => $path]);
+        $this->assertSame($mime, $out['mime']);
+        $this->assertArrayHasKey('download_url', $out);
+        $this->assertArrayHasKey('upload_url', $out);
+        $this->assertSame($path, $this->store->ofKind(CheckoutToken::KIND_UPLOAD)->path);
+    }
+
+    /** files_edit and files_replace keep working on text only: the checkout is the way for binaries. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('binaryProvider')]
+    public function testEditAndReplaceStillRefuseABinaryFile(string $path, string $mime): void {
+        $this->tree->addFile('/alice/files' . $path, "PK\x03\x04\x00\xFF", $mime);
+        $this->assertSame(FilesMessages::notText(), $this->failure('files_edit', ['path' => $path, 'content' => 'x']));
+        $this->assertSame(FilesMessages::notText(), $this->failure('files_replace', ['path' => $path, 'old' => 'PK', 'new' => 'x']));
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    /** A binary inside the backup folder is still refused: the folder a user recovers from is never checked out. */
+    public function testCheckoutRefusesABinaryInsideTheBackupFolder(): void {
+        $this->tree->addFile('/alice/files/MCP backups/contrato.docx.20260921-141320.bak', 'bin', 'application/octet-stream');
+        $this->assertSame(FilesMessages::backupPath(),
+            $this->failure('files_checkout', ['path' => '/MCP backups/contrato.docx.20260921-141320.bak']));
+        $this->assertSame([], $this->store->rows);
+    }
+
     public function testCheckoutReturnsTwoLinksAndNeverTheContent(): void {
         $out = $this->json('files_checkout', ['path' => '/Documentos/ata.md']);
         $this->assertSame(['path', 'etag', 'size', 'mime', 'access', 'download_url', 'upload_url', 'expires_at'], array_keys($out));

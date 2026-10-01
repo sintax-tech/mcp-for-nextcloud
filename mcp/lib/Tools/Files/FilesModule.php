@@ -416,11 +416,11 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
      * @param string $userId authenticated user
      * @param string $path file to download and upload, user-relative
      * @return array<string, mixed>
-     * @throws ToolFailure when the file is not editable, versioning is off or the write would be refused
+     * @throws ToolFailure when the path is the backup folder or not a file, versioning is off or the write would be refused
      */
     private function planCheckout(Folder $root, string $userId, string $path): array {
         $path = PathGuard::normalize($path);
-        $this->assertEditable($root, $path);
+        $this->assertNotBackup($path);
         $file = $this->file($root, $path);
         $shared = $this->guard->guard($file, $userId, $path, false);
         // The same refusal the mint gives, so the plan cannot promise links the upload would not honour.
@@ -743,12 +743,18 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     }
 
     /**
+     * Issues the links for any file type: the bytes travel between the client and the controller only.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param string $path file to download and upload, user-relative
+     * @param bool $confirmed whether the caller passed confirm_shared
      * @return array{content: list<array{type:string, text:string}>}
-     * @throws ToolFailure when the file is not text or the write is refused
+     * @throws ToolFailure when the path is the backup folder or not a file, or the write is refused
      */
     private function checkoutOut(Folder $root, string $userId, string $path, bool $confirmed): array {
         $path = PathGuard::normalize($path);
-        $this->assertEditable($root, $path);
+        $this->assertNotBackup($path);
         $file = $this->file($root, $path);
         $access = $this->accessInfo->describe($file, $userId);
         if (($payload = $this->guard->guard($file, $userId, $path, $confirmed)) !== null) {
@@ -853,14 +859,27 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     }
 
     /**
+     * The only refusal files_checkout shares with an edit: the folder a user recovers from is never written.
+     * The checkout never reads the bytes, so its type does not matter; the upload limit lives in CheckoutService.
+     *
+     * @param string $path normalized user-relative path
+     * @throws ToolFailure when the path is inside the backup folder
+     */
+    private function assertNotBackup(string $path): void {
+        if (FileBackup::isBackupPath($path)) {
+            throw new ToolFailure(FilesMessages::backupPath());
+        }
+    }
+
+    /**
+     * files_edit and files_replace write text through the model, so they also need a text file.
+     *
      * @param Folder $root the user's folder
      * @param string $path normalized user-relative path
      * @throws ToolFailure when the path is the backup folder or does not hold editable text
      */
     private function assertEditable(Folder $root, string $path): void {
-        if (FileBackup::isBackupPath($path)) {
-            throw new ToolFailure(FilesMessages::backupPath());
-        }
+        $this->assertNotBackup($path);
         if (!TextExtractor::isText($this->file($root, $path))) {
             throw new ToolFailure(FilesMessages::notText());
         }

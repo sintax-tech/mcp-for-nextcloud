@@ -181,6 +181,45 @@ final class FilesPlanTest extends FilesToolsTestCase {
         $this->assertSame([], $this->store->ops);
     }
 
+    /**
+     * @return array<string, array{string, string}> binary files the checkout plan has to accept
+     */
+    public static function binaryProvider(): array {
+        return [
+            'docx' => ['/Documentos/contrato.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+            'xls' => ['/Documentos/planilha.xls', 'application/vnd.ms-excel'],
+            'pdf' => ['/Documentos/relatorio.pdf', 'application/pdf'],
+            'png' => ['/Documentos/foto.png', 'image/png'],
+        ];
+    }
+
+    /** A binary file is planned like a text one: same promise of links, same MIME, nothing minted. */
+    #[DataProvider('binaryProvider')]
+    public function testCheckoutPlanAcceptsABinaryFile(string $path, string $mime): void {
+        $this->tree->addFile('/alice/files' . $path, "PK\x03\x04\x00\xFF", $mime);
+        $this->snapshot();
+        $plan = $this->plan('files_checkout', ['path' => $path]);
+
+        $this->assertSame($path, $plan['path']);
+        $this->assertSame($mime, $plan['mime']);
+        $this->assertTrue($plan['linksAfterConfirmation']);
+        $this->assertNothingWritten();
+        $this->assertSame([], $this->store->rows);
+    }
+
+    /** The checkout plan still refuses the backup folder, binary or not. */
+    public function testCheckoutPlanRefusesTheBackupFolder(): void {
+        $this->tree->addFile('/alice/files/MCP backups/contrato.docx.20260921-141320.bak', 'bin', 'application/octet-stream');
+        $this->snapshot();
+        try {
+            $this->plan('files_checkout', ['path' => '/MCP backups/contrato.docx.20260921-141320.bak']);
+            $this->fail('a checkout of the backup folder must not be planned');
+        } catch (\OCA\Mcp\Tools\ToolFailure $e) {
+            $this->assertSame(\OCA\Mcp\Tools\Files\FilesMessages::backupPath(), $e->getMessage());
+        }
+        $this->assertNothingWritten();
+    }
+
     /** The plan refuses a checkout without versioning the same way the mint does, instead of crashing. */
     public function testCheckoutPlanWithoutVersioningIsRefusedLikeTheMint(): void {
         $this->enabled = [];

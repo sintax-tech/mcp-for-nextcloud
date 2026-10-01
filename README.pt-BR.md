@@ -26,6 +26,21 @@ Assistentes de IA rendem mais quando alcançam as ferramentas que o time já usa
 - **As permissões do Nextcloud sempre valem.** O app nunca amplia o que o usuário já pode fazer no Nextcloud.
 - **Ocultação de arquivos sensíveis por etiqueta.** O administrador pode escolher etiquetas de sistema (preferencialmente restritas ou invisíveis) para ocultar completamente arquivos e pastas das ferramentas e dos recursos MCP, incluindo tudo o que estiver dentro deles. Em caso de dúvida, oculta: se a consulta da etiqueta falhar, o item continua oculto. Os backups feitos pelo app recebem a etiqueta antes de receber qualquer conteúdo.
 
+## Novidades da 0.8.0
+
+Se você vem da 0.7.0, isto é o que a nova versão acrescenta. A lista completa, incluindo as correções de segurança, está no [`CHANGELOG.md`](CHANGELOG.md).
+
+- **Contatos e Tarefas.** Catálogos e contatos (`contacts_list_addressbooks`, `contacts_search_contacts`, `contacts_read_contact`, `contacts_create_contact`, `contacts_edit_contact`, `contacts_delete_contact`) e tarefas VTODO (`tasks_list_calendars`, `tasks_list_tasks`, `tasks_read_task`, `tasks_create_task`, `tasks_edit_task`, `tasks_complete_task`, `tasks_delete_task`). Contatos passam pelo CardDAV do core e preservam campos desconhecidos do vCard; tarefas não dependem de app opcional. Os dois módulos têm grants próprios de `read`/`create`/`edit`/`delete`, todas as escritas desligadas por padrão. As regras de exclusão e de backup estão em [Contatos e tarefas](#contatos-e-tarefas).
+- **Busca por conteúdo.** `files_search` busca dentro dos arquivos e devolve trechos quando o app `fulltextsearch` está ativo e indexado, e cai para busca por nome com um aviso quando não está. `notes_search` busca no título e no Markdown das notas.
+- **OCR pelo Workflow OCR.** Com esse app opcional instalado, um PDF escaneado ganha uma camada de texto que o `files_read` lê normalmente. Sem ele, uma página sem texto volta como `text_layer: false` mais um aviso, e a página de admin mostra o status do OCR. Nada fica bloqueado.
+- **Recursos MCP (MCP Resources).** O cliente pode listar `mcp://guide` para ler o guia das ferramentas, descobrir os templates `nc://files/{path}` e `nc://notes/{id}` e ler arquivos e notas como recursos. Recurso sem permissão, inexistente ou oculto falha fechada.
+- **Ocultar arquivos sensíveis por etiqueta.** O administrador escolhe etiquetas de sistema nas configurações de admin e tudo o que as tiver, inclusive o conteúdo de uma pasta etiquetada, fica invisível para as ferramentas — leitura, busca, listagem, visão de imagens e destinos de escrita agem como se não existisse. Em caso de dúvida, oculta; e os backups do app recebem a etiqueta antes de receber qualquer conteúdo.
+- **Entrar pelo ChatGPT e pelo Gemini CLI.** `chatgpt.com` é aceito ao lado de `claude.ai`, e um cliente nativo embutido e opcional (`nextcloud-mcp-native`, desligado por padrão) cobre programas locais como o Gemini CLI. Ambos se configuram na nova seção de admin **Clientes OAuth**, sem passo no terminal. *Compatível por código, ainda não comprovado em cliente real* — veja [Conectando um cliente](#conectando-um-cliente).
+- **Uma seção de configurações de verdade.** O app tem uma entrada própria **MCP for Nextcloud**, com ícone, nos menus de administração e pessoal, e a página de admin é dividida em blocos: Status, Clientes OAuth, Arquivos ocultos e etiquetas, OCR, Permissões e Conexões ativas.
+- **Retirar qualquer tipo de arquivo.** O `files_checkout` agora aceita DOCX, XLSX, PDF e imagens até o limite de envio, e não só texto. O próprio limite passa a ser editável em MiB pela página de admin, em vez de só por `occ`.
+
+Quem vem da 0.7.0: ao atualizar o app, o servidor roda duas migrações de esquema, que criam as tabelas `mcp_file_batches` (o registro das reorganizações de pasta executadas, para o `files_undo_batch` poder desfazê-las) e `mcp_oauth_spent` (hashes de refresh consumidos, guardados até expirar para detectar reuso). O Nextcloud executa as duas sozinho: nenhum passo manual, nenhum `occ`, e nada muda no `config.php`. Voltar para a 0.7.0 deixa as duas tabelas sem uso e inofensivas. Leia o [CHANGELOG](CHANGELOG.md) para as mudanças de segurança desta versão.
+
 ## Funcionalidades
 
 | Módulo | Leitura | Escrita (cada uma exige liberação do admin) |

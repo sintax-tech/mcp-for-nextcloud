@@ -63,7 +63,10 @@ class ClientMetadataFetcher {
             return false;
         }
         $hosts = array_filter(array_map('trim', explode(',', strtolower(
-            $this->config->getAppValue('mcp', self::HOSTS_KEY, self::DEFAULT_HOSTS)))));
+            $this->config->getAppValue('mcp', self::HOSTS_KEY, self::DEFAULT_HOSTS)))), static fn (string $host) => $host !== '');
+        if ($hosts === []) {
+            $hosts = explode(',', self::DEFAULT_HOSTS);
+        }
         return in_array(strtolower($parts['host'] ?? ''), $hosts, true);
     }
 

@@ -132,6 +132,15 @@ final class GrantsControllerTest extends TestCase {
         ], $data);
     }
 
+    public function testOauthClientsShowsDefaultHostsForEmptyConfig(): void {
+        foreach (['', " , , \t "] as $raw) {
+            $this->fx->config->app['mcp'][ClientMetadataFetcher::HOSTS_KEY] = $raw;
+            $data = $this->controller()->oauthClients()->getData();
+            $this->assertSame(explode(',', ClientMetadataFetcher::DEFAULT_HOSTS), $data['hosts']);
+            $this->assertTrue($data['hostsDefault']);
+        }
+    }
+
     public function testOauthClientsReadsExplicitConfig(): void {
         $this->fx->config->app['mcp']['oauth_client_hosts'] = 'claude.ai,gemini.example.com';
         $this->fx->config->app['mcp']['oauth_native_client_enabled'] = '1';

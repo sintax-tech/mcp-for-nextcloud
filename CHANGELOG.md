@@ -2,11 +2,32 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
-## Unreleased
+## 0.9.0
 
 ### Added
 
+- tools: every write of every module returns its confirmation plan as readable Markdown, so the person reads what they are about to approve. The text is translated to the user's language (English, Brazilian Portuguese and Spanish), and the machine-readable plan is kept in `structuredContent` as before, so nothing a model relies on changes.
+- calendar: the plan of an event creation, update, move or transfer warns about a collision with another event, shows the availability of the attendees and names the shared calendar it will use. Collision and availability are computed from the instance; a shared calendar is found by name and owner instead of its DAV path.
+- people: a new `users_search` tool finds account ids through the sharing search, so the model asks before guessing an id.
 - contacts: `contacts_search_contacts` also searches the read-only accounts catalog of the instance when `addressbook` is omitted or is the catalog path, so colleagues are found. It uses the official `OCP\Contacts\IManager` and applies the admin user-enumeration settings (autocompletion, group restriction, full-match). Each account result carries `accountId`; a personal contact with the same e-mail is kept and gains it. `contacts_read_contact` reads an account with public fields only, `contacts_list_addressbooks` lists the catalog as read-only, and create/edit/delete refuse it.
+- deck: creating a card can assign board members, with their names in the plan.
+
+### Changed
+
+- tools: an invalid argument error now names the field and the rule that rejected the value, in camelCase too, so the model can correct the call without guessing. Only safe details are exposed.
+
+### Security
+
+- plans: text written by other people (file names, reasons, excerpts, contact fields, note bodies, deck and talk names) is escaped before it enters a plan, so a name cannot inject Markdown or HTML into the confirmation the user reads. Newlines are normalized and long text is truncated.
+
+### Fixed
+
+- calendar: an event or task in the trash is found under the renamed `-deleted` URI the core uses, so deleting and reading it back works.
+- calendar, tasks: the state after a write is read straight from the database instead of the CalDavBackend cache, so the result of a create or update is current.
+- files: a batch move puts the plan items into the folders it creates itself, instead of placing them before the folders exist.
+- files: the checkout upload accepts the raw bytes whatever the content type sent by the client.
+- talk: quoting a file resolves the attachment by its full `ocRoomShare` provider id, instead of the room id alone.
+- calendar: the availability log records only the exception class, with no message and no e-mail.
 
 ## 0.8.2
 

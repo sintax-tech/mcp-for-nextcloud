@@ -12,6 +12,7 @@ use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Notes\NotesMessages;
@@ -178,8 +179,24 @@ final class ResourceRegistryTest extends TestCase {
             'size' => ResourceRegistry::MAX_BLOB_BYTES + 1,
         ]);
         $this->expectException(ToolFailure::class);
-        $this->expectExceptionMessage('Resource too large for binary read');
+        $this->expectExceptionMessage(FilesMessages::binaryResourceTooLarge(ResourceRegistry::MAX_BLOB_BYTES));
         $this->registry->read('nc://files/Documentos/large.bin', 'alice');
+    }
+
+    public function testReadFilesTextOverLimitThrowsToolFailure(): void {
+        $this->tree->addFile('/alice/files/Documentos/over_limit.txt', 'x', 'text/plain', [
+            'size' => TextExtractor::MAX_BYTES + 1,
+        ]);
+        $this->expectException(ToolFailure::class);
+        $this->expectExceptionMessage(FilesMessages::readTooLarge(TextExtractor::MAX_BYTES));
+        $this->registry->read('nc://files/Documentos/over_limit.txt', 'alice');
+    }
+
+    public function testReadFilesPdfExtractsAsTextPlain(): void {
+        $this->tree->addFile('/alice/files/Documentos/doc.pdf', '%PDF-1.4 sample', 'application/pdf');
+        $result = $this->registry->read('nc://files/Documentos/doc.pdf', 'alice');
+        $content = $result['contents'][0];
+        $this->assertSame('text/plain', $content['mimeType']);
     }
 
     public function testReadFilesWithoutGrantThrowsNotFound(): void {

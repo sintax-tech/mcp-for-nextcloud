@@ -48,11 +48,11 @@ class ResourceRegistry {
         private IUserManager $userManager,
         private IRootFolder $rootFolder,
         private VisibilityGuard $visibilityGuard,
-        private ?TextExtractor $textExtractor = null,
-        private ?NotesRepository $notesRepo = null,
+        private TextExtractor $textExtractor,
+        private NotesRepository $notesRepo,
         private ?ToolGuide $guide = null,
     ) {
-        $this->guide ??= new ToolGuide();
+        $this->guide = $guide ?? new ToolGuide();
     }
 
     /**
@@ -208,26 +208,14 @@ class ResourceRegistry {
 
             $mime = (string)$node->getMimetype();
             $name = $node->getName();
-            $isText = TextExtractor::isTextNamed($name, $mime)
-                || in_array(strtolower($mime), ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.oasis.opendocument.text'], true)
-                || in_array(strtolower(pathinfo($name, PATHINFO_EXTENSION)), ['pdf', 'docx', 'odt'], true);
 
-            if ($isText) {
-                if ($this->textExtractor === null) {
-                    throw new \RuntimeException('TextExtractor is not available');
-                }
-                $extracted = $this->textExtractor->extract($node);
-                $text = mb_strlen($extracted) > self::MAX_TEXT_CHARS
-                    ? mb_substr($extracted, 0, self::MAX_TEXT_CHARS) . "\n\n" . FilesMessages::textTruncated()
-                    : $extracted;
-                $resMime = in_array(strtolower($mime), ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.oasis.opendocument.text'], true)
-                    ? 'text/plain'
-                    : ($mime !== '' ? $mime : 'text/plain');
+            if (TextExtractor::canExtract($name, $mime)) {
+                $text = $this->textExtractor->readText($node, self::MAX_TEXT_CHARS);
                 return [
                     'contents' => [
                         [
                             'uri' => $uri,
-                            'mimeType' => $resMime,
+                            'mimeType' => TextExtractor::textMime($name, $mime),
                             'text' => $text,
                         ],
                     ],
@@ -236,11 +224,11 @@ class ResourceRegistry {
 
             $size = (int)$node->getSize();
             if ($size > self::MAX_BLOB_BYTES) {
-                throw new ToolFailure('Resource too large for binary read (maximum ' . intdiv(self::MAX_BLOB_BYTES, 1024) . ' KiB).');
+                throw new ToolFailure(FilesMessages::binaryResourceTooLarge(self::MAX_BLOB_BYTES));
             }
             $bytes = (string)$node->getContent();
             if (strlen($bytes) > self::MAX_BLOB_BYTES) {
-                throw new ToolFailure('Resource too large for binary read (maximum ' . intdiv(self::MAX_BLOB_BYTES, 1024) . ' KiB).');
+                throw new ToolFailure(FilesMessages::binaryResourceTooLarge(self::MAX_BLOB_BYTES));
             }
             return [
                 'contents' => [
@@ -269,25 +257,17 @@ class ResourceRegistry {
         }
         $id = (int)$rawId;
 
-        if ($this->notesRepo === null) {
-            throw new \RuntimeException('NotesRepository is not available');
-        }
-
         return NodeAccess::run(function () use ($uri, $id, $userId): array {
             $notesFolder = $this->notesRepo->folder($userId, false);
             $note = $this->notesRepo->find($notesFolder, $id);
             $this->visibilityGuard->assertVisible($note);
-
-            if ($note->getSize() > NotesModule::MAX_BYTES) {
-                throw new ToolFailure(NotesMessages::noteTooLargeForReading(NotesModule::MAX_BYTES));
-            }
 
             return [
                 'contents' => [
                     [
                         'uri' => $uri,
                         'mimeType' => 'text/markdown',
-                        'text' => mb_scrub((string)$note->getContent(), 'UTF-8'),
+                        'text' => $this->notesRepo->read($note),
                     ],
                 ],
             ];

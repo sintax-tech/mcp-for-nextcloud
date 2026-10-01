@@ -19,6 +19,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 /** The Markdown a person reads for every Files write plan, built from the plans the module really returns. */
 final class FilesPlanRendererTest extends FilesToolsTestCase {
+    use \OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
+
     protected function setUp(): void {
         parent::setUp();
         require_once __DIR__ . '/Stubs/versions_api.php';
@@ -170,5 +172,19 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
     public function testGarbageInThePlanNeverThrows(): void {
         $this->assertNull(FilesPlanRenderer::render('files_move_batch', ['order' => 'x']));
         $this->assertNull(FilesPlanRenderer::render('files_edit', ['path' => ['a'], 'diff' => 5]));
+    }
+
+    /** Every write tool of the module renders a plan of its own: none falls back to the generic field list. */
+    public function testEveryWriteToolHasAReadablePlan(): void {
+        $plans = [];
+        foreach (self::toolsProvider() as [$tool, $arguments]) {
+            $plans[$tool] = $this->plan($tool, $arguments);
+        }
+        // An undo needs a batch that really ran, so one move is confirmed first and its id is undone.
+        $this->tree->addFile('/alice/files/Documentos/lote.md', 'lote', 'text/markdown');
+        $ran = $this->module->call('files_move_batch', ['moves' => [['from' => '/Documentos/lote.md', 'to' => '/Arquivo/lote.md']], 'confirm' => true], 'alice');
+        $batchId = json_decode($ran['content'][0]['text'], true)['batch_id'];
+        $plans['files_undo_batch'] = $this->plan('files_undo_batch', ['batch_id' => $batchId]);
+        $this->assertEveryWriteToolHasAReadablePlan($this->module, $plans);
     }
 }

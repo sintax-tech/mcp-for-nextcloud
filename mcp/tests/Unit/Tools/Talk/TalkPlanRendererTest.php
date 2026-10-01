@@ -32,6 +32,8 @@ use RuntimeException;
  * against a hand-made payload would keep passing while the module moved a key.
  */
 final class TalkPlanRendererTest extends TestCase {
+    use \OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
+
     private ConversationWriter&MockObject $writer;
     private FileSharer&MockObject $sharer;
     private AttachmentAccess&MockObject $attachmentAccess;
@@ -380,6 +382,39 @@ final class TalkPlanRendererTest extends TestCase {
         foreach ($plans as $plan) {
             $this->assertNotNull(TalkPlanRenderer::render((string)$plan['action'], $plan));
         }
+    }
+
+    /** Every write tool of the module renders a plan of its own: none falls back to the generic field list. */
+    public function testEveryWriteToolHasAReadablePlan(): void {
+        $conversation = $this->givenConversation();
+        $this->sharer->method('previewFile')
+            ->willReturn(['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 1]);
+        $this->attachmentAccess->method('requireRoomShareOf')->willReturn($this->givenShare());
+        $this->attachmentAccess->method('describe')
+            ->willReturn(['attachmentId' => 77, 'name' => 'figura.png', 'size' => 1, 'mimeType' => 'image/png']);
+        $services = $this->createMock(\OCA\Mcp\Tools\Talk\TalkServices::class);
+        $resolver = new \OCA\Mcp\Tools\Talk\ConversationResolver($services);
+        $module = new \OCA\Mcp\Tools\Talk\TalkModule(
+            $services,
+            new \OCA\Mcp\Tools\Talk\ConversationReader($services, $resolver, $this->createMock(ActorNames::class)),
+            $resolver,
+            $this->writer,
+            $this->sharer,
+            $this->previews,
+            $this->createMock(\OCA\Mcp\Tools\Talk\UserConversationResolver::class),
+            $this->createMock(\OCA\Mcp\Tools\Talk\GroupCreator::class),
+            $this->createMock(\OCA\Mcp\Tools\Talk\ReferenceLinker::class),
+            $this->createMock(\Psr\Log\LoggerInterface::class),
+        );
+
+        $this->assertEveryWriteToolHasAReadablePlan($module, [
+            'talk_reply' => $this->previews->reply($conversation, 'alice', 'oi', null),
+            'talk_send_batch' => $this->previews->batch($conversation, 'alice', [['message' => 'oi']]),
+            'talk_attach_file' => $this->previews->attach($conversation, 'alice', 'relatorio.pdf', null),
+            'talk_quote_file' => $this->previews->quote($conversation, 'alice', 77, null),
+            'talk_message_user' => $this->previews->directMessage(new DirectContact('bob', 'Bob Souza'), 'alice', 'oi'),
+            'talk_create_group' => $this->previews->group('alice', 'Projeto X', []),
+        ]);
     }
 
     /** A plan the module would refuse never reaches a renderer; one a renderer cannot read must not throw either. */

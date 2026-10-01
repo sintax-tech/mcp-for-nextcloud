@@ -30,6 +30,8 @@ use PHPUnit\Framework\TestCase;
  * confirm. Dates are read in the timezone of the account, so a due date never moves a day.
  */
 final class TasksPlanRendererTest extends TestCase {
+    use \OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
+
     private const PATH = '/remote.php/dav/calendars/alice/tasks/';
     private string $data = "BEGIN:VCALENDAR\r\n"
         . "VERSION:2.0\r\n"
@@ -175,6 +177,17 @@ final class TasksPlanRendererTest extends TestCase {
         self::assertStringContainsString('01/10/2026 12:00', $body);
         // A zone this PHP build does not know must not cost the person the whole text.
         self::assertIsString($module->renderPlan('tasks_complete_task', $plan + ['timezone' => 'Mars/Olympus']));
+    }
+
+    /** Every write tool of the module renders a plan of its own: none falls back to the generic field list. */
+    public function testEveryWriteToolHasAReadablePlan(): void {
+        $module = $this->module();
+        $this->assertEveryWriteToolHasAReadablePlan($module, [
+            'tasks_create_task' => $module->preview('tasks_create_task', ['calendar' => self::PATH, 'summary' => 'Buy milk'], 'alice'),
+            'tasks_edit_task' => $module->preview('tasks_edit_task', ['calendar' => self::PATH, 'uid' => 't1', 'summary' => 'Buy bread'], 'alice'),
+            'tasks_complete_task' => $module->preview('tasks_complete_task', ['calendar' => self::PATH, 'uid' => 't1'], 'alice'),
+            'tasks_delete_task' => $module->preview('tasks_delete_task', ['calendar' => self::PATH, 'uid' => 't1'], 'alice'),
+        ]);
     }
 
     /** Renders the plan of a real tool call, exactly as the registry asks for it before a write. */

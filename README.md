@@ -37,6 +37,7 @@ AI assistants are most useful when they can reach the tools a team already uses.
 
 Plus:
 
+- **Conversational confirmation before every write (`confirm: true`)**: any tool that changes data (`operation != 'read'`) only executes when called with `confirm: true`. Without it, the server returns the plan (`requiresConfirmation: true`) and makes no changes. The assistant must present the plan to the user and only repeat the call with `confirm: true` after explicit approval. No approval state or tokens are kept on the server.
 - **Friendly tool titles** in the client ("Search files", "List calendars") and MCP annotations (`readOnlyHint`, `destructiveHint`) so clients can ask before risky actions.
 - **Safety confirmations** for resources that belong to someone else: shared folders, team folders, other people's Deck boards and calendars. The server refuses the first call and returns a ready-made message, and the assistant must ask the user before repeating it with `confirm_shared: true`. *(Deck and Calendar since 0.6.6; Files and Notes in 0.7)*
 - **Optional apps respected**: tools and admin matrix columns of an app that is disabled (for everyone or for a given user) are hidden.

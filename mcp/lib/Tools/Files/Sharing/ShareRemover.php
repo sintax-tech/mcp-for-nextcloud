@@ -113,7 +113,8 @@ final class ShareRemover {
      * @param string $uid authenticated user
      * @param string $id full share id, as files_list_shares returns it
      * @return array{IShare, Node} the share and its node as the user sees it
-     * @throws ToolFailure not found, for anything that is not the user's own; the Talk message for the user's own attachment
+     * @throws ToolFailure not found, for anything that is not the user's own or whose node is hidden; the Talk message only
+     *   for the user's own attachment of a visible node of the user
      */
     private function byId(Folder $userFolder, string $uid, string $id): array {
         try {
@@ -121,16 +122,17 @@ final class ShareRemover {
         } catch (\Exception) {
             throw new ToolFailure(CommonMessages::notFound());
         }
-        if ($share->getSharedBy() !== $uid) {
+        if ($share->getSharedBy() !== $uid || !$this->ownsTheNode($share, $uid)) {
             throw new ToolFailure(CommonMessages::notFound());
         }
+        // Visibility comes before anything that would say more than "not found": a hidden node does not exist (invariant 1).
+        $node = $this->access->nodeOf($userFolder, $share) ?? throw new ToolFailure(CommonMessages::notFound());
         if ($share->getShareType() === IShare::TYPE_ROOM) {
             throw new ToolFailure(FilesMessages::shareTypeUnsupported());
         }
-        if (!$this->access->isRemovable($share, $uid) || !$this->ownsTheNode($share, $uid)) {
+        if (!$this->access->isRemovable($share, $uid)) {
             throw new ToolFailure(CommonMessages::notFound());
         }
-        $node = $this->access->nodeOf($userFolder, $share) ?? throw new ToolFailure(CommonMessages::notFound());
         $this->access->assertGranted($uid, $share->getShareType());
         return [$share, $node];
     }

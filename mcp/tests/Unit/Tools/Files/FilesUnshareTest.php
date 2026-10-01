@@ -202,6 +202,20 @@ final class FilesUnshareTest extends FilesToolsTestCase {
         self::assertSame([], $this->shares->writes);
     }
 
+    /** Invariant 1: the Talk message would reveal that a hidden file, or one of somebody else, exists. */
+    public function testATalkAttachmentOnAHiddenOrForeignNodeIsNotFound(): void {
+        $this->tree->addFile('/alice/files/Recebido.pdf', 'x', 'application/pdf', ['scope' => 'shared']);
+        $foreign = $this->shares->add(['type' => IShare::TYPE_ROOM, 'with' => 'room2', 'node' => $this->id('/Recebido.pdf'),
+            'nodeObject' => $this->tree->node('/alice/files/Recebido.pdf')]);
+        self::assertSame(CommonMessages::notFound(), $this->planFailure(['shareId' => $foreign->getFullId()]));
+
+        $this->hideTheMinutes();
+        $hidden = $this->share(['type' => IShare::TYPE_ROOM, 'with' => 'room1']);
+        self::assertSame(CommonMessages::notFound(), $this->planFailure(['shareId' => $hidden->getFullId()]));
+        self::assertSame(CommonMessages::notFound(), $this->confirmFailure(['shareId' => $hidden->getFullId()]));
+        self::assertSame([], $this->shares->writes);
+    }
+
     public function testAHiddenNodeIsNotFoundByIdAndByPath(): void {
         $this->hideTheMinutes();
         $share = $this->share();

@@ -110,4 +110,3 @@ final class LinkPasswordTest extends TestCase {
         self::assertSame(LinkPassword::LENGTH, strlen((new LinkPassword($dispatcher, new FakeSecureRandom()))->generate()));
     }
 }
-

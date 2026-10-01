@@ -82,6 +82,7 @@ final class FilesModuleTest extends TestCase {
             $users,
             $this->createMock(\Psr\Log\LoggerInterface::class),
             $this->createMock(\Psr\Container\ContainerInterface::class),
+            $db,
         );
         $this->module = new FilesModule($root, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $users, $db,
             $access, new SharedWriteGuard($access),

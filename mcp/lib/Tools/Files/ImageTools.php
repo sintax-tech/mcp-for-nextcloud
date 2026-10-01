@@ -10,11 +10,14 @@ use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolResult;
 use OCP\Files\File;
 use OCP\Files\Folder;
-use OCP\Files\Node;
 use OCP\Files\NotFoundException;
+use OCP\Files\Search\ISearchComparison;
+use OCP\Files\Search\ISearchOrder;
 use OCP\IConfig;
+use OCP\IDBConnection;
 use OCP\IPreview;
 use OCP\IUserManager;
+use OCP\SystemTag\ISystemTag;
 use OCP\SystemTag\ISystemTagManager;
 use OCP\SystemTag\ISystemTagObjectMapper;
 use OCP\SystemTag\TagNotFoundException;
@@ -23,9 +26,7 @@ use Psr\Container\NotFoundExceptionInterface;
 use Psr\Log\LoggerInterface;
 
 /**
- * Read-only image tools: fetch previews as inline image bytes for the model, and search for images by
- * name, folder, modification date or system tag. Everything goes through the user's IRootFolder view
- * and native Nextcloud permissions, so a user never sees a file they could not reach in the Files app.
+ * Read-only image retrieval, batching, previews and filtered search.
  */
 final class ImageTools {
     /** Default max_size (in pixels) for a single image preview. */
@@ -48,8 +49,8 @@ final class ImageTools {
     public const SEARCH_DEFAULT_LIMIT = 25;
     /** Hard ceiling for files_image_search. */
     public const SEARCH_MAX_LIMIT = 100;
-    /** Overfetch factor to make up for files filtered out after search. */
-    public const SEARCH_OVERFETCH = 4;
+    /** Hard ceiling on object IDs resolved for a system tag search. */
+    public const TAG_RESOLUTION_CEILING = 2000;
     /** MIME types that are safe to return as-is when no preview provider accepts the file. */
     private const RETURNABLE_ORIGINAL_MIMES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     /** Metadata key published by the Files Metadata app for image dimensions [width, height]. */
@@ -70,6 +71,7 @@ final class ImageTools {
         private IUserManager $userManager,
         private LoggerInterface $logger,
         private ContainerInterface $container,
+        private IDBConnection $db,
     ) {}
 
     /**
@@ -112,7 +114,7 @@ final class ImageTools {
         }
         $selected = $paths !== null
             ? $this->selectPaths($root, $paths)
-            : $this->selectFromFolder($root, (string)$folder, $limit);
+            : $this->selectFromFolder($root, $userId, (string)$folder, $limit);
         $budget = $this->batchMaxBytes();
         $items = [];
         $skipped = [];
@@ -161,72 +163,173 @@ final class ImageTools {
      * @throws ToolFailure for an invalid folder or date
      */
     public function search(Folder $root, string $userId, array $args): array {
-        $limit = (int)$args['limit'];
-        $query = isset($args['query']) ? (string)$args['query'] : '';
+        $limit = max(1, min(self::SEARCH_MAX_LIMIT, (int)$args['limit']));
+        $query = isset($args['query']) ? trim((string)$args['query']) : '';
         $folder = isset($args['folder']) ? PathGuard::normalize((string)$args['folder']) : '/';
         $after = $this->parseDate($args['modified_after'] ?? null);
         $before = $this->parseDate($args['modified_before'] ?? null);
-        $tagObjectIds = isset($args['tag']) ? $this->objectIdsForTag((string)$args['tag']) : null;
-        if ($tagObjectIds === []) {
-            return [];
-        }
+        $tag = isset($args['tag']) && trim((string)$args['tag']) !== '' ? trim((string)$args['tag']) : null;
+
         $scope = NodeAccess::get($root, $folder);
         if (!$scope instanceof Folder) {
             throw new ToolFailure(FilesMessages::notAFolder());
         }
-        $operation = new MimeLikeComparison('image/%');
-        $searchLimit = max($limit * self::SEARCH_OVERFETCH, $limit + 20);
-        $search = new NameSearchQuery($operation, $searchLimit, $this->userManager->get($userId));
-        $results = [];
-        foreach ($scope->search($search) as $node) {
-            if (!$node instanceof File || !$node->isReadable()) {
-                continue;
-            }
-            $mtime = (int)$node->getMTime();
-            if ($after !== null && $mtime < $after) {
-                continue;
-            }
-            if ($before !== null && $mtime > $before) {
-                continue;
-            }
-            if ($query !== '' && stripos($node->getName(), $query) === false) {
-                continue;
-            }
-            if ($tagObjectIds !== null && !in_array((string)$node->getId(), $tagObjectIds, true)) {
-                continue;
-            }
-            $results[] = $node;
+
+        if ($tag !== null) {
+            return $this->searchByTag($root, $scope, $userId, $tag, $query, $after, $before, $limit);
         }
-        usort($results, static fn (File $a, File $b): int => (int)$b->getMTime() <=> (int)$a->getMTime());
-        $results = array_slice($results, 0, $limit);
-        return array_map(fn (File $file) => $this->searchEntry($root, $userId, $file), $results);
+
+        return $this->searchByQuery($root, $scope, $userId, $query, $after, $before, $limit);
     }
 
     /**
-     * Picks images under a folder, newest first.
+     * Resolves object IDs for a system tag, enforces user visibility and folder scoping, and sorts by mtime DESC.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function searchByTag(
+        Folder $root,
+        Folder $scope,
+        string $userId,
+        string $tagName,
+        string $query,
+        ?int $after,
+        ?int $before,
+        int $limit,
+    ): array {
+        $tag = $this->findTag($tagName);
+        if ($tag === null) {
+            return [];
+        }
+
+        try {
+            $rawIds = $this->tagMapper->getObjectIdsForTags($tag->getId(), self::TAG_OBJECT_TYPE);
+        } catch (TagNotFoundException|\Throwable) {
+            return [];
+        }
+
+        if (!is_array($rawIds) || $rawIds === []) {
+            return [];
+        }
+
+        $count = count($rawIds);
+        if ($count > self::TAG_RESOLUTION_CEILING) {
+            $this->logger->warning('Image tag search truncated: tag has more objects than ceiling', [
+                'tag' => $tagName,
+                'count' => $count,
+                'ceiling' => self::TAG_RESOLUTION_CEILING,
+            ]);
+            $rawIds = array_slice($rawIds, 0, self::TAG_RESOLUTION_CEILING);
+        }
+
+        $files = [];
+        foreach ($rawIds as $id) {
+            try {
+                $nodes = $scope->getById((int)$id);
+            } catch (\Throwable) {
+                continue;
+            }
+            foreach ($nodes as $node) {
+                if (!$node instanceof File || !$node->isReadable()) {
+                    continue;
+                }
+                $mime = (string)$node->getMimetype();
+                if (!self::looksLikeImage($mime)) {
+                    continue;
+                }
+                if ($query !== '' && stripos($node->getName(), $query) === false) {
+                    continue;
+                }
+                $mtime = (int)$node->getMTime();
+                if ($after !== null && $mtime < $after) {
+                    continue;
+                }
+                if ($before !== null && $mtime > $before) {
+                    continue;
+                }
+                $files[] = $node;
+            }
+        }
+
+        usort($files, static fn (File $a, File $b): int => (int)$b->getMTime() <=> (int)$a->getMTime());
+        $files = array_slice($files, 0, $limit);
+
+        return array_map(fn (File $file) => $this->searchEntry($root, $userId, $file), $files);
+    }
+
+    /**
+     * Builds and executes an ISearchQuery with filters (mimetype, name, mtime) and mtime DESC ordering.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function searchByQuery(
+        Folder $root,
+        Folder $scope,
+        string $userId,
+        string $query,
+        ?int $after,
+        ?int $before,
+        int $limit,
+    ): array {
+        $conditions = [
+            new SearchComparison('mimetype', ISearchComparison::COMPARE_LIKE, 'image/%'),
+        ];
+        if ($query !== '') {
+            $pattern = '%' . $this->db->escapeLikeParameter($query) . '%';
+            $conditions[] = new SearchComparison('name', ISearchComparison::COMPARE_LIKE, $pattern);
+        }
+        if ($after !== null) {
+            $conditions[] = new SearchComparison('mtime', ISearchComparison::COMPARE_GREATER_THAN_EQUAL, $after);
+        }
+        if ($before !== null) {
+            $conditions[] = new SearchComparison('mtime', ISearchComparison::COMPARE_LESS_THAN_EQUAL, $before);
+        }
+
+        $operation = SearchBinaryOperator::and(...$conditions);
+        $order = [new SearchOrder('mtime', ISearchOrder::DIRECTION_DESCENDING)];
+        $user = $this->userManager->get($userId);
+        $search = new NameSearchQuery($operation, $limit, $user, $order);
+
+        $out = [];
+        foreach ($scope->search($search) as $node) {
+            if ($node->getPath() === $scope->getPath() || !$node instanceof File || !$node->isReadable()) {
+                continue;
+            }
+            $out[] = $this->searchEntry($root, $userId, $node);
+            if (count($out) >= $limit) {
+                break;
+            }
+        }
+
+        return $out;
+    }
+
+    /**
+     * Picks images under a folder, newest first, running the search as the authenticated user.
      *
      * @param Folder $root the user's folder
+     * @param string $userId authenticated user
      * @param string $folder user-relative folder path
      * @param int $limit maximum items to pick
      * @return list<array{0:string, 1:File|null, 2:string|null}> path, file, error (one of file/error is set)
      * @throws ToolFailure when the folder path is not a folder
      */
-    private function selectFromFolder(Folder $root, string $folder, int $limit): array {
+    private function selectFromFolder(Folder $root, string $userId, string $folder, int $limit): array {
         $normalized = PathGuard::normalize($folder);
         $scope = NodeAccess::get($root, $normalized);
         if (!$scope instanceof Folder) {
             throw new ToolFailure(FilesMessages::notAFolder());
         }
-        $operation = new MimeLikeComparison('image/%');
-        $search = new NameSearchQuery($operation, max($limit * self::SEARCH_OVERFETCH, $limit + 10), $this->userManager->get((string)$scope->getOwner()?->getUID()));
+        $operation = new SearchComparison('mimetype', ISearchComparison::COMPARE_LIKE, 'image/%');
+        $order = [new SearchOrder('mtime', ISearchOrder::DIRECTION_DESCENDING)];
+        $user = $this->userManager->get($userId);
+        $search = new NameSearchQuery($operation, min($limit, self::BATCH_MAX_ITEMS), $user, $order);
         $files = [];
         foreach ($scope->search($search) as $node) {
             if ($node instanceof File && $node->isReadable()) {
                 $files[] = $node;
             }
         }
-        usort($files, static fn (File $a, File $b): int => (int)$b->getMTime() <=> (int)$a->getMTime());
-        $files = array_slice($files, 0, min($limit, self::BATCH_MAX_ITEMS));
         return array_map(fn (File $f) => [(string)$root->getRelativePath($f->getPath()), $f, null], $files);
     }
 
@@ -301,33 +404,16 @@ final class ImageTools {
         throw new ToolFailure(FilesMessages::imageUnsupported());
     }
 
-    /**
-     * @param string $tagName case-sensitive tag name
-     * @return list<string> object ids with the tag, or [] when the tag does not exist
-     */
-    private function objectIdsForTag(string $tagName): array {
+    /** Searches for a tag by name, strictly restricted to user-visible tags. */
+    private function findTag(string $tagName): ?ISystemTag {
         try {
-            // user-visible or restricted tags (true/false) are both valid; Recognize creates visible ones.
-            $tag = $this->findTag($tagName);
-        } catch (TagNotFoundException) {
-            return [];
-        }
-        if ($tag === null) {
-            return [];
-        }
-        try {
-            return $this->tagMapper->getObjectIdsForTags($tag->getId(), self::TAG_OBJECT_TYPE);
-        } catch (TagNotFoundException) {
-            return [];
-        }
-    }
-
-    /** Searches for a tag by name across visibility combinations; returns null when nothing matched. */
-    private function findTag(string $tagName): ?\OCP\SystemTag\ISystemTag {
-        foreach ($this->tagManager->getAllTags(null, $tagName) as $tag) {
-            if ($tag->getName() === $tagName) {
-                return $tag;
+            foreach ($this->tagManager->getAllTags(true, $tagName) as $tag) {
+                if ($tag->isUserVisible() && $tag->getName() === $tagName) {
+                    return $tag;
+                }
             }
+        } catch (\Throwable) {
+            return null;
         }
         return null;
     }
@@ -384,7 +470,7 @@ final class ImageTools {
             'name' => $file->getName(),
             'mime' => (string)$file->getMimetype(),
             'size' => (int)$file->getSize(),
-            'mtime' => gmdate('D, d M Y H:i:s \\G\\M\\T', (int)$file->getMTime()),
+            'mtime' => gmdate('Y-m-d\TH:i:s\Z', (int)$file->getMTime()),
             'effective_max_size' => $effectiveMaxSize,
             'access' => $this->accessInfo->describe($file, $userId),
         ];
@@ -411,8 +497,8 @@ final class ImageTools {
             'name' => $file->getName(),
             'mime' => (string)$file->getMimetype(),
             'size' => (int)$file->getSize(),
-            'mtime' => gmdate('D, d M Y H:i:s \\G\\M\\T', (int)$file->getMTime()),
-            'tags' => $this->tagsOf((int)$file->getId()),
+            'mtime' => gmdate('Y-m-d\TH:i:s\Z', (int)$file->getMTime()),
+            'tags' => $this->tagsOf((int)$file->getId(), $userId),
             'access' => $this->accessInfo->describe($file, $userId),
         ];
         $captured = $this->originalCaptureTime($file);
@@ -448,16 +534,18 @@ final class ImageTools {
 
     /**
      * @param int $fileId file id
+     * @param string|null $userId user to run visibility checks for
      * @return list<string> tag names visible to the viewer; empty on missing tag app or metadata errors
      */
-    private function tagsOf(int $fileId): array {
+    private function tagsOf(int $fileId, ?string $userId = null): array {
         try {
             $byObject = $this->tagMapper->getTagIdsForObjects([(string)$fileId], self::TAG_OBJECT_TYPE);
             $tagIds = $byObject[(string)$fileId] ?? [];
             if ($tagIds === []) {
                 return [];
             }
-            $tags = $this->tagManager->getTagsByIds($tagIds);
+            $user = $userId !== null ? $this->userManager->get($userId) : null;
+            $tags = $this->tagManager->getTagsByIds($tagIds, $user);
             $names = [];
             foreach ($tags as $tag) {
                 if ($tag->isUserVisible()) {

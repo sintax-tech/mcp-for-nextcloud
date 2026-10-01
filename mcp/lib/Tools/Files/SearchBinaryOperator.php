@@ -11,6 +11,9 @@ use OCP\Files\Search\ISearchOperator;
  * Binary search operator (AND/OR/NOT) for Nextcloud file searches.
  */
 final class SearchBinaryOperator implements ISearchBinaryOperator {
+    /** @var array<string, mixed> */
+    private array $hints = [];
+
     /**
      * @param string $type ISearchBinaryOperator::OPERATOR_*
      * @param ISearchOperator[] $arguments
@@ -27,6 +30,14 @@ final class SearchBinaryOperator implements ISearchBinaryOperator {
     /** @return ISearchOperator[] */
     public function getArguments(): array {
         return $this->arguments;
+    }
+
+    public function getQueryHint(string $name, $default) {
+        return $this->hints[$name] ?? $default;
+    }
+
+    public function setQueryHint(string $name, $value): void {
+        $this->hints[$name] = $value;
     }
 
     /**

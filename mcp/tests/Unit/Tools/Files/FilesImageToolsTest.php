@@ -173,6 +173,132 @@ final class FilesImageToolsTest extends FilesToolsTestCase {
         self::assertSame('read', $definitions['files_image_search']['operation']);
     }
 
+
+    public function testImageSearchQueryPushdownWithLimitReturnsNewestMatchingItems(): void {
+        $this->tree->addFolder('/alice/files/Photos');
+        for ($i = 1; $i <= 5; $i++) {
+            $this->tree->addFile("/alice/files/Photos/pic{$i}.jpg", "data{$i}", 'image/jpeg');
+            $this->tree->nodes["/alice/files/Photos/pic{$i}.jpg"]['mtime'] = 1000 * $i;
+        }
+        $this->tree->addFile('/alice/files/Photos/other.txt', 'text', 'text/plain');
+        $this->tree->nodes['/alice/files/Photos/other.txt']['mtime'] = 9999;
+
+        $out = $this->json('files_image_search', [
+            'folder' => '/Photos',
+            'query' => 'pic',
+            'limit' => 2,
+        ]);
+
+        self::assertCount(2, $out);
+        self::assertSame('/Photos/pic5.jpg', $out[0]['path']);
+        self::assertSame('/Photos/pic4.jpg', $out[1]['path']);
+
+        $lastSearch = end($this->tree->searches);
+        self::assertNotNull($lastSearch);
+        self::assertSame(2, $lastSearch->getLimit());
+        self::assertNotEmpty($lastSearch->getOrder());
+    }
+
+    public function testImageSearchTagOnNodeOutsideUserViewDoesNotAppear(): void {
+        $this->tree->addFolder('/alice/files/Photos');
+        $this->tree->addFile('/alice/files/Photos/local.jpg', 'L', 'image/jpeg');
+        $foreignId = 99999;
+
+        $tag = $this->createMock(ISystemTag::class);
+        $tag->method('getId')->willReturn('77');
+        $tag->method('getName')->willReturn('outside-tag');
+        $tag->method('isUserVisible')->willReturn(true);
+        $this->tagManager->method('getAllTags')->willReturn([$tag]);
+        $this->tagMapper->method('getObjectIdsForTags')->willReturn([(string)$foreignId]);
+
+        $out = $this->json('files_image_search', [
+            'folder' => '/Photos',
+            'tag' => 'outside-tag',
+        ]);
+
+        self::assertSame([], $out);
+    }
+
+    public function testImageSearchTagCeilingEnforcesMaximumAndLogsWarning(): void {
+        $tag = $this->createMock(ISystemTag::class);
+        $tag->method('getId')->willReturn('88');
+        $tag->method('getName')->willReturn('popular');
+        $tag->method('isUserVisible')->willReturn(true);
+        $this->tagManager->method('getAllTags')->willReturn([$tag]);
+
+        $ids = array_map('strval', range(1, 2005));
+        $this->tagMapper->method('getObjectIdsForTags')->willReturn($ids);
+
+        $this->logger->expects($this->once())
+            ->method('warning')
+            ->with(
+                'Image tag search truncated: tag has more objects than ceiling',
+                $this->callback(fn (array $ctx): bool =>
+                    $ctx['tag'] === 'popular' && $ctx['count'] === 2005 && $ctx['ceiling'] === 2000
+                )
+            );
+
+        $out = $this->json('files_image_search', ['tag' => 'popular']);
+        self::assertIsArray($out);
+    }
+
+    public function testInvisibleTagCannotBeSearchedAndIsOmittedFromResults(): void {
+        $id = $this->tree->addFile('/alice/files/Photos/tagged.jpg', 'T', 'image/jpeg');
+
+        $visibleTag = $this->createMock(ISystemTag::class);
+        $visibleTag->method('getId')->willReturn('10');
+        $visibleTag->method('getName')->willReturn('visible-tag');
+        $visibleTag->method('isUserVisible')->willReturn(true);
+
+        $invisibleTag = $this->createMock(ISystemTag::class);
+        $invisibleTag->method('getId')->willReturn('20');
+        $invisibleTag->method('getName')->willReturn('invisible-tag');
+        $invisibleTag->method('isUserVisible')->willReturn(false);
+
+        $this->tagManager->method('getAllTags')->willReturn([$visibleTag, $invisibleTag]);
+        $this->tagManager->method('getTagsByIds')->willReturn([$visibleTag, $invisibleTag]);
+        $this->tagMapper->method('getTagIdsForObjects')->willReturn([(string)$id => ['10', '20']]);
+
+        $out = $this->json('files_image_search', ['tag' => 'invisible-tag']);
+        self::assertSame([], $out);
+
+        $out2 = $this->json('files_image_search', ['folder' => '/Photos']);
+        self::assertCount(1, $out2);
+        self::assertSame(['visible-tag'], $out2[0]['tags']);
+    }
+
+    public function testSelectFromFolderSearchesAsAuthenticatedUserOnSharedFolder(): void {
+        $this->tree->addFolder('/alice/files/SharedFolder', ['scope' => 'shared']);
+        $this->tree->addFile('/alice/files/SharedFolder/shared.jpg', 'S', 'image/jpeg', ['scope' => 'shared']);
+        $this->preparePreview('image/jpeg', 'preview');
+
+        $out = $this->tool('files_images_view', ['folder' => '/SharedFolder']);
+        self::assertSame('image', $out['content'][0]['type']);
+
+        $lastSearch = end($this->tree->searches);
+        self::assertNotNull($lastSearch);
+        self::assertSame('alice', $lastSearch->getUser()->getUID());
+    }
+
+    public function testMtimeFormatIsIso8601UtcAcrossTools(): void {
+        $mtime = 1790000000;
+        $iso = gmdate('Y-m-d\TH:i:s\Z', $mtime);
+        $this->tree->addFile('/alice/files/Photos/clock.jpg', 'C', 'image/jpeg');
+        $this->tree->nodes['/alice/files/Photos/clock.jpg']['mtime'] = $mtime;
+        $this->preparePreview('image/jpeg', 'preview');
+
+        $view = $this->tool('files_image_view', ['path' => '/Photos/clock.jpg']);
+        $metaView = json_decode($view['content'][1]['text'], true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame($iso, $metaView['mtime']);
+
+        $views = $this->tool('files_images_view', ['paths' => ['/Photos/clock.jpg']]);
+        $metaViews = json_decode($views['content'][1]['text'], true, 512, JSON_THROW_ON_ERROR);
+        self::assertSame($iso, $metaViews['mtime']);
+
+        $search = $this->json('files_image_search', ['folder' => '/Photos']);
+        self::assertSame($iso, $search[0]['mtime']);
+    }
+
     /** Returns the single IPreview preview with the given bytes and mimetype. */
     private function preparePreview(string $mime, string $bytes): void {
         $simple = $this->createMock(ISimpleFile::class);

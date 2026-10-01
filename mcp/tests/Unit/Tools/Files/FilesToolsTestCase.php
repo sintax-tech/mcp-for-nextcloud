@@ -52,6 +52,7 @@ abstract class FilesToolsTestCase extends TestCase {
     protected IPreview $previewManager;
     protected ISystemTagManager $tagManager;
     protected ISystemTagObjectMapper $tagMapper;
+    protected \Psr\Log\LoggerInterface $logger;
     protected FilesModule $module;
     /** @var list<string> tokens handed out per route, in order */
     protected array $issued = [];
@@ -99,6 +100,7 @@ abstract class FilesToolsTestCase extends TestCase {
         $this->previewManager = $this->createMock(IPreview::class);
         $this->tagManager = $this->createMock(ISystemTagManager::class);
         $this->tagMapper = $this->createMock(ISystemTagObjectMapper::class);
+        $this->logger = $this->createMock(\Psr\Log\LoggerInterface::class);
         $imageTools = new ImageTools(
             $this->previewManager,
             $access,
@@ -106,8 +108,9 @@ abstract class FilesToolsTestCase extends TestCase {
             $this->tagManager,
             $this->tagMapper,
             $this->users,
-            $this->createMock(\Psr\Log\LoggerInterface::class),
+            $this->logger,
             $this->createMock(\Psr\Container\ContainerInterface::class),
+            $db,
         );
         $this->module = new FilesModule(
             $root,

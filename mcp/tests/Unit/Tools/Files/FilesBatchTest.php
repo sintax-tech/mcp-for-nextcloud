@@ -91,7 +91,85 @@ final class FilesBatchTest extends FilesToolsTestCase {
             ['path' => '/2026/03', 'exists' => false, 'willCreate' => true],
         ], $plan['mkdirs']);
         $this->assertSame(2, $plan['summary']['mkdirs']);
+        $this->assertTrue($plan['ok'], 'moves into planned folders must be accepted');
+        $this->assertSame(1, $plan['summary']['planned']);
         $this->assertSame([], $this->tree->ops, 'o plano não cria a pasta, apenas diz que criaria');
+    }
+
+    /** A planned folder only grants its own path and its implied parents, not arbitrary descendants. */
+    public function testMkdirsDoesNotApproveAnUnplannedDestination(): void {
+        $plan = $this->plan('files_move_batch', [
+            'moves' => [['from' => '/Documentos/ata.md', 'to' => '/New/Other/ata.md']],
+            'mkdirs' => ['/New'],
+        ]);
+        $this->assertFalse($plan['ok']);
+        $this->assertSame(CommonMessages::notFound(), $plan['denied'][0]['reason']);
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    /** Permissions on the existing ancestor still apply to a missing planned destination. */
+    public function testMkdirsDoesNotBypassDestinationPermissions(): void {
+        $this->tree->addFolder('/alice/files/ReadOnly', ['permissions' => \OCP\Constants::PERMISSION_READ]);
+        $args = [
+            'moves' => [['from' => '/Documentos/ata.md', 'to' => '/ReadOnly/New/ata.md']],
+            'mkdirs' => ['/ReadOnly/New'],
+        ];
+        $plan = $this->plan('files_move_batch', $args);
+        $this->assertFalse($plan['ok']);
+        $this->assertSame(CommonMessages::forbidden(), $plan['denied'][0]['reason']);
+        $this->failure('files_move_batch', $args);
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    /** Hidden ancestors remain not found even when mkdirs supplies the missing child. */
+    public function testMkdirsDoesNotBypassDestinationVisibility(): void {
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $this->visibilityGuard = new \OCA\Mcp\Service\VisibilityGuard($this->config->mock($this), $tagMapper);
+        $this->setUp();
+        $hiddenId = $this->tree->addFolder('/alice/files/Hidden');
+        $tagMapper->method('getTagIdsForObjects')->willReturnCallback(static function (array $ids) use ($hiddenId): array {
+            $tags = [];
+            foreach ($ids as $id) {
+                $tags[$id] = (string)$id === (string)$hiddenId ? ['999'] : [];
+            }
+            return $tags;
+        });
+        $args = [
+            'moves' => [['from' => '/Documentos/ata.md', 'to' => '/Hidden/New/ata.md']],
+            'mkdirs' => ['/Hidden/New'],
+        ];
+        $plan = $this->plan('files_move_batch', $args);
+        $this->assertFalse($plan['ok']);
+        $this->assertSame(CommonMessages::notFound(), $plan['denied'][0]['reason']);
+        $this->failure('files_move_batch', $args);
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    /** A future folder inherits the storage boundary of its real parent. */
+    public function testMkdirsDoesNotBypassStorageBoundaries(): void {
+        $this->tree->addFolder('/alice/files/External', ['storageId' => 'external']);
+        $plan = $this->plan('files_move_batch', [
+            'moves' => [['from' => '/Documentos/ata.md', 'to' => '/External/New/ata.md']],
+            'mkdirs' => ['/External/New'],
+        ]);
+        $this->assertFalse($plan['ok']);
+        $this->assertCount(1, $plan['conflicts']);
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    /** Listing a deeper mkdir also creates the receiving parent, but cannot replace a real file. */
+    public function testMkdirsSupportsImpliedParentsAndRefusesFileAncestors(): void {
+        $args = [
+            'moves' => [['from' => '/Documentos/ata.md', 'to' => '/New/ata.md']],
+            'mkdirs' => ['/New/Nested'],
+        ];
+        $this->assertTrue($this->plan('files_move_batch', $args)['ok']);
+        $this->tree->addFile('/alice/files/New', 'occupied');
+        $plan = $this->plan('files_move_batch', $args);
+        $this->assertFalse($plan['ok']);
+        $this->assertSame(CommonMessages::forbidden(), $plan['denied'][0]['reason']);
+        $this->assertSame([], $this->tree->ops);
     }
 
     public function testThePlanSaysAFolderThatIsAlreadyThereIsNotCreated(): void {
@@ -182,6 +260,27 @@ final class FilesBatchTest extends FilesToolsTestCase {
         ], $batch->moves, 'o lote guarda o id observável de cada destino, para o desfazer conferir');
         $this->assertSame(['/Arquivado/2026'], $batch->dirs);
         $this->assertNull($batch->undoneAt);
+    }
+
+    /** A nested mkdir implies its parents and must finish before the move. */
+    public function testABatchMovesIntoANewNestedFolderAndCanBeUndone(): void {
+        $args = [
+            'moves' => [['from' => '/Documentos/ata.md', 'to' => '/New/Nested/ata.md']],
+            'mkdirs' => ['/New/Nested'],
+        ];
+        $plan = $this->plan('files_move_batch', $args);
+        $this->assertTrue($plan['ok']);
+        $this->assertSame([], $this->tree->ops);
+        $out = $this->json('files_move_batch', $args);
+        $this->assertSame(['/New', '/New/Nested'], $out['created_dirs']);
+        $this->assertSame([
+            'mkdir /alice/files/New',
+            'mkdir /alice/files/New/Nested',
+            'move /alice/files/Documentos/ata.md /alice/files/New/Nested/ata.md',
+        ], $this->tree->ops);
+        $this->json('files_undo_batch', ['batch_id' => $out['batch_id']]);
+        $this->assertArrayHasKey('/alice/files/Documentos/ata.md', $this->tree->nodes);
+        $this->assertArrayNotHasKey('/alice/files/New', $this->tree->nodes);
     }
 
     public function testABatchWithASharedItemRefusesToMoveAnythingWithoutTheSharedConfirmation(): void {

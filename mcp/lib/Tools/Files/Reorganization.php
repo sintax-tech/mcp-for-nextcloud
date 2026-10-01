@@ -273,12 +273,13 @@ final class Reorganization {
      * @param string $from source path, user-relative
      * @param string $to destination path, user-relative
      * @param string|null $etag ETag the caller read before, null to skip the check
-     * @return Inspection the node, the receiving folder and the normalized destination
+     * @param list<string> $mkdirs folders (including their parents) available only while planning
+     * @return Inspection the node, the receiving folder or its existing ancestor, and the normalized destination
      * @throws \InvalidArgumentException for a path with traversal or control characters
      * @throws MoveConflict when the destination is taken, the folder would land inside itself, or the two ends are on different storages
      * @throws ToolFailure when the source is missing, unreadable or not changeable, or the destination cannot receive
      */
-    public function inspect(Folder $root, string $from, string $to, ?string $etag = null): Inspection {
+    public function inspect(Folder $root, string $from, string $to, ?string $etag = null, array $mkdirs = []): Inspection {
         $source = $this->writable($root, $from);
         NodeAccess::checkEtag($source, $etag);
         $to = PathGuard::normalize($to);
@@ -286,7 +287,7 @@ final class Reorganization {
         // reason instead of "something is already there" for a subfolder of the folder they are moving.
         $this->assertNotIntoItself($root, $source, $to);
         $this->assertFree($root, $to);
-        $destination = $this->destination($root, $to);
+        $destination = $this->destination($root, $to, $mkdirs);
         $this->assertSameStorage($source, $destination);
         return new Inspection($source, $destination, $to);
     }
@@ -920,13 +921,33 @@ final class Reorganization {
     /**
      * @param Folder $root the user's folder
      * @param string $path destination path, user-relative
-     * @return Folder the destination folder, which must already exist
+     * @param list<string> $mkdirs planned folders whose existing ancestor supplies permissions and storage
+     * @return Folder the destination folder, or the existing ancestor of a planned folder
      * @throws ToolFailure when it does not exist or cannot take new entries
      */
-    private function destination(Folder $root, string $path): Folder {
+    private function destination(Folder $root, string $path, array $mkdirs = []): Folder {
         $segments = array_values(array_filter(explode('/', $path)));
         array_pop($segments);
-        $parent = NodeAccess::run(fn () => NodeAccess::get($root, '/' . implode('/', $segments), $this->visibilityGuard));
+        $parentPath = '/' . implode('/', $segments);
+        if ($parentPath !== '/' && !$root->nodeExists(ltrim($parentPath, '/'))) {
+            $planned = false;
+            foreach ($mkdirs as $dir) {
+                $dir = PathGuard::normalize($dir);
+                if ($dir === $parentPath || str_starts_with($dir, $parentPath . '/')) {
+                    $planned = true;
+                    break;
+                }
+            }
+            if ($planned) {
+                // Only mkdirs and their implied parents exist in the plan. Check the real ancestor:
+                // a missing descendant must never bypass visibility, permissions or storage boundaries.
+                do {
+                    array_pop($segments);
+                    $parentPath = '/' . implode('/', $segments);
+                } while ($parentPath !== '/' && !$root->nodeExists(ltrim($parentPath, '/')));
+            }
+        }
+        $parent = NodeAccess::run(fn () => NodeAccess::get($root, $parentPath, $this->visibilityGuard));
         if (!$parent instanceof Folder || !$parent->isCreatable()) {
             throw new ToolFailure(CommonMessages::forbidden());
         }

@@ -61,7 +61,7 @@ final class MovePlanner {
             $from = (string)$item['from'];
             $to = (string)$item['to'];
             try {
-                $check = $this->reorganization->inspect($root, $from, $to);
+                $check = $this->reorganization->inspect($root, $from, $to, mkdirs: $mkdirs);
             } catch (MoveConflict $e) {
                 $conflicts[] = ['from' => $from, 'to' => $to, 'reason' => $e->getMessage()];
                 continue;

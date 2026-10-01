@@ -25,15 +25,26 @@ final class TrashedObject {
      * @param CalendarStore $store calendar storage
      * @param int $calendarId backend calendar id
      * @param string $uri original object URI, from before the deletion
-     * @return bool whether the object is now in the trash (renamed row flagged deleted, or the original row flagged deleted)
+     * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null the trashed row (renamed, or the
+     *         original row flagged deleted), or null when the object is not in the trash
      */
-    public static function exists(CalendarStore $store, int $calendarId, string $uri): bool {
+    public static function row(CalendarStore $store, int $calendarId, string $uri): ?array {
         foreach ([self::uri($uri), $uri] as $candidate) {
             $row = $store->object($calendarId, $candidate);
             if ($row !== null && $row['deleted']) {
-                return true;
+                return $row;
             }
         }
-        return false;
+        return null;
+    }
+
+    /**
+     * @param CalendarStore $store calendar storage
+     * @param int $calendarId backend calendar id
+     * @param string $uri original object URI, from before the deletion
+     * @return bool whether the object is now in the trash
+     */
+    public static function exists(CalendarStore $store, int $calendarId, string $uri): bool {
+        return self::row($store, $calendarId, $uri) !== null;
     }
 }

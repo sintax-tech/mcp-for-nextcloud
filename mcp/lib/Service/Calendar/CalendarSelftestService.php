@@ -145,8 +145,9 @@ final class CalendarSelftestService {
 
             $step = 'delete';
             $this->delete($uid, $b, $suppressedUid);
-            $this->require(($this->store->object($b->id, $suppressedUri)['deleted'] ?? false) && $this->store->objectByUid($b->id, $suppressedUid) === null, CalendarSelftestMessages::assertion('deleted-object'));
-            $this->assertSuppressed($this->store->object($b->id, $suppressedUri));
+            $trashed = \OCA\Mcp\Tools\Calendar\TrashedObject::row($this->store, $b->id, $suppressedUri);
+            $this->require($trashed !== null && $this->store->objectByUid($b->id, $suppressedUid) === null, CalendarSelftestMessages::assertion('deleted-object'));
+            $this->assertSuppressed($trashed);
             $this->ok($report, $step, CalendarSelftestMessages::detail('delete'));
 
             $step = 'invitations';

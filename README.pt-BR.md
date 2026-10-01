@@ -29,18 +29,18 @@ Assistentes de IA rendem mais quando alcançam as ferramentas que o time já usa
 
 | Módulo | Leitura | Escrita (cada uma exige liberação do admin) |
 |---|---|---|
-| **Arquivos** | listar, buscar por nome, ler texto (TXT/MD, PDF, DOCX, ODT) | editar arquivos de texto, com backup conferido em `/MCP backups` e versão do Nextcloud antes de cada gravação. **Nunca exclui.** |
+| **Arquivos** | listar, buscar por nome, ler texto (TXT/MD, PDF, DOCX, ODT), listar e ler versões do arquivo | editar com diff e substituição de trecho, com backup conferido em `/MCP backups` e versão do Nextcloud antes de cada gravação; restaurar uma versão guardada; retirar um arquivo para um agente com terminal por um link de uso único; reorganizar pastas: varrer a árvore, criar pasta, copiar, mover, mover um lote e desfazer. **Nunca exclui.** |
 | **Notas** | listar, ler | criar, editar, mover entre categorias, excluir (só quando a lixeira permite recuperar) |
-| **Calendário** | listar calendários e eventos (recorrência, fusos, dia inteiro) | *temporariamente só leitura*: as escritas ficam ocultas até serem validadas num CalDAV real do Nextcloud 33 |
+| **Calendário** | listar calendários e eventos (recorrência, fusos, dia inteiro) | criar, editar, mover, excluir e transferir eventos pelo pipeline CalDAV de verdade, com participantes. As escritas ficam ocultas até `occ mcp:calendar-selftest` comprová-las no seu servidor, e cada uma devolve antes um plano: **nada é gravado antes de o usuário aprovar.** |
 | **Deck** | quadros, listas, cards e **acompanhamento** dos quadros que você gerencia: cards por responsável, com prazo, indicação de atraso (no seu fuso) e link do card | criar, editar, mover e excluir cards |
 | **Talk** | conversas e mensagens (nunca marca como lido) | responder (podendo citar uma mensagem ou incluir o link de um card do Deck ou evento que você pode ver), mensagem direta para um usuário, lote de mensagens, compartilhar ou citar arquivo, criar conversa em grupo (permissão própria, desligada por padrão). **Nada é enviado antes de o usuário aprovar o rascunho exato.** |
 
 E também:
 
 - **Nomes amigáveis das ferramentas** no cliente ("Buscar arquivos", "Listar calendários") e anotações MCP (`readOnlyHint`, `destructiveHint`), para o cliente pedir confirmação em ações de risco.
-- **Confirmação de segurança** em recursos de outras pessoas: pastas compartilhadas, pastas de time, quadros do Deck e calendários de outro dono. O servidor recusa a primeira chamada e devolve uma mensagem pronta. O assistente precisa perguntar ao usuário antes de repetir com `confirm_shared: true`. *(Deck e Calendário desde a 0.6.6; Arquivos e Notas na 0.7)*
+- **Confirmação de segurança** em recursos de outras pessoas: pastas compartilhadas, pastas de time, quadros do Deck e calendários de outro dono. O servidor recusa a primeira chamada e devolve uma mensagem pronta. O assistente precisa perguntar ao usuário antes de repetir com `confirm_shared: true`. *(Deck e Calendário desde a 0.6.6; Arquivos e Notas desde a 0.7.0)*
 - **Apps opcionais respeitados**: as tools e as colunas da matriz de admin de um app desativado (para todos ou para um usuário) ficam ocultas.
-- **Interface traduzida**: a matriz de admin, a página pessoal, a tela de consentimento e toda mensagem mostrada por uma tool seguem o idioma do usuário no Nextcloud. Inglês, português do Brasil e espanhol vêm incluídos (o espanhol é uma primeira tradução e ainda precisa de revisão de um nativo); as descrições das tools ficam em inglês, porque quem as lê é o modelo.
+- **Interface traduzida**: a matriz de admin, a página pessoal, a tela de consentimento e toda mensagem mostrada por uma tool seguem o idioma da conta Nextcloud do usuário. Todos os módulos estão cobertos (Arquivos, Notas, Calendário, Deck, Talk, as mensagens compartilhadas, as páginas de checkout e o selftest do calendário). Inglês, português do Brasil e espanhol vêm incluídos (o espanhol é uma primeira tradução e ainda precisa de revisão de um nativo); as descrições das tools ficam em inglês, porque quem as lê é o modelo.
 - **As duas gerações do MCP** no mesmo endpoint: `2026-07-28`, sem estado (`server/discover`), e o fluxo clássico com `initialize` (`2025-06-18` e anteriores).
 
 ## Requisitos
@@ -125,9 +125,6 @@ Veja o [`CHANGELOG.md`](CHANGELOG.md) (em inglês).
 
 ## Roadmap
 
-- Edição "como local" para agentes com terminal: links de checkout e checkin, versões de arquivo (listar, ler, restaurar), diffs e substituição de trecho
-- Reorganização de pastas: varredura da árvore, criar pastas, mover e copiar, lotes com simulação e desfazer. Continua sem exclusão.
-- Mensagens das ferramentas no idioma de cada usuário nos módulos restantes (Arquivos, Calendário e as mensagens compartilhadas; Deck, Notas e Talk já estão prontos)
 - Publicação na App Store do Nextcloud
 
 ## Licença

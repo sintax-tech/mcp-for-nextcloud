@@ -29,18 +29,18 @@ AI assistants are most useful when they can reach the tools a team already uses.
 
 | Module | Read | Write (each one needs an admin grant) |
 |---|---|---|
-| **Files** | list, search by name, read text (TXT/MD, PDF, DOCX, ODT) | edit text files, with a verified backup in `/MCP backups` and a Nextcloud version before every write. **Never deletes.** |
+| **Files** | list, search by name, read text (TXT/MD, PDF, DOCX, ODT), list and read file versions | edit with a diff and a partial replacement, with a verified backup in `/MCP backups` and a Nextcloud version before every write; restore a stored version; check a file out to an agent with a shell through a one-time link; reorganize folders: scan the tree, create a folder, copy, move, move a batch and undo it. **Never deletes.** |
 | **Notes** | list, read | create, edit, move between categories, delete (only when the trash bin can recover it) |
-| **Calendar** | list calendars and events (recurrence, time zones, all-day) | *temporarily read-only*: writes stay hidden until they are validated against a real Nextcloud 33 CalDAV setup |
+| **Calendar** | list calendars and events (recurrence, time zones, all-day) | create, edit, move, delete and transfer events through the real CalDAV pipeline, with participants. The writes stay hidden until `occ mcp:calendar-selftest` proves them on your server, and each one returns a plan first: **nothing is written before the user approves it.** |
 | **Deck** | boards, stacks, cards, and a **follow-up** of the boards you manage: cards grouped by assignee, with due date, overdue flag (in your own time zone) and a link to the card | create, edit, move, delete cards |
 | **Talk** | conversations and messages (never marks anything as read) | reply (optionally quoting a message or linking a Deck card or calendar event you can see), direct message to a user, batch of messages, share or quote a file, create a group conversation (separate grant, off by default). **Nothing is sent before the user approves the exact draft.** |
 
 Plus:
 
 - **Friendly tool titles** in the client ("Search files", "List calendars") and MCP annotations (`readOnlyHint`, `destructiveHint`) so clients can ask before risky actions.
-- **Safety confirmations** for resources that belong to someone else: shared folders, team folders, other people's Deck boards and calendars. The server refuses the first call and returns a ready-made message, and the assistant must ask the user before repeating it with `confirm_shared: true`. *(Deck and Calendar since 0.6.6; Files and Notes in 0.7)*
+- **Safety confirmations** for resources that belong to someone else: shared folders, team folders, other people's Deck boards and calendars. The server refuses the first call and returns a ready-made message, and the assistant must ask the user before repeating it with `confirm_shared: true`. *(Deck and Calendar since 0.6.6; Files and Notes since 0.7.0)*
 - **Optional apps respected**: tools and admin matrix columns of an app that is disabled (for everyone or for a given user) are hidden.
-- **Localized UI**: admin matrix, personal page, consent screen and every message a tool shows follow the user's Nextcloud language. English, Brazilian Portuguese and Spanish are included (Spanish is a first translation and still needs a native review); tool descriptions stay English, because the model is what reads them.
+- **Localized UI**: admin matrix, personal page, consent screen and every message a tool shows follow the language of the user's Nextcloud account. All modules are covered (Files, Notes, Calendar, Deck, Talk, the shared messages, the checkout pages and the calendar selftest). English, Brazilian Portuguese and Spanish are included (Spanish is a first translation and still needs a native review); tool descriptions stay English, because the model is what reads them.
 - **Both MCP eras**: stateless MCP `2026-07-28` (`server/discover`) and the classic `initialize` flow (`2025-06-18` and earlier) on the same endpoint.
 
 ## Requirements
@@ -125,9 +125,6 @@ See [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Roadmap
 
-- Local-style editing for agents with a shell: checkout/check-in links, file versions (list, read, restore), diffs and partial replacements
-- Folder reorganization: tree scan, create folders, move/copy, dry-run batches with undo. Still no deletes.
-- Tool messages in each user's language for the remaining modules (Files, Calendar and the shared messages; Deck, Notes and Talk are done)
 - Nextcloud App Store release
 
 ## License

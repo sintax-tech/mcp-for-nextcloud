@@ -2,11 +2,34 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
-## Unreleased
+## 0.7.0
 
 ### Added
-- Tools: the descriptions are read by the model, so they are fixed English, while every message shown to the user comes out in their own language. Deck, Notes and Talk are covered; Files, Calendar and the shared messages are still pending.
+- Files: local editing for an agent with a shell. `files_checkout` returns two single-use links, a download valid for 5 minutes and an upload valid for 15, so the content never passes through the model; the raw upload, `files_replace` and `files_version_restore` work through them. The link is the credential: 32 bytes, bound to the user, the file id and the ETag, and only a keyed hash is stored. An ETag that diverged before the upload writes nothing.
+- Files: folder reorganization. `files_tree` is a bounded scan, `files_mkdir` creates a folder and refuses an occupied target (behind `files.create`), `files_copy` and `files_move` move a file or a folder, `files_move_batch` plans first and records what it did, and `files_undo_batch` is the one place Files removes anything. `files_move_batch` (with `dry_run: false`), `files_undo_batch` and `files_version_restore` require `confirm: true`; the other writes ask the user only when the node is not in their own folder, which is then retried with `confirm_shared: true`.
+- Files: node ownership is now known, and a write to a shared node (a wrapped share included) passes through the `confirm_shared` guard, the same one Deck and Calendar use.
+- Files: the tool schema is validated as an array or an object, with `items`, properties and limits.
+- Calendar: the five writes (`calendar_create_event`, `calendar_update_event`, `calendar_delete_event`, `calendar_move_event`, `calendar_transfer_event`) go through the official CalDAV pipeline, so invitations, sequences, sync-tokens and the trash behave like the web interface. Internal attendees are resolved to the account e-mail.
+- Calendar: `occ mcp:calendar-selftest` proves the DAV writes on a real server and records the result. The writes stay hidden until it runs, the record is valid only for the app version and the Nextcloud major.minor it was produced on, and `--revoke` hides them again. Sending invitations is only reported as verified when the selftest actually proves it.
+- Calendar: every write needs a plan and an explicit confirmation. Without `confirm: true` the tools return the plan (current versus proposed values, participants, invitation and trash consequences, optional ETag) and never touch DAV. Nothing is stored as an approval and no token is issued: grants, ACL, the write gate, `confirm_shared` and the optional ETag all still apply on the confirmed call.
+- Language: a per-user translation base (`UserL10n`), the tool titles in the user's language and the instructions in English. The language comes from the account preference.
 - Language: Spanish (`es`) is included for the whole app, next to English and Brazilian Portuguese, as a first translation that still needs a native review.
+
+### Changed
+- Tools: the descriptions are read by the model, so they stay English, while every message shown to the user comes out in their own language. Deck, Notes, Talk, Files, the shared messages, the checkout pages, Calendar and the selftest are all covered now.
+- Calendar: every string the user sees lives in `CalendarMessages`, next to the schema of the Calendar tools.
+- Package: the vendored sabre pins are exact and the vendor allowlist is part of the packaged app.
+
+### Fixed
+- Files: a diff has no phantom line and marks the end of the file when the file ends without a newline.
+- Files: the upload takes raw bytes only, reads the token from the route and spends the link only at the moment of writing.
+- Files: a link that was already spent answers 409 and asks for a new checkout, instead of suggesting the same link again.
+- Files: the version restore refuses the backup folder, exactly as the edit already did.
+- Files: `files_replace` writes over the raw bytes and the app never deletes a file.
+- Files: an undo that stopped halfway can be retried.
+- Files: the checkout routes resolve the controller and `sharedBy` resolves the UID of the share.
+- Protocol: an invalid-argument error names the field in camelCase too.
+- Language: the generic server error and the invalid-argument messages are translated, and the review findings F1-F5 of the two translation phases are fixed.
 
 ## 0.6.10
 

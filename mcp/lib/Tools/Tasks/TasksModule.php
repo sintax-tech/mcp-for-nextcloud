@@ -366,7 +366,8 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
             'calendar' => (array) $calendar,
             'etag' => $row['etag'] ?? null,
             'before' => $before,
-            'after' => $after === null ? null : $this->data->item($after),
+            // A new task has no uid the person could use yet: the confirmed call generates a random one and returns it.
+            'after' => $after === null ? null : array_diff_key($this->data->item($after), $name === 'tasks_create_task' ? ['uid' => 1] : []),
             'shared' => $shared,
             'recoverable' => $deleting,
             'consequence' => $deleting ? Translator::t('The task will be moved to the calendar trash.') : null,

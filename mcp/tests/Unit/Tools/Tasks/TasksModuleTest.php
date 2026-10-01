@@ -297,6 +297,26 @@ final class TasksModuleTest extends TestCase {
         self::assertSame('New', $result['summary']);
     }
 
+    public function testCreationPlanHasNoUidAndIdenticalCreationsMakeDistinctTasks(): void {
+        $args = ['calendar' => self::PATH, 'summary' => 'Buy milk'];
+        self::assertArrayNotHasKey('uid', $this->module->preview('tasks_create_task', $args, 'alice')['after']);
+        $uris = [];
+        $this->dav->method('put')->willReturnCallback(
+            function ($user, $calendar, $uri, $data) use (&$uris) {
+                $uris[] = $uri;
+                $this->data = $data;
+                return new DavResult(201);
+            }
+        );
+        $uids = [];
+        for ($i = 0; $i < 2; $i++) {
+            $uids[] = $this->json($this->module->call('tasks_create_task', $args + ['confirm' => true], 'alice'))['uid'];
+        }
+        self::assertNotSame($uids[0], $uids[1]);
+        self::assertNotSame($uris[0], $uris[1]);
+        self::assertSame($uids[0] . '.ics', $uris[0]);
+    }
+
     public function testRemovingStartCannotLeaveDurationWithoutStart(): void {
         $this->data = str_replace(
             'SUMMARY:Work',

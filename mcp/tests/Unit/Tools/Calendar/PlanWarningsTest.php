@@ -237,4 +237,11 @@ final class PlanWarningsTest extends CalendarTestCase {
         self::assertArrayNotHasKey('sharedCalendars', $plan);
         self::assertArrayNotHasKey('suggestedCalendar', $plan);
     }
+
+    public function testTheGuideExplainsTheWarningsToTheModel(): void {
+        $notes = implode(' ', $this->module->guideNotes());
+        foreach (['warnings', 'collision', 'busy', 'suggestedCalendar', 'sharedCalendars', 'never block'] as $term) {
+            self::assertStringContainsString($term, $notes);
+        }
+    }
 }

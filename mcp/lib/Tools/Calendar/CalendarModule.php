@@ -64,6 +64,14 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
             'Every write answers with a plan first: what it would change, the etag of the object as it is now, and '
                 . 'which invitations would go out. Nothing is written until the very same call is repeated with '
                 . 'confirm: true, so show the plan to the user and wait for an explicit yes.',
+            'The plan of a create, update (when the time or the guests change), move or transfer can carry warnings: a '
+                . 'collision with another event of the target calendar, a participant who is busy or whose agenda could '
+                . 'not be checked, and a calendar that is not shared with the participants. Each warning has a type '
+                . '(collision, busy, unverifiable, calendarNotShared) and a message to read to the user. They never block: '
+                . 'tell the user and repeat the call with confirm: true only if the answer is still yes. When '
+                . 'sharedCalendars lists calendars the participants already see and suggestedCalendar is set, offer it; '
+                . 'when there are several, ask the user which one to use and repeat the call with that calendar. Other '
+                . 'people\'s appointments are only ever reported as busy, never with their content.',
             'Dates and times arrive as they will be stored, and are read back in the timezone of the account; a '
                 . 'recurring event is expanded into its occurrences before it reaches the user.',
             'send_invitations hands the invitation to the CalDAV scheduling of the server. The plan and the result '

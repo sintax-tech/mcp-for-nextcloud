@@ -30,6 +30,12 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 - Tool guide: the obsolete `approval_id` gate is gone from the guide's list of extra gates.
 
 ### Security
+- Checkout downloads reject changed file ETags with HTTP 409 before spending the token or opening the content stream.
+- CIMD metadata downloads use streaming, reject oversized Content-Length and read at most 64 KiB plus one byte before closing the response.
+- Reusing a rotated refresh token revokes all access and refresh grants for its client and owner, including rotation races.
+- OAuth authorization and MCP Bearer authentication require the mcp scope; offline_access alone grants no endpoint access.
+- MCP always validates its own Bearer credentials and rejects requests whose session belongs to another account.
+- Administrative service shutdown and eligibility removal immediately delete OAuth tokens and pending codes; disabling or deleting an account also revokes credentials.
 - Hidden tags fail closed: when at least one hidden tag is configured, an error while resolving a folder chain or reading tags hides the item instead of showing it. The warning logged carries no file name or path.
 - Backups inherit hidden tags before they receive content: the backup file is created empty, tagged, then filled and size-checked. If tagging fails, the user's write is aborted and only an empty backup remains, so nothing sensitive is left untagged and nothing is deleted.
 - A write whose destination collides with a hidden item is refused with the same message as any other forbidden destination. Refusing at all can still tell that the name is taken; this residual risk is documented.

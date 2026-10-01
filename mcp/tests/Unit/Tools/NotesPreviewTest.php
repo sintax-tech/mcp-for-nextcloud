@@ -160,7 +160,7 @@ final class NotesPreviewTest extends TestCase {
     }
 
     private function registry(): ToolRegistry {
-        $policy = new GrantPolicy((new InMemoryConfig())->mock($this));
+        $policy = new GrantPolicy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         foreach (GrantPolicy::CATALOG['notes'] as $operation) {
             $policy->setGrant('alice', 'notes', $operation, true);
         }

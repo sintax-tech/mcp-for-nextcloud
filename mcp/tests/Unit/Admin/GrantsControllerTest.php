@@ -96,6 +96,21 @@ final class GrantsControllerTest extends TestCase {
         }
     }
 
+    public function testBulkEligibilityRevokesSelectedGroupMembersOnly(): void {
+        $this->fx->groups['sales'] = ['ana', 'bob'];
+        foreach (['ana', 'bob', 'carl'] as $uid) {
+            $this->fx->oauth->insertToken(['user_id' => $uid], 0);
+            $this->fx->oauth->insertCode(['user_id' => $uid], 0);
+        }
+        $this->controller(['uids' => $this->fx->groups['sales'], 'module' => null,
+            'operation' => 'eligible', 'granted' => false])->bulk();
+        $this->assertSame(['carl'], array_values(array_column($this->fx->oauth->tokens, 'user_id')));
+        $this->assertSame(['carl'], array_values(array_column($this->fx->oauth->codes, 'user_id')));
+        $this->controller(['uids' => $this->fx->groups['sales'], 'module' => null,
+            'operation' => 'eligible', 'granted' => true])->bulk();
+        $this->assertCount(1, $this->fx->oauth->tokens);
+    }
+
     public function testServiceUsesItsOwnKey(): void {
         $this->assertSame(['enabled' => true], $this->controller(['enabled' => true])->service()->getData());
         $this->assertSame('1', $this->fx->config->app['mcp']['service_enabled']);

@@ -70,19 +70,31 @@ class ClientMetadataFetcher {
      * @throws OAuthException when the document cannot be fetched or exceeds the size limit
      */
     private function download(string $clientId): string {
+        $stream = null;
         try {
             $response = $this->clientService->newClient()->get($clientId, [
                 'timeout' => 5,
                 'allow_redirects' => false,
+                // OCP IResponse returns a resource with stream enabled, avoiding eager buffering.
+                'stream' => true,
                 'headers' => ['Accept' => 'application/json'],
             ]);
-            $body = $response->getBody();
-            $body = is_string($body) ? $body : (string)stream_get_contents($body, self::MAX_BYTES + 1);
+            $stream = $response->getBody();
+            $length = $response->getHeader('Content-Length');
+            if ($response->getStatusCode() !== 200 || !is_resource($stream)
+                || ($length !== '' && (!ctype_digit($length) || (float)$length > self::MAX_BYTES))) {
+                throw new \RuntimeException('Invalid metadata response');
+            }
+            $body = stream_get_contents($stream, self::MAX_BYTES + 1);
+            if ($body === false || strlen($body) > self::MAX_BYTES) {
+                throw new \RuntimeException('Metadata exceeds size limit');
+            }
         } catch (Throwable) {
             throw new OAuthException('invalid_client', 'Client metadata document unavailable');
-        }
-        if ($response->getStatusCode() !== 200 || strlen($body) > self::MAX_BYTES) {
-            throw new OAuthException('invalid_client', 'Client metadata document unavailable');
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
         }
         return $body;
     }

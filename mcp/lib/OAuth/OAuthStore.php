@@ -13,6 +13,7 @@ use OCP\IDBConnection;
 class OAuthStore {
     private const CODES = 'mcp_oauth_codes';
     private const TOKENS = 'mcp_oauth_tokens';
+    private const SPENT = 'mcp_oauth_spent';
 
     public function __construct(private IDBConnection $db) {}
 
@@ -48,6 +49,7 @@ class OAuthStore {
     public function insertToken(array $row, int $now): void {
         $purge = $this->db->getQueryBuilder();
         $purge->delete(self::TOKENS)->where($purge->expr()->lt('refresh_expires', $purge->createNamedParameter($now, IQueryBuilder::PARAM_INT)))->executeStatement();
+        $this->purgeSpent($now);
         $this->insert(self::TOKENS, $row);
     }
 
@@ -67,29 +69,81 @@ class OAuthStore {
      * @return bool true when exactly this call rotated the grant
      */
     public function rotate(int $id, string $oldRefreshHash, string $accessHash, int $accessExpires, string $refreshHash, int $refreshExpires): bool {
-        $qb = $this->db->getQueryBuilder();
-        $qb->update(self::TOKENS)
-            ->set('access_hash', $qb->createNamedParameter($accessHash))
-            ->set('access_expires', $qb->createNamedParameter($accessExpires, IQueryBuilder::PARAM_INT))
-            ->set('refresh_hash', $qb->createNamedParameter($refreshHash))
-            ->set('refresh_expires', $qb->createNamedParameter($refreshExpires, IQueryBuilder::PARAM_INT))
-            ->where($qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)))
-            ->andWhere($qb->expr()->eq('refresh_hash', $qb->createNamedParameter($oldRefreshHash)));
-        return $qb->executeStatement() === 1;
+        $this->purgeSpent($refreshExpires - TokenService::REFRESH_TTL);
+        $this->db->beginTransaction();
+        try {
+            $row = $this->findByRefresh($oldRefreshHash);
+            if ($row === null || (int)$row['id'] !== $id) {
+                $this->db->rollBack();
+                return false;
+            }
+            $qb = $this->db->getQueryBuilder();
+            $updated = $qb->update(self::TOKENS)
+                ->set('access_hash', $qb->createNamedParameter($accessHash))
+                ->set('access_expires', $qb->createNamedParameter($accessExpires, IQueryBuilder::PARAM_INT))
+                ->set('refresh_hash', $qb->createNamedParameter($refreshHash))
+                ->set('refresh_expires', $qb->createNamedParameter($refreshExpires, IQueryBuilder::PARAM_INT))
+                ->where($qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)))
+                ->andWhere($qb->expr()->eq('refresh_hash', $qb->createNamedParameter($oldRefreshHash)))
+                ->executeStatement();
+            if ($updated !== 1) {
+                $this->db->rollBack();
+                return false;
+            }
+            // Commit the consumed hash together with its replacement, so a racing loser or later replay
+            // can identify the client/owner. Never retain the plaintext refresh token.
+            $this->insert(self::SPENT, ['refresh_hash' => $oldRefreshHash, 'user_id' => $row['user_id'],
+                'client_id' => $row['client_id'], 'grant_id' => $id, 'expires_at' => (int)$row['refresh_expires']]);
+            $this->db->commit();
+            return true;
+        } catch (\Throwable $e) {
+            $this->db->rollBack();
+            throw $e;
+        }
+    }
+
+    /** Revokes all grants of the matching client/owner if this is an unexpired consumed refresh hash. */
+    public function revokeReusedRefresh(string $hash, string $clientId, int $now): void {
+        $this->purgeSpent($now);
+        $row = $this->findOne(self::SPENT, 'refresh_hash', $hash);
+        if ($row !== null && $row['client_id'] === $clientId && (int)$row['expires_at'] >= $now) {
+            foreach ([self::TOKENS, self::SPENT] as $table) {
+                $qb = $this->db->getQueryBuilder();
+                $qb->delete($table)
+                    ->where($qb->expr()->eq('user_id', $qb->createNamedParameter($row['user_id'])))
+                    ->andWhere($qb->expr()->eq('client_id', $qb->createNamedParameter($clientId)))
+                    ->executeStatement();
+            }
+        }
     }
 
     /** Deletes one grant (access and refresh token together). */
     public function deleteToken(int $id): void {
         $qb = $this->db->getQueryBuilder();
         $qb->delete(self::TOKENS)->where($qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)))->executeStatement();
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete(self::SPENT)->where($qb->expr()->eq('grant_id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)))->executeStatement();
+    }
+
+    /** Deletes all credentials immediately when the service is disabled. */
+    public function deleteAll(): void {
+        foreach ([self::TOKENS, self::CODES, self::SPENT] as $table) {
+            $this->db->getQueryBuilder()->delete($table)->executeStatement();
+        }
     }
 
     /** Deletes every grant and pending code of a user. */
     public function deleteForUser(string $uid): void {
-        foreach ([self::TOKENS, self::CODES] as $table) {
+        foreach ([self::TOKENS, self::CODES, self::SPENT] as $table) {
             $qb = $this->db->getQueryBuilder();
             $qb->delete($table)->where($qb->expr()->eq('user_id', $qb->createNamedParameter($uid)))->executeStatement();
         }
+    }
+
+    /** Normal token issuance, rotation and replay checks bound history retention without an occ step. */
+    private function purgeSpent(int $now): void {
+        $qb = $this->db->getQueryBuilder();
+        $qb->delete(self::SPENT)->where($qb->expr()->lt('expires_at', $qb->createNamedParameter($now, IQueryBuilder::PARAM_INT)))->executeStatement();
     }
 
     /** @param array<string,string|int> $row */

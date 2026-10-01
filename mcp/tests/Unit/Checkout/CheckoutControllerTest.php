@@ -92,7 +92,7 @@ final class CheckoutControllerTest extends TestCase {
         $this->tree->addFile(self::FILE, '# Ata', 'text/markdown');
         $this->store = new InMemoryCheckoutTokenStore();
         $this->config = new InMemoryConfig();
-        $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this));
+        $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         $this->policy->setGlobalEnabled(true);
         $this->policy->setEligible('alice', true);
         $this->policy->setConnected('alice', true);
@@ -389,6 +389,18 @@ final class CheckoutControllerTest extends TestCase {
         $response = $this->controller->upload();
         $this->assertSame(200, $this->code($response));
         $this->assertContains('write /alice/files/Compartilhado/plano.md', $this->tree->ops);
+    }
+
+    public function testChangedDownloadEtagRefusesWithoutSpendingOrOpeningTheFile(): void {
+        $this->store->rows = [];
+        $this->issue(CheckoutToken::KIND_DOWNLOAD);
+        $this->tree->nodes[self::FILE]['etag'] = 'changed';
+        $response = $this->controller->download();
+        $this->assertSame(409, $this->code($response));
+        $this->assertNotContains(self::FILE, $this->tree->opened);
+        $this->assertNotContains('consume', $this->store->ops);
+        $row = reset($this->store->rows);
+        $this->assertNull($row['used_at']);
     }
 
     public function testDownloadStreamsTheFileAndSpendsItsToken(): void {

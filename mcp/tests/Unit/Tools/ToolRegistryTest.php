@@ -24,7 +24,7 @@ final class ToolRegistryTest extends TestCase {
     private LoggerInterface $logger;
 
     protected function setUp(): void {
-        $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this));
+        $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         $this->logger = $this->createMock(LoggerInterface::class);
     }
 

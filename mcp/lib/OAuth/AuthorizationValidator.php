@@ -37,7 +37,7 @@ class AuthorizationValidator {
             throw new OAuthException('invalid_target', 'Unknown resource', true);
         }
         $scopes = array_values(array_filter(explode(' ', $get('scope'))));
-        if (array_diff($scopes, self::SCOPES) !== []) {
+        if (array_diff($scopes, self::SCOPES) !== [] || ($scopes !== [] && !in_array('mcp', $scopes, true))) {
             throw new OAuthException('invalid_scope', 'Unknown scope', true);
         }
         return new AuthorizationRequest($client, $redirectUri, $get('state'), $get('code_challenge'),

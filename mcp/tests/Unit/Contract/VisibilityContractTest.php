@@ -172,7 +172,7 @@ final class VisibilityContractTest extends TestCase {
     }
 
     private function registry(array $modules): ToolRegistry {
-        $policy = new GrantPolicy($this->config->mock($this));
+        $policy = new GrantPolicy($this->config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         foreach (GrantPolicy::CATALOG as $module => $operations) {
             foreach ($operations as $operation) {
                 $policy->setGrant('alice', $module, $operation, true);

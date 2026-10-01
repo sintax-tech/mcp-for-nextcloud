@@ -68,7 +68,7 @@ final class ContactsPolicyTest extends TestCase {
         );
         $apps = $this->createMock(IAppManager::class);
         $apps->method('isEnabledForUser')->with('contacts')->willReturn($enabled);
-        $policy = new GrantPolicy((new InMemoryConfig())->mock($this));
+        $policy = new GrantPolicy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         return [
             new ToolRegistry([$module], $policy, $apps, $users, new NullLogger()),
             $policy,

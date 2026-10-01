@@ -33,7 +33,7 @@ final class TokenFlowTest extends TestCase {
 
     protected function setUp(): void {
         $this->store = new InMemoryOAuthStore();
-        $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this));
+        $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this), $this->store);
         $this->policy->setGlobalEnabled(true);
         $this->policy->setEligible('alice', true);
         $this->policy->setConnected('alice', true);
@@ -77,8 +77,10 @@ final class TokenFlowTest extends TestCase {
     public function testOnlyHashesArePersisted(): void {
         $code = $this->code();
         $tokens = $this->exchange($code);
-        $dump = json_encode([$this->store->codes, $this->store->tokens]);
-        foreach ([$code, $tokens['access_token'], $tokens['refresh_token']] as $secret) {
+        $rotated = $this->service->refresh(['refresh_token' => $tokens['refresh_token'], 'client_id' => self::CLIENT]);
+        $this->assertArrayHasKey(hash_hmac('sha256', $tokens['refresh_token'], 'mcp-oauth|instance-secret'), $this->store->spent);
+        $dump = json_encode([$this->store->codes, $this->store->tokens, $this->store->spent]);
+        foreach ([$code, $tokens['access_token'], $tokens['refresh_token'], $rotated['access_token'], $rotated['refresh_token']] as $secret) {
             $this->assertStringNotContainsString($secret, $dump);
         }
         $this->assertStringStartsWith('ncmcp_at_', $tokens['access_token']);
@@ -103,10 +105,18 @@ final class TokenFlowTest extends TestCase {
     public function testBearerResolvesToOwnerUntilExpiry(): void {
         $access = $this->exchange($this->code())['access_token'];
         $this->assertSame('alice', $this->authenticator->authenticate('Bearer ' . $access, 'https://cloud.example.org/index.php/apps/mcp/')?->getUID());
+        $this->assertSame('alice', $this->authenticator->authenticate('bEaReR  ' . $access, self::RESOURCE)?->getUID());
         $this->assertNull($this->authenticator->authenticate('Bearer ' . $access, 'https://other.example.org/apps/mcp/'), 'wrong audience');
         $this->assertNull($this->authenticator->authenticate('Bearer ncmcp_at_unknown', self::RESOURCE));
         $this->now += TokenService::ACCESS_TTL + 1;
         $this->assertNull($this->authenticator->authenticate('Bearer ' . $access, self::RESOURCE), 'expired');
+    }
+
+    public function testOfflineOnlyBearerCannotAccessMcp(): void {
+        $tokens = $this->exchange($this->code());
+        $id = array_key_first($this->store->tokens);
+        $this->store->tokens[$id]['scope'] = 'offline_access';
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE));
     }
 
     public function testRefreshRotatesAndOldTokensStopWorking(): void {
@@ -118,6 +128,41 @@ final class TokenFlowTest extends TestCase {
         $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]));
     }
 
+    public function testRefreshReplayRevokesAllGrantsForTheClientAndOwner(): void {
+        $first = $this->exchange($this->code());
+        $otherGrant = $this->exchange($this->code());
+        $second = $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]);
+        $third = $this->service->refresh(['refresh_token' => $second['refresh_token'], 'client_id' => self::CLIENT]);
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]));
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $third['access_token'], self::RESOURCE));
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $otherGrant['access_token'], self::RESOURCE));
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $third['refresh_token'], 'client_id' => self::CLIENT]));
+    }
+
+    public function testLosingRefreshRotationRaceRevokesTheWinningGrant(): void {
+        $first = $this->exchange($this->code());
+        // The store publishes the winning rotation but reports that this request lost its conditional update.
+        $this->store->loseRotationRace = true;
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]));
+        $this->assertSame([], $this->store->tokens);
+    }
+
+    public function testReplayDoesNotRevokeOtherClientsOrUsers(): void {
+        $first = $this->exchange($this->code());
+        $this->store->insertToken(['user_id' => 'bob', 'client_id' => self::CLIENT], $this->now);
+        $this->store->insertToken(['user_id' => 'alice', 'client_id' => 'https://other.example/client'], $this->now);
+        $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]);
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]));
+        $this->assertSame(['bob', 'alice'], array_values(array_column($this->store->tokens, 'user_id')));
+    }
+
+    public function testRefreshReplayWithWrongClientDoesNotRevokeTheOwner(): void {
+        $first = $this->exchange($this->code());
+        $second = $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]);
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => 'https://other.example/client']));
+        $this->assertNotNull($this->authenticator->authenticate('Bearer ' . $second['access_token'], self::RESOURCE));
+    }
+
     public function testLosingEligibilityRevokesAccessAndRefresh(): void {
         $tokens = $this->exchange($this->code());
         $this->policy->setEligible('alice', false);
@@ -127,9 +172,35 @@ final class TokenFlowTest extends TestCase {
         $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $tokens['refresh_token'], 'client_id' => self::CLIENT]));
     }
 
+    public function testServiceOffThenOnPermanentlyRevokesUnusedCredentials(): void {
+        $tokens = $this->exchange($this->code());
+        $code = $this->code();
+        $this->policy->setGlobalEnabled(false);
+        $this->assertSame([], $this->store->tokens);
+        $this->assertSame([], $this->store->codes);
+        $this->policy->setGlobalEnabled(true);
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE));
+        $this->assertGrantFails(fn () => $this->exchange($code));
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $tokens['refresh_token'], 'client_id' => self::CLIENT]));
+    }
+
+    public function testEligibilityRemovalThenRestorationPermanentlyRevokesUnusedCredentials(): void {
+        $tokens = $this->exchange($this->code());
+        $code = $this->code();
+        $this->policy->setEligible('alice', false);
+        $this->assertSame([], $this->store->tokens);
+        $this->assertSame([], $this->store->codes);
+        $this->policy->setEligible('alice', true);
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE));
+        $this->assertGrantFails(fn () => $this->exchange($code));
+    }
+
     public function testDisconnectRevokesEverything(): void {
         $tokens = $this->exchange($this->code());
+        $this->service->refresh(['refresh_token' => $tokens['refresh_token'], 'client_id' => self::CLIENT]);
+        $this->assertNotEmpty($this->store->spent);
         $this->service->revokeUser('alice');
+        $this->assertSame([], $this->store->spent);
         $this->assertNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE));
     }
 }

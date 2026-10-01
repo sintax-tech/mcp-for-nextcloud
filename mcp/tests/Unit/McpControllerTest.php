@@ -39,7 +39,7 @@ final class McpControllerTest extends TestCase {
 
     protected function setUp(): void {
         $this->store = new InMemoryConfig();
-        $this->policy = new GrantPolicy($this->store->mock($this));
+        $this->policy = new GrantPolicy($this->store->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         $this->policy->setGlobalEnabled(true);
         foreach (['alice', 'bob'] as $uid) {
             $this->policy->setEligible($uid, true);
@@ -191,6 +191,35 @@ final class McpControllerTest extends TestCase {
         $response = $this->controller('{"jsonrpc":"2.0","id":1,"method":"tools/list"}')->post();
         $this->assertSame(200, $response->getStatus());
         $this->assertSame($bob, $this->volatileUser);
+    }
+
+    public function testOwnBearerWithAnotherSessionIsRejected(): void {
+        $this->headers['Authorization'] = 'Bearer ncmcp_at_valid';
+        $bob = $this->createMock(IUser::class);
+        $bob->method('getUID')->willReturn('bob');
+        $bob->method('isEnabled')->willReturn(true);
+        $this->authenticator->expects($this->once())->method('authenticate')->willReturn($bob);
+        $this->assertSame([401, ''], $this->listTools());
+        $this->assertNull($this->volatileUser);
+    }
+
+    public function testInvalidOwnBearerCannotFallBackToAnActiveSession(): void {
+        $this->headers['Authorization'] = 'Bearer ncmcp_at_invalid';
+        $this->authenticator->expects($this->once())->method('authenticate')->willReturn(null);
+        $this->assertSame([401, ''], $this->listTools());
+    }
+
+    public function testOwnBearerSchemeIsCaseInsensitiveAndCannotFallBackToSession(): void {
+        $this->headers['Authorization'] = 'bearer ncmcp_at_invalid';
+        $this->authenticator->expects($this->once())->method('authenticate')->willReturn(null);
+        $this->assertSame([401, ''], $this->listTools());
+    }
+
+    public function testMatchingSessionAndBearerUsesValidatedBearer(): void {
+        $this->headers['Authorization'] = 'Bearer ncmcp_at_valid';
+        $this->authenticator->expects($this->once())->method('authenticate')->willReturn($this->user);
+        $this->assertSame(200, $this->listTools()[0]);
+        $this->assertSame($this->user, $this->volatileUser);
     }
 
     public function testInvalidBearerGetsInvalidTokenChallenge(): void {

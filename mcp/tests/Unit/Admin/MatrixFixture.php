@@ -21,6 +21,7 @@ use PHPUnit\Framework\TestCase;
 final class MatrixFixture {
     public InMemoryConfig $config;
     public GrantPolicy $policy;
+    public \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore $oauth;
     /** @var array<string, array{name:string, email:string, enabled:bool}> */
     public array $users = [];
     /** @var array<string, list<string>> members by group id */
@@ -33,7 +34,8 @@ final class MatrixFixture {
 
     public function __construct(private TestCase $test) {
         $this->config = new InMemoryConfig();
-        $this->policy = new GrantPolicy($this->config->mock($test));
+        $this->oauth = new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore();
+        $this->policy = new GrantPolicy($this->config->mock($test), $this->oauth);
     }
 
     public function addUser(string $uid, string $name, string $email = '', bool $enabled = true, array $groups = []): void {

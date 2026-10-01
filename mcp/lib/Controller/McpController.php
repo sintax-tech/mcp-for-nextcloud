@@ -48,23 +48,27 @@ class McpController extends Controller {
     #[NoAdminRequired]
     #[NoCSRFRequired]
     public function post(): McpResponse {
-        if ($failure = $this->preflight()) {
-            return $failure;
+        try {
+            if ($failure = $this->preflight()) {
+                return $failure;
+            }
+            $contentType = strtolower(trim(explode(';', $this->request->getHeader('Content-Type'))[0]));
+            $accept = strtolower($this->request->getHeader('Accept'));
+            if ($contentType !== 'application/json' || !str_contains($accept, 'application/json') || !str_contains($accept, 'text/event-stream')) {
+                return new McpResponse('', 406);
+            }
+            $raw = $this->readBody();
+            if (!is_string($raw) || strlen($raw) > 1048576) {
+                return new McpResponse('', 413);
+            }
+            $result = $this->protocol->handle($raw, $this->request->getHeader('MCP-Protocol-Version'), $this->userSession->getUser()->getUID(), [
+                'method' => $this->request->getHeader('Mcp-Method'),
+                'name' => $this->request->getHeader('Mcp-Name'),
+            ]);
+            return new McpResponse($result['body'] === null ? '' : json_encode($result['body'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $result['status']);
+        } finally {
+            Translator::reset();
         }
-        $contentType = strtolower(trim(explode(';', $this->request->getHeader('Content-Type'))[0]));
-        $accept = strtolower($this->request->getHeader('Accept'));
-        if ($contentType !== 'application/json' || !str_contains($accept, 'application/json') || !str_contains($accept, 'text/event-stream')) {
-            return new McpResponse('', 406);
-        }
-        $raw = $this->readBody();
-        if (!is_string($raw) || strlen($raw) > 1048576) {
-            return new McpResponse('', 413);
-        }
-        $result = $this->protocol->handle($raw, $this->request->getHeader('MCP-Protocol-Version'), $this->userSession->getUser()->getUID(), [
-            'method' => $this->request->getHeader('Mcp-Method'),
-            'name' => $this->request->getHeader('Mcp-Name'),
-        ]);
-        return new McpResponse($result['body'] === null ? '' : json_encode($result['body'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $result['status']);
     }
 
     /** @return McpResponse 405: no SSE stream is offered (401/403 first when access is denied) */

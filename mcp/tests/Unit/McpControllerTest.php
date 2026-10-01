@@ -203,8 +203,10 @@ final class McpControllerTest extends TestCase {
     }
 
     public function testBasicRequestTranslatesInTheLanguageOfTheAccount(): void {
-        $this->assertSame(200, $this->listTools()[0]);
-        $this->assertSame('Desconectar', Translator::t('Disconnect'));
+        [$status, $body] = $this->listTools();
+        $this->assertSame(200, $status);
+        $this->assertStringContainsString('Verificar o status do MCP', $body);
+        $this->assertSame('Disconnect', Translator::t('Disconnect'), 'the translator is released when the request ends');
     }
 
     public function testBearerRequestTranslatesInTheLanguageOfTheTokenOwner(): void {
@@ -214,8 +216,10 @@ final class McpControllerTest extends TestCase {
         $this->login(null);
         $this->headers['Authorization'] = 'Bearer ncmcp_at_valid';
         $this->authenticator->method('authenticate')->willReturn($bob);
-        $this->assertSame(200, $this->controller('{"jsonrpc":"2.0","id":1,"method":"tools/list"}')->post()->getStatus());
-        $this->assertSame('Desconectar', Translator::t('Disconnect'));
+        $response = $this->controller('{"jsonrpc":"2.0","id":1,"method":"tools/list"}')->post();
+        $this->assertSame(200, $response->getStatus());
+        $this->assertStringContainsString('Verificar o status do MCP', $response->render());
+        $this->assertSame('Disconnect', Translator::t('Disconnect'));
     }
 
     public function testRejectedRequestDoesNotKeepTheTranslatorOfAPreviousOne(): void {

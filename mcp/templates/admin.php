@@ -31,11 +31,47 @@
             <span id="mcp-page-info"></span>
             <button type="button" id="mcp-next"><?php p($l->t('Next')); ?></button>
         </span>
+
+    <h3><?php p($l->t('Hidden files & tags')); ?></h3>
+    <p class="mcp-hint"><?php p($l->t('Files and folders tagged with the selected system tags will be completely hidden from MCP tools. Recommended: use restricted or invisible tags so users cannot remove them.')); ?></p>
+    <div id="mcp-hidden-tags-section" class="mcp-hidden-tags">
+        <div id="mcp-tags-list" class="mcp-tags-container" aria-busy="true">
+            <span class="mcp-tags-loading"><?php p($l->t('Loading tags…')); ?></span>
+        </div>
+        <div id="mcp-tags-warning" class="mcp-tags-warning" style="display: none;">
+            <?php p($l->t('Warning: one or more selected tags are collaborative. Users with edit access can remove collaborative tags, which may expose hidden files.')); ?>
+        </div>
+        <span class="mcp-status" id="mcp-tags-status" aria-live="polite"></span>
     </div>
+</div>
     <div class="mcp-matrix-wrap">
         <table class="mcp-matrix" id="mcp-matrix" aria-busy="true">
             <thead></thead>
             <tbody><tr><td class="mcp-empty"><?php p($l->t('Loading…')); ?></td></tr></tbody>
         </table>
+
+    <h3><?php p($l->t('Hidden files & tags')); ?></h3>
+    <p class="mcp-hint"><?php p($l->t('Files and folders tagged with the selected system tags will be completely hidden from MCP tools. Recommended: use restricted or invisible tags so users cannot remove them.')); ?></p>
+    <div id="mcp-hidden-tags-section" class="mcp-hidden-tags">
+        <div id="mcp-tags-list" class="mcp-tags-container" aria-busy="true">
+            <span class="mcp-tags-loading"><?php p($l->t('Loading tags…')); ?></span>
+        </div>
+        <div id="mcp-tags-warning" class="mcp-tags-warning" style="display: none;">
+            <?php p($l->t('Warning: one or more selected tags are collaborative. Users with edit access can remove collaborative tags, which may expose hidden files.')); ?>
+        </div>
+        <span class="mcp-status" id="mcp-tags-status" aria-live="polite"></span>
+    </div>
+</div>
+
+    <h3><?php p($l->t('Hidden files & tags')); ?></h3>
+    <p class="mcp-hint"><?php p($l->t('Files and folders tagged with the selected system tags will be completely hidden from MCP tools. Recommended: use restricted or invisible tags so users cannot remove them.')); ?></p>
+    <div id="mcp-hidden-tags-section" class="mcp-hidden-tags">
+        <div id="mcp-tags-list" class="mcp-tags-container" aria-busy="true">
+            <span class="mcp-tags-loading"><?php p($l->t('Loading tags…')); ?></span>
+        </div>
+        <div id="mcp-tags-warning" class="mcp-tags-warning" style="display: none;">
+            <?php p($l->t('Warning: one or more selected tags are collaborative. Users with edit access can remove collaborative tags, which may expose hidden files.')); ?>
+        </div>
+        <span class="mcp-status" id="mcp-tags-status" aria-live="polite"></span>
     </div>
 </div>

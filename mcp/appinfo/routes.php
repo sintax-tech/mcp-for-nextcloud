@@ -16,6 +16,8 @@ return ['routes' => [
     ['name' => 'grants#bulk', 'url' => '/api/grants/bulk', 'verb' => 'POST'],
     ['name' => 'grants#update', 'url' => '/api/grants/{uid}', 'verb' => 'PUT'],
     ['name' => 'grants#service', 'url' => '/api/service', 'verb' => 'PUT'],
+    ['name' => 'tags#index', 'url' => '/api/admin/tags', 'verb' => 'GET'],
+    ['name' => 'tags#update', 'url' => '/api/admin/tags', 'verb' => 'PUT'],
     ['name' => 'metadata#protectedResource', 'url' => '/.well-known/oauth-protected-resource', 'verb' => 'GET'],
     ['name' => 'metadata#authorizationServer', 'url' => '/.well-known/openid-configuration', 'verb' => 'GET'],
     ['name' => 'metadata#oauthServer', 'url' => '/.well-known/oauth-authorization-server', 'verb' => 'GET'],

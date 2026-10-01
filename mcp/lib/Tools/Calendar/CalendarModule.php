@@ -12,6 +12,7 @@ use OCA\Mcp\Tools\Calendar\Handler\MoveEvent;
 use OCA\Mcp\Tools\Calendar\Handler\TransferEvent;
 use OCA\Mcp\Tools\Calendar\Handler\UpdateEvent;
 use OCA\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\ToolGuideNotes;
 use OCA\Mcp\Tools\ToolModule;
 use RuntimeException;
@@ -21,7 +22,7 @@ use RuntimeException;
  * (writes are off by default), the app and the input schema, and asks {@see self::preview()} for the
  * plan of every write that arrives without `confirm: true`.
  */
-final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
+final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes, RendersPlans {
     /** @var array<string, CalendarTool> handlers by tool name */
     private array $tools = [];
 
@@ -43,7 +44,9 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
         DeleteEvent $deleteEvent,
         TransferEvent $transferEvent,
         private CalendarDraftApproval $approval,
+        private ?CalendarPlanRenderer $planRenderer = null,
     ) {
+        $this->planRenderer ??= new CalendarPlanRenderer();
         foreach ([$listCalendars, $listEvents, $createEvent, $updateEvent, $moveEvent, $deleteEvent, $transferEvent] as $tool) {
             $this->tools[$tool->definition()['name']] = $tool;
         }
@@ -104,6 +107,17 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
     }
 
     /**
+     * Renders a write plan as Markdown for the user confirming it.
+     *
+     * @param string $tool tool name
+     * @param array<string, mixed> $plan plan returned by preview()
+     * @return string|null Markdown body or null to fall back to the generic renderer
+     */
+    public function renderPlan(string $tool, array $plan): ?string {
+        return $this->planRenderer->renderPlan($tool, $plan);
+    }
+
+    /**
      * @param string $name tool name
      * @param array<string, mixed> $arguments arguments validated by the registry
      * @param string $userId authenticated UID
@@ -139,6 +153,7 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
             throw new RuntimeException('Calendar backend failure', 0, $e);
         }
     }
+
     /**
      * The published schema of a write: the shared acknowledgement, and the note that asks for the plan first.
      * `confirm` itself is not added here — the registry publishes it on every write tool of the app.
@@ -157,5 +172,4 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
         $definition['description'] .= ' First returns a detailed plan without writing. Show it to the user and wait for explicit approval; then repeat the same arguments with confirm=true, adding the etag returned in the plan when it has one.';
         return $definition;
     }
-
 }

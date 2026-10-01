@@ -4,7 +4,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
 use InvalidArgumentException;
+use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
+use OCA\Mcp\Tools\RendersPlans;
 
 final class CalendarModuleTest extends CalendarTestCase {
     public function testDefinitionsDeclareCatalogGrantsAppAndStrictSchemas(): void {
@@ -85,5 +88,30 @@ final class CalendarModuleTest extends CalendarTestCase {
     public function testUnknownToolIsInvalidParams(): void {
         $this->expectException(InvalidArgumentException::class);
         $this->call('calendar_nope');
+    }
+
+    public function testModuleImplementsRendersPlansAndDelegates(): void {
+        $this->assertInstanceOf(RendersPlans::class, $this->module);
+
+        Translator::use(new JsonL10n('pt_BR'));
+        try {
+            $plan = [
+                'action' => 'calendar_create_event',
+                'calendar' => ['name' => 'Tecnologia Dalcomad'],
+                'after' => [
+                    'summary' => 'Reunião',
+                    'start' => '2026-10-01T17:00:00Z',
+                    'end' => '2026-10-01T18:00:00Z',
+                    'allDay' => false,
+                    'timeZone' => 'America/Sao_Paulo',
+                ],
+            ];
+
+            $rendered = $this->module->renderPlan('calendar_create_event', $plan);
+            $this->assertNotNull($rendered);
+            $this->assertStringContainsString('Criar evento em *Tecnologia Dalcomad*: **Reunião**', $rendered);
+        } finally {
+            Translator::reset();
+        }
     }
 }

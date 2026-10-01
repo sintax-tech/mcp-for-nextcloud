@@ -34,6 +34,15 @@ final class Translator {
     }
 
     /**
+     * Returns the locale code of the current translator, falling back to 'en'.
+     *
+     * @return string locale code (e.g. 'pt_BR', 'en')
+     */
+    public static function locale(): string {
+        return self::$l10n?->getLocaleCode() ?: 'en';
+    }
+
+    /**
      * Translates a text.
      *
      * @param string $text English source text, a literal

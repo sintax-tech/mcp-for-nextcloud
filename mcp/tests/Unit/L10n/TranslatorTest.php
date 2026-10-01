@@ -42,4 +42,17 @@ final class TranslatorTest extends TestCase {
         Translator::use(new JsonL10n('de'));
         $this->assertSame('Disconnect', Translator::t('Disconnect'));
     }
+
+    public function testLocaleDefaultsToEnglish(): void {
+        $this->assertSame('en', Translator::locale());
+    }
+
+    public function testLocaleReflectsActiveL10n(): void {
+        Translator::use(new JsonL10n('pt_BR'));
+        $this->assertSame('pt_BR', Translator::locale());
+        Translator::use(new JsonL10n('es'));
+        $this->assertSame('es', Translator::locale());
+        Translator::reset();
+        $this->assertSame('en', Translator::locale());
+    }
 }

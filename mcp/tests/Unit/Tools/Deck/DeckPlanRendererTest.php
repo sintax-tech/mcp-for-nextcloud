@@ -72,7 +72,7 @@ final class DeckPlanRendererTest extends TestCase {
 		);
 		(new \ReflectionProperty(DeckToolModule::class, 'gateway'))->setValue($this->module, $this->gateway);
 
-		$this->renderer = new DeckPlanRenderer(new \DateTimeZone('America/Sao_Paulo'));
+		$this->renderer = new DeckPlanRenderer();
 	}
 
 	protected function tearDown(): void {
@@ -250,11 +250,10 @@ final class DeckPlanRendererTest extends TestCase {
 		$this->assertStringContainsString('Delete card in *Pessoal*: **Tarefa Antiga**', $rendered);
 	}
 
-	public function testTimezoneFormatting(): void {
-		$utcRenderer = new DeckPlanRenderer(new \DateTimeZone('UTC'));
-		$spRenderer = new DeckPlanRenderer(new \DateTimeZone('America/Sao_Paulo'));
+	public function testTimezoneFormattingFromPlan(): void {
+		$renderer = new DeckPlanRenderer();
 
-		$plan = [
+		$planUtc = [
 			'action' => 'deck_create_card',
 			'card' => [
 				'title' => 'Prazo com hora',
@@ -263,13 +262,25 @@ final class DeckPlanRendererTest extends TestCase {
 			'destination' => [
 				'board' => 'Quadro',
 			],
+			'timezone' => 'UTC',
 		];
+		$planSp = $planUtc;
+		$planSp['timezone'] = 'America/Sao_Paulo';
 
-		$utcText = $utcRenderer->render('deck_create_card', $plan);
-		$spText = $spRenderer->render('deck_create_card', $plan);
+		$utcText = $renderer->render('deck_create_card', $planUtc);
+		$spText = $renderer->render('deck_create_card', $planSp);
 
 		$this->assertStringContainsString('2026-10-01 15:30', $utcText);
 		$this->assertStringContainsString('2026-10-01 12:30', $spText);
+	}
+
+	public function testPreviewSetsTimezoneInPlan(): void {
+		$plan = $this->module->preview('deck_create_card', [
+			'stackId' => 10,
+			'title' => 'Test',
+		], 'alice');
+
+		$this->assertSame('America/Sao_Paulo', $plan['timezone']);
 	}
 
 	public function testMissingKeysReturnsNull(): void {

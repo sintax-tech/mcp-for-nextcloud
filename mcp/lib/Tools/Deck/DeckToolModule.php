@@ -54,7 +54,6 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	private const DEFAULT_LIMIT = 50;
 
 	private ?DeckGatewayInterface $gateway = null;
-	private ?string $lastUserId = null;
 
 	/**
 	 * @param ContainerInterface $container Nextcloud server container, resolves the Deck services lazily.
@@ -294,15 +293,17 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	 * @throws \OCA\Mcp\Tools\ToolFailure When the Deck refuses the same read the write would do.
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
-		$this->lastUserId = $userId;
 		try {
-			return match ($name) {
+			$plan = match ($name) {
 				CreateCardHandler::TOOL => $this->planCreate($arguments, $userId),
 				EditCardHandler::TOOL => $this->planEdit($arguments, $userId),
 				MoveCardHandler::TOOL => $this->planMove($arguments, $userId),
 				DeleteCardHandler::TOOL => $this->planDelete($arguments, $userId),
 				default => throw new InvalidArgumentException(DeckMessages::errorUnknownTool()),
 			};
+			$plan['timezone'] = $this->zones()?->forUser($userId)->getName();
+
+			return $plan;
 		} catch (InvalidArgumentException $e) {
 			throw $e;
 		} catch (\Throwable $e) {
@@ -321,8 +322,7 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	 * {@inheritDoc}
 	 */
 	public function renderPlan(string $tool, array $plan): ?string {
-		$zone = $this->lastUserId !== null ? $this->zones()?->forUser($this->lastUserId) : null;
-		return (new DeckPlanRenderer($zone))->render($tool, $plan);
+		return (new DeckPlanRenderer())->render($tool, $plan);
 	}
 
 	/**

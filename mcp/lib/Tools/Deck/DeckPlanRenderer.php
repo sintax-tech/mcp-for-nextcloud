@@ -11,10 +11,7 @@ use OCA\Mcp\L10n\Translator;
 final class DeckPlanRenderer {
 	private const MAX_TEXT_LENGTH = 200;
 
-	private \DateTimeZone $zone;
-
-	public function __construct(?\DateTimeZone $zone = null) {
-		$this->zone = $zone ?? new \DateTimeZone(date_default_timezone_get());
+	public function __construct(private ?\DateTimeZone $zone = null) {
 	}
 
 	/**
@@ -24,9 +21,10 @@ final class DeckPlanRenderer {
 	 */
 	public function render(string $tool, array $plan): ?string {
 		try {
+			$zone = $this->resolveZone($plan);
 			return match ($tool) {
-				'deck_create_card' => $this->renderCreate($plan),
-				'deck_edit_card' => $this->renderEdit($plan),
+				'deck_create_card' => $this->renderCreate($plan, $zone),
+				'deck_edit_card' => $this->renderEdit($plan, $zone),
 				'deck_move_card' => $this->renderMove($plan),
 				'deck_delete_card' => $this->renderDelete($plan),
 				default => null,
@@ -37,9 +35,28 @@ final class DeckPlanRenderer {
 	}
 
 	/**
+	 * Resolves the timezone from the plan if present, falling back to constructor or system default.
+	 *
 	 * @param array<string, mixed> $plan
 	 */
-	private function renderCreate(array $plan): ?string {
+	private function resolveZone(array $plan): \DateTimeZone {
+		if (isset($plan['timezone']) && is_string($plan['timezone']) && $plan['timezone'] !== '') {
+			try {
+				return new \DateTimeZone($plan['timezone']);
+			} catch (\Throwable) {
+				// fall through
+			}
+		}
+		if ($this->zone !== null) {
+			return $this->zone;
+		}
+		return new \DateTimeZone(date_default_timezone_get());
+	}
+
+	/**
+	 * @param array<string, mixed> $plan
+	 */
+	private function renderCreate(array $plan, \DateTimeZone $zone): ?string {
 		$card = $plan['card'] ?? null;
 		$dest = $plan['destination'] ?? null;
 		if (!is_array($card) || !isset($card['title']) || !is_string($card['title']) || $card['title'] === '') {
@@ -64,7 +81,7 @@ final class DeckPlanRenderer {
 
 		$dueDate = $card['dueDate'] ?? $card['duedate'] ?? null;
 		if (is_string($dueDate) && $dueDate !== '') {
-			$lines[] = Translator::t('- Due date: %s', [$this->formatDate($dueDate)]);
+			$lines[] = Translator::t('- Due date: %s', [$this->formatDate($dueDate, $zone)]);
 		}
 
 		$assignees = $this->extractAssignees($card);
@@ -89,7 +106,7 @@ final class DeckPlanRenderer {
 	/**
 	 * @param array<string, mixed> $plan
 	 */
-	private function renderEdit(array $plan): ?string {
+	private function renderEdit(array $plan, \DateTimeZone $zone): ?string {
 		$card = $plan['card'] ?? null;
 		if (!is_array($card) || !isset($card['before'], $card['after']) || !is_array($card['before']) || !is_array($card['after'])) {
 			return null;
@@ -124,8 +141,8 @@ final class DeckPlanRenderer {
 				$afterDesc = !empty($after['description']) ? $this->truncate((string)$after['description']) : Translator::t('(empty)');
 				$lines[] = Translator::t('- Description: %s → %s', [$beforeDesc, $afterDesc]);
 			} elseif ($field === 'duedate' && (array_key_exists('duedate', $before) || array_key_exists('duedate', $after))) {
-				$beforeDue = !empty($before['duedate']) ? $this->formatDate((string)$before['duedate']) : Translator::t('(no due date)');
-				$afterDue = !empty($after['duedate']) ? $this->formatDate((string)$after['duedate']) : Translator::t('(no due date)');
+				$beforeDue = !empty($before['duedate']) ? $this->formatDate((string)$before['duedate'], $zone) : Translator::t('(no due date)');
+				$afterDue = !empty($after['duedate']) ? $this->formatDate((string)$after['duedate'], $zone) : Translator::t('(no due date)');
 				$lines[] = Translator::t('- Due date: %s → %s', [$beforeDue, $afterDue]);
 			}
 		}
@@ -257,12 +274,12 @@ final class DeckPlanRenderer {
 		return $names;
 	}
 
-	private function formatDate(string $raw): string {
+	private function formatDate(string $raw, \DateTimeZone $zone): string {
 		try {
 			if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $raw)) {
 				return $raw;
 			}
-			$dt = (new \DateTimeImmutable($raw))->setTimezone($this->zone);
+			$dt = (new \DateTimeImmutable($raw))->setTimezone($zone);
 			if ($dt->format('H:i:s') === '00:00:00') {
 				return $dt->format('Y-m-d');
 			}

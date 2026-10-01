@@ -68,6 +68,22 @@ final class DeckToolModuleTest extends TestCase {
 		$this->module = $this->module($container, $this->appManager, $this->createMock(LoggerInterface::class));
 	}
 
+	/** Only creation accepts assignments; schemas and guide expose the supported behavior. */
+	public function testCreationDeclaresAssigneesAndRejectsMalformedAccountIds(): void {
+		$schema = $this->definitionOf(CreateCardHandler::TOOL)['inputSchema'];
+		self::assertSame(['pedro'], \OCA\Mcp\Tools\ArgumentValidator::validate($schema, ['stackId' => 10, 'title' => 'New', 'assignees' => ['pedro']])['assignees']);
+		self::assertArrayNotHasKey('assignees', $this->definitionOf(EditCardHandler::TOOL)['inputSchema']['properties']);
+		self::assertStringContainsString('assignments', implode(' ', $this->module->guideNotes()));
+		foreach ([[''], [123], 'pedro', array_fill(0, 101, 'pedro')] as $value) {
+			try {
+				\OCA\Mcp\Tools\ArgumentValidator::validate($schema, ['stackId' => 10, 'title' => 'New', 'assignees' => $value]);
+				self::fail('accepted malformed assignees');
+			} catch (\OCA\Mcp\Tools\ArgumentValidationException $e) {
+				self::assertStringStartsWith('assignees', $e->details()['field']);
+			}
+		}
+	}
+
 	public function testImplementsTheModuleContract(): void {
 		self::assertInstanceOf(ToolModule::class, $this->module);
 	}

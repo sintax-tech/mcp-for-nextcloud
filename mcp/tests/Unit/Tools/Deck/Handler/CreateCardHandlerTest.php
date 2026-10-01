@@ -40,6 +40,45 @@ final class CreateCardHandlerTest extends TestCase {
 		return new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 	}
 
+	/** A rejected assignee stops the creation before any write. */
+	public function testInvalidAssigneeCreatesNothing(): void {
+		$gateway = $this->gatewayOwnedBy('alice');
+		$gateway->expects(self::once())->method('validateAssignees')->willThrowException(new InvalidArgumentException('Invalid argument: assignees'));
+		$gateway->expects(self::never())->method('createCard');
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
+		$this->expectException(InvalidArgumentException::class);
+		$handler->handle(['stackId' => 10, 'title' => 'New', 'assignees' => ['missing']], 'alice');
+	}
+
+	/** A race after creation returns the created card with a safe warning instead of an error or deletion. */
+	public function testAssignmentRaceKeepsCreatedCard(): void {
+		$gateway = $this->gatewayOwnedBy('alice');
+		$gateway->method('validateAssignees')->willReturn([['uid' => 'pedro', 'displayName' => 'Pedro']]);
+		$gateway->expects(self::once())->method('createCard')->willReturn($this->card(['id' => 9]));
+		$gateway->expects(self::once())->method('assignCardUser')->with('alice', 9, 'pedro')->willThrowException(new RuntimeException('secret'));
+		$gateway->expects(self::never())->method('deleteCard');
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
+		$result = $handler->handle(['stackId' => 10, 'title' => 'New', 'assignees' => ['pedro']], 'alice');
+		$payload = $this->payload($result);
+		self::assertSame(9, $payload['id']);
+		self::assertNotEmpty($payload['warnings']);
+		self::assertArrayNotHasKey('isError', $result);
+		self::assertStringNotContainsString('secret', json_encode($result));
+	}
+
+	/** Successful assignments are included in the created card returned to the caller. */
+	public function testCreatedCardIncludesSuccessfulAssignments(): void {
+		$gateway = $this->gatewayOwnedBy('alice');
+		$gateway->method('validateAssignees')->willReturn([['uid' => 'pedro', 'displayName' => 'Pedro']]);
+		$gateway->expects(self::once())->method('createCard')->willReturn($this->card(['id' => 9]));
+		$gateway->expects(self::once())->method('assignCardUser')->with('alice', 9, 'pedro')
+			->willReturn(new \OCA\Deck\Db\Assignment(['cardId' => 9, 'participant' => 'pedro', 'type' => 0]));
+		$handler = new CreateCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
+		$payload = $this->payload($handler->handle(['stackId' => 10, 'title' => 'New', 'assignees' => ['pedro']], 'alice'));
+		self::assertSame('pedro', $payload['assignedUsers'][0]['uid']);
+		self::assertArrayNotHasKey('warnings', $payload);
+	}
+
 	public function testHappyPathSendsTheCardOwnedByTheCaller(): void {
 		$gateway = $this->gatewayOwnedBy('alice');
 		$gateway->expects(self::once())

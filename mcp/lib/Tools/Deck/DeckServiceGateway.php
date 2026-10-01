@@ -3,7 +3,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Deck;
 
+use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Tools\ArgumentValidationException;
 use OCA\Deck\Db\Acl;
+use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\AssignmentMapper;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Card;
@@ -12,6 +15,7 @@ use OCA\Deck\Db\Stack;
 use OCA\Deck\Db\StackMapper;
 use OCA\Deck\Model\OptionalNullableValue;
 use OCA\Deck\NoPermissionException;
+use OCA\Deck\Service\AssignmentService;
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
@@ -180,6 +184,38 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 
 		// `CardService::find()` checks PERMISSION_READ and refuses a deleted card.
 		return $cardService->find($cardId);
+	}
+
+	/** {@inheritDoc} */
+	public function validateAssignees(string $userId, int $stackId, array $assignees): array {
+		$this->bindUser($userId);
+		/** @var PermissionService $permissions */
+		$permissions = $this->service(PermissionService::class);
+		/** @var StackMapper $stacks */
+		$stacks = $this->service(StackMapper::class);
+		$permissions->checkPermission($stacks, $stackId, Acl::PERMISSION_EDIT);
+		$boardId = $stacks->findBoardId($stackId);
+		/** @var IUserManager $users */
+		$users = $this->service(IUserManager::class);
+		$out = [];
+		foreach (CardInput::assignees($assignees) as $uid) {
+			$user = $users->get($uid);
+			// Deck evaluates owner, direct ACL, group and circle membership for this account.
+			if ($user === null || !($permissions->getPermissions($boardId, $uid)[Acl::PERMISSION_READ] ?? false)) {
+				throw new ArgumentValidationException('Invalid argument: assignees', 'assignees',
+					Translator::t('each account must exist and have access to the board'));
+			}
+			$out[] = ['uid' => $uid, 'displayName' => $user->getDisplayName()];
+		}
+		return $out;
+	}
+
+	/** {@inheritDoc} */
+	public function assignCardUser(string $userId, int $cardId, string $assignee): Assignment {
+		$this->bindUser($userId);
+		/** @var AssignmentService $assignments */
+		$assignments = $this->service(AssignmentService::class);
+		return $assignments->assignUser($cardId, $assignee);
 	}
 
 	/**

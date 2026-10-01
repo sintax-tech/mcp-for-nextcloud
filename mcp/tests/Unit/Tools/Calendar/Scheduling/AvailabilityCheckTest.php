@@ -18,26 +18,26 @@ final class AvailabilityCheckTest extends TestCase {
 
     /** @return void */
     public function testFreeAttendeeIsNeitherBusyNorUnverifiable(): void {
-        $manager = $this->manager([$this->result('bob@example.invalid', true)]);
+        $manager = $this->manager([$this->verdict('bob@example.invalid', true)]);
 
-        self::assertSame(['busy' => [], 'unverifiable' => [], 'failed' => false], $this->run($manager, [self::BOB]));
+        self::assertSame(['busy' => [], 'unverifiable' => [], 'failed' => false], $this->runCheck($manager, [self::BOB]));
     }
 
     /** @return void */
     public function testBusyAttendeeIsReportedWithoutEmail(): void {
-        $manager = $this->manager([$this->result('bob@example.invalid', false)]);
+        $manager = $this->manager([$this->verdict('bob@example.invalid', false)]);
 
         self::assertSame(
             ['busy' => [['uid' => 'bob', 'displayName' => 'Roberto']], 'unverifiable' => [], 'failed' => false],
-            $this->run($manager, [self::BOB]),
+            $this->runCheck($manager, [self::BOB]),
         );
     }
 
     /** @return void */
     public function testMailtoPrefixAndCaseAreNormalised(): void {
-        $manager = $this->manager([$this->result('MAILTO:carla@EXAMPLE.invalid', false)]);
+        $manager = $this->manager([$this->verdict('MAILTO:carla@EXAMPLE.invalid', false)]);
 
-        $out = $this->run($manager, [self::CARLA]);
+        $out = $this->runCheck($manager, [self::CARLA]);
 
         self::assertSame([['uid' => 'carla', 'displayName' => 'Carla']], $out['busy']);
         self::assertSame([], $out['unverifiable']);
@@ -46,11 +46,11 @@ final class AvailabilityCheckTest extends TestCase {
     /** @return void */
     public function testAttendeeWithoutResultIsUnverifiableAndOrganizerIsIgnored(): void {
         $manager = $this->manager([
-            $this->result('alice@example.invalid', false),
-            $this->result('bob@example.invalid', true),
+            $this->verdict('alice@example.invalid', false),
+            $this->verdict('bob@example.invalid', true),
         ]);
 
-        $out = $this->run($manager, [self::BOB, self::CARLA]);
+        $out = $this->runCheck($manager, [self::BOB, self::CARLA]);
 
         self::assertSame([], $out['busy']);
         self::assertSame([['uid' => 'carla', 'displayName' => 'Carla']], $out['unverifiable']);
@@ -67,7 +67,7 @@ final class AvailabilityCheckTest extends TestCase {
                 && !str_contains($m, 'example.invalid')),
         );
 
-        $out = $this->run($manager, [self::BOB], 'alice', $logger);
+        $out = $this->runCheck($manager, [self::BOB], 'alice', $logger);
 
         self::assertSame(['busy' => [], 'unverifiable' => [], 'failed' => true], $out);
     }
@@ -77,7 +77,7 @@ final class AvailabilityCheckTest extends TestCase {
         $manager = $this->createMock(IManager::class);
         $manager->expects(self::never())->method('checkAvailability');
 
-        $out = $this->run($manager, [self::BOB], 'ghost');
+        $out = $this->runCheck($manager, [self::BOB], 'ghost');
 
         self::assertSame(['busy' => [], 'unverifiable' => [], 'failed' => true], $out);
     }
@@ -87,7 +87,7 @@ final class AvailabilityCheckTest extends TestCase {
         $manager = $this->createMock(IManager::class);
         $manager->expects(self::never())->method('checkAvailability');
 
-        self::assertSame(['busy' => [], 'unverifiable' => [], 'failed' => false], $this->run($manager, []));
+        self::assertSame(['busy' => [], 'unverifiable' => [], 'failed' => false], $this->runCheck($manager, []));
     }
 
     /** @return void */
@@ -113,7 +113,7 @@ final class AvailabilityCheckTest extends TestCase {
     }
 
     /** @return IAvailabilityResult */
-    private function result(string $email, bool $available): IAvailabilityResult {
+    private function verdict(string $email, bool $available): IAvailabilityResult {
         $r = $this->createMock(IAvailabilityResult::class);
         $r->method('getAttendeeEmail')->willReturn($email);
         $r->method('isAvailable')->willReturn($available);
@@ -133,7 +133,7 @@ final class AvailabilityCheckTest extends TestCase {
      * @param list<array{uid:string, email:string, displayName:string}> $attendees
      * @return array{busy: list<array{uid:string, displayName:string}>, unverifiable: list<array{uid:string, displayName:string}>, failed: bool}
      */
-    private function run(IManager $manager, array $attendees, string $organizer = 'alice', ?LoggerInterface $logger = null): array {
+    private function runCheck(IManager $manager, array $attendees, string $organizer = 'alice', ?LoggerInterface $logger = null): array {
         return $this->check($manager, $logger)->check(
             $organizer,
             new DateTimeImmutable('2026-10-05 10:00'),

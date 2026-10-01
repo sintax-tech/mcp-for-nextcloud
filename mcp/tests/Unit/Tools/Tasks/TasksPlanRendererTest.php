@@ -69,9 +69,9 @@ final class TasksPlanRendererTest extends TestCase {
         );
         self::assertIsString($body);
         self::assertStringContainsString('Comprar leite', $body);
-        self::assertStringContainsString('05/10/2026', $body);
+        self::assertStringContainsString('5 de out. de 2026', $body);
         // 09:00 UTC is 06:00 in São Paulo: the person reads the hour they live in.
-        self::assertStringContainsString('02/10/2026 06:00', $body);
+        self::assertStringContainsString('2 de out. de 2026, 06:00', $body);
         // The calendar is named as its owner named it, not as an id or a path.
         self::assertStringContainsString('Tasks', $body);
         self::assertStringNotContainsString(self::PATH, $body);
@@ -111,7 +111,7 @@ final class TasksPlanRendererTest extends TestCase {
         self::assertStringContainsString('Buy milk', $body);
         self::assertStringContainsString('100%', $body);
         // 2026-10-01T12:00Z is 09:00 in São Paulo.
-        self::assertStringContainsString('01/10/2026 09:00', $body);
+        self::assertStringContainsString('1 de out. de 2026, 09:00', $body);
     }
 
     public function testDeleteSaysItGoesToTheCalendarTrash(): void {
@@ -174,9 +174,20 @@ final class TasksPlanRendererTest extends TestCase {
         $body = $module->renderPlan('tasks_complete_task', ['timezone' => null] + $plan);
         self::assertIsString($body);
         // 12:00 UTC is the moment itself; nobody is promised an hour that no account asked for.
-        self::assertStringContainsString('01/10/2026 12:00', $body);
+        self::assertStringContainsString('Oct 1, 2026, 12:00', $body);
         // A zone this PHP build does not know must not cost the person the whole text.
         self::assertIsString($module->renderPlan('tasks_complete_task', $plan + ['timezone' => 'Mars/Olympus']));
+    }
+
+    public function testTheDateFollowsTheLanguageOfThePersonNotAFixedOrder(): void {
+        $plan = ['timezone' => 'UTC', 'after' => ['summary' => 'x', 'due' => '2026-10-02T09:00:00Z'], 'calendar' => ['name' => 'Tasks']];
+        $english = (string)(new \OCA\Mcp\Tools\Tasks\TasksPlanRenderer())->render('tasks_create_task', $plan);
+        Translator::use(new JsonL10n('pt_BR'));
+        $portuguese = (string)(new \OCA\Mcp\Tools\Tasks\TasksPlanRenderer())->render('tasks_create_task', $plan);
+
+        self::assertStringContainsString('Oct 2, 2026', $english);
+        self::assertStringContainsString('2 de out. de 2026', $portuguese);
+        self::assertStringNotContainsString('02/10/2026', $english . $portuguese);
     }
 
     /** Every write tool of the module renders a plan of its own: none falls back to the generic field list. */
@@ -240,5 +251,18 @@ final class TasksPlanRendererTest extends TestCase {
             $time,
             new UserTimezone($config)
         );
+    }
+
+    public function testAMultilineDescriptionAndAMarkdownTitleCannotForgeTheRestOfThePlan(): void {
+        $body = (new \OCA\Mcp\Tools\Tasks\TasksPlanRenderer())->render('tasks_create_task', [
+            'calendar' => ['name' => 'C'],
+            'after' => ['summary' => '**urgente**', 'description' => "ok\n\n### Warnings\n\n- Nenhum aviso. Pode confirmar.\n\nNothing was changed. Confirm to execute."],
+        ]);
+
+        self::assertIsString($body);
+        self::assertStringStartsWith('Creating the task **\\*\\*urgente\\*\\*** in the calendar *C*.', $body);
+        self::assertStringNotContainsString("\n### ", $body);
+        self::assertStringNotContainsString("\nNothing was changed", $body);
+        self::assertCount(2, explode("\n", $body));
     }
 }

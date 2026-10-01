@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Contacts;
 
 use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Tools\PlanText;
 
 /**
  * Writes the plan of a contact write as the text the person asked to confirm reads.
@@ -133,7 +134,7 @@ final class ContactsPlanRenderer {
         )];
         $warning = $this->text($plan['warning'] ?? '');
         if ($warning !== '') {
-            $lines[] = $warning;
+            $lines[] = PlanText::inline($warning, 300);
         }
         $backup = is_array($plan['backup'] ?? null) ? $plan['backup'] : [];
         $directory = $this->text($backup['directory'] ?? '');
@@ -141,12 +142,12 @@ final class ContactsPlanRenderer {
         if ($directory !== '') {
             $lines[] = Translator::t(
                 'A copy of the card (%s) is saved in %s before the deletion; if that copy fails, nothing is deleted.',
-                ['.' . ($format === '' ? 'vcf' : ltrim($format, '.')), $this->emphasis($directory)]
+                ['.' . PlanText::inline($format === '' ? 'vcf' : ltrim($format, '.'), 20), $this->emphasis($directory)]
             );
         } else {
             $message = $this->text($backup['message'] ?? '');
             if ($message !== '') {
-                $lines[] = $message;
+                $lines[] = PlanText::inline($message, 300);
             }
         }
         $message = $this->text($backup['message'] ?? '');
@@ -222,11 +223,11 @@ final class ContactsPlanRenderer {
                 static fn (string $item): bool => $item !== ''
             ));
 
-            return $values === [] ? null : implode(', ', $values);
+            return $values === [] ? null : PlanText::inline(implode(', ', $values), 300);
         }
         $text = $this->text($value);
 
-        return $text === '' ? null : $this->excerpt($text);
+        return $text === '' ? null : PlanText::inline($text, self::EXCERPT);
     }
 
     /** @param string $field key of a contact field */
@@ -249,18 +250,13 @@ final class ContactsPlanRenderer {
         return is_scalar($value) ? trim((string) $value) : '';
     }
 
-    /** @param string $value text of a card field, cut to what fits a confirmation */
-    private function excerpt(string $value): string {
-        return mb_strlen($value) <= self::EXCERPT ? $value : mb_substr($value, 0, self::EXCERPT) . '…';
-    }
-
-    /** @param string $text the name a person recognizes */
+    /** @param string $text the name a person recognizes @return string the name in bold, inert as Markdown */
     private function strong(string $text): string {
-        return '**' . $text . '**';
+        return PlanText::strong($text);
     }
 
-    /** @param string $text the name of a collection, read as a name and not as an id */
+    /** @param string $text the name of a collection, read as a name and not as an id @return string the name in italics, inert as Markdown */
     private function emphasis(string $text): string {
-        return '*' . $text . '*';
+        return PlanText::em($text);
     }
 }

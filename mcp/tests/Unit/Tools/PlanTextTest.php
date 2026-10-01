@@ -95,4 +95,17 @@ final class PlanTextTest extends TestCase {
         self::assertSame('> ' . str_repeat('a', 50) . '…', $out);
         self::assertSame('', PlanText::quote(" \n "));
     }
+
+    /** @return void */
+    public function testFlatOnlyCollapsesAndCutsForDataThatIsEscapedLater(): void {
+        self::assertSame("**x** [l] a b", PlanText::flat("**x** [l]\n\ta   b"));
+        self::assertSame('abc…', PlanText::flat('abcdef', 3));
+    }
+
+    /** @return void */
+    public function testCodeKeepsAValueExactlyAndCannotBeClosedFromInside(): void {
+        self::assertSame('`/calendars/alice/team/`', PlanText::code('/calendars/alice/team/'));
+        self::assertSame("`a'b *c* [d](e)`", PlanText::code("a`b\n*c* [d](e)"));
+        self::assertSame('', PlanText::code(" \n "));
+    }
 }

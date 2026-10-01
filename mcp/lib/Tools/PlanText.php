@@ -18,6 +18,30 @@ final class PlanText {
     private const SPECIAL = ['\\', '`', '*', '_', '[', ']', '<', '>', '#', '|', '~', '&'];
 
     /**
+     * One line of plain text, not escaped: for strings that travel as data and are escaped once, when a plan is rendered.
+     *
+     * @param string $text user, model or third-party text
+     * @param int $max characters kept; longer text ends with an ellipsis
+     * @return string the text on one line, without control characters
+     */
+    public static function flat(string $text, int $max = self::INLINE_MAX): string {
+        $clean = self::collapse($text);
+        return mb_strlen($clean) > $max ? rtrim(mb_substr($clean, 0, $max)) . '…' : $clean;
+    }
+
+    /**
+     * A value the model must repeat exactly (a path, an etag) as inline code: nothing inside is read as Markdown.
+     *
+     * @param string $text value to show
+     * @param int $max characters kept; a value is never cut silently, so callers pass a generous limit
+     * @return string the value in backticks, or an empty string when nothing is left of it
+     */
+    public static function code(string $text, int $max = 500): string {
+        $clean = str_replace('`', "'", self::flat($text, $max));
+        return $clean === '' ? '' : '`' . $clean . '`';
+    }
+
+    /**
      * One line of inert text: no line break survives, nothing is read as Markdown, HTML or a link.
      *
      * @param string $text user, model or third-party text
@@ -25,12 +49,9 @@ final class PlanText {
      * @return string text safe to put inside a line of the plan
      */
     public static function inline(string $text, int $max = self::INLINE_MAX): string {
-        $clean = trim(preg_replace('/[\p{Cc}\p{Zl}\p{Zp}\s]+/u', ' ', mb_scrub($text, 'UTF-8')) ?? '');
+        $clean = self::collapse($text);
         $cut = mb_strlen($clean) > $max;
-        if ($cut) {
-            $clean = rtrim(mb_substr($clean, 0, $max));
-        }
-        return self::escape($clean) . ($cut ? '…' : '');
+        return self::escape($cut ? rtrim(mb_substr($clean, 0, $max)) : $clean) . ($cut ? '…' : '');
     }
 
     /**
@@ -71,13 +92,21 @@ final class PlanText {
         }
         $lines = [];
         foreach (explode("\n", $text) as $line) {
-            $line = trim(preg_replace('/[\p{Cc}\p{Zl}\p{Zp}\s]+/u', ' ', $line) ?? '');
+            $line = self::collapse($line);
             $lines[] = rtrim('> ' . self::escape($line));
         }
         if ($cut) {
             $lines[count($lines) - 1] .= '…';
         }
         return implode("\n", $lines);
+    }
+
+    /**
+     * @param string $text any text, possibly with invalid UTF-8
+     * @return string the text on one line: every run of line breaks, tabs, spaces and control characters is one space
+     */
+    private static function collapse(string $text): string {
+        return trim(preg_replace('/[\p{Cc}\p{Zl}\p{Zp}\s]+/u', ' ', mb_scrub($text, 'UTF-8')) ?? '');
     }
 
     /**

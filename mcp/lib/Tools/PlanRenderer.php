@@ -11,6 +11,10 @@ final class PlanRenderer {
     private const ENVELOPE_KEYS = ['tool', 'title', 'requiresConfirmation', 'message', 'action', 'etag', 'warnings', 'sharedCalendars', 'suggestedCalendar'];
     /** Text writes show their size rather than disclosing complete contents through a diff or snippet. */
     private const CONTENT_KEYS = ['content', 'old', 'new', 'diff'];
+    /** Longest generic value shown to the person. */
+    private const TEXT_MAX = 300;
+    /** Longest instruction for the model; it is server text, so it is cut only against abuse. */
+    private const INSTRUCTION_MAX = 2000;
 
     /**
      * Module renderer failures must never prevent a person from seeing the generic confirmation plan.
@@ -31,7 +35,10 @@ final class PlanRenderer {
         }
         $parts = [];
         if (isset($plan['title']) && is_scalar($plan['title'])) {
-            $parts[] = '**' . self::text($plan['title']) . '**';
+            $title = PlanText::strong(self::scalar($plan['title']), self::TEXT_MAX);
+            if ($title !== '') {
+                $parts[] = $title;
+            }
         }
         $body ??= self::fields($plan, $tool);
         if ($body !== '') {
@@ -60,7 +67,10 @@ final class PlanRenderer {
             $parts[] = '### ' . Translator::t('Calendars shared with participants') . "\n\n" . implode("\n", $calendars);
         }
         if (is_array($plan['suggestedCalendar'] ?? null) && isset($plan['suggestedCalendar']['name'])) {
-            $parts[] = Translator::t('Suggestion: use %s', ['*' . self::text($plan['suggestedCalendar']['name']) . '*']);
+            $suggestion = PlanText::em(self::scalar($plan['suggestedCalendar']['name']), self::TEXT_MAX);
+            if ($suggestion !== '') {
+                $parts[] = Translator::t('Suggestion: use %s', [$suggestion]);
+            }
         }
         $footer = Translator::t('Nothing was changed. Confirm to execute.');
         if (isset($plan['message']) && is_scalar($plan['message']) && $plan['message'] !== '') {
@@ -73,11 +83,53 @@ final class PlanRenderer {
                 $instruction = trim(substr($instruction, strlen($firstSentence)));
             }
             if ($instruction !== '') {
-                $footer .= "\n\n*" . self::text($instruction, false) . '*';
+                $footer .= "\n\n" . PlanText::em($instruction, self::INSTRUCTION_MAX);
             }
+        }
+        $repeat = self::repeatData($plan);
+        if ($repeat !== '') {
+            $footer .= "\n\n" . $repeat;
         }
         $parts[] = $footer;
         return implode("\n\n", $parts);
+    }
+
+    /**
+     * What a client that shows only this text still needs to repeat the call: the etag of the plan and the calendars
+     * it can use. The person sees names; the exact values appear here, in the line meant for the model.
+     *
+     * @param array<string, mixed> $plan complete structured plan
+     * @return string one italic line with the values in inline code, or an empty string when there is nothing to add
+     */
+    private static function repeatData(array $plan): string {
+        $sentences = [];
+        $etag = isset($plan['etag']) && is_scalar($plan['etag']) ? PlanText::code((string)$plan['etag']) : '';
+        if ($etag !== '') {
+            $sentences[] = Translator::t('To confirm, repeat the call with etag %s.', [$etag]);
+        }
+        $candidates = [];
+        foreach ((array)($plan['sharedCalendars'] ?? []) as $calendar) {
+            $candidates[] = $calendar;
+        }
+        if ($candidates === [] && is_array($plan['suggestedCalendar'] ?? null)) {
+            $candidates[] = $plan['suggestedCalendar'];
+        }
+        $options = [];
+        foreach ($candidates as $calendar) {
+            if (!is_array($calendar) || !isset($calendar['path']) || !is_scalar($calendar['path'])) {
+                continue;
+            }
+            $path = PlanText::code((string)$calendar['path']);
+            if ($path === '') {
+                continue;
+            }
+            $name = isset($calendar['name']) && is_scalar($calendar['name']) ? PlanText::inline((string)$calendar['name'], 80) : '';
+            $options[] = $name === '' ? $path : $path . ' (' . $name . ')';
+        }
+        if ($options !== []) {
+            $sentences[] = Translator::t('To use another calendar, repeat the call with calendar %s.', [implode(', ', $options)]);
+        }
+        return $sentences === [] ? '' : '*' . implode(' ', $sentences) . '*';
     }
 
     /**
@@ -133,13 +185,9 @@ final class PlanRenderer {
         return is_scalar($value) ? (string)$value : '';
     }
 
-    /** @param mixed $value plan text @param bool $truncate bound generic values @return string inert Markdown text */
-    private static function text(mixed $value, bool $truncate = true): string {
-        $text = preg_replace('/\s+/u', ' ', self::scalar($value)) ?? '';
-        if ($truncate && mb_strlen($text) > 300) {
-            $text = mb_substr($text, 0, 300) . '...';
-        }
-        return str_replace(['\\', '*', '_', '`', '[', ']', '<', '>', '#', '|'], ['\\\\', '\\*', '\\_', '\\`', '\\[', '\\]', '&lt;', '&gt;', '\\#', '\\|'], $text);
+    /** @param mixed $value plan text @return string inert Markdown text of at most 300 characters */
+    private static function text(mixed $value): string {
+        return PlanText::inline(self::scalar($value), self::TEXT_MAX);
     }
 
     /** @param string $key plan key @return string translated known label or humanized unknown key */

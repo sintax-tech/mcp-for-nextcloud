@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Calendar;
 
 use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Tools\PlanText;
 
 /**
  * Every user-facing string of the calendar write path, in one place.
@@ -301,7 +302,7 @@ final class CalendarMessages {
      * @return string translated collision warning
      */
     public static function collisionWith(string $summary, string $when): string {
-        return Translator::t('Overlaps %s (%s)', [$summary, $when]);
+        return Translator::t('Overlaps %s (%s)', [PlanText::flat($summary, 120), $when]);
     }
 
     /**
@@ -325,7 +326,7 @@ final class CalendarMessages {
      * @return string translated busy warning
      */
     public static function attendeeBusy(string $name): string {
-        return Translator::t('%s is busy at this time.', [$name]);
+        return Translator::t('%s is busy at this time.', [PlanText::flat($name, 80)]);
     }
 
     /**
@@ -333,7 +334,7 @@ final class CalendarMessages {
      * @return string translated warning
      */
     public static function attendeeUnverifiable(string $name): string {
-        return Translator::t('Could not check the availability of %s.', [$name]);
+        return Translator::t('Could not check the availability of %s.', [PlanText::flat($name, 80)]);
     }
 
     /** @return string translated warning for a failed availability lookup */
@@ -349,9 +350,9 @@ final class CalendarMessages {
      * @return string translated warning, with the suggestion or the instruction to ask
      */
     public static function calendarNotShared(string $calendar, string $names, ?string $suggested, bool $ask): string {
-        $text = Translator::t('The calendar %s is not shared with %s.', [$calendar, $names]);
+        $text = Translator::t('The calendar %s is not shared with %s.', [PlanText::flat($calendar, 80), PlanText::flat($names, 200)]);
         if ($suggested !== null) {
-            return $text . ' ' . Translator::t('Suggested: %s.', [$suggested]);
+            return $text . ' ' . Translator::t('Suggested: %s.', [PlanText::flat($suggested, 80)]);
         }
         return $ask ? $text . ' ' . Translator::t('Ask the user which calendar to use.') : $text;
     }

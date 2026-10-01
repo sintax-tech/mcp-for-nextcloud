@@ -37,10 +37,10 @@ final class PlanRendererTest extends TestCase {
             'description' => str_repeat('x', 301),
         ]);
         self::assertStringStartsWith('**My plan**', $text);
-        foreach (['Destination: /Archive', 'Recoverable: yes', 'Enabled: no', 'Tags: a, b, 3, no', 'Count: 0', 'Custom field:', '  - Child:', '    - Leaf:', str_repeat('x', 300) . '...', '*Original instruction.*'] as $part) {
+        foreach (['Destination: /Archive', 'Recoverable: yes', 'Enabled: no', 'Tags: a, b, 3, no', 'Count: 0', 'Custom field:', '  - Child:', '    - Leaf:', str_repeat('x', 300) . '…', '*Original instruction.*'] as $part) {
             self::assertStringContainsString($part, $text);
         }
-        foreach (['secret-action', 'secret-etag', 'fake_write', 'Empty:', 'Nothing:', 'deep-secret', str_repeat('x', 301)] as $part) {
+        foreach (['secret-action', 'fake_write', 'Empty:', 'Nothing:', 'deep-secret', str_repeat('x', 301)] as $part) {
             self::assertStringNotContainsString($part, $text);
         }
     }
@@ -55,9 +55,10 @@ final class PlanRendererTest extends TestCase {
         foreach (['Corpo específico.', '### Avisos', '- Há conflito.', '### Calendários compartilhados com os participantes', "- Equipe, de Roberto Almeida\n- Trabalho\n", 'Sugestão: usar *Equipe*', 'Nada foi alterado. Confirme para executar.'] as $part) {
             self::assertStringContainsString($part, $text);
         }
-        // The DAV path is for the model (structured content), never for the person.
-        self::assertStringNotContainsString('/cal/', $text);
-        self::assertStringNotContainsString('/cal/team', $text);
+        // The DAV path is for the model: it never appears among the lines the person reads, only in the last line.
+        [$person, $model] = explode('Nada foi alterado. Confirme para executar.', $text, 2);
+        self::assertStringNotContainsString('/cal/', $person);
+        self::assertStringContainsString('Para usar outro calendário, repita a chamada com calendar `/cal/team` (Equipe), `/cal/work` (Trabalho).', $model);
     }
 
     public function testSharedCalendarsInSpanishNameTheOwnerOnlyWhenThereIsOne(): void {
@@ -66,7 +67,9 @@ final class PlanRendererTest extends TestCase {
             'sharedCalendars' => [['path' => '/cal/team', 'name' => 'Equipo', 'owner' => 'Roberto'], ['path' => '/cal/work', 'name' => 'Trabajo']],
         ]);
         self::assertStringContainsString("- Equipo, de Roberto\n- Trabajo", $text);
-        self::assertStringNotContainsString('/cal/', $text);
+        [$person, $model] = explode('No se cambió nada. Confirme para ejecutar.', $text, 2);
+        self::assertStringNotContainsString('/cal/', $person);
+        self::assertStringContainsString('Para usar otro calendario, repita la llamada con calendar `/cal/team` (Equipo), `/cal/work` (Trabajo).', $model);
     }
 
     public function testModuleBodyAndExceptionFallback(): void {
@@ -120,7 +123,7 @@ final class PlanRendererTest extends TestCase {
     public function testPlainModuleUsesGenericBodyAndUnicodeIsCutAtCharacters(): void {
         $module = $this->createMock(ToolModule::class);
         $text = PlanRenderer::render($module, 'fake', ['description' => str_repeat('á', 301), 'arguments' => ['path' => '/file.md']]);
-        self::assertStringContainsString(str_repeat('á', 300) . '...', $text);
+        self::assertStringContainsString(str_repeat('á', 300) . '…', $text);
         self::assertStringNotContainsString(str_repeat('á', 301), $text);
         self::assertStringContainsString('  - Path: /file.md', $text);
         self::assertStringNotContainsString('###', $text);
@@ -143,5 +146,48 @@ final class PlanRendererTest extends TestCase {
         self::assertStringContainsString('**\\*title\\***', $text);
         self::assertStringNotContainsString("\n### forged", $text);
         self::assertStringContainsString('*\\*instruction\\**', $text);
+    }
+
+    public function testTheModelLineCarriesTheEtagAndTheCandidatesWhenTheClientShowsOnlyText(): void {
+        $text = PlanRenderer::render($this->module(), 'calendar_create_event', [
+            'etag' => '"abc123"', 'message' => 'Show this draft to the user.',
+            'sharedCalendars' => [['path' => '/cal/team/', 'name' => 'Equipe', 'owner' => 'Roberto'], ['path' => '/cal/work/', 'name' => 'Trabalho']],
+            'suggestedCalendar' => ['path' => '/cal/team/', 'name' => 'Equipe'],
+        ]);
+
+        self::assertStringEndsWith(
+            "*To confirm, repeat the call with etag `\"abc123\"`. To use another calendar, repeat the call with calendar `/cal/team/` (Equipe), `/cal/work/` (Trabalho).*",
+            $text
+        );
+        self::assertSame(1, substr_count($text, 'abc123'));
+    }
+
+    public function testTheModelLineUsesTheSuggestionWhenThereAreNoSharedCalendarsAndIsAbsentWithoutData(): void {
+        $text = PlanRenderer::render($this->module(), 'fake', ['suggestedCalendar' => ['path' => '/cal/team/', 'name' => 'Equipe']]);
+        self::assertStringEndsWith('repeat the call with calendar `/cal/team/` (Equipe).*', $text);
+        self::assertStringEndsWith('Nothing was changed. Confirm to execute.', PlanRenderer::render($this->module(), 'fake', ['path' => '/x']));
+    }
+
+    public function testTheModelLineCannotBeBrokenByTheValues(): void {
+        $text = PlanRenderer::render($this->module(), 'fake', [
+            'etag' => "a`b\n### Warnings",
+            'sharedCalendars' => [['path' => "/cal/`x`\n*", 'name' => "**n**\n# h"]],
+        ]);
+
+        self::assertStringNotContainsString("\n### ", $text);
+        self::assertStringContainsString("etag `a'b ### Warnings`", $text);
+        self::assertStringContainsString("`/cal/'x' *` (\\*\\*n\\*\\* \\# h)", $text);
+    }
+
+    public function testHostileTitleNamesAndWarningsStayInert(): void {
+        $text = PlanRenderer::render($this->module(), 'fake', [
+            'title' => '[l](javascript:alert(1))',
+            'warnings' => [['type' => 'collision', 'message' => "Overlaps **x**\n### Forged <b>y</b> https://evil.example/p"]],
+        ]);
+
+        self::assertStringNotContainsString('](javascript:', $text);
+        self::assertStringNotContainsString("\n### Forged", $text);
+        self::assertStringNotContainsString('<b>', $text);
+        self::assertStringNotContainsString('https://', $text);
     }
 }

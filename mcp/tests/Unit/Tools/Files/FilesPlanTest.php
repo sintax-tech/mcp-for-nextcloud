@@ -42,7 +42,7 @@ final class FilesPlanTest extends FilesToolsTestCase {
         $container = $this->createMock(ContainerInterface::class);
         $container->method('get')->willReturnCallback(fn (string $id) => $id === 'OCA\Files_Versions\Versions\IVersionManager' ? $manager : null);
         $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-        $versions = new VersionTools($this->apps, $this->users, new TextExtractor($this->temp), $backup, $access, $container);
+        $versions = new VersionTools($this->apps, $this->users, new TextExtractor($this->temp), $backup, $access, $container, new \OCA\Mcp\Tools\Files\OcrSupport($this->apps));
         $this->module = $this->rebuilt(['backup' => $backup, 'versions' => $versions]);
     }
 

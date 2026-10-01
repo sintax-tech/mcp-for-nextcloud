@@ -20,6 +20,7 @@ use OCA\Mcp\Tools\Files\MoveReport;
 use OCA\Mcp\Tools\Files\Reorganization;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\FilesModule;
+use OCA\Mcp\Tools\Files\OcrSupport;
 use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Files\VersionTools;
 use OCA\Mcp\Tools\Common\CommonMessages;
@@ -68,7 +69,7 @@ final class FilesModuleTest extends TestCase {
         $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturnCallback(fn (string $route, array $args = []) => 'https://cloud.test/apps/mcp/' . ($args['token'] ?? ''));
-        $versions = new VersionTools($apps, $users, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $access, $this->createMock(\Psr\Container\ContainerInterface::class));
+        $versions = new VersionTools($apps, $users, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $access, $this->createMock(\Psr\Container\ContainerInterface::class), new OcrSupport($apps));
         $report = new MoveReport($this->createMock(\Psr\Container\ContainerInterface::class), $this->tree->shareManager(), $apps);
         $reorganization = new Reorganization($access, new SharedWriteGuard($access), $report, $users);
         $planner = new MovePlanner($reorganization, $access, new SharedWriteGuard($access));
@@ -87,7 +88,7 @@ final class FilesModuleTest extends TestCase {
         $this->module = new FilesModule($root, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $users, $db,
             $access, new SharedWriteGuard($access),
             new CheckoutService($urls, $appConfig, $time, new TokenHasher($appConfig), $this->createMock(CheckoutTokenStore::class), $apps, $users),
-            $versions, $reorganization, $planner, $store, $time, $imageTools);
+            $versions, $reorganization, $planner, $store, $time, $imageTools, new OcrSupport($apps));
         $this->versions = $versions;
     }
 
@@ -221,8 +222,8 @@ final class FilesModuleTest extends TestCase {
 
     public function testReadRejectsFoldersAndBinaries(): void {
         $this->assertSame(FilesMessages::notAFile(), $this->failure('files_read', ['path' => '/Documentos']));
-        $this->tree->addFile('/alice/files/foto.jpg', "\xFF\xD8", 'image/jpeg');
-        $this->assertSame(FilesMessages::unsupportedFormat(), $this->failure('files_read', ['path' => '/foto.jpg']));
+        $this->tree->addFile('/alice/files/dados.bin', "\x00\x01", 'application/octet-stream');
+        $this->assertSame(FilesMessages::unsupportedFormat(), $this->failure('files_read', ['path' => '/dados.bin']));
     }
 
     public function testEditBacksUpThenWrites(): void {

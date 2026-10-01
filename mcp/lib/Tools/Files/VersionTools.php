@@ -40,6 +40,7 @@ final class VersionTools {
         private FileBackup $backup,
         private NodeAccessInfo $access,
         private ContainerInterface $container,
+        private OcrSupport $ocr,
     ) {}
 
     /**
@@ -77,7 +78,7 @@ final class VersionTools {
      * @param string $path normalized user-relative path of $file
      * @param string $revision version identifier as returned by list()
      * @param string $viewerUid authenticated user
-     * @return array{path:string, version:string, size:int, mime:string, text:string, truncated:bool}
+     * @return array{path:string, version:string, size:int, mime:string, text:string, truncated:bool, text_layer?:bool, ocr_active?:bool, notice?:string}
      * @throws ToolFailure when versioning is off, the version does not exist or cannot be read
      */
     public function read(File $file, string $path, string $revision, string $viewerUid): array {
@@ -96,7 +97,14 @@ final class VersionTools {
             throw new ToolFailure(FilesMessages::readTooLarge(TextExtractor::MAX_BYTES));
         }
         $mime = $version->getMimeType();
-        $text = $this->extractor->extractBytes($bytes, $version->getSourceFileName() ?: $path, $mime);
+        $name = $version->getSourceFileName() ?: $path;
+        $scannable = OcrSupport::canLackText($name, $mime);
+        $text = $scannable && str_starts_with(strtolower($mime), 'image/') ? '' : $this->extractor->extractBytes($bytes, $name, $mime);
+        if ($scannable && trim($text) === '') {
+            $notice = $this->ocr->noTextNotice();
+            return ['path' => $path, 'version' => $revision, 'size' => strlen($bytes), 'mime' => $mime, 'text' => $notice,
+                'truncated' => false, 'text_layer' => false, 'ocr_active' => $this->ocr->isActive(), 'notice' => $notice];
+        }
         return [
             'path' => $path,
             'version' => $revision,

@@ -2,7 +2,7 @@
 /**
  * Admin section: endpoint, service switch and the users × permissions matrix rendered by js/admin-grants.js.
  *
- * @var array{endpoint:string, serviceEnabled:bool} $_
+ * @var array{endpoint:string, serviceEnabled:bool, ocrActive:bool, ocrUrl:string} $_
  * @var \OCP\IL10N $l
  */
 \OCP\Util::addScript('mcp', 'admin-grants');
@@ -20,6 +20,17 @@
         <span class="mcp-status" id="mcp-service-status" aria-live="polite"></span>
     </p>
     <p class="mcp-hint"><?php p($l->t('Users need “Can connect” and must activate the connection in their personal settings. Read permissions start allowed; write, delete and transfer start denied. Nextcloud permissions and shares still apply.')); ?></p>
+
+    <h3><?php p($l->t('OCR')); ?></h3>
+    <?php if ($_['ocrActive']) { ?>
+        <p class="mcp-ocr" id="mcp-ocr" data-active="1"><?php p($l->t('Workflow OCR is active. PDFs it processes gain a text layer that files_read can read.')); ?></p>
+    <?php } else { ?>
+        <p class="mcp-ocr mcp-hint" id="mcp-ocr" data-active="0">
+            <?php p($l->t('Workflow OCR is not active. Scanned PDFs and images have no text for the AI; it is told to ask you or to view the page as an image.')); ?>
+            <a href="<?php p($_['ocrUrl']); ?>" target="_blank" rel="noopener noreferrer"><?php p($l->t('Get Workflow OCR in the App Store')); ?></a>.
+            <?php p($l->t('It needs ocrmypdf installed on the server. Nothing else in MCP depends on it.')); ?>
+        </p>
+    <?php } ?>
 
     <div class="mcp-toolbar">
         <input type="search" id="mcp-search" placeholder="<?php p($l->t('Search user (name, user ID or e-mail)')); ?>" aria-label="<?php p($l->t('Search user')); ?>">

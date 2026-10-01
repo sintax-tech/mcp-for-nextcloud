@@ -19,6 +19,7 @@ use OCA\Mcp\Tools\Files\MovePlanner;
 use OCA\Mcp\Tools\Files\MoveReport;
 use OCA\Mcp\Tools\Files\Reorganization;
 use OCA\Mcp\Tools\Files\FilesModule;
+use OCA\Mcp\Tools\Files\OcrSupport;
 use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Files\VersionTools;
 use OCA\Mcp\Tools\ToolFailure;
@@ -44,6 +45,8 @@ abstract class FilesToolsTestCase extends TestCase {
     protected FakeTree $tree;
     protected InMemoryCheckoutTokenStore $store;
     protected IAppManager $apps;
+    /** Whether the Workflow OCR app counts as enabled. */
+    protected bool $ocrActive = false;
     protected IUserManager $users;
     protected IUser $user;
     protected ITimeFactory $time;
@@ -78,6 +81,7 @@ abstract class FilesToolsTestCase extends TestCase {
         $this->apps->method('isEnabledForUser')->willReturnCallback(function (string $app) use (&$enabled): bool {
             return in_array($app, $enabled, true);
         });
+        $this->apps->method('isEnabledForAnyone')->willReturnCallback(fn (string $app): bool => $this->ocrActive && $app === 'workflow_ocr');
         $this->user = $this->createMock(IUser::class);
         $this->user->method('getUID')->willReturn('alice');
         $this->users = $this->createMock(IUserManager::class);
@@ -122,12 +126,13 @@ abstract class FilesToolsTestCase extends TestCase {
             $access,
             new SharedWriteGuard($access),
             new CheckoutService($urls, $config, $this->time, new TokenHasher($config), $this->store, $this->apps, $this->users),
-            new VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class)),
+            new VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class), new OcrSupport($this->apps)),
             new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users),
             new MovePlanner(new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users), $access, new SharedWriteGuard($access)),
             $this->batches,
             $this->time,
             $imageTools,
+            new OcrSupport($this->apps),
         );
     }
 

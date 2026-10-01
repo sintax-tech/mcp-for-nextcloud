@@ -62,6 +62,7 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
         private BatchStore $batches,
         private ITimeFactory $time,
         private ImageTools $images,
+        private OcrSupport $ocr,
     ) {}
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app?:string}> */
@@ -220,6 +221,10 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
             'files_edit, files_replace and files_checkout need versioning on (files_versions) and copy the file to '
                 . '"/' . self::BACKUP_FOLDER . '" before writing. files_checkout hands out short-lived links for local '
                 . 'tools instead of passing the content through the model.',
+            'files_read and files_version_read of a PDF or image with no text return text_layer: false and a notice '
+                . 'instead of an error: the file is a scan. If the Workflow OCR app is active it recognises the text in '
+                . 'the background (by the administrator\'s rule) and writes it into the PDF as a new version, so read '
+                . 'again later; otherwise view the page as an image with the image tools.',
             'There is no delete: files_undo_batch is the way back from files_move_batch, and files_version_restore '
                 . 'restores content as a new version.',
         ];
@@ -502,11 +507,18 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     private function read(Folder $root, string $userId, string $path): array {
         $path = PathGuard::normalize($path);
         $file = $this->file($root, $path);
-        $text = $this->extractor->extract($file);
+        $meta = ['path' => $path, 'etag' => (string)$file->getEtag(), 'size' => (int)$file->getSize(),
+            'mime' => (string)$file->getMimetype(), 'access' => $this->accessInfo->describe($file, $userId)];
+        $scannable = OcrSupport::canLackText($file->getName(), (string)$file->getMimetype());
+        $isImage = $scannable && str_starts_with(strtolower((string)$file->getMimetype()), 'image/');
+        $text = $isImage ? '' : $this->extractor->extract($file);
+        if ($scannable && trim($text) === '') {
+            $notice = $this->ocr->noTextNotice();
+            return $this->text($notice, $meta + ['text_layer' => false, 'ocr_active' => $this->ocr->isActive(), 'notice' => $notice]);
+        }
         return $this->text(
             mb_strlen($text) > self::MAX_CHARS ? mb_substr($text, 0, self::MAX_CHARS) . "\n\n" . FilesMessages::textTruncated() : $text,
-            ['path' => $path, 'etag' => (string)$file->getEtag(), 'size' => (int)$file->getSize(),
-                'mime' => (string)$file->getMimetype(), 'access' => $this->accessInfo->describe($file, $userId)],
+            $meta,
         );
     }
 

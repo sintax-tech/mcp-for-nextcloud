@@ -350,10 +350,7 @@ class FilesModule implements ToolModule, PreviewsWrites {
         $file = $this->file($root, $path);
         $shared = $this->guard->guard($file, $userId, $path, false);
         // The same refusal the mint gives, so the plan cannot promise links the upload would not honour.
-        $user = $this->userManager->get($userId);
-        if ($user === null || !$this->appManager->isEnabledForUser(CheckoutService::VERSIONS_APP, $user)) {
-            throw new ToolFailure(FilesMessages::versionsOff());
-        }
+        $this->checkout->assertAvailable($userId);
         return [
             'action' => 'files_checkout',
             'path' => $path,

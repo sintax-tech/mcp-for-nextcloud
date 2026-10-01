@@ -62,12 +62,7 @@ final class CheckoutService {
      * @throws \OCA\Mcp\Tools\ToolFailure when versioning is off, which the upload would refuse later
      */
     public function issue(string $userId, File $file, string $path, array $access, bool $confirmed): array {
-        // The upload always takes a backup, so a checkout without files_versions would hand out two links
-        // that cannot work. Better to say so now, with both links still unused.
-        $user = $this->userManager->get($userId);
-        if ($user === null || !$this->appManager->isEnabledForUser(self::VERSIONS_APP, $user)) {
-            throw new ToolFailure(FilesMessages::versionsOff());
-        }
+        $this->assertAvailable($userId);
         $now = $this->time->getTime();
         [$downloadToken, $uploadToken] = [$this->mint(CheckoutToken::KIND_DOWNLOAD), $this->mint(CheckoutToken::KIND_UPLOAD)];
         $row = [
@@ -100,6 +95,22 @@ final class CheckoutService {
             'upload_url' => $this->url(CheckoutToken::KIND_UPLOAD, $uploadToken),
             'expires_at' => gmdate('Y-m-d\TH:i:s\Z', $now + self::UPLOAD_TTL),
         ];
+    }
+
+    /**
+     * Refuses a checkout whose upload could never be honoured, without minting anything.
+     *
+     * The upload always takes a backup, so a checkout without files_versions would hand out two links
+     * that cannot work. The plan and the mint ask the same question here, so both say so the same way.
+     *
+     * @param string $userId authenticated user
+     * @throws ToolFailure when versioning is off for this account
+     */
+    public function assertAvailable(string $userId): void {
+        $user = $this->userManager->get($userId);
+        if ($user === null || !$this->appManager->isEnabledForUser(self::VERSIONS_APP, $user)) {
+            throw new ToolFailure(FilesMessages::versionsOff());
+        }
     }
 
     /**

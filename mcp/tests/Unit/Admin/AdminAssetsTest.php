@@ -20,6 +20,23 @@ final class AdminAssetsTest extends TestCase {
         $this->assertFileDoesNotExist($app . '/lib/Controller/UsersController.php');
     }
 
+    /**
+     * Every element id the admin script looks up appears exactly once, and the div tags balance, so
+     * getElementById() never binds to a stray copy of a section (the hidden-tags block was once merged in three times).
+     */
+    public function testAdminTemplateHasUniqueIdsAndBalancedDivs(): void {
+        $app = dirname(__DIR__, 3);
+        $template = (string)file_get_contents($app . '/templates/admin.php');
+        $script = (string)file_get_contents($app . '/js/admin-grants.js');
+        preg_match_all("/getElementById\\('([^']+)'\\)/", $script, $used);
+        $this->assertNotEmpty($used[1]);
+        foreach (array_unique($used[1]) as $id) {
+            $this->assertSame(1, substr_count($template, 'id="' . $id . '"'), "id $id must appear exactly once");
+        }
+        $this->assertSame(1, substr_count($template, "t('Hidden files & tags')"));
+        $this->assertSame(preg_match_all('/<div\b/', $template), preg_match_all('/<\/div>/', $template), 'div tags must balance');
+    }
+
     public function testRoutesDropTheOldAdminFormsAndKeepOAuth(): void {
         $routes = array_column((require dirname(__DIR__, 3) . '/appinfo/routes.php')['routes'], 'name');
         foreach (['settings#global', 'settings#user', 'users#index'] as $gone) {

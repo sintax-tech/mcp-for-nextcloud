@@ -25,7 +25,7 @@ final class DeckMessages {
 	public const TOOL_CREATE_CARD_DESCRIPTION
 		= 'Creates a Deck card at the end of a list (stack), owned by you. Optional assignees are account IDs with access to the board; use users_search to resolve IDs. If assignment fails after creation, the created card is returned with a warning.';
 	public const TOOL_EDIT_CARD_DESCRIPTION
-		= 'Edits the title, description and due date of a Deck card. Use lastModified to avoid overwriting a concurrent edit.';
+		= 'Edits the title, description, due date and assignees of a Deck card. Use assign and unassign (lists of account IDs; use users_search to resolve IDs) to change who is responsible for it. Use lastModified to avoid overwriting a concurrent edit. If an assignment fails midway, the result lists what was assigned, unassigned and failed; nothing is undone.';
 	public const TOOL_MOVE_CARD_DESCRIPTION
 		= 'Moves a Deck card to another list (stack), including one on another board. Without order, the card goes to the end.';
 	public const TOOL_DELETE_CARD_DESCRIPTION
@@ -39,6 +39,8 @@ final class DeckMessages {
 	public const PARAM_CARD_ID = 'Id of the Deck card.';
 	public const PARAM_STATUS = 'Status filter: overdue (due before today), open, done or all. Default: overdue.';
 	public const PARAM_ASSIGNEES = 'Optional list of account IDs to assign (maximum 100). Each account must exist and have access to the board. Omit or send an empty list to create without explicit assignments.';
+	public const PARAM_ASSIGN = 'Optional list of account IDs to assign to the card (maximum 100). Each account must exist and have access to the board. An account already assigned is ignored with a warning. Cannot share an account with unassign.';
+	public const PARAM_UNASSIGN = 'Optional list of account IDs to remove from the card (maximum 100). An account that is not assigned today is ignored with a warning. Cannot share an account with assign.';
 	public const PARAM_ASSIGNEE = 'UID of the assignee (if you are not sure of someone\'s ID, call users_search first); returns only the cards assigned to that person.';
 	public const PARAM_DUE_BEFORE = 'Returns only cards due on or before this date, in YYYY-MM-DD format.';
 	public const PARAM_TITLE = 'Card title.';
@@ -103,7 +105,7 @@ final class DeckMessages {
 	 * @return string The message in the language of the current user.
 	 */
 	public static function errorNoFieldToEdit(): string {
-		return Translator::t('Provide at least one field to edit: title, description or duedate.');
+		return Translator::t('Provide at least one field to edit: title, description, duedate, assign or unassign.');
 	}
 
 	/**
@@ -178,7 +180,7 @@ final class DeckMessages {
 	 * @return string The message in the language of the current user.
 	 */
 	public static function planCreate(): string {
-		return Translator::t('Nothing was changed. After your approval a new card is created at the end of the list below, and you are set as its owner.');
+		return Translator::t('Nothing was changed. After your approval a new card is created at the end of the list below, owned by you. You are not assigned to it unless listed below.');
 	}
 
 	/**

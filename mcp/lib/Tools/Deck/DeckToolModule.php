@@ -92,7 +92,9 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 				. 'with confirm_shared: true. The refusal is a normal result that says what is missing, not an error.',
 			'The caller owns a created card. Explicit assignments are checked before creation and shown in the plan. '
 				. 'Assignment changes during creation can produce a created card with warnings; read it before retrying in Deck. '
-				. 'Editing assignees is not supported by deck_edit_card.',
+				. 'deck_edit_card changes assignees with assign and unassign (lists of account IDs, at most 100 each); '
+				. 'an account cannot be in both, accounts are checked before anything is written, and a failure midway '
+				. 'leaves the result listing assigned, unassigned and failed.',
 			'duedate is a plain day (Y-m-d) and is read in the timezone of the account; a card description is capped '
 				. 'at ' . CardInput::MAX_DESCRIPTION_LENGTH . ' characters and a title at 255.',
 			'deck_move_card only changes the position inside the list of the card; moving it to another list or another '
@@ -164,7 +166,7 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 						'title' => $this->string(DeckMessages::PARAM_TITLE, 1, 255),
 						'description' => $this->string(DeckMessages::PARAM_DESCRIPTION, 0, null, ''),
 						'duedate' => $this->nullableString(DeckMessages::PARAM_DUEDATE, null),
-						'assignees' => ['type' => 'array', 'maxItems' => 100, 'items' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 255], 'description' => DeckMessages::PARAM_ASSIGNEES],
+						'assignees' => $this->accountList(DeckMessages::PARAM_ASSIGNEES),
 						'confirm_shared' => $this->confirmShared(),
 					],
 					['stackId', 'title'],
@@ -184,6 +186,8 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 						'title' => $this->string(DeckMessages::PARAM_TITLE, 1, 255),
 						'description' => $this->string(DeckMessages::PARAM_DESCRIPTION, 0),
 						'duedate' => $this->nullableString(DeckMessages::PARAM_DUEDATE),
+						'assign' => $this->accountList(DeckMessages::PARAM_ASSIGN),
+						'unassign' => $this->accountList(DeckMessages::PARAM_UNASSIGN),
 						'lastModified' => $this->integer(DeckMessages::PARAM_LAST_MODIFIED, 0),
 						'confirm_shared' => $this->confirmShared(),
 					],
@@ -356,13 +360,15 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	}
 
 	/**
-	 * @param array{cardId: int, title?: string, description?: string, duedate?: string|null, lastModified?: int} $arguments
+	 * @param array{cardId: int, title?: string, description?: string, duedate?: string|null, assign?: list<string>, unassign?: list<string>, lastModified?: int} $arguments
 	 * @param string $userId UID of the authenticated caller.
 	 * @return array<string, mixed>
 	 */
 	private function planEdit(array $arguments, string $userId): array {
 		$given = array_intersect_key($arguments, array_flip(['title', 'description', 'duedate']));
-		if ($given === []) {
+		$changes = AssigneeChanges::fromArguments($arguments);
+		$editsAssignees = $changes['assign'] !== [] || $changes['unassign'] !== [];
+		if ($given === [] && !$editsAssignees) {
 			throw new InvalidArgumentException(DeckMessages::errorNoFieldToEdit());
 		}
 		$card = $this->gateway()->findCard($userId, (int)$arguments['cardId']);
@@ -380,20 +386,54 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 				? $this->day(CardInput::duedate($given['duedate']), $zone)
 				: $before['duedate'],
 		];
+		$assignees = $editsAssignees ? $this->planAssignees($userId, $card, $changes) : null;
 		$board = $this->gateway()->cardOwnership($userId, (int)$arguments['cardId']);
+
+		$changed = array_values(array_filter(
+			['title', 'description', 'duedate'],
+			static fn (string $field): bool => $before[$field] !== $after[$field],
+		));
+		if ($assignees !== null && ($assignees['added'] !== [] || $assignees['removed'] !== [])) {
+			$changed[] = 'assignees';
+		}
 
 		return [
 			'action' => EditCardHandler::TOOL,
 			'card' => ['id' => (int)$card->getId(), 'before' => $before, 'after' => $after],
 			'board' => $this->board($board, $userId),
-			'changed' => array_values(array_filter(
-				['title', 'description', 'duedate'],
-				static fn (string $field): bool => $before[$field] !== $after[$field],
-			)),
+			'changed' => $changed,
 			'lastModified' => ['current' => (int)$card->getLastModified(), 'sent' => $arguments['lastModified'] ?? null],
 			'shared' => $board['owner'] === $userId ? [] : [$this->board($board, $userId)],
 			'recoverable' => true,
 			'message' => DeckMessages::planEdit(),
+		] + ($assignees === null ? [] : ['assignees' => $assignees]);
+	}
+
+	/**
+	 * Who is responsible for the card now, who joins, who leaves and what is ignored.
+	 *
+	 * Accounts to add go through the same board check the write runs, so a refusal comes with the plan
+	 * and nothing is written to find it out.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param \OCA\Deck\Db\Card $card Card as read, with its assignments.
+	 * @param array{assign: list<string>, unassign: list<string>} $changes Validated lists of the call.
+	 * @return array{before: list<array{uid: string, displayName: string}>, after: list<array{uid: string, displayName: string}>, added: list<array{uid: string, displayName: string}>, removed: list<array{uid: string, displayName: string}>, notAssigned: list<string>, alreadyAssigned: list<string>}
+	 */
+	private function planAssignees(string $userId, \OCA\Deck\Db\Card $card, array $changes): array {
+		$before = $this->formatter($userId)->card($card)['assignedUsers'];
+		$resolved = AssigneeChanges::resolve($changes['assign'], $changes['unassign'], array_column($before, 'uid'));
+		$added = $resolved['add'] === [] ? [] : $this->gateway()->validateAssignees($userId, (int)$card->getStackId(), $resolved['add']);
+		$removed = array_values(array_filter($before, static fn (array $user): bool => in_array($user['uid'], $resolved['remove'], true)));
+		$kept = array_values(array_filter($before, static fn (array $user): bool => !in_array($user['uid'], $resolved['remove'], true)));
+
+		return [
+			'before' => $before,
+			'after' => [...$kept, ...$added],
+			'added' => $added,
+			'removed' => $removed,
+			'notAssigned' => $resolved['notAssigned'],
+			'alreadyAssigned' => $resolved['alreadyAssigned'],
 		];
 	}
 
@@ -548,7 +588,7 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	 * @return AbstractHandler|null Handler bound to this module's dependencies.
 	 */
 	private function handlerFor(string $name, string $userId): ?AbstractHandler {
-		$formatter = new CardFormatter($this->urlGenerator, $this->timeFactory, $this->userManager, $this->zones()?->forUser($userId));
+		$formatter = $this->formatter($userId);
 
 		return match ($name) {
 			ListBoardsHandler::TOOL => new ListBoardsHandler($this->gateway(), $this->logger, $formatter),
@@ -562,6 +602,14 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 			DeleteCardHandler::TOOL => new DeleteCardHandler($this->gateway(), $this->logger, $formatter),
 			default => null,
 		};
+	}
+
+	/**
+	 * @param string $userId UID of the authenticated caller, whose timezone the payload speaks.
+	 * @return CardFormatter Formatter bound to this module's dependencies.
+	 */
+	private function formatter(string $userId): CardFormatter {
+		return new CardFormatter($this->urlGenerator, $this->timeFactory, $this->userManager, $this->zones()?->forUser($userId));
 	}
 
 	/**
@@ -633,6 +681,14 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 		}
 
 		return $property;
+	}
+
+	/**
+	 * @param string $description Parameter description.
+	 * @return array<string, mixed> Array of at most 100 account IDs.
+	 */
+	private function accountList(string $description): array {
+		return ['type' => 'array', 'maxItems' => 100, 'items' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 255], 'description' => $description];
 	}
 
 	/**

@@ -170,6 +170,7 @@ Para atualizar: `occ app:disable mcp`, remover `<apps>/mcp`, extrair o novo paco
    - Os botões ✓/✕ no cabeçalho aplicam a coluna aos usuários ativos da página, com confirmação.
    - Usuários desativados aparecem marcados e não podem ser editados. Módulos cujo app não está disponível no servidor não aparecem na matriz; para um usuário sem acesso ao app, a célula fica desativada. As permissões salvas são preservadas.
    - O e-mail só serve para a busca e nunca é exibido.
+2. **Arquivos e etiquetas ocultas**: selecione etiquetas de sistema para que arquivos e pastas etiquetados fiquem totalmente invisíveis às ferramentas do MCP (leitura, busca, listagem, imagens, notas, talk e checkout). Recomenda-se o uso de etiquetas restritas ou invisíveis.
    - Serviço, elegibilidade e conexão pessoal começam desligados para todos, inclusive administradores. Leitura começa permitida; escrita, exclusão e transferência começam negadas.
    - A página usa a API JSON admin-only `GET /apps/mcp/api/grants`, `PUT /apps/mcp/api/grants/{uid}`, `POST /apps/mcp/api/grants/bulk` e `PUT /apps/mcp/api/service`.
 2. **Configurações pessoais → Informações pessoais → MCP connection**: o próprio usuário clica em *Connect*.

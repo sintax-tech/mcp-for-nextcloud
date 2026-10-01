@@ -24,6 +24,7 @@ AI assistants are most useful when they can reach the tools a team already uses.
 - **Sign in with Nextcloud.** Clients such as claude.ai use OAuth ("Sign in"): the user logs into their own Nextcloud and clicks **Allow**. App passwords (HTTP Basic) still work for other clients.
 - **Admin in control.** Service on/off switch, per-user eligibility and a **user × permission matrix**. Reading is on by default for eligible users; every write, move, delete, transfer or restore is **off until the admin grants it**.
 - **Nextcloud ACLs always apply.** The app never widens what a user can already do in Nextcloud.
+- **Hide sensitive files by system tag.** Administrators can configure system tags (recommended: restricted or invisible) to make tagged files and folders completely invisible to MCP tools.
 
 ## Features
 
@@ -74,7 +75,7 @@ Plus:
 
    Adjust paths and the web server user to your setup. With Docker, run `occ` inside the container. This manual route is only an alternative: installing from the Nextcloud App Store needs no terminal at all.
 
-3. **Configure** in *Administration settings → Additional settings → MCP*: turn the service on, mark who may connect, and grant write permissions where needed.
+3. **Configure** in *Administration settings → Additional settings → MCP*: turn the service on, mark who may connect, grant write permissions where needed, and select system tags for hiding sensitive files.
 
 ## Connecting a client
 

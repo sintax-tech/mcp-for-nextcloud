@@ -88,7 +88,7 @@ Create, update e delete usam `send_invitations: false` por padrão (`x-nc-schedu
 
 ### Diagnóstico opcional do Calendar (`occ mcp:calendar-selftest`)
 
-Não é pré-requisito: nada depende dele para as tools aparecerem ou funcionarem, e ele não grava nem esconde nada. É uma ferramenta de diagnóstico para quem administra o servidor e quer ver, passo a passo, o CalDAV real respondendo. Rode na raiz do Nextcloud como o usuário do servidor web. O UID organizador precisa ter conta habilitada, e-mail válido e Calendar habilitado; a retenção `dav/calendarRetentionObligation` não pode ser `0` (a limpeza seria permanente, então ele falha antes de criar qualquer objeto).
+Não é pré-requisito: nada depende dele para as tools aparecerem ou funcionarem, e ele não grava nem esconde nada. É uma ferramenta de diagnóstico opcional e avançada para quem administra o servidor e quer ver, passo a passo, o CalDAV real respondendo. Rode na raiz do Nextcloud como o usuário do servidor web. O UID organizador precisa ter conta habilitada, e-mail válido e Calendar habilitado; a retenção `dav/calendarRetentionObligation` não pode ser `0` (a limpeza seria permanente, então ele falha antes de criar qualquer objeto).
 
 ```sh
 sudo -u www-data php occ mcp:calendar-selftest UID_ORGANIZADOR
@@ -192,6 +192,8 @@ sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp
 
 Em Docker, rode os comandos `occ` dentro do container como o usuário do servidor web. Se o PHP usa OPcache com `validate_timestamps=0`, reinicie o PHP-FPM após copiar os arquivos.
 
+Este é o único ponto do app que ainda exige terminal: a instalação por SSH. Quando houver publicação na App Store, instalar por lá dispensa qualquer comando, e a configuração passa a ser só a tela de admin.
+
 Para atualizar: `occ app:disable mcp`, remover `<apps>/mcp`, extrair o novo pacote, `occ app:enable mcp` e `occ upgrade` se o Nextcloud pedir. A pasta precisa ser trocada inteira, para não sobrarem arquivos antigos em `vendor/`. Para remover: `occ app:remove mcp`.
 
 ## Configurar
@@ -205,12 +207,13 @@ Para atualizar: `occ app:disable mcp`, remover `<apps>/mcp`, extrair o novo paco
 2. **Arquivos e etiquetas ocultas**: selecione etiquetas de sistema para que arquivos e pastas etiquetados fiquem totalmente invisíveis às ferramentas do MCP (leitura, busca, listagem, imagens, notas, talk e checkout). Recomenda-se o uso de etiquetas restritas ou invisíveis.
    - Serviço, elegibilidade e conexão pessoal começam desligados para todos, inclusive administradores. Leitura começa permitida; escrita, exclusão e transferência começam negadas.
    - A página usa a API JSON admin-only `GET /apps/mcp/api/grants`, `PUT /apps/mcp/api/grants/{uid}`, `POST /apps/mcp/api/grants/bulk` e `PUT /apps/mcp/api/service`.
-2. **Configurações pessoais → Informações pessoais → MCP connection**: o próprio usuário clica em *Connect*.
-3. Em **Configurações pessoais → Segurança**, o usuário cria uma senha de app. O cliente MCP usa autenticação HTTP Basic com o ID do usuário e essa senha de app. O app nunca pede nem guarda a senha principal.
+2. **Clientes OAuth**: a mesma tela de admin edita os hosts de cliente permitidos e liga o cliente nativo para programas locais, sem passo de terminal. A API é `GET /apps/mcp/api/oauth-clients` e `PUT /apps/mcp/api/oauth-clients` (admin-only, com CSRF do Nextcloud), aceita `hosts` e/ou `nativeClientEnabled`, valida tudo antes de gravar e recusa uma lista de hosts inválida em vez de escrevê-la.
+3. **Configurações pessoais → Informações pessoais → MCP connection**: o próprio usuário clica em *Connect*.
+4. Em **Configurações pessoais → Segurança**, o usuário cria uma senha de app. O cliente MCP usa autenticação HTTP Basic com o ID do usuário e essa senha de app. O app nunca pede nem guarda a senha principal.
 
 Risco residual nas escritas: colisões com destinos ocultos usam a mesma recusa genérica de destinos sem permissão, mas a diferença entre recusa e criação possível ainda permite inferir que um caminho está indisponível.
 
-O login pelo navegador via OAuth está descrito em [Conectar pelo claude.ai (OAuth)](#conectar-pelo-claudeai-oauth).
+O login pelo navegador via OAuth está descrito em [Conectar pelo claude.ai (OAuth)](#conectar-pelo-claudeai-oauth) e, para ChatGPT e Gemini CLI, em [Conectar pelo ChatGPT e pelo Gemini CLI (OAuth)](#conectar-pelo-chatgpt-e-pelo-gemini-cli-oauth).
 
 ### Chaves de configuração
 
@@ -220,6 +223,10 @@ O login pelo navegador via OAuth está descrito em [Conectar pelo claude.ai (OAu
 | usuário, app `mcp` | `eligible` | `1` liberado pelo administrador |
 | usuário, app `mcp` | `connected` | `1` conexão pessoal ativa |
 | usuário, app `mcp` | `grant_<módulo>_<operação>` | `1`/`0`; ausente vale `1` para `read` e `0` para as demais |
+| app `mcp` | `oauth_client_hosts` | lista de hosts separados por vírgula; ausente ou vazia vale o padrão `claude.ai,chatgpt.com` |
+| app `mcp` | `oauth_native_client_enabled` | `1` habilita o cliente nativo local `nextcloud-mcp-native`, `0` ou ausente desabilitado |
+
+As duas chaves OAuth são editáveis pela seção **Clientes OAuth** da tela de admin e não precisam de `occ`; ver [Conectar pelo claude.ai (OAuth)](#conectar-pelo-claudeai-oauth).
 
 A chave `enabled` do app `mcp` pertence ao Nextcloud, que a usa para marcar o app como habilitado (`yes`), e não é o liga/desliga do MCP. O app nunca lê nem grava `enabled`, `installed_version`, `types`, `levels` ou `ocsid`. Para diagnóstico: `occ config:app:get mcp service_enabled`.
 
@@ -231,7 +238,20 @@ No claude.ai, em **Personalizar > Conectores > Adicionar conector personalizado*
 - metadata do servidor de autorização em `/apps/mcp/.well-known/openid-configuration` e `/apps/mcp/.well-known/oauth-authorization-server` (issuer `https://<instância>/apps/mcp`);
 - `oauth/authorize` (consentimento) e `oauth/token` (PKCE S256, refresh com rotação). Access token 1 h, refresh 30 dias; só hashes vão ao banco.
 
-Só clientes CIMD com host na allowlist são aceitos (padrão `claude.ai`): `occ config:app:set mcp oauth_client_hosts --value="claude.ai"`. Disconnect pessoal, perda de elegibilidade (inclusive em lote por grupo), serviço desligado e conta desabilitada ou apagada excluem imediatamente os tokens access/refresh e códigos pendentes. Reativar o serviço ou a elegibilidade não restaura credenciais antigas; conecte novamente. O Claude sai de `160.79.104.0/21`; se a proteção brute force do Nextcloud atrasar o endpoint de token, libere essa faixa. Basic + app password continua valendo para outros clientes.
+Só clientes CIMD com host na allowlist são aceitos. A allowlist padrão é `claude.ai,chatgpt.com` e é editada sem terminal em **Administração → Configurações adicionais → MCP → Clientes OAuth → Hosts de clientes permitidos** (host exato, sem `https://`, porta, caminho ou `*`, ao menos um; salvar substitui a lista inteira e remover um host recusa o cliente na hora, mesmo com o documento em cache). A chave `oauth_client_hosts` não precisa ser gravada à mão: um valor salvo antes da 0.8.0 é preservado e o padrão só vale quando a chave está ausente ou vazia. A mesma seção liga **Permitir programas locais (cliente nativo)**, que habilita o `client_id` público fixo `nextcloud-mcp-native` (desligado por padrão) para programas locais como o Gemini CLI, e mostra os redirect URIs loopback aceitos.
+
+Todo redirecionamento de volta a um cliente carrega `iss` com o emissor (RFC 9207), inclusive na negação e em erros redirecionáveis; erros anteriores à validação do redirect continuam locais. Clientes sem documento de identidade próprio, como o Gemini CLI, são recusados com `invalid_client` enquanto o cliente nativo estiver desligado.
+
+Disconnect pessoal, perda de elegibilidade (inclusive em lote por grupo), serviço desligado e conta desabilitada ou apagada excluem imediatamente os tokens access/refresh e códigos pendentes. Reativar o serviço ou a elegibilidade não restaura credenciais antigas; conecte novamente. O Claude sai de `160.79.104.0/21`; se a proteção brute force do Nextcloud atrasar o endpoint de token, libere essa faixa. Basic + app password continua valendo para outros clientes.
+
+## Conectar pelo ChatGPT e pelo Gemini CLI (OAuth)
+
+Passos para o usuário, com a mesma URL e a mesma tela "Permitir", estão no README da raiz, nas seções ChatGPT e Gemini CLI. Resumo do que o servidor exige de cada um:
+
+- **ChatGPT**: CIMD em `chatgpt.com`, aceito pela allowlist padrão. O documento real traz `token_endpoint_auth_methods_supported: [none, private_key_jwt]` e o singular `private_key_jwt`; o plural vence, e `none` está na lista, então o cliente é aceito como público.
+- **Gemini CLI**: não publica documento de identidade, então usa o cliente nativo estático. O usuário cola o `client_id` exibido na seção do admin em `~/.gemini/settings.json` → `mcpServers.<nome>.oauth.clientId` e roda `/mcp auth`. O redirect `http://localhost:<porta>/oauth/callback` casa porque `RedirectUriMatcher` ignora a porta em loopback (RFC 8252 7.3).
+
+Ambos estão **compatíveis por código, ainda não comprovados em cliente real**: não existe instalação de teste, e o smoke test real só acontece depois do deploy da 0.8.0. Até lá, `iss` é obrigatório porque o Gemini CLI rejeita retorno sem ele.
 
 ## Revogar
 

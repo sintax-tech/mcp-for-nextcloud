@@ -93,12 +93,73 @@ Task deletion uses native calendar trash and is refused when `dav/calendarRetent
 
 ## Connecting a client
 
-### claude.ai / Claude Desktop (recommended)
+Every client talks to the same URL, `https://cloud.example.com/apps/mcp/`, and authenticates as the person using it, with that person's own permissions. Only the authentication step differs:
+
+| Client | Authentication | Something the administrator has to do first |
+|---|---|---|
+| **Claude** — claude.ai, Claude Desktop, Cowork, Claude Code | OAuth **Sign in**, Claude's published identity (CIMD) | Nothing: `claude.ai` is allowed by default |
+| **ChatGPT** | OAuth **Sign in**, OpenAI's published identity (CIMD) | Nothing: `chatgpt.com` is allowed by default |
+| **Gemini CLI** | OAuth with the app's built-in native client | Tick **Allow local programs** and copy the `client_id` |
+| **Any other MCP client** | App password (HTTP Basic) | Nothing |
+
+### Claude (claude.ai, Claude Desktop, Cowork and Claude Code — recommended)
 
 1. *Settings → Connectors → Add custom connector*.
 2. URL: `https://cloud.example.com/apps/mcp/`.
 3. Authentication: **Sign in** (OAuth), client: **Claude's published identity** (CIMD). No headers needed.
 4. **Connect**: your Nextcloud opens, you log in and click **Allow**.
+
+`claude.ai` is in the allowed client hosts out of the box, so nothing has to be changed on the server. If an administrator narrowed that list, Claude is refused with `invalid_client` before the login page even opens: ask them to put `claude.ai` back in *Administration settings → Additional settings → MCP → OAuth clients → Allowed client hosts*.
+
+### ChatGPT
+
+> **Compatible by code, not yet proven on a real client.** The server side is implemented and covered by tests, but the first end-to-end test against a live ChatGPT connector happens only after 0.8.0 is deployed. Treat it as expected to work and unverified until then.
+
+1. In ChatGPT, add a new connector for an MCP server and paste `https://cloud.example.com/apps/mcp/` as its URL.
+2. Authentication: **Sign in** (OAuth). ChatGPT identifies itself with the client identity document published at `chatgpt.com`; the app downloads that document to learn the redirect URIs it registered. No headers, no app password.
+3. **Connect**: your Nextcloud opens, you log in and click **Allow**.
+
+`chatgpt.com` is allowed by default, so an installation that was never configured already accepts ChatGPT. If an administrator narrowed the list to other hosts, ChatGPT is refused with `invalid_client` before the login page opens — ask them to add `chatgpt.com` back in *Administration settings → Additional settings → MCP → OAuth clients → Allowed client hosts*.
+
+### Gemini CLI
+
+> **Compatible by code, not yet proven on a real client.** The server side is implemented and covered by tests, but the first end-to-end test against a real Gemini CLI login happens only after 0.8.0 is deployed. Treat it as expected to work and unverified until then.
+
+Two steps, one from the administrator and one from the user, with no terminal on the server.
+
+**Administrator** — *Administration settings → Additional settings → MCP → OAuth clients*:
+
+1. Tick **Allow local programs (native client)**. It is off by default.
+2. The section then reveals the `client_id` to copy — `nextcloud-mcp-native` — and the redirect URIs it accepts.
+
+**User** — create or edit `~/.gemini/settings.json` on your own machine:
+
+```json
+{
+  "mcpServers": {
+    "nextcloud": {
+      "url": "https://cloud.example.com/apps/mcp/",
+      "oauth": {
+        "clientId": "nextcloud-mcp-native"
+      }
+    }
+  }
+}
+```
+
+3. In Gemini CLI, run `/mcp auth` (or `/mcp auth nextcloud`).
+4. Your Nextcloud opens in the browser: log in and click **Allow**. Gemini CLI is listening on a free port it picked itself, so the browser returns to `http://localhost:<port>/oauth/callback`. The app accepts `http://localhost/oauth/callback`, `http://127.0.0.1/oauth/callback` and `http://[::1]/oauth/callback`, and ignores the port for loopback addresses (RFC 8252 7.3), so the random port still matches.
+
+Why a built-in client: Gemini CLI has no published client identity document, so the app ships one fixed public client for local programs. Its id is the same for everyone on the instance, and that is safe because it grants nothing by itself — the login, the eligibility, the personal connection, the administrator's grants, the consent screen and PKCE all still apply. Turning the switch off also stops the client from exchanging an authorization code and from refreshing a token.
+
+### Administrators: OAuth clients
+
+*Administration settings → Additional settings → MCP → OAuth clients* decides which clients may connect, without any terminal step:
+
+- **Allowed client hosts** — the hosts whose published client identity document the app is willing to download, separated by commas; `claude.ai` and `chatgpt.com` by default. Exact host names only: no `https://`, no port, no path, no `*`, and at least one host has to stay. The host is the one in the URL the client uses as its `client_id`. Saving replaces the whole list, and removing a host refuses that client immediately, even when its document is already cached.
+- **Allow local programs (native client)** — enables the `nextcloud-mcp-native` client described above and shows the `client_id` and the accepted redirect URIs to copy.
+
+Both controls are administrator-only and CSRF-protected, and they report a refused save. A configuration you set yourself is not overwritten by the defaults: an `oauth_client_hosts` value saved before 0.8.0 keeps being used as it is.
 
 ### Other MCP clients (app password)
 
@@ -119,7 +180,11 @@ curl -u 'alice:APP-PASSWORD' \
 ## Security
 
 - Every call re-checks, in this order: authenticated identity, service switch, user eligibility, personal connection, the admin grant for that exact operation, and the Nextcloud ACL of the concrete resource.
-- OAuth: PKCE S256, exact redirect URI match, allow-listed CIMD client hosts (default `claude.ai`), tokens stored only as HMAC hashes, one-time rotating refresh tokens.
+- OAuth: PKCE S256, exact redirect URI match (a loopback redirect URI may use any port, per RFC 8252 7.3), client identity documents accepted only from the allowed hosts the administrator edits in the admin page (default `claude.ai` and `chatgpt.com`), the public-client method `none` as the only accepted token authentication method, tokens stored only as HMAC hashes, one-time rotating refresh tokens.
+- A client identity document is downloaded over HTTPS from an allowed host only, without following redirects, capped at 64 KiB and cached for an hour. Dropping a host from the list blocks the client at once, cache or no cache.
+- Every redirect back to a client carries `iss` with this server's issuer identifier (RFC 9207) — on the authorization code, on a denial and on redirectable errors alike. Errors raised before the redirect URI is validated are shown on a local page instead of being redirected.
+- The native client is off by default. Once enabled it is a public client with a fixed, non-secret `client_id` that may only return to a loopback callback, and it grants no access on its own: the login, the eligibility, the personal connection, the administrator's grants, the consent screen and PKCE all still apply. Turning it off also stops it from exchanging an authorization code or refreshing a token.
+- The admin "OAuth clients" section is administrator-only, CSRF-protected, refuses an invalid host list instead of writing it, and shows the effective state and any save error.
 - No passwords, tokens or file contents in logs. Errors returned to clients are generic.
 - The consent screen is CSRF-protected and cannot be framed.
 - Found a vulnerability? Please report it privately to the maintainers instead of opening a public issue.
@@ -142,7 +207,6 @@ See [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Roadmap
 
-- Allowed OAuth client hosts editable in the admin page (today only `claude.ai` works without changing the app configuration)
 - Native review of the Spanish translation
 - Nextcloud App Store release
 

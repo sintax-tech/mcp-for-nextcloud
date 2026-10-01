@@ -29,7 +29,7 @@ use OCP\IUserManager;
  */
 class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     /** Maximum note size read or written, in bytes. */
-    public const MAX_BYTES = 1024 * 1024;
+    public const MAX_BYTES = NotesRepository::MAX_BYTES;
     /** Storage wrapper files_trashbin puts around storages whose deletions go to the trash bin. */
     public const TRASH_STORAGE = 'OCA\\Files_Trashbin\\Storage';
     /** Characters of the content a plan shows, so the user reads the note and not a wall of text. */
@@ -132,11 +132,8 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     /** @return array{id:int, title:string, category:string, modified:int, etag:string, content:string, access:array<string, mixed>} */
     private function read(?Folder $root, string $userId, int $id): array {
         $note = $this->notes->find($root, $id);
-        if ($note->getSize() > self::MAX_BYTES) {
-            throw new ToolFailure(NotesMessages::noteTooLargeForReading(self::MAX_BYTES));
-        }
         return $this->notes->info($note, $root) + [
-            'content' => mb_scrub((string)$note->getContent(), 'UTF-8'),
+            'content' => $this->notes->read($note),
             'access' => $this->accessInfo->describe($note, $userId),
         ];
     }

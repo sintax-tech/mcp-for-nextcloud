@@ -20,6 +20,8 @@ use OCP\IConfig;
 class NotesRepository {
     /** Maximum number of notes returned by all(). */
     public const MAX_NOTES = 2000;
+    /** Maximum note content size in bytes (1 MiB). */
+    public const MAX_BYTES = 1024 * 1024;
     /** Notes app default folder when the user never changed the setting. */
     public const DEFAULT_FOLDER = 'Notes';
     /** File extensions the Notes app treats as notes. */
@@ -85,6 +87,21 @@ class NotesRepository {
             }
         }
         throw new ToolFailure(CommonMessages::notFound());
+    }
+
+    /**
+     * Reads a note's text content, checking the byte limit.
+     * Shared by notes_read and nc://notes/{id}.
+     *
+     * @param File $note readable note file
+     * @return string UTF-8 scrubbed content
+     * @throws ToolFailure when the note exceeds MAX_BYTES
+     */
+    public function read(File $note): string {
+        if ($note->getSize() > self::MAX_BYTES) {
+            throw new ToolFailure(NotesMessages::noteTooLargeForReading(self::MAX_BYTES));
+        }
+        return mb_scrub((string)$note->getContent(), 'UTF-8');
     }
 
     /**

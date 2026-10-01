@@ -49,6 +49,17 @@ final class CalendarApprovalTest extends CalendarTestCase {
         self::assertCount(1, $this->dav->calls);
     }
 
+    /**
+     * `confirm` is decided by the registry alone: the module never checks it again, so a call that reached
+     * it dispatches once whatever `confirm` says, and the registry is the only place that can stop it.
+     */
+    #[DataProvider('writes')]
+    public function testTheModuleDoesNotCheckConfirmASecondTime(string $tool, array $args): void {
+        $result = $this->module->call($tool, $args + ['confirm_shared' => true], 'alice');
+        self::assertArrayNotHasKey('isError', $result, $result['content'][0]['text'] ?? '');
+        self::assertCount(1, $this->dav->calls);
+    }
+
     #[DataProvider('existingEventWrites')]
     public function testPlanEtagIsAcceptedAndUsedOnTheConfirmedCall(string $tool, array $args): void {
         $plan = self::json($this->registry->call($tool, $args, 'alice'));

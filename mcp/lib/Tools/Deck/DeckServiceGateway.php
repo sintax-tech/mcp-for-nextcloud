@@ -218,6 +218,15 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		return $assignments->assignUser($cardId, $assignee);
 	}
 
+	/** {@inheritDoc} */
+	public function unassignCardUser(string $userId, int $cardId, string $assignee): Assignment {
+		$this->bindUser($userId);
+		/** @var AssignmentService $assignments */
+		$assignments = $this->service(AssignmentService::class);
+		// Deck v1.17.5: `unassignUser(int $cardId, string $userId, int $type = 0)`; the user type is the default.
+		return $assignments->unassignUser($cardId, $assignee);
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */

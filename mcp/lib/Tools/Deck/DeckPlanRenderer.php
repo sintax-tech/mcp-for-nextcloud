@@ -147,6 +147,8 @@ final class DeckPlanRenderer {
 			}
 		}
 
+		array_push($lines, ...$this->assigneeLines($plan['assignees'] ?? null));
+
 		if (is_array($board) && !empty($board['shared'])) {
 			$owner = !empty($board['ownerDisplayName']) && is_string($board['ownerDisplayName'])
 				? $board['ownerDisplayName']
@@ -158,6 +160,51 @@ final class DeckPlanRenderer {
 		}
 
 		return implode("\n", $lines);
+	}
+
+	/**
+	 * Lines of the assignee section of an edit plan: who joins, who leaves, the final list and what is ignored.
+	 *
+	 * @param mixed $assignees `assignees` section of the plan, or null when the call did not touch them.
+	 * @return list<string> Markdown lines, empty when there is nothing to say.
+	 */
+	private function assigneeLines(mixed $assignees): array {
+		if (!is_array($assignees)) {
+			return [];
+		}
+		$lines = [];
+		$added = $this->extractAssignees(['assignees' => $assignees['added'] ?? []]);
+		$removed = $this->extractAssignees(['assignees' => $assignees['removed'] ?? []]);
+		if ($added !== []) {
+			$lines[] = Translator::t('- Assigned: %s', [PlanText::inline(implode(', ', $added), 300)]);
+		}
+		if ($removed !== []) {
+			$lines[] = Translator::t('- Unassigned: %s', [PlanText::inline(implode(', ', $removed), 300)]);
+		}
+		if (array_key_exists('after', $assignees)) {
+			$after = $this->extractAssignees(['assignees' => $assignees['after']]);
+			$lines[] = Translator::t('- Assignees after the change: %s', [
+				$after === [] ? Translator::t('(nobody)') : PlanText::inline(implode(', ', $after), 300),
+			]);
+		}
+		$notAssigned = $this->uids($assignees['notAssigned'] ?? []);
+		if ($notAssigned !== []) {
+			$lines[] = Translator::t('- Ignored, not assigned to the card: %s', [PlanText::inline(implode(', ', $notAssigned), 300)]);
+		}
+		$already = $this->uids($assignees['alreadyAssigned'] ?? []);
+		if ($already !== []) {
+			$lines[] = Translator::t('- Ignored, already assigned to the card: %s', [PlanText::inline(implode(', ', $already), 300)]);
+		}
+
+		return $lines;
+	}
+
+	/**
+	 * @param mixed $value Account IDs of the plan.
+	 * @return list<string> The non-empty strings of the list.
+	 */
+	private function uids(mixed $value): array {
+		return is_array($value) ? array_values(array_filter($value, static fn ($uid): bool => is_string($uid) && $uid !== '')) : [];
 	}
 
 	/**

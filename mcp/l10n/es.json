@@ -271,7 +271,7 @@
     "Note exceeds the read limit of %d bytes." : "La nota supera el límite de lectura de %d bytes.",
     "Notes" : "Notas",
     "notes" : "notas",
-    "Nothing was changed. After your approval a new card is created at the end of the list below, and you are set as its owner." : "No se cambió nada. Tras tu aprobación se crea una tarjeta nueva al final de la lista de abajo y tú quedas como su responsable.",
+    "Nothing was changed. After your approval a new card is created at the end of the list below, owned by you. You are not assigned to it unless listed below." : "No se cambió nada. Tras tu aprobación se crea una tarjeta nueva al final de la lista de abajo, de la que eres propietario. No quedas asignado a ella salvo que figures abajo.",
     "Nothing was changed. After your approval a note is created with the title and content below." : "No se cambió nada. Tras tu aprobación se crea una nota con el título y el contenido de abajo.",
     "Nothing was changed. After your approval a single-use download link and a single-use upload link are issued for this file, which can be any file type (document, spreadsheet, PDF, image) up to the upload limit below; the upload only succeeds while the ETag below is the current one. A text file can also be edited directly with files_edit or files_replace." : "No se cambió nada. Tras tu aprobación se emiten un enlace de descarga de un solo uso y un enlace de subida de un solo uso para este archivo, que puede ser de cualquier tipo (documento, hoja de cálculo, PDF, imagen) hasta el límite de subida de abajo; la subida solo funciona mientras el ETag de abajo sea el actual. Un archivo de texto también se puede editar directamente con files_edit o files_replace.",
     "Nothing was changed. After your approval each item below goes back to where the batch took it from, and only the empty folders the batch created are removed." : "No se cambió nada. Tras tu aprobación cada elemento de abajo vuelve de donde el lote lo sacó, y solo se eliminan las carpetas vacías que creó el lote.",
@@ -312,7 +312,7 @@
     "Previous" : "Anterior",
     "Provide 1 to 50 attendees, without duplicates." : "Indique de 1 a 50 participantes, sin duplicados.",
     "Provide at least one field to change." : "Indique al menos un campo para modificar.",
-    "Provide at least one field to edit: title, description or duedate." : "Indique al menos un campo para editar: title, description o duedate.",
+    "Provide at least one field to edit: title, description, duedate, assign or unassign." : "Indique al menos un campo para editar: title, description, duedate, assign o unassign.",
     "Provide either paths or folder." : "Proporcione paths o folder.",
     "Provide start and end when changing allDay." : "Indique start y end al modificar allDay.",
     "quote" : "citar",
@@ -699,6 +699,15 @@
     "%s, of %s" : "%s, de %s",
     "unnamed calendar" : "calendario sin nombre",
     "To confirm, repeat the call with etag %s." : "Para confirmar, repita la llamada con etag %s.",
-    "To use another calendar, repeat the call with calendar %s." : "Para usar otro calendario, repita la llamada con calendar %s."
+    "To use another calendar, repeat the call with calendar %s." : "Para usar otro calendario, repita la llamada con calendar %s.",
+    "an account ID cannot be in both assign and unassign" : "una cuenta no puede estar en assign y unassign a la vez",
+    "Ignored, not assigned to the card: %s" : "Ignorado, no es responsable de la tarjeta: %s",
+    "Ignored, already assigned to the card: %s" : "Ignorado, ya es responsable de la tarjeta: %s",
+    "- Assigned: %s" : "- Pasa a ser responsable: %s",
+    "- Unassigned: %s" : "- Deja de ser responsable: %s",
+    "- Assignees after the change: %s" : "- Responsables tras el cambio: %s",
+    "- Ignored, not assigned to the card: %s" : "- Ignorado, no es responsable de la tarjeta: %s",
+    "- Ignored, already assigned to the card: %s" : "- Ignorado, ya es responsable de la tarjeta: %s",
+    "(nobody)" : "(nadie)"
 },"pluralForm" :"nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

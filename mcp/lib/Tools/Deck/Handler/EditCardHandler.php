@@ -4,9 +4,15 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Deck\Handler;
 
 use InvalidArgumentException;
+use OCA\Deck\Db\Acl;
+use OCA\Deck\Db\Card;
+use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Tools\Deck\AssigneeChanges;
+use OCA\Mcp\Tools\Deck\CardCriteria;
 use OCA\Mcp\Tools\Deck\CardFormatter;
 use OCA\Mcp\Tools\Deck\CardInput;
 use OCA\Mcp\Tools\Deck\DeckConflictException;
+use OCA\Mcp\Tools\Deck\DeckErrors;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckMessages;
 use Psr\Log\LoggerInterface;
@@ -16,7 +22,8 @@ use Psr\Log\LoggerInterface;
  *
  * Deck v1.17.5 only offers a whole-form update, so this handler reads the card, merges what the
  * client sent and writes everything back; the gateway fills in the fields the client did not
- * touch. When `lastModified` is sent and no longer matches, nothing is written.
+ * touch. When `lastModified` is sent and no longer matches, nothing is written. Responsibles are
+ * changed afterwards, one account at a time, through the assignment service.
  */
 final class EditCardHandler extends AbstractHandler {
 	/** MCP tool name this handler serves. */
@@ -41,20 +48,23 @@ final class EditCardHandler extends AbstractHandler {
 	/**
 	 * {@inheritDoc}
 	 *
-	 * The payload is the updated card.
+	 * The payload is the updated card. When `assign` or `unassign` were sent it also reports `assigned`,
+	 * `unassigned` and `failed` (uid and a safe reason); a failure in the middle leaves what was already done.
 	 *
-	 * @param array<string, mixed> $arguments Requires `cardId`; accepts the editable fields and `lastModified`.
+	 * @param array<string, mixed> $arguments Requires `cardId`; accepts the editable fields, `assign`, `unassign` and `lastModified`.
 	 * @param string $userId UID of the authenticated caller.
 	 * @return array{content: list<array{type: string, text: string}>, isError?: bool} MCP result.
-	 * @throws InvalidArgumentException When no editable field is present or a date is invalid, mapped to -32602.
+	 * @throws InvalidArgumentException When nothing editable is present, a date is invalid or an assignee is refused, mapped to -32602.
 	 */
 	public function handle(array $arguments, string $userId): array {
 		$given = array_intersect_key($arguments, array_flip(self::EDITABLE_FIELDS));
-		if ($given === []) {
+		$changes = AssigneeChanges::fromArguments($arguments);
+		$editsAssignees = $changes['assign'] !== [] || $changes['unassign'] !== [];
+		if ($given === [] && !$editsAssignees) {
 			throw new InvalidArgumentException(DeckMessages::errorNoFieldToEdit());
 		}
 
-		return $this->run(function () use ($arguments, $given, $userId): array {
+		return $this->run(function () use ($arguments, $given, $changes, $editsAssignees, $userId): array {
 			// Owned by somebody else and not confirmed yet: answer with the shared-resource payload
 			// and leave the card untouched, before it is even read.
 			$confirmation = $this->confirmShared(
@@ -73,6 +83,7 @@ final class EditCardHandler extends AbstractHandler {
 				throw new DeckConflictException(DeckMessages::errorConflict());
 			}
 
+			// Everything that can be refused is refused here, before the first write.
 			$title = array_key_exists('title', $given)
 				? CardInput::requireTitle((string)$given['title'])
 				: (string)$card->getTitle();
@@ -82,10 +93,28 @@ final class EditCardHandler extends AbstractHandler {
 			$duedate = array_key_exists('duedate', $given)
 				? CardInput::duedate($given['duedate'])
 				: $this->currentDuedate($card->getDuedate());
+			$resolved = AssigneeChanges::resolve($changes['assign'], $changes['unassign'], CardCriteria::assignedUids($card));
+			if ($resolved['add'] !== []) {
+				$this->gateway->validateAssignees($userId, (int)$card->getStackId(), $resolved['add']);
+			}
 
-			return $this->formatter->card(
-				$this->gateway->updateCard($userId, $card, $title, $description, $duedate),
-			);
+			if ($given === []) {
+				$updated = $card;
+			} else {
+				$updated = $this->gateway->updateCard($userId, $card, $title, $description, $duedate);
+				// The update answer does not always carry the assignments; the ones read above still stand.
+				if ($updated->getAssignedUsers() === null) {
+					$updated->setAssignedUsers($card->getAssignedUsers() ?? []);
+				}
+			}
+			if (!$editsAssignees) {
+				return $this->formatter->card($updated);
+			}
+
+			// Applied first: the card is formatted from the assignments that really stand afterwards.
+			$report = $this->applyAssignees($userId, $updated, $resolved);
+
+			return $this->formatter->card($updated) + $report;
 		});
 	}
 
@@ -95,6 +124,69 @@ final class EditCardHandler extends AbstractHandler {
 	 */
 	protected function toolName(): string {
 		return self::TOOL;
+	}
+
+	/**
+	 * Assigns and unassigns one account at a time and reports what happened.
+	 *
+	 * A failure is recorded and the loop goes on: nothing already done is undone, and the card is
+	 * mutated in place only for what succeeded, so the payload shows the real assignees.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param Card $card Card to report, its assignments updated as each change succeeds.
+	 * @param array{add: list<string>, remove: list<string>, alreadyAssigned: list<string>, notAssigned: list<string>} $resolved What to do and what to ignore.
+	 * @return array{assigned: list<string>, unassigned: list<string>, failed: list<array{uid: string, reason: string}>, warnings?: list<string>}
+	 */
+	private function applyAssignees(string $userId, Card $card, array $resolved): array {
+		$assigned = [];
+		$unassigned = [];
+		$failed = [];
+		$cardId = (int)$card->getId();
+		$assignments = $card->getAssignedUsers() ?? [];
+
+		foreach ($resolved['remove'] as $uid) {
+			try {
+				$this->gateway->unassignCardUser($userId, $cardId, $uid);
+				$unassigned[] = $uid;
+				$assignments = array_values(array_filter(
+					$assignments,
+					static fn ($assignment): bool => !($assignment->getType() === Acl::PERMISSION_TYPE_USER && (string)$assignment->getParticipant() === $uid),
+				));
+			} catch (\Throwable $e) {
+				$failed[] = $this->failure($uid, $e);
+			}
+		}
+		foreach ($resolved['add'] as $uid) {
+			try {
+				$assignments[] = $this->gateway->assignCardUser($userId, $cardId, $uid);
+				$assigned[] = $uid;
+			} catch (\Throwable $e) {
+				$failed[] = $this->failure($uid, $e);
+			}
+		}
+		$card->setAssignedUsers($assignments);
+
+		$warnings = [];
+		if ($resolved['notAssigned'] !== []) {
+			$warnings[] = Translator::t('Ignored, not assigned to the card: %s', [implode(', ', $resolved['notAssigned'])]);
+		}
+		if ($resolved['alreadyAssigned'] !== []) {
+			$warnings[] = Translator::t('Ignored, already assigned to the card: %s', [implode(', ', $resolved['alreadyAssigned'])]);
+		}
+
+		return ['assigned' => $assigned, 'unassigned' => $unassigned, 'failed' => $failed]
+			+ ($warnings === [] ? [] : ['warnings' => $warnings]);
+	}
+
+	/**
+	 * @param string $uid Account whose change failed.
+	 * @param \Throwable $e What Deck raised; only its class is logged, never its message.
+	 * @return array{uid: string, reason: string} Entry of `failed`, worded by {@see DeckErrors}.
+	 */
+	private function failure(string $uid, \Throwable $e): array {
+		$this->logger->warning('MCP Deck assignment change failed ({exception})', ['exception' => $e::class]);
+
+		return ['uid' => $uid, 'reason' => DeckErrors::messageFor($e)];
 	}
 
 	/**

@@ -84,6 +84,28 @@ final class DeckToolModuleTest extends TestCase {
 		}
 	}
 
+	/** Editing accepts `assign` / `unassign` (at most 100 each) and the guide no longer says it cannot. */
+	public function testEditDeclaresAssignAndUnassign(): void {
+		$definition = $this->definitionOf(EditCardHandler::TOOL);
+		$schema = $definition['inputSchema'];
+		foreach (['assign', 'unassign'] as $field) {
+			self::assertSame('array', $schema['properties'][$field]['type']);
+			self::assertSame(100, $schema['properties'][$field]['maxItems']);
+			self::assertSame(['pedro'], \OCA\Mcp\Tools\ArgumentValidator::validate($schema, ['cardId' => 7, $field => ['pedro']])[$field]);
+			foreach ([[''], [123], 'pedro', array_fill(0, 101, 'pedro')] as $value) {
+				try {
+					\OCA\Mcp\Tools\ArgumentValidator::validate($schema, ['cardId' => 7, $field => $value]);
+					self::fail('accepted malformed ' . $field);
+				} catch (\OCA\Mcp\Tools\ArgumentValidationException $e) {
+					self::assertStringStartsWith($field, $e->details()['field']);
+				}
+			}
+		}
+		self::assertStringNotContainsString('not supported', implode(' ', $this->module->guideNotes()));
+		self::assertStringContainsString('assign', $definition['description']);
+		self::assertStringContainsString('unassign', $definition['description']);
+	}
+
 	public function testImplementsTheModuleContract(): void {
 		self::assertInstanceOf(ToolModule::class, $this->module);
 	}

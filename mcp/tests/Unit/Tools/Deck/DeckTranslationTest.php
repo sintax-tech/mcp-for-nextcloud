@@ -28,7 +28,7 @@ final class DeckTranslationTest extends TestCase {
 		'errorInvalid' => 'Dados inválidos para o Deck.',
 		'errorConflict' => 'O item do Deck mudou durante a operação. Tente de novo.',
 		'errorGeneric' => 'Não foi possível concluir a operação no Deck.',
-		'errorNoFieldToEdit' => 'Informe ao menos um campo para editar: title, description ou duedate.',
+		'errorNoFieldToEdit' => 'Informe ao menos um campo para editar: title, description, duedate, assign ou unassign.',
 		'errorInvalidDuedate' => 'A data prevista deve ser uma data válida no formato AAAA-MM-DD.',
 		'errorInvalidDueBefore' => 'A data de dueBefore deve ser uma data válida no formato AAAA-MM-DD.',
 		'errorInvalidStatus' => 'Status inválido para o acompanhamento. Use overdue, open, done ou all.',
@@ -52,6 +52,20 @@ final class DeckTranslationTest extends TestCase {
 			. ' Confirme com o usuário antes de continuar e repita a chamada com confirm_shared: true.',
 			DeckMessages::sharedConfirmation('Comercial', 'Pedro Almeida'),
 		);
+	}
+
+	/** The creator owns the card but is not assigned to it: no language may tell the user they became its assignee. */
+	public function testCreatePlanDoesNotSayTheUserBecomesTheAssignee(): void {
+		self::assertStringContainsString('owned by you', DeckMessages::planCreate());
+		self::assertStringContainsString('not assigned', DeckMessages::planCreate());
+
+		Translator::use(new JsonL10n('pt_BR'));
+		self::assertStringNotContainsString('responsável', DeckMessages::planCreate());
+		self::assertStringContainsString('você é o dono', DeckMessages::planCreate());
+
+		Translator::use(new JsonL10n('es'));
+		self::assertStringNotContainsString('responsable', DeckMessages::planCreate());
+		self::assertStringContainsString('propietario', DeckMessages::planCreate());
 	}
 
 	public function testSpanishUserGetsSpanishTexts(): void {

@@ -129,6 +129,15 @@ final class DeckServiceGatewayTest extends TestCase {
 		self::assertSame($assignment, $this->gateway->assignCardUser('alice', 9, 'pedro'));
 	}
 
+	/** Unassigning goes through Deck's assignment service with the user type as default (v1.17.5 signature). */
+	public function testUnassignCardUserUsesAssignmentService(): void {
+		$service = $this->createMock(\OCA\Deck\Service\AssignmentService::class);
+		$this->services[\OCA\Deck\Service\AssignmentService::class] = $service;
+		$assignment = new Assignment(['cardId' => 9, 'participant' => 'pedro', 'type' => Acl::PERMISSION_TYPE_USER]);
+		$service->expects(self::once())->method('unassignUser')->with(9, 'pedro')->willReturn($assignment);
+		self::assertSame($assignment, $this->gateway->unassignCardUser('alice', 9, 'pedro'));
+	}
+
 	public function testListBoardsBindsTheCallerAndHidesArchivedBoards(): void {
 		$boards = [$this->boardDouble(1)];
 		$this->recordSetUserId();

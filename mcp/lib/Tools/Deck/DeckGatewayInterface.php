@@ -109,6 +109,16 @@ interface DeckGatewayInterface {
 	public function assignCardUser(string $userId, int $cardId, string $assignee): \OCA\Deck\Db\Assignment;
 
 	/**
+	 * Removes one account from the assignees of a card through Deck's assignment service.
+	 * @param string $userId Authenticated caller.
+	 * @param int $cardId Card the account leaves.
+	 * @param string $assignee Account ID to unassign.
+	 * @return \OCA\Deck\Db\Assignment Removed assignment.
+	 * @throws \Throwable When Deck refuses or a concurrent change prevents it.
+	 */
+	public function unassignCardUser(string $userId, int $cardId, string $assignee): \OCA\Deck\Db\Assignment;
+
+	/**
 	 * Creates a card owned by the caller at the end of the stack.
 	 *
 	 * @param string $userId UID of the authenticated caller, used as the card owner.

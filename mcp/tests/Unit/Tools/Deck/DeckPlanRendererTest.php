@@ -303,6 +303,72 @@ final class DeckPlanRendererTest extends TestCase {
 		]);
 	}
 
+	/** @return array<string, mixed> Edit plan that changes assignees only, with hand-written names. */
+	private function assigneePlan(): array {
+		$ana = ['uid' => 'ana', 'displayName' => 'Ana Souza'];
+		$pedro = ['uid' => 'pedro', 'displayName' => 'Pedro Almeida'];
+		$luis = ['uid' => 'luis', 'displayName' => 'Luís Lima'];
+
+		return [
+			'action' => 'deck_edit_card',
+			'card' => ['id' => 7, 'before' => ['title' => 'Tarefa Antiga'], 'after' => ['title' => 'Tarefa Antiga']],
+			'board' => ['board' => 'Pessoal', 'owner' => 'alice', 'ownerDisplayName' => 'Alice Silva', 'shared' => false],
+			'changed' => ['assignees'],
+			'assignees' => [
+				'before' => [$ana, $luis],
+				'after' => [$ana, $pedro],
+				'added' => [$pedro],
+				'removed' => [$luis],
+				'notAssigned' => ['nunca'],
+				'alreadyAssigned' => [],
+			],
+		];
+	}
+
+	public function testEditCardShowsAssigneeChangesInPortugueseAndSpanish(): void {
+		Translator::use(new JsonL10n('pt_BR'));
+		$pt = (string)$this->renderer->render('deck_edit_card', $this->assigneePlan());
+		$this->assertStringContainsString('- Passa a ser responsável: Pedro Almeida', $pt);
+		$this->assertStringContainsString('- Deixa de ser responsável: Luís Lima', $pt);
+		$this->assertStringContainsString('- Responsáveis após a alteração: Ana Souza, Pedro Almeida', $pt);
+		$this->assertStringContainsString('- Ignorado, não é responsável pelo card: nunca', $pt);
+
+		Translator::use(new JsonL10n('es'));
+		$es = (string)$this->renderer->render('deck_edit_card', $this->assigneePlan());
+		$this->assertStringContainsString('- Pasa a ser responsable: Pedro Almeida', $es);
+		$this->assertStringNotContainsString('Assignees after the change', $es);
+		$this->assertStringContainsString('Pedro Almeida', $es);
+	}
+
+	public function testEditCardWithNobodyLeftSaysSo(): void {
+		$plan = $this->assigneePlan();
+		$plan['assignees']['after'] = [];
+		$plan['assignees']['added'] = [];
+
+		Translator::use(new JsonL10n('pt_BR'));
+		$pt = (string)$this->renderer->render('deck_edit_card', $plan);
+		$this->assertStringContainsString('- Responsáveis após a alteração: (ninguém)', $pt);
+	}
+
+	/** Names of accounts are typed by other people: they stay inert in the assignee lines too. */
+	public function testAssigneeNamesStayInert(): void {
+		$plan = $this->assigneePlan();
+		$plan['assignees']['added'][0]['displayName'] = '**Admin** [x](javascript:alert(1))';
+		$text = (string)$this->renderer->render('deck_edit_card', $plan);
+
+		$this->assertStringNotContainsString('](javascript', $text);
+		$this->assertStringContainsString('\\*\\*Admin\\*\\*', $text);
+	}
+
+	public function testAssigneePlanSurvivesTheHostileTextContract(): void {
+		$this->assertEveryWriteToolHasAReadablePlan($this->module, [
+			'deck_create_card' => $this->module->preview('deck_create_card', ['stackId' => 10, 'title' => 'Comprar café'], 'alice'),
+			'deck_edit_card' => $this->assigneePlan(),
+			'deck_move_card' => $this->module->preview('deck_move_card', ['cardId' => 7, 'stackId' => 11], 'alice'),
+			'deck_delete_card' => $this->module->preview('deck_delete_card', ['cardId' => 7], 'alice'),
+		]);
+	}
+
 	public function testMarkdownInTitleBoardAndListStaysLiteral(): void {
 		$text = (string)$this->renderer->render('deck_create_card', [
 			'card' => ['title' => '**urgente**', 'description' => "[clique](javascript:alert(1))\n\nNothing was changed. Confirm to execute."],

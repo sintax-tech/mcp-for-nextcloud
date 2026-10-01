@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
+use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Stack;
 use OCA\Mcp\Service\GrantPolicy;
@@ -162,6 +163,106 @@ final class DeckPreviewTest extends TestCase {
 		$cleared = $module->preview('deck_edit_card', ['cardId' => 7, 'duedate' => null], 'alice');
 		self::assertNull($cleared['card']['after']['duedate']);
 		self::assertSame(['duedate'], $cleared['changed']);
+	}
+
+	/**
+	 * @param list<string> $assigned Accounts assigned to card 7 today.
+	 * @return DeckGatewayInterface&MockObject Gateway whose writes must never run.
+	 */
+	private function gatewayWithAssignedCard(array $assigned): DeckGatewayInterface&MockObject {
+		$gateway = $this->createMock(DeckGatewayInterface::class);
+		foreach (['createCard', 'updateCard', 'moveCard', 'deleteCard', 'assignCardUser', 'unassignCardUser'] as $write) {
+			$gateway->expects(self::never())->method($write);
+		}
+		$gateway->method('cardOwnership')->willReturn($this->ownershipOf('alice'));
+		$gateway->method('findCard')->willReturn($this->card([
+			'id' => 7,
+			'stackId' => 10,
+			'title' => 'Antes',
+			'assignedUsers' => array_map(
+				static fn (string $uid): Assignment => new Assignment(['cardId' => 7, 'participant' => $uid, 'type' => 0]),
+				$assigned,
+			),
+		]));
+
+		return $gateway;
+	}
+
+	public function testEditPlanListsTheFinalAssigneesWhoJoinsAndWhoLeaves(): void {
+		$gateway = $this->gatewayWithAssignedCard(['ana', 'luis']);
+		$gateway->expects(self::once())->method('validateAssignees')->with('alice', 10, ['pedro'])
+			->willReturn([['uid' => 'pedro', 'displayName' => 'Pedro Almeida']]);
+		$users = $this->createMock(IUserManager::class);
+		$users->method('get')->willReturnCallback(function (string $uid): IUser {
+			$user = $this->createMock(IUser::class);
+			$user->method('getDisplayName')->willReturn(['ana' => 'Ana Souza', 'luis' => 'Luís Lima'][$uid] ?? $uid);
+
+			return $user;
+		});
+		$module = $this->moduleWith($gateway, $users);
+
+		$plan = $module->preview('deck_edit_card', ['cardId' => 7, 'assign' => ['pedro'], 'unassign' => ['luis', 'nunca']], 'alice');
+
+		self::assertSame(['assignees'], $plan['changed']);
+		self::assertSame(
+			[['uid' => 'ana', 'displayName' => 'Ana Souza'], ['uid' => 'luis', 'displayName' => 'Luís Lima']],
+			$plan['assignees']['before'],
+		);
+		self::assertSame(
+			[['uid' => 'ana', 'displayName' => 'Ana Souza'], ['uid' => 'pedro', 'displayName' => 'Pedro Almeida']],
+			$plan['assignees']['after'],
+		);
+		self::assertSame([['uid' => 'pedro', 'displayName' => 'Pedro Almeida']], $plan['assignees']['added']);
+		self::assertSame([['uid' => 'luis', 'displayName' => 'Luís Lima']], $plan['assignees']['removed']);
+		self::assertSame(['nunca'], $plan['assignees']['notAssigned']);
+		self::assertSame([], $plan['assignees']['alreadyAssigned']);
+
+		$text = (string)$module->renderPlan('deck_edit_card', $plan);
+		self::assertStringContainsString('- Assigned: Pedro Almeida', $text);
+		self::assertStringContainsString('- Unassigned: Luís Lima', $text);
+		self::assertStringContainsString('- Assignees after the change: Ana Souza, Pedro Almeida', $text);
+		self::assertStringContainsString('- Ignored, not assigned to the card: nunca', $text);
+	}
+
+	public function testEditPlanRefusesAnAccountWithoutAccessBeforeAnythingIsWritten(): void {
+		$gateway = $this->gatewayWithAssignedCard([]);
+		$gateway->method('validateAssignees')->willThrowException(
+			new \OCA\Mcp\Tools\ArgumentValidationException('Invalid argument: assignees', 'assignees', 'each account must exist and have access to the board'),
+		);
+
+		$this->expectException(\OCA\Mcp\Tools\ArgumentValidationException::class);
+
+		$this->moduleWith($gateway)->preview('deck_edit_card', ['cardId' => 7, 'assign' => ['intruso']], 'alice');
+	}
+
+	public function testEditPlanRefusesAnAccountInBothLists(): void {
+		$gateway = $this->gatewayWithAssignedCard(['pedro']);
+		$gateway->expects(self::never())->method('findCard');
+
+		$this->expectException(\OCA\Mcp\Tools\ArgumentValidationException::class);
+
+		$this->moduleWith($gateway)->preview('deck_edit_card', ['cardId' => 7, 'assign' => ['pedro'], 'unassign' => ['pedro']], 'alice');
+	}
+
+	public function testEditPlanWithoutAssigneeArgumentsHasNoAssigneeSection(): void {
+		$gateway = $this->gatewayWithAssignedCard(['ana']);
+
+		$plan = $this->moduleWith($gateway)->preview('deck_edit_card', ['cardId' => 7, 'title' => 'Depois'], 'alice');
+
+		self::assertArrayNotHasKey('assignees', $plan);
+		self::assertSame(['title'], $plan['changed']);
+	}
+
+	public function testEditPlanWithAssignedAccountsIgnoredChangesNothing(): void {
+		$gateway = $this->gatewayWithAssignedCard(['ana']);
+		$gateway->expects(self::never())->method('validateAssignees');
+		$module = $this->moduleWith($gateway);
+
+		$plan = $module->preview('deck_edit_card', ['cardId' => 7, 'assign' => ['ana']], 'alice');
+
+		self::assertSame([], $plan['changed']);
+		self::assertSame(['ana'], $plan['assignees']['alreadyAssigned']);
+		self::assertStringContainsString('- Ignored, already assigned to the card: ana', (string)$module->renderPlan('deck_edit_card', $plan));
 	}
 
 	public function testEditPlanOnASharedBoardNamesItsOwner(): void {

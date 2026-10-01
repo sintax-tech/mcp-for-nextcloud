@@ -41,6 +41,7 @@ final class MovePlanner {
         private Reorganization $reorganization,
         private NodeAccessInfo $access,
         private SharedWriteGuard $guard,
+        private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
     ) {}
 
     /**
@@ -110,7 +111,18 @@ final class MovePlanner {
         $dirs = [];
         foreach ($paths as $path) {
             $relative = ltrim(\OCA\Mcp\Tools\Common\PathGuard::normalize($path), '/');
-            $exists = $relative === '' || $root->nodeExists($relative);
+            $exists = false;
+            if ($relative === '') {
+                $exists = true;
+            } elseif ($root->nodeExists($relative)) {
+                $node = null;
+                try {
+                    $node = $root->get($relative);
+                } catch (\Throwable) {}
+                if ($node !== null && ($this->visibilityGuard === null || $this->visibilityGuard->isVisible($node))) {
+                    $exists = true;
+                }
+            }
             $dirs[] = ['path' => $path, 'exists' => $exists, 'willCreate' => !$exists];
         }
         return $dirs;

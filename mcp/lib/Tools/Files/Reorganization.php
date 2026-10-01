@@ -380,10 +380,24 @@ final class Reorganization {
         if (FileBackup::isBackupPath($path)) {
             throw new ToolFailure(FilesMessages::backupPath());
         }
-        if ($root->nodeExists(ltrim($path, '/'))) {
+        $rel = ltrim($path, '/');
+        if ($root->nodeExists($rel)) {
+            if ($this->visibilityGuard !== null) {
+                try {
+                    $existing = $root->get($rel);
+                    if (!$this->visibilityGuard->isVisible($existing)) {
+                        throw new ToolFailure(CommonMessages::forbidden());
+                    }
+                } catch (ToolFailure $e) {
+                    throw $e;
+                } catch (\Throwable) {}
+            }
             throw new ToolFailure(FilesMessages::destinationExists());
         }
         $parent = $this->existingAncestor($root, $path);
+        if ($this->visibilityGuard !== null) {
+            $this->visibilityGuard->assertVisible($parent);
+        }
         if (!$parent->isCreatable()) {
             throw new ToolFailure(CommonMessages::forbidden());
         }

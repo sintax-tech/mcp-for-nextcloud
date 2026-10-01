@@ -164,18 +164,25 @@ final class GrantsControllerTest extends TestCase {
         $this->assertSame('0', $this->fx->config->app['mcp']['oauth_native_client_enabled']);
     }
 
+    public function testUpdateOauthClientsNormalizesHostsBeforeValidationAndDeduplication(): void {
+        $response = $this->controller(['hosts' => [' ChatGPT.com ', 'CLAUDE.AI', 'chatgpt.COM']])->updateOauthClients();
+        $this->assertSame(200, $response->getStatus());
+        $this->assertSame(['chatgpt.com', 'claude.ai'], $response->getData()['hosts']);
+        $this->assertSame('chatgpt.com,claude.ai', $this->fx->config->app['mcp'][ClientMetadataFetcher::HOSTS_KEY]);
+    }
+
     public function testUpdateOauthClientsRejectsInvalidInputWithoutWriting(): void {
         foreach ([
             [],
             ['hosts' => []],
             ['hosts' => 'claude.ai'],
-            ['hosts' => ['Claude.ai']],
             ['hosts' => ['https://claude.ai']],
             ['hosts' => ['claude.ai:443']],
             ['hosts' => ['claude.ai/path']],
             ['hosts' => ['*.claude.ai']],
             ['hosts' => ['claude .ai']],
             ['hosts' => ['']],
+            ['hosts' => ['   ']],
             ['hosts' => ['claude..ai']],
             ['hosts' => [42]],
             ['hosts' => ['claude.ai'], 'nativeClientEnabled' => 'yes'],

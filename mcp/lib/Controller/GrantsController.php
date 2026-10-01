@@ -161,18 +161,23 @@ class GrantsController extends Controller {
     }
 
     /**
-     * @param mixed $value request value, which must be a non-empty list of bare lowercase host names
-     * @return list<string> validated hosts without duplicates
+     * @param mixed $value request value, which must be a non-empty list of bare host names
+     * @return list<string> validated lowercase hosts without surrounding whitespace or duplicates
      * @throws InvalidArgumentException for an empty list, a non-string or a host with scheme, port, path, wildcard or space
      */
     private static function hosts(mixed $value): array {
         if (!is_array($value) || $value === [] || !array_is_list($value)) {
             throw new InvalidArgumentException('Invalid request');
         }
-        foreach ($value as $host) {
-            if (!is_string($host) || preg_match('/^[a-z0-9-]+(\.[a-z0-9-]+)*$/D', $host) !== 1 || strlen($host) > 253) {
+        foreach ($value as $index => $host) {
+            if (!is_string($host)) {
                 throw new InvalidArgumentException('Invalid request');
             }
+            $host = strtolower(trim($host));
+            if (preg_match('/^[a-z0-9-]+(\.[a-z0-9-]+)*$/D', $host) !== 1 || strlen($host) > 253) {
+                throw new InvalidArgumentException('Invalid request');
+            }
+            $value[$index] = $host;
         }
         return array_values(array_unique($value));
     }

@@ -474,7 +474,7 @@
 		}
 
 		hostsSave.addEventListener('click', async () => {
-			const hosts = hostsInput.value.split(',').map((host) => host.trim()).filter((host) => host !== '')
+			const hosts = hostsInput.value.split(',').map((host) => host.trim().toLowerCase()).filter((host) => host !== '')
 			hostsSave.disabled = true
 			try {
 				show(await api('PUT', '/api/oauth-clients', { hosts }))

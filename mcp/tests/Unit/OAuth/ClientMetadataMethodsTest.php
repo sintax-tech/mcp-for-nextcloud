@@ -96,6 +96,18 @@ final class ClientMetadataMethodsTest extends TestCase {
         $this->assertRefused($fetcher, 'https://chatgpt.com.attacker.tld/oauth/x/client.json');
     }
 
+    public function testEmptyHostConfigUsesDefaultsForClaudeAndChatGpt(): void {
+        foreach (['', " , , \t "] as $raw) {
+            foreach ([self::CLAUDE, self::CHATGPT] as $id) {
+                $fetcher = $this->fetcher(['client_id' => $id, 'client_name' => 'Public client',
+                    'redirect_uris' => ['https://claude.ai/callback'], 'token_endpoint_auth_method' => 'none']);
+                $this->config->app['mcp'][ClientMetadataFetcher::HOSTS_KEY] = $raw;
+                $this->assertSame($id, $fetcher->fetch($id)->clientId);
+                $this->assertRefused($fetcher, 'https://attacker.tld/client.json');
+            }
+        }
+    }
+
     public function testHostRemovedFromTheKeyBlocksEvenWithACachedDocument(): void {
         $document = $this->chatgpt(['token_endpoint_auth_methods_supported' => ['none']]);
         $fetcher = $this->fetcher($document);

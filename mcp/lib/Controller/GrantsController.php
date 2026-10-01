@@ -4,6 +4,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Controller;
 
 use InvalidArgumentException;
+use OCA\Mcp\OAuth\ClientMetadataFetcher;
+use OCA\Mcp\OAuth\ClientResolver;
+use OCA\Mcp\OAuth\NativeClient;
 use OCA\Mcp\Service\GrantMatrix;
 use OCA\Mcp\Service\GrantPolicy;
 use OCP\AppFramework\Controller;
@@ -22,17 +25,6 @@ use OCP\IUserManager;
 class GrantsController extends Controller {
     /** Pseudo-operation of the bulk endpoint that toggles eligibility instead of a grant. */
     public const ELIGIBLE = 'eligible';
-    /** App config key: comma-separated CIMD client_id hosts; absent means DEFAULT_HOSTS. */
-    public const HOSTS_KEY = 'oauth_client_hosts';
-    /** App config key: '1' when the static native client is accepted, '0' (default) otherwise. */
-    public const NATIVE_KEY = 'oauth_native_client_enabled';
-    /** Hosts trusted when HOSTS_KEY is absent. */
-    public const DEFAULT_HOSTS = ['claude.ai', 'chatgpt.com'];
-    // TODO(merge): NativeClient::CLIENT_ID
-    public const NATIVE_CLIENT_ID = 'nextcloud-mcp-native';
-    // TODO(merge): NativeClient::REDIRECT_URIS
-    public const NATIVE_REDIRECT_URIS = ['http://localhost/oauth/callback', 'http://127.0.0.1/oauth/callback', 'http://[::1]/oauth/callback'];
-
     public function __construct(
         string $appName,
         IRequest $request,
@@ -145,10 +137,10 @@ class GrantsController extends Controller {
                 $native = self::bool($native);
             }
             if ($hosts !== null) {
-                $this->config->setAppValue($this->appName, self::HOSTS_KEY, implode(',', $hosts));
+                $this->config->setAppValue($this->appName, ClientMetadataFetcher::HOSTS_KEY, implode(',', $hosts));
             }
             if ($native !== null) {
-                $this->config->setAppValue($this->appName, self::NATIVE_KEY, $native ? '1' : '0');
+                $this->config->setAppValue($this->appName, NativeClient::CONFIG_KEY, $native ? '1' : '0');
             }
             return $this->oauthState();
         });
@@ -156,31 +148,36 @@ class GrantsController extends Controller {
 
     /** @return array{hosts:list<string>, hostsDefault:bool, nativeClientEnabled:bool, nativeClientId:string, nativeRedirectUris:list<string>} */
     private function oauthState(): array {
-        $raw = $this->config->getAppValue($this->appName, self::HOSTS_KEY, '');
+        $raw = $this->config->getAppValue($this->appName, ClientMetadataFetcher::HOSTS_KEY, '');
         $hosts = array_values(array_filter(array_map('trim', explode(',', $raw)), static fn (string $h) => $h !== ''));
         $default = $hosts === [];
         return [
-            'hosts' => $default ? self::DEFAULT_HOSTS : $hosts,
+            'hosts' => $default ? explode(',', ClientMetadataFetcher::DEFAULT_HOSTS) : $hosts,
             'hostsDefault' => $default,
-            'nativeClientEnabled' => $this->config->getAppValue($this->appName, self::NATIVE_KEY, '0') === '1',
-            'nativeClientId' => self::NATIVE_CLIENT_ID,
-            'nativeRedirectUris' => self::NATIVE_REDIRECT_URIS,
+            'nativeClientEnabled' => ClientResolver::nativeEnabled($this->config),
+            'nativeClientId' => NativeClient::CLIENT_ID,
+            'nativeRedirectUris' => NativeClient::REDIRECT_URIS,
         ];
     }
 
     /**
-     * @param mixed $value request value, which must be a non-empty list of bare lowercase host names
-     * @return list<string> validated hosts without duplicates
+     * @param mixed $value request value, which must be a non-empty list of bare host names
+     * @return list<string> validated lowercase hosts without surrounding whitespace or duplicates
      * @throws InvalidArgumentException for an empty list, a non-string or a host with scheme, port, path, wildcard or space
      */
     private static function hosts(mixed $value): array {
         if (!is_array($value) || $value === [] || !array_is_list($value)) {
             throw new InvalidArgumentException('Invalid request');
         }
-        foreach ($value as $host) {
-            if (!is_string($host) || preg_match('/^[a-z0-9-]+(\.[a-z0-9-]+)*$/D', $host) !== 1 || strlen($host) > 253) {
+        foreach ($value as $index => $host) {
+            if (!is_string($host)) {
                 throw new InvalidArgumentException('Invalid request');
             }
+            $host = strtolower(trim($host));
+            if (preg_match('/^[a-z0-9-]+(\.[a-z0-9-]+)*$/D', $host) !== 1 || strlen($host) > 253) {
+                throw new InvalidArgumentException('Invalid request');
+            }
+            $value[$index] = $host;
         }
         return array_values(array_unique($value));
     }

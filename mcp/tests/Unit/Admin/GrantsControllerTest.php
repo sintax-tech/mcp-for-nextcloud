@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Admin;
 
 use OCA\Mcp\Controller\GrantsController;
+use OCA\Mcp\OAuth\ClientMetadataFetcher;
+use OCA\Mcp\OAuth\NativeClient;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
@@ -122,12 +124,21 @@ final class GrantsControllerTest extends TestCase {
     public function testOauthClientsShowsTheDefaultHostsWhenUnset(): void {
         $data = $this->controller()->oauthClients()->getData();
         $this->assertSame([
-            'hosts' => ['claude.ai', 'chatgpt.com'],
+            'hosts' => explode(',', ClientMetadataFetcher::DEFAULT_HOSTS),
             'hostsDefault' => true,
             'nativeClientEnabled' => false,
-            'nativeClientId' => 'nextcloud-mcp-native',
-            'nativeRedirectUris' => ['http://localhost/oauth/callback', 'http://127.0.0.1/oauth/callback', 'http://[::1]/oauth/callback'],
+            'nativeClientId' => NativeClient::CLIENT_ID,
+            'nativeRedirectUris' => NativeClient::REDIRECT_URIS,
         ], $data);
+    }
+
+    public function testOauthClientsShowsDefaultHostsForEmptyConfig(): void {
+        foreach (['', " , , \t "] as $raw) {
+            $this->fx->config->app['mcp'][ClientMetadataFetcher::HOSTS_KEY] = $raw;
+            $data = $this->controller()->oauthClients()->getData();
+            $this->assertSame(explode(',', ClientMetadataFetcher::DEFAULT_HOSTS), $data['hosts']);
+            $this->assertTrue($data['hostsDefault']);
+        }
     }
 
     public function testOauthClientsReadsExplicitConfig(): void {
@@ -153,18 +164,25 @@ final class GrantsControllerTest extends TestCase {
         $this->assertSame('0', $this->fx->config->app['mcp']['oauth_native_client_enabled']);
     }
 
+    public function testUpdateOauthClientsNormalizesHostsBeforeValidationAndDeduplication(): void {
+        $response = $this->controller(['hosts' => [' ChatGPT.com ', 'CLAUDE.AI', 'chatgpt.COM']])->updateOauthClients();
+        $this->assertSame(200, $response->getStatus());
+        $this->assertSame(['chatgpt.com', 'claude.ai'], $response->getData()['hosts']);
+        $this->assertSame('chatgpt.com,claude.ai', $this->fx->config->app['mcp'][ClientMetadataFetcher::HOSTS_KEY]);
+    }
+
     public function testUpdateOauthClientsRejectsInvalidInputWithoutWriting(): void {
         foreach ([
             [],
             ['hosts' => []],
             ['hosts' => 'claude.ai'],
-            ['hosts' => ['Claude.ai']],
             ['hosts' => ['https://claude.ai']],
             ['hosts' => ['claude.ai:443']],
             ['hosts' => ['claude.ai/path']],
             ['hosts' => ['*.claude.ai']],
             ['hosts' => ['claude .ai']],
             ['hosts' => ['']],
+            ['hosts' => ['   ']],
             ['hosts' => ['claude..ai']],
             ['hosts' => [42]],
             ['hosts' => ['claude.ai'], 'nativeClientEnabled' => 'yes'],

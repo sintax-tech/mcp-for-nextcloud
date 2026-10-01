@@ -110,6 +110,28 @@ final class DeckMessages {
 	}
 
 	/**
+	 * A card was created in a list while it was being deleted, so the delete was taken back.
+	 * @param bool $restored Whether the list is back; false when it stayed in the Deck trash.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorStackReceivedCards(bool $restored): string {
+		return $restored
+			? Translator::t('The list received cards while it was being deleted; nothing was deleted.')
+			: Translator::t('The list received cards while it was being deleted and could not be restored; recover it from the Deck trash.');
+	}
+
+	/**
+	 * A card was created in a list of the board while it was being deleted, so the delete was taken back.
+	 * @param bool $restored Whether the board is back; false when it stayed in the Deck trash.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorBoardReceivedCards(bool $restored): string {
+		return $restored
+			? Translator::t('The board received cards while it was being deleted; nothing was deleted.')
+			: Translator::t('The board received cards while it was being deleted and could not be restored; recover it from the Deck trash.');
+	}
+
+	/**
 	 * Only the owner deletes a board, even when others may manage it.
 	 * @return string The message in the language of the current user.
 	 */

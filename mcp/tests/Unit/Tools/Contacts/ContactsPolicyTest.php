@@ -64,7 +64,8 @@ final class ContactsPolicyTest extends TestCase {
             $this->createMock(ContactDav::class),
             new ContactCard(),
             new SharedGuard($users),
-            $this->createMock(ContactBackup::class)
+            $this->createMock(ContactBackup::class),
+            $this->createMock(\OCA\Mcp\Tools\Contacts\SystemContacts::class)
         );
         $apps = $this->createMock(IAppManager::class);
         $apps->method('isEnabledForUser')->with('contacts')->willReturn($enabled);

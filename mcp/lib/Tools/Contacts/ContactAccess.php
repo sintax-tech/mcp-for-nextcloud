@@ -15,6 +15,9 @@ class ContactAccess {
     /** Base of the address-book paths exposed by the tools. */
     private const PATH_PREFIX = '/remote.php/dav/addressbooks/users/';
 
+    /** Directory name the core uses for the system address book inside every user's home. */
+    public const SYSTEM_URI = 'z-server-generated--system';
+
     /**
      * Receives the read-only port used to resolve visible address books.
      *
@@ -22,6 +25,27 @@ class ContactAccess {
      * @return void
      */
     public function __construct(private ContactStore $store) {}
+
+    /**
+     * DAV path under which the tools expose the system catalog ("Accounts") to one user.
+     *
+     * @param string $userId authenticated user UID
+     * @return string
+     */
+    public static function systemPath(string $userId): string {
+        return self::PATH_PREFIX . rawurlencode($userId) . '/' . self::SYSTEM_URI . '/';
+    }
+
+    /**
+     * Whether a tool path names the read-only system catalog.
+     *
+     * @param string $userId authenticated user UID
+     * @param string $path address-book path given to a tool
+     * @return bool
+     */
+    public function isSystemPath(string $userId, string $path): bool {
+        return rtrim($path, '/') === rtrim(self::systemPath($userId), '/');
+    }
 
     /**
      * Lists personal and shared address books, explicitly excluding system principals.

@@ -11,8 +11,10 @@ use OCA\Mcp\Tools\Contacts\ContactCard;
 use OCA\Mcp\Tools\Contacts\ContactDav;
 use OCA\Mcp\Tools\Contacts\ContactStore;
 use OCA\Mcp\Tools\Contacts\ContactsModule;
+use OCA\Mcp\Tools\Contacts\SystemContacts;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\IUserManager;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /** Verifies contact plans, preserving patches, visibility and guarded native writes. */
@@ -35,6 +37,7 @@ final class ContactsModuleTest extends TestCase {
     private array $books;
     private array $rows;
     private ContactBackup $backup;
+    private SystemContacts $system;
 
     protected function setUp(): void {
         $this->books = [
@@ -64,16 +67,18 @@ final class ContactsModuleTest extends TestCase {
         $this->store->method('books')->willReturnCallback(fn () => $this->books);
         $this->store->method('card')->willReturn(['uri' => 'c1.vcf', 'etag' => '"v1"', 'data' => self::CARD]);
         $this->rows = [['uri' => 'c1.vcf', 'etag' => '"v1"', 'data' => self::CARD]];
-        $this->store->method('cards')->willReturnCallback(fn () => $this->rows);
+        $this->store->method('cards')->willReturnCallback(fn (int $bookId): array => $bookId === 1 ? $this->rows : []);
         $this->dav = $this->createMock(ContactDav::class);
         $this->backup = $this->createMock(ContactBackup::class);
+        $this->system = $this->createMock(SystemContacts::class);
         $this->module = new ContactsModule(
             new ContactAccess($this->store),
             $this->store,
             $this->dav,
             new ContactCard(),
             new SharedGuard($this->createMock(IUserManager::class)),
-            $this->backup
+            $this->backup,
+            $this->system
         );
     }
 
@@ -339,6 +344,160 @@ final class ContactsModuleTest extends TestCase {
             'ORG:Example;Department;Unit',
             $cards->patch($original, ['organization' => $item['organization']])->serialize()
         );
+    }
+
+    private const SYSTEM_BOOK = '/remote.php/dav/addressbooks/users/alice/z-server-generated--system/';
+
+    /**
+     * @param list<string> $emails
+     * @return array<string, mixed>
+     */
+    private function account(string $uid, string $name, array $emails = []): array {
+        return [
+            'uid' => $uid,
+            'accountId' => $uid,
+            'name' => $name,
+            'organization' => 'Dalcomad',
+            'title' => '',
+            'nickname' => '',
+            'emails' => $emails,
+            'uri' => 'Database:' . $uid . '.vcf',
+            'addressbook' => self::SYSTEM_BOOK,
+            'addressBook' => ['name' => 'Contas', 'system' => true],
+            'readOnly' => true,
+        ];
+    }
+
+    public function testListAddressbooksIncludesTheReadOnlySystemCatalog(): void {
+        $this->system->method('bookName')->willReturn('Contas');
+        $books = $this->json($this->module->call('contacts_list_addressbooks', [], 'alice'));
+        self::assertCount(3, $books);
+        $last = $books[2];
+        self::assertSame(self::SYSTEM_BOOK, $last['path']);
+        self::assertSame('Contas', $last['name']);
+        self::assertTrue($last['system']);
+        self::assertTrue($last['readOnly']);
+        self::assertFalse($last['writable']);
+    }
+
+    public function testSearchWithoutAddressbookAddsAccountsAfterPersonalContacts(): void {
+        $this->system->method('search')->with('alice', 'Old')->willReturn([$this->account('pedro', 'Pedro Almeida', ['pedro@example.invalid'])]);
+        $result = $this->json($this->module->call('contacts_search_contacts', ['query' => 'Old'], 'alice'));
+        self::assertSame(['c1.vcf', 'Database:pedro.vcf'], array_column($result['contacts'], 'uri'));
+        self::assertSame('pedro', $result['contacts'][1]['accountId']);
+        self::assertTrue($result['contacts'][1]['readOnly']);
+        self::assertSame(self::SYSTEM_BOOK, $result['contacts'][1]['addressbook']);
+        self::assertArrayNotHasKey('accountId', $result['contacts'][0]);
+        self::assertFalse($result['hasMore']);
+    }
+
+    public function testSearchWithoutAddressbookAndWithoutTermNeverTouchesTheCatalog(): void {
+        $this->system->expects(self::never())->method('search');
+        $result = $this->json($this->module->call('contacts_search_contacts', [], 'alice'));
+        self::assertSame(['c1.vcf'], array_column($result['contacts'], 'uri'));
+    }
+
+    public function testPersonalContactWinsAndGainsAccountIdWhenTheEmailMatches(): void {
+        $this->system->method('search')->willReturn([$this->account('old', 'Old Name', ['HOME@example.invalid'])]);
+        $result = $this->json($this->module->call('contacts_search_contacts', ['query' => 'Old'], 'alice'));
+        self::assertCount(1, $result['contacts']);
+        self::assertSame('c1.vcf', $result['contacts'][0]['uri']);
+        self::assertSame('old', $result['contacts'][0]['accountId']);
+    }
+
+    public function testSearchPaginatesAcrossPersonalAndAccountResults(): void {
+        $this->system->method('search')->willReturn(
+            [$this->account('a', 'Old A'), $this->account('b', 'Old B')]
+        );
+        $first = $this->json($this->module->call('contacts_search_contacts', ['query' => 'Old', 'limit' => 2], 'alice'));
+        self::assertSame(['c1.vcf', 'Database:a.vcf'], array_column($first['contacts'], 'uri'));
+        self::assertTrue($first['hasMore']);
+        self::assertSame(2, $first['nextOffset']);
+        $second = $this->json(
+            $this->module->call('contacts_search_contacts', ['query' => 'Old', 'limit' => 2, 'offset' => 2], 'alice')
+        );
+        self::assertSame(['Database:b.vcf'], array_column($second['contacts'], 'uri'));
+        self::assertFalse($second['hasMore']);
+    }
+
+    public function testSearchRestrictedToTheSystemCatalogReturnsOnlyAccounts(): void {
+        $this->system->method('bookName')->willReturn('Contas');
+        $this->system->method('search')->willReturn([$this->account('pedro', 'Pedro Almeida')]);
+        $result = $this->json(
+            $this->module->call('contacts_search_contacts', ['addressbook' => self::SYSTEM_BOOK, 'query' => 'Pedro'], 'alice')
+        );
+        self::assertSame(['Database:pedro.vcf'], array_column($result['contacts'], 'uri'));
+    }
+
+    public function testHiddenCatalogPathIsNotFoundForSearch(): void {
+        $this->system->method('bookName')->willReturn(null);
+        $this->system->expects(self::never())->method('search');
+        $this->expectException(ToolFailure::class);
+        $this->module->call('contacts_search_contacts', ['addressbook' => self::SYSTEM_BOOK, 'query' => 'Pedro'], 'alice');
+    }
+
+    public function testCatalogSearchRequiresATerm(): void {
+        $this->system->method('bookName')->willReturn('Contas');
+        $this->system->expects(self::never())->method('search');
+        $this->expectException(ToolFailure::class);
+        $this->module->call('contacts_search_contacts', ['addressbook' => self::SYSTEM_BOOK, 'query' => ''], 'alice');
+    }
+
+    public function testReadsAnAccountContactWithoutVcardOrPrivateFields(): void {
+        $this->system->method('find')->with('alice', 'Database:pedro.vcf')->willReturn($this->account('pedro', 'Pedro Almeida'));
+        $contact = $this->json(
+            $this->module->call('contacts_read_contact', ['addressbook' => self::SYSTEM_BOOK, 'uri' => 'Database:pedro.vcf'], 'alice')
+        );
+        self::assertSame('pedro', $contact['accountId']);
+        self::assertTrue($contact['readOnly']);
+        self::assertArrayNotHasKey('vcard', $contact);
+        self::assertArrayNotHasKey('etag', $contact);
+    }
+
+    public function testReadOfAnUnavailableAccountContactIsNotFound(): void {
+        $this->system->method('find')->willReturn(null);
+        $this->expectException(ToolFailure::class);
+        $this->module->call('contacts_read_contact', ['addressbook' => self::SYSTEM_BOOK, 'uri' => 'Database:x.vcf'], 'alice');
+    }
+
+    /** @return array<string, array{string, array<string, mixed>}> */
+    public static function writesToTheCatalog(): array {
+        $book = ['addressbook' => self::SYSTEM_BOOK];
+        return [
+            'create' => ['contacts_create_contact', $book + ['name' => 'New']],
+            'edit' => ['contacts_edit_contact', $book + ['uri' => 'Database:pedro.vcf', 'name' => 'New']],
+            'delete' => ['contacts_delete_contact', $book + ['uri' => 'Database:pedro.vcf']],
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $arguments
+     */
+    #[DataProvider('writesToTheCatalog')]
+    public function testWritesToTheCatalogAreRefusedWithAClearMessage(string $tool, array $arguments): void {
+        $this->dav->expects(self::never())->method('put');
+        $this->dav->expects(self::never())->method('update');
+        $this->dav->expects(self::never())->method('delete');
+        $this->backup->expects(self::never())->method('save');
+        foreach ([false, true] as $confirmed) {
+            try {
+                $this->module->call($tool, $arguments + ($confirmed ? ['confirm' => true] : []), 'alice');
+                self::fail('The system catalog must refuse writes.');
+            } catch (ToolFailure $failure) {
+                self::assertStringContainsString('read-only', $failure->getMessage());
+                self::assertStringContainsString('administrator', $failure->getMessage());
+            }
+        }
+        $this->expectException(ToolFailure::class);
+        $this->module->preview($tool, $arguments, 'alice');
+    }
+
+    public function testSearchDefinitionMakesTheAddressbookOptionalAndMentionsAccounts(): void {
+        $definitions = array_column($this->module->definitions(), null, 'name');
+        $search = $definitions['contacts_search_contacts'];
+        self::assertNotContains('addressbook', $search['inputSchema']['required'] ?? []);
+        self::assertStringContainsString('accountId', $search['description']);
+        self::assertStringContainsString('accountId', implode(' ', $this->module->guideNotes()));
     }
 
     private function json(array $result): array {

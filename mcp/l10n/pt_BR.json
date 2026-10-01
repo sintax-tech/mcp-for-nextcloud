@@ -578,6 +578,8 @@
     "Move event from *%s* to *%s*: **%s**" : "Mover evento de *%s* para *%s*: **%s**",
     "Transfer event from *%s* to *%s*: **%s**" : "Transferir evento de *%s* para *%s*: **%s**",
     "Delete event in *%s*: **%s**" : "Excluir evento em *%s*: **%s**",
-    "- Consequence: %s" : "- Consequência: %s"
+    "- Consequence: %s" : "- Consequência: %s",
+    "Enter at least 2 characters to search the accounts catalog." : "Digite pelo menos 2 caracteres para buscar no catálogo de contas.",
+    "Account contacts are read-only; ask the administrator." : "Os contatos de contas são somente leitura; peça ao administrador."
 },"pluralForm" :"nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

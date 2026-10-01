@@ -204,6 +204,18 @@
 		return el('details', { className: 'mcp-bulk-menu' }, [summary, list])
 	}
 
+	/** Makes the second header row stick right below the first one, whose height depends on the density. */
+	function stickSecondHeaderRow() {
+		const [top, sub] = table.tHead.rows
+		if (!top || !sub) {
+			return
+		}
+		const offset = top.getBoundingClientRect().height
+		for (const cell of sub.cells) {
+			cell.style.top = offset + 'px'
+		}
+	}
+
 	/** Renders header and rows from state.data. */
 	function render() {
 		const data = state.data
@@ -237,11 +249,7 @@
 		})
 		top.append(el('th', { rowSpan: 2, scope: 'col', textContent: t('mcp', 'Connected') }))
 		table.tHead.replaceChildren(top, sub)
-		// The second header row sticks right below the first one.
-		const offset = top.getBoundingClientRect().height
-		for (const cell of sub.cells) {
-			cell.style.top = offset + 'px'
-		}
+		stickSecondHeaderRow()
 
 		const rows = data.users.map(renderRow)
 		if (rows.length === 0) {
@@ -433,6 +441,7 @@
 	table.classList.toggle('mcp-compact', compactBox.checked)
 	compactBox.addEventListener('change', () => {
 		table.classList.toggle('mcp-compact', compactBox.checked)
+		stickSecondHeaderRow()
 		try {
 			window.localStorage.setItem(COMPACT_KEY, compactBox.checked ? '1' : '0')
 		} catch (e) {

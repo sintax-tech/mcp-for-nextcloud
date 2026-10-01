@@ -2,6 +2,7 @@ OC.L10N.register(
     "mcp",
     {
     "%s: %s" : "%s: %s",
+    "The search for people failed; try again." : "La búsqueda de personas falló; inténtelo de nuevo.",
     "required with confirm: true; send the plan_state of the plan" : "obligatorio con confirm: true; envíe el plan_state del plan",
     "The share changed since the plan; check it again." : "El recurso compartido cambió desde el plan; revíselo de nuevo.",
     "To confirm, repeat the call with plan_state %s." : "Para confirmar, repita la llamada con plan_state %s.",

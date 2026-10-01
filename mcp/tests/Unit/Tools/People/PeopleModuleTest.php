@@ -14,6 +14,7 @@ use OCA\Mcp\Tools\ToolPresentation;
 use OCP\Collaboration\Collaborators\ISearch;
 use OCP\Share\IShare;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 /**
  * Verifies the account search: exact and partial matches, limit, term bounds and the optional e-mail;
@@ -36,7 +37,7 @@ final class PeopleModuleTest extends TestCase {
             $captured = [$term, $types, $lookup, $limit, $offset];
             return [$result, false];
         });
-        return new PeopleModule($search);
+        return new PeopleModule($search, $this->createMock(LoggerInterface::class));
     }
 
     /** @return list<array<string, string>> */
@@ -46,7 +47,7 @@ final class PeopleModuleTest extends TestCase {
     }
 
     public function testDefinitionIsAnAppLessReadTool(): void {
-        $definitions = (new PeopleModule($this->createMock(ISearch::class)))->definitions();
+        $definitions = (new PeopleModule($this->createMock(ISearch::class), $this->createMock(LoggerInterface::class)))->definitions();
         self::assertCount(1, $definitions);
         self::assertSame('users_search', $definitions[0]['name']);
         self::assertSame('people', $definitions[0]['module']);
@@ -65,7 +66,7 @@ final class PeopleModuleTest extends TestCase {
     }
 
     public function testIncludeGroupsIsValidatedAsABooleanByTheSchema(): void {
-        $schema = (new PeopleModule($this->createMock(ISearch::class)))->definitions()[0]['inputSchema'];
+        $schema = (new PeopleModule($this->createMock(ISearch::class), $this->createMock(LoggerInterface::class)))->definitions()[0]['inputSchema'];
         self::assertFalse(ArgumentValidator::validate($schema, ['query' => 've'])['include_groups']);
         self::assertTrue(ArgumentValidator::validate($schema, ['query' => 've', 'include_groups' => true])['include_groups']);
         $this->expectException(InvalidArgumentException::class);
@@ -206,16 +207,57 @@ final class PeopleModuleTest extends TestCase {
         self::assertStringContainsString('Never invent an ID', ToolPresentation::INSTRUCTIONS);
         self::assertStringContainsString('Search people', ToolPresentation::INSTRUCTIONS);
         self::assertSame('Search people', ToolPresentation::title('users_search'));
-        self::assertStringContainsString('users_search', implode(' ', (new PeopleModule($this->createMock(ISearch::class)))->guideNotes()));
+        self::assertStringContainsString('users_search', implode(' ', (new PeopleModule($this->createMock(ISearch::class), $this->createMock(LoggerInterface::class)))->guideNotes()));
     }
 
     public function testTheModelIsToldHowToShareWithAGroup(): void {
-        $module = new PeopleModule($this->createMock(ISearch::class));
+        $module = new PeopleModule($this->createMock(ISearch::class), $this->createMock(LoggerInterface::class));
         $description = $module->definitions()[0]['description'];
         self::assertStringContainsString('include_groups', $description);
         self::assertStringContainsString('group:', $description);
         $notes = implode(' ', $module->guideNotes());
         self::assertStringContainsString('include_groups', $notes);
         self::assertStringContainsString('group:', $notes);
+    }
+
+    /**
+     * Whatever the core search throws may carry the term in its message: the call fails with a fixed message, the log
+     * keeps the exception class only, and the term reaches neither, through the module or the registry that runs it.
+     */
+    public function testAFailingSearchIsASafeErrorAndLogsTheClassOnly(): void {
+        $term = 'Zé Segredo';
+        $search = $this->createMock(ISearch::class);
+        $search->method('search')->willThrowException(new \RuntimeException('no index for ' . $term));
+        $logged = [];
+        $logger = $this->createMock(LoggerInterface::class);
+        foreach (['emergency', 'alert', 'critical', 'error', 'warning', 'notice', 'info', 'debug', 'log'] as $level) {
+            $logger->method($level)->willReturnCallback(function (mixed ...$args) use (&$logged): void {
+                $logged[] = $args;
+            });
+        }
+        $module = new PeopleModule($search, $logger);
+
+        try {
+            $module->call('users_search', ['query' => $term, 'limit' => 10], 'alice');
+            self::fail('no failure');
+        } catch (\OCA\Mcp\Tools\ToolFailure $e) {
+            self::assertSame('The search for people failed; try again.', $e->getMessage());
+        }
+        self::assertSame([['app' => 'mcp', 'exception_class' => \RuntimeException::class]], array_column($logged, 1));
+
+        $policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
+        $policy->setGrant('alice', 'people', 'read', true);
+        $registryLogger = $this->createMock(LoggerInterface::class);
+        $registryLogger->method('error')->willReturnCallback(function (mixed ...$args) use (&$logged): void {
+            $logged[] = $args;
+        });
+        $registry = new \OCA\Mcp\Tools\ToolRegistry([$module], $policy, $this->createMock(\OCP\App\IAppManager::class),
+            $this->createMock(\OCP\IUserManager::class), $registryLogger);
+        $result = $registry->call('users_search', ['query' => $term], 'alice');
+
+        self::assertTrue($result['isError'] ?? false);
+        self::assertStringNotContainsString('Segredo', json_encode($result, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
+        self::assertStringNotContainsString('Segredo', json_encode($logged, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE));
+        self::assertCount(2, $logged, 'só o aviso do módulo, nada do registry');
     }
 }

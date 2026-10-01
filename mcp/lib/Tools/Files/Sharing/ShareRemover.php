@@ -53,31 +53,33 @@ final class ShareRemover {
      * @throws ToolFailure not found, a Talk attachment, or a type the administrator did not grant
      */
     public function plan(Folder $userFolder, string $uid, array $arguments): array {
-        return $this->planOf($this->prepare($userFolder, $uid, $arguments));
+        return $this->planOf($this->prepare($userFolder, $uid, $arguments), $uid);
     }
 
     /**
      * @param array{share:IShare, path:string, folder:bool, recipient:ShareRecipient} $target what {@see self::prepare()} returned
+     * @param string $uid authenticated user, part of the state
      * @param bool $changed whether the confirmed call found this share instead of the approved one: a warning says so
      * @return array<string, mixed> the plan, in the shape {@see self::plan()} documents, plus `warnings` when changed
      */
-    private function planOf(array $target, bool $changed = false): array {
+    private function planOf(array $target, string $uid, bool $changed = false): array {
         return [
             'shareId' => (string)$target['share']->getFullId(),
             'path' => $target['path'],
             'isDir' => $target['folder'],
             'with' => $target['recipient']->toArray(),
             'message' => CommonMessages::planNothingChanged(),
-            PlanState::ARGUMENT => $this->stateOf($target),
+            PlanState::ARGUMENT => $this->stateOf($target, $uid),
         ] + ($changed ? ['warnings' => [['message' => FilesMessages::sharePlanChanged()]]] : []);
     }
 
     /**
      * @param array{share:IShare} $target what {@see self::prepare()} returned
+     * @param string $uid authenticated user, so the value never confirms for another account
      * @return string the opaque {@see PlanState} of the share to remove: its id and its fields as they are now
      */
-    private function stateOf(array $target): string {
-        return $this->states->of('files_unshare', ['action' => 'remove', 'before' => ShareAccess::snapshot($target['share'])]);
+    private function stateOf(array $target, string $uid): string {
+        return $this->states->of('files_unshare', $uid, ['action' => 'remove', 'before' => ShareAccess::snapshot($target['share'])]);
     }
 
     /**
@@ -96,8 +98,8 @@ final class ShareRemover {
     public function apply(Folder $userFolder, string $uid, array $arguments): array {
         $target = $this->prepare($userFolder, $uid, $arguments);
         PlanState::require($arguments);
-        if (!PlanState::matches($this->stateOf($target), $arguments)) {
-            throw new PlanChanged($this->planOf($target, true));
+        if (!PlanState::matches($this->stateOf($target, $uid), $arguments)) {
+            throw new PlanChanged($this->planOf($target, $uid, true));
         }
         try {
             $this->shareManager->deleteShare($target['share']);

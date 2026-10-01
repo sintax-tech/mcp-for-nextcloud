@@ -84,18 +84,19 @@ final class ShareWriter {
      * @throws ToolFailure for every other refusal, with a translated reason
      */
     public function plan(Folder $userFolder, string $uid, array $arguments): array {
-        return $this->planOf($this->prepare($userFolder, $uid, $arguments));
+        return $this->planOf($this->prepare($userFolder, $uid, $arguments), $uid);
     }
 
     /**
      * The plan of one prepared change, with its {@see PlanState}.
      *
      * @param array<string, mixed> $change what {@see self::prepare()} returned
+     * @param string $uid authenticated user, part of the state
      * @param bool $changed whether the confirmed call found this state instead of the approved one: the warning that
      *   says so comes first
      * @return array<string, mixed> the plan, in the shape {@see self::plan()} documents
      */
-    private function planOf(array $change, bool $changed = false): array {
+    private function planOf(array $change, string $uid, bool $changed = false): array {
         $warnings = $change['warnings'];
         if ($changed) {
             array_unshift($warnings, FilesMessages::sharePlanChanged());
@@ -113,7 +114,7 @@ final class ShareWriter {
             'timezone' => $change['timezone']->getName(),
             'warnings' => array_map(static fn (string $message): array => ['message' => $message], $warnings),
             'message' => $change['action'] === self::NONE ? FilesMessages::planShareNothing() : CommonMessages::planNothingChanged(),
-            PlanState::ARGUMENT => $this->stateOf($change),
+            PlanState::ARGUMENT => $this->stateOf($change, $uid),
         ] + ($change['passwordPlan'] === null ? [] : ['password' => $change['passwordPlan']]);
     }
 
@@ -122,10 +123,11 @@ final class ShareWriter {
      * note, whether it has a password), the node and what it becomes. No password is part of it.
      *
      * @param array<string, mixed> $change what {@see self::prepare()} returned
+     * @param string $uid authenticated user, so the value never confirms for another account
      * @return string the opaque {@see PlanState} of the change
      */
-    private function stateOf(array $change): string {
-        return $this->states->of('files_share', [
+    private function stateOf(array $change, string $uid): string {
+        return $this->states->of('files_share', $uid, [
             'action' => $change['action'],
             'shareId' => $change['existing']?->getFullId(),
             'node' => $change['node']->getId(),
@@ -154,8 +156,8 @@ final class ShareWriter {
     public function apply(Folder $userFolder, string $uid, array $arguments): array {
         $change = $this->prepare($userFolder, $uid, $arguments);
         PlanState::require($arguments);
-        if (!PlanState::matches($this->stateOf($change), $arguments)) {
-            throw new PlanChanged($this->planOf($change, true));
+        if (!PlanState::matches($this->stateOf($change, $uid), $arguments)) {
+            throw new PlanChanged($this->planOf($change, $uid, true));
         }
         $share = $change['existing'];
         $password = null;

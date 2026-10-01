@@ -18,25 +18,32 @@ final class PlanStateTest extends TestCase {
 
     public function testTheSameStateGivesTheSameValueAcrossInstances(): void {
         $shown = ['action' => 'update', 'shareId' => 'ocinternal:7', 'before' => ['bits' => 19, 'note' => 'oi']];
-        self::assertSame($this->states()->of('files_share', $shown), $this->states()->of('files_share', $shown));
-        self::assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $this->states()->of('files_share', $shown));
+        self::assertSame($this->states()->of('files_share', 'alice', $shown), $this->states()->of('files_share', 'alice', $shown));
+        self::assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $this->states()->of('files_share', 'alice', $shown));
     }
 
     public function testAnyDifferenceGivesAnotherValue(): void {
         $states = $this->states();
-        $base = $states->of('files_share', ['action' => 'update', 'shareId' => 'ocinternal:7', 'before' => ['bits' => 19]]);
-        self::assertNotSame($base, $states->of('files_share', ['action' => 'create', 'shareId' => 'ocinternal:7', 'before' => ['bits' => 19]]));
-        self::assertNotSame($base, $states->of('files_share', ['action' => 'update', 'shareId' => 'ocinternal:8', 'before' => ['bits' => 19]]));
-        self::assertNotSame($base, $states->of('files_share', ['action' => 'update', 'shareId' => 'ocinternal:7', 'before' => ['bits' => 17]]));
-        self::assertNotSame($base, $states->of('files_unshare', ['action' => 'update', 'shareId' => 'ocinternal:7', 'before' => ['bits' => 19]]),
+        $base = $states->of('files_share', 'alice', ['action' => 'update', 'shareId' => 'ocinternal:7', 'before' => ['bits' => 19]]);
+        self::assertNotSame($base, $states->of('files_share', 'alice', ['action' => 'create', 'shareId' => 'ocinternal:7', 'before' => ['bits' => 19]]));
+        self::assertNotSame($base, $states->of('files_share', 'alice', ['action' => 'update', 'shareId' => 'ocinternal:8', 'before' => ['bits' => 19]]));
+        self::assertNotSame($base, $states->of('files_share', 'alice', ['action' => 'update', 'shareId' => 'ocinternal:7', 'before' => ['bits' => 17]]));
+        self::assertNotSame($base, $states->of('files_unshare', 'alice', ['action' => 'update', 'shareId' => 'ocinternal:7', 'before' => ['bits' => 19]]),
             'o estado de uma tool não confirma outra');
-        self::assertNotSame($base, $this->states('other-secret')->of('files_share', ['action' => 'update', 'shareId' => 'ocinternal:7', 'before' => ['bits' => 19]]),
+        self::assertNotSame($base, $this->states('other-secret')->of('files_share', 'alice', ['action' => 'update', 'shareId' => 'ocinternal:7', 'before' => ['bits' => 19]]),
             'sem o segredo da instância não se calcula o valor');
+    }
+
+    /** The same state seen by another account is another value: a plan_state never confirms for somebody else. */
+    public function testAnotherAccountGivesAnotherValue(): void {
+        $states = $this->states();
+        $shown = ['action' => 'update', 'shareId' => 'ocinternal:7', 'before' => ['bits' => 19]];
+        self::assertNotSame($states->of('files_share', 'alice', $shown), $states->of('files_share', 'bruno', $shown));
     }
 
     /** Nothing of what was hashed can be read back from the value. */
     public function testTheValueCarriesNoneOfTheFields(): void {
-        $value = $this->states()->of('files_share', ['note' => 'segredo-da-nota', 'shareId' => 'ocinternal:42']);
+        $value = $this->states()->of('files_share', 'alice', ['note' => 'segredo-da-nota', 'shareId' => 'ocinternal:42']);
         self::assertStringNotContainsString('segredo', $value);
         self::assertStringNotContainsString('ocinternal', $value);
         self::assertSame(64, strlen($value));
@@ -44,10 +51,10 @@ final class PlanStateTest extends TestCase {
 
     public function testTheValueGivenBackMatchesOnlyWhenIdentical(): void {
         $states = $this->states();
-        $value = $states->of('files_share', ['action' => 'create']);
+        $value = $states->of('files_share', 'alice', ['action' => 'create']);
         self::assertTrue(PlanState::matches($value, [PlanState::ARGUMENT => $value]));
         self::assertFalse(PlanState::matches($value, [PlanState::ARGUMENT => strtoupper($value)]));
-        self::assertFalse(PlanState::matches($value, [PlanState::ARGUMENT => $states->of('files_share', ['action' => 'update'])]));
+        self::assertFalse(PlanState::matches($value, [PlanState::ARGUMENT => $states->of('files_share', 'alice', ['action' => 'update'])]));
     }
 
     /** A confirmed call without the value is an argument error on the field, the G4 way, with a fixed rule. */

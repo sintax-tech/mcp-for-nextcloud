@@ -30,11 +30,12 @@ final class PlanState {
 
     /**
      * @param string $tool tool whose plan this is, so the state of one tool never confirms another
+     * @param string $uid authenticated user the plan was made for, so a plan_state never confirms for another account
      * @param array<string, mixed> $shown what the plan showed and the write depends on, as scalars and arrays of them
      * @return string 64 lowercase hex characters
      */
-    public function of(string $tool, array $shown): string {
-        $payload = json_encode([$tool, $shown], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+    public function of(string $tool, string $uid, array $shown): string {
+        $payload = json_encode([$tool, $uid, $shown], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
         return hash_hmac('sha256', $payload, 'mcp-plan-state|' . $this->config->getSystemValueString('secret', ''));
     }
 

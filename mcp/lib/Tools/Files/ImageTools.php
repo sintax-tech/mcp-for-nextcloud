@@ -72,6 +72,7 @@ final class ImageTools {
         private LoggerInterface $logger,
         private ContainerInterface $container,
         private IDBConnection $db,
+        private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
     ) {}
 
     /**
@@ -233,6 +234,9 @@ final class ImageTools {
                 if (!$node instanceof File || !$node->isReadable()) {
                     continue;
                 }
+                if ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($node)) {
+                    continue;
+                }
                 $mime = (string)$node->getMimetype();
                 if (!self::looksLikeImage($mime)) {
                     continue;
@@ -288,17 +292,50 @@ final class ImageTools {
         $operation = SearchBinaryOperator::and(...$conditions);
         $order = [new SearchOrder('mtime', ISearchOrder::DIRECTION_DESCENDING)];
         $user = $this->userManager->get($userId);
-        $search = new NameSearchQuery($operation, $limit, $user, $order);
 
         $out = [];
-        foreach ($scope->search($search) as $node) {
-            if ($node->getPath() === $scope->getPath() || !$node instanceof File || !$node->isReadable()) {
-                continue;
+        $seenIds = [];
+        $batchSize = $limit;
+        $maxInspected = 500;
+        $offset = 0;
+        $totalInspected = 0;
+
+        while (count($out) < $limit && $totalInspected < $maxInspected) {
+            $fetchLimit = min($batchSize, $maxInspected - $totalInspected);
+            $search = new NameSearchQuery($operation, $fetchLimit, $user, $order, $offset);
+            $batch = $scope->search($search);
+            $batchCount = 0;
+            $newInBatch = 0;
+
+            foreach ($batch as $node) {
+                $batchCount++;
+                $totalInspected++;
+                $id = (int)$node->getId();
+                if ($id > 0) {
+                    if (isset($seenIds[$id])) {
+                        continue;
+                    }
+                    $seenIds[$id] = true;
+                }
+                $newInBatch++;
+
+                if ($node->getPath() === $scope->getPath() || !$node instanceof File || !$node->isReadable()) {
+                    continue;
+                }
+                if ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($node)) {
+                    continue;
+                }
+                $out[] = $this->searchEntry($root, $userId, $node);
+                if (count($out) >= $limit) {
+                    break 2;
+                }
             }
-            $out[] = $this->searchEntry($root, $userId, $node);
-            if (count($out) >= $limit) {
+
+            if ($batchCount === 0 || $newInBatch === 0 || $batchCount < $fetchLimit) {
                 break;
             }
+
+            $offset += $batchCount;
         }
 
         return $out;
@@ -316,7 +353,7 @@ final class ImageTools {
      */
     private function selectFromFolder(Folder $root, string $userId, string $folder, int $limit): array {
         $normalized = PathGuard::normalize($folder);
-        $scope = NodeAccess::get($root, $normalized);
+        $scope = NodeAccess::get($root, $normalized, $this->visibilityGuard);
         if (!$scope instanceof Folder) {
             throw new ToolFailure(FilesMessages::notAFolder());
         }
@@ -326,7 +363,7 @@ final class ImageTools {
         $search = new NameSearchQuery($operation, min($limit, self::BATCH_MAX_ITEMS), $user, $order);
         $files = [];
         foreach ($scope->search($search) as $node) {
-            if ($node instanceof File && $node->isReadable()) {
+            if ($node instanceof File && $node->isReadable() && ($this->visibilityGuard === null || $this->visibilityGuard->isVisible($node))) {
                 $files[] = $node;
             }
         }
@@ -345,7 +382,7 @@ final class ImageTools {
         foreach ($paths as $raw) {
             $path = PathGuard::normalize((string)$raw);
             try {
-                $node = NodeAccess::get($root, $path);
+                $node = NodeAccess::get($root, $path, $this->visibilityGuard);
                 if (!$node instanceof File) {
                     $out[] = [$path, null, FilesMessages::notAnImage()];
                     continue;
@@ -566,7 +603,7 @@ final class ImageTools {
      * @throws ToolFailure for a folder, a non-image or an unreadable node
      */
     private function requireImage(Folder $root, string $path): File {
-        $node = NodeAccess::get($root, $path);
+        $node = NodeAccess::get($root, $path, $this->visibilityGuard);
         if (!$node instanceof File) {
             throw new ToolFailure(FilesMessages::notAnImage());
         }

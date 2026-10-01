@@ -55,6 +55,7 @@ abstract class FilesToolsTestCase extends TestCase {
     protected ISystemTagObjectMapper $tagMapper;
     protected \Psr\Log\LoggerInterface $logger;
     protected FilesModule $module;
+    protected ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null;
     /** @var list<string> tokens handed out per route, in order */
     protected array $issued = [];
     /** @var list<string> apps enabled for alice; a test can empty it to simulate files_versions being off */
@@ -97,7 +98,7 @@ abstract class FilesToolsTestCase extends TestCase {
 
         $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
         $extractor = new TextExtractor($this->temp);
-        $backup = new FileBackup($this->apps, $this->users, $this->time, $config);
+        $backup = new FileBackup($this->apps, $this->users, $this->time, $config, $this->visibilityGuard);
         $this->previewManager = $this->createMock(IPreview::class);
         $this->tagManager = $this->createMock(ISystemTagManager::class);
         $this->tagMapper = $this->createMock(ISystemTagObjectMapper::class);
@@ -112,6 +113,7 @@ abstract class FilesToolsTestCase extends TestCase {
             $this->logger,
             $this->createMock(\Psr\Container\ContainerInterface::class),
             $db,
+            $this->visibilityGuard,
         );
         $this->module = new FilesModule(
             $root,
@@ -123,11 +125,12 @@ abstract class FilesToolsTestCase extends TestCase {
             new SharedWriteGuard($access),
             new CheckoutService($urls, $config, $this->time, new TokenHasher($config), $this->store, $this->apps, $this->users),
             new VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class)),
-            new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users),
-            new MovePlanner(new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users), $access, new SharedWriteGuard($access)),
+            new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users, $this->visibilityGuard),
+            new MovePlanner(new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users, $this->visibilityGuard), $access, new SharedWriteGuard($access)),
             $this->batches,
             $this->time,
             $imageTools,
+            $this->visibilityGuard,
         );
     }
 

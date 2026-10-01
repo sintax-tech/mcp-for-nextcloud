@@ -21,6 +21,7 @@ final class NameSearchQuery implements ISearchQuery {
         private int $limit,
         private ?IUser $user,
         private array $order = [],
+        private int $offset = 0,
     ) {}
 
     /** @return ISearchOperator */
@@ -34,8 +35,8 @@ final class NameSearchQuery implements ISearchQuery {
     }
 
     /** @return int always 0: a single page is fetched */
-    public function getOffset() {
-        return 0;
+    public function getOffset(): int {
+        return $this->offset;
     }
 
     /** @return ISearchOrder[] */

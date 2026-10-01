@@ -249,4 +249,45 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
             $this->failure('files_move', ['from' => self::SOURCE_PATH, 'to' => '/NaoExiste/ata.md']));
         $this->assertFalse(array_key_exists('/alice/files/NaoExiste', $this->tree->nodes));
     }
+
+    public function testAMoveToExistingHiddenTargetIsRefusedWithForbiddenRatherThanDestinationExists(): void {
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $this->visibilityGuard = new \OCA\Mcp\Service\VisibilityGuard($this->config->mock($this), $tagMapper);
+        $this->setUp();
+
+        $id = $this->tree->addFile('/alice/files/Arquivado/secret.md', 'secret');
+        $tagMapper->method('getTagIdsForObjects')->willReturn([(string)$id => ['999']]);
+
+        $this->assertSame(CommonMessages::forbidden(),
+            $this->failure('files_move', ['from' => self::SOURCE_PATH, 'to' => '/Arquivado/secret.md']));
+    }
+
+    public function testACopyToExistingHiddenTargetIsRefusedWithForbiddenRatherThanDestinationExists(): void {
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $this->visibilityGuard = new \OCA\Mcp\Service\VisibilityGuard($this->config->mock($this), $tagMapper);
+        $this->setUp();
+
+        $id = $this->tree->addFile('/alice/files/Arquivado/secret.md', 'secret');
+        $tagMapper->method('getTagIdsForObjects')->willReturn([(string)$id => ['999']]);
+
+        $this->assertSame(CommonMessages::forbidden(),
+            $this->failure('files_copy', ['from' => self::SOURCE_PATH, 'to' => '/Arquivado/secret.md']));
+    }
+
+    public function testHiddenSourceFileIsRefusedAsNotFound(): void {
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $this->visibilityGuard = new \OCA\Mcp\Service\VisibilityGuard($this->config->mock($this), $tagMapper);
+        $this->setUp();
+
+        $sourceId = $this->tree->nodes[self::SOURCE]['id'];
+        $tagMapper->method('getTagIdsForObjects')->willReturn([(string)$sourceId => ['999']]);
+
+        $this->assertSame(CommonMessages::notFound(),
+            $this->failure('files_copy', ['from' => self::SOURCE_PATH, 'to' => '/Arquivado/ata-copy.md']));
+        $this->assertSame(CommonMessages::notFound(),
+            $this->failure('files_move', ['from' => self::SOURCE_PATH, 'to' => '/Arquivado/ata-moved.md']));
+    }
 }

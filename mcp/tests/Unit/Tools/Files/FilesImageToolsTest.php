@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
+use OCA\Mcp\Tools\Common\CommonMessages;
+
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\ImageTools;
 use OCA\Mcp\Tools\ToolFailure;
@@ -300,6 +302,30 @@ final class FilesImageToolsTest extends FilesToolsTestCase {
     }
 
     /** Returns the single IPreview preview with the given bytes and mimetype. */
+    public function testHiddenImageIsHiddenFromViewAndSearch(): void {
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $this->visibilityGuard = new \OCA\Mcp\Service\VisibilityGuard($this->config->mock($this), $tagMapper);
+        $this->setUp();
+
+        $this->tree->addFolder('/alice/files/Photos');
+        $imgId = $this->tree->addFile('/alice/files/Photos/secret.jpg', 'img', 'image/jpeg');
+        $tagMapper->method('getTagIdsForObjects')->willReturn([(string)$imgId => ['999']]);
+
+        // files_image_view fails not found
+        $this->assertSame(CommonMessages::notFound(), $this->failure('files_image_view', ['path' => '/Photos/secret.jpg']));
+
+        // files_images_view skips hidden image as not found in summary
+        $views = $this->tool('files_images_view', ['paths' => ['/Photos/secret.jpg']]);
+        $summary = json_decode(end($views['content'])['text'], true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame('/Photos/secret.jpg', $summary['skipped'][0]['path']);
+        $this->assertSame(CommonMessages::notFound(), $summary['skipped'][0]['reason']);
+
+        // files_image_search omits hidden image
+        $results = $this->json('files_image_search', ['folder' => '/Photos']);
+        $paths = array_column($results, 'path');
+        $this->assertNotContains('/Photos/secret.jpg', $paths);
+    }
     private function preparePreview(string $mime, string $bytes): void {
         $simple = $this->createMock(ISimpleFile::class);
         $simple->method('getMimeType')->willReturn($mime);

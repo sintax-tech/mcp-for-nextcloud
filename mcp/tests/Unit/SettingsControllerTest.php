@@ -26,7 +26,7 @@ final class SettingsControllerTest extends TestCase {
     private BatchStore $batches;
 
     protected function setUp(): void {
-        $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+        $this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         $alice = $this->createMock(IUser::class);
         $alice->method('getUID')->willReturn('alice');
         $alice->method('isEnabled')->willReturn(true);

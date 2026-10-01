@@ -415,3 +415,31 @@
 .mcp-settings .mcp-checkout-limit {
 	width: 8em;
 }
+
+/* Narrow screens: one column of cards, stacked toolbars, and tables that scroll sideways instead of overflowing. */
+@media (max-width: 768px) {
+	.mcp-settings .mcp-cards {
+		grid-template-columns: 1fr;
+	}
+
+	#mcp-admin .mcp-toolbar,
+	.mcp-settings .mcp-toolbar {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	#mcp-admin .mcp-toolbar input[type="search"] {
+		min-width: 0;
+		width: 100%;
+	}
+
+	#mcp-admin .mcp-pager,
+	.mcp-settings .mcp-pager {
+		margin-inline-start: 0;
+	}
+
+	.mcp-settings .mcp-connections-table {
+		display: block;
+		overflow-x: auto;
+	}
+}

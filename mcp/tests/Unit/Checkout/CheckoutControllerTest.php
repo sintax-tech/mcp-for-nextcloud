@@ -92,7 +92,7 @@ final class CheckoutControllerTest extends TestCase {
         $this->tree->addFile(self::FILE, '# Ata', 'text/markdown');
         $this->store = new InMemoryCheckoutTokenStore();
         $this->config = new InMemoryConfig();
-        $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+        $this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         $this->policy->setGlobalEnabled(true);
         $this->policy->setEligible('alice', true);
         $this->policy->setConnected('alice', true);

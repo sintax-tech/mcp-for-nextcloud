@@ -85,11 +85,40 @@ final class AdminAssetsTest extends TestCase {
         $this->assertStringContainsString("Util::addScript('mcp', 'connections')", $template);
         $this->assertStringContainsString('data-scope="personal"', $template);
         preg_match_all("/getElementById\\('([^']+)'\\)/", (string)file_get_contents($app . '/js/connections.js'), $used);
-        foreach (array_diff(array_unique($used[1]), ['mcp-connections-search']) as $id) {
+        // Admin-only elements: the search box and the Status card the revoke buttons refresh.
+        foreach (array_diff(array_unique($used[1]), ['mcp-connections-search', 'mcp-count-connections']) as $id) {
             $this->assertSame(1, substr_count($template, 'id="' . $id . '"'), "id $id must appear exactly once");
         }
+        $admin = (string)file_get_contents($app . '/templates/admin.php');
+        $this->assertSame(1, substr_count($admin, 'id="mcp-count-connections"'), 'the admin Status card the script refreshes');
+        $this->assertStringNotContainsString('mcp-count-connections', $template, 'the personal page has no Status card');
         $this->assertStringNotContainsString('mcp-connections-search', $template, 'the personal list has no user search');
         $this->assertSame(preg_match_all('/<div\b/', $template), preg_match_all('/<\/div>/', $template), 'div tags must balance');
+    }
+
+    /** Revoke buttons name their connection, an emptied last page steps back, and narrow screens have a layout. */
+    public function testConnectionsScriptAndStylesCoverAccessibilityAndNarrowScreens(): void {
+        $app = dirname(__DIR__, 3);
+        $script = (string)file_get_contents($app . '/js/connections.js');
+        foreach (["'Revoke {client} for {user}'", "'Revoke {client}'", "'Revoke all connections of {user}'"] as $label) {
+            $this->assertStringContainsString($label, $script);
+        }
+        $this->assertStringContainsString('state.page > 1', $script);
+        $css = (string)file_get_contents($app . '/css/admin.css');
+        $this->assertStringContainsString('@media (max-width: 768px)', $css);
+        $narrow = substr($css, (int)strpos($css, '@media (max-width: 768px)'));
+        $this->assertStringNotContainsString('#', preg_replace('/#mcp-admin/', '', $narrow), 'only theme variables and no fixed colors');
+        $this->assertStringContainsString('overflow-x: auto', $narrow);
+    }
+
+    /** The checkout limit field repeats the controller's ceiling in its max attribute; the two must not drift apart. */
+    public function testCheckoutLimitFieldMaxMatchesTheController(): void {
+        $app = dirname(__DIR__, 3);
+        $template = (string)file_get_contents($app . '/templates/admin.php');
+        $this->assertSame(1, preg_match('/<input[^>]*id="mcp-checkout-limit"[^>]*>/', $template, $input));
+        $this->assertSame(1, preg_match('/\bmax="(\d+)"/', $input[0], $max));
+        $this->assertSame(\OCA\Mcp\Controller\CheckoutLimitController::MAX_MIB, (int)$max[1]);
+        $this->assertStringContainsString('Math.max(1, Math.ceil(data.configuredBytes / 1048576))', (string)file_get_contents($app . '/js/admin-grants.js'));
     }
 
     public function testRoutesDropTheOldAdminFormsAndKeepOAuth(): void {

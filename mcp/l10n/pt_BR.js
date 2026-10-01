@@ -494,6 +494,10 @@ OC.L10N.register(
     "PHP sets no request size limit." : "O PHP não limita o tamanho da requisição.",
     "Could not load the checkout upload limit." : "Não foi possível carregar o limite de envio do checkout.",
     "Enter a whole number of MiB, at least 1." : "Informe um número inteiro de MiB, no mínimo 1.",
-    "Could not save the checkout upload limit." : "Não foi possível salvar o limite de envio do checkout."
+    "Could not save the checkout upload limit." : "Não foi possível salvar o limite de envio do checkout.",
+    "Eligible users who activated their connection." : "Usuários elegíveis que ativaram a própria conexão.",
+    "Revoke {client} for {user}" : "Revogar {client} de {user}",
+    "Revoke {client}" : "Revogar {client}",
+    "Revoke all connections of {user}" : "Revogar todas as conexões de {user}"
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

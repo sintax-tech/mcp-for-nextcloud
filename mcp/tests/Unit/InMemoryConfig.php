@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit;
 
+use OCP\Config\IUserConfig;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 
@@ -17,8 +18,26 @@ final class InMemoryConfig {
     /** Number of getUserValueForUsers calls. */
     public int $batchCalls = 0;
 
+    /** @var \WeakMap<IConfig, IUserConfig>|null the IUserConfig double that serves the same data as each IConfig mock */
+    private static ?\WeakMap $userConfigs = null;
+
+    /**
+     * A GrantPolicy over an IConfig mock of this class and the IUserConfig double that goes with it
+     * (the policy lists flagged users through IUserConfig::searchUsersByValueString).
+     */
+    public static function policy(IConfig $config, \OCA\Mcp\OAuth\OAuthStore $store): \OCA\Mcp\Service\GrantPolicy {
+        return new \OCA\Mcp\Service\GrantPolicy($config, $store, self::$userConfigs[$config]);
+    }
+
     public function mock(TestCase $test): IConfig {
         $config = (new \ReflectionMethod($test, 'createMock'))->invoke($test, IConfig::class);
+        $userConfig = (new \ReflectionMethod($test, 'createMock'))->invoke($test, IUserConfig::class);
+        self::$userConfigs ??= new \WeakMap();
+        self::$userConfigs[$config] = $userConfig;
+        $userConfig->method('searchUsersByValueString')->willReturnCallback(function (string $app, string $key, string $value, bool $caseInsensitive = false): \Generator {
+            $this->accessed[] = ['user', $app, $key];
+            yield from array_keys(array_filter($this->user, static fn (array $apps) => ($apps[$app][$key] ?? null) === $value));
+        });
         $config->method('getSystemValueString')->willReturnCallback(function ($key, $default = '') {
             return $this->system[$key] ?? $default;
         });
@@ -48,10 +67,6 @@ final class InMemoryConfig {
                 }
             }
             return $out;
-        });
-        $config->method('getUsersForUserValue')->willReturnCallback(function ($app, $key, $value): array {
-            $this->accessed[] = ['user', $app, $key];
-            return array_keys(array_filter($this->user, static fn (array $apps) => ($apps[$app][$key] ?? null) === $value));
         });
         $config->method('setUserValue')->willReturnCallback(function ($uid, $app, $key, $value): void {
             $this->accessed[] = ['user', $app, $key];

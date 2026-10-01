@@ -23,7 +23,7 @@ class GrantMatrix {
     public const MAX_PAGE = 10000;
     /** Longest search term accepted. */
     public const MAX_SEARCH = 100;
-    /** Matrix filters: '' every user, otherwise only users with that GrantPolicy flag on. */
+    /** Matrix filters: '' every user, 'eligible' the eligible ones, 'connected' the eligible ones who also connected. */
     public const FILTERS = ['' => null, 'eligible' => GrantPolicy::ELIGIBLE_KEY, 'connected' => GrantPolicy::CONNECTED_KEY];
     /** Nextcloud app that provides each module of GrantPolicy::CATALOG. */
     public const MODULE_APPS = ['files' => 'files', 'notes' => 'notes', 'deck' => 'deck', 'calendar' => 'calendar', 'talk' => 'spreed', 'contacts' => 'contacts', 'tasks' => 'dav'];
@@ -119,7 +119,8 @@ class GrantMatrix {
     }
 
     /**
-     * Users with an eligibility or connection flag on. Only those users are loaded (never the whole user base),
+     * Eligible users, or eligible users who also connected (GrantPolicy::connectedUsers, the count of the status
+     * summary). Only those users are loaded (never the whole user base),
      * then narrowed by group and by uid, display name or e-mail, ordered by display name like the backend search.
      *
      * @param string $key GrantPolicy::ELIGIBLE_KEY or GrantPolicy::CONNECTED_KEY
@@ -131,7 +132,7 @@ class GrantMatrix {
             throw new InvalidArgumentException('Invalid request');
         }
         $users = [];
-        foreach ($this->policy->flaggedUsers($key) as $uid) {
+        foreach ($key === GrantPolicy::CONNECTED_KEY ? $this->policy->connectedUsers() : $this->policy->flaggedUsers($key) as $uid) {
             $user = $this->userManager->get($uid);
             if ($user === null || ($gid !== '' && !$this->groupManager->isInGroup($uid, $gid))) {
                 continue;

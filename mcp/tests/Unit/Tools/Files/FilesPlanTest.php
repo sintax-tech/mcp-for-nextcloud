@@ -285,7 +285,7 @@ final class FilesPlanTest extends FilesToolsTestCase {
     }
 
     private function registry(): ToolRegistry {
-        $policy = new GrantPolicy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+        $policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         foreach (GrantPolicy::CATALOG['files'] as $operation) {
             $policy->setGrant('alice', 'files', $operation, true);
         }

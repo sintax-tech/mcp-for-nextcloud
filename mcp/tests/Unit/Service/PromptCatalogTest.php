@@ -22,7 +22,7 @@ final class PromptCatalogTest extends TestCase {
     private PromptCatalog $catalog;
 
     protected function setUp(): void {
-        $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+        $this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         $this->catalog = new PromptCatalog();
     }
 

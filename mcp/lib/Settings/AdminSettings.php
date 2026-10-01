@@ -29,7 +29,6 @@ class AdminSettings implements ISettings {
     /** @return TemplateResponse the rendered settings section */
     public function getForm(): TemplateResponse {
         $eligible = $this->policy->flaggedUsers(GrantPolicy::ELIGIBLE_KEY);
-        $connected = array_intersect($eligible, $this->policy->flaggedUsers(GrantPolicy::CONNECTED_KEY));
         return new TemplateResponse('mcp', 'admin', [
             'endpoint' => $this->urlGenerator->linkToRouteAbsolute('mcp.mcp.post'),
             'serviceEnabled' => $this->policy->globalEnabled(),
@@ -37,7 +36,7 @@ class AdminSettings implements ISettings {
             'ocrUrl' => OcrSupport::APP_URL,
             'version' => $this->appManager->getAppVersion('mcp'),
             'eligibleUsers' => count($eligible),
-            'connectedUsers' => count($connected),
+            'connectedUsers' => count($this->policy->connectedUsers()),
             'activeConnections' => $this->connections->count(),
         ], '');
     }

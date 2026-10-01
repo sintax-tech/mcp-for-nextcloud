@@ -245,7 +245,7 @@ final class DeckPreviewTest extends TestCase {
 	}
 
 	private function registry(DeckGatewayInterface $gateway): ToolRegistry {
-		$policy = new GrantPolicy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
 		foreach (GrantPolicy::CATALOG['deck'] as $operation) {
 			$policy->setGrant('alice', 'deck', $operation, true);
 		}

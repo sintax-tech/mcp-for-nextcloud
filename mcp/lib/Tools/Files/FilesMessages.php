@@ -691,4 +691,112 @@ final class FilesMessages {
     public static function shareTypeUnsupported(): string {
         return Translator::t('This kind of share is not managed here; a Talk attachment is removed in Talk.');
     }
+
+    /** @return string description of files_share */
+    public static function shareTool(): string {
+        return 'Share a file or folder of yours with a person or a group, or change how it is already shared with them. '
+            . 'Find the account or group id with users_search first (include_groups: true for groups); never guess it. '
+            . 'Sharing again with the same recipient changes that share instead of creating another one. permission is '
+            . 'view (open and download) or edit (change; on a folder also add and delete inside it); a share never lets '
+            . 'the recipient share it on. expires is the last day (YYYY-MM-DD, in the user\'s timezone, tomorrow or later); '
+            . 'omit it to keep the current one, or for a new share to get the administrator\'s default. Without confirm: '
+            . 'true it returns the plan and changes nothing. Nextcloud notifies the recipient. Needs the "share" permission; '
+            . 'a public link (with: "link") needs "link".';
+    }
+
+    /** @return string description of the with parameter of files_share */
+    public static function shareWithParam(): string {
+        return 'Recipient: user:<uid> for a person, group:<gid> for a group, or link for a public link.';
+    }
+
+    /** @return string description of the permission parameter of files_share */
+    public static function sharePermissionParam(): string {
+        return 'view to open and download; edit to change too (on a folder: add, change and delete inside it).';
+    }
+
+    /** @return string description of the expires parameter of files_share */
+    public static function shareExpiresParam(): string {
+        return 'Last day of access, YYYY-MM-DD in the user\'s timezone, tomorrow or later.';
+    }
+
+    /** @return string description of the note parameter of files_share */
+    public static function shareNoteParam(): string {
+        return 'Note shown to the recipient with the share; an empty string removes the current note.';
+    }
+
+    /** @return string advice for the model when the share already is what was asked */
+    public static function planShareNothing(): string {
+        return 'Nothing was changed. The share already is exactly like this, so a confirmed call changes nothing either.';
+    }
+
+    /** @return string a share whose recipient is the user */
+    public static function shareWithSelf(): string {
+        return Translator::t('You already have this item; choose another person to share it with.');
+    }
+
+    /** @return string a public link asked before the link feature exists */
+    public static function shareLinkNotAvailable(): string {
+        return Translator::t('Public links are not available yet; they arrive with the “link” permission in a coming update.');
+    }
+
+    /** @return string sharing turned off on the server */
+    public static function shareDisabled(): string {
+        return Translator::t('Sharing is turned off on this server.');
+    }
+
+    /** @return string sharing turned off for this account */
+    public static function shareDisabledForYou(): string {
+        return Translator::t('Your administrator turned sharing off for your account.');
+    }
+
+    /** @return string sharing with groups turned off */
+    public static function shareGroupsDisabled(): string {
+        return Translator::t('Sharing with groups is turned off on this server.');
+    }
+
+    /** @return string the members-only rule refuses a person outside the user's groups */
+    public static function shareOnlyGroupMembers(): string {
+        return Translator::t('On this server you can only share with people who are in one of your groups.');
+    }
+
+    /** @return string the members-only rule refuses a group the user is not in */
+    public static function shareOnlyOwnGroups(): string {
+        return Translator::t('On this server you can only share with groups you are a member of.');
+    }
+
+    /** @return string a node the user may not share, such as one without the share permission */
+    public static function shareNodeNotShareable(): string {
+        return Translator::t('Nextcloud does not allow sharing this item.');
+    }
+
+    /** @return string a level above what the user may do with the node */
+    public static function shareAboveOwnPermissions(): string {
+        return Translator::t('You cannot give more access than you have on this item; share it with view instead.');
+    }
+
+    /** @return string the core says the recipient already has access through another share */
+    public static function shareAlreadyHasAccess(): string {
+        return Translator::t('This recipient already has access to this item through another share.');
+    }
+
+    /** @return string any other refusal of the core, without its message */
+    public static function shareRefused(): string {
+        return Translator::t('Nextcloud refused this share because of a sharing rule of this server.');
+    }
+
+    /**
+     * @param string $group display name of the group
+     * @return string warning of a group share
+     */
+    public static function shareGroupWarning(string $group): string {
+        return Translator::t('Every member of %s gets access, including people who join the group later.', [$group]);
+    }
+
+    /**
+     * @param string $recipient display name of the person or group
+     * @return string warning of a folder shared with edit
+     */
+    public static function shareFolderEditWarning(string $recipient): string {
+        return Translator::t('With edit on a folder, %s can also delete files inside it.', [$recipient]);
+    }
 }

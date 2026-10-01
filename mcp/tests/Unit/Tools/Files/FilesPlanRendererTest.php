@@ -163,7 +163,7 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
     }
 
     public function testMissingKeysGiveNull(): void {
-        foreach (['files_edit', 'files_replace', 'files_checkout', 'files_copy', 'files_mkdir', 'files_move', 'files_move_batch', 'files_undo_batch', 'files_version_restore', 'files_list'] as $tool) {
+        foreach (['files_edit', 'files_replace', 'files_checkout', 'files_copy', 'files_mkdir', 'files_move', 'files_move_batch', 'files_undo_batch', 'files_version_restore', 'files_list', 'files_share'] as $tool) {
             $this->assertNull(FilesPlanRenderer::render($tool, []), $tool);
             $this->assertNull($this->module->renderPlan($tool, ['unknown' => 1]), $tool);
         }
@@ -185,6 +185,11 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
         $ran = $this->module->call('files_move_batch', ['moves' => [['from' => '/Documentos/lote.md', 'to' => '/Arquivo/lote.md']], 'confirm' => true], 'alice');
         $batchId = json_decode($ran['content'][0]['text'], true)['batch_id'];
         $plans['files_undo_batch'] = $this->plan('files_undo_batch', ['batch_id' => $batchId]);
+        // The update of a web-made share carries the most text: both notes, the name and the re-share line.
+        $this->sharePolicy->setGrant('alice', 'files', 'share', true);
+        $this->shares->add(['node' => $this->tree->nodes['/alice/files/Documentos/ata.md']['id'], 'with' => 'bruno', 'permissions' => 19,
+            'note' => 'antes', 'nodeObject' => $this->tree->node('/alice/files/Documentos/ata.md')]);
+        $plans['files_share'] = $this->plan('files_share', ['path' => '/Documentos/ata.md', 'with' => 'user:bruno', 'note' => 'depois', 'expires' => '2026-12-31']);
         $this->assertEveryWriteToolHasAReadablePlan($this->module, $plans);
     }
 

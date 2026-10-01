@@ -352,4 +352,191 @@ final class Messages {
     public static function unknownTool(): string {
         return Translator::t('unknown tool');
     }
+
+    /* Texts of the human plan, the body a person reads before approving a write. */
+
+    /**
+     * Opening line of a plan that lands in a conversation.
+     *
+     * @param string $conversation Name of the conversation, the way the user knows it
+     * @return string The line in the language of the current user
+     */
+    public static function planToConversation(string $conversation): string {
+        return Translator::t('Message to **%s**:', [$conversation]);
+    }
+
+    /**
+     * Opening line of a plan that opens a direct conversation.
+     *
+     * @param string $person Display name of the person being written to
+     * @return string The line in the language of the current user
+     */
+    public static function planToPerson(string $person): string {
+        return Translator::t('Direct message to **%s**:', [$person]);
+    }
+
+    /**
+     * Consequence of a direct message: the plan carries no conversation because there may be none yet.
+     *
+     * @param string $person Display name of the person being written to
+     * @return string The line in the language of the current user
+     */
+    public static function planDirectConversationCreated(string $person): string {
+        return Translator::t('The direct conversation with **%s** will be created if it does not exist yet.', [$person]);
+    }
+
+    /**
+     * Opening line of a batch of one, so a single message never reads as a list.
+     *
+     * @param string $conversation Name of the conversation, the way the user knows it
+     * @return string The line in the language of the current user
+     */
+    public static function planOneMessage(string $conversation): string {
+        return Translator::t('One message to **%s**:', [$conversation]);
+    }
+
+    /**
+     * Opening line of a batch of several messages.
+     *
+     * @param int $count How many messages the batch carries
+     * @param string $conversation Name of the conversation, the way the user knows it
+     * @return string The line in the language of the current user
+     */
+    public static function planMessages(int $count, string $conversation): string {
+        return Translator::t('%d messages to **%s**:', [$count, $conversation]);
+    }
+
+    /**
+     * Who the message answers, named the way the user knows them.
+     *
+     * @param string $author Display name of the quoted author
+     * @return string The line in the language of the current user
+     */
+    public static function planReplyingTo(string $author): string {
+        return Translator::t('Replying to **%s**:', [$author]);
+    }
+
+    /**
+     * The item a message links to, so the user sees whose item the link exposes.
+     *
+     * @param string $label Kind of the item, already translated
+     * @param string $title Title of the item
+     * @return string The line in the language of the current user
+     */
+    public static function planLinkTo(string $label, string $title): string {
+        return Translator::t('The message also carries a link to the %s *%s*.', [$label, $title]);
+    }
+
+    /**
+     * Opening line of an attachment plan.
+     *
+     * @param string $name Name of the file
+     * @param string $size Size of the file, already formatted
+     * @param string $conversation Name of the conversation, the way the user knows it
+     * @return string The line in the language of the current user
+     */
+    public static function planSharingFile(string $name, string $size, string $conversation): string {
+        return Translator::t('The file **%s** (%s) will be shared in **%s**.', [$name, $size, $conversation]);
+    }
+
+    /**
+     * @return string The line introducing the caption of an attachment, in the language of the current user
+     */
+    public static function planCaptionAfterFile(): string {
+        return Translator::t('Caption, sent as a message right after the file:');
+    }
+
+    /**
+     * Opening line of a plan citing an attachment already in the conversation.
+     *
+     * @param string $name Name of the cited file
+     * @param string $conversation Name of the conversation, the way the user knows it
+     * @return string The line in the language of the current user
+     */
+    public static function planCitingFile(string $name, string $conversation): string {
+        return Translator::t('A message will be published in **%s** citing the file **%s**.', [$conversation, $name]);
+    }
+
+    /**
+     * Opening line of a plan citing an attachment whose name the plan does not carry.
+     *
+     * @param string $conversation Name of the conversation, the way the user knows it
+     * @return string The line in the language of the current user
+     */
+    public static function planCitingUnknownFile(string $conversation): string {
+        return Translator::t('A message will be published in **%s** citing an attachment already shared there.', [$conversation]);
+    }
+
+    /**
+     * @return string The line introducing the caption of a citation, in the language of the current user
+     */
+    public static function planCaptionWithCitation(): string {
+        return Translator::t('Caption shown with the citation:');
+    }
+
+    /**
+     * Opening line of a group plan.
+     *
+     * @param string $group Name of the group
+     * @return string The line in the language of the current user
+     */
+    public static function planCreatingGroup(string $group): string {
+        return Translator::t('The Talk group **%s** will be created with you as the owner.', [$group]);
+    }
+
+    /**
+     * @return string The line introducing the invited people, in the language of the current user
+     */
+    public static function planInviting(): string {
+        return Translator::t('These people will be invited:');
+    }
+
+    /**
+     * @return string The line saying nobody is invited, in the language of the current user
+     */
+    public static function planNoGuests(): string {
+        return Translator::t('Nobody is invited: the group starts with you alone.');
+    }
+
+    /**
+     * Marker left when a long text was cut to fit the plan.
+     * @return string The marker in the language of the current user.
+     */
+    public static function contentTruncated(): string {
+        return Translator::t('[content truncated]');
+    }
+
+    /**
+     * A size a person can read at a glance instead of a byte count.
+     *
+     * @param int $bytes Size in bytes
+     * @return string The size in the language of the current user
+     */
+    public static function sizeInBytes(int $bytes): string {
+        return Translator::t('%d bytes', [$bytes]);
+    }
+
+    /**
+     * @param float $kilobytes Size in kilobytes, already rounded
+     * @return string The size in the language of the current user
+     */
+    public static function sizeInKilobytes(float $kilobytes): string {
+        return Translator::t('%s kB', [rtrim(rtrim(number_format($kilobytes, 1, '.', ''), '0'), '.')]);
+    }
+
+    /**
+     * @param float $megabytes Size in megabytes, already rounded
+     * @return string The size in the language of the current user
+     */
+    public static function sizeInMegabytes(float $megabytes): string {
+        return Translator::t('%s MB', [rtrim(rtrim(number_format($megabytes, 1, '.', ''), '0'), '.')]);
+    }
+
+    /**
+     * @param float $gigabytes Size in gigabytes, already rounded
+     * @return string The size in the language of the current user
+     */
+    public static function sizeInGigabytes(float $gigabytes): string {
+        return Translator::t('%s GB', [rtrim(rtrim(number_format($gigabytes, 1, '.', ''), '0'), '.')]);
+    }
 }

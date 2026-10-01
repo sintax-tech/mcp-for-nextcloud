@@ -22,6 +22,7 @@ use OCA\Mcp\Tools\Talk\TalkServices;
 use OCA\Mcp\Tools\Talk\TalkUnavailableException;
 use OCA\Mcp\Tools\Talk\UserConversationResolver;
 use OCA\Mcp\Tools\Talk\WritePreview;
+use OCA\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolRegistry;
 use OCA\Mcp\Tools\WriteGate;
@@ -607,6 +608,34 @@ class TalkModuleTest extends TestCase {
             $this->assertSame($name, $plan['action']);
             $this->assertArrayNotHasKey('approvalId', $plan, $name);
         }
+    }
+
+    /**
+     * The module owns no text of its own: it hands the plan of every writing tool to the renderer of the module,
+     * which is the one that knows how a person reads a conversation, a file name and a message.
+     */
+    public function testTheModuleRendersEveryWritingPlanAndOnlyThose(): void {
+        $this->assertInstanceOf(RendersPlans::class, $this->module);
+
+        $this->assertStringContainsString(
+            'Comercial',
+            (string)$this->module->renderPlan(TalkModule::TOOL_REPLY, [
+                'conversation' => ['displayName' => 'Comercial'],
+                'draft' => ['message' => 'bom dia'],
+            ]),
+        );
+        $this->assertStringContainsString(
+            'Bob Souza',
+            (string)$this->module->renderPlan(TalkModule::TOOL_MESSAGE_USER, [
+                'target' => ['displayName' => 'Bob Souza'],
+                'draft' => ['message' => 'oi'],
+            ]),
+        );
+
+        // A plan this module cannot read, and anything that is not a write, fall back to the generic body.
+        $this->assertNull($this->module->renderPlan(TalkModule::TOOL_REPLY, []));
+        $this->assertNull($this->module->renderPlan(TalkModule::TOOL_LIST, ['requiresConfirmation' => true]));
+        $this->assertNull($this->module->renderPlan(TalkModule::TOOL_READ, []));
     }
 
     /** A read tool has no plan to build: preview() says so instead of inventing one. */

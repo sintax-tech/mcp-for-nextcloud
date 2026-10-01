@@ -113,6 +113,14 @@ namespace OCA\Deck\Service {
 		public function delete(int $id): Board {
 			throw new \LogicException('Stub: expected a PHPUnit mock.');
 		}
+
+		/**
+		 * @param int $id Board to bring back from the trash; needs `PERMISSION_MANAGE`, allowed on a deleted board.
+		 * @return Board Board with `deleted_at` back to 0 (Deck `lib/Service/BoardService.php:259`).
+		 */
+		public function deleteUndo(int $id): Board {
+			throw new \LogicException('Stub: expected a PHPUnit mock.');
+		}
 	}
 
 	/** Stack service double; signatures mirror Deck `v1.17.5` `lib/Service/StackService.php`. */
@@ -149,6 +157,20 @@ namespace OCA\Deck\Service {
 		 * @return Stack Stack marked as deleted (soft delete); its cards are not touched.
 		 */
 		public function delete(int $id): Stack {
+			throw new \LogicException('Stub: expected a PHPUnit mock.');
+		}
+
+		/**
+		 * Deck has no undo for a stack; the web interface brings one back with `deletedAt: 0` through this method.
+		 *
+		 * @param int $id Stack to update; needs `PERMISSION_MANAGE`, allowed on a deleted stack.
+		 * @param string $title Stack title.
+		 * @param int $boardId Board of the stack; needs `PERMISSION_MANAGE`.
+		 * @param int $order Position among the stacks of the board.
+		 * @param int|null $deletedAt Deletion timestamp, 0 brings the stack back.
+		 * @return Stack Updated stack.
+		 */
+		public function update(int $id, string $title, int $boardId, int $order, ?int $deletedAt): Stack {
 			throw new \LogicException('Stub: expected a PHPUnit mock.');
 		}
 	}

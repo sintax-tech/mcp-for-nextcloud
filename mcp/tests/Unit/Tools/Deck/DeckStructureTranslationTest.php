@@ -33,11 +33,19 @@ final class DeckStructureTranslationTest extends TestCase {
 		self::assertSame('A lista tem 1 cartão; mova ou exclua antes.', DeckRefusalException::stackNotEmpty(1)->getMessage());
 		self::assertSame('O quadro tem 2 cartões; mova ou exclua antes.', DeckRefusalException::boardNotEmpty(2)->getMessage());
 		self::assertSame('Só o dono de um quadro pode excluí-lo.', DeckRefusalException::boardNotOwned()->getMessage());
+		self::assertSame('A lista recebeu cartões durante a exclusão; nada foi excluído.', DeckRefusalException::stackReceivedCards(true)->getMessage());
+		self::assertSame('O quadro recebeu cartões durante a exclusão; nada foi excluído.', DeckRefusalException::boardReceivedCards(true)->getMessage());
+		self::assertSame('A lista recebeu cartões durante a exclusão e não pôde ser restaurada; recupere-a na lixeira do Deck.', DeckRefusalException::stackReceivedCards(false)->getMessage());
+		self::assertSame('O quadro recebeu cartões durante a exclusão e não pôde ser restaurado; recupere-o na lixeira do Deck.', DeckRefusalException::boardReceivedCards(false)->getMessage());
 
 		Translator::use(new JsonL10n('es'));
 		self::assertSame('La lista tiene 3 tarjetas; muévalas o elimínelas antes.', DeckRefusalException::stackNotEmpty(3)->getMessage());
 		self::assertSame('El tablero tiene 1 tarjeta; muévala o elimínela antes.', DeckRefusalException::boardNotEmpty(1)->getMessage());
 		self::assertSame('Solo el propietario de un tablero puede eliminarlo.', DeckRefusalException::boardNotOwned()->getMessage());
+		self::assertSame('La lista recibió tarjetas durante la eliminación; no se eliminó nada.', DeckRefusalException::stackReceivedCards(true)->getMessage());
+		self::assertSame('El tablero recibió tarjetas durante la eliminación; no se eliminó nada.', DeckRefusalException::boardReceivedCards(true)->getMessage());
+		self::assertSame('La lista recibió tarjetas durante la eliminación y no se pudo restaurar; recupérela desde la papelera de Deck.', DeckRefusalException::stackReceivedCards(false)->getMessage());
+		self::assertSame('El tablero recibió tarjetas durante la eliminación y no se pudo restaurar; recupérelo desde la papelera de Deck.', DeckRefusalException::boardReceivedCards(false)->getMessage());
 	}
 
 	public function testPlanMessagesAndConsequencesAreTranslated(): void {

@@ -11,6 +11,7 @@ use OCA\Deck\StatusException;
 use OCA\Mcp\Tools\Deck\DeckConflictException;
 use OCA\Mcp\Tools\Deck\DeckErrors;
 use OCA\Mcp\Tools\Deck\DeckMessages;
+use OCA\Mcp\Tools\Deck\DeckSessionException;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;
 use PHPUnit\Framework\TestCase;
@@ -35,6 +36,7 @@ final class DeckErrorsTest extends TestCase {
 			'bad request' => [new BadRequestException('too long'), DeckMessages::errorInvalid()],
 			'conflict' => [new ConflictException('stale'), DeckMessages::errorConflict()],
 			'own conflict' => [new DeckConflictException(DeckMessages::errorConflict()), DeckMessages::errorConflict()],
+			'session not bound' => [new DeckSessionException('session user differs'), DeckMessages::errorSessionNotBound()],
 			'unexpected' => [new RuntimeException('connection to 10.0.0.5 refused'), DeckMessages::errorGeneric()],
 		];
 	}

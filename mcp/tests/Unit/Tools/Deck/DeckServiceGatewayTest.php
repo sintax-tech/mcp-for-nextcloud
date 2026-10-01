@@ -20,8 +20,11 @@ use OCA\Deck\Service\StackService;
 use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\Deck\CardCriteria;
 use OCA\Mcp\Tools\Deck\DeckServiceGateway;
+use OCA\Mcp\Tools\Deck\DeckSessionException;
+use OCA\Deck\Service\AssignmentService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;
+use OCP\ISession;
 use OCP\IUser;
 use OCP\IUserManager;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -791,6 +794,89 @@ final class DeckServiceGatewayTest extends TestCase {
 		$user = $this->createMock(IUser::class);
 		$user->method('getDisplayName')->willReturn($displayName);
 		$this->services[IUserManager::class]->method('get')->with($uid)->willReturn($user);
+	}
+
+	/**
+	 * Gateway reading the session the way the DI container does for the Deck services.
+	 *
+	 * The CardService double behaves like Deck v1.17.5 `CardService::create()`: the row is written first, then
+	 * `enrichCards()` calls `IUserManager::get($this->userId)`, a TypeError when the injected `userId` is null.
+	 *
+	 * @param string|null $sessionUid `user_id` of the session, which Deck receives as its injected `userId`.
+	 * @param list<string> $written Titles the Deck persisted, filled by reference.
+	 * @return DeckServiceGateway Gateway wired to that session.
+	 */
+	private function sessionGateway(?string $sessionUid, array &$written): DeckServiceGateway {
+		$session = $this->createMock(ISession::class);
+		$session->method('get')->willReturnCallback(static fn (string $key): mixed => $key === 'user_id' ? $sessionUid : null);
+		$this->recordSetUserId();
+		$this->services[CardService::class]->method('create')->willReturnCallback(
+			function (string $title) use (&$written, $sessionUid): Card {
+				$written[] = $title;
+				if ($sessionUid === null) {
+					throw new \TypeError('OC\User\Manager::get(): Argument #1 ($uid) must be of type string, null given');
+				}
+				return $this->card();
+			},
+		);
+		$this->services[CardService::class]->method('delete')->willReturnCallback(function () use (&$written): Card {
+			$written[] = 'delete';
+			return $this->card();
+		});
+		$this->services[AssignmentService::class] = $this->createMock(AssignmentService::class);
+		$this->services[AssignmentService::class]->method('assignUser')->willReturnCallback(function () use (&$written): Assignment {
+			$written[] = 'assign';
+			return new Assignment();
+		});
+
+		return new DeckServiceGateway($this->container, $this->time, null, $session);
+	}
+
+	/**
+	 * Regression of 0.9.1: under OAuth the session had no `user_id`, Deck wrote the card and then failed with a
+	 * TypeError, the model retried and the card was written twice. The gateway refuses before any Deck write.
+	 */
+	public function testWriteWithoutTheCallerInTheSessionIsRefusedBeforeDeckWrites(): void {
+		$written = [];
+		$gateway = $this->sessionGateway(null, $written);
+
+		foreach ([
+			'create' => fn () => $gateway->createCard('alice', 10, 'Fechar', '', null),
+			'delete' => fn () => $gateway->deleteCard('alice', 7),
+			'assign' => fn () => $gateway->assignCardUser('alice', 7, 'pedro'),
+		] as $operation => $call) {
+			try {
+				$call();
+				self::fail($operation . ' reached the Deck without the caller in the session');
+			} catch (DeckSessionException) {
+			}
+		}
+
+		self::assertSame([], $written);
+		self::assertSame([], $this->record('setUserId:'), 'nothing of the Deck is bound before the check');
+	}
+
+	/** A session that belongs to somebody else is refused the same way, never written as that account. */
+	public function testSessionOfAnotherAccountIsRefused(): void {
+		$written = [];
+		$gateway = $this->sessionGateway('bob', $written);
+
+		$this->expectException(DeckSessionException::class);
+		try {
+			$gateway->createCard('alice', 10, 'Fechar', '', null);
+		} finally {
+			self::assertSame([], $written);
+		}
+	}
+
+	public function testCallerInTheSessionWritesOnce(): void {
+		$written = [];
+		$gateway = $this->sessionGateway('alice', $written);
+
+		$gateway->createCard('alice', 10, 'Fechar', '', null);
+		$gateway->deleteCard('alice', 7);
+
+		self::assertSame(['Fechar', 'delete'], $written);
 	}
 
 	/**

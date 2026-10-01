@@ -22,6 +22,7 @@ use OCA\Deck\Service\PermissionService;
 use OCA\Deck\Service\StackService;
 use OCA\Mcp\Service\UserTimezone;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\ISession;
 use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
 
@@ -49,11 +50,14 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	 * @param ITimeFactory $time Clock the follow-up reads `overdue` from, so it can be pinned in a test.
 	 * @param UserTimezone|null $zones Timezone of the caller, deciding which day a due date falls on;
 	 *     PHP's default when absent.
+	 * @param ISession|null $session Session the DI container reads the Deck services' `userId` from; checked
+	 *     against the caller before every Deck call, skipped when absent.
 	 */
 	public function __construct(
 		private ContainerInterface $container,
 		private ITimeFactory $time,
 		private ?UserTimezone $zones = null,
+		private ?ISession $session = null,
 	) {
 	}
 
@@ -364,10 +368,20 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	 * permission cache, so every Deck ACL decision in this request is taken for the authenticated
 	 * user rather than for any state left over by the session.
 	 *
+	 * `setUserId()` exists on the board service only: `CardService`, `AssignmentService` and the
+	 * `ActivityManager` keep the `userId` the DI container injected, which is `ISession::get('user_id')`.
+	 * When it is not the caller, Deck v1.17.5 writes the card and then fails in `enrichCards()`, so the
+	 * session is checked first and the call is refused before anything of the Deck runs.
+	 *
 	 * @param string $userId UID of the authenticated caller.
 	 * @return BoardService Deck board service bound to that user.
+	 * @throws DeckSessionException When the session the Deck services read is not the caller's.
 	 */
 	private function bindUser(string $userId): BoardService {
+		if ($this->session !== null && $this->session->get('user_id') !== $userId) {
+			throw new DeckSessionException('The session user is not the authenticated caller');
+		}
+
 		/** @var BoardService $boardService */
 		$boardService = $this->service(BoardService::class);
 		$boardService->setUserId($userId);

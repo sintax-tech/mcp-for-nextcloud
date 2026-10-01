@@ -41,6 +41,7 @@ final class ApplicationRegistrationTest extends TestCase {
         $services = [
             ITimeFactory::class => $this->createMock(ITimeFactory::class),
             IConfig::class => $this->createMock(IConfig::class),
+            \OCP\ISession::class => $this->createMock(\OCP\ISession::class),
         ];
         $container = $this->createMock(ContainerInterface::class);
         $container->method('get')->willReturnCallback(
@@ -72,6 +73,8 @@ final class ApplicationRegistrationTest extends TestCase {
         // The timezone is what makes due dates follow the user; a factory that dropped it would still build.
         $zones = (new \ReflectionProperty(DeckServiceGateway::class, 'zones'))->getValue($gateway);
         $this->assertNotNull($zones);
+        // Without the session the check that refuses a Deck write under another `userId` is skipped.
+        $this->assertNotNull((new \ReflectionProperty(DeckServiceGateway::class, 'session'))->getValue($gateway));
     }
 
     public function testCalendarDavIsBoundToTheDispatcherAndReaderStaysLazy(): void {

@@ -91,6 +91,14 @@ final class DeckMessages {
 	}
 
 	/**
+	 * The session the Deck services read is not the authenticated caller's; refused before writing.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function errorSessionNotBound(): string {
+		return Translator::t('The Deck could not be bound to the authenticated account. Nothing was changed; try again.');
+	}
+
+	/**
 	 * Fallback for anything unexpected.
 	 * @return string The message in the language of the current user.
 	 */

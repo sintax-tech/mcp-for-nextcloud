@@ -404,6 +404,8 @@ final class ToolGuide {
         // Every text of the guide is English, on purpose: it is written for the model, which translates it
         // for the user. Saying so in the answer itself keeps a client that relays the text from dropping the
         // only hint the reader has that the text was not written for their eyes.
-        return ToolResult::structured(self::LANGUAGE_NOTE . "\n\n" . $markdown, ['language_note' => self::LANGUAGE_NOTE] + $data);
+        return ToolResult::structured(self::LANGUAGE_NOTE . "\n\n"
+            . 'Write confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.'
+            . "\n\n" . $markdown, ['language_note' => self::LANGUAGE_NOTE] + $data);
     }
 }

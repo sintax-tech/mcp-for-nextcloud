@@ -792,7 +792,7 @@ class TalkModuleTest extends TestCase {
     private function payloadOf(array $result): array {
         $this->assertArrayNotHasKey('isError', $result);
 
-        return json_decode($result['content'][0]['text'], true);
+        return $result['structuredContent'] ?? json_decode($result['content'][0]['text'], true);
     }
 }
 

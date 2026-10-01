@@ -68,6 +68,64 @@ final class ToolRegistryTest extends TestCase {
         return new ToolRegistry([$module], $this->policy, $apps, $users, $this->logger);
     }
 
+    /** Every registered write gets the same readable envelope, regardless of module preview support. */
+    public function testEveryRegisteredWriteReturnsMarkdownAndStructuredConfirmation(): void {
+        foreach (GrantPolicy::CATALOG as $module => $operations) {
+            foreach ($operations as $operation) { $this->policy->setGrant('alice', $module, $operation, true); }
+        }
+        $apps = $this->createMock(IAppManager::class);
+        $apps->method('isEnabledForUser')->willReturn(true);
+        $users = $this->createMock(IUserManager::class);
+        $users->method('get')->willReturn($this->createMock(IUser::class));
+        foreach (\OCA\Mcp\AppInfo\Application::MODULES as $class) {
+            // Definitions are independent of constructor collaborators. Use the real catalog, replacing
+            // only schemas so this test focuses on the registry envelope rather than resource validation.
+            $definitions = (new \ReflectionClass($class))->newInstanceWithoutConstructor()->definitions();
+            $module = new class($definitions) implements ToolModule {
+                public function __construct(private array $definitions) {}
+                public function definitions(): array {
+                    return array_map(static function (array $definition): array {
+                        $definition['inputSchema'] = ['type' => 'object', 'properties' => new \stdClass()];
+                        return $definition;
+                    }, $this->definitions);
+                }
+                public function call(string $name, array $arguments, string $userId): array {
+                    throw new \LogicException('Unconfirmed writes must not execute');
+                }
+            };
+            $registry = new ToolRegistry([$module], $this->policy, $apps, $users, $this->logger);
+            foreach ($definitions as $definition) {
+                if (!\OCA\Mcp\Tools\WriteGate::isWrite($definition)) { continue; }
+                foreach ([[], ['confirm' => false]] as $arguments) {
+                    $result = $registry->call($definition['name'], $arguments, 'alice');
+                    self::assertTrue($result['structuredContent']['requiresConfirmation'], $definition['name']);
+                    self::assertSame('requiresConfirmation', array_key_first($result['structuredContent']));
+                    self::assertStringStartsWith('**', $result['content'][0]['text']);
+                    self::assertNull(json_decode($result['content'][0]['text'], true));
+                }
+            }
+        }
+    }
+
+    /** Rendering cannot strip the preview payload or let a module override confirmation. */
+    public function testPreviewPayloadIsPreservedAndConfirmationCannotBeOverridden(): void {
+        $plan = ['requiresConfirmation' => false, 'message' => 'Review this.', 'custom' => ['value' => 7]];
+        $module = new class($plan) implements ToolModule, \OCA\Mcp\Tools\PreviewsWrites, \OCA\Mcp\Tools\RendersPlans {
+            public function __construct(private array $plan) {}
+            public function definitions(): array {
+                return [['name' => 'fake_edit', 'description' => 'Edit', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'files', 'operation' => 'edit']];
+            }
+            public function call(string $name, array $arguments, string $userId): array { throw new \LogicException('Must not execute'); }
+            public function preview(string $name, array $arguments, string $userId): array { return $this->plan; }
+            public function renderPlan(string $tool, array $plan): ?string { return 'Custom body'; }
+        };
+        $this->policy->setGrant('alice', 'files', 'edit', true);
+        $result = (new ToolRegistry([$module], $this->policy, $this->createMock(IAppManager::class), $this->createMock(IUserManager::class), $this->logger))->call('fake_edit', [], 'alice');
+        self::assertSame(['requiresConfirmation' => true, 'tool' => 'fake_edit', 'title' => 'Edit'] + $plan, $result['structuredContent']);
+        self::assertStringContainsString('Custom body', $result['content'][0]['text']);
+        self::assertStringContainsString('*Review this.*', $result['content'][0]['text']);
+    }
+
     public function testListFollowsGrantsAndApps(): void {
         // The guide is a built-in of the registry, so it leads every list: it is how the model finds out
         // about the tools the grants left standing.

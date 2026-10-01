@@ -194,6 +194,9 @@ abstract class CalendarTestCase extends TestCase {
      */
     protected static function json(array $result, int $block = 0): mixed {
         self::assertArrayNotHasKey('isError', $result, $result['content'][0]['text'] ?? '');
+        if ($block === 0 && isset($result['structuredContent'])) {
+            return $result['structuredContent'];
+        }
         return json_decode($result['content'][$block]['text'], true, 512, JSON_THROW_ON_ERROR);
     }
 

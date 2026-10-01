@@ -297,6 +297,7 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
                 'app' => 'mcp',
                 'tool' => $name,
                 'exception' => $e::class,
+                'exception_message' => self::loggable($e),
             ]);
 
             throw new ToolFailure($this->messageFor($e));
@@ -370,6 +371,7 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
                 'app' => 'mcp',
                 'tool' => $name,
                 'exception' => $e::class,
+                'exception_message' => self::loggable($e),
             ]);
 
             return ToolResult::error($this->messageFor($e));
@@ -816,5 +818,16 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
      */
     private function writable(string $userId, array $arguments): Conversation {
         return $this->resolver->resolveForWriting($userId, $this->token($arguments));
+    }
+
+    /**
+     * The message that explains the failure, for the server log only: a refusal wraps the real cause, so the
+     * cause is the one worth reading. Sanitized like the registry's, with no paths and a length limit.
+     *
+     * @param Throwable $e the exception being logged
+     * @return string sanitized message
+     */
+    private static function loggable(Throwable $e): string {
+        return \OCA\Mcp\Tools\ToolRegistry::loggable($e->getPrevious() ?? $e);
     }
 }

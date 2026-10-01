@@ -39,6 +39,28 @@ class AttachmentAccessTest extends TestCase {
         $this->addToAssertionCount(1);
     }
 
+    /**
+     * Regression for the real-world failure: the share manager resolves ids as "<provider>:<id>" and throws on a
+     * bare number, so talk_quote_file answered "attachment not found" for the very id talk_attach_file returned.
+     */
+    public function testTheBareIdFromReadMessagesIsLookedUpAsAFullRoomShareId(): void {
+        $share = $this->createMock(IShare::class);
+        $share->method('getId')->willReturn('77');
+        $share->method('getShareType')->willReturn(IShare::TYPE_ROOM);
+        $share->method('getSharedWith')->willReturn('abcd');
+        $this->shareManager->method('getShareById')->willReturnCallback(
+            static function (string $id) use ($share): IShare {
+                if ($id !== 'ocRoom:77') {
+                    throw new RuntimeException('Invalid share id: ' . $id);
+                }
+
+                return $share;
+            },
+        );
+
+        $this->assertSame($share, $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77));
+    }
+
     public function testTheValidatedShareComesBackSoTheDraftCanNameTheFile(): void {
         $this->givenShare(IShare::TYPE_ROOM, 'abcd');
 
@@ -88,7 +110,7 @@ class AttachmentAccessTest extends TestCase {
     public function testTheShareIsOnlyReadAndNeverWritten(): void {
         $this->shareManager->expects($this->once())
             ->method('getShareById')
-            ->with('77', 'alice')
+            ->with('ocRoom:77', 'alice')
             ->willReturn($this->givenShare(IShare::TYPE_ROOM, 'abcd'));
         // Reading the share is all this may do: creating one here would publish the attachment a second time.
         $this->shareManager->expects($this->never())->method('createShare');

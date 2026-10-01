@@ -138,7 +138,7 @@ class ToolRegistry {
      * @param \Throwable $e the unexpected exception
      * @return string at most {@see self::LOG_MESSAGE_LIMIT} characters
      */
-    private static function loggable(\Throwable $e): string {
+    public static function loggable(\Throwable $e): string {
         $message = preg_replace('#(?:/[\w.@~+-]+){2,}/?#u', '[path]', $e->getMessage()) ?? '';
         return mb_substr($message, 0, self::LOG_MESSAGE_LIMIT);
     }

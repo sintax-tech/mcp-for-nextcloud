@@ -14,6 +14,9 @@ use Throwable;
  * already approved.
  */
 class AttachmentAccess {
+    /** Id of the room share provider, which the share manager needs as the prefix of every share id it resolves. */
+    private const ROOM_PROVIDER_ID = 'ocRoom';
+
     public function __construct(
         private IShareManager $shareManager,
         private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
@@ -26,13 +29,14 @@ class AttachmentAccess {
      *
      * @param Conversation $conversation Conversation the card would be published in
      * @param string $userId Authenticated user
-     * @param int $attachmentId Room share id reported by talk_read_messages
+     * @param int $attachmentId Bare room share id as talk_attach_file and talk_read_messages report it; the share
+     *                          manager only resolves "<provider>:<id>", so the provider prefix is added here
      * @return IShare The validated share, so a draft can name the file the card will carry
      * @throws ConversationAccessException When the id is not a share of this conversation
      */
     public function requireRoomShareOf(Conversation $conversation, string $userId, int $attachmentId): IShare {
         try {
-            $share = $this->shareManager->getShareById((string)$attachmentId, $userId);
+            $share = $this->shareManager->getShareById(self::ROOM_PROVIDER_ID . ':' . $attachmentId, $userId);
         } catch (Throwable $e) {
             throw new ConversationAccessException(Messages::attachmentNotFound(), $e);
         }

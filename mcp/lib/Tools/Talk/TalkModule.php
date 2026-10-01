@@ -268,6 +268,46 @@ class TalkModule implements ToolModule {
     }
 
     /**
+     * Builds the plan of a writing tool without executing anything, for whoever enforces the confirmation.
+     *
+     * This is the only entry point a central gate needs: the plan comes from the same resolution the call does,
+     * so a gate that refuses a write without confirm: true can show the very plan the confirmed call would act on
+     * instead of a second, weaker description of it.
+     *
+     * @param string $name Name of a writing tool of this module
+     * @param array<string, mixed> $arguments Validated arguments, without confirm
+     * @param string $userId Authenticated user
+     * @return array<string, mixed> The plan, ready to be shown to the user
+     * @throws InvalidArgumentException For an unknown tool name or a malformed argument
+     */
+    public function preview(string $name, array $arguments, string $userId): array {
+        return match ($name) {
+            self::TOOL_REPLY => $this->replyPreview($userId, $arguments),
+            self::TOOL_ATTACH => $this->attachPreview($userId, $arguments),
+            self::TOOL_QUOTE => $this->quotePreview($userId, $arguments),
+            self::TOOL_MESSAGE_USER => $this->messageUserPreview($userId, $arguments),
+            self::TOOL_SEND_BATCH => $this->sendBatchPreview($userId, $arguments),
+            self::TOOL_CREATE_GROUP => $this->createGroupPreview($userId, $arguments),
+            default => throw new InvalidArgumentException(Messages::unknownTool()),
+        };
+    }
+
+    /**
+     * @param string $name Name of a writing tool of this module
+     * @return bool Whether the tool publishes something, so a central gate can hold it back without confirm
+     */
+    public static function writesSomething(string $name): bool {
+        return in_array($name, [
+            self::TOOL_REPLY,
+            self::TOOL_ATTACH,
+            self::TOOL_QUOTE,
+            self::TOOL_MESSAGE_USER,
+            self::TOOL_SEND_BATCH,
+            self::TOOL_CREATE_GROUP,
+        ], true);
+    }
+
+    /**
      * Routes one tool call. Arguments arrive already validated against the schema, so only the rules a schema cannot
      * express are checked here, further down: a blank message, a malformed token or a path with a relative segment.
      *
@@ -415,25 +455,62 @@ class TalkModule implements ToolModule {
      * @throws TalkUnavailableException When spreed is unavailable
      */
     private function replyCall(string $userId, array $arguments): array {
+        if (!$this->confirmed($arguments)) {
+            return $this->replyPreview($userId, $arguments);
+        }
+
+        $resolved = $this->resolveReply($userId, $arguments);
+
+        return $this->writer->reply($resolved['conversation'], $userId, $resolved['message'], $resolved['replyTo']);
+    }
+
+    /**
+     * The plan of a reply, including the final text: the reference is resolved here too, so what the user reads
+     * is the text with the title and the link that will actually be published.
+     *
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> The plan
+     */
+    private function replyPreview(string $userId, array $arguments): array {
+        $resolved = $this->resolveReply($userId, $arguments);
+        $plan = $this->preview->reply(
+            $resolved['conversation'],
+            $userId,
+            $resolved['message'],
+            $resolved['replyTo'],
+        );
+
+        return $resolved['item'] === null ? $plan : $plan + ['reference' => $resolved['item']];
+    }
+
+    /**
+     * Everything a reply needs, resolved the same way on the plan and on the confirmed call.
+     *
+     * The reference is resolved again on the confirmed call instead of trusted from the plan: access is checked
+     * at the moment of sending, and a title that changed since the plan changes the text, so the plan the user
+     * saw is no longer the text that would go out.
+     *
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array{conversation:Conversation, message:string, replyTo:int|null, item:array<string, mixed>|null}
+     */
+    private function resolveReply(string $userId, array $arguments): array {
         $message = $this->message($arguments);
-        $replyTo = $this->replyTo($arguments);
         $reference = $this->reference($arguments);
         $conversation = $this->writable($userId, $arguments);
 
-        // The reference is resolved again on the confirmed call instead of trusted from the plan: access is
-        // checked at the moment of sending, and a title that changed since the plan changes the text, so the
-        // plan the user saw is no longer the text that would go out.
         $item = $reference === null ? null : $this->references->resolve($userId, $reference);
         if ($item !== null) {
             $message = ReferenceLinker::append($message, $item);
         }
 
-        if (!$this->confirmed($arguments)) {
-            $plan = $this->preview->reply($conversation, $userId, $message, $replyTo);
-
-            return $item === null ? $plan : $plan + ['reference' => $item];
-        }
-        return $this->writer->reply($conversation, $userId, $message, $replyTo);
+        return [
+            'conversation' => $conversation,
+            'message' => $message,
+            'replyTo' => $this->replyTo($arguments),
+            'item' => $item,
+        ];
     }
 
     /**
@@ -451,7 +528,7 @@ class TalkModule implements ToolModule {
         $conversation = $this->writable($userId, $arguments);
 
         if (!$this->confirmed($arguments)) {
-            return $this->preview->attach($conversation, $userId, $path, $caption);
+            return $this->attachPreview($userId, $arguments);
         }
         $attached = $this->sharer->attach($conversation, $userId, $path, $caption);
         if (($attached['captionSent'] ?? null) === false) {
@@ -471,6 +548,23 @@ class TalkModule implements ToolModule {
     /**
      * @param string $userId Authenticated user
      * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> The plan of talk_attach_file
+     * @throws InvalidArgumentException When the path is missing
+     * @throws ConversationAccessException When the conversation cannot be reached for writing
+     * @throws FileAccessException When the file is missing, not shareable or already shared in this conversation
+     */
+    private function attachPreview(string $userId, array $arguments): array {
+        return $this->preview->attach(
+            $this->writable($userId, $arguments),
+            $userId,
+            $this->path($arguments),
+            $this->optionalMessage($arguments),
+        );
+    }
+
+    /**
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
      * @return array<string, mixed> Result data of talk_quote_file, or the plan when confirm is absent
      * @throws InvalidArgumentException When the attachment id is missing
      * @throws ConversationAccessException When the conversation cannot be reached for writing, or the attachment is not a share of it
@@ -482,9 +576,25 @@ class TalkModule implements ToolModule {
         $conversation = $this->writable($userId, $arguments);
 
         if (!$this->confirmed($arguments)) {
-            return $this->preview->quote($conversation, $userId, $attachmentId, $caption);
+            return $this->quotePreview($userId, $arguments);
         }
         return $this->writer->quoteAttachment($conversation, $userId, $attachmentId, $caption);
+    }
+
+    /**
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> The plan of talk_quote_file
+     * @throws InvalidArgumentException When the attachment id is missing
+     * @throws ConversationAccessException When the conversation cannot be reached for writing, or the attachment is not a share of it
+     */
+    private function quotePreview(string $userId, array $arguments): array {
+        return $this->preview->quote(
+            $this->writable($userId, $arguments),
+            $userId,
+            $this->attachmentId($arguments),
+            $this->optionalMessage($arguments),
+        );
     }
 
     /**
@@ -504,13 +614,28 @@ class TalkModule implements ToolModule {
         $message = $this->message($arguments);
 
         if (!$this->confirmed($arguments)) {
-            return $this->preview->directMessage($this->userConversations->target($userId, $targetId), $userId, $message);
+            return $this->messageUserPreview($userId, $arguments);
         }
 
         $conversation = $this->userConversations->conversation($userId, $targetId);
         $result = $this->writer->reply($conversation, $userId, $message, null);
 
         return $result + ['user' => ['id' => $targetId, 'displayName' => $conversation->displayName($userId)]];
+    }
+
+    /**
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> The plan of talk_message_user
+     * @throws InvalidArgumentException When the account id or the message is missing
+     * @throws ConversationAccessException When the target is out of reach
+     */
+    private function messageUserPreview(string $userId, array $arguments): array {
+        return $this->preview->directMessage(
+            $this->userConversations->target($userId, $this->targetUser($arguments)),
+            $userId,
+            $this->message($arguments),
+        );
     }
 
     /**
@@ -532,7 +657,7 @@ class TalkModule implements ToolModule {
         $conversation = $this->resolver->resolveForWriting($userId, $this->token($arguments));
 
         if (!$this->confirmed($arguments)) {
-            return $this->preview->batch($conversation, $userId, $items);
+            return $this->sendBatchPreview($userId, $arguments);
         }
 
         $result = $this->writer->replyMany($conversation, $userId, $items);
@@ -551,6 +676,21 @@ class TalkModule implements ToolModule {
     }
 
     /**
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> The plan of talk_send_batch
+     * @throws InvalidArgumentException When the batch is empty, too long, or an item is malformed
+     * @throws ConversationAccessException When the conversation cannot be written in or a citation does not exist
+     */
+    private function sendBatchPreview(string $userId, array $arguments): array {
+        return $this->preview->batch(
+            $this->resolver->resolveForWriting($userId, $this->token($arguments)),
+            $userId,
+            $this->batchItems($arguments),
+        );
+    }
+
+    /**
      * A new group. Both steps of the product's API happen only here, in the confirmed call: the plan resolves the
      * people who would be invited and stops, so an abandoned preview leaves no room behind.
      *
@@ -566,14 +706,25 @@ class TalkModule implements ToolModule {
         $participants = $this->participantIds($arguments);
 
         if (!$this->confirmed($arguments)) {
-            return $this->preview->group(
-                $userId,
-                $name,
-                $this->userConversations->contacts($userId, $participants, true),
-            );
+            return $this->createGroupPreview($userId, $arguments);
         }
 
         return $this->groups->create($userId, $name, $participants);
+    }
+
+    /**
+     * @param string $userId Authenticated user
+     * @param array<string, mixed> $arguments Validated arguments
+     * @return array<string, mixed> The plan of talk_create_group
+     * @throws InvalidArgumentException When the name or the participant list is not usable
+     * @throws ConversationAccessException When an account is out of reach
+     */
+    private function createGroupPreview(string $userId, array $arguments): array {
+        return $this->preview->group(
+            $userId,
+            GroupCreator::normalizeName((string)($arguments['name'] ?? '')),
+            $this->userConversations->contacts($userId, $this->participantIds($arguments), true),
+        );
     }
 
     /**
@@ -621,6 +772,11 @@ class TalkModule implements ToolModule {
         $messages = $arguments['messages'] ?? throw new InvalidArgumentException(Messages::emptyBatch());
         if (!is_array($messages) || !array_is_list($messages) || $messages === []) {
             throw new InvalidArgumentException(Messages::emptyBatch());
+        }
+        // A list longer than a user can read is a mistake in the call, and it is refused here so that neither
+        // the plan nor the conversation behind it is built for something nobody could have approved.
+        if (count($messages) > WritePreview::MAX_BATCH) {
+            throw new InvalidArgumentException(Messages::tooManyMessages(WritePreview::MAX_BATCH));
         }
 
         $items = [];

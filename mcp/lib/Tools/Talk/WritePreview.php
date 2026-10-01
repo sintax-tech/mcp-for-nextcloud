@@ -190,7 +190,7 @@ class WritePreview {
      * @return list<array{message:string, replyTo:int|null}>
      * @throws InvalidArgumentException When the batch is empty, too long, or an item is not usable
      */
-    public static function normalizedBatch(array $items): array {
+    private static function normalizedBatch(array $items): array {
         if ($items === []) {
             throw new InvalidArgumentException(Messages::emptyBatch());
         }

@@ -308,6 +308,14 @@ final class FakeTree {
         });
         $folder->method('getById')->willReturnCallback(fn (int $id) => array_values(array_map(fn ($p) => $this->node($p),
             array_filter(array_keys($this->nodes), fn ($p) => str_starts_with($p, $path . '/') && $this->nodes[$p]['id'] === $id))));
+        $folder->method('getFirstNodeById')->willReturnCallback(function (int $id) use ($path): ?Node {
+            foreach (array_keys($this->nodes) as $p) {
+                if (str_starts_with($p, $path . '/') && $this->nodes[$p]['id'] === $id) {
+                    return $this->node($p);
+                }
+            }
+            return null;
+        });
         return $folder;
     }
 

@@ -46,6 +46,7 @@ final class ToolPresentation {
         return match ($name) {
             // Diagnostics
             'mcp_status' => Translator::t('Check MCP status'),
+            'mcp_guide' => Translator::t('Tool guide'),
             // Files
             'files_list' => Translator::t('List files'),
             'files_search' => Translator::t('Search files'),
@@ -120,6 +121,22 @@ final class ToolPresentation {
             'idempotentHint' => $readOnly,
             'openWorldHint' => false,
         ];
+    }
+
+    /**
+     * Title of a grant module, in the language of the current user, for the guide and for the admin matrix.
+     *
+     * @param string $module grant module a tool declares (files, notes, calendar, deck, talk)
+     */
+    public static function moduleTitle(string $module): string {
+        return match ($module) {
+            'files' => Translator::t('Files'),
+            'notes' => Translator::t('Notes'),
+            'calendar' => Translator::t('Calendar'),
+            'deck' => Translator::t('Deck'),
+            'talk' => Translator::t('Talk'),
+            default => ucfirst($module),
+        };
     }
 
     /**

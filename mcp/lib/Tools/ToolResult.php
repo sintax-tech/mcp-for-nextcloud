@@ -20,6 +20,18 @@ final class ToolResult {
     }
 
     /**
+     * Tool result carrying the same answer twice: markdown the model reads and structured content a client
+     * can take apart without parsing it.
+     *
+     * @param string $markdown the answer as readable markdown
+     * @param array<string, mixed> $data the same answer as structured content
+     * @return array{content: list<array{type:string, text:string}>, structuredContent: array<string, mixed>}
+     */
+    public static function structured(string $markdown, array $data): array {
+        return ['content' => [['type' => 'text', 'text' => $markdown]], 'structuredContent' => $data];
+    }
+
+    /**
      * @param string $message client-safe message
      * @return array{content: list<array{type:string, text:string}>, isError: bool}
      */

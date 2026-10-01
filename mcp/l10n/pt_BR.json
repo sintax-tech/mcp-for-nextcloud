@@ -34,6 +34,7 @@
     "Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true." : "Alterações afetam outras pessoas. Confirme com o usuário antes de continuar e repita a chamada com confirm_shared: true.",
     "Changes affect other people. Confirm with the user before continuing and run a new files_checkout with confirm_shared: true, because this edit link has already been used." : "Alterações afetam outras pessoas. Confirme com o usuário antes de continuar e faça um novo files_checkout com confirm_shared: true, porque este link de edição já foi gasto.",
     "Check MCP status" : "Verificar o status do MCP",
+    "Tool guide" : "Guia das ferramentas",
     "Client: %s" : "Cliente: %s",
     "Confirm Activity, CalDAV clients, and email delivery manually; the report does not confirm email delivery." : "Confirme Activity, clientes CalDAV e recebimento de e-mail manualmente; o relatório não confirma entrega de e-mail.",
     "Conflict: %s" : "Conflito: %s",

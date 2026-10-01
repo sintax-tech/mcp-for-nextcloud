@@ -12,6 +12,7 @@ final class ToolPresentationTest extends TestCase {
     /** English source title and the pt-BR title the app showed before the translation, by technical tool name. */
     private const TITLES = [
         'mcp_status' => ['Check MCP status', 'Verificar o status do MCP'],
+        'mcp_guide' => ['Tool guide', 'Guia das ferramentas'],
         'files_list' => ['List files', 'Listar arquivos'],
         'files_search' => ['Search files', 'Buscar arquivos'],
         'files_read' => ['Read file', 'Ler arquivo'],

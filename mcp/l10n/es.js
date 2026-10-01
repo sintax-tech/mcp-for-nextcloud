@@ -498,6 +498,8 @@ OC.L10N.register(
     "Eligible users who activated their connection." : "Usuarios elegibles que activaron su propia conexión.",
     "Revoke {client} for {user}" : "Revocar {client} de {user}",
     "Revoke {client}" : "Revocar {client}",
-    "Revoke all connections of {user}" : "Revocar todas las conexiones de {user}"
+    "Revoke all connections of {user}" : "Revocar todas las conexiones de {user}",
+    "Enter at least 2 characters to search the accounts catalog." : "Escriba al menos 2 caracteres para buscar en el catálogo de cuentas.",
+    "Account contacts are read-only; ask the administrator." : "Los contactos de cuentas son de solo lectura; pídaselo al administrador."
 },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

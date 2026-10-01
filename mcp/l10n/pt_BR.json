@@ -496,6 +496,8 @@
     "Eligible users who activated their connection." : "Usuários elegíveis que ativaram a própria conexão.",
     "Revoke {client} for {user}" : "Revogar {client} de {user}",
     "Revoke {client}" : "Revogar {client}",
-    "Revoke all connections of {user}" : "Revogar todas as conexões de {user}"
+    "Revoke all connections of {user}" : "Revogar todas as conexões de {user}",
+    "Enter at least 2 characters to search the accounts catalog." : "Digite pelo menos 2 caracteres para buscar no catálogo de contas.",
+    "Account contacts are read-only; ask the administrator." : "Os contatos de contas são somente leitura; peça ao administrador."
 },"pluralForm" : "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

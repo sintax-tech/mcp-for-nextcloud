@@ -30,6 +30,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
      * @param ContactCard $cards vCard parser and preserving patch builder
      * @param SharedGuard $guard shared-owner confirmation policy
      * @param ContactBackup $backup verified contact backup service
+     * @param SystemContacts $system read-only account catalog ("Accounts") governed by the admin enumeration rules
      * @return void
      */
     public function __construct(
@@ -39,6 +40,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
         private ContactCard $cards,
         private SharedGuard $guard,
         private ContactBackup $backup,
+        private SystemContacts $system,
     ) {}
 
     /**
@@ -73,7 +75,8 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
                 'contacts',
                 'contacts',
                 'contacts_list_addressbooks',
-                'List your own and shared address books, excluding the system user directory.',
+                'List your own and shared address books plus, when the admin exposes it, the read-only '
+                    . 'accounts catalog of the instance.',
                 'read',
                 []
             ),
@@ -81,22 +84,29 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
                 'contacts',
                 'contacts',
                 'contacts_search_contacts',
-                'Search contacts in one visible address book by name, email, phone or organization; '
-                    . 'an empty query lists contacts.',
+                'Search contacts by name, email, phone or organization in one address book or, when '
+                    . '"addressbook" is omitted, in all of them including the read-only accounts of the instance '
+                    . '(colleagues). Account results carry accountId, the user ID to use for invitations, '
+                    . 'attendees, Deck and Talk. An empty query lists personal contacts only; accounts need a '
+                    . 'search term of at least 2 characters.',
                 'read',
                 [
-                    'addressbook' => $book,
+                    'addressbook' => Schema::text(
+                        'Address book path returned by List address books. Omit to search all of them.',
+                        1,
+                        1024
+                    ),
                     'query' => Schema::text('Case-insensitive search text.', 0, 1024),
                     'limit' => Schema::limit(),
                     'offset' => Schema::offset(),
-                ],
-                ['addressbook']
+                ]
             ),
             Schema::definition(
                 'contacts',
                 'contacts',
                 'contacts_read_contact',
-                'Read a contact including all vCard properties and its ETag.',
+                'Read a contact including all vCard properties and its ETag. A contact of the accounts '
+                    . 'catalog returns only its public fields and accountId, without vCard or ETag.',
                 'read',
                 ['addressbook' => $book, 'uri' => $uri],
                 ['addressbook', 'uri']
@@ -139,9 +149,13 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
      */
     public function guideNotes(): array {
         return [
-            'List address books first; only your own and shared address books are exposed. The '
-                . 'system user directory is excluded.',
-            'Search one address book to obtain contact object URIs, then read a contact before '
+            'List address books first; your own and shared address books are exposed, plus the '
+                . 'read-only accounts catalog when the admin allows it. Searching without an address '
+                . 'book also covers the accounts of the instance (colleagues, with a term of at least 2 '
+                . 'characters, following the admin user-enumeration settings); each account result has '
+                . 'accountId, the ID to use for invitations. Use users_search to look for accounts only. '
+                . 'Account contacts can never be created, edited or deleted.',
+            'Search an address book to obtain contact object URIs, then read a contact before '
                 . 'editing it. Unknown vCard properties are preserved; the preview includes every '
                 . 'property before and after.',
             'Writes first show a plan without changing anything. Wait for an explicit yes, repeat '
@@ -182,59 +196,38 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
      */
     public function call(string $name, array $arguments, string $userId): array {
         if ($name === 'contacts_list_addressbooks') {
-            return ToolResult::json(array_map(static fn ($book) => (array) $book, $this->access->visible($userId)));
+            $books = array_map(static fn ($book) => (array) $book, $this->access->visible($userId));
+            $catalog = $this->system->bookName($userId);
+            if ($catalog !== null) {
+                $books[] = [
+                    'id' => 0,
+                    'uri' => ContactAccess::SYSTEM_URI,
+                    'name' => $catalog,
+                    'ownerId' => 'system',
+                    'ownerPrincipal' => 'principals/system/system',
+                    'writable' => false,
+                    'path' => ContactAccess::systemPath($userId),
+                    'system' => true,
+                    'readOnly' => true,
+                ];
+            }
+            return ToolResult::json($books);
         }
-        if ($name === 'contacts_search_contacts' || $name === 'contacts_read_contact') {
+        if ($name === 'contacts_search_contacts') {
+            return $this->search($arguments, $userId);
+        }
+        if ($name === 'contacts_read_contact' && $this->access->isSystemPath($userId, $arguments['addressbook'])) {
+            $account = $this->system->find($userId, $arguments['uri']) ?? throw new ToolFailure(CommonMessages::notFound());
+            return ToolResult::json($account);
+        }
+        if ($name === 'contacts_read_contact') {
             $book = $this->access->resolve($userId, $arguments['addressbook']);
-            if ($name === 'contacts_read_contact') {
-                $row = $this->row($book->id, $arguments['uri']);
-                return ToolResult::json(
-                    $this->cards->item($this->cards->parse($row['data'])) + [
-                        'uri' => $row['uri'],
-                        'etag' => $row['etag'],
-                        'addressbook' => $book->path,
-                    ]
-                );
-            }
-            $query = mb_strtolower($arguments['query'] ?? '');
-            $limit = $arguments['limit'] ?? 50;
-            $items = [];
-            $more = false;
-            $offset = $arguments['offset'] ?? 0;
-            $matched = 0;
-            foreach ($this->store->cards($book->id) as $row) {
-                try {
-                    $item = $this->cards->item($this->cards->parse($row['data']));
-                } catch (ToolFailure) {
-                    continue;
-                }
-                $search = implode(
-                    ' ',
-                    [
-                        $item['name'],
-                        $item['organization'],
-                        ...$item['emails'],
-                        ...$item['phones'],
-                    ]
-                );
-                if ($query !== '' && !str_contains(mb_strtolower($search), $query)) {
-                    continue;
-                }
-                if ($matched++ < $offset) {
-                    continue;
-                }
-                if (count($items) >= $limit) {
-                    $more = true;
-                    break;
-                }
-                unset($item['vcard'], $item['properties']);
-                $items[] = $item + ['uri' => $row['uri'], 'etag' => $row['etag'], 'addressbook' => $book->path];
-            }
+            $row = $this->row($book->id, $arguments['uri']);
             return ToolResult::json(
-                [
-                    'contacts' => $items,
-                    'hasMore' => $more,
-                    'nextOffset' => $more ? $offset + count($items) : null,
+                $this->cards->item($this->cards->parse($row['data'])) + [
+                    'uri' => $row['uri'],
+                    'etag' => $row['etag'],
+                    'addressbook' => $book->path,
                 ]
             );
         }
@@ -297,6 +290,114 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
     }
 
     /**
+     * Searches personal and shared books and, without a book or with the catalog path, the read-only accounts.
+     *
+     * Personal matches come first. An account whose e-mail equals one of a personal match is not repeated; the
+     * personal contact gains its accountId instead. Offset and limit apply to the combined list.
+     *
+     * @param array<string, mixed> $arguments validated tool arguments
+     * @param string $userId authenticated user UID
+     * @return array{content:list<array{type:string, text:string}>, isError?:bool} MCP result
+     * @throws ToolFailure when the book is foreign, hidden or the catalog needs a search term
+     */
+    private function search(array $arguments, string $userId): array {
+        $path = $arguments['addressbook'] ?? null;
+        $term = trim((string) ($arguments['query'] ?? ''));
+        $books = [];
+        $accounts = [];
+        if ($path !== null && $this->access->isSystemPath($userId, $path)) {
+            if ($this->system->bookName($userId) === null) {
+                throw new ToolFailure(CommonMessages::notFound());
+            }
+            if (mb_strlen($term) < SystemContacts::MIN_QUERY) {
+                throw new ToolFailure(
+                    Translator::t('Enter at least 2 characters to search the accounts catalog.')
+                );
+            }
+            $accounts = $this->system->search($userId, $term);
+        } elseif ($path !== null) {
+            $books = [$this->access->resolve($userId, $path)];
+        } else {
+            $books = $this->access->visible($userId);
+            if (mb_strlen($term) >= SystemContacts::MIN_QUERY) {
+                $accounts = $this->system->search($userId, $term);
+            }
+        }
+        $accountIds = [];
+        foreach ($accounts as $account) {
+            foreach ($account['emails'] as $email) {
+                $accountIds[mb_strtolower($email)] ??= $account['accountId'];
+            }
+        }
+        $limit = $arguments['limit'] ?? 50;
+        $offset = $arguments['offset'] ?? 0;
+        $items = [];
+        $more = false;
+        $matched = 0;
+        foreach ($this->candidates($books, mb_strtolower($term), $accounts, $accountIds) as $item) {
+            if ($matched++ < $offset) {
+                continue;
+            }
+            if (count($items) >= $limit) {
+                $more = true;
+                break;
+            }
+            $items[] = $item;
+        }
+        return ToolResult::json(
+            [
+                'contacts' => $items,
+                'hasMore' => $more,
+                'nextOffset' => $more ? $offset + count($items) : null,
+            ]
+        );
+    }
+
+    /**
+     * Yields matching personal contacts, then the account contacts that no personal contact already covers.
+     *
+     * @param list<Calendar> $books authorized personal and shared address books
+     * @param string $query lower-case search text, empty to list everything
+     * @param list<array<string, mixed>> $accounts account entries already filtered by the admin rules
+     * @param array<string, string> $accountIds accountId by lower-case e-mail, to annotate personal contacts
+     * @return \Generator<int, array<string, mixed>>
+     */
+    private function candidates(array $books, string $query, array $accounts, array $accountIds): \Generator {
+        $seen = [];
+        foreach ($books as $book) {
+            foreach ($this->store->cards($book->id) as $row) {
+                try {
+                    $item = $this->cards->item($this->cards->parse($row['data']));
+                } catch (ToolFailure) {
+                    continue;
+                }
+                $search = implode(' ', [$item['name'], $item['organization'], ...$item['emails'], ...$item['phones']]);
+                if ($query !== '' && !str_contains(mb_strtolower($search), $query)) {
+                    continue;
+                }
+                unset($item['vcard'], $item['properties']);
+                $item += ['uri' => $row['uri'], 'etag' => $row['etag'], 'addressbook' => $book->path];
+                foreach ($item['emails'] as $email) {
+                    $email = mb_strtolower($email);
+                    $seen[$email] = true;
+                    if (isset($accountIds[$email])) {
+                        $item['accountId'] ??= $accountIds[$email];
+                    }
+                }
+                yield $item;
+            }
+        }
+        foreach ($accounts as $account) {
+            foreach ($account['emails'] as $email) {
+                if (isset($seen[mb_strtolower($email)])) {
+                    continue 2;
+                }
+            }
+            yield $account;
+        }
+    }
+
+    /**
      * Prepares contact access, ETag checks and a complete plan without mutating DAV or Files.
      *
      * @param string $name write tool name
@@ -323,6 +424,9 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
             ['name', 'organization', 'title', 'note', 'url', 'emails', 'phones']
         ) === []) {
             throw new InvalidArgumentException(Translator::t('Provide at least one field to change.'));
+        }
+        if ($this->access->isSystemPath($userId, $arguments['addressbook'])) {
+            throw new ToolFailure(Translator::t('Account contacts are read-only; ask the administrator.'));
         }
         $book = $this->access->resolve($userId, $arguments['addressbook'], true);
         $row = null;

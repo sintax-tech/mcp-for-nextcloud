@@ -52,7 +52,7 @@ final class AvailabilityCheck {
         try {
             $results = $this->calendarManager->checkAvailability($start, $end, $organizer, $emails);
         } catch (\Throwable $e) {
-            $this->logger->warning('Availability check failed: ' . $e::class . ': ' . $e->getMessage());
+            $this->logger->warning('Availability check failed: ' . $e::class . ': ' . self::scrub($e->getMessage()));
             return $failed;
         }
 
@@ -73,6 +73,17 @@ final class AvailabilityCheck {
             }
         }
         return ['busy' => $busy, 'unverifiable' => $unverifiable, 'failed' => false];
+    }
+
+    /**
+     * Removes e-mail addresses from a core message and caps its length, so it is safe to log.
+     *
+     * @param string $message raw exception message
+     * @return string message with addresses replaced by `[email]`, at most 300 characters
+     */
+    private static function scrub(string $message): string {
+        $clean = preg_replace('/[^\s@<>"' . "'" . ']+@[^\s@<>"' . "'" . ']+/', '[email]', $message) ?? '';
+        return mb_substr($clean, 0, 300);
     }
 
     /**

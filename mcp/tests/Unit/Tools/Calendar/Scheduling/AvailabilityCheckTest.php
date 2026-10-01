@@ -73,6 +73,21 @@ final class AvailabilityCheckTest extends TestCase {
     }
 
     /** @return void */
+    public function testEmailsInTheExceptionMessageAreNotLoggedAndMessageIsCapped(): void {
+        $manager = $this->createMock(IManager::class);
+        $manager->method('checkAvailability')->willThrowException(
+            new \RuntimeException('no calendar for bob@example.invalid <carla@example.invalid> ' . str_repeat('x', 500)),
+        );
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects(self::once())->method('warning')->with(
+            self::callback(static fn (string $m): bool => !str_contains($m, '@') && str_contains($m, '[email]')
+                && strlen($m) < 400),
+        );
+
+        $this->runCheck($manager, [self::BOB], 'alice', $logger);
+    }
+
+    /** @return void */
     public function testMissingOrganizerFailsWithoutCallingTheApi(): void {
         $manager = $this->createMock(IManager::class);
         $manager->expects(self::never())->method('checkAvailability');

@@ -271,7 +271,7 @@
     "Note exceeds the read limit of %d bytes." : "Nota excede o limite de leitura de %d bytes.",
     "Notes" : "Notas",
     "notes" : "notas",
-    "Nothing was changed. After your approval a new card is created at the end of the list below, and you are set as its owner." : "Nada foi alterado. Após sua aprovação, um novo card é criado no fim da lista abaixo e você passa a ser o responsável por ele.",
+    "Nothing was changed. After your approval a new card is created at the end of the list below, owned by you. You are not assigned to it unless listed below." : "Nada foi alterado. Após sua aprovação, um novo card é criado no fim da lista abaixo e você é o dono dele. Você só fica atribuído a ele se constar abaixo.",
     "Nothing was changed. After your approval a note is created with the title and content below." : "Nada foi alterado. Após sua aprovação, uma nota é criada com o título e o conteúdo abaixo.",
     "Nothing was changed. After your approval a single-use download link and a single-use upload link are issued for this file, which can be any file type (document, spreadsheet, PDF, image) up to the upload limit below; the upload only succeeds while the ETag below is the current one. A text file can also be edited directly with files_edit or files_replace." : "Nada foi alterado. Após sua aprovação, um link de download de uso único e um link de envio de uso único são emitidos para este arquivo, que pode ser de qualquer tipo (documento, planilha, PDF, imagem) até o limite de envio abaixo; o envio só funciona enquanto o ETag abaixo for o atual. Um arquivo de texto também pode ser editado diretamente com files_edit ou files_replace.",
     "Nothing was changed. After your approval each item below goes back to where the batch took it from, and only the empty folders the batch created are removed." : "Nada foi alterado. Após sua aprovação, cada item abaixo volta para onde o lote o tirou, e somente as pastas vazias criadas pelo lote são removidas.",
@@ -312,7 +312,7 @@
     "Previous" : "Anterior",
     "Provide 1 to 50 attendees, without duplicates." : "Informe de 1 a 50 participantes, sem repetição.",
     "Provide at least one field to change." : "Informe ao menos um campo para alterar.",
-    "Provide at least one field to edit: title, description or duedate." : "Informe ao menos um campo para editar: title, description ou duedate.",
+    "Provide at least one field to edit: title, description, duedate, assign or unassign." : "Informe ao menos um campo para editar: title, description, duedate, assign ou unassign.",
     "Provide either paths or folder." : "Informe paths ou folder.",
     "Provide start and end when changing allDay." : "Informe start e end ao alterar allDay.",
     "quote" : "citar",
@@ -699,6 +699,15 @@
     "%s, of %s" : "%s, de %s",
     "unnamed calendar" : "calendário sem nome",
     "To confirm, repeat the call with etag %s." : "Para confirmar, repita a chamada com etag %s.",
-    "To use another calendar, repeat the call with calendar %s." : "Para usar outro calendário, repita a chamada com calendar %s."
+    "To use another calendar, repeat the call with calendar %s." : "Para usar outro calendário, repita a chamada com calendar %s.",
+    "an account ID cannot be in both assign and unassign" : "uma conta não pode estar em assign e unassign ao mesmo tempo",
+    "Ignored, not assigned to the card: %s" : "Ignorado, não é responsável pelo card: %s",
+    "Ignored, already assigned to the card: %s" : "Ignorado, já é responsável pelo card: %s",
+    "- Assigned: %s" : "- Passa a ser responsável: %s",
+    "- Unassigned: %s" : "- Deixa de ser responsável: %s",
+    "- Assignees after the change: %s" : "- Responsáveis após a alteração: %s",
+    "- Ignored, not assigned to the card: %s" : "- Ignorado, não é responsável pelo card: %s",
+    "- Ignored, already assigned to the card: %s" : "- Ignorado, já é responsável pelo card: %s",
+    "(nobody)" : "(ninguém)"
 },"pluralForm" :"nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

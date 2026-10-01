@@ -297,27 +297,6 @@ final class TasksModuleTest extends TestCase {
         self::assertSame('New', $result['summary']);
     }
 
-    public function testCreationPlanAndExecutionUseTheSameUid(): void {
-        $args = ['calendar' => self::PATH, 'summary' => 'New', 'due' => '2026-10-05'];
-        $planned = $this->module->preview('tasks_create_task', $args, 'alice')['after']['uid'];
-        $this->dav->expects(self::once())->method('put')->with(
-            'alice',
-            'tasks',
-            $planned . '.ics',
-            self::callback(function ($data) {
-                $this->data = $data;
-                return true;
-            }),
-            false
-        )->willReturn(new DavResult(201));
-        $created = $this->json($this->module->call('tasks_create_task', $args + ['confirm' => true], 'alice'));
-        self::assertSame($planned, $created['uid']);
-        self::assertNotSame(
-            $planned,
-            $this->module->preview('tasks_create_task', ['summary' => 'Other'] + $args, 'alice')['after']['uid']
-        );
-    }
-
     public function testRemovingStartCannotLeaveDurationWithoutStart(): void {
         $this->data = str_replace(
             'SUMMARY:Work',

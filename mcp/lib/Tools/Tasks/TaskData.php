@@ -99,20 +99,19 @@ class TaskData {
     }
 
     /**
-     * Creates a task and applies the supplied fields and timestamps.
+     * Creates a task with a new UID and applies the supplied fields and timestamps.
      *
      * @param array<string, mixed> $arguments validated tool arguments; omitted editable fields remain unchanged
      * @param DateTimeImmutable $now clock time for task metadata
-     * @param string|null $uid UID to give the task; a random one when null
      * @return VCalendar
      * @throws InvalidArgumentException when task dates or progress are invalid
      * @throws ToolFailure when the task cannot be read safely
      */
-    public function create(array $arguments, DateTimeImmutable $now, ?string $uid = null): VCalendar {
+    public function create(array $arguments, DateTimeImmutable $now): VCalendar {
         $calendar = new VCalendar(
             [
                 'VTODO' => [
-                    'UID' => $uid ?? bin2hex(random_bytes(16)),
+                    'UID' => bin2hex(random_bytes(16)),
                     'SUMMARY' => $arguments['summary'],
                     'STATUS' => 'NEEDS-ACTION',
                 ],

@@ -28,6 +28,7 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 - Files: `files_replace` writes over the raw bytes and the app never deletes a file.
 - Files: an undo that stopped halfway can be retried.
 - Files: the checkout routes resolve the controller and `sharedBy` resolves the UID of the share.
+- Language: the `files_move_batch` confirmation and move-failure messages are translated, and Calendar selftest failures report `FAIL` like the rest of the report uses English statuses.
 - Protocol: an invalid-argument error names the field in camelCase too.
 - Language: the generic server error and the invalid-argument messages are translated, and the review findings F1-F5 of the two translation phases are fixed.
 

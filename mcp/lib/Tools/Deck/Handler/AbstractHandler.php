@@ -8,6 +8,7 @@ use OCA\Mcp\Tools\Deck\DeckConflictException;
 use OCA\Mcp\Tools\Deck\DeckErrors;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckMessages;
+use OCA\Mcp\Tools\Deck\DeckRefusalException;
 use OCA\Mcp\Tools\Deck\DeckResult;
 use Psr\Log\LoggerInterface;
 
@@ -59,8 +60,8 @@ abstract class AbstractHandler {
 				'exception' => $e::class,
 			];
 
-			if ($e instanceof DeckConflictException) {
-				$this->logger->warning('MCP Deck tool conflicted: {tool}', $context);
+			if ($e instanceof DeckConflictException || $e instanceof DeckRefusalException) {
+				$this->logger->warning('MCP Deck tool refused or conflicted: {tool}', $context);
 			} else {
 				$this->logger->error('MCP Deck tool failed: {tool} ({exception})', $context);
 			}

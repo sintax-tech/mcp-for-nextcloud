@@ -95,6 +95,24 @@ namespace OCA\Deck\Service {
 		public function isArchived($mapper, int $id): bool {
 			throw new \LogicException('Stub: expected a PHPUnit mock.');
 		}
+
+		/**
+		 * @param string $title Board title, validated by Deck to 1-100 characters.
+		 * @param string $userId Owner of the new board.
+		 * @param string $color Six hexadecimal digits, without `#`.
+		 * @return Board Created board, with its default labels.
+		 */
+		public function create(string $title, string $userId, string $color): Board {
+			throw new \LogicException('Stub: expected a PHPUnit mock.');
+		}
+
+		/**
+		 * @param int $id Board to delete; needs `PERMISSION_MANAGE`.
+		 * @return Board Board marked as deleted (soft delete, recoverable in Deck).
+		 */
+		public function delete(int $id): Board {
+			throw new \LogicException('Stub: expected a PHPUnit mock.');
+		}
 	}
 
 	/** Stack service double; signatures mirror Deck `v1.17.5` `lib/Service/StackService.php`. */
@@ -113,6 +131,24 @@ namespace OCA\Deck\Service {
 		 * @return Stack[] Stacks of the board, with their cards.
 		 */
 		public function findAll(int $boardId, int $since = -1): array {
+			throw new \LogicException('Stub: expected a PHPUnit mock.');
+		}
+
+		/**
+		 * @param string $title Stack title.
+		 * @param int $boardId Board that receives the stack; needs `PERMISSION_MANAGE`.
+		 * @param int $order Position among the stacks of the board.
+		 * @return Stack Created stack.
+		 */
+		public function create(string $title, int $boardId, int $order): Stack {
+			throw new \LogicException('Stub: expected a PHPUnit mock.');
+		}
+
+		/**
+		 * @param int $id Stack to delete; needs `PERMISSION_MANAGE`.
+		 * @return Stack Stack marked as deleted (soft delete); its cards are not touched.
+		 */
+		public function delete(int $id): Stack {
 			throw new \LogicException('Stub: expected a PHPUnit mock.');
 		}
 	}

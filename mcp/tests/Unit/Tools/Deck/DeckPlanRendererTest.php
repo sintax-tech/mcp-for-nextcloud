@@ -46,6 +46,11 @@ final class DeckPlanRendererTest extends TestCase {
 			? $this->ownershipOf('pedro', 'Equipe')
 			: $this->ownershipOf('alice', 'Pessoal'));
 		$this->gateway->method('cardOwnership')->willReturnCallback(fn (string $user, int $card): array => $this->ownershipOf('alice', 'Pessoal'));
+		$this->gateway->method('boardOwnership')->willReturnCallback(fn (string $user, int $board): array => $board === 2
+			? $this->ownershipOf('pedro', 'Equipe')
+			: $this->ownershipOf('alice', 'Pessoal'));
+		$this->gateway->method('stackCardCount')->willReturn(0);
+		$this->gateway->method('boardCardCount')->willReturn(0);
 		$this->gateway->method('findCard')->willReturn($this->card([
 			'id' => 7,
 			'stackId' => 10,
@@ -300,7 +305,25 @@ final class DeckPlanRendererTest extends TestCase {
 			'deck_edit_card' => $this->module->preview('deck_edit_card', ['cardId' => 7, 'title' => 'Tarefa Nova'], 'alice'),
 			'deck_move_card' => $this->module->preview('deck_move_card', ['cardId' => 7, 'stackId' => 11], 'alice'),
 			'deck_delete_card' => $this->module->preview('deck_delete_card', ['cardId' => 7], 'alice'),
-		]);
+		] + $this->structurePlans());
+	}
+
+	/**
+	 * Plans of the four tools that build or empty the structure, as the module produces them.
+	 *
+	 * @return array<string, array<string, mixed>> Plan of each tool, keyed by tool name.
+	 */
+	private function structurePlans(): array {
+		return [
+			'deck_create_board' => $this->module->preview('deck_create_board', [
+				'title' => 'Projeto Alfa',
+				'color' => 'ff0000',
+				'stacks' => [['title' => 'A fazer', 'cards' => [['title' => 'Briefing', 'description' => 'texto', 'duedate' => '2026-10-05', 'assignees' => ['alice']]]], ['title' => 'Feito']],
+			], 'alice'),
+			'deck_create_stack' => $this->module->preview('deck_create_stack', ['boardId' => 2, 'title' => 'Revisão', 'order' => 1], 'alice'),
+			'deck_delete_stack' => $this->module->preview('deck_delete_stack', ['stackId' => 10], 'alice'),
+			'deck_delete_board' => $this->module->preview('deck_delete_board', ['boardId' => 1], 'alice'),
+		];
 	}
 
 	/** @return array<string, mixed> Edit plan that changes assignees only, with hand-written names. */
@@ -366,7 +389,7 @@ final class DeckPlanRendererTest extends TestCase {
 			'deck_edit_card' => $this->assigneePlan(),
 			'deck_move_card' => $this->module->preview('deck_move_card', ['cardId' => 7, 'stackId' => 11], 'alice'),
 			'deck_delete_card' => $this->module->preview('deck_delete_card', ['cardId' => 7], 'alice'),
-		]);
+		] + $this->structurePlans());
 	}
 
 	public function testMarkdownInTitleBoardAndListStaysLiteral(): void {

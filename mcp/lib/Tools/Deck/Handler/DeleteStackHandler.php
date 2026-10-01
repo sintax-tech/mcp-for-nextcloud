@@ -1,0 +1,60 @@
+<?php
+declare(strict_types=1);
+
+namespace OCA\Mcp\Tools\Deck\Handler;
+
+use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use Psr\Log\LoggerInterface;
+
+/**
+ * Backs `deck_delete_stack`: deletes a list, but only while it holds no card.
+ *
+ * Deck deletes a list whatever it holds, so the gateway counts the cards again at the moment of the delete
+ * and refuses with the number of cards left. The delete is Deck's soft delete: the list goes to the trash.
+ */
+final class DeleteStackHandler extends AbstractHandler {
+	/** MCP tool name this handler serves. */
+	public const TOOL = 'deck_delete_stack';
+
+	/**
+	 * @param DeckGatewayInterface $gateway Deck access, the only door to the Deck app.
+	 * @param LoggerInterface $logger Receives tool name and exception class on failure.
+	 */
+	public function __construct(DeckGatewayInterface $gateway, LoggerInterface $logger) {
+		parent::__construct($gateway, $logger);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * The payload is the deleted list.
+	 *
+	 * @param array<string, mixed> $arguments Requires `stackId`; accepts `confirm_shared`.
+	 * @param string $userId UID of the authenticated caller.
+	 * @return array{content: list<array{type: string, text: string}>, isError?: bool} MCP result.
+	 */
+	public function handle(array $arguments, string $userId): array {
+		return $this->run(function () use ($arguments, $userId): array {
+			$confirmation = $this->confirmShared($arguments, $userId, $this->gateway->stackOwnership($userId, (int)$arguments['stackId']));
+			if ($confirmation !== null) {
+				return $confirmation;
+			}
+
+			$stack = $this->gateway->deleteEmptyStack($userId, (int)$arguments['stackId']);
+
+			return [
+				'id' => (int)$stack->getId(),
+				'boardId' => (int)$stack->getBoardId(),
+				'title' => (string)$stack->getTitle(),
+				'deleted' => true,
+			];
+		});
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	protected function toolName(): string {
+		return self::TOOL;
+	}
+}

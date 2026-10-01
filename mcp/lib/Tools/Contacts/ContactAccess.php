@@ -1,32 +1,74 @@
 <?php
 declare(strict_types=1);
+
 namespace OCA\Mcp\Tools\Contacts;
 
-use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\Calendar\Calendar;
+use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Tools\ToolFailure;
 
 /** Uses the Calendar collection descriptor for the identical ownership/shared guard metadata. */
 class ContactAccess {
-    private const PREFIX='/remote.php/dav/addressbooks/users/';
+    /** Only user principals may own visible address books. */
+    private const PRINCIPAL_PREFIX = 'principals/users/';
+
+    /** Base of the address-book paths exposed by the tools. */
+    private const PATH_PREFIX = '/remote.php/dav/addressbooks/users/';
+
+    /**
+     * Receives the read-only port used to resolve visible address books.
+     *
+     * @param ContactStore $store read-only storage port
+     * @return void
+     */
     public function __construct(private ContactStore $store) {}
-    /** @return list<Calendar> Personal and shared books only; no system principal can pass this filter. */
+
+    /**
+     * Lists personal and shared address books, explicitly excluding system principals.
+     *
+     * @param string $userId authenticated user UID
+     * @return list<Calendar>
+     */
     public function visible(string $userId): array {
-        $out=[];
-        foreach($this->store->books('principals/users/'.$userId) as $row) {
-            $owner=$row['ownerPrincipal'];
-            if (!str_starts_with($owner,'principals/users/')) { continue; }
-            $ownerId=substr($owner,strlen('principals/users/'));
-            $out[]=new Calendar($row['id'],$row['uri'],$row['displayName'],$ownerId,$owner,!$row['readOnly'],self::PREFIX.rawurlencode($userId).'/'.rawurlencode($row['uri']).'/');
+        $addressbooks = [];
+        foreach ($this->store->books(self::PRINCIPAL_PREFIX . $userId) as $row) {
+            $owner = $row['ownerPrincipal'];
+            if (!str_starts_with($owner, self::PRINCIPAL_PREFIX)) {
+                continue;
+            }
+            $ownerId = substr($owner, strlen(self::PRINCIPAL_PREFIX));
+            $addressbooks[] = new Calendar(
+                $row['id'],
+                $row['uri'],
+                $row['displayName'],
+                $ownerId,
+                $owner,
+                !$row['readOnly'],
+                self::PATH_PREFIX . rawurlencode($userId) . '/' . rawurlencode($row['uri']) . '/'
+            );
         }
-        return $out;
+        return $addressbooks;
     }
-    public function resolve(string $userId,string $path,bool $write=false): Calendar {
-        foreach($this->visible($userId) as $book) {
-            if (rtrim($book->path,'/') !== rtrim($path,'/')) { continue; }
-            if ($write && !$book->writable) { throw new ToolFailure(\OCA\Mcp\Tools\Common\CommonMessages::forbidden()); }
+
+    /**
+     * Resolves a visible address-book path and optionally requires write access.
+     *
+     * @param string $userId authenticated user UID
+     * @param string $path address-book DAV path returned by the listing tool
+     * @param bool $write whether to require a writable address book
+     * @return Calendar
+     * @throws ToolFailure when the path is foreign, hidden or not writable
+     */
+    public function resolve(string $userId, string $path, bool $write = false): Calendar {
+        foreach ($this->visible($userId) as $book) {
+            if (rtrim($book->path, '/') !== rtrim($path, '/')) {
+                continue;
+            }
+            if ($write && !$book->writable) {
+                throw new ToolFailure(CommonMessages::forbidden());
+            }
             return $book;
         }
-        throw new ToolFailure(\OCA\Mcp\Tools\Common\CommonMessages::notFound());
+        throw new ToolFailure(CommonMessages::notFound());
     }
 }

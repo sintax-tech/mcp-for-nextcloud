@@ -44,13 +44,22 @@ final class ShareRecipientResolver {
             if ($user === null) {
                 throw new ArgumentValidationException('Invalid argument: ' . $field, $field, Translator::t('unknown account'));
             }
-            return new ShareRecipient(ShareRecipient::USER, $user->getUID(), $user->getDisplayName());
+            return new ShareRecipient(ShareRecipient::USER, $user->getUID(), self::name($user->getDisplayName(), $user->getUID()));
         }
         $group = $this->groupManager->get($id);
         if ($group === null) {
             throw new ArgumentValidationException('Invalid argument: ' . $field, $field, Translator::t('unknown group'));
         }
-        return new ShareRecipient(ShareRecipient::GROUP, $group->getGID(), $group->getDisplayName());
+        return new ShareRecipient(ShareRecipient::GROUP, $group->getGID(), self::name($group->getDisplayName(), $group->getGID()));
+    }
+
+    /**
+     * @param string|null $name display name a backend returned, possibly empty
+     * @param string $id uid or gid
+     * @return string the name, or the id when the backend has none
+     */
+    private static function name(?string $name, string $id): string {
+        return $name === null || $name === '' ? $id : $name;
     }
 
     /**

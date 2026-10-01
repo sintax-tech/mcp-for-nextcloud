@@ -54,6 +54,7 @@ class FilesModule implements ToolModule {
         private MovePlanner $planner,
         private BatchStore $batches,
         private ITimeFactory $time,
+        private ImageTools $images,
     ) {}
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app?:string}> */
@@ -164,6 +165,35 @@ class FilesModule implements ToolModule {
                     'confirm' => ['type' => 'boolean', 'const' => true, 'description' => FilesMessages::confirm()],
                     'confirm_shared' => $confirmShared,
                 ], ['path', 'version', 'confirm'])],
+            ['name' => 'files_image_view', 'module' => 'files', 'operation' => 'read',
+                'description' => FilesMessages::imageViewTool(),
+                'inputSchema' => self::schema([
+                    'path' => $path,
+                    'max_size' => ['type' => 'integer', 'minimum' => ImageTools::MIN_MAX_SIZE, 'maximum' => ImageTools::MAX_MAX_SIZE,
+                        'default' => ImageTools::DEFAULT_MAX_SIZE, 'description' => FilesMessages::imageMaxSize()],
+                ], ['path'])],
+            ['name' => 'files_images_view', 'module' => 'files', 'operation' => 'read',
+                'description' => FilesMessages::imagesViewTool(),
+                'inputSchema' => self::schema([
+                    'paths' => ['type' => 'array', 'minItems' => 1, 'maxItems' => ImageTools::BATCH_MAX_ITEMS,
+                        'items' => ['type' => 'string', 'minLength' => 1], 'description' => FilesMessages::imagePaths()],
+                    'folder' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::imageFolder()],
+                    'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => ImageTools::BATCH_MAX_ITEMS,
+                        'default' => ImageTools::BATCH_MAX_ITEMS],
+                    'max_size' => ['type' => 'integer', 'minimum' => ImageTools::MIN_MAX_SIZE, 'maximum' => ImageTools::MAX_MAX_SIZE,
+                        'default' => ImageTools::DEFAULT_MAX_SIZE, 'description' => FilesMessages::imageMaxSize()],
+                ])],
+            ['name' => 'files_image_search', 'module' => 'files', 'operation' => 'read',
+                'description' => FilesMessages::imageSearchTool(),
+                'inputSchema' => self::schema([
+                    'query' => ['type' => 'string', 'description' => FilesMessages::imageQuery()],
+                    'folder' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::imageFolder()],
+                    'modified_after' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::imageModifiedAfter()],
+                    'modified_before' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::imageModifiedBefore()],
+                    'tag' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::imageTag()],
+                    'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => ImageTools::SEARCH_MAX_LIMIT,
+                        'default' => ImageTools::SEARCH_DEFAULT_LIMIT],
+                ])],
         ];
     }
 
@@ -211,6 +241,9 @@ class FilesModule implements ToolModule {
             'files_versions_list' => ToolResult::json($this->versions->list($root, $this->file($root, $arguments['path']), PathGuard::normalize($arguments['path']), $arguments['limit'], $userId)),
             'files_version_read' => ToolResult::json($this->versions->read($this->file($root, $arguments['path']), PathGuard::normalize($arguments['path']), $arguments['version'], $userId)),
             'files_version_restore' => $this->restore($root, $userId, $arguments['path'], $arguments['version'], $confirmed),
+            'files_image_view' => $this->images->view($root, $userId, $arguments['path'], $arguments['max_size']),
+            'files_images_view' => $this->images->viewMany($root, $userId, $arguments['paths'] ?? null, $arguments['folder'] ?? null, $arguments['limit'], $arguments['max_size']),
+            'files_image_search' => ToolResult::json($this->images->search($root, $userId, $arguments)),
             default => throw new \InvalidArgumentException('Unknown tool'),
         });
     }

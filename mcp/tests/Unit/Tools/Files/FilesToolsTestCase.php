@@ -14,6 +14,7 @@ use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileBackup;
+use OCA\Mcp\Tools\Files\ImageTools;
 use OCA\Mcp\Tools\Files\MovePlanner;
 use OCA\Mcp\Tools\Files\MoveReport;
 use OCA\Mcp\Tools\Files\Reorganization;
@@ -29,7 +30,10 @@ use OCP\IDBConnection;
 use OCP\ITempManager;
 use OCP\IURLGenerator;
 use OCP\IUser;
+use OCP\IPreview;
 use OCP\IUserManager;
+use OCP\SystemTag\ISystemTagManager;
+use OCP\SystemTag\ISystemTagObjectMapper;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -45,6 +49,11 @@ abstract class FilesToolsTestCase extends TestCase {
     protected ITimeFactory $time;
     protected InMemoryBatchStore $batches;
     protected ITempManager $temp;
+    protected \OCA\Mcp\Tests\Unit\InMemoryConfig $config;
+    protected IPreview $previewManager;
+    protected ISystemTagManager $tagManager;
+    protected ISystemTagObjectMapper $tagMapper;
+    protected \Psr\Log\LoggerInterface $logger;
     protected FilesModule $module;
     /** @var list<string> tokens handed out per route, in order */
     protected array $issued = [];
@@ -78,7 +87,8 @@ abstract class FilesToolsTestCase extends TestCase {
         $db = $this->createMock(IDBConnection::class);
         $this->batches = new InMemoryBatchStore($db);
         $db->method('escapeLikeParameter')->willReturnCallback(fn (string $s) => addcslashes($s, '\\_%'));
-        $config = (new InMemoryConfig())->mock($this);
+        $this->config = new InMemoryConfig();
+        $config = $this->config->mock($this);
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturnCallback(function (string $route, array $args = []): string {
             $this->issued[$route][] = (string)($args['token'] ?? '');
@@ -88,6 +98,21 @@ abstract class FilesToolsTestCase extends TestCase {
         $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
         $extractor = new TextExtractor($this->temp);
         $backup = new FileBackup($this->apps, $this->users, $this->time, $config);
+        $this->previewManager = $this->createMock(IPreview::class);
+        $this->tagManager = $this->createMock(ISystemTagManager::class);
+        $this->tagMapper = $this->createMock(ISystemTagObjectMapper::class);
+        $this->logger = $this->createMock(\Psr\Log\LoggerInterface::class);
+        $imageTools = new ImageTools(
+            $this->previewManager,
+            $access,
+            $config,
+            $this->tagManager,
+            $this->tagMapper,
+            $this->users,
+            $this->logger,
+            $this->createMock(\Psr\Container\ContainerInterface::class),
+            $db,
+        );
         $this->module = new FilesModule(
             $root,
             $extractor,
@@ -102,6 +127,7 @@ abstract class FilesToolsTestCase extends TestCase {
             new MovePlanner(new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users), $access, new SharedWriteGuard($access)),
             $this->batches,
             $this->time,
+            $imageTools,
         );
     }
 

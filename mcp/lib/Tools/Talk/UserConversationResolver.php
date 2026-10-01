@@ -17,9 +17,9 @@ use Throwable;
  * the rule the Talk UI follows when you start a chat — and answers every refusal the same way, because "that user
  * exists but you may not write to them" is not something this tool may confirm.
  *
- * The draft never creates the room. Showing a draft must not leave an empty conversation behind in the user's
- * Talk list, and the fingerprint of the approval is bound to the target user instead of to a token that does not
- * exist yet.
+ * The plan never creates the room. Showing a plan must not leave an empty conversation behind in the user's
+ * Talk list, so the room is opened by the confirmed call, which names the target account and not a token that
+ * does not exist yet.
  */
 class UserConversationResolver {
     /** Longest account id the tool accepts; real ids are far shorter, the cap only bounds the payload. */

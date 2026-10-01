@@ -11,13 +11,39 @@ A URL exata da instância aparece nas páginas de administração e pessoal.
 
 Cada tool só aparece em `tools/list` e só pode ser chamada quando o usuário tem o grant da operação, e o app exigido está habilitado para ele. Grant e app são verificados de novo a cada chamada. Tudo roda como o usuário autenticado, pela pasta dele no Nextcloud, e as permissões e compartilhamentos do Nextcloud continuam valendo.
 
+### Guia das ferramentas (`mcp_guide`)
+
+`mcp_guide` (título **Guia das ferramentas**) descreve as ferramentas ao próprio modelo, para que ele não precise adivinhar o que cada uma faz:
+
+- **sem argumento** — uma linha por módulo com os títulos das ferramentas, apenas dos módulos disponíveis **para aquele usuário** (o mesmo filtro de grant e app do `tools/list`: módulo desabilitado ou sem grant não aparece);
+- **com `module`** (`files`, `notes`, `calendar`, `deck`, `talk`) — cada ferramenta do módulo: descrição, se lê ou escreve, parâmetros com tipo, obrigatoriedade, descrição, `enum` e limites, e as confirmações que exige;
+- **com `tool`** — uma só ferramenta, com o módulo a que pertence.
+
+O texto vem das definições reais (`ToolModule::definitions()`, `inputSchema`, `annotations` e `ToolPresentation`), então mudar o schema de uma ferramenta muda o guia: não existe uma segunda cópia da documentação para manter em dia. O que o schema não carrega — como encontrar as coisas, com quais caminhos e IDs, e onde as escritas param — entra em `ToolGuideNotes::guideNotes()`, uma nota curta por módulo, escrita ao lado do módulo. A resposta traz o mesmo conteúdo em markdown e em `structuredContent`, e a tool é read-only: ela lê definições, nunca executa uma ferramenta.
+
+Módulo ou ferramenta que o usuário não pode ver é recusado com uma mensagem que lista o que ele pode usar. Não há aprovação gravada no servidor: a regra de confirmar antes de escrever está nas `instructions` do `initialize` e vale para toda tool que altera algo.
+
 | Tool | Grant | Observações |
 | --- | --- | --- |
 | `mcp_status` | — | Diagnóstico; não lê dados do usuário. |
 | `files_list` `{path="/"}` | files.read | Filhos diretos da pasta, no formato `{name, path, isDir, size, mtime, contentType}`. |
 | `files_search` `{query, limit=25}` | files.read | Busca por nome (`%`, `_` e `\` são literais), de 1 a 100 resultados; o limite vai para a própria consulta ao cache de arquivos. |
 | `files_read` `{path}` | files.read | Texto puro, PDF, DOCX e ODT. Arquivo acima de 20 MiB é recusado antes da leitura, e o texto é truncado em 100 000 caracteres. |
-| `files_edit` `{path, content, etag?}` | files.edit | Só arquivo de texto existente, com no máximo 10 MiB. Antes de gravar, exige o `files_versions` ativo e copia o original para `/MCP backups/<caminho>/<nome>.<AAAAmmdd-HHMMSS>.bak`; se qualquer passo falhar, nada é gravado. Com `etag` divergente, nada é gravado. Não cria, move nem exclui. |
+| `files_tree` `{path="/", depth=5, limit=2000}` | files.read | Árvore da pasta com o dono de cada item, para planejar reorganização sem uma chamada por pasta. Respeita profundidade (até 5) e contagem (até 2000) e avisa quando trunca. |
+| `files_image_view` `{path, max_size=1568}` | files.read | Preview reduzido em base64 (JPEG/PNG/WebP/GIF/TIFF/PDF) sob limite de bytes (padrão 1 MB), com fallback ao original para formatos seguros. Inclui metadados breves. |
+| `files_images_view` `{paths?, folder?, limit=6, max_size=1568}` | files.read | Pré-visualização de várias imagens (até 6) sob orçamento total de bytes (padrão 4 MB); itens descartados são informados no sumário. |
+| `files_image_search` `{query?, folder?, modified_after?, modified_before?, tag?, limit=25}` | files.read | Busca exclusiva por arquivos de imagem (`image/%`), com filtros de nome, pasta, datas ISO e system tags (inclui tags automáticas do Recognize). |
+| `files_edit` `{path, content, etag?}` | files.edit | Só arquivo de texto existente, com no máximo 10 MiB. Antes de gravar, exige o `files_versions` ativo e copia o original para `/MCP backups/<caminho>/<nome>.<AAAAmmdd-HHMMSS>.bak`; se qualquer passo falhar, nada é gravado. Com `etag` divergente, nada é gravado. Não cria, move nem exclui. Fora da pasta pessoal, exige `confirm_shared: true` depois de perguntar ao usuário. |
+| `files_replace` `{path, old, new, etag?}` | files.edit | Troca um trecho que precisa aparecer exatamente uma vez e devolve o diff. Mesmas exigências do `files_edit`: versionamento ativo, backup em `/MCP backups` e `etag` divergente não grava nada. Fora da pasta pessoal, exige `confirm_shared: true`. |
+| `files_checkout` `{path}` | files.edit | Devolve dois links de uso único para editar com ferramenta local (curl) sem passar o conteúdo pelo modelo: download válido por 5 minutos e upload por 15. Cada link é a credencial, preso ao usuário, ao arquivo e ao ETag vigente; se o arquivo mudar antes do upload, nada é gravado. O upload cria o mesmo backup do `files_edit`. Fora da pasta pessoal, só emite os links com `confirm_shared: true`. |
+| `files_mkdir` `{path}` | files.create | Cria pasta, incluindo níveis intermediários. Recusa destino já existente e nunca apaga conteúdo. Fora da pasta pessoal, exige `confirm_shared: true`. |
+| `files_copy` `{from, to, etag?}` | files.create | Copia arquivo ou pasta para outro caminho, criando um nó novo com id novo; nunca sobrescreve o destino. A cópia não preserva id, versões nem compartilhamentos. Limite de 2000 itens e 1 GiB, medido antes de copiar. Fora da pasta pessoal, origem ou destino exigem `confirm_shared: true`. |
+| `files_move` `{from, to, etag?}` | files.move | Move ou renomeia dentro do mesmo storage, sem sobrescrever o destino. Devolve o id antes e depois, e as contagens de versão e compartilhamento quando os apps estão ativos. Entre storages o Nextcloud trata como cópia e o id muda. Fora da pasta pessoal, origem ou destino exigem `confirm_shared: true`. |
+| `files_move_batch` `{moves, mkdirs?, confirm?}` | files.move | Até 200 movimentações, com pastas criadas antes na ordem dada. Sem `confirm: true` não grava e devolve o plano: o que passaria, os conflitos, o que o Nextcloud nega e o que pertence a outra pessoa. Com `confirm: true` executa e devolve o `batch_id` do `files_undo_batch`. Um item que falhar no meio interrompe o lote, e o que já foi movido fica registrado para desfazer. Itens de outra pessoa exigem `confirm_shared: true`. |
+| `files_undo_batch` `{batch_id, confirm: true}` | files.move | Desfaz um `files_move_batch` na ordem inversa. Antes de mudar alguma coisa confere o lote inteiro: se algum item não for mais o que o lote colocou no destino, se o caminho de origem já estiver ocupado ou se as permissões mudaram, nada é desfeito e a resposta aponta o item que travou. Só remove pastas vazias criadas pelo próprio lote; pasta com conteúdo é preservada e vai em `kept_dirs`. É o único lugar em que Files remove alguma coisa. |
+| `files_versions_list` `{path, limit=50}` | files.read | Versões do arquivo pelo app `files_versions`, da mais nova para a mais antiga. |
+| `files_version_read` `{path, version}` | files.read | Texto de uma versão anterior, com o mesmo limite e a mesma extração de texto do `files_read`. |
+| `files_version_restore` `{path, version, confirm: true}` | files.restore | Restaura uma versão guardada, criando antes uma cópia do conteúdo atual em `/MCP backups` e uma versão nova no Nextcloud. Exige `confirm: true` e recusa a própria pasta de backup, como a edição já fazia. Fora da pasta pessoal, exige também `confirm_shared: true`. |
 | `notes_list` `{}` | notes.read | Notas `.md`/`.txt` da pasta do app Notes (preferência `notesPath`, padrão `Notes`). |
 | `notes_read` `{id}` | notes.read | Nota com conteúdo; limite de 1 MiB. |
 | `notes_create` `{title, content="", category=""}` | notes.create | Nunca sobrescreve; em colisão, usa `Título (2)`. |
@@ -88,6 +114,14 @@ sudo -u www-data php occ config:app:delete mcp calendar_writes_verified
 
 Tools de Notes exigem o app Notes habilitado para o usuário. Leitura começa permitida; criação, edição, movimentação e exclusão começam negadas até o administrador liberar. Não há timeout próprio: a leitura é local ao PHP e o limite de bytes protege contra arquivos grandes. Storage externo lento fica limitado ao `max_execution_time` do PHP.
 
+### Imagens (`files_image_view`, `files_images_view`, `files_image_search`)
+
+Ferramentas somente leitura (`files.read`) que respeitam a pasta do usuário e as permissões nativas do Nextcloud:
+
+- **`files_image_view`**: Gera uma pré-visualização reduzida da imagem via `OCP\IPreview` com dimensão máxima configurável (`max_size`, padrão 1568 px). Se o preview exceder o limite de bytes (configurável em `image_single_max_bytes`, padrão 1 MB), a resolução é reduzida progressivamente até caber. Se não houver preview disponível para o formato, recorre ao arquivo original para formatos comuns (JPEG, PNG, WebP, GIF) desde que esteja dentro do limite de bytes. Retorna bloco `image` (base64) e bloco `text` com metadados (`path`, `mime`, dimensões originais se disponíveis, `size`, `mtime`, `access`, `captured_at`).
+- **`files_images_view`**: Recebe uma lista de `paths` (até 6) ou uma pasta `folder` (com `limit`, padrão 6) e retorna múltiplos blocos de imagem sob um orçamento compartilhado (`image_batch_max_bytes`, padrão 4 MB). Arquivos que excedem o orçamento ou falham são listados no sumário `skipped`.
+- **`files_image_search`**: Busca arquivos com mimetype `image/%`, com filtros opcionais por texto (`query`), pasta (`folder`), intervalo de modificação ISO 8601 (`modified_after`/`modified_before`) e tag de sistema (`tag`, incluindo tags automáticas geradas pelo app Recognize). Retorna apenas metadados ordenados por `mtime` decrescente.
+
 Argumentos inválidos, tool inexistente ou sem grant retornam o erro JSON-RPC `-32602`, sem distinguir o motivo. Falhas de execução retornam `isError: true` com uma mensagem genérica, sem caminho físico, conteúdo ou stack trace.
 
 ## Empacotar
@@ -128,9 +162,9 @@ Os arquivos de licença acompanham cada pacote em `vendor/`. O `vendor/autoload.
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-0.6.10.tar.gz <servidor>:/tmp/
+scp build/mcp-0.7.0.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-0.6.10.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-0.7.0.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp

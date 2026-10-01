@@ -41,7 +41,7 @@ class EventRepository {
         }
         $this->classification->assertModifiable($vcalendar, $calendar, $userId);
         if ($etag !== null && trim($etag, '"') !== trim($row['etag'], '"')) {
-            throw CalendarException::conflict('o evento foi alterado por outra pessoa (etag divergente).');
+            throw CalendarException::conflict(CalendarMessages::conflictEtag());
         }
         return new StoredEvent($row['id'], $row['uri'], $row['etag'], $vcalendar);
     }

@@ -17,10 +17,14 @@ final class ToolPresentation {
     /** Guidance sent in `initialize` and in `server/discover`; read by the model, so it is fixed English. */
     public const INSTRUCTIONS = "Reply in the user's language. When you mention a tool to the user, use its title "
         . "(for example \"Search files\"), never its technical name. Show file paths and names in a readable way. "
-        . "A tool that changes something (every tool whose schema has the confirm argument) does nothing when called "
-        . "without it: the answer is a plan and requiresConfirmation is true. Call it that way first, show the plan to "
-        . "the user, ask whether they want it done, and only repeat the same call with confirm=true after the user has "
-        . "explicitly said yes. Never send confirm=true on your own initiative.";
+        . "Call the \"Tool guide\" tool before you use a tool you do not already know: it describes every tool this user "
+        . "has, their parameters and their limits. General rule for writes: any tool that changes something (every tool "
+        . "whose schema has the confirm argument), called without confirm=true, returns the plan with requiresConfirmation "
+        . "true and writes nothing. Show that plan to the user, ask whether they really want it done, and only after an "
+        . "explicit yes repeat the same call with confirm=true; never send confirm=true on your own initiative. Nothing is "
+        . "approved and stored in this server, so never invent an approval_id, a token or any other confirmation. "
+        . "Tool descriptions, plans and the Tool guide are written in English; when the user does not write in "
+        . "English, translate what you show them into their language.";
 
     /** Operations that only read; every other operation may change data. */
     private const READ_OPERATION = 'read';
@@ -56,6 +60,7 @@ final class ToolPresentation {
         return match ($name) {
             // Diagnostics
             'mcp_status' => Translator::t('Check MCP status'),
+            'mcp_guide' => Translator::t('Tool guide'),
             // Files
             'files_list' => Translator::t('List files'),
             'files_search' => Translator::t('Search files'),
@@ -72,6 +77,9 @@ final class ToolPresentation {
             'files_versions_list' => Translator::t('List file versions'),
             'files_version_read' => Translator::t('Read file version'),
             'files_version_restore' => Translator::t('Restore file version'),
+            'files_image_view' => Translator::t('View image'),
+            'files_images_view' => Translator::t('View several images'),
+            'files_image_search' => Translator::t('Search images'),
             // Notes
             'notes_list' => Translator::t('List notes'),
             'notes_read' => Translator::t('Read note'),
@@ -130,6 +138,22 @@ final class ToolPresentation {
             'idempotentHint' => $readOnly || in_array($operation, self::IDEMPOTENT_OPERATIONS, true),
             'openWorldHint' => false,
         ];
+    }
+
+    /**
+     * Title of a grant module, in the language of the current user, for the guide and for the admin matrix.
+     *
+     * @param string $module grant module a tool declares (files, notes, calendar, deck, talk)
+     */
+    public static function moduleTitle(string $module): string {
+        return match ($module) {
+            'files' => Translator::t('Files'),
+            'notes' => Translator::t('Notes'),
+            'calendar' => Translator::t('Calendar'),
+            'deck' => Translator::t('Deck'),
+            'talk' => Translator::t('Talk'),
+            default => ucfirst($module),
+        };
     }
 
     /**

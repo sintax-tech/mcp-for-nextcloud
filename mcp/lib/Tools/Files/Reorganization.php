@@ -326,7 +326,7 @@ final class Reorganization {
                 $movedNode = NodeAccess::run(fn () => $check->source->move($this->absolute($root, $check->to)));
                 $moved[] = ['from' => $item['from'], 'to' => $check->to, 'toId' => (int)$movedNode->getId()];
             } catch (\Throwable $e) {
-                $failure = $e instanceof ToolFailure ? $e->getMessage() : 'Falha ao mover o item.';
+                $failure = $e instanceof ToolFailure ? $e->getMessage() : FilesMessages::moveFailed();
                 $batchId = $store->insert(new Batch(null, $userId, $now, $moved, $created, null));
                 return [
                     'batch_id' => $batchId,

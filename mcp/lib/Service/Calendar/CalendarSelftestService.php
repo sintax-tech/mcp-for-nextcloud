@@ -204,14 +204,14 @@ final class CalendarSelftestService {
             }
             $passed = true;
         } catch (\Throwable $error) {
-            $report(['step' => $step, 'status' => 'FALHA', 'detail' => $this->safeError($error)]);
+            $report(['step' => $step, 'status' => 'FAIL', 'detail' => $this->safeError($error)]);
         } finally {
             $clean = true;
             // Every cleanup action is attempted, even after a preceding cleanup failed.
             $attempt = function (string $resource, callable $action) use (&$clean, $report): void {
                 try { $action(); } catch (\Throwable $error) {
                     $clean = false;
-                    $report(['step' => 'cleanup-resource', 'status' => 'FALHA', 'detail' => $resource . ': ' . $this->safeError($error)]);
+                    $report(['step' => 'cleanup-resource', 'status' => 'FAIL', 'detail' => $resource . ': ' . $this->safeError($error)]);
                 }
             };
             if (isset($user)) {
@@ -241,13 +241,13 @@ final class CalendarSelftestService {
                 }
             }
             $this->session->setVolatileActiveUser($previous);
-            $report(['step' => 'cleanup', 'status' => $clean ? 'OK' : 'FALHA', 'detail' => $clean ? CalendarSelftestMessages::detail($owned === [] ? 'cleanup-empty' : 'cleanup') : CalendarSelftestMessages::FAILED]);
+            $report(['step' => 'cleanup', 'status' => $clean ? 'OK' : 'FAIL', 'detail' => $clean ? CalendarSelftestMessages::detail($owned === [] ? 'cleanup-empty' : 'cleanup') : CalendarSelftestMessages::FAILED]);
             $passed = $passed && $clean;
         }
         if ($passed && !($options['no-enable'] ?? false)) {
             $this->gate->recordVerification($operations, $uid, $this->time->now()->format(DATE_ATOM), $invitations);
         }
-        $report(['step' => 'gate', 'status' => $passed ? 'OK' : 'FALHA', 'detail' => !$passed ? CalendarSelftestMessages::FAILED : (($options['no-enable'] ?? false) ? CalendarSelftestMessages::PASSED_NO_ENABLE : CalendarSelftestMessages::PASSED)]);
+        $report(['step' => 'gate', 'status' => $passed ? 'OK' : 'FAIL', 'detail' => !$passed ? CalendarSelftestMessages::FAILED : (($options['no-enable'] ?? false) ? CalendarSelftestMessages::PASSED_NO_ENABLE : CalendarSelftestMessages::PASSED)]);
         return $passed;
     }
 

@@ -12,6 +12,7 @@ use OCA\Mcp\Tools\Calendar\Handler\MoveEvent;
 use OCA\Mcp\Tools\Calendar\Handler\TransferEvent;
 use OCA\Mcp\Tools\Calendar\Handler\UpdateEvent;
 use OCA\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Tools\ToolGuideNotes;
 use OCA\Mcp\Tools\ToolModule;
 use RuntimeException;
 
@@ -21,7 +22,7 @@ use RuntimeException;
  * input schema for exposed tools, and asks {@see self::preview()} for the plan of every write that
  * arrives without `confirm: true`.
  */
-final class CalendarModule implements ToolModule, PreviewsWrites {
+final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     /** @var array<string, CalendarTool> handlers by tool name */
     private array $tools = [];
 
@@ -49,6 +50,31 @@ final class CalendarModule implements ToolModule, PreviewsWrites {
         foreach ([$listCalendars, $listEvents, $createEvent, $updateEvent, $moveEvent, $deleteEvent, $transferEvent] as $tool) {
             $this->tools[$tool->definition()['name']] = $tool;
         }
+    }
+
+    /**
+     * What the schemas cannot say: how an event is found, and why a write here answers with a plan first.
+     *
+     * @return list<string>
+     */
+    public function guideNotes(): array {
+        return [
+            'Calendars are addressed by path: calendar_list_calendars gives the paths of this user. Events are '
+                . 'addressed by uid, and calendar_list_events gives the uids of a period.',
+            'Every write answers with a plan first: what it would change, the etag of the object as it is now, and '
+                . 'which invitations would go out. Nothing is written until the very same call is repeated with '
+                . 'confirm: true, so show the plan to the user and wait for an explicit yes.',
+            'Dates and times arrive as they will be stored, and are read back in the timezone of the account; a '
+                . 'recurring event is expanded into its occurrences before it reaches the user.',
+            'send_invitations stays refused on a server that has not proved CalDAV scheduling: without it no '
+                . 'invitation leaves, and the call says so instead of pretending it was sent.',
+            'A calendar owned by somebody else (a share) needs confirm_shared after asking the user, and a transfer '
+                . 'moves the event there and removes it from here.',
+            'A deleted event goes to the Nextcloud trash bin of the calendar; with retention at 0 the deletion is '
+                . 'refused rather than permanent.',
+            'The writing tools only appear at all once the DAV verification passed on this server. A module showing '
+                . 'reads only means the verification is still closed, not that the grants are missing.',
+        ];
     }
 
     /**

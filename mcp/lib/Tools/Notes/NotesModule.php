@@ -11,6 +11,7 @@ use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Tools\ToolGuideNotes;
 use OCA\Mcp\Tools\ToolModule;
 use OCA\Mcp\Tools\ToolResult;
 use OCP\App\IAppManager;
@@ -26,7 +27,7 @@ use OCP\IUserManager;
  * arrives without `confirm: true`: the note as it is now, what the call would do to it, and whether the
  * trash bin would take it back. A preview creates no category folder and writes nothing.
  */
-class NotesModule implements ToolModule, PreviewsWrites {
+class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     /** Maximum note size read or written, in bytes. */
     public const MAX_BYTES = 1024 * 1024;
     /** Storage wrapper files_trashbin puts around storages whose deletions go to the trash bin. */
@@ -40,6 +41,24 @@ class NotesModule implements ToolModule, PreviewsWrites {
         private SharedWriteGuard $guard,
         private NodeAccessInfo $accessInfo,
     ) {}
+
+    /**
+     * What the schemas cannot say: how a note is named and what the module refuses to do.
+     *
+     * @return list<string>
+     */
+    public function guideNotes(): array {
+        return [
+            'A note is addressed by the `id` notes_list returns, not by its title; the title is the file name and '
+                . 'the category is the subfolder it sits in.',
+            'notes_create never overwrites: when the title is taken in that category it picks a free name, and the '
+                . 'response says which name it used.',
+            'notes_delete only deletes where the Nextcloud trash bin takes the note back; anywhere else it refuses '
+                . 'instead of removing it for good.',
+            'Notes are capped at ' . self::MAX_BYTES . ' bytes read or written, and a title at 200 characters.',
+            'Pass `etag` to make a change fail instead of overwriting somebody else\'s version of the same note.',
+        ];
+    }
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}> */
     public function definitions(): array {

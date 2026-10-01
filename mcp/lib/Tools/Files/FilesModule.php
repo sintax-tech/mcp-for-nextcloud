@@ -9,6 +9,7 @@ use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Tools\ToolGuideNotes;
 use OCA\Mcp\Tools\ToolModule;
 use OCA\Mcp\Tools\ToolResult;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -36,7 +37,7 @@ use OCP\IUserManager;
  * that would be created, the node the batch would touch — and writes nothing: no folder is created, no
  * checkout token is minted and no file is backed up before the user has said yes.
  */
-class FilesModule implements ToolModule, PreviewsWrites {
+class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     /** Characters returned by files_read before the text is truncated. */
     public const MAX_CHARS = 100000;
     /** Maximum size of the new content accepted by files_edit and files_replace, in bytes. */
@@ -60,6 +61,7 @@ class FilesModule implements ToolModule, PreviewsWrites {
         private MovePlanner $planner,
         private BatchStore $batches,
         private ITimeFactory $time,
+        private ImageTools $images,
     ) {}
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app?:string}> */
@@ -164,6 +166,62 @@ class FilesModule implements ToolModule, PreviewsWrites {
                     'version' => $version,
                     'confirm_shared' => $confirmShared,
                 ], ['path', 'version'])],
+            ['name' => 'files_image_view', 'module' => 'files', 'operation' => 'read',
+                'description' => FilesMessages::imageViewTool(),
+                'inputSchema' => self::schema([
+                    'path' => $path,
+                    'max_size' => ['type' => 'integer', 'minimum' => ImageTools::MIN_MAX_SIZE, 'maximum' => ImageTools::MAX_MAX_SIZE,
+                        'default' => ImageTools::DEFAULT_MAX_SIZE, 'description' => FilesMessages::imageMaxSize()],
+                ], ['path'])],
+            ['name' => 'files_images_view', 'module' => 'files', 'operation' => 'read',
+                'description' => FilesMessages::imagesViewTool(),
+                'inputSchema' => self::schema([
+                    'paths' => ['type' => 'array', 'minItems' => 1, 'maxItems' => ImageTools::BATCH_MAX_ITEMS,
+                        'items' => ['type' => 'string', 'minLength' => 1], 'description' => FilesMessages::imagePaths()],
+                    'folder' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::imageFolder()],
+                    'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => ImageTools::BATCH_MAX_ITEMS,
+                        'default' => ImageTools::BATCH_MAX_ITEMS],
+                    'max_size' => ['type' => 'integer', 'minimum' => ImageTools::MIN_MAX_SIZE, 'maximum' => ImageTools::MAX_MAX_SIZE,
+                        'default' => ImageTools::DEFAULT_MAX_SIZE, 'description' => FilesMessages::imageMaxSize()],
+                ])],
+            ['name' => 'files_image_search', 'module' => 'files', 'operation' => 'read',
+                'description' => FilesMessages::imageSearchTool(),
+                'inputSchema' => self::schema([
+                    'query' => ['type' => 'string', 'description' => FilesMessages::imageQuery()],
+                    'folder' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::imageFolder()],
+                    'modified_after' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::imageModifiedAfter()],
+                    'modified_before' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::imageModifiedBefore()],
+                    'tag' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::imageTag()],
+                    'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => ImageTools::SEARCH_MAX_LIMIT,
+                        'default' => ImageTools::SEARCH_DEFAULT_LIMIT],
+                ])],
+        ];
+    }
+
+    /**
+     * What the schemas cannot say: how a path is spelled, which tool finds what, and where the writes stop.
+     *
+     * @return list<string>
+     */
+    public function guideNotes(): array {
+        return [
+            'Paths are absolute inside the folder of the user calling and start at "/"; they are never relative and '
+                . 'never leave the storage Nextcloud already lets that user reach.',
+            'To find something, use files_search for a name anywhere, files_tree for the shape of a folder (depth '
+                . Reorganization::MAX_DEPTH . ', ' . Reorganization::MAX_ENTRIES . ' entries) and files_list for a single '
+                . 'folder. The `access` field of every entry says who owns it and what it allows.',
+            'Reorganization is the only way files change places: a copy is capped at ' . ReorganizationLimits::NODES
+                . ' items and ' . intdiv(ReorganizationLimits::BYTES, 1024 ** 3) . ' GiB, a batch takes at most '
+                . ReorganizationLimits::BATCH_ITEMS . ' moves, and nothing overwrites the destination.',
+            'Pass `etag` when changing what was just read: a different etag aborts the write instead of dropping '
+                . 'the change someone else made in the meantime.',
+            'Anything outside the personal folder is refused on a write until the user has been asked and the call '
+                . 'repeats with confirm_shared: true. A calendar, a share or a file owned by somebody else is that case.',
+            'files_edit, files_replace and files_checkout need versioning on (files_versions) and copy the file to '
+                . '"/' . self::BACKUP_FOLDER . '" before writing. files_checkout hands out short-lived links for local '
+                . 'tools instead of passing the content through the model.',
+            'There is no delete: files_undo_batch is the way back from files_move_batch, and files_version_restore '
+                . 'restores content as a new version.',
         ];
     }
 
@@ -209,6 +267,9 @@ class FilesModule implements ToolModule, PreviewsWrites {
             'files_versions_list' => ToolResult::json($this->versions->list($root, $this->file($root, $arguments['path']), PathGuard::normalize($arguments['path']), $arguments['limit'], $userId)),
             'files_version_read' => ToolResult::json($this->versions->read($this->file($root, $arguments['path']), PathGuard::normalize($arguments['path']), $arguments['version'], $userId)),
             'files_version_restore' => $this->restore($root, $userId, $arguments['path'], $arguments['version'], $confirmed),
+            'files_image_view' => $this->images->view($root, $userId, $arguments['path'], $arguments['max_size']),
+            'files_images_view' => $this->images->viewMany($root, $userId, $arguments['paths'] ?? null, $arguments['folder'] ?? null, $arguments['limit'], $arguments['max_size']),
+            'files_image_search' => ToolResult::json($this->images->search($root, $userId, $arguments)),
             default => throw new \InvalidArgumentException('Unknown tool'),
         });
     }

@@ -17,6 +17,7 @@ use OCA\Mcp\Tools\Deck\Handler\ReadCardHandler;
 use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Tools\ToolGuideNotes;
 use OCA\Mcp\Tools\ToolModule;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -38,7 +39,7 @@ use stdClass;
  * whenever a write arrives without `confirm: true`; the plan it returns is what the agent shows the
  * user, and `confirm_shared` still guards a board of somebody else at the moment of the write.
  */
-final class DeckToolModule implements ToolModule, PreviewsWrites {
+final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
 	/** Nextcloud app id whose presence the whole module depends on. */
 	public const DECK_APP = 'deck';
 
@@ -71,6 +72,28 @@ final class DeckToolModule implements ToolModule, PreviewsWrites {
 		private ?IUserManager $userManager = null,
 		private ?IConfig $config = null,
 	) {
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * How a card is found and where the writes stop: the three ids, the shared board and the field limits.
+	 *
+	 * @return list<string>
+	 */
+	public function guideNotes(): array {
+		return [
+			'A card is addressed by three ids: deck_list_boards gives the board, deck_list_stacks the lists of a '
+				. 'board, and deck_list_cards the cards of a list. Read them in that order before writing anything.',
+			'deck_read_card returns the card with its comments; deck_followup_cards lists the cards that are due or '
+				. 'overdue, per board.',
+			'A board owned by somebody else is refused on a write until the user has been asked and the call repeats '
+				. 'with confirm_shared: true. The refusal is a normal result that says what is missing, not an error.',
+			'duedate is a plain day (Y-m-d) and is read in the timezone of the account; a card description is capped '
+				. 'at ' . CardInput::MAX_DESCRIPTION_LENGTH . ' characters and a title at 255.',
+			'deck_move_card only changes the position inside the list of the card; moving it to another list or another '
+				. 'board is not something this module does.',
+		];
 	}
 
 	/**

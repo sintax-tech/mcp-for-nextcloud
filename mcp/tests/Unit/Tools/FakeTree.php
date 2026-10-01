@@ -9,6 +9,10 @@ use OCP\Files\Folder;
 use OCP\Files\Node;
 use OCP\Files\NotFoundException;
 use OCP\Files\NotPermittedException;
+use OCP\Files\Search\ISearchBinaryOperator;
+use OCP\Files\Search\ISearchComparison;
+use OCP\Files\Search\ISearchOperator;
+use OCP\Files\Search\ISearchOrder;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -189,11 +193,102 @@ final class FakeTree {
         });
         $folder->method('search')->willReturnCallback(function ($query) use ($path): array {
             $this->searches[] = $query;
-            // Evaluates the escaped LIKE pattern like the database would, then applies the query limit.
-            $regex = '/^' . preg_replace_callback('/\\\\(.)|%|_|[^%_\\\\]+/', static fn ($m) => match (true) {
-                isset($m[1]) => preg_quote($m[1], '/'), $m[0] === '%' => '.*', $m[0] === '_' => '.', default => preg_quote($m[0], '/'),
-            }, $query->getSearchOperation()->getValue()) . '$/iu';
-            $matches = array_filter(array_keys($this->nodes), fn ($p) => str_starts_with($p, $path . '/') && preg_match($regex, basename($p)) === 1);
+            $operation = $query->getSearchOperation();
+
+            $evalOp = function ($op, string $p) use (&$evalOp): bool {
+                if ($op instanceof ISearchBinaryOperator) {
+                    $type = $op->getType();
+                    $args = $op->getArguments();
+                    if ($type === ISearchBinaryOperator::OPERATOR_AND) {
+                        foreach ($args as $arg) {
+                            if (!$evalOp($arg, $p)) {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+                    if ($type === ISearchBinaryOperator::OPERATOR_OR) {
+                        foreach ($args as $arg) {
+                            if ($evalOp($arg, $p)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                    if ($type === ISearchBinaryOperator::OPERATOR_NOT) {
+                        return !empty($args) && !$evalOp($args[0], $p);
+                    }
+                }
+                if ($op instanceof ISearchComparison) {
+                    $field = $op->getField();
+                    $type = $op->getType();
+                    $targetVal = $op->getValue();
+                    $nodeVal = match ($field) {
+                        'mimetype' => $this->nodes[$p]['mime'] ?? 'httpd/unix-directory',
+                        'name' => basename($p),
+                        'mtime' => $this->nodes[$p]['mtime'] ?? 0,
+                        default => null,
+                    };
+                    if ($type === ISearchComparison::COMPARE_LIKE) {
+                        $regex = '/^' . preg_replace_callback('/\\\\(.)|%|_|[^%_\\\\]+/', static fn ($m) => match (true) {
+                            isset($m[1]) => preg_quote($m[1], '/'),
+                            $m[0] === '%' => '.*',
+                            $m[0] === '_' => '.',
+                            default => preg_quote($m[0], '/'),
+                        }, (string)$targetVal) . '$/iu';
+                        return preg_match($regex, (string)$nodeVal) === 1;
+                    }
+                    if ($type === ISearchComparison::COMPARE_GREATER_THAN_EQUAL) {
+                        return (int)$nodeVal >= (int)$targetVal;
+                    }
+                    if ($type === ISearchComparison::COMPARE_LESS_THAN_EQUAL) {
+                        return (int)$nodeVal <= (int)$targetVal;
+                    }
+                    if ($type === ISearchComparison::COMPARE_GREATER_THAN) {
+                        return (int)$nodeVal > (int)$targetVal;
+                    }
+                    if ($type === ISearchComparison::COMPARE_LESS_THAN) {
+                        return (int)$nodeVal < (int)$targetVal;
+                    }
+                    if ($type === ISearchComparison::COMPARE_EQUAL) {
+                        return (string)$nodeVal === (string)$targetVal;
+                    }
+                }
+                return false;
+            };
+
+            $matches = array_filter(array_keys($this->nodes), function ($p) use ($path, $operation, $evalOp): bool {
+                if (!str_starts_with($p, $path . '/')) {
+                    return false;
+                }
+                return $evalOp($operation, $p);
+            });
+
+            $orders = method_exists($query, 'getOrder') ? $query->getOrder() : [];
+            if (!empty($orders)) {
+                usort($matches, function (string $p1, string $p2) use ($orders): int {
+                    foreach ($orders as $order) {
+                        $field = $order->getField();
+                        $dir = $order->getDirection();
+                        $v1 = match ($field) {
+                            'mtime' => $this->nodes[$p1]['mtime'] ?? 0,
+                            'name' => basename($p1),
+                            default => 0,
+                        };
+                        $v2 = match ($field) {
+                            'mtime' => $this->nodes[$p2]['mtime'] ?? 0,
+                            'name' => basename($p2),
+                            default => 0,
+                        };
+                        if ($v1 !== $v2) {
+                            $cmp = $v1 <=> $v2;
+                            return $dir === ISearchOrder::DIRECTION_DESCENDING ? -$cmp : $cmp;
+                        }
+                    }
+                    return 0;
+                });
+            }
+
             return array_slice(array_values(array_map(fn ($p) => $this->node($p), $matches)), 0, $query->getLimit());
         });
         $folder->method('getById')->willReturnCallback(fn (int $id) => array_values(array_map(fn ($p) => $this->node($p),

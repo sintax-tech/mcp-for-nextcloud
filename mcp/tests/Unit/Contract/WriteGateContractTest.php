@@ -136,6 +136,16 @@ final class WriteGateContractTest extends TestCase {
         $this->assertGreaterThan(10, $writesChecked, 'Write tools should be greater than 10');
     }
 
+    /**
+     * Every module of the app writes something, so every one describes its own plan and none falls back to the
+     * generic one. Read from the class, because Calendar only lists its writes after the selftest.
+     */
+    public function testEveryModuleDescribesItsOwnPlan(): void {
+        foreach (Application::MODULES as $moduleClass) {
+            $this->assertTrue(is_subclass_of($moduleClass, PreviewsWrites::class), "$moduleClass must implement PreviewsWrites");
+        }
+    }
+
     public function testCallingEveryWritingToolWithoutConfirmNeverExecutesAndReturnsRequiresConfirmation(): void {
         foreach (Application::MODULES as $moduleClass) {
             $realModule = $this->build($moduleClass);

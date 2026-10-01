@@ -40,11 +40,11 @@ use OCA\Mcp\Tools\Talk\ActorNames;
 use OCA\Mcp\Tools\Talk\ConversationReader;
 use OCA\Mcp\Tools\Talk\ConversationResolver;
 use OCA\Mcp\Tools\Talk\ConversationWriter;
-use OCA\Mcp\Tools\Talk\DraftApproval;
 use OCA\Mcp\Tools\Talk\FileSharer;
 use OCA\Mcp\Tools\Talk\GroupCreator;
 use OCA\Mcp\Tools\Talk\ReferenceLinker;
 use OCA\Mcp\Tools\Talk\TalkModule;
+use OCA\Mcp\Tools\Talk\WritePreview;
 use OCA\Mcp\Tools\Talk\TalkServices;
 use OCA\Mcp\Tools\Talk\UserConversationResolver;
 use OCA\Mcp\Tools\ToolModule;
@@ -211,7 +211,7 @@ final class ToolErrorsLanguagesTest extends TestCase {
             $resolver,
             $this->createMock(ConversationWriter::class),
             $this->createMock(FileSharer::class),
-            $this->createMock(DraftApproval::class),
+            $this->createMock(WritePreview::class),
             $this->createMock(UserConversationResolver::class),
             $this->createMock(GroupCreator::class),
             $this->createMock(ReferenceLinker::class),

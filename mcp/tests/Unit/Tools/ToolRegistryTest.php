@@ -69,16 +69,19 @@ final class ToolRegistryTest extends TestCase {
     }
 
     public function testListFollowsGrantsAndApps(): void {
-        $this->assertSame(['a_read', 'n_read'], array_column($this->registry()->list('alice'), 'name'));
+        // The guide is a built-in of the registry, so it leads every list: it is how the model finds out
+        // about the tools the grants left standing.
+        $this->assertSame(['mcp_guide', 'a_read', 'n_read'], array_column($this->registry()->list('alice'), 'name'));
         $this->policy->setGrant('alice', 'files', 'edit', true);
         $this->policy->setGrant('alice', 'files', 'read', false);
         $this->enabledApps = [];
-        $this->assertSame(['a_edit'], array_column($this->registry()->list('alice'), 'name'));
-        $this->assertSame(['a_read'], array_column($this->registry()->list('bob'), 'name'));
+        $this->assertSame(['mcp_guide', 'a_edit'], array_column($this->registry()->list('alice'), 'name'));
+        $this->assertSame(['mcp_guide', 'a_read'], array_column($this->registry()->list('bob'), 'name'));
     }
 
     public function testListedDefinitionsExposeOnlyMcpFields(): void {
         $this->assertSame(['name', 'title', 'description', 'inputSchema', 'annotations'], array_keys($this->registry()->list('alice')[0]));
+        $this->assertSame(['name', 'title', 'description', 'inputSchema', 'annotations'], array_keys($this->registry()->list('alice')[1]));
     }
 
     public function testListedDefinitionsCarryTitleAndAnnotations(): void {

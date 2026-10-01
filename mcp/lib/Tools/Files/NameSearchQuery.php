@@ -4,20 +4,23 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files;
 
 use OCP\Files\Search\ISearchOperator;
+use OCP\Files\Search\ISearchOrder;
 use OCP\Files\Search\ISearchQuery;
 use OCP\IUser;
 
-/** File name search with limit and offset pushed into the file cache query, so large trees are not fully loaded. */
+/** File search with limit, offset and ordering pushed into the file cache query, so large trees are not fully loaded. */
 final class NameSearchQuery implements ISearchQuery {
     /**
      * @param ISearchOperator $operation search condition
      * @param int $limit maximum rows fetched by the file cache query
      * @param IUser|null $user user the search runs for
+     * @param ISearchOrder[] $order ordering criteria
      */
     public function __construct(
         private ISearchOperator $operation,
         private int $limit,
         private ?IUser $user,
+        private array $order = [],
     ) {}
 
     /** @return ISearchOperator */
@@ -35,9 +38,9 @@ final class NameSearchQuery implements ISearchQuery {
         return 0;
     }
 
-    /** @return array{} default ordering */
+    /** @return ISearchOrder[] */
     public function getOrder() {
-        return [];
+        return $this->order;
     }
 
     /** @return IUser|null */

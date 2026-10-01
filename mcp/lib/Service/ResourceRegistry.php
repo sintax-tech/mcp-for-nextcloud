@@ -50,9 +50,8 @@ class ResourceRegistry {
         private VisibilityGuard $visibilityGuard,
         private TextExtractor $textExtractor,
         private NotesRepository $notesRepo,
-        private ?ToolGuide $guide = null,
+        private ToolGuide $guide,
     ) {
-        $this->guide = $guide ?? new ToolGuide();
     }
 
     /**

@@ -25,7 +25,6 @@ use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Notes\NotesModule;
 use OCA\Mcp\Tools\Notes\NotesRepository;
-use OCA\Mcp\Tools\ToolGuide;
 use OCA\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\AppFramework\App;
@@ -112,7 +111,7 @@ class Application extends App implements IBootstrap {
             $c->get(VisibilityGuard::class),
             new TextExtractor($c->get(ITempManager::class)),
             new NotesRepository($c->get(IRootFolder::class), $c->get(IConfig::class)),
-            new ToolGuide(),
+            $c->get(ToolRegistry::class)->guide(),
         ));
         $context->registerService(McpProtocol::class, static fn (ContainerInterface $c): McpProtocol => new McpProtocol(
             $c->get(ToolRegistry::class),

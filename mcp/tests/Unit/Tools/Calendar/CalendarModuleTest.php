@@ -88,7 +88,8 @@ final class CalendarModuleTest extends CalendarTestCase {
         $users = $this->createMock(\OCP\IUserManager::class);
         $users->method('get')->willReturn($this->createMock(\OCP\IUser::class));
         $registry = new \OCA\Mcp\Tools\ToolRegistry([$this->module], $policy, $apps, $users, new \Psr\Log\NullLogger());
-        self::assertCount(2, $registry->list('alice'));
+        // The two exposed reads plus the guide, which the registry lists ahead of every module.
+        self::assertCount(3, $registry->list('alice'));
         $policy->setGrant('alice', 'calendar', 'create', true);
         $policy->setGrant('alice', 'calendar', 'edit', true);
         $listed = array_column($registry->list('alice'), null, 'name');

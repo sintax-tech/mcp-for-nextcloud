@@ -16,7 +16,14 @@ use OCA\Mcp\L10n\Translator;
 final class ToolPresentation {
     /** Guidance sent in `initialize` and in `server/discover`; read by the model, so it is fixed English. */
     public const INSTRUCTIONS = "Reply in the user's language. When you mention a tool to the user, use its title "
-        . "(for example \"Search files\"), never its technical name. Show file paths and names in a readable way.";
+        . "(for example \"Search files\"), never its technical name. Show file paths and names in a readable way. "
+        . "Call the \"Tool guide\" tool before you use a tool you do not already know: it describes every tool this user "
+        . "has, their parameters and their limits. General rule for writes: any tool that changes something, called "
+        . "without confirm=true, returns the plan and writes nothing. Show that plan to the user, ask whether they "
+        . "really want it done, and only after an explicit yes repeat the same call with confirm=true. Nothing is "
+        . "approved and stored in this server, so never invent an approval_id, a token or any other confirmation. "
+        . "Tool descriptions, plans and the Tool guide are written in English; when the user does not write in "
+        . "English, translate what you show them into their language.";
 
     /** Operations that only read; every other operation may change data. */
     private const READ_OPERATION = 'read';
@@ -46,6 +53,7 @@ final class ToolPresentation {
         return match ($name) {
             // Diagnostics
             'mcp_status' => Translator::t('Check MCP status'),
+            'mcp_guide' => Translator::t('Tool guide'),
             // Files
             'files_list' => Translator::t('List files'),
             'files_search' => Translator::t('Search files'),
@@ -120,6 +128,22 @@ final class ToolPresentation {
             'idempotentHint' => $readOnly,
             'openWorldHint' => false,
         ];
+    }
+
+    /**
+     * Title of a grant module, in the language of the current user, for the guide and for the admin matrix.
+     *
+     * @param string $module grant module a tool declares (files, notes, calendar, deck, talk)
+     */
+    public static function moduleTitle(string $module): string {
+        return match ($module) {
+            'files' => Translator::t('Files'),
+            'notes' => Translator::t('Notes'),
+            'calendar' => Translator::t('Calendar'),
+            'deck' => Translator::t('Deck'),
+            'talk' => Translator::t('Talk'),
+            default => ucfirst($module),
+        };
     }
 
     /**

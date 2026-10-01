@@ -8,6 +8,7 @@ use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Tools\ToolGuideNotes;
 use OCA\Mcp\Tools\ToolModule;
 use OCA\Mcp\Tools\ToolResult;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -30,7 +31,7 @@ use OCP\IUserManager;
  * Every result that names a node also carries its `access` description, and every write outside the
  * personal scope goes through SharedWriteGuard first.
  */
-class FilesModule implements ToolModule {
+class FilesModule implements ToolModule, ToolGuideNotes {
     /** Characters returned by files_read before the text is truncated. */
     public const MAX_CHARS = 100000;
     /** Maximum size of the new content accepted by files_edit and files_replace, in bytes. */
@@ -164,6 +165,33 @@ class FilesModule implements ToolModule {
                     'confirm' => ['type' => 'boolean', 'const' => true, 'description' => FilesMessages::confirm()],
                     'confirm_shared' => $confirmShared,
                 ], ['path', 'version', 'confirm'])],
+        ];
+    }
+
+    /**
+     * What the schemas cannot say: how a path is spelled, which tool finds what, and where the writes stop.
+     *
+     * @return list<string>
+     */
+    public function guideNotes(): array {
+        return [
+            'Paths are absolute inside the folder of the user calling and start at "/"; they are never relative and '
+                . 'never leave the storage Nextcloud already lets that user reach.',
+            'To find something, use files_search for a name anywhere, files_tree for the shape of a folder (depth '
+                . Reorganization::MAX_DEPTH . ', ' . Reorganization::MAX_ENTRIES . ' entries) and files_list for a single '
+                . 'folder. The `access` field of every entry says who owns it and what it allows.',
+            'Reorganization is the only way files change places: a copy is capped at ' . ReorganizationLimits::NODES
+                . ' items and ' . intdiv(ReorganizationLimits::BYTES, 1024 ** 3) . ' GiB, a batch takes at most '
+                . ReorganizationLimits::BATCH_ITEMS . ' moves, and nothing overwrites the destination.',
+            'Pass `etag` when changing what was just read: a different etag aborts the write instead of dropping '
+                . 'the change someone else made in the meantime.',
+            'Anything outside the personal folder is refused on a write until the user has been asked and the call '
+                . 'repeats with confirm_shared: true. A calendar, a share or a file owned by somebody else is that case.',
+            'files_edit, files_replace and files_checkout need versioning on (files_versions) and copy the file to '
+                . '"/' . self::BACKUP_FOLDER . '" before writing. files_checkout hands out short-lived links for local '
+                . 'tools instead of passing the content through the model.',
+            'There is no delete: files_undo_batch is the way back from files_move_batch, and files_version_restore '
+                . 'restores content as a new version.',
         ];
     }
 

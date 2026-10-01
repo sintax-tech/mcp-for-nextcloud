@@ -12,6 +12,8 @@ use Psr\Log\LoggerInterface;
 
 /** Single policy point for tools/list and tools/call: grant and app availability are re-read on every request. */
 class ToolRegistry {
+    private ?ToolGuide $guide = null;
+
     /** @param list<ToolModule> $modules explicit module list, in tools/list order */
     public function __construct(
         private array $modules,
@@ -25,21 +27,45 @@ class ToolRegistry {
      * Every tool carries the display metadata clients show instead of the technical name:
      * `title` (Tool.title) and `annotations` derived from the tool's grant operation.
      *
+     * The guide is the first tool of the list: it is how the model finds out about the others, so a client
+     * that only shows the beginning of the list still shows it.
+     *
      * @param string $userId authenticated user
      * @return list<array{name:string, title:string, description:string, inputSchema:array<string, mixed>, annotations:array<string, bool|string>}> tools the user may call now
      */
     public function list(string $userId): array {
+        $definitions = $this->definitions($userId);
+        array_unshift($definitions, $this->present($this->guide()->definition()));
+        return array_map(
+            // tools/list carries only what a client needs to show and validate the tool; the grant module,
+            // the operation and the app stay inside the server, for the guide.
+            static fn (array $definition): array => [
+                'name' => $definition['name'],
+                'title' => $definition['title'],
+                'description' => $definition['description'],
+                'inputSchema' => $definition['inputSchema'],
+                'annotations' => $definition['annotations'],
+            ],
+            $definitions,
+        );
+    }
+
+    /**
+     * The same tools tools/list answers, with the fields the guide needs to explain them: the grant module
+     * and operation, the app the tool needs, the title and the annotations.
+     *
+     * Reading the processed definitions rather than the raw ones is what keeps the guide honest: whatever
+     * the registry did to a schema before answering tools/list is what the guide describes.
+     *
+     * @param string $userId authenticated user
+     * @return list<array<string, mixed>> one entry per tool the user may call now, guide excluded
+     */
+    public function definitions(string $userId): array {
         $tools = [];
         foreach ($this->modules as $module) {
             foreach ($module->definitions() as $definition) {
                 if ($this->allowed($definition, $userId)) {
-                    $tools[] = [
-                        'name' => $definition['name'],
-                        'title' => ToolPresentation::title($definition['name']),
-                        'description' => $definition['description'],
-                        'inputSchema' => $definition['inputSchema'],
-                        'annotations' => ToolPresentation::annotations($definition['name'], $definition['operation'], ($definition['destructiveHint'] ?? false) === true),
-                    ];
+                    $tools[] = $this->present($definition);
                 }
             }
         }
@@ -54,6 +80,12 @@ class ToolRegistry {
      * @throws InvalidArgumentException for unknown, hidden or invalid calls (JSON-RPC -32602)
      */
     public function call(string $name, array $arguments, string $userId): array {
+        if ($name === ToolGuide::TOOL) {
+            return $this->describe(
+                ArgumentValidator::validate($this->guide()->definition()['inputSchema'], $arguments),
+                $userId,
+            );
+        }
         foreach ($this->modules as $module) {
             foreach ($module->definitions() as $definition) {
                 if ($definition['name'] !== $name) {
@@ -76,6 +108,43 @@ class ToolRegistry {
             }
         }
         throw new InvalidArgumentException('Unknown tool');
+    }
+
+    /**
+     * The guide tool reads the definitions of this user like any other read, so it goes through the same
+     * permission filter and reports a module or a tool the user cannot see as a readable refusal.
+     *
+     * @param array<string, mixed> $arguments validated arguments of the guide call
+     * @param string $userId authenticated user
+     * @return array{content: list<array{type:string, text:string}>, structuredContent: array<string, mixed>, isError?: bool}
+     */
+    private function describe(array $arguments, string $userId): array {
+        try {
+            return $this->guide()->result($this->definitions($userId), $arguments);
+        } catch (ToolFailure $e) {
+            return ToolResult::error($e->getMessage());
+        }
+    }
+
+    /**
+     * @param array<string, mixed> $definition a tool definition of a module, or of the guide itself
+     * @return array{name:string, title:string, description:string, inputSchema:array<string, mixed>, annotations:array<string, bool|string>, module:string, operation:string, app?:string}
+     */
+    private function present(array $definition): array {
+        return [
+            'name' => $definition['name'],
+            'title' => ToolPresentation::title($definition['name']),
+            'description' => $definition['description'],
+            'inputSchema' => $definition['inputSchema'],
+            'annotations' => ToolPresentation::annotations($definition['name'], $definition['operation'], ($definition['destructiveHint'] ?? false) === true),
+            'module' => $definition['module'],
+            'operation' => $definition['operation'],
+        ] + (isset($definition['app']) ? ['app' => $definition['app']] : []);
+    }
+
+    /** The guide is built once with the module list it reads the behaviour notes from. */
+    private function guide(): ToolGuide {
+        return $this->guide ??= new ToolGuide($this->modules);
     }
 
     /** @param array{module:string, operation:string, app?:string} $definition */

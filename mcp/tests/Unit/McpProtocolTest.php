@@ -77,9 +77,11 @@ final class McpProtocolTest extends TestCase {
         $this->assertSame(400, $this->call(['jsonrpc' => '2.0', 'method' => 'tools/list'])['status']);
     }
 
-    public function testToolsListExposesOnlyTheDiagnosticTool(): void {
+    public function testToolsListExposesTheTwoBuiltInTools(): void {
         $tools = $this->call(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list'])['body']['result']['tools'];
-        $this->assertSame(['mcp_status'], array_column($tools, 'name'));
+        // No module is registered in this fixture: what is left are the two tools the server owns itself.
+        $this->assertSame(['mcp_status', 'mcp_guide'], array_column($tools, 'name'));
+        $this->assertTrue($tools[1]['annotations']['readOnlyHint']);
     }
 
     public function testToolsCallReturnsContentWithOrWithoutArguments(): void {

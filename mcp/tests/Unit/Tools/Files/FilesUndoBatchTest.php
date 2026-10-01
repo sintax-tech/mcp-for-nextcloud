@@ -5,6 +5,9 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Tools\Files\Batch;
 use OCA\Mcp\Tools\Files\BatchStore;
+use OCA\Mcp\Tools\Files\FilesMessages;
+use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Tools\ToolFailure;
 
 /**
  * files_undo_batch: giving a reorganization back.
@@ -101,13 +104,13 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
         $id = $this->batches->insert(new Batch(null, 'bob', 1790000000,
             [['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md', 'toId' => 1]], [], null));
         $this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
-        $this->expectExceptionMessage('Lote não encontrado.');
+        $this->expectExceptionMessage(FilesMessages::batchNotFound());
         $this->tool('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
     }
 
     public function testABatchThatDoesNotExistIsNotFound(): void {
         $this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
-        $this->expectExceptionMessage('Lote não encontrado.');
+        $this->expectExceptionMessage(FilesMessages::batchNotFound());
         $this->tool('files_undo_batch', ['batch_id' => 9999, 'confirm' => true]);
     }
 
@@ -116,14 +119,14 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
         $id = $this->runBatch();
         $this->batches->rows[$id]['created_at'] = 1790000000 - BatchStore::LIFETIME_SECONDS - 1;
         $this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
-        $this->expectExceptionMessage('Lote não encontrado.');
+        $this->expectExceptionMessage(FilesMessages::batchNotFound());
         $this->tool('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
     }
 
     public function testABatchCannotBeUndoneTwice(): void {
         $id = $this->runBatch();
         $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
-        $this->assertSame('Este lote já foi desfeito.', $this->failure('files_undo_batch', ['batch_id' => $id, 'confirm' => true]));
+        $this->assertSame(FilesMessages::batchAlreadyUndone(), $this->failure('files_undo_batch', ['batch_id' => $id, 'confirm' => true]));
     }
 
     /** Something else now sits at the original path: undoing would overwrite what the user did after. */
@@ -133,7 +136,7 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
         $out = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
         $this->assertSame(0, $out['undone']);
         $this->assertSame([['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md',
-            'reason' => 'Já existe um arquivo ou pasta neste destino.']], $out['conflicts']);
+            'reason' => FilesMessages::destinationExists()]], $out['conflicts']);
         $this->assertSame('versão nova', $this->tree->nodes['/alice/files/Documentos/ata.md']['content']);
         $this->assertArrayHasKey('/alice/files/Arquivado/ata.md', $this->tree->nodes, 'nada foi movido de volta');
     }
@@ -147,7 +150,7 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
         ], JSON_THROW_ON_ERROR);
         $out = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
         $this->assertSame(0, $out['undone']);
-        $this->assertSame('O item não é mais o que este lote moveu; nada foi desfeito.', $out['conflicts'][0]['reason']);
+        $this->assertSame(FilesMessages::notTheBatchNode(), $out['conflicts'][0]['reason']);
         $this->assertSame(2, count($out['conflicts']), 'todo item é conferido, não só o primeiro');
     }
 
@@ -158,7 +161,7 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
         $out = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
         $this->assertSame(0, $out['undone']);
         $this->assertSame('/Documentos/plano.md', $out['conflicts'][0]['from']);
-        $this->assertSame('Sem acesso a este recurso no Nextcloud.', $out['conflicts'][0]['reason']);
+        $this->assertSame(CommonMessages::forbidden(), $out['conflicts'][0]['reason']);
         $this->assertArrayHasKey('/alice/files/Arquivado/ata.md', $this->tree->nodes, 'nem o item que passaria foi movido');
     }
 
@@ -169,7 +172,7 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
             $this->tree->nodes['/alice/files/Documentos/plano.md']);
         $out = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
         $this->assertSame(0, $out['undone']);
-        $this->assertSame('Recurso não encontrado no Nextcloud.', $out['conflicts'][0]['reason']);
+        $this->assertSame(CommonMessages::notFound(), $out['conflicts'][0]['reason']);
     }
 
     /**
@@ -235,7 +238,7 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
     public function testAFinishedBatchCannotBeUndoneAgain(): void {
         $id = $this->runBatch();
         $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
-        $this->assertSame('Este lote já foi desfeito.',
+        $this->assertSame(FilesMessages::batchAlreadyUndone(),
             $this->failure('files_undo_batch', ['batch_id' => $id, 'confirm' => true]));
     }
 

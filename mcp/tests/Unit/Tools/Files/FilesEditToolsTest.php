@@ -4,6 +4,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Checkout\CheckoutToken;
+use OCA\Mcp\Tools\Files\FilesMessages;
+use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Tools\ToolFailure;
 
 /**
  * files_replace, files_checkout and the shared-write guard as the Files tools expose them: the read
@@ -56,7 +59,7 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
     /** A snippet that is not valid UTF-8 cannot be located safely, so it is refused before anything else. */
     public function testReplaceRefusesASnippetThatIsNotValidUtf8(): void {
         $this->tree->addFile('/alice/files/Documentos/pessoas.csv', "a;\xE3o\n", 'text/csv');
-        $this->assertSame('O trecho informado não é UTF-8 válido; envie-o exatamente como aparece no arquivo.',
+        $this->assertSame(FilesMessages::snippetNotUtf8(),
             $this->failure('files_replace', ['path' => '/Documentos/pessoas.csv', 'old' => "\xE3", 'new' => 'x']));
         $this->assertSame("a;\xE3o\n", $this->tree->nodes['/alice/files/Documentos/pessoas.csv']['content']);
         $this->assertSame([], $this->tree->ops);
@@ -65,7 +68,7 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
     /** The count is over bytes, so the same snippet twice in a Latin-1 file is still ambiguous. */
     public function testReplaceCountsOccurrencesOverBytes(): void {
         $this->tree->addFile('/alice/files/Documentos/pessoas.csv', "Rio\nS\xE3o\nRio\n", 'text/csv');
-        $this->assertSame('O trecho informado aparece 2 vezes no arquivo; informe um trecho único.',
+        $this->assertSame(FilesMessages::snippetAmbiguous(2),
             $this->failure('files_replace', ['path' => '/Documentos/pessoas.csv', 'old' => 'Rio', 'new' => 'x']));
     }
 
@@ -76,7 +79,7 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
     public function testVersionRestoreRefusesAFileInsideTheBackupFolder(): void {
         $copy = '/alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak';
         $this->tree->addFile($copy, '# Ata', 'text/markdown');
-        $this->assertSame('Arquivos em "/MCP backups" não podem ser editados pelo MCP.', $this->failure(
+        $this->assertSame(FilesMessages::backupPath(), $this->failure(
             'files_version_restore',
             ['path' => '/MCP backups/Documentos/ata.md.20260921-141320.bak', 'version' => '1759100000', 'confirm' => true],
         ));
@@ -89,7 +92,7 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
         $this->tree->addFile('/MCP backups/ata.md', '# Ata', 'text/markdown');
         foreach (['files_edit', 'files_replace', 'files_checkout'] as $tool) {
             $arguments = $tool === 'files_replace' ? ['old' => 'Ata', 'new' => 'x'] : ($tool === 'files_edit' ? ['content' => 'x'] : []);
-            $this->assertSame('Arquivos em "/MCP backups" não podem ser editados pelo MCP.',
+            $this->assertSame(FilesMessages::backupPath(),
                 $this->failure($tool, ['path' => '/MCP backups/ata.md'] + $arguments), $tool);
         }
         $this->assertSame([], $this->tree->ops);
@@ -117,7 +120,7 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
      */
     public function testCheckoutIsRefusedWhenVersioningIsOff(): void {
         $this->enabled = [];
-        $this->assertSame('O versionamento de arquivos (files_versions) não está ativo nesta conta.',
+        $this->assertSame(FilesMessages::versionsOff(),
             $this->failure('files_checkout', ['path' => '/Documentos/ata.md']));
         $this->assertSame([], $this->store->rows, 'nenhum link pode ser emitido');
         $this->assertSame([], $this->tree->ops);
@@ -132,20 +135,20 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
     }
 
     public function testReplaceRefusesASnippetThatIsNotThere(): void {
-        $this->assertSame('O trecho informado não aparece no arquivo.',
+        $this->assertSame(FilesMessages::snippetMissing(),
             $this->failure('files_replace', ['path' => '/Documentos/ata.md', 'old' => 'inexistente', 'new' => 'x']));
         $this->assertSame([], $this->tree->ops);
     }
 
     public function testReplaceRefusesAnAmbiguousSnippetAndSaysHowOftenItOccurs(): void {
         $this->tree->addFile('/alice/files/Documentos/repetido.md', 'a a a', 'text/markdown');
-        $this->assertSame('O trecho informado aparece 3 vezes no arquivo; informe um trecho único.',
+        $this->assertSame(FilesMessages::snippetAmbiguous(3),
             $this->failure('files_replace', ['path' => '/Documentos/repetido.md', 'old' => 'a', 'new' => 'b']));
         $this->assertSame([], $this->tree->ops);
     }
 
     public function testReplaceRespectsTheEtagAndWritesNothingOnConflict(): void {
-        $this->assertSame('O recurso foi alterado desde a última leitura (etag divergente); nada foi gravado.',
+        $this->assertSame(CommonMessages::conflict(),
             $this->failure('files_replace', ['path' => '/Documentos/ata.md', 'old' => 'Ata', 'new' => 'x', 'etag' => 'outro']));
         $this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
         $this->assertSame([], $this->tree->ops);
@@ -153,9 +156,9 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
 
     public function testReplaceRefusesBinariesAndTheBackupFolder(): void {
         $this->tree->addFile('/alice/files/foto.jpg', 'bin', 'image/jpeg');
-        $this->assertSame('Somente arquivos de texto podem ser editados pelo MCP.',
+        $this->assertSame(FilesMessages::notText(),
             $this->failure('files_replace', ['path' => '/foto.jpg', 'old' => 'bin', 'new' => 'x']));
-        $this->assertSame('Arquivos em "/MCP backups" não podem ser editados pelo MCP.',
+        $this->assertSame(FilesMessages::backupPath(),
             $this->failure('files_replace', ['path' => '/MCP backups/ata.md', 'old' => 'Ata', 'new' => 'x']));
     }
 
@@ -231,7 +234,7 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
         $this->tree->addFile($path, 'x', 'text/markdown',
             ['scope' => 'shared', 'permissions' => \OCP\Constants::PERMISSION_READ]);
         foreach ([false, true] as $confirmed) {
-            $this->assertSame('Sem acesso a este recurso no Nextcloud.',
+            $this->assertSame(CommonMessages::forbidden(),
                 $this->failure('files_edit', ['path' => '/Compartilhado/leitura.md', 'content' => 'y', 'confirm_shared' => $confirmed]));
         }
         $this->assertSame([], $this->tree->ops);

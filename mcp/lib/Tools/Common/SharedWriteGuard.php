@@ -29,7 +29,7 @@ class SharedWriteGuard {
     public function guard(Node $node, string $viewerUid, string $resource, bool $confirmed): ?array {
         $info = $this->access->describe($node, $viewerUid);
         if ($info['permissions']['update'] === false) {
-            throw new ToolFailure(ToolFailure::FORBIDDEN);
+            throw new ToolFailure(CommonMessages::forbidden());
         }
         if ($confirmed || $info['scope'] === NodeAccessInfo::PERSONAL) {
             return null;
@@ -60,7 +60,7 @@ class SharedWriteGuard {
         }
         return $payload + [
             'resource' => $resource,
-            'message' => $this->message($info) . ' ' . ($advice ?? CommonMessages::CONFIRM_ADVICE),
+            'message' => $this->message($info) . ' ' . ($advice ?? CommonMessages::confirmAdvice()),
         ];
     }
 

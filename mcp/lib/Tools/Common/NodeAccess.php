@@ -26,13 +26,13 @@ final class NodeAccess {
         try {
             return $action();
         } catch (NotFoundException) {
-            throw new ToolFailure(ToolFailure::NOT_FOUND);
+            throw new ToolFailure(CommonMessages::notFound());
         } catch (NotPermittedException|ForbiddenException) {
-            throw new ToolFailure(ToolFailure::FORBIDDEN);
+            throw new ToolFailure(CommonMessages::forbidden());
         } catch (LockedException) {
-            throw new ToolFailure(ToolFailure::LOCKED);
+            throw new ToolFailure(CommonMessages::locked());
         } catch (NotEnoughSpaceException) {
-            throw new ToolFailure('Espaço insuficiente na cota do usuário.');
+            throw new ToolFailure(CommonMessages::insufficientQuota());
         }
     }
 
@@ -48,7 +48,7 @@ final class NodeAccess {
         $path = PathGuard::normalize($path);
         $node = $path === '/' ? $root : $root->get(ltrim($path, '/'));
         if (!$node->isReadable()) {
-            throw new ToolFailure(ToolFailure::FORBIDDEN);
+            throw new ToolFailure(CommonMessages::forbidden());
         }
         return $node;
     }
@@ -64,7 +64,7 @@ final class NodeAccess {
      */
     public static function requireFile(Node $node): File {
         if (!$node instanceof File) {
-            throw new ToolFailure('O caminho informado não é um arquivo.');
+            throw new ToolFailure(CommonMessages::notAFile());
         }
         return $node;
     }
@@ -84,7 +84,7 @@ final class NodeAccess {
             if ($folder->nodeExists($segment)) {
                 $next = $folder->get($segment);
                 if (!$next instanceof Folder) {
-                    throw new ToolFailure('Já existe um arquivo com o nome da pasta de destino.');
+                    throw new ToolFailure(CommonMessages::fileInTargetFolderPath());
                 }
                 $folder = $next;
             } else {
@@ -101,7 +101,7 @@ final class NodeAccess {
      */
     public static function checkEtag(Node $node, ?string $etag): void {
         if ($etag !== null && trim($etag, '"') !== trim((string)$node->getEtag(), '"')) {
-            throw new ToolFailure(ToolFailure::CONFLICT);
+            throw new ToolFailure(CommonMessages::conflict());
         }
     }
 }

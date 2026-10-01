@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
+use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\ReorganizationLimits;
 
 /**
@@ -55,13 +57,13 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
 
     public function testCopyRefusesAnOccupiedDestinationWithoutOverwriting(): void {
         $this->tree->addFile('/alice/files/Copia/ata.md', 'outro conteúdo', 'text/markdown');
-        $this->assertSame('Já existe um arquivo ou pasta neste destino.', $this->failure('files_copy', ['from' => self::SOURCE_PATH, 'to' => '/Copia/ata.md']));
+        $this->assertSame(FilesMessages::destinationExists(), $this->failure('files_copy', ['from' => self::SOURCE_PATH, 'to' => '/Copia/ata.md']));
         $this->assertSame('outro conteúdo', $this->tree->nodes['/alice/files/Copia/ata.md']['content']);
         $this->assertSame([], $this->tree->ops);
     }
 
     public function testCopyChecksTheSourceEtagAndWritesNothingOnConflict(): void {
-        $this->assertSame('O recurso foi alterado desde a última leitura (etag divergente); nada foi gravado.',
+        $this->assertSame(CommonMessages::conflict(),
             $this->failure('files_copy', ['from' => self::SOURCE_PATH, 'to' => '/Copia/ata.md', 'etag' => 'outro']));
         $this->assertFalse(array_key_exists('/alice/files/Copia/ata.md', $this->tree->nodes));
         $this->assertSame([], $this->tree->ops);
@@ -79,7 +81,7 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
         for ($i = 0; $i < ReorganizationLimits::NODES + 1; $i++) {
             $this->tree->addFile("/alice/files/Grande/arquivo-$i.txt", 'x', 'text/plain');
         }
-        $this->assertSame('A cópia passaria de ' . ReorganizationLimits::NODES . ' itens; nada foi copiado. Escolha uma pasta menor.',
+        $this->assertSame(FilesMessages::copyTooManyNodes(ReorganizationLimits::NODES),
             $this->failure('files_copy', ['from' => '/Grande', 'to' => '/Copia/Grande']));
         $this->assertFalse(array_key_exists('/alice/files/Copia/Grande', $this->tree->nodes));
         $this->assertSame([], $this->tree->ops);
@@ -88,7 +90,7 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
     public function testCopyRefusesATreeOverTheByteCeilingWithoutCopyingAnything(): void {
         $this->tree->addFile('/alice/files/Pesada/grande.bin', str_repeat('x', 16), 'application/octet-stream');
         $this->tree->nodes['/alice/files/Pesada/grande.bin']['size'] = ReorganizationLimits::BYTES + 1;
-        $this->assertSame('A cópia passaria de ' . ReorganizationLimits::BYTES . ' bytes; nada foi copiado. Escolha uma pasta menor.',
+        $this->assertSame(FilesMessages::copyTooLarge(ReorganizationLimits::BYTES),
             $this->failure('files_copy', ['from' => '/Pesada', 'to' => '/Copia/Pesada']));
         $this->assertSame([], $this->tree->ops);
     }
@@ -99,7 +101,7 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
             $this->tree->addFile("/alice/files/Grande/arquivo-$i.txt", 'x', 'text/plain');
         }
         $this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
-        $this->expectExceptionMessage('A cópia passaria de ' . ReorganizationLimits::NODES . ' itens');
+        $this->expectExceptionMessage(FilesMessages::copyTooManyNodes(ReorganizationLimits::NODES));
         $this->reorganization()->measure($this->tree->node('/alice/files/Grande'));
     }
 
@@ -182,7 +184,7 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
         // A mount point is what puts a subtree on another storage, so the folder carries the id.
         $this->tree->addFolder('/alice/files/Externo', ['storageId' => 'externo']);
         $this->tree->addFile('/alice/files/Externo/plano.md', 'plano', 'text/markdown');
-        $this->assertSame('Mover entre storages diferentes não é suportado nesta versão; mova dentro da mesma área de arquivos.',
+        $this->assertSame(FilesMessages::crossStorage(),
             $this->failure('files_move', ['from' => '/Documentos/ata.md', 'to' => '/Externo/ata.md']));
         $this->assertSame("# Ata\nolá", $this->tree->nodes[self::SOURCE]['content'], 'a origem tem que continuar onde estava');
         $this->assertSame([], $this->tree->ops);
@@ -190,33 +192,33 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
 
     public function testARefusesAnOccupiedDestinationWithoutOverwriting(): void {
         $this->tree->addFile('/alice/files/Documentos/outro.md', 'outro', 'text/markdown');
-        $this->assertSame('Já existe um arquivo ou pasta neste destino.', $this->failure('files_move', ['from' => self::SOURCE_PATH, 'to' => '/Documentos/outro.md']));
+        $this->assertSame(FilesMessages::destinationExists(), $this->failure('files_move', ['from' => self::SOURCE_PATH, 'to' => '/Documentos/outro.md']));
         $this->assertSame("# Ata\nolá", $this->tree->nodes[self::SOURCE]['content']);
         $this->assertSame('outro', $this->tree->nodes['/alice/files/Documentos/outro.md']['content']);
         $this->assertSame([], $this->tree->ops);
     }
 
     public function testARefusesAFolderIntoItself(): void {
-        $this->assertSame('Não é possível mover uma pasta para dentro dela mesma.',
+        $this->assertSame(FilesMessages::folderIntoItself(),
             $this->failure('files_move', ['from' => '/Documentos', 'to' => '/Documentos/2026/sub']));
         $this->assertSame([], $this->tree->ops);
     }
 
     public function testARefusesAFolderIntoItsOwnSubfolder(): void {
-        $this->assertSame('Não é possível mover uma pasta para dentro dela mesma.',
+        $this->assertSame(FilesMessages::folderIntoItself(),
             $this->failure('files_move', ['from' => '/Documentos', 'to' => '/Documentos/2026']));
     }
 
     public function testARefusesAMoveWithoutPermissionAndLeavesTheNodeWhereItWas(): void {
         $this->tree->nodes[self::SOURCE]['updateable'] = false;
-        $this->assertSame('Sem acesso a este recurso no Nextcloud.',
+        $this->assertSame(CommonMessages::forbidden(),
             $this->failure('files_move', ['from' => self::SOURCE_PATH, 'to' => '/Arquivado/ata.md']));
         $this->assertSame([], $this->tree->ops);
     }
 
     public function testARefusesAMoveIntoAFolderThatCannotTakeIt(): void {
         $this->tree->addFolder('/alice/files/Cheia', ['permissions' => \OCP\Constants::PERMISSION_READ]);
-        $this->assertSame('Sem acesso a este recurso no Nextcloud.',
+        $this->assertSame(CommonMessages::forbidden(),
             $this->failure('files_move', ['from' => self::SOURCE_PATH, 'to' => '/Cheia/ata.md']));
         $this->assertSame([], $this->tree->ops);
     }
@@ -236,14 +238,14 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
 
     public function testAMoveOfAnUnreadableSourceIsRefused(): void {
         $this->tree->nodes[self::SOURCE]['readable'] = false;
-        $this->assertSame('Sem acesso a este recurso no Nextcloud.',
+        $this->assertSame(CommonMessages::forbidden(),
             $this->failure('files_move', ['from' => self::SOURCE_PATH, 'to' => '/Arquivado/ata.md']));
         $this->assertSame([], $this->tree->ops);
     }
 
     /** The destination folder has to exist; creating it is files_mkdir's job, and the user asked for that. */
     public function testAMoveToAMissingFolderIsRefusedWithoutCreatingIt(): void {
-        $this->assertSame('Recurso não encontrado no Nextcloud.',
+        $this->assertSame(CommonMessages::notFound(),
             $this->failure('files_move', ['from' => self::SOURCE_PATH, 'to' => '/NaoExiste/ata.md']));
         $this->assertFalse(array_key_exists('/alice/files/NaoExiste', $this->tree->nodes));
     }

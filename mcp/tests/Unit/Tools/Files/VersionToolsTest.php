@@ -9,7 +9,9 @@ use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Tools\Files\TextExtractor;
+use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\VersionTools;
+use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\Files\Folder;
@@ -88,7 +90,7 @@ final class VersionToolsTest extends TestCase {
         $tools = new VersionTools($apps, $this->users, $this->createMock(TextExtractor::class), $this->backup,
             new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $this->createMock(ContainerInterface::class));
         $this->expectException(ToolFailure::class);
-        $this->expectExceptionMessage('O versionamento de arquivos (files_versions) não está ativo nesta conta.');
+        $this->expectExceptionMessage(FilesMessages::versionsOff());
         $tools->list($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', 50, 'alice');
     }
 
@@ -126,13 +128,13 @@ final class VersionToolsTest extends TestCase {
             $this->tools->read($this->file(), '/Documentos/ata.md', 'nope', 'alice');
             $this->fail('an unknown revision must not resolve');
         } catch (ToolFailure $e) {
-            $this->assertSame('Versão não encontrada para este arquivo: nope.', $e->getMessage());
+            $this->assertSame(FilesMessages::versionMissing('nope'), $e->getMessage());
         }
     }
 
     public function testReadReportsAVersionThatCannotBeOpened(): void {
         $this->expectException(ToolFailure::class);
-        $this->expectExceptionMessage('Não foi possível ler o conteúdo desta versão.');
+        $this->expectExceptionMessage(FilesMessages::versionUnreadable());
         $this->tools->read($this->file(), '/Documentos/ata.md', '1759200000', 'alice');
     }
 
@@ -150,7 +152,7 @@ final class VersionToolsTest extends TestCase {
     public function testRestoreReportsARollbackThatFailed(): void {
         $this->manager->rollbackResult = false;
         $this->expectException(ToolFailure::class);
-        $this->expectExceptionMessage('Não foi possível restaurar esta versão.');
+        $this->expectExceptionMessage(FilesMessages::versionRestoreFailed());
         $this->tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
     }
 
@@ -170,7 +172,7 @@ final class VersionToolsTest extends TestCase {
     public function testRestoreRefusesAFileNextcloudWillNotUpdate(): void {
         $this->tree->nodes[self::FILE]['updateable'] = false;
         $this->expectException(ToolFailure::class);
-        $this->expectExceptionMessage(ToolFailure::FORBIDDEN);
+        $this->expectExceptionMessage(CommonMessages::forbidden());
         $this->tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
     }
 }

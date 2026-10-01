@@ -17,9 +17,11 @@ use OCA\Mcp\Tools\Files\BatchStore;
 use OCA\Mcp\Tools\Files\MovePlanner;
 use OCA\Mcp\Tools\Files\MoveReport;
 use OCA\Mcp\Tools\Files\Reorganization;
+use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Files\VersionTools;
+use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -130,10 +132,10 @@ final class FilesModuleTest extends TestCase {
     }
 
     public function testListRejectsFilesTraversalAndUnreadable(): void {
-        $this->assertSame('O caminho informado não é uma pasta.', $this->failure('files_list', ['path' => '/relatorio.pdf']));
-        $this->assertSame(ToolFailure::NOT_FOUND, $this->failure('files_list', ['path' => '/nada']));
+        $this->assertSame(FilesMessages::notAFolder(), $this->failure('files_list', ['path' => '/relatorio.pdf']));
+        $this->assertSame(CommonMessages::notFound(), $this->failure('files_list', ['path' => '/nada']));
         $this->tree->nodes['/alice/files/Documentos']['readable'] = false;
-        $this->assertSame(ToolFailure::FORBIDDEN, $this->failure('files_list', ['path' => 'Documentos']));
+        $this->assertSame(CommonMessages::forbidden(), $this->failure('files_list', ['path' => 'Documentos']));
         foreach (['/../bob/files', "/a\0b", 'Documentos/../..'] as $path) {
             try {
                 $this->tool('files_list', ['path' => $path]);
@@ -182,9 +184,9 @@ final class FilesModuleTest extends TestCase {
 
     public function testCorruptDocumentsAndZipBombsReturnANotice(): void {
         $this->tree->addFile('/alice/files/bad.pdf', "%PDF-broken\0\0", 'application/pdf');
-        $this->assertSame('[não foi possível extrair o texto de bad.pdf]', $this->tool('files_read', ['path' => '/bad.pdf'])['content'][0]['text']);
+        $this->assertSame(FilesMessages::notExtracted('bad.pdf'), $this->tool('files_read', ['path' => '/bad.pdf'])['content'][0]['text']);
         $this->tree->addFile('/alice/files/bomb.docx', self::zip('word/document.xml', str_repeat('A', TextExtractor::MAX_BYTES + 1)), '');
-        $this->assertSame('[não foi possível extrair o texto de bomb.docx]', $this->tool('files_read', ['path' => '/bomb.docx'])['content'][0]['text']);
+        $this->assertSame(FilesMessages::notExtracted('bomb.docx'), $this->tool('files_read', ['path' => '/bomb.docx'])['content'][0]['text']);
     }
 
     public function testReadEnforcesByteLimitBeforeAndWhileReading(): void {
@@ -198,14 +200,16 @@ final class FilesModuleTest extends TestCase {
     public function testReadTruncatesAtCharacterLimit(): void {
         $this->tree->addFile('/alice/files/long.txt', str_repeat('é', FilesModule::MAX_CHARS + 50));
         $text = $this->tool('files_read', ['path' => '/long.txt'])['content'][0]['text'];
-        $this->assertStringEndsWith("\n\n[conteúdo truncado]", $text);
+        $this->assertStringEndsWith("
+
+" . FilesMessages::textTruncated(), $text);
         $this->assertSame(FilesModule::MAX_CHARS, mb_strlen(explode("\n\n[", $text)[0]));
     }
 
     public function testReadRejectsFoldersAndBinaries(): void {
-        $this->assertSame('O caminho informado não é um arquivo.', $this->failure('files_read', ['path' => '/Documentos']));
+        $this->assertSame(FilesMessages::notAFile(), $this->failure('files_read', ['path' => '/Documentos']));
         $this->tree->addFile('/alice/files/foto.jpg', "\xFF\xD8", 'image/jpeg');
-        $this->assertSame('Formato de arquivo não suportado para leitura de texto.', $this->failure('files_read', ['path' => '/foto.jpg']));
+        $this->assertSame(FilesMessages::unsupportedFormat(), $this->failure('files_read', ['path' => '/foto.jpg']));
     }
 
     public function testEditBacksUpThenWrites(): void {
@@ -264,11 +268,11 @@ final class FilesModuleTest extends TestCase {
 
     /** @return iterable<string, array{0: callable(self):void, 1: string}> */
     public static function blockedEdits(): iterable {
-        yield 'versions disabled' => [fn (self $t) => $t->apps = [], 'files_versions'];
-        yield 'copy fails' => [fn (self $t) => $t->tree->failCopy[] = '/alice/files/Documentos/ata.md', 'cópia de segurança'];
-        yield 'copy size differs' => [fn (self $t) => $t->tree->shortCopy[] = '/alice/files/Documentos/ata.md', 'cópia de segurança'];
-        yield 'not updateable' => [fn (self $t) => $t->tree->nodes['/alice/files/Documentos/ata.md']['updateable'] = false, ToolFailure::FORBIDDEN];
-        yield 'backup folder name taken by a file' => [fn (self $t) => $t->tree->addFile('/alice/files/MCP backups', 'x'), 'cópia de segurança'];
+        yield 'versions disabled' => [fn (self $t) => $t->apps = [], FilesMessages::versioningOff()];
+        yield 'copy fails' => [fn (self $t) => $t->tree->failCopy[] = '/alice/files/Documentos/ata.md', FilesMessages::backupFailed()];
+        yield 'copy size differs' => [fn (self $t) => $t->tree->shortCopy[] = '/alice/files/Documentos/ata.md', FilesMessages::backupFailed()];
+        yield 'not updateable' => [fn (self $t) => $t->tree->nodes['/alice/files/Documentos/ata.md']['updateable'] = false, CommonMessages::forbidden()];
+        yield 'backup folder name taken by a file' => [fn (self $t) => $t->tree->addFile('/alice/files/MCP backups', 'x'), FilesMessages::backupFailed()];
     }
 
     /** @dataProvider blockedEdits */
@@ -280,12 +284,12 @@ final class FilesModuleTest extends TestCase {
     }
 
     public function testEditRefusesStaleEtagBinariesBackupsAndOversizedContent(): void {
-        $this->assertSame(ToolFailure::CONFLICT, $this->failure('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'x', 'etag' => 'old']));
-        $this->assertSame('Somente arquivos de texto podem ser editados pelo MCP.', $this->failure('files_edit', ['path' => '/relatorio.pdf', 'content' => 'x']));
+        $this->assertSame(CommonMessages::conflict(), $this->failure('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'x', 'etag' => 'old']));
+        $this->assertSame(FilesMessages::notText(), $this->failure('files_edit', ['path' => '/relatorio.pdf', 'content' => 'x']));
         $this->tree->addFile('/alice/files/MCP backups/a.txt.bak', 'b');
-        $this->assertStringContainsString('não podem ser editados', $this->failure('files_edit', ['path' => '/MCP backups/a.txt.bak', 'content' => 'x']));
-        $this->assertStringContainsString('limite de edição', $this->failure('files_edit', ['path' => '/Documentos/ata.md', 'content' => str_repeat('x', FilesModule::MAX_EDIT_BYTES + 1)]));
-        $this->assertSame(ToolFailure::NOT_FOUND, $this->failure('files_edit', ['path' => '/novo.txt', 'content' => 'x']));
+        $this->assertSame(FilesMessages::backupPath(), $this->failure('files_edit', ['path' => '/MCP backups/a.txt.bak', 'content' => 'x']));
+        $this->assertSame(FilesMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES), $this->failure('files_edit', ['path' => '/Documentos/ata.md', 'content' => str_repeat('x', FilesModule::MAX_EDIT_BYTES + 1)]));
+        $this->assertSame(CommonMessages::notFound(), $this->failure('files_edit', ['path' => '/novo.txt', 'content' => 'x']));
         $this->assertSame([], $this->tree->ops);
     }
 

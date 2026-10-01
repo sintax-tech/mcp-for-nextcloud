@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
+use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\ReorganizationLimits;
 
 /**
@@ -112,9 +114,9 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->assertFalse($plan['ok'], 'um plano com item bloqueado não está ok');
         $this->assertSame([['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md', 'ok' => true]], $plan['moves']);
         $this->assertSame([['from' => '/Documentos/plano.md', 'to' => '/Arquivado/plano.md',
-            'reason' => 'Já existe um arquivo ou pasta neste destino.']], $plan['conflicts']);
+            'reason' => FilesMessages::destinationExists()]], $plan['conflicts']);
         $this->assertSame([['from' => '/Documentos/orcamento.md', 'to' => '/Arquivado/orcamento.md',
-            'reason' => 'Sem acesso a este recurso no Nextcloud.']], $plan['denied']);
+            'reason' => CommonMessages::forbidden()]], $plan['denied']);
         $this->assertSame(['total' => 3, 'planned' => 1, 'conflicts' => 1, 'denied' => 1, 'shared' => 0, 'mkdirs' => 0],
             $plan['summary']);
     }
@@ -125,7 +127,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
         ]);
         $this->assertFalse($plan['ok']);
         $this->assertSame([['from' => '/Documentos/nao-existe.md', 'to' => '/Arquivado/nao-existe.md',
-            'reason' => 'Recurso não encontrado no Nextcloud.']], $plan['denied']);
+            'reason' => CommonMessages::notFound()]], $plan['denied']);
     }
 
     public function testThePlanRefusesAFolderIntoItself(): void {
@@ -133,7 +135,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
             'moves' => [['from' => '/Documentos', 'to' => '/Documentos/sub']],
         ]);
         $this->assertFalse($plan['ok']);
-        $this->assertSame('Não é possível mover uma pasta para dentro dela mesma.', $plan['conflicts'][0]['reason']);
+        $this->assertSame(FilesMessages::folderIntoItself(), $plan['conflicts'][0]['reason']);
     }
 
     /**
@@ -222,7 +224,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->assertSame([], $out['moved']);
         $this->assertSame('/Documentos/ata.md', $out['failed']['from']);
         $this->assertSame('/Arquivado/ata.md', $out['failed']['to']);
-        $this->assertSame('Sem acesso a este recurso no Nextcloud.', $out['failed']['reason']);
+        $this->assertSame(CommonMessages::forbidden(), $out['failed']['reason']);
         $this->assertSame(['/Documentos/plano.md', '/Documentos/orcamento.md'],
             array_column($out['not_attempted'], 'from'), 'o que não foi tentado é dito, não escondido');
         $this->assertSame([], $this->batches->find(1, 'alice')->moves);

@@ -5,6 +5,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Common;
 
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
+use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\ToolFailure;
@@ -43,8 +44,7 @@ final class SharedWriteGuardTest extends TestCase {
             'ownerDisplayName' => 'Pedro Almeida',
             'teamFolder' => 'Engenharia',
             'resource' => '/Engenharia/x.md',
-            'message' => 'Este arquivo está na pasta de time "Engenharia" (Team Folder). Alterações afetam outras '
-                . 'pessoas. Confirme com o usuário antes de continuar e repita a chamada com confirm_shared: true.',
+            'message' => CommonMessages::teamFolder('Engenharia') . ' ' . CommonMessages::confirmAdvice(),
         ], $payload);
     }
 
@@ -52,14 +52,14 @@ final class SharedWriteGuardTest extends TestCase {
         $payload = $this->guard->guard($this->node('shared', '/alice/files/C/x.md'), 'alice', '/C/x.md', false);
         $this->assertSame('shared', $payload['scope']);
         $this->assertSame('Pedro Almeida', $payload['sharedBy']);
-        $this->assertStringStartsWith('Este arquivo foi compartilhado por Pedro Almeida.', $payload['message']);
+        $this->assertStringStartsWith(CommonMessages::sharedBy('Pedro Almeida'), $payload['message']);
         $this->assertArrayNotHasKey('teamFolder', $payload);
     }
 
     public function testExternalStorageIsNamedWithoutAPerson(): void {
         $payload = $this->guard->guard($this->node('external', '/alice/files/E/x.md'), 'alice', '/E/x.md', false);
         $this->assertSame('external', $payload['scope']);
-        $this->assertStringStartsWith('Este arquivo está em um armazenamento externo.', $payload['message']);
+        $this->assertStringStartsWith(CommonMessages::externalStorage(), $payload['message']);
     }
 
     /** Every scope writes once the user confirmed, and the payload is then absent. */
@@ -77,7 +77,7 @@ final class SharedWriteGuardTest extends TestCase {
                 $this->guard->guard($node, 'alice', '/Documentos/leitura.md', $confirmed);
                 $this->fail('a read-only node must never be writable');
             } catch (ToolFailure $e) {
-                $this->assertSame(ToolFailure::FORBIDDEN, $e->getMessage());
+                $this->assertSame(CommonMessages::forbidden(), $e->getMessage());
             }
         }
     }

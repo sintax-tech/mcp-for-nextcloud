@@ -12,6 +12,7 @@ use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileBackup;
+use OCA\Mcp\Tools\Files\FilesMessages;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
@@ -362,9 +363,9 @@ final class CheckoutControllerTest extends TestCase {
         $this->tree->addFile('/alice/files/Compartilhado/plano.md', 'plano', 'text/markdown', ['scope' => 'shared']);
         $this->issue(CheckoutToken::KIND_UPLOAD, 'personal', false, '/Compartilhado/plano.md');
         $message = $this->payload($this->controller->upload())['message'];
-        $this->assertStringContainsString('novo files_checkout', $message);
+        $this->assertStringContainsString('files_checkout', $message);
         $this->assertStringContainsString('confirm_shared: true', $message);
-        $this->assertStringNotContainsString('repite a chamada', $message);
+        $this->assertStringNotContainsString('repeat the call', $message);
         $this->assertSame(410, $this->code($this->controller->upload()), 'o link já foi gasto');
     }
 
@@ -374,7 +375,7 @@ final class CheckoutControllerTest extends TestCase {
         $this->store->moveEtag('e-outro');
         $response = $this->controller->upload();
         $this->assertSame(409, $this->code($response));
-        $this->assertStringContainsString('novo files_checkout', (string)$response->render());
+        $this->assertStringContainsString('files_checkout', (string)$response->render());
         $this->assertStringNotContainsString('etag', (string)$response->render());
     }
 
@@ -419,7 +420,7 @@ final class CheckoutControllerTest extends TestCase {
         $this->headers['Content-Type'] = 'multipart/form-data; boundary=x';
         $response = $this->controller->upload();
         $this->assertSame(400, $this->code($response));
-        $this->assertSame('Envie os bytes do arquivo como corpo bruto (curl -T), não como formulário multipart.', (string)$response->render());
+        $this->assertSame(FilesMessages::uploadMultipart(), (string)$response->render());
         $this->assertSame([], $this->tree->ops);
         $this->assertNotContains('consume', $this->store->ops, 'o link tem que continuar valendo');
     }
@@ -453,7 +454,7 @@ final class CheckoutControllerTest extends TestCase {
         $this->stage('');
         $response = $this->controller->upload();
         $this->assertSame(400, $this->code($response));
-        $this->assertSame('O corpo enviado está vazio; nada foi gravado.', (string)$response->render());
+        $this->assertSame(FilesMessages::uploadEmpty(), (string)$response->render());
         $this->assertSame([], $this->tree->ops);
         $this->assertNotContains('consume', $this->store->ops, 'o link tem que continuar valendo');
     }

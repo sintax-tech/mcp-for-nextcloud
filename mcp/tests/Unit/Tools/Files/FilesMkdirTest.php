@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
+use OCA\Mcp\Tools\Files\FilesMessages;
+use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Tools\ToolFailure;
+
 /**
  * files_mkdir: create folders, never overwrite what is already there.
  *
@@ -46,13 +50,13 @@ final class FilesMkdirTest extends FilesToolsTestCase {
     /** An existing folder is refused and left exactly as it was: no delete, no reuse, no surprise. */
     public function testItRefusesAFolderThatAlreadyExistsWithoutTouchingIt(): void {
         $this->tree->addFile('/alice/files/Documentos/2026/plano.md', 'plano', 'text/markdown');
-        $this->assertSame('Já existe um arquivo ou pasta neste destino.', $this->failure('files_mkdir', ['path' => '/Documentos/2026']));
+        $this->assertSame(FilesMessages::destinationExists(), $this->failure('files_mkdir', ['path' => '/Documentos/2026']));
         $this->assertSame('plano', $this->tree->nodes['/alice/files/Documentos/2026/plano.md']['content']);
         $this->assertSame([], $this->tree->ops);
     }
 
     public function testItRefusesAnExistingFileAsWell(): void {
-        $this->assertSame('Já existe um arquivo ou pasta neste destino.', $this->failure('files_mkdir', ['path' => '/Documentos/ata.md']));
+        $this->assertSame(FilesMessages::destinationExists(), $this->failure('files_mkdir', ['path' => '/Documentos/ata.md']));
         $this->assertSame([], $this->tree->ops);
     }
 
@@ -63,7 +67,7 @@ final class FilesMkdirTest extends FilesToolsTestCase {
         } catch (\InvalidArgumentException $e) {
             $this->assertSame('Invalid argument: path', $e->getMessage());
         }
-        $this->assertSame('Arquivos em "/MCP backups" não podem ser editados pelo MCP.', $this->failure('files_mkdir', ['path' => '/MCP backups/2026']));
+        $this->assertSame(FilesMessages::backupPath(), $this->failure('files_mkdir', ['path' => '/MCP backups/2026']));
         $this->assertSame([], $this->tree->ops);
     }
 
@@ -93,7 +97,7 @@ final class FilesMkdirTest extends FilesToolsTestCase {
         $this->tree->addFolder('/alice/files/Equipe', ['permissions' => \OCP\Constants::PERMISSION_READ]);
         $this->tree->nodes['/alice/files/Equipe']['updateable'] = false;
         foreach ([false, true] as $confirmed) {
-            $this->assertSame('Sem acesso a este recurso no Nextcloud.',
+            $this->assertSame(CommonMessages::forbidden(),
                 $this->failure('files_mkdir', ['path' => '/Equipe/2026', 'confirm_shared' => $confirmed]));
         }
         $this->assertSame([], $this->tree->ops);
@@ -101,6 +105,6 @@ final class FilesMkdirTest extends FilesToolsTestCase {
 
     /** The root is a folder that already exists, so it is refused like any other. */
     public function testTheRootIsRefused(): void {
-        $this->assertSame('Já existe um arquivo ou pasta neste destino.', $this->failure('files_mkdir', ['path' => '/']));
+        $this->assertSame(FilesMessages::destinationExists(), $this->failure('files_mkdir', ['path' => '/']));
     }
 }

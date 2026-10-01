@@ -5,6 +5,8 @@ namespace OCA\Mcp\Controller;
 
 use OCA\Mcp\Checkout\CheckoutToken;
 use OCA\Mcp\Checkout\CheckoutTokenStore;
+use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\L10n\UserL10n;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tools\Common\NodeAccess;
@@ -28,6 +30,7 @@ use OCP\Files\File;
 use OCP\Files\IRootFolder;
 use OCP\IRequest;
 use OCP\ITempManager;
+use OCP\IUserManager;
 use OCP\IUserSession;
 use Psr\Log\LoggerInterface;
 
@@ -67,6 +70,8 @@ class CheckoutController extends Controller {
         private SharedWriteGuard $guard,
         private NodeAccessInfo $accessInfo,
         private LoggerInterface $logger,
+        private ?UserL10n $l10n = null,
+        private ?IUserManager $userManager = null,
     ) {
         parent::__construct($appName, $request);
     }
@@ -80,26 +85,30 @@ class CheckoutController extends Controller {
     #[NoAdminRequired]
     #[NoCSRFRequired]
     public function download(): Response {
-        $opened = $this->resolve(CheckoutToken::KIND_DOWNLOAD);
-        if ($opened instanceof Response) {
-            return $opened;
+        try {
+            $opened = $this->resolve(CheckoutToken::KIND_DOWNLOAD);
+            if ($opened instanceof Response) {
+                return $opened;
+            }
+            [$row, $file] = $opened;
+            if ($failure = $this->spend($row)) {
+                return $failure;
+            }
+            $handle = $file->fopen('r');
+            if ($handle === false) {
+                return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
+            }
+            // filename*=UTF-8'' is the form that survives a name with spaces or accents; the plain filename
+            // is the percent-encoded fallback for clients that only understand RFC 6266.
+            $name = $file->getName();
+            return new StreamResponse($handle, Http::STATUS_OK, [
+                'Content-Type' => (string)$file->getMimetype(),
+                'Content-Disposition' => sprintf('attachment; filename="%s"; filename*=UTF-8\'\'%s', rawurlencode($name), rawurlencode($name)),
+                'Cache-Control' => 'no-store',
+            ]);
+        } finally {
+            Translator::reset();
         }
-        [$row, $file] = $opened;
-        if ($failure = $this->spend($row)) {
-            return $failure;
-        }
-        $handle = $file->fopen('r');
-        if ($handle === false) {
-            return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
-        }
-        // filename*=UTF-8'' is the form that survives a name with spaces or accents; the plain filename
-        // is the percent-encoded fallback for clients that only understand RFC 6266.
-        $name = $file->getName();
-        return new StreamResponse($handle, Http::STATUS_OK, [
-            'Content-Type' => (string)$file->getMimetype(),
-            'Content-Disposition' => sprintf('attachment; filename="%s"; filename*=UTF-8\'\'%s', rawurlencode($name), rawurlencode($name)),
-            'Cache-Control' => 'no-store',
-        ]);
     }
 
     /**
@@ -120,37 +129,41 @@ class CheckoutController extends Controller {
     #[NoAdminRequired]
     #[NoCSRFRequired]
     public function upload(): Response {
-        if ($failure = $this->checkBodyType()) {
-            return $failure;
-        }
-        $token = $this->routeToken();
-        if ($token === null) {
-            return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
-        }
-        $limit = $this->checkout->maxBytes();
-        $body = $this->storeBody($limit);
-        if ($failure = $this->checkBody($limit)) {
-            if ($body !== null) {
-                @unlink($body);
-            }
-            return $failure;
-        }
-        $opened = $this->resolve(CheckoutToken::KIND_UPLOAD);
-        if ($opened instanceof Response) {
-            @unlink((string)$body);
-            return $opened;
-        }
-        [$row, $file] = $opened;
-        // The link is spent here, immediately before anything that can change the file. Everything above is
-        // a refusal the agent can fix without a new checkout; everything below may already have written.
-        if ($failure = $this->spend($row)) {
-            @unlink((string)$body);
-            return $failure;
-        }
         try {
-            return $this->write($row, $file, (string)$body);
+            if ($failure = $this->checkBodyType()) {
+                return $failure;
+            }
+            $token = $this->routeToken();
+            if ($token === null) {
+                return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
+            }
+            $limit = $this->checkout->maxBytes();
+            $body = $this->storeBody($limit);
+            if ($failure = $this->checkBody($limit)) {
+                if ($body !== null) {
+                    @unlink($body);
+                }
+                return $failure;
+            }
+            $opened = $this->resolve(CheckoutToken::KIND_UPLOAD);
+            if ($opened instanceof Response) {
+                @unlink((string)$body);
+                return $opened;
+            }
+            [$row, $file] = $opened;
+            // The link is spent here, immediately before anything that can change the file. Everything above is
+            // a refusal the agent can fix without a new checkout; everything below may already have written.
+            if ($failure = $this->spend($row)) {
+                @unlink((string)$body);
+                return $failure;
+            }
+            try {
+                return $this->write($row, $file, (string)$body);
+            } finally {
+                @unlink((string)$body);
+            }
         } finally {
-            @unlink((string)$body);
+            Translator::reset();
         }
     }
 
@@ -220,10 +233,10 @@ class CheckoutController extends Controller {
         $access = $this->accessInfo->describe($file, $row->userId);
         // The scope recorded at checkout can be stale: a file may have moved into a share in between.
         if ($access['scope'] !== NodeAccessInfo::PERSONAL && !$row->sharedConfirmed) {
-            return $this->json(Http::STATUS_CONFLICT, $this->guard->request($access, $row->path, CommonMessages::CONFIRM_ADVICE_CHECKOUT));
+            return $this->json(Http::STATUS_CONFLICT, $this->guard->request($access, $row->path, CommonMessages::confirmAdviceCheckout()));
         }
         if (!$file->isUpdateable()) {
-            return $this->refuse(Http::STATUS_FORBIDDEN, ToolFailure::FORBIDDEN);
+            return $this->refuse(Http::STATUS_FORBIDDEN, CommonMessages::forbidden());
         }
         $copy = '';
         try {
@@ -232,7 +245,7 @@ class CheckoutController extends Controller {
             $file->putContent((string)file_get_contents($body));
             $node = NodeAccess::requireFile(NodeAccess::get($root, $row->path));
         } catch (ToolFailure $e) {
-            $conflict = $e->getMessage() === ToolFailure::CONFLICT;
+            $conflict = $e->getMessage() === CommonMessages::conflict();
             $message = $conflict ? FilesMessages::uploadConflict() : $e->getMessage();
             return $this->refuse($conflict ? Http::STATUS_CONFLICT : Http::STATUS_BAD_REQUEST, $message);
         } catch (\Throwable) {
@@ -270,6 +283,12 @@ class CheckoutController extends Controller {
         $uid = $row->userId;
         if (!$this->policy->canConnect($uid) || !$this->policy->granted($uid, self::MODULE, self::OPERATION)) {
             return $this->refuse(Http::STATUS_FORBIDDEN, FilesMessages::checkoutRevoked());
+        }
+        if ($this->l10n !== null && $this->userManager !== null) {
+            $user = $this->userManager->get($uid);
+            if ($user !== null) {
+                Translator::use($this->l10n->forUser($user));
+            }
         }
         try {
             $file = NodeAccess::requireFile(NodeAccess::get($this->rootFolder->getUserFolder($uid), $row->path));

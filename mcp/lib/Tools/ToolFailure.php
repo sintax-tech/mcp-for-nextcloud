@@ -6,11 +6,11 @@ namespace OCA\Mcp\Tools;
 /** A tool failure whose message is safe to show to the MCP client (no paths, content or internals). */
 class ToolFailure extends \RuntimeException {
     /** Missing node, or node outside the scope the tool may see. */
-    public const NOT_FOUND = 'Recurso não encontrado no Nextcloud.';
+    public const NOT_FOUND = 'Resource not found in Nextcloud.';
     /** Nextcloud denied the operation (ACL, share permissions). */
-    public const FORBIDDEN = 'Sem acesso a este recurso no Nextcloud.';
+    public const FORBIDDEN = 'No access to this resource in Nextcloud.';
     /** The node is locked by another operation. */
-    public const LOCKED = 'Recurso bloqueado por outra operação; tente novamente.';
+    public const LOCKED = 'Resource locked by another operation; try again.';
     /** The caller's etag no longer matches. */
-    public const CONFLICT = 'O recurso foi alterado desde a última leitura (etag divergente); nada foi gravado.';
+    public const CONFLICT = 'The resource has changed since the last read (etag differs); nothing was written.';
 }

@@ -120,7 +120,7 @@ class NodeAccessInfo {
      */
     private function sharerName(?string $uid): string {
         if ($uid === null || $uid === '') {
-            return CommonMessages::UNIDENTIFIED;
+            return CommonMessages::unidentified();
         }
         return $this->userManager->get($uid)?->getDisplayName() ?? $uid;
     }

@@ -7,6 +7,7 @@ use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;
@@ -119,7 +120,7 @@ final class Reorganization {
             return ['path' => $path, 'created' => false, 'created_paths' => []] + $payload;
         }
         if (!$parent->isCreatable()) {
-            throw new ToolFailure(ToolFailure::FORBIDDEN);
+            throw new ToolFailure(CommonMessages::forbidden());
         }
         $created = $this->missingLevels($root, $path);
         NodeAccess::ensureFolder($root, $path);
@@ -464,7 +465,7 @@ final class Reorganization {
             throw new MoveConflict(FilesMessages::destinationExists());
         }
         if (!$there->isDeletable()) {
-            throw new ToolFailure(ToolFailure::FORBIDDEN);
+            throw new ToolFailure(CommonMessages::forbidden());
         }
         try {
             $parent = $this->destination($root, $move['from']);
@@ -476,7 +477,7 @@ final class Reorganization {
             return;
         }
         if (!$parent->isCreatable()) {
-            throw new ToolFailure(ToolFailure::FORBIDDEN);
+            throw new ToolFailure(CommonMessages::forbidden());
         }
     }
 
@@ -612,7 +613,7 @@ final class Reorganization {
         // denied list instead of the whole call failing.
         $node = NodeAccess::run(fn () => NodeAccess::get($root, PathGuard::normalize($path)));
         if (!$node->isUpdateable()) {
-            throw new ToolFailure(ToolFailure::FORBIDDEN);
+            throw new ToolFailure(CommonMessages::forbidden());
         }
         return $node;
     }
@@ -666,7 +667,7 @@ final class Reorganization {
         array_pop($segments);
         $parent = NodeAccess::run(fn () => NodeAccess::get($root, '/' . implode('/', $segments)));
         if (!$parent instanceof Folder || !$parent->isCreatable()) {
-            throw new ToolFailure(ToolFailure::FORBIDDEN);
+            throw new ToolFailure(CommonMessages::forbidden());
         }
         return $parent;
     }

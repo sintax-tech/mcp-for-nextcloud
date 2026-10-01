@@ -5,6 +5,7 @@ namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\Common\NodeAccess;
+use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -53,7 +54,7 @@ class FileBackup {
             throw new ToolFailure(FilesMessages::versioningOff());
         }
         if (!$file->isUpdateable()) {
-            throw new ToolFailure(ToolFailure::FORBIDDEN);
+            throw new ToolFailure(CommonMessages::forbidden());
         }
         NodeAccess::checkEtag($file, $etag);
         return $this->copy($root, $file, $path, $userId);

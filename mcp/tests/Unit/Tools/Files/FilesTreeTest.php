@@ -3,6 +3,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
+use OCA\Mcp\Tools\Files\FilesMessages;
+use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Tools\ToolFailure;
+
 /**
  * files_tree: one bounded walk so an agent can plan a reorganization without a call per directory.
  * The shape, the bounds and what is left out are the contract; the order is deterministic.
@@ -134,15 +138,15 @@ final class FilesTreeTest extends FilesToolsTestCase {
     /** The tree of a file is a mistake, not an empty answer. */
     public function testItRejectsAFileAndAnUnreadablePath(): void {
         $this->seed();
-        $this->assertSame('O caminho informado não é uma pasta.', $this->failure('files_tree', ['path' => '/Documentos/raiz.md']));
+        $this->assertSame(FilesMessages::notAFolder(), $this->failure('files_tree', ['path' => '/Documentos/raiz.md']));
         try {
             $this->tree(['path' => '/nao-existe']);
             $this->fail('uma pasta que não existe não pode dar árvore');
         } catch (\OCA\Mcp\Tools\ToolFailure $e) {
-            $this->assertSame(\OCA\Mcp\Tools\ToolFailure::NOT_FOUND, $e->getMessage());
+            $this->assertSame(CommonMessages::notFound(), $e->getMessage());
         }
         $this->tree->nodes['/alice/files/Documentos/2026/arquivo']['readable'] = false;
-        $this->assertSame('Sem acesso a este recurso no Nextcloud.', $this->failure('files_tree', ['path' => '/Documentos/2026/arquivo']));
+        $this->assertSame(CommonMessages::forbidden(), $this->failure('files_tree', ['path' => '/Documentos/2026/arquivo']));
     }
 
     /** The empty folder is a valid answer, not a failure. */

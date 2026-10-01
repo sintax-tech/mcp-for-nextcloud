@@ -22,6 +22,8 @@ return ['routes' => [
     // Two path segments, so a user id never collides with a numeric connection id.
     ['name' => 'connections#revokeUser', 'url' => '/api/connections/users/{uid}', 'verb' => 'DELETE'],
     ['name' => 'connections#destroy', 'url' => '/api/connections/{id}', 'verb' => 'DELETE', 'requirements' => ['id' => '\d+']],
+    ['name' => 'my_connections#index', 'url' => '/api/my/connections', 'verb' => 'GET'],
+    ['name' => 'my_connections#destroy', 'url' => '/api/my/connections/{id}', 'verb' => 'DELETE', 'requirements' => ['id' => '\d+']],
     ['name' => 'tags#index', 'url' => '/api/admin/tags', 'verb' => 'GET'],
     ['name' => 'tags#update', 'url' => '/api/admin/tags', 'verb' => 'PUT'],
     ['name' => 'metadata#protectedResource', 'url' => '/.well-known/oauth-protected-resource', 'verb' => 'GET'],

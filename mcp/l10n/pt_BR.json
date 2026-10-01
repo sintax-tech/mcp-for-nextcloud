@@ -310,7 +310,6 @@
     "Send file bytes as raw body (curl -T), not as multipart form." : "Envie os bytes do arquivo como corpo bruto (curl -T), não como formulário multipart.",
     "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan." : "Envie true apenas depois de mostrar ao usuário o plano desta chamada e de ele ter dito explicitamente que sim. Sem isso nada é alterado e a resposta é o plano.",
     "server has email invitation sending disabled" : "o servidor está com o envio de convites por e-mail desligado",
-    "Service: %s. Administrator eligibility: %s." : "Serviço: %s. Elegibilidade do administrador: %s.",
     "shared calendar of another owner" : "calendário compartilhado de outro dono",
     "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present)." : "Mostre este rascunho ao usuário e aguarde sua aprovação explícita. Só depois repita os mesmos argumentos com confirm: true (e o etag deste plano, quando houver).",
     "Show this plan to the user exactly as it will be sent in a direct conversation with '%s', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing and the direct conversation is not created." : "Mostre este plano ao usuário exatamente como será enviado em uma conversa direta com '%s', pergunte se ele realmente quer isso e só repita a mesma chamada com confirm: true depois que ele disser sim de forma explícita. Se ele pedir mudanças, ajuste o texto, chame a tool de novo e mostre o novo plano. Sem essa confirmação o servidor não publica nada e a conversa direta não é criada.",
@@ -425,7 +424,6 @@
     "Could not load the OAuth client settings." : "Não foi possível carregar as configurações de clientes OAuth.",
     "Invalid host list: use lowercase host names only, without https://, port, path or *, and keep at least one." : "Lista de hosts inválida: use só nomes de host em minúsculas, sem https://, porta, caminho ou *, e mantenha ao menos um.",
     "Could not change the native client." : "Não foi possível alterar o cliente nativo.",
-    "Your connection: %s." : "Sua conexão: %s.",
     "Status" : "Status",
     "Service" : "Serviço",
     "App version" : "Versão do app",
@@ -480,6 +478,12 @@
     "Could not revoke the connection." : "Não foi possível revogar a conexão.",
     "Revoke every connection of {user}? Their clients are signed out at once; the user can sign in again." : "Revogar todas as conexões de {user}? Os clientes são desconectados na hora; o usuário pode entrar de novo.",
     "Connections of {user} revoked." : "Conexões de {user} revogadas.",
-    "Could not revoke the connections of {user}." : "Não foi possível revogar as conexões de {user}."
+    "Could not revoke the connections of {user}." : "Não foi possível revogar as conexões de {user}.",
+    "Administrator eligibility" : "Permissão do administrador",
+    "Your connection" : "Sua conexão",
+    "An administrator must turn the service on and allow your account before you can connect." : "Um administrador precisa ligar o serviço e liberar a sua conta antes que você possa conectar.",
+    "Your connected clients" : "Seus clientes conectados",
+    "MCP clients you signed in with OAuth. Revoking signs a client out at once; you can sign in again later." : "Clientes MCP em que você entrou com OAuth. Revogar desconecta o cliente na hora; você pode entrar de novo depois.",
+    "App password" : "Senha de app"
 },"pluralForm" : "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

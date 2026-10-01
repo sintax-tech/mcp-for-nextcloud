@@ -78,11 +78,21 @@ class FileBackup {
             for ($i = 2; $folder->nodeExists($name); $i++) {
                 $name = $base . '-' . $i . '.bak';
             }
-            $copy = $file->copy($folder->getPath() . '/' . $name);
-            $valid = $copy instanceof File && $copy->getSize() === $file->getSize();
-            if ($valid && $copy instanceof File) {
-                $this->visibilityGuard?->copyHiddenTags($file, $copy);
+            // Establish privacy while the new backup contains no sensitive bytes.
+            $copy = $folder->newFile($name);
+            $this->visibilityGuard?->copyHiddenTags($file, $copy);
+            $stream = $file->fopen('rb');
+            if (!is_resource($stream)) {
+                throw new \RuntimeException('Backup source stream unavailable');
             }
+            try {
+                $copy->putContent($stream);
+            } finally {
+                if (is_resource($stream)) {
+                    fclose($stream);
+                }
+            }
+            $valid = $copy->getSize() === $file->getSize();
         } catch (\Throwable) {
             $valid = false;
         }

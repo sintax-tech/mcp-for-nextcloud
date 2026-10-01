@@ -245,7 +245,7 @@ final class FilesModuleTest extends TestCase {
         $this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files' . $backup]['content']);
         $this->assertSame('novo', $this->tree->nodes['/alice/files/Documentos/ata.md']['content']);
         $this->assertSame(['mkdir /alice/files/MCP backups', 'mkdir /alice/files/MCP backups/Documentos',
-            'copy /alice/files/Documentos/ata.md /alice/files' . $backup, 'write /alice/files/Documentos/ata.md'], $this->tree->ops);
+            'create /alice/files' . $backup, 'write /alice/files' . $backup, 'write /alice/files/Documentos/ata.md'], $this->tree->ops);
     }
 
     public function testSecondBackupInTheSameSecondGetsASuffix(): void {
@@ -289,8 +289,8 @@ final class FilesModuleTest extends TestCase {
     /** @return iterable<string, array{0: callable(self):void, 1: string}> */
     public static function blockedEdits(): iterable {
         yield 'versions disabled' => [fn (self $t) => $t->apps = [], FilesMessages::versioningOff()];
-        yield 'copy fails' => [fn (self $t) => $t->tree->failCopy[] = '/alice/files/Documentos/ata.md', FilesMessages::backupFailed()];
-        yield 'copy size differs' => [fn (self $t) => $t->tree->shortCopy[] = '/alice/files/Documentos/ata.md', FilesMessages::backupFailed()];
+        yield 'copy fails' => [fn (self $t) => $t->tree->failBackupWrite = true, FilesMessages::backupFailed()];
+        yield 'copy size differs' => [fn (self $t) => $t->tree->shortBackupWrite = true, FilesMessages::backupFailed()];
         yield 'not updateable' => [fn (self $t) => $t->tree->nodes['/alice/files/Documentos/ata.md']['updateable'] = false, CommonMessages::forbidden()];
         yield 'backup folder name taken by a file' => [fn (self $t) => $t->tree->addFile('/alice/files/MCP backups', 'x'), FilesMessages::backupFailed()];
     }

@@ -156,7 +156,7 @@ final class VersionToolsTest extends TestCase {
         $this->assertStringStartsWith('/MCP backups/Documentos/ata.md.', $out['backup']);
         $this->assertSame('# Ata' . "\n" . 'olá', $this->tree->nodes['/alice/files' . $out['backup']]['content']);
         $this->assertSame(['mkdir /alice/files/MCP backups', 'mkdir /alice/files/MCP backups/Documentos',
-            'copy /alice/files/Documentos/ata.md /alice/files' . $out['backup']], $this->tree->ops);
+            'create /alice/files' . $out['backup'], 'write /alice/files' . $out['backup']], $this->tree->ops);
         $this->assertContains('rollback', $this->manager->ops);
     }
 

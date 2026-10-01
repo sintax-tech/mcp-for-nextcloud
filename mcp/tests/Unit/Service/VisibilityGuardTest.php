@@ -93,6 +93,20 @@ final class VisibilityGuardTest extends TestCase {
         $this->assertFalse($guard->isVisible($node));
     }
 
+    public function testCopyHiddenTagsAbortsOnAncestryFailure(): void {
+        $this->config->app['mcp'][VisibilityGuard::CONFIG_KEY] = '["42"]';
+        $source = $this->createMock(Node::class);
+        $source->method('getId')->willReturn(123);
+        $source->method('getParent')->willThrowException(new \RuntimeException());
+        $destination = $this->createMock(Node::class);
+        $mapper = $this->createMock(ISystemTagObjectMapper::class);
+        $mapper->method('getTagIdsForObjects')->willReturn(['123' => ['42']]);
+        $mapper->expects($this->never())->method('assignTags');
+        $guard = new VisibilityGuard($this->config->mock($this), $mapper);
+        $this->expectException(ToolFailure::class);
+        $guard->copyHiddenTags($source, $destination);
+    }
+
     public function testDirectlyTaggedFileIsHidden(): void {
         $this->config->app['mcp'][VisibilityGuard::CONFIG_KEY] = json_encode(['42', '99']);
         $guard = $this->guard();

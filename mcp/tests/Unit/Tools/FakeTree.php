@@ -38,6 +38,8 @@ final class FakeTree {
     /** Absolute path of the mount a node lives in; null means "the node's own folder". */
     public ?string $mountPath = null;
     public bool $failWrite = false;
+    public bool $failBackupWrite = false;
+    public bool $shortBackupWrite = false;
     /** @var list<\OCP\Files\Search\ISearchQuery> queries received by Folder::search */
     public array $searches = [];
     private int $nextId = 100;
@@ -163,12 +165,16 @@ final class FakeTree {
             rewind($handle);
             return $handle;
         });
-        $file->method('putContent')->willReturnCallback(function (string $data) use ($path): void {
+        $file->method('putContent')->willReturnCallback(function ($data) use ($path): void {
             $this->ops[] = "write $path";
-            if ($this->failWrite) {
+            $isBackup = str_starts_with($path, $this->root . '/MCP backups/');
+            if (($isBackup && $this->failBackupWrite) || (!$isBackup && $this->failWrite)) {
                 throw new NotPermittedException();
             }
-            $this->nodes[$path]['content'] = $data;
+            $this->nodes[$path]['content'] = is_resource($data) ? stream_get_contents($data) : $data;
+            if ($isBackup && $this->shortBackupWrite) {
+                $this->nodes[$path]['content'] = '';
+            }
             $this->nodes[$path]['etag'] .= '+';
         });
         return $file;

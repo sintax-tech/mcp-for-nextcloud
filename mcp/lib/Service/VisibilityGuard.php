@@ -225,7 +225,9 @@ class VisibilityGuard {
     }
 
     /**
-     * Copies any hidden tags from the source node (or its ancestors) to a newly created backup copy.
+     * Copies hidden tags from the source or its ancestors before the empty backup receives content.
+     *
+     * @throws ToolFailure when tags or ancestors cannot be resolved, or tags cannot be assigned
      */
     public function copyHiddenTags(Node $source, Node $destination): void {
         $hiddenTags = $this->getHiddenTagIds();
@@ -235,11 +237,13 @@ class VisibilityGuard {
 
         $tagsToAssign = [];
         $current = $source;
+        $seen = [];
         while ($current instanceof Node) {
             $cid = (int)$current->getId();
-            if ($cid <= 0) {
+            if ($cid <= 0 || isset($seen[$cid])) {
                 break;
             }
+            $seen[$cid] = true;
             try {
                 $tags = $this->tagMapper->getTagIdsForObjects([(string)$cid], 'files');
                 foreach ($tags[(string)$cid] ?? [] as $tagId) {
@@ -252,16 +256,18 @@ class VisibilityGuard {
                     break;
                 }
                 $current = $parent;
-            } catch (\Throwable) {
-                break;
+            } catch (\Throwable $e) {
+                $this->warnVisibilityFailure();
+                throw new ToolFailure(\OCA\Mcp\Tools\Files\FilesMessages::backupFailed(), 0, $e);
             }
         }
 
         if ($tagsToAssign !== []) {
             try {
-                $this->tagMapper->assignTags((string)$destination->getId(), 'files', array_keys($tagsToAssign));
-            } catch (\Throwable) {
-                // Non-fatal if tag mapping fails
+                $this->tagMapper->assignTags((string)$destination->getId(), 'files', array_map(strval(...), array_keys($tagsToAssign)));
+            } catch (\Throwable $e) {
+                $this->warnVisibilityFailure();
+                throw new ToolFailure(\OCA\Mcp\Tools\Files\FilesMessages::backupFailed(), 0, $e);
             }
         }
     }

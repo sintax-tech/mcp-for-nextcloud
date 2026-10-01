@@ -214,7 +214,7 @@ final class CheckoutControllerTest extends TestCase {
         $this->assertSame('/Documentos/ata.md', $out['path']);
         $this->assertSame('# Ata', $this->tree->nodes['/alice/files' . $out['backup']]['content']);
         $this->assertSame(['mkdir /alice/files/MCP backups', 'mkdir /alice/files/MCP backups/Documentos',
-            'copy /alice/files/Documentos/ata.md /alice/files' . $out['backup'],
+            'create /alice/files' . $out['backup'], 'write /alice/files' . $out['backup'],
             'write /alice/files/Documentos/ata.md'], $this->tree->ops);
     }
 

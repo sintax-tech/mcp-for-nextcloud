@@ -16,6 +16,7 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 ### Security
 
 - files: `files_list_shares` without `path` lists only shares of files the user owns. A share the user created of a received file (a re-share made in another interface) no longer appears, with its link URL or recipient, and takes no place on a page.
+- files: an unexpected failure while the link password is validated (a policy listener throwing something other than a refusal, whose message may carry the candidate) or while the share is saved (an `Error` included) becomes the safe "password refused" or "share refused" message. The log keeps the exception class only, so the generated password never reaches it.
 
 ## 0.9.1
 

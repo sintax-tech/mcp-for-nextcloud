@@ -13,6 +13,7 @@ use OCP\Security\Events\ValidatePasswordPolicyEvent;
 use OCP\Security\ISecureRandom;
 use OCP\Security\PasswordContext;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 /** The password of a public link: the policy generator first, the secure random fallback after, always validated. */
 final class LinkPasswordTest extends TestCase {
@@ -28,6 +29,20 @@ final class LinkPasswordTest extends TestCase {
     private array $validated = [];
     /** @var list<object> events dispatched, in order */
     private array $events = [];
+    /** What a broken listener throws while validating, null when it works. */
+    private ?\Throwable $validationBreaks = null;
+    /** @var list<array<int, mixed>> every call to the logger */
+    private array $logged = [];
+
+    private function logger(): LoggerInterface {
+        $logger = $this->createMock(LoggerInterface::class);
+        foreach (['emergency', 'alert', 'critical', 'error', 'warning', 'notice', 'info', 'debug', 'log'] as $level) {
+            $logger->method($level)->willReturnCallback(function (mixed ...$args): void {
+                $this->logged[] = $args;
+            });
+        }
+        return $logger;
+    }
 
     private function passwords(?ISecureRandom $random = null): LinkPassword {
         $dispatcher = $this->createMock(IEventDispatcher::class);
@@ -38,13 +53,16 @@ final class LinkPasswordTest extends TestCase {
             }
             if ($event instanceof ValidatePasswordPolicyEvent) {
                 $this->validated[] = $event->getPassword();
+                if ($this->validationBreaks !== null) {
+                    throw $this->validationBreaks;
+                }
             }
             if ($event instanceof ValidatePasswordPolicyEvent
                 && ($this->refuseAll || $this->refuseFirst-- > 0 || in_array($event->getPassword(), $this->refused, true))) {
                 throw new HintException('Password needs at least 20 characters', 'Password needs at least 20 characters');
             }
         });
-        return new LinkPassword($dispatcher, $random ?? new FakeSecureRandom());
+        return new LinkPassword($dispatcher, $random ?? new FakeSecureRandom(), $this->logger());
     }
 
     public function testThePolicyGeneratorIsAskedFirstForTheSharingContext(): void {
@@ -107,6 +125,37 @@ final class LinkPasswordTest extends TestCase {
                 throw new HintException('generator broken');
             }
         });
-        self::assertSame(LinkPassword::LENGTH, strlen((new LinkPassword($dispatcher, new FakeSecureRandom()))->generate()));
+        self::assertSame(LinkPassword::LENGTH, strlen((new LinkPassword($dispatcher, new FakeSecureRandom(), $this->logger()))->generate()));
+    }
+
+    /**
+     * A listener that breaks in an unexpected way may write the candidate into its message: the call fails with the
+     * safe message, nothing else is tried, and the log keeps the exception class only.
+     */
+    public function testAnUnexpectedValidationFailureIsASafeErrorAndLogsTheClassOnly(): void {
+        $this->generated = ['Policy-Made#Password1'];
+        $this->validationBreaks = new \RuntimeException('failed validating Policy-Made#Password1');
+        try {
+            $this->passwords()->generate();
+            self::fail('no failure');
+        } catch (ToolFailure $e) {
+            self::assertSame(FilesMessages::linkPasswordRefused(), $e->getMessage());
+        }
+        self::assertCount(1, $this->validated, 'nenhuma outra senha é tentada');
+        self::assertCount(1, $this->logged);
+        self::assertSame(['app' => 'mcp', 'exception_class' => \RuntimeException::class], $this->logged[0][1]);
+        self::assertStringNotContainsString('Policy-Made#Password1', json_encode($this->logged, JSON_THROW_ON_ERROR));
+    }
+
+    /** An Error is as unexpected as an exception, and handled the same way. */
+    public function testAnErrorOfTheListenerIsHandledTheSameWay(): void {
+        $this->validationBreaks = new \TypeError('bad candidate');
+        try {
+            $this->passwords()->generate();
+            self::fail('no failure');
+        } catch (ToolFailure $e) {
+            self::assertSame(FilesMessages::linkPasswordRefused(), $e->getMessage());
+        }
+        self::assertSame(\TypeError::class, $this->logged[0][1]['exception_class']);
     }
 }

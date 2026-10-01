@@ -71,6 +71,8 @@ abstract class FilesToolsTestCase extends TestCase {
     protected array $linkPasswords = [];
     /** Whether the password policy refuses every password, as one no generated password can meet. */
     protected bool $refuseAllPasswords = false;
+    /** @var (\Closure(string): \Throwable)|null what a broken policy listener throws for the candidate it validates, null for none */
+    protected ?\Closure $passwordPolicyFailure = null;
     /** Logger of the share writer, to check that only the exception class is logged. */
     protected \Psr\Log\LoggerInterface $shareLogger;
     /** Shares alice created, behind the IShareManager double of files_list_shares. */
@@ -202,8 +204,9 @@ abstract class FilesToolsTestCase extends TestCase {
     }
 
     /**
-     * The link password generator over {@see self::$linkPasswords} and {@see self::$refuseAllPasswords}, read at call time,
-     * with a reproducible ISecureRandom as the fallback.
+     * The link password generator over {@see self::$linkPasswords}, {@see self::$refuseAllPasswords} and
+     * {@see self::$passwordPolicyFailure}, read at call time, with a reproducible ISecureRandom as the fallback and the
+     * logger of the share writer.
      */
     private function linkPassword(): \OCA\Mcp\Tools\Files\Sharing\LinkPassword {
         $events = $this->createMock(\OCP\EventDispatcher\IEventDispatcher::class);
@@ -211,11 +214,14 @@ abstract class FilesToolsTestCase extends TestCase {
             if ($event instanceof \OCP\Security\Events\GenerateSecurePasswordEvent && $this->linkPasswords !== []) {
                 $event->setPassword(array_shift($this->linkPasswords));
             }
+            if ($event instanceof \OCP\Security\Events\ValidatePasswordPolicyEvent && $this->passwordPolicyFailure !== null) {
+                throw ($this->passwordPolicyFailure)($event->getPassword());
+            }
             if ($event instanceof \OCP\Security\Events\ValidatePasswordPolicyEvent && $this->refuseAllPasswords) {
                 throw new \OCP\HintException('Password is too weak', 'Password is too weak');
             }
         });
-        return new \OCA\Mcp\Tools\Files\Sharing\LinkPassword($events, new \OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeSecureRandom());
+        return new \OCA\Mcp\Tools\Files\Sharing\LinkPassword($events, new \OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeSecureRandom(), $this->shareLogger);
     }
 
     /** The post-condition report, wired against the same version and share doubles the module uses. */

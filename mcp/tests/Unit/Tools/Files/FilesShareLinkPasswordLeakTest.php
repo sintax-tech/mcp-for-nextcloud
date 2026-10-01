@@ -82,4 +82,34 @@ final class FilesShareLinkPasswordLeakTest extends FilesToolsTestCase {
         $this->assertNoPassword('log', self::all($this->logged));
         self::assertNotSame([], $this->logged, 'a recusa fica registrada, só com a classe');
     }
+
+    /**
+     * The scenario of the review: a policy listener breaks with an unexpected exception whose message carries the
+     * candidate. The call fails with the safe message, and no log call and no part of the answer has the password.
+     */
+    public function testAnUnexpectedPolicyFailureWithThePasswordLeaksNothing(): void {
+        $this->linkPasswords = [self::PASSWORD];
+        $this->passwordPolicyFailure = static fn (string $candidate): \Throwable => new \RuntimeException('failed validating ' . $candidate);
+        $result = $this->registry->call('files_share', ['path' => self::FILE, 'with' => 'link', 'password' => true, 'confirm' => true], 'alice');
+
+        self::assertTrue($result['isError'] ?? false);
+        self::assertSame(\OCA\Mcp\Tools\Files\FilesMessages::linkPasswordRefused(), $result['content'][0]['text']);
+        $this->assertNoPassword('erro', self::all($result));
+        $this->assertNoPassword('log', self::all($this->logged));
+        self::assertSame([], $this->shares->writes, 'nada é gravado');
+        self::assertContains(\RuntimeException::class, array_column(array_column($this->logged, 1), 'exception_class'));
+    }
+
+    /** An Error of the core while saving, with the password in its message, is caught like any refusal. */
+    public function testAnErrorOfTheCoreAfterGeneratingLeaksNothing(): void {
+        $this->linkPasswords = [self::PASSWORD];
+        $this->shares->failWrite = new \TypeError('cannot hash ' . self::PASSWORD);
+        $result = $this->registry->call('files_share', ['path' => self::FILE, 'with' => 'link', 'password' => true, 'confirm' => true], 'alice');
+
+        self::assertTrue($result['isError'] ?? false);
+        self::assertSame(\OCA\Mcp\Tools\Files\FilesMessages::shareRefused(), $result['content'][0]['text']);
+        $this->assertNoPassword('erro', self::all($result));
+        $this->assertNoPassword('log', self::all($this->logged));
+        self::assertSame([['app' => 'mcp', 'exception_class' => \TypeError::class]], array_column($this->logged, 1));
+    }
 }

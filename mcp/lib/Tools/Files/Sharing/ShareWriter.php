@@ -106,7 +106,8 @@ final class ShareWriter {
      *   this call generated a link password, also `password` (the only place it is ever returned) and `passwordNotice`
      * @throws ArgumentValidationException as {@see self::plan()}
      * @throws ToolFailure as {@see self::plan()}, when no acceptable password can be generated, and with a translated
-     *   reason when the core refuses
+     *   reason when the core refuses; once a password may exist, every unexpected Throwable becomes one of these too, so
+     *   nothing carrying it reaches the registry, which logs the message of what escapes
      */
     public function apply(Folder $userFolder, string $uid, array $arguments): array {
         $change = $this->prepare($userFolder, $uid, $arguments);
@@ -117,8 +118,14 @@ final class ShareWriter {
             $password = $change['generatePassword'] ? $this->passwords->generate() : null;
             $share = $this->write($change, $uid, $password);
         }
-        $result = ['action' => $change['action'], 'changed' => $change['action'] !== self::NONE]
-            + $this->formatter->item($share, $change['path'], $this->access->isRemovable($share, $uid));
+        try {
+            $item = $this->formatter->item($share, $change['path'], $this->access->isRemovable($share, $uid));
+        } catch (\Throwable $e) {
+            // A password may exist by now: nothing unexpected reaches the registry, whose log keeps the message.
+            $this->logger->warning('MCP share result failed', ['app' => 'mcp', 'exception_class' => $e::class]);
+            throw new ToolFailure(FilesMessages::shareRefused());
+        }
+        $result = ['action' => $change['action'], 'changed' => $change['action'] !== self::NONE] + $item;
         if ($password !== null) {
             $result['password'] = $password;
             $result['passwordNotice'] = FilesMessages::linkPasswordShownOnce();
@@ -421,7 +428,8 @@ final class ShareWriter {
 
     /**
      * The write itself, through IShareManager so the administrator's rules apply (invariant 3). A refusal of the core
-     * becomes a translated message; the log keeps the exception class only, never its message, which can name paths.
+     * becomes a translated message; the log keeps the exception class only, never its message, which can name paths or
+     * carry the new link password. Any Throwable counts, an Error included, so none of them reaches the registry's log.
      *
      * The plain link password is handed to setPassword() only: the core validates it with the password policy and
      * stores its hash (Manager::createShare and updateSharePasswordIfNeeded). Without a new password an update leaves
@@ -467,7 +475,7 @@ final class ShareWriter {
                 $share->setNote($change['note']);
             }
             return $this->shareManager->createShare($share);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             $this->logger->warning('MCP share refused by Nextcloud', ['app' => 'mcp', 'exception_class' => $e::class]);
             throw new ToolFailure($e instanceof AlreadySharedException ? FilesMessages::shareAlreadyHasAccess() : FilesMessages::shareRefused());
         }

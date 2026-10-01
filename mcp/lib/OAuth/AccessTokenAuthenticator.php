@@ -33,7 +33,8 @@ class AccessTokenAuthenticator {
             return null;
         }
         $row = $this->store->findByAccess($this->hasher->hash(substr($authorization, 7)));
-        if ($row === null || (int)$row['access_expires'] < $this->time->getTime()
+        if ($row === null || !in_array('mcp', explode(' ', (string)$row['scope']), true)
+            || (int)$row['access_expires'] < $this->time->getTime()
             || !ResourceUrl::sameResource((string)$row['resource'], $resource)) {
             return null;
         }

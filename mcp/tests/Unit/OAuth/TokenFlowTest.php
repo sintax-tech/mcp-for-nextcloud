@@ -109,6 +109,13 @@ final class TokenFlowTest extends TestCase {
         $this->assertNull($this->authenticator->authenticate('Bearer ' . $access, self::RESOURCE), 'expired');
     }
 
+    public function testOfflineOnlyBearerCannotAccessMcp(): void {
+        $tokens = $this->exchange($this->code());
+        $id = array_key_first($this->store->tokens);
+        $this->store->tokens[$id]['scope'] = 'offline_access';
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE));
+    }
+
     public function testRefreshRotatesAndOldTokensStopWorking(): void {
         $first = $this->exchange($this->code());
         $second = $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]);

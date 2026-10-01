@@ -30,6 +30,7 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 - Tool guide: the obsolete `approval_id` gate is gone from the guide's list of extra gates.
 
 ### Security
+- OAuth authorization and MCP Bearer authentication require the mcp scope; offline_access alone grants no endpoint access.
 - MCP always validates its own Bearer credentials and rejects requests whose session belongs to another account.
 - Administrative service shutdown and eligibility removal immediately delete OAuth tokens and pending codes; disabling or deleting an account also revokes credentials.
 - Hidden tags fail closed: when at least one hidden tag is configured, an error while resolving a folder chain or reading tags hides the item instead of showing it. The warning logged carries no file name or path.

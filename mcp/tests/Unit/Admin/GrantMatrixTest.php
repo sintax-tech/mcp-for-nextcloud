@@ -165,4 +165,48 @@ final class GrantMatrixTest extends TestCase {
             }
         }
     }
+
+    /** The eligible/connected filters page over flagged users only, keep search and group, and know the exact total. */
+    public function testFiltersPageOverFlaggedUsersOnly(): void {
+        foreach (['u003', 'u006', 'u010', 'ana', 'bruno'] as $uid) {
+            $this->fx->policy->setEligible($uid, true);
+        }
+        $this->fx->policy->setConnected('ana', true);
+        $this->fx->policy->setConnected('u010', true);
+        $eligible = $this->fx->matrix()->page('', '', 1, 'eligible');
+        $this->assertSame(['ana', 'bruno', 'u003', 'u006', 'u010'], array_column($eligible['users'], 'uid'));
+        $this->assertSame(5, $eligible['total']);
+        $this->assertFalse($eligible['hasMore']);
+        $this->assertSame([], $this->fx->searches, 'a filtered page never searches the whole user base');
+        $this->assertSame(['ana', 'u003', 'u006'], array_column($this->fx->matrix()->page('', 'sales', 1, 'eligible')['users'], 'uid'));
+        $this->assertSame(['bruno'], array_column($this->fx->matrix()->page('b.lima', '', 1, 'eligible')['users'], 'uid'));
+        $connected = $this->fx->matrix()->page('', '', 1, 'connected');
+        $this->assertSame(['ana', 'u010'], array_column($connected['users'], 'uid'));
+        $this->assertSame(2, $connected['total']);
+        $this->assertSame([], $this->fx->matrix()->page('', '', 2, 'connected')['users']);
+    }
+
+    public function testFilterPagesOfFifty(): void {
+        for ($i = 1; $i <= 60; $i++) {
+            $this->fx->policy->setEligible(sprintf('u%03d', $i), true);
+        }
+        $first = $this->fx->matrix()->page('', '', 1, 'eligible');
+        $this->assertCount(GrantMatrix::PAGE_SIZE, $first['users']);
+        $this->assertTrue($first['hasMore']);
+        $this->assertSame(60, $first['total']);
+        $second = $this->fx->matrix()->page('', '', 2, 'eligible');
+        $this->assertSame(['u051', 'u052', 'u053', 'u054', 'u055', 'u056', 'u057', 'u058', 'u059', 'u060'], array_column($second['users'], 'uid'));
+        $this->assertFalse($second['hasMore']);
+    }
+
+    public function testRejectsUnknownFilterAndGroup(): void {
+        foreach ([['', 'nope'], ['ghosts', 'eligible'], ['', 'disabled']] as [$group, $filter]) {
+            try {
+                $this->fx->matrix()->page('', $group, 1, $filter);
+                $this->fail("accepted $group/$filter");
+            } catch (InvalidArgumentException) {
+                $this->addToAssertionCount(1);
+            }
+        }
+    }
 }

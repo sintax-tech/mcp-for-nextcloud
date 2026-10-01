@@ -45,6 +45,10 @@ final class InMemoryConfig {
             }
             return $out;
         });
+        $config->method('getUsersForUserValue')->willReturnCallback(function ($app, $key, $value): array {
+            $this->accessed[] = ['user', $app, $key];
+            return array_keys(array_filter($this->user, static fn (array $apps) => ($apps[$app][$key] ?? null) === $value));
+        });
         $config->method('setUserValue')->willReturnCallback(function ($uid, $app, $key, $value): void {
             $this->accessed[] = ['user', $app, $key];
             $this->user[$uid][$app][$key] = $value;

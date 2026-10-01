@@ -37,14 +37,19 @@ final class AdminAssetsTest extends TestCase {
         $this->assertSame(preg_match_all('/<div\b/', $template), preg_match_all('/<\/div>/', $template), 'div tags must balance');
     }
 
-    /** The OAuth clients section sits between OCR and the matrix toolbar, and each new string is translated. */
+    /**
+     * The blocks follow the planned order (status, OAuth clients, hidden tags, OCR, permissions), and each
+     * string of the OAuth clients section is translated.
+     */
     public function testOauthClientsSectionIsPlacedAndTranslated(): void {
         $app = dirname(__DIR__, 3);
         $template = (string)file_get_contents($app . '/templates/admin.php');
-        $ocr = strpos($template, "t('OCR')");
+        $status = strpos($template, "t('Status')");
         $oauth = strpos($template, "t('OAuth clients')");
+        $tags = strpos($template, "t('Hidden files & tags')");
+        $ocr = strpos($template, "t('OCR')");
         $toolbar = strpos($template, 'class="mcp-toolbar"');
-        $this->assertTrue($ocr < $oauth && $oauth < $toolbar);
+        $this->assertTrue($status < $oauth && $oauth < $tags && $tags < $ocr && $ocr < $toolbar);
         foreach (['mcp-oauth-hosts', 'mcp-oauth-hosts-status', 'mcp-native-client', 'mcp-native-client-status', 'mcp-native-client-details'] as $id) {
             $this->assertSame(1, substr_count($template, 'id="' . $id . '"'), $id);
         }

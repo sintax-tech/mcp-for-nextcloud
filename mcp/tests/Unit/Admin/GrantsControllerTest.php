@@ -46,6 +46,15 @@ final class GrantsControllerTest extends TestCase {
         self::assertBad($this->controller()->index('', '', 0));
     }
 
+    public function testIndexFiltersEligibleAndConnectedUsers(): void {
+        $this->fx->policy->setEligible('bob', true);
+        $this->fx->policy->setConnected('bob', true);
+        $this->fx->policy->setEligible('carl', true);
+        $this->assertSame(['bob', 'carl'], array_column($this->controller()->index('', '', 1, 'eligible')->getData()['users'], 'uid'));
+        $this->assertSame(['bob'], array_column($this->controller()->index('', '', 1, 'connected')->getData()['users'], 'uid'));
+        self::assertBad($this->controller()->index('', '', 1, 'everyone'));
+    }
+
     public function testToggleEligibilityAndGrantIsReflectedInThePolicy(): void {
         $row = $this->controller(['eligible' => true])->update('ana')->getData();
         $this->assertTrue($row['eligible']);

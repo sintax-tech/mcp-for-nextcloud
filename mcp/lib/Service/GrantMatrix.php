@@ -23,6 +23,8 @@ class GrantMatrix {
     public const MAX_PAGE = 10000;
     /** Longest search term accepted. */
     public const MAX_SEARCH = 100;
+    /** Matrix filters: '' every user, otherwise only users with that GrantPolicy flag on. */
+    public const FILTERS = ['' => null, 'eligible' => GrantPolicy::ELIGIBLE_KEY, 'connected' => GrantPolicy::CONNECTED_KEY];
     /** Nextcloud app that provides each module of GrantPolicy::CATALOG. */
     public const MODULE_APPS = ['files' => 'files', 'notes' => 'notes', 'deck' => 'deck', 'calendar' => 'calendar', 'talk' => 'spreed', 'contacts' => 'contacts', 'tasks' => 'dav'];
 
@@ -37,16 +39,21 @@ class GrantMatrix {
      * @param string $search term matched by the user backends against uid, display name and e-mail
      * @param string $group group id to restrict to, '' for every user
      * @param int $page 1-based page number
+     * @param string $filter key of FILTERS: '' for every user, 'eligible' or 'connected'
      * @return array{users: list<array{uid:string, displayName:string, enabled:bool, eligible:bool, connected:bool, grants:array<string, array<string, bool>>, appsEnabled:array<string, bool>}>, page:int, pageSize:int, hasMore:bool, total:int|null, catalog:array<string, list<string>>, appsEnabled:array<string, bool>, groups:list<array{id:string, displayName:string}>, serviceEnabled:bool}
-     * @throws InvalidArgumentException for a page out of range, an oversized term or an unknown group
+     * @throws InvalidArgumentException for a page out of range, an oversized term, an unknown group or filter
      */
-    public function page(string $search, string $group, int $page): array {
+    public function page(string $search, string $group, int $page, string $filter = ''): array {
         $search = trim($search);
-        if ($page < 1 || $page > self::MAX_PAGE || mb_strlen($search) > self::MAX_SEARCH) {
+        if ($page < 1 || $page > self::MAX_PAGE || mb_strlen($search) > self::MAX_SEARCH || !array_key_exists($filter, self::FILTERS)) {
             throw new InvalidArgumentException('Invalid request');
         }
         $offset = ($page - 1) * self::PAGE_SIZE;
-        [$users, $total] = $group === '' ? $this->allUsers($search, $offset) : $this->groupUsers($group, $search, $offset);
+        [$users, $total] = match (true) {
+            $filter !== '' => $this->flaggedUsers(self::FILTERS[$filter], $group, $search, $offset),
+            $group === '' => $this->allUsers($search, $offset),
+            default => $this->groupUsers($group, $search, $offset),
+        };
         $hasMore = count($users) > self::PAGE_SIZE;
         $users = array_slice($users, 0, self::PAGE_SIZE);
         $appsEnabled = $this->appsEnabled();
@@ -109,6 +116,34 @@ class GrantMatrix {
             $total = is_int($count) ? $count : null;
         }
         return [$users, $total];
+    }
+
+    /**
+     * Users with an eligibility or connection flag on. Only those users are loaded (never the whole user base),
+     * then narrowed by group and by uid, display name or e-mail, ordered by display name like the backend search.
+     *
+     * @param string $key GrantPolicy::ELIGIBLE_KEY or GrantPolicy::CONNECTED_KEY
+     * @return array{0: list<IUser>, 1: int} users of the page (one extra when another page exists) and the exact total
+     * @throws InvalidArgumentException for an unknown group
+     */
+    private function flaggedUsers(string $key, string $gid, string $search, int $offset): array {
+        if ($gid !== '' && $this->groupManager->get($gid) === null) {
+            throw new InvalidArgumentException('Invalid request');
+        }
+        $users = [];
+        foreach ($this->policy->flaggedUsers($key) as $uid) {
+            $user = $this->userManager->get($uid);
+            if ($user === null || ($gid !== '' && !$this->groupManager->isInGroup($uid, $gid))) {
+                continue;
+            }
+            if ($search !== '' && mb_stripos($uid, $search) === false && mb_stripos($user->getDisplayName(), $search) === false
+                && mb_stripos((string)$user->getEMailAddress(), $search) === false) {
+                continue;
+            }
+            $users[] = $user;
+        }
+        usort($users, static fn (IUser $a, IUser $b) => strcasecmp($a->getDisplayName(), $b->getDisplayName()) ?: strcmp($a->getUID(), $b->getUID()));
+        return [array_slice($users, $offset, self::PAGE_SIZE + 1), count($users)];
     }
 
     /**

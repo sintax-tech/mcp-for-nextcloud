@@ -30,6 +30,7 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 - Tool guide: the obsolete `approval_id` gate is gone from the guide's list of extra gates.
 
 ### Security
+- Reusing a rotated refresh token revokes all access and refresh grants for its client and owner, including rotation races.
 - OAuth authorization and MCP Bearer authentication require the mcp scope; offline_access alone grants no endpoint access.
 - MCP always validates its own Bearer credentials and rejects requests whose session belongs to another account.
 - Administrative service shutdown and eligibility removal immediately delete OAuth tokens and pending codes; disabling or deleting an account also revokes credentials.

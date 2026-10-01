@@ -78,7 +78,11 @@ class TokenService {
         $oldHash = $this->hasher->hash($get('refresh_token'));
         $row = $this->store->findByRefresh($oldHash);
         $now = $this->time->getTime();
-        if ($row === null || (int)$row['refresh_expires'] < $now || $row['client_id'] !== $get('client_id')) {
+        if ($row === null) {
+            $this->store->revokeReusedRefresh($oldHash, $get('client_id'), $now);
+            throw new OAuthException('invalid_grant', 'Invalid refresh token');
+        }
+        if ((int)$row['refresh_expires'] < $now || $row['client_id'] !== $get('client_id')) {
             throw new OAuthException('invalid_grant', 'Invalid refresh token');
         }
         if ($this->gate->owner((string)$row['user_id']) === null) {
@@ -88,6 +92,7 @@ class TokenService {
         $refresh = $this->hasher->generate('rt');
         if (!$this->store->rotate((int)$row['id'], $oldHash, $this->hasher->hash($access), $now + self::ACCESS_TTL,
             $this->hasher->hash($refresh), $now + self::REFRESH_TTL)) {
+            $this->store->revokeReusedRefresh($oldHash, $get('client_id'), $now);
             throw new OAuthException('invalid_grant', 'Invalid refresh token');
         }
         return $this->body($access, $refresh, (string)$row['scope']);

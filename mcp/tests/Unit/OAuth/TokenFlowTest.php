@@ -77,7 +77,7 @@ final class TokenFlowTest extends TestCase {
     public function testOnlyHashesArePersisted(): void {
         $code = $this->code();
         $tokens = $this->exchange($code);
-        $dump = json_encode([$this->store->codes, $this->store->tokens]);
+        $dump = json_encode([$this->store->codes, $this->store->tokens, $this->store->spent]);
         foreach ([$code, $tokens['access_token'], $tokens['refresh_token']] as $secret) {
             $this->assertStringNotContainsString($secret, $dump);
         }
@@ -125,6 +125,41 @@ final class TokenFlowTest extends TestCase {
         $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]));
     }
 
+    public function testRefreshReplayRevokesAllGrantsForTheClientAndOwner(): void {
+        $first = $this->exchange($this->code());
+        $otherGrant = $this->exchange($this->code());
+        $second = $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]);
+        $third = $this->service->refresh(['refresh_token' => $second['refresh_token'], 'client_id' => self::CLIENT]);
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]));
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $third['access_token'], self::RESOURCE));
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $otherGrant['access_token'], self::RESOURCE));
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $third['refresh_token'], 'client_id' => self::CLIENT]));
+    }
+
+    public function testLosingRefreshRotationRaceRevokesTheWinningGrant(): void {
+        $first = $this->exchange($this->code());
+        // The store publishes the winning rotation but reports that this request lost its conditional update.
+        $this->store->loseRotationRace = true;
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]));
+        $this->assertSame([], $this->store->tokens);
+    }
+
+    public function testReplayDoesNotRevokeOtherClientsOrUsers(): void {
+        $first = $this->exchange($this->code());
+        $this->store->insertToken(['user_id' => 'bob', 'client_id' => self::CLIENT], $this->now);
+        $this->store->insertToken(['user_id' => 'alice', 'client_id' => 'https://other.example/client'], $this->now);
+        $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]);
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]));
+        $this->assertSame(['bob', 'alice'], array_values(array_column($this->store->tokens, 'user_id')));
+    }
+
+    public function testRefreshReplayWithWrongClientDoesNotRevokeTheOwner(): void {
+        $first = $this->exchange($this->code());
+        $second = $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]);
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => 'https://other.example/client']));
+        $this->assertNotNull($this->authenticator->authenticate('Bearer ' . $second['access_token'], self::RESOURCE));
+    }
+
     public function testLosingEligibilityRevokesAccessAndRefresh(): void {
         $tokens = $this->exchange($this->code());
         $this->policy->setEligible('alice', false);
@@ -159,7 +194,10 @@ final class TokenFlowTest extends TestCase {
 
     public function testDisconnectRevokesEverything(): void {
         $tokens = $this->exchange($this->code());
+        $this->service->refresh(['refresh_token' => $tokens['refresh_token'], 'client_id' => self::CLIENT]);
+        $this->assertNotEmpty($this->store->spent);
         $this->service->revokeUser('alice');
+        $this->assertSame([], $this->store->spent);
         $this->assertNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE));
     }
 }

@@ -86,6 +86,7 @@ class CheckoutController extends Controller {
     #[NoCSRFRequired]
     public function download(): Response {
         try {
+            $this->configureUserL10n();
             $opened = $this->resolve(CheckoutToken::KIND_DOWNLOAD);
             if ($opened instanceof Response) {
                 return $opened;
@@ -130,6 +131,7 @@ class CheckoutController extends Controller {
     #[NoCSRFRequired]
     public function upload(): Response {
         try {
+            $this->configureUserL10n();
             if ($failure = $this->checkBodyType()) {
                 return $failure;
             }
@@ -270,6 +272,32 @@ class CheckoutController extends Controller {
      * @param string $kind CheckoutToken::KIND_DOWNLOAD or KIND_UPLOAD
      * @return array{0: CheckoutToken, 1: File}|Response the token with its node, or the refusal
      */
+    /**
+     * Configures the translator for the token owner before body or permission checks,
+     * so early refusals are delivered in the user language when the token is known.
+     */
+    private function configureUserL10n(): void {
+        if ($this->l10n === null || $this->userManager === null) {
+            return;
+        }
+        $token = $this->routeToken();
+        if ($token === null) {
+            return;
+        }
+        $row = $this->store->find($this->hasher->hash($token));
+        if ($row === null) {
+            return;
+        }
+        $session = $this->userSession->getUser();
+        if ($session !== null && $session->getUID() !== $row->userId) {
+            return;
+        }
+        $user = $this->userManager->get($row->userId);
+        if ($user !== null) {
+            Translator::use($this->l10n->forUser($user));
+        }
+    }
+
     private function resolve(string $kind): array|Response {
         $row = $this->store->find($this->hasher->hash($this->routeToken() ?? ''));
         if ($row === null || $row->kind !== $kind) {

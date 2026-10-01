@@ -19,7 +19,7 @@ final class NotesMessages {
     public const TOOL_CREATE_DESCRIPTION = 'Creates a note; never overwrites an existing one.';
     public const TOOL_EDIT_DESCRIPTION = 'Changes the content and/or the title of a note.';
     public const TOOL_MOVE_DESCRIPTION = 'Moves a note to another category.';
-    public const TOOL_DELETE_DESCRIPTION = 'Deletes a note to the Nextcloud trash bin. Requires confirm=true.';
+    public const TOOL_DELETE_DESCRIPTION = 'Deletes a note to the Nextcloud trash bin, where it can be restored.';
 
     /* Parameter descriptions. */
     public const PARAM_ID = 'Id of the note.';
@@ -30,7 +30,6 @@ final class NotesMessages {
     public const PARAM_NEW_CONTENT = 'New complete content.';
     public const PARAM_NEW_TITLE = 'New title.';
     public const PARAM_CATEGORY_TARGET = 'Destination category; empty for the root.';
-    public const PARAM_CONFIRM = 'Must be true to confirm the deletion.';
     public const PARAM_CONFIRM_SHARED = 'Required only when the note is outside your personal folder '
         . '(shared, team folder, or external storage). Send only after confirming with the user.';
 
@@ -85,5 +84,50 @@ final class NotesMessages {
      */
     public static function notRecoverable(): string {
         return Translator::t('Deletion blocked: the trash bin (files_trashbin) is not active for this note, so it would not be recoverable.');
+    }
+
+    /* Plan of a write: the answer to a call that arrives without confirm, nothing having been written. */
+
+    /**
+     * @return string The message in the language of the current user.
+     */
+    public static function planCreate(): string {
+        return Translator::t('Nothing was changed. After your approval a note is created with the title and content below.');
+    }
+
+    /**
+     * @return string The message in the language of the current user.
+     */
+    public static function planEdit(): string {
+        return Translator::t('Nothing was changed. After your approval the note keeps the fields below.');
+    }
+
+    /**
+     * @return string The message in the language of the current user.
+     */
+    public static function planMove(): string {
+        return Translator::t('Nothing was changed. After your approval the note moves to the category below.');
+    }
+
+    /**
+     * @return string The message in the language of the current user.
+     */
+    public static function planDelete(): string {
+        return Translator::t('Nothing was changed. After your approval the note goes to the Nextcloud trash bin.');
+    }
+
+    /**
+     * @return string The message in the language of the current user.
+     */
+    public static function planDeleteConsequence(): string {
+        return Translator::t('The note can be restored from the Nextcloud trash bin, where it stays until it is emptied.');
+    }
+
+    /**
+     * Appended to the excerpt of a note that is longer than the plan shows.
+     * @return string The message in the language of the current user.
+     */
+    public static function excerptTruncated(): string {
+        return Translator::t('[content truncated]');
     }
 }

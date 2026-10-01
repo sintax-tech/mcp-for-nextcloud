@@ -10,10 +10,11 @@ use OCA\Mcp\Tools\Files\ReorganizationLimits;
 /**
  * files_move_batch: the reorganization a person reads before anything happens.
  *
- * A batch is two things at once — a plan the agent shows to the user, and an execution the user approved.
- * The plan never writes and never records a batch, so a rejected plan leaves no trace. The execution stops
- * at the first error and records only what it did, because a half-applied reorganization the user cannot
- * read is worse than one that stopped and said so.
+ * A batch is two things at once — the plan the agent shows to the user, and the execution the user approved.
+ * The plan is what a call without `confirm: true` answers with; the registry asks the module for it, and it
+ * never writes nor records a batch, so a rejected plan leaves no trace. The execution stops at the first
+ * error and records only what it did, because a half-applied reorganization the user cannot read is worse
+ * than one that stopped and said so.
  */
 final class FilesBatchTest extends FilesToolsTestCase {
     protected function setUp(): void {
@@ -30,12 +31,12 @@ final class FilesBatchTest extends FilesToolsTestCase {
 
     // -------------------------------------------------------------- the plan
 
-    public function testABatchIsDeclaredForMovingFilesAndDefaultsToADryRun(): void {
+    /** A batch is a move; `confirm` comes from the registry and `dry_run` is gone with it. */
+    public function testABatchIsDeclaredForMovingFilesAndDefersTheConfirmationToTheRegistry(): void {
         $batch = array_column($this->module->definitions(), null, 'name')['files_move_batch'];
         $this->assertSame('move', $batch['operation']);
         $this->assertSame(['moves'], $batch['inputSchema']['required']);
-        $this->assertTrue($batch['inputSchema']['properties']['dry_run']['default'], 'o padrão é planejar, não executar');
-        $this->assertTrue($batch['inputSchema']['properties']['confirm']['const'], 'confirm tem de valer exatamente true');
+        $this->assertArrayNotHasKey('dry_run', $batch['inputSchema']['properties'], 'o lote tem um confirm só');
         $this->assertSame(['from', 'to'], $batch['inputSchema']['properties']['moves']['items']['required']);
         $this->assertSame(ReorganizationLimits::BATCH_ITEMS, $batch['inputSchema']['properties']['moves']['maxItems']);
         $this->assertSame(ReorganizationLimits::BATCH_ITEMS, $batch['inputSchema']['properties']['mkdirs']['maxItems']);
@@ -60,10 +61,10 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->tool('files_move_batch', ['moves' => []]);
     }
 
-    public function testADryRunPlansEveryItemAndWritesNothing(): void {
-        $plan = $this->json('files_move_batch', self::BATCH);
-        $this->assertTrue($plan['dryRun']);
+    public function testThePlanAnswersEveryItemAndWritesNothing(): void {
+        $plan = $this->plan('files_move_batch', self::BATCH);
         $this->assertTrue($plan['ok']);
+        $this->assertSame('files_move_batch', $plan['action']);
         $this->assertSame([
             ['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md', 'ok' => true],
             ['from' => '/Documentos/plano.md', 'to' => '/Arquivado/plano.md', 'ok' => true],
@@ -74,12 +75,14 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->assertSame([], $plan['mkdirs']);
         $this->assertSame(['total' => 2, 'planned' => 2, 'conflicts' => 0, 'denied' => 0, 'shared' => 0, 'mkdirs' => 0],
             $plan['summary']);
+        $this->assertSame([['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md'],
+            ['from' => '/Documentos/plano.md', 'to' => '/Arquivado/plano.md']], $plan['order'], 'a ordem do lote faz parte do que o usuário aprova');
         $this->assertSame([], $this->tree->ops, 'um plano não toca em nada');
         $this->assertSame([], $this->batches->all(), 'um plano não grava lote');
     }
 
     public function testThePlanSeesTheFoldersItWouldCreate(): void {
-        $plan = $this->json('files_move_batch', [
+        $plan = $this->plan('files_move_batch', [
             'moves' => [['from' => '/Documentos/ata.md', 'to' => '/2026/03/ata.md']],
             'mkdirs' => ['/2026', '/2026/03'],
         ]);
@@ -92,7 +95,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
     }
 
     public function testThePlanSaysAFolderThatIsAlreadyThereIsNotCreated(): void {
-        $plan = $this->json('files_move_batch', [
+        $plan = $this->plan('files_move_batch', [
             'moves' => [['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md']],
             'mkdirs' => ['/Arquivado'],
         ]);
@@ -104,7 +107,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
     public function testThePlanListsBlockedItemsWithoutHidingTheOthers(): void {
         $this->tree->addFile('/alice/files/Arquivado/plano.md', 'versão antiga', 'text/markdown');
         $this->tree->nodes['/alice/files/Documentos/orcamento.md']['updateable'] = false;
-        $plan = $this->json('files_move_batch', [
+        $plan = $this->plan('files_move_batch', [
             'moves' => [
                 ['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md'],
                 ['from' => '/Documentos/plano.md', 'to' => '/Arquivado/plano.md'],
@@ -122,7 +125,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
     }
 
     public function testThePlanNamesAMissingSourceInsteadOfPretendingItWillMove(): void {
-        $plan = $this->json('files_move_batch', [
+        $plan = $this->plan('files_move_batch', [
             'moves' => [['from' => '/Documentos/nao-existe.md', 'to' => '/Arquivado/nao-existe.md']],
         ]);
         $this->assertFalse($plan['ok']);
@@ -131,7 +134,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
     }
 
     public function testThePlanRefusesAFolderIntoItself(): void {
-        $plan = $this->json('files_move_batch', [
+        $plan = $this->plan('files_move_batch', [
             'moves' => [['from' => '/Documentos', 'to' => '/Documentos/sub']],
         ]);
         $this->assertFalse($plan['ok']);
@@ -142,14 +145,13 @@ final class FilesBatchTest extends FilesToolsTestCase {
      * The confirmation payload carries the plan with it, so the agent's code path is the same one it already
      * knows for a single move, and it can show the user what the batch would do.
      */
-    public function testABatchWithASharedItemAsksForConfirmationAndStillShowsThePlan(): void {
+    public function testThePlanSaysAnItemOfSomebodyElseIsSharedInsteadOfAMoveThatWouldHappen(): void {
         $this->tree->addFile('/alice/files/Engenharia/plano.md', 'plano', 'text/markdown', ['scope' => 'team']);
         $this->tree->mountPath = '/alice/files/Engenharia';
-        $out = $this->json('files_move_batch', [
+        $out = $this->plan('files_move_batch', [
             'moves' => [['from' => '/Engenharia/plano.md', 'to' => '/Arquivado/plano.md']],
         ]);
-        $this->assertTrue($out['requiresConfirmation']);
-        $this->assertSame('team', $out['scope']);
+        $this->assertTrue($out['requiresSharedConfirmation']);
         // A non-personal item is listed as shared, not as a move that would happen.
         $this->assertSame([], $out['moves']);
         $this->assertSame([['from' => '/Engenharia/plano.md', 'to' => '/Arquivado/plano.md', 'scope' => 'team']], $out['shared']);
@@ -159,18 +161,10 @@ final class FilesBatchTest extends FilesToolsTestCase {
 
     // ------------------------------------------------------------- execution
 
-    public function testAnExecutionWithoutConfirmationIsRefusedBeforeAnythingHappens(): void {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('confirm');
-        $this->tool('files_move_batch', ['moves' => self::BATCH['moves'], 'dry_run' => false]);
-    }
-
     public function testAnExecutionMovesInOrderCreatesTheFoldersAndRecordsTheBatch(): void {
         $out = $this->json('files_move_batch', [
             'moves' => self::BATCH['moves'],
             'mkdirs' => ['/Arquivado/2026'],
-            'dry_run' => false,
-            'confirm' => true,
         ]);
         $this->assertSame(1, $out['batch_id']);
         $this->assertSame(['/Documentos/ata.md', '/Documentos/plano.md'], array_column($out['moved'], 'from'));
@@ -198,8 +192,6 @@ final class FilesBatchTest extends FilesToolsTestCase {
                 ['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md'],
                 ['from' => '/Engenharia/plano.md', 'to' => '/Arquivado/plano.md'],
             ],
-            'dry_run' => false,
-            'confirm' => true,
         ]);
         $this->assertTrue($out['requiresConfirmation']);
         $this->assertArrayNotHasKey('batch_id', $out, 'sem confirm_shared nada é executado nem gravado');
@@ -215,8 +207,6 @@ final class FilesBatchTest extends FilesToolsTestCase {
                 ['from' => '/Documentos/plano.md', 'to' => '/Arquivado/plano.md'],
                 ['from' => '/Documentos/orcamento.md', 'to' => '/Arquivado/orcamento.md'],
             ],
-            'dry_run' => false,
-            'confirm' => true,
         ]);
         // Nothing is refused at plan time here, so the failure has to come from the move itself: a lock or a
         // permission that changed between the plan and the execution.
@@ -231,7 +221,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
     }
 
     public function testABatchOfSomebodyElseIsNotFound(): void {
-        $this->json('files_move_batch', ['moves' => self::BATCH['moves'], 'dry_run' => false, 'confirm' => true]);
+        $this->json('files_move_batch', self::BATCH);
         $this->assertNull($this->batches->find(1, 'bob'), 'o lote existe, mas não é de bob');
     }
 }

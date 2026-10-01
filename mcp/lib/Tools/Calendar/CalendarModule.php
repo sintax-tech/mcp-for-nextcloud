@@ -11,15 +11,17 @@ use OCA\Mcp\Tools\Calendar\Handler\ListEvents;
 use OCA\Mcp\Tools\Calendar\Handler\MoveEvent;
 use OCA\Mcp\Tools\Calendar\Handler\TransferEvent;
 use OCA\Mcp\Tools\Calendar\Handler\UpdateEvent;
+use OCA\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Tools\ToolModule;
 use RuntimeException;
 
 /**
  * Calendar tool module: reads are always exposed, writes only after the selftest proved the DAV
  * pipeline on this server (see CalendarWriteGate). The registry has already checked grant, app and
- * input schema for exposed tools.
+ * input schema for exposed tools, and asks {@see self::preview()} for the plan of every write that
+ * arrives without `confirm: true`.
  */
-final class CalendarModule implements ToolModule {
+final class CalendarModule implements ToolModule, PreviewsWrites {
     /** @var array<string, CalendarTool> handlers by tool name */
     private array $tools = [];
 
@@ -61,6 +63,33 @@ final class CalendarModule implements ToolModule {
     }
 
     /**
+     * The plan of a write, which the registry asks for when the call arrives without `confirm: true`.
+     *
+     * The draft itself lives in {@see CalendarDraftApproval}: preparing it is what reads the event, its
+     * ETag and the calendars it would touch, and nothing is dispatched here.
+     *
+     * @param string $name write tool name
+     * @param array<string, mixed> $arguments arguments validated by the registry
+     * @param string $userId authenticated UID
+     * @return array<string, mixed> the plan, as the structured content of a non-error result
+     * @throws InvalidArgumentException for an unknown or unavailable tool (-32602)
+     * @throws RuntimeException wrapping any other failure, which the registry reports generically
+     */
+    public function preview(string $name, array $arguments, string $userId): array {
+        $tool = $this->tools[$name] ?? throw new InvalidArgumentException('Unknown tool');
+        if (!in_array($tool->definition()['operation'], $this->gate->operations(), true)) {
+            throw new InvalidArgumentException('Unknown tool');
+        }
+        if (($arguments['send_invitations'] ?? false) === true && !$this->gate->invitationsVerified()) {
+            throw new CalendarException(CalendarMessages::invitationsUnverified());
+        }
+        if (!$tool instanceof CalendarWriteTool) {
+            throw new InvalidArgumentException('Unknown tool');
+        }
+        return $this->approval->preview($tool, $arguments, $userId);
+    }
+
+    /**
      * @param string $name tool name
      * @param array<string, mixed> $arguments arguments validated by the registry
      * @param string $userId authenticated UID
@@ -69,6 +98,22 @@ final class CalendarModule implements ToolModule {
      * @throws RuntimeException wrapping any other failure, which the registry reports generically
      */
     public function call(string $name, array $arguments, string $userId): array {
+        return $this->write($name, $arguments, $userId, fn (CalendarWriteTool $tool): array => $this->approval->execute($tool, $arguments, $userId));
+    }
+
+    /**
+     * Resolves the tool, refuses explicit scheduling before the delivery proof, and runs one of the two
+     * halves of a write: its plan, or the write the user confirmed.
+     *
+     * @param string $name tool name
+     * @param array<string, mixed> $arguments arguments validated by the registry
+     * @param string $userId authenticated UID
+     * @param callable(CalendarWriteTool): array $run what to do with a write tool
+     * @return array{content: list<array{type:string, text:string}>, isError?: bool} MCP result
+     * @throws InvalidArgumentException for an unknown tool (-32602)
+     * @throws RuntimeException wrapping any other failure, which the registry reports generically
+     */
+    private function write(string $name, array $arguments, string $userId, callable $run): array {
         $tool = $this->tools[$name] ?? throw new InvalidArgumentException('Unknown tool');
         if (!in_array($tool->definition()['operation'], $this->gate->operations(), true)) {
             throw new InvalidArgumentException('Unknown tool');
@@ -79,7 +124,7 @@ final class CalendarModule implements ToolModule {
             return ToolSchema::error(CalendarMessages::invitationsUnverified());
         }
         try {
-            return $tool instanceof CalendarWriteTool ? $this->approval->call($tool, $arguments, $userId) : $tool->execute($arguments, $userId);
+            return $tool instanceof CalendarWriteTool ? $run($tool) : $tool->execute($arguments, $userId);
         } catch (CalendarException $e) {
             return ToolSchema::error($e->getMessage());
         } catch (CalendarArgumentException $e) {
@@ -89,16 +134,17 @@ final class CalendarModule implements ToolModule {
             throw new RuntimeException('Calendar backend failure', 0, $e);
         }
     }
-    /** Public approval controls are distinct from the direct selftest handler schemas. */
+    /**
+     * The published schema of a write: the shared acknowledgement, and the note that asks for the plan first.
+     * `confirm` itself is not added here — the registry publishes it on every write tool of the app.
+     */
     private function publicDefinition(CalendarTool $tool): array {
         $definition = $tool->definition();
         if (!$tool instanceof CalendarWriteTool) { return $definition; }
         $schema = &$definition['inputSchema'];
         $properties = (array)$schema['properties'];
-        $properties['confirm'] = ['type' => 'boolean', 'default' => false, 'description' => 'Set true only after the plan was shown to the user and the user explicitly said yes. Without it nothing is written.'];
         $properties['confirm_shared'] = SharedGuard::property();
         $schema['properties'] = (object)$properties;
-        $schema['required'] = array_values(array_diff($schema['required'] ?? [], ['confirm']));
         $definition['description'] .= ' First returns a detailed plan without writing. Show it to the user and wait for explicit approval; then repeat the same arguments with confirm=true, adding the etag returned in the plan when it has one.';
         return $definition;
     }

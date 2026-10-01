@@ -7,6 +7,7 @@ use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolModule;
 use OCA\Mcp\Tools\ToolResult;
@@ -29,8 +30,13 @@ use OCP\IUserManager;
  *
  * Every result that names a node also carries its `access` description, and every write outside the
  * personal scope goes through SharedWriteGuard first.
+ *
+ * Every writing tool also answers {@see self::preview()}, which the registry asks for whenever the call
+ * arrives without `confirm: true`. A plan reads what it needs — the file, its ETag, the diff, the backup
+ * that would be created, the node the batch would touch — and writes nothing: no folder is created, no
+ * checkout token is minted and no file is backed up before the user has said yes.
  */
-class FilesModule implements ToolModule {
+class FilesModule implements ToolModule, PreviewsWrites {
     /** Characters returned by files_read before the text is truncated. */
     public const MAX_CHARS = 100000;
     /** Maximum size of the new content accepted by files_edit and files_replace, in bytes. */
@@ -112,18 +118,13 @@ class FilesModule implements ToolModule {
                     'mkdirs' => ['type' => 'array', 'maxItems' => ReorganizationLimits::BATCH_ITEMS,
                         'items' => ['type' => 'string', 'minLength' => 1],
                         'description' => 'Folders to create before moves.'],
-                    'dry_run' => ['type' => 'boolean', 'default' => true,
-                        'description' => 'When true returns only the plan; when false executes and requires confirm: true.'],
-                    'confirm' => ['type' => 'boolean', 'const' => true,
-                        'description' => 'Must be true to execute the batch'],
                     'confirm_shared' => $confirmShared,
                 ], ['moves'])],
             ['name' => 'files_undo_batch', 'module' => 'files', 'operation' => 'move',
                 'description' => FilesMessages::undoTool(),
                 'inputSchema' => self::schema([
                     'batch_id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'The batch_id returned by files_move_batch.'],
-                    'confirm' => ['type' => 'boolean', 'const' => true, 'description' => 'Must be true to undo'],
-                ], ['batch_id', 'confirm'])],
+                ], ['batch_id'])],
             ['name' => 'files_read', 'module' => 'files', 'operation' => 'read',
                 'description' => FilesMessages::readTool(),
                 'inputSchema' => self::schema(['path' => $path], ['path'])],
@@ -161,9 +162,8 @@ class FilesModule implements ToolModule {
                 'inputSchema' => self::schema([
                     'path' => $path,
                     'version' => $version,
-                    'confirm' => ['type' => 'boolean', 'const' => true, 'description' => FilesMessages::confirm()],
                     'confirm_shared' => $confirmShared,
-                ], ['path', 'version', 'confirm'])],
+                ], ['path', 'version'])],
         ];
     }
 
@@ -189,8 +189,6 @@ class FilesModule implements ToolModule {
                 $userId,
                 $arguments['moves'],
                 $arguments['mkdirs'] ?? [],
-                (bool)($arguments['dry_run'] ?? true),
-                $arguments['confirm'] ?? null,
                 $confirmed,
                 $this->planner,
                 $this->batches,
@@ -213,6 +211,199 @@ class FilesModule implements ToolModule {
             'files_version_restore' => $this->restore($root, $userId, $arguments['path'], $arguments['version'], $confirmed),
             default => throw new \InvalidArgumentException('Unknown tool'),
         });
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * Every plan runs the same checks the write runs and reads the same state, so what the user is shown is
+     * what the confirmed call would do — including the refusals, which arrive as errors before anything is
+     * asked. Nothing here writes: no backup, no folder, no checkout token.
+     */
+    public function preview(string $name, array $arguments, string $userId): array {
+        $root = $this->rootFolder->getUserFolder($userId);
+        $etag = $arguments['etag'] ?? null;
+        return NodeAccess::run(fn (): array => match ($name) {
+            'files_mkdir' => $this->reorganization->planMkdir($root, $userId, $arguments['path']),
+            'files_copy' => $this->reorganization->planCopy($root, $userId, $arguments['from'], $arguments['to'], $etag),
+            'files_move' => $this->reorganization->planMove($root, $userId, $arguments['from'], $arguments['to'], $etag),
+            'files_move_batch' => $this->reorganization->planBatch($root, $userId, $arguments['moves'], $arguments['mkdirs'] ?? [], $this->planner),
+            'files_undo_batch' => $this->reorganization->planUndoBatch($root, $userId, $arguments['batch_id'], $this->batches, $this->time->getTime()),
+            'files_edit' => $this->planWrite($root, $userId, $arguments['path'], $arguments['content'], $etag),
+            'files_replace' => $this->planReplace($root, $userId, $arguments['path'], $arguments['old'], $arguments['new'], $etag),
+            'files_checkout' => $this->planCheckout($root, $userId, $arguments['path']),
+            'files_version_restore' => $this->planRestore($root, $userId, $arguments['path'], $arguments['version']),
+            default => throw new \InvalidArgumentException('Unknown tool'),
+        });
+    }
+
+    /**
+     * The plan of `files_edit`: the diff the write would produce and the backup it would take first.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param string $path file to overwrite, user-relative
+     * @param string $content new complete content
+     * @param string|null $etag ETag the caller read before, null to skip the check
+     * @return array<string, mixed>
+     * @throws ToolFailure for a non-text file, an oversized content, a stale ETag or a denied write
+     */
+    private function planWrite(Folder $root, string $userId, string $path, string $content, ?string $etag): array {
+        $path = PathGuard::normalize($path);
+        $this->assertEditable($root, $path);
+        if (strlen($content) > self::MAX_EDIT_BYTES) {
+            throw new ToolFailure(FilesMessages::editTooLarge(self::MAX_EDIT_BYTES));
+        }
+        $file = $this->file($root, $path);
+        NodeAccess::checkEtag($file, $etag);
+        $diff = UnifiedDiff::between($this->extractor->extract($file), $content);
+
+        return $this->planContent($file, $userId, $path, [
+            'action' => 'files_edit',
+            'size' => ['before' => (int)$file->getSize(), 'after' => strlen($content)],
+            'diff' => $diff,
+            'message' => FilesMessages::planEdit(),
+        ]);
+    }
+
+    /**
+     * The plan of `files_replace`: the same diff, from the same snippet check the write performs.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param string $path file to overwrite, user-relative
+     * @param string $old snippet that must appear exactly once
+     * @param string $new replacement text
+     * @param string|null $etag ETag the caller read before, null to skip the check
+     * @return array<string, mixed>
+     * @throws ToolFailure when the snippet is absent or ambiguous, or the write would be refused
+     */
+    private function planReplace(Folder $root, string $userId, string $path, string $old, string $new, ?string $etag): array {
+        $path = PathGuard::normalize($path);
+        $this->assertEditable($root, $path);
+        if (strlen($new) > self::MAX_EDIT_BYTES) {
+            throw new ToolFailure(FilesMessages::editTooLarge(self::MAX_EDIT_BYTES));
+        }
+        if (!mb_check_encoding($old, 'UTF-8')) {
+            throw new ToolFailure(FilesMessages::snippetNotUtf8());
+        }
+        $file = $this->file($root, $path);
+        NodeAccess::checkEtag($file, $etag);
+        $raw = (string)$file->getContent();
+        $occurrences = substr_count($raw, $old);
+        if ($occurrences === 0) {
+            throw new ToolFailure(FilesMessages::snippetMissing());
+        }
+        if ($occurrences > 1) {
+            throw new ToolFailure(FilesMessages::snippetAmbiguous($occurrences));
+        }
+        $updated = str_replace($old, $new, $raw, $count);
+
+        return $this->planContent($file, $userId, $path, [
+            'action' => 'files_replace',
+            'snippet' => ['occurrences' => $occurrences, 'replaced' => $count],
+            'size' => ['before' => (int)$file->getSize(), 'after' => strlen($updated)],
+            'diff' => UnifiedDiff::between($this->extractor->extract($file), $updated),
+            'message' => FilesMessages::planReplace(),
+        ]);
+    }
+
+    /**
+     * The fields every content write shares: who owns the file, whether other people are reached and the
+     * backup the write takes before it writes.
+     *
+     * @param File $file file about to be overwritten
+     * @param string $userId authenticated user
+     * @param string $path normalized user-relative path of $file
+     * @param array<string, mixed> $plan what the specific tool would do
+     * @return array<string, mixed>
+     * @throws ToolFailure when Nextcloud refuses the update, with or without the shared confirmation
+     */
+    private function planContent(File $file, string $userId, string $path, array $plan): array {
+        $shared = $this->guard->guard($file, $userId, $path, false);
+        return $plan + [
+            'path' => $path,
+            'etag' => (string)$file->getEtag(),
+            'backup' => '/' . self::BACKUP_FOLDER,
+            'access' => $this->accessInfo->describe($file, $userId),
+            'shared' => $shared === null ? [] : [$shared],
+            'requiresSharedConfirmation' => $shared !== null,
+            'recoverable' => true,
+            'consequence' => FilesMessages::planBackupConsequence(),
+        ];
+    }
+
+    /**
+     * The plan of `files_checkout`: the file the links would be minted for, and nothing else.
+     *
+     * No token is minted here on purpose: a link in an unapproved answer is a write the user never saw.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param string $path file to download and upload, user-relative
+     * @return array<string, mixed>
+     * @throws ToolFailure when the file is not editable, versioning is off or the write would be refused
+     */
+    private function planCheckout(Folder $root, string $userId, string $path): array {
+        $path = PathGuard::normalize($path);
+        $this->assertEditable($root, $path);
+        $file = $this->file($root, $path);
+        $shared = $this->guard->guard($file, $userId, $path, false);
+        // The same refusal the mint gives, so the plan cannot promise links the upload would not honour.
+        $user = $this->userManager->get($userId);
+        if ($user === null || !$this->appManager->isEnabledForUser(CheckoutService::VERSIONS_APP, $user)) {
+            throw new ToolFailure(FilesMessages::versionsOff());
+        }
+        return [
+            'action' => 'files_checkout',
+            'path' => $path,
+            'etag' => (string)$file->getEtag(),
+            'size' => (int)$file->getSize(),
+            'mime' => (string)$file->getMimetype(),
+            'downloadTtlSeconds' => CheckoutService::DOWNLOAD_TTL,
+            'uploadTtlSeconds' => CheckoutService::UPLOAD_TTL,
+            'uploadMaxBytes' => $this->checkout->maxBytes(),
+            'backup' => '/' . self::BACKUP_FOLDER,
+            'access' => $this->accessInfo->describe($file, $userId),
+            'shared' => $shared === null ? [] : [$shared],
+            'requiresSharedConfirmation' => $shared !== null,
+            'recoverable' => true,
+            'linksAfterConfirmation' => true,
+            'consequence' => FilesMessages::planCheckoutConsequence(),
+            'message' => FilesMessages::planCheckout(),
+        ];
+    }
+
+    /**
+     * The plan of `files_version_restore`: the version that would come back and the backup taken first.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param string $path file to roll back, user-relative
+     * @param string $version version identifier
+     * @return array<string, mixed>
+     * @throws ToolFailure when versioning is off, the version is gone, the path is a backup or the write is denied
+     */
+    private function planRestore(Folder $root, string $userId, string $path, string $version): array {
+        $path = PathGuard::normalize($path);
+        if (FileBackup::isBackupPath($path)) {
+            throw new ToolFailure(FilesMessages::backupPath());
+        }
+        $file = $this->file($root, $path);
+        $shared = $this->guard->guard($file, $userId, $path, false);
+        return [
+            'action' => 'files_version_restore',
+            'path' => $path,
+            'version' => $this->versions->describe($file, $version, $userId),
+            'current' => ['etag' => (string)$file->getEtag(), 'size' => (int)$file->getSize()],
+            'backup' => '/' . self::BACKUP_FOLDER,
+            'access' => $this->accessInfo->describe($file, $userId),
+            'shared' => $shared === null ? [] : [$shared],
+            'requiresSharedConfirmation' => $shared !== null,
+            'recoverable' => true,
+            'consequence' => FilesMessages::planBackupConsequence(),
+            'message' => FilesMessages::planRestore(),
+        ];
     }
 
     /** @return list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string, access:array<string, mixed>}> */

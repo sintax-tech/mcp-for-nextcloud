@@ -114,7 +114,7 @@ final class FilesModuleTest extends TestCase {
             array_values(array_filter(array_column($defs, 'app', 'name'))));
         $this->assertArrayNotHasKey('app', $defs['files_tree'], 'a árvore só depende de arquivos, que sempre existem');
         $this->assertSame(['path', 'old', 'new'], $defs['files_replace']['inputSchema']['required']);
-        $this->assertSame(['path', 'version', 'confirm'], $defs['files_version_restore']['inputSchema']['required']);
+        $this->assertSame(['path', 'version'], $defs['files_version_restore']['inputSchema']['required']);
         $this->assertSame('/', $defs['files_list']['inputSchema']['properties']['path']['default']);
         $this->assertSame(['minimum' => 1, 'maximum' => 100, 'default' => 25], array_intersect_key($defs['files_search']['inputSchema']['properties']['limit'], ['minimum' => 0, 'maximum' => 0, 'default' => 0]));
         $this->assertSame(['path'], $defs['files_read']['inputSchema']['required']);

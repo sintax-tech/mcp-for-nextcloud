@@ -58,13 +58,6 @@ final class ToolSchema {
     }
 
     /**
-     * @return array<string, mixed> mandatory confirmation property
-     */
-    public static function confirm(): array {
-        return ['type' => 'boolean', 'const' => true, 'description' => CalendarMessages::PROP_CONFIRM];
-    }
-
-    /**
      * @param string $description Portuguese description
      * @return array<string, mixed> date or timestamp property
      */

@@ -11,8 +11,9 @@ use Psr\Log\LoggerInterface;
  * Backs `deck_delete_card`.
  *
  * Deletion is irreversible from the tools: Deck soft-deletes the card the same way its web
- * interface does, and there is no tool to bring it back. The `confirm` argument is required and
- * constrained to `true` by the schema, so a call without it never reaches this handler.
+ * interface does, and there is no tool to bring it back. The registry only reaches this handler
+ * after the user confirmed the plan, and `confirm_shared` is still what a board of somebody else
+ * needs before the card is deleted.
  */
 final class DeleteCardHandler extends AbstractHandler {
 	/** MCP tool name this handler serves. */
@@ -36,14 +37,14 @@ final class DeleteCardHandler extends AbstractHandler {
 	 *
 	 * The payload is the deleted card.
 	 *
-	 * @param array<string, mixed> $arguments Requires `cardId` and `confirm`.
+	 * @param array<string, mixed> $arguments Requires `cardId`; accepts `confirm` and `confirm_shared`.
 	 * @param string $userId UID of the authenticated caller.
 	 * @return array{content: list<array{type: string, text: string}>, isError?: bool} MCP result.
 	 */
 	public function handle(array $arguments, string $userId): array {
 		return $this->run(function () use ($arguments, $userId): array {
-			// `confirm` is already true here (the schema forces it); `confirm_shared` is what the
-			// board of somebody else still needs before the card is deleted.
+			// The user already confirmed the plan; `confirm_shared` is what the board of somebody
+			// else still needs before the card is deleted.
 			$confirmation = $this->confirmShared(
 				$arguments,
 				$userId,

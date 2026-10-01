@@ -15,6 +15,8 @@ use OCA\Mcp\Tools\Deck\Handler\ListStacksHandler;
 use OCA\Mcp\Tools\Deck\Handler\MoveCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\ReadCardHandler;
 use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolModule;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -31,8 +33,12 @@ use stdClass;
  * This class only declares the tools and routes a call to a handler. It holds no Deck logic and
  * resolves no Deck class at construction time, because the Deck app may not be installed: the
  * tools declare `app: 'deck'` so the registry hides them, and the handler is built per call.
+ *
+ * The four writing tools are also described by {@see self::preview()}, which the registry asks for
+ * whenever a write arrives without `confirm: true`; the plan it returns is what the agent shows the
+ * user, and `confirm_shared` still guards a board of somebody else at the moment of the write.
  */
-final class DeckToolModule implements ToolModule {
+final class DeckToolModule implements ToolModule, PreviewsWrites {
 	/** Nextcloud app id whose presence the whole module depends on. */
 	public const DECK_APP = 'deck';
 
@@ -178,13 +184,14 @@ final class DeckToolModule implements ToolModule {
 			[
 				'name' => DeleteCardHandler::TOOL,
 				'description' => DeckMessages::TOOL_DELETE_CARD_DESCRIPTION . DeckMessages::CONFIRM_SHARED_DESCRIPTION,
+				// `confirm` is not declared here: the registry publishes it on every write tool, so the
+				// same wording and the same rule apply to all of them.
 				'inputSchema' => $this->schema(
 					[
 						'cardId' => $this->integer(DeckMessages::PARAM_CARD_ID),
-						'confirm' => ['type' => 'boolean', 'const' => true, 'description' => DeckMessages::PARAM_CONFIRM],
 						'confirm_shared' => $this->confirmShared(),
 					],
-					['cardId', 'confirm'],
+					['cardId'],
 				),
 				'module' => self::MODULE,
 				'operation' => 'delete',
@@ -244,6 +251,231 @@ final class DeckToolModule implements ToolModule {
 		}
 
 		return $handler->handle($arguments, $userId);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * The plan of a Deck write: the card as it is now and as the call would leave it, the lists and
+	 * boards on both ends of a move, and who owns them. Everything here is read through the same
+	 * gateway the handler uses, so the preview applies the Deck ACL and says "not found" where the
+	 * write would; nothing is written and nothing is stored.
+	 *
+	 * @param string $name One of the writing tool names of {@see self::definitions()}.
+	 * @param array<string, mixed> $arguments Arguments already validated by the registry.
+	 * @param string $userId UID of the authenticated caller.
+	 * @return array<string, mixed> The plan, as the structured content of a non-error result.
+	 * @throws InvalidArgumentException For an unknown tool or an argument the write would refuse (-32602).
+	 * @throws \OCA\Mcp\Tools\ToolFailure When the Deck refuses the same read the write would do.
+	 */
+	public function preview(string $name, array $arguments, string $userId): array {
+		try {
+			return match ($name) {
+				CreateCardHandler::TOOL => $this->planCreate($arguments, $userId),
+				EditCardHandler::TOOL => $this->planEdit($arguments, $userId),
+				MoveCardHandler::TOOL => $this->planMove($arguments, $userId),
+				DeleteCardHandler::TOOL => $this->planDelete($arguments, $userId),
+				default => throw new InvalidArgumentException(DeckMessages::errorUnknownTool()),
+			};
+		} catch (InvalidArgumentException $e) {
+			throw $e;
+		} catch (\Throwable $e) {
+			// A preview that fails has to say the same thing the write would say, so the model is not
+			// sent to ask the user about something that cannot happen.
+			$this->logger->warning('MCP Deck plan failed: {tool} ({exception})', [
+				'tool' => $name,
+				'exception' => $e::class,
+			]);
+
+			throw new ToolFailure(DeckErrors::messageFor($e));
+		}
+	}
+
+	/**
+	 * @param array{stackId: int, title: string, description?: string, duedate?: string|null} $arguments
+	 * @param string $userId UID of the authenticated caller, also the owner of the card to be created.
+	 * @return array<string, mixed>
+	 */
+	private function planCreate(array $arguments, string $userId): array {
+		$place = $this->place($userId, (int)$arguments['stackId']);
+
+		return [
+			'action' => CreateCardHandler::TOOL,
+			'card' => [
+				'title' => CardInput::requireTitle((string)$arguments['title']),
+				'description' => CardInput::requireDescription((string)($arguments['description'] ?? '')),
+				'dueDate' => CardInput::duedate($arguments['duedate'] ?? null),
+				'owner' => $userId,
+			],
+			'destination' => $place,
+			'shared' => $place['shared'] ? [$place] : [],
+			'recoverable' => true,
+			'message' => DeckMessages::planCreate(),
+		];
+	}
+
+	/**
+	 * @param array{cardId: int, title?: string, description?: string, duedate?: string|null, lastModified?: int} $arguments
+	 * @param string $userId UID of the authenticated caller.
+	 * @return array<string, mixed>
+	 */
+	private function planEdit(array $arguments, string $userId): array {
+		$given = array_intersect_key($arguments, array_flip(['title', 'description', 'duedate']));
+		if ($given === []) {
+			throw new InvalidArgumentException(DeckMessages::errorNoFieldToEdit());
+		}
+		$card = $this->gateway()->findCard($userId, (int)$arguments['cardId']);
+		$before = $this->fields($card);
+		$after = [
+			'title' => array_key_exists('title', $given) ? CardInput::requireTitle((string)$given['title']) : $before['title'],
+			'description' => array_key_exists('description', $given)
+				? CardInput::requireDescription((string)$given['description'])
+				: $before['description'],
+			// Absent keeps the date as it is; an explicit null clears it, exactly as the write reads it.
+			'duedate' => array_key_exists('duedate', $given)
+				? CardInput::duedate($given['duedate'])
+				: $this->instant($card->getDuedate()),
+		];
+		$board = $this->gateway()->cardOwnership($userId, (int)$arguments['cardId']);
+
+		return [
+			'action' => EditCardHandler::TOOL,
+			'card' => ['id' => (int)$card->getId(), 'before' => $before, 'after' => $after],
+			'board' => $this->board($board, $userId),
+			'changed' => array_values(array_keys(array_filter(
+				['title', 'description', 'duedate'],
+				static fn (string $field): bool => $before[$field] !== $after[$field],
+			))),
+			'lastModified' => ['current' => (int)$card->getLastModified(), 'sent' => $arguments['lastModified'] ?? null],
+			'shared' => $board['owner'] === $userId ? [] : [$this->board($board, $userId)],
+			'recoverable' => true,
+			'message' => DeckMessages::planEdit(),
+		];
+	}
+
+	/**
+	 * @param array{cardId: int, stackId: int, order?: int} $arguments
+	 * @param string $userId UID of the authenticated caller.
+	 * @return array<string, mixed>
+	 */
+	private function planMove(array $arguments, string $userId): array {
+		$cardId = (int)$arguments['cardId'];
+		$card = $this->gateway()->findCard($userId, $cardId);
+		$origin = $this->place($userId, (int)$card->getStackId());
+		$destination = $this->place($userId, (int)$arguments['stackId']);
+
+		return [
+			'action' => MoveCardHandler::TOOL,
+			'card' => ['id' => $cardId] + $this->fields($card),
+			'origin' => $origin,
+			'destination' => $destination,
+			'order' => array_key_exists('order', $arguments) ? (int)$arguments['order'] : null,
+			'sameList' => $origin['stackId'] === $destination['stackId'],
+			'shared' => array_values(array_filter([$origin, $destination], static fn (array $place): bool => $place['shared'])),
+			'recoverable' => true,
+			'message' => DeckMessages::planMove(),
+		];
+	}
+
+	/**
+	 * @param array{cardId: int} $arguments
+	 * @param string $userId UID of the authenticated caller.
+	 * @return array<string, mixed>
+	 */
+	private function planDelete(array $arguments, string $userId): array {
+		$cardId = (int)$arguments['cardId'];
+		$card = $this->gateway()->findCard($userId, $cardId);
+		$board = $this->gateway()->cardOwnership($userId, $cardId);
+
+		return [
+			'action' => DeleteCardHandler::TOOL,
+			'card' => ['id' => $cardId] + $this->fields($card),
+			'board' => $this->board($board, $userId),
+			'shared' => $board['owner'] === $userId ? [] : [$this->board($board, $userId)],
+			// Deck soft-deletes, but no tool of this app brings a card back, so the plan says so instead of
+			// leaving the user to discover it.
+			'recoverable' => false,
+			'consequence' => DeckMessages::planDeleteConsequence(),
+			'message' => DeckMessages::planDelete(),
+		];
+	}
+
+	/**
+	 * Where a card lands or comes from: the list, the board behind it and who owns that board.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $stackId Deck list the plan is about.
+	 * @return array{stackId: int, list: string|null, board: string, owner: string, ownerDisplayName: string, shared: bool}
+	 */
+	private function place(string $userId, int $stackId): array {
+		$ownership = $this->gateway()->stackOwnership($userId, $stackId);
+
+		return [
+			'stackId' => $stackId,
+			'list' => $this->listTitle($userId, $stackId),
+			'board' => $ownership['name'],
+			'owner' => $ownership['owner'],
+			'ownerDisplayName' => $ownership['ownerDisplayName'],
+			'shared' => $ownership['owner'] !== $userId,
+		];
+	}
+
+	/**
+	 * @param array{owner: string, ownerDisplayName: string, name: string} $ownership
+	 * @param string $userId UID of the authenticated caller.
+	 * @return array{board: string, owner: string, ownerDisplayName: string, shared: bool}
+	 */
+	private function board(array $ownership, string $userId): array {
+		return [
+			'board' => $ownership['name'],
+			'owner' => $ownership['owner'],
+			'ownerDisplayName' => $ownership['ownerDisplayName'],
+			'shared' => $ownership['owner'] !== $userId,
+		];
+	}
+
+	/**
+	 * Title of the Deck list a stack id names, or null when it cannot be read.
+	 *
+	 * The Deck gateway has no single-stack query, and a plan is not a hot path: the visible boards are
+	 * walked once and the first list that matches wins.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param int $stackId Deck list to name.
+	 * @return string|null The list title, or null when no visible board holds it.
+	 */
+	private function listTitle(string $userId, int $stackId): ?string {
+		foreach ($this->gateway()->listBoards($userId) as $board) {
+			foreach ($this->gateway()->listStacks($userId, (int)$board->getId()) as $stack) {
+				if ((int)$stack->getId() === $stackId) {
+					return (string)$stack->getTitle();
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * The fields a write can change, as the plan shows them.
+	 *
+	 * @param \OCA\Deck\Db\Card $card Card as the gateway read it.
+	 * @return array{title: string, description: string, duedate: string|null}
+	 */
+	private function fields(\OCA\Deck\Db\Card $card): array {
+		return [
+			'title' => (string)$card->getTitle(),
+			'description' => (string)$card->getDescription(),
+			'duedate' => $this->instant($card->getDuedate()),
+		];
+	}
+
+	/**
+	 * @param mixed $value Value of a Deck `datetime` column.
+	 * @return string|null ISO 8601 instant, or null when the card has no date.
+	 */
+	private function instant(mixed $value): ?string {
+		return $value instanceof \DateTimeInterface ? $value->format(\DateTimeInterface::ATOM) : null;
 	}
 
 	/**

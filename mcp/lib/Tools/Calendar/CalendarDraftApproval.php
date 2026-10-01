@@ -6,39 +6,73 @@ use Sabre\VObject\Component\VCalendar;
 use Sabre\VObject\Component\VEvent;
 
 /**
- * Conversational approval for every public Calendar write: without confirm=true the call only returns the plan.
- * Nothing is stored; the server cannot prove the user said yes, it only refuses to write before the AI asked.
+ * The plan of every public Calendar write, and the execution of the confirmed one.
+ *
+ * The registry calls {@see self::preview()} whenever a write arrives without `confirm: true` and
+ * {@see self::execute()} when it arrives with it, so the confirmation is checked in exactly one place and
+ * nowhere else. Nothing is stored: the server cannot prove the user said yes, it only refuses to write
+ * before the AI asked. The ETag the plan returns is optional, and when it is sent the confirmed call is
+ * refused when the event changed in between.
  */
 final class CalendarDraftApproval {
     public function __construct(private CalendarWriteGate $gate, private Scheduling $scheduling, private EventBuilder $builder, private SharedGuard $sharedGuard) {}
 
     /**
+     * The plan of a write: what the event looks like now, what it would look like after, and what sending it
+     * would mean for the participants. Prepared but never dispatched, so no DAV call is written.
+     *
      * @param CalendarWriteTool $tool write handler
-     * @param array<string, mixed> $arguments MCP arguments, possibly with confirm and confirm_shared
+     * @param array<string, mixed> $arguments MCP arguments, without confirm
      * @param string $userId authenticated UID
-     * @return array{content: list<array{type:string, text:string}>, isError?: bool} the plan, or the write result after confirm=true
+     * @return array<string, mixed> the plan, as the structured content of a non-error result
+     * @throws CalendarException when the write would be refused (ACL, calendar not found)
+     */
+    public function preview(CalendarWriteTool $tool, array $arguments, string $userId): array {
+        [$prepared, $shared] = $this->prepare($tool, $arguments, $userId);
+        return ['requiresConfirmation' => true, 'message' => CalendarMessages::approvalPrompt()]
+            + $this->plan($tool->definition()['name'], $prepared, $arguments)
+            + ['shared' => $shared];
+    }
+
+    /**
+     * The confirmed write. Prepared again here: grants, ACL, ownership, ETag (when sent) and If-Match are
+     * rechecked at dispatch time, so what runs is what the user approved rather than what it looked like then.
+     *
+     * @param CalendarWriteTool $tool write handler
+     * @param array<string, mixed> $arguments MCP arguments, with confirm
+     * @param string $userId authenticated UID
+     * @return array{content: list<array{type:string, text:string}>, isError?: bool} the write result
      * @throws CalendarException when the write is refused (shared calendar not acknowledged, ETag changed, ACL)
      */
-    public function call(CalendarWriteTool $tool, array $arguments, string $userId): array {
-        $confirm = ($arguments['confirm'] ?? false) === true;
-        // SharedGuard is shown in the draft; the approved call must explicitly acknowledge it.
+    public function execute(CalendarWriteTool $tool, array $arguments, string $userId): array {
+        [$prepared, $shared] = $this->prepare($tool, $arguments, $userId);
+        if ($shared !== [] && ($arguments['confirm_shared'] ?? false) !== true) { throw CalendarException::blocked(CalendarMessages::approvalShared()); }
+        $result = $prepared->dispatch();
+        return $prepared->target === null ? $result : ToolSchema::result($result);
+    }
+
+    /**
+     * Prepares the write and reads who it would reach.
+     *
+     * The plan is built with confirm_shared forced on, so the shared calendars appear in it; the confirmed
+     * call still has to acknowledge them with the argument the user sees in the schema.
+     *
+     * @param CalendarWriteTool $tool write handler
+     * @param array<string, mixed> $arguments MCP arguments
+     * @param string $userId authenticated UID
+     * @return array{0: PreparedCalendarWrite, 1: list<array<string, mixed>>} the prepared write and the shared notices
+     * @throws CalendarException when the write would be refused
+     */
+    private function prepare(CalendarWriteTool $tool, array $arguments, string $userId): array {
         $prepared = $tool->prepare(array_replace($arguments, ['confirm_shared' => true]), $userId);
         if (is_array($prepared)) { throw new \RuntimeException('Calendar write preparation failed'); }
-        $name = $tool->definition()['name'];
         $shared = [];
         foreach (array_filter([$prepared->source, $prepared->target]) as $calendar) {
             if (($notice = $this->sharedGuard->confirm($calendar, $userId, [])) !== null) {
                 $shared[] = json_decode($notice['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR);
             }
         }
-        $plan = $this->plan($name, $prepared, $arguments) + ['shared' => $shared];
-        if (!$confirm) {
-            return ToolSchema::result(['requiresConfirmation' => true, 'message' => CalendarMessages::approvalPrompt()] + $plan);
-        }
-        if ($shared !== [] && ($arguments['confirm_shared'] ?? false) !== true) { throw CalendarException::blocked(CalendarMessages::approvalShared()); }
-        // Every confirmed call is prepared again: grants, ACL, ownership, ETag (when sent) and If-Match are rechecked at dispatch time.
-        $result = $prepared->dispatch();
-        return $prepared->target === null ? $result : ToolSchema::result($result);
+        return [$prepared, $shared];
     }
 
     private function plan(string $name, PreparedCalendarWrite $prepared, array $arguments): array {

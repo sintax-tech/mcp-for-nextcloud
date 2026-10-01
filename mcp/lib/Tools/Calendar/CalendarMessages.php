@@ -61,7 +61,6 @@ final class CalendarMessages {
 
     public const PROP_UID = 'event UID';
     public const PROP_ETAG = 'expected etag; if it differs, nothing is changed';
-    public const PROP_CONFIRM = 'must be true to confirm the operation';
     public const PROP_ATTENDEES = 'Nextcloud account IDs (not emails). Replaces the attendee list.';
     public const PROP_SEND_INVITATIONS = 'true delivers the invitation to Nextcloud scheduling; email depends on server settings and does not confirm receipt';
 

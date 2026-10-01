@@ -52,6 +52,7 @@ abstract class CalendarTestCase extends TestCase {
     protected FakeCalendarStore $store;
     protected FakeCalendarDav $dav;
     protected CalendarModule $module;
+    protected \OCA\Mcp\Tools\ToolRegistry $registry;
     protected \OCA\Mcp\Tools\Calendar\CalendarWriteGate $gate;
     protected string $verification = '';
     /** @var array<string, \OCA\Mcp\Tools\Calendar\CalendarTool> write handlers exercised directly by domain tests */
@@ -125,6 +126,17 @@ abstract class CalendarTestCase extends TestCase {
             $transferEvent,
             $this->gate,
             new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($this->gate, $scheduling, $builder, $guard),
+        );
+        $policy = $this->createMock(\OCA\Mcp\Service\GrantPolicy::class);
+        $policy->method('granted')->willReturn(true);
+        $apps = $this->createMock(\OCP\App\IAppManager::class);
+        $apps->method('isEnabledForUser')->willReturn(true);
+        $this->registry = new \OCA\Mcp\Tools\ToolRegistry(
+            [$this->module],
+            $policy,
+            $apps,
+            $this->users(),
+            new \Psr\Log\NullLogger(),
         );
     }
 

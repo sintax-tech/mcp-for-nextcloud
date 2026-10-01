@@ -33,7 +33,6 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
                 ['from' => '/Documentos/plano.md', 'to' => '/Arquivado/plano.md'],
             ],
             'mkdirs' => $mkdirs,
-            'dry_run' => false,
             'confirm' => true,
         ])['batch_id'];
     }
@@ -43,14 +42,17 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
     public function testAnUndoIsDeclaredAsAMoveAndNotAsADelete(): void {
         $undo = array_column($this->module->definitions(), null, 'name')['files_undo_batch'];
         $this->assertSame('move', $undo['operation'], 'desfazer devolve o que files_move moveu');
-        $this->assertSame(['batch_id', 'confirm'], $undo['inputSchema']['required']);
-        $this->assertTrue($undo['inputSchema']['properties']['confirm']['const']);
+        $this->assertSame(['batch_id'], $undo['inputSchema']['required']);
         $this->assertSame(1, $undo['inputSchema']['properties']['batch_id']['minimum']);
     }
 
     public function testAnUndoNeedsTheConfirmation(): void {
-        $this->expectException(\InvalidArgumentException::class);
-        $this->tool('files_undo_batch', ['batch_id' => $this->runBatch()]);
+        $id = $this->runBatch();
+        $plan = $this->plan('files_undo_batch', ['batch_id' => $id]);
+        $this->assertSame('files_undo_batch', $plan['action']);
+        $this->assertSame($id, $plan['batch_id']);
+        $this->assertTrue($plan['ok']);
+        $this->assertArrayHasKey('/alice/files/Arquivado/ata.md', $this->tree->nodes);
     }
 
     // ------------------------------------------------------------- what it does
@@ -205,7 +207,6 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
                 ['from' => '/Documentos/notas.md', 'to' => '/Arquivado/notas.md'],
             ],
             'mkdirs' => ['/Arquivado/2026'],
-            'dry_run' => false,
             'confirm' => true,
         ])['batch_id'];
         // Reverse order is notas, plano, ata: the middle one breaks.

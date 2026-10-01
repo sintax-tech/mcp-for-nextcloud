@@ -29,15 +29,14 @@ final class TransferEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
                 'calendar' => ToolSchema::calendar(CalendarMessages::propertyDescription('source-calendar')),
                 'uid' => ToolSchema::uid(),
                 'targetCalendar' => ToolSchema::calendar(CalendarMessages::propertyDescription('transfer-calendar')),
-                'confirm' => ToolSchema::confirm(),
                 'etag' => ToolSchema::etag(),
             ],
-            ['calendar', 'uid', 'targetCalendar', 'confirm'],
+            ['calendar', 'uid', 'targetCalendar'],
         );
     }
 
     /**
-     * @param array{calendar: string, uid: string, targetCalendar: string, confirm: true, etag?: string} $arguments
+     * @param array{calendar: string, uid: string, targetCalendar: string, etag?: string} $arguments
      * @param string $userId authenticated UID
      * @return array{content: list<array{type:string, text:string}>} {uid, from, to}
      * @throws \OCA\Mcp\Tools\Calendar\CalendarException when the transfer is not allowed or conflicts

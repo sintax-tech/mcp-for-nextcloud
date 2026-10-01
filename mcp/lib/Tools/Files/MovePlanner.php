@@ -30,7 +30,8 @@ final class MovePlan {
 /**
  * Reads a batch and says what would happen, without touching anything.
  *
- * A blocked item does not stop the plan: the agent has to see the whole list to be able to fix it, and a
+ * This is the plan the user approves before the batch runs, and it is rebuilt again when the batch does run:
+ * a blocked item does not stop it, because the agent has to see the whole list to be able to fix it, and a
  * plan of 200 items where 1 conflicts is a question for the user, not a failure to hide behind. The same
  * checks a single move runs come from Reorganization::inspect(), so a plan can never approve a move the
  * tool would refuse.
@@ -79,7 +80,6 @@ final class MovePlanner {
         }
         $dirs = $this->planDirs($root, $mkdirs);
         $plan = [
-            'dryRun' => true,
             'ok' => $conflicts === [] && $denied === [],
             'moves' => array_map(fn (array $item) => $item + ['ok' => true], $planned),
             'conflicts' => $conflicts,

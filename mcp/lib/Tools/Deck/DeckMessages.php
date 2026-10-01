@@ -29,7 +29,7 @@ final class DeckMessages {
 	public const TOOL_MOVE_CARD_DESCRIPTION
 		= 'Moves a Deck card to another list (stack), including one on another board. Without order, the card goes to the end.';
 	public const TOOL_DELETE_CARD_DESCRIPTION
-		= 'Deletes a Deck card the same way the web interface does: the deletion can be undone in Deck. Requires confirm.';
+		= 'Deletes a Deck card the same way the web interface does: the deletion can be undone in Deck.';
 	public const TOOL_FOLLOWUP_CARDS_DESCRIPTION
 		= 'Lists the cards of the boards you can manage (owner or manage permission), grouped by assignee, with a direct link to each card. By default it returns only overdue cards; the scan covers at most 100 visible boards.';
 
@@ -47,7 +47,6 @@ final class DeckMessages {
 	public const PARAM_OFFSET = 'Number of cards to skip, for pagination.';
 	public const PARAM_ORDER = 'Position of the card in the list, from 0 to 99999.';
 	public const PARAM_LAST_MODIFIED = 'lastModified of the card at the time it was read; if it has changed, the edit is refused.';
-	public const PARAM_CONFIRM = 'Must be true to confirm the deletion.';
 	public const PARAM_CONFIRM_SHARED = 'Set to true only after the user has confirmed the change on somebody else\'s board.';
 
 	/* Shared-resource confirmation (confirm_shared). */
@@ -170,5 +169,42 @@ final class DeckMessages {
 	 */
 	public static function sharedConfirmation(string $board, string $owner): string {
 		return Translator::t('The board \'%s\' belongs to %s and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true.', [$board, $owner]);
+	}
+
+	/* Plan of a write: the answer to a call that arrives without confirm, nothing having been written. */
+
+	/**
+	 * @return string The message in the language of the current user.
+	 */
+	public static function planCreate(): string {
+		return Translator::t('Nothing was changed. After your approval a new card is created at the end of the list below, and you are set as its owner.');
+	}
+
+	/**
+	 * @return string The message in the language of the current user.
+	 */
+	public static function planEdit(): string {
+		return Translator::t('Nothing was changed. After your approval the fields below are written over the card.');
+	}
+
+	/**
+	 * @return string The message in the language of the current user.
+	 */
+	public static function planMove(): string {
+		return Translator::t('Nothing was changed. After your approval the card moves from the list below to the destination below.');
+	}
+
+	/**
+	 * @return string The message in the language of the current user.
+	 */
+	public static function planDelete(): string {
+		return Translator::t('Nothing was changed. After your approval the card is deleted from the board below.');
+	}
+
+	/**
+	 * @return string The message in the language of the current user.
+	 */
+	public static function planDeleteConsequence(): string {
+		return Translator::t('Deck deletes the card the way the web interface does: it leaves the lists, and only the board owner or an administrator can bring it back from the Deck web interface. No tool of this app undoes it.');
 	}
 }

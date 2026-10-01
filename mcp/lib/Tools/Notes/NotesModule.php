@@ -7,7 +7,9 @@ use InvalidArgumentException;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolModule;
 use OCA\Mcp\Tools\ToolResult;
@@ -19,12 +21,18 @@ use OCP\IUserManager;
 /**
  * Notes tools: definitions and one short method per operation. File access, lookup and naming live in
  * NotesRepository; this class adds the operation rules (size, etag, ACL, confirmation, recoverability).
+ *
+ * The four writing tools also answer {@see self::preview()}, which the registry asks for whenever a write
+ * arrives without `confirm: true`: the note as it is now, what the call would do to it, and whether the
+ * trash bin would take it back. A preview creates no category folder and writes nothing.
  */
-class NotesModule implements ToolModule {
+class NotesModule implements ToolModule, PreviewsWrites {
     /** Maximum note size read or written, in bytes. */
     public const MAX_BYTES = 1024 * 1024;
     /** Storage wrapper files_trashbin puts around storages whose deletions go to the trash bin. */
     public const TRASH_STORAGE = 'OCA\\Files_Trashbin\\Storage';
+    /** Characters of the content a plan shows, so the user reads the note and not a wall of text. */
+    private const EXCERPT_CHARS = 400;
     public function __construct(
         private NotesRepository $notes,
         private IAppManager $appManager,
@@ -63,10 +71,9 @@ class NotesModule implements ToolModule {
             ], ['id', 'category']),
             self::tool('notes_delete', 'delete', NotesMessages::TOOL_DELETE_DESCRIPTION, [
                 'id' => $id,
-                'confirm' => ['type' => 'boolean', 'const' => true, 'description' => NotesMessages::PARAM_CONFIRM],
                 'etag' => $etag,
                 'confirm_shared' => $confirmShared,
-            ], ['id', 'confirm']),
+            ], ['id']),
         ];
     }
 
@@ -171,17 +178,11 @@ class NotesModule implements ToolModule {
     }
 
     /**
-     * @param array{id:int, confirm:bool, etag?:string, confirm_shared?:bool} $arguments
+     * @param array{id:int, confirm?:bool, etag?:string, confirm_shared?:bool} $arguments
      * @return array<string, mixed> the deletion receipt, or the shared-write confirmation without deleting
      */
     private function delete(?Folder $root, string $userId, array $arguments): array {
-        if (($arguments['confirm'] ?? false) !== true) {
-            throw new InvalidArgumentException('Invalid argument: confirm');
-        }
-        $user = $this->userManager->get($userId);
-        if ($user === null || !$this->appManager->isEnabledForUser('files_trashbin', $user)) {
-            throw new ToolFailure(NotesMessages::notRecoverable());
-        }
+        $this->assertRecoverable($userId);
         if (($payload = $this->writable($root, $userId, $arguments)) !== null) {
             return $payload;
         }
@@ -195,6 +196,238 @@ class NotesModule implements ToolModule {
         }
         $note->delete();
         return ['id' => $arguments['id'], 'deleted' => true, 'trash' => true];
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * The plan says what the note looks like now and what the call does to it: the title and category it
+     * would end up in, an excerpt of the content, and whether the trash bin would bring it back. A note
+     * that would not be recoverable is refused here with the same message the write would give, so the
+     * model never asks the user about a deletion the server will not perform.
+     */
+    public function preview(string $name, array $arguments, string $userId): array {
+        $root = $this->notes->folder($userId, false);
+        return match ($name) {
+            'notes_create' => $this->previewCreate($root, $arguments),
+            'notes_edit' => $this->previewEdit($root, $userId, $arguments),
+            'notes_move' => $this->previewMove($root, $userId, $arguments),
+            'notes_delete' => $this->previewDelete($root, $userId, $arguments),
+            default => throw new InvalidArgumentException('Unknown tool'),
+        };
+    }
+
+    /**
+     * @param Folder|null $root notes folder
+     * @param array{title:string, content?:string, category?:string} $arguments
+     * @return array<string, mixed> the note the call would create
+     */
+    private function previewCreate(?Folder $root, array $arguments): array {
+        self::checkSize((string)($arguments['content'] ?? ''));
+        $category = (string)($arguments['category'] ?? '');
+        $folder = $this->existingCategory($root, $category);
+        if ($root === null || $folder === null) {
+            // The category folder itself does not exist yet: the write creates it, and the plan says so
+            // rather than creating anything now.
+            return [
+                'action' => 'notes_create',
+                'note' => ['title' => (string)$arguments['title'], 'category' => trim($category, '/'), 'categoryCreated' => $category !== ''],
+                'recoverable' => true,
+                'message' => NotesMessages::planCreate(),
+            ];
+        }
+        return [
+            'action' => 'notes_create',
+            'note' => [
+                'title' => (string)$arguments['title'],
+                'fileName' => $this->notes->freeName($folder, (string)$arguments['title']),
+                'category' => $this->categoryName($root, $folder),
+                'categoryCreated' => false,
+                'content' => self::excerpt((string)($arguments['content'] ?? '')),
+                'bytes' => strlen((string)($arguments['content'] ?? '')),
+            ],
+            'recoverable' => true,
+            'message' => NotesMessages::planCreate(),
+        ];
+    }
+
+    /**
+     * @param Folder|null $root notes folder
+     * @param string $userId authenticated user
+     * @param array{id:int, content?:string, title?:string, etag?:string, confirm_shared?:bool} $arguments
+     * @return array<string, mixed> the note before and after the change
+     */
+    private function previewEdit(?Folder $root, string $userId, array $arguments): array {
+        if (!isset($arguments['content']) && !isset($arguments['title'])) {
+            throw new InvalidArgumentException('Missing argument: content');
+        }
+        $note = $this->notes->find($root, $arguments['id']);
+        if (isset($arguments['content'])) {
+            self::checkSize($arguments['content']);
+        }
+        NodeAccess::checkEtag($note, $arguments['etag'] ?? null);
+        if (!$note->isUpdateable()) {
+            throw new ToolFailure(CommonMessages::forbidden());
+        }
+        $before = $this->snapshot($root, $note);
+        $after = $before;
+        $after['title'] = isset($arguments['title'])
+            ? pathinfo($this->notes->renamedName($note, $arguments['title']), PATHINFO_FILENAME)
+            : $before['title'];
+        if (isset($arguments['content'])) {
+            $after['content'] = self::excerpt($arguments['content']);
+            $after['bytes'] = strlen($arguments['content']);
+        }
+        return [
+            'action' => 'notes_edit',
+            'note' => ['id' => (int)$note->getId(), 'before' => $before, 'after' => $after],
+            'changed' => array_values(array_filter(
+                ['title', 'content'],
+                static fn (string $field): bool => $before[$field] !== $after[$field],
+            )),
+            'access' => $this->accessInfo->describe($note, $userId),
+            'shared' => $this->shared($note, $userId),
+            'recoverable' => true,
+            'message' => NotesMessages::planEdit(),
+        ];
+    }
+
+    /**
+     * @param Folder|null $root notes folder
+     * @param string $userId authenticated user
+     * @param array{id:int, category:string, etag?:string, confirm_shared?:bool} $arguments
+     * @return array<string, mixed> where the note goes
+     */
+    private function previewMove(?Folder $root, string $userId, array $arguments): array {
+        $note = $this->notes->find($root, $arguments['id']);
+        NodeAccess::checkEtag($note, $arguments['etag'] ?? null);
+        if (!$note->isUpdateable()) {
+            throw new ToolFailure(CommonMessages::forbidden());
+        }
+        $category = (string)$arguments['category'];
+        $folder = $this->existingCategory($root, $category);
+        return [
+            'action' => 'notes_move',
+            'note' => $this->snapshot($root, $note),
+            'from' => $this->snapshot($root, $note)['category'],
+            'to' => trim($category, '/'),
+            'categoryCreated' => $folder === null && trim($category, '/') !== '',
+            'titleTaken' => $folder !== null && $folder->nodeExists($note->getName()),
+            'access' => $this->accessInfo->describe($note, $userId),
+            'shared' => $this->shared($note, $userId),
+            'recoverable' => true,
+            'message' => NotesMessages::planMove(),
+        ];
+    }
+
+    /**
+     * @param Folder|null $root notes folder
+     * @param string $userId authenticated user
+     * @param array{id:int, etag?:string, confirm_shared?:bool} $arguments
+     * @return array<string, mixed> the note that would go to the trash bin
+     */
+    private function previewDelete(?Folder $root, string $userId, array $arguments): array {
+        $this->assertRecoverable($userId);
+        $note = $this->notes->find($root, $arguments['id']);
+        NodeAccess::checkEtag($note, $arguments['etag'] ?? null);
+        if (!$note->isDeletable()) {
+            throw new ToolFailure(CommonMessages::forbidden());
+        }
+        if (!$note->getStorage()->instanceOfStorage(self::TRASH_STORAGE)) {
+            throw new ToolFailure(NotesMessages::notRecoverable());
+        }
+        return [
+            'action' => 'notes_delete',
+            'note' => $this->snapshot($root, $note),
+            'access' => $this->accessInfo->describe($note, $userId),
+            'shared' => $this->shared($note, $userId),
+            'trash' => true,
+            'recoverable' => true,
+            'consequence' => NotesMessages::planDeleteConsequence(),
+            'message' => NotesMessages::planDelete(),
+        ];
+    }
+
+    /**
+     * The note as a plan shows it: where it is and what it says, without reading it whole.
+     *
+     * @param Folder $root notes folder
+     * @param File $note note to describe
+     * @return array<string, mixed>
+     * @throws ToolFailure when the note is over the read limit
+     */
+    private function snapshot(Folder $root, File $note): array {
+        $size = (int)$note->getSize();
+        if ($size > self::MAX_BYTES) {
+            throw new ToolFailure(NotesMessages::noteTooLargeForReading(self::MAX_BYTES));
+        }
+        return $this->notes->info($note, $root) + [
+            'content' => self::excerpt((string)$note->getContent()),
+            'bytes' => $size,
+        ];
+    }
+
+    /**
+     * The category folder as it is now, without creating it.
+     *
+     * @param Folder|null $root notes folder
+     * @param string $category requested category
+     * @return Folder|null the folder, or null when it does not exist yet
+     * @throws InvalidArgumentException on traversal or control characters
+     */
+    private function existingCategory(?Folder $root, string $category): ?Folder {
+        if ($root === null || trim($category, '/') === '') {
+            return $root;
+        }
+        try {
+            $relative = ltrim(PathGuard::normalize($category), '/');
+        } catch (InvalidArgumentException) {
+            throw new InvalidArgumentException('Invalid argument: category');
+        }
+        $found = $root->nodeExists($relative) ? $root->get($relative) : null;
+        return $found instanceof Folder ? $found : null;
+    }
+
+    /**
+     * @param Folder $root notes folder
+     * @param Folder $folder category folder below it
+     * @return string the category as the other tools name it
+     */
+    private function categoryName(Folder $root, Folder $folder): string {
+        return trim((string)$root->getRelativePath($folder->getPath()), '/');
+    }
+
+    /**
+     * @param File $note note about to be changed
+     * @param string $userId authenticated user
+     * @return array<string, mixed> the ownership description when the note reaches other people
+     */
+    private function shared(File $note, string $userId): array {
+        $access = $this->accessInfo->describe($note, $userId);
+        return $access['scope'] === NodeAccessInfo::PERSONAL ? [] : [$access];
+    }
+
+    /**
+     * A deletion only happens when the trash bin would take the note back.
+     *
+     * @param string $userId authenticated user
+     * @throws ToolFailure when files_trashbin is off for this account
+     */
+    private function assertRecoverable(string $userId): void {
+        $user = $this->userManager->get($userId);
+        if ($user === null || !$this->appManager->isEnabledForUser('files_trashbin', $user)) {
+            throw new ToolFailure(NotesMessages::notRecoverable());
+        }
+    }
+
+    /**
+     * @param string $content full content of a note
+     * @return string the beginning of it, marked when there is more
+     */
+    private static function excerpt(string $content): string {
+        return mb_strlen($content) > self::EXCERPT_CHARS
+            ? mb_substr($content, 0, self::EXCERPT_CHARS) . NotesMessages::excerptTruncated()
+            : $content;
     }
 
     /**

@@ -53,17 +53,16 @@ final class DeleteEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
             [
                 'calendar' => ToolSchema::calendar(),
                 'uid' => ToolSchema::uid(),
-                'confirm' => ToolSchema::confirm(),
                 'etag' => ToolSchema::etag(),
                 'send_invitations' => ToolSchema::sendInvitations(),
                 'confirm_shared' => SharedGuard::property(),
             ],
-            ['calendar', 'uid', 'confirm'],
+            ['calendar', 'uid'],
         );
     }
 
     /**
-     * @param array{calendar: string, uid: string, confirm: true, etag?: string, send_invitations?: bool, confirm_shared?: bool} $arguments
+     * @param array{calendar: string, uid: string, etag?: string, send_invitations?: bool, confirm_shared?: bool} $arguments
      * @param string $userId authenticated UID
      * @return array{content: list<array{type:string, text:string}>} {uid, calendar, deleted, recoverable, scheduling}
      * @throws CalendarException when not writable, protected, changed meanwhile or the trash is disabled

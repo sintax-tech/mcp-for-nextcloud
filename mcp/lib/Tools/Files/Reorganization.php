@@ -302,22 +302,12 @@ final class Reorganization {
         string $userId,
         array $moves,
         array $mkdirs,
-        bool $dryRun,
-        ?bool $confirmed,
         bool $confirmedShared,
         MovePlanner $planner,
         BatchStore $store,
         int $now,
     ): array {
         $result = $planner->plan($root, $userId, $moves, $mkdirs);
-        if ($dryRun) {
-            // A non-personal item asks for confirmation in the plan as well: the agent shows the user the
-            // list either way, and the code path is the same one files_move already has.
-            return $result->confirmation === null ? $result->plan : array_merge($result->confirmation, $result->plan);
-        }
-        if ($confirmed !== true) {
-            throw new \InvalidArgumentException('files_move_batch com dry_run: false exige confirm: true.');
-        }
         if (!$result->isOk()) {
             throw new ToolFailure(FilesMessages::batchNotOk(
                 count($result->plan['conflicts']),
@@ -326,7 +316,7 @@ final class Reorganization {
         }
         if ($result->confirmation !== null && !$confirmedShared) {
             // The plan travels with the confirmation: the agent shows the user the same list either way.
-            return array_merge($result->confirmation, $result->plan, ['dryRun' => false]);
+            return array_merge($result->confirmation, $result->plan);
         }
         $created = $this->createFolders($root, $mkdirs);
         $moved = [];
@@ -355,6 +345,168 @@ final class Reorganization {
             'undos' => count($moved),
         ];
     }
+    /**
+     * The plan of `files_mkdir`: the levels that do not exist yet, and the folder they would be created in.
+     *
+     * Every check of the write runs here first, so a plan never describes a folder the tool would refuse.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param string $path folder that would be created, user-relative
+     * @return array<string, mixed>
+     * @throws \InvalidArgumentException for a path with traversal or control characters
+     * @throws ToolFailure when the destination is taken, inside the backup folder or denied
+     */
+    public function planMkdir(Folder $root, string $userId, string $path): array {
+        $path = PathGuard::normalize($path);
+        if ($path === '/') {
+            throw new ToolFailure(FilesMessages::destinationExists());
+        }
+        if (FileBackup::isBackupPath($path)) {
+            throw new ToolFailure(FilesMessages::backupPath());
+        }
+        if ($root->nodeExists(ltrim($path, '/'))) {
+            throw new ToolFailure(FilesMessages::destinationExists());
+        }
+        $parent = $this->existingAncestor($root, $path);
+        if (!$parent->isCreatable()) {
+            throw new ToolFailure(CommonMessages::forbidden());
+        }
+        return [
+            'action' => 'files_mkdir',
+            'path' => $path,
+            'created' => $this->missingLevels($root, $path),
+            'createdIn' => $root->getRelativePath($parent->getPath()) ?? '',
+            'access' => $this->access->describe($parent, $userId),
+            'shared' => $this->sharedOf($userId, $parent),
+            'recoverable' => true,
+            'message' => FilesMessages::planMkdir(),
+        ];
+    }
+
+    /**
+     * The plan of `files_copy`: both ends, what the copy weighs and the id the original keeps.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param string $from source path, user-relative
+     * @param string $to destination path, user-relative
+     * @param string|null $etag ETag the caller read before, null to skip the check
+     * @return array<string, mixed>
+     * @throws \InvalidArgumentException for a path with traversal or control characters
+     * @throws ToolFailure for an occupied destination, a stale ETag, a ceiling or a denied write
+     */
+    public function planCopy(Folder $root, string $userId, string $from, string $to, ?string $etag): array {
+        $source = $this->writable($root, $from);
+        NodeAccess::checkEtag($source, $etag);
+        $to = PathGuard::normalize($to);
+        $this->assertFree($root, $to);
+        $measured = $this->measure($source);
+        $destination = $this->destination($root, $to);
+        return [
+            'action' => 'files_copy',
+            'from' => $root->getRelativePath($source->getPath()) ?? '',
+            'to' => $to,
+            'idBefore' => (int)$source->getId(),
+            'nodes' => $measured['nodes'],
+            'bytes' => $measured['bytes'],
+            'access' => $this->access->describe($source, $userId),
+            'shared' => $this->sharedOf($userId, $source, $destination),
+            'recoverable' => true,
+            'message' => FilesMessages::planCopy(),
+        ];
+    }
+
+    /**
+     * The plan of `files_move`: where the node goes, what it carries and what still shares it.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param string $from source path, user-relative
+     * @param string $to destination path, user-relative
+     * @param string|null $etag ETag the caller read before, null to skip the check
+     * @return array<string, mixed>
+     * @throws \InvalidArgumentException for a path with traversal or control characters
+     * @throws MoveConflict when the destination is taken, the folder would land inside itself, or the two ends are on different storages
+     * @throws ToolFailure when the source is missing, unreadable, not changeable, or the destination cannot receive
+     */
+    public function planMove(Folder $root, string $userId, string $from, string $to, ?string $etag): array {
+        $check = $this->inspect($root, $from, $to, $etag);
+        return [
+            'action' => 'files_move',
+            'from' => $root->getRelativePath($check->source->getPath()) ?? '',
+            'to' => $check->to,
+            'idBefore' => (int)$check->source->getId(),
+            'isDir' => $check->source instanceof Folder,
+            'versions' => $this->versions($check->source, $userId),
+            'access' => $this->access->describe($check->source, $userId),
+            'shared' => $this->sharedOf($userId, $check->source, $check->destination),
+            'recoverable' => true,
+            'message' => FilesMessages::planMove(),
+        ];
+    }
+
+    /**
+     * The plan of `files_move_batch`: the ordered list the user approved, with everything that blocks it.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param list<array{from:string, to:string}> $moves requested moves
+     * @param list<string> $mkdirs folders the batch would create
+     * @param MovePlanner $planner the plan builder
+     * @return array<string, mixed>
+     */
+    public function planBatch(Folder $root, string $userId, array $moves, array $mkdirs, MovePlanner $planner): array {
+        $result = $planner->plan($root, $userId, $moves, $mkdirs);
+        $plan = $result->plan;
+        unset($plan['dryRun']);
+        return [
+            'action' => 'files_move_batch',
+            'order' => array_map(static fn (array $item): array => ['from' => $item['from'], 'to' => $item['to']], $moves),
+            'undo' => 'files_undo_batch with the batch_id the run returns',
+            'requiresSharedConfirmation' => $result->confirmation !== null,
+            'message' => FilesMessages::planBatch(),
+        ] + $plan;
+    }
+
+    /**
+     * The plan of `files_undo_batch`: what would go back, what would be removed and what blocks the undo.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param int $batchId batch to undo
+     * @param BatchStore $store where the batch is recorded
+     * @param int $now current time
+     * @return array<string, mixed>
+     * @throws ToolFailure when the batch is not this user's, is gone, or was already undone
+     */
+    public function planUndoBatch(Folder $root, string $userId, int $batchId, BatchStore $store, int $now): array {
+        $batch = $store->find($batchId, $userId);
+        if ($batch === null || $batch->createdAt < $now - BatchStore::LIFETIME_SECONDS) {
+            throw new ToolFailure(FilesMessages::batchNotFound());
+        }
+        if ($batch->isUndone()) {
+            throw new ToolFailure(FilesMessages::batchAlreadyUndone());
+        }
+        $conflicts = $this->undoConflicts($root, $batch);
+        [$removed, $kept] = $this->emptyDirs($root, $batch);
+        return [
+            'action' => 'files_undo_batch',
+            'batch_id' => $batchId,
+            'count' => count($batch->moves),
+            'undo' => array_map(
+                static fn (array $move): array => ['to' => $move['to'], 'from' => $move['from']],
+                array_reverse($batch->moves),
+            ),
+            'removed_dirs' => $removed,
+            'kept_dirs' => $kept,
+            'conflicts' => $conflicts,
+            'ok' => $conflicts === [],
+            'recoverable' => true,
+            'message' => FilesMessages::planUndoBatch(),
+        ];
+    }
+
 
     /**
      * Gives a batch back what it moved, and removes the folders it created while they are still empty.
@@ -485,6 +637,68 @@ final class Reorganization {
      * @param list<string> $paths folders, in the order the batch created them
      * @return list<string> the same paths, deepest first
      */
+
+    /**
+     * Which of the folders a batch created the undo would remove, and which it would keep.
+     *
+     * Only an empty folder the batch itself created goes; a folder with content, one the user cannot delete
+     * and one that is not there any more are all kept. Reading it is what lets the plan answer the question
+     * before anything is moved back.
+     *
+     * @param Folder $root the user's folder
+     * @param Batch $batch batch being undone
+     * @return array{0: list<string>, 1: list<string>} the folders to remove and the folders to keep
+     */
+    private function emptyDirs(Folder $root, Batch $batch): array {
+        $removed = [];
+        $kept = [];
+        $simulatedRemoved = [];
+        foreach ($this->byDepth($batch->dirs) as $dir) {
+            $relative = ltrim($dir, '/');
+            if (!$root->nodeExists($relative)) {
+                continue;
+            }
+            $folder = $root->get($relative);
+            if (!$folder instanceof Folder || !$folder->isDeletable()) {
+                $kept[] = $dir;
+                continue;
+            }
+            $listing = $folder->getDirectoryListing();
+            $remaining = array_filter(
+                $listing,
+                function ($child) use ($root, $simulatedRemoved): bool {
+                    $childPath = '/' . ltrim($root->getRelativePath($child->getPath()) ?? '', '/');
+                    return !in_array($childPath, $simulatedRemoved, true);
+                }
+            );
+            if ($remaining !== []) {
+                $kept[] = $dir;
+                continue;
+            }
+            $removed[] = $dir;
+            $simulatedRemoved[] = $dir;
+        }
+        return [$removed, $kept];
+    }
+
+    /**
+     * Which of the given nodes reach people other than the caller, described the way the write would ask.
+     *
+     * @param string $userId authenticated user
+     * @param Node ...$nodes ends of the operation: the source and the folder that would receive it
+     * @return list<array<string, mixed>> the ownership description of each non-personal end, empty when all are personal
+     */
+    private function sharedOf(string $userId, Node ...$nodes): array {
+        $shared = [];
+        foreach ($nodes as $node) {
+            $info = $this->access->describe($node, $userId);
+            if ($info['scope'] !== NodeAccessInfo::PERSONAL) {
+                $shared[] = $info;
+            }
+        }
+        return $shared;
+    }
+
     private function byDepth(array $paths): array {
         $byDepth = $paths;
         usort($byDepth, fn (string $a, string $b) => substr_count($b, '/') <=> substr_count($a, '/'));

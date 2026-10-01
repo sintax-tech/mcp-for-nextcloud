@@ -13,6 +13,7 @@ use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Notes\NotesModule;
 use OCA\Mcp\Tools\Notes\NotesRepository;
 use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Tools\WriteGate;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
 use OCP\IUser;
@@ -48,7 +49,8 @@ final class NotesModuleTest extends TestCase {
 
     private function tool(string $name, array $arguments = []): array {
         $definition = array_column($this->module->definitions(), null, 'name')[$name];
-        $result = $this->module->call($name, ArgumentValidator::validate($definition['inputSchema'], $arguments), 'alice');
+        $published = WriteGate::publish($definition);
+        $result = $this->module->call($name, ArgumentValidator::validate($published['inputSchema'], $arguments), 'alice');
         return json_decode($result['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR);
     }
 
@@ -213,8 +215,10 @@ final class NotesModuleTest extends TestCase {
     }
 
     public function testDeleteNeedsConfirmationAndTrashbin(): void {
-        $this->invalid('notes_delete', ['id' => $this->ata]);
-        $this->invalid('notes_delete', ['id' => $this->ata, 'confirm' => false]);
+        $plan = $this->module->preview('notes_delete', ['id' => $this->ata], 'alice');
+        $this->assertSame('notes_delete', $plan['action']);
+        $this->assertTrue($plan['recoverable']);
+        $this->assertArrayHasKey('/alice/files/Notes/Reuniões/Ata.md', $this->tree->nodes);
         $this->apps = ['notes'];
         $this->assertSame(NotesMessages::notRecoverable(), $this->failure('notes_delete', ['id' => $this->ata, 'confirm' => true]));
         $this->assertArrayHasKey('/alice/files/Notes/Reuniões/Ata.md', $this->tree->nodes);

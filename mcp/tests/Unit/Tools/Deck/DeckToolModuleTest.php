@@ -156,7 +156,7 @@ final class DeckToolModuleTest extends TestCase {
 			'create card' => [CreateCardHandler::TOOL, ['stackId', 'title']],
 			'edit card' => [EditCardHandler::TOOL, ['cardId']],
 			'move card' => [MoveCardHandler::TOOL, ['cardId', 'stackId']],
-			'delete card' => [DeleteCardHandler::TOOL, ['cardId', 'confirm']],
+			'delete card' => [DeleteCardHandler::TOOL, ['cardId']],
 		];
 	}
 
@@ -172,11 +172,14 @@ final class DeckToolModuleTest extends TestCase {
 		self::assertFalse($schema['additionalProperties']);
 	}
 
-	public function testDeleteRequiresConfirmTrueSoTheRegistryBlocksAnythingElse(): void {
-		$confirm = $this->definitionOf(DeleteCardHandler::TOOL)['inputSchema']['properties']['confirm'];
+	public function testDeleteDefersConfirmToTheRegistryGate(): void {
+		$definition = $this->definitionOf(DeleteCardHandler::TOOL);
+		self::assertArrayNotHasKey('confirm', $definition['inputSchema']['properties'] ?? []);
 
-		self::assertTrue($confirm['const']);
+		$published = \OCA\Mcp\Tools\WriteGate::publish($definition);
+		$confirm = $published['inputSchema']['properties']['confirm'];
 		self::assertSame('boolean', $confirm['type']);
+		self::assertArrayNotHasKey('const', $confirm);
 	}
 
 	public function testEveryWriteToolOffersConfirmSharedAndWarnsAboutItInTheDescription(): void {

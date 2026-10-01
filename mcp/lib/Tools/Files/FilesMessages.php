@@ -27,12 +27,12 @@ final class FilesMessages {
 
     /** @return string description of files_move_batch */
     public static function batchTool(): string {
-        return 'Plan or execute a batch of moves and folder creations, in the given order. With dry_run: true '
-            . '(default) writes nothing and returns the full plan: what would succeed, what conflicts, what '
-            . 'Nextcloud denies, what belongs to someone else, and which folders would be created. With dry_run: false '
-            . 'requires confirm: true, executes in order, creates folders beforehand, and returns batch_id to undo '
-            . 'with files_undo_batch. An item failing midway halts the batch: items already moved remain '
-            . 'recorded and can be undone, and unattempted items are returned as not_attempted.';
+        return 'Move several files and create folders, in the given order. Without confirm: true writes nothing '
+            . 'and returns the full plan: what would succeed, what conflicts, what Nextcloud denies, what belongs '
+            . 'to someone else, and which folders would be created. With confirm: true it executes in order, '
+            . 'creates the folders beforehand and returns a batch_id to undo with files_undo_batch. An item '
+            . 'failing midway halts the batch: items already moved remain recorded and can be undone, and '
+            . 'unattempted items are returned as not_attempted.';
     }
 
     /** @return string description of files_undo_batch */
@@ -135,8 +135,8 @@ final class FilesMessages {
     /** @return string description of files_version_restore */
     public static function versionRestoreTool(): string {
         return 'Restore a previous file version, first creating a copy of current content in '
-            . '"/MCP backups" and a new version in Nextcloud. Requires confirm=true. If the file is outside '
-            . 'your personal folder, restore only after asking the user and retrying with confirm_shared.';
+            . '"/MCP backups" and a new version in Nextcloud. If the file is outside your personal folder, '
+            . 'restore only after asking the user and retrying with confirm_shared.';
     }
 
     // ---------------------------------------------------------------- parameter descriptions
@@ -177,9 +177,83 @@ final class FilesMessages {
         return 'Version identifier, as returned by files_versions_list';
     }
 
-    /** @return string description of the confirm parameter of files_version_restore */
-    public static function confirm(): string {
-        return 'Must be true to confirm restoration';
+    // ---------------------------------------------------------------- plans of the writes
+
+    /**
+     * @return string the plan of files_mkdir
+     */
+    public static function planMkdir(): string {
+        return Translator::t('Nothing was changed. After your approval the folders below are created.');
+    }
+
+    /**
+     * @return string the plan of files_copy
+     */
+    public static function planCopy(): string {
+        return Translator::t('Nothing was changed. After your approval the item below is copied to the destination, as a new independent copy.');
+    }
+
+    /**
+     * @return string the plan of files_move
+     */
+    public static function planMove(): string {
+        return Translator::t('Nothing was changed. After your approval the item below moves to the destination, keeping its id, its versions and its shares.');
+    }
+
+    /**
+     * @return string the plan of files_move_batch
+     */
+    public static function planBatch(): string {
+        return Translator::t('Nothing was changed. After your approval the items below are moved in the order shown and the folders are created. The run returns a batch_id that undoes it.');
+    }
+
+    /**
+     * @return string the plan of files_undo_batch
+     */
+    public static function planUndoBatch(): string {
+        return Translator::t('Nothing was changed. After your approval each item below goes back to where the batch took it from, and only the empty folders the batch created are removed.');
+    }
+
+    /**
+     * @return string the plan of files_edit
+     */
+    public static function planEdit(): string {
+        return Translator::t('Nothing was changed. After your approval the file is replaced by the content below and a copy of the current content is kept in the backup folder.');
+    }
+
+    /**
+     * @return string the plan of files_replace
+     */
+    public static function planReplace(): string {
+        return Translator::t('Nothing was changed. After your approval the snippet below is replaced and a copy of the current content is kept in the backup folder.');
+    }
+
+    /**
+     * @return string the plan of files_checkout
+     */
+    public static function planCheckout(): string {
+        return Translator::t('Nothing was changed. After your approval a single-use download link and a single-use upload link are issued for this file; the upload only succeeds while the ETag below is the current one.');
+    }
+
+    /**
+     * @return string the plan of files_version_restore
+     */
+    public static function planRestore(): string {
+        return Translator::t('Nothing was changed. After your approval the file goes back to the version below, a copy of the current content is kept in the backup folder and a new version is created.');
+    }
+
+    /**
+     * @return string what the backup taken by a write gives back
+     */
+    public static function planBackupConsequence(): string {
+        return Translator::t('The previous content stays available in the backup folder, and Nextcloud keeps the new content as a version of the file.');
+    }
+
+    /**
+     * @return string what the links of a checkout mean
+     */
+    public static function planCheckoutConsequence(): string {
+        return Translator::t('The upload replaces the whole file, takes the same backup as an edit and is refused if the file changed since the checkout.');
     }
 
     // ---------------------------------------------------------------- failures
@@ -251,7 +325,7 @@ final class FilesMessages {
      * @return string a batch whose plan still has blocked items
      */
     public static function batchNotOk(int $conflicts, int $denied): string {
-        return Translator::t('The plan has %s conflict(s) and %s item(s) without permission; run with dry_run: true, fix and try again. Nothing was moved.', [(string)$conflicts, (string)$denied]);
+        return Translator::t('The plan has %s conflict(s) and %s item(s) without permission; call it again without confirm, fix the list and try again. Nothing was moved.', [(string)$conflicts, (string)$denied]);
     }
 
     /** @return string a folder moved into itself or into one of its own subfolders */

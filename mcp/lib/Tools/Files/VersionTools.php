@@ -108,6 +108,26 @@ final class VersionTools {
     }
 
     /**
+     * Describes the version a rollback would bring back, without reading its content and without writing.
+     *
+     * @param File $file file to be rolled back
+     * @param string $revision version identifier as returned by list()
+     * @param string $viewerUid authenticated user
+     * @return array{revision:string, timestamp:string, size:int, mime:string, name:string}
+     * @throws ToolFailure when versioning is off or no version carries that identifier
+     */
+    public function describe(File $file, string $revision, string $viewerUid): array {
+        $version = $this->find($this->requireVersioning($viewerUid), $file, $revision);
+        return [
+            'revision' => (string)$version->getRevisionId(),
+            'timestamp' => gmdate('Y-m-d\TH:i:s\Z', $version->getTimestamp()),
+            'size' => (int)$version->getSize(),
+            'mime' => $version->getMimeType(),
+            'name' => $version->getSourceFileName(),
+        ];
+    }
+
+    /**
      * Rolls the file back to a stored version, after the same backup files_edit performs.
      *
      * The shared-write guard runs in the module before this call, so the confirmation payload is a

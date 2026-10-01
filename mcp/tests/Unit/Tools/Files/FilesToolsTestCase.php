@@ -21,6 +21,7 @@ use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Files\VersionTools;
 use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Tools\WriteGate;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\IRootFolder;
@@ -115,11 +116,31 @@ abstract class FilesToolsTestCase extends TestCase {
         return new MoveReport($this->createMock(\Psr\Container\ContainerInterface::class), $this->tree->shareManager(), $this->apps);
     }
 
-    /** Runs a tool the way the registry does: schema validation first, then the handler. */
+    /**
+     * Runs a confirmed tool the way the registry does: the published schema first, then the module.
+     *
+     * The registry is what refuses an unconfirmed write, and {@see WriteGateContractTest} covers that refusal
+     * for every module; here the call goes straight to the module so a test can state what the write does
+     * without repeating the confirmation on every line.
+     */
     protected function tool(string $name, array $arguments = []): array {
+        return $this->module->call($name, $this->validated($name, $arguments), 'alice');
+    }
+
+    /** @return array<string, mixed> the decoded JSON of the plan of a write */
+    protected function plan(string $name, array $arguments = []): array {
+        return $this->module->preview($name, $this->validated($name, $arguments), 'alice');
+    }
+
+    /**
+     * @param string $name tool name
+     * @param array<string, mixed> $arguments arguments of the test
+     * @return array<string, mixed> the arguments validated against the schema the client sees
+     */
+    protected function validated(string $name, array $arguments): array {
         foreach ($this->module->definitions() as $definition) {
             if ($definition['name'] === $name) {
-                return $this->module->call($name, ArgumentValidator::validate($definition['inputSchema'], $arguments), 'alice');
+                return ArgumentValidator::validate(WriteGate::publish($definition)['inputSchema'], $arguments);
             }
         }
         $this->fail("no tool $name");

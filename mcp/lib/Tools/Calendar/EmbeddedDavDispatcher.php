@@ -276,12 +276,12 @@ class EmbeddedDavDispatcher implements CalendarDav {
             403 => CalendarException::forbidden(),
             404 => CalendarException::notFound(),
             // 409 Conflict, including OCA\DAV\Exception\UidConflict (a duplicate UID in the calendar).
-            409 => CalendarException::conflict(CalendarMessages::CONFLICT_UID),
+            409 => CalendarException::conflict(CalendarMessages::conflictUid()),
             412 => $request->getHeader('If-Match') !== null
-                ? CalendarException::conflict(CalendarMessages::CONFLICT_ETAG)
-                : CalendarException::conflict(CalendarMessages::CONFLICT_NAME),
+                ? CalendarException::conflict(CalendarMessages::conflictEtag())
+                : CalendarException::conflict(CalendarMessages::conflictName()),
             // 415 or 400 from the iCalendar validation of the CalDAV plugin.
-            400, 415 => CalendarException::blocked(CalendarMessages::DATA_REFUSED),
+            400, 415 => CalendarException::blocked(CalendarMessages::dataRefused()),
             default => new CalendarException(CalendarMessages::DAV_FAILURE),
         };
         return new CalendarException($mapped->getMessage(), $exception->getHTTPCode(), $exception);

@@ -5,6 +5,8 @@ namespace OCA\Mcp\Tests\Unit\Checkout;
 
 use OCA\Mcp\Controller\CheckoutController;
 use OCA\Mcp\Checkout\CheckoutToken;
+use OCA\Mcp\L10n\UserL10n;
+use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
@@ -138,14 +140,15 @@ final class CheckoutControllerTest extends TestCase {
      * @param NodeAccessInfo $access ownership description
      * @return TestableCheckoutController the controller under test
      */
-    private function build($root, $session, $config, $urls, FileBackup $backup, NodeAccessInfo $access): TestableCheckoutController {
+    private function build($root, $session, $config, $urls, FileBackup $backup, NodeAccessInfo $access, ?UserL10n $l10n = null): TestableCheckoutController {
         $request = $this->createMock(IRequest::class);
         $request->method('getHeader')->willReturnCallback(fn (string $name): string => $this->headers[$name] ?? '');
         $request->method('getMethod')->willReturn('PUT');
         return new TestableCheckoutController('mcp', $request, $root, $session,
             $this->temp, $this->time, $this->policy, $this->store, $this->hasher,
             new CheckoutService($urls, $config, $this->time, $this->hasher, $this->store, $this->apps, $this->users), $backup,
-            new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class));
+            new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class),
+            $l10n, $this->users);
     }
 
     /** Stores an upload token for the file, standing for a checkout the agent already made. */
@@ -221,6 +224,7 @@ final class CheckoutControllerTest extends TestCase {
     }
 
     public function testADownloadTokenIsNotAcceptedOnTheUploadRoute(): void {
+        $this->store->rows = [];
         $this->issue(CheckoutToken::KIND_DOWNLOAD);
         $this->assertSame(404, $this->code($this->controller->upload()));
         $this->assertSame([], $this->tree->ops);
@@ -388,6 +392,7 @@ final class CheckoutControllerTest extends TestCase {
     }
 
     public function testDownloadStreamsTheFileAndSpendsItsToken(): void {
+        $this->store->rows = [];
         $this->issue(CheckoutToken::KIND_DOWNLOAD);
         $response = $this->controller->download();
         $this->assertSame(200, $this->code($response));
@@ -522,6 +527,51 @@ final class CheckoutControllerTest extends TestCase {
         $headers = $this->headers($this->controller->download());
         $this->assertStringContainsString("filename*=UTF-8''ata%20da%20reuni%C3%A3o.md", $headers['Content-Disposition']);
         $this->assertStringNotContainsString('filename="ata da', $headers['Content-Disposition']);
+    }
+
+    public function testEarlyRefusalsReachTheClientInTheLanguageOfTheTokenOwner(): void {
+        $factory = JsonL10n::wire($this->createMock(\OCP\L10N\IFactory::class), ['alice' => 'pt_BR']);
+        $l10n = new UserL10n($factory);
+        $root = $this->createMock(IRootFolder::class);
+        $root->method('getUserFolder')->willReturnCallback(fn (string $uid) => $uid === 'alice'
+            ? $this->tree->rootFolder()
+            : throw new \LogicException('other user'));
+        $config = $this->config->mock($this);
+        $urls = $this->createMock(IURLGenerator::class);
+        $urls->method('linkToRouteAbsolute')->willReturn('/apps/mcp/x');
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
+        $controller = $this->build($root, $this->session, $config, $urls,
+            new FileBackup($this->apps, $this->users, $this->time, $config), $access, $l10n);
+        $controller->route = ['token' => self::TOKEN];
+
+        // 1. Multipart refusal in Portuguese
+        $this->issue(CheckoutToken::KIND_UPLOAD);
+        $this->headers['Content-Type'] = 'multipart/form-data; boundary=xyz';
+        $response = $controller->upload();
+        $this->assertSame(400, $this->code($response));
+        $this->assertStringContainsString('Envie os bytes do arquivo como corpo bruto (curl -T), não como formulário multipart.', (string)$response->render());
+
+        // 2. Empty body refusal in Portuguese
+        $this->controller = $controller;
+        $this->headers['Content-Type'] = 'application/octet-stream';
+        $this->stage('');
+        $response = $controller->upload();
+        $this->assertSame(400, $this->code($response));
+        $this->assertStringContainsString('O corpo enviado está vazio; nada foi gravado.', (string)$response->render());
+
+        // 3. Revoked grant refusal in Portuguese
+        $this->stage('conteudo valido');
+        $this->policy->setGrant('alice', 'files', 'edit', false);
+        $response = $controller->upload();
+        $this->assertSame(403, $this->code($response));
+        $this->assertStringContainsString('A conexão com o MCP foi desligada ou o acesso a esta pasta não está mais concedido.', (string)$response->render());
+
+        // 4. Download with revoked grant refusal in Portuguese
+        $this->store->rows = [];
+        $this->issue(CheckoutToken::KIND_DOWNLOAD);
+        $response = $controller->download();
+        $this->assertSame(403, $this->code($response));
+        $this->assertStringContainsString('A conexão com o MCP foi desligada ou o acesso a esta pasta não está mais concedido.', (string)$response->render());
     }
 
     public function testAnUploadTokenIsNotAcceptedOnTheDownloadRoute(): void {

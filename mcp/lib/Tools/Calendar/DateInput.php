@@ -48,7 +48,7 @@ final class DateInput {
                 return (new DateTimeImmutable($input))->setTimezone($utc);
             }
         }
-        throw new CalendarArgumentException(sprintf(CalendarMessages::INVALID_ISO_DATE, $label));
+        throw new CalendarArgumentException(CalendarMessages::invalidIsoDate($label));
     }
 
     /**
@@ -61,7 +61,7 @@ final class DateInput {
      */
     public function day(string $input, string $label): DateTimeImmutable {
         if (!$this->isDateOnly($input)) {
-            throw new CalendarArgumentException(sprintf(CalendarMessages::INVALID_ALL_DAY_FORMAT, $label));
+            throw new CalendarArgumentException(CalendarMessages::invalidAllDayFormat($label));
         }
         return $this->parse($input, $label);
     }
@@ -80,10 +80,10 @@ final class DateInput {
         $start = $from === null ? $now->setTimezone(new DateTimeZone('UTC')) : $this->parse($from, 'from');
         $end = $to === null ? $start->modify('+' . self::DEFAULT_WINDOW_SECONDS . ' seconds') : $this->parse($to, 'to');
         if ($start >= $end) {
-            throw new CalendarArgumentException(CalendarMessages::RANGE_FROM_AFTER_TO);
+            throw new CalendarArgumentException(CalendarMessages::rangeFromAfterTo());
         }
         if ($end->getTimestamp() - $start->getTimestamp() > self::MAX_WINDOW_SECONDS) {
-            throw CalendarException::limit(CalendarMessages::WINDOW_TOO_WIDE);
+            throw CalendarException::limit(CalendarMessages::windowTooWide());
         }
         return [$start, $end];
     }
@@ -113,7 +113,7 @@ final class DateInput {
      */
     public function timeZone(string $name): DateTimeZone {
         if (!in_array($name, DateTimeZone::listIdentifiers(DateTimeZone::ALL_WITH_BC), true)) {
-            throw new CalendarArgumentException(CalendarMessages::INVALID_TIME_ZONE);
+            throw new CalendarArgumentException(CalendarMessages::invalidTimeZone());
         }
         return new DateTimeZone($name);
     }

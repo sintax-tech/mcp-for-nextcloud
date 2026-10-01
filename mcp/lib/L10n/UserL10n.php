@@ -11,8 +11,14 @@ use OCP\L10N\IFactory;
  * Resolves the translator of the `mcp` app for an authenticated user.
  *
  * Token requests (claude.ai, Desktop) carry no session and no reliable Accept-Language, so the IL10N the container
- * injects is no use here: the language is the one stored in the account, then the server default, then English,
- * which is what IFactory::getUserLanguage() already does.
+ * injects is no use here: the language is resolved in explicit priority:
+ * 1. Forced language (if configured on the instance)
+ * 2. User account language preference
+ * 3. Server default language
+ * 4. English (en) fallback
+ *
+ * Languages not available in the `mcp` app are skipped so Nextcloud factory heuristics (such as inspecting
+ * Accept-Language headers) never take precedence over account or server defaults.
  */
 class UserL10n {
     public function __construct(private IFactory $factory) {
@@ -24,6 +30,15 @@ class UserL10n {
      * @param IUser $user authenticated user
      */
     public function forUser(IUser $user): IL10N {
-        return $this->factory->get('mcp', $this->factory->getUserLanguage($user));
+        try {
+            foreach ($this->factory->getLanguageIterator($user) as $lang) {
+                if ($lang === "en" || $this->factory->languageExists("mcp", $lang)) {
+                    return $this->factory->get("mcp", $lang);
+                }
+            }
+        } catch (\Throwable) {
+            // Fall back safely if the iterator is unavailable
+        }
+        return $this->factory->get("mcp", "en");
     }
 }

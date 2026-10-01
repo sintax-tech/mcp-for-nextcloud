@@ -19,7 +19,7 @@ final class DateInputTest extends TestCase {
 
     public function testRejectsInvalidOffset(): void {
         $this->expectException(CalendarArgumentException::class);
-        $this->expectExceptionMessage('Data ISO inválida em to.');
+        $this->expectExceptionMessage('Invalid ISO date in to.');
         (new DateInput())->parse('2026-03-10T10:30:00+25:00', 'to');
     }
 

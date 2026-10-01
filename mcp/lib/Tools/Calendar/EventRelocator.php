@@ -52,18 +52,18 @@ class EventRelocator {
         $source = $this->access->resolveWritable($userId, $sourcePath);
         $target = $this->access->resolveWritable($userId, $targetPath);
         if ($source->id === $target->id) {
-            throw CalendarException::conflict(CalendarMessages::CONFLICT_SAME_CALENDAR);
+            throw CalendarException::conflict(CalendarMessages::conflictSameCalendar());
         }
         $sameOwner = $source->ownerPrincipal === $target->ownerPrincipal;
         if (!$crossOwner && !$sameOwner) {
-            throw CalendarException::blocked(CalendarMessages::MOVE_NEEDS_TRANSFER);
+            throw CalendarException::blocked(CalendarMessages::moveNeedsTransfer());
         }
         if ($crossOwner && $sameOwner) {
-            throw CalendarException::blocked(CalendarMessages::TRANSFER_NEEDS_MOVE);
+            throw CalendarException::blocked(CalendarMessages::transferNeedsMove());
         }
         $stored = $this->events->forChange($source, $uid, $userId, $etag);
         if ($crossOwner && $this->hasAttendees($stored->vcalendar)) {
-            throw CalendarException::blocked(CalendarMessages::TRANSFER_WITH_ATTENDEES);
+            throw CalendarException::blocked(CalendarMessages::transferWithAttendees());
         }
         $this->events->assertFree($target, $uid, $stored->uri);
         return new PreparedCalendarWrite($source, $target, $stored, $stored->vcalendar, function () use ($userId, $source, $target, $stored, $uid): array {
@@ -72,14 +72,14 @@ class EventRelocator {
             // (sabre/dav/lib/DAV/Tree.php:163-187), and that fallback swallows exceptions
             // (apps/dav/lib/CalDAV/Calendar.php:416-432), so the 201 alone proves nothing.
             if ($this->store->objectByUid($target->id, $uid) === null || $this->store->objectByUid($source->id, $uid) !== null) {
-                throw new \RuntimeException(CalendarMessages::MOVE_NOT_CONFIRMED);
+                throw new \RuntimeException(CalendarMessages::moveNotConfirmed());
             }
             return [
                 'uid' => $uid,
                 'from' => $source->path,
                 'to' => $target->path,
                 'participantsNotified' => false,
-                'note' => CalendarMessages::PARTICIPANTS_NOT_NOTIFIED,
+                'note' => CalendarMessages::participantsNotNotified(),
             ];
         });
     }

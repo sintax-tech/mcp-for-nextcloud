@@ -80,7 +80,7 @@ final class DeleteEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
             return $confirmation;
         }
         if (!$this->trash->recoverable()) {
-            throw CalendarException::blocked(CalendarMessages::TRASH_DISABLED);
+            throw CalendarException::blocked(CalendarMessages::trashDisabled());
         }
         $stored = $this->events->forChange($calendar, $arguments['uid'], $userId, $arguments['etag'] ?? null);
         $notify = (bool)($arguments['send_invitations'] ?? false);

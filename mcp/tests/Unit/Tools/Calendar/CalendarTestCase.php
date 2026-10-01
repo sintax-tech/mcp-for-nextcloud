@@ -73,6 +73,7 @@ abstract class CalendarTestCase extends TestCase {
         $this->store->addCalendar(self::ALICE, 6, 'tasks', self::ALICE, ['components' => ['VTODO']]);
         $this->store->addCalendar(self::ALICE, 7, 'old', self::ALICE, ['deleted' => true]);
         $this->dav = new FakeCalendarDav($this->store);
+        \OCA\Mcp\L10n\Translator::use(new \OCA\Mcp\Tests\Unit\L10n\JsonL10n('pt_BR'));
 
         $time = $this->createMock(ITimeFactory::class);
         $time->method('now')->willReturnCallback(static fn () => new DateTimeImmutable(self::NOW));
@@ -132,6 +133,10 @@ abstract class CalendarTestCase extends TestCase {
      *
      * @return IUserManager double
      */
+    protected function tearDown(): void {
+        \OCA\Mcp\L10n\Translator::reset();
+    }
+
     private function users(): IUserManager {
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturnCallback(function ($uid): ?IUser {

@@ -14,14 +14,14 @@ final class CalendarException extends ToolFailure {
      * @return self calendar or event missing, or not visible to the user
      */
     public static function notFound(): self {
-        return new self(CalendarMessages::NOT_FOUND);
+        return new self(CalendarMessages::notFound());
     }
 
     /**
      * @return self the user cannot write to the resource
      */
     public static function forbidden(): self {
-        return new self(CalendarMessages::FORBIDDEN);
+        return new self(CalendarMessages::forbidden());
     }
 
     /**

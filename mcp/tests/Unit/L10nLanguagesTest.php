@@ -63,6 +63,15 @@ final class L10nLanguagesTest extends TestCase {
             sort($fromJs);
             sort($fromJson);
             $this->assertSame($fromJson, $fromJs, 'l10n/' . $language . '.js and .json must list the same keys');
+
+            $this->assertMatchesRegularExpression(
+                '/\},\s*"((?:nplurals=[^"]+))"\s*\);\s*$/s',
+                $js,
+                $language . '.js must have valid OC.L10N.register syntax with the pluralForm string as 3rd argument',
+            );
+            preg_match('/\},\s*"((?:nplurals=[^"]+))"\s*\);\s*$/s', $js, $jsPluralMatch);
+            $decoded = json_decode((string)file_get_contents(self::APP_ROOT . '/l10n/' . $language . '.json'), true);
+            $this->assertSame($decoded['pluralForm'], $jsPluralMatch[1] ?? '', $language . '.js pluralForm must match .json pluralForm');
         }
     }
 

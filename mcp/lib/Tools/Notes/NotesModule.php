@@ -6,6 +6,7 @@ namespace OCA\Mcp\Tools\Notes;
 use InvalidArgumentException;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
+use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolModule;
@@ -186,7 +187,7 @@ class NotesModule implements ToolModule {
         }
         $note = $this->notes->find($root, $arguments['id']);
         if (!$note->isDeletable()) {
-            throw new ToolFailure(ToolFailure::FORBIDDEN);
+            throw new ToolFailure(CommonMessages::forbidden());
         }
         // An enabled app does not cover every mount: external or excluded storages delete permanently.
         if (!$note->getStorage()->instanceOfStorage(self::TRASH_STORAGE)) {
@@ -208,7 +209,7 @@ class NotesModule implements ToolModule {
     private function writable(?Folder $root, string $userId, array $arguments): ?array {
         $note = $this->notes->find($root, $arguments['id']);
         if (!$note->isUpdateable()) {
-            throw new ToolFailure(ToolFailure::FORBIDDEN);
+            throw new ToolFailure(CommonMessages::forbidden());
         }
         NodeAccess::checkEtag($note, $arguments['etag'] ?? null);
         return $this->guard->guard($note, $userId, (string)$arguments['id'], (bool)($arguments['confirm_shared'] ?? false));

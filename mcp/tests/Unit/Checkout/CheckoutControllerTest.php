@@ -218,6 +218,19 @@ final class CheckoutControllerTest extends TestCase {
             'write /alice/files/Documentos/ata.md'], $this->tree->ops);
     }
 
+    /** curl -T may omit Content-Type or use the actual file MIME type. */
+    public function testRawUploadAcceptsMissingAndFileContentTypes(): void {
+        foreach (['', 'text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/octet-stream'] as $type) {
+            $this->refresh();
+            $this->store->rows = [];
+            $this->issue();
+            $this->stage('raw file bytes');
+            $this->headers['Content-Type'] = $type;
+            $this->assertSame(200, $this->code($this->controller->upload()), $type);
+            $this->assertSame('raw file bytes', $this->tree->nodes['/alice/files/Documentos/ata.md']['content']);
+        }
+    }
+
     public function testAnUnknownTokenIsRefused(): void {
         $this->assertSame(404, $this->code($this->unknown()));
         $this->assertSame([], $this->tree->ops);
@@ -442,17 +455,18 @@ final class CheckoutControllerTest extends TestCase {
         $this->assertNotContains('consume', $this->store->ops, 'o link tem que continuar valendo');
     }
 
-    /** Any other interpreted content type is 415, and the link survives. */
-    public function testAnInterpretedContentTypeIsRefusedWithoutSpendingTheToken(): void {
+    /** JSON and form MIME types are also file bytes, never decoded parameters. */
+    public function testAnInterpretedContentTypeIsWrittenAsRawBytes(): void {
         foreach (['application/json', 'application/x-www-form-urlencoded'] as $type) {
             $this->refresh();
+            $this->store->rows = [];
             $this->issue();
             $this->stage('{"token":"outro"}');
             $this->headers['Content-Type'] = $type;
             $response = $this->controller->upload();
-            $this->assertSame(415, $this->code($response), $type);
-            $this->assertSame([], $this->tree->ops, $type);
-            $this->assertNotContains('consume', $this->store->ops, 'o link tem que continuar valendo');
+            $this->assertSame(200, $this->code($response), $type);
+            $this->assertSame('{"token":"outro"}', $this->tree->nodes['/alice/files/Documentos/ata.md']['content']);
+            $this->assertContains('consume', $this->store->ops);
         }
     }
 
@@ -461,8 +475,10 @@ final class CheckoutControllerTest extends TestCase {
         $this->issue();
         $this->stage('{"token":"ncmcp_co_u_atacante","path":"/Documentos/outro.md"}');
         $this->headers['Content-Type'] = 'application/json';
-        $this->assertSame(415, $this->code($this->controller->upload()));
-        $this->assertSame([], $this->tree->ops);
+        $this->assertSame(200, $this->code($this->controller->upload()));
+        $this->assertSame('{"token":"ncmcp_co_u_atacante","path":"/Documentos/outro.md"}',
+            $this->tree->nodes['/alice/files/Documentos/ata.md']['content']);
+        $this->assertArrayNotHasKey('/alice/files/Documentos/outro.md', $this->tree->nodes);
     }
 
     /** An empty body is refused without writing and without spending the link. */
@@ -504,7 +520,7 @@ final class CheckoutControllerTest extends TestCase {
     public function testTheRejectionsThatKeepTheLinkAreExactlyTheOnesBeforeTheGuard(): void {
         $this->issue();
         foreach ([
-            'sem tipo de corpo' => ['Content-Type' => 'text/plain'],
+            'multipart body' => ['Content-Type' => 'multipart/form-data; boundary=x'],
             'corpo vazio' => ['Content-Length' => '0'],
             'acima do limite' => ['Content-Length' => (string)(self::UPLOAD_LIMIT + 1)],
         ] as $label => $headers) {

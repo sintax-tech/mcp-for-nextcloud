@@ -126,6 +126,7 @@ final class FilesMessages {
     public static function checkoutTool(): string {
         return 'Provide temporary download and upload links to edit any file type (document, spreadsheet, PDF, '
             . 'image) with local tools (curl) without passing content through the model, up to the upload limit. '
+            . 'Upload raw bytes with curl -T /tmp/file -X PUT -H "Content-Type: application/octet-stream" "$UPLOAD_URL". '
             . 'A text file can also be edited directly with files_edit or files_replace. Links are valid for 5 to 15 minutes, single-use, '
             . 'and bound to you, the file, and current ETag: if the file changes before upload, nothing is '
             . 'written. Upload creates the same backup as files_edit. If the file is outside your personal '

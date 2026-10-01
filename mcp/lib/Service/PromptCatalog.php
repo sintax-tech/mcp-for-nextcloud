@@ -61,7 +61,7 @@ final class PromptCatalog {
             '2. Download the file using your shell: curl -sS -o /tmp/file "$DOWNLOAD_URL".',
             '   The link is valid for a few minutes and single-use: if it fails, run files_checkout again.',
             '3. Edit /tmp/file with your local tools. The user sees the diff; do not write anything outside the file.',
-            '4. Return the file with curl -sS -T /tmp/file -X PUT "$UPLOAD_URL".',
+            '4. Return the file with curl -sS -T /tmp/file -X PUT -H "Content-Type: application/octet-stream" "$UPLOAD_URL".',
             '   The server validates the token and ETag, creates a backup in "/MCP backups", saves the file, and returns the new ETag.',
             '   If the file changed in the meantime, the response is a conflict (409) and nothing was written: re-read and repeat.',
             '',

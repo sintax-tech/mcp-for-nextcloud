@@ -6,6 +6,7 @@ namespace OCA\Mcp\Tests\Unit\OAuth;
 use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\AuthorizationRequest;
 use OCA\Mcp\OAuth\ClientMetadata;
+use OCA\Mcp\OAuth\NativeClient;
 use OCA\Mcp\OAuth\OAuthException;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\OAuth\TokenOwnerGate;
@@ -29,11 +30,14 @@ final class TokenFlowTest extends TestCase {
     private GrantPolicy $policy;
     private int $now = 1_000_000;
     private TokenService $service;
+    private InMemoryConfig $appConfig;
     private AccessTokenAuthenticator $authenticator;
 
     protected function setUp(): void {
         $this->store = new InMemoryOAuthStore();
-        $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this), $this->store);
+        $this->appConfig = new InMemoryConfig();
+        $appConfigMock = $this->appConfig->mock($this);
+        $this->policy = new GrantPolicy($appConfigMock, $this->store);
         $this->policy->setGlobalEnabled(true);
         $this->policy->setEligible('alice', true);
         $this->policy->setConnected('alice', true);
@@ -48,7 +52,7 @@ final class TokenFlowTest extends TestCase {
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $alice : null);
         $gate = new TokenOwnerGate($users, $this->policy, $this->store);
-        $this->service = new TokenService($this->store, $hasher, $time, $gate);
+        $this->service = new TokenService($this->store, $hasher, $time, $gate, $appConfigMock);
         $this->authenticator = new AccessTokenAuthenticator($this->store, $hasher, $time, $gate);
     }
 
@@ -56,6 +60,41 @@ final class TokenFlowTest extends TestCase {
         $request = new AuthorizationRequest(new ClientMetadata(self::CLIENT, 'Claude', [self::REDIRECT]),
             self::REDIRECT, 'xyz', self::CHALLENGE, self::RESOURCE, 'mcp');
         return $this->service->createCode($request, 'alice');
+    }
+
+    private function nativeCode(): string {
+        $request = new AuthorizationRequest(NativeClient::metadata(), 'http://localhost:53421/oauth/callback',
+            'xyz', self::CHALLENGE, self::RESOURCE, 'mcp');
+        return $this->service->createCode($request, 'alice');
+    }
+
+    private function nativeExchange(string $code): array {
+        return $this->service->exchangeCode([
+            'grant_type' => 'authorization_code', 'code' => $code, 'code_verifier' => self::VERIFIER,
+            'client_id' => NativeClient::CLIENT_ID, 'redirect_uri' => 'http://localhost:53421/oauth/callback',
+            'resource' => self::RESOURCE,
+        ]);
+    }
+
+    public function testNativeClientExchangesAndRefreshesWhileEnabled(): void {
+        $this->appConfig->app['mcp'][NativeClient::CONFIG_KEY] = '1';
+        $tokens = $this->nativeExchange($this->nativeCode());
+        $next = $this->service->refresh(['refresh_token' => $tokens['refresh_token'], 'client_id' => NativeClient::CLIENT_ID]);
+        $this->assertNotSame($tokens['refresh_token'], $next['refresh_token']);
+    }
+
+    public function testDisabledNativeClientCannotExchangeAnIssuedCode(): void {
+        $this->appConfig->app['mcp'][NativeClient::CONFIG_KEY] = '1';
+        $code = $this->nativeCode();
+        $this->appConfig->app['mcp'][NativeClient::CONFIG_KEY] = '0';
+        $this->assertGrantFails(fn () => $this->nativeExchange($code));
+    }
+
+    public function testDisabledNativeClientCannotRefresh(): void {
+        $this->appConfig->app['mcp'][NativeClient::CONFIG_KEY] = '1';
+        $tokens = $this->nativeExchange($this->nativeCode());
+        $this->appConfig->app['mcp'][NativeClient::CONFIG_KEY] = '0';
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $tokens['refresh_token'], 'client_id' => NativeClient::CLIENT_ID]));
     }
 
     private function exchange(string $code, array $override = []): array {

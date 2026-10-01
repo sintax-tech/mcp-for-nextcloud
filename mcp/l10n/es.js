@@ -297,6 +297,7 @@ OC.L10N.register(
     "restore" : "restaurar",
     "Restore file version" : "Restaurar versión del archivo",
     "Restricted" : "Restringida",
+    "Local program (native client)" : "Programa local (cliente nativo)",
     "Returns to: %s" : "Vuelve a: %s",
     "Saved" : "Guardado",
     "Saving…" : "Guardando…",

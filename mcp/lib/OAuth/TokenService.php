@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\OAuth;
 
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IConfig;
 
 /**
  * Issues authorization codes and token grants and runs the token endpoint grants (authorization_code with PKCE,
@@ -19,6 +20,7 @@ class TokenService {
         private TokenHasher $hasher,
         private ITimeFactory $time,
         private TokenOwnerGate $gate,
+        private IConfig $config,
     ) {}
 
     /**
@@ -59,6 +61,7 @@ class TokenService {
             || ($get('resource') !== '' && !ResourceUrl::sameResource($get('resource'), (string)$row['resource']))) {
             throw new OAuthException('invalid_grant', 'Invalid authorization code');
         }
+        $this->assertClientEnabled((string)$row['client_id']);
         if ($this->gate->owner((string)$row['user_id']) === null) {
             throw new OAuthException('invalid_grant', 'MCP access is not allowed for this account');
         }
@@ -85,6 +88,7 @@ class TokenService {
         if ((int)$row['refresh_expires'] < $now || $row['client_id'] !== $get('client_id')) {
             throw new OAuthException('invalid_grant', 'Invalid refresh token');
         }
+        $this->assertClientEnabled((string)$row['client_id']);
         if ($this->gate->owner((string)$row['user_id']) === null) {
             throw new OAuthException('invalid_grant', 'MCP access is not allowed for this account');
         }
@@ -96,6 +100,16 @@ class TokenService {
             throw new OAuthException('invalid_grant', 'Invalid refresh token');
         }
         return $this->body($access, $refresh, (string)$row['scope']);
+    }
+
+    /**
+     * @param string $clientId client of a grant being exchanged or renewed
+     * @throws OAuthException invalid_grant when the grant belongs to the native client and it is disabled
+     */
+    private function assertClientEnabled(string $clientId): void {
+        if ($clientId === NativeClient::CLIENT_ID && !ClientResolver::nativeEnabled($this->config)) {
+            throw new OAuthException('invalid_grant', 'This client is disabled');
+        }
     }
 
     /** Revokes every access and refresh token of the user (personal Disconnect). */

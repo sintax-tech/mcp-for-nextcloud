@@ -23,17 +23,18 @@ final class CardInput {
 	/**
 	 * Validates account IDs without echoing their values on failure.
 	 * @param mixed $value Requested account ID list.
+	 * @param string $field Argument the list came from, named in the failure.
 	 * @return list<string> Unique account IDs.
 	 * @throws InvalidArgumentException When the list or an account ID is malformed.
 	 */
-	public static function assignees(mixed $value): array {
+	public static function assignees(mixed $value, string $field = 'assignees'): array {
 		if (!is_array($value) || !array_is_list($value) || count($value) > 100) {
-			throw new ArgumentValidationException('Invalid argument: assignees', 'assignees',
+			throw new ArgumentValidationException('Invalid argument: ' . $field, $field,
 				Translator::t('expected a list of at most 100 account IDs'));
 		}
 		foreach ($value as $uid) {
 			if (!is_string($uid) || trim($uid) === '' || mb_strlen($uid) > 255) {
-				throw new ArgumentValidationException('Invalid argument: assignees', 'assignees',
+				throw new ArgumentValidationException('Invalid argument: ' . $field, $field,
 					Translator::t('expected non-empty account IDs of at most 255 characters'));
 			}
 		}

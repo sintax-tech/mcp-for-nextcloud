@@ -12,6 +12,7 @@ use OCA\Mcp\Tools\Contacts\ContactCard;
 use OCA\Mcp\Tools\Contacts\ContactDav;
 use OCA\Mcp\Tools\Contacts\ContactStore;
 use OCA\Mcp\Tools\Contacts\ContactsModule;
+use OCA\Mcp\Tools\Contacts\SystemContacts;
 use OCA\Mcp\Tools\RendersPlans;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -196,7 +197,9 @@ final class ContactsPlanRendererTest extends TestCase {
             $this->createMock(ContactDav::class),
             new ContactCard(),
             new SharedGuard($users),
-            $backup
+            $backup,
+            // The read-only account directory is not part of what a plan describes, so it stays empty here.
+            $this->createMock(SystemContacts::class)
         );
     }
 }

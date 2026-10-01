@@ -89,7 +89,7 @@ A exclusão de tarefas usa a lixeira nativa do calendário e é recusada com `da
 
    Ajuste os caminhos e o usuário do servidor web ao seu ambiente. Com Docker, rode o `occ` dentro do container. Esse caminho manual é só uma alternativa: instalando pela App Store do Nextcloud não há passo no terminal.
 
-3. **Configure** em *Configurações de administração → Configurações adicionais → MCP*: ligue o serviço, marque quem pode conectar, libere as permissões de escrita necessárias e selecione etiquetas de sistema para ocultar arquivos sensíveis.
+3. **Configure** em *Configurações de administração → MCP for Nextcloud* (o app tem entrada própria, com ícone, no menu de configurações): ligue o serviço, marque quem pode conectar, libere as permissões de escrita necessárias e selecione etiquetas de sistema para ocultar arquivos sensíveis. A página é dividida em blocos: **Status** (endpoint para copiar, serviço, versão do app, usuários habilitados/conectados, conexões ativas e o limite de envio do checkout editável em MiB, ao lado do teto `post_max_size` do PHP), **Clientes OAuth**, **Arquivos e etiquetas ocultas**, **OCR**, **Permissões** (a matriz usuários × permissões, com busca, grupo, filtros "pode conectar / conectados", menu "Todos" por módulo para os usuários da página e paginação em cima e embaixo) e **Conexões ativas**.
 
 ## Conectando um cliente
 
@@ -102,7 +102,7 @@ A exclusão de tarefas usa a lixeira nativa do calendário e é recusada com `da
 
 ### Outros clientes MCP (senha de app)
 
-Crie uma senha de app em *Configurações pessoais → Segurança* e ative a conexão em *Configurações pessoais → MCP*. Depois configure o cliente com a URL acima e autenticação HTTP Basic (`usuario:senha-de-app`). Teste rápido:
+Crie uma senha de app em *Configurações pessoais → Segurança* e ative a conexão em *Configurações pessoais → MCP for Nextcloud*. Depois configure o cliente com a URL acima e autenticação HTTP Basic (`usuario:senha-de-app`). Teste rápido:
 
 ```bash
 curl -u 'alice:SENHA-DE-APP' \
@@ -113,8 +113,8 @@ curl -u 'alice:SENHA-DE-APP' \
 
 ### Revogando acesso
 
-- **Usuário**: *Configurações pessoais → MCP → Desconectar* bloqueia a próxima requisição e revoga os tokens OAuth. Senhas de app se revogam em *Segurança*.
-- **Admin**: remova a permissão de conectar ou desligue o serviço. Vale a partir da próxima requisição.
+- **Usuário**: *Configurações pessoais → MCP for Nextcloud → Desconectar* bloqueia a próxima requisição e revoga os tokens OAuth. A mesma página lista os próprios clientes OAuth (cliente, conectado em, expira em) com **Revogar** em cada um. Senhas de app se revogam em *Segurança*.
+- **Admin**: remova a permissão de conectar ou desligue o serviço. Vale a partir da próxima requisição. *Configurações de administração → MCP for Nextcloud → Conexões ativas* lista toda conexão OAuth (usuário, cliente, conectado em, expira em) e revoga uma, ou todas de um usuário, na hora; o usuário pode entrar de novo enquanto tiver permissão para conectar.
 
 ## Segurança
 

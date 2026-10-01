@@ -342,10 +342,10 @@ final class DeckToolModule implements ToolModule, PreviewsWrites {
 			'action' => EditCardHandler::TOOL,
 			'card' => ['id' => (int)$card->getId(), 'before' => $before, 'after' => $after],
 			'board' => $this->board($board, $userId),
-			'changed' => array_values(array_keys(array_filter(
+			'changed' => array_values(array_filter(
 				['title', 'description', 'duedate'],
 				static fn (string $field): bool => $before[$field] !== $after[$field],
-			))),
+			)),
 			'lastModified' => ['current' => (int)$card->getLastModified(), 'sent' => $arguments['lastModified'] ?? null],
 			'shared' => $board['owner'] === $userId ? [] : [$this->board($board, $userId)],
 			'recoverable' => true,

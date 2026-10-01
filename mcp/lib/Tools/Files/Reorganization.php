@@ -292,8 +292,10 @@ final class Reorganization {
     }
 
     /**
-     * Plans or runs a batch. Planning writes nothing and records nothing; running needs the user's
-     * confirmation, stops at the first failure and records what it did so the batch can be undone.
+     * Validates an ordered batch of folder creations and moves, then runs it. The plan is always rebuilt
+     * here, so a stale plan can never run. A plan that touches shared nodes is returned as a confirmation
+     * until `$confirmedShared` is set; the caller decides whether the user has already said yes. The run
+     * stops at the first failure and records what it did so the batch can be undone.
      *
      * A batch whose plan is not ok is refused rather than partly run: the user approved a plan, and
      * quietly dropping the item that conflicts would leave a state neither they nor the agent asked for.
@@ -302,14 +304,13 @@ final class Reorganization {
      * @param string $userId authenticated user
      * @param list<array{from:string, to:string}> $moves requested moves
      * @param list<string> $mkdirs folders to create before moving
-     * @param bool $dryRun true to only plan
-     * @param bool|null $confirmed the user's confirm, required to run
-     * @param bool $confirmedShared whether the caller passed confirm_shared
+     * @param bool $confirmedShared whether the caller passed confirm_shared; without it a plan touching shared
+     *                              nodes comes back as a confirmation instead of running
      * @param MovePlanner $planner the plan builder
      * @param BatchStore $store where a run batch is recorded
      * @param int $now current time
-     * @return array<string, mixed> the plan, the confirmation, or the outcome of the run
-     * @throws \InvalidArgumentException for a malformed path, or a run without confirm
+     * @return array<string, mixed> the plan merged with the shared-node confirmation, or the outcome of the run
+     * @throws \InvalidArgumentException for a malformed path
      * @throws ToolFailure when the plan is not ok, or the run itself failed
      */
     public function batch(

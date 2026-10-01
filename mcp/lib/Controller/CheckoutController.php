@@ -266,14 +266,6 @@ class CheckoutController extends Controller {
     }
 
     /**
-     * Everything a request has to pass before the link stops being reusable: the token exists, the session
-     * agrees with it, the policy still allows it, and the node it names is still there with the same id.
-     * None of these has touched the file, so none of them may cost the agent its link.
-     *
-     * @param string $kind CheckoutToken::KIND_DOWNLOAD or KIND_UPLOAD
-     * @return array{0: CheckoutToken, 1: File}|Response the token with its node, or the refusal
-     */
-    /**
      * Configures the translator for the token owner before body or permission checks,
      * so early refusals are delivered in the user language when the token is known.
      */
@@ -299,6 +291,16 @@ class CheckoutController extends Controller {
         }
     }
 
+    /**
+     * Everything a request has to pass before the link stops being reusable: the token exists, the session
+     * agrees with it, the policy still allows it, and the node it names is still there with the same id.
+     * None of these has touched the file, so none of them may cost the agent its link.
+     *
+     * Each refusal maps to the HTTP status the agent can act on (404 unknown or foreign token, 403 revoked).
+     *
+     * @param string $kind CheckoutToken::KIND_DOWNLOAD or KIND_UPLOAD
+     * @return array{0: CheckoutToken, 1: File}|Response the token with its node, or the refusal
+     */
     private function resolve(string $kind): array|Response {
         $row = $this->store->find($this->hasher->hash($this->routeToken() ?? ''));
         if ($row === null || $row->kind !== $kind) {

@@ -213,6 +213,14 @@ class McpProtocol {
         };
     }
 
+    /**
+     * Handles resources/list for protocol versions before 2026-07-28, returning the plain resource page.
+     *
+     * @param int|string $id JSON-RPC request id
+     * @param array<string, mixed> $params request params; `cursor` selects the page
+     * @param string $userId authenticated user
+     * @return array<string, mixed> JSON-RPC result, or -32601 when resources are unavailable, or -32602 for a bad cursor
+     */
     private function legacyResourceList(int|string $id, array $params, string $userId): array {
         if ($this->resources === null) {
             return $this->error($id, -32601, 'Method not found');
@@ -225,6 +233,14 @@ class McpProtocol {
         }
     }
 
+    /**
+     * Handles resources/templates/list for protocol versions before 2026-07-28.
+     *
+     * @param int|string $id JSON-RPC request id
+     * @param array<string, mixed> $params request params; `cursor` selects the page
+     * @param string $userId authenticated user
+     * @return array<string, mixed> JSON-RPC result, or -32601 when resources are unavailable, or -32602 for a bad cursor
+     */
     private function legacyResourceTemplates(int|string $id, array $params, string $userId): array {
         if ($this->resources === null) {
             return $this->error($id, -32601, 'Method not found');
@@ -237,6 +253,16 @@ class McpProtocol {
         }
     }
 
+    /**
+     * Handles resources/read for protocol versions before 2026-07-28.
+     *
+     * An unreadable resource is reported as -32002 (resource not found), which is what those clients expect.
+     *
+     * @param int|string $id JSON-RPC request id
+     * @param array<string, mixed> $params request params; `uri` names the resource
+     * @param string $userId authenticated user
+     * @return array<string, mixed> JSON-RPC result with `contents`, or an error (-32601 unavailable, -32602 bad uri, -32002 unreadable)
+     */
     private function legacyResourceRead(int|string $id, array $params, string $userId): array {
         if ($this->resources === null) {
             return $this->error($id, -32601, 'Method not found');
@@ -254,6 +280,15 @@ class McpProtocol {
         }
     }
 
+    /**
+     * Handles resources/list for protocol 2026-07-28: a complete, private, uncached result carrying `_meta`.
+     *
+     * @param int|string $id JSON-RPC request id
+     * @param array<string, mixed> $params request params; `cursor` selects the page
+     * @param string $userId authenticated user
+     * @param array<string, mixed> $meta `_meta` echoed back in the result
+     * @return array<string, mixed> JSON-RPC result, or -32601 (HTTP 404) when resources are unavailable, or -32602 for a bad cursor
+     */
     private function modernResourceList(int|string $id, array $params, string $userId, array $meta): array {
         if ($this->resources === null) {
             return $this->error($id, -32601, 'Method not found', 404);
@@ -273,6 +308,15 @@ class McpProtocol {
         }
     }
 
+    /**
+     * Handles resources/templates/list for protocol 2026-07-28: a complete, private, uncached result carrying `_meta`.
+     *
+     * @param int|string $id JSON-RPC request id
+     * @param array<string, mixed> $params request params; `cursor` selects the page
+     * @param string $userId authenticated user
+     * @param array<string, mixed> $meta `_meta` echoed back in the result
+     * @return array<string, mixed> JSON-RPC result, or -32601 (HTTP 404) when resources are unavailable, or -32602 for a bad cursor
+     */
     private function modernResourceTemplates(int|string $id, array $params, string $userId, array $meta): array {
         if ($this->resources === null) {
             return $this->error($id, -32601, 'Method not found', 404);
@@ -292,6 +336,17 @@ class McpProtocol {
         }
     }
 
+    /**
+     * Handles resources/read for protocol 2026-07-28: a complete, private, uncached result carrying `_meta`.
+     *
+     * Unlike the legacy form, an unreadable resource is -32602 (invalid params) here.
+     *
+     * @param int|string $id JSON-RPC request id
+     * @param array<string, mixed> $params request params; `uri` names the resource
+     * @param string $userId authenticated user
+     * @param array<string, mixed> $meta `_meta` echoed back in the result
+     * @return array<string, mixed> JSON-RPC result with `contents`, or an error (-32601 unavailable, -32602 bad uri or unreadable resource)
+     */
     private function modernResourceRead(int|string $id, array $params, string $userId, array $meta): array {
         if ($this->resources === null) {
             return $this->error($id, -32601, 'Method not found', 404);

@@ -178,6 +178,14 @@ class TextExtractor {
         }
     }
 
+    /**
+     * Extracts the text of a PDF with smalot/pdfparser. Embedded images are not retained and the decode
+     * memory is capped, so a hostile or huge file cannot exhaust PHP memory.
+     *
+     * @param string $bytes raw PDF content, already within MAX_BYTES
+     * @return string plain text of all pages
+     * @throws \Exception when the PDF cannot be parsed
+     */
     private function pdf(string $bytes): string {
         $config = new Config();
         $config->setRetainImageContent(false);

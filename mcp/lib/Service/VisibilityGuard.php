@@ -334,6 +334,10 @@ class VisibilityGuard {
 
     /**
      * Checks if $node is inside the backup folder, and if the original file still exists and is hidden.
+     *
+     * @param Node $node node being checked
+     * @param array<int, Node> $chain the node and its not-yet-cached ancestors, keyed by file id, as collected by the caller
+     * @return bool true when the node is a backup mirror of a hidden original
      */
     private function isHiddenBackup(Node $node, array $chain): bool {
         // Find ancestor named FileBackup::FOLDER

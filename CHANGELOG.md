@@ -2,6 +2,13 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 0.8.2
+
+### Fixed
+
+- calendar: event creation, update, move and transfer, task creation and Talk event references failed with "Unexpected error" on Nextcloud 33 because the calendar store called a backend method that does not exist; a contract test now checks every backend method the adapters use.
+- logging: an unexpected tool failure now logs the exception message (truncated to 300 characters, file paths replaced, no tool arguments) next to the exception class; the client still receives the generic error.
+
 ## 0.8.1
 
 ### Fixed

@@ -484,6 +484,14 @@
     "An administrator must turn the service on and allow your account before you can connect." : "Un administrador debe activar el servicio y habilitar su cuenta antes de que pueda conectarse.",
     "Your connected clients" : "Sus clientes conectados",
     "MCP clients you signed in with OAuth. Revoking signs a client out at once; you can sign in again later." : "Clientes MCP en los que inició sesión con OAuth. Revocar desconecta el cliente al instante; puede volver a entrar más tarde.",
-    "App password" : "Contraseña de aplicación"
+    "App password" : "Contraseña de aplicación",
+    "Checkout upload limit" : "Límite de subida del checkout",
+    "MiB" : "MiB",
+    "Effective limit: {size} MiB." : "Límite efectivo: {size} MiB.",
+    "PHP allows up to {size} MiB (post_max_size)." : "PHP permite hasta {size} MiB (post_max_size).",
+    "PHP sets no request size limit." : "PHP no limita el tamaño de la solicitud.",
+    "Could not load the checkout upload limit." : "No se pudo cargar el límite de subida del checkout.",
+    "Enter a whole number of MiB, at least 1." : "Indique un número entero de MiB, como mínimo 1.",
+    "Could not save the checkout upload limit." : "No se pudo guardar el límite de subida del checkout."
 },"pluralForm" : "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

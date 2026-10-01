@@ -46,6 +46,16 @@
                 <span class="mcp-card-label"><?php p($l->t('Active connections')); ?></span>
                 <span class="mcp-card-value" id="mcp-count-connections"><?php p((string)$_['activeConnections']); ?></span>
             </div>
+            <div class="mcp-card mcp-card-wide">
+                <label class="mcp-card-label" for="mcp-checkout-limit"><?php p($l->t('Checkout upload limit')); ?></label>
+                <span>
+                    <input type="number" id="mcp-checkout-limit" class="mcp-checkout-limit" min="1" max="102400" step="1" inputmode="numeric" aria-describedby="mcp-checkout-limit-info">
+                    <span><?php p($l->t('MiB')); ?></span>
+                    <button type="button" id="mcp-checkout-limit-save"><?php p($l->t('Save')); ?></button>
+                    <span class="mcp-status" id="mcp-checkout-limit-status" aria-live="polite"></span>
+                </span>
+                <span class="mcp-hint" id="mcp-checkout-limit-info"></span>
+            </div>
         </div>
         <p class="settings-hint mcp-hint"><?php p($l->t('Paste the endpoint in the MCP client. Turning the service off signs every client out at once.')); ?></p>
     </div>

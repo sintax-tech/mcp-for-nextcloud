@@ -98,7 +98,7 @@ final class AdminAssetsTest extends TestCase {
             $this->assertNotContains($gone, $routes);
         }
         foreach (['settings#personal', 'grants#index', 'grants#update', 'grants#bulk', 'grants#service', 'grants#oauthClients', 'grants#updateOauthClients', 'o_auth#token', 'metadata#protectedResource',
-            'connections#index', 'connections#destroy', 'connections#revokeUser', 'my_connections#index', 'my_connections#destroy'] as $kept) {
+            'connections#index', 'connections#destroy', 'connections#revokeUser', 'my_connections#index', 'my_connections#destroy', 'checkout_limit#show', 'checkout_limit#update'] as $kept) {
             $this->assertContains($kept, $routes);
         }
     }

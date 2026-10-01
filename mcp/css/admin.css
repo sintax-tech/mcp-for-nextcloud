@@ -411,3 +411,7 @@
 	text-align: end;
 	white-space: nowrap;
 }
+
+.mcp-settings .mcp-checkout-limit {
+	width: 8em;
+}

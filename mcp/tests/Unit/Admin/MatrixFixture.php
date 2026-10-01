@@ -6,7 +6,6 @@ namespace OCA\Mcp\Tests\Unit\Admin;
 use OCA\Mcp\Service\GrantMatrix;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\Calendar\CalendarWriteGate;
 use OCP\IAppConfig;
 use OCP\App\IAppManager;
 use OCP\IGroup;
@@ -28,7 +27,6 @@ final class MatrixFixture {
     public array $groups = ['sales' => [], 'admin' => []];
     /** @var list<array{string, ?int, ?int}> searchDisplayName calls: pattern, limit, offset */
     public array $searches = [];
-    public string $calendarVerification = '';
     public array $enabledApps = ['notes', 'calendar'];
     /** @var array<string, list<string>> optional per-app user allowlists */
     public array $appUsers = [];
@@ -46,22 +44,7 @@ final class MatrixFixture {
     }
 
     public function matrix(): GrantMatrix {
-        return new GrantMatrix($this->policy, $this->userManager(), $this->groupManager(), $this->appManager(), $this->calendarGate());
-    }
-
-    /**
-     * Gate with no verification stored, so the admin catalog only offers reading by default.
-     *
-     * @return CalendarWriteGate
-     */
-    public function calendarGate(): CalendarWriteGate {
-        $appConfig = $this->mock(IAppConfig::class);
-        $appConfig->method('getValueString')->willReturnCallback(fn () => $this->calendarVerification);
-        $appManager = $this->mock(IAppManager::class);
-        $appManager->method('getAppVersion')->willReturn('0.6.10');
-        $config = $this->mock(\OCP\IConfig::class);
-        $config->method('getSystemValueString')->willReturn('33.0.2.2');
-        return new CalendarWriteGate($appConfig, $appManager, $config);
+        return new GrantMatrix($this->policy, $this->userManager(), $this->groupManager(), $this->appManager());
     }
 
     public function userManager(): IUserManager {

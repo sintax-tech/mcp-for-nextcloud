@@ -20,15 +20,16 @@ final class GrantMatrixTest extends TestCase {
         $this->fx->addUser('bruno', 'Bruno Lima', 'b.lima@corp.example', false);
     }
 
-    public function testVerifiedCatalogPreservesStoredWriteGrantsWhenRevoked(): void {
-        $this->fx->calendarVerification = '{"app":"0.6.10","nextcloud":"33.0","operations":["create","edit"],"invitations":true}';
-        $matrix = $this->fx->matrix();
-        self::assertSame(['read', 'create', 'edit'], $matrix->page('', '', 1)['catalog']['calendar']);
-        $grants = $matrix->page('', '', 1)['users'][0]['grants'];
-        $this->fx->calendarVerification = '';
-        $revoked = $matrix->page('', '', 1);
-        self::assertSame(['read'], $revoked['catalog']['calendar']);
-        self::assertSame($grants, $revoked['users'][0]['grants']);
+    public function testCalendarCatalogOffersEveryOperationWithoutAnySelftest(): void {
+        self::assertSame(['read', 'create', 'edit', 'move', 'delete', 'transfer'], $this->fx->matrix()->page('', '', 1)['catalog']['calendar']);
+    }
+
+    public function testCalendarWritesAreDeniedByDefault(): void {
+        $grants = $this->fx->matrix()->page('', '', 1)['users'][0]['grants']['calendar'];
+        self::assertTrue($grants['read']);
+        foreach (['create', 'edit', 'move', 'delete', 'transfer'] as $operation) {
+            self::assertFalse($grants[$operation], $operation);
+        }
     }
 
     public function testPagesOfFiftyWithOffsetHasMoreAndTotal(): void {
@@ -87,7 +88,7 @@ final class GrantMatrixTest extends TestCase {
 
     public function testCatalogAppsAndService(): void {
         $page = $this->fx->matrix()->page('', '', 1);
-        $this->assertSame(['files' => GrantPolicy::CATALOG['files'], 'notes' => GrantPolicy::CATALOG['notes'], 'calendar' => ['read']], $page['catalog']);
+        $this->assertSame(['files' => GrantPolicy::CATALOG['files'], 'notes' => GrantPolicy::CATALOG['notes'], 'calendar' => GrantPolicy::CATALOG['calendar']], $page['catalog']);
         $this->assertSame(['files' => true, 'notes' => true, 'deck' => false, 'calendar' => true, 'talk' => false], $page['appsEnabled']);
         $this->assertFalse($page['serviceEnabled']);
     }
@@ -110,12 +111,12 @@ final class GrantMatrixTest extends TestCase {
         $this->assertTrue($this->fx->matrix()->page('', '', 1)['users'][0]['grants']['files']['restore']);
     }
 
-    public function testDisabledCalendarWritesAreAbsentFromMatrixButSavedGrantsRemain(): void {
+    public function testCalendarWriteGrantsAreOfferedAndStoredGrantsRemain(): void {
         $this->fx->policy->setGrant('bruno', 'calendar', 'create', true);
 
         $page = $this->fx->matrix()->page('Bruno', '', 1);
 
-        $this->assertSame(['read'], $page['catalog']['calendar']);
+        $this->assertSame(GrantPolicy::CATALOG['calendar'], $page['catalog']['calendar']);
         $this->assertTrue($page['users'][0]['grants']['calendar']['create']);
     }
 

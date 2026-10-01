@@ -17,10 +17,9 @@ use OCA\Mcp\Tools\ToolModule;
 use RuntimeException;
 
 /**
- * Calendar tool module: reads are always exposed, writes only after the selftest proved the DAV
- * pipeline on this server (see CalendarWriteGate). The registry has already checked grant, app and
- * input schema for exposed tools, and asks {@see self::preview()} for the plan of every write that
- * arrives without `confirm: true`.
+ * Calendar tool module: every tool is exposed; the registry has already checked the admin grant
+ * (writes are off by default), the app and the input schema, and asks {@see self::preview()} for the
+ * plan of every write that arrives without `confirm: true`.
  */
 final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     /** @var array<string, CalendarTool> handlers by tool name */
@@ -34,7 +33,6 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
      * @param MoveEvent $moveEvent calendar_move_event
      * @param DeleteEvent $deleteEvent calendar_delete_event
      * @param TransferEvent $transferEvent calendar_transfer_event
-     * @param CalendarWriteGate $gate which operations the verification opened
      */
     public function __construct(
         ListCalendars $listCalendars,
@@ -44,7 +42,6 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
         MoveEvent $moveEvent,
         DeleteEvent $deleteEvent,
         TransferEvent $transferEvent,
-        private CalendarWriteGate $gate,
         private CalendarDraftApproval $approval,
     ) {
         foreach ([$listCalendars, $listEvents, $createEvent, $updateEvent, $moveEvent, $deleteEvent, $transferEvent] as $tool) {
@@ -66,14 +63,15 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
                 . 'confirm: true, so show the plan to the user and wait for an explicit yes.',
             'Dates and times arrive as they will be stored, and are read back in the timezone of the account; a '
                 . 'recurring event is expanded into its occurrences before it reaches the user.',
-            'send_invitations stays refused on a server that has not proved CalDAV scheduling: without it no '
-                . 'invitation leaves, and the call says so instead of pretending it was sent.',
+            'send_invitations hands the invitation to the CalDAV scheduling of the server. The plan and the result '
+                . 'say whether the server has e-mail invitations switched on (imipEnabled); when it is off, say so to '
+                . 'the user instead of claiming an e-mail was sent.',
             'A calendar owned by somebody else (a share) needs confirm_shared after asking the user, and a transfer '
                 . 'moves the event there and removes it from here.',
             'A deleted event goes to the Nextcloud trash bin of the calendar; with retention at 0 the deletion is '
                 . 'refused rather than permanent.',
-            'The writing tools only appear at all once the DAV verification passed on this server. A module showing '
-                . 'reads only means the verification is still closed, not that the grants are missing.',
+            'The writing tools appear only when the administrator granted them to this user; a module showing reads '
+                . 'only means the writing grants are off.',
         ];
     }
 
@@ -81,11 +79,7 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
      * @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}>
      */
     public function definitions(): array {
-        $operations = $this->gate->operations();
-        return array_values(array_map(
-            fn (CalendarTool $tool) => $this->publicDefinition($tool),
-            array_filter($this->tools, static fn (CalendarTool $tool): bool => in_array($tool->definition()['operation'], $operations, true)),
-        ));
+        return array_values(array_map(fn (CalendarTool $tool) => $this->publicDefinition($tool), $this->tools));
     }
 
     /**
@@ -98,17 +92,11 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
      * @param array<string, mixed> $arguments arguments validated by the registry
      * @param string $userId authenticated UID
      * @return array<string, mixed> the plan, as the structured content of a non-error result
-     * @throws InvalidArgumentException for an unknown or unavailable tool (-32602)
+     * @throws InvalidArgumentException for an unknown tool (-32602)
      * @throws RuntimeException wrapping any other failure, which the registry reports generically
      */
     public function preview(string $name, array $arguments, string $userId): array {
         $tool = $this->tools[$name] ?? throw new InvalidArgumentException('Unknown tool');
-        if (!in_array($tool->definition()['operation'], $this->gate->operations(), true)) {
-            throw new InvalidArgumentException('Unknown tool');
-        }
-        if (($arguments['send_invitations'] ?? false) === true && !$this->gate->invitationsVerified()) {
-            throw new CalendarException(CalendarMessages::invitationsUnverified());
-        }
         if (!$tool instanceof CalendarWriteTool) {
             throw new InvalidArgumentException('Unknown tool');
         }
@@ -128,8 +116,7 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
     }
 
     /**
-     * Resolves the tool, refuses explicit scheduling before the delivery proof, and runs one of the two
-     * halves of a write: its plan, or the write the user confirmed.
+     * Resolves the tool and runs a read, or the write the user confirmed.
      *
      * @param string $name tool name
      * @param array<string, mixed> $arguments arguments validated by the registry
@@ -141,14 +128,6 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
      */
     private function write(string $name, array $arguments, string $userId, callable $run): array {
         $tool = $this->tools[$name] ?? throw new InvalidArgumentException('Unknown tool');
-        if (!in_array($tool->definition()['operation'], $this->gate->operations(), true)) {
-            throw new InvalidArgumentException('Unknown tool');
-        }
-        // Fail closed for explicit scheduling until the optional internal-delivery proof passed.
-        // This also covers cancellation and existing guests not present in the arguments.
-        if (($arguments['send_invitations'] ?? false) === true && !$this->gate->invitationsVerified()) {
-            return ToolSchema::error(CalendarMessages::invitationsUnverified());
-        }
         try {
             return $tool instanceof CalendarWriteTool ? $run($tool) : $tool->execute($arguments, $userId);
         } catch (CalendarException $e) {

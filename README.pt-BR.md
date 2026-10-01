@@ -31,7 +31,7 @@ Assistentes de IA rendem mais quando alcançam as ferramentas que o time já usa
 |---|---|---|
 | **Arquivos** | listar, buscar por nome, buscar imagens por tag/data, ver imagens e prévias em lote (JPEG, PNG, WebP, GIF, TIFF, PDF), ler texto (TXT/MD, PDF, DOCX, ODT), listar e ler versões do arquivo | editar com diff e substituição de trecho, com backup conferido em `/MCP backups` e versão do Nextcloud antes de cada gravação; restaurar uma versão guardada; retirar um arquivo para um agente com terminal por um link de uso único; reorganizar pastas: varrer a árvore, criar pasta, copiar, mover, mover um lote e desfazer. **Nunca exclui.** |
 | **Notas** | listar, ler | criar, editar, mover entre categorias, excluir (só quando a lixeira permite recuperar) |
-| **Calendário** | listar calendários e eventos (recorrência, fusos, dia inteiro) | criar, editar, mover, excluir e transferir eventos pelo pipeline CalDAV de verdade, com participantes. As escritas ficam ocultas até `occ mcp:calendar-selftest` comprová-las no seu servidor, e cada uma devolve antes um plano: **nada é gravado antes de o usuário aprovar.** |
+| **Calendário** | listar calendários e eventos (recorrência, fusos, dia inteiro) | criar, editar, mover, excluir e transferir eventos pelo pipeline CalDAV de verdade, com participantes. As escritas ficam desligadas até o administrador liberá-las na matriz de permissões (sem passo no terminal), e cada uma devolve antes um plano: **nada é gravado antes de o usuário aprovar.** |
 | **Deck** | quadros, listas, cards e **acompanhamento** dos quadros que você gerencia: cards por responsável, com prazo, indicação de atraso (no seu fuso) e link do card | criar, editar, mover e excluir cards |
 | **Talk** | conversas e mensagens (nunca marca como lido) | responder (podendo citar uma mensagem ou incluir o link de um card do Deck ou evento que você pode ver), mensagem direta para um usuário, lote de mensagens, compartilhar ou citar arquivo, criar conversa em grupo (permissão própria, desligada por padrão). **Nada é enviado antes de o usuário aprovar: chamada sem `confirm: true` devolve só o plano (destinatário, texto final, anexos, o que será criado ou compartilhado) e não executa nada; com `confirm: true` revalida as permissões e envia. Não há approval_id, token nem registro no servidor.** |
 
@@ -72,7 +72,7 @@ E também:
    sudo -u www-data php /var/www/nextcloud/occ app:enable mcp
    ```
 
-   Ajuste os caminhos e o usuário do servidor web ao seu ambiente. Com Docker, rode o `occ` dentro do container.
+   Ajuste os caminhos e o usuário do servidor web ao seu ambiente. Com Docker, rode o `occ` dentro do container. Esse caminho manual é só uma alternativa: instalando pela App Store do Nextcloud não há passo no terminal.
 
 3. **Configure** em *Configurações de administração → Configurações adicionais → MCP*: ligue o serviço, marque quem pode conectar e libere as permissões de escrita necessárias.
 

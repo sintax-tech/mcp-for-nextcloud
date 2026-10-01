@@ -84,7 +84,7 @@ final class WriteGateContractTest extends TestCase {
             'boolean' => false,
             'array' => ($rule['minItems'] ?? 0) > 0 && isset($rule['items']) ? [$this->dummyValue((array)$rule['items'])] : [],
             'object' => $this->dummyArguments($rule),
-            default => 'dummy',
+            default => substr(str_pad('dummy', max(5, (int)($rule['minLength'] ?? 0)), 'x'), 0, (int)($rule['maxLength'] ?? PHP_INT_MAX)),
         };
     }
 
@@ -126,7 +126,8 @@ final class WriteGateContractTest extends TestCase {
                 $this->assertFalse($annotations['readOnlyHint'], "$name: readOnlyHint must be false for write tools");
                 $this->assertFalse($annotations['openWorldHint'], "$name: openWorldHint must always be false");
                 $expectedDestructive = in_array($definition['operation'], ['delete', 'restore', 'transfer', 'move', 'edit', 'replace', 'reply', 'attach', 'quote'], true)
-                    || in_array($name, ['talk_create_group'], true);
+                    || in_array($name, ['talk_create_group'], true)
+                    || ($definition['destructiveHint'] ?? false) === true;
                 $this->assertSame($expectedDestructive, $annotations['destructiveHint'], "$name: destructiveHint mismatch");
                 $this->assertSame($definition['operation'] === 'restore', $annotations['idempotentHint'], "$name: idempotentHint mismatch");
             }

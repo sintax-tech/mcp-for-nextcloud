@@ -31,7 +31,7 @@ AI assistants are most useful when they can reach the tools a team already uses.
 |---|---|---|
 | **Files** | list, search by name, search images by tag/date, view images and batch previews (JPEG, PNG, WebP, GIF, TIFF, PDF), read text (TXT/MD, PDF, DOCX, ODT), list and read file versions | edit with a diff and a partial replacement, with a verified backup in `/MCP backups` and a Nextcloud version before every write; restore a stored version; check a file out to an agent with a shell through a one-time link; reorganize folders: scan the tree, create a folder, copy, move, move a batch and undo it. **Never deletes.** |
 | **Notes** | list, read | create, edit, move between categories, delete (only when the trash bin can recover it) |
-| **Calendar** | list calendars and events (recurrence, time zones, all-day) | create, edit, move, delete and transfer events through the real CalDAV pipeline, with participants. The writes stay hidden until `occ mcp:calendar-selftest` proves them on your server, and each one returns a plan first: **nothing is written before the user approves it.** |
+| **Calendar** | list calendars and events (recurrence, time zones, all-day) | create, edit, move, delete and transfer events through the real CalDAV pipeline, with participants. The writes are off until an administrator grants them in the admin matrix (no terminal step), and each one returns a plan first: **nothing is written before the user approves it.** |
 | **Deck** | boards, stacks, cards, and a **follow-up** of the boards you manage: cards grouped by assignee, with due date, overdue flag (in your own time zone) and a link to the card | create, edit, move, delete cards |
 | **Talk** | conversations and messages (never marks anything as read) | reply (optionally quoting a message or linking a Deck card or calendar event you can see), direct message to a user, batch of messages, share or quote a file, create a group conversation (separate grant, off by default). **Nothing is sent before the user approves: a call without `confirm: true` returns only the plan (recipient, final text, attachments, what would be created or shared) and runs nothing; with `confirm: true` it checks the permissions again and sends. No approval id, token or record is kept on the server.** |
 
@@ -72,7 +72,7 @@ Plus:
    sudo -u www-data php /var/www/nextcloud/occ app:enable mcp
    ```
 
-   Adjust paths and the web server user to your setup. With Docker, run `occ` inside the container.
+   Adjust paths and the web server user to your setup. With Docker, run `occ` inside the container. This manual route is only an alternative: installing from the Nextcloud App Store needs no terminal at all.
 
 3. **Configure** in *Administration settings → Additional settings → MCP*: turn the service on, mark who may connect, and grant write permissions where needed.
 

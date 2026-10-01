@@ -98,7 +98,6 @@ final class CalendarMessages {
     public const NOT_ORGANIZER = 'only the event organizer can change attendees.';
     public const MOVE_NOT_CONFIRMED = 'Could not move the event; try again.';
     public const TRANSFER_WITH_ATTENDEES = 'Cannot transfer an event with attendees to someone else\'s calendar: you remain the organizer and Nextcloud does not notify anyone in this operation. Move the event within your calendars or remove attendees first.';
-    public const INVITATIONS_UNVERIFIED = 'sending invitations not yet verified on this server';
     public const ATTENDEES_INVALID = 'Provide 1 to 50 attendees, without duplicates.';
     public const ATTENDEE_NOT_FOUND = 'attendee \'%s\' not found or has no email address';
     public const ORGANIZER_WITHOUT_EMAIL = 'your account has no email address, so the event cannot have attendees.';
@@ -185,10 +184,6 @@ final class CalendarMessages {
 
     public static function notOrganizer(): string {
         return Translator::t('only the event organizer can change attendees.');
-    }
-
-    public static function invitationsUnverified(): string {
-        return Translator::t('sending invitations not yet verified on this server');
     }
 
     public static function attendeesInvalid(): string {
@@ -314,6 +309,6 @@ final class CalendarMessages {
     }
 
     public static function previewInvitationProof(): string {
-        return Translator::t('Server proof covers internal delivery and suppression by the DAV pipeline; it does not prove receipt of external email.');
+        return Translator::t('Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved.');
     }
 }

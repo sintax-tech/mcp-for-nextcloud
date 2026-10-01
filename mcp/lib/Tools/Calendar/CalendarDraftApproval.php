@@ -15,7 +15,7 @@ use Sabre\VObject\Component\VEvent;
  * refused when the event changed in between.
  */
 final class CalendarDraftApproval {
-    public function __construct(private CalendarWriteGate $gate, private Scheduling $scheduling, private EventBuilder $builder, private SharedGuard $sharedGuard) {}
+    public function __construct(private Scheduling $scheduling, private EventBuilder $builder, private SharedGuard $sharedGuard) {}
 
     /**
      * The plan of a write: what the event looks like now, what it would look like after, and what sending it
@@ -88,7 +88,7 @@ final class CalendarDraftApproval {
             'etag' => $prepared->before?->etag, 'before' => $before, 'after' => $after,
             'participants' => ['current' => $old, 'proposed' => $new, 'added' => array_values(array_diff($new, $old)), 'removed' => array_values(array_diff($old, $new))],
             'recoverable' => $deleting, 'consequence' => $deleting ? CalendarMessages::previewTrash() : null,
-            'scheduling' => ['requested' => $notify, 'imipEnabled' => $this->scheduling->imipEnabled(), 'invitationsVerified' => $this->gate->invitationsVerified(), 'participantsNotified' => false,
+            'scheduling' => ['requested' => $notify, 'imipEnabled' => $this->scheduling->imipEnabled(), 'participantsNotified' => false,
                 'message' => $moving ? CalendarMessages::participantsNotNotified() : ($notify ? ($deleting ? CalendarMessages::previewCancel() : CalendarMessages::previewInvitations()) : CalendarMessages::previewSuppressed()),
                 'proofScope' => CalendarMessages::previewInvitationProof()]];
     }

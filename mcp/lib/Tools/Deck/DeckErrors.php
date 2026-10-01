@@ -52,6 +52,9 @@ final class DeckErrors {
 		if ($exception instanceof DeckRefusalException) {
 			return $exception->getMessage();
 		}
+		if ($exception instanceof DeckUnconfirmedException) {
+			return DeckMessages::writeUnconfirmed($exception->readWith);
+		}
 
 		foreach (self::MAPPING as [$classes, $method]) {
 			foreach ($classes as $class) {

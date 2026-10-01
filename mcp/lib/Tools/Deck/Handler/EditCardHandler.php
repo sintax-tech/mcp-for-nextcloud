@@ -23,7 +23,8 @@ use Psr\Log\LoggerInterface;
  * Deck v1.17.5 only offers a whole-form update, so this handler reads the card, merges what the
  * client sent and writes everything back; the gateway fills in the fields the client did not
  * touch. When `lastModified` is sent and no longer matches, nothing is written. Responsibles are
- * changed afterwards, one account at a time, through the assignment service.
+ * changed afterwards, one account at a time, through the assignment service. An update or an assignment change that
+ * throws after Deck saved it is read back and counts as done, with a warning ({@see AbstractHandler::afterWrite()}).
  */
 final class EditCardHandler extends AbstractHandler {
 	/** MCP tool name this handler serves. */
@@ -98,21 +99,26 @@ final class EditCardHandler extends AbstractHandler {
 				$this->gateway->validateAssignees($userId, (int)$card->getStackId(), $resolved['add']);
 			}
 
+			$warnings = [];
 			if ($given === []) {
 				$updated = $card;
 			} else {
-				$updated = $this->gateway->updateCard($userId, $card, $title, $description, $duedate);
+				$updated = $this->afterWrite(
+					fn () => $this->gateway->updateCard($userId, $card, $title, $description, $duedate),
+					fn () => $this->savedEdit($userId, $card, $title, $description, $duedate),
+					$warnings,
+				);
 				// The update answer does not always carry the assignments; the ones read above still stand.
 				if ($updated->getAssignedUsers() === null) {
 					$updated->setAssignedUsers($card->getAssignedUsers() ?? []);
 				}
 			}
 			if (!$editsAssignees) {
-				return $this->formatter->card($updated);
+				return $this->formatter->card($updated) + ($warnings === [] ? [] : ['warnings' => $warnings]);
 			}
 
 			// Applied first: the card is formatted from the assignments that really stand afterwards.
-			$report = $this->applyAssignees($userId, $updated, $resolved);
+			$report = $this->applyAssignees($userId, $updated, $resolved, $warnings);
 
 			return $this->formatter->card($updated) + $report;
 		});
@@ -135,9 +141,11 @@ final class EditCardHandler extends AbstractHandler {
 	 * @param string $userId UID of the authenticated caller.
 	 * @param Card $card Card to report, its assignments updated as each change succeeds.
 	 * @param array{add: list<string>, remove: list<string>, alreadyAssigned: list<string>, notAssigned: list<string>} $resolved What to do and what to ignore.
+	 * @param list<string> $warnings Warnings so far (a saved update whose Deck side effects failed); each change that
+	 *     Deck saved before failing adds the same warning once, and the change counts as done.
 	 * @return array{assigned: list<string>, unassigned: list<string>, failed: list<array{uid: string, reason: string}>, warnings?: list<string>}
 	 */
-	private function applyAssignees(string $userId, Card $card, array $resolved): array {
+	private function applyAssignees(string $userId, Card $card, array $resolved, array $warnings = []): array {
 		$assigned = [];
 		$unassigned = [];
 		$failed = [];
@@ -146,7 +154,11 @@ final class EditCardHandler extends AbstractHandler {
 
 		foreach ($resolved['remove'] as $uid) {
 			try {
-				$this->gateway->unassignCardUser($userId, $cardId, $uid);
+				$this->afterWrite(
+					fn () => $this->gateway->unassignCardUser($userId, $cardId, $uid),
+					fn () => $this->assignmentOf($userId, $cardId, $uid) === null ? true : null,
+					$warnings,
+				);
 				$unassigned[] = $uid;
 				$assignments = array_values(array_filter(
 					$assignments,
@@ -158,7 +170,11 @@ final class EditCardHandler extends AbstractHandler {
 		}
 		foreach ($resolved['add'] as $uid) {
 			try {
-				$assignments[] = $this->gateway->assignCardUser($userId, $cardId, $uid);
+				$assignments[] = $this->afterWrite(
+					fn () => $this->gateway->assignCardUser($userId, $cardId, $uid),
+					fn () => $this->assignmentOf($userId, $cardId, $uid),
+					$warnings,
+				);
 				$assigned[] = $uid;
 			} catch (\Throwable $e) {
 				$failed[] = $this->failure($uid, $e);
@@ -166,7 +182,6 @@ final class EditCardHandler extends AbstractHandler {
 		}
 		$card->setAssignedUsers($assignments);
 
-		$warnings = [];
 		if ($resolved['notAssigned'] !== []) {
 			$warnings[] = Translator::t('Ignored, not assigned to the card: %s', [implode(', ', $resolved['notAssigned'])]);
 		}
@@ -176,6 +191,39 @@ final class EditCardHandler extends AbstractHandler {
 
 		return ['assigned' => $assigned, 'unassigned' => $unassigned, 'failed' => $failed]
 			+ ($warnings === [] ? [] : ['warnings' => $warnings]);
+	}
+
+	/**
+	 * The card read back after an update that threw, when it shows the update: the fields asked for and a new
+	 * modification time (Deck's mapper sets it on every update), so asking for the values the card already had never
+	 * passes for a write.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param Card $before Card as read before the update.
+	 * @param string $title Title sent.
+	 * @param string $description Description sent.
+	 * @param string|null $duedate Due date sent; only whether there is one is compared, since Deck stores the instant
+	 *     in the caller's timezone.
+	 * @return Card|null The saved card, or null when the update did not happen.
+	 */
+	private function savedEdit(string $userId, Card $before, string $title, string $description, ?string $duedate): ?Card {
+		$card = $this->gateway->cardState($userId, (int)$before->getId());
+		$saved = (string)$card->getTitle() === $title
+			&& self::withoutAstral((string)$card->getDescription()) === self::withoutAstral($description)
+			&& ($card->getDuedate() === null) === ($duedate === null)
+			&& (int)$card->getLastModified() !== (int)$before->getLastModified();
+
+		return $saved ? $card : null;
+	}
+
+	/**
+	 * A description as a database without 4-byte UTF-8 stores it: Deck's mapper replaces those characters with U+FFFD.
+	 *
+	 * @param string $text Description.
+	 * @return string The same text with every character outside the Basic Multilingual Plane replaced.
+	 */
+	private static function withoutAstral(string $text): string {
+		return (string)preg_replace('/[\x{10000}-\x{10FFFF}]/u', "\u{FFFD}", $text);
 	}
 
 	/**

@@ -839,6 +839,11 @@ OC.L10N.register(
     "Create Deck board" : "Criar quadro no Deck",
     "Create list in Deck" : "Criar lista no Deck",
     "Delete Deck list" : "Excluir lista do Deck",
-    "Delete Deck board" : "Excluir quadro do Deck"
+    "Delete Deck board" : "Excluir quadro do Deck",
+    "Saved; Deck reported an error afterwards (notification or activity)." : "Foi gravado; o Deck relatou um erro depois (notificação ou atividade).",
+    "Could not confirm whether Deck saved this change; read it with %s before trying again." : "Não foi possível confirmar se o Deck gravou esta alteração; leia com %s antes de tentar de novo.",
+    "Could not confirm whether the list '%s' was created; read the board before retrying." : "Não foi possível confirmar se a lista '%s' foi criada; leia o quadro antes de tentar de novo.",
+    "Could not confirm whether the card '%s' was created; read the list before retrying." : "Não foi possível confirmar se o cartão '%s' foi criado; leia a lista antes de tentar de novo.",
+    "%s Some items could not be confirmed; see 'warnings' before retrying." : "%s Alguns itens não puderam ser confirmados; veja 'warnings' antes de tentar de novo."
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

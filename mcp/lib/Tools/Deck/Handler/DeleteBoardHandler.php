@@ -36,14 +36,38 @@ final class DeleteBoardHandler extends AbstractHandler {
 	 */
 	public function handle(array $arguments, string $userId): array {
 		return $this->run(function () use ($arguments, $userId): array {
-			$board = $this->gateway->deleteEmptyBoard($userId, (int)$arguments['boardId']);
+			$boardId = (int)$arguments['boardId'];
+			$warnings = [];
+			$board = $this->afterWrite(
+				fn () => $this->gateway->deleteEmptyBoard($userId, $boardId),
+				function () use ($userId, $boardId) {
+					// Only the owner deletes a board, so the board is among the caller's own, deleted or not.
+					foreach ($this->gateway->ownedBoards($userId) as $board) {
+						if ((int)$board->getId() === $boardId) {
+							return (int)$board->getDeletedAt() > 0 ? $board : null;
+						}
+					}
+
+					return null;
+				},
+				$warnings,
+			);
 
 			return [
 				'id' => (int)$board->getId(),
 				'title' => (string)$board->getTitle(),
 				'deleted' => true,
-			];
+			] + ($warnings === [] ? [] : ['warnings' => $warnings]);
 		});
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * A deleted board leaves the boards of the caller.
+	 */
+	protected function readWith(): string {
+		return 'deck_list_boards';
 	}
 
 	/**

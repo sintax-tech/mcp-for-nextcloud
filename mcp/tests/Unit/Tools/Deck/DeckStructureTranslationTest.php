@@ -48,6 +48,35 @@ final class DeckStructureTranslationTest extends TestCase {
 		self::assertSame('El tablero recibió tarjetas durante la eliminación y no se pudo restaurar; recupérelo desde la papelera de Deck.', DeckRefusalException::boardReceivedCards(false)->getMessage());
 	}
 
+	/** Re-review of c06b2e0: what a write answers when Deck failed after saving, or nobody can tell. */
+	public function testAfterWriteMessagesAreWordedForThePerson(): void {
+		Translator::use(new JsonL10n('pt_BR'));
+		self::assertSame('Foi gravado; o Deck relatou um erro depois (notificação ou atividade).', DeckMessages::writtenThenFailed());
+		self::assertSame('Não foi possível confirmar se o Deck gravou esta alteração; leia com deck_read_card antes de tentar de novo.', DeckMessages::writeUnconfirmed('deck_read_card'));
+		self::assertSame("Não foi possível confirmar se a lista 'A fazer' foi criada; leia o quadro antes de tentar de novo.", DeckMessages::boardItemUnconfirmed('list', 'A fazer'));
+		self::assertSame("Não foi possível confirmar se o cartão 'Um' foi criado; leia a lista antes de tentar de novo.", DeckMessages::boardItemUnconfirmed('card', 'Um'));
+
+		Translator::use(new JsonL10n('es'));
+		self::assertSame('Se guardó; Deck informó un error después (notificación o actividad).', DeckMessages::writtenThenFailed());
+		self::assertSame('No se pudo confirmar si Deck guardó este cambio; léalo con deck_list_boards antes de volver a intentarlo.', DeckMessages::writeUnconfirmed('deck_list_boards'));
+		self::assertSame("No se pudo confirmar si se creó la lista 'A fazer'; lea el tablero antes de volver a intentarlo.", DeckMessages::boardItemUnconfirmed('list', 'A fazer'));
+		self::assertSame("No se pudo confirmar si se creó la tarjeta 'Um'; lea la lista antes de volver a intentarlo.", DeckMessages::boardItemUnconfirmed('card', 'Um'));
+	}
+
+	/** A deck_create_board with an item nobody can confirm says so in the summary, in the language of the account. */
+	public function testTheSummaryOfAnUnconfirmedBuildIsTranslated(): void {
+		Translator::use(new JsonL10n('pt_BR'));
+		$gateway = $this->createMock(DeckGatewayInterface::class);
+		$gateway->method('createBoard')->willReturn(new Board(['id' => 3, 'title' => 'Projeto']));
+		$gateway->method('createStack')->willThrowException(new \RuntimeException('listener'));
+		$gateway->method('stacksOf')->willThrowException(new \RuntimeException('db gone'));
+
+		$payload = $this->payload((new CreateBoardHandler($gateway, $this->createMock(LoggerInterface::class)))
+			->handle(['title' => 'Projeto', 'stacks' => [['title' => 'A fazer']], 'confirm' => true], 'alice'));
+
+		self::assertStringEndsWith(" Alguns itens não puderam ser confirmados; veja 'warnings' antes de tentar de novo.", $payload['summary']);
+	}
+
 	public function testPlanMessagesAndConsequencesAreTranslated(): void {
 		foreach (['pt_BR', 'es'] as $language) {
 			Translator::use(new JsonL10n($language));

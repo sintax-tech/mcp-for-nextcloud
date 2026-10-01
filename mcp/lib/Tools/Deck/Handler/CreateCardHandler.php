@@ -12,7 +12,9 @@ use Psr\Log\LoggerInterface;
 /**
  * Backs `deck_create_card`.
  *
- * The caller owns the card; optional assignees are checked against Deck board ACLs before creation.
+ * The caller owns the card; optional assignees are checked against Deck board ACLs before creation. A creation or
+ * assignment that throws after Deck saved it is read back and answered as saved, with a warning
+ * ({@see AbstractHandler::afterWrite()}).
  */
 final class CreateCardHandler extends AbstractHandler {
 	/** MCP tool name this handler serves. */
@@ -57,27 +59,49 @@ final class CreateCardHandler extends AbstractHandler {
 				? $this->gateway->validateAssignees($userId, (int)$arguments['stackId'], CardInput::assignees($arguments['assignees']))
 				: [];
 
-			$card = $this->gateway->createCard(
-				$userId,
-				(int)$arguments['stackId'],
-				CardInput::requireTitle((string)$arguments['title']),
-				CardInput::requireDescription((string)($arguments['description'] ?? '')),
-				CardInput::duedate($arguments['duedate'] ?? null),
-			);
+			$stackId = (int)$arguments['stackId'];
+			$title = CardInput::requireTitle((string)$arguments['title']);
+			$description = CardInput::requireDescription((string)($arguments['description'] ?? ''));
+			$duedate = CardInput::duedate($arguments['duedate'] ?? null);
 
 			$warnings = [];
+			// Deck inserts the card before its activity, events and enrichment: a failure after that point is a card
+			// that exists, found again by owner, title and creation time.
+			$card = $this->afterWrite(
+				fn () => $this->gateway->createCard($userId, $stackId, $title, $description, $duedate),
+				fn () => $this->gateway->findCreatedCard($userId, $stackId, $title, []),
+				$warnings,
+			);
+
+			$assignmentFailed = false;
 			foreach ($assignees as $assignee) {
 				try {
-					$assignment = $this->gateway->assignCardUser($userId, (int)$card->getId(), $assignee['uid']);
+					$assignment = $this->afterWrite(
+						fn () => $this->gateway->assignCardUser($userId, (int)$card->getId(), $assignee['uid']),
+						fn () => $this->assignmentOf($userId, (int)$card->getId(), $assignee['uid']),
+						$warnings,
+					);
 					$card->setAssignedUsers([...($card->getAssignedUsers() ?? []), $assignment]);
 				} catch (\Throwable $e) {
 					// Creation succeeded: never turn this into an error that encourages a duplicate retry.
 					$this->logger->warning('MCP Deck assignment failed after creation ({exception})', ['exception' => $e::class]);
-					$warnings = [Translator::t('The card was created, but one or more assignees could not be assigned. Read the card before retrying assignment in Deck.')];
+					$assignmentFailed = true;
 				}
+			}
+			if ($assignmentFailed) {
+				$warnings[] = Translator::t('The card was created, but one or more assignees could not be assigned. Read the card before retrying assignment in Deck.');
 			}
 			return $this->formatter->card($card) + ($warnings === [] ? [] : ['warnings' => $warnings]);
 		});
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * A new card is found again among the cards of its list.
+	 */
+	protected function readWith(): string {
+		return 'deck_list_cards';
 	}
 
 	/**

@@ -132,6 +132,35 @@ final class DeckMessages {
 	}
 
 	/**
+	 * Deck saved the write and failed afterwards, in an activity, event or notification: the result stands.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function writtenThenFailed(): string {
+		return Translator::t('Saved; Deck reported an error afterwards (notification or activity).');
+	}
+
+	/**
+	 * A write threw and the state could not be read back: unknown, so read before retrying instead of repeating.
+	 * @param string $readWith Tool that reads the item back.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function writeUnconfirmed(string $readWith): string {
+		return Translator::t('Could not confirm whether Deck saved this change; read it with %s before trying again.', [$readWith]);
+	}
+
+	/**
+	 * One list or card of deck_create_board whose creation could not be confirmed.
+	 * @param string $kind `list` or `card`.
+	 * @param string $title Its title.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function boardItemUnconfirmed(string $kind, string $title): string {
+		return $kind === 'list'
+			? Translator::t('Could not confirm whether the list \'%s\' was created; read the board before retrying.', [$title])
+			: Translator::t('Could not confirm whether the card \'%s\' was created; read the list before retrying.', [$title]);
+	}
+
+	/**
 	 * Only the owner deletes a board, even when others may manage it.
 	 * @return string The message in the language of the current user.
 	 */

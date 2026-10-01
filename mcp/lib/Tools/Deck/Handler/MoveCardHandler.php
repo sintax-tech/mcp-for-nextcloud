@@ -59,11 +59,27 @@ final class MoveCardHandler extends AbstractHandler {
 				return $confirmation;
 			}
 
+			$cardId = (int)$arguments['cardId'];
+			$stackId = (int)$arguments['stackId'];
 			$order = array_key_exists('order', $arguments) ? (int)$arguments['order'] : null;
 
-			return $this->formatter->card(
-				$this->gateway->moveCard($userId, (int)$arguments['cardId'], (int)$arguments['stackId'], $order),
+			// Read before the move, so a move that threw can be told from one that never happened: Deck saves the
+			// new list before the activity and the reorder of the destination.
+			$before = $this->gateway->cardState($userId, $cardId);
+			$warnings = [];
+			$card = $this->afterWrite(
+				fn () => $this->gateway->moveCard($userId, $cardId, $stackId, $order),
+				function () use ($userId, $cardId, $stackId, $before) {
+					$card = $this->gateway->cardState($userId, $cardId);
+					$moved = (int)$card->getStackId() === $stackId && (int)$card->getDeletedAt() === 0
+						&& ((int)$before->getStackId() !== $stackId || (int)$card->getLastModified() !== (int)$before->getLastModified());
+
+					return $moved ? $card : null;
+				},
+				$warnings,
 			);
+
+			return $this->formatter->card($card) + ($warnings === [] ? [] : ['warnings' => $warnings]);
 		});
 	}
 

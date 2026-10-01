@@ -22,11 +22,18 @@ use OCA\Mcp\Tools\Calendar\Handler\MoveEvent;
 use OCA\Mcp\Tools\Calendar\Handler\TransferEvent;
 use OCA\Mcp\Tools\Calendar\Handler\UpdateEvent;
 use OCA\Mcp\Tools\Calendar\Scheduling;
+use OCA\Mcp\Tools\Calendar\Scheduling\AvailabilityCheck;
+use OCA\Mcp\Tools\Calendar\Scheduling\CollisionCheck;
+use OCA\Mcp\Tools\Calendar\Scheduling\PlanWarnings;
+use OCA\Mcp\Tools\Calendar\Scheduling\SharedCalendarFinder;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\TrashPolicy;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IAppConfig;
+use OCP\Calendar\IAvailabilityResult;
+use OCP\Calendar\IManager;
 use OCP\IConfig;
+use OCP\IGroupManager;
 use OCP\IUser;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
@@ -59,6 +66,12 @@ abstract class CalendarTestCase extends TestCase {
     protected string $retention = '';
     /** Value returned by dav/sendInvitations. */
     protected string $sendInvitations = 'yes';
+    /** @var list<string> e-mail addresses the availability API reports as busy */
+    protected array $busyEmails = [];
+    /** @var list<string> e-mail addresses the availability API gives no verdict for */
+    protected array $unknownEmails = [];
+    /** Whether the availability API throws. */
+    protected bool $availabilityFails = false;
     /** E-mail addresses per account id, for the guest list. */
     protected array $emails = ['alice' => 'alice@example.invalid', 'bob' => 'bob@example.invalid', 'carla' => 'carla@example.invalid', 'dave' => 'dave@example.invalid'];
 
@@ -109,6 +122,33 @@ abstract class CalendarTestCase extends TestCase {
             'calendar_delete_event' => $deleteEvent,
             'calendar_transfer_event' => $transferEvent,
         ];
+        $calendarManager = $this->createMock(IManager::class);
+        $calendarManager->method('checkAvailability')->willReturnCallback(function ($start, $end, $organizer, array $emails): array {
+            if ($this->availabilityFails) {
+                throw new \RuntimeException('availability unavailable');
+            }
+            $results = [];
+            foreach ($emails as $email) {
+                if (in_array($email, $this->unknownEmails, true)) {
+                    continue;
+                }
+                $result = $this->createMock(IAvailabilityResult::class);
+                $result->method('getAttendeeEmail')->willReturn($email);
+                $result->method('isAvailable')->willReturn(!in_array($email, $this->busyEmails, true));
+                $results[] = $result;
+            }
+            return $results;
+        });
+        $groups = $this->createMock(IGroupManager::class);
+        $groups->method('getUserGroupIds')->willReturn([]);
+        $warnings = new PlanWarnings(
+            new CollisionCheck($this->store, $repository, $classification, new EventExpander(), $logger),
+            new AvailabilityCheck($calendarManager, $this->users(), $logger),
+            new SharedCalendarFinder($access, $this->store, $this->users(), $groups),
+            $attendees,
+            $builder,
+            $logger,
+        );
         $this->module = new CalendarModule(
             $listCalendars,
             $listEvents,
@@ -117,7 +157,7 @@ abstract class CalendarTestCase extends TestCase {
             $moveEvent,
             $deleteEvent,
             $transferEvent,
-            new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($scheduling, $builder, $guard),
+            new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($scheduling, $builder, $guard, $warnings),
         );
         $policy = $this->createMock(\OCA\Mcp\Service\GrantPolicy::class);
         $policy->method('granted')->willReturn(true);

@@ -253,7 +253,14 @@ final class ToolErrorsLanguagesTest extends TestCase {
             $moveEvent,
             $deleteEvent,
             $transferEvent,
-            new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($scheduling, $builder, $guard),
+            new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($scheduling, $builder, $guard, new \OCA\Mcp\Tools\Calendar\Scheduling\PlanWarnings(
+                new \OCA\Mcp\Tools\Calendar\Scheduling\CollisionCheck($store, $repository, $classification, new EventExpander(), $logger),
+                new \OCA\Mcp\Tools\Calendar\Scheduling\AvailabilityCheck($this->createMock(\OCP\Calendar\IManager::class), $users, $logger),
+                new \OCA\Mcp\Tools\Calendar\Scheduling\SharedCalendarFinder($access, $store, $users, $this->createMock(\OCP\IGroupManager::class)),
+                $attendees,
+                $builder,
+                $logger,
+            )),
         );
     }
 }

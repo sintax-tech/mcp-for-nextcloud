@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tools\Calendar;
 
+use OCA\Mcp\Tools\Calendar\Scheduling\PlanWarnings;
 use Sabre\VObject\Component\VCalendar;
 use Sabre\VObject\Component\VEvent;
 
@@ -15,11 +16,13 @@ use Sabre\VObject\Component\VEvent;
  * refused when the event changed in between.
  */
 final class CalendarDraftApproval {
-    public function __construct(private Scheduling $scheduling, private EventBuilder $builder, private SharedGuard $sharedGuard) {}
+    public function __construct(private Scheduling $scheduling, private EventBuilder $builder, private SharedGuard $sharedGuard, private PlanWarnings $warnings) {}
 
     /**
      * The plan of a write: what the event looks like now, what it would look like after, and what sending it
-     * would mean for the participants. Prepared but never dispatched, so no DAV call is written.
+     * would mean for the participants. Prepared but never dispatched, so no DAV call is written. Create, update,
+     * move and transfer also carry the scheduling warnings (collision, busy participants, calendars shared with
+     * them); they inform the user and never stop the confirmed call.
      *
      * @param CalendarWriteTool $tool write handler
      * @param array<string, mixed> $arguments MCP arguments, without confirm
@@ -29,9 +32,11 @@ final class CalendarDraftApproval {
      */
     public function preview(CalendarWriteTool $tool, array $arguments, string $userId): array {
         [$prepared, $shared] = $this->prepare($tool, $arguments, $userId);
+        $name = $tool->definition()['name'];
         return ['requiresConfirmation' => true, 'message' => CalendarMessages::approvalPrompt()]
-            + $this->plan($tool->definition()['name'], $prepared, $arguments)
-            + ['shared' => $shared];
+            + $this->plan($name, $prepared, $arguments)
+            + ['shared' => $shared]
+            + ($this->warnings->applies($name) ? $this->warnings->forWrite($name, $prepared, $arguments, $userId) : []);
     }
 
     /**

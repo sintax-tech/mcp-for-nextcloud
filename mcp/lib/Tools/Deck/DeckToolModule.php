@@ -16,6 +16,7 @@ use OCA\Mcp\Tools\Deck\Handler\MoveCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\ReadCardHandler;
 use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolGuideNotes;
 use OCA\Mcp\Tools\ToolModule;
@@ -39,7 +40,7 @@ use stdClass;
  * whenever a write arrives without `confirm: true`; the plan it returns is what the agent shows the
  * user, and `confirm_shared` still guards a board of somebody else at the moment of the write.
  */
-final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
+final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes, RendersPlans {
 	/** Nextcloud app id whose presence the whole module depends on. */
 	public const DECK_APP = 'deck';
 
@@ -53,6 +54,7 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	private const DEFAULT_LIMIT = 50;
 
 	private ?DeckGatewayInterface $gateway = null;
+	private ?string $lastUserId = null;
 
 	/**
 	 * @param ContainerInterface $container Nextcloud server container, resolves the Deck services lazily.
@@ -292,6 +294,7 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	 * @throws \OCA\Mcp\Tools\ToolFailure When the Deck refuses the same read the write would do.
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
+		$this->lastUserId = $userId;
 		try {
 			return match ($name) {
 				CreateCardHandler::TOOL => $this->planCreate($arguments, $userId),
@@ -312,6 +315,14 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 
 			throw new ToolFailure(DeckErrors::messageFor($e));
 		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function renderPlan(string $tool, array $plan): ?string {
+		$zone = $this->lastUserId !== null ? $this->zones()?->forUser($this->lastUserId) : null;
+		return (new DeckPlanRenderer($zone))->render($tool, $plan);
 	}
 
 	/**

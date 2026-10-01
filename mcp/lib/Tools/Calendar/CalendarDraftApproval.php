@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tools\Calendar;
 
+use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\Calendar\Scheduling\PlanWarnings;
 use Sabre\VObject\Component\VCalendar;
 use Sabre\VObject\Component\VEvent;
@@ -16,7 +17,10 @@ use Sabre\VObject\Component\VEvent;
  * refused when the event changed in between.
  */
 final class CalendarDraftApproval {
-    public function __construct(private Scheduling $scheduling, private EventBuilder $builder, private SharedGuard $sharedGuard, private PlanWarnings $warnings) {}
+    /**
+     * @param UserTimezone|null $zones timezone of the account: the plan names it, so every time of it reads in the zone the user lives in
+     */
+    public function __construct(private Scheduling $scheduling, private EventBuilder $builder, private SharedGuard $sharedGuard, private PlanWarnings $warnings, private ?UserTimezone $zones = null) {}
 
     /**
      * The plan of a write: what the event looks like now, what it would look like after, and what sending it
@@ -35,6 +39,7 @@ final class CalendarDraftApproval {
         $name = $tool->definition()['name'];
         return ['requiresConfirmation' => true, 'message' => CalendarMessages::approvalPrompt()]
             + $this->plan($name, $prepared, $arguments)
+            + ['timezone' => $this->zones?->forUser($userId)->getName()]
             + ['shared' => $shared]
             + ($this->warnings->applies($name) ? $this->warnings->forWrite($name, $prepared, $arguments, $userId) : []);
     }

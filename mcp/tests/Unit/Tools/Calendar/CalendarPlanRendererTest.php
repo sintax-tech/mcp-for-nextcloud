@@ -522,6 +522,46 @@ final class CalendarPlanRendererTest extends TestCase {
         $this->assertStringNotContainsStringIgnoringCase('mailto', $markdown);
     }
 
+    /** An event without a zone of its own is read in the zone of the account the plan names, not in UTC. */
+    public function testATimeWithoutZoneIsShownInTheZoneOfThePlan(): void {
+        Translator::use(new JsonL10n('pt_BR'));
+        $plan = $this->createPlan(['timeZone' => null, 'start' => '2026-10-01T20:30:00+00:00', 'end' => '2026-10-01T21:00:00+00:00']) + ['timezone' => 'America/Sao_Paulo'];
+
+        $markdown = (string)$this->renderer->renderPlan('calendar_create_event', $plan);
+
+        $this->assertStringContainsString('- Quando: qui, 1 de out. de 2026, 17:30–18:00' . "\n", $markdown . "\n");
+        $this->assertStringNotContainsString('20:30', $markdown);
+        $this->assertStringNotContainsString('America/Sao_Paulo', $markdown, 'the account zone is the default and needs no label');
+    }
+
+    /** An event in the zone of the account needs no label either; one in another zone keeps its own. */
+    public function testTheZoneIsLabelledOnlyWhenItIsNotTheOneOfTheAccount(): void {
+        Translator::use(new JsonL10n('pt_BR'));
+        $same = $this->createPlan(['timeZone' => 'America/Sao_Paulo']) + ['timezone' => 'America/Sao_Paulo'];
+        $other = $this->createPlan(['timeZone' => 'Europe/Berlin']) + ['timezone' => 'America/Sao_Paulo'];
+
+        $this->assertStringContainsString('14:00–15:00' . "\n", (string)$this->renderer->renderPlan('calendar_create_event', $same) . "\n");
+        $this->assertStringNotContainsString('(America/Sao_Paulo)', (string)$this->renderer->renderPlan('calendar_create_event', $same));
+        $this->assertStringContainsString('19:00–20:00 (Europe/Berlin)', (string)$this->renderer->renderPlan('calendar_create_event', $other));
+    }
+
+    /** Every Calendar plan that shows a time uses the zone of the plan. */
+    public function testEveryCalendarPlanReadsTheTimeInTheZoneOfThePlan(): void {
+        Translator::use(new JsonL10n('pt_BR'));
+        $event = ['summary' => 'Reunião', 'start' => '2026-10-01T20:30:00+00:00', 'end' => '2026-10-01T21:00:00+00:00', 'allDay' => false, 'timeZone' => null];
+        $moved = ['start' => '2026-10-01T20:45:00+00:00', 'end' => '2026-10-01T21:15:00+00:00'] + $event;
+        foreach ([
+            'calendar_update_event' => ['before' => $event, 'after' => $moved],
+            'calendar_move_event' => ['before' => $event, 'after' => $event, 'destination' => ['name' => 'Outra']],
+            'calendar_transfer_event' => ['before' => $event, 'after' => $event, 'destination' => ['name' => 'Outra']],
+            'calendar_delete_event' => ['before' => $event, 'after' => null],
+        ] as $tool => $parts) {
+            $markdown = (string)$this->renderer->renderPlan($tool, ['action' => $tool, 'calendar' => ['name' => 'Agenda'], 'timezone' => 'America/Sao_Paulo'] + $parts);
+            $this->assertStringContainsString('17:30', $markdown, $tool);
+            $this->assertStringNotContainsString('20:30', $markdown, $tool);
+        }
+    }
+
     /** @return array<string, mixed> a create plan to which the test adds what it exercises */
     private function createPlan(array $after = [], mixed $calendar = ['name' => 'Agenda']): array {
         return [

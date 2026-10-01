@@ -258,6 +258,26 @@ final class PlanWarningsTest extends CalendarTestCase {
         self::assertCount(1, $this->dav->calls);
     }
 
+    // ---- timezone of the plan ----
+
+    /** The plan names the zone of the account and reads the times of an event without a zone in it, not in UTC. */
+    public function testThePlanNamesTheAccountZoneAndReadsAZonelessEventInIt(): void {
+        $this->seedEvent();
+        $args = ['calendar' => self::PERSONAL, 'uid' => 'event', 'start' => '2026-10-01T12:30:00Z', 'end' => '2026-10-01T13:30:00Z'];
+        $plan = self::json($this->registry->call('calendar_update_event', $args, 'alice'));
+        self::assertSame('America/Sao_Paulo', $plan['timezone']);
+        $text = $this->registry->call('calendar_update_event', $args, 'alice')['content'][0]['text'];
+        self::assertStringContainsString('09:00–10:00 → qui, 1 de out. de 2026, 09:30–10:30', $text);
+        self::assertStringNotContainsString('12:00', $text);
+    }
+
+    /** The collision warning of an event without a zone is written in the zone of the account too. */
+    public function testACollisionOfAZonelessEventIsWrittenInTheAccountZone(): void {
+        $this->store->addObject(1, 'dentist.ics', self::ics("UID:dentist\nSUMMARY:Dentista\nDTSTART:20261001T173000Z\nDTEND:20261001T183000Z"));
+        $plan = self::json($this->registry->call('calendar_create_event', ['calendar' => self::PERSONAL, 'summary' => 'Planejamento', 'start' => '2026-10-01T14:00:00-03:00', 'end' => '2026-10-01T15:00:00-03:00'], 'alice'));
+        self::assertSame([['type' => 'collision', 'message' => 'Sobrepõe Dentista (qui, 1 de out. de 2026, 14:30–15:30)']], $plan['warnings']);
+    }
+
     // ---- move, transfer, delete ----
 
     public function testMoveChecksCollisionsInTheDestinationCalendar(): void {

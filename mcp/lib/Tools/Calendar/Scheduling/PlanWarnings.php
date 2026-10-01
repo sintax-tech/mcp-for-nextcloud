@@ -12,6 +12,7 @@ use OCA\Mcp\Tools\Calendar\Calendar;
 use OCA\Mcp\Tools\Calendar\CalendarMessages;
 use OCA\Mcp\Tools\Calendar\EventBuilder;
 use OCA\Mcp\Tools\Calendar\PreparedCalendarWrite;
+use OCA\Mcp\Service\UserTimezone;
 use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
 use Sabre\VObject\Component\VEvent;
@@ -37,6 +38,7 @@ final class PlanWarnings {
      * @param EventBuilder $builder reads the timing of the proposed event
      * @param IUserManager $users names the owner of a shared calendar that is not the user's
      * @param LoggerInterface|null $logger receives the class of a failure, never its message
+     * @param UserTimezone|null $zones timezone of the account, the one the times of an event without its own read in
      */
     public function __construct(
         private CollisionCheck $collisions,
@@ -46,6 +48,7 @@ final class PlanWarnings {
         private EventBuilder $builder,
         private IUserManager $users,
         private ?LoggerInterface $logger = null,
+        private ?UserTimezone $zones = null,
     ) {}
 
     /**
@@ -81,7 +84,7 @@ final class PlanWarnings {
         if ($isUpdate && !$this->changed($prepared, $timing, $master)) {
             return $none;
         }
-        $zone = $timing['timeZone'] ?? new DateTimeZone(date_default_timezone_get() ?: 'UTC');
+        $zone = $timing['timeZone'] ?? $this->zones?->forUser($userId) ?? new DateTimeZone(date_default_timezone_get() ?: 'UTC');
         $calendar = $prepared->target ?? $prepared->source;
         $warnings = $this->collisionWarnings($calendar, $userId, $timing, $prepared->before?->uri, $zone);
         $shared = [];

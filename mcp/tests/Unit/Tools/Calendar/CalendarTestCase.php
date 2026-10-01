@@ -72,6 +72,8 @@ abstract class CalendarTestCase extends TestCase {
     protected array $busyBlocks = [];
     /** @var list<array{string, string}> ranges the availability API was asked about, as UTC ISO start and end, in order */
     protected array $availabilityAsked = [];
+    /** Timezone of alice's account, as UserTimezone reads it. */
+    protected string $accountTimezone = 'America/Sao_Paulo';
     /** @var list<string> e-mail addresses the availability API gives no verdict for */
     protected array $unknownEmails = [];
     /** Whether the availability API throws. */
@@ -144,6 +146,10 @@ abstract class CalendarTestCase extends TestCase {
             }
             return $results;
         });
+        $zoneConfig = $this->createMock(IConfig::class);
+        $zoneConfig->method('getUserValue')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $this->accountTimezone : '');
+        $zoneConfig->method('getSystemValueString')->willReturn('');
+        $zones = new \OCA\Mcp\Service\UserTimezone($zoneConfig);
         $groups = $this->createMock(IGroupManager::class);
         $groups->method('getUserGroupIds')->willReturn([]);
         $warnings = new PlanWarnings(
@@ -154,6 +160,7 @@ abstract class CalendarTestCase extends TestCase {
             $builder,
             $this->users(),
             $logger,
+            $zones,
         );
         $this->module = new CalendarModule(
             $listCalendars,
@@ -163,7 +170,7 @@ abstract class CalendarTestCase extends TestCase {
             $moveEvent,
             $deleteEvent,
             $transferEvent,
-            new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($scheduling, $builder, $guard, $warnings),
+            new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($scheduling, $builder, $guard, $warnings, $zones),
         );
         $policy = $this->createMock(\OCA\Mcp\Service\GrantPolicy::class);
         $policy->method('granted')->willReturn(true);
@@ -178,11 +185,6 @@ abstract class CalendarTestCase extends TestCase {
         );
     }
 
-    /**
-     * User manager resolving alice, bob and carla, for the guest list and the shared-calendar messages.
-     *
-     * @return IUserManager double
-     */
     /**
      * @param string $email attendee address, lower case
      * @param \DateTimeInterface $start start of the asked range
@@ -202,6 +204,11 @@ abstract class CalendarTestCase extends TestCase {
         \OCA\Mcp\L10n\Translator::reset();
     }
 
+    /**
+     * User manager resolving alice, bob and carla, for the guest list and the shared-calendar messages.
+     *
+     * @return IUserManager double
+     */
     private function users(): IUserManager {
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturnCallback(function ($uid): ?IUser {

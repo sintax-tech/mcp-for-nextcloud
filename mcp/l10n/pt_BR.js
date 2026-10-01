@@ -705,6 +705,15 @@ OC.L10N.register(
     "share" : "compartilhar",
     "link" : "link público",
     "Share own files with people and groups" : "Compartilhar os próprios arquivos com pessoas e grupos",
-    "Create public links to own files" : "Criar links públicos para os próprios arquivos"
+    "Create public links to own files" : "Criar links públicos para os próprios arquivos",
+    "one of: %s" : "um destes: %s",
+    "expected user:<uid>, group:<gid> or link" : "esperado user:<uid>, group:<gid> ou link",
+    "unknown account" : "conta desconhecida",
+    "unknown group" : "grupo desconhecido",
+    "Public link" : "Link público",
+    "Only files and folders you own can be shared here; this one belongs to someone else." : "Aqui só é possível compartilhar arquivos e pastas de que você é dono; este pertence a outra pessoa.",
+    "Your whole folder cannot be shared; choose a file or a folder inside it." : "Não é possível compartilhar a sua pasta inteira; escolha um arquivo ou uma pasta dentro dela.",
+    "Your administrator has not allowed the AI to manage this kind of share." : "O administrador não permitiu que a IA gerencie este tipo de compartilhamento.",
+    "This kind of share is not managed here; a Talk attachment is removed in Talk." : "Este tipo de compartilhamento não é gerenciado aqui; um anexo do Talk se remove no Talk."
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

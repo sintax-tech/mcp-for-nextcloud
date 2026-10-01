@@ -22,6 +22,17 @@ final class AttendeeResolverTest extends TestCase {
     }
 
     /** @return void */
+    public function testExistingInternalUidsMayContainAtSignsAndSpaces(): void {
+        $users = $this->users();
+        foreach (['bob@example.invalid', 'Bob Silva'] as $uid) {
+            $users[$uid] = $this->user($uid, $uid, 'account-address@example.invalid', true);
+        }
+        $resolved = $this->resolverWith($users)->resolve(['bob@example.invalid', 'Bob Silva'], 'alice');
+        self::assertSame(['bob@example.invalid', 'Bob Silva'], array_column($resolved, 'uid'));
+        self::assertSame(['account-address@example.invalid', 'account-address@example.invalid'], array_column($resolved, 'email'));
+    }
+
+    /** @return void */
     public function testEveryRefusalNamesTheUidSoTheCallerCanFixIt(): void {
         foreach ([
             'ghost' => 'ghost',

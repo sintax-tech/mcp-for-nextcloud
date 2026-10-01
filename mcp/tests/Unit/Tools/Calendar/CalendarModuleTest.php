@@ -80,6 +80,23 @@ final class CalendarModuleTest extends CalendarTestCase {
         $this->assertNoWrites();
     }
 
+    public function testPublicRegistryExposesInvitationAnnotationsAndStillRequiresGrants(): void {
+        $this->verification = json_encode(['app' => '0.6.10', 'nextcloud' => '33.0', 'operations' => ['create', 'edit'], 'invitations' => false]);
+        $policy = new GrantPolicy((new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this));
+        $apps = $this->createMock(\OCP\App\IAppManager::class);
+        $apps->method('isEnabledForUser')->willReturn(true);
+        $users = $this->createMock(\OCP\IUserManager::class);
+        $users->method('get')->willReturn($this->createMock(\OCP\IUser::class));
+        $registry = new \OCA\Mcp\Tools\ToolRegistry([$this->module], $policy, $apps, $users, new \Psr\Log\NullLogger());
+        self::assertCount(2, $registry->list('alice'));
+        $policy->setGrant('alice', 'calendar', 'create', true);
+        $policy->setGrant('alice', 'calendar', 'edit', true);
+        $listed = array_column($registry->list('alice'), null, 'name');
+        self::assertTrue($listed['calendar_create_event']['annotations']['destructiveHint']);
+        self::assertTrue($listed['calendar_update_event']['annotations']['destructiveHint']);
+        self::assertFalse($listed['calendar_list_events']['annotations']['destructiveHint']);
+    }
+
     public function testUnknownToolIsInvalidParams(): void {
         $this->expectException(InvalidArgumentException::class);
         $this->call('calendar_nope');

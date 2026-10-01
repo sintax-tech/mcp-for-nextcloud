@@ -37,7 +37,7 @@ final class AttendeeResolver {
             throw new CalendarArgumentException(CalendarMessages::ATTENDEES_INVALID);
         }
         foreach ($uids as $uid) {
-            if ($uid === '' || $uid === $organizerUid || str_contains($uid, '@') || preg_match('/^[^\s@]+$/', $uid) !== 1) {
+            if ($uid === '' || $uid === $organizerUid) {
                 throw new CalendarArgumentException(sprintf(CalendarMessages::ATTENDEE_NOT_FOUND, $uid));
             }
         }

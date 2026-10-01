@@ -2,6 +2,12 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased
+
+### Added
+
+- contacts: `contacts_search_contacts` also searches the read-only accounts catalog of the instance when `addressbook` is omitted or is the catalog path, so colleagues are found. It uses the official `OCP\Contacts\IManager` and applies the admin user-enumeration settings (autocompletion, group restriction, full-match). Each account result carries `accountId`; a personal contact with the same e-mail is kept and gains it. `contacts_read_contact` reads an account with public fields only, `contacts_list_addressbooks` lists the catalog as read-only, and create/edit/delete refuse it.
+
 ## 0.8.2
 
 ### Fixed

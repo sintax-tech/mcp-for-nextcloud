@@ -40,15 +40,32 @@ final class DeleteStackHandler extends AbstractHandler {
 				return $confirmation;
 			}
 
-			$stack = $this->gateway->deleteEmptyStack($userId, (int)$arguments['stackId']);
+			$stackId = (int)$arguments['stackId'];
+			$warnings = [];
+			// The refusals of the gateway (cards in the list, a card that arrived during the delete) are decided by
+			// it; any other exception is followed by a look in the trash of the board.
+			$stack = $this->afterWrite(
+				fn () => $this->gateway->deleteEmptyStack($userId, $stackId),
+				fn () => $this->gateway->deletedStack($userId, $stackId),
+				$warnings,
+			);
 
 			return [
 				'id' => (int)$stack->getId(),
 				'boardId' => (int)$stack->getBoardId(),
 				'title' => (string)$stack->getTitle(),
 				'deleted' => true,
-			];
+			] + ($warnings === [] ? [] : ['warnings' => $warnings]);
 		});
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * A deleted list leaves the lists of its board.
+	 */
+	protected function readWith(): string {
+		return 'deck_list_stacks';
 	}
 
 	/**

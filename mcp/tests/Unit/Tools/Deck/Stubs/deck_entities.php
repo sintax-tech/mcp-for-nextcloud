@@ -45,7 +45,7 @@ interface IPermissionMapper {
 /** Board entity double. */
 class Board {
 	/**
-	 * @param array{id?: int, title?: string, color?: string|null, archived?: bool, owner?: string, lastModified?: int} $fields Values the getters report.
+	 * @param array{id?: int, title?: string, color?: string|null, archived?: bool, owner?: string, lastModified?: int, deletedAt?: int} $fields Values the getters report.
 	 */
 	public function __construct(private array $fields = []) {
 	}
@@ -72,6 +72,11 @@ class Board {
 
 	public function getLastModified(): int {
 		return (int)($this->fields['lastModified'] ?? 0);
+	}
+
+	/** @return int When the board went to the Deck trash, 0 while it is not deleted. */
+	public function getDeletedAt(): int {
+		return (int)($this->fields['deletedAt'] ?? 0);
 	}
 }
 
@@ -110,7 +115,7 @@ class Stack {
 /** Card entity double. */
 class Card {
 	/**
-	 * @param array{id?: int, stackId?: int, title?: string, description?: string, type?: string, owner?: string, order?: int, archived?: bool, deletedAt?: int, duedate?: \DateTime|null, done?: \DateTime|null, lastModified?: int, attachmentCount?: int|null, relatedBoard?: Board|null, assignedUsers?: Assignment[]|null} $fields Values the getters report.
+	 * @param array{id?: int, stackId?: int, title?: string, description?: string, type?: string, owner?: string, order?: int, archived?: bool, deletedAt?: int, duedate?: \DateTime|null, done?: \DateTime|null, lastModified?: int, createdAt?: int, attachmentCount?: int|null, relatedBoard?: Board|null, assignedUsers?: Assignment[]|null} $fields Values the getters report.
 	 */
 	public function __construct(private array $fields = []) {
 	}
@@ -163,6 +168,11 @@ class Card {
 		return (int)($this->fields['lastModified'] ?? 0);
 	}
 
+	/** @return int When `CardMapper::insert()` stored the card, as a Unix timestamp. */
+	public function getCreatedAt(): int {
+		return (int)($this->fields['createdAt'] ?? 0);
+	}
+
 	public function getAttachmentCount(): ?int {
 		return $this->fields['attachmentCount'] ?? null;
 	}
@@ -197,6 +207,18 @@ class BoardMapper implements IPermissionMapper {
 	public function findBoardId(int $id): ?int {
 		return null;
 	}
+
+	/**
+	 * A fresh query on the boards the user owns, the deleted ones included (Deck `lib/Db/BoardMapper.php:263`).
+	 *
+	 * @param string $userId Owner.
+	 * @param int|null $limit Maximum number of boards.
+	 * @param int|null $offset Boards to skip.
+	 * @return Board[] Boards owned by the user.
+	 */
+	public function findAllByOwner(string $userId, ?int $limit = null, ?int $offset = null) {
+		return [];
+	}
 }
 
 /** Stack mapper double; signatures mirror Deck `v1.17.5` `lib/Db/StackMapper.php`. */
@@ -227,6 +249,16 @@ class StackMapper implements IPermissionMapper {
 	public function findAll(int $boardId, ?int $limit = null, $offset = 0): array {
 		return [];
 	}
+
+	/**
+	 * @param int $boardId Board to list.
+	 * @param int|null $limit Maximum number of stacks.
+	 * @param int $offset Stacks to skip.
+	 * @return Stack[] Stacks of the board in the Deck trash (`deleted_at` not 0).
+	 */
+	public function findDeleted(int $boardId, ?int $limit = null, int $offset = 0): array {
+		return [];
+	}
 }
 
 /** Card mapper double; signatures mirror Deck `v1.17.5` `lib/Db/CardMapper.php`. */
@@ -246,6 +278,17 @@ class CardMapper implements IPermissionMapper {
 	 */
 	public function findBoardId(int $id): ?int {
 		return null;
+	}
+
+	/**
+	 * A fresh query on one card, deleted or not (Deck `lib/Db/CardMapper.php:116`).
+	 *
+	 * @param int|string $id Card id.
+	 * @param bool $enhance Also read the labels and the owner.
+	 * @return Card The card.
+	 */
+	public function find($id, bool $enhance = true): Card {
+		throw new \LogicException('Stub: expected a PHPUnit mock.');
 	}
 
 	/**

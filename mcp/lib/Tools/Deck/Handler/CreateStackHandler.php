@@ -44,16 +44,35 @@ final class CreateStackHandler extends AbstractHandler {
 				return $confirmation;
 			}
 
+			$boardId = (int)$arguments['boardId'];
 			$order = array_key_exists('order', $arguments) ? (int)$arguments['order'] : null;
-			$stack = $this->gateway->createStack($userId, (int)$arguments['boardId'], $title, $order);
+
+			// The lists before the write, so a creation that threw is told apart from a list that already had the title:
+			// Deck inserts the list before its activity and the board event.
+			$before = array_map(static fn ($stack): int => (int)$stack->getId(), $this->gateway->stacksOf($userId, $boardId));
+			$warnings = [];
+			$stack = $this->afterWrite(
+				fn () => $this->gateway->createStack($userId, $boardId, $title, $order),
+				fn () => self::newStack($this->gateway->stacksOf($userId, $boardId), $title, $before),
+				$warnings,
+			);
 
 			return [
 				'id' => (int)$stack->getId(),
 				'boardId' => (int)$stack->getBoardId(),
 				'title' => (string)$stack->getTitle(),
 				'order' => (int)$stack->getOrder(),
-			];
+			] + ($warnings === [] ? [] : ['warnings' => $warnings]);
 		});
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * A list is found again among the lists of its board.
+	 */
+	protected function readWith(): string {
+		return 'deck_list_stacks';
 	}
 
 	/**

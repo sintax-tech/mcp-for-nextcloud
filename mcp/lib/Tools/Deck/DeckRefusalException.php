@@ -15,6 +15,17 @@ use RuntimeException;
  * it could not be taken back: its message says the item is in the Deck trash.
  */
 final class DeckRefusalException extends RuntimeException {
+	/** Whether the item was deleted after all: the `*ReceivedCards(false)` pair, whose undo failed. */
+	private bool $afterWrite = false;
+
+	/**
+	 * @return bool true when the refusal came after the delete and the item stayed in the Deck trash, so the tool
+	 *     answers with a partial result instead of an error that would invite a retry
+	 */
+	public function afterWrite(): bool {
+		return $this->afterWrite;
+	}
+
 	/**
 	 * @param int $cards Active and archived cards the list holds.
 	 * @return self Refusal worded for a list.
@@ -36,7 +47,10 @@ final class DeckRefusalException extends RuntimeException {
 	 * @return self Refusal for a list that received a card while it was being deleted.
 	 */
 	public static function stackReceivedCards(bool $restored): self {
-		return new self(DeckMessages::errorStackReceivedCards($restored));
+		$refusal = new self(DeckMessages::errorStackReceivedCards($restored));
+		$refusal->afterWrite = !$restored;
+
+		return $refusal;
 	}
 
 	/**
@@ -44,7 +58,10 @@ final class DeckRefusalException extends RuntimeException {
 	 * @return self Refusal for a board that received a card while it was being deleted.
 	 */
 	public static function boardReceivedCards(bool $restored): self {
-		return new self(DeckMessages::errorBoardReceivedCards($restored));
+		$refusal = new self(DeckMessages::errorBoardReceivedCards($restored));
+		$refusal->afterWrite = !$restored;
+
+		return $refusal;
 	}
 
 	/**

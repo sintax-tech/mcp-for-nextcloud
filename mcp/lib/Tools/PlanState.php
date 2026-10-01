@@ -15,6 +15,10 @@ use OCP\IConfig;
  * it again from the state it is about to change and requires the value back: a different one means the person
  * approved something else, so nothing is written and the answer is the new plan ({@see PlanChanged}).
  *
+ * General rule: `$shown` holds every argument that changes the effect of the write (the node, the recipient, each field
+ * the call asks for) next to the state it found, so the value of one plan never confirms a call with other arguments,
+ * even when both would find the same state. An argument that does not change the effect (`confirm`, this one) stays out.
+ *
  * The value is an HMAC-SHA256 with the instance secret: stable for the same state, opaque, and never readable back
  * into the fields. Without the secret it cannot be computed either, so a confirmed call carries it only after a plan
  * was produced for that state. Hand it nothing secret anyway, never a password. Stateless: one instance serves every
@@ -31,7 +35,8 @@ final class PlanState {
     /**
      * @param string $tool tool whose plan this is, so the state of one tool never confirms another
      * @param string $uid authenticated user the plan was made for, so a plan_state never confirms for another account
-     * @param array<string, mixed> $shown what the plan showed and the write depends on, as scalars and arrays of them
+     * @param array<string, mixed> $shown what the plan showed and the write depends on, every argument that changes the
+     *   effect included, as scalars and arrays of them
      * @return string 64 lowercase hex characters
      */
     public function of(string $tool, string $uid, array $shown): string {

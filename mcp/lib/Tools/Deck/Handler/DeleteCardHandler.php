@@ -54,7 +54,20 @@ final class DeleteCardHandler extends AbstractHandler {
 				return $confirmation;
 			}
 
-			return $this->formatter->card($this->gateway->deleteCard($userId, (int)$arguments['cardId']));
+			$cardId = (int)$arguments['cardId'];
+			$warnings = [];
+			// Deck stamps `deleted_at` before the activity and the notifications: the card read back says whether it went.
+			$card = $this->afterWrite(
+				fn () => $this->gateway->deleteCard($userId, $cardId),
+				function () use ($userId, $cardId) {
+					$card = $this->gateway->cardState($userId, $cardId);
+
+					return (int)$card->getDeletedAt() > 0 ? $card : null;
+				},
+				$warnings,
+			);
+
+			return $this->formatter->card($card) + ($warnings === [] ? [] : ['warnings' => $warnings]);
 		});
 	}
 

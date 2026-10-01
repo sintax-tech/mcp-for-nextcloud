@@ -9,6 +9,7 @@ use OCA\Deck\Db\Acl;
 use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\AssignmentMapper;
 use OCA\Deck\Db\Board;
+use OCA\Deck\Db\BoardMapper;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Db\Stack;
@@ -41,6 +42,9 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 
 	/** Visible boards a follow-up scans at most, so one call stays a bounded number of queries. */
 	private const MAX_BOARDS = 100;
+
+	/** How far back a card counts as the one a failed creation saved, in seconds. */
+	private const CREATED_WITHIN = 120;
 
 	/** @var array<string, object> Services resolved so far in this request. */
 	private array $resolved = [];
@@ -553,6 +557,134 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		}
 
 		throw DeckRefusalException::boardReceivedCards(true);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * `CardMapper::find()` runs a fresh query and, unlike `CardService::find()`, answers a deleted card too.
+	 */
+	public function cardState(string $userId, int $cardId): Card {
+		$this->bindUser($userId);
+
+		/** @var PermissionService $permissionService */
+		$permissionService = $this->service(PermissionService::class);
+		/** @var CardMapper $cardMapper */
+		$cardMapper = $this->service(CardMapper::class);
+
+		// Deck v1.17.5 `checkPermission($mapper, $id, $permission, $userId, $allowDeletedCard)`: a deleted card is
+		// exactly what a delete leaves, so it stays readable here.
+		$permissionService->checkPermission($cardMapper, $cardId, Acl::PERMISSION_READ, null, true);
+
+		return $cardMapper->find($cardId, false);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function findCreatedCard(string $userId, int $stackId, string $title, array $excludeIds = []): ?Card {
+		$this->bindUser($userId);
+
+		/** @var PermissionService $permissionService */
+		$permissionService = $this->service(PermissionService::class);
+		/** @var StackMapper $stackMapper */
+		$stackMapper = $this->service(StackMapper::class);
+		/** @var CardMapper $cardMapper */
+		$cardMapper = $this->service(CardMapper::class);
+
+		$permissionService->checkPermission($stackMapper, $stackId, Acl::PERMISSION_READ);
+
+		$since = $this->time->getTime() - self::CREATED_WITHIN;
+		$found = null;
+		foreach ($cardMapper->findAll($stackId) ?: [] as $card) {
+			if (!$card instanceof Card || in_array((int)$card->getId(), $excludeIds, true)) {
+				continue;
+			}
+			if ((string)$card->getOwner() === $userId && (string)$card->getTitle() === $title && (int)$card->getCreatedAt() >= $since
+				&& ($found === null || (int)$card->getId() > (int)$found->getId())) {
+				$found = $card;
+			}
+		}
+
+		return $found;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function cardAssignments(string $userId, int $cardId): array {
+		$this->bindUser($userId);
+
+		/** @var PermissionService $permissionService */
+		$permissionService = $this->service(PermissionService::class);
+		/** @var AssignmentMapper $assignmentMapper */
+		$assignmentMapper = $this->service(AssignmentMapper::class);
+
+		$permissionService->checkPermission($this->service(CardMapper::class), $cardId, Acl::PERMISSION_READ);
+
+		return array_values($assignmentMapper->findIn([$cardId]));
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function stacksOf(string $userId, int $boardId): array {
+		$this->bindUser($userId);
+
+		/** @var PermissionService $permissionService */
+		$permissionService = $this->service(PermissionService::class);
+		/** @var StackMapper $stackMapper */
+		$stackMapper = $this->service(StackMapper::class);
+
+		$permissionService->checkPermission(null, $boardId, Acl::PERMISSION_READ);
+
+		return array_values($stackMapper->findAll($boardId));
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * `StackMapper::find()` keeps the entity of the request in memory, with the `deleted_at` the failed delete set on
+	 * it even when the update never reached the database, so the lists are queried again instead.
+	 */
+	public function deletedStack(string $userId, int $stackId): ?Stack {
+		$this->bindUser($userId);
+
+		/** @var PermissionService $permissionService */
+		$permissionService = $this->service(PermissionService::class);
+		/** @var StackMapper $stackMapper */
+		$stackMapper = $this->service(StackMapper::class);
+
+		$boardId = $stackMapper->findBoardId($stackId) ?? throw new NoPermissionException('Permission denied');
+		$permissionService->checkPermission(null, $boardId, Acl::PERMISSION_READ);
+
+		foreach ($stackMapper->findDeleted($boardId) as $stack) {
+			if ((int)$stack->getId() === $stackId) {
+				return $stack;
+			}
+		}
+		foreach ($stackMapper->findAll($boardId) as $stack) {
+			if ((int)$stack->getId() === $stackId) {
+				return null;
+			}
+		}
+
+		throw new \RuntimeException('The list is neither active nor in the trash');
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * `BoardMapper::findAllByOwner()` is a fresh query; `find()` would answer from the entity cache of the request.
+	 * Only the caller's own boards are read, so no ACL check is needed.
+	 */
+	public function ownedBoards(string $userId): array {
+		$this->bindUser($userId);
+
+		/** @var BoardMapper $boardMapper */
+		$boardMapper = $this->service(BoardMapper::class);
+
+		return array_values($boardMapper->findAllByOwner($userId) ?: []);
 	}
 
 	/**

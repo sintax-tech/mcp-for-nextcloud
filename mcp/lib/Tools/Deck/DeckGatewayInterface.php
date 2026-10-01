@@ -293,4 +293,66 @@ interface DeckGatewayInterface {
 	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
 	 */
 	public function deleteEmptyBoard(string $userId, int $boardId): Board;
+
+	/**
+	 * One card read again from the database, deleted or not, so a write tool can tell what a failed write left.
+	 *
+	 * @param string $userId UID of the authenticated caller, who must be able to read the board of the card.
+	 * @param int $cardId Card to read.
+	 * @return Card The card as stored, without the enrichment of the Deck service.
+	 * @throws \Throwable Any Deck failure; the caller treats it as "cannot tell".
+	 */
+	public function cardState(string $userId, int $cardId): Card;
+
+	/**
+	 * The card a creation that threw may have saved: the newest card of the caller in that list with that title,
+	 * created in the last two minutes and not one of `$excludeIds`.
+	 *
+	 * @param string $userId UID of the authenticated caller, the owner of the card.
+	 * @param int $stackId List the card was created in.
+	 * @param string $title Title of the card.
+	 * @param list<int> $excludeIds Cards already accounted for, such as the ones created earlier in the same call.
+	 * @return Card|null The card, or null when there is none.
+	 * @throws \Throwable Any Deck failure; the caller treats it as "cannot tell".
+	 */
+	public function findCreatedCard(string $userId, int $stackId, string $title, array $excludeIds = []): ?Card;
+
+	/**
+	 * The assignments of one card, read again from the database.
+	 *
+	 * @param string $userId UID of the authenticated caller, who must be able to read the card.
+	 * @param int $cardId Card to read.
+	 * @return list<\OCA\Deck\Db\Assignment> Its assignments.
+	 * @throws \Throwable Any Deck failure; the caller treats it as "cannot tell".
+	 */
+	public function cardAssignments(string $userId, int $cardId): array;
+
+	/**
+	 * The active lists of a board, read again from the database (deleted ones left out, no cards embedded).
+	 *
+	 * @param string $userId UID of the authenticated caller, who must be able to read the board.
+	 * @param int $boardId Board to read.
+	 * @return list<Stack> Its lists.
+	 * @throws \Throwable Any Deck failure; the caller treats it as "cannot tell".
+	 */
+	public function stacksOf(string $userId, int $boardId): array;
+
+	/**
+	 * Whether a list went to the Deck trash, read again from the database.
+	 *
+	 * @param string $userId UID of the authenticated caller, who must be able to read the board of the list.
+	 * @param int $stackId List to look for.
+	 * @return Stack|null The list as found in the trash, or null when it is still among the active lists.
+	 * @throws \Throwable When it is found nowhere, or any Deck failure; the caller treats it as "cannot tell".
+	 */
+	public function deletedStack(string $userId, int $stackId): ?Stack;
+
+	/**
+	 * The boards the caller owns, read again from the database, deleted ones included.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @return list<Board> Their boards.
+	 * @throws \Throwable Any Deck failure; the caller treats it as "cannot tell".
+	 */
+	public function ownedBoards(string $userId): array;
 }

@@ -230,6 +230,62 @@ final class FilesSharePlanStateTest extends FilesToolsTestCase {
         self::assertSame(['field' => 'plan_state', 'rule' => 'required with confirm: true; send the plan_state of the plan'], $missing);
     }
 
+    /** Re-review of c06b2e0: a plan for one recipient never confirms a share with another, nor another path or field. */
+    public function testAPlanStateConfirmsOnlyTheArgumentsOfThePlan(): void {
+        $this->tree->addFile('/alice/files/Documentos/outro.md', 'outro', 'text/markdown');
+        $planned = ['path' => self::FILE, 'with' => 'user:bruno'];
+        $state = $this->plan('files_share', $planned)[PlanState::ARGUMENT];
+        foreach ([
+            'another person' => ['with' => 'user:carla'],
+            'a group' => ['with' => 'group:finance'],
+            'another path' => ['path' => '/Documentos/outro.md'],
+            'another permission' => ['permission' => 'edit'],
+            'a date' => ['expires' => '2026-12-31'],
+            'a note' => ['note' => 'leia'],
+        ] as $case => $swap) {
+            $plan = $this->changed('files_share', $swap + $planned, $state);
+            $this->assertChanged($plan);
+            self::assertNotSame($state, $plan[PlanState::ARGUMENT], $case);
+        }
+        self::assertSame([], $this->shares->shares, 'nenhum compartilhamento foi criado');
+    }
+
+    /**
+     * Every argument of files_share and files_unshare that is not confirm or plan_state changes the effect, so changing
+     * its value changes plan_state. A new argument of the schema fails this test until it has a case here.
+     */
+    public function testEveryArgumentOfTheSchemaIsPartOfThePlanState(): void {
+        $this->tree->addFile('/alice/files/Documentos/outro.md', 'outro', 'text/markdown');
+        $other = '/alice/files/Documentos/outro.md';
+        $bruno = $this->webShare();
+        $carla = $this->webShare(['with' => 'carla']);
+        $this->shares->add(['node' => $this->tree->nodes[$other]['id'], 'with' => 'bruno', 'nodeObject' => $this->tree->node($other)]);
+        $cases = [
+            'files_share' => [
+                'path' => [['path' => self::FILE, 'with' => 'user:bruno'], ['path' => '/Documentos/outro.md', 'with' => 'user:bruno']],
+                'with' => [['path' => self::FILE, 'with' => 'group:finance'], ['path' => self::FILE, 'with' => 'group:board']],
+                'permission' => [['path' => self::FILE, 'with' => 'group:finance'], ['path' => self::FILE, 'with' => 'group:finance', 'permission' => 'edit']],
+                'expires' => [['path' => self::FILE, 'with' => 'group:finance', 'expires' => '2026-12-31'], ['path' => self::FILE, 'with' => 'group:finance', 'expires' => '2027-01-15']],
+                'note' => [['path' => self::FILE, 'with' => 'user:bruno', 'note' => ''], ['path' => self::FILE, 'with' => 'user:bruno']],
+                'password' => [['path' => self::FILE, 'with' => 'link'], ['path' => self::FILE, 'with' => 'link', 'password' => false]],
+            ],
+            'files_unshare' => [
+                'shareId' => [['shareId' => $bruno->getFullId()], ['shareId' => $carla->getFullId()]],
+                'path' => [['path' => self::FILE, 'with' => 'user:bruno'], ['path' => '/Documentos/outro.md', 'with' => 'user:bruno']],
+                'with' => [['path' => self::FILE, 'with' => 'user:bruno'], ['path' => self::FILE, 'with' => 'user:carla']],
+            ],
+        ];
+        foreach ($cases as $tool => $arguments) {
+            $schema = array_keys($this->validatedSchema($tool)['properties']);
+            self::assertEqualsCanonicalizing(array_values(array_diff($schema, ['confirm', PlanState::ARGUMENT])), array_keys($arguments),
+                "$tool: todo argumento do schema tem um caso");
+            foreach ($arguments as $argument => [$one, $two]) {
+                self::assertNotSame($this->plan($tool, $one)[PlanState::ARGUMENT], $this->plan($tool, $two)[PlanState::ARGUMENT],
+                    "$tool: trocar $argument muda o plan_state");
+            }
+        }
+    }
+
     /** @return array<string, mixed> the input schema of a tool as the module defines it */
     private function validatedSchema(string $tool): array {
         return array_column($this->module->definitions(), null, 'name')[$tool]['inputSchema'];

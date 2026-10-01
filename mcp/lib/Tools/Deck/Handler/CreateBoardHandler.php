@@ -7,6 +7,8 @@ use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tools\Deck\BoardBlueprint;
 use OCA\Mcp\Tools\Deck\DeckErrors;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Tools\Deck\DeckMessages;
+use OCA\Mcp\Tools\Deck\DeckUnconfirmedException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -15,7 +17,9 @@ use Psr\Log\LoggerInterface;
  * Everything that can be refused is refused first, by {@see BoardBlueprint}, so a bad structure writes nothing.
  * Once the board exists the handler never answers with an error: each list and card is its own step, a step
  * that fails is reported in `failed` and the others go on, and nothing already written is undone. An error
- * after a write is what made the client retry and build the same card twice in 0.9.0.
+ * after a write is what made the client retry and build the same card twice in 0.9.0. A step that throws after Deck
+ * saved it (the board before its default labels, a list or a card before its activity) is read back and counts as
+ * created, with a warning; one whose state cannot be read back is a warning, never an entry of `failed`.
  */
 final class CreateBoardHandler extends AbstractHandler {
 	/** MCP tool name this handler serves. */
@@ -44,11 +48,27 @@ final class CreateBoardHandler extends AbstractHandler {
 		$blueprint = BoardBlueprint::parse($arguments, $userId);
 
 		return $this->run(function () use ($blueprint, $userId): array {
-			// The one step whose failure is a plain error: until it succeeds nothing exists.
-			$board = $this->gateway->createBoard($userId, $blueprint['title'], $blueprint['color']);
+			// The one step whose failure is a plain error: until it succeeds nothing exists. Deck inserts the board
+			// before its labels and activity, so the boards of the caller before and after tell whether it does.
+			$before = array_map(static fn ($board): int => (int)$board->getId(), $this->gateway->ownedBoards($userId));
+			$warnings = [];
+			$board = $this->afterWrite(
+				fn () => $this->gateway->createBoard($userId, $blueprint['title'], $blueprint['color']),
+				fn () => $this->newBoard($userId, $blueprint['title'], $before),
+				$warnings,
+			);
 
-			return $this->build((int)$board->getId(), (string)$board->getTitle(), $blueprint, $userId);
+			return $this->build((int)$board->getId(), (string)$board->getTitle(), $blueprint, $userId, $warnings);
 		});
+	}
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * A new board is found again among the boards of the caller.
+	 */
+	protected function readWith(): string {
+		return 'deck_list_boards';
 	}
 
 	/**
@@ -59,23 +79,53 @@ final class CreateBoardHandler extends AbstractHandler {
 	}
 
 	/**
+	 * The board a creation that threw saved: the newest active board of the caller with that title that did not exist before.
+	 *
+	 * @param string $userId UID of the authenticated caller.
+	 * @param string $title Title asked for.
+	 * @param list<int> $before Ids of the caller's boards before the write.
+	 * @return \OCA\Deck\Db\Board|null The board, or null when there is none.
+	 */
+	private function newBoard(string $userId, string $title, array $before): ?\OCA\Deck\Db\Board {
+		$found = null;
+		foreach ($this->gateway->ownedBoards($userId) as $board) {
+			if (!in_array((int)$board->getId(), $before, true) && (string)$board->getTitle() === $title && (int)$board->getDeletedAt() === 0
+				&& ($found === null || (int)$board->getId() > (int)$found->getId())) {
+				$found = $board;
+			}
+		}
+
+		return $found;
+	}
+
+	/**
 	 * Creates the lists and the cards of an existing board, collecting what could not be created.
 	 *
 	 * @param int $boardId Board just created.
 	 * @param string $boardTitle Its title as Deck stored it.
 	 * @param array{stacks: list<array{title: string, cards: list<array{title: string, description: string, duedate: string|null, assignees: list<string>}>}>} $blueprint Validated structure.
 	 * @param string $userId UID of the authenticated caller.
+	 * @param list<string> $warnings Warnings so far, such as a board saved before Deck failed.
 	 * @return array<string, mixed> Payload that says what exists and what does not.
 	 */
-	private function build(int $boardId, string $boardTitle, array $blueprint, string $userId): array {
+	private function build(int $boardId, string $boardTitle, array $blueprint, string $userId, array $warnings = []): array {
 		$stacks = [];
 		$failed = [];
-		$warnings = [];
+		$unconfirmed = 0;
 		$cardTotal = 0;
 
 		foreach ($blueprint['stacks'] as $position => $wanted) {
 			try {
-				$stack = $this->gateway->createStack($userId, $boardId, $wanted['title'], $position);
+				$known = array_column($stacks, 'id');
+				$stack = $this->afterWrite(
+					fn () => $this->gateway->createStack($userId, $boardId, $wanted['title'], $position),
+					fn () => self::newStack($this->gateway->stacksOf($userId, $boardId), $wanted['title'], $known),
+					$warnings,
+				);
+			} catch (DeckUnconfirmedException $e) {
+				$warnings[] = $this->unconfirmed('list', $wanted['title'], $e);
+				$unconfirmed++;
+				continue;
 			} catch (\Throwable $e) {
 				$failed[] = [
 					'kind' => 'list',
@@ -89,7 +139,16 @@ final class CreateBoardHandler extends AbstractHandler {
 			$cards = [];
 			foreach ($wanted['cards'] as $order => $card) {
 				try {
-					$created = $this->gateway->createCard($userId, (int)$stack->getId(), $card['title'], $card['description'], $card['duedate'], $order);
+					$known = array_column($cards, 'id');
+					$created = $this->afterWrite(
+						fn () => $this->gateway->createCard($userId, (int)$stack->getId(), $card['title'], $card['description'], $card['duedate'], $order),
+						fn () => $this->gateway->findCreatedCard($userId, (int)$stack->getId(), $card['title'], $known),
+						$warnings,
+					);
+				} catch (DeckUnconfirmedException $e) {
+					$warnings[] = $this->unconfirmed('card', $card['title'], $e);
+					$unconfirmed++;
+					continue;
 				} catch (\Throwable $e) {
 					$failed[] = ['kind' => 'card', 'list' => $wanted['title'], 'title' => $card['title'], 'reason' => $this->reason($e)];
 					continue;
@@ -98,7 +157,11 @@ final class CreateBoardHandler extends AbstractHandler {
 
 				foreach ($card['assignees'] as $assignee) {
 					try {
-						$this->gateway->assignCardUser($userId, (int)$created->getId(), $assignee);
+						$this->afterWrite(
+							fn () => $this->gateway->assignCardUser($userId, (int)$created->getId(), $assignee),
+							fn () => $this->assignmentOf($userId, (int)$created->getId(), $assignee),
+							$warnings,
+						);
 					} catch (\Throwable $e) {
 						// The card exists: never turn this into something that invites a second attempt.
 						$this->logger->warning('MCP Deck assignment failed after creation ({exception})', ['exception' => $e::class]);
@@ -110,13 +173,33 @@ final class CreateBoardHandler extends AbstractHandler {
 			$stacks[] = ['id' => (int)$stack->getId(), 'title' => $wanted['title'], 'cards' => $cards];
 		}
 
+		$summary = $this->summary($boardTitle, count($stacks), $cardTotal, count($failed));
+
 		return [
 			'created' => ['board' => ['id' => $boardId, 'title' => $boardTitle], 'stacks' => $stacks],
 			'failed' => $failed,
 			'warnings' => $warnings,
-			'complete' => $failed === [],
-			'summary' => $this->summary($boardTitle, count($stacks), $cardTotal, count($failed)),
+			'complete' => $failed === [] && $unconfirmed === 0,
+			'summary' => $unconfirmed === 0 ? $summary
+				: Translator::t('%s Some items could not be confirmed; see \'warnings\' before retrying.', [$summary]),
 		];
+	}
+
+	/**
+	 * Warning for a list or card whose creation threw and could not be read back: maybe created, so not in `failed`.
+	 *
+	 * @param string $kind `list` or `card`.
+	 * @param string $title Its title.
+	 * @param DeckUnconfirmedException $e What the read-back raised; only the class of the original exception is logged.
+	 * @return string Caller-safe warning.
+	 */
+	private function unconfirmed(string $kind, string $title, DeckUnconfirmedException $e): string {
+		$this->logger->warning('MCP Deck tool step not confirmed: {tool} ({exception})', [
+			'tool' => self::TOOL,
+			'exception' => $e->getPrevious() === null ? $e::class : $e->getPrevious()::class,
+		]);
+
+		return DeckMessages::boardItemUnconfirmed($kind, $title);
 	}
 
 	/**

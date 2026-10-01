@@ -13,6 +13,8 @@ use Smalot\PdfParser\Parser;
 class TextExtractor {
     /** Largest file read (and largest zip entry inflated), in bytes. */
     public const MAX_BYTES = 20 * 1024 * 1024;
+    /** Characters returned by files_read and resources/read before the text is truncated. */
+    public const MAX_CHARS = 100_000;
     /** Extensions returned as UTF-8 text. */
     private const TEXT_EXTENSIONS = ['txt', 'md', 'markdown', 'csv', 'tsv', 'json', 'xml', 'yaml', 'yml', 'log', 'ini', 'conf', 'html', 'htm', 'css', 'js', 'ts', 'php', 'py', 'sh', 'sql', 'svg', 'ics', 'vcf', 'rtf', 'tex'];
     /** Non text/* MIME types that are still text. */
@@ -41,6 +43,55 @@ class TextExtractor {
         $mime = strtolower($mime);
         return str_starts_with($mime, 'text/') || in_array($mime, self::TEXT_MIMES, true)
             || in_array(strtolower(pathinfo($name, PATHINFO_EXTENSION)), self::TEXT_EXTENSIONS, true);
+    }
+
+    /**
+     * @param string $name file name
+     * @param string $mime MIME type of the file
+     * @return bool whether the file can be extracted into text (plain text, PDF, DOCX, ODT)
+     */
+    public static function canExtract(string $name, string $mime): bool {
+        $mime = strtolower($mime);
+        $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        return $mime === 'application/pdf' || $extension === 'pdf'
+            || $mime === self::DOCX || $extension === 'docx'
+            || $mime === self::ODT || $extension === 'odt'
+            || self::isTextNamed($name, $mime);
+    }
+
+    /**
+     * @param string $name file name
+     * @param string $mime original file MIME type
+     * @return string MIME type of the extracted content (text/plain for converted documents, original for text/*)
+     */
+    public static function textMime(string $name, string $mime): string {
+        $lowerMime = strtolower($mime);
+        $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        if ($lowerMime === 'application/pdf' || $extension === 'pdf'
+            || $lowerMime === self::DOCX || $extension === 'docx'
+            || $lowerMime === self::ODT || $extension === 'odt') {
+            return 'text/plain';
+        }
+        return $mime !== '' ? $mime : 'text/plain';
+    }
+
+    /**
+     * Extracts text from a file, enforcing the byte limit and truncating to MAX_CHARS.
+     * Shared by files_read and resources/read.
+     *
+     * @param File $file readable file within MAX_BYTES
+     * @param int $maxChars character limit before truncation
+     * @return string extracted and truncated text
+     * @throws ToolFailure over the byte limit, unreadable or unsupported format
+     */
+    public function readText(File $file, int $maxChars = self::MAX_CHARS): string {
+        if ($file->getSize() > self::MAX_BYTES) {
+            throw new ToolFailure(self::tooLarge());
+        }
+        $text = $this->extract($file);
+        return mb_strlen($text) > $maxChars
+            ? mb_substr($text, 0, $maxChars) . "\n\n" . FilesMessages::textTruncated()
+            : $text;
     }
 
     /**

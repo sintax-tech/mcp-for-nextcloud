@@ -39,7 +39,7 @@ use OCP\IUserManager;
  */
 class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     /** Characters returned by files_read before the text is truncated. */
-    public const MAX_CHARS = 100000;
+    public const MAX_CHARS = TextExtractor::MAX_CHARS;
     /** Maximum size of the new content accepted by files_edit and files_replace, in bytes. */
     public const MAX_EDIT_BYTES = 10 * 1024 * 1024;
     /** Folder in the user's root that receives a copy of every file before an edit writes it. */
@@ -502,9 +502,9 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     private function read(Folder $root, string $userId, string $path): array {
         $path = PathGuard::normalize($path);
         $file = $this->file($root, $path);
-        $text = $this->extractor->extract($file);
+        $text = $this->extractor->readText($file);
         return $this->text(
-            mb_strlen($text) > self::MAX_CHARS ? mb_substr($text, 0, self::MAX_CHARS) . "\n\n" . FilesMessages::textTruncated() : $text,
+            $text,
             ['path' => $path, 'etag' => (string)$file->getEtag(), 'size' => (int)$file->getSize(),
                 'mime' => (string)$file->getMimetype(), 'access' => $this->accessInfo->describe($file, $userId)],
         );

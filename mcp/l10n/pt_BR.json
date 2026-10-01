@@ -666,6 +666,15 @@
     "low priority" : "prioridade baixa",
     "lowest priority" : "prioridade mínima",
     "normal priority" : "prioridade normal",
-    "without priority" : "sem prioridade"
+    "without priority" : "sem prioridade",
+    "Overlaps %s (%s)" : "Sobrepõe %s (%s)",
+    "Overlaps a busy appointment (%s)" : "Sobrepõe um compromisso ocupado (%s)",
+    "+ %d more" : "+ %d mais",
+    "%s is busy at this time." : "%s está ocupado(a) neste horário.",
+    "Could not check the availability of %s." : "Não foi possível verificar a disponibilidade de %s.",
+    "Could not check the participants' availability." : "Não foi possível verificar a disponibilidade dos participantes.",
+    "The calendar %s is not shared with %s." : "O calendário %s não é compartilhado com %s.",
+    "Suggested: %s." : "Sugestão: %s.",
+    "Ask the user which calendar to use." : "Pergunte ao usuário qual calendário usar."
 },"pluralForm" :"nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

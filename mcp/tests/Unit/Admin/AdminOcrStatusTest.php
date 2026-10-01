@@ -41,14 +41,17 @@ final class AdminOcrStatusTest extends TestCase {
         $apps = $this->createMock(IAppManager::class);
         $apps->method('getAppVersion')->with('mcp')->willReturn('0.8.0');
         $policy = $this->createMock(GrantPolicy::class);
-        $policy->method('flaggedUsers')->willReturnMap([
-            [GrantPolicy::ELIGIBLE_KEY, ['ana', 'bob', 'carl']],
-            [GrantPolicy::CONNECTED_KEY, ['bob', 'dave']],
-        ]);
+        $policy->method('flaggedUsers')->with(GrantPolicy::ELIGIBLE_KEY)->willReturn(['ana', 'bob', 'carl']);
+        $policy->method('connectedUsers')->willReturn(['bob']);
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturn('https://cloud.test/mcp');
         $params = (new AdminSettings($policy, $urls, new OcrSupport($apps), $apps, $this->connections()))->getForm()->getParams();
         $this->assertSame(['0.8.0', 3, 1, 4], [$params['version'], $params['eligibleUsers'], $params['connectedUsers'], $params['activeConnections']]);
+    }
+
+    public function testConnectedUsersCardExplainsItsDefinition(): void {
+        $template = (string)file_get_contents(dirname(__DIR__, 3) . '/templates/admin.php');
+        $this->assertStringContainsString("Eligible users who activated their connection.", $template);
     }
 
     public function testTemplateShowsTheWarningLinkAndOcrmypdfNote(): void {

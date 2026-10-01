@@ -186,6 +186,16 @@ final class GrantMatrixTest extends TestCase {
         $this->assertSame([], $this->fx->matrix()->page('', '', 2, 'connected')['users']);
     }
 
+    /** The connected filter uses the status card's definition: eligible and connected, so a stray connected flag is not listed. */
+    public function testConnectedFilterRequiresEligibility(): void {
+        $this->fx->policy->setEligible('ana', true);
+        $this->fx->policy->setConnected('ana', true);
+        $this->fx->policy->setConnected('bruno', true);
+        $connected = $this->fx->matrix()->page('', '', 1, 'connected');
+        $this->assertSame(['ana'], array_column($connected['users'], 'uid'));
+        $this->assertSame(1, $connected['total']);
+    }
+
     public function testFilterPagesOfFifty(): void {
         for ($i = 1; $i <= 60; $i++) {
             $this->fx->policy->setEligible(sprintf('u%03d', $i), true);

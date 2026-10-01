@@ -21,6 +21,7 @@
 	const nextButton = document.getElementById('mcp-connections-next')
 	const pageInfo = document.getElementById('mcp-connections-page-info')
 	const status = document.getElementById('mcp-connections-status')
+	const connectionsCount = document.getElementById('mcp-count-connections')
 	// t() escapes variables as HTML by default; the confirm dialog and the status region take plain text, where
 	// that would show "D&#039;Avila". Never pass this for a result that is inserted as HTML.
 	const PLAIN_TEXT = { escape: false }
@@ -85,6 +86,13 @@
 	function clientCell(client) {
 		const text = client.kind === 'native' ? t('mcp', 'Local program (native client)') : client.host
 		return el('td', { title: client.id, textContent: text })
+	}
+
+	/** @param {{counts?: {connections?: number}}} result DELETE response; refreshes the Status card when it carries the new total */
+	function updateCounts(result) {
+		if (connectionsCount && result && result.counts && Number.isInteger(result.counts.connections)) {
+			connectionsCount.textContent = String(result.counts.connections)
+		}
 	}
 
 	/** @param {string} text message for the screen reader status region */
@@ -164,7 +172,7 @@
 			return
 		}
 		try {
-			await api('DELETE', base + '/' + encodeURIComponent(String(connection.id)))
+			updateCounts(await api('DELETE', base + '/' + encodeURIComponent(String(connection.id))))
 			say(t('mcp', 'Connection revoked.'))
 		} catch (e) {
 			notifyError(t('mcp', 'Could not revoke the connection.'))
@@ -178,7 +186,7 @@
 			return
 		}
 		try {
-			await api('DELETE', '/api/connections/users/' + encodeURIComponent(connection.uid))
+			updateCounts(await api('DELETE', '/api/connections/users/' + encodeURIComponent(connection.uid)))
 			say(t('mcp', 'Connections of {user} revoked.', { user: connection.displayName }, undefined, PLAIN_TEXT))
 		} catch (e) {
 			notifyError(t('mcp', 'Could not revoke the connections of {user}.', { user: connection.displayName }))

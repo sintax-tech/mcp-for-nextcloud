@@ -109,6 +109,16 @@ class GrantPolicy {
     }
 
     /**
+     * Users an administrator allowed and who activated their connection: the one meaning of "connected" in the
+     * status summary and in the matrix filter.
+     *
+     * @return list<string> uids with both flags on, sorted
+     */
+    public function connectedUsers(): array {
+        return array_values(array_intersect($this->flaggedUsers(self::ELIGIBLE_KEY), $this->flaggedUsers(self::CONNECTED_KEY)));
+    }
+
+    /**
      * @param string $uid Nextcloud user id
      * @return bool true only when the service is on, the user is eligible and connected
      */

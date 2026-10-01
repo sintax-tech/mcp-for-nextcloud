@@ -42,26 +42,36 @@ class ConnectionsController extends Controller {
 
     /**
      * @param int $id grant id of the connection
-     * @return JSONResponse {revoked: true}, or 404 when no such connection exists
+     * @return JSONResponse {revoked: true, counts: {connections}} with the live connection total left, or 404 when no such connection exists
      */
     public function destroy(int $id): JSONResponse {
         if (!$this->connections->revoke($id, null)) {
             return new JSONResponse(['error' => 'Not found'], Http::STATUS_NOT_FOUND);
         }
-        return new JSONResponse(['revoked' => true]);
+        return new JSONResponse(['revoked' => true, 'counts' => $this->counts()]);
     }
 
     /**
      * Also works for a user id that no longer exists, so leftovers can be cleaned up.
      *
      * @param string $uid user whose connections are revoked
-     * @return JSONResponse {revoked: true}, or 400 for an empty or oversized user id
+     * @return JSONResponse {revoked: true, counts: {connections}}, or 400 for an empty or oversized user id
      */
     public function revokeUser(string $uid): JSONResponse {
         if ($uid === '' || strlen($uid) > self::MAX_UID) {
             return new JSONResponse(['error' => 'Invalid request'], Http::STATUS_BAD_REQUEST);
         }
         $this->connections->revokeUser($uid);
-        return new JSONResponse(['revoked' => true]);
+        return new JSONResponse(['revoked' => true, 'counts' => $this->counts()]);
+    }
+
+    /**
+     * Revoking never changes eligibility or the personal connection flag, so the live connection total is the only
+     * figure of the status summary that moves.
+     *
+     * @return array{connections:int}
+     */
+    private function counts(): array {
+        return ['connections' => $this->connections->count()];
     }
 }

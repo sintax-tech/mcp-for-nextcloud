@@ -492,6 +492,7 @@
     "PHP sets no request size limit." : "PHP no limita el tamaño de la solicitud.",
     "Could not load the checkout upload limit." : "No se pudo cargar el límite de subida del checkout.",
     "Enter a whole number of MiB, at least 1." : "Indique un número entero de MiB, como mínimo 1.",
-    "Could not save the checkout upload limit." : "No se pudo guardar el límite de subida del checkout."
+    "Could not save the checkout upload limit." : "No se pudo guardar el límite de subida del checkout.",
+    "Eligible users who activated their connection." : "Usuarios elegibles que activaron su propia conexión."
 },"pluralForm" : "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

@@ -41,6 +41,7 @@
             <div class="mcp-card">
                 <span class="mcp-card-label"><?php p($l->t('Connected users')); ?></span>
                 <span class="mcp-card-value" id="mcp-count-connected"><?php p((string)$_['connectedUsers']); ?></span>
+                <span class="mcp-hint"><?php p($l->t('Eligible users who activated their connection.')); ?></span>
             </div>
             <div class="mcp-card">
                 <span class="mcp-card-label"><?php p($l->t('Active connections')); ?></span>

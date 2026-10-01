@@ -64,7 +64,7 @@ final class ConnectionsControllerTest extends TestCase {
         $gone = $this->fx->grant('bob', 'https://claude.ai/c', 20);
         $this->fx->store->spent['refresh-secret-bob20'] = $this->fx->store->tokens[$gone];
         $response = $this->controller()->destroy($gone);
-        $this->assertSame([200, ['revoked' => true]], [$response->getStatus(), $response->getData()]);
+        $this->assertSame([200, ['revoked' => true, 'counts' => ['connections' => 1]]], [$response->getStatus(), $response->getData()]);
         $this->assertSame([$keep], array_keys($this->fx->store->tokens));
         $this->assertSame([], $this->fx->store->spent, 'the rotation history of the grant goes with it');
         $this->assertNull($this->fx->store->findByAccess('access-secret-bob20'), 'the access token stops working at once');
@@ -76,7 +76,7 @@ final class ConnectionsControllerTest extends TestCase {
         $this->fx->grant('alice', 'https://claude.ai/c', 10);
         $this->fx->grant('alice', 'nextcloud-mcp-native', 20);
         $bob = $this->fx->grant('bob', 'https://claude.ai/c', 30);
-        $this->assertSame(['revoked' => true], $this->controller()->revokeUser('alice')->getData());
+        $this->assertSame(['revoked' => true, 'counts' => ['connections' => 1]], $this->controller()->revokeUser('alice')->getData());
         $this->assertSame([$bob], array_keys($this->fx->store->tokens));
         $this->assertSame(400, $this->controller()->revokeUser('')->getStatus());
         $this->assertSame(400, $this->controller()->revokeUser(str_repeat('u', 65))->getStatus());

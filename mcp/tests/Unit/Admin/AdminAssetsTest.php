@@ -85,9 +85,13 @@ final class AdminAssetsTest extends TestCase {
         $this->assertStringContainsString("Util::addScript('mcp', 'connections')", $template);
         $this->assertStringContainsString('data-scope="personal"', $template);
         preg_match_all("/getElementById\\('([^']+)'\\)/", (string)file_get_contents($app . '/js/connections.js'), $used);
-        foreach (array_diff(array_unique($used[1]), ['mcp-connections-search']) as $id) {
+        // Admin-only elements: the search box and the Status card the revoke buttons refresh.
+        foreach (array_diff(array_unique($used[1]), ['mcp-connections-search', 'mcp-count-connections']) as $id) {
             $this->assertSame(1, substr_count($template, 'id="' . $id . '"'), "id $id must appear exactly once");
         }
+        $admin = (string)file_get_contents($app . '/templates/admin.php');
+        $this->assertSame(1, substr_count($admin, 'id="mcp-count-connections"'), 'the admin Status card the script refreshes');
+        $this->assertStringNotContainsString('mcp-count-connections', $template, 'the personal page has no Status card');
         $this->assertStringNotContainsString('mcp-connections-search', $template, 'the personal list has no user search');
         $this->assertSame(preg_match_all('/<div\b/', $template), preg_match_all('/<\/div>/', $template), 'div tags must balance');
     }

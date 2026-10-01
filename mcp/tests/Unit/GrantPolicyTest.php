@@ -32,6 +32,17 @@ final class GrantPolicyTest extends TestCase {
         $this->assertTrue($this->policy->canConnect('alice'));
     }
 
+    /** "Connected" means eligible and activated: a user who activated but is not (or no longer) eligible does not count. */
+    public function testConnectedUsersAreEligibleAndActivated(): void {
+        foreach (['bob', 'alice', 'carl'] as $uid) {
+            $this->policy->setEligible($uid, true);
+        }
+        $this->policy->setConnected('bob', true);
+        $this->policy->setConnected('alice', true);
+        $this->policy->setConnected('dave', true);
+        $this->assertSame(['alice', 'bob'], $this->policy->connectedUsers());
+    }
+
     public function testEachSwitchRevokesOnNextCheck(): void {
         $this->policy->setGlobalEnabled(true);
         $this->policy->setEligible('alice', true);

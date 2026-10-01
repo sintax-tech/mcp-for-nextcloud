@@ -5,6 +5,7 @@ namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
+use OCA\Mcp\Tools\PlanText;
 
 /**
  * Turns the plan of a Files write into the Markdown body the person reads before confirming.
@@ -17,6 +18,8 @@ use OCA\Mcp\Tools\Common\NodeAccessInfo;
 final class FilesPlanRenderer {
     /** Longest excerpt of file content shown, in characters. */
     private const EXCERPT = 200;
+    /** Longest path or name shown in bold, in characters: long enough to tell two deep paths apart. */
+    private const NAME = 400;
 
     private function __construct() {
     }
@@ -321,22 +324,22 @@ final class FilesPlanRenderer {
             }
             return $date->format(Translator::t('m/d/Y H:i'));
         } catch (\Throwable) {
-            return $iso;
+            return PlanText::inline($iso);
         }
     }
 
-    /** @return string the text shortened to the excerpt limit */
+    /** @return string the text shortened to the excerpt limit, free of Markdown and line breaks */
     private static function excerpt(string $text): string {
-        $text = trim(preg_replace('/\s+/u', ' ', $text) ?? $text);
-        return mb_strlen($text) > self::EXCERPT ? mb_substr($text, 0, self::EXCERPT) . '…' : $text;
+        return PlanText::inline($text, self::EXCERPT);
     }
 
     private static function quote(string $text): string {
         return '«' . self::excerpt($text) . '»';
     }
 
+    /** @return string a file, folder or person name in bold, inert as Markdown */
     private static function bold(string $text): string {
-        return '**' . $text . '**';
+        return PlanText::strong($text, self::NAME);
     }
 
     private static function bytes(int $bytes): string {

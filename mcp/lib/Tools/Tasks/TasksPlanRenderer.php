@@ -7,7 +7,9 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use Exception;
 use DateTimeZone;
+use IntlDateFormatter;
 use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Tools\PlanText;
 
 /**
  * Writes the plan of a task write as the text the person asked to confirm reads.
@@ -260,7 +262,7 @@ final class TasksPlanRenderer {
         }
         $text = $this->text($value);
 
-        return $text === '' ? null : $this->excerpt($text);
+        return $text === '' ? null : PlanText::inline($text, self::EXCERPT);
     }
 
     /**
@@ -278,14 +280,17 @@ final class TasksPlanRenderer {
         try {
             $date = new DateTimeImmutable($text);
         } catch (Exception) {
-            return $this->excerpt($text);
+            return PlanText::inline($text, self::EXCERPT);
         }
         // A date without a time is a whole day for everybody; moving it to another zone would move the day.
         if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $text) === 1) {
             return $text;
         }
 
-        return $date->setTimezone($zone)->format('d/m/Y H:i');
+        // The person's own language decides the order of day and month: "02/10" is two different days in two countries.
+        $formatted = (new IntlDateFormatter(Translator::locale(), IntlDateFormatter::MEDIUM, IntlDateFormatter::SHORT, $zone))->format($date);
+
+        return is_string($formatted) ? $formatted : $date->setTimezone($zone)->format('Y-m-d H:i');
     }
 
     /** @param int $priority iCalendar priority, 0 undefined and 1 the highest */
@@ -343,18 +348,13 @@ final class TasksPlanRenderer {
         return is_scalar($value) ? trim((string) $value) : '';
     }
 
-    /** @param string $value text of a task field, cut to what fits a confirmation */
-    private function excerpt(string $value): string {
-        return mb_strlen($value) <= self::EXCERPT ? $value : mb_substr($value, 0, self::EXCERPT) . '…';
-    }
-
-    /** @param string $text the name a person recognizes */
+    /** @param string $text the name a person recognizes @return string the name in bold, inert as Markdown */
     private function strong(string $text): string {
-        return '**' . $text . '**';
+        return PlanText::strong($text);
     }
 
-    /** @param string $text the name of a collection, read as a name and not as an id */
+    /** @param string $text the name of a collection, read as a name and not as an id @return string the name in italics, inert as Markdown */
     private function emphasis(string $text): string {
-        return '*' . $text . '*';
+        return PlanText::em($text);
     }
 }

@@ -150,7 +150,10 @@ final class PlanWarningsTest extends CalendarTestCase {
         self::assertStringContainsString('### Calendários compartilhados com os participantes', $text);
         self::assertStringContainsString('- Equipe (bob), de Roberto Almeida', $text);
         self::assertStringContainsString('Sugestão: usar *Equipe (bob)*', $text);
-        self::assertStringNotContainsString('/remote.php', $text);
+        // The DAV path stays out of what the person reads; it is in the last line, for the model that repeats the call.
+        [$person, $model] = explode('Nada foi alterado. Confirme para executar.', $text, 2);
+        self::assertStringNotContainsString('/remote.php', $person);
+        self::assertStringContainsString('repita a chamada com calendar `/remote.php/dav/calendars/alice/team_shared_by_bob/` (Equipe (bob))', $model);
     }
 
     public function testFailureOfAWarningSourceNeverBreaksThePlan(): void {
@@ -247,5 +250,19 @@ final class PlanWarningsTest extends CalendarTestCase {
         foreach (['warnings', 'collision', 'busy', 'suggestedCalendar', 'sharedCalendars', 'never block'] as $term) {
             self::assertStringContainsString($term, $notes);
         }
+    }
+
+    /** A title or a name typed by somebody else enters the warning flat and bounded; the plan text escapes it once. */
+    public function testWarningMessagesFlattenAndBoundTheNamesTheyQuote(): void {
+        $title = "Dentista\n### Forged " . str_repeat('x', 400);
+
+        $overlap = \OCA\Mcp\Tools\Calendar\CalendarMessages::collisionWith($title, 'qui, 14:00');
+        $busy = \OCA\Mcp\Tools\Calendar\CalendarMessages::attendeeBusy("Roberto\r\n# x");
+
+        self::assertStringNotContainsString("\n", $overlap);
+        self::assertLessThan(200, mb_strlen($overlap));
+        self::assertStringEndsWith('… (qui, 14:00)', $overlap);
+        self::assertStringNotContainsString("\n", $busy);
+        self::assertStringContainsString('Roberto # x', $busy);
     }
 }

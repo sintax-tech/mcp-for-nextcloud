@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Talk;
 
 use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Tools\PlanText;
 
 /**
  * Every string of the Talk module lives here.
@@ -362,7 +363,7 @@ final class Messages {
      * @return string The line in the language of the current user
      */
     public static function planToConversation(string $conversation): string {
-        return Translator::t('Message to **%s**:', [$conversation]);
+        return Translator::t('Message to **%s**:', [PlanText::inline($conversation)]);
     }
 
     /**
@@ -372,7 +373,7 @@ final class Messages {
      * @return string The line in the language of the current user
      */
     public static function planToPerson(string $person): string {
-        return Translator::t('Direct message to **%s**:', [$person]);
+        return Translator::t('Direct message to **%s**:', [PlanText::inline($person)]);
     }
 
     /**
@@ -382,7 +383,7 @@ final class Messages {
      * @return string The line in the language of the current user
      */
     public static function planDirectConversationCreated(string $person): string {
-        return Translator::t('The direct conversation with **%s** will be created if it does not exist yet.', [$person]);
+        return Translator::t('The direct conversation with **%s** will be created if it does not exist yet.', [PlanText::inline($person)]);
     }
 
     /**
@@ -392,7 +393,7 @@ final class Messages {
      * @return string The line in the language of the current user
      */
     public static function planOneMessage(string $conversation): string {
-        return Translator::t('One message to **%s**:', [$conversation]);
+        return Translator::t('One message to **%s**:', [PlanText::inline($conversation)]);
     }
 
     /**
@@ -403,7 +404,7 @@ final class Messages {
      * @return string The line in the language of the current user
      */
     public static function planMessages(int $count, string $conversation): string {
-        return Translator::t('%d messages to **%s**:', [$count, $conversation]);
+        return Translator::t('%d messages to **%s**:', [$count, PlanText::inline($conversation)]);
     }
 
     /**
@@ -413,7 +414,7 @@ final class Messages {
      * @return string The line in the language of the current user
      */
     public static function planReplyingTo(string $author): string {
-        return Translator::t('Replying to **%s**:', [$author]);
+        return Translator::t('Replying to **%s**:', [PlanText::inline($author)]);
     }
 
     /**
@@ -424,7 +425,7 @@ final class Messages {
      * @return string The line in the language of the current user
      */
     public static function planLinkTo(string $label, string $title): string {
-        return Translator::t('The message also carries a link to the %s *%s*.', [$label, $title]);
+        return Translator::t('The message also carries a link to the %s *%s*.', [PlanText::inline($label), PlanText::inline($title)]);
     }
 
     /**
@@ -436,7 +437,7 @@ final class Messages {
      * @return string The line in the language of the current user
      */
     public static function planSharingFile(string $name, string $size, string $conversation): string {
-        return Translator::t('The file **%s** (%s) will be shared in **%s**.', [$name, $size, $conversation]);
+        return Translator::t('The file **%s** (%s) will be shared in **%s**.', [PlanText::inline($name), PlanText::inline($size), PlanText::inline($conversation)]);
     }
 
     /**
@@ -454,7 +455,7 @@ final class Messages {
      * @return string The line in the language of the current user
      */
     public static function planCitingFile(string $name, string $conversation): string {
-        return Translator::t('A message will be published in **%s** citing the file **%s**.', [$conversation, $name]);
+        return Translator::t('A message will be published in **%s** citing the file **%s**.', [PlanText::inline($conversation), PlanText::inline($name)]);
     }
 
     /**
@@ -464,7 +465,7 @@ final class Messages {
      * @return string The line in the language of the current user
      */
     public static function planCitingUnknownFile(string $conversation): string {
-        return Translator::t('A message will be published in **%s** citing an attachment already shared there.', [$conversation]);
+        return Translator::t('A message will be published in **%s** citing an attachment already shared there.', [PlanText::inline($conversation)]);
     }
 
     /**
@@ -481,7 +482,7 @@ final class Messages {
      * @return string The line in the language of the current user
      */
     public static function planCreatingGroup(string $group): string {
-        return Translator::t('The Talk group **%s** will be created with you as the owner.', [$group]);
+        return Translator::t('The Talk group **%s** will be created with you as the owner.', [PlanText::inline($group)]);
     }
 
     /**

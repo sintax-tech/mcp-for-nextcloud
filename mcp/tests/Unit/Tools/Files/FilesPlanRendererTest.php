@@ -187,4 +187,17 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
         $plans['files_undo_batch'] = $this->plan('files_undo_batch', ['batch_id' => $batchId]);
         $this->assertEveryWriteToolHasAReadablePlan($this->module, $plans);
     }
+
+    public function testNamesWithMarkdownStayLiteralInsteadOfBreakingTheBold(): void {
+        $body = (string)FilesPlanRenderer::render('files_move', ['from' => 'a_b*c.md', 'to' => 'x/[clique](javascript:alert(1)).md']);
+
+        $this->assertSame('Move **a\\_b\\*c.md** to **x/\\[clique\\]\\(javascript:alert(1)).md**.', trim($body));
+    }
+
+    public function testADiffCannotOpenAnotherLineOrLinkOfThePlan(): void {
+        $body = (string)FilesPlanRenderer::render('files_edit', ['path' => 'a.md', 'diff' => "-old\n+**new**\n+[c](javascript:1)\n+\n+### Warnings"]);
+
+        $this->assertStringContainsString('After: «\\*\\*new\\*\\* \\[c\\]\\(javascript:1) \\#\\#\\# Warnings»', $body);
+        $this->assertStringNotContainsString("\n### ", $body);
+    }
 }

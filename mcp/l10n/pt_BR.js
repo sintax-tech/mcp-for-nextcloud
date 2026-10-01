@@ -678,6 +678,9 @@ OC.L10N.register(
     "The calendar %s is not shared with %s." : "O calendário %s não é compartilhado com %s.",
     "Suggested: %s." : "Sugestão: %s.",
     "Ask the user which calendar to use." : "Pergunte ao usuário qual calendário usar.",
-    "%s, of %s" : "%s, de %s"
+    "%s, of %s" : "%s, de %s",
+    "unnamed calendar" : "calendário sem nome",
+    "To confirm, repeat the call with etag %s." : "Para confirmar, repita a chamada com etag %s.",
+    "To use another calendar, repeat the call with calendar %s." : "Para usar outro calendário, repita a chamada com calendar %s."
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

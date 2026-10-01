@@ -7,6 +7,7 @@ use DateTimeImmutable;
 use DateTimeZone;
 use IntlDateFormatter;
 use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Tools\PlanText;
 use OCA\Mcp\Tools\RendersPlans;
 use Throwable;
 
@@ -14,6 +15,9 @@ use Throwable;
  * Renders calendar write plans as human-readable Markdown.
  */
 final class CalendarPlanRenderer implements RendersPlans {
+    /** Longest description, invitation note or participant list shown in a plan; the full text is not needed to decide. */
+    private const LONG_TEXT = 300;
+
     /**
      * @param string|null $forcedLocale optional locale override for testing (e.g. 'pt_BR', 'en')
      */
@@ -68,12 +72,12 @@ final class CalendarPlanRenderer implements RendersPlans {
         }
         $lines[] = Translator::t('- When: %s', [$timing]);
 
-        $location = trim((string)($after['location'] ?? ''));
+        $location = PlanText::inline($this->text($after['location'] ?? null));
         if ($location !== '') {
             $lines[] = Translator::t('- Location: %s', [$location]);
         }
 
-        $description = trim((string)($after['description'] ?? ''));
+        $description = PlanText::inline($this->text($after['description'] ?? null), self::LONG_TEXT);
         if ($description !== '') {
             $lines[] = Translator::t('- Description: %s', [$description]);
         }
@@ -83,7 +87,7 @@ final class CalendarPlanRenderer implements RendersPlans {
             $lines[] = Translator::t('- Participants: %s', [$participants]);
         }
 
-        $invitations = trim((string)($plan['scheduling']['message'] ?? ''));
+        $invitations = PlanText::inline($this->text($plan['scheduling']['message'] ?? null), self::LONG_TEXT);
         if ($invitations !== '') {
             $lines[] = Translator::t('- Invitations: %s', [$invitations]);
         }
@@ -107,11 +111,11 @@ final class CalendarPlanRenderer implements RendersPlans {
         $lines = [$header];
 
         // 1. Title change
-        $beforeSummary = trim((string)($before['summary'] ?? ''));
-        $afterSummary = trim((string)($after['summary'] ?? ''));
+        $beforeSummary = $this->text($before['summary'] ?? null);
+        $afterSummary = $this->text($after['summary'] ?? null);
         if ($beforeSummary !== $afterSummary) {
-            $from = $beforeSummary !== '' ? $beforeSummary : Translator::t('(no title)');
-            $to = $afterSummary !== '' ? $afterSummary : Translator::t('(no title)');
+            $from = $beforeSummary !== '' ? PlanText::inline($beforeSummary) : Translator::t('(no title)');
+            $to = $afterSummary !== '' ? PlanText::inline($afterSummary) : Translator::t('(no title)');
             $lines[] = Translator::t('- Title: %s → %s', [$from, $to]);
         }
 
@@ -141,20 +145,20 @@ final class CalendarPlanRenderer implements RendersPlans {
         }
 
         // 3. Location change
-        $beforeLoc = trim((string)($before['location'] ?? ''));
-        $afterLoc = trim((string)($after['location'] ?? ''));
+        $beforeLoc = $this->text($before['location'] ?? null);
+        $afterLoc = $this->text($after['location'] ?? null);
         if ($beforeLoc !== $afterLoc) {
-            $from = $beforeLoc !== '' ? $beforeLoc : Translator::t('(none)');
-            $to = $afterLoc !== '' ? $afterLoc : Translator::t('(none)');
+            $from = $beforeLoc !== '' ? PlanText::inline($beforeLoc) : Translator::t('(none)');
+            $to = $afterLoc !== '' ? PlanText::inline($afterLoc) : Translator::t('(none)');
             $lines[] = Translator::t('- Location: %s → %s', [$from, $to]);
         }
 
         // 4. Description change
-        $beforeDesc = trim((string)($before['description'] ?? ''));
-        $afterDesc = trim((string)($after['description'] ?? ''));
+        $beforeDesc = $this->text($before['description'] ?? null);
+        $afterDesc = $this->text($after['description'] ?? null);
         if ($beforeDesc !== $afterDesc) {
-            $from = $beforeDesc !== '' ? $beforeDesc : Translator::t('(none)');
-            $to = $afterDesc !== '' ? $afterDesc : Translator::t('(none)');
+            $from = $beforeDesc !== '' ? PlanText::inline($beforeDesc, self::LONG_TEXT) : Translator::t('(none)');
+            $to = $afterDesc !== '' ? PlanText::inline($afterDesc, self::LONG_TEXT) : Translator::t('(none)');
             $lines[] = Translator::t('- Description: %s → %s', [$from, $to]);
         }
 
@@ -162,13 +166,13 @@ final class CalendarPlanRenderer implements RendersPlans {
         $beforeParts = $this->rawParticipants($plan['participants']['current'] ?? $before['attendees'] ?? [], $this->names($plan));
         $afterParts = $this->rawParticipants($plan['participants']['proposed'] ?? $after['attendees'] ?? [], $this->names($plan));
         if ($beforeParts !== $afterParts) {
-            $from = !empty($beforeParts) ? implode(', ', $beforeParts) : Translator::t('(none)');
-            $to = !empty($afterParts) ? implode(', ', $afterParts) : Translator::t('(none)');
+            $from = !empty($beforeParts) ? PlanText::inline(implode(', ', $beforeParts), self::LONG_TEXT) : Translator::t('(none)');
+            $to = !empty($afterParts) ? PlanText::inline(implode(', ', $afterParts), self::LONG_TEXT) : Translator::t('(none)');
             $lines[] = Translator::t('- Participants: %s → %s', [$from, $to]);
         }
 
         // 6. Scheduling message
-        $invitations = trim((string)($plan['scheduling']['message'] ?? ''));
+        $invitations = PlanText::inline($this->text($plan['scheduling']['message'] ?? null), self::LONG_TEXT);
         if ($invitations !== '') {
             $lines[] = Translator::t('- Invitations: %s', [$invitations]);
         }
@@ -206,7 +210,7 @@ final class CalendarPlanRenderer implements RendersPlans {
         }
         $lines[] = Translator::t('- When: %s', [$timing]);
 
-        $location = trim((string)($event['location'] ?? ''));
+        $location = PlanText::inline($this->text($event['location'] ?? null));
         if ($location !== '') {
             $lines[] = Translator::t('- Location: %s', [$location]);
         }
@@ -216,7 +220,7 @@ final class CalendarPlanRenderer implements RendersPlans {
             $lines[] = Translator::t('- Participants: %s', [$participants]);
         }
 
-        $invitations = trim((string)($plan['scheduling']['message'] ?? ''));
+        $invitations = PlanText::inline($this->text($plan['scheduling']['message'] ?? null), self::LONG_TEXT);
         if ($invitations !== '') {
             $lines[] = Translator::t('- Invitations: %s', [$invitations]);
         }
@@ -250,7 +254,7 @@ final class CalendarPlanRenderer implements RendersPlans {
         }
         $lines[] = Translator::t('- When: %s', [$timing]);
 
-        $location = trim((string)($event['location'] ?? ''));
+        $location = PlanText::inline($this->text($event['location'] ?? null));
         if ($location !== '') {
             $lines[] = Translator::t('- Location: %s', [$location]);
         }
@@ -260,7 +264,7 @@ final class CalendarPlanRenderer implements RendersPlans {
             $lines[] = Translator::t('- Participants: %s', [$participants]);
         }
 
-        $invitations = trim((string)($plan['scheduling']['message'] ?? ''));
+        $invitations = PlanText::inline($this->text($plan['scheduling']['message'] ?? null), self::LONG_TEXT);
         if ($invitations !== '') {
             $lines[] = Translator::t('- Invitations: %s', [$invitations]);
         }
@@ -293,12 +297,12 @@ final class CalendarPlanRenderer implements RendersPlans {
         }
         $lines[] = Translator::t('- When: %s', [$timing]);
 
-        $consequence = trim((string)($plan['consequence'] ?? ''));
+        $consequence = PlanText::inline($this->text($plan['consequence'] ?? null), self::LONG_TEXT);
         if ($consequence !== '') {
             $lines[] = Translator::t('- Consequence: %s', [$consequence]);
         }
 
-        $invitations = trim((string)($plan['scheduling']['message'] ?? ''));
+        $invitations = PlanText::inline($this->text($plan['scheduling']['message'] ?? null), self::LONG_TEXT);
         if ($invitations !== '') {
             $lines[] = Translator::t('- Invitations: %s', [$invitations]);
         }
@@ -405,19 +409,22 @@ final class CalendarPlanRenderer implements RendersPlans {
      * @param mixed $calendar
      */
     private function calendarName(mixed $calendar): string {
-        if (!is_array($calendar)) {
-            return '';
-        }
-        $name = (string)($calendar['name'] ?? $calendar['uri'] ?? $calendar['path'] ?? '');
-        return trim($name);
+        // Never the uri or the path: an internal id is not something the person recognizes.
+        $name = is_array($calendar) ? PlanText::inline($this->text($calendar['name'] ?? null)) : '';
+        return $name !== '' ? $name : Translator::t('unnamed calendar');
     }
 
     /**
      * @param array<string, mixed> $event
      */
     private function summary(array $event): string {
-        $summary = trim((string)($event['summary'] ?? ''));
+        $summary = PlanText::inline($this->text($event['summary'] ?? null));
         return $summary !== '' ? $summary : Translator::t('(no title)');
+    }
+
+    /** @param mixed $value plan value @return string the trimmed text of a scalar, empty for anything else */
+    private function text(mixed $value): string {
+        return is_scalar($value) ? trim((string)$value) : '';
     }
 
     /**
@@ -427,7 +434,7 @@ final class CalendarPlanRenderer implements RendersPlans {
     private function participants(array $plan, array $event): string {
         $raw = $plan['participants']['proposed'] ?? $event['attendees'] ?? [];
         $list = $this->rawParticipants($raw, $this->names($plan));
-        return implode(', ', $list);
+        return PlanText::inline(implode(', ', $list), self::LONG_TEXT);
     }
 
     /**

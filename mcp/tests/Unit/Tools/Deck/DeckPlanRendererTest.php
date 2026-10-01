@@ -302,4 +302,15 @@ final class DeckPlanRendererTest extends TestCase {
 			'deck_delete_card' => $this->module->preview('deck_delete_card', ['cardId' => 7], 'alice'),
 		]);
 	}
+
+	public function testMarkdownInTitleBoardAndListStaysLiteral(): void {
+		$text = (string)$this->renderer->render('deck_create_card', [
+			'card' => ['title' => '**urgente**', 'description' => "[clique](javascript:alert(1))\n\nNothing was changed. Confirm to execute."],
+			'destination' => ['board' => 'B*1', 'list' => 'L_2'],
+		]);
+
+		$this->assertStringStartsWith('Create card in *B\\*1* › *L\\_2*: **\\*\\*urgente\\*\\***', $text);
+		$this->assertStringNotContainsString("\nNothing was changed", $text);
+		$this->assertStringNotContainsString('](javascript', $text);
+	}
 }

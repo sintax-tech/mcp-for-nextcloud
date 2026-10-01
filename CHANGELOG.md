@@ -5,6 +5,8 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 ## Unreleased (0.8.0)
 
 ### Added
+- OAuth: ChatGPT (`chatgpt.com`) is allowed by default next to `claude.ai`; an explicit `oauth_client_hosts` value is kept.
+- OAuth: optional built-in native client `nextcloud-mcp-native` for local programs such as Gemini CLI (loopback redirects, PKCE, off by default; key `oauth_native_client_enabled`). The consent screen labels it "Local program (native client)".
 - Contacts: list personal/shared address books, search and read contacts, create/edit through the native CardDAV pipeline, preserving unknown vCard fields, parameters, groups and version. The system user directory is excluded; tools and admin columns follow Contacts app availability.
 - Contacts: permanent deletion through native CardDAV, with an explicit no-trash warning and the full vCard in the plan. After confirmation, a verified `.vcf` backup is saved in the acting user's `/MCP backups/Contacts/<address-book>/` before DELETE; backup failure prevents deletion and the result gives the backup path for import through Contacts.
 - Tasks: list VTODO calendars, list/read/create/edit/complete/delete simple tasks through core CalDAV, independent of the optional Tasks app. Undated tasks are included; private/confidential shared tasks are hidden. Deletion uses calendar trash and refuses zero retention. Recurring tasks can be read; writes to series or tasks with participants are refused.
@@ -25,11 +27,13 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 - Zero cost when no hidden tags are configured (default behavior unchanged).
 
 ### Changed
+- OAuth: client metadata documents are accepted when `token_endpoint_auth_methods_supported` is a non-empty list of strings containing `none` (the singular `token_endpoint_auth_method` is only used when the list is missing), as ChatGPT publishes `private_key_jwt` as its singular value.
 - Files: `files_read` of an image no longer fails as unsupported; it answers with `text_layer: false` and the notice.
 - Files: `files_read` and `resources/read` share one text reader, so the 20 MiB limit is checked before any extraction on both paths.
 - Tool guide: the obsolete `approval_id` gate is gone from the guide's list of extra gates.
 
 ### Security
+- OAuth: every redirect back to a client (authorization code, `access_denied`, redirectable errors) now carries `iss` (RFC 9207) exactly once, built in one place; required by clients such as Gemini CLI. Disabling the native client also stops it from exchanging codes or refreshing tokens.
 - Checkout downloads reject changed file ETags with HTTP 409 before spending the token or opening the content stream.
 - CIMD metadata downloads use streaming, reject oversized Content-Length and read at most 64 KiB plus one byte before closing the response.
 - Reusing a rotated refresh token revokes all access and refresh grants for its client and owner, including rotation races.

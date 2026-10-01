@@ -12,12 +12,12 @@ use Throwable;
 /**
  * Resolves a URL-formatted client_id (OAuth Client ID Metadata Document) into ClientMetadata.
  * Only HTTPS client_ids whose host is in the app config allowlist `oauth_client_hosts` (comma separated, default
- * claude.ai) are fetched. IClientService refuses local/private addresses (SSRF); documents are size-limited and
+ * claude.ai,chatgpt.com) are fetched. IClientService refuses local/private addresses (SSRF); documents are size-limited and
  * cached for up to an hour.
  */
 class ClientMetadataFetcher {
     public const HOSTS_KEY = 'oauth_client_hosts';
-    public const DEFAULT_HOSTS = 'claude.ai';
+    public const DEFAULT_HOSTS = 'claude.ai,chatgpt.com';
     private const MAX_BYTES = 65536;
     private const CACHE_TTL = 3600;
 
@@ -50,7 +50,12 @@ class ClientMetadataFetcher {
         return $metadata;
     }
 
-    /** @return bool true for an https URL with a path, no credentials/fragment, and an allowlisted host */
+    /**
+     * Runs before the cache lookup, so removing a host from the allowlist blocks it even with a cached document.
+     *
+     * @param string $clientId client_id from the authorization request
+     * @return bool true for an https URL with a path, no credentials/fragment, and an allowlisted host
+     */
     private function allowed(string $clientId): bool {
         $parts = parse_url($clientId);
         if (!is_array($parts) || ($parts['scheme'] ?? '') !== 'https' || isset($parts['user']) || isset($parts['pass'])
@@ -100,6 +105,22 @@ class ClientMetadataFetcher {
     }
 
     /**
+     * Checks that the client can authenticate as a public client (`none`). The plural list wins when present
+     * (a non-empty list of strings containing `none`); the singular is only consulted when the plural is missing.
+     *
+     * @param array<string,mixed> $data decoded metadata document
+     * @return bool true when the document is compatible with a public client
+     */
+    private static function publicClientMethods(array $data): bool {
+        if (array_key_exists('token_endpoint_auth_methods_supported', $data)) {
+            $methods = $data['token_endpoint_auth_methods_supported'];
+            return is_array($methods) && array_is_list($methods) && $methods !== [] && $methods === array_filter($methods, 'is_string')
+                && in_array('none', $methods, true);
+        }
+        return !isset($data['token_endpoint_auth_method']) || $data['token_endpoint_auth_method'] === 'none';
+    }
+
+    /**
      * Validates the metadata document identity, redirect list, and public-client authentication method.
      *
      * @param string $clientId expected client identifier from the authorization request
@@ -111,7 +132,7 @@ class ClientMetadataFetcher {
         $data = json_decode($document, true);
         if (!is_array($data) || ($data['client_id'] ?? null) !== $clientId
             || !is_array($data['redirect_uris'] ?? null) || $data['redirect_uris'] === []
-            || (isset($data['token_endpoint_auth_method']) && $data['token_endpoint_auth_method'] !== 'none')) {
+            || !self::publicClientMethods($data)) {
             throw new OAuthException('invalid_client', 'Invalid client metadata document');
         }
         $uris = array_values(array_filter($data['redirect_uris'], 'is_string'));

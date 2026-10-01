@@ -11,7 +11,7 @@ class AuthorizationValidator {
     /** Scopes accepted; grants are still decided by the admin matrix, not by scopes. */
     public const SCOPES = ['mcp', 'offline_access'];
 
-    public function __construct(private ClientMetadataFetcher $fetcher) {}
+    public function __construct(private ClientResolver $resolver) {}
 
     /**
      * @param array<string,mixed> $params query parameters of the authorization request
@@ -21,7 +21,7 @@ class AuthorizationValidator {
      */
     public function validate(array $params, string $expectedResource): AuthorizationRequest {
         $get = static fn (string $name): string => is_string($params[$name] ?? null) ? $params[$name] : '';
-        $client = $this->fetcher->fetch($get('client_id'));
+        $client = $this->resolver->resolve($get('client_id'));
         $redirectUri = $get('redirect_uri');
         if ($redirectUri === '' || !RedirectUriMatcher::matches($redirectUri, $client->redirectUris)) {
             throw new OAuthException('invalid_request', 'redirect_uri is not registered for this client');

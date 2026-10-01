@@ -330,7 +330,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
         $category = (string)($arguments['category'] ?? '');
         if ($root !== null && trim($category, '/') !== '') {
             try {
-                $relative = ltrim(PathGuard::normalize($category), '/');
+                $relative = ltrim(PathGuard::normalize($category, 'category'), '/');
                 if ($root->nodeExists($relative)) {
                     $node = $root->get($relative);
                     if ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($node)) {
@@ -423,7 +423,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
         $category = (string)$arguments['category'];
         if ($root !== null && trim($category, '/') !== '') {
             try {
-                $relative = ltrim(PathGuard::normalize($category), '/');
+                $relative = ltrim(PathGuard::normalize($category, 'category'), '/');
                 if ($root->nodeExists($relative)) {
                     $node = $root->get($relative);
                     if ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($node)) {
@@ -515,7 +515,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
             return $root;
         }
         try {
-            $relative = ltrim(PathGuard::normalize($category), '/');
+            $relative = ltrim(PathGuard::normalize($category, 'category'), '/');
         } catch (InvalidArgumentException) {
             throw new InvalidArgumentException('Invalid argument: category');
         }

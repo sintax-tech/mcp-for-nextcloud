@@ -23,7 +23,28 @@ final class ArgumentValidator {
      * @throws InvalidArgumentException naming the first unknown, missing or invalid argument
      */
     public static function validate(array $schema, array $arguments): array {
-        return self::object($schema, $arguments, '');
+        return self::object($schema, $arguments, '', self::declared($schema));
+    }
+
+    /**
+     * Every property name the schema declares at any level, so an unknown key can be told from a declared name in the wrong place.
+     *
+     * @param array<string, mixed> $schema object schema
+     * @return array<string, true> declared names as keys
+     */
+    private static function declared(array $schema): array {
+        $names = [];
+        $properties = $schema['properties'] ?? [];
+        foreach ($properties instanceof \stdClass ? (array)$properties : $properties as $key => $rule) {
+            $names[(string)$key] = true;
+            if (is_array($rule)) {
+                $names += self::declared($rule);
+            }
+        }
+        if (isset($schema['items']) && is_array($schema['items'])) {
+            $names += self::declared($schema['items']);
+        }
+        return $names;
     }
 
     /**
@@ -35,10 +56,11 @@ final class ArgumentValidator {
      * @param array<string, mixed> $schema object schema with properties/required
      * @param array<string, mixed> $value value shaped like an object
      * @param string $path dot path of this value for error messages, empty at the root
+     * @param array<string, true> $declared names the whole schema declares, to tell an unknown key from a misplaced one
      * @return array<string, mixed> validated object with defaults applied
      * @throws InvalidArgumentException naming the first unknown, missing or invalid argument
      */
-    private static function object(array $schema, array $value, string $path): array {
+    private static function object(array $schema, array $value, string $path, array $declared): array {
         if ($value !== [] && array_is_list($value)) {
             // The root keeps its own wording: a list where the call object belongs is a malformed call, not a
             // malformed argument, and clients match on this message.
@@ -49,7 +71,10 @@ final class ArgumentValidator {
         $properties = $properties instanceof \stdClass ? (array)$properties : $properties;
         foreach (array_keys($value) as $key) {
             if (!isset($properties[$key])) {
-                throw new ArgumentValidationException('Unknown argument: ' . self::key($path, (string)$key), $path, Translator::t('unknown property; use only declared arguments'));
+                // The field is the name only when the schema declares it somewhere: then it is a fixed string of
+                // ours, never the client's. Any other name stays out of the answer and the parent is named instead.
+                $field = isset($declared[(string)$key]) ? self::key($path, (string)$key) : $path;
+                throw new ArgumentValidationException('Unknown argument: ' . self::key($path, (string)$key), $field, Translator::t('unknown property; use only declared arguments'));
             }
         }
         foreach ($schema['required'] ?? [] as $key) {
@@ -67,7 +92,7 @@ final class ArgumentValidator {
                 }
                 continue;
             }
-            $out[$key] = self::check(self::key($path, $key), is_array($rule) ? $rule : [], $value[$key]);
+            $out[$key] = self::check(self::key($path, $key), is_array($rule) ? $rule : [], $value[$key], $declared);
         }
         return $out;
     }
@@ -75,15 +100,16 @@ final class ArgumentValidator {
     /**
      * @param array<string, mixed> $rule property schema (type as string or list of types, minLength, maxLength, minimum, maximum, const, enum, object properties, array items/minItems/maxItems)
      * @param mixed $value argument value
+     * @param array<string, true> $declared names the whole schema declares
      * @throws InvalidArgumentException when the value breaks the rule
      */
-    private static function check(string $key, array $rule, mixed $value): mixed {
+    private static function check(string $key, array $rule, mixed $value, array $declared): mixed {
         // Nesting recurses with the same rules as the root, so only a single type may name a structure.
         if (($rule['type'] ?? null) === 'object') {
             if (!is_array($value)) {
                 throw new ArgumentValidationException("Invalid argument: $key", $key, self::rule($rule));
             }
-            return self::object($rule, $value, $key);
+            return self::object($rule, $value, $key, $declared);
         }
         if (($rule['type'] ?? null) === 'array') {
             if (!is_array($value) || ($value !== [] && !array_is_list($value))) {
@@ -101,7 +127,7 @@ final class ArgumentValidator {
             }
             $out = [];
             foreach ($value as $index => $item) {
-                $out[] = self::check($key . '[' . $index . ']', $rule['items'], $item);
+                $out[] = self::check($key . '[' . $index . ']', $rule['items'], $item, $declared);
             }
             return $out;
         }

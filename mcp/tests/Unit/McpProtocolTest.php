@@ -195,6 +195,57 @@ final class McpProtocolTest extends TestCase {
         $this->assertStringNotContainsString('2026-10-01T17:00:00', json_encode($out));
     }
 
+    /** @return array<string, mixed> the response to calling a one-tool module that runs $action */
+    private function failing(string $tool, array $arguments, callable $action): array {
+        $module = new class($tool, $action) implements \OCA\Mcp\Tools\ToolModule {
+            public function __construct(private string $tool, private $action) {}
+            public function definitions(): array {
+                return [['name' => $this->tool, 'description' => 'x', 'module' => 'files', 'operation' => 'read',
+                    'inputSchema' => ['type' => 'object', 'additionalProperties' => false, 'properties' => ['path' => ['type' => 'string']]]]];
+            }
+            public function call(string $name, array $arguments, string $userId): array {
+                ($this->action)($arguments);
+                return [];
+            }
+        };
+        return $this->callWith($module, ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => ['name' => $tool, 'arguments' => $arguments]]);
+    }
+
+    /** A path that leaves the user's folder is an argument error like any other: field, fixed rule, no value. */
+    public function testPathTraversalAnswersWithTheFieldAndAFixedRule(): void {
+        $out = $this->failing('ler', ['path' => '/../../etc/passwd'], static fn (array $a) => \OCA\Mcp\Tools\Common\PathGuard::normalize($a['path']));
+        $this->assertSame(-32602, $out['body']['error']['code']);
+        $this->assertSame('path', $out['body']['error']['data']['field']);
+        $this->assertNotSame('', $out['body']['error']['data']['rule']);
+        $this->assertStringStartsWith('path: ', $out['body']['error']['message']);
+        $this->assertStringNotContainsString('passwd', json_encode($out));
+        $this->assertStringNotContainsString('etc', json_encode($out));
+    }
+
+    /** A control character in a path is the same kind of error, with the same answer. */
+    public function testAControlCharacterInAPathAnswersTheSameWay(): void {
+        $out = $this->failing('ler', ['path' => "/a\0b"], static fn (array $a) => \OCA\Mcp\Tools\Common\PathGuard::normalize($a['path']));
+        $this->assertSame('path', $out['body']['error']['data']['field']);
+        $this->assertNotSame('', $out['body']['error']['data']['rule']);
+    }
+
+    /** A tool that does not exist keeps its message and now carries a rule too, without echoing the name asked for. */
+    public function testAnUnknownToolAnswersWithARule(): void {
+        $out = $this->call(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call', 'params' => ['name' => 'ferramenta_secreta_xyz', 'arguments' => []]]);
+        $this->assertSame(-32602, $out['body']['error']['code']);
+        $this->assertSame('Unknown tool', $out['body']['error']['message']);
+        $this->assertSame('name', $out['body']['error']['data']['field']);
+        $this->assertNotSame('', $out['body']['error']['data']['rule']);
+        $this->assertStringNotContainsString('secreta', json_encode($out));
+    }
+
+    /** The unknown-property answer always has a non-empty field, so a client can point at something. */
+    public function testAnUnknownPropertyNeverAnswersWithAnEmptyField(): void {
+        $out = $this->failing('ler', ['bogus' => 1], static fn () => null);
+        $this->assertSame('arguments', $out['body']['error']['data']['field']);
+        $this->assertSame('arguments: unknown property; use only declared arguments', $out['body']['error']['message']);
+    }
+
     /** What the client is told for a message the validator produced. */
     private function filtered(string $message): string {
         $method = (new \ReflectionMethod(McpProtocol::class, 'safeMessage'));

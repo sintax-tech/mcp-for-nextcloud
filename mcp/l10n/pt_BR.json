@@ -1,6 +1,8 @@
 { "translations": {
     "%s: %s" : "%s: %s",
     "unknown property; use only declared arguments" : "propriedade desconhecida; use apenas argumentos declarados",
+    "must stay inside your folder: no parent (..) segments or control characters" : "deve ficar dentro da sua pasta: sem segmentos de pasta pai (..) nem caracteres de controle",
+    "unknown tool; use one listed by tools/list" : "ferramenta desconhecida; use uma listada em tools/list",
     "required argument" : "argumento obrigatório",
     "expected %s" : "esperado %s",
     "minimum %s" : "mínimo %s",

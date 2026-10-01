@@ -127,7 +127,7 @@ class ToolRegistry {
                 }
             }
         }
-        throw new InvalidArgumentException('Unknown tool');
+        throw new UnknownToolException();
     }
 
     /**

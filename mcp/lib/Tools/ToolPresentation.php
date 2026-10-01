@@ -126,6 +126,10 @@ final class ToolPresentation {
             'deck_move_card' => Translator::t('Move card in Deck'),
             'deck_delete_card' => Translator::t('Delete Deck card'),
             'deck_followup_cards' => Translator::t('Follow up on Deck tasks'),
+            'deck_create_board' => Translator::t('Create Deck board'),
+            'deck_create_stack' => Translator::t('Create list in Deck'),
+            'deck_delete_stack' => Translator::t('Delete Deck list'),
+            'deck_delete_board' => Translator::t('Delete Deck board'),
             // Talk
             'talk_list_conversations' => Translator::t('List Talk conversations'),
             'talk_read_messages' => Translator::t('Read Talk messages'),

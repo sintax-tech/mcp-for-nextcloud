@@ -102,7 +102,7 @@ final class CreateBoardHandler extends AbstractHandler {
 					} catch (\Throwable $e) {
 						// The card exists: never turn this into something that invites a second attempt.
 						$this->logger->warning('MCP Deck assignment failed after creation ({exception})', ['exception' => $e::class]);
-						$warnings[] = Translator::t('The card "%s" was created, but an assignee could not be assigned. Read the card before retrying in Deck.', [$card['title']]);
+						$warnings[] = Translator::t('The card \'%s\' was created, but an assignee could not be assigned. Read the card before retrying in Deck.', [$card['title']]);
 					}
 				}
 			}
@@ -146,10 +146,10 @@ final class CreateBoardHandler extends AbstractHandler {
 			Translator::n('%n card', '%n cards', $cards),
 		]);
 		if ($failed === 0) {
-			return Translator::t('The board "%s" was created with %s.', [$board, $made]);
+			return Translator::t('The board \'%s\' was created with %s.', [$board, $made]);
 		}
 
-		return Translator::t('The board "%s" exists with %s, but %s could not be created. Nothing was undone; see "failed" before retrying.', [
+		return Translator::t('The board \'%s\' exists with %s, but %s could not be created. Nothing was undone; see \'failed\' before retrying.', [
 			$board,
 			$made,
 			Translator::n('%n item', '%n items', $failed),

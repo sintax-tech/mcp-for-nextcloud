@@ -6,8 +6,12 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 use InvalidArgumentException;
 use OCA\Mcp\Tools\Deck\DeckMessages;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
+use OCA\Mcp\Tools\Deck\Handler\CreateBoardHandler;
 use OCA\Mcp\Tools\Deck\Handler\CreateCardHandler;
+use OCA\Mcp\Tools\Deck\Handler\CreateStackHandler;
+use OCA\Mcp\Tools\Deck\Handler\DeleteBoardHandler;
 use OCA\Mcp\Tools\Deck\Handler\DeleteCardHandler;
+use OCA\Mcp\Tools\Deck\Handler\DeleteStackHandler;
 use OCA\Mcp\Tools\Deck\Handler\EditCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\FollowupCardsHandler;
 use OCA\Mcp\Tools\Deck\Handler\ListBoardsHandler;
@@ -110,7 +114,7 @@ final class DeckToolModuleTest extends TestCase {
 		self::assertInstanceOf(ToolModule::class, $this->module);
 	}
 
-	public function testDeclaresTheNineToolsInTheDeclaredOrder(): void {
+	public function testDeclaresTheThirteenToolsInTheDeclaredOrder(): void {
 		self::assertSame([
 			'deck_list_boards',
 			'deck_list_stacks',
@@ -121,6 +125,10 @@ final class DeckToolModuleTest extends TestCase {
 			'deck_move_card',
 			'deck_delete_card',
 			'deck_followup_cards',
+			'deck_create_board',
+			'deck_create_stack',
+			'deck_delete_stack',
+			'deck_delete_board',
 		], array_column($this->module->definitions(), 'name'));
 	}
 
@@ -146,6 +154,10 @@ final class DeckToolModuleTest extends TestCase {
 			'move card' => [MoveCardHandler::TOOL, 'move'],
 			'delete card' => [DeleteCardHandler::TOOL, 'delete'],
 			'follow up cards' => [FollowupCardsHandler::TOOL, 'read'],
+			'create board' => [CreateBoardHandler::TOOL, 'create'],
+			'create stack' => [CreateStackHandler::TOOL, 'create'],
+			'delete stack' => [DeleteStackHandler::TOOL, 'delete'],
+			'delete board' => [DeleteBoardHandler::TOOL, 'delete'],
 		];
 	}
 

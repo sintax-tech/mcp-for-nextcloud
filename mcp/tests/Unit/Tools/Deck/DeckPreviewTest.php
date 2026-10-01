@@ -41,7 +41,7 @@ final class DeckPreviewTest extends TestCase {
 	 */
 	private function readOnlyGateway(): DeckGatewayInterface&MockObject {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
-		foreach (['createCard', 'updateCard', 'moveCard', 'deleteCard'] as $write) {
+		foreach (['createCard', 'updateCard', 'moveCard', 'deleteCard', 'createBoard', 'createStack', 'deleteEmptyStack', 'deleteEmptyBoard', 'assignCardUser', 'unassignCardUser'] as $write) {
 			$gateway->expects(self::never())->method($write);
 		}
 		$gateway->method('listBoards')->willReturn([new Board(['id' => 1, 'title' => 'Pessoal']), new Board(['id' => 2, 'title' => 'Equipe'])]);

@@ -5,8 +5,12 @@ namespace OCA\Mcp\Tools\Deck;
 
 use InvalidArgumentException;
 use OCA\Mcp\Tools\Deck\Handler\AbstractHandler;
+use OCA\Mcp\Tools\Deck\Handler\CreateBoardHandler;
 use OCA\Mcp\Tools\Deck\Handler\CreateCardHandler;
+use OCA\Mcp\Tools\Deck\Handler\CreateStackHandler;
+use OCA\Mcp\Tools\Deck\Handler\DeleteBoardHandler;
 use OCA\Mcp\Tools\Deck\Handler\DeleteCardHandler;
+use OCA\Mcp\Tools\Deck\Handler\DeleteStackHandler;
 use OCA\Mcp\Tools\Deck\Handler\EditCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\FollowupCardsHandler;
 use OCA\Mcp\Tools\Deck\Handler\ListBoardsHandler;
@@ -30,13 +34,14 @@ use Psr\Log\LoggerInterface;
 use stdClass;
 
 /**
- * The Deck tool module: nine tools that read, follow up, create, edit, move and delete Deck cards.
+ * The Deck tool module: thirteen tools that read, follow up, create, edit, move and delete Deck cards, and
+ * build or empty the structure around them (boards and lists).
  *
  * This class only declares the tools and routes a call to a handler. It holds no Deck logic and
  * resolves no Deck class at construction time, because the Deck app may not be installed: the
  * tools declare `app: 'deck'` so the registry hides them, and the handler is built per call.
  *
- * The four writing tools are also described by {@see self::preview()}, which the registry asks for
+ * The writing tools are also described by {@see self::preview()}, which the registry asks for
  * whenever a write arrives without `confirm: true`; the plan it returns is what the agent shows the
  * user, and `confirm_shared` still guards a board of somebody else at the moment of the write.
  */
@@ -95,6 +100,11 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 				. 'deck_edit_card changes assignees with assign and unassign (lists of account IDs, at most 100 each); '
 				. 'an account cannot be in both, accounts are checked before anything is written, and a failure midway '
 				. 'leaves the result listing assigned, unassigned and failed.',
+			'To set up a project from scratch use one deck_create_board call: it creates the board, its lists and their first '
+				. 'cards after a single confirmation (at most ' . BoardBlueprint::MAX_STACKS . ' lists and ' . BoardBlueprint::MAX_CARDS . ' cards). '
+				. 'The board is open only to its owner, so share it in Deck before assigning anybody else. deck_create_stack adds a '
+				. 'list to an existing board. deck_delete_stack and deck_delete_board work only on something empty: they refuse, '
+				. 'saying how many cards are left, while any card (active or archived) remains, and what they delete goes to the Deck trash.',
 			'duedate is a plain day (Y-m-d) and is read in the timezone of the account; a card description is capped '
 				. 'at ' . CardInput::MAX_DESCRIPTION_LENGTH . ' characters and a title at 255.',
 			'deck_move_card only changes the position inside the list of the card; moving it to another list or another '
@@ -257,6 +267,88 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 				'operation' => 'read',
 				'app' => self::DECK_APP,
 			],
+			[
+				'name' => CreateBoardHandler::TOOL,
+				'description' => DeckMessages::TOOL_CREATE_BOARD_DESCRIPTION,
+				// A board that does not exist yet cannot be somebody else's, so there is no `confirm_shared`.
+				'inputSchema' => $this->schema(
+					[
+						'title' => $this->string(DeckMessages::PARAM_BOARD_TITLE, 1, BoardBlueprint::MAX_TITLE_LENGTH),
+						'color' => $this->string(DeckMessages::PARAM_BOARD_COLOR, 6, 7),
+						'stacks' => [
+							'type' => 'array',
+							'maxItems' => BoardBlueprint::MAX_STACKS,
+							'description' => DeckMessages::PARAM_BOARD_STACKS,
+							'items' => $this->schema(
+								[
+									'title' => $this->string(DeckMessages::PARAM_STACK_TITLE, 1, BoardBlueprint::MAX_TITLE_LENGTH),
+									'cards' => [
+										'type' => 'array',
+										'maxItems' => BoardBlueprint::MAX_CARDS,
+										'description' => DeckMessages::PARAM_STACK_CARDS,
+										'items' => $this->schema(
+											[
+												'title' => $this->string(DeckMessages::PARAM_TITLE, 1, 255),
+												'description' => $this->string(DeckMessages::PARAM_DESCRIPTION, 0),
+												'duedate' => $this->nullableString(DeckMessages::PARAM_DUEDATE),
+												'assignees' => $this->accountList(DeckMessages::PARAM_ASSIGNEES),
+											],
+											['title'],
+										),
+									],
+								],
+								['title'],
+							),
+						],
+					],
+					['title'],
+				),
+				'module' => self::MODULE,
+				'operation' => 'create',
+				'app' => self::DECK_APP,
+			],
+			[
+				'name' => CreateStackHandler::TOOL,
+				'description' => DeckMessages::TOOL_CREATE_STACK_DESCRIPTION . DeckMessages::CONFIRM_SHARED_DESCRIPTION,
+				'inputSchema' => $this->schema(
+					[
+						'boardId' => $this->integer(DeckMessages::PARAM_BOARD_ID),
+						'title' => $this->string(DeckMessages::PARAM_STACK_TITLE, 1, BoardBlueprint::MAX_TITLE_LENGTH),
+						'order' => $this->integer(DeckMessages::PARAM_STACK_ORDER, 0, self::MAX_ORDER),
+						'confirm_shared' => $this->confirmShared(),
+					],
+					['boardId', 'title'],
+				),
+				'module' => self::MODULE,
+				'operation' => 'create',
+				'app' => self::DECK_APP,
+			],
+			[
+				'name' => DeleteStackHandler::TOOL,
+				'description' => DeckMessages::TOOL_DELETE_STACK_DESCRIPTION . DeckMessages::CONFIRM_SHARED_DESCRIPTION,
+				'inputSchema' => $this->schema(
+					[
+						'stackId' => $this->integer(DeckMessages::PARAM_STACK_ID),
+						'confirm_shared' => $this->confirmShared(),
+					],
+					['stackId'],
+				),
+				'module' => self::MODULE,
+				'operation' => 'delete',
+				'app' => self::DECK_APP,
+			],
+			[
+				'name' => DeleteBoardHandler::TOOL,
+				// Only the owner deletes a board, so `confirm_shared` does not exist here: a board of somebody else is refused.
+				'description' => DeckMessages::TOOL_DELETE_BOARD_DESCRIPTION,
+				'inputSchema' => $this->schema(
+					['boardId' => $this->integer(DeckMessages::PARAM_BOARD_ID)],
+					['boardId'],
+				),
+				'module' => self::MODULE,
+				'operation' => 'delete',
+				'app' => self::DECK_APP,
+			],
 		];
 	}
 
@@ -307,6 +399,10 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 				EditCardHandler::TOOL => $this->planEdit($arguments, $userId),
 				MoveCardHandler::TOOL => $this->planMove($arguments, $userId),
 				DeleteCardHandler::TOOL => $this->planDelete($arguments, $userId),
+				CreateBoardHandler::TOOL => $this->planCreateBoard($arguments, $userId),
+				CreateStackHandler::TOOL => $this->planCreateStack($arguments, $userId),
+				DeleteStackHandler::TOOL => $this->planDeleteStack($arguments, $userId),
+				DeleteBoardHandler::TOOL => $this->planDeleteBoard($arguments, $userId),
 				default => throw new InvalidArgumentException(DeckMessages::errorUnknownTool()),
 			};
 			$plan['timezone'] = $this->zones()?->forUser($userId)->getName();
@@ -485,6 +581,123 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	}
 
 	/**
+	 * The tree of a board as it will be built: the board, its lists and their cards, validated by the same
+	 * {@see BoardBlueprint} the execution reads, so anything the write would refuse is refused here.
+	 *
+	 * @param array<string, mixed> $arguments Arguments of `deck_create_board`.
+	 * @param string $userId UID of the authenticated caller, the owner of the board.
+	 * @return array<string, mixed>
+	 * @throws InvalidArgumentException Naming the field when the structure is refused.
+	 */
+	private function planCreateBoard(array $arguments, string $userId): array {
+		$blueprint = BoardBlueprint::parse($arguments, $userId);
+		// Only the owner can be assigned on a new board, and BoardBlueprint has already refused anybody else.
+		$self = ['uid' => $userId, 'displayName' => $this->userManager?->get($userId)?->getDisplayName() ?: $userId];
+
+		return [
+			'action' => CreateBoardHandler::TOOL,
+			'board' => ['title' => $blueprint['title'], 'color' => $blueprint['color'], 'colorGiven' => $blueprint['colorGiven']],
+			'owner' => $userId,
+			'stacks' => array_map(static fn (array $stack): array => [
+				'title' => $stack['title'],
+				'cards' => array_map(static fn (array $card): array => [
+					'title' => $card['title'],
+					'description' => $card['description'],
+					'duedate' => $card['duedate'],
+					'assignees' => array_map(static fn (string $uid): array => $self, $card['assignees']),
+				], $stack['cards']),
+			], $blueprint['stacks']),
+			'totals' => ['stacks' => count($blueprint['stacks']), 'cards' => $blueprint['cardCount']],
+			'limits' => ['stacks' => BoardBlueprint::MAX_STACKS, 'cards' => BoardBlueprint::MAX_CARDS],
+			'shared' => [],
+			'recoverable' => true,
+			'message' => DeckMessages::planCreateBoard(),
+		];
+	}
+
+	/**
+	 * @param array{boardId: int, title: string, order?: int} $arguments
+	 * @param string $userId UID of the authenticated caller.
+	 * @return array<string, mixed>
+	 */
+	private function planCreateStack(array $arguments, string $userId): array {
+		$title = BoardBlueprint::title((string)$arguments['title'], 'title');
+		$board = $this->board($this->gateway()->boardOwnership($userId, (int)$arguments['boardId']), $userId);
+
+		return [
+			'action' => CreateStackHandler::TOOL,
+			'stack' => ['title' => $title, 'order' => array_key_exists('order', $arguments) ? (int)$arguments['order'] : null],
+			'board' => $board,
+			'shared' => $board['shared'] ? [$board] : [],
+			'recoverable' => true,
+			'message' => DeckMessages::planCreateStack(),
+		];
+	}
+
+	/**
+	 * A list can only be deleted empty, so the cards are counted for the plan and a list that holds any has no
+	 * plan at all: the refusal is the answer, as the write would give it.
+	 *
+	 * @param array{stackId: int} $arguments
+	 * @param string $userId UID of the authenticated caller.
+	 * @return array<string, mixed>
+	 * @throws DeckRefusalException When the list holds any card.
+	 */
+	private function planDeleteStack(array $arguments, string $userId): array {
+		$stackId = (int)$arguments['stackId'];
+		$place = $this->place($userId, $stackId);
+		$cards = $this->gateway()->stackCardCount($userId, $stackId);
+		if ($cards > 0) {
+			throw DeckRefusalException::stackNotEmpty($cards);
+		}
+		$board = ['board' => $place['board'], 'owner' => $place['owner'], 'ownerDisplayName' => $place['ownerDisplayName'], 'shared' => $place['shared']];
+
+		return [
+			'action' => DeleteStackHandler::TOOL,
+			'stack' => ['id' => $stackId, 'title' => $place['list'], 'cards' => $cards],
+			'board' => $board,
+			'shared' => $place['shared'] ? [$board] : [],
+			'recoverable' => true,
+			'consequence' => DeckMessages::planDeleteStackConsequence(),
+			'message' => DeckMessages::planDeleteStack(),
+		];
+	}
+
+	/**
+	 * A board can only be deleted by its owner and empty, so a board of somebody else or one that holds a card has
+	 * no plan: the refusal is the answer, as the write would give it.
+	 *
+	 * @param array{boardId: int} $arguments
+	 * @param string $userId UID of the authenticated caller.
+	 * @return array<string, mixed>
+	 * @throws DeckRefusalException When the caller is not the owner or any list holds a card.
+	 */
+	private function planDeleteBoard(array $arguments, string $userId): array {
+		$boardId = (int)$arguments['boardId'];
+		$ownership = $this->gateway()->boardOwnership($userId, $boardId);
+		if ($ownership['owner'] !== $userId) {
+			throw DeckRefusalException::boardNotOwned();
+		}
+		$cards = $this->gateway()->boardCardCount($userId, $boardId);
+		if ($cards > 0) {
+			throw DeckRefusalException::boardNotEmpty($cards);
+		}
+
+		return [
+			'action' => DeleteBoardHandler::TOOL,
+			'board' => ['id' => $boardId, 'title' => $ownership['name'], 'cards' => $cards],
+			'stacks' => array_map(
+				static fn (\OCA\Deck\Db\Stack $stack): string => (string)$stack->getTitle(),
+				$this->gateway()->listStacks($userId, $boardId),
+			),
+			'shared' => [],
+			'recoverable' => true,
+			'consequence' => DeckMessages::planDeleteBoardConsequence(),
+			'message' => DeckMessages::planDeleteBoard(),
+		];
+	}
+
+	/**
 	 * Where a card lands or comes from: the list, the board behind it and who owns that board.
 	 *
 	 * @param string $userId UID of the authenticated caller.
@@ -600,6 +813,10 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 			EditCardHandler::TOOL => new EditCardHandler($this->gateway(), $this->logger, $formatter),
 			MoveCardHandler::TOOL => new MoveCardHandler($this->gateway(), $this->logger, $formatter),
 			DeleteCardHandler::TOOL => new DeleteCardHandler($this->gateway(), $this->logger, $formatter),
+			CreateBoardHandler::TOOL => new CreateBoardHandler($this->gateway(), $this->logger),
+			CreateStackHandler::TOOL => new CreateStackHandler($this->gateway(), $this->logger),
+			DeleteStackHandler::TOOL => new DeleteStackHandler($this->gateway(), $this->logger),
+			DeleteBoardHandler::TOOL => new DeleteBoardHandler($this->gateway(), $this->logger),
 			default => null,
 		};
 	}

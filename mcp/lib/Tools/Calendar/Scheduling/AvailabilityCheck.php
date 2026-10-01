@@ -13,7 +13,7 @@ use Psr\Log\LoggerInterface;
  *
  * Uses the official scheduling API, which only reports on accounts of this instance and never
  * exposes the content of an appointment: only the free/busy verdict per attendee comes back.
- * Neither e-mail addresses nor appointment content are ever logged.
+ * Neither e-mail addresses nor appointment content are ever logged: a failure records the exception class only.
  */
 final class AvailabilityCheck {
     /**
@@ -52,7 +52,8 @@ final class AvailabilityCheck {
         try {
             $results = $this->calendarManager->checkAvailability($start, $end, $organizer, $emails);
         } catch (\Throwable $e) {
-            $this->logger->warning('Availability check failed: ' . $e::class . ': ' . self::scrub($e->getMessage()));
+            // Only the class is logged: a core message can carry appointment text or addresses.
+            $this->logger->warning('Availability check failed: ' . $e::class);
             return $failed;
         }
 
@@ -73,17 +74,6 @@ final class AvailabilityCheck {
             }
         }
         return ['busy' => $busy, 'unverifiable' => $unverifiable, 'failed' => false];
-    }
-
-    /**
-     * Removes e-mail addresses from a core message and caps its length, so it is safe to log.
-     *
-     * @param string $message raw exception message
-     * @return string message with addresses replaced by `[email]`, at most 300 characters
-     */
-    private static function scrub(string $message): string {
-        $clean = preg_replace('/[^\s@<>"' . "'" . ']+@[^\s@<>"' . "'" . ']+/', '[email]', $message) ?? '';
-        return mb_substr($clean, 0, 300);
     }
 
     /**

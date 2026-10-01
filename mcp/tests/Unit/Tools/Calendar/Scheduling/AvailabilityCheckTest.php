@@ -58,13 +58,12 @@ final class AvailabilityCheckTest extends TestCase {
     }
 
     /** @return void */
-    public function testApiExceptionFailsAndLogsOnlyClassAndMessage(): void {
+    public function testApiExceptionFailsAndLogsOnlyTheClass(): void {
         $manager = $this->createMock(IManager::class);
         $manager->method('checkAvailability')->willThrowException(new \RuntimeException('boom'));
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('warning')->with(
-            self::callback(static fn (string $m): bool => str_contains($m, 'RuntimeException') && str_contains($m, 'boom')
-                && !str_contains($m, 'example.invalid')),
+            self::callback(static fn (string $m): bool => str_contains($m, 'RuntimeException') && !str_contains($m, 'boom')),
         );
 
         $out = $this->runCheck($manager, [self::BOB], 'alice', $logger);
@@ -73,15 +72,15 @@ final class AvailabilityCheckTest extends TestCase {
     }
 
     /** @return void */
-    public function testEmailsInTheExceptionMessageAreNotLoggedAndMessageIsCapped(): void {
+    public function testNothingFromTheExceptionMessageIsLogged(): void {
         $manager = $this->createMock(IManager::class);
         $manager->method('checkAvailability')->willThrowException(
-            new \RuntimeException('no calendar for bob@example.invalid <carla@example.invalid> ' . str_repeat('x', 500)),
+            new \RuntimeException('no calendar for bob@example.invalid <carla@example.invalid> Reunião sobre o diagnóstico da paciente ' . str_repeat('x', 500)),
         );
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects(self::once())->method('warning')->with(
-            self::callback(static fn (string $m): bool => !str_contains($m, '@') && str_contains($m, '[email]')
-                && strlen($m) < 400),
+            self::callback(static fn (string $m): bool => !str_contains($m, '@') && !str_contains($m, 'Reunião')
+                && !str_contains($m, 'xxx') && str_contains($m, 'RuntimeException')),
         );
 
         $this->runCheck($manager, [self::BOB], 'alice', $logger);

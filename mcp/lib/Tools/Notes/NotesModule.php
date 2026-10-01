@@ -11,6 +11,7 @@ use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolGuideNotes;
 use OCA\Mcp\Tools\ToolModule;
@@ -28,7 +29,7 @@ use OCP\IUserManager;
  * arrives without `confirm: true`: the note as it is now, what the call would do to it, and whether the
  * trash bin would take it back. A preview creates no category folder and writes nothing.
  */
-class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
+class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, RendersPlans {
     /** Maximum note size read or written, in bytes. */
     public const MAX_BYTES = NotesRepository::MAX_BYTES;
     /** Storage wrapper files_trashbin puts around storages whose deletions go to the trash bin. */
@@ -310,6 +311,13 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
             'notes_delete' => $this->previewDelete($root, $userId, $arguments),
             default => throw new InvalidArgumentException('Unknown tool'),
         };
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function renderPlan(string $tool, array $plan): ?string {
+        return (new NotesPlanRenderer())->render($tool, $plan);
     }
 
     /**

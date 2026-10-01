@@ -16,6 +16,7 @@ use OCA\Mcp\Tools\Deck\Handler\MoveCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\ReadCardHandler;
 use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolGuideNotes;
 use OCA\Mcp\Tools\ToolModule;
@@ -39,7 +40,7 @@ use stdClass;
  * whenever a write arrives without `confirm: true`; the plan it returns is what the agent shows the
  * user, and `confirm_shared` still guards a board of somebody else at the moment of the write.
  */
-final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
+final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes, RendersPlans {
 	/** Nextcloud app id whose presence the whole module depends on. */
 	public const DECK_APP = 'deck';
 
@@ -293,13 +294,16 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
 		try {
-			return match ($name) {
+			$plan = match ($name) {
 				CreateCardHandler::TOOL => $this->planCreate($arguments, $userId),
 				EditCardHandler::TOOL => $this->planEdit($arguments, $userId),
 				MoveCardHandler::TOOL => $this->planMove($arguments, $userId),
 				DeleteCardHandler::TOOL => $this->planDelete($arguments, $userId),
 				default => throw new InvalidArgumentException(DeckMessages::errorUnknownTool()),
 			};
+			$plan['timezone'] = $this->zones()?->forUser($userId)->getName();
+
+			return $plan;
 		} catch (InvalidArgumentException $e) {
 			throw $e;
 		} catch (\Throwable $e) {
@@ -312,6 +316,13 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 
 			throw new ToolFailure(DeckErrors::messageFor($e));
 		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function renderPlan(string $tool, array $plan): ?string {
+		return (new DeckPlanRenderer())->render($tool, $plan);
 	}
 
 	/**

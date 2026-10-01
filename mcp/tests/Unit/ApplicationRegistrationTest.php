@@ -50,6 +50,18 @@ final class ApplicationRegistrationTest extends TestCase {
         return $container;
     }
 
+    public function testUserRevocationListenersAreRegisteredWithOcpEvents(): void {
+        $events = [];
+        $context = $this->createMock(IRegistrationContext::class);
+        $context->method('registerEventListener')->willReturnCallback(function ($event, $listener) use (&$events): void {
+            $events[$event] = $listener;
+        });
+        (new \ReflectionClass(Application::class))->newInstanceWithoutConstructor()->register($context);
+        foreach ([\OCP\User\Events\UserChangedEvent::class, \OCP\User\Events\UserDeletedEvent::class] as $event) {
+            $this->assertSame(\OCA\Mcp\OAuth\UserRevocationListener::class, $events[$event]);
+        }
+    }
+
     public function testTheDeckGatewayFactoryBuildsTheGatewayWithItsClockAndTimezone(): void {
         $factories = $this->registeredFactories();
         $this->assertArrayHasKey(DeckGatewayInterface::class, $factories);

@@ -38,7 +38,7 @@ class AuthorizationValidator {
         }
         $scopes = array_values(array_filter(explode(' ', $get('scope'))));
         if (array_diff($scopes, self::SCOPES) !== [] || ($scopes !== [] && !in_array('mcp', $scopes, true))) {
-            throw new OAuthException('invalid_scope', 'MCP scope is required; unknown scopes are not supported', true);
+            throw new OAuthException('invalid_scope', 'Unknown scope', true);
         }
         return new AuthorizationRequest($client, $redirectUri, $get('state'), $get('code_challenge'),
             $resource !== '' ? $resource : $expectedResource, $scopes === [] ? 'mcp' : implode(' ', $scopes));

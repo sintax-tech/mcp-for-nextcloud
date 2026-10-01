@@ -20,7 +20,7 @@ class AccessTokenAuthenticator {
 
     /** @return bool true when the header carries a token issued by this app */
     public static function isOwnBearer(string $authorization): bool {
-        return str_starts_with($authorization, 'Bearer ncmcp_at_');
+        return preg_match('/^Bearer[ \t]+ncmcp_at_/i', $authorization) === 1;
     }
 
     /**
@@ -32,7 +32,7 @@ class AccessTokenAuthenticator {
         if (!self::isOwnBearer($authorization)) {
             return null;
         }
-        $row = $this->store->findByAccess($this->hasher->hash(substr($authorization, 7)));
+        $row = $this->store->findByAccess($this->hasher->hash(trim((string)preg_replace('/^Bearer[ \t]+/i', '', $authorization))));
         if ($row === null || !in_array('mcp', explode(' ', (string)$row['scope']), true)
             || (int)$row['access_expires'] < $this->time->getTime()
             || !ResourceUrl::sameResource((string)$row['resource'], $resource)) {

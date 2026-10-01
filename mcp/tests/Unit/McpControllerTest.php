@@ -209,6 +209,12 @@ final class McpControllerTest extends TestCase {
         $this->assertSame([401, ''], $this->listTools());
     }
 
+    public function testOwnBearerSchemeIsCaseInsensitiveAndCannotFallBackToSession(): void {
+        $this->headers['Authorization'] = 'bearer ncmcp_at_invalid';
+        $this->authenticator->expects($this->once())->method('authenticate')->willReturn(null);
+        $this->assertSame([401, ''], $this->listTools());
+    }
+
     public function testMatchingSessionAndBearerUsesValidatedBearer(): void {
         $this->headers['Authorization'] = 'Bearer ncmcp_at_valid';
         $this->authenticator->expects($this->once())->method('authenticate')->willReturn($this->user);

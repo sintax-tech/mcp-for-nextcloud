@@ -77,8 +77,10 @@ final class TokenFlowTest extends TestCase {
     public function testOnlyHashesArePersisted(): void {
         $code = $this->code();
         $tokens = $this->exchange($code);
+        $rotated = $this->service->refresh(['refresh_token' => $tokens['refresh_token'], 'client_id' => self::CLIENT]);
+        $this->assertArrayHasKey(hash_hmac('sha256', $tokens['refresh_token'], 'mcp-oauth|instance-secret'), $this->store->spent);
         $dump = json_encode([$this->store->codes, $this->store->tokens, $this->store->spent]);
-        foreach ([$code, $tokens['access_token'], $tokens['refresh_token']] as $secret) {
+        foreach ([$code, $tokens['access_token'], $tokens['refresh_token'], $rotated['access_token'], $rotated['refresh_token']] as $secret) {
             $this->assertStringNotContainsString($secret, $dump);
         }
         $this->assertStringStartsWith('ncmcp_at_', $tokens['access_token']);
@@ -103,6 +105,7 @@ final class TokenFlowTest extends TestCase {
     public function testBearerResolvesToOwnerUntilExpiry(): void {
         $access = $this->exchange($this->code())['access_token'];
         $this->assertSame('alice', $this->authenticator->authenticate('Bearer ' . $access, 'https://cloud.example.org/index.php/apps/mcp/')?->getUID());
+        $this->assertSame('alice', $this->authenticator->authenticate('bEaReR  ' . $access, self::RESOURCE)?->getUID());
         $this->assertNull($this->authenticator->authenticate('Bearer ' . $access, 'https://other.example.org/apps/mcp/'), 'wrong audience');
         $this->assertNull($this->authenticator->authenticate('Bearer ncmcp_at_unknown', self::RESOURCE));
         $this->now += TokenService::ACCESS_TTL + 1;

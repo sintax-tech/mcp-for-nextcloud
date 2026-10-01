@@ -140,6 +140,14 @@ class OAuthStore {
         }
     }
 
+    /** Deletes every grant, pending code and spent-refresh record of one client, for all users. */
+    public function deleteForClient(string $clientId): void {
+        foreach ([self::TOKENS, self::CODES, self::SPENT] as $table) {
+            $qb = $this->db->getQueryBuilder();
+            $qb->delete($table)->where($qb->expr()->eq('client_id', $qb->createNamedParameter($clientId)))->executeStatement();
+        }
+    }
+
     /** Normal token issuance, rotation and replay checks bound history retention without an occ step. */
     private function purgeSpent(int $now): void {
         $qb = $this->db->getQueryBuilder();

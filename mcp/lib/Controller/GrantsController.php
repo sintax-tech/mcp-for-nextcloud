@@ -7,6 +7,7 @@ use InvalidArgumentException;
 use OCA\Mcp\OAuth\ClientMetadataFetcher;
 use OCA\Mcp\OAuth\ClientResolver;
 use OCA\Mcp\OAuth\NativeClient;
+use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\Service\GrantMatrix;
 use OCA\Mcp\Service\GrantPolicy;
 use OCP\AppFramework\Controller;
@@ -32,6 +33,7 @@ class GrantsController extends Controller {
         private GrantPolicy $policy,
         private IUserManager $userManager,
         private IConfig $config,
+        private OAuthStore $oauth,
     ) {
         parent::__construct($appName, $request);
     }
@@ -141,6 +143,9 @@ class GrantsController extends Controller {
             }
             if ($native !== null) {
                 $this->config->setAppValue($this->appName, NativeClient::CONFIG_KEY, $native ? '1' : '0');
+                if (!$native) {
+                    $this->oauth->deleteForClient(NativeClient::CLIENT_ID);
+                }
             }
             return $this->oauthState();
         });

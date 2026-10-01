@@ -175,11 +175,20 @@ final class GrantsControllerTest extends TestCase {
         $this->assertSame([], $this->fx->oauth->codes);
     }
 
+    public function testSendingTheDefaultHostsDeletesTheKeyAndAnotherListStoresIt(): void {
+        $this->fx->config->app['mcp']['oauth_client_hosts'] = 'claude.ai,example.org';
+        $data = $this->controller(['hosts' => ['chatgpt.com', 'claude.ai']])->updateOauthClients()->getData();
+        $this->assertArrayNotHasKey('oauth_client_hosts', $this->fx->config->app['mcp']);
+        $this->assertTrue($data['hostsDefault']);
+        $this->controller(['hosts' => ['claude.ai']])->updateOauthClients();
+        $this->assertSame('claude.ai', $this->fx->config->app['mcp']['oauth_client_hosts']);
+    }
+
     public function testUpdateOauthClientsNormalizesHostsBeforeValidationAndDeduplication(): void {
-        $response = $this->controller(['hosts' => [' ChatGPT.com ', 'CLAUDE.AI', 'chatgpt.COM']])->updateOauthClients();
+        $response = $this->controller(['hosts' => [' ChatGPT.com ', 'CLAUDE.AI', 'chatgpt.COM', 'Extra.Example.org']])->updateOauthClients();
         $this->assertSame(200, $response->getStatus());
-        $this->assertSame(['chatgpt.com', 'claude.ai'], $response->getData()['hosts']);
-        $this->assertSame('chatgpt.com,claude.ai', $this->fx->config->app['mcp'][ClientMetadataFetcher::HOSTS_KEY]);
+        $this->assertSame(['chatgpt.com', 'claude.ai', 'extra.example.org'], $response->getData()['hosts']);
+        $this->assertSame('chatgpt.com,claude.ai,extra.example.org', $this->fx->config->app['mcp'][ClientMetadataFetcher::HOSTS_KEY]);
     }
 
     public function testUpdateOauthClientsRejectsInvalidInputWithoutWriting(): void {

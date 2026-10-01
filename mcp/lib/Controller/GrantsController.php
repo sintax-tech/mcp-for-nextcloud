@@ -139,7 +139,13 @@ class GrantsController extends Controller {
                 $native = self::bool($native);
             }
             if ($hosts !== null) {
-                $this->config->setAppValue($this->appName, ClientMetadataFetcher::HOSTS_KEY, implode(',', $hosts));
+                $default = explode(',', ClientMetadataFetcher::DEFAULT_HOSTS);
+                if (count($hosts) === count($default) && array_diff($hosts, $default) === []) {
+                    // The default is not frozen into the config, so a later release can change it.
+                    $this->config->deleteAppValue($this->appName, ClientMetadataFetcher::HOSTS_KEY);
+                } else {
+                    $this->config->setAppValue($this->appName, ClientMetadataFetcher::HOSTS_KEY, implode(',', $hosts));
+                }
             }
             if ($native !== null) {
                 $this->config->setAppValue($this->appName, NativeClient::CONFIG_KEY, $native ? '1' : '0');

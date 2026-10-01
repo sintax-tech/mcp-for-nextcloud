@@ -24,6 +24,7 @@ final class FakeTree {
     public array $nodes = [];
     /** @var list<string> */
     public array $ops = [];
+    public array $opened = [];
     /** Paths whose copy() must fail, or produce a truncated copy. */
     public array $failCopy = [];
     /** Paths whose move() must fail, as a lock or a permission that changed since the plan. */
@@ -160,6 +161,7 @@ final class FakeTree {
         $file->method('getSize')->willReturnCallback(fn () => $this->nodes[$path]['size'] ?? strlen($this->nodes[$path]['content']));
         $file->method('getContent')->willReturnCallback(fn () => $this->nodes[$path]['content']);
         $file->method('fopen')->willReturnCallback(function () use ($path) {
+            $this->opened[] = $path;
             $handle = fopen('php://memory', 'w+');
             fwrite($handle, $this->nodes[$path]['content']);
             rewind($handle);

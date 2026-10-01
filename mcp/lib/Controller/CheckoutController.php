@@ -93,6 +93,11 @@ class CheckoutController extends Controller {
                 return $opened;
             }
             [$row, $file] = $opened;
+            try {
+                NodeAccess::checkEtag($file, $row->etag);
+            } catch (ToolFailure) {
+                return $this->refuse(Http::STATUS_CONFLICT, CommonMessages::conflict());
+            }
             if ($failure = $this->spend($row)) {
                 return $failure;
             }

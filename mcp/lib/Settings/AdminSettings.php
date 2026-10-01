@@ -10,7 +10,7 @@ use OCP\IURLGenerator;
 use OCP\Settings\ISettings;
 
 /**
- * Admin page (Additional settings): endpoint URL, service switch, OCR status and the users × permissions matrix.
+ * Admin page in the app's own "MCP for Nextcloud" section: endpoint URL, service switch, OCR status and the users × permissions matrix.
  * The matrix itself is loaded and saved by js/admin-grants.js through GrantsController.
  */
 class AdminSettings implements ISettings {
@@ -30,9 +30,9 @@ class AdminSettings implements ISettings {
         ], '');
     }
 
-    /** @return string settings section id ('additional') */
+    /** @return string settings section id, the app's own "MCP for Nextcloud" entry */
     public function getSection(): string {
-        return 'additional';
+        return AdminSection::ID;
     }
 
     /** @return int ordering within the section */

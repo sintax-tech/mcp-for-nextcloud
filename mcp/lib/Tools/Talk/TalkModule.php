@@ -5,6 +5,7 @@ namespace OCA\Mcp\Tools\Talk;
 
 use InvalidArgumentException;
 use OCA\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolModule;
 use Psr\Log\LoggerInterface;
@@ -20,9 +21,10 @@ use Throwable;
  * Every writing tool stops at a plan until the user says yes: the registry answers a call without confirm: true
  * with {@see self::preview()} and writes nothing, and only a confirmed call reaches {@see self::call()}, which
  * revalidates and publishes. Nothing is persisted between the two calls, so the conversation is the client's
- * promise to show the plan and to report the answer.
+ * promise to show the plan and to report the answer. That plan is shown through {@see TalkPlanRenderer}, so the
+ * person reads who the message goes to and what it says rather than the shape of the payload.
  */
-class TalkModule implements ToolModule, PreviewsWrites {
+class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
     public const TOOL_LIST = 'talk_list_conversations';
     public const TOOL_READ = 'talk_read_messages';
     public const TOOL_REPLY = 'talk_reply';
@@ -299,6 +301,19 @@ class TalkModule implements ToolModule, PreviewsWrites {
 
             throw new ToolFailure($this->messageFor($e));
         }
+    }
+
+    /**
+     * The plan of this module's write tools in the words of the person approving it, so the confirmation shows a
+     * conversation, a person and a text instead of a payload. A plan this module cannot name returns null and the
+     * envelope falls back to its generic body; the module itself decides nothing about how a plan is presented.
+     *
+     * @param string $tool Tool name
+     * @param array<string, mixed> $plan The plan returned by preview()
+     * @return string|null Markdown body, or null when the plan is not one this module renders
+     */
+    public function renderPlan(string $tool, array $plan): ?string {
+        return TalkPlanRenderer::render($tool, $plan);
     }
 
     /**

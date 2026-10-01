@@ -173,6 +173,15 @@ final class UpdateEventTest extends CalendarTestCase {
         self::assertSame([], $validated['attendees']);
     }
 
+    public function testSuppressedUpdateDoesNotAttributeAnOldDeliveryStatusToThisWrite(): void {
+        $this->store->objects[1]['e.ics']['data'] = str_replace('ATTENDEE;CN=Bob:', 'ATTENDEE;CN=Bob;SCHEDULE-STATUS="1.2;Message delivered locally":', $this->store->objects[1]['e.ics']['data']);
+        $result = self::json($this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'e', 'summary' => 'Suppressed']));
+        self::assertFalse($result['scheduling']['requested']);
+        self::assertNull($result['scheduling']['participants'][0]['scheduleStatus']);
+        self::assertSame('sem registro de envio', $result['scheduling']['participants'][0]['meaning']);
+        self::assertSame('1.2;Message delivered locally', (string)$this->written()->ATTENDEE['SCHEDULE-STATUS']);
+    }
+
     public function testRefusedGuestListWritesNothing(): void {
         $this->store->addObject(1, 'o.ics', self::ics("UID:o\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z\nORGANIZER:mailto:alice@example.invalid"));
 

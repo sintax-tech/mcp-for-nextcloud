@@ -59,6 +59,15 @@ final class TransferEventTest extends CalendarTestCase {
         $this->assertNoWrites();
     }
 
+    public function testOverrideGuestsAlsoBlockTransferBeforeDispatch(): void {
+        $this->store->addObject(1, 'series.ics', self::ics(
+            "UID:series\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z\nRRULE:FREQ=WEEKLY",
+            "BEGIN:VEVENT\nUID:series\nRECURRENCE-ID:20260319T090000Z\nDTSTART:20260319T090000Z\nDTEND:20260319T100000Z\nATTENDEE:mailto:bob@example.invalid\nEND:VEVENT"
+        ));
+        self::assertToolError($this->transfer(['uid' => 'series']), 'participantes');
+        $this->assertNoWrites();
+    }
+
     public function testATransferWithoutGuestsGoesThrough(): void {
         $this->store->addObject(1, 'n.ics', self::ics("UID:n\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z"));
 

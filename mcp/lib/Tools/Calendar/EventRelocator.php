@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Calendar;
 
-use Sabre\VObject\Component\VEvent;
+use Sabre\VObject\Component\VCalendar;
 
 /**
  * Moves an event between two calendars the user can write, keeping its UID and object URI.
@@ -57,8 +57,7 @@ class EventRelocator {
             throw CalendarException::blocked(CalendarMessages::TRANSFER_NEEDS_MOVE);
         }
         $stored = $this->events->forChange($source, $uid, $userId, $etag);
-        $master = $stored->master();
-        if ($crossOwner && $master !== null && $this->hasAttendees($master)) {
+        if ($crossOwner && $this->hasAttendees($stored->vcalendar)) {
             throw CalendarException::blocked(CalendarMessages::TRANSFER_WITH_ATTENDEES);
         }
         $this->events->assertFree($target, $uid, $stored->uri);
@@ -79,10 +78,13 @@ class EventRelocator {
     }
 
     /**
-     * @param VEvent $event event to inspect
+     * @param VCalendar $calendar series including every detached override
      * @return bool whether the event carries any guest at all
      */
-    private function hasAttendees(VEvent $event): bool {
-        return isset($event->ATTENDEE) && count($event->select('ATTENDEE')) > 0;
+    private function hasAttendees(VCalendar $calendar): bool {
+        foreach ($calendar->select('VEVENT') as $event) {
+            if (count($event->select('ATTENDEE')) > 0) { return true; }
+        }
+        return false;
     }
 }

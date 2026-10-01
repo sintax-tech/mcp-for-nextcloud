@@ -47,7 +47,7 @@ final class Scheduling {
      */
     public function report(bool $requested, ?VCalendar $vcalendar, string $note = ''): array {
         $block = ['requested' => $requested, 'imipEnabled' => $this->imipEnabled(), 'message' => $this->message($requested, $note)];
-        $participants = $this->participants($vcalendar);
+        $participants = $this->participants($vcalendar, $requested);
         if ($participants !== []) {
             $block['participants'] = $participants;
         }
@@ -72,9 +72,10 @@ final class Scheduling {
 
     /**
      * @param VCalendar|null $vcalendar object re-read after the write
+     * @param bool $requested false suppresses historical scheduler status in this result
      * @return list<array{email:string, scheduleStatus:string|null, meaning:string}> one entry per guest
      */
-    private function participants(?VCalendar $vcalendar): array {
+    private function participants(?VCalendar $vcalendar, bool $requested): array {
         if ($vcalendar === null) {
             return [];
         }
@@ -84,7 +85,9 @@ final class Scheduling {
         }
         $out = [];
         foreach ($event->select('ATTENDEE') as $attendee) {
-            $status = $attendee['SCHEDULE-STATUS'] ?? null;
+            // A prior delivery status can survive a suppressed edit. It says nothing about
+            // this request, so do not attribute it to a call that explicitly scheduled nothing.
+            $status = $requested ? ($attendee['SCHEDULE-STATUS'] ?? null) : null;
             $code = $status === null ? null : $this->baseCode((string)$status);
             $out[] = [
                 'email' => (string)$attendee,

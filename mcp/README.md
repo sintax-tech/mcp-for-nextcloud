@@ -44,7 +44,7 @@ Módulo ou ferramenta que o usuário não pode ver é recusado com uma mensagem 
 | --- | --- | --- |
 | `mcp_status` | — | Diagnóstico; não lê dados do usuário. |
 | `files_list` `{path="/"}` | files.read | Filhos diretos da pasta, no formato `{name, path, isDir, size, mtime, contentType}`. |
-| `files_search` `{query, limit=25}` | files.read | Busca por nome (`%`, `_` e `\` são literais), de 1 a 100 resultados; o limite vai para a própria consulta ao cache de arquivos. |
+| `files_search` `{query, limit=25, mode="auto"}` | files.read | Busca por conteúdo quando `fulltextsearch` e `files_fulltextsearch` estão ativos e indexados (com trechos destacados); senão ou em erro, busca por nome (`%`, `_` e `\` são literais), de 1 a 100 resultados. Parâmetro `mode` (`auto` ou `name`) permite forçar busca por nome. |
 | `files_read` `{path}` | files.read | Texto puro, PDF, DOCX e ODT. Arquivo acima de 20 MiB é recusado antes da leitura, e o texto é truncado em 100 000 caracteres. PDF ou imagem sem camada de texto retorna `text_layer: false` com um aviso (não é erro); se o app opcional **Workflow OCR** (`workflow_ocr`, exige `ocrmypdf` no servidor) estiver ativo, ele grava o texto no PDF em segundo plano e uma nova leitura já o traz. A tela de admin mostra o status do Workflow OCR. |
 | `files_tree` `{path="/", depth=5, limit=2000}` | files.read | Árvore da pasta com o dono de cada item, para planejar reorganização sem uma chamada por pasta. Respeita profundidade (até 5) e contagem (até 2000) e avisa quando trunca. |
 | `files_image_view` `{path, max_size=1568}` | files.read | Preview reduzido em base64 (JPEG/PNG/WebP/GIF/TIFF/PDF) sob limite de bytes (padrão 1 MB), com fallback ao original para formatos seguros. Inclui metadados breves. |
@@ -62,6 +62,7 @@ Módulo ou ferramenta que o usuário não pode ver é recusado com uma mensagem 
 | `files_version_read` `{path, version}` | files.read | Texto de uma versão anterior, com o mesmo limite e a mesma extração de texto do `files_read`. |
 | `files_version_restore` `{path, version, confirm: true}` | files.restore | Restaura uma versão guardada, criando antes uma cópia do conteúdo atual em `/MCP backups` e uma versão nova no Nextcloud. Exige `confirm: true` e recusa a própria pasta de backup, como a edição já fazia. Fora da pasta pessoal, exige também `confirm_shared: true`. |
 | `notes_list` `{}` | notes.read | Notas `.md`/`.txt` da pasta do app Notes (preferência `notesPath`, padrão `Notes`). |
+| `notes_search` `{query, limit=20, category=""}` | notes.read | Busca por título e conteúdo Markdown (até 1 MiB), com trecho contextual da ocorrência. Opcionalmente restrita a uma categoria. |
 | `notes_read` `{id}` | notes.read | Nota com conteúdo; limite de 1 MiB. |
 | `notes_create` `{title, content="", category=""}` | notes.create | Nunca sobrescreve; em colisão, usa `Título (2)`. |
 | `notes_edit` `{id, content?, title?, etag?}` | notes.edit | Conteúdo e/ou título. |

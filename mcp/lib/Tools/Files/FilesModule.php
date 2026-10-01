@@ -16,7 +16,11 @@ use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
+use OCA\Mcp\Service\VisibilityGuard;
+use OCP\App\IAppManager;
 use OCP\Files\Node;
+use OCP\FullTextSearch\IFullTextSearchManager;
+use OCP\FullTextSearch\Model\ISearchResult;
 use OCP\IDBConnection;
 use OCP\IUserManager;
 
@@ -63,7 +67,14 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
         private ITimeFactory $time,
         private ImageTools $images,
         private OcrSupport $ocr,
-    ) {}
+        ?VisibilityGuard $visibilityGuard = null,
+        private ?IAppManager $appManager = null,
+        private ?IFullTextSearchManager $ftsManager = null,
+    ) {
+        $this->visibilityGuard = $visibilityGuard ?? new VisibilityGuard();
+    }
+
+    private VisibilityGuard $visibilityGuard;
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app?:string}> */
     public function definitions(): array {
@@ -78,8 +89,9 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
             ['name' => 'files_search', 'module' => 'files', 'operation' => 'read',
                 'description' => FilesMessages::searchTool(),
                 'inputSchema' => self::schema([
-                    'query' => ['type' => 'string', 'minLength' => 1, 'description' => 'Search term'],
-                    'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100, 'default' => 25],
+                    'query' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::searchQuery()],
+                    'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100, 'default' => 25, 'description' => FilesMessages::searchLimit()],
+                    'mode' => ['type' => 'string', 'enum' => ['auto', 'name'], 'default' => 'auto', 'description' => FilesMessages::searchMode()],
                 ], ['query'])],
             ['name' => 'files_tree', 'module' => 'files', 'operation' => 'read',
                 'description' => FilesMessages::treeTool(),
@@ -208,7 +220,7 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
         return [
             'Paths are absolute inside the folder of the user calling and start at "/"; they are never relative and '
                 . 'never leave the storage Nextcloud already lets that user reach.',
-            'To find something, use files_search for a name anywhere, files_tree for the shape of a folder (depth '
+            'To find something, use files_search for full-text content search when available (or by file name), files_tree for the shape of a folder (depth '
                 . Reorganization::MAX_DEPTH . ', ' . Reorganization::MAX_ENTRIES . ' entries) and files_list for a single '
                 . 'folder. The `access` field of every entry says who owns it and what it allows.',
             'Reorganization is the only way files change places: a copy is capped at ' . ReorganizationLimits::NODES
@@ -257,7 +269,7 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
                 $this->batches,
                 $this->time->getTime(),
             )),
-            'files_search' => ToolResult::json($this->search($root, $userId, $arguments['query'], $arguments['limit'])),
+            'files_search' => ToolResult::json($this->search($root, $userId, $arguments['query'], (int)$arguments['limit'], (string)($arguments['mode'] ?? 'auto'))),
             'files_undo_batch' => ToolResult::json($this->reorganization->undoBatch(
                 $root,
                 $userId,
@@ -480,13 +492,124 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
         return $entries;
     }
 
+    /**
+     * @return array{search_mode:string, full_text_active:bool, notice?:string, files:list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string, access:array<string, mixed>, excerpts?:list<string>}>}
+     */
+    private function search(Folder $root, string $userId, string $query, int $limit, string $mode = 'auto'): array {
+        if ($mode === 'name') {
+            return [
+                'search_mode' => 'name_only',
+                'full_text_active' => $this->isFullTextAvailable($userId),
+                'files' => $this->searchByName($root, $userId, $query, $limit),
+            ];
+        }
+
+        if (!$this->isFullTextAvailable($userId)) {
+            return [
+                'search_mode' => 'name_only',
+                'full_text_active' => false,
+                'notice' => FilesMessages::searchNameOnlyNotice(),
+                'files' => $this->searchByName($root, $userId, $query, $limit),
+            ];
+        }
+
+        try {
+            $results = $this->ftsManager->search([
+                'search' => $query,
+                'providers' => ['files'],
+                'size' => $limit + self::SEARCH_OVERFETCH,
+                'page' => 1,
+            ], $userId);
+
+            $files = [];
+            $seen = [];
+            foreach ($results as $result) {
+                if (!$result instanceof ISearchResult) {
+                    continue;
+                }
+                foreach ($result->getDocuments() as $doc) {
+                    $fileId = (int)$doc->getId();
+                    if ($fileId <= 0) {
+                        continue;
+                    }
+                    $nodes = $root->getById($fileId);
+                    if ($nodes === []) {
+                        continue;
+                    }
+                    $visibleNodes = $this->visibilityGuard->filter($nodes);
+                    if ($visibleNodes === []) {
+                        continue;
+                    }
+                    $node = $visibleNodes[0];
+                    if ($node->getPath() === $root->getPath() || !$node->isReadable()) {
+                        continue;
+                    }
+                    if (isset($seen[$node->getId()])) {
+                        continue;
+                    }
+                    $seen[$node->getId()] = true;
+
+                    $snippets = [];
+                    foreach ($doc->getExcerpts() as $item) {
+                        if (is_array($item) && isset($item['excerpt']) && is_string($item['excerpt'])) {
+                            $snippets[] = trim(strip_tags($item['excerpt']));
+                        } elseif (is_string($item)) {
+                            $snippets[] = trim(strip_tags($item));
+                        }
+                    }
+                    $snippets = array_values(array_filter($snippets, static fn (string $s) => $s !== ''));
+
+                    $entry = $this->entry($root, $userId, $node);
+                    if ($snippets !== []) {
+                        $entry['excerpts'] = $snippets;
+                    }
+                    $files[] = $entry;
+                    if (count($files) >= $limit) {
+                        break 2;
+                    }
+                }
+            }
+
+            return [
+                'search_mode' => 'content',
+                'full_text_active' => true,
+                'files' => $files,
+            ];
+        } catch (\Throwable) {
+            return [
+                'search_mode' => 'name_only',
+                'full_text_active' => false,
+                'notice' => FilesMessages::searchFallbackNotice(),
+                'files' => $this->searchByName($root, $userId, $query, $limit),
+            ];
+        }
+    }
+
+    private function isFullTextAvailable(string $userId): bool {
+        if ($this->appManager === null || $this->ftsManager === null) {
+            return false;
+        }
+        $user = $this->userManager->get($userId);
+        if (!$this->appManager->isEnabledForUser('fulltextsearch', $user)
+            || !$this->appManager->isEnabledForUser('files_fulltextsearch', $user)) {
+            return false;
+        }
+        try {
+            return $this->ftsManager->isAvailable() && $this->ftsManager->isProviderIndexed('files');
+        } catch (\Throwable) {
+            return false;
+        }
+    }
+
     /** @return list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string, access:array<string, mixed>}> */
-    private function search(Folder $root, string $userId, string $query, int $limit): array {
+    private function searchByName(Folder $root, string $userId, string $query, int $limit): array {
         // %, _ and \ in the term are literal: escaped the way core's own file search escapes LIKE terms.
         $pattern = '%' . $this->db->escapeLikeParameter($query) . '%';
         $search = new NameSearchQuery(new NameLikeComparison($pattern), $limit + self::SEARCH_OVERFETCH, $this->userManager->get($userId));
         $out = [];
-        foreach ($root->search($search) as $node) {
+        $nodes = $root->search($search);
+        $visibleNodes = $this->visibilityGuard->filter($nodes);
+        foreach ($visibleNodes as $node) {
             if ($node->getPath() === $root->getPath() || !$node->isReadable()) {
                 continue;
             }

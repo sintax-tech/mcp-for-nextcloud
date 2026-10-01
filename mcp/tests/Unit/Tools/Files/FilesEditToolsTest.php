@@ -265,7 +265,8 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
     /** Search results carry the same description a listing does. */
     public function testSearchReportsTheScopeOfEveryHit(): void {
         $this->tree->addFile('/alice/files/Engenharia/ata-equipe.md', 'x', 'text/markdown', ['scope' => 'team']);
-        $entries = $this->json('files_search', ['query' => 'ata']);
+        $res = $this->json('files_search', ['query' => 'ata']);
+        $entries = $res['files'];
         $scopes = [];
         foreach ($entries as $entry) {
             $scopes[$entry['path']] = $entry['access'];

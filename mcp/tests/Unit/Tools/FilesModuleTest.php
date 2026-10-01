@@ -161,9 +161,12 @@ final class FilesModuleTest extends TestCase {
     }
 
     public function testSearchMatchesNamesAndCapsResults(): void {
-        $this->assertSame(['/Documentos/ata.md'], array_column($this->json('files_search', ['query' => 'ATA']), 'path'));
+        $res = $this->json('files_search', ['query' => 'ATA']);
+        $this->assertSame('name_only', $res['search_mode']);
+        $this->assertFalse($res['full_text_active']);
+        $this->assertSame(['/Documentos/ata.md'], array_column($res['files'], 'path'));
         $this->tree->addFile('/alice/files/b-ata.txt', 'x');
-        $this->assertCount(1, $this->json('files_search', ['query' => 'ata', 'limit' => 1]));
+        $this->assertCount(1, $this->json('files_search', ['query' => 'ata', 'limit' => 1])['files']);
         $this->expectException(InvalidArgumentException::class);
         $this->tool('files_search', ['query' => '']);
     }
@@ -171,7 +174,9 @@ final class FilesModuleTest extends TestCase {
     public function testSearchPushesAnEscapedLikeAndTheLimitIntoTheQuery(): void {
         $this->tree->addFile('/alice/files/100%_real.txt', 'x');
         $this->tree->addFile('/alice/files/100abreal.txt', 'x');
-        $this->assertSame(['/100%_real.txt'], array_column($this->json('files_search', ['query' => '100%_r', 'limit' => 7]), 'path'));
+        $res = $this->json('files_search', ['query' => '100%_r', 'limit' => 7]);
+        $this->assertSame('name_only', $res['search_mode']);
+        $this->assertSame(['/100%_real.txt'], array_column($res['files'], 'path'));
         $query = $this->tree->searches[0];
         $this->assertSame(7 + FilesModule::SEARCH_OVERFETCH, $query->getLimit());
         $this->assertSame(0, $query->getOffset());
@@ -183,7 +188,8 @@ final class FilesModuleTest extends TestCase {
         $this->tree->addFile('/alice/files/ata-1.txt', 'x', 'text/plain', ['readable' => false]);
         $this->tree->addFile('/alice/files/ata-2.txt', 'x');
         $this->tree->addFile('/alice/files/ata-3.txt', 'x');
-        $paths = array_column($this->json('files_search', ['query' => 'ata-', 'limit' => 2]), 'path');
+        $res = $this->json('files_search', ['query' => 'ata-', 'limit' => 2]);
+        $paths = array_column($res['files'], 'path');
         $this->assertSame(['/ata-2.txt', '/ata-3.txt'], $paths);
     }
 

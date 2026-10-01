@@ -15,6 +15,7 @@ use OCA\Mcp\L10n\Translator;
 final class NotesMessages {
     /* Tool descriptions, exposed to MCP clients in tools/list. */
     public const TOOL_LIST_DESCRIPTION = 'Lists the notes (Notes app) of the user.';
+    public const TOOL_SEARCH_DESCRIPTION = 'Searches notes by title and content (Markdown).';
     public const TOOL_READ_DESCRIPTION = 'Reads the content of a note by id.';
     public const TOOL_CREATE_DESCRIPTION = 'Creates a note; never overwrites an existing one.';
     public const TOOL_EDIT_DESCRIPTION = 'Changes the content and/or the title of a note.';
@@ -32,6 +33,9 @@ final class NotesMessages {
     public const PARAM_CATEGORY_TARGET = 'Destination category; empty for the root.';
     public const PARAM_CONFIRM_SHARED = 'Required only when the note is outside your personal folder '
         . '(shared, team folder, or external storage). Send only after confirming with the user.';
+    public const PARAM_SEARCH_QUERY = 'Search term to find in note title or content.';
+    public const PARAM_SEARCH_LIMIT = 'Maximum number of notes to return (1-100, default 20).';
+    public const PARAM_SEARCH_CATEGORY = 'Optional category (subfolder) to limit search to; empty for all notes.';
 
     private function __construct() {
     }

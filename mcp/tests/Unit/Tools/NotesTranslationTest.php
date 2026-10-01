@@ -87,12 +87,12 @@ final class NotesTranslationTest extends TestCase {
                 $texts[] = $value;
             }
         });
-        self::assertCount(22, $texts);
+        self::assertCount(26, $texts);
         foreach ($texts as $text) {
             self::assertDoesNotMatchRegularExpression('/[À-ÿ]/u', $text);
         }
         self::assertSame(NotesMessages::TOOL_LIST_DESCRIPTION, $definitions[0]['description']);
-        self::assertSame(NotesMessages::PARAM_ID, $definitions[1]['inputSchema']['properties']['id']['description']);
+        self::assertSame(NotesMessages::PARAM_ID, $definitions[2]['inputSchema']['properties']['id']['description']);
     }
 
     protected function tearDown(): void {

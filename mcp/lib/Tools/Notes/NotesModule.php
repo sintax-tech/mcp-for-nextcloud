@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Notes;
 
 use InvalidArgumentException;
+use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\CommonMessages;
@@ -34,13 +35,18 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     public const TRASH_STORAGE = 'OCA\\Files_Trashbin\\Storage';
     /** Characters of the content a plan shows, so the user reads the note and not a wall of text. */
     private const EXCERPT_CHARS = 400;
+    private VisibilityGuard $visibilityGuard;
+
     public function __construct(
         private NotesRepository $notes,
         private IAppManager $appManager,
         private IUserManager $userManager,
         private SharedWriteGuard $guard,
         private NodeAccessInfo $accessInfo,
-    ) {}
+        ?VisibilityGuard $visibilityGuard = null,
+    ) {
+        $this->visibilityGuard = $visibilityGuard ?? new VisibilityGuard();
+    }
 
     /**
      * What the schemas cannot say: how a note is named and what the module refuses to do.
@@ -49,8 +55,9 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
      */
     public function guideNotes(): array {
         return [
-            'A note is addressed by the `id` notes_list returns, not by its title; the title is the file name and '
+            'A note is addressed by the `id` notes_list or notes_search returns, not by its title; the title is the file name and '
                 . 'the category is the subfolder it sits in.',
+            'Use notes_search to find notes by keyword in title or Markdown content.',
             'notes_create never overwrites: when the title is taken in that category it picks a free name, and the '
                 . 'response says which name it used.',
             'notes_delete only deletes where the Nextcloud trash bin takes the note back; anywhere else it refuses '
@@ -69,6 +76,11 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
         $confirmShared = ['type' => 'boolean', 'description' => NotesMessages::PARAM_CONFIRM_SHARED];
         return [
             self::tool('notes_list', 'read', NotesMessages::TOOL_LIST_DESCRIPTION, []),
+            self::tool('notes_search', 'read', NotesMessages::TOOL_SEARCH_DESCRIPTION, [
+                'query' => ['type' => 'string', 'minLength' => 1, 'description' => NotesMessages::PARAM_SEARCH_QUERY],
+                'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100, 'default' => 20, 'description' => NotesMessages::PARAM_SEARCH_LIMIT],
+                'category' => ['type' => 'string', 'default' => '', 'description' => NotesMessages::PARAM_SEARCH_CATEGORY],
+            ], ['query']),
             self::tool('notes_read', 'read', NotesMessages::TOOL_READ_DESCRIPTION, ['id' => $id], ['id']),
             self::tool('notes_create', 'create', NotesMessages::TOOL_CREATE_DESCRIPTION, [
                 'title' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 200, 'description' => NotesMessages::PARAM_TITLE],
@@ -109,6 +121,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
             $root = $this->notes->folder($userId, $name === 'notes_create');
             return ToolResult::json(match ($name) {
                 'notes_list' => $this->list($root, $userId),
+                'notes_search' => $this->search($root, $userId, $arguments['query'], (int)$arguments['limit'], (string)($arguments['category'] ?? '')),
                 'notes_read' => $this->read($root, $userId, $arguments['id']),
                 'notes_create' => $this->create($root, $arguments['title'], $arguments['content'], $arguments['category']),
                 'notes_edit' => $this->edit($root, $userId, $arguments),
@@ -127,6 +140,74 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
         $notes = array_map(fn (File $note) => $this->notes->info($note, $root) + ['access' => $this->accessInfo->describe($note, $userId)], $this->notes->all($root));
         usort($notes, static fn (array $a, array $b) => $b['modified'] <=> $a['modified']);
         return $notes;
+    }
+
+    /** @return list<array{id:int, title:string, category:string, modified:int, etag:string, snippet:string, access:array<string, mixed>}> */
+    private function search(?Folder $root, string $userId, string $query, int $limit, string $category): array {
+        if ($root === null || $query === '') {
+            return [];
+        }
+
+        $targetFolder = $this->existingCategory($root, $category);
+        if ($targetFolder === null) {
+            return [];
+        }
+
+        $allNotes = $this->notes->all($targetFolder);
+        usort($allNotes, static fn (File $a, File $b) => $b->getMTime() <=> $a->getMTime());
+        $visibleNotes = $this->visibilityGuard->filter($allNotes);
+
+        $results = [];
+        foreach ($visibleNotes as $note) {
+            if (!$note instanceof File || !NotesRepository::isNote($note) || !$note->isReadable()) {
+                continue;
+            }
+
+            $title = pathinfo($note->getName(), PATHINFO_FILENAME);
+            $titleMatch = mb_stripos($title, $query) !== false;
+
+            $contentMatch = false;
+            $contentPos = false;
+            $content = '';
+            if ($note->getSize() <= self::MAX_BYTES) {
+                $content = mb_scrub((string)$note->getContent(), 'UTF-8');
+                $contentPos = mb_stripos($content, $query);
+                $contentMatch = $contentPos !== false;
+            }
+
+            if (!$titleMatch && !$contentMatch) {
+                continue;
+            }
+
+            if ($contentMatch && $contentPos !== false) {
+                $start = max(0, $contentPos - 50);
+                $length = 120 + mb_strlen($query);
+                $snippet = mb_substr($content, $start, $length);
+                $snippet = trim((string)preg_replace('/\s+/', ' ', $snippet));
+                if ($start > 0) {
+                    $snippet = '...' . $snippet;
+                }
+                if ($start + $length < mb_strlen($content)) {
+                    $snippet .= '...';
+                }
+            } else {
+                $snippet = trim((string)preg_replace('/\s+/', ' ', mb_substr($content, 0, 100)));
+                if (mb_strlen($content) > 100) {
+                    $snippet .= '...';
+                }
+            }
+
+            $results[] = $this->notes->info($note, $root) + [
+                'snippet' => $snippet,
+                'access' => $this->accessInfo->describe($note, $userId),
+            ];
+
+            if (count($results) >= $limit) {
+                break;
+            }
+        }
+
+        return $results;
     }
 
     /** @return array{id:int, title:string, category:string, modified:int, etag:string, content:string, access:array<string, mixed>} */

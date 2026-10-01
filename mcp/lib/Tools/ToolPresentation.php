@@ -82,6 +82,7 @@ final class ToolPresentation {
             'files_image_search' => Translator::t('Search images'),
             // Notes
             'notes_list' => Translator::t('List notes'),
+            'notes_search' => Translator::t('Search notes'),
             'notes_read' => Translator::t('Read note'),
             'notes_create' => Translator::t('Create note'),
             'notes_edit' => Translator::t('Edit note'),

@@ -21,7 +21,9 @@ final class ToolPresentation {
         . "has, their parameters and their limits. General rule for writes: any tool that changes something, called "
         . "without confirm=true, returns the plan and writes nothing. Show that plan to the user, ask whether they "
         . "really want it done, and only after an explicit yes repeat the same call with confirm=true. Nothing is "
-        . "approved and stored in this server, so never invent an approval_id, a token or any other confirmation.";
+        . "approved and stored in this server, so never invent an approval_id, a token or any other confirmation. "
+        . "Tool descriptions, plans and the Tool guide are written in English; when the user does not write in "
+        . "English, translate what you show them into their language.";
 
     /** Operations that only read; every other operation may change data. */
     private const READ_OPERATION = 'read';

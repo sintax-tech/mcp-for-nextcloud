@@ -202,7 +202,7 @@ final class ToolGuideTest extends TestCase {
         $this->assertSame('files_edit', $result['structuredContent']['name']);
         $this->assertSame('files', $result['structuredContent']['module']);
         $this->assertSame(['confirm'], $result['structuredContent']['tool']['confirmation']);
-        $this->assertStringStartsWith('# Edit file (`files_edit`)', $this->markdown($result));
+        $this->assertStringContainsString("# Edit file (`files_edit`)", $this->markdown($result));
         $this->assertStringContainsString('Module: Files (`files`). Grant operation: `edit`.', $this->markdown($result));
         $this->assertSame(['path', 'mode', 'limit'], array_column($result['structuredContent']['tool']['parameters'], 'name'));
 
@@ -242,6 +242,7 @@ final class ToolGuideTest extends TestCase {
         $this->assertSame('files', $result['structuredContent']['module']);
         $this->assertStringContainsString('Edit file', $result['structuredContent']['tools'][1]['title']);
         $this->assertStringContainsString('# Files (`files`)', $result['content'][0]['text']);
+        $this->assertArrayHasKey('language_note', $result['structuredContent']);
     }
 
     public function testTheGuideIsListedAsAReadOnlyTool(): void {
@@ -265,5 +266,30 @@ final class ToolGuideTest extends TestCase {
         $this->assertStringContainsString('confirm=true', $instructions);
         $this->assertStringContainsString('ask whether they really want it done', $instructions);
         $this->assertStringContainsString('never invent an approval_id', $instructions);
+    }
+
+    /** The guide is written for the model, so it stays in English and asks to be relayed. */
+    public function testTheInstructionsSayTheTextsAreEnglishAndMustBeRelayed(): void {
+        $instructions = ToolPresentation::INSTRUCTIONS;
+
+        $this->assertStringContainsString('Tool descriptions, plans and the Tool guide are written in English', $instructions);
+        $this->assertStringContainsString('translate what you show them into their language', $instructions);
+        $this->assertStringContainsString("Reply in the user's language", $instructions);
+        // The instructions themselves are read by the model, so they never follow the rule they state.
+        $this->assertDoesNotMatchRegularExpression('/[À-ÿ]/u', $instructions);
+    }
+
+    public function testEveryAnswerOpensSayingTheGuideIsInEnglish(): void {
+        foreach ([[], ['module' => 'files'], ['tool' => 'files_edit']] as $arguments) {
+            $result = $this->guide($arguments);
+
+            $this->assertStringStartsWith(
+                'This guide is in English: relay it to the user in their own language.',
+                $this->markdown($result),
+                json_encode($arguments) . ' must open with the language note',
+            );
+            $this->assertSame('This guide is in English: relay it to the user in their own language.',
+                $result['structuredContent']['language_note']);
+        }
     }
 }

@@ -20,6 +20,17 @@ final class ToolGuide {
     public const TOOL = 'mcp_guide';
 
     /**
+     * Opened every answer with: the guide is written in English for the model, not for the user reading it.
+     *
+     * The guide is not translated on purpose. What a tool does is read by the model, which is the one that
+     * talks to the user, and a translation here would arrive at the reader in a language nobody chose while
+     * still being read by a model that was told to answer in the user's language. So the guide says it is in
+     * English and asks for the relay, and {@see ToolPresentation::INSTRUCTIONS} says the same for the whole
+     * server.
+     */
+    private const LANGUAGE_NOTE = 'This guide is in English: relay it to the user in their own language.';
+
+    /**
      * Arguments a module may declare besides the confirmation every write gets. They are read from the
      * schema the registry handed over, so a module that adds a gate of its own shows up here on its own.
      */
@@ -390,6 +401,9 @@ final class ToolGuide {
      * @return array{content: list<array{type:string, text:string}>, structuredContent: array<string, mixed>}
      */
     private function render(string $markdown, array $data): array {
-        return ToolResult::structured($markdown, $data);
+        // Every text of the guide is English, on purpose: it is written for the model, which translates it
+        // for the user. Saying so in the answer itself keeps a client that relays the text from dropping the
+        // only hint the reader has that the text was not written for their eyes.
+        return ToolResult::structured(self::LANGUAGE_NOTE . "\n\n" . $markdown, ['language_note' => self::LANGUAGE_NOTE] + $data);
     }
 }

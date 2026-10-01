@@ -9,6 +9,7 @@ use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\McpProtocol;
 use OCA\Mcp\Service\PromptCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Tools\ToolPresentation;
 use OCA\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
@@ -144,6 +145,49 @@ final class ToolsListContractTest extends TestCase {
                 $this->assertTrue($tool->annotations->idempotentHint, "$tool->name: a read-only tool is idempotent");
                 $this->assertFalse($tool->annotations->destructiveHint, "$tool->name: a read-only tool cannot be destructive");
             }
+        }
+    }
+
+    /**
+     * The title is what the client shows to the person reading the conversation, the description is what the
+     * model reads: in tools/list of one account the titles come out in the language of that account, while the
+     * descriptions of the translated modules stay the same English text in every one of them.
+     */
+    public function testTitlesFollowTheUsersLanguageAndDescriptionsStayEnglish(): void {
+        $expectedTitles = [
+            'en' => ['notes_list' => 'List notes', 'deck_read_card' => 'Read Deck card', 'talk_reply' => 'Reply in Talk'],
+            'pt_BR' => ['notes_list' => 'Listar notas', 'deck_read_card' => 'Ler card do Deck', 'talk_reply' => 'Responder no Talk'],
+            'es' => ['notes_list' => 'Listar notas', 'deck_read_card' => 'Leer tarjeta de Deck', 'talk_reply' => 'Responder en Talk'],
+        ];
+        $descriptions = [];
+        try {
+            foreach ($expectedTitles as $language => $titles) {
+                Translator::use(new JsonL10n($language));
+                $tools = array_column(
+                    json_decode($this->toolsListJson(), false, 512, JSON_THROW_ON_ERROR)->result->tools,
+                    null,
+                    'name',
+                );
+                foreach ($titles as $name => $title) {
+                    $this->assertSame($title, $tools[$name]->title, $language . ': ' . $name);
+                    $this->assertSame($tools[$name]->title, $tools[$name]->annotations->title, $language . ': ' . $name);
+                }
+                foreach ($tools as $tool) {
+                    $descriptions[$language][$tool->name] = $tool->description;
+                    if (preg_match('/^(notes|deck|talk)_/', $tool->name) === 1 || $tool->name === 'mcp_status') {
+                        $this->assertDoesNotMatchRegularExpression(
+                            '/[À-ÿ]/u',
+                            $tool->description,
+                            $language . ': ' . $tool->name . ' has a description meant for the model, it stays English',
+                        );
+                    }
+                }
+            }
+        } finally {
+            Translator::reset();
+        }
+        foreach ($descriptions as $language => $byTool) {
+            $this->assertSame($descriptions['en'], $byTool, $language . ': a description changed with the language');
         }
     }
 

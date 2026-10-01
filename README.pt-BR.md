@@ -37,6 +37,7 @@ Assistentes de IA rendem mais quando alcançam as ferramentas que o time já usa
 
 E também:
 
+- **Guia das ferramentas** (`mcp_guide`): o modelo pergunta ao servidor o que cada ferramenta faz, seus parâmetros, limites e se exige confirmação. O guia é montado das mesmas definições que o `tools/list` entrega, filtrado pelas permissões e apps do usuário. Ele é escrito em inglês e o modelo repassa no idioma do usuário.
 - **Nomes amigáveis das ferramentas** no cliente ("Buscar arquivos", "Listar calendários") e anotações MCP (`readOnlyHint`, `destructiveHint`), para o cliente pedir confirmação em ações de risco.
 - **Confirmação de segurança** em recursos de outras pessoas: pastas compartilhadas, pastas de time, quadros do Deck e calendários de outro dono. O servidor recusa a primeira chamada e devolve uma mensagem pronta. O assistente precisa perguntar ao usuário antes de repetir com `confirm_shared: true`. *(Deck e Calendário desde a 0.6.6; Arquivos e Notas desde a 0.7.0)*
 - **Apps opcionais respeitados**: as tools e as colunas da matriz de admin de um app desativado (para todos ou para um usuário) ficam ocultas.
@@ -125,6 +126,7 @@ Veja o [`CHANGELOG.md`](CHANGELOG.md) (em inglês).
 
 ## Roadmap
 
+- Plano e `confirm: true` em toda escrita de todos os módulos (Arquivos, Notas e Deck ainda gravam direto, exceto as operações que já pedem `confirm`)
 - Publicação na App Store do Nextcloud
 
 ## Licença

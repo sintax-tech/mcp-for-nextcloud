@@ -33,10 +33,11 @@ AI assistants are most useful when they can reach the tools a team already uses.
 | **Notes** | list, read | create, edit, move between categories, delete (only when the trash bin can recover it) |
 | **Calendar** | list calendars and events (recurrence, time zones, all-day) | create, edit, move, delete and transfer events through the real CalDAV pipeline, with participants. The writes stay hidden until `occ mcp:calendar-selftest` proves them on your server, and each one returns a plan first: **nothing is written before the user approves it.** |
 | **Deck** | boards, stacks, cards, and a **follow-up** of the boards you manage: cards grouped by assignee, with due date, overdue flag (in your own time zone) and a link to the card | create, edit, move, delete cards |
-| **Talk** | conversations and messages (never marks anything as read) | reply (optionally quoting a message or linking a Deck card or calendar event you can see), direct message to a user, batch of messages, share or quote a file, create a group conversation (separate grant, off by default). **Nothing is sent before the user approves the exact draft.** |
+| **Talk** | conversations and messages (never marks anything as read) | reply (optionally quoting a message or linking a Deck card or calendar event you can see), direct message to a user, batch of messages, share or quote a file, create a group conversation (separate grant, off by default). **Nothing is sent before the user approves: a call without `confirm: true` returns only the plan (recipient, final text, attachments, what would be created or shared) and runs nothing; with `confirm: true` it checks the permissions again and sends. No approval id, token or record is kept on the server.** |
 
 Plus:
 
+- **Tool guide** (`mcp_guide`): the model asks the server what each tool does, its parameters, limits and whether it needs confirmation, built from the same definitions `tools/list` serves, filtered by the user's grants and apps. The guide is in English and the model relays it in the user's language.
 - **Friendly tool titles** in the client ("Search files", "List calendars") and MCP annotations (`readOnlyHint`, `destructiveHint`) so clients can ask before risky actions.
 - **Safety confirmations** for resources that belong to someone else: shared folders, team folders, other people's Deck boards and calendars. The server refuses the first call and returns a ready-made message, and the assistant must ask the user before repeating it with `confirm_shared: true`. *(Deck and Calendar since 0.6.6; Files and Notes since 0.7.0)*
 - **Optional apps respected**: tools and admin matrix columns of an app that is disabled (for everyone or for a given user) are hidden.
@@ -125,6 +126,7 @@ See [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Roadmap
 
+- Plan and `confirm: true` on every write of every module (Files, Notes and Deck still write directly, except the operations that already ask for `confirm`)
 - Nextcloud App Store release
 
 ## License

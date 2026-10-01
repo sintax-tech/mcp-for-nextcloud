@@ -189,11 +189,19 @@ final class FakeTree {
         });
         $folder->method('search')->willReturnCallback(function ($query) use ($path): array {
             $this->searches[] = $query;
-            // Evaluates the escaped LIKE pattern like the database would, then applies the query limit.
+            $operation = $query->getSearchOperation();
+            // Evaluates the escaped LIKE pattern like the database would, against the operation's field.
             $regex = '/^' . preg_replace_callback('/\\\\(.)|%|_|[^%_\\\\]+/', static fn ($m) => match (true) {
                 isset($m[1]) => preg_quote($m[1], '/'), $m[0] === '%' => '.*', $m[0] === '_' => '.', default => preg_quote($m[0], '/'),
-            }, $query->getSearchOperation()->getValue()) . '$/iu';
-            $matches = array_filter(array_keys($this->nodes), fn ($p) => str_starts_with($p, $path . '/') && preg_match($regex, basename($p)) === 1);
+            }, $operation->getValue()) . '$/iu';
+            $field = $operation->getField();
+            $matches = array_filter(array_keys($this->nodes), function ($p) use ($path, $regex, $field): bool {
+                if (!str_starts_with($p, $path . '/')) {
+                    return false;
+                }
+                $value = $field === 'mimetype' ? ($this->nodes[$p]['mime'] ?? 'httpd/unix-directory') : basename($p);
+                return preg_match($regex, (string)$value) === 1;
+            });
             return array_slice(array_values(array_map(fn ($p) => $this->node($p), $matches)), 0, $query->getLimit());
         });
         $folder->method('getById')->willReturnCallback(fn (int $id) => array_values(array_map(fn ($p) => $this->node($p),

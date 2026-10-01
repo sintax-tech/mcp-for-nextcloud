@@ -13,6 +13,7 @@ use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileBackup;
+use OCA\Mcp\Tools\Files\ImageTools;
 use OCA\Mcp\Tools\Files\BatchStore;
 use OCA\Mcp\Tools\Files\MovePlanner;
 use OCA\Mcp\Tools\Files\MoveReport;
@@ -72,10 +73,20 @@ final class FilesModuleTest extends TestCase {
         $reorganization = new Reorganization($access, new SharedWriteGuard($access), $report, $users);
         $planner = new MovePlanner($reorganization, $access, new SharedWriteGuard($access));
         $store = new BatchStore($db);
+        $imageTools = new ImageTools(
+            $this->createMock(\OCP\IPreview::class),
+            $access,
+            $appConfig,
+            $this->createMock(\OCP\SystemTag\ISystemTagManager::class),
+            $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class),
+            $users,
+            $this->createMock(\Psr\Log\LoggerInterface::class),
+            $this->createMock(\Psr\Container\ContainerInterface::class),
+        );
         $this->module = new FilesModule($root, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $users, $db,
             $access, new SharedWriteGuard($access),
             new CheckoutService($urls, $appConfig, $time, new TokenHasher($appConfig), $this->createMock(CheckoutTokenStore::class), $apps, $users),
-            $versions, $reorganization, $planner, $store, $time);
+            $versions, $reorganization, $planner, $store, $time, $imageTools);
         $this->versions = $versions;
     }
 
@@ -106,10 +117,11 @@ final class FilesModuleTest extends TestCase {
         $defs = array_column($this->module->definitions(), null, 'name');
         $this->assertSame(['files_list', 'files_search', 'files_tree', 'files_mkdir', 'files_copy', 'files_move',
             'files_move_batch', 'files_undo_batch', 'files_read', 'files_edit', 'files_replace',
-            'files_checkout', 'files_versions_list', 'files_version_read', 'files_version_restore'],
+            'files_checkout', 'files_versions_list', 'files_version_read', 'files_version_restore',
+            'files_image_view', 'files_images_view', 'files_image_search'],
             array_keys($defs));
         $this->assertSame(['read', 'read', 'read', 'create', 'create', 'move', 'move', 'move', 'read', 'edit',
-            'edit', 'edit', 'read', 'read', 'restore'], array_column($defs, 'operation'));
+            'edit', 'edit', 'read', 'read', 'restore', 'read', 'read', 'read'], array_column($defs, 'operation'));
         $this->assertSame(['files_versions', 'files_versions', 'files_versions'],
             array_values(array_filter(array_column($defs, 'app', 'name'))));
         $this->assertArrayNotHasKey('app', $defs['files_tree'], 'a árvore só depende de arquivos, que sempre existem');

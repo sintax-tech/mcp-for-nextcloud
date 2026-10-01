@@ -50,7 +50,7 @@ final class CalendarSelftestServiceTest extends CalendarTestCase {
         $this->dav->failureFor['deleteCalendar'] = new \RuntimeException('cleanup failed');
         self::assertFalse($service->run('alice', [], $this->report(...)));
         self::assertSame(['read'], $this->gate->operations());
-        self::assertSame('FALHA', $this->steps['cleanup']['status']);
+        self::assertSame('FAIL', $this->steps['cleanup']['status']);
         self::assertNull($this->active);
     }
 
@@ -131,7 +131,7 @@ final class CalendarSelftestServiceTest extends CalendarTestCase {
     public function testUnprovedInternalDeliveryCannotOpenInvitationsOrWrites(): void {
         self::assertFalse($this->service()->run('alice', ['attendee-uid' => 'bob'], $this->report(...)));
         self::assertSame(['read'], $this->gate->operations());
-        self::assertSame('FALHA', $this->steps['invitations']['status']);
+        self::assertSame('FAIL', $this->steps['invitations']['status']);
         self::assertSame('OK', $this->steps['cleanup']['status']);
     }
 

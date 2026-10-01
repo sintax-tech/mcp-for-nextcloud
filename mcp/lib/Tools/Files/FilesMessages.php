@@ -734,6 +734,11 @@ final class FilesMessages {
         return Translator::t('You already have this item; choose another person to share it with.');
     }
 
+    /** @return string the password policy refused every password the server generated for a link */
+    public static function linkPasswordRefused(): string {
+        return Translator::t('The server could not generate a password that meets the password policy, so no link was created. Ask your administrator to check the password policy.');
+    }
+
     /** @return string a public link asked before the link feature exists */
     public static function shareLinkNotAvailable(): string {
         return Translator::t('Public links are not available yet; they arrive with the “link” permission in a coming update.');

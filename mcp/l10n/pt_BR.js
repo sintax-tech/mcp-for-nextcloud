@@ -765,6 +765,7 @@ OC.L10N.register(
     "tomorrow or later" : "amanhã ou depois",
     "at most %s days from today (administrator rule)" : "no máximo %s dias a partir de hoje (regra do administrador)",
     "Share file or folder" : "Compartilhar arquivo ou pasta",
-    "Nothing was changed. The share already is exactly like this, so a confirmed call changes nothing either." : "Nada foi alterado. O compartilhamento já está exatamente assim, então confirmar também não muda nada."
+    "Nothing was changed. The share already is exactly like this, so a confirmed call changes nothing either." : "Nada foi alterado. O compartilhamento já está exatamente assim, então confirmar também não muda nada.",
+    "The server could not generate a password that meets the password policy, so no link was created. Ask your administrator to check the password policy." : "O servidor não conseguiu gerar uma senha que atenda à política de senhas, por isso nenhum link foi criado. Peça ao administrador para conferir a política de senhas."
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

@@ -714,6 +714,7 @@ OC.L10N.register(
     "Only files and folders you own can be shared here; this one belongs to someone else." : "Aquí solo se pueden compartir archivos y carpetas de los que usted es propietario; este pertenece a otra persona.",
     "Your whole folder cannot be shared; choose a file or a folder inside it." : "No se puede compartir su carpeta entera; elija un archivo o una carpeta dentro de ella.",
     "Your administrator has not allowed the AI to manage this kind of share." : "El administrador no ha permitido que la IA gestione este tipo de uso compartido.",
-    "This kind of share is not managed here; a Talk attachment is removed in Talk." : "Este tipo de uso compartido no se gestiona aquí; un adjunto de Talk se elimina en Talk."
+    "This kind of share is not managed here; a Talk attachment is removed in Talk." : "Este tipo de uso compartido no se gestiona aquí; un adjunto de Talk se elimina en Talk.",
+    "List shares" : "Listar recursos compartidos"
 },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

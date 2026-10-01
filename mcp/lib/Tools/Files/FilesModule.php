@@ -7,6 +7,8 @@ use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Tools\Files\Sharing\ShareAccess;
+use OCA\Mcp\Tools\Files\Sharing\ShareLister;
 use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Tools\RendersPlans;
@@ -28,7 +30,7 @@ use OCP\IUserManager;
 
 /**
  * Files tools: list, search, tree, mkdir, copy, move, batch, read, protected edit, snippet replace, local
- * checkout, versions and undo.
+ * checkout, versions, undo and the list of the user's own shares.
  *
  * There is deliberately no delete. Moving a node is allowed and happens in Reorganization, behind the
  * storage, destination and shared-write guards; the only removal in the module is the empty folder a batch
@@ -73,6 +75,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
         private ?IAppManager $appManager = null,
         private ?IFullTextSearchManager $ftsManager = null,
         private ?UserTimezone $timezone = null,
+        private ?ShareLister $shareLister = null,
     ) {}
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app?:string}> */
@@ -207,6 +210,13 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
                     'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => ImageTools::SEARCH_MAX_LIMIT,
                         'default' => ImageTools::SEARCH_DEFAULT_LIMIT],
                 ])],
+            ['name' => 'files_list_shares', 'module' => 'files', 'operation' => 'read',
+                'description' => FilesMessages::listSharesTool(),
+                'inputSchema' => self::schema([
+                    'path' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::listSharesPath()],
+                    'offset' => ['type' => 'integer', 'minimum' => 0, 'maximum' => ShareAccess::MAX_OFFSET, 'default' => 0,
+                        'description' => FilesMessages::listSharesOffset()],
+                ])],
         ];
     }
 
@@ -241,6 +251,10 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
                 . 'again later; otherwise view the page as an image with the image tools.',
             'There is no delete: files_undo_batch is the way back from files_move_batch, and files_version_restore '
                 . 'restores content as a new version.',
+            'files_list_shares shows only the shares you created and only of your own files; a file you received '
+                . 'cannot be re-shared here. A password is never shown, only hasPassword. A room share is a Talk '
+                . 'attachment and is removed in Talk. Sharing with people or groups needs the "share" permission and '
+                . 'public links the separate "link" permission, both granted by the administrator.',
         ];
     }
 
@@ -289,8 +303,24 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             'files_image_view' => $this->images->view($root, $userId, $arguments['path'], $arguments['max_size']),
             'files_images_view' => $this->images->viewMany($root, $userId, $arguments['paths'] ?? null, $arguments['folder'] ?? null, $arguments['limit'], $arguments['max_size']),
             'files_image_search' => ToolResult::json($this->images->search($root, $userId, $arguments)),
+            'files_list_shares' => ToolResult::json($this->listShares($root, $userId, $arguments['path'] ?? null, (int)$arguments['offset'])),
             default => throw new \InvalidArgumentException('Unknown tool'),
         });
+    }
+
+    /**
+     * files_list_shares: the shares of one own node, or one page of every share the user created.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param string|null $path node whose shares to list, null for every share of the user
+     * @param int $offset shares to skip when listing without path
+     * @return array<string, mixed> {@see ShareLister::forPath()} or {@see ShareLister::mine()}
+     * @throws ToolFailure for a node that is missing, hidden, the root or not the user's own
+     */
+    private function listShares(Folder $root, string $userId, ?string $path, int $offset): array {
+        $lister = $this->shareLister ?? throw new \LogicException('ShareLister is not wired');
+        return $path === null ? $lister->mine($root, $userId, $offset) : $lister->forPath($root, $userId, $path);
     }
 
     /**

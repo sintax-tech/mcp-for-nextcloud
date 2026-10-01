@@ -67,6 +67,7 @@ final class VisibilityContractTest extends TestCase {
         'files_image_view' => 'image_view',
         'files_images_view' => 'images_view',
         'files_image_search' => 'image_search',
+        'files_list_shares' => 'list_shares',
         'notes_list' => 'notes_list',
         'notes_search' => 'notes_search',
         'notes_read' => 'notes_read',
@@ -84,6 +85,8 @@ final class VisibilityContractTest extends TestCase {
     private array $tagAssignments = [];
     private FakeTree $tree;
     private VisibilityGuard $guard;
+    /** @var list<\OCP\Share\IShare> what getSharesBy() answers for a listing of every share (no node) */
+    private array $listedShares = [];
 
     protected function setUp(): void {
         parent::setUp();
@@ -157,6 +160,14 @@ final class VisibilityContractTest extends TestCase {
                 $user->method('getUID')->willReturn('alice');
                 $users->method('get')->willReturn($user);
                 $args[] = $users;
+                continue;
+            }
+            if ($name === \OCP\Share\IManager::class) {
+                // Only a listing without node gets shares, so the move reports and NodeAccessInfo stay as before.
+                $shares = $this->createMock(\OCP\Share\IManager::class);
+                $shares->method('getSharesBy')->willReturnCallback(fn (string $uid, int $type, ?\OCP\Files\Node $node = null): array
+                    => $node === null && $type === \OCP\Share\IShare::TYPE_USER ? $this->listedShares : []);
+                $args[] = $shares;
                 continue;
             }
             if ($name === IRootFolder::class) {
@@ -433,6 +444,28 @@ final class VisibilityContractTest extends TestCase {
         // 18. files_undo_batch: unknown or hidden batch id throws batchNotFound
         $res = $registry->call('files_undo_batch', ['batch_id' => 9999], 'alice');
         $this->assertTrue($res['isError'] ?? false);
+        $assertNoLeak($res['content'][0]['text']);
+
+        // 18b. files_list_shares: a hidden node is not found by path and absent from the listing of every share
+        foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
+            $res = $registry->call('files_list_shares', ['path' => $p], 'alice');
+            $this->assertTrue($res['isError'] ?? false);
+            $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+            $assertNoLeak($res['content'][0]['text']);
+        }
+        foreach ([$directFileId, $ancestralFileId, $this->tree->addFile('/alice/files/shared_visible.txt', 'v')] as $nodeId) {
+            $share = $this->createMock(\OCP\Share\IShare::class);
+            $share->method('getShareType')->willReturn(\OCP\Share\IShare::TYPE_USER);
+            $share->method('getSharedWith')->willReturn('bruno');
+            $share->method('getSharedBy')->willReturn('alice');
+            $share->method('getShareOwner')->willReturn('alice');
+            $share->method('getNodeId')->willReturn($nodeId);
+            $share->method('getFullId')->willReturn('ocinternal:' . $nodeId);
+            $this->listedShares[] = $share;
+        }
+        $res = $registry->call('files_list_shares', [], 'alice');
+        $this->assertArrayNotHasKey('isError', $res);
+        $this->assertSame(['/shared_visible.txt'], array_column(json_decode($res['content'][0]['text'], true)['shares'], 'path'));
         $assertNoLeak($res['content'][0]['text']);
 
         // 19. notes_list

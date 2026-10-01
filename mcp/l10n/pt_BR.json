@@ -496,6 +496,24 @@
     "Eligible users who activated their connection." : "Usuários elegíveis que ativaram a própria conexão.",
     "Revoke {client} for {user}" : "Revogar {client} de {user}",
     "Revoke {client}" : "Revogar {client}",
-    "Revoke all connections of {user}" : "Revogar todas as conexões de {user}"
+    "Revoke all connections of {user}" : "Revogar todas as conexões de {user}",
+    "Create event in *%s*: **%s**" : "Criar evento em *%s*: **%s**",
+    "- When: %s" : "- Quando: %s",
+    "- Location: %s" : "- Local: %s",
+    "- Description: %s" : "- Descrição: %s",
+    "- Participants: %s" : "- Participantes: %s",
+    "- Invitations: %s" : "- Convites: %s",
+    "Update event in *%s*: **%s**" : "Atualizar evento em *%s*: **%s**",
+    "- Title: %s → %s" : "- Título: %s → %s",
+    "- When: %s → %s" : "- Quando: %s → %s",
+    "(none)" : "(nenhum)",
+    "- Location: %s → %s" : "- Local: %s → %s",
+    "- Description: %s → %s" : "- Descrição: %s → %s",
+    "- Participants: %s → %s" : "- Participantes: %s → %s",
+    "- No changes" : "- Nenhuma alteração",
+    "Move event from *%s* to *%s*: **%s**" : "Mover evento de *%s* para *%s*: **%s**",
+    "Transfer event from *%s* to *%s*: **%s**" : "Transferir evento de *%s* para *%s*: **%s**",
+    "Delete event in *%s*: **%s**" : "Excluir evento em *%s*: **%s**",
+    "- Consequence: %s" : "- Consequência: %s"
 },"pluralForm" : "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

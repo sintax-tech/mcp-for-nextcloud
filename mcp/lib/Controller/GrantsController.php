@@ -123,6 +123,8 @@ class GrantsController extends Controller {
     }
 
     /**
+     * @param mixed $module module id from the request body, validated against GrantPolicy::CATALOG
+     * @param mixed $operation operation id from the request body, validated against GrantPolicy::CATALOG
      * @return array{0:string, 1:string}
      * @throws InvalidArgumentException when the pair is not in GrantPolicy::CATALOG
      */
@@ -133,7 +135,11 @@ class GrantsController extends Controller {
         return [$module, $operation];
     }
 
-    /** @throws InvalidArgumentException unless the value is a JSON boolean */
+    /**
+     * @param mixed $value request value, which must be a JSON boolean
+     * @return bool validated boolean value
+     * @throws InvalidArgumentException unless the value is a JSON boolean
+     */
     private static function bool(mixed $value): bool {
         if (!is_bool($value)) {
             throw new InvalidArgumentException('Invalid request');

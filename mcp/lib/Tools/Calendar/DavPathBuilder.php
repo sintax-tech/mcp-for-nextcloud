@@ -44,7 +44,7 @@ final class DavPathBuilder {
 
     /**
      * @param string $value one path segment
-     * @param string $label Portuguese noun of the segment, for the error message
+     * @param string $label translated noun naming the segment in the error message
      * @return string the encoded segment
      * @throws CalendarException when the value is empty, reserved or contains a separator
      */

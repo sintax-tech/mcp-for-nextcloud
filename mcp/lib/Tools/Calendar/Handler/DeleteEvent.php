@@ -72,7 +72,13 @@ final class DeleteEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
         return is_array($prepared) ? $prepared : $prepared->dispatch();
     }
 
-    /** Validate and construct the write without dispatching; direct callers retain SharedGuard. */
+    /**
+     * Validates and constructs the write without dispatching, so the registry can show its plan first.
+     *
+     * @param array<string, mixed> $arguments raw tool arguments
+     * @param string $userId authenticated user id
+     * @return \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite|array{content: list<array{type:string, text:string}>} prepared write or SharedGuard refusal result
+     */
     public function prepare(array $arguments, string $userId): \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite|array {
         $calendar = $this->access->resolveWritable($userId, $arguments['calendar']);
         if (($confirmation = $this->guard->confirm($calendar, $userId, $arguments)) !== null) {

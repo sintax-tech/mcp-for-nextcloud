@@ -255,7 +255,10 @@ final class CalendarSelftestService {
         return $this->account($uid);
     }
 
-    /** @return array<string,mixed> decoded result from a successful real handler */
+    /**
+     * @param array<string, mixed> $result raw MCP result from the handler
+     * @return array<string, mixed> decoded result from a successful real handler
+     */
     private function tool(array $result): array {
         $this->require(!($result['isError'] ?? false), CalendarSelftestMessages::FAILED);
         $value = json_decode($result['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR);
@@ -263,7 +266,12 @@ final class CalendarSelftestService {
         return $value;
     }
 
-    /** @return array<string,mixed> result of the create handler with a generated UUID */
+    /**
+     * @param string $uid internal user id used to run the handler
+     * @param Calendar $calendar calendar that will hold the generated event
+     * @param list<string> $guests attendee account ids
+     * @return array<string, mixed> result of the create handler with a generated UUID
+     */
     private function create(string $uid, Calendar $calendar, array $guests = []): array {
         $start = $this->time->now()->modify('+1 day');
         return $this->tool($this->createEvent->execute(['calendar' => $calendar->path, 'summary' => CalendarSelftestMessages::EVENT,
@@ -296,7 +304,10 @@ final class CalendarSelftestService {
         return $calendar;
     }
 
-    /** @return void checks a real attendee survived with no scheduler status */
+    /**
+     * @param array<string, mixed> $row stored event row to inspect
+     * @return void checks a real attendee survived with no scheduler status
+     */
     private function assertSuppressed(array $row): void {
         $guests = $this->parse($row['data'])->VEVENT->select('ATTENDEE');
         $this->require(count($guests) === 1, CalendarSelftestMessages::assertion('attendee-preserved'));
@@ -305,7 +316,11 @@ final class CalendarSelftestService {
         }
     }
 
-    /** @return void expects a mapped refusal; only explicit HTTP codes prove DAV preconditions */
+    /**
+     * @param callable(): mixed $action operation expected to be refused
+     * @param list<int> $httpCodes accepted HTTP status codes, when a DAV precondition is under test
+     * @return void expects a mapped refusal; only explicit HTTP codes prove DAV preconditions
+     */
     private function expectRefusal(callable $action, array $httpCodes = []): void {
         try { $action(); } catch (CalendarException $error) {
             $this->require($httpCodes === [] || in_array($error->getCode(), $httpCodes, true), CalendarSelftestMessages::assertion('refusal-status'));
@@ -333,7 +348,11 @@ final class CalendarSelftestService {
         return $matches;
     }
 
-    /** @return void cancels as organizer then removes only matching participant copies/inbox items */
+    /**
+     * @param IUser $organizer account that owns the event
+     * @param array{attendee:IUser, uid:string, calendar:Calendar} $entry generated invitation cleanup data
+     * @return void cancels as organizer then removes only matching participant copies/inbox items
+     */
     private function cleanupInvitation(IUser $organizer, array $entry): void {
         $attendee = $entry['attendee'];
         $uid = $entry['uid'];
@@ -375,12 +394,21 @@ final class CalendarSelftestService {
         return CalendarSelftestMessages::FAILED . ' (' . $error::class . ')';
     }
 
-    /** @return void emits a successful stage */
+    /**
+     * @param callable(array{step:string, status:string, detail:string}):void $report safe report callback
+     * @param string $step diagnostic stage name
+     * @param string $detail safe evidence for the stage
+     * @return void emits a successful stage
+     */
     private function ok(callable $report, string $step, string $detail): void {
         $report(['step' => $step, 'status' => 'OK', 'detail' => $detail]);
     }
 
-    /** @return void emits an optional stage without claiming proof */
+    /**
+     * @param callable(array{step:string, status:string, detail:string}):void $report safe report callback
+     * @param string $step diagnostic stage name
+     * @return void emits an optional stage without claiming proof
+     */
     private function skip(callable $report, string $step): void {
         $report(['step' => $step, 'status' => 'NOT TESTED', 'detail' => CalendarSelftestMessages::OPTIONAL]);
     }

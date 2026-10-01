@@ -9,7 +9,7 @@ use Sabre\VObject\Component\VEvent;
 use Sabre\VObject\Property\ICalendar\DateTime as DateTimeProperty;
 
 /**
- * Converts one event occurrence into the tool output item of the Node prototype.
+ * Converts one event occurrence into the output item returned by the calendar tools.
  */
 final class EventMapper {
     /** Summary shown for CONFIDENTIAL events of other owners. */

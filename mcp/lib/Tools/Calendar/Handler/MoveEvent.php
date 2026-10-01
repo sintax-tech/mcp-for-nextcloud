@@ -49,7 +49,13 @@ final class MoveEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
         return is_array($prepared) ? $prepared : ToolSchema::result($prepared->dispatch());
     }
 
-    /** Prepare without performing a MOVE. */
+    /**
+     * Builds the move proposal without dispatching it, so the registry can show the plan first.
+     *
+     * @param array<string, mixed> $arguments raw tool arguments
+     * @param string $userId authenticated user id
+     * @return \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite|array{content: list<array{type:string, text:string}>} prepared write or SharedGuard refusal result
+     */
     public function prepare(array $arguments, string $userId): \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite|array {
         $source = $this->access->resolveWritable($userId, $arguments['calendar']);
         $target = $this->access->resolveWritable($userId, $arguments['targetCalendar']);

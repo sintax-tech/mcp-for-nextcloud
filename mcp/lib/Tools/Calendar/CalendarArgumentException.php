@@ -7,7 +7,7 @@ use InvalidArgumentException;
 
 /**
  * Invalid argument the input schema cannot express (date format, time zone, range order).
- * The registry answers it with JSON-RPC -32602; the message is Portuguese and safe to show.
+ * The registry answers it with JSON-RPC -32602; the message uses English source text translated for the user.
  */
 final class CalendarArgumentException extends InvalidArgumentException {
 }

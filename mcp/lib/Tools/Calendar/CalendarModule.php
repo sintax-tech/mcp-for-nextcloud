@@ -142,6 +142,10 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
     /**
      * The published schema of a write: the shared acknowledgement, and the note that asks for the plan first.
      * `confirm` itself is not added here — the registry publishes it on every write tool of the app.
+     *
+     * @return array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app?:string, destructiveHint?:bool} public tool definition with shared-write confirmation schema when applicable
+     *
+     * @return array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string, destructiveHint?:bool} public tool definition with shared-write confirmation schema when applicable
      */
     private function publicDefinition(CalendarTool $tool): array {
         $definition = $tool->definition();

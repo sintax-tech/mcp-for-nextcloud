@@ -14,7 +14,7 @@ final class ToolSchema {
 
     /**
      * @param string $name tool name
-     * @param string $description Portuguese description
+     * @param string $description English source text shown to calendar-tool clients
      * @param string $operation grant operation
      * @param array<string, array<string, mixed>> $properties JSON Schema properties
      * @param list<string> $required required property names
@@ -36,7 +36,7 @@ final class ToolSchema {
     }
 
     /**
-     * @param string $description Portuguese description
+     * @param string $description English source text shown to calendar-tool clients
      * @return array<string, mixed> calendar path property
      */
     public static function calendar(string $description = CalendarMessages::PROP_CALENDAR): array {
@@ -58,7 +58,7 @@ final class ToolSchema {
     }
 
     /**
-     * @param string $description Portuguese description
+     * @param string $description English source text shown to calendar-tool clients
      * @return array<string, mixed> date or timestamp property
      */
     public static function date(string $description): array {
@@ -66,7 +66,7 @@ final class ToolSchema {
     }
 
     /**
-     * @param string $description Portuguese description
+     * @param string $description English source text shown to calendar-tool clients
      * @param int $minLength minimum length
      * @param int $maxLength maximum length
      * @return array<string, mixed> text property
@@ -114,7 +114,7 @@ final class ToolSchema {
     }
 
     /**
-     * @param string $message Portuguese message safe to show
+     * @param string $message translated user-facing error message
      * @return array{content: list<array{type:string, text:string}>, isError: bool} MCP error result
      */
     public static function error(string $message): array {

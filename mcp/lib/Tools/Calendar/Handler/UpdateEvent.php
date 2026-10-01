@@ -102,7 +102,13 @@ final class UpdateEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
         return is_array($prepared) ? $prepared : $prepared->dispatch();
     }
 
-    /** Validate and construct the write without dispatching; direct callers retain SharedGuard. */
+    /**
+     * Validates and constructs the write without dispatching, so the registry can show its plan first.
+     *
+     * @param array<string, mixed> $arguments raw tool arguments
+     * @param string $userId authenticated user id
+     * @return \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite|array{content: list<array{type:string, text:string}>} prepared write or SharedGuard refusal result
+     */
     public function prepare(array $arguments, string $userId): \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite|array {
         $timingChanges = array_intersect_key($arguments, array_flip(self::TIMING_FIELDS));
         $textChanges = array_intersect_key($arguments, array_flip(self::TEXT_FIELDS));
@@ -130,7 +136,7 @@ final class UpdateEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
         $this->builder->touch($master, $this->time->now());
         $notify = (bool)($arguments['send_invitations'] ?? false);
         // If-Match always carries the ETag just read, even when the client sent none, so a change
-        // made between the read and the write loses instead of being overwritten (D3, seção 2).
+        // made between the read and the write loses instead of being overwritten (an ETag mismatch aborts the update).
         return new \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite($calendar, null, $before, $stored->vcalendar, function () use ($calendar, $stored, $notify, $userId): array {
             $this->dav->update($userId, $calendar->uri, $stored->uri, $stored->etag, $stored->vcalendar->serialize(), $notify);
             $row = $this->store->object($calendar->id, $stored->uri)

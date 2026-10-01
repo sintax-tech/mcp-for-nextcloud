@@ -14,7 +14,11 @@ interface ToolModule {
 
     /**
      * The grant is already verified by the registry; the handler verifies identity and the resource ACL.
-     * Returns an MCP result {content:[...], isError?:bool}. Throws \InvalidArgumentException for -32602.
+     * @param string $name tool name as listed by definitions()
+     * @param array<string, mixed> $arguments arguments already validated against the tool's input schema
+     * @param string $userId authenticated user id
+     * @return array{content: list<array{type:string, text:string}>, isError?: bool} MCP tool result
+     * @throws \InvalidArgumentException when arguments are invalid (-32602)
      */
     public function call(string $name, array $arguments, string $userId): array;
 }

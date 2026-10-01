@@ -144,8 +144,7 @@ final class CardCriteria {
 	/**
 	 * Due date of a card as the day the user sees, or null when it has none.
 	 *
-	 * @param Card $card Card to read; Deck keeps `duedate` as a `datetime` column, but a stub or a
-	 *     fresh entity may still hold the raw string, which is taken as a day already.
+	 * @param Card $card card to read; Deck stores duedate as a datetime column, but an entity not yet hydrated may still hold the raw string, which is treated as a day
 	 * @param \DateTimeZone $zone Timezone of the user.
 	 * @return string|null Day in `YYYY-MM-DD`, or null.
 	 */

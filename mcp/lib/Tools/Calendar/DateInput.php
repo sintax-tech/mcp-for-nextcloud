@@ -8,7 +8,7 @@ use DateTimeZone;
 
 /**
  * Parses and validates the ISO dates, windows and time zones accepted by the calendar tools,
- * with the same formats as the Node prototype.
+ * using the formats accepted by the calendar tools.
  */
 final class DateInput {
     /** Largest listing window, in seconds (366 days). */

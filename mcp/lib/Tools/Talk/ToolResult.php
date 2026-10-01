@@ -26,7 +26,7 @@ final class ToolResult {
     }
 
     /**
-     * @param string $message Message written for the user, in Portuguese
+     * @param string $message localized message written for the user
      * @return array{content:list<array{type:string, text:string}>, isError:bool}
      */
     public static function error(string $message): array {

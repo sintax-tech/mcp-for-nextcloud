@@ -51,7 +51,11 @@ final class CalendarSelftestMessages {
         return Translator::t('Confirm Activity, CalDAV clients, and email delivery manually; the report does not confirm email delivery.');
     }
 
-    /** @return string safe stage evidence assembled from generated identifiers only */
+    /**
+     * @param string $step diagnostic stage identifier
+     * @param mixed ...$values generated identifiers and safe status values interpolated into the stage message
+     * @return string safe stage evidence assembled from generated identifiers only
+     */
     public static function detail(string $step, mixed ...$values): string {
         $format = match ($step) {
             'calendars' => 'HTTP 201; %s %s',
@@ -108,7 +112,10 @@ final class CalendarSelftestMessages {
         return Translator::t('Unconfirmed effect: %s.', [self::checkLabel($check)]);
     }
 
-    /** @return string one report line; details are generated identifiers or safe errors only */
+    /**
+     * @param array{status:string, step:string, detail:string} $step stage result from the selftest runner
+     * @return string one report line; details are generated identifiers or safe errors only
+     */
     public static function line(array $step): string {
         return $step['status'] . ' ' . $step['step'] . ': ' . $step['detail'];
     }

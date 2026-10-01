@@ -346,7 +346,12 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
         $before = null;
         $now = $this->time->now();
         if ($name === 'tasks_create_task') {
-            $after = $this->data->create($arguments, $now);
+            // The UID derives from who asks and what is asked, so the plan the person approves shows the
+            // UID the confirmed call creates (a repeated identical create targets the same object).
+            $fields = array_diff_key($arguments, ['confirm' => 1, 'confirm_shared' => 1]);
+            ksort($fields);
+            $uid = substr(hash('sha256', $userId . "\0" . json_encode($fields, JSON_THROW_ON_ERROR)), 0, 32);
+            $after = $this->data->create($arguments, $now, $uid);
         } else {
             $row = $this->row($calendar->id, $arguments['uid']);
             $old = $this->readable($row, $calendar->ownedByOther($userId));

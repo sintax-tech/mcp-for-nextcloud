@@ -12,6 +12,7 @@ use OCA\Mcp\Tools\Calendar\CalendarDav;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
+use OCA\Mcp\Tools\Calendar\TrashedObject;
 use OCA\Mcp\Tools\Calendar\TrashPolicy;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Dav\CollectionSchema as Schema;
@@ -281,8 +282,7 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
                 );
             }
             $this->dav->delete($userId, $calendar->uri, $row['uri'], $row['etag'], false);
-            $deleted = $this->store->object($calendar->id, $row['uri']);
-            if ($deleted === null || !$deleted['deleted']) {
+            if (!TrashedObject::exists($this->store, $calendar->id, $row['uri'])) {
                 throw new RuntimeException('Task trash verification failed');
             }
             return ToolResult::json(

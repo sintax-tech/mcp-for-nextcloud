@@ -21,7 +21,22 @@ final class DeleteEventTest extends CalendarTestCase {
             self::json($this->delete([])),
         );
         $this->assertSame([['delete', ['personal', 'd.ics', '"' . md5(self::ics("UID:d\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z\nRRULE:FREQ=DAILY")) . '"', false]]], $this->dav->calls);
-        $this->assertTrue($this->store->objects[1]['d.ics']['deleted'], 'the object must be in the trash');
+        $this->assertArrayNotHasKey('d.ics', $this->store->objects[1], 'the core frees the original URI');
+        $this->assertTrue($this->store->objects[1]['d-deleted.ics']['deleted'], 'the object must be in the trash under the renamed URI');
+    }
+
+    public function testDeleteSucceedsWhenTheCoreRenamesTheTrashedObject(): void {
+        // Reproduces the production false error: the verification looked for "d.ics" and found nothing.
+        $result = $this->delete([]);
+        $this->assertArrayNotHasKey('isError', $result);
+        $this->assertTrue(self::json($result)['deleted']);
+    }
+
+    public function testDeleteFailsWhenTheObjectIsNeitherLiveNorInTheTrash(): void {
+        $this->dav->failureFor = [];
+        $this->dav->statusFor['delete'] = 204; // answers without applying: object stays live
+        $this->expectException(RuntimeException::class);
+        $this->delete([]);
     }
 
     public function testBlockedWhenTrashRetentionIsDisabled(): void {

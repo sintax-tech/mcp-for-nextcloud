@@ -50,7 +50,7 @@ class AttachmentAccessTest extends TestCase {
         $share->method('getSharedWith')->willReturn('abcd');
         $this->shareManager->method('getShareById')->willReturnCallback(
             static function (string $id) use ($share): IShare {
-                if ($id !== 'ocRoom:77') {
+                if ($id !== 'ocRoomShare:77') {
                     throw new RuntimeException('Invalid share id: ' . $id);
                 }
 
@@ -59,6 +59,11 @@ class AttachmentAccessTest extends TestCase {
         );
 
         $this->assertSame($share, $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77));
+    }
+
+    public function testAnIdThatAlreadyHasAProviderIsNotPrefixedAgain(): void {
+        $this->assertSame('ocRoomShare:77', AttachmentAccess::fullShareId('ocRoomShare:77'));
+        $this->assertSame('ocRoomShare:77', AttachmentAccess::fullShareId(77));
     }
 
     public function testTheValidatedShareComesBackSoTheDraftCanNameTheFile(): void {
@@ -110,7 +115,7 @@ class AttachmentAccessTest extends TestCase {
     public function testTheShareIsOnlyReadAndNeverWritten(): void {
         $this->shareManager->expects($this->once())
             ->method('getShareById')
-            ->with('ocRoom:77', 'alice')
+            ->with('ocRoomShare:77', 'alice')
             ->willReturn($this->givenShare(IShare::TYPE_ROOM, 'abcd'));
         // Reading the share is all this may do: creating one here would publish the attachment a second time.
         $this->shareManager->expects($this->never())->method('createShare');

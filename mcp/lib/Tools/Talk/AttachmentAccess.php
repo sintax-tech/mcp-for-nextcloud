@@ -14,13 +14,26 @@ use Throwable;
  * already approved.
  */
 class AttachmentAccess {
-    /** Id of the room share provider, which the share manager needs as the prefix of every share id it resolves. */
-    private const ROOM_PROVIDER_ID = 'ocRoom';
+    /** Share provider id the manager needs as prefix of every share id; from spreed's RoomShareProvider::identifier(). */
+    private const ROOM_PROVIDER_ID = 'ocRoomShare';
 
     public function __construct(
         private IShareManager $shareManager,
         private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
     ) {}
+
+    /**
+     * The id the share manager resolves: "<provider>:<id>". An id that already carries a provider is kept as is,
+     * so it is never prefixed twice.
+     *
+     * @param int|string $id Bare share id, or an already full one
+     * @return string Full share id
+     */
+    public static function fullShareId(int|string $id): string {
+        $id = (string)$id;
+
+        return str_contains($id, ':') ? $id : self::ROOM_PROVIDER_ID . ':' . $id;
+    }
 
     /**
      * Checks that the id really is a room share of this conversation, and not a link share, a file of another
@@ -36,7 +49,7 @@ class AttachmentAccess {
      */
     public function requireRoomShareOf(Conversation $conversation, string $userId, int $attachmentId): IShare {
         try {
-            $share = $this->shareManager->getShareById(self::ROOM_PROVIDER_ID . ':' . $attachmentId, $userId);
+            $share = $this->shareManager->getShareById(self::fullShareId($attachmentId), $userId);
         } catch (Throwable $e) {
             throw new ConversationAccessException(Messages::attachmentNotFound(), $e);
         }

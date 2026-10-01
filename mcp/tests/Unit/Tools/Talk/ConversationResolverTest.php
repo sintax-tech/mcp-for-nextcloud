@@ -28,7 +28,7 @@ class ConversationResolverTest extends TestCase {
         $this->talkServices->expects($this->never())->method('manager');
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::INVALID_TOKEN);
+        $this->expectExceptionMessage(Messages::invalidToken());
         $this->resolver->resolveForReading('alice', 'ABC');
     }
 
@@ -70,7 +70,7 @@ class ConversationResolverTest extends TestCase {
         $notAMember = (new FailingConversationResolver($services))->captureForTest('abcd');
 
         // The caller must not be able to tell "no such conversation" from "you are not in it".
-        $this->assertSame(Messages::CONVERSATION_NOT_FOUND, $notThere);
+        $this->assertSame(Messages::conversationNotFound(), $notThere);
         $this->assertSame($notThere, $notAMember);
     }
 
@@ -78,7 +78,7 @@ class ConversationResolverTest extends TestCase {
         $this->givenRoom(readOnly: 1, type: 7, federated: false, lobby: 0, permissions: 128);
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::CONVERSATION_NOT_WRITABLE);
+        $this->expectExceptionMessage(Messages::conversationNotWritable());
         $this->resolver->resolveForWriting('alice', 'abcd');
     }
 
@@ -86,7 +86,7 @@ class ConversationResolverTest extends TestCase {
         $this->givenRoom(readOnly: 0, type: 7, federated: false, lobby: 0, permissions: 128);
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::CONVERSATION_NOT_WRITABLE);
+        $this->expectExceptionMessage(Messages::conversationNotWritable());
         $this->resolver->resolveForWriting('alice', 'abcd');
     }
 
@@ -94,7 +94,7 @@ class ConversationResolverTest extends TestCase {
         $this->givenRoom(readOnly: 0, type: 1, federated: true, lobby: 0, permissions: 128);
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::CONVERSATION_NOT_WRITABLE);
+        $this->expectExceptionMessage(Messages::conversationNotWritable());
         $this->resolver->resolveForWriting('alice', 'abcd');
     }
 
@@ -102,7 +102,7 @@ class ConversationResolverTest extends TestCase {
         $this->givenRoom(readOnly: 0, type: 1, federated: false, lobby: 0, permissions: 0);
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::CONVERSATION_NOT_WRITABLE);
+        $this->expectExceptionMessage(Messages::conversationNotWritable());
         $this->resolver->resolveForWriting('alice', 'abcd');
     }
 
@@ -110,7 +110,7 @@ class ConversationResolverTest extends TestCase {
         $this->givenRoom(readOnly: 0, type: 1, federated: false, lobby: 2, permissions: 128);
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::CONVERSATION_NOT_WRITABLE);
+        $this->expectExceptionMessage(Messages::conversationNotWritable());
         $this->resolver->resolveForWriting('alice', 'abcd');
     }
 

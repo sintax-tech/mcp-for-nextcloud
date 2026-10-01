@@ -233,14 +233,14 @@ final class DeckToolModule implements ToolModule {
 	public function call(string $name, array $arguments, string $userId): array {
 		$handler = $this->handlerFor($name, $userId);
 		if ($handler === null) {
-			throw new InvalidArgumentException(DeckMessages::ERROR_UNKNOWN_TOOL);
+			throw new InvalidArgumentException(DeckMessages::errorUnknownTool());
 		}
 
 		// The registry already filters by app; this is the safety net for any other caller.
 		// isEnabledForUser() takes an IUser, never the UID string: passing the string breaks at runtime.
 		$user = $this->userManager?->get($userId);
 		if (($this->userManager !== null && $user === null) || !$this->appManager->isEnabledForUser(self::DECK_APP, $user)) {
-			throw new InvalidArgumentException(DeckMessages::ERROR_DECK_APP_UNAVAILABLE);
+			throw new InvalidArgumentException(DeckMessages::errorDeckAppUnavailable());
 		}
 
 		return $handler->handle($arguments, $userId);

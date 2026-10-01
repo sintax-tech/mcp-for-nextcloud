@@ -7,7 +7,13 @@ use InvalidArgumentException;
 use OCA\Mcp\Tools\ArgumentValidator;
 use PHPUnit\Framework\TestCase;
 
-/** Covers the list-of-types form (e.g. ["string", "null"]) plus the nested objects and arrays the batch tools need. */
+/**
+ * Covers the list-of-types form (e.g. ["string", "null"]) plus the nested objects and arrays the batch tools need.
+ *
+ * Both batch tools depend on this and name nested fields differently in their own schemas: files_move_batch
+ * takes moves[] of {from,to}, talk_send_batch takes items[] of {message,reply_to}. The cases from both live
+ * here, so a nested list of objects is proven once for each shape rather than twice for the same one.
+ */
 final class ArgumentValidatorTest extends TestCase {
     /** @return array<string, mixed> schema with a nullable string and no default */
     private function schema(): array {
@@ -157,6 +163,59 @@ final class ArgumentValidatorTest extends TestCase {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('Invalid arguments');
         ArgumentValidator::validate($this->batchSchema(), [['message' => 'oi']]);
+    }
+
+    /** @return array<string, mixed> a schema with a list of {from,to}, as files_move_batch declares */
+    private function movesSchema(): array {
+        return ['type' => 'object', 'additionalProperties' => false, 'properties' => [
+            'moves' => ['type' => 'array', 'minItems' => 1, 'maxItems' => 200, 'items' => [
+                'type' => 'object', 'additionalProperties' => false,
+                'properties' => ['from' => ['type' => 'string'], 'to' => ['type' => 'string']],
+                'required' => ['from', 'to'],
+            ]],
+        ]];
+    }
+
+    /** The registry validates the batch, not the handler, and every broken shape is named where it broke. */
+    public function testValidatesAListOfObjects(): void {
+        $schema = $this->movesSchema();
+        $this->assertSame([['from' => '/a', 'to' => '/b']],
+            ArgumentValidator::validate($schema, ['moves' => [['from' => '/a', 'to' => '/b']]])['moves']);
+        $casos = [
+            [[['from' => '/a']], 'Missing argument: moves[0].to'],
+            [[['from' => '/a', 'to' => '/b', 'extra' => 1]], 'Unknown argument: moves[0].extra'],
+            [[['from' => 1, 'to' => '/b']], 'Invalid argument: moves[0].from'],
+            ['nao-lista', 'Invalid argument: moves'],
+        ];
+        foreach ($casos as [$moves, $esperado]) {
+            try {
+                ArgumentValidator::validate($schema, ['moves' => $moves]);
+                $this->fail('accepted ' . json_encode($moves));
+            } catch (InvalidArgumentException $e) {
+                $this->assertSame($esperado, $e->getMessage());
+            }
+        }
+    }
+
+    public function testEnforcesItemCountBounds(): void {
+        $schema = ['type' => 'object', 'properties' => ['paths' => ['type' => 'array', 'maxItems' => 2]]];
+        $this->assertSame(['paths' => ['/a', '/b']], ArgumentValidator::validate($schema, ['paths' => ['/a', '/b']]));
+        $this->expectException(InvalidArgumentException::class);
+        ArgumentValidator::validate($schema, ['paths' => ['/a', '/b', '/c']]);
+    }
+
+    /** An object property applies defaults and rejects unknown keys, exactly like a top-level schema. */
+    public function testValidatesAnObjectProperty(): void {
+        $schema = ['type' => 'object', 'properties' => ['payload' => [
+            'type' => 'object', 'additionalProperties' => false, 'properties' => ['name' => ['type' => 'string']],
+        ]]];
+        $this->assertSame(['payload' => ['name' => 'x']], ArgumentValidator::validate($schema, ['payload' => ['name' => 'x']]));
+        try {
+            ArgumentValidator::validate($schema, ['payload' => ['outro' => 'x']]);
+            $this->fail('accepted an unknown key in an object property');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame('Unknown argument: payload.outro', $e->getMessage());
+        }
     }
 
     public function testConstStillApplies(): void {

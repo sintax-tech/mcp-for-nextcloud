@@ -99,7 +99,7 @@ class UserConversationResolverTest extends TestCase {
         $this->shareManager->method('currentUserCanEnumerateTargetUser')->willReturn(false);
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::USER_NOT_REACHABLE);
+        $this->expectExceptionMessage(Messages::userNotReachable());
         $this->resolver->target('alice', 'ghost');
     }
 
@@ -111,7 +111,7 @@ class UserConversationResolverTest extends TestCase {
             $this->resolver->target('alice', 'alice');
             $this->fail('the caller was allowed to write to themself');
         } catch (ConversationAccessException $e) {
-            $this->assertSame(Messages::USER_NOT_REACHABLE, $e->getMessage());
+            $this->assertSame(Messages::userNotReachable(), $e->getMessage());
         }
     }
 
@@ -126,7 +126,7 @@ class UserConversationResolverTest extends TestCase {
             $this->resolver->target('alice', 'bob');
             $this->fail('a target out of reach was accepted');
         } catch (ConversationAccessException $e) {
-            $this->assertSame(Messages::USER_NOT_REACHABLE, $e->getMessage());
+            $this->assertSame(Messages::userNotReachable(), $e->getMessage());
         }
     }
 
@@ -149,7 +149,7 @@ class UserConversationResolverTest extends TestCase {
             $this->fail('an account out of reach was accepted in a guest list');
         } catch (ConversationAccessException $e) {
             // The id is the caller's own input, so naming it tells which guest to fix and maps nothing new.
-            $this->assertSame(sprintf(Messages::PARTICIPANT_NOT_REACHABLE, 'ghost'), $e->getMessage());
+            $this->assertSame(Messages::participantNotReachable('ghost'), $e->getMessage());
         }
     }
 
@@ -159,7 +159,7 @@ class UserConversationResolverTest extends TestCase {
                 $this->resolver->target('alice', $targetId);
                 $this->fail('accepted ' . var_export($targetId, true));
             } catch (InvalidArgumentException $e) {
-                $this->assertSame(Messages::INVALID_USER, $e->getMessage());
+                $this->assertSame(Messages::invalidUser(), $e->getMessage());
             }
         }
     }
@@ -206,7 +206,7 @@ class UserConversationResolverTest extends TestCase {
             $this->resolver->conversation('alice', 'bob');
             $this->fail('a refusal from the product became a success');
         } catch (ConversationAccessException $e) {
-            $this->assertSame(Messages::USER_NOT_REACHABLE, $e->getMessage());
+            $this->assertSame(Messages::userNotReachable(), $e->getMessage());
             $this->assertSame('talk is not a friend', $e->getPrevious()?->getMessage());
         }
     }
@@ -218,7 +218,7 @@ class UserConversationResolverTest extends TestCase {
         $this->givenParticipant(128);
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::CONVERSATION_NOT_WRITABLE);
+        $this->expectExceptionMessage(Messages::conversationNotWritable());
         $this->resolver->conversation('alice', 'bob');
     }
 
@@ -229,7 +229,7 @@ class UserConversationResolverTest extends TestCase {
         $this->givenParticipant(0);
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::CONVERSATION_NOT_WRITABLE);
+        $this->expectExceptionMessage(Messages::conversationNotWritable());
         $this->resolver->conversation('alice', 'bob');
     }
 

@@ -78,7 +78,7 @@ final class ListBoardsHandlerTest extends TestCase {
 		$result = $handler->handle([], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN, $this->text($result));
+		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
 		self::assertStringNotContainsString('Permission denied', $this->text($result));
 	}
 
@@ -90,7 +90,7 @@ final class ListBoardsHandlerTest extends TestCase {
 		$result = $handler->handle([], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_NOT_ALLOWED, $this->text($result));
+		self::assertSame(DeckMessages::errorNotAllowed(), $this->text($result));
 	}
 
 	public function testBackendFailureIsLoggedByClassOnly(): void {
@@ -113,6 +113,6 @@ final class ListBoardsHandlerTest extends TestCase {
 		$result = $handler->handle([], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_GENERIC, $this->text($result));
+		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
 	}
 }

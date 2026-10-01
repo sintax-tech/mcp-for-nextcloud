@@ -183,7 +183,7 @@ final class FollowupCardsHandlerTest extends TestCase {
 		$handler = new FollowupCardsHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::ERROR_INVALID_STATUS);
+		$this->expectExceptionMessage(DeckMessages::errorInvalidStatus());
 
 		$handler->handle(['status' => 'late'], 'alice');
 	}
@@ -194,7 +194,7 @@ final class FollowupCardsHandlerTest extends TestCase {
 		$handler = new FollowupCardsHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::ERROR_INVALID_DUE_BEFORE);
+		$this->expectExceptionMessage(DeckMessages::errorInvalidDueBefore());
 
 		$handler->handle(['dueBefore' => '31/03/2026'], 'alice');
 	}
@@ -245,6 +245,6 @@ final class FollowupCardsHandlerTest extends TestCase {
 		$result = $handler->handle([], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_GENERIC, $this->text($result));
+		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
 	}
 }

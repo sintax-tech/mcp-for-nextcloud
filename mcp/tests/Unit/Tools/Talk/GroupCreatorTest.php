@@ -118,7 +118,7 @@ class GroupCreatorTest extends TestCase {
             $this->groups->create('alice', 'Projeto X', array_fill(0, GroupCreator::MAX_PARTICIPANTS + 1, 'bob'));
             $this->fail('a group with more guests than the limit was accepted');
         } catch (InvalidArgumentException $e) {
-            $this->assertSame(sprintf(Messages::TOO_MANY_PARTICIPANTS, GroupCreator::MAX_PARTICIPANTS), $e->getMessage());
+            $this->assertSame(Messages::tooManyParticipants(GroupCreator::MAX_PARTICIPANTS), $e->getMessage());
         }
 
         // Nothing exists yet, so a refused list must not have reached the product.
@@ -127,7 +127,7 @@ class GroupCreatorTest extends TestCase {
 
     public function testAnAccountOutOfReachStopsTheCallBeforeTheRoomExists(): void {
         $this->userConversations->method('contacts')
-            ->willThrowException(new ConversationAccessException(Messages::USER_NOT_REACHABLE));
+            ->willThrowException(new ConversationAccessException(Messages::userNotReachable()));
         $roomService = new GroupRoomService(new GroupRoom('wxyz', 'Projeto X'));
         $this->givenRoomService($roomService);
 
@@ -135,7 +135,7 @@ class GroupCreatorTest extends TestCase {
             $this->groups->create('alice', 'Projeto X', ['ghost']);
             $this->fail('an unreachable guest did not stop the creation');
         } catch (ConversationAccessException $e) {
-            $this->assertSame(Messages::USER_NOT_REACHABLE, $e->getMessage());
+            $this->assertSame(Messages::userNotReachable(), $e->getMessage());
         }
 
         // A guest nobody may reach is refused before the room, never after it.
@@ -150,7 +150,7 @@ class GroupCreatorTest extends TestCase {
             $this->groups->create('alice', 'Projeto X', []);
             $this->fail('a refused creation was answered as a success');
         } catch (ConversationAccessException $e) {
-            $this->assertSame(Messages::CONVERSATION_NOT_CREATED, $e->getMessage());
+            $this->assertSame(Messages::conversationNotCreated(), $e->getMessage());
         }
     }
 
@@ -185,7 +185,7 @@ class GroupCreatorTest extends TestCase {
             $result['participants'],
         );
         $this->assertSame(
-            [['id' => 'carol', 'displayName' => 'Carol Lima', 'error' => Messages::INVITATION_FAILED]],
+            [['id' => 'carol', 'displayName' => 'Carol Lima', 'error' => Messages::invitationFailed()]],
             $result['invitations_failed'],
         );
         $this->assertSame(3, $participantService->calls);
@@ -242,7 +242,7 @@ class GroupCreatorTest extends TestCase {
             $this->groups->create('alice', 'Projeto X', []);
             $this->fail('a creation without an owner was attempted');
         } catch (ConversationAccessException $e) {
-            $this->assertSame(Messages::CONVERSATION_NOT_CREATED, $e->getMessage());
+            $this->assertSame(Messages::conversationNotCreated(), $e->getMessage());
         }
 
         $this->assertSame(0, $roomService->calls);
@@ -252,14 +252,14 @@ class GroupCreatorTest extends TestCase {
         $this->assertSame('Projeto X', GroupCreator::normalizeName('  Projeto X  '));
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::INVALID_GROUP_NAME);
+        $this->expectExceptionMessage(Messages::invalidGroupName());
 
         GroupCreator::normalizeName('   ');
     }
 
     public function testANameLongerThanTheLimitIsAClientMistake(): void {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::GROUP_NAME_TOO_LONG);
+        $this->expectExceptionMessage(Messages::groupNameTooLong());
 
         GroupCreator::normalizeName(str_repeat('a', GroupCreator::MAX_NAME_LENGTH + 1));
     }

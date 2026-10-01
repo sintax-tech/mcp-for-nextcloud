@@ -36,13 +36,13 @@ class UserFileResolver {
             $node = $this->rootFolder->getUserFolder($userId)->get($cleanPath);
         } catch (Throwable $e) {
             // A missing node, a denied one and a broken backend are the same answer to the caller.
-            throw new FileAccessException(Messages::FILE_NOT_FOUND, $e);
+            throw new FileAccessException(Messages::fileNotFound(), $e);
         }
 
         if (!$node instanceof File
             || !$node->isReadable()
             || ($node->getPermissions() & Constants::PERMISSION_SHARE) !== Constants::PERMISSION_SHARE) {
-            throw new FileAccessException(Messages::FILE_NOT_FOUND);
+            throw new FileAccessException(Messages::fileNotFound());
         }
 
         return $node;
@@ -59,7 +59,7 @@ class UserFileResolver {
         // Only a path made of nothing but spaces is refused here. The path itself is never trimmed, because a file
         // name may legitimately end with a space.
         if (trim($path) === '' || str_contains($path, "\0") || str_contains($path, '\\')) {
-            throw new InvalidArgumentException(Messages::INVALID_PATH);
+            throw new InvalidArgumentException(Messages::invalidPath());
         }
 
         $segments = [];
@@ -68,13 +68,13 @@ class UserFileResolver {
                 continue;
             }
             if ($segment === '.' || $segment === '..') {
-                throw new InvalidArgumentException(Messages::INVALID_PATH);
+                throw new InvalidArgumentException(Messages::invalidPath());
             }
             $segments[] = $segment;
         }
 
         if ($segments === []) {
-            throw new InvalidArgumentException(Messages::INVALID_PATH);
+            throw new InvalidArgumentException(Messages::invalidPath());
         }
 
         return implode('/', $segments);

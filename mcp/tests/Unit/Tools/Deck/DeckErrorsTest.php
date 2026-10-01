@@ -27,15 +27,15 @@ final class DeckErrorsTest extends TestCase {
 	 */
 	public static function mappingProvider(): array {
 		return [
-			'no permission' => [new NoPermissionException('Permission denied'), DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN],
-			'does not exist' => [new DoesNotExistException('gone'), DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN],
-			'multiple objects' => [new MultipleObjectsReturnedException('ambiguous'), DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN],
-			'archived status' => [new StatusException('board archived'), DeckMessages::ERROR_NOT_ALLOWED],
-			'archived item' => [new ArchivedItemException('card archived'), DeckMessages::ERROR_NOT_ALLOWED],
-			'bad request' => [new BadRequestException('too long'), DeckMessages::ERROR_INVALID],
-			'conflict' => [new ConflictException('stale'), DeckMessages::ERROR_CONFLICT],
-			'own conflict' => [new DeckConflictException(DeckMessages::ERROR_CONFLICT), DeckMessages::ERROR_CONFLICT],
-			'unexpected' => [new RuntimeException('connection to 10.0.0.5 refused'), DeckMessages::ERROR_GENERIC],
+			'no permission' => [new NoPermissionException('Permission denied'), DeckMessages::errorNotFoundOrForbidden()],
+			'does not exist' => [new DoesNotExistException('gone'), DeckMessages::errorNotFoundOrForbidden()],
+			'multiple objects' => [new MultipleObjectsReturnedException('ambiguous'), DeckMessages::errorNotFoundOrForbidden()],
+			'archived status' => [new StatusException('board archived'), DeckMessages::errorNotAllowed()],
+			'archived item' => [new ArchivedItemException('card archived'), DeckMessages::errorNotAllowed()],
+			'bad request' => [new BadRequestException('too long'), DeckMessages::errorInvalid()],
+			'conflict' => [new ConflictException('stale'), DeckMessages::errorConflict()],
+			'own conflict' => [new DeckConflictException(DeckMessages::errorConflict()), DeckMessages::errorConflict()],
+			'unexpected' => [new RuntimeException('connection to 10.0.0.5 refused'), DeckMessages::errorGeneric()],
 		];
 	}
 
@@ -54,7 +54,7 @@ final class DeckErrorsTest extends TestCase {
 	public function testGenericMessageLeaksNoDetail(): void {
 		$message = DeckErrors::messageFor(new RuntimeException('SELECT * FROM deck_cards failed at /srv/data'));
 
-		self::assertSame(DeckMessages::ERROR_GENERIC, $message);
+		self::assertSame(DeckMessages::errorGeneric(), $message);
 		self::assertStringNotContainsString('deck_cards', $message);
 		self::assertStringNotContainsString('/srv/data', $message);
 	}

@@ -4,6 +4,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit;
 
 use OCA\Mcp\Controller\McpController;
+use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\L10n\UserL10n;
+use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\ResourceUrl;
 use OCA\Mcp\Service\GrantPolicy;
@@ -27,6 +30,12 @@ final class McpControllerTest extends TestCase {
     /** @var AccessTokenAuthenticator&\PHPUnit\Framework\MockObject\MockObject */
     private AccessTokenAuthenticator $authenticator;
     private ?IUser $volatileUser = null;
+    /** @var array<string, string> language of each account, by uid */
+    private array $languages = ['alice' => 'pt_BR', 'bob' => 'es'];
+
+    protected function tearDown(): void {
+        Translator::reset();
+    }
 
     protected function setUp(): void {
         $this->store = new InMemoryConfig();
@@ -66,7 +75,8 @@ final class McpControllerTest extends TestCase {
         $resourceRequest->method('getServerProtocol')->willReturn('https');
         $resourceRequest->method('getServerHost')->willReturn('cloud.example.org');
         $controller = new TestableMcpController('mcp', $request, $session, $urls, $this->policy, McpProtocolTest::protocol($this),
-            new ResourceUrl($resourceRequest), $this->authenticator);
+            new ResourceUrl($resourceRequest), $this->authenticator,
+            new UserL10n(JsonL10n::wire($this->createMock(\OCP\L10N\IFactory::class), $this->languages)));
         $controller->body = $body;
         return $controller;
     }
@@ -190,5 +200,28 @@ final class McpControllerTest extends TestCase {
         $response = $this->controller('{}')->post();
         $this->assertSame(401, $response->getStatus());
         $this->assertStringStartsWith('Bearer error="invalid_token", resource_metadata=', self::headers($response)['WWW-Authenticate']);
+    }
+
+    public function testBasicRequestTranslatesInTheLanguageOfTheAccount(): void {
+        $this->assertSame(200, $this->listTools()[0]);
+        $this->assertSame('Desconectar', Translator::t('Disconnect'));
+    }
+
+    public function testBearerRequestTranslatesInTheLanguageOfTheTokenOwner(): void {
+        $this->languages = ['alice' => 'en', 'bob' => 'pt_BR'];
+        $this->login('bob');
+        $bob = $this->user;
+        $this->login(null);
+        $this->headers['Authorization'] = 'Bearer ncmcp_at_valid';
+        $this->authenticator->method('authenticate')->willReturn($bob);
+        $this->assertSame(200, $this->controller('{"jsonrpc":"2.0","id":1,"method":"tools/list"}')->post()->getStatus());
+        $this->assertSame('Desconectar', Translator::t('Disconnect'));
+    }
+
+    public function testRejectedRequestDoesNotKeepTheTranslatorOfAPreviousOne(): void {
+        $this->assertSame(200, $this->listTools()[0]);
+        $this->login(null);
+        $this->assertSame(401, $this->listTools()[0]);
+        $this->assertSame('Disconnect', Translator::t('Disconnect'));
     }
 }

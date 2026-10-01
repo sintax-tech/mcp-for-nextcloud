@@ -28,7 +28,7 @@ final class CardInput {
 	public static function requireTitle(string $title): string {
 		$trimmed = trim($title);
 		if ($trimmed === '') {
-			throw new InvalidArgumentException(DeckMessages::ERROR_TITLE_REQUIRED);
+			throw new InvalidArgumentException(DeckMessages::errorTitleRequired());
 		}
 
 		return $trimmed;
@@ -43,7 +43,7 @@ final class CardInput {
 	 */
 	public static function requireDescription(string $description): string {
 		if (mb_strlen($description) > self::MAX_DESCRIPTION_LENGTH) {
-			throw new InvalidArgumentException(DeckMessages::ERROR_DESCRIPTION_TOO_LONG);
+			throw new InvalidArgumentException(DeckMessages::errorDescriptionTooLong());
 		}
 
 		return $description;
@@ -57,7 +57,7 @@ final class CardInput {
 	 * @throws InvalidArgumentException When the string is not a real calendar date.
 	 */
 	public static function duedate(mixed $value): ?string {
-		return self::date($value, DeckMessages::ERROR_INVALID_DUEDATE);
+		return self::date($value, DeckMessages::errorInvalidDuedate());
 	}
 
 	/**
@@ -68,7 +68,7 @@ final class CardInput {
 	 * @throws InvalidArgumentException When the string is not a real calendar date.
 	 */
 	public static function dueBefore(mixed $value): ?string {
-		return self::date($value, DeckMessages::ERROR_INVALID_DUE_BEFORE);
+		return self::date($value, DeckMessages::errorInvalidDueBefore());
 	}
 
 	/**

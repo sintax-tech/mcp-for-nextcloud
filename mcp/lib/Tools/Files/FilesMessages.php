@@ -1,0 +1,424 @@
+<?php
+declare(strict_types=1);
+
+namespace OCA\Mcp\Tools\Files;
+
+use OCA\Mcp\L10n\Translator;
+
+/**
+ * Every user-facing string of the Files module: tool descriptions, parameter descriptions and failure
+ * messages. Handlers hold no text literal; this is the single entry point for IL10N.
+ */
+final class FilesMessages {
+    /** Folder in the user's root that receives a copy of every file before an edit writes it. */
+    public const BACKUP_FOLDER = FileBackup::FOLDER;
+
+    // ---------------------------------------------------------------- tool descriptions
+
+    /** @return string description of files_list */
+    public static function listTool(): string {
+        return 'List files and folders from a user Nextcloud directory.';
+    }
+
+    /** @return string description of files_search */
+    public static function searchTool(): string {
+        return 'Search files by name in the user folder on Nextcloud.';
+    }
+
+    /** @return string description of files_move_batch */
+    public static function batchTool(): string {
+        return 'Plan or execute a batch of moves and folder creations, in the given order. With dry_run: true '
+            . '(default) writes nothing and returns the full plan: what would succeed, what conflicts, what '
+            . 'Nextcloud denies, what belongs to someone else, and which folders would be created. With dry_run: false '
+            . 'requires confirm: true, executes in order, creates folders beforehand, and returns batch_id to undo '
+            . 'with files_undo_batch. An item failing midway halts the batch: items already moved remain '
+            . 'recorded and can be undone, and unattempted items are returned as not_attempted.';
+    }
+
+    /** @return string description of files_undo_batch */
+    public static function undoTool(): string {
+        return 'Undo a files_move_batch, returning each node to its source path in reverse order. '
+            . 'Before making any changes checks the whole batch: if any item is no longer what the '
+            . 'batch placed at destination, if the source path is already occupied, or if permissions changed, '
+            . 'nothing is undone and the response identifies the blocking item. Removes only empty folders that the '
+            . 'batch itself created; a folder with content is preserved and listed in kept_dirs.';
+    }
+
+    /** @return string a batch that does not exist, is not this user's, or is past its lifetime */
+    public static function batchNotFound(): string {
+        return Translator::t('Batch not found.');
+    }
+
+    /** @return string a batch that was already undone */
+    public static function batchAlreadyUndone(): string {
+        return Translator::t('This batch has already been undone.');
+    }
+
+    /** @return string a node at the destination that is not the one the batch moved */
+    public static function notTheBatchNode(): string {
+        return Translator::t('The item is no longer what this batch moved; nothing was undone.');
+    }
+
+    /** @return string description of files_read */
+    public static function readTool(): string {
+        return 'Read the text of a file from Nextcloud (plain text/markdown directly; PDF/DOCX/ODT via text extraction).';
+    }
+
+    /** @return string description of files_tree */
+    public static function treeTool(): string {
+        return 'List the file tree of a folder, with the owner of each item and capacity limits. '
+            . 'Use to plan a reorganization without one call per folder. Enforces depth and entry '
+            . 'limits, and warns when truncated.';
+    }
+
+    /** @return string description of files_mkdir */
+    public static function mkdirTool(): string {
+        return 'Create a folder, including intermediate levels when missing. Refuses if destination '
+            . 'already exists and never deletes existing contents. If destination is outside your personal '
+            . 'folder, ask the user first and retry with confirm_shared.';
+    }
+
+    /** @return string description of files_copy */
+    public static function copyTool(): string {
+        return 'Copy a file or folder to another path, creating a new node with a new id. Never '
+            . 'overwrites the destination. The copy is an independent node: does not preserve source id, versions, '
+            . 'or shares. Capped at ' . ReorganizationLimits::NODES . ' items and '
+            . ReorganizationLimits::BYTES . ' bytes, measured before copying. If source or destination '
+            . 'is outside your personal folder, ask the user first and retry with confirm_shared.';
+    }
+
+    /** @return string description of files_move */
+    public static function moveTool(): string {
+        return 'Move or rename a file or folder within the same file area, without overwriting the '
+            . 'destination. Reports id before and after, as well as version and share counts when '
+            . 'corresponding apps are enabled. Does not move across different storages: there Nextcloud treats '
+            . 'it as a copy and the id changes. If source or destination is outside your personal folder, ask '
+            . 'the user first and retry with confirm_shared.';
+    }
+
+    /** @return string description of files_edit */
+    public static function editTool(): string {
+        return 'Replace the content of an existing text file and return the diff. Before writing, requires '
+            . 'active versioning and creates a copy in "/MCP backups". If the file is outside your personal '
+            . 'folder, only write after asking the user and retrying the call with confirm_shared. '
+            . 'Never creates, moves, or deletes files.';
+    }
+
+    /** @return string description of files_replace */
+    public static function replaceTool(): string {
+        return 'Replace a unique snippet of an existing text file and return the diff. The specified snippet '
+            . 'must appear exactly once. Before writing, requires active versioning and creates a copy '
+            . 'in "/MCP backups". If the file is outside your personal folder, only write after '
+            . 'asking the user and retrying the call with confirm_shared.';
+    }
+
+    /** @return string description of files_checkout */
+    public static function checkoutTool(): string {
+        return 'Provide temporary download and upload links to edit a file with local tools '
+            . '(curl) without passing content through the model. Links are valid for 5 to 15 minutes, single-use, '
+            . 'and bound to you, the file, and current ETag: if the file changes before upload, nothing is '
+            . 'written. Upload creates the same backup as files_edit. If the file is outside your personal '
+            . 'folder, only issue links after asking the user and retrying with confirm_shared.';
+    }
+
+    /** @return string description of files_versions_list */
+    public static function versionsListTool(): string {
+        return 'List versions of a file from the Versions app, from newest to oldest.';
+    }
+
+    /** @return string description of files_version_read */
+    public static function versionReadTool(): string {
+        return 'Read the text of a previous file version, with the same limit and text extraction as '
+            . 'files_read.';
+    }
+
+    /** @return string description of files_version_restore */
+    public static function versionRestoreTool(): string {
+        return 'Restore a previous file version, first creating a copy of current content in '
+            . '"/MCP backups" and a new version in Nextcloud. Requires confirm=true. If the file is outside '
+            . 'your personal folder, restore only after asking the user and retrying with confirm_shared.';
+    }
+
+    // ---------------------------------------------------------------- parameter descriptions
+
+    /** @return string description of the path parameter */
+    public static function path(): string {
+        return 'Path of the file or folder, e.g. /Documents/report.pdf';
+    }
+
+    /** @return string description of the etag parameter */
+    public static function etag(): string {
+        return 'Previously read ETag; if it differs, nothing is written';
+    }
+
+    /** @return string description of the confirm_shared parameter */
+    public static function confirmShared(): string {
+        return 'Required only when the file is outside your personal folder (shared, team folder, '
+            . 'or external storage). Send only after confirming with the user.';
+    }
+
+    /** @return string description of the content parameter of files_edit */
+    public static function content(): string {
+        return 'Complete new content (UTF-8)';
+    }
+
+    /** @return string description of the old parameter of files_replace */
+    public static function oldSnippet(): string {
+        return 'Snippet to replace; must appear exactly once in the file';
+    }
+
+    /** @return string description of the new parameter of files_replace */
+    public static function newSnippet(): string {
+        return 'Replacement text for the specified snippet';
+    }
+
+    /** @return string description of the version parameter */
+    public static function version(): string {
+        return 'Version identifier, as returned by files_versions_list';
+    }
+
+    /** @return string description of the confirm parameter of files_version_restore */
+    public static function confirm(): string {
+        return 'Must be true to confirm restoration';
+    }
+
+    // ---------------------------------------------------------------- failures
+
+    /** @return string a path that is not a folder */
+    public static function notAFolder(): string {
+        return Translator::t('The specified path is not a folder.');
+    }
+
+    /** @return string a path that is not a file */
+    public static function notAFile(): string {
+        return Translator::t('The specified path is not a file.');
+    }
+
+    /** @return string a non-text file */
+    public static function notText(): string {
+        return Translator::t('Only text files can be edited via MCP.');
+    }
+
+    /** @return string an edit inside the backup folder */
+    public static function backupPath(): string {
+        return Translator::t('Files in \'/%s\' cannot be edited via MCP.', [self::BACKUP_FOLDER]);
+    }
+
+    /**
+     * @param int $limit maximum accepted size in bytes
+     * @return string a content over the edit limit
+     */
+    public static function editTooLarge(int $limit): string {
+        return Translator::t('Content exceeds the edit limit of %s bytes.', [(string)$limit]);
+    }
+
+    /**
+     * @param string $backup path of the verified copy of the original
+     * @return string a failed write, naming where the original still is
+     */
+    public static function writeFailed(string $backup): string {
+        return Translator::t('Failed to write file; original preserved in %s.', [$backup]);
+    }
+
+    /** @return string versioning is off for the user */
+    public static function versioningOff(): string {
+        return Translator::t('Editing blocked: file versioning (files_versions) is not active.');
+    }
+
+    /** @return string the backup copy could not be created or verified */
+    public static function backupFailed(): string {
+        return Translator::t('Editing blocked: could not create backup copy of original.');
+    }
+
+    /** @return string the snippet given to files_replace does not occur */
+    public static function snippetMissing(): string {
+        return Translator::t('The specified snippet does not appear in the file.');
+    }
+
+    /** @return string the snippet given to files_replace is not text we can locate in the file */
+    public static function snippetNotUtf8(): string {
+        return Translator::t('The specified snippet is not valid UTF-8; send it exactly as it appears in the file.');
+    }
+
+    /** @return string something already sits where a folder would go */
+    public static function crossStorage(): string {
+        return Translator::t('Moving across different storages is not supported in this version; move within the same file area.');
+    }
+
+    /**
+     * @param int $conflicts how many items clash with what is already there
+     * @param int $denied how many items Nextcloud will not let the user touch
+     * @return string a batch whose plan still has blocked items
+     */
+    public static function batchNotOk(int $conflicts, int $denied): string {
+        return Translator::t('The plan has %s conflict(s) and %s item(s) without permission; run with dry_run: true, fix and try again. Nothing was moved.', [(string)$conflicts, (string)$denied]);
+    }
+
+    /** @return string a folder moved into itself or into one of its own subfolders */
+    public static function folderIntoItself(): string {
+        return Translator::t('Cannot move a folder into itself.');
+    }
+
+    /**
+     * @param int $limit ceiling in nodes
+     * @return string a copy whose source is larger than the node ceiling
+     */
+    public static function copyTooManyNodes(int $limit): string {
+        return Translator::t('The copy would exceed %s items; nothing was copied. Choose a smaller folder.', [(string)$limit]);
+    }
+
+    /**
+     * @param int $limit ceiling in bytes
+     * @return string a copy whose source is larger than the byte ceiling
+     */
+    public static function copyTooLarge(int $limit): string {
+        return Translator::t('The copy would exceed %s bytes; nothing was copied. Choose a smaller folder.', [(string)$limit]);
+    }
+
+    /** @return string something already sits where a folder would go */
+    public static function destinationExists(): string {
+        return Translator::t('A file or folder already exists at this destination.');
+    }
+
+    /**
+     * @param int $occurrences how many times the snippet occurs
+     * @return string the snippet given to files_replace is ambiguous
+     */
+    public static function snippetAmbiguous(int $occurrences): string {
+        return Translator::t('The specified snippet appears %s times in the file; provide a unique snippet.', [(string)$occurrences]);
+    }
+
+    /** @return string the file could not be opened */
+    public static function openFailed(): string {
+        return Translator::t('Could not open file.');
+    }
+
+    /** @return string the file could not be read */
+    public static function readFailed(): string {
+        return Translator::t('Could not read file.');
+    }
+
+    /** @return string an unsupported format for text extraction */
+    public static function unsupportedFormat(): string {
+        return Translator::t('Unsupported file format for text extraction.');
+    }
+
+    /**
+     * @param int $limit read limit in bytes
+     * @return string a file over the read limit
+     */
+    public static function readTooLarge(int $limit): string {
+        return Translator::t('File exceeds the read limit of %s bytes.', [(string)$limit]);
+    }
+
+    /**
+     * @param string $name file name
+     * @return string a corrupt document whose text could not be extracted
+     */
+    public static function notExtracted(string $name): string {
+        return Translator::t('[could not extract text from %s]', [$name]);
+    }
+
+    /** @return string appends to text cut by files_read */
+    public static function textTruncated(): string {
+        return Translator::t('[content truncated]');
+    }
+
+    // ---------------------------------------------------------------- versions
+
+    /** @return string versioning is required and not active */
+    public static function versionsOff(): string {
+        return Translator::t('File versioning (files_versions) is not active on this account.');
+    }
+
+    /**
+     * @param string $requested version identifier asked for
+     * @return string no version with that identifier
+     */
+    public static function versionMissing(string $requested): string {
+        return Translator::t('Version not found for this file: %s.', [$requested]);
+    }
+
+    /** @return string the version could not be read */
+    public static function versionUnreadable(): string {
+        return Translator::t('Could not read content of this version.');
+    }
+
+    /** @return string the rollback did not report success */
+    public static function versionRestoreFailed(): string {
+        return Translator::t('Could not restore this version.');
+    }
+
+    // ---------------------------------------------------------------- checkout
+
+    /**
+     * @param string $path normalized path refused for checkout
+     * @return string a folder or a non-text file
+     */
+    public static function checkoutNotEditable(string $path): string {
+        return Translator::t('Cannot prepare editing for this file.');
+    }
+
+    /** @return string app service, eligibility or connection is off right now */
+    public static function checkoutRevoked(): string {
+        return Translator::t('MCP connection is disabled or access to this folder is no longer granted.');
+    }
+
+    /** @return string the checkout token is unknown */
+    public static function tokenInvalid(): string {
+        return Translator::t('Invalid edit link.');
+    }
+
+    /** @return string the checkout token expired or was already used */
+    public static function tokenSpent(): string {
+        return Translator::t('This edit link has expired or has already been used. Please checkout again.');
+    }
+
+    /** @return string the checkout token is of the wrong kind for this route */
+    public static function tokenWrongKind(): string {
+        return Translator::t('Invalid edit link.');
+    }
+
+    /**
+     * @param int $limit effective limit in bytes
+     * @return string an upload over the limit
+     */
+    public static function uploadTooLarge(int $limit): string {
+        return Translator::t('Content exceeds the upload limit of %s bytes.', [(string)$limit]);
+    }
+
+    /**
+     * The ETag no longer matches. The token is already spent, so the agent cannot retry it: it has to read
+     * the file again and make a new checkout, which is what this message asks for.
+     *
+     * @return string the client-safe reason for a 409 on the upload
+     */
+    public static function uploadConflict(): string {
+        return Translator::t('The file changed after checkout; nothing was written. Re-read the file and run a new files_checkout before uploading again.');
+    }
+
+    /** @return string a multipart body, the shape `curl -F` produces instead of raw bytes */
+    public static function uploadMultipart(): string {
+        return Translator::t('Send file bytes as raw body (curl -T), not as multipart form.');
+    }
+
+    /** @return string a body the upload route does not interpret */
+    public static function uploadWrongType(): string {
+        return Translator::t('Send body as application/octet-stream with file bytes.');
+    }
+
+    /** @return string a body that carried nothing at all */
+    public static function uploadEmpty(): string {
+        return Translator::t('The uploaded body is empty; nothing was written.');
+    }
+
+    /**
+     * @param string $backup path of the verified copy of the original, '' when the failure came before it
+     * @return string a failed write, naming where the original still is
+     */
+    public static function uploadFailed(string $backup): string {
+        return $backup === ''
+            ? Translator::t('Failed to write file.')
+            : Translator::t('Failed to write file; original preserved in %s.', [$backup]);
+    }
+}

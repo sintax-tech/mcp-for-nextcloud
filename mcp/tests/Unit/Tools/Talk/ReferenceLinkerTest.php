@@ -118,7 +118,7 @@ class ReferenceLinkerTest extends TestCase {
             $this->fail('a card out of reach was linked');
         } catch (ConversationAccessException $e) {
             // The same answer as a card that does not exist: the reference must not confirm the card is there.
-            $this->assertSame(Messages::REFERENCE_NOT_FOUND, $e->getMessage());
+            $this->assertSame(Messages::referenceNotFound(), $e->getMessage());
         }
     }
 
@@ -126,7 +126,7 @@ class ReferenceLinkerTest extends TestCase {
         $this->givenCard(7, 'Proposta ACME', 4);
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::REFERENCE_NOT_FOUND);
+        $this->expectExceptionMessage(Messages::referenceNotFound());
 
         $this->linker->resolve('alice', ['type' => 'deck_card', 'card_id' => 7, 'board_id' => 5]);
     }
@@ -144,7 +144,7 @@ class ReferenceLinkerTest extends TestCase {
         $this->deck->expects($this->never())->method('findCard');
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::REFERENCE_DECK_OFF);
+        $this->expectExceptionMessage(Messages::referenceDeckOff());
 
         $this->linker->resolve('alice', ['type' => 'deck_card', 'card_id' => 7]);
     }
@@ -154,7 +154,7 @@ class ReferenceLinkerTest extends TestCase {
         $this->deck->expects($this->never())->method('findCard');
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::REFERENCE_DECK_OFF);
+        $this->expectExceptionMessage(Messages::referenceDeckOff());
 
         $this->linker->resolve('alice', ['type' => 'deck_card', 'card_id' => 7]);
     }
@@ -178,7 +178,7 @@ class ReferenceLinkerTest extends TestCase {
         $this->store->expects($this->never())->method('objectByUid');
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::REFERENCE_NOT_FOUND);
+        $this->expectExceptionMessage(Messages::referenceNotFound());
 
         $this->linker->resolve('alice', ['type' => 'calendar_event', 'calendar' => self::CALENDAR_PATH, 'uid' => 'ev-1']);
     }
@@ -188,7 +188,7 @@ class ReferenceLinkerTest extends TestCase {
         $this->store->method('objectByUid')->willReturn(null);
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::REFERENCE_NOT_FOUND);
+        $this->expectExceptionMessage(Messages::referenceNotFound());
 
         $this->linker->resolve('alice', ['type' => 'calendar_event', 'calendar' => self::CALENDAR_PATH, 'uid' => 'ev-1']);
     }
@@ -201,7 +201,7 @@ class ReferenceLinkerTest extends TestCase {
             $this->linker->resolve('alice', ['type' => 'calendar_event', 'calendar' => self::CALENDAR_PATH, 'uid' => 'ev-1']);
             $this->fail('a private event of another owner was linked');
         } catch (ConversationAccessException $e) {
-            $this->assertSame(Messages::REFERENCE_NOT_FOUND, $e->getMessage());
+            $this->assertSame(Messages::referenceNotFound(), $e->getMessage());
             $this->assertStringNotContainsString('Consulta', $e->getMessage());
         }
     }
@@ -221,7 +221,7 @@ class ReferenceLinkerTest extends TestCase {
         $this->calendars->expects($this->never())->method('resolve');
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::REFERENCE_CALENDAR_OFF);
+        $this->expectExceptionMessage(Messages::referenceCalendarOff());
 
         $this->linker->resolve('alice', ['type' => 'calendar_event', 'calendar' => self::CALENDAR_PATH, 'uid' => 'ev-1']);
     }
@@ -238,7 +238,7 @@ class ReferenceLinkerTest extends TestCase {
                 $this->linker->resolve('alice', $reference);
                 $this->fail('accepted ' . json_encode($reference));
             } catch (InvalidArgumentException $e) {
-                $this->assertSame(Messages::INVALID_REFERENCE, $e->getMessage());
+                $this->assertSame(Messages::invalidReference(), $e->getMessage());
             }
         }
     }
@@ -250,12 +250,12 @@ class ReferenceLinkerTest extends TestCase {
             'url' => 'https://cloud.example/apps/deck/board/4/card/7',
         ]);
 
-        $this->assertSame("veja isto\n\nCard do Deck: Proposta ACME\nhttps://cloud.example/apps/deck/board/4/card/7", $text);
+        $this->assertSame("veja isto\n\nDeck card: Proposta ACME\nhttps://cloud.example/apps/deck/board/4/card/7", $text);
     }
 
     public function testAMessageThatOnlyFitsWithoutTheLinkIsTooLong(): void {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::MESSAGE_TOO_LONG);
+        $this->expectExceptionMessage(Messages::messageTooLong());
 
         ReferenceLinker::append(str_repeat('a', ConversationWriter::MAX_MESSAGE_LENGTH), [
             'type' => 'calendar_event',

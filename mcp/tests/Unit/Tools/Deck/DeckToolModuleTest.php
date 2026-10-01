@@ -254,7 +254,7 @@ final class DeckToolModuleTest extends TestCase {
 
 	public function testUnknownToolIsRefusedBeforeTouchingDeck(): void {
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::ERROR_UNKNOWN_TOOL);
+		$this->expectExceptionMessage(DeckMessages::errorUnknownTool());
 
 		$this->module->call('deck_everything', [], 'alice');
 	}
@@ -276,7 +276,7 @@ final class DeckToolModuleTest extends TestCase {
 		);
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::ERROR_DECK_APP_UNAVAILABLE);
+		$this->expectExceptionMessage(DeckMessages::errorDeckAppUnavailable());
 
 		$module->call(ListBoardsHandler::TOOL, [], 'alice');
 	}
@@ -296,7 +296,7 @@ final class DeckToolModuleTest extends TestCase {
 				$module->call($definition['name'], [], 'alice');
 				self::fail('Expected the app check to refuse the call.');
 			} catch (InvalidArgumentException $e) {
-				self::assertSame(DeckMessages::ERROR_DECK_APP_UNAVAILABLE, $e->getMessage());
+				self::assertSame(DeckMessages::errorDeckAppUnavailable(), $e->getMessage());
 			}
 		}
 	}

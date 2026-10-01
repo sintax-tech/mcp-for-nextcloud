@@ -33,7 +33,7 @@ final class CardInputTest extends TestCase {
 	#[DataProvider('blankTitleProvider')]
 	public function testBlankTitleIsRejected(string $title): void {
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::ERROR_TITLE_REQUIRED);
+		$this->expectExceptionMessage(DeckMessages::errorTitleRequired());
 
 		CardInput::requireTitle($title);
 	}
@@ -46,7 +46,7 @@ final class CardInputTest extends TestCase {
 
 	public function testDescriptionOverTheLimitIsRejectedInsteadOfTruncated(): void {
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::ERROR_DESCRIPTION_TOO_LONG);
+		$this->expectExceptionMessage(DeckMessages::errorDescriptionTooLong());
 
 		CardInput::requireDescription(str_repeat('a', CardInput::MAX_DESCRIPTION_LENGTH + 1));
 	}
@@ -76,7 +76,7 @@ final class CardInputTest extends TestCase {
 	#[DataProvider('invalidDateProvider')]
 	public function testInvalidDateIsRejected(string $value): void {
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::ERROR_INVALID_DUEDATE);
+		$this->expectExceptionMessage(DeckMessages::errorInvalidDuedate());
 
 		CardInput::duedate($value);
 	}

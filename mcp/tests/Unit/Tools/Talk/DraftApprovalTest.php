@@ -106,14 +106,14 @@ class DraftApprovalTest extends TestCase {
         // The instruction repeats what is about to happen: the user approves a name and a guest list.
         $this->assertStringContainsString('Projeto X', $draft['message']);
         $this->assertStringContainsString('Bob Souza, Carol Lima', $draft['message']);
-        $this->assertStringContainsString('approval_id igual ao approvalId acima', $draft['message']);
+        $this->assertStringContainsString('approval_id equal to the approvalId above', $draft['message']);
     }
 
     public function testAGroupDraftWithoutGuestsDoesNotPromiseAnyInvitation(): void {
         $draft = $this->drafts->group('alice', 'Projeto X', []);
 
         $this->assertSame([], $draft['draft']['participants']);
-        $this->assertStringNotContainsString('convidados', $draft['message']);
+        $this->assertStringNotContainsString('guests', $draft['message']);
     }
 
     public function testAGroupApprovalCoversTheNameAndTheGuestListTogether(): void {
@@ -130,7 +130,7 @@ class DraftApprovalTest extends TestCase {
             $this->drafts->approveGroup('alice', $draft['approvalId'], 'Outro grupo', $guests);
             $this->fail('an approval covered a group the user never saw');
         } catch (ApprovalException $e) {
-            $this->assertSame(Messages::APPROVAL_INVALID, $e->getMessage());
+            $this->assertSame(Messages::approvalInvalid(), $e->getMessage());
         }
     }
 
@@ -140,7 +140,7 @@ class DraftApprovalTest extends TestCase {
         $this->drafts->approveGroup('alice', $draft['approvalId'], 'Projeto X', ['bob']);
 
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->drafts->approveGroup('alice', $draft['approvalId'], 'Projeto X', ['bob']);
     }
 
@@ -157,13 +157,13 @@ class DraftApprovalTest extends TestCase {
         $draft = $this->drafts->group('alice', 'Projeto X', [new DirectContact('bob', 'Bob Souza')]);
 
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->drafts->approveGroup('alice', $draft['approvalId'], 'Projeto X', []);
     }
 
     public function testABlankGroupNameIsAClientMistakeBeforeAnyPreview(): void {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::INVALID_GROUP_NAME);
+        $this->expectExceptionMessage(Messages::invalidGroupName());
 
         $this->drafts->group('alice', '   ', []);
     }
@@ -200,7 +200,7 @@ class DraftApprovalTest extends TestCase {
 
         // A shorter batch is not that draft: dropping an item is exactly what the approval forbids.
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->drafts->approveBatch($conversation, 'alice', $draft['approvalId'], [['message' => 'primeiro']]);
     }
 
@@ -214,7 +214,7 @@ class DraftApprovalTest extends TestCase {
             $this->drafts->approveBatch($conversation, 'alice', $draft['approvalId'], $items);
             $this->fail('a spent batch approval was accepted twice');
         } catch (ApprovalException $e) {
-            $this->assertSame(Messages::APPROVAL_INVALID, $e->getMessage());
+            $this->assertSame(Messages::approvalInvalid(), $e->getMessage());
         }
     }
 
@@ -225,7 +225,7 @@ class DraftApprovalTest extends TestCase {
             $this->drafts->batch($conversation, 'alice', []);
             $this->fail('an empty batch was accepted');
         } catch (InvalidArgumentException $e) {
-            $this->assertSame(Messages::EMPTY_BATCH, $e->getMessage());
+            $this->assertSame(Messages::emptyBatch(), $e->getMessage());
         }
 
         $tooMany = array_fill(0, DraftApproval::MAX_BATCH + 1, ['message' => 'oi']);
@@ -233,7 +233,7 @@ class DraftApprovalTest extends TestCase {
             $this->drafts->batch($conversation, 'alice', $tooMany);
             $this->fail('a batch over the limit was accepted');
         } catch (InvalidArgumentException $e) {
-            $this->assertSame(sprintf(Messages::TOO_MANY_MESSAGES, DraftApproval::MAX_BATCH), $e->getMessage());
+            $this->assertSame(Messages::tooManyMessages(DraftApproval::MAX_BATCH), $e->getMessage());
         }
     }
 
@@ -242,7 +242,7 @@ class DraftApprovalTest extends TestCase {
         $this->writer->expects($this->never())->method('quoteTarget');
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::EMPTY_MESSAGE);
+        $this->expectExceptionMessage(Messages::emptyMessage());
         $this->drafts->batch($conversation, 'alice', [
             ['message' => 'primeiro', 'replyTo' => 7],
             ['message' => '   '],
@@ -252,7 +252,7 @@ class DraftApprovalTest extends TestCase {
     public function testTheDirectMessageDraftNamesThePersonInTheInstruction(): void {
         $draft = $this->drafts->directMessage(new DirectContact('bob', 'Bob Souza'), 'alice', 'oi');
 
-        $this->assertSame(sprintf(Messages::CONFIRMATION_INSTRUCTION_TARGET, 'Bob Souza'), $draft['message']);
+        $this->assertSame(Messages::confirmationInstructionTarget('Bob Souza'), $draft['message']);
         $this->assertStringContainsString('approval_id', $draft['message']);
     }
 
@@ -267,7 +267,7 @@ class DraftApprovalTest extends TestCase {
             $this->drafts->approveDirectMessage('alice', $id, 'bob', 'oi');
             $this->fail('a spent approval was accepted twice');
         } catch (ApprovalException $e) {
-            $this->assertSame(Messages::APPROVAL_INVALID, $e->getMessage());
+            $this->assertSame(Messages::approvalInvalid(), $e->getMessage());
         }
     }
 
@@ -279,7 +279,7 @@ class DraftApprovalTest extends TestCase {
                 $this->drafts->approveDirectMessage('alice', $draft['approvalId'], $target, $text);
                 $this->fail("a draft of bob was approved for $target with text '$text'");
             } catch (ApprovalException $e) {
-                $this->assertSame(Messages::APPROVAL_INVALID, $e->getMessage());
+                $this->assertSame(Messages::approvalInvalid(), $e->getMessage());
             }
         }
     }
@@ -288,7 +288,7 @@ class DraftApprovalTest extends TestCase {
         $draft = $this->drafts->directMessage(new DirectContact('bob', 'Bob Souza'), 'alice', 'oi');
 
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->drafts->approveDirectMessage('mallory', $draft['approvalId'], 'bob', 'oi');
     }
 
@@ -296,7 +296,7 @@ class DraftApprovalTest extends TestCase {
         $draft = $this->drafts->reply($this->givenConversation(), 'alice', 'bom dia', null);
 
         $this->assertSame(
-            sprintf(Messages::CONFIRMATION_INSTRUCTION, 'Comercial'),
+            Messages::confirmationInstruction('Comercial'),
             $draft['message'],
         );
         $this->assertStringContainsString("'Comercial'", $draft['message']);
@@ -345,13 +345,13 @@ class DraftApprovalTest extends TestCase {
         $this->writer->expects($this->never())->method('quoteTarget');
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::EMPTY_MESSAGE);
+        $this->expectExceptionMessage(Messages::emptyMessage());
         $this->drafts->reply($this->givenConversation(), 'alice', "   \n ", null);
     }
 
     public function testAMessageAboveTheLimitIsRefusedByTheDraftToo(): void {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::MESSAGE_TOO_LONG);
+        $this->expectExceptionMessage(Messages::messageTooLong());
         $this->drafts->reply(
             $this->givenConversation(),
             'alice',
@@ -362,10 +362,10 @@ class DraftApprovalTest extends TestCase {
 
     public function testAQuotedIdThatDoesNotExistIsRefusedBeforeAnyDraft(): void {
         $this->writer->method('quoteTarget')
-            ->willThrowException(new ConversationAccessException(Messages::REPLY_TARGET_NOT_FOUND));
+            ->willThrowException(new ConversationAccessException(Messages::replyTargetNotFound()));
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::REPLY_TARGET_NOT_FOUND);
+        $this->expectExceptionMessage(Messages::replyTargetNotFound());
         $this->drafts->reply($this->givenConversation(), 'alice', 'concordo', 99);
     }
 
@@ -398,10 +398,10 @@ class DraftApprovalTest extends TestCase {
     }
 
     public function testAFileThatCannotBeSharedIsRefusedBeforeAnyDraft(): void {
-        $this->sharer->method('previewFile')->willThrowException(new FileAccessException(Messages::FILE_NOT_FOUND));
+        $this->sharer->method('previewFile')->willThrowException(new FileAccessException(Messages::fileNotFound()));
 
         $this->expectException(FileAccessException::class);
-        $this->expectExceptionMessage(Messages::FILE_NOT_FOUND);
+        $this->expectExceptionMessage(Messages::fileNotFound());
         $this->drafts->attach($this->givenConversation(), 'alice', 'sumiu.pdf', null);
     }
 
@@ -456,16 +456,16 @@ class DraftApprovalTest extends TestCase {
 
     public function testAnAttachmentOfAnotherConversationIsRefusedBeforeAnyDraft(): void {
         $this->attachmentAccess->method('requireRoomShareOf')
-            ->willThrowException(new ConversationAccessException(Messages::ATTACHMENT_NOT_FOUND));
+            ->willThrowException(new ConversationAccessException(Messages::attachmentNotFound()));
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::ATTACHMENT_NOT_FOUND);
+        $this->expectExceptionMessage(Messages::attachmentNotFound());
         $this->drafts->quote($this->givenConversation(), 'alice', 99, null);
     }
 
     public function testABlankCaptionIsRefusedByTheQuoteRule(): void {
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::EMPTY_MESSAGE);
+        $this->expectExceptionMessage(Messages::emptyMessage());
         $this->drafts->quote($this->givenConversation(), 'alice', 77, '   ');
     }
 
@@ -518,7 +518,7 @@ class DraftApprovalTest extends TestCase {
         $this->drafts->approveReply($this->givenConversation(), 'alice', $draft['approvalId'], 'bom dia', null);
 
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->drafts->approveReply($this->givenConversation(), 'alice', $draft['approvalId'], 'bom dia', null);
     }
 
@@ -527,7 +527,7 @@ class DraftApprovalTest extends TestCase {
 
         // Same call, different text: the user approved "bom dia", not this.
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->drafts->approveReply($this->givenConversation(), 'alice', $draft['approvalId'], 'outra coisa', null);
     }
 
@@ -535,7 +535,7 @@ class DraftApprovalTest extends TestCase {
         $draft = $this->drafts->reply($this->givenConversation('abcd'), 'alice', 'bom dia', null);
 
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->drafts->approveReply($this->givenConversation('zzzz'), 'alice', $draft['approvalId'], 'bom dia', null);
     }
 
@@ -544,7 +544,7 @@ class DraftApprovalTest extends TestCase {
 
         // Same message and same account, but a different action: approval is per tool, not per account.
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->drafts->approveQuote($this->givenConversation('abcd'), 'alice', $draft['approvalId'], 77, null);
     }
 
@@ -552,13 +552,13 @@ class DraftApprovalTest extends TestCase {
         $draft = $this->drafts->reply($this->givenConversation(), 'alice', 'bom dia', null);
 
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->drafts->approveReply($this->givenConversation(), 'mallory', $draft['approvalId'], 'bom dia', null);
     }
 
     public function testACallThatSkipsTheDraftHasNothingToApprove(): void {
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_MISSING);
+        $this->expectExceptionMessage(Messages::approvalMissing());
         $this->drafts->approveReply($this->givenConversation(), 'alice', null, 'bom dia', null);
     }
 
@@ -578,7 +578,7 @@ class DraftApprovalTest extends TestCase {
         $draft = $this->drafts->attach($this->givenConversation(), 'alice', 'relatorio.pdf', null);
 
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->drafts->approveAttach($this->givenConversation(), 'alice', $draft['approvalId'], 'outro.pdf', null);
     }
 
@@ -602,7 +602,7 @@ class DraftApprovalTest extends TestCase {
         $draft = $this->drafts->quote($this->givenConversation(), 'alice', 77, null);
 
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->drafts->approveQuote($this->givenConversation(), 'alice', $draft['approvalId'], 88, null);
     }
 

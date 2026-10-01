@@ -5,6 +5,7 @@ namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\Common\NodeAccess;
+use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -50,10 +51,10 @@ class FileBackup {
     public function prepare(Folder $root, File $file, string $path, string $userId, ?string $etag): string {
         $user = $this->userManager->get($userId);
         if ($user === null || !$this->appManager->isEnabledForUser('files_versions', $user)) {
-            throw new ToolFailure('Edição bloqueada: o versionamento de arquivos (files_versions) não está ativo.');
+            throw new ToolFailure(FilesMessages::versioningOff());
         }
         if (!$file->isUpdateable()) {
-            throw new ToolFailure(ToolFailure::FORBIDDEN);
+            throw new ToolFailure(CommonMessages::forbidden());
         }
         NodeAccess::checkEtag($file, $etag);
         return $this->copy($root, $file, $path, $userId);
@@ -82,7 +83,7 @@ class FileBackup {
             $valid = false;
         }
         if (!$valid) {
-            throw new ToolFailure('Edição bloqueada: não foi possível criar a cópia de segurança do original.');
+            throw new ToolFailure(FilesMessages::backupFailed());
         }
         return $root->getRelativePath($copy->getPath()) ?? '';
     }

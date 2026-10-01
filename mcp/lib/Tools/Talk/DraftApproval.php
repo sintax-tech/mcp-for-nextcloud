@@ -80,10 +80,10 @@ class DraftApproval {
      */
     public function batch(Conversation $conversation, string $userId, array $items): array {
         if ($items === []) {
-            throw new InvalidArgumentException(Messages::EMPTY_BATCH);
+            throw new InvalidArgumentException(Messages::emptyBatch());
         }
         if (count($items) > self::MAX_BATCH) {
-            throw new InvalidArgumentException(sprintf(Messages::TOO_MANY_MESSAGES, self::MAX_BATCH));
+            throw new InvalidArgumentException(Messages::tooManyMessages(self::MAX_BATCH));
         }
 
         // Everything that only needs the payload is checked first: a list with a blank item is a mistake in the
@@ -183,7 +183,7 @@ class DraftApproval {
             'action' => 'talk_message_user',
             'target' => $target->describe(),
             'draft' => ['message' => $text],
-            'message' => sprintf(Messages::CONFIRMATION_INSTRUCTION_TARGET, $target->displayName),
+            'message' => Messages::confirmationInstructionTarget($target->displayName),
         ];
     }
 
@@ -210,10 +210,9 @@ class DraftApproval {
             ]),
             'action' => 'talk_create_group',
             'draft' => ['name' => $title, 'participants' => $invited],
-            'message' => sprintf(
-                Messages::CONFIRMATION_INSTRUCTION_GROUP,
+            'message' => Messages::confirmationInstructionGroup(
                 $title,
-                $invited === [] ? '' : ' e como convidados ' . implode(', ', array_column($invited, 'displayName')),
+                Messages::invitedGuests(array_column($invited, 'displayName')),
             ),
         ];
     }
@@ -290,10 +289,10 @@ class DraftApproval {
      */
     private static function normalizedBatch(array $items): array {
         if ($items === []) {
-            throw new InvalidArgumentException(Messages::EMPTY_BATCH);
+            throw new InvalidArgumentException(Messages::emptyBatch());
         }
         if (count($items) > self::MAX_BATCH) {
-            throw new InvalidArgumentException(sprintf(Messages::TOO_MANY_MESSAGES, self::MAX_BATCH));
+            throw new InvalidArgumentException(Messages::tooManyMessages(self::MAX_BATCH));
         }
 
         $normalized = [];
@@ -363,7 +362,7 @@ class DraftApproval {
                 'displayName' => $displayName,
             ],
             'draft' => $draft,
-            'message' => sprintf(Messages::CONFIRMATION_INSTRUCTION, $displayName),
+            'message' => Messages::confirmationInstruction($displayName),
         ];
     }
 

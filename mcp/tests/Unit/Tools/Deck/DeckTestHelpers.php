@@ -141,8 +141,8 @@ trait DeckTestHelpers {
 		self::assertSame('Pedro Almeida', $payload['ownerDisplayName']);
 		self::assertSame('Comercial', $payload['resource']);
 		self::assertSame(
-			"O quadro 'Comercial' pertence a Pedro Almeida e é compartilhado com você. Alterações afetam outras pessoas."
-			. ' Confirme com o usuário antes de continuar e repita a chamada com confirm_shared: true.',
+			"The board 'Comercial' belongs to Pedro Almeida and is shared with you. Changes affect other people."
+			. ' Confirm with the user before continuing and repeat the call with confirm_shared: true.',
 			$payload['message'],
 		);
 	}

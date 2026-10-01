@@ -116,7 +116,7 @@ final class EditCardHandlerTest extends TestCase {
 		], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_CONFLICT, $this->text($result));
+		self::assertSame(DeckMessages::errorConflict(), $this->text($result));
 	}
 
 	public function testMatchingLastModifiedProceeds(): void {
@@ -142,7 +142,7 @@ final class EditCardHandlerTest extends TestCase {
 		$handler = new EditCardHandler($gateway, $this->createMock(LoggerInterface::class), $this->cardFormatter());
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::ERROR_NO_FIELD_TO_EDIT);
+		$this->expectExceptionMessage(DeckMessages::errorNoFieldToEdit());
 
 		$handler->handle(['cardId' => 7], 'alice');
 	}
@@ -151,7 +151,7 @@ final class EditCardHandlerTest extends TestCase {
 		$handler = $this->handler();
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::ERROR_NO_FIELD_TO_EDIT);
+		$this->expectExceptionMessage(DeckMessages::errorNoFieldToEdit());
 
 		$handler->handle(['cardId' => 7, 'lastModified' => 1_700_000_000], 'alice');
 	}
@@ -160,7 +160,7 @@ final class EditCardHandlerTest extends TestCase {
 		$handler = $this->handler();
 
 		$this->expectException(InvalidArgumentException::class);
-		$this->expectExceptionMessage(DeckMessages::ERROR_INVALID_DUEDATE);
+		$this->expectExceptionMessage(DeckMessages::errorInvalidDuedate());
 
 		$handler->handle(['cardId' => 7, 'duedate' => '31/12/2026'], 'alice');
 	}
@@ -173,21 +173,21 @@ final class EditCardHandlerTest extends TestCase {
 		$result = $handler->handle(['cardId' => 7, 'title' => 'Novo'], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN, $this->text($result));
+		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 
 	public function testArchivedBoardBecomesTheNotAllowedMessage(): void {
 		$result = $this->handler([], new StatusException('Operation not allowed. This board is archived.'))
 			->handle(['cardId' => 7, 'title' => 'Novo'], 'alice');
 
-		self::assertSame(DeckMessages::ERROR_NOT_ALLOWED, $this->text($result));
+		self::assertSame(DeckMessages::errorNotAllowed(), $this->text($result));
 	}
 
 	public function testDeckRejectionBecomesTheInvalidMessage(): void {
 		$result = $this->handler([], new BadRequestException('title'))
 			->handle(['cardId' => 7, 'title' => 'Novo'], 'alice');
 
-		self::assertSame(DeckMessages::ERROR_INVALID, $this->text($result));
+		self::assertSame(DeckMessages::errorInvalid(), $this->text($result));
 	}
 
 	public function testBackendFailureBecomesTheGenericMessage(): void {
@@ -195,7 +195,7 @@ final class EditCardHandlerTest extends TestCase {
 			->handle(['cardId' => 7, 'title' => 'Novo'], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_GENERIC, $this->text($result));
+		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
 	}
 
 	public function testSharedBoardWithoutConfirmationUpdatesNothing(): void {
@@ -244,6 +244,6 @@ final class EditCardHandlerTest extends TestCase {
 		$result = $handler->handle(['cardId' => 7, 'title' => 'Novo título'], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN, $this->text($result));
+		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 }

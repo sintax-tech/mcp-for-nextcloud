@@ -29,9 +29,18 @@ class TextExtractor {
      * @return bool whether the file is plain text (and therefore readable as-is and editable)
      */
     public static function isText(File $file): bool {
-        $mime = strtolower((string)$file->getMimetype());
+        return self::isTextNamed($file->getName(), (string)$file->getMimetype());
+    }
+
+    /**
+     * @param string $name file name, whose extension counts as text
+     * @param string $mime MIME type of the file
+     * @return bool whether these two describe plain text, for a node or for a stored version alike
+     */
+    public static function isTextNamed(string $name, string $mime): bool {
+        $mime = strtolower($mime);
         return str_starts_with($mime, 'text/') || in_array($mime, self::TEXT_MIMES, true)
-            || in_array(strtolower(pathinfo($file->getName(), PATHINFO_EXTENSION)), self::TEXT_EXTENSIONS, true);
+            || in_array(strtolower(pathinfo($name, PATHINFO_EXTENSION)), self::TEXT_EXTENSIONS, true);
     }
 
     /**
@@ -40,23 +49,35 @@ class TextExtractor {
      * @throws ToolFailure over the byte limit, unreadable or unsupported format
      */
     public function extract(File $file): string {
-        $bytes = $this->read($file);
-        $mime = strtolower((string)$file->getMimetype());
-        $extension = strtolower(pathinfo($file->getName(), PATHINFO_EXTENSION));
+        return $this->extractBytes($this->read($file), $file->getName(), (string)$file->getMimetype());
+    }
+
+    /**
+     * Same extraction for content that is not a node, so a stored version reads exactly like a file.
+     *
+     * @param string $bytes raw content within MAX_BYTES
+     * @param string $name file name the content came from, whose extension counts as text
+     * @param string $mime MIME type the content came from
+     * @return string extracted text; a "[não foi possível extrair...]" notice for a corrupt PDF/DOCX/ODT
+     * @throws ToolFailure for an unsupported format
+     */
+    public function extractBytes(string $bytes, string $name, string $mime): string {
+        $mime = strtolower($mime);
+        $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
         if ($mime === 'application/pdf' || $extension === 'pdf') {
-            return $this->guarded($file, fn () => $this->pdf($bytes));
+            return $this->guarded($name, fn () => $this->pdf($bytes));
         }
         if ($mime === self::DOCX || $extension === 'docx') {
-            return $this->guarded($file, fn () => $this->zipXml($bytes, 'word/document.xml', ['#</w:p>#' => "\n", '#<w:tab\s*/>#' => "\t", '#<w:(br|cr)\b[^>]*/>#' => "\n"]));
+            return $this->guarded($name, fn () => $this->zipXml($bytes, 'word/document.xml', ['#</w:p>#' => "\n", '#<w:tab\s*/>#' => "\t", '#<w:(br|cr)\b[^>]*/>#' => "\n"]));
         }
         if ($mime === self::ODT || $extension === 'odt') {
-            return $this->guarded($file, fn () => $this->zipXml($bytes, 'content.xml', ['#</text:(p|h)>#' => "\n", '#<text:tab\s*/>#' => "\t", '#<text:line-break\s*/>#' => "\n", '#<text:s\s*/>#' => ' ']));
+            return $this->guarded($name, fn () => $this->zipXml($bytes, 'content.xml', ['#</text:(p|h)>#' => "\n", '#<text:tab\s*/>#' => "\t", '#<text:line-break\s*/>#' => "\n", '#<text:s\s*/>#' => ' ']));
         }
-        if (self::isText($file)) {
+        if (self::isTextNamed($name, $mime)) {
             $text = mb_scrub($bytes, 'UTF-8');
             return str_starts_with($text, "\u{FEFF}") ? substr($text, 3) : $text;
         }
-        throw new ToolFailure('Formato de arquivo não suportado para leitura de texto.');
+        throw new ToolFailure(FilesMessages::unsupportedFormat());
     }
 
     /**
@@ -72,7 +93,7 @@ class TextExtractor {
         }
         $handle = $file->fopen('r');
         if ($handle === false) {
-            throw new ToolFailure('Não foi possível abrir o arquivo.');
+            throw new ToolFailure(FilesMessages::openFailed());
         }
         try {
             $bytes = stream_get_contents($handle, self::MAX_BYTES + 1);
@@ -80,7 +101,7 @@ class TextExtractor {
             fclose($handle);
         }
         if ($bytes === false) {
-            throw new ToolFailure('Não foi possível ler o arquivo.');
+            throw new ToolFailure(FilesMessages::readFailed());
         }
         if (strlen($bytes) > self::MAX_BYTES) {
             throw new ToolFailure(self::tooLarge());
@@ -90,15 +111,19 @@ class TextExtractor {
 
     /** @return string client message for a file over MAX_BYTES */
     public static function tooLarge(): string {
-        return 'Arquivo excede o limite de leitura de ' . self::MAX_BYTES . ' bytes.';
+        return FilesMessages::readTooLarge(self::MAX_BYTES);
     }
 
-    /** @param callable():string $extract parser call whose failures become a generic notice */
-    private function guarded(File $file, callable $extract): string {
+    /**
+     * @param string $name file name named in the failure notice
+     * @param callable():string $extract parser call whose failures become a generic notice
+     * @return string the extracted text or the notice
+     */
+    private function guarded(string $name, callable $extract): string {
         try {
             return trim($extract());
         } catch (\Throwable) {
-            return '[não foi possível extrair o texto de ' . $file->getName() . ']';
+            return FilesMessages::notExtracted($name);
         }
     }
 

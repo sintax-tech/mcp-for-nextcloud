@@ -2,6 +2,12 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased
+
+### Added
+- Tools: the descriptions are read by the model, so they are fixed English, while every message shown to the user comes out in their own language. Deck, Notes and Talk are covered; Files, Calendar and the shared messages are still pending.
+- Language: Spanish (`es`) is included for the whole app, next to English and Brazilian Portuguese, as a first translation that still needs a native review.
+
 ## 0.6.10
 
 ### Added

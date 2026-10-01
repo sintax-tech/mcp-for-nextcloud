@@ -96,7 +96,7 @@ final class ListCardsHandlerTest extends TestCase {
 		$result = $handler->handle(['stackId' => 10], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_NOT_FOUND_OR_FORBIDDEN, $this->text($result));
+		self::assertSame(DeckMessages::errorNotFoundOrForbidden(), $this->text($result));
 	}
 
 	public function testBackendFailureBecomesTheGenericMessage(): void {
@@ -107,6 +107,6 @@ final class ListCardsHandlerTest extends TestCase {
 		$result = $handler->handle(['stackId' => 10], 'alice');
 
 		self::assertTrue($result['isError']);
-		self::assertSame(DeckMessages::ERROR_GENERIC, $this->text($result));
+		self::assertSame(DeckMessages::errorGeneric(), $this->text($result));
 	}
 }

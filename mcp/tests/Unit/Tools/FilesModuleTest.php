@@ -4,14 +4,29 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools;
 
 use InvalidArgumentException;
+use OCA\Mcp\Checkout\CheckoutTokenStore;
+use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tools\ArgumentValidator;
+use OCA\Mcp\Tools\Common\NodeAccessInfo;
+use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileBackup;
+use OCA\Mcp\Tools\Files\BatchStore;
+use OCA\Mcp\Tools\Files\MovePlanner;
+use OCA\Mcp\Tools\Files\MoveReport;
+use OCA\Mcp\Tools\Files\Reorganization;
+use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
+use OCA\Mcp\Tools\Files\VersionTools;
+use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IConfig;
+use OCP\IURLGenerator;
 use OCP\Files\IRootFolder;
 use OCP\Files\Search\ISearchComparison;
 use OCP\IDBConnection;
@@ -25,6 +40,7 @@ final class FilesModuleTest extends TestCase {
     private array $apps = ['files_versions'];
     private InMemoryConfig $config;
     private FilesModule $module;
+    private VersionTools $versions;
 
     protected function setUp(): void {
         $this->tree = new FakeTree($this);
@@ -47,7 +63,20 @@ final class FilesModuleTest extends TestCase {
         $this->config = new InMemoryConfig();
         // Alice's own timezone stamps every backup below; the stamps are local, never UTC.
         $this->config->user['alice']['core']['timezone'] = 'America/Sao_Paulo';
-        $this->module = new FilesModule($root, new TextExtractor($temp), new FileBackup($apps, $users, $time, $this->config->mock($this)), $users, $db);
+        $appConfig = $this->config->mock($this);
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
+        $urls = $this->createMock(IURLGenerator::class);
+        $urls->method('linkToRouteAbsolute')->willReturnCallback(fn (string $route, array $args = []) => 'https://cloud.test/apps/mcp/' . ($args['token'] ?? ''));
+        $versions = new VersionTools($apps, $users, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $access, $this->createMock(\Psr\Container\ContainerInterface::class));
+        $report = new MoveReport($this->createMock(\Psr\Container\ContainerInterface::class), $this->tree->shareManager(), $apps);
+        $reorganization = new Reorganization($access, new SharedWriteGuard($access), $report, $users);
+        $planner = new MovePlanner($reorganization, $access, new SharedWriteGuard($access));
+        $store = new BatchStore($db);
+        $this->module = new FilesModule($root, new TextExtractor($temp), new FileBackup($apps, $users, $time, $appConfig), $users, $db,
+            $access, new SharedWriteGuard($access),
+            new CheckoutService($urls, $appConfig, $time, new TokenHasher($appConfig), $this->createMock(CheckoutTokenStore::class), $apps, $users),
+            $versions, $reorganization, $planner, $store, $time);
+        $this->versions = $versions;
     }
 
     /** Runs a tool the way the registry does: schema validation first, then the handler. */
@@ -75,8 +104,17 @@ final class FilesModuleTest extends TestCase {
 
     public function testDefinitionsKeepPrototypeNamesAndGrants(): void {
         $defs = array_column($this->module->definitions(), null, 'name');
-        $this->assertSame(['files_list', 'files_search', 'files_read', 'files_edit'], array_keys($defs));
-        $this->assertSame(['read', 'read', 'read', 'edit'], array_column($defs, 'operation'));
+        $this->assertSame(['files_list', 'files_search', 'files_tree', 'files_mkdir', 'files_copy', 'files_move',
+            'files_move_batch', 'files_undo_batch', 'files_read', 'files_edit', 'files_replace',
+            'files_checkout', 'files_versions_list', 'files_version_read', 'files_version_restore'],
+            array_keys($defs));
+        $this->assertSame(['read', 'read', 'read', 'create', 'create', 'move', 'move', 'move', 'read', 'edit',
+            'edit', 'edit', 'read', 'read', 'restore'], array_column($defs, 'operation'));
+        $this->assertSame(['files_versions', 'files_versions', 'files_versions'],
+            array_values(array_filter(array_column($defs, 'app', 'name'))));
+        $this->assertArrayNotHasKey('app', $defs['files_tree'], 'a árvore só depende de arquivos, que sempre existem');
+        $this->assertSame(['path', 'old', 'new'], $defs['files_replace']['inputSchema']['required']);
+        $this->assertSame(['path', 'version', 'confirm'], $defs['files_version_restore']['inputSchema']['required']);
         $this->assertSame('/', $defs['files_list']['inputSchema']['properties']['path']['default']);
         $this->assertSame(['minimum' => 1, 'maximum' => 100, 'default' => 25], array_intersect_key($defs['files_search']['inputSchema']['properties']['limit'], ['minimum' => 0, 'maximum' => 0, 'default' => 0]));
         $this->assertSame(['path'], $defs['files_read']['inputSchema']['required']);
@@ -85,15 +123,19 @@ final class FilesModuleTest extends TestCase {
     public function testListReturnsPrototypeEntryShape(): void {
         $entries = $this->json('files_list');
         $this->assertSame(['Documentos', 'relatorio.pdf'], array_column($entries, 'name'));
-        $this->assertSame(['name' => 'Documentos', 'path' => '/Documentos', 'isDir' => true, 'size' => 0, 'mtime' => 'Tue, 30 Sep 2025 02:40:00 GMT', 'contentType' => 'httpd/unix-directory'], $entries[0]);
+        $this->assertSame(['name' => 'Documentos', 'path' => '/Documentos', 'isDir' => true, 'size' => 0,
+            'mtime' => 'Tue, 30 Sep 2025 02:40:00 GMT', 'contentType' => 'httpd/unix-directory',
+            'access' => ['scope' => 'personal', 'owner' => 'alice', 'ownerDisplayName' => 'Alice',
+                'permissions' => ['read' => true, 'update' => true, 'create' => true, 'delete' => true, 'share' => true]]],
+            $entries[0]);
         $this->assertSame('/Documentos/ata.md', $this->json('files_list', ['path' => '/Documentos'])[0]['path']);
     }
 
     public function testListRejectsFilesTraversalAndUnreadable(): void {
-        $this->assertSame('O caminho informado não é uma pasta.', $this->failure('files_list', ['path' => '/relatorio.pdf']));
-        $this->assertSame(ToolFailure::NOT_FOUND, $this->failure('files_list', ['path' => '/nada']));
+        $this->assertSame(FilesMessages::notAFolder(), $this->failure('files_list', ['path' => '/relatorio.pdf']));
+        $this->assertSame(CommonMessages::notFound(), $this->failure('files_list', ['path' => '/nada']));
         $this->tree->nodes['/alice/files/Documentos']['readable'] = false;
-        $this->assertSame(ToolFailure::FORBIDDEN, $this->failure('files_list', ['path' => 'Documentos']));
+        $this->assertSame(CommonMessages::forbidden(), $this->failure('files_list', ['path' => 'Documentos']));
         foreach (['/../bob/files', "/a\0b", 'Documentos/../..'] as $path) {
             try {
                 $this->tool('files_list', ['path' => $path]);
@@ -142,9 +184,9 @@ final class FilesModuleTest extends TestCase {
 
     public function testCorruptDocumentsAndZipBombsReturnANotice(): void {
         $this->tree->addFile('/alice/files/bad.pdf', "%PDF-broken\0\0", 'application/pdf');
-        $this->assertSame('[não foi possível extrair o texto de bad.pdf]', $this->tool('files_read', ['path' => '/bad.pdf'])['content'][0]['text']);
+        $this->assertSame(FilesMessages::notExtracted('bad.pdf'), $this->tool('files_read', ['path' => '/bad.pdf'])['content'][0]['text']);
         $this->tree->addFile('/alice/files/bomb.docx', self::zip('word/document.xml', str_repeat('A', TextExtractor::MAX_BYTES + 1)), '');
-        $this->assertSame('[não foi possível extrair o texto de bomb.docx]', $this->tool('files_read', ['path' => '/bomb.docx'])['content'][0]['text']);
+        $this->assertSame(FilesMessages::notExtracted('bomb.docx'), $this->tool('files_read', ['path' => '/bomb.docx'])['content'][0]['text']);
     }
 
     public function testReadEnforcesByteLimitBeforeAndWhileReading(): void {
@@ -158,14 +200,16 @@ final class FilesModuleTest extends TestCase {
     public function testReadTruncatesAtCharacterLimit(): void {
         $this->tree->addFile('/alice/files/long.txt', str_repeat('é', FilesModule::MAX_CHARS + 50));
         $text = $this->tool('files_read', ['path' => '/long.txt'])['content'][0]['text'];
-        $this->assertStringEndsWith("\n\n[conteúdo truncado]", $text);
+        $this->assertStringEndsWith("
+
+" . FilesMessages::textTruncated(), $text);
         $this->assertSame(FilesModule::MAX_CHARS, mb_strlen(explode("\n\n[", $text)[0]));
     }
 
     public function testReadRejectsFoldersAndBinaries(): void {
-        $this->assertSame('O caminho informado não é um arquivo.', $this->failure('files_read', ['path' => '/Documentos']));
+        $this->assertSame(FilesMessages::notAFile(), $this->failure('files_read', ['path' => '/Documentos']));
         $this->tree->addFile('/alice/files/foto.jpg', "\xFF\xD8", 'image/jpeg');
-        $this->assertSame('Formato de arquivo não suportado para leitura de texto.', $this->failure('files_read', ['path' => '/foto.jpg']));
+        $this->assertSame(FilesMessages::unsupportedFormat(), $this->failure('files_read', ['path' => '/foto.jpg']));
     }
 
     public function testEditBacksUpThenWrites(): void {
@@ -173,7 +217,11 @@ final class FilesModuleTest extends TestCase {
         $out = $this->json('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'novo', 'etag' => $etag]);
         // 1790000000 is 2026-09-21 14:13:20 UTC; America/Sao_Paulo is UTC-3, so 11:13:20 local.
         $backup = '/MCP backups/Documentos/ata.md.20260921-111320.bak';
-        $this->assertSame(['path' => '/Documentos/ata.md', 'size' => 4, 'etag' => $etag . '+', 'backup' => $backup], $out);
+        $this->assertSame(['path' => '/Documentos/ata.md', 'size' => 4, 'etag' => $etag . '+',
+            'access' => ['scope' => 'personal', 'owner' => 'alice', 'ownerDisplayName' => 'Alice',
+                'permissions' => ['read' => true, 'update' => true, 'create' => true, 'delete' => true, 'share' => true]],
+            'backup' => $backup,
+            'diff' => "--- antes\n+++ depois\n@@ -1,2 +1,1 @@\n-# Ata\n-olá\n\\ No newline at end of file\n+novo\n\\ No newline at end of file\n"], $out);
         $this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files' . $backup]['content']);
         $this->assertSame('novo', $this->tree->nodes['/alice/files/Documentos/ata.md']['content']);
         $this->assertSame(['mkdir /alice/files/MCP backups', 'mkdir /alice/files/MCP backups/Documentos',
@@ -220,11 +268,11 @@ final class FilesModuleTest extends TestCase {
 
     /** @return iterable<string, array{0: callable(self):void, 1: string}> */
     public static function blockedEdits(): iterable {
-        yield 'versions disabled' => [fn (self $t) => $t->apps = [], 'files_versions'];
-        yield 'copy fails' => [fn (self $t) => $t->tree->failCopy[] = '/alice/files/Documentos/ata.md', 'cópia de segurança'];
-        yield 'copy size differs' => [fn (self $t) => $t->tree->shortCopy[] = '/alice/files/Documentos/ata.md', 'cópia de segurança'];
-        yield 'not updateable' => [fn (self $t) => $t->tree->nodes['/alice/files/Documentos/ata.md']['updateable'] = false, ToolFailure::FORBIDDEN];
-        yield 'backup folder name taken by a file' => [fn (self $t) => $t->tree->addFile('/alice/files/MCP backups', 'x'), 'cópia de segurança'];
+        yield 'versions disabled' => [fn (self $t) => $t->apps = [], FilesMessages::versioningOff()];
+        yield 'copy fails' => [fn (self $t) => $t->tree->failCopy[] = '/alice/files/Documentos/ata.md', FilesMessages::backupFailed()];
+        yield 'copy size differs' => [fn (self $t) => $t->tree->shortCopy[] = '/alice/files/Documentos/ata.md', FilesMessages::backupFailed()];
+        yield 'not updateable' => [fn (self $t) => $t->tree->nodes['/alice/files/Documentos/ata.md']['updateable'] = false, CommonMessages::forbidden()];
+        yield 'backup folder name taken by a file' => [fn (self $t) => $t->tree->addFile('/alice/files/MCP backups', 'x'), FilesMessages::backupFailed()];
     }
 
     /** @dataProvider blockedEdits */
@@ -236,12 +284,12 @@ final class FilesModuleTest extends TestCase {
     }
 
     public function testEditRefusesStaleEtagBinariesBackupsAndOversizedContent(): void {
-        $this->assertSame(ToolFailure::CONFLICT, $this->failure('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'x', 'etag' => 'old']));
-        $this->assertSame('Somente arquivos de texto podem ser editados pelo MCP.', $this->failure('files_edit', ['path' => '/relatorio.pdf', 'content' => 'x']));
+        $this->assertSame(CommonMessages::conflict(), $this->failure('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'x', 'etag' => 'old']));
+        $this->assertSame(FilesMessages::notText(), $this->failure('files_edit', ['path' => '/relatorio.pdf', 'content' => 'x']));
         $this->tree->addFile('/alice/files/MCP backups/a.txt.bak', 'b');
-        $this->assertStringContainsString('não podem ser editados', $this->failure('files_edit', ['path' => '/MCP backups/a.txt.bak', 'content' => 'x']));
-        $this->assertStringContainsString('limite de edição', $this->failure('files_edit', ['path' => '/Documentos/ata.md', 'content' => str_repeat('x', FilesModule::MAX_EDIT_BYTES + 1)]));
-        $this->assertSame(ToolFailure::NOT_FOUND, $this->failure('files_edit', ['path' => '/novo.txt', 'content' => 'x']));
+        $this->assertSame(FilesMessages::backupPath(), $this->failure('files_edit', ['path' => '/MCP backups/a.txt.bak', 'content' => 'x']));
+        $this->assertSame(FilesMessages::editTooLarge(FilesModule::MAX_EDIT_BYTES), $this->failure('files_edit', ['path' => '/Documentos/ata.md', 'content' => str_repeat('x', FilesModule::MAX_EDIT_BYTES + 1)]));
+        $this->assertSame(CommonMessages::notFound(), $this->failure('files_edit', ['path' => '/novo.txt', 'content' => 'x']));
         $this->assertSame([], $this->tree->ops);
     }
 
@@ -251,8 +299,23 @@ final class FilesModuleTest extends TestCase {
     }
 
     public function testFilesCodeNeverDeletesMovesOrRenames(): void {
-        foreach (['/../../../lib/Tools/Files/FilesModule.php', '/../../../lib/Tools/Files/TextExtractor.php'] as $file) {
-            $this->assertDoesNotMatchRegularExpression('/->(delete|move|rename|unlink)\s*\(/', (string)file_get_contents(__DIR__ . $file), $file);
+        foreach (glob(__DIR__ . '/../../../lib/Tools/Files/*.php') ?: [] as $file) {
+            $code = (string)file_get_contents($file);
+            // Deleting a node is out of the question for Files. BatchStore deletes rows, not files, and the
+            // one allowed Node::delete() lives in Reorganization's undoBatch() — NoFileDeletionTest pins that
+            // one down; no other file in the namespace may call delete() at all.
+            if (!in_array(basename($file), ['Reorganization.php', 'BatchStore.php'], true)) {
+                $this->assertDoesNotMatchRegularExpression('/->(delete|unlink)\s*\(/', $code, $file);
+            }
+            $this->assertDoesNotMatchRegularExpression('/->(rename)\s*\(/', $code, $file);
+        }
+        foreach (glob(__DIR__ . '/../../../lib/Tools/Files/*.php') ?: [] as $file) {
+            if (basename($file) === 'Reorganization.php') {
+                continue;
+            }
+            // Delegating to Reorganization is the point; any other receiver moving a node is not.
+            $code = str_replace('$this->reorganization->', '', (string)file_get_contents($file));
+            $this->assertDoesNotMatchRegularExpression('/->(move)\s*\(/', $code, $file);
         }
         $this->json('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'x']);
         $this->assertSame([], array_filter($this->tree->ops, fn ($op) => preg_match('/^(delete|move) /', $op) === 1));

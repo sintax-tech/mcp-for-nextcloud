@@ -101,7 +101,7 @@ class FileSharerTest extends TestCase {
         $this->fileResolver->method('resolveShareableFile')->willReturn($this->file);
         $this->givenCreatedShare(77);
         $this->writer->method('sendText')
-            ->willThrowException(new ConversationAccessException(Messages::MESSAGE_NOT_SENT));
+            ->willThrowException(new ConversationAccessException(Messages::messageNotSent()));
 
         // The share is already in the room: an error result would hide an attachment that really was published,
         // and the caller would retry an attach that can only end in "already shared" with the caption lost.
@@ -111,7 +111,7 @@ class FileSharerTest extends TestCase {
         $this->assertFalse($result['captionSent']);
         $this->assertSame('olha o relatório', $result['caption']);
         $this->assertArrayNotHasKey('messageId', $result);
-        $this->assertSame(Messages::CAPTION_NOT_SENT, $result['message']);
+        $this->assertSame(Messages::captionNotSent(), $result['message']);
         $this->assertStringContainsString('talk_reply', $result['message']);
     }
 
@@ -136,7 +136,7 @@ class FileSharerTest extends TestCase {
         $this->writer->expects($this->never())->method('sendText');
 
         $this->expectException(FileAccessException::class);
-        $this->expectExceptionMessage(Messages::FILE_ALREADY_SHARED);
+        $this->expectExceptionMessage(Messages::fileAlreadyShared());
         $this->sharer->attach($this->givenConversation('abcd'), 'alice', 'relatorio.pdf');
     }
 
@@ -146,7 +146,7 @@ class FileSharerTest extends TestCase {
         $this->shareManager->expects($this->never())->method('createShare');
 
         $this->expectException(FileAccessException::class);
-        $this->expectExceptionMessage(Messages::FILE_ALREADY_SHARED);
+        $this->expectExceptionMessage(Messages::fileAlreadyShared());
         $this->sharer->attach($this->givenConversation('abcd'), 'alice', 'relatorio.pdf');
     }
 
@@ -182,18 +182,18 @@ class FileSharerTest extends TestCase {
         $this->shareManager->method('newShare')->willThrowException(new RuntimeException('Room is read only'));
 
         $this->expectException(FileAccessException::class);
-        $this->expectExceptionMessage(Messages::FILE_NOT_SHARED);
+        $this->expectExceptionMessage(Messages::fileNotShared());
         $this->sharer->attach($this->givenConversation('abcd'), 'alice', 'relatorio.pdf');
     }
 
     public function testUnreadableFileStopsBeforeAnyShareLookup(): void {
         $this->fileResolver->method('resolveShareableFile')
-            ->willThrowException(new FileAccessException(Messages::FILE_NOT_FOUND));
+            ->willThrowException(new FileAccessException(Messages::fileNotFound()));
         $this->shareManager->expects($this->never())->method('newShare');
         $this->shareManager->expects($this->never())->method('getSharesBy');
 
         $this->expectException(FileAccessException::class);
-        $this->expectExceptionMessage(Messages::FILE_NOT_FOUND);
+        $this->expectExceptionMessage(Messages::fileNotFound());
         $this->sharer->attach($this->givenConversation('abcd'), 'alice', 'relatorio.pdf');
     }
 

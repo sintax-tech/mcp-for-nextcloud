@@ -76,7 +76,7 @@ class ApprovalRegistry {
      */
     public function consume(string $userId, ?string $approvalId, array $binding): void {
         if ($approvalId === null || $approvalId === '') {
-            throw new ApprovalException(Messages::APPROVAL_MISSING);
+            throw new ApprovalException(Messages::approvalMissing());
         }
 
         $key = self::KEY_PREFIX . $approvalId;
@@ -85,14 +85,14 @@ class ApprovalRegistry {
 
         $entry = json_decode($stored, true);
         if (!is_array($entry) || !isset($entry['userId'], $entry['binding'], $entry['expiresAt'])) {
-            throw new ApprovalException(Messages::APPROVAL_INVALID);
+            throw new ApprovalException(Messages::approvalInvalid());
         }
         if (!is_int($entry['expiresAt']) || $entry['expiresAt'] <= time()) {
-            throw new ApprovalException(Messages::APPROVAL_INVALID);
+            throw new ApprovalException(Messages::approvalInvalid());
         }
         // An id of another user is compared without a word about it: the answer is the same for every mismatch.
         if ($entry['userId'] !== $userId || !hash_equals((string)$entry['binding'], self::fingerprint($binding))) {
-            throw new ApprovalException(Messages::APPROVAL_INVALID);
+            throw new ApprovalException(Messages::approvalInvalid());
         }
     }
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Controller;
 
 use OCA\Mcp\Http\McpResponse;
+use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\L10n\UserL10n;
 use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\ResourceUrl;
 use OCA\Mcp\Service\GrantPolicy;
@@ -32,6 +34,7 @@ class McpController extends Controller {
         private McpProtocol $protocol,
         private ResourceUrl $resourceUrl,
         private AccessTokenAuthenticator $tokens,
+        private UserL10n $l10n,
     ) {
         parent::__construct($appName, $request);
     }
@@ -89,8 +92,9 @@ class McpController extends Controller {
         return file_get_contents('php://input', false, null, 0, 1048577);
     }
 
-    /** @return McpResponse|null a rejection for foreign Origin, missing identity or denied policy; null to proceed */
+    /** @return McpResponse|null a rejection for foreign Origin, missing identity or denied policy; null to proceed, with the translator set to the user's language */
     private function preflight(): ?McpResponse {
+        Translator::reset();
         $origin = $this->request->getHeader('Origin');
         if ($origin !== '') {
             $endpoint = $this->urlGenerator->linkToRouteAbsolute('mcp.mcp.post');
@@ -122,6 +126,8 @@ class McpController extends Controller {
         if (!$this->policy->canConnect($user->getUID())) {
             return new McpResponse('', 403);
         }
+        // Both the Basic and the OAuth path end here with the authenticated user, whose account language wins.
+        Translator::use($this->l10n->forUser($user));
         return null;
     }
 

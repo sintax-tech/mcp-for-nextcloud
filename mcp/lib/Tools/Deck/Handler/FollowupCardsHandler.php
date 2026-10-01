@@ -61,7 +61,7 @@ final class FollowupCardsHandler extends AbstractHandler {
 		return $this->run(function () use ($arguments, $userId): array {
 			$status = (string)($arguments['status'] ?? CardCriteria::STATUS_OVERDUE);
 			if (!in_array($status, CardCriteria::STATUSES, true)) {
-				throw new InvalidArgumentException(DeckMessages::ERROR_INVALID_STATUS);
+				throw new InvalidArgumentException(DeckMessages::errorInvalidStatus());
 			}
 
 			$page = $this->gateway->followupCards(

@@ -65,25 +65,25 @@ class ApprovalRegistryTest extends TestCase {
         $this->approvals->consume('alice', $id, $this->givenBinding());
 
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->approvals->consume('alice', $id, $this->givenBinding());
     }
 
     public function testACallWithoutAnIdIsRefusedWithTheInstructionToAskForTheDraft(): void {
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_MISSING);
+        $this->expectExceptionMessage(Messages::approvalMissing());
         $this->approvals->consume('alice', null, $this->givenBinding());
     }
 
     public function testAnEmptyIdIsNoIdAtAll(): void {
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_MISSING);
+        $this->expectExceptionMessage(Messages::approvalMissing());
         $this->approvals->consume('alice', '', $this->givenBinding());
     }
 
     public function testAnIdNobodyIssuedIsRefused(): void {
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->approvals->consume('alice', 'ID999', $this->givenBinding());
     }
 
@@ -95,7 +95,7 @@ class ApprovalRegistryTest extends TestCase {
             $this->approvals->consume('mallory', $id, $this->givenBinding());
             $this->fail('An id issued to another account must not approve anything.');
         } catch (ApprovalException $e) {
-            $this->assertSame(Messages::APPROVAL_INVALID, $e->getMessage());
+            $this->assertSame(Messages::approvalInvalid(), $e->getMessage());
             $this->assertStringNotContainsString('alice', $e->getMessage());
         }
     }
@@ -104,7 +104,7 @@ class ApprovalRegistryTest extends TestCase {
         $id = $this->approvals->issue('alice', ['action' => 'talk_reply', 'conversation' => 'abcd', 'message' => 'oi']);
 
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->approvals->consume('alice', $id, ['action' => 'talk_reply', 'conversation' => 'zzzz', 'message' => 'oi']);
     }
 
@@ -112,7 +112,7 @@ class ApprovalRegistryTest extends TestCase {
         $id = $this->approvals->issue('alice', ['action' => 'talk_reply', 'conversation' => 'abcd', 'message' => 'oi']);
 
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->approvals->consume('alice', $id, ['action' => 'talk_attach_file', 'conversation' => 'abcd', 'message' => 'oi']);
     }
 
@@ -120,7 +120,7 @@ class ApprovalRegistryTest extends TestCase {
         $id = $this->approvals->issue('alice', ['action' => 'talk_reply', 'conversation' => 'abcd', 'message' => 'oi']);
 
         $this->expectException(ApprovalException::class);
-        $this->expectExceptionMessage(Messages::APPROVAL_INVALID);
+        $this->expectExceptionMessage(Messages::approvalInvalid());
         $this->approvals->consume('alice', $id, ['action' => 'talk_reply', 'conversation' => 'abcd', 'message' => 'oi alterado']);
     }
 
@@ -132,7 +132,7 @@ class ApprovalRegistryTest extends TestCase {
             $this->approvals->consume('alice', $id, $this->givenBinding());
             $this->fail('An expired id must not approve anything.');
         } catch (ApprovalException $e) {
-            $this->assertSame(Messages::APPROVAL_INVALID, $e->getMessage());
+            $this->assertSame(Messages::approvalInvalid(), $e->getMessage());
         }
         $this->assertArrayNotHasKey(ApprovalRegistry::KEY_PREFIX . $id, $this->rows);
     }

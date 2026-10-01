@@ -5,7 +5,11 @@ namespace OCA\Mcp\Tests\Unit\Tools;
 
 use InvalidArgumentException;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tools\ArgumentValidator;
+use OCA\Mcp\Tools\Notes\NotesMessages;
+use OCA\Mcp\Tools\Common\NodeAccessInfo;
+use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Notes\NotesModule;
 use OCA\Mcp\Tools\Notes\NotesRepository;
 use OCA\Mcp\Tools\ToolFailure;
@@ -37,7 +41,9 @@ final class NotesModuleTest extends TestCase {
         $apps->method('isEnabledForUser')->willReturnCallback(fn (string $app) => in_array($app, $this->apps, true));
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturn($this->createMock(IUser::class));
-        $this->module = new NotesModule(new NotesRepository($root, $this->config->mock($this)), $apps, $users);
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
+        $this->module = new NotesModule(new NotesRepository($root, $this->config->mock($this)), $apps, $users,
+            new SharedWriteGuard($access), $access);
     }
 
     private function tool(string $name, array $arguments = []): array {
@@ -77,7 +83,70 @@ final class NotesModuleTest extends TestCase {
         $this->assertEqualsCanonicalizing(['Ata', 'Ideia'], array_column($notes, 'title'));
         $ata = array_column($notes, null, 'title')['Ata'];
         $this->assertSame(['id' => $this->ata, 'title' => 'Ata', 'category' => 'Reuniões'], array_intersect_key($ata, ['id' => 0, 'title' => 0, 'category' => 0]));
-        $this->assertSame(['id', 'title', 'category', 'modified', 'etag'], array_keys($ata));
+        $this->assertSame(['id', 'title', 'category', 'modified', 'etag', 'access'], array_keys($ata));
+        $this->assertSame('personal', $ata['access']['scope']);
+    }
+
+    /**
+     * A note lives inside the user's own folder by construction, so the guard never fires on the normal
+     * path. It only fires when an administrator pointed the notes path at a share or a team folder, and
+     * then nothing is written until the user confirms.
+     */
+    public function testANoteOutsideThePersonalScopeAsksForConfirmationBeforeAnyChange(): void {
+        $this->config->user['alice']['notes']['notesPath'] = 'Equipe';
+        $id = $this->tree->addFile('/alice/files/Equipe/Ata.md', 'decisões', 'text/markdown', ['scope' => 'team']);
+        $this->tree->mountPath = '/alice/files/Equipe';
+
+        $edit = $this->tool('notes_edit', ['id' => $id, 'content' => 'novo']);
+        $this->assertTrue($edit['requiresConfirmation']);
+        $this->assertSame('team', $edit['scope']);
+        $this->assertSame('Equipe', $edit['teamFolder']);
+        $this->assertSame((string)$id, $edit['resource']);
+        $this->assertSame('decisões', $this->tree->nodes['/alice/files/Equipe/Ata.md']['content']);
+        $this->assertSame([], $this->tree->ops);
+
+        $this->tree->addFile('/alice/files/Equipe/Outra.md', 'x', 'text/markdown', ['scope' => 'team']);
+        $other = $this->tree->nodes['/alice/files/Equipe/Outra.md']['id'];
+        $this->assertTrue($this->tool('notes_move', ['id' => $other, 'category' => 'Sub'])['requiresConfirmation']);
+        $this->assertTrue($this->tool('notes_delete', ['id' => $other, 'confirm' => true])['requiresConfirmation']);
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    public function testTheGuardLetsTheChangeThroughOnceTheUserConfirmed(): void {
+        $this->config->user['alice']['notes']['notesPath'] = 'Equipe';
+        $id = $this->tree->addFile('/alice/files/Equipe/Ata.md', 'decisões', 'text/markdown', ['scope' => 'shared']);
+        $out = $this->tool('notes_edit', ['id' => $id, 'content' => 'novo', 'confirm_shared' => true]);
+        $this->assertArrayNotHasKey('requiresConfirmation', $out);
+        $this->assertSame('novo', $this->tree->nodes['/alice/files/Equipe/Ata.md']['content']);
+    }
+
+    /** A note Nextcloud will not update stays refused, confirmation or not. */
+    public function testANoteWithoutUpdatePermissionIsDeniedEitherWay(): void {
+        $this->config->user['alice']['notes']['notesPath'] = 'Equipe';
+        $id = $this->tree->addFile('/alice/files/Equipe/Ata.md', 'x', 'text/markdown',
+            ['scope' => 'shared', 'permissions' => \OCP\Constants::PERMISSION_READ]);
+        foreach ([false, true] as $confirmed) {
+            try {
+                $this->tool('notes_edit', ['id' => $id, 'content' => 'y', 'confirm_shared' => $confirmed]);
+                $this->fail('a read-only note must never be writable');
+            } catch (ToolFailure $e) {
+                $this->assertSame(ToolFailure::FORBIDDEN, $e->getMessage());
+            }
+        }
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    public function testThePersonalPathNeverAsksForConfirmation(): void {
+        $out = $this->tool('notes_edit', ['id' => $this->ata, 'content' => 'novo']);
+        $this->assertArrayNotHasKey('requiresConfirmation', $out);
+        $this->assertSame('personal', $out['access']['scope']);
+    }
+
+    public function testTheWriteToolsDeclareTheConfirmationArgument(): void {
+        $defs = array_column($this->module->definitions(), null, 'name');
+        foreach (['notes_edit', 'notes_move', 'notes_delete'] as $name) {
+            $this->assertArrayHasKey('confirm_shared', $defs[$name]['inputSchema']['properties'], $name);
+        }
     }
 
     public function testListUsesTheConfiguredFolderAndToleratesAMissingOne(): void {
@@ -96,7 +165,7 @@ final class NotesModuleTest extends TestCase {
 
     public function testReadEnforcesSizeLimit(): void {
         $id = $this->tree->addFile('/alice/files/Notes/grande.md', 'x', 'text/markdown', ['size' => NotesModule::MAX_BYTES + 1]);
-        $this->assertStringContainsString('limite', $this->failure('notes_read', ['id' => $id]));
+        $this->assertSame(NotesMessages::noteTooLargeForReading(NotesModule::MAX_BYTES), $this->failure('notes_read', ['id' => $id]));
     }
 
     public function testCreateNeverOverwrites(): void {
@@ -125,7 +194,7 @@ final class NotesModuleTest extends TestCase {
     public function testEditRefusesConflictsAndEmptyChanges(): void {
         $this->assertSame(ToolFailure::CONFLICT, $this->failure('notes_edit', ['id' => $this->ata, 'content' => 'x', 'etag' => 'velho']));
         $this->tree->addFile('/alice/files/Notes/Reuniões/Outra.md', 'o');
-        $this->assertStringContainsString('Já existe', $this->failure('notes_edit', ['id' => $this->ata, 'title' => 'Outra']));
+        $this->assertSame(NotesMessages::titleExistsInCategory(), $this->failure('notes_edit', ['id' => $this->ata, 'title' => 'Outra']));
         $this->assertSame(ToolFailure::NOT_FOUND, $this->failure('notes_edit', ['id' => $this->outside, 'content' => 'x']));
         $this->invalid('notes_edit', ['id' => $this->ata]);
         $this->tree->nodes['/alice/files/Notes/Reuniões/Ata.md']['updateable'] = false;
@@ -139,7 +208,7 @@ final class NotesModuleTest extends TestCase {
         $this->assertSame('Arquivo/2026', $moved['category']);
         $this->assertArrayHasKey('/alice/files/Notes/Arquivo/2026/Ata.md', $this->tree->nodes);
         $this->tree->addFile('/alice/files/Notes/Ata.md', 'raiz');
-        $this->assertStringContainsString('Já existe', $this->failure('notes_move', ['id' => $this->ata, 'category' => '']));
+        $this->assertSame(NotesMessages::titleExistsInTargetCategory(), $this->failure('notes_move', ['id' => $this->ata, 'category' => '']));
         $this->invalid('notes_move', ['id' => $this->ata, 'category' => '../../Documentos']);
     }
 
@@ -147,7 +216,7 @@ final class NotesModuleTest extends TestCase {
         $this->invalid('notes_delete', ['id' => $this->ata]);
         $this->invalid('notes_delete', ['id' => $this->ata, 'confirm' => false]);
         $this->apps = ['notes'];
-        $this->assertStringContainsString('files_trashbin', $this->failure('notes_delete', ['id' => $this->ata, 'confirm' => true]));
+        $this->assertSame(NotesMessages::notRecoverable(), $this->failure('notes_delete', ['id' => $this->ata, 'confirm' => true]));
         $this->assertArrayHasKey('/alice/files/Notes/Reuniões/Ata.md', $this->tree->nodes);
         $this->apps = ['notes', 'files_trashbin'];
         $this->assertSame(ToolFailure::NOT_FOUND, $this->failure('notes_delete', ['id' => $this->outside, 'confirm' => true]));
@@ -158,7 +227,7 @@ final class NotesModuleTest extends TestCase {
 
     public function testDeleteIsBlockedOnStorageWithoutTrashWrapper(): void {
         $this->tree->nodes['/alice/files/Notes/Reuniões/Ata.md']['trash'] = false;
-        $this->assertSame(NotesModule::NOT_RECOVERABLE, $this->failure('notes_delete', ['id' => $this->ata, 'confirm' => true]));
+        $this->assertSame(NotesMessages::notRecoverable(), $this->failure('notes_delete', ['id' => $this->ata, 'confirm' => true]));
         $this->assertArrayHasKey('/alice/files/Notes/Reuniões/Ata.md', $this->tree->nodes);
         $this->assertSame([], $this->tree->ops);
     }

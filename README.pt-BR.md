@@ -40,7 +40,7 @@ E também:
 - **Nomes amigáveis das ferramentas** no cliente ("Buscar arquivos", "Listar calendários") e anotações MCP (`readOnlyHint`, `destructiveHint`), para o cliente pedir confirmação em ações de risco.
 - **Confirmação de segurança** em recursos de outras pessoas: pastas compartilhadas, pastas de time, quadros do Deck e calendários de outro dono. O servidor recusa a primeira chamada e devolve uma mensagem pronta. O assistente precisa perguntar ao usuário antes de repetir com `confirm_shared: true`. *(Deck e Calendário desde a 0.6.6; Arquivos e Notas na 0.7)*
 - **Apps opcionais respeitados**: as tools e as colunas da matriz de admin de um app desativado (para todos ou para um usuário) ficam ocultas.
-- **Interface traduzida**: a matriz de admin, a página pessoal e a tela de consentimento seguem o idioma do usuário no Nextcloud. Inglês e português do Brasil vêm incluídos.
+- **Interface traduzida**: a matriz de admin, a página pessoal, a tela de consentimento e toda mensagem mostrada por uma tool seguem o idioma do usuário no Nextcloud. Inglês, português do Brasil e espanhol vêm incluídos (o espanhol é uma primeira tradução e ainda precisa de revisão de um nativo); as descrições das tools ficam em inglês, porque quem as lê é o modelo.
 - **As duas gerações do MCP** no mesmo endpoint: `2026-07-28`, sem estado (`server/discover`), e o fluxo clássico com `initialize` (`2025-06-18` e anteriores).
 
 ## Requisitos
@@ -127,7 +127,7 @@ Veja o [`CHANGELOG.md`](CHANGELOG.md) (em inglês).
 
 - Edição "como local" para agentes com terminal: links de checkout e checkin, versões de arquivo (listar, ler, restaurar), diffs e substituição de trecho
 - Reorganização de pastas: varredura da árvore, criar pastas, mover e copiar, lotes com simulação e desfazer. Continua sem exclusão.
-- Títulos e mensagens das ferramentas no idioma de cada usuário
+- Mensagens das ferramentas no idioma de cada usuário nos módulos restantes (Arquivos, Calendário e as mensagens compartilhadas; Deck, Notas e Talk já estão prontos)
 - Publicação na App Store do Nextcloud
 
 ## Licença

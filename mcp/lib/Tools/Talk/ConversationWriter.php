@@ -40,7 +40,7 @@ class ConversationWriter {
     public function reply(Conversation $conversation, string $userId, string $message, ?int $replyTo = null): array {
         $body = self::normalizeMessage($message);
         if ($replyTo !== null && $replyTo < 1) {
-            throw new InvalidArgumentException(Messages::INVALID_IDENTIFIER);
+            throw new InvalidArgumentException(Messages::invalidIdentifier());
         }
 
         $participantService = $this->talkServices->participantService($userId);
@@ -64,7 +64,7 @@ class ConversationWriter {
         } catch (TalkUnavailableException $e) {
             throw $e;
         } catch (Throwable $e) {
-            throw new ConversationAccessException(Messages::MESSAGE_NOT_SENT, $e);
+            throw new ConversationAccessException(Messages::messageNotSent(), $e);
         }
 
         return [
@@ -122,7 +122,7 @@ class ConversationWriter {
      */
     public function quoteTarget(Conversation $conversation, string $userId, int $replyTo): IComment {
         if ($replyTo < 1) {
-            throw new InvalidArgumentException(Messages::INVALID_IDENTIFIER);
+            throw new InvalidArgumentException(Messages::invalidIdentifier());
         }
 
         try {
@@ -130,9 +130,9 @@ class ConversationWriter {
                 ->getParentComment($conversation->room, (string)$replyTo);
         } catch (CommentNotFoundException $e) {
             // A missing id and an id from another conversation are the same answer.
-            throw new ConversationAccessException(Messages::REPLY_TARGET_NOT_FOUND, $e);
+            throw new ConversationAccessException(Messages::replyTargetNotFound(), $e);
         } catch (Throwable $e) {
-            throw new ConversationAccessException(Messages::REPLY_TARGET_NOT_FOUND, $e);
+            throw new ConversationAccessException(Messages::replyTargetNotFound(), $e);
         }
     }
 
@@ -170,7 +170,7 @@ class ConversationWriter {
         } catch (TalkUnavailableException $e) {
             throw $e;
         } catch (Throwable $e) {
-            throw new ConversationAccessException(Messages::MESSAGE_NOT_SENT, $e);
+            throw new ConversationAccessException(Messages::messageNotSent(), $e);
         }
 
         return [
@@ -206,10 +206,10 @@ class ConversationWriter {
     public static function normalizeMessage(string $message): string {
         $trimmed = trim($message);
         if ($trimmed === '') {
-            throw new InvalidArgumentException(Messages::EMPTY_MESSAGE);
+            throw new InvalidArgumentException(Messages::emptyMessage());
         }
         if (mb_strlen($trimmed) > self::MAX_MESSAGE_LENGTH) {
-            throw new InvalidArgumentException(Messages::MESSAGE_TOO_LONG);
+            throw new InvalidArgumentException(Messages::messageTooLong());
         }
 
         return $trimmed;

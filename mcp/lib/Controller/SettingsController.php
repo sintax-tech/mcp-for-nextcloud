@@ -4,6 +4,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Controller;
 
 use InvalidArgumentException;
+use OCA\Mcp\Checkout\CheckoutTokenStore;
+use OCA\Mcp\Tools\Files\BatchStore;
 use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Service\GrantPolicy;
 use OCP\AppFramework\Controller;
@@ -27,6 +29,8 @@ class SettingsController extends Controller {
         private IUserSession $userSession,
         private GrantPolicy $policy,
         private TokenService $oauthTokens,
+        private CheckoutTokenStore $checkoutTokens,
+        private BatchStore $batches,
     ) {
         parent::__construct($appName, $request);
     }
@@ -59,6 +63,10 @@ class SettingsController extends Controller {
         if ($enabled === '0') {
             // Disconnecting also revokes every OAuth access and refresh token of the user.
             $this->oauthTokens->revokeUser($uid);
+            // And every pending checkout link, so a link issued before the switch cannot be spent after it.
+            $this->checkoutTokens->deleteForUser($uid);
+            // And every batch still waiting to be undone: it must not outlive the connection that made it.
+            $this->batches->deleteForUser($uid);
         }
         return new RedirectResponse($this->urlGenerator->linkToRoute('settings.PersonalSettings.index', ['section' => 'personal-info']));
     }

@@ -58,7 +58,7 @@ class UserFileResolverTest extends TestCase {
         $this->rootFolder->expects($this->never())->method('getUserFolder');
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(Messages::INVALID_PATH);
+        $this->expectExceptionMessage(Messages::invalidPath());
         $this->resolver->resolveShareableFile('alice', $path);
     }
 
@@ -80,7 +80,7 @@ class UserFileResolverTest extends TestCase {
         $this->userFolder->method('get')->willThrowException(new NotFoundException('nope'));
 
         $this->expectException(FileAccessException::class);
-        $this->expectExceptionMessage(Messages::FILE_NOT_FOUND);
+        $this->expectExceptionMessage(Messages::fileNotFound());
         $this->resolver->resolveShareableFile('alice', 'relatorio.pdf');
     }
 
@@ -88,7 +88,7 @@ class UserFileResolverTest extends TestCase {
         $this->userFolder->method('get')->willReturn($this->createMock(Folder::class));
 
         $this->expectException(FileAccessException::class);
-        $this->expectExceptionMessage(Messages::FILE_NOT_FOUND);
+        $this->expectExceptionMessage(Messages::fileNotFound());
         $this->resolver->resolveShareableFile('alice', 'Documentos');
     }
 
@@ -96,7 +96,7 @@ class UserFileResolverTest extends TestCase {
         $this->givenFile(Constants::PERMISSION_SHARE, false);
 
         $this->expectException(FileAccessException::class);
-        $this->expectExceptionMessage(Messages::FILE_NOT_FOUND);
+        $this->expectExceptionMessage(Messages::fileNotFound());
         $this->resolver->resolveShareableFile('alice', 'relatorio.pdf');
     }
 
@@ -104,7 +104,7 @@ class UserFileResolverTest extends TestCase {
         $this->givenFile(Constants::PERMISSION_READ | Constants::PERMISSION_UPDATE);
 
         $this->expectException(FileAccessException::class);
-        $this->expectExceptionMessage(Messages::FILE_NOT_FOUND);
+        $this->expectExceptionMessage(Messages::fileNotFound());
         $this->resolver->resolveShareableFile('alice', 'relatorio.pdf');
     }
 
@@ -116,7 +116,7 @@ class UserFileResolverTest extends TestCase {
             $this->resolver->resolveShareableFile('alice', 'relatorio.pdf');
             $this->fail('A denied lookup must be refused.');
         } catch (FileAccessException $e) {
-            $this->assertSame(Messages::FILE_NOT_FOUND, $e->getMessage());
+            $this->assertSame(Messages::fileNotFound(), $e->getMessage());
             $this->assertStringNotContainsString('locked', $e->getMessage());
         }
     }

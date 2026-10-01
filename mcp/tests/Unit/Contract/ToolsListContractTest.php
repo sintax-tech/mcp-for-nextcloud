@@ -4,12 +4,16 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract;
 
 use OCA\Mcp\AppInfo\Application;
+use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\McpProtocol;
+use OCA\Mcp\Service\PromptCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Tools\ToolPresentation;
 use OCA\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
+use OCP\IL10N;
 use OCP\IUser;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
@@ -76,7 +80,8 @@ final class ToolsListContractTest extends TestCase {
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturn($this->createMock(IUser::class));
         $modules = array_map(fn (string $class) => $this->build($class), Application::MODULES);
-        $protocol = new McpProtocol(new ToolRegistry($modules, $policy, $apps, $users, $this->createMock(LoggerInterface::class)), $this->createMock(LoggerInterface::class));
+        $protocol = new McpProtocol(new ToolRegistry($modules, $policy, $apps, $users, $this->createMock(LoggerInterface::class)),
+            new PromptCatalog(), $policy, $this->createMock(LoggerInterface::class));
         $out = $protocol->handle($request, $version, 'alice', json_decode($headers, true));
         return json_encode($out['body'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
@@ -140,6 +145,49 @@ final class ToolsListContractTest extends TestCase {
                 $this->assertTrue($tool->annotations->idempotentHint, "$tool->name: a read-only tool is idempotent");
                 $this->assertFalse($tool->annotations->destructiveHint, "$tool->name: a read-only tool cannot be destructive");
             }
+        }
+    }
+
+    /**
+     * The title is what the client shows to the person reading the conversation, the description is what the
+     * model reads: in tools/list of one account the titles come out in the language of that account, while the
+     * descriptions of the translated modules stay the same English text in every one of them.
+     */
+    public function testTitlesFollowTheUsersLanguageAndDescriptionsStayEnglish(): void {
+        $expectedTitles = [
+            'en' => ['notes_list' => 'List notes', 'deck_read_card' => 'Read Deck card', 'talk_reply' => 'Reply in Talk'],
+            'pt_BR' => ['notes_list' => 'Listar notas', 'deck_read_card' => 'Ler card do Deck', 'talk_reply' => 'Responder no Talk'],
+            'es' => ['notes_list' => 'Listar notas', 'deck_read_card' => 'Leer tarjeta de Deck', 'talk_reply' => 'Responder en Talk'],
+        ];
+        $descriptions = [];
+        try {
+            foreach ($expectedTitles as $language => $titles) {
+                Translator::use(new JsonL10n($language));
+                $tools = array_column(
+                    json_decode($this->toolsListJson(), false, 512, JSON_THROW_ON_ERROR)->result->tools,
+                    null,
+                    'name',
+                );
+                foreach ($titles as $name => $title) {
+                    $this->assertSame($title, $tools[$name]->title, $language . ': ' . $name);
+                    $this->assertSame($tools[$name]->title, $tools[$name]->annotations->title, $language . ': ' . $name);
+                }
+                foreach ($tools as $tool) {
+                    $descriptions[$language][$tool->name] = $tool->description;
+                    if (preg_match('/^(notes|deck|talk)_/', $tool->name) === 1 || $tool->name === 'mcp_status') {
+                        $this->assertDoesNotMatchRegularExpression(
+                            '/[À-ÿ]/u',
+                            $tool->description,
+                            $language . ': ' . $tool->name . ' has a description meant for the model, it stays English',
+                        );
+                    }
+                }
+            }
+        } finally {
+            Translator::reset();
+        }
+        foreach ($descriptions as $language => $byTool) {
+            $this->assertSame($descriptions['en'], $byTool, $language . ': a description changed with the language');
         }
     }
 
@@ -211,10 +259,23 @@ final class ToolsListContractTest extends TestCase {
     public function testEveryRegisteredToolIsInTheTitleMap(): void {
         $tools = json_decode($this->toolsListJson(), false, 512, JSON_THROW_ON_ERROR)->result->tools;
         $missing = [];
-        foreach ($tools as $tool) {
-            if (ToolPresentation::title($tool->name) === ToolPresentation::humanized($tool->name)) {
-                $missing[] = $tool->name;
+        // A mapped title goes through the translator, the humanized fallback does not: the marker tells them apart
+        // even when the English title happens to equal the humanized name.
+        Translator::use(new class implements IL10N {
+            public function t(string $text, $parameters = []): string { return '«' . $text . '»'; }
+            public function n(string $text_singular, string $text_plural, int $count, array $parameters = []): string { return '«' . $text_singular . '»'; }
+            public function l(string $type, $data, array $options = []) { return (string)$data; }
+            public function getLanguageCode(): string { return 'en'; }
+            public function getLocaleCode(): string { return 'en'; }
+        });
+        try {
+            foreach ($tools as $tool) {
+                if (!str_starts_with(ToolPresentation::title($tool->name), '«')) {
+                    $missing[] = $tool->name;
+                }
             }
+        } finally {
+            Translator::reset();
         }
         $this->assertSame([], $missing, 'these tools are missing a friendly title in ToolPresentation');
     }
@@ -255,13 +316,15 @@ final class ToolsListContractTest extends TestCase {
     }
 
     public function testInitializeEncodesCapabilitiesAsObjects(): void {
-        $protocol = new McpProtocol(new ToolRegistry([], new GrantPolicy((new InMemoryConfig())->mock($this)), $this->createMock(IAppManager::class),
-            $this->createMock(IUserManager::class), $this->createMock(LoggerInterface::class)), $this->createMock(LoggerInterface::class));
+        $policy = new GrantPolicy((new InMemoryConfig())->mock($this));
+        $protocol = new McpProtocol(new ToolRegistry([], $policy, $this->createMock(IAppManager::class),
+            $this->createMock(IUserManager::class), $this->createMock(LoggerInterface::class)),
+            new PromptCatalog(), $policy, $this->createMock(LoggerInterface::class));
         $out = $protocol->handle(json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'initialize', 'params' => [
             'protocolVersion' => '2025-11-25', 'capabilities' => new \stdClass(), 'clientInfo' => ['name' => 'Claude-User', 'version' => '1.0'],
         ]]), '', 'alice');
         $json = json_encode($out['body']);
-        $this->assertStringContainsString('"capabilities":{"tools":{}}', $json);
+        $this->assertStringContainsString('"capabilities":{"tools":{},"prompts":{}}', $json);
         $result = json_decode($json)->result;
         $this->assertSame('2025-06-18', $result->protocolVersion);
         $this->assertIsString($result->serverInfo->name);

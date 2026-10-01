@@ -101,7 +101,7 @@ class AttachmentAccessTest extends TestCase {
         $this->givenShare(IShare::TYPE_ROOM, 'zzzz');
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::ATTACHMENT_NOT_FOUND);
+        $this->expectExceptionMessage(Messages::attachmentNotFound());
         $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
     }
 
@@ -109,7 +109,7 @@ class AttachmentAccessTest extends TestCase {
         $this->givenShare(IShare::TYPE_LINK, 'abcd');
 
         $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::ATTACHMENT_NOT_FOUND);
+        $this->expectExceptionMessage(Messages::attachmentNotFound());
         $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
     }
 
@@ -122,7 +122,7 @@ class AttachmentAccessTest extends TestCase {
             $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
             $this->fail('An attachment the user cannot see must be refused.');
         } catch (ConversationAccessException $e) {
-            $this->assertSame(Messages::ATTACHMENT_NOT_FOUND, $e->getMessage());
+            $this->assertSame(Messages::attachmentNotFound(), $e->getMessage());
             $this->assertStringNotContainsString('not visible', $e->getMessage());
             $this->assertStringNotContainsString('10.0.0.9', $e->getMessage());
             // The cause is kept for the log only.

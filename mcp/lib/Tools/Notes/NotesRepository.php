@@ -130,7 +130,7 @@ class NotesRepository {
         $name = $base . '.md';
         for ($i = 2; $folder->nodeExists($name); $i++) {
             if ($i > self::MAX_SUFFIX) {
-                throw new ToolFailure('Já existem notas demais com este título.');
+                throw new ToolFailure(NotesMessages::tooManyNotesWithSameTitle());
             }
             $name = $base . ' (' . $i . ').md';
         }

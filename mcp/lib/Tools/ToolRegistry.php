@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools;
 
 use InvalidArgumentException;
+use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Service\GrantPolicy;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
@@ -70,7 +71,7 @@ class ToolRegistry {
                     return ToolResult::error($e->getMessage());
                 } catch (\Throwable $e) {
                     $this->logger->error('MCP tool failed', ['app' => 'mcp', 'tool' => $name, 'exception_class' => $e::class]);
-                    return ToolResult::error('Erro inesperado ao acessar o Nextcloud.');
+                    return ToolResult::error(Translator::t('Unexpected error while accessing Nextcloud.'));
                 }
             }
         }

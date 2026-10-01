@@ -18,6 +18,10 @@ return ['routes' => [
     ['name' => 'grants#service', 'url' => '/api/service', 'verb' => 'PUT'],
     ['name' => 'grants#oauthClients', 'url' => '/api/oauth-clients', 'verb' => 'GET'],
     ['name' => 'grants#updateOauthClients', 'url' => '/api/oauth-clients', 'verb' => 'PUT'],
+    ['name' => 'connections#index', 'url' => '/api/connections', 'verb' => 'GET'],
+    // Two path segments, so a user id never collides with a numeric connection id.
+    ['name' => 'connections#revokeUser', 'url' => '/api/connections/users/{uid}', 'verb' => 'DELETE'],
+    ['name' => 'connections#destroy', 'url' => '/api/connections/{id}', 'verb' => 'DELETE', 'requirements' => ['id' => '\d+']],
     ['name' => 'tags#index', 'url' => '/api/admin/tags', 'verb' => 'GET'],
     ['name' => 'tags#update', 'url' => '/api/admin/tags', 'verb' => 'PUT'],
     ['name' => 'metadata#protectedResource', 'url' => '/.well-known/oauth-protected-resource', 'verb' => 'GET'],

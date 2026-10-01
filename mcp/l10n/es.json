@@ -459,6 +459,27 @@
     "Change {module} permissions for every user on this page" : "Cambiar los permisos de {module} para todos los usuarios de esta página",
     "Users {from}–{to}" : "Usuarios {from}–{to}",
     "Users {from}–{to} of {total}" : "Usuarios {from}–{to} de {total}",
-    "connected" : "conectado"
+    "connected" : "conectado",
+    "Active connections" : "Conexiones activas",
+    "Each row is one MCP client signed in with OAuth. Revoking signs that client out at once; the user can sign in again while they may connect. App passwords are managed in each user’s security settings." : "Cada fila es un cliente MCP conectado por OAuth. Revocar desconecta ese cliente al instante; el usuario puede volver a entrar mientras tenga permiso para conectarse. Las contraseñas de aplicación se gestionan en la configuración de seguridad de cada usuario.",
+    "Search by user ID or client" : "Buscar por ID de usuario o cliente",
+    "Search connections" : "Buscar conexiones",
+    "Client" : "Cliente",
+    "Signed in" : "Conectado el",
+    "Expires" : "Caduca el",
+    "Actions" : "Acciones",
+    "Could not load the connections." : "No se pudieron cargar las conexiones.",
+    "Revoke" : "Revocar",
+    "Revoke all of this user" : "Revocar todas de este usuario",
+    "No active connections." : "No hay conexiones activas.",
+    "No connection matches the search." : "Ninguna conexión coincide con la búsqueda.",
+    "You have no active connections." : "No tiene conexiones activas.",
+    "Revoke the connection of {user} through {client}? The client is signed out at once." : "¿Revocar la conexión de {user} mediante {client}? El cliente se desconecta al instante.",
+    "Revoke the connection through {client}? The client is signed out at once." : "¿Revocar la conexión mediante {client}? El cliente se desconecta al instante.",
+    "Connection revoked." : "Conexión revocada.",
+    "Could not revoke the connection." : "No se pudo revocar la conexión.",
+    "Revoke every connection of {user}? Their clients are signed out at once; the user can sign in again." : "¿Revocar todas las conexiones de {user}? Sus clientes se desconectan al instante; el usuario puede volver a entrar.",
+    "Connections of {user} revoked." : "Conexiones de {user} revocadas.",
+    "Could not revoke the connections of {user}." : "No se pudieron revocar las conexiones de {user}."
 },"pluralForm" : "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

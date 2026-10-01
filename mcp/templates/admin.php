@@ -1,13 +1,14 @@
 <?php
 /**
  * Admin page of the "MCP for Nextcloud" settings section, one core `.section` per block:
- * status, OAuth clients, hidden files & tags, OCR and the users × permissions matrix. The matrix, OAuth clients
- * and tags are filled by js/admin-grants.js.
+ * status, OAuth clients, hidden files & tags, OCR, the users × permissions matrix and the active connections.
+ * The matrix, OAuth clients and tags are filled by js/admin-grants.js, the connections by js/connections.js.
  *
- * @var array{endpoint:string, serviceEnabled:bool, ocrActive:bool, ocrUrl:string, version:string, eligibleUsers:int, connectedUsers:int} $_
+ * @var array{endpoint:string, serviceEnabled:bool, ocrActive:bool, ocrUrl:string, version:string, eligibleUsers:int, connectedUsers:int, activeConnections:int} $_
  * @var \OCP\IL10N $l
  */
 \OCP\Util::addScript('mcp', 'admin-grants');
+\OCP\Util::addScript('mcp', 'connections');
 \OCP\Util::addStyle('mcp', 'admin');
 ?>
 <div id="mcp-admin" class="mcp-settings" data-service-enabled="<?php p($_['serviceEnabled'] ? '1' : '0'); ?>">
@@ -40,6 +41,10 @@
             <div class="mcp-card">
                 <span class="mcp-card-label"><?php p($l->t('Connected users')); ?></span>
                 <span class="mcp-card-value" id="mcp-count-connected"><?php p((string)$_['connectedUsers']); ?></span>
+            </div>
+            <div class="mcp-card">
+                <span class="mcp-card-label"><?php p($l->t('Active connections')); ?></span>
+                <span class="mcp-card-value" id="mcp-count-connections"><?php p((string)$_['activeConnections']); ?></span>
             </div>
         </div>
         <p class="settings-hint mcp-hint"><?php p($l->t('Paste the endpoint in the MCP client. Turning the service off signs every client out at once.')); ?></p>
@@ -135,5 +140,31 @@
                 <button type="button" id="mcp-next-bottom"><?php p($l->t('Next')); ?></button>
             </span>
         </div>
+    </div>
+
+    <div class="section mcp-block" id="mcp-connections" data-scope="admin">
+        <h2><?php p($l->t('Active connections')); ?></h2>
+        <p class="settings-hint mcp-hint"><?php p($l->t('Each row is one MCP client signed in with OAuth. Revoking signs that client out at once; the user can sign in again while they may connect. App passwords are managed in each user’s security settings.')); ?></p>
+        <div class="mcp-toolbar">
+            <input type="search" id="mcp-connections-search" placeholder="<?php p($l->t('Search by user ID or client')); ?>" aria-label="<?php p($l->t('Search connections')); ?>">
+            <span class="mcp-pager">
+                <button type="button" id="mcp-connections-prev"><?php p($l->t('Previous')); ?></button>
+                <span id="mcp-connections-page-info"></span>
+                <button type="button" id="mcp-connections-next"><?php p($l->t('Next')); ?></button>
+            </span>
+            <span class="mcp-status" id="mcp-connections-status" aria-live="polite"></span>
+        </div>
+        <table class="mcp-connections-table" id="mcp-connections-table" aria-busy="true">
+            <thead>
+                <tr>
+                    <th scope="col"><?php p($l->t('User')); ?></th>
+                    <th scope="col"><?php p($l->t('Client')); ?></th>
+                    <th scope="col"><?php p($l->t('Signed in')); ?></th>
+                    <th scope="col"><?php p($l->t('Expires')); ?></th>
+                    <th scope="col"><span class="hidden-visually"><?php p($l->t('Actions')); ?></span></th>
+                </tr>
+            </thead>
+            <tbody><tr><td colspan="5" class="mcp-empty"><?php p($l->t('Loading…')); ?></td></tr></tbody>
+        </table>
     </div>
 </div>

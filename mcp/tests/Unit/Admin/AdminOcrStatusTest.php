@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Admin;
 
+use OCA\Mcp\Service\ConnectionList;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Settings\AdminSettings;
 use OCA\Mcp\Tools\Files\OcrSupport;
@@ -19,7 +20,13 @@ final class AdminOcrStatusTest extends TestCase {
         $policy->method('globalEnabled')->willReturn(true);
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturn('https://cloud.test/mcp');
-        return (new AdminSettings($policy, $urls, new OcrSupport($apps), $apps))->getForm()->getParams();
+        return (new AdminSettings($policy, $urls, new OcrSupport($apps), $apps, $this->connections()))->getForm()->getParams();
+    }
+
+    private function connections(): ConnectionList {
+        $connections = $this->createMock(ConnectionList::class);
+        $connections->method('count')->willReturn(4);
+        return $connections;
     }
 
     public function testStatusFollowsTheApp(): void {
@@ -40,8 +47,8 @@ final class AdminOcrStatusTest extends TestCase {
         ]);
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturn('https://cloud.test/mcp');
-        $params = (new AdminSettings($policy, $urls, new OcrSupport($apps), $apps))->getForm()->getParams();
-        $this->assertSame(['0.8.0', 3, 1], [$params['version'], $params['eligibleUsers'], $params['connectedUsers']]);
+        $params = (new AdminSettings($policy, $urls, new OcrSupport($apps), $apps, $this->connections()))->getForm()->getParams();
+        $this->assertSame(['0.8.0', 3, 1, 4], [$params['version'], $params['eligibleUsers'], $params['connectedUsers'], $params['activeConnections']]);
     }
 
     public function testTemplateShowsTheWarningLinkAndOcrmypdfNote(): void {

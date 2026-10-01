@@ -11,7 +11,7 @@ final class AdminAssetsTest extends TestCase {
         $app = dirname(__DIR__, 3);
         $template = (string)file_get_contents($app . '/templates/admin.php');
         preg_match_all("/Util::add(Script|Style)\\(\\s*'mcp'\\s*,\\s*'([^']+)'/", $template, $matches, PREG_SET_ORDER);
-        $this->assertCount(2, $matches);
+        $this->assertCount(3, $matches);
         foreach ($matches as [, $kind, $name]) {
             $file = $kind === 'Script' ? "$app/js/$name.js" : "$app/css/$name.css";
             $this->assertFileExists($file);
@@ -27,7 +27,7 @@ final class AdminAssetsTest extends TestCase {
     public function testAdminTemplateHasUniqueIdsAndBalancedDivs(): void {
         $app = dirname(__DIR__, 3);
         $template = (string)file_get_contents($app . '/templates/admin.php');
-        $script = (string)file_get_contents($app . '/js/admin-grants.js');
+        $script = (string)file_get_contents($app . '/js/admin-grants.js') . file_get_contents($app . '/js/connections.js');
         preg_match_all("/getElementById\\('([^']+)'\\)/", $script, $used);
         $this->assertNotEmpty($used[1]);
         foreach (array_unique($used[1]) as $id) {
@@ -69,12 +69,22 @@ final class AdminAssetsTest extends TestCase {
         }
     }
 
+    /** Six blocks, each a core settings section with its own heading, in the planned order. */
+    public function testAdminPageHasSixSectionBlocks(): void {
+        $template = (string)file_get_contents(dirname(__DIR__, 3) . '/templates/admin.php');
+        preg_match_all('/<div class="section mcp-block" id="([^"]+)"[^>]*>\s*<h2><\?php p\(\$l->t\(\'([^\']+)\'\)\); \?><\/h2>/', $template, $blocks);
+        $this->assertSame(['mcp-block-status', 'mcp-block-oauth', 'mcp-block-tags', 'mcp-block-ocr', 'mcp-block-matrix', 'mcp-connections'], $blocks[1]);
+        $this->assertSame(['Status', 'OAuth clients', 'Hidden files & tags', 'OCR', 'Permissions', 'Active connections'], $blocks[2]);
+        $this->assertStringContainsString('data-scope="admin"', $template);
+    }
+
     public function testRoutesDropTheOldAdminFormsAndKeepOAuth(): void {
         $routes = array_column((require dirname(__DIR__, 3) . '/appinfo/routes.php')['routes'], 'name');
         foreach (['settings#global', 'settings#user', 'users#index'] as $gone) {
             $this->assertNotContains($gone, $routes);
         }
-        foreach (['settings#personal', 'grants#index', 'grants#update', 'grants#bulk', 'grants#service', 'grants#oauthClients', 'grants#updateOauthClients', 'o_auth#token', 'metadata#protectedResource'] as $kept) {
+        foreach (['settings#personal', 'grants#index', 'grants#update', 'grants#bulk', 'grants#service', 'grants#oauthClients', 'grants#updateOauthClients', 'o_auth#token', 'metadata#protectedResource',
+            'connections#index', 'connections#destroy', 'connections#revokeUser'] as $kept) {
             $this->assertContains($kept, $routes);
         }
     }

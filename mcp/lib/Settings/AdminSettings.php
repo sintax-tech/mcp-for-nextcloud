@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Settings;
 
+use OCA\Mcp\Service\ConnectionList;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tools\Files\OcrSupport;
 use OCP\App\IAppManager;
@@ -22,6 +23,7 @@ class AdminSettings implements ISettings {
         private IURLGenerator $urlGenerator,
         private OcrSupport $ocr,
         private IAppManager $appManager,
+        private ConnectionList $connections,
     ) {}
 
     /** @return TemplateResponse the rendered settings section */
@@ -36,6 +38,7 @@ class AdminSettings implements ISettings {
             'version' => $this->appManager->getAppVersion('mcp'),
             'eligibleUsers' => count($eligible),
             'connectedUsers' => count($connected),
+            'activeConnections' => $this->connections->count(),
         ], '');
     }
 

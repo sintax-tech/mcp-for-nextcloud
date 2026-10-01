@@ -372,3 +372,42 @@
 	outline: 2px solid var(--color-primary-element);
 	outline-offset: 2px;
 }
+
+/* Active connections table (admin and personal). */
+.mcp-settings .mcp-connections-table {
+	border-collapse: collapse;
+	max-width: 1100px;
+	width: 100%;
+}
+
+.mcp-settings .mcp-connections-table th,
+.mcp-settings .mcp-connections-table td {
+	padding: 6px 10px;
+	border-bottom: 1px solid var(--color-border);
+	text-align: start;
+	vertical-align: middle;
+}
+
+.mcp-settings .mcp-connections-table thead th {
+	color: var(--color-text-maxcontrast);
+	font-weight: normal;
+}
+
+.mcp-settings .mcp-connections-table tbody tr:hover > * {
+	background-color: var(--color-background-hover);
+}
+
+.mcp-settings .mcp-connections-table .mcp-name,
+.mcp-settings .mcp-connections-table .mcp-uid {
+	display: block;
+}
+
+.mcp-settings .mcp-connections-table .mcp-uid,
+.mcp-settings .mcp-connections-table .mcp-empty {
+	color: var(--color-text-maxcontrast);
+}
+
+.mcp-settings .mcp-actions {
+	text-align: end;
+	white-space: nowrap;
+}

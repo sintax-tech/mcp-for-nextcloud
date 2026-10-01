@@ -765,6 +765,14 @@ OC.L10N.register(
     "tomorrow or later" : "mañana o después",
     "at most %s days from today (administrator rule)" : "como máximo %s días desde hoy (regla del administrador)",
     "Share file or folder" : "Compartir archivo o carpeta",
-    "Nothing was changed. The share already is exactly like this, so a confirmed call changes nothing either." : "No se cambió nada. El recurso compartido ya está exactamente así, así que confirmar tampoco cambia nada."
+    "Nothing was changed. The share already is exactly like this, so a confirmed call changes nothing either." : "No se cambió nada. El recurso compartido ya está exactamente así, así que confirmar tampoco cambia nada.",
+    "Nextcloud could not remove this share." : "Nextcloud no pudo quitar este recurso compartido.",
+    "The link to %s will stop working; anyone who has the link loses access." : "El enlace de %s dejará de funcionar; quien tenga el enlace pierde el acceso.",
+    "Every member of the group %s will lose access to %s." : "Todos los miembros del grupo %s perderán el acceso a %s.",
+    "%s will no longer have access to %s." : "%s dejará de tener acceso a %s.",
+    "Nothing is deleted: the folder and everything in it stay exactly as they are." : "No se borra nada: la carpeta y todo lo que contiene siguen exactamente como están.",
+    "Nothing is deleted: the file stays exactly as it is." : "No se borra nada: el archivo sigue exactamente como está.",
+    "give either shareId, or path together with with" : "indica shareId, o path junto con with",
+    "Stop sharing file or folder" : "Dejar de compartir archivo o carpeta"
 },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

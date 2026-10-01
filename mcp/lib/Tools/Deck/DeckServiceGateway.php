@@ -234,14 +234,14 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function createCard(string $userId, int $stackId, string $title, string $description, ?string $duedate): Card {
+	public function createCard(string $userId, int $stackId, string $title, string $description, ?string $duedate, ?int $order = null): Card {
 		$this->bindUser($userId);
 
 		/** @var CardService $cardService */
 		$cardService = $this->service(CardService::class);
 
 		// `type` is free text in Deck (only length-checked), so the tools always write `note`.
-		return $cardService->create($title, $stackId, 'note', self::LAST_ORDER, $userId, $description, $this->instant($userId, $duedate));
+		return $cardService->create($title, $stackId, 'note', $order ?? self::LAST_ORDER, $userId, $description, $this->instant($userId, $duedate));
 	}
 
 	/**
@@ -332,7 +332,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		// for a denied one, so no owner or title is read before the caller may write there.
 		$permissionService->checkPermission($stackMapper, $stackId, Acl::PERMISSION_EDIT);
 
-		return $this->boardOwnership($stackMapper->findBoardId($stackId));
+		return $this->ownershipOfBoard($stackMapper->findBoardId($stackId));
 	}
 
 	/**
@@ -350,7 +350,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		// read so a caller without edit access never learns who owns the board.
 		$permissionService->checkPermission($cardMapper, $cardId, Acl::PERMISSION_EDIT);
 
-		return $this->boardOwnership($cardMapper->findBoardId($cardId));
+		return $this->ownershipOfBoard($cardMapper->findBoardId($cardId));
 	}
 
 	/**
@@ -368,6 +368,128 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		$permissionService->checkPermission($cardMapper, $cardId, Acl::PERMISSION_READ);
 
 		return (int)$cardMapper->findBoardId($cardId);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function createBoard(string $userId, string $title, string $color): Board {
+		$boardService = $this->bindUser($userId);
+
+		// Deck v1.17.5 `create(string $title, string $userId, string $color)`; it adds the four default labels.
+		return $boardService->create($title, $userId, $color);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function createStack(string $userId, int $boardId, string $title, ?int $order): Stack {
+		$this->bindUser($userId);
+
+		/** @var StackService $stackService */
+		$stackService = $this->service(StackService::class);
+
+		if ($order === null) {
+			/** @var PermissionService $permissionService */
+			$permissionService = $this->service(PermissionService::class);
+			/** @var StackMapper $stackMapper */
+			$stackMapper = $this->service(StackMapper::class);
+			// `StackService::create()` needs PERMISSION_MANAGE; reading the lists is an access of its own,
+			// so the same check comes before the query.
+			$permissionService->checkPermission(null, $boardId, Acl::PERMISSION_MANAGE);
+			$highest = -1;
+			foreach ($stackMapper->findAll($boardId) as $stack) {
+				$highest = max($highest, (int)$stack->getOrder());
+			}
+			$order = $highest + 1;
+		}
+
+		// Deck v1.17.5 `create(string $title, int $boardId, int $order)`; it checks MANAGE and refuses an archived board.
+		return $stackService->create($title, $boardId, $order);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function boardOwnership(string $userId, int $boardId): array {
+		$this->bindUser($userId);
+
+		/** @var PermissionService $permissionService */
+		$permissionService = $this->service(PermissionService::class);
+
+		// Check first: the owner and the title are read only for somebody who may manage the board.
+		$permissionService->checkPermission(null, $boardId, Acl::PERMISSION_MANAGE);
+
+		return $this->ownershipOfBoard($boardId);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function stackCardCount(string $userId, int $stackId): int {
+		$this->bindUser($userId);
+
+		/** @var PermissionService $permissionService */
+		$permissionService = $this->service(PermissionService::class);
+		/** @var StackMapper $stackMapper */
+		$stackMapper = $this->service(StackMapper::class);
+
+		// The same check `StackService::delete()` runs, taken before any card is read.
+		$permissionService->checkPermission($stackMapper, $stackId, Acl::PERMISSION_MANAGE);
+
+		return $this->cardsInStack($stackId);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function boardCardCount(string $userId, int $boardId): int {
+		$this->bindUser($userId);
+
+		/** @var PermissionService $permissionService */
+		$permissionService = $this->service(PermissionService::class);
+
+		$permissionService->checkPermission(null, $boardId, Acl::PERMISSION_MANAGE);
+
+		return $this->cardsInBoard($boardId);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function deleteEmptyStack(string $userId, int $stackId): Stack {
+		// The count runs the manage check and binds the caller; it is taken again here and not trusted from the plan.
+		$cards = $this->stackCardCount($userId, $stackId);
+		if ($cards > 0) {
+			throw DeckRefusalException::stackNotEmpty($cards);
+		}
+
+		/** @var StackService $stackService */
+		$stackService = $this->service(StackService::class);
+
+		// Soft delete: Deck stamps `deleted_at` on the list and keeps the row.
+		return $stackService->delete($stackId);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public function deleteEmptyBoard(string $userId, int $boardId): Board {
+		// Owner first: somebody who merely manages the board is refused before a single card is counted.
+		if ($this->boardOwnership($userId, $boardId)['owner'] !== $userId) {
+			throw DeckRefusalException::boardNotOwned();
+		}
+		$cards = $this->cardsInBoard($boardId);
+		if ($cards > 0) {
+			throw DeckRefusalException::boardNotEmpty($cards);
+		}
+
+		/** @var BoardService $boardService */
+		$boardService = $this->service(BoardService::class);
+
+		// Soft delete: Deck stamps `deleted_at` on the board, which leaves the lists of the web interface and
+		// can be brought back from the Deck deleted items.
+		return $boardService->delete($boardId);
 	}
 
 	/**
@@ -510,7 +632,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	 * @throws NoPermissionException When the board cannot be resolved, as the Deck answers it.
 	 * @throws \Throwable Any Deck failure; the caller maps it with {@see DeckErrors}.
 	 */
-	private function boardOwnership(mixed $boardId): array {
+	private function ownershipOfBoard(mixed $boardId): array {
 		if ($boardId === null) {
 			// Reached only if Deck and this lookup disagree; answer like Deck does, without leaking.
 			throw new NoPermissionException('Permission denied');
@@ -528,6 +650,40 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 			'ownerDisplayName' => $this->displayName($owner),
 			'name' => (string)$board->getTitle(),
 		];
+	}
+
+	/**
+	 * Cards of one list that still count as cards: the active ones and the archived ones.
+	 *
+	 * Deck leaves the deleted cards (its trash) out of both queries, and a card in the trash is not a reason
+	 * to keep a list.
+	 *
+	 * @param int $stackId List to count; the caller was already checked.
+	 * @return int Number of cards.
+	 */
+	private function cardsInStack(int $stackId): int {
+		/** @var CardMapper $cardMapper */
+		$cardMapper = $this->service(CardMapper::class);
+
+		return count($cardMapper->findAll($stackId) ?: []) + count($cardMapper->findAllArchived($stackId) ?: []);
+	}
+
+	/**
+	 * Cards of every list of a board, counted as {@see self::cardsInStack()} does.
+	 *
+	 * @param int $boardId Board to count; the caller was already checked.
+	 * @return int Number of cards.
+	 */
+	private function cardsInBoard(int $boardId): int {
+		/** @var StackMapper $stackMapper */
+		$stackMapper = $this->service(StackMapper::class);
+
+		$cards = 0;
+		foreach ($stackMapper->findAll($boardId) as $stack) {
+			$cards += $this->cardsInStack((int)$stack->getId());
+		}
+
+		return $cards;
 	}
 
 	/**

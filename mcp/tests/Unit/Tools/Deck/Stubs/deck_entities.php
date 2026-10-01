@@ -260,6 +260,16 @@ class CardMapper implements IPermissionMapper {
 	}
 
 	/**
+	 * @param int|string $stackId Stack to list.
+	 * @param int|null $limit Maximum number of cards.
+	 * @param int $offset Cards to skip.
+	 * @return Card[] Archived cards of the stack (deleted ones are left out).
+	 */
+	public function findAllArchived($stackId, ?int $limit = null, int $offset = 0) {
+		return [];
+	}
+
+	/**
 	 * @param array<int> $stackIds Stacks whose cards are read in one query.
 	 * @param int|null $limit Maximum number of cards per stack.
 	 * @param int $offset Cards to skip.

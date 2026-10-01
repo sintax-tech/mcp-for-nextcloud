@@ -506,4 +506,15 @@ final class RenderParticipantStub {
     public function getPermissions(): int {
         return 128;
     }
+
+    public function testALoneCarriageReturnCannotLeaveTheBlockQuoteAndNamesStayLiteral(): void {
+        $body = (string)TalkPlanRenderer::render('talk_reply', [
+            'conversation' => ['displayName' => '**urgente**'],
+            'draft' => ['message' => "hi [x](javascript:alert(1))\r# Heading\r\n**b**"],
+        ]);
+
+        $this->assertStringStartsWith('Message to **\\*\\*urgente\\*\\***:', $body);
+        $this->assertStringContainsString("> hi \\[x\\]\\(javascript:alert(1))\n> \\# Heading\n> \\*\\*b\\*\\*", $body);
+        $this->assertStringNotContainsString("\r", $body);
+    }
 }

@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Talk;
 
+use OCA\Mcp\Tools\PlanText;
 use Throwable;
 
 /**
@@ -238,7 +239,7 @@ final class TalkPlanRenderer {
             if ($displayName === null) {
                 return null;
             }
-            $body[] = '- **' . $displayName . '**';
+            $body[] = '- ' . PlanText::strong($displayName);
         }
 
         return implode("\n", $body);
@@ -301,7 +302,7 @@ final class TalkPlanRenderer {
      * A message body as a Markdown quote, cut when it is longer than {@see self::EXCERPT_MAX_LENGTH}.
      *
      * @param string $message Message as the plan carries it
-     * @return string The block quote, one "> " per line
+     * @return string The block quote, one "> " per line, with no line able to leave the block or to be read as Markdown
      */
     private static function excerpt(string $message): string {
         $text = trim($message);
@@ -310,8 +311,8 @@ final class TalkPlanRenderer {
             $text = mb_substr($text, 0, self::EXCERPT_MAX_LENGTH);
         }
 
-        $lines = explode("\n", $text);
-        $quoted = implode("\n", array_map(static fn (string $line): string => '> ' . $line, $lines));
+        // Every line of the message, whatever ends it ("\n", "\r\n" or a lone "\r"), stays inside the block quote.
+        $quoted = PlanText::quote($text, self::EXCERPT_MAX_LENGTH);
 
         return $cut ? $quoted . "\n> " . Messages::contentTruncated() : $quoted;
     }

@@ -9,13 +9,13 @@ use OCA\Mcp\Tools\Talk\ConversationAccessException;
 use OCA\Mcp\Tools\Talk\ConversationReader;
 use OCA\Mcp\Tools\Talk\ConversationResolver;
 use OCA\Mcp\Tools\Talk\ConversationWriter;
-use OCA\Mcp\Tools\Talk\DraftApproval;
 use OCA\Mcp\Tools\Talk\FileSharer;
 use OCA\Mcp\Tools\Talk\GroupCreator;
 use OCA\Mcp\Tools\Talk\Messages;
 use OCA\Mcp\Tools\Talk\ReferenceLinker;
 use OCA\Mcp\Tools\Talk\TalkModule;
 use OCA\Mcp\Tools\Talk\TalkServices;
+use OCA\Mcp\Tools\Talk\WritePreview;
 use OCA\Mcp\Tools\Talk\UserConversationResolver;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
@@ -45,8 +45,6 @@ final class TalkTranslationTest extends TestCase {
         'fileAlreadyShared' => 'o arquivo já está compartilhado nesta conversa',
         'captionNotSent' => 'O anexo foi compartilhado nesta conversa, mas a legenda não foi enviada. Não repita talk_attach_file: o arquivo já está compartilhado e um novo cartão não seria criado. Se o usuário ainda quiser a legenda, envie-a como uma nova mensagem com talk_reply, seguindo a mesma aprovação.',
         'talkUnavailable' => 'o app de conversas não está disponível',
-        'approvalMissing' => 'falta a aprovação do rascunho: chame a tool sem confirm para receber a prévia e mostre-a ao usuário antes de repetir com confirm: true',
-        'approvalInvalid' => 'aprovação inválida, expirada ou já usada: gere a prévia de novo, mostre-a ao usuário e repita com o novo approval_id',
         'unexpected' => 'erro inesperado ao acessar o Talk',
         'invalidToken' => 'conversation_token inválido',
         'emptyMessage' => 'message não pode ser vazia',
@@ -74,23 +72,23 @@ final class TalkTranslationTest extends TestCase {
         }
         self::assertSame(
             'Vou criar no Talk o grupo \'Projeto X\' com você como dono e como convidados Bob Souza, Carol Lima.'
-            . ' Mostre isso ao usuário e só repita a mesma chamada com confirm: true e approval_id igual ao approvalId'
-            . ' acima depois que ele aprovar; se ele pedir mudanças, mude o rascunho e gere outra prévia.'
-            . ' Sem essa aprovação o servidor não cria nada.',
+            . ' Mostre este plano ao usuário e só repita a mesma chamada com confirm: true depois que ele disser'
+            . ' sim de forma explícita; se ele pedir mudanças, ajuste o plano e chame a tool de novo.'
+            . ' Sem essa confirmação o servidor não cria nada.',
             Messages::confirmationInstructionGroup('Projeto X', Messages::invitedGuests(['Bob Souza', 'Carol Lima'])),
         );
         self::assertSame(
-            'Mostre este rascunho ao usuário exatamente como será enviado para a conversa \'Comercial\' e só repita a'
-            . ' mesma chamada com confirm: true e approval_id igual ao approvalId acima depois que ele aprovar. Se ele'
-            . ' pedir mudanças, ajuste o texto, chame a tool de novo para gerar outra prévia e mostre de novo. Sem essa'
-            . ' aprovação o servidor não publica nada.',
+            'Mostre este plano ao usuário exatamente como será enviado para a conversa \'Comercial\', pergunte se ele'
+            . ' realmente quer isso e só repita a mesma chamada com confirm: true depois que ele disser sim de forma'
+            . ' explícita. Se ele pedir mudanças, ajuste o texto, chame a tool de novo e mostre o novo plano. Sem essa'
+            . ' confirmação o servidor não publica nada.',
             Messages::confirmationInstruction('Comercial'),
         );
         self::assertSame(
-            'Mostre este rascunho ao usuário exatamente como será enviado em uma conversa direta com \'Bob Souza\' e'
-            . ' só repita a mesma chamada com confirm: true e approval_id igual ao approvalId acima depois que ele'
-            . ' aprovar. Se ele pedir mudanças, ajuste o texto, chame a tool de novo para gerar outra prévia e mostre'
-            . ' de novo. Sem essa aprovação o servidor não publica nada e a conversa direta não é criada.',
+            'Mostre este plano ao usuário exatamente como será enviado em uma conversa direta com \'Bob Souza\','
+            . ' pergunte se ele realmente quer isso e só repita a mesma chamada com confirm: true depois que ele disser'
+            . ' sim de forma explícita. Se ele pedir mudanças, ajuste o texto, chame a tool de novo e mostre o novo'
+            . ' plano. Sem essa confirmação o servidor não publica nada e a conversa direta não é criada.',
             Messages::confirmationInstructionTarget('Bob Souza'),
         );
         self::assertSame(
@@ -159,7 +157,7 @@ final class TalkTranslationTest extends TestCase {
             $this->createMock(ConversationResolver::class),
             $this->createMock(ConversationWriter::class),
             $this->createMock(FileSharer::class),
-            $this->createMock(DraftApproval::class),
+            $this->createMock(WritePreview::class),
             $this->createMock(UserConversationResolver::class),
             $this->createMock(GroupCreator::class),
             $this->createMock(ReferenceLinker::class),

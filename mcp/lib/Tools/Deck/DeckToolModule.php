@@ -90,6 +90,9 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 				. 'overdue, per board.',
 			'A board owned by somebody else is refused on a write until the user has been asked and the call repeats '
 				. 'with confirm_shared: true. The refusal is a normal result that says what is missing, not an error.',
+			'The caller owns a created card. Explicit assignments are checked before creation and shown in the plan. '
+				. 'Assignment changes during creation can produce a created card with warnings; read it before retrying in Deck. '
+				. 'Editing assignees is not supported by deck_edit_card.',
 			'duedate is a plain day (Y-m-d) and is read in the timezone of the account; a card description is capped '
 				. 'at ' . CardInput::MAX_DESCRIPTION_LENGTH . ' characters and a title at 255.',
 			'deck_move_card only changes the position inside the list of the card; moving it to another list or another '
@@ -161,6 +164,7 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 						'title' => $this->string(DeckMessages::PARAM_TITLE, 1, 255),
 						'description' => $this->string(DeckMessages::PARAM_DESCRIPTION, 0, null, ''),
 						'duedate' => $this->nullableString(DeckMessages::PARAM_DUEDATE, null),
+						'assignees' => ['type' => 'array', 'maxItems' => 100, 'items' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 255], 'description' => DeckMessages::PARAM_ASSIGNEES],
 						'confirm_shared' => $this->confirmShared(),
 					],
 					['stackId', 'title'],
@@ -326,12 +330,15 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	}
 
 	/**
-	 * @param array{stackId: int, title: string, description?: string, duedate?: string|null} $arguments
+	 * @param array{stackId: int, title: string, description?: string, duedate?: string|null, assignees?: list<string>} $arguments
 	 * @param string $userId UID of the authenticated caller, also the owner of the card to be created.
 	 * @return array<string, mixed>
 	 */
 	private function planCreate(array $arguments, string $userId): array {
 		$place = $this->place($userId, (int)$arguments['stackId']);
+		$assignees = array_key_exists('assignees', $arguments)
+			? $this->gateway()->validateAssignees($userId, (int)$arguments['stackId'], CardInput::assignees($arguments['assignees']))
+			: null;
 
 		return [
 			'action' => CreateCardHandler::TOOL,
@@ -340,7 +347,7 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 				'description' => CardInput::requireDescription((string)($arguments['description'] ?? '')),
 				'dueDate' => CardInput::duedate($arguments['duedate'] ?? null),
 				'owner' => $userId,
-			],
+			] + ($assignees === null ? [] : ['assignees' => $assignees]),
 			'destination' => $place,
 			'shared' => $place['shared'] ? [$place] : [],
 			'recoverable' => true,

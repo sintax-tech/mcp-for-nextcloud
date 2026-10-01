@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools;
 
 use InvalidArgumentException;
+use OCA\Mcp\L10n\Translator;
 
 /**
  * Validates tool arguments against the small JSON Schema subset the tools declare, applying defaults.
@@ -41,19 +42,19 @@ final class ArgumentValidator {
         if ($value !== [] && array_is_list($value)) {
             // The root keeps its own wording: a list where the call object belongs is a malformed call, not a
             // malformed argument, and clients match on this message.
-            throw new InvalidArgumentException($path === '' ? 'Invalid arguments' : 'Invalid argument: ' . $path);
+            throw new ArgumentValidationException($path === '' ? 'Invalid arguments' : 'Invalid argument: ' . $path, $path, self::rule(['type' => 'object']));
         }
 
         $properties = $schema['properties'] ?? [];
         $properties = $properties instanceof \stdClass ? (array)$properties : $properties;
         foreach (array_keys($value) as $key) {
             if (!isset($properties[$key])) {
-                throw new InvalidArgumentException('Unknown argument: ' . self::key($path, (string)$key));
+                throw new ArgumentValidationException('Unknown argument: ' . self::key($path, (string)$key), $path, Translator::t('unknown property; use only declared arguments'));
             }
         }
         foreach ($schema['required'] ?? [] as $key) {
             if (!array_key_exists($key, $value)) {
-                throw new InvalidArgumentException('Missing argument: ' . self::key($path, (string)$key));
+                throw new ArgumentValidationException('Missing argument: ' . self::key($path, (string)$key), self::key($path, (string)$key), Translator::t('required argument'));
             }
         }
 
@@ -80,17 +81,17 @@ final class ArgumentValidator {
         // Nesting recurses with the same rules as the root, so only a single type may name a structure.
         if (($rule['type'] ?? null) === 'object') {
             if (!is_array($value)) {
-                throw new InvalidArgumentException("Invalid argument: $key");
+                throw new ArgumentValidationException("Invalid argument: $key", $key, self::rule($rule));
             }
             return self::object($rule, $value, $key);
         }
         if (($rule['type'] ?? null) === 'array') {
             if (!is_array($value) || ($value !== [] && !array_is_list($value))) {
-                throw new InvalidArgumentException("Invalid argument: $key");
+                throw new ArgumentValidationException("Invalid argument: $key", $key, self::rule($rule));
             }
             $count = count($value);
             if ($count < ($rule['minItems'] ?? 0) || (isset($rule['maxItems']) && $count > $rule['maxItems'])) {
-                throw new InvalidArgumentException("Invalid argument: $key");
+                throw new ArgumentValidationException("Invalid argument: $key", $key, self::rule($rule));
             }
             // A schema that does not say what its items look like (a plain list of strings, or one whose
             // shape is checked further down) has nothing to validate each item against, and inventing an
@@ -117,7 +118,7 @@ final class ArgumentValidator {
                 return $value;
             }
         }
-        throw new InvalidArgumentException("Invalid argument: $key");
+        throw new ArgumentValidationException("Invalid argument: $key", $key, self::rule($rule));
     }
 
     /**
@@ -138,6 +139,36 @@ final class ArgumentValidator {
             'boolean' => is_bool($value),
             default => false,
         };
+    }
+
+    /**
+     * Describes declared constraints without copying enum members or client data.
+     * @param array<string, mixed> $rule Published schema constraints.
+     * @return string Localized rule suitable for an error response.
+     */
+    private static function rule(array $rule): string {
+        $type = $rule['type'] ?? [];
+        $types = is_array($type) ? $type : [$type];
+        $parts = [Translator::t('expected %s', [implode(' or ', $types)])];
+        foreach (['minimum', 'maximum', 'minLength', 'maxLength', 'minItems', 'maxItems'] as $bound) {
+            if (isset($rule[$bound])) {
+                $parts[] = match ($bound) {
+                    'minimum' => Translator::t('minimum %s', [$rule[$bound]]),
+                    'maximum' => Translator::t('maximum %s', [$rule[$bound]]),
+                    'minLength' => Translator::t('minimum length %s', [$rule[$bound]]),
+                    'maxLength' => Translator::t('maximum length %s', [$rule[$bound]]),
+                    'minItems' => Translator::t('minimum items %s', [$rule[$bound]]),
+                    'maxItems' => Translator::t('maximum items %s', [$rule[$bound]]),
+                };
+            }
+        }
+        if (isset($rule['enum'])) {
+            $parts[] = Translator::t('must match a declared enum option');
+        }
+        if (array_key_exists('const', $rule)) {
+            $parts[] = Translator::t('must match the declared constant');
+        }
+        return implode('; ', $parts);
     }
 
     /** Joins a parent path with a key, keeping the root messages exactly as they were. */

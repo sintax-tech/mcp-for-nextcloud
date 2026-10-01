@@ -23,7 +23,7 @@ final class DeckMessages {
 	public const TOOL_READ_CARD_DESCRIPTION
 		= 'Reads a Deck card with its description, dates and counters.';
 	public const TOOL_CREATE_CARD_DESCRIPTION
-		= 'Creates a Deck card at the end of a list (stack). You are set as the card assignee.';
+		= 'Creates a Deck card at the end of a list (stack), owned by you. Optional assignees are account IDs with access to the board; use users_search to resolve IDs. If assignment fails after creation, the created card is returned with a warning.';
 	public const TOOL_EDIT_CARD_DESCRIPTION
 		= 'Edits the title, description and due date of a Deck card. Use lastModified to avoid overwriting a concurrent edit.';
 	public const TOOL_MOVE_CARD_DESCRIPTION
@@ -38,6 +38,7 @@ final class DeckMessages {
 	public const PARAM_STACK_ID = 'Id of the Deck list (stack).';
 	public const PARAM_CARD_ID = 'Id of the Deck card.';
 	public const PARAM_STATUS = 'Status filter: overdue (due before today), open, done or all. Default: overdue.';
+	public const PARAM_ASSIGNEES = 'Optional list of account IDs to assign (maximum 100). Each account must exist and have access to the board. Omit or send an empty list to create without explicit assignments.';
 	public const PARAM_ASSIGNEE = 'UID of the assignee (if you are not sure of someone\'s ID, call users_search first); returns only the cards assigned to that person.';
 	public const PARAM_DUE_BEFORE = 'Returns only cards due on or before this date, in YYYY-MM-DD format.';
 	public const PARAM_TITLE = 'Card title.';

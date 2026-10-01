@@ -15,6 +15,17 @@ use PHPUnit\Framework\TestCase;
  * here, so a nested list of objects is proven once for each shape rather than twice for the same one.
  */
 final class ArgumentValidatorTest extends TestCase {
+    /** Nested schema failures expose a safe rule and field, never the rejected value. */
+    public function testFailureIncludesStructuredRule(): void {
+        try {
+            ArgumentValidator::validate(['properties' => ['limit' => ['type' => 'integer', 'maximum' => 100]]], ['limit' => 987654]);
+            $this->fail('accepted invalid limit');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame(['field' => 'limit', 'rule' => 'expected integer; maximum 100'], $e->details());
+            $this->assertStringNotContainsString('987654', json_encode($e->details()));
+        }
+    }
+
     /** @return array<string, mixed> schema with a nullable string and no default */
     private function schema(): array {
         return ['type' => 'object', 'additionalProperties' => false, 'properties' => [

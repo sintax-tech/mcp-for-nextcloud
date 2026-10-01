@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Deck\Handler;
 
+use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tools\Deck\CardFormatter;
 use OCA\Mcp\Tools\Deck\CardInput;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
@@ -11,8 +12,7 @@ use Psr\Log\LoggerInterface;
 /**
  * Backs `deck_create_card`.
  *
- * The card always belongs to the caller: assigning it to somebody else would need their board ACL
- * resolved too, and it is out of scope for this sprint.
+ * The caller owns the card; optional assignees are checked against Deck board ACLs before creation.
  */
 final class CreateCardHandler extends AbstractHandler {
 	/** MCP tool name this handler serves. */
@@ -36,7 +36,7 @@ final class CreateCardHandler extends AbstractHandler {
 	 *
 	 * The payload is the created card.
 	 *
-	 * @param array<string, mixed> $arguments Requires `stackId` and `title`; accepts `description` and `duedate`.
+	 * @param array<string, mixed> $arguments Requires `stackId` and `title`; accepts `description`, `duedate` and `assignees`.
 	 * @param string $userId UID of the authenticated caller, also the card owner.
 	 * @return array{content: list<array{type: string, text: string}>, isError?: bool} MCP result.
 	 */
@@ -53,6 +53,10 @@ final class CreateCardHandler extends AbstractHandler {
 				return $confirmation;
 			}
 
+			$assignees = array_key_exists('assignees', $arguments)
+				? $this->gateway->validateAssignees($userId, (int)$arguments['stackId'], CardInput::assignees($arguments['assignees']))
+				: [];
+
 			$card = $this->gateway->createCard(
 				$userId,
 				(int)$arguments['stackId'],
@@ -61,7 +65,18 @@ final class CreateCardHandler extends AbstractHandler {
 				CardInput::duedate($arguments['duedate'] ?? null),
 			);
 
-			return $this->formatter->card($card);
+			$warnings = [];
+			foreach ($assignees as $assignee) {
+				try {
+					$assignment = $this->gateway->assignCardUser($userId, (int)$card->getId(), $assignee['uid']);
+					$card->setAssignedUsers([...($card->getAssignedUsers() ?? []), $assignment]);
+				} catch (\Throwable $e) {
+					// Creation succeeded: never turn this into an error that encourages a duplicate retry.
+					$this->logger->warning('MCP Deck assignment failed after creation ({exception})', ['exception' => $e::class]);
+					$warnings = [Translator::t('The card was created, but one or more assignees could not be assigned. Read the card before retrying assignment in Deck.')];
+				}
+			}
+			return $this->formatter->card($card) + ($warnings === [] ? [] : ['warnings' => $warnings]);
 		});
 	}
 

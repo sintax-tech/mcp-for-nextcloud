@@ -79,6 +79,18 @@ final class DeckPreviewTest extends TestCase {
 		return $module;
 	}
 
+	/** Explicit assignees are validated during preview and their display names are escaped by the renderer. */
+	public function testCreatePlanIncludesAssignees(): void {
+		$gateway = $this->readOnlyGateway();
+		$gateway->expects(self::once())->method('validateAssignees')->with('alice', 10, ['pedro'])
+			->willReturn([['uid' => 'pedro', 'displayName' => 'Pedro **Admin**']]);
+		$gateway->expects(self::never())->method('assignCardUser');
+		$module = $this->moduleWith($gateway);
+		$plan = $module->preview('deck_create_card', ['stackId' => 10, 'title' => 'New', 'assignees' => ['pedro']], 'alice');
+		self::assertSame('Pedro **Admin**', $plan['card']['assignees'][0]['displayName']);
+		self::assertStringContainsString('Pedro \\*\\*Admin\\*\\*', $module->renderPlan('deck_create_card', $plan));
+	}
+
 	public function testCreatePlanShowsTheCardAndItsDestination(): void {
 		$gateway = $this->readOnlyGateway();
 		$gateway->expects(self::never())->method('findCard');

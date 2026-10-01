@@ -89,6 +89,26 @@ interface DeckGatewayInterface {
 	public function findCard(string $userId, int $cardId): Card;
 
 	/**
+	 * Validates accounts and their board access before a preview or creation.
+	 * @param string $userId Authenticated caller.
+	 * @param int $stackId Destination stack.
+	 * @param list<string> $assignees Account IDs to assign.
+	 * @return list<array{uid: string, displayName: string}> Unique validated accounts.
+	 * @throws \InvalidArgumentException When any account is missing or lacks access.
+	 */
+	public function validateAssignees(string $userId, int $stackId, array $assignees): array;
+
+	/**
+	 * Assigns one validated account through Deck's assignment service.
+	 * @param string $userId Authenticated caller.
+	 * @param int $cardId Created card.
+	 * @param string $assignee Account ID to assign.
+	 * @return \OCA\Deck\Db\Assignment Persisted assignment.
+	 * @throws \Throwable When a concurrent change prevents assignment.
+	 */
+	public function assignCardUser(string $userId, int $cardId, string $assignee): \OCA\Deck\Db\Assignment;
+
+	/**
 	 * Creates a card owned by the caller at the end of the stack.
 	 *
 	 * @param string $userId UID of the authenticated caller, used as the card owner.

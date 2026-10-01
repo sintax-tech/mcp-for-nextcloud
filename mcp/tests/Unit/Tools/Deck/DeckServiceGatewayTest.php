@@ -82,6 +82,53 @@ final class DeckServiceGatewayTest extends TestCase {
 		$this->gateway = new DeckServiceGateway($this->container, $this->time);
 	}
 
+	/** Board ACLs are evaluated for each assignee by Deck, including group-derived access. */
+	public function testAssigneesNeedExistingAccountsAndBoardReadAccess(): void {
+		$this->services[PermissionService::class]->method('checkPermission')->willReturn(true);
+		$this->services[StackMapper::class]->method('findBoardId')->with(10)->willReturn(4);
+		$this->recordUser('pedro', 'Pedro');
+		$this->services[PermissionService::class]->expects(self::once())->method('getPermissions')
+			->with(4, 'pedro')->willReturn([Acl::PERMISSION_READ => true]);
+		self::assertSame([['uid' => 'pedro', 'displayName' => 'Pedro']], $this->gateway->validateAssignees('alice', 10, ['pedro', 'pedro']));
+	}
+
+	/** A missing account or a user without access fails before creating anything. */
+	public function testAssigneeWithoutBoardAccessIsRejected(): void {
+		$this->services[PermissionService::class]->method('checkPermission')->willReturn(true);
+		$this->services[StackMapper::class]->method('findBoardId')->willReturn(4);
+		$this->recordUser('pedro', 'Pedro');
+		$this->services[PermissionService::class]->method('getPermissions')->willReturn([Acl::PERMISSION_READ => false]);
+		$this->services[CardService::class]->expects(self::never())->method('create');
+		$this->expectException(\InvalidArgumentException::class);
+		$this->expectExceptionMessage('Invalid argument: assignees');
+		$this->gateway->validateAssignees('alice', 10, ['pedro']);
+	}
+
+	/** Missing accounts never reach permission checks or writes. */
+	public function testMissingAssigneeIsRejected(): void {
+		$this->services[PermissionService::class]->method('checkPermission')->willReturn(true);
+		$this->services[StackMapper::class]->method('findBoardId')->willReturn(4);
+		$this->services[IUserManager::class]->method('get')->willReturn(null);
+		$this->services[PermissionService::class]->expects(self::never())->method('getPermissions');
+		$this->services[CardService::class]->expects(self::never())->method('create');
+		try {
+			$this->gateway->validateAssignees('alice', 10, ['secret-account']);
+			self::fail('accepted a missing account');
+		} catch (\OCA\Mcp\Tools\ArgumentValidationException $e) {
+			self::assertSame('assignees', $e->details()['field']);
+			self::assertStringNotContainsString('secret-account', $e->clientMessage());
+		}
+	}
+
+	/** The adapter uses the actual assignment service API, with user type as the default. */
+	public function testAssignCardUserUsesAssignmentService(): void {
+		$service = $this->createMock(\OCA\Deck\Service\AssignmentService::class);
+		$this->services[\OCA\Deck\Service\AssignmentService::class] = $service;
+		$assignment = new Assignment(['cardId' => 9, 'participant' => 'pedro', 'type' => Acl::PERMISSION_TYPE_USER]);
+		$service->expects(self::once())->method('assignUser')->with(9, 'pedro')->willReturn($assignment);
+		self::assertSame($assignment, $this->gateway->assignCardUser('alice', 9, 'pedro'));
+	}
+
 	public function testListBoardsBindsTheCallerAndHidesArchivedBoards(): void {
 		$boards = [$this->boardDouble(1)];
 		$this->recordSetUserId();

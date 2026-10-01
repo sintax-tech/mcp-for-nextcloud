@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Deck;
 
+use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Tools\ArgumentValidationException;
 use InvalidArgumentException;
 
 /**
@@ -17,6 +19,26 @@ final class CardInput {
 
 	/** Format accepted for `duedate`, matching the Deck `duedate` column. */
 	private const DATE_FORMAT = 'Y-m-d';
+
+	/**
+	 * Validates account IDs without echoing their values on failure.
+	 * @param mixed $value Requested account ID list.
+	 * @return list<string> Unique account IDs.
+	 * @throws InvalidArgumentException When the list or an account ID is malformed.
+	 */
+	public static function assignees(mixed $value): array {
+		if (!is_array($value) || !array_is_list($value) || count($value) > 100) {
+			throw new ArgumentValidationException('Invalid argument: assignees', 'assignees',
+				Translator::t('expected a list of at most 100 account IDs'));
+		}
+		foreach ($value as $uid) {
+			if (!is_string($uid) || trim($uid) === '' || mb_strlen($uid) > 255) {
+				throw new ArgumentValidationException('Invalid argument: assignees', 'assignees',
+					Translator::t('expected non-empty account IDs of at most 255 characters'));
+			}
+		}
+		return array_values(array_unique($value));
+	}
 
 	/**
 	 * Validates a card title.

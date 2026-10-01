@@ -178,6 +178,19 @@ namespace OCA\Deck\Service {
 		}
 	}
 
+	/** Assignment service double; signature mirrors Deck v1.17.5. */
+	class AssignmentService {
+		/**
+		 * @param int $cardId Created card.
+		 * @param string $userId Account to assign.
+		 * @param int $type Assignment type (user by default).
+		 * @return \OCA\Deck\Db\Assignment Persisted assignment.
+		 */
+		public function assignUser(int $cardId, string $userId, int $type = 0): \OCA\Deck\Db\Assignment {
+			throw new \LogicException('Stub: expected a PHPUnit mock.');
+		}
+	}
+
 	/** Permission service double; signature mirrors Deck `v1.17.5` `lib/Service/PermissionService.php:112`. */
 	class PermissionService {
 		/**

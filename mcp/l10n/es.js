@@ -728,7 +728,6 @@ OC.L10N.register(
     "This kind of share is not managed here; a Talk attachment is removed in Talk." : "Este tipo de uso compartido no se gestiona aquí; un adjunto de Talk se elimina en Talk.",
     "List shares" : "Listar recursos compartidos",
     "You already have this item; choose another person to share it with." : "Este elemento ya es suyo; elija otra persona con quien compartirlo.",
-    "Public links are not available yet; they arrive with the “link” permission in a coming update." : "Los enlaces públicos aún no están disponibles; llegan con el permiso “link” en una próxima actualización.",
     "Sharing is turned off on this server." : "El uso compartido está desactivado en este servidor.",
     "Your administrator turned sharing off for your account." : "El administrador desactivó el uso compartido para su cuenta.",
     "Sharing with groups is turned off on this server." : "El uso compartido con grupos está desactivado en este servidor.",
@@ -766,6 +765,11 @@ OC.L10N.register(
     "at most %s days from today (administrator rule)" : "como máximo %s días desde hoy (regla del administrador)",
     "Share file or folder" : "Compartir archivo o carpeta",
     "Nothing was changed. The share already is exactly like this, so a confirmed call changes nothing either." : "No se cambió nada. El recurso compartido ya está exactamente así, así que confirmar tampoco cambia nada.",
-    "The server could not generate a password that meets the password policy, so no link was created. Ask your administrator to check the password policy." : "El servidor no pudo generar una contraseña que cumpla la política de contraseñas, así que no se creó ningún enlace. Pida al administrador que revise la política de contraseñas."
+    "The server could not generate a password that meets the password policy, so no link was created. Ask your administrator to check the password policy." : "El servidor no pudo generar una contraseña que cumpla la política de contraseñas, así que no se creó ningún enlace. Pida al administrador que revise la política de contraseñas.",
+    "Your administrator turned public links off for your account." : "El administrador desactivó los enlaces públicos para su cuenta.",
+    "Anyone who has the link can open this, without signing in." : "Cualquier persona que tenga el enlace podrá abrir esto, sin iniciar sesión.",
+    "Save this password now and send it separately from the link: it will not be shown again. To change it later, share the link again with password: true." : "Guarde esta contraseña ahora y envíela separada del enlace: no se volverá a mostrar. Para cambiarla después, comparta el enlace de nuevo con password: true.",
+    "only view for a public link" : "un enlace público solo admite view",
+    "only for a public link" : "solo para un enlace público"
 },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

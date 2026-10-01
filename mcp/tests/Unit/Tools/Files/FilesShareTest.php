@@ -56,7 +56,7 @@ final class FilesShareTest extends FilesToolsTestCase {
         self::assertSame(['view', 'edit'], $properties['permission']['enum']);
         self::assertSame('view', $properties['permission']['default']);
         self::assertSame(500, $properties['note']['maxLength']);
-        self::assertSame(['path', 'with', 'permission', 'expires', 'note'], array_keys($properties));
+        self::assertSame(['path', 'with', 'permission', 'expires', 'note', 'password'], array_keys($properties));
     }
 
     public function testThePlanOfANewShareWritesNothing(): void {
@@ -237,10 +237,10 @@ final class FilesShareTest extends FilesToolsTestCase {
         self::assertSame(FilesMessages::shareNotGranted(), $this->planFailure(['path' => '/Documentos/ata.md', 'with' => 'user:bruno']));
     }
 
-    /** The public link is the next ticket; until then it is a clear refusal, never a generic error. */
-    public function testALinkIsNotAvailableYet(): void {
+    /** A link answers to its own grant, not to `share`; the link behaviour itself is in FilesShareLinkTest. */
+    public function testALinkNeedsTheLinkGrant(): void {
         $this->sharePolicy->setGrant('alice', 'files', 'link', true);
-        self::assertSame(FilesMessages::shareLinkNotAvailable(), $this->planFailure(['path' => '/Documentos/ata.md', 'with' => 'link']));
+        self::assertSame('create', $this->plan('files_share', ['path' => '/Documentos/ata.md', 'with' => 'link'])['action']);
         $this->sharePolicy->setGrant('alice', 'files', 'link', false);
         self::assertSame(FilesMessages::shareNotGranted(), $this->planFailure(['path' => '/Documentos/ata.md', 'with' => 'link']));
     }

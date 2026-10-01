@@ -728,7 +728,6 @@ OC.L10N.register(
     "This kind of share is not managed here; a Talk attachment is removed in Talk." : "Este tipo de compartilhamento não é gerenciado aqui; um anexo do Talk se remove no Talk.",
     "List shares" : "Listar compartilhamentos",
     "You already have this item; choose another person to share it with." : "Este item já é seu; escolha outra pessoa para compartilhar.",
-    "Public links are not available yet; they arrive with the “link” permission in a coming update." : "Links públicos ainda não estão disponíveis; eles chegam com a permissão “link” numa próxima atualização.",
     "Sharing is turned off on this server." : "O compartilhamento está desligado neste servidor.",
     "Your administrator turned sharing off for your account." : "O administrador desligou o compartilhamento para a sua conta.",
     "Sharing with groups is turned off on this server." : "O compartilhamento com grupos está desligado neste servidor.",
@@ -766,6 +765,11 @@ OC.L10N.register(
     "at most %s days from today (administrator rule)" : "no máximo %s dias a partir de hoje (regra do administrador)",
     "Share file or folder" : "Compartilhar arquivo ou pasta",
     "Nothing was changed. The share already is exactly like this, so a confirmed call changes nothing either." : "Nada foi alterado. O compartilhamento já está exatamente assim, então confirmar também não muda nada.",
-    "The server could not generate a password that meets the password policy, so no link was created. Ask your administrator to check the password policy." : "O servidor não conseguiu gerar uma senha que atenda à política de senhas, por isso nenhum link foi criado. Peça ao administrador para conferir a política de senhas."
+    "The server could not generate a password that meets the password policy, so no link was created. Ask your administrator to check the password policy." : "O servidor não conseguiu gerar uma senha que atenda à política de senhas, por isso nenhum link foi criado. Peça ao administrador para conferir a política de senhas.",
+    "Your administrator turned public links off for your account." : "O administrador desativou os links públicos para a sua conta.",
+    "Anyone who has the link can open this, without signing in." : "Qualquer pessoa que tiver o link poderá abrir isto, sem entrar no Nextcloud.",
+    "Save this password now and send it separately from the link: it will not be shown again. To change it later, share the link again with password: true." : "Guarde esta senha agora e envie-a separada do link: ela não será mostrada de novo. Para trocá-la depois, compartilhe o link de novo com password: true.",
+    "only view for a public link" : "um link público só aceita view",
+    "only for a public link" : "só para link público"
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

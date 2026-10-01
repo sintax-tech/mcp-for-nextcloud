@@ -46,6 +46,8 @@ final class FakeShares {
     /** @var list<string> users the administrator excluded from sharing */
     public array $sharingDisabledFor = [];
     private int $nextId = 1;
+    /** Marks a stored password as a hash, the way the core's hasher output differs from any plain password. */
+    private const HASH_PREFIX = 'hash$';
 
     public function __construct(private TestCase $test) {}
 
@@ -100,6 +102,11 @@ final class FakeShares {
             }
             $share->setId((string)$this->nextId++);
             $share->setShareOwner($share->getNode()->getOwner()?->getUID() ?? (string)$share->getSharedBy());
+            if ($share->getShareType() === IShare::TYPE_LINK) {
+                // As Manager::createShare: a unique token, and the plain password replaced by its hash.
+                $share->setToken('tok' . $share->getId());
+                $this->hashPassword($share);
+            }
             $this->shares[] = $share;
             return $share;
         });
@@ -108,6 +115,8 @@ final class FakeShares {
             if ($this->failWrite !== null) {
                 throw $this->failWrite;
             }
+            // As Manager::updateSharePasswordIfNeeded: a new plain password is hashed, the stored hash is left alone.
+            $this->hashPassword($share);
             return $share;
         });
         $manager->method('deleteShare')->willReturnCallback(function (IShare $share): void {
@@ -172,6 +181,19 @@ final class FakeShares {
         $share->method('getNodeType')->willReturnCallback(static fn () => $get('nodeType') ?? 'file');
         $share->method('getNote')->willReturnCallback(static fn (): string => (string)$get('note'));
         return $share;
+    }
+
+    /** @return string the hash this store keeps instead of a plain password, as the core's IHasher would */
+    public static function hashOf(string $password): string {
+        return self::HASH_PREFIX . hash('sha256', $password);
+    }
+
+    /** Replaces a plain password of the share by its hash; a hash already stored stays as it is. */
+    private function hashPassword(IShare $share): void {
+        $password = $share->getPassword();
+        if (is_string($password) && $password !== '' && !str_starts_with($password, self::HASH_PREFIX)) {
+            $share->setPassword(self::hashOf($password));
+        }
     }
 
     private function mock(string $interface): object {

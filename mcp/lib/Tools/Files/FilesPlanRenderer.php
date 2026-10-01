@@ -1,0 +1,343 @@
+<?php
+declare(strict_types=1);
+
+namespace OCA\Mcp\Tools\Files;
+
+use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Tools\Common\NodeAccessInfo;
+
+/**
+ * Turns the plan of a Files write into the Markdown body the person reads before confirming.
+ *
+ * Only the body: the title, the warnings and the footer belong to the envelope. The text names the file
+ * or folder the way the person knows it, says what changes ("before → after") and repeats the consequences
+ * the plan already carries: the backup copy, who else is reached. A plan without the keys a tool needs
+ * answers null, so the envelope falls back to its generic body; nothing here throws.
+ */
+final class FilesPlanRenderer {
+    /** Longest excerpt of file content shown, in characters. */
+    private const EXCERPT = 200;
+
+    private function __construct() {
+    }
+
+    /**
+     * @param string $tool tool name
+     * @param array<string, mixed> $plan the plan returned by FilesModule::preview()
+     * @return string|null Markdown body, or null when the tool is not a Files write or the plan lacks what it needs
+     */
+    public static function render(string $tool, array $plan): ?string {
+        try {
+            $lines = match ($tool) {
+                'files_edit', 'files_replace' => self::content($tool, $plan),
+                'files_checkout' => self::checkout($plan),
+                'files_copy' => self::copy($plan),
+                'files_mkdir' => self::mkdir($plan),
+                'files_move' => self::move($plan),
+                'files_move_batch' => self::batch($plan),
+                'files_undo_batch' => self::undo($plan),
+                'files_version_restore' => self::restore($plan),
+                default => null,
+            };
+        } catch (\Throwable) {
+            return null;
+        }
+        return $lines === null ? null : implode("\n", $lines);
+    }
+
+    /** @return list<string>|null */
+    private static function content(string $tool, array $plan): ?array {
+        $path = self::text($plan, 'path');
+        if ($path === null || !isset($plan['diff']) || !is_string($plan['diff'])) {
+            return null;
+        }
+        $lines = [$tool === 'files_edit'
+            ? Translator::t('Overwrite the content of %s with the new text.', [self::bold($path)])
+            : Translator::t('Replace a passage of %s.', [self::bold($path)]), ''];
+        [$removed, $added] = self::changes($plan['diff']);
+        if ($removed === [] && $added === []) {
+            $lines[] = '- ' . Translator::t('The text does not change.');
+        } else {
+            $lines[] = '- ' . Translator::t('Lines removed: %s; lines added: %s.', [count($removed), count($added)]);
+            if ($removed !== []) {
+                $lines[] = '- ' . Translator::t('Before: %s', [self::quote(implode(' ', $removed))]);
+            }
+            if ($added !== []) {
+                $lines[] = '- ' . Translator::t('After: %s', [self::quote(implode(' ', $added))]);
+            }
+        }
+        $size = $plan['size'] ?? null;
+        if (is_array($size) && isset($size['before'], $size['after'])) {
+            $lines[] = '- ' . Translator::t('Size: %s → %s', [self::bytes((int)$size['before']), self::bytes((int)$size['after'])]);
+        }
+        return array_merge($lines, self::backup($plan), self::sharing($plan));
+    }
+
+    /** @return list<string>|null */
+    private static function checkout(array $plan): ?array {
+        $path = self::text($plan, 'path');
+        if ($path === null) {
+            return null;
+        }
+        $lines = [Translator::t('Prepare %s to be downloaded, changed and sent back.', [self::bold($path)]), ''];
+        if (isset($plan['size'])) {
+            $lines[] = '- ' . Translator::t('Size: %s', [self::bytes((int)$plan['size'])]);
+        }
+        if (isset($plan['downloadTtlSeconds'], $plan['uploadTtlSeconds'])) {
+            $lines[] = '- ' . Translator::t('The download link works for %s minutes and the upload link for %s minutes.', [
+                (int)ceil((int)$plan['downloadTtlSeconds'] / 60),
+                (int)ceil((int)$plan['uploadTtlSeconds'] / 60),
+            ]);
+        }
+        if (isset($plan['uploadMaxBytes'])) {
+            $lines[] = '- ' . Translator::t('The new version can weigh up to %s.', [self::bytes((int)$plan['uploadMaxBytes'])]);
+        }
+        $lines[] = '- ' . Translator::t('Nothing is changed until the new version is uploaded.');
+        return array_merge($lines, self::backup($plan), self::sharing($plan));
+    }
+
+    /** @return list<string>|null */
+    private static function copy(array $plan): ?array {
+        $from = self::text($plan, 'from');
+        $to = self::text($plan, 'to');
+        if ($from === null || $to === null) {
+            return null;
+        }
+        $lines = [Translator::t('Copy %s to %s. The original stays where it is.', [self::bold($from), self::bold($to)]), ''];
+        if (isset($plan['nodes'])) {
+            $lines[] = '- ' . Translator::n('%n item, %s in total.', '%n items, %s in total.', (int)$plan['nodes'], [self::bytes((int)($plan['bytes'] ?? 0))]);
+        }
+        return array_merge($lines, self::sharing($plan));
+    }
+
+    /** @return list<string>|null */
+    private static function mkdir(array $plan): ?array {
+        $path = self::text($plan, 'path');
+        if ($path === null) {
+            return null;
+        }
+        $lines = [Translator::t('Create the folder %s.', [self::bold($path)]), ''];
+        $levels = self::strings($plan['created'] ?? []);
+        if (count($levels) > 1) {
+            $lines[] = '- ' . Translator::t('Folders that will be created: %s', [implode(', ', array_map([self::class, 'bold'], $levels))]);
+        }
+        if (isset($plan['createdIn']) && is_string($plan['createdIn'])) {
+            $lines[] = '- ' . Translator::t('Inside: %s', [self::bold($plan['createdIn'] === '' ? '/' : $plan['createdIn'])]);
+        }
+        return array_merge($lines, self::sharing($plan));
+    }
+
+    /** @return list<string>|null */
+    private static function move(array $plan): ?array {
+        $from = self::text($plan, 'from');
+        $to = self::text($plan, 'to');
+        if ($from === null || $to === null) {
+            return null;
+        }
+        $lines = [($plan['isDir'] ?? false) === true
+            ? Translator::t('Move the folder %s to %s.', [self::bold($from), self::bold($to)])
+            : Translator::t('Move %s to %s.', [self::bold($from), self::bold($to)]), ''];
+        if (isset($plan['versions']) && is_int($plan['versions']) && $plan['versions'] > 0) {
+            $lines[] = '- ' . Translator::n('Its %n earlier version goes along.', 'Its %n earlier versions go along.', $plan['versions']);
+        }
+        return array_merge($lines, self::sharing($plan));
+    }
+
+    /** @return list<string>|null */
+    private static function batch(array $plan): ?array {
+        $order = $plan['order'] ?? $plan['moves'] ?? null;
+        if (!is_array($order)) {
+            return null;
+        }
+        $lines = [Translator::n('Move %n item:', 'Move %n items:', count($order)), ''];
+        foreach ($order as $item) {
+            if (is_array($item) && isset($item['from'], $item['to'])) {
+                $lines[] = '- ' . self::bold((string)$item['from']) . ' → ' . self::bold((string)$item['to']);
+            }
+        }
+        $created = [];
+        foreach ((array)($plan['mkdirs'] ?? []) as $dir) {
+            if (is_array($dir) && ($dir['willCreate'] ?? false) === true && isset($dir['path'])) {
+                $created[] = self::bold((string)$dir['path']);
+            }
+        }
+        if ($created !== []) {
+            $lines[] = '';
+            $lines[] = Translator::t('Folders that will be created first: %s', [implode(', ', $created)]);
+        }
+        foreach (['conflicts', 'denied'] as $key) {
+            $items = array_filter((array)($plan[$key] ?? []), 'is_array');
+            if ($items === []) {
+                continue;
+            }
+            $lines[] = '';
+            $lines[] = $key === 'conflicts'
+                ? Translator::t('Cannot be moved, the destination is taken or invalid:')
+                : Translator::t('Not allowed by Nextcloud:');
+            foreach ($items as $item) {
+                $reason = isset($item['reason']) ? ' — ' . self::excerpt((string)$item['reason']) : '';
+                $lines[] = '- ' . self::bold((string)($item['from'] ?? '')) . ' → ' . self::bold((string)($item['to'] ?? '')) . $reason;
+            }
+        }
+        $shared = array_filter((array)($plan['shared'] ?? []), 'is_array');
+        if ($shared !== []) {
+            $lines[] = '';
+            $lines[] = Translator::t('These items belong to someone else or are shared, so moving them also needs the shared-content confirmation:');
+            foreach ($shared as $item) {
+                $lines[] = '- ' . self::bold((string)($item['from'] ?? '')) . ' → ' . self::bold((string)($item['to'] ?? ''));
+            }
+        }
+        $lines[] = '';
+        $lines[] = Translator::t('You can undo the whole batch afterwards.');
+        return $lines;
+    }
+
+    /** @return list<string>|null */
+    private static function undo(array $plan): ?array {
+        if (!isset($plan['undo']) || !is_array($plan['undo'])) {
+            return null;
+        }
+        $lines = [Translator::n('Undo a batch and put %n item back where it was:', 'Undo a batch and put %n items back where they were:', count($plan['undo'])), ''];
+        foreach ($plan['undo'] as $item) {
+            if (is_array($item) && isset($item['from'], $item['to'])) {
+                $lines[] = '- ' . self::bold((string)$item['to']) . ' → ' . self::bold((string)$item['from']);
+            }
+        }
+        $removed = self::strings($plan['removed_dirs'] ?? []);
+        if ($removed !== []) {
+            $lines[] = '';
+            $lines[] = Translator::t('Empty folders the batch created will be removed: %s', [implode(', ', array_map([self::class, 'bold'], $removed))]);
+        }
+        $conflicts = array_filter((array)($plan['conflicts'] ?? []), 'is_array');
+        if ($conflicts !== []) {
+            $lines[] = '';
+            $lines[] = Translator::t('The undo is blocked because these items changed since the batch:');
+            foreach ($conflicts as $item) {
+                $reason = isset($item['reason']) ? ' — ' . self::excerpt((string)$item['reason']) : '';
+                $lines[] = '- ' . self::bold((string)($item['to'] ?? $item['from'] ?? '')) . $reason;
+            }
+        }
+        return $lines;
+    }
+
+    /** @return list<string>|null */
+    private static function restore(array $plan): ?array {
+        $path = self::text($plan, 'path');
+        $version = $plan['version'] ?? null;
+        if ($path === null || !is_array($version) || !isset($version['timestamp'])) {
+            return null;
+        }
+        $when = self::moment((string)$version['timestamp'], self::text($plan, 'timezone'));
+        $lines = [Translator::t('Bring %s back to the version of %s.', [self::bold($path), $when]), ''];
+        if (isset($version['size'])) {
+            $current = is_array($plan['current'] ?? null) && isset($plan['current']['size']) ? (int)$plan['current']['size'] : null;
+            $lines[] = '- ' . ($current === null
+                ? Translator::t('Size: %s', [self::bytes((int)$version['size'])])
+                : Translator::t('Size: %s → %s', [self::bytes($current), self::bytes((int)$version['size'])]));
+        }
+        $lines[] = '- ' . Translator::t('The current content is replaced by that version.');
+        return array_merge($lines, self::backup($plan), self::sharing($plan));
+    }
+
+    /**
+     * @param array<string, mixed> $plan plan of a tool that copies the file before writing
+     * @return list<string> the line naming the backup folder, when the plan carries one
+     */
+    private static function backup(array $plan): array {
+        $backup = self::text($plan, 'backup');
+        return $backup === null ? [] : ['- ' . Translator::t('A copy of the current file is saved first in %s.', [self::bold($backup)])];
+    }
+
+    /**
+     * @param array<string, mixed> $plan plan with an optional `shared` list of access descriptions
+     * @return list<string> who else is reached, and the extra confirmation when the plan asks for it
+     */
+    private static function sharing(array $plan): array {
+        $lines = [];
+        foreach ((array)($plan['shared'] ?? []) as $info) {
+            if (!is_array($info)) {
+                continue;
+            }
+            $who = (string)($info['sharedBy'] ?? $info['ownerDisplayName'] ?? '');
+            $line = match ($info['scope'] ?? null) {
+                NodeAccessInfo::TEAM => Translator::t('It is in the team folder %s, so other members see the change.', [self::bold((string)($info['teamFolder'] ?? ''))]),
+                NodeAccessInfo::EXTERNAL => Translator::t('It is on external storage.'),
+                NodeAccessInfo::SHARED => Translator::t('It was shared with you by %s, so the change reaches them too.', [self::bold($who)]),
+                default => null,
+            };
+            if ($line !== null) {
+                $lines[] = '- ' . $line;
+            }
+        }
+        if (($plan['requiresSharedConfirmation'] ?? false) === true) {
+            $lines[] = '- ' . Translator::t('Because other people are affected, an extra confirmation of the shared content is needed.');
+        }
+        return $lines;
+    }
+
+    /**
+     * @param string $diff unified diff
+     * @return array{list<string>, list<string>} removed and added lines, without the markers
+     */
+    private static function changes(string $diff): array {
+        $removed = [];
+        $added = [];
+        foreach (explode("\n", $diff) as $line) {
+            if (str_starts_with($line, '---') || str_starts_with($line, '+++')) {
+                continue;
+            }
+            if (str_starts_with($line, '-')) {
+                $removed[] = trim(substr($line, 1));
+            } elseif (str_starts_with($line, '+')) {
+                $added[] = trim(substr($line, 1));
+            }
+        }
+        return [array_values(array_filter($removed, 'strlen')), array_values(array_filter($added, 'strlen'))];
+    }
+
+    /** @return string the instant as the person reads it, in their timezone when the plan names one */
+    private static function moment(string $iso, ?string $timezone): string {
+        try {
+            $date = new \DateTimeImmutable($iso);
+            if ($timezone !== null) {
+                $date = $date->setTimezone(new \DateTimeZone($timezone));
+            }
+            return $date->format(Translator::t('m/d/Y H:i'));
+        } catch (\Throwable) {
+            return $iso;
+        }
+    }
+
+    /** @return string the text shortened to the excerpt limit */
+    private static function excerpt(string $text): string {
+        $text = trim(preg_replace('/\s+/u', ' ', $text) ?? $text);
+        return mb_strlen($text) > self::EXCERPT ? mb_substr($text, 0, self::EXCERPT) . '…' : $text;
+    }
+
+    private static function quote(string $text): string {
+        return '«' . self::excerpt($text) . '»';
+    }
+
+    private static function bold(string $text): string {
+        return '**' . $text . '**';
+    }
+
+    private static function bytes(int $bytes): string {
+        foreach (['B', 'KB', 'MB', 'GB'] as $i => $unit) {
+            if ($bytes < 1024 ** ($i + 1) || $unit === 'GB') {
+                return ($i === 0 ? (string)$bytes : rtrim(rtrim(number_format($bytes / 1024 ** $i, 1, '.', ''), '0'), '.')) . ' ' . $unit;
+            }
+        }
+        return $bytes . ' B';
+    }
+
+    /** @return string|null the non-empty string under $key */
+    private static function text(array $plan, string $key): ?string {
+        return isset($plan[$key]) && is_string($plan[$key]) && $plan[$key] !== '' ? $plan[$key] : null;
+    }
+
+    /** @return list<string> the string members of a list */
+    private static function strings(mixed $value): array {
+        return is_array($value) ? array_values(array_filter($value, 'is_string')) : [];
+    }
+}

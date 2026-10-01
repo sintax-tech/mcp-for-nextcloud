@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Calendar\Handler;
 
 use OCA\Mcp\Tools\Calendar\CalendarAccess;
+use OCA\Mcp\Tools\Calendar\CalendarMessages;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
 use OCA\Mcp\Tools\Calendar\CalendarTool;
 use OCA\Mcp\Tools\Calendar\Classification;
@@ -49,10 +50,10 @@ final class ListEvents implements CalendarTool {
      * @return array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}
      */
     public function definition(): array {
-        return ToolSchema::definition('calendar_list_events', 'Lista eventos num intervalo (default: próximos 7 dias).', 'read', [
-            'calendar' => ToolSchema::calendar('path do calendário (opcional)'),
-            'from' => ToolSchema::date('ISO date início'),
-            'to' => ToolSchema::date('ISO date fim'),
+        return ToolSchema::definition('calendar_list_events', CalendarMessages::TOOL_LIST_EVENTS, 'read', [
+            'calendar' => ToolSchema::calendar(CalendarMessages::propertyDescription('calendar-optional')),
+            'from' => ToolSchema::date(CalendarMessages::propertyDescription('from')),
+            'to' => ToolSchema::date(CalendarMessages::propertyDescription('to')),
         ]);
     }
 

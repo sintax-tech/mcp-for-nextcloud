@@ -10,8 +10,13 @@
         "phpunit/phpunit": "^10.5",
         "nextcloud/ocp": "dev-stable33",
         "doctrine/dbal": "^4.0",
-        "sabre/vobject": "^4.5",
-        "sabre/dav": "^4.7"
+        "sabre/vobject": "4.5.6",
+        "sabre/dav": "4.7.0",
+        "sabre/event": "5.1.7",
+        "sabre/http": "5.1.12",
+        "sabre/uri": "2.3.4",
+        "sabre/xml": "2.2.11",
+        "symfony/console": "v6.4.41"
     },
     "autoload": {
         "psr-4": { "OCA\\Mcp\\": "lib/" }

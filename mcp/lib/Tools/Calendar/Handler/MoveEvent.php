@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Calendar\Handler;
 
 use OCA\Mcp\Tools\Calendar\CalendarAccess;
+use OCA\Mcp\Tools\Calendar\CalendarMessages;
 use OCA\Mcp\Tools\Calendar\CalendarTool;
 use OCA\Mcp\Tools\Calendar\EventRelocator;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
@@ -30,9 +31,9 @@ final class MoveEvent implements CalendarTool {
     public function definition(): array {
         return ToolSchema::definition(
             'calendar_move_event',
-            'Move um evento para outro calendário do mesmo dono, sem sobrescrever.' . ToolSchema::NO_NOTIFICATION . SharedGuard::DESCRIPTION_SUFFIX,
+            CalendarMessages::TOOL_MOVE_EVENT . CalendarMessages::PARTICIPANTS_NOT_NOTIFIED . CalendarMessages::SHARED_CONFIRMATION_SUFFIX,
             'move',
-            ['calendar' => ToolSchema::calendar('path do calendário de origem'), 'uid' => ToolSchema::uid(), 'targetCalendar' => ToolSchema::calendar('path do calendário de destino'), 'etag' => ToolSchema::etag(), 'confirm_shared' => SharedGuard::property()],
+            ['calendar' => ToolSchema::calendar(CalendarMessages::propertyDescription('source-calendar')), 'uid' => ToolSchema::uid(), 'targetCalendar' => ToolSchema::calendar(CalendarMessages::propertyDescription('target-calendar')), 'etag' => ToolSchema::etag(), 'confirm_shared' => SharedGuard::property()],
             ['calendar', 'uid', 'targetCalendar'],
         );
     }

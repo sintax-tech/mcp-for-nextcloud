@@ -16,9 +16,11 @@ final class TransferEventTest extends CalendarTestCase {
     }
 
     public function testTransfersToAnotherOwnersWritableCalendar(): void {
-        $this->assertSame(['uid' => 't', 'from' => self::PERSONAL, 'to' => self::TEAM], self::json($this->transfer([])));
-        $id = $this->store->objects[1]['t.ics']['id'];
-        $this->assertSame([['move', [self::ALICE, $id, self::BOB, 3, 't.ics']]], $this->store->writes);
+        $this->assertSame(
+            ['uid' => 't', 'from' => self::PERSONAL, 'to' => self::TEAM, 'participantsNotified' => false, 'note' => 'Os participantes do evento não são avisados, como ao mover no app Calendar.'],
+            self::json($this->transfer([])),
+        );
+        $this->assertSame([['move', ['personal', 't.ics', 'team_shared_by_bob', '"' . md5(self::ics("UID:t\nCLASS:PRIVATE\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z")) . '"']]], $this->dav->calls);
     }
 
     public function testReadOnlyTargetAndSameOwnerAreRefused(): void {
@@ -47,8 +49,35 @@ final class TransferEventTest extends CalendarTestCase {
         $this->assertNoWrites();
     }
 
+    public function testATransferCarryingGuestsIsRefusedBeforeAnyDispatch(): void {
+        $this->store->addObject(1, 'w.ics', self::ics(
+            "UID:w\nSUMMARY:Comiliao\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z\n"
+            . "ORGANIZER:mailto:alice@example.invalid\nATTENDEE;CN=Bob:mailto:bob@example.invalid"
+        ));
+
+        self::assertToolError($this->transfer(['uid' => 'w']), 'organizador continua sendo você');
+        $this->assertNoWrites();
+    }
+
+    public function testOverrideGuestsAlsoBlockTransferBeforeDispatch(): void {
+        $this->store->addObject(1, 'series.ics', self::ics(
+            "UID:series\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z\nRRULE:FREQ=WEEKLY",
+            "BEGIN:VEVENT\nUID:series\nRECURRENCE-ID:20260319T090000Z\nDTSTART:20260319T090000Z\nDTEND:20260319T100000Z\nATTENDEE:mailto:bob@example.invalid\nEND:VEVENT"
+        ));
+        self::assertToolError($this->transfer(['uid' => 'series']), 'participantes');
+        $this->assertNoWrites();
+    }
+
+    public function testATransferWithoutGuestsGoesThrough(): void {
+        $this->store->addObject(1, 'n.ics', self::ics("UID:n\nDTSTART:20260312T090000Z\nDTEND:20260312T100000Z"));
+
+        self::json($this->transfer(['uid' => 'n']));
+
+        $this->assertSame('move', $this->dav->calls[0][0]);
+    }
+
     public function testBackendFailurePropagates(): void {
-        $this->store->failure = new RuntimeException('boom');
+        $this->dav->failureFor['move'] = new RuntimeException('boom');
         $this->expectException(RuntimeException::class);
         $this->transfer([]);
     }

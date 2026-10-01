@@ -107,14 +107,15 @@ final class ToolPresentation {
      *
      * @param string $name technical tool name
      * @param string $operation grant operation of the tool definition (read, create, edit, delete, move, transfer, restore)
+     * @param bool $destructiveHint a module may strengthen the default confirmation hint
      * @return array{title: string, readOnlyHint: bool, destructiveHint: bool, idempotentHint: bool, openWorldHint: bool}
      */
-    public static function annotations(string $name, string $operation): array {
+    public static function annotations(string $name, string $operation, bool $destructiveHint = false): array {
         $readOnly = $operation === self::READ_OPERATION;
         return [
             'title' => self::title($name),
             'readOnlyHint' => $readOnly,
-            'destructiveHint' => in_array($operation, self::DESTRUCTIVE_OPERATIONS, true)
+            'destructiveHint' => $destructiveHint || in_array($operation, self::DESTRUCTIVE_OPERATIONS, true)
                 || in_array($name, self::DESTRUCTIVE_TOOLS, true),
             'idempotentHint' => $readOnly,
             'openWorldHint' => false,

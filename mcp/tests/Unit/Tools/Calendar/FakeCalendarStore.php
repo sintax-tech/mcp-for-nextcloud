@@ -8,18 +8,19 @@ use OCA\Mcp\Tools\Calendar\CalendarStore;
 use Throwable;
 
 /**
- * In-memory CalendarStore that records every write and can simulate a backend failure.
+ * In-memory CalendarStore, read-only on the tool side, with the writes applied by FakeCalendarDav.
+ *
+ * The store exposes no write method of its own: the only way an object changes here is a dispatched
+ * DAV request, which is what makes "nothing was dispatched" a meaningful assertion.
  */
 final class FakeCalendarStore implements CalendarStore {
     /** @var array<string, list<array{id:int, uri:string, displayName:string, ownerPrincipal:string, readOnly:bool, components:list<string>, deleted:bool}>> calendars by principal */
     public array $calendars = [];
     /** @var array<int, array<string, array{id:int, uri:string, etag:string, data:string, deleted:bool}>> objects by calendar id and URI */
     public array $objects = [];
-    /** @var list<array{0:string, 1:mixed}> write calls: [method, arguments] */
-    public array $writes = [];
-    /** Failure thrown by every method when set. */
+    /** Failure thrown by every read method when set. */
     public ?Throwable $failure = null;
-    /** Result returned by move(). */
+    /** Result returned by moveCalendarObject in the fake DAV. */
     public bool $moveResult = true;
     private int $nextObjectId = 1000;
 
@@ -88,31 +89,48 @@ final class FakeCalendarStore implements CalendarStore {
         return null;
     }
 
-    public function create(int $calendarId, string $uri, string $data): string {
-        $this->fail();
-        $this->writes[] = ['create', [$calendarId, $uri, $data]];
+    /**
+     * @param int $calendarId calendar id
+     * @param string $uri object URI
+     * @param string $data iCalendar text
+     * @return string the new ETag
+     */
+    public function applyCreate(int $calendarId, string $uri, string $data): string {
         $this->addObject($calendarId, $uri, $data);
         return $this->objects[$calendarId][$uri]['etag'];
     }
 
-    public function update(int $calendarId, string $uri, string $data): string {
-        $this->fail();
-        $this->writes[] = ['update', [$calendarId, $uri, $data]];
+    /**
+     * @param int $calendarId calendar id
+     * @param string $uri object URI
+     * @param string $data iCalendar text
+     * @return string the new ETag
+     */
+    public function applyUpdate(int $calendarId, string $uri, string $data): string {
         $id = $this->objects[$calendarId][$uri]['id'];
         $this->objects[$calendarId][$uri] = ['id' => $id, 'uri' => $uri, 'etag' => '"' . md5($data) . '"', 'data' => $data, 'deleted' => false];
         return $this->objects[$calendarId][$uri]['etag'];
     }
 
-    public function move(string $sourceOwnerPrincipal, int $objectId, string $targetOwnerPrincipal, int $targetCalendarId, string $uri): bool {
-        $this->fail();
-        $this->writes[] = ['move', [$sourceOwnerPrincipal, $objectId, $targetOwnerPrincipal, $targetCalendarId, $uri]];
-        return $this->moveResult;
+    /**
+     * @param int $calendarId calendar id
+     * @param string $uri object URI
+     * @return void
+     */
+    public function applyDelete(int $calendarId, string $uri): void {
+        $this->objects[$calendarId][$uri]['deleted'] = true;
     }
 
-    public function delete(int $calendarId, string $uri): void {
-        $this->fail();
-        $this->writes[] = ['delete', [$calendarId, $uri]];
-        $this->objects[$calendarId][$uri]['deleted'] = true;
+    /**
+     * @param int $fromId source calendar id
+     * @param string $uri object URI
+     * @param int $toId destination calendar id
+     * @return void
+     */
+    public function applyMove(int $fromId, string $uri, int $toId): void {
+        $row = $this->objects[$fromId][$uri];
+        unset($this->objects[$fromId][$uri]);
+        $this->objects[$toId][$uri] = $row;
     }
 
     private function fail(): void {

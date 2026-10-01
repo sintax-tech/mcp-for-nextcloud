@@ -24,7 +24,7 @@ final class EventTiming {
         public readonly ?DateTimeZone $timeZone,
     ) {
         if ($end <= $start) {
-            throw new CalendarArgumentException('Intervalo inválido: end deve ser posterior a start.');
+            throw new CalendarArgumentException(CalendarMessages::RANGE_END_BEFORE_START);
         }
     }
 }

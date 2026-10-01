@@ -11,8 +11,6 @@ final class ToolSchema {
     public const MODULE = 'calendar';
     /** Nextcloud app that must be enabled for the user. */
     public const APP = 'calendar';
-    /** Warning appended to the description of every write tool (no iTIP scheduling). */
-    public const NO_NOTIFICATION = ' Os participantes do evento não são notificados.';
 
     /**
      * @param string $name tool name
@@ -41,7 +39,7 @@ final class ToolSchema {
      * @param string $description Portuguese description
      * @return array<string, mixed> calendar path property
      */
-    public static function calendar(string $description = 'path do calendário, como retornado por calendar_list_calendars'): array {
+    public static function calendar(string $description = CalendarMessages::PROP_CALENDAR): array {
         return ['type' => 'string', 'minLength' => 1, 'maxLength' => 1024, 'description' => $description];
     }
 
@@ -49,21 +47,21 @@ final class ToolSchema {
      * @return array<string, mixed> event UID property
      */
     public static function uid(): array {
-        return ['type' => 'string', 'minLength' => 1, 'maxLength' => 255, 'description' => 'UID do evento'];
+        return ['type' => 'string', 'minLength' => 1, 'maxLength' => 255, 'description' => CalendarMessages::PROP_UID];
     }
 
     /**
      * @return array<string, mixed> optional ETag property for optimistic concurrency
      */
     public static function etag(): array {
-        return ['type' => 'string', 'minLength' => 1, 'maxLength' => 128, 'description' => 'etag esperado; se divergir, nada é alterado'];
+        return ['type' => 'string', 'minLength' => 1, 'maxLength' => 128, 'description' => CalendarMessages::PROP_ETAG];
     }
 
     /**
      * @return array<string, mixed> mandatory confirmation property
      */
     public static function confirm(): array {
-        return ['type' => 'boolean', 'const' => true, 'description' => 'precisa ser true para confirmar a operação'];
+        return ['type' => 'boolean', 'const' => true, 'description' => CalendarMessages::PROP_CONFIRM];
     }
 
     /**
@@ -82,6 +80,32 @@ final class ToolSchema {
      */
     public static function text(string $description, int $minLength, int $maxLength): array {
         return ['type' => 'string', 'minLength' => $minLength, 'maxLength' => $maxLength, 'description' => $description];
+    }
+
+    /**
+     * @param bool $allowEmpty update accepts [] to remove every attendee
+     * @return array<string, mixed> guest list property: internal account ids only
+     */
+    public static function attendees(bool $allowEmpty = false): array {
+        return [
+            'type' => 'array',
+            'items' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 64],
+            'minItems' => $allowEmpty ? 0 : 1,
+            'maxItems' => AttendeeResolver::MAX_ATTENDEES,
+            'uniqueItems' => true,
+            'description' => CalendarMessages::PROP_ATTENDEES,
+        ];
+    }
+
+    /**
+     * @return array<string, mixed> opt-in invitation property, defaulting to sending nothing
+     */
+    public static function sendInvitations(): array {
+        return [
+            'type' => 'boolean',
+            'default' => false,
+            'description' => CalendarMessages::PROP_SEND_INVITATIONS,
+        ];
     }
 
     /**

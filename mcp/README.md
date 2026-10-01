@@ -28,7 +28,61 @@ Cada tool só aparece em `tools/list` e só pode ser chamada quando o usuário t
 | `calendar_list_calendars` `{}` | calendar.read | Calendários visíveis ao usuário, próprios e compartilhados. |
 | `calendar_list_events` `{calendar?, from?, to?}` | calendar.read | Eventos no intervalo (padrão: próximos 7 dias), com recorrência expandida. |
 
-Por enquanto, Calendar oferece apenas leitura: as cinco tools de escrita estão ocultas de `tools/list`, chamadas diretas falham fechadas e suas colunas não aparecem na matriz administrativa até ser provado o caminho oficial DAV do Nextcloud. Os grants de escrita já salvos são preservados internamente para eventual reativação depois da validação. As tools de leitura exigem o app Calendar habilitado para o usuário e usam o backend CalDAV do app DAV, carregado só quando uma tool de calendário é chamada. O runtime/plugins do Nextcloud 33 não foram validados; antes de reativar escrita, é obrigatório testar PUT/DELETE/MOVE, ACL compartilhada, convites e efeitos num ambiente de integração Nextcloud 33 real. `sabre/vobject` vem do core e não está no `vendor/` do pacote.
+Calendar começa com apenas leitura. As cinco escritas entram no `tools/list` e na matriz de concessões somente depois do comando `occ mcp:calendar-selftest` confirmar o DAV real no servidor. Os grants existentes são preservados; novos grants de escrita continuam desligados por padrão. A prova vale para a versão exata do app MCP e para o major.minor do Nextcloud: patch 33.0.x mantém a liberação; atualização do app ou mudança de minor/major exige novo selftest. O app Calendar precisa estar habilitado para o usuário. Sabre e Symfony Console vêm do core do Nextcloud e ficam fora do `vendor/` do pacote.
+
+| Tool após verificação | Grant | Comportamento |
+| --- | --- | --- |
+| `calendar_create_event` | calendar.create | Evento simples; `attendees` são UIDs internos resolvidos para o e-mail da conta. |
+| `calendar_update_event` | calendar.edit | Atualiza texto/datas e substitui participantes; `attendees: []` remove todos. Mudança de participantes em série ou por outro organizador é recusada. |
+| `calendar_move_event` | calendar.move | MOVE no mesmo dono; participantes não são avisados, como no app Calendar. |
+| `calendar_delete_event` | calendar.delete | Exclui a série na lixeira; exige `confirm: true` e retenção ativa. |
+| `calendar_transfer_event` | calendar.transfer | MOVE para agenda de outro dono compartilhada com escrita; exige `confirm: true`, recusa participantes e só é liberado com prova `--shared-calendar`. |
+
+Create, update e delete usam `send_invitations: false` por padrão (`x-nc-scheduling: false`). `true` requer a prova opcional `--attendee-uid`, inclusive para convidados existentes e CANCEL. O resultado informa o agendamento do Nextcloud, `imipEnabled` e os estados observados; nunca confirma recebimento de e-mail. A configuração `dav/sendInvitations=no` desliga iMIP, mas não impede iTIP interno. Escritas em agenda de outra pessoa ainda exigem `confirm_shared: true` após confirmação do usuário; transfer já exige a confirmação explícita própria.
+
+### Verificação Calendar no servidor
+
+Execute na raiz da instalação Nextcloud, como o usuário do servidor web (exemplo `www-data`). O UID organizador precisa ter conta habilitada, e-mail válido e Calendar habilitado. A retenção `dav/calendarRetentionObligation` não pode ser `0`: nesse modo o selftest revoga o gate e falha antes de criar qualquer objeto, pois a limpeza dos calendários seria permanente.
+
+```sh
+sudo -u www-data php occ mcp:calendar-selftest UID_ORGANIZADOR --no-enable
+sudo -u www-data php occ mcp:calendar-selftest UID_ORGANIZADOR
+sudo -u www-data php occ config:app:get mcp calendar_writes_verified
+```
+
+A primeira execução prova sem gravar a liberação e revoga uma prova anterior. A segunda libera create/edit/move/delete após todos os passos e a limpeza retornarem `OK`. Sem as opções, `invitations` fica `false`, transfer fica ausente, e as três provas opcionais mostram `NÃO TESTADO`. Cada execução cria dois calendários com URIs aleatórios `mcp-selftest-...-a`/`-b`, toca somente eventos criados nela e move esses calendários para a lixeira ao terminar.
+
+Para comprovar convites e transferência, forneça outro UID interno com e-mail e Calendar e o path de uma agenda de outro dono compartilhada com escrita na home do organizador:
+
+```sh
+sudo -u www-data php occ mcp:calendar-selftest UID_ORGANIZADOR \
+  --attendee-uid UID_PARTICIPANTE \
+  --shared-calendar '/remote.php/dav/calendars/UID_ORGANIZADOR/URI_COMPARTILHADO/' \
+  --acl-probe-user UID_SEM_ACESSO
+```
+
+Essa execução opta por efeitos nos dois usuários: convite interno, CANCEL de limpeza e Activity na agenda compartilhada. Ela exige `SCHEDULE-STATUS:1.2`, cópia do evento na agenda do participante e REQUEST na caixa CalDAV, depois remove somente cópias/itens com o UID gerado pelo teste. Não é uma prova de SMTP. A verificação ACL usa o principal de `UID_SEM_ACESSO` contra a home do organizador e exige HTTP 403/404 sem gravar.
+
+| Etapa do relatório | Resultado esperado |
+| --- | --- |
+| `preflight`, `calendars` | Conta/app/retenção válidos; dois MKCALENDAR HTTP 201 visíveis. |
+| `create` | HTTP 201, UID e ETag relidos, sync-token aumentou. |
+| `suppression-create`, `suppression-update` | PUT 201/204, ATTENDEE `@example.invalid` sem SCHEDULE-STATUS; SUMMARY mudou e SEQUENCE subiu. |
+| `stale-tool`, `stale-dav` | Conflito no handler e HTTP 412 no DAV; dados e ETag intactos. |
+| `move`, `overwrite` | MOVE 201 com UID só no destino e sync das duas agendas; Overwrite F retorna 412 e preserva os dois objetos. |
+| `delete` | HTTP 204, UID fora da leitura e `deleted=true` na lixeira. |
+| `invitations`, `transfer`, `acl` | `OK` se solicitadas e comprovadas; `NÃO TESTADO` sem as opções. |
+| `cleanup`, `gate` | Limpeza HTTP 204 confirmada, sessão restaurada e prova gravada após a limpeza. |
+
+Qualquer `FALHA` retorna código não zero e mantém todas as escritas ocultas. Se a limpeza falhar, `cleanup-resource` indica o path/UID que precisa ser conferido no servidor. Activity, sincronização em clientes CalDAV externos, recebimento de e-mail e o uso pelo cliente MCP exigem observação no servidor.
+
+Para desligar novamente:
+
+```sh
+sudo -u www-data php occ mcp:calendar-selftest --revoke
+# Alternativa administrativa equivalente:
+sudo -u www-data php occ config:app:delete mcp calendar_writes_verified
+```
 
 Tools de Notes exigem o app Notes habilitado para o usuário. Leitura começa permitida; criação, edição, movimentação e exclusão começam negadas até o administrador liberar. Não há timeout próprio: a leitura é local ao PHP e o limite de bytes protege contra arquivos grandes. Storage externo lento fica limitado ao `max_execution_time` do PHP.
 

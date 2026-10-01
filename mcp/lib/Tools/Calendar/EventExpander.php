@@ -71,7 +71,7 @@ final class EventExpander {
         try {
             while ($iterator->valid()) {
                 if (++$steps > self::MAX_ITERATIONS_PER_SERIES) {
-                    throw CalendarException::limit('Limite de expansão de ocorrências atingido; reduza a janela do calendário.');
+                    throw CalendarException::limit(CalendarMessages::EXPANSION_LIMIT);
                 }
                 $start = DateTimeImmutable::createFromInterface($iterator->getDtStart());
                 if ($start >= $to) {
@@ -81,14 +81,14 @@ final class EventExpander {
                 $event = $iterator->getEventObject();
                 if ($end > $from && !$this->cancelledOverride($event)) {
                     if (count($out) >= self::MAX_OCCURRENCES_PER_SERIES) {
-                        throw CalendarException::limit('Limite de 500 ocorrências por série atingido; reduza a janela do calendário.');
+                        throw CalendarException::limit(CalendarMessages::OCCURRENCE_LIMIT);
                     }
                     $out[] = ['event' => $event, 'start' => $start, 'end' => $end];
                 }
                 $iterator->next();
             }
         } catch (MaxInstancesExceededException) {
-            throw CalendarException::limit('Limite de expansão de ocorrências atingido; reduza a janela do calendário.');
+            throw CalendarException::limit(CalendarMessages::EXPANSION_LIMIT);
         }
         return $out;
     }

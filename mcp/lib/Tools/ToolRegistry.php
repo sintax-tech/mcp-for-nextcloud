@@ -38,7 +38,7 @@ class ToolRegistry {
                         'title' => ToolPresentation::title($definition['name']),
                         'description' => $definition['description'],
                         'inputSchema' => $definition['inputSchema'],
-                        'annotations' => ToolPresentation::annotations($definition['name'], $definition['operation']),
+                        'annotations' => ToolPresentation::annotations($definition['name'], $definition['operation'], ($definition['destructiveHint'] ?? false) === true),
                     ];
                 }
             }

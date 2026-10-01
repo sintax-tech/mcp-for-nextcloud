@@ -6,6 +6,8 @@ namespace OCA\Mcp\Tools\Calendar;
 use DateTime;
 use DateTimeImmutable;
 use OCA\DAV\CalDAV\CalDavBackend;
+use OCP\DB\QueryBuilder\IQueryBuilder;
+use OCP\IDBConnection;
 use Psr\Container\ContainerInterface;
 
 /**
@@ -15,6 +17,8 @@ use Psr\Container\ContainerInterface;
  * Line numbers refer to apps/dav/lib/CalDAV/CalDavBackend.php on branch stable33.
  */
 class DavCalendarStore implements CalendarStore {
+    /** Value of `calendarobjects.calendartype` for regular calendars (CalDavBackend::CALENDAR_TYPE_CALENDAR). */
+    private const CALENDAR_TYPE_CALENDAR = 0;
     /** Row key of the owner principal (OCA\DAV\DAV\Sharing\Plugin::NS_OWNCLOUD). */
     private const OWNER_PRINCIPAL = '{http://owncloud.org/ns}owner-principal';
     /** Row key set only on calendars shared with the principal. */
@@ -119,15 +123,31 @@ class DavCalendarStore implements CalendarStore {
     }
 
     /**
-     * Assumes `public function findCalendarObjectByUid(int $calendarId, string $uid, int $calendarType = self::CALENDAR_TYPE_CALENDAR, ?bool $deleted = false): ?array`
-     * (line 1499), which by default skips trashed objects.
+     * Looks the live object up by its UID inside one calendar. `CalDavBackend::findCalendarObjectByUid()`
+     * is not part of every Nextcloud 33 release (it is missing in 33.0.2), so the URI comes from a query on
+     * `calendarobjects` and the row from the stable `getCalendarObject()` (line 1398).
      *
      * @param int $calendarId backend calendar id
      * @param string $uid iCalendar UID
      * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}|null
+     * @throws \Psr\Container\ContainerExceptionInterface when the DAV app or the database cannot be resolved
      */
     public function objectByUid(int $calendarId, string $uid): ?array {
-        $row = $this->backend()->findCalendarObjectByUid($calendarId, $uid);
+        $qb = $this->container->get(IDBConnection::class)->getQueryBuilder();
+        $result = $qb->select('uri')
+            ->from('calendarobjects')
+            ->where($qb->expr()->eq('calendarid', $qb->createNamedParameter($calendarId, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('uid', $qb->createNamedParameter($uid)))
+            ->andWhere($qb->expr()->eq('calendartype', $qb->createNamedParameter(self::CALENDAR_TYPE_CALENDAR, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->isNull('deleted_at'))
+            ->setMaxResults(1)
+            ->executeQuery();
+        $uri = $result->fetchOne();
+        $result->closeCursor();
+        if ($uri === false || $uri === null) {
+            return null;
+        }
+        $row = $this->backend()->getCalendarObject($calendarId, (string)$uri);
         return $row === null ? null : $this->objectRow($row);
     }
 

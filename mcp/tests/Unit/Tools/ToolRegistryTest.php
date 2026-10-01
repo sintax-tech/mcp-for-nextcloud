@@ -141,7 +141,31 @@ final class ToolRegistryTest extends TestCase {
             fn (array $context) => $context['exception_class'] === \RuntimeException::class && !str_contains(json_encode($context), 'secret')));
         $result = $this->registry()->call('a_read', [], 'alice');
         $this->assertTrue($result['isError']);
-        $this->assertStringNotContainsString('secret', $result['content'][0]['text']);
+        $this->assertSame('Unexpected error while accessing Nextcloud.', $result['content'][0]['text']);
+    }
+
+    public function testUnexpectedFailureLogsClassAndMessageButTheClientStaysGeneric(): void {
+        $this->throw = new \Error('Call to undefined method OCA\DAV\CalDAV\CalDavBackend::missing()');
+        $logged = [];
+        $this->logger->expects($this->once())->method('error')->willReturnCallback(function (string $message, array $context) use (&$logged): void {
+            $logged = $context;
+        });
+        $result = $this->registry()->call('a_read', [], 'alice');
+        $this->assertSame('Call to undefined method OCA\DAV\CalDAV\CalDavBackend::missing()', $logged['exception_message']);
+        $this->assertSame(\Error::class, $logged['exception_class']);
+        $this->assertStringNotContainsString('missing', $result['content'][0]['text']);
+    }
+
+    public function testLoggedMessageHidesFilePathsAndIsTruncated(): void {
+        $this->throw = new \RuntimeException('cannot open /var/www/data/alice/files/secret.txt: ' . str_repeat('x', 400));
+        $logged = [];
+        $this->logger->expects($this->once())->method('error')->willReturnCallback(function (string $message, array $context) use (&$logged): void {
+            $logged = $context;
+        });
+        $this->registry()->call('a_read', [], 'alice');
+        $this->assertStringStartsWith('cannot open [path]: xxx', $logged['exception_message']);
+        $this->assertSame(300, mb_strlen($logged['exception_message']));
+        $this->assertStringNotContainsString('alice', $logged['exception_message']);
     }
 
     private function assertUnknown(string $name): void {

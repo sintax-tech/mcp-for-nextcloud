@@ -18,6 +18,9 @@ use Psr\Log\LoggerInterface;
  * write anything by accident, and a new module is gated by writing `operation: 'create'` and nothing else.
  */
 class ToolRegistry {
+    /** Longest exception message written to the server log. */
+    private const LOG_MESSAGE_LIMIT = 300;
+
     private ?ToolGuide $guide = null;
 
     /** @param list<ToolModule> $modules explicit module list, in tools/list order */
@@ -118,12 +121,25 @@ class ToolRegistry {
                 } catch (ToolFailure $e) {
                     return ToolResult::error($e->getMessage());
                 } catch (\Throwable $e) {
-                    $this->logger->error('MCP tool failed', ['app' => 'mcp', 'tool' => $name, 'exception_class' => $e::class]);
+                    $this->logger->error('MCP tool failed', ['app' => 'mcp', 'tool' => $name, 'exception_class' => $e::class, 'exception_message' => self::loggable($e)]);
                     return ToolResult::error(Translator::t('Unexpected error while accessing Nextcloud.'));
                 }
             }
         }
         throw new InvalidArgumentException('Unknown tool');
+    }
+
+    /**
+     * The message of an unexpected exception for the server log only: no arguments, no trace, file-system paths
+     * replaced and the text cut, so the log explains the failure without carrying user data. The client never
+     * sees it.
+     *
+     * @param \Throwable $e the unexpected exception
+     * @return string at most {@see self::LOG_MESSAGE_LIMIT} characters
+     */
+    private static function loggable(\Throwable $e): string {
+        $message = preg_replace('#(?:/[\w.@~+-]+){2,}/?#u', '[path]', $e->getMessage()) ?? '';
+        return mb_substr($message, 0, self::LOG_MESSAGE_LIMIT);
     }
 
     /**

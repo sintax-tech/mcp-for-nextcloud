@@ -52,8 +52,6 @@ class CheckoutController extends Controller {
     /** Grant the whole checkout flow needs; checkout, upload and replace all use files.edit. */
     private const MODULE = 'files';
     private const OPERATION = 'edit';
-    /** The only body type the upload accepts: the raw bytes of the file, nothing interpreted. */
-    private const CONTENT_TYPE = 'application/octet-stream';
 
     public function __construct(
         string $appName,
@@ -121,7 +119,7 @@ class CheckoutController extends Controller {
     /**
      * Replaces the file with the uploaded bytes, spending the upload token.
      *
-     * The body is checked before the token is spent, so a call the agent got wrong — wrong content type, an
+     * The body is checked before the token is spent, so a call the agent got wrong — a multipart body, an
      * empty body, a body over the limit — still leaves the link usable. Everything from the guard on leaves
      * it spent, because from there the write may or may not have happened and a retry would be ambiguous.
      *
@@ -130,7 +128,7 @@ class CheckoutController extends Controller {
      * so an argument would let a body choose which file it writes.
      *
      * @return Response the JSON receipt, or 409 for a conflict, 403 for a refused write, and
-     *         400/404/410/413/415/500 for the rest
+     *         400/404/410/413/500 for the rest
      */
     #[PublicPage]
     #[NoAdminRequired]
@@ -176,21 +174,17 @@ class CheckoutController extends Controller {
     }
 
     /**
-     * Only the raw bytes of the file are accepted. A multipart body is called out separately with 400
-     * because `curl -F` is the obvious mistake and the generic 415 would not say what was wrong.
+     * Accept raw file bytes regardless of the advertised MIME type, including a missing header.
+     * Multipart forms still need a targeted refusal because their envelope is not file content.
      *
      * @return Response|null the refusal, or null when the body type is acceptable
      */
     private function checkBodyType(): ?Response {
         $type = strtolower(trim(explode(';', $this->request->getHeader('Content-Type'))[0]));
-        if ($type === self::CONTENT_TYPE) {
-            return null;
-        }
         if ($type === 'multipart/form-data') {
             return $this->refuse(Http::STATUS_BAD_REQUEST, FilesMessages::uploadMultipart());
         }
-        $this->logger->debug('MCP checkout upload refused its content type', ['app' => 'mcp', 'type' => mb_substr($type, 0, 32)]);
-        return $this->refuse(Http::STATUS_UNSUPPORTED_MEDIA_TYPE, FilesMessages::uploadWrongType());
+        return null;
     }
 
     /**

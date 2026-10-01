@@ -63,6 +63,8 @@ class Application extends App implements IBootstrap {
 
     /** @param IRegistrationContext $context registration context of the app */
     public function register(IRegistrationContext $context): void {
+        $context->registerEventListener(\OCP\User\Events\UserChangedEvent::class, \OCA\Mcp\OAuth\UserRevocationListener::class);
+        $context->registerEventListener(\OCP\User\Events\UserDeletedEvent::class, \OCA\Mcp\OAuth\UserRevocationListener::class);
         // Production dependencies (smalot/pdfparser) are bundled in the package's vendor/.
         $autoload = __DIR__ . '/../../vendor/autoload.php';
         if (is_file($autoload)) {

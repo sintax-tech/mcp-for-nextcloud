@@ -69,7 +69,7 @@ final class ToolsListContractTest extends TestCase {
      */
     private function handle(string $request, string $version, string $headers = '{}', bool $optionalAppsEnabled = true, ?callable $grants = null): string {
         $config = new InMemoryConfig();
-        $policy = new GrantPolicy($config->mock($this));
+        $policy = new GrantPolicy($config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         foreach (GrantPolicy::CATALOG as $module => $operations) {
             foreach ($operations as $operation) {
                 $policy->setGrant('alice', $module, $operation, $grants === null || $grants($module, $operation));
@@ -299,7 +299,7 @@ final class ToolsListContractTest extends TestCase {
     }
 
     public function testInitializeEncodesCapabilitiesAsObjects(): void {
-        $policy = new GrantPolicy((new InMemoryConfig())->mock($this));
+        $policy = new GrantPolicy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         $protocol = new McpProtocol(new ToolRegistry([], $policy, $this->createMock(IAppManager::class),
             $this->createMock(IUserManager::class), $this->createMock(LoggerInterface::class)),
             new PromptCatalog(), $policy, $this->createMock(LoggerInterface::class));

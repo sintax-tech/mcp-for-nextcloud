@@ -28,7 +28,7 @@ final class ToolGuideTest extends TestCase {
     private array $enabledApps = ['notes', 'deck'];
 
     protected function setUp(): void {
-        $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this));
+        $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         $this->policy->setGrant('alice', 'files', 'read', true);
         $this->policy->setGrant('alice', 'files', 'edit', true);
         $this->policy->setGrant('alice', 'notes', 'read', true);

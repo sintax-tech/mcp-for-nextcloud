@@ -84,6 +84,13 @@ class OAuthStore {
         $qb->delete(self::TOKENS)->where($qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)))->executeStatement();
     }
 
+    /** Deletes all credentials immediately when the service is disabled. */
+    public function deleteAll(): void {
+        foreach ([self::TOKENS, self::CODES] as $table) {
+            $this->db->getQueryBuilder()->delete($table)->executeStatement();
+        }
+    }
+
     /** Deletes every grant and pending code of a user. */
     public function deleteForUser(string $uid): void {
         foreach ([self::TOKENS, self::CODES] as $table) {

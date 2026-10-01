@@ -161,7 +161,7 @@ final class ToolErrorsLanguagesTest extends TestCase {
      */
     private function call(ToolModule $module, string $name, array $arguments): string {
         $config = new InMemoryConfig();
-        $policy = new GrantPolicy($config->mock($this));
+        $policy = new GrantPolicy($config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         foreach (GrantPolicy::CATALOG as $grantedModule => $operations) {
             foreach ($operations as $operation) {
                 $policy->setGrant('alice', $grantedModule, $operation, true);

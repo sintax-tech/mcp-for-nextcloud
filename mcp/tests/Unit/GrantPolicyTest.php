@@ -13,7 +13,7 @@ final class GrantPolicyTest extends TestCase {
 
     protected function setUp(): void {
         $this->store = new InMemoryConfig();
-        $this->policy = new GrantPolicy($this->store->mock($this));
+        $this->policy = new GrantPolicy($this->store->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
     }
 
     public function testEverythingStartsClosed(): void {
@@ -78,7 +78,7 @@ final class GrantPolicyTest extends TestCase {
     public function testStateSurvivesANewPolicyInstance(): void {
         $this->policy->setGlobalEnabled(true);
         $this->policy->setGrant('alice', 'deck', 'move', true);
-        $fresh = new GrantPolicy($this->store->mock($this));
+        $fresh = new GrantPolicy($this->store->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         $this->assertTrue($fresh->globalEnabled());
         $this->assertTrue($fresh->granted('alice', 'deck', 'move'));
     }

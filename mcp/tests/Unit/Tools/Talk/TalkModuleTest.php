@@ -769,7 +769,7 @@ class TalkModuleTest extends TestCase {
 
     /** The registry with this module and every Talk grant on: the one place that decides about confirm. */
     private function registry(): ToolRegistry {
-        $policy = new GrantPolicy((new InMemoryConfig())->mock($this));
+        $policy = new GrantPolicy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         foreach (GrantPolicy::CATALOG['talk'] as $operation) {
             $policy->setGrant('alice', 'talk', $operation, true);
         }

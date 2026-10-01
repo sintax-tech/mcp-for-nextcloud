@@ -39,6 +39,8 @@ final class InMemoryOAuthStore extends OAuthStore {
 
     public function deleteToken(int $id): void { unset($this->tokens[$id]); }
 
+    public function deleteAll(): void { $this->tokens = []; $this->codes = []; }
+
     public function deleteForUser(string $uid): void {
         $this->tokens = array_filter($this->tokens, fn (array $r) => $r['user_id'] !== $uid);
         $this->codes = array_filter($this->codes, fn (array $r) => $r['user_id'] !== $uid);

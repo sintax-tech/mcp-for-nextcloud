@@ -29,7 +29,7 @@ final class CalendarModuleTest extends CalendarTestCase {
     }
 
     public function testWritesAreVisibleWithoutAnySelftestWhenGrantedAndHiddenWhenNot(): void {
-        $policy = new GrantPolicy((new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this));
+        $policy = new GrantPolicy((new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         $apps = $this->createMock(\OCP\App\IAppManager::class);
         $apps->method('isEnabledForUser')->willReturn(true);
         $users = $this->createMock(\OCP\IUserManager::class);
@@ -66,7 +66,7 @@ final class CalendarModuleTest extends CalendarTestCase {
     }
 
     public function testPublicRegistryExposesInvitationAnnotationsAndStillRequiresGrants(): void {
-        $policy = new GrantPolicy((new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this));
+        $policy = new GrantPolicy((new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         $apps = $this->createMock(\OCP\App\IAppManager::class);
         $apps->method('isEnabledForUser')->willReturn(true);
         $users = $this->createMock(\OCP\IUserManager::class);

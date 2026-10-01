@@ -5,6 +5,7 @@ namespace OCA\Mcp\Service;
 
 use InvalidArgumentException;
 use OCP\IConfig;
+use OCA\Mcp\OAuth\OAuthStore;
 
 /**
  * Persisted MCP access policy: global switch, per-user admin eligibility, per-user personal
@@ -41,7 +42,7 @@ class GrantPolicy {
      */
     public const RESERVED_APP_KEYS = ['enabled', 'installed_version', 'types', 'levels', 'ocsid'];
 
-    public function __construct(private IConfig $config) {}
+    public function __construct(private IConfig $config, private OAuthStore $oauth) {}
 
     /** @return bool whether the administrator enabled the MCP service (off by default) */
     public function globalEnabled(): bool {
@@ -51,6 +52,9 @@ class GrantPolicy {
     /** @param bool $enabled new state of the global service switch */
     public function setGlobalEnabled(bool $enabled): void {
         $this->config->setAppValue(self::APP, self::SERVICE_KEY, $enabled ? '1' : '0');
+        if (!$enabled) {
+            $this->oauth->deleteAll();
+        }
     }
 
     /**
@@ -67,6 +71,9 @@ class GrantPolicy {
      */
     public function setEligible(string $uid, bool $enabled): void {
         $this->config->setUserValue($uid, self::APP, self::ELIGIBLE_KEY, $enabled ? '1' : '0');
+        if (!$enabled) {
+            $this->oauth->deleteForUser($uid);
+        }
     }
 
     /**

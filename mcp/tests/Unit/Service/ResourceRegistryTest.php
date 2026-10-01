@@ -54,7 +54,7 @@ final class ResourceRegistryTest extends TestCase {
         $this->noteId = $this->tree->addFile('/alice/files/Notes/Ideia.md', '# Ideia', 'text/markdown');
 
         $this->config = new InMemoryConfig();
-        $this->policy = new GrantPolicy($this->config->mock($this));
+        $this->policy = new GrantPolicy($this->config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         $this->policy->setGrant('alice', 'files', 'read', true);
         $this->policy->setGrant('alice', 'notes', 'read', true);
 

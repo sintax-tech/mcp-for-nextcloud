@@ -33,7 +33,7 @@ final class TokenFlowTest extends TestCase {
 
     protected function setUp(): void {
         $this->store = new InMemoryOAuthStore();
-        $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this));
+        $this->policy = new GrantPolicy((new InMemoryConfig())->mock($this), $this->store);
         $this->policy->setGlobalEnabled(true);
         $this->policy->setEligible('alice', true);
         $this->policy->setConnected('alice', true);
@@ -125,6 +125,29 @@ final class TokenFlowTest extends TestCase {
         $this->assertSame([], $this->store->tokens);
         $this->policy->setEligible('alice', true);
         $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $tokens['refresh_token'], 'client_id' => self::CLIENT]));
+    }
+
+    public function testServiceOffThenOnPermanentlyRevokesUnusedCredentials(): void {
+        $tokens = $this->exchange($this->code());
+        $code = $this->code();
+        $this->policy->setGlobalEnabled(false);
+        $this->assertSame([], $this->store->tokens);
+        $this->assertSame([], $this->store->codes);
+        $this->policy->setGlobalEnabled(true);
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE));
+        $this->assertGrantFails(fn () => $this->exchange($code));
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $tokens['refresh_token'], 'client_id' => self::CLIENT]));
+    }
+
+    public function testEligibilityRemovalThenRestorationPermanentlyRevokesUnusedCredentials(): void {
+        $tokens = $this->exchange($this->code());
+        $code = $this->code();
+        $this->policy->setEligible('alice', false);
+        $this->assertSame([], $this->store->tokens);
+        $this->assertSame([], $this->store->codes);
+        $this->policy->setEligible('alice', true);
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE));
+        $this->assertGrantFails(fn () => $this->exchange($code));
     }
 
     public function testDisconnectRevokesEverything(): void {

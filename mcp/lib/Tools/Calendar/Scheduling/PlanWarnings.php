@@ -87,7 +87,7 @@ final class PlanWarnings {
         $shared = [];
         $suggested = null;
         if ($guests !== null && $guests !== []) {
-            array_push($warnings, ...$this->availabilityWarnings($userId, $timing, $guests));
+            array_push($warnings, ...$this->availabilityWarnings($userId, $timing, $guests, $this->ownSlot($prepared)));
             if ($tool === 'calendar_create_event' || array_key_exists('attendees', $arguments)) {
                 [$sharing, $shared, $suggested] = $this->sharingWarnings($calendar, $userId, $guests);
                 array_push($warnings, ...$sharing);
@@ -185,17 +185,88 @@ final class PlanWarnings {
     }
 
     /**
+     * The slot the stored event occupies today and the guests who already hold a copy of it.
+     *
+     * The core free/busy cannot leave an event out, and a guest's own copy of the invitation is a busy block
+     * in their calendar, so every guest of the stored event would be reported busy for the very event being
+     * edited. Create has no stored event and returns null.
+     *
+     * @param PreparedCalendarWrite $prepared write being planned
+     * @return array{start: DateTimeImmutable, end: DateTimeImmutable, guests: list<string>}|null current slot and guest addresses (lower case, no `mailto:`), null when the event is new
+     */
+    private function ownSlot(PreparedCalendarWrite $prepared): ?array {
+        $before = $prepared->before?->master();
+        if ($before === null) {
+            return null;
+        }
+        $old = $this->builder->timing($before);
+        return [
+            'start' => $old['start'],
+            'end' => $old['end'],
+            'guests' => array_map(static fn (string $a): string => (string)preg_replace('/^mailto:/', '', $a), $this->emails($before)),
+        ];
+    }
+
+    /**
+     * @param DateTimeImmutable $start start of the proposed range
+     * @param DateTimeImmutable $end end of the proposed range
+     * @param DateTimeImmutable $slotStart start of the current slot
+     * @param DateTimeImmutable $slotEnd end of the current slot
+     * @return list<array{DateTimeImmutable, DateTimeImmutable}> what is left of [start, end) once the current slot is taken out, at most two parts
+     */
+    private function outside(DateTimeImmutable $start, DateTimeImmutable $end, DateTimeImmutable $slotStart, DateTimeImmutable $slotEnd): array {
+        $parts = [];
+        if ($start < $slotStart) {
+            $parts[] = [$start, min($end, $slotStart)];
+        }
+        if ($end > $slotEnd) {
+            $parts[] = [max($start, $slotEnd), $end];
+        }
+        return $parts;
+    }
+
+    /**
+     * Asks the availability of the guests over the proposed range.
+     *
+     * A guest of the stored event is asked only about the part of the proposed range outside the event's
+     * current slot: inside it their own copy of the event is what makes them busy. Known limit: another
+     * appointment of that guest that sits entirely inside the current slot is not reported. A new guest,
+     * and every guest of a new event, is asked about the whole range.
+     *
      * @param string $userId acting user
      * @param array{start: DateTimeImmutable, end: DateTimeImmutable, allDay: bool, timeZone: DateTimeZone|null} $timing proposed timing
      * @param list<array{uid:string, email:string, displayName:string}> $guests participants
+     * @param array{start: DateTimeImmutable, end: DateTimeImmutable, guests: list<string>}|null $own current slot of the stored event and its guests
      * @return list<array{type:string, message:string}> busy and unverifiable warnings
      */
-    private function availabilityWarnings(string $userId, array $timing, array $guests): array {
-        try {
-            $result = $this->availability->check($userId, $timing['start'], $timing['end'], $guests);
-        } catch (Throwable $e) {
-            $this->failed($e);
-            $result = ['busy' => [], 'unverifiable' => [], 'failed' => true];
+    private function availabilityWarnings(string $userId, array $timing, array $guests, ?array $own): array {
+        $holders = array_values(array_filter($guests, static fn (array $g): bool => $own !== null && in_array(strtolower($g['email']), $own['guests'], true)));
+        $others = array_values(array_filter($guests, static fn (array $g): bool => !in_array($g, $holders, true)));
+        $queries = [];
+        if ($others !== []) {
+            $queries[] = [$timing['start'], $timing['end'], $others];
+        }
+        if ($holders !== [] && $own !== null) {
+            foreach ($this->outside($timing['start'], $timing['end'], $own['start'], $own['end']) as [$from, $to]) {
+                $queries[] = [$from, $to, $holders];
+            }
+        }
+        $result = ['busy' => [], 'unverifiable' => [], 'failed' => false];
+        foreach ($queries as [$from, $to, $asked]) {
+            try {
+                $part = $this->availability->check($userId, $from, $to, $asked);
+            } catch (Throwable $e) {
+                $this->failed($e);
+                $part = ['busy' => [], 'unverifiable' => [], 'failed' => true];
+            }
+            $result['failed'] = $result['failed'] || $part['failed'];
+            foreach (['busy', 'unverifiable'] as $kind) {
+                foreach ($part[$kind] as $entry) {
+                    if (!in_array($entry, $result[$kind], true)) {
+                        $result[$kind][] = $entry;
+                    }
+                }
+            }
         }
         if ($result['failed']) {
             return [['type' => 'unverifiable', 'message' => CalendarMessages::availabilityFailed()]];

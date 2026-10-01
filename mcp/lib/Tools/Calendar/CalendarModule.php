@@ -71,7 +71,10 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
                 . 'tell the user and repeat the call with confirm: true only if the answer is still yes. When '
                 . 'sharedCalendars lists calendars the participants already see and suggestedCalendar is set, offer it; '
                 . 'when there are several, ask the user which one to use and repeat the call with that calendar. Other '
-                . 'people\'s appointments are only ever reported as busy, never with their content.',
+                . 'people\'s appointments are only ever reported as busy, never with their content. When an update '
+                . 'moves an event, the event\'s own slot is left out of the availability check of the guests it already '
+                . 'has (their copy of the invitation would otherwise make them busy); the collision check always leaves '
+                . 'the event itself out. An appointment of a guest sitting entirely inside the old slot is not reported.',
             'Dates and times arrive as they will be stored, and are read back in the timezone of the account; a '
                 . 'recurring event is expanded into its occurrences before it reaches the user.',
             'send_invitations hands the invitation to the CalDAV scheduling of the server. The plan and the result '

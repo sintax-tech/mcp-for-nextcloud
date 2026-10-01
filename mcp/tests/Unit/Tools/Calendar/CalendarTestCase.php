@@ -68,6 +68,10 @@ abstract class CalendarTestCase extends TestCase {
     protected string $sendInvitations = 'yes';
     /** @var list<string> e-mail addresses the availability API reports as busy */
     protected array $busyEmails = [];
+    /** @var array<string, list<array{string, string}>> busy blocks (ISO start, ISO end) per address, as the core free/busy sees them */
+    protected array $busyBlocks = [];
+    /** @var list<array{string, string}> ranges the availability API was asked about, as UTC ISO start and end, in order */
+    protected array $availabilityAsked = [];
     /** @var list<string> e-mail addresses the availability API gives no verdict for */
     protected array $unknownEmails = [];
     /** Whether the availability API throws. */
@@ -124,6 +128,7 @@ abstract class CalendarTestCase extends TestCase {
         ];
         $calendarManager = $this->createMock(IManager::class);
         $calendarManager->method('checkAvailability')->willReturnCallback(function ($start, $end, $organizer, array $emails): array {
+            $this->availabilityAsked[] = [$start->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z'), $end->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z')];
             if ($this->availabilityFails) {
                 throw new \RuntimeException('availability unavailable');
             }
@@ -134,7 +139,7 @@ abstract class CalendarTestCase extends TestCase {
                 }
                 $result = $this->createMock(IAvailabilityResult::class);
                 $result->method('getAttendeeEmail')->willReturn($email);
-                $result->method('isAvailable')->willReturn(!in_array($email, $this->busyEmails, true));
+                $result->method('isAvailable')->willReturn(!in_array($email, $this->busyEmails, true) && !$this->busyIn($email, $start, $end));
                 $results[] = $result;
             }
             return $results;
@@ -178,6 +183,21 @@ abstract class CalendarTestCase extends TestCase {
      *
      * @return IUserManager double
      */
+    /**
+     * @param string $email attendee address, lower case
+     * @param \DateTimeInterface $start start of the asked range
+     * @param \DateTimeInterface $end end of the asked range
+     * @return bool whether one of the busy blocks of the address overlaps the range, as the core free/busy would say
+     */
+    private function busyIn(string $email, \DateTimeInterface $start, \DateTimeInterface $end): bool {
+        foreach ($this->busyBlocks[$email] ?? [] as [$from, $to]) {
+            if (new \DateTimeImmutable($from) < $end && new \DateTimeImmutable($to) > $start) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected function tearDown(): void {
         \OCA\Mcp\L10n\Translator::reset();
     }

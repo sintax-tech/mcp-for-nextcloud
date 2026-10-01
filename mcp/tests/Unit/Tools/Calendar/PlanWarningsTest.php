@@ -194,6 +194,52 @@ final class PlanWarningsTest extends CalendarTestCase {
         self::assertSame(['Carla Dias está ocupado(a) neste horário.'], self::messages($plan['warnings'], 'busy'));
     }
 
+    /** The guest's own copy of the event is a busy block of the core free/busy; it must not be reported as a conflict. */
+    public function testUpdateInsideTheCurrentSlotDoesNotReportTheGuestBusyByTheEventItself(): void {
+        $this->seedEvent("\nATTENDEE;CN=Carla Dias:mailto:carla@example.invalid");
+        $this->busyBlocks = ['carla@example.invalid' => [['2026-10-01T12:00:00Z', '2026-10-01T13:00:00Z']]];
+        $plan = self::json($this->registry->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'event', 'start' => '2026-10-01T12:15:00Z', 'end' => '2026-10-01T12:45:00Z'], 'alice'));
+        self::assertSame([], self::messages($plan['warnings'], 'busy'));
+        self::assertSame([], $this->availabilityAsked, 'nothing outside the own slot is left to ask');
+    }
+
+    public function testUpdateOverlappingTheCurrentSlotOnlyAsksAboutTheNewPart(): void {
+        $this->seedEvent("\nATTENDEE;CN=Carla Dias:mailto:carla@example.invalid");
+        $this->busyBlocks = ['carla@example.invalid' => [['2026-10-01T12:00:00Z', '2026-10-01T13:00:00Z']]];
+        $plan = self::json($this->registry->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'event', 'start' => '2026-10-01T12:30:00Z', 'end' => '2026-10-01T13:30:00Z'], 'alice'));
+        self::assertSame([], self::messages($plan['warnings'], 'busy'));
+        self::assertSame([['2026-10-01T13:00:00Z', '2026-10-01T13:30:00Z']], $this->availabilityAsked);
+    }
+
+    public function testUpdateStillReportsAnotherAppointmentOfTheGuestOutsideTheCurrentSlot(): void {
+        $this->seedEvent("\nATTENDEE;CN=Carla Dias:mailto:carla@example.invalid");
+        $this->busyBlocks = ['carla@example.invalid' => [['2026-10-01T12:00:00Z', '2026-10-01T13:00:00Z'], ['2026-10-01T13:10:00Z', '2026-10-01T13:20:00Z']]];
+        $plan = self::json($this->registry->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'event', 'start' => '2026-10-01T12:30:00Z', 'end' => '2026-10-01T13:30:00Z'], 'alice'));
+        self::assertSame(['Carla Dias está ocupado(a) neste horário.'], self::messages($plan['warnings'], 'busy'));
+    }
+
+    public function testUpdateAskingBeforeAndAfterTheCurrentSlotAsksBothParts(): void {
+        $this->seedEvent("\nATTENDEE;CN=Carla Dias:mailto:carla@example.invalid");
+        $this->busyBlocks = ['carla@example.invalid' => [['2026-10-01T12:00:00Z', '2026-10-01T13:00:00Z']]];
+        self::json($this->registry->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'event', 'start' => '2026-10-01T11:30:00Z', 'end' => '2026-10-01T13:30:00Z'], 'alice'));
+        self::assertSame([['2026-10-01T11:30:00Z', '2026-10-01T12:00:00Z'], ['2026-10-01T13:00:00Z', '2026-10-01T13:30:00Z']], $this->availabilityAsked);
+    }
+
+    /** A guest who is not in the stored event has no copy of it: the whole new range is asked, own slot included. */
+    public function testUpdateAddingAGuestStillChecksTheCurrentSlotForThem(): void {
+        $this->seedEvent();
+        $this->busyBlocks = ['bob@example.invalid' => [['2026-10-01T12:00:00Z', '2026-10-01T13:00:00Z']]];
+        $plan = self::json($this->registry->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'event', 'attendees' => ['bob']], 'alice'));
+        self::assertSame(['Roberto Almeida está ocupado(a) neste horário.'], self::messages($plan['warnings'], 'busy'));
+    }
+
+    public function testCreateStillChecksTheWholeRangeOfEveryGuest(): void {
+        $this->busyBlocks = ['carla@example.invalid' => [['2026-10-01T17:00:00Z', '2026-10-01T18:00:00Z']]];
+        $plan = $this->createPlan(['attendees' => ['carla']]);
+        self::assertSame(['Carla Dias está ocupado(a) neste horário.'], self::messages($plan['warnings'], 'busy'));
+        self::assertSame([['2026-10-01T17:00:00Z', '2026-10-01T18:00:00Z']], $this->availabilityAsked);
+    }
+
     public function testUpdateOfGuestsChecksAvailabilityAndSharing(): void {
         $this->seedEvent();
         $this->busyEmails = ['bob@example.invalid'];

@@ -496,6 +496,25 @@
     "Eligible users who activated their connection." : "Usuários elegíveis que ativaram a própria conexão.",
     "Revoke {client} for {user}" : "Revogar {client} de {user}",
     "Revoke {client}" : "Revogar {client}",
-    "Revoke all connections of {user}" : "Revogar todas as conexões de {user}"
+    "Revoke all connections of {user}" : "Revogar todas as conexões de {user}",
+    "Message to **%s**:" : "Mensagem para **%s**:",
+    "Direct message to **%s**:" : "Mensagem direta para **%s**:",
+    "The direct conversation with **%s** will be created if it does not exist yet." : "A conversa direta com **%s** será criada se ela ainda não existir.",
+    "One message to **%s**:" : "Uma mensagem para **%s**:",
+    "%d messages to **%s**:" : "%d mensagens para **%s**:",
+    "Replying to **%s**:" : "Respondendo a **%s**:",
+    "The message also carries a link to the %s *%s*." : "A mensagem também traz um link para %s *%s*.",
+    "The file **%s** (%s) will be shared in **%s**." : "O arquivo **%s** (%s) será compartilhado em **%s**.",
+    "Caption, sent as a message right after the file:" : "Legenda, enviada como mensagem logo após o arquivo:",
+    "A message will be published in **%s** citing the file **%s**." : "Uma mensagem será publicada em **%s** citando o arquivo **%s**.",
+    "A message will be published in **%s** citing an attachment already shared there." : "Uma mensagem será publicada em **%s** citando um anexo já compartilhado ali.",
+    "Caption shown with the citation:" : "Legenda exibida junto com a citação:",
+    "The Talk group **%s** will be created with you as the owner." : "O grupo do Talk **%s** será criado com você como proprietário.",
+    "These people will be invited:" : "Estas pessoas serão convidadas:",
+    "Nobody is invited: the group starts with you alone." : "Ninguém é convidado: o grupo começa só com você.",
+    "%d bytes" : "%d bytes",
+    "%s kB" : "%s kB",
+    "%s MB" : "%s MB",
+    "%s GB" : "%s GB"
 },"pluralForm" : "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

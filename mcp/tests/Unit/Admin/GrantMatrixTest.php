@@ -110,16 +110,25 @@ final class GrantMatrixTest extends TestCase {
      */
     public function testTheNewFilesRestoreColumnArrivesWithTheCatalog(): void {
         $page = $this->fx->matrix()->page('', '', 1);
-        $this->assertSame(['read', 'edit', 'create', 'move', 'restore'], $page['catalog']['files']);
+        $this->assertSame(['read', 'edit', 'create', 'move', 'restore', 'share', 'link'], $page['catalog']['files']);
         $this->assertNotSame([], $page['users']);
         foreach ($page['users'] as $user) {
-            foreach (['restore', 'create', 'move'] as $operation) {
+            foreach (['restore', 'create', 'move', 'share', 'link'] as $operation) {
                 $this->assertArrayHasKey($operation, $user['grants']['files']);
                 $this->assertFalse($user['grants']['files'][$operation], "$operation nasce desligado");
             }
         }
         $this->fx->policy->setGrant($page['users'][0]['uid'], 'files', 'restore', true);
         $this->assertTrue($this->fx->matrix()->page('', '', 1)['users'][0]['grants']['files']['restore']);
+    }
+
+    /** Sharing with people and public links are two separate columns, so a link can be granted alone. */
+    public function testShareAndLinkColumnsAreIndependent(): void {
+        $uid = $this->fx->matrix()->page('', '', 1)['users'][0]['uid'];
+        $this->fx->policy->setGrant($uid, 'files', 'share', true);
+        $grants = $this->fx->matrix()->page('', '', 1)['users'][0]['grants']['files'];
+        $this->assertTrue($grants['share']);
+        $this->assertFalse($grants['link'], 'o link público não vem junto com o compartilhamento interno');
     }
 
     public function testCalendarWriteGrantsAreOfferedAndStoredGrantsRemain(): void {

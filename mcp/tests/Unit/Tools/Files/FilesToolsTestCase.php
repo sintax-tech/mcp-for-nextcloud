@@ -61,6 +61,8 @@ abstract class FilesToolsTestCase extends TestCase {
     protected ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null;
     /** @var list<string> tokens handed out per route, in order */
     protected array $issued = [];
+    /** Shares alice created, behind the IShareManager double of files_list_shares. */
+    protected \OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeShares $shares;
     /** @var list<string> apps enabled for alice; a test can empty it to simulate files_versions being off */
     protected array $enabled = ['files_versions'];
 
@@ -136,6 +138,20 @@ abstract class FilesToolsTestCase extends TestCase {
             $imageTools,
             new OcrSupport($this->apps),
             $this->visibilityGuard,
+            shareLister: $this->shareLister($urls),
+        );
+    }
+
+    /** The lister of files_list_shares over {@see self::$shares}, with the same users, tree and guard. */
+    private function shareLister(IURLGenerator $urls): \OCA\Mcp\Tools\Files\Sharing\ShareLister {
+        $this->shares = new \OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeShares($this);
+        $policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+        return new \OCA\Mcp\Tools\Files\Sharing\ShareLister(
+            new \OCA\Mcp\Tools\Files\Sharing\ShareAccess($this->shares->manager(), $policy, $this->visibilityGuard ?? $this->shares->guardShowingAll()),
+            new \OCA\Mcp\Tools\Files\Sharing\ShareFormatter(
+                new \OCA\Mcp\Tools\Files\Sharing\ShareRecipientResolver($this->users, $this->createMock(\OCP\IGroupManager::class)),
+                $urls,
+            ),
         );
     }
 

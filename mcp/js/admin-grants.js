@@ -54,6 +54,8 @@
 			reply: t('mcp', 'reply'),
 			attach: t('mcp', 'attach'),
 			quote: t('mcp', 'quote'),
+			share: t('mcp', 'share'),
+			link: t('mcp', 'link'),
 		}
 	}
 
@@ -81,6 +83,8 @@
 			reply: t('mcp', 'Send messages and replies'),
 			attach: t('mcp', 'Share a file into a conversation'),
 			quote: t('mcp', 'Quote part of a file in a message'),
+			share: t('mcp', 'Share own files with people and groups'),
+			link: t('mcp', 'Create public links to own files'),
 		}
 		return hints[operation] || ''
 	}

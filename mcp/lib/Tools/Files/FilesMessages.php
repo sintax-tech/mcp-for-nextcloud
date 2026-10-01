@@ -644,4 +644,51 @@ final class FilesMessages {
             ? Translator::t('Failed to write file.')
             : Translator::t('Failed to write file; original preserved in %s.', [$backup]);
     }
+
+    // ---------------------------------------------------------------- sharing
+
+    /** @return string description of files_list_shares */
+    public static function listSharesTool(): string {
+        return 'List the shares you created: with a path, the shares of that file or folder (which must be yours); '
+            . 'without one, every share you created, ' . \OCA\Mcp\Tools\Files\Sharing\ShareAccess::PAGE_SIZE . ' per page '
+            . 'with offset. Each item has shareId, type (user, group, link or room), with (id and display name), '
+            . 'permission (view, edit or custom), reshare, expires, hasPassword, url (links only), removable and path. '
+            . 'Passwords are never returned. A room share is a Talk attachment: it is listed with removable: false '
+            . 'and is removed in Talk.';
+    }
+
+    /** @return string description of the path parameter of files_list_shares */
+    public static function listSharesPath(): string {
+        return 'File or folder of yours whose shares to list, e.g. /Documents/report.pdf. Omit to list every share you created.';
+    }
+
+    /** @return string description of the offset parameter of files_list_shares */
+    public static function listSharesOffset(): string {
+        return 'Shares to skip when listing without path; use the nextOffset of the previous page.';
+    }
+
+    /** @return string name shown for the recipient of a public link */
+    public static function publicLink(): string {
+        return Translator::t('Public link');
+    }
+
+    /** @return string a share asked for a node the user does not own */
+    public static function shareNotOwner(): string {
+        return Translator::t('Only files and folders you own can be shared here; this one belongs to someone else.');
+    }
+
+    /** @return string a share asked for the root of the user folder */
+    public static function shareRootRefused(): string {
+        return Translator::t('Your whole folder cannot be shared; choose a file or a folder inside it.');
+    }
+
+    /** @return string the administrator did not grant the sharing operation this type needs */
+    public static function shareNotGranted(): string {
+        return Translator::t('Your administrator has not allowed the AI to manage this kind of share.');
+    }
+
+    /** @return string a share type the tools do not manage, such as a Talk attachment */
+    public static function shareTypeUnsupported(): string {
+        return Translator::t('This kind of share is not managed here; a Talk attachment is removed in Talk.');
+    }
 }

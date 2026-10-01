@@ -2,6 +2,13 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased
+
+### Added
+
+- files: a new `files_list_shares` tool lists the shares the user created, of one own file or folder or of every file (50 per page, `offset` up to 1000), with type, recipient name, `view`/`edit` permission, expiry, whether a password exists and the link URL. The password itself is never returned, a hidden node is treated as missing, and a Talk attachment is listed as not removable.
+- grants: two new Files operations, `share` (people and groups) and `link` (public links), both denied by default, appear as columns of the admin matrix.
+
 ## 0.9.0
 
 ### Added

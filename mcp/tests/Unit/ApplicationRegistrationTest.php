@@ -123,6 +123,40 @@ final class ApplicationRegistrationTest extends TestCase {
     }
 
     /**
+     * The sharing services are autowired, not registered: the server builds them from their constructor types,
+     * as unregistered() does here, and hands the lister to FilesModule through its typed parameter. A
+     * constructor that asks for something the container cannot serve fails here and not on the first share.
+     */
+    public function testTheSharingServicesAutowireAndReachTheFilesModule(): void {
+        $built = [];
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('get')->willReturnCallback(
+            function (string $id) use (&$built, &$container): object {
+                return $built[$id] ??= $this->unregistered($id, static fn (string $dependency): object => $container->get($dependency));
+            },
+        );
+
+        $lister = $container->get(\OCA\Mcp\Tools\Files\Sharing\ShareLister::class);
+        $this->assertInstanceOf(\OCA\Mcp\Tools\Files\Sharing\ShareLister::class, $lister);
+        foreach ([\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class, \OCA\Mcp\Tools\Files\Sharing\ShareFormatter::class,
+            \OCA\Mcp\Tools\Files\Sharing\ShareRecipientResolver::class] as $service) {
+            $this->assertInstanceOf($service, $container->get($service));
+        }
+        // Invariant 1: a hidden node is never listed nor shared, so the guard cannot be left out by the container.
+        $guard = (new \ReflectionProperty(\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class, 'visibilityGuard'))
+            ->getValue($container->get(\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class));
+        $this->assertInstanceOf(\OCA\Mcp\Service\VisibilityGuard::class, $guard);
+        $this->assertFalse((new \ReflectionMethod(\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class, '__construct'))
+            ->getParameters()[2]->allowsNull(), 'o guard de visibilidade é obrigatório');
+
+        $parameters = array_column(array_map(
+            static fn (\ReflectionParameter $p): array => ['name' => $p->getName(), 'type' => (string)$p->getType()],
+            (new \ReflectionMethod(\OCA\Mcp\Tools\Files\FilesModule::class, '__construct'))->getParameters(),
+        ), 'type', 'name');
+        $this->assertSame('?' . \OCA\Mcp\Tools\Files\Sharing\ShareLister::class, $parameters['shareLister']);
+    }
+
+    /**
      * Boots every factory register() declares, the way the server does on the first get(): a service the app
      * registered is built by its own factory, anything else is a double. A constructor that drifts from its
      * factory, or a factory that builds a collaborator without what it needs, fails here instead of with an

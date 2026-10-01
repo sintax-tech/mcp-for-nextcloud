@@ -63,6 +63,23 @@ final class SharedCalendarFinderTest extends TestCase {
         self::assertSame([], $this->finder->candidates('alice', ['bob', 'carol']));
     }
 
+    public function testUrlEncodedGroupAndUserPrincipalsAreDecoded(): void {
+        $this->users['bob'] = ['My Group'];
+        $this->users['ana@example.com'] = [];
+        $this->store->addCalendar(self::ORGANIZER, 2, 'team', self::ORGANIZER);
+        $this->store->addShare(2, 'principals/groups/My%20Group');
+        $this->store->addShare(2, 'principals/users/ana%40example.com');
+        self::assertCount(1, $this->finder->candidates('alice', ['bob', 'ana@example.com']));
+    }
+
+    public function testUrlEncodedUserShareDoesNotMatchAnotherUid(): void {
+        $this->users['ana@example.com'] = [];
+        $this->store->addCalendar(self::ORGANIZER, 2, 'team', self::ORGANIZER);
+        $this->store->addShare(2, 'principals/users/ana%40example.com');
+        self::assertSame([], $this->finder->candidates('alice', ['ana%40example.com']));
+        self::assertSame([], $this->finder->candidates('alice', ['bob']));
+    }
+
     public function testAllAttendeesMustSeeTheCalendarThroughAnyShare(): void {
         $this->users['carol'] = ['sales'];
         $this->store->addCalendar(self::ORGANIZER, 2, 'team', self::ORGANIZER);

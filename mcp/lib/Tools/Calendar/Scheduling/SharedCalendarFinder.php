@@ -74,11 +74,12 @@ final class SharedCalendarFinder {
     private function seenByAll(Calendar $calendar, array $groupsByUser): bool {
         $users = [];
         $groups = [];
+        // Principals from the backend may be URL-encoded (spaces, "@", accents), so ids are decoded before comparing.
         foreach ($this->store->sharesOf($calendar->id) as $share) {
             if (str_starts_with($share['principal'], self::USER_PREFIX)) {
-                $users[substr($share['principal'], strlen(self::USER_PREFIX))] = true;
+                $users[rawurldecode(substr($share['principal'], strlen(self::USER_PREFIX)))] = true;
             } elseif (str_starts_with($share['principal'], self::GROUP_PREFIX)) {
-                $groups[substr($share['principal'], strlen(self::GROUP_PREFIX))] = true;
+                $groups[rawurldecode(substr($share['principal'], strlen(self::GROUP_PREFIX)))] = true;
             }
         }
         foreach ($groupsByUser as $uid => $userGroups) {

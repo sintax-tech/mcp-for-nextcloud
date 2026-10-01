@@ -61,11 +61,11 @@ final class Scheduling {
      */
     private function message(bool $requested, string $note): string {
         if (!$requested) {
-            return CalendarMessages::SCHEDULING_SUPPRESSED;
+            return CalendarMessages::schedulingSuppressed();
         }
-        $base = CalendarMessages::SCHEDULING_HANDED_OVER;
+        $base = CalendarMessages::schedulingHandedOver();
         if (!$this->imipEnabled()) {
-            $base .= ' (' . CalendarMessages::IMIP_DISABLED . ')';
+            $base .= ' (' . CalendarMessages::imipDisabled() . ')';
         }
         return $note === '' ? $base : $base . $note;
     }

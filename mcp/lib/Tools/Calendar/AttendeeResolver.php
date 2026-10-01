@@ -34,24 +34,24 @@ final class AttendeeResolver {
     public function resolve(array $uids, string $organizerUid): array {
         $uids = array_values($uids);
         if (count($uids) !== count(array_unique($uids))) {
-            throw new CalendarArgumentException(CalendarMessages::ATTENDEES_INVALID);
+            throw new CalendarArgumentException(CalendarMessages::attendeesInvalid());
         }
         foreach ($uids as $uid) {
             if ($uid === '' || $uid === $organizerUid) {
-                throw new CalendarArgumentException(sprintf(CalendarMessages::ATTENDEE_NOT_FOUND, $uid));
+                throw new CalendarArgumentException(CalendarMessages::attendeeNotFound($uid));
             }
         }
         if ($uids !== [] && count($uids) > self::MAX_ATTENDEES) {
-            throw new CalendarArgumentException(CalendarMessages::ATTENDEES_INVALID);
+            throw new CalendarArgumentException(CalendarMessages::attendeesInvalid());
         }
         if ($uids !== [] && $this->email($organizerUid) === null) {
-            throw new CalendarArgumentException(CalendarMessages::ORGANIZER_WITHOUT_EMAIL);
+            throw new CalendarArgumentException(CalendarMessages::organizerWithoutEmail());
         }
         $resolved = [];
         foreach ($uids as $uid) {
             $email = $this->email($uid);
             if ($email === null) {
-                throw new CalendarArgumentException(sprintf(CalendarMessages::ATTENDEE_NOT_FOUND, $uid));
+                throw new CalendarArgumentException(CalendarMessages::attendeeNotFound($uid));
             }
             $user = $this->users->get($uid);
             $resolved[] = ['uid' => $uid, 'email' => $email, 'displayName' => $user?->getDisplayName() ?: $uid];
@@ -67,7 +67,7 @@ final class AttendeeResolver {
     public function organizer(string $uid): array {
         $email = $this->email($uid);
         if ($email === null) {
-            throw new CalendarArgumentException(CalendarMessages::ORGANIZER_WITHOUT_EMAIL);
+            throw new CalendarArgumentException(CalendarMessages::organizerWithoutEmail());
         }
         $user = $this->users->get($uid);
         return ['email' => $email, 'displayName' => $user?->getDisplayName() ?: $uid];

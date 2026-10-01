@@ -25,6 +25,6 @@ final class DavCalendarStoreTest extends TestCase {
 
     public function testCalendarExceptionIsAToolFailureWithTheSameMessage(): void {
         $this->assertInstanceOf(ToolFailure::class, CalendarException::notFound());
-        $this->assertSame('Calendário ou evento não encontrado.', CalendarException::notFound()->getMessage());
+        $this->assertSame('Calendar or event not found.', CalendarException::notFound()->getMessage());
     }
 }

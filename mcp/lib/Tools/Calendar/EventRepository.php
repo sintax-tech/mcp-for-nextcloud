@@ -37,7 +37,7 @@ class EventRepository {
         }
         $vcalendar = $this->parse($row['data']);
         if ($vcalendar === null) {
-            throw CalendarException::blocked(CalendarMessages::EVENT_UNREADABLE);
+            throw CalendarException::blocked(CalendarMessages::eventUnreadable());
         }
         $this->classification->assertModifiable($vcalendar, $calendar, $userId);
         if ($etag !== null && trim($etag, '"') !== trim($row['etag'], '"')) {
@@ -54,7 +54,7 @@ class EventRepository {
      */
     public function assertFree(Calendar $calendar, string $uid, string $uri): void {
         if ($this->store->objectByUid($calendar->id, $uid) !== null || $this->store->object($calendar->id, $uri) !== null) {
-            throw CalendarException::conflict(CalendarMessages::CONFLICT_UID);
+            throw CalendarException::conflict(CalendarMessages::conflictUid());
         }
     }
 

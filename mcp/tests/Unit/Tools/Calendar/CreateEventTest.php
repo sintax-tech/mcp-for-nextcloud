@@ -149,7 +149,7 @@ final class CreateEventTest extends CalendarTestCase {
         $definition = $this->writeHandlers['calendar_create_event']->definition();
 
         $this->assertTrue($definition['destructiveHint']);
-        $this->assertStringContainsString('pode enviar convites a outras pessoas', $definition['description']);
+        $this->assertStringContainsString('This call may send invitations to other people', $definition['description']);
         // The properties are an object on the wire, so the agent sees them as a JSON object.
         $properties = (array)$definition['inputSchema']['properties'];
         $this->assertFalse($properties['send_invitations']['default']);

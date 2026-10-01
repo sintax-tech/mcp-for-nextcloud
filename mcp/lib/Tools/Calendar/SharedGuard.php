@@ -44,7 +44,7 @@ final class SharedGuard {
             'owner' => $calendar->ownerId,
             'ownerDisplayName' => $displayName,
             'resource' => $calendar->name,
-            'message' => sprintf(CalendarMessages::SHARED_CONFIRMATION, $calendar->name, $displayName),
+            'message' => CalendarMessages::sharedConfirmation($calendar->name, $displayName),
         ]);
     }
 }

@@ -74,10 +74,11 @@ final class NotesModuleTest extends TestCase {
 
     public function testDefinitionsRequireNotesAppAndMatchGrants(): void {
         $defs = $this->module->definitions();
-        $this->assertSame(['notes_list', 'notes_read', 'notes_create', 'notes_edit', 'notes_move', 'notes_delete'], array_column($defs, 'name'));
-        $this->assertSame(['read', 'read', 'create', 'edit', 'move', 'delete'], array_column($defs, 'operation'));
+        $this->assertSame(['notes_list', 'notes_search', 'notes_read', 'notes_create', 'notes_edit', 'notes_move', 'notes_delete'], array_column($defs, 'name'));
+        $this->assertSame(['read', 'read', 'read', 'create', 'edit', 'move', 'delete'], array_column($defs, 'operation'));
         $this->assertSame(['notes'], array_values(array_unique(array_column($defs, 'app'))));
-        $this->assertSame(['id'], $defs[1]['inputSchema']['required']);
+        $this->assertSame(['query'], $defs[1]['inputSchema']['required']);
+        $this->assertSame(['id'], $defs[2]['inputSchema']['required']);
     }
 
     public function testListReturnsOnlyNotesInsideTheNotesFolder(): void {
@@ -241,5 +242,68 @@ final class NotesModuleTest extends TestCase {
         $this->tree->nodes['/alice/files/Notes/Reuniões/Ata.md']['deletable'] = false;
         $this->assertSame(ToolFailure::FORBIDDEN, $this->failure('notes_delete', ['id' => $this->ata, 'confirm' => true]));
         $this->assertSame([], $this->tree->ops);
+    }
+
+    public function testSearchNotesByTitleAndContent(): void {
+        // Match by title
+        $hits = $this->tool('notes_search', ['query' => 'Ata']);
+        $this->assertCount(1, $hits);
+        $this->assertSame('Ata', $hits[0]['title']);
+        $this->assertSame('Reuniões', $hits[0]['category']);
+        $this->assertArrayHasKey('snippet', $hits[0]);
+
+        // Match by content
+        $hits = $this->tool('notes_search', ['query' => 'decisões']);
+        $this->assertCount(1, $hits);
+        $this->assertSame('Ata', $hits[0]['title']);
+        $this->assertStringContainsString('decisões', $hits[0]['snippet']);
+
+        // Scoped to category
+        $hits = $this->tool('notes_search', ['query' => 'decisões', 'category' => 'Reuniões']);
+        $this->assertCount(1, $hits);
+        $this->assertSame('Ata', $hits[0]['title']);
+
+        // Nonexistent category
+        $hits = $this->tool('notes_search', ['query' => 'decisões', 'category' => 'Inexistente']);
+        $this->assertSame([], $hits);
+
+        // Limit caps results
+        $hits = $this->tool('notes_search', ['query' => 'e', 'limit' => 1]);
+        $this->assertCount(1, $hits);
+    }
+
+    public function testSearchNotesVisibilityGuardFiltersHiddenNotes(): void {
+        $guard = $this->createMock(\OCA\Mcp\Service\VisibilityGuard::class);
+        $guard->method('filter')->willReturnCallback(function (iterable $nodes): array {
+            $filtered = [];
+            foreach ($nodes as $node) {
+                // Hide Ata.md
+                if (!str_contains($node->getPath(), 'Ata.md')) {
+                    $filtered[] = $node;
+                }
+            }
+            return $filtered;
+        });
+
+        $root = $this->createMock(IRootFolder::class);
+        $root->method('getUserFolder')->willReturnCallback(fn () => $this->tree->rootFolder());
+        $apps = $this->createMock(IAppManager::class);
+        $apps->method('isEnabledForUser')->willReturnCallback(fn (string $app) => in_array($app, $this->apps, true));
+        $users = $this->createMock(IUserManager::class);
+        $users->method('get')->willReturn($this->createMock(IUser::class));
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
+        $module = new NotesModule(
+            new NotesRepository($root, $this->config->mock($this)),
+            $apps,
+            $users,
+            new SharedWriteGuard($access),
+            $access,
+            $guard,
+        );
+
+        $def = array_column($module->definitions(), null, 'name')['notes_search'];
+        $res = $module->call('notes_search', ArgumentValidator::validate($def['inputSchema'], ['query' => 'decisões']), 'alice');
+        $hits = json_decode($res['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR);
+        $this->assertSame([], $hits);
     }
 }

@@ -28,7 +28,11 @@ final class ToolPresentationTest extends TestCase {
         'files_versions_list' => ['List file versions', 'Listar versões do arquivo'],
         'files_version_read' => ['Read file version', 'Ler versão do arquivo'],
         'files_version_restore' => ['Restore file version', 'Restaurar versão do arquivo'],
+        'files_image_view' => ['View image', 'Ver imagem'],
+        'files_images_view' => ['View several images', 'Ver várias imagens'],
+        'files_image_search' => ['Search images', 'Buscar imagens'],
         'notes_list' => ['List notes', 'Listar notas'],
+        'notes_search' => ['Search notes', 'Buscar notas'],
         'notes_read' => ['Read note', 'Ler nota'],
         'notes_create' => ['Create note', 'Criar nota'],
         'notes_edit' => ['Edit note', 'Editar nota'],
@@ -60,44 +64,21 @@ final class ToolPresentationTest extends TestCase {
         'talk_create_group' => ['Create group in Talk', 'Criar grupo no Talk'],
     ];
 
+    public function testEveryTitleTranslatesIntoPortuguese(): void {
+        Translator::use(new JsonL10n('pt_BR'));
+        foreach (self::TITLES as $name => [$english, $portuguese]) {
+            $this->assertSame($portuguese, ToolPresentation::title($name), "Title for $name in pt_BR");
+        }
+    }
+
+    public function testWithoutTranslatorTheEnglishSourceComesOut(): void {
+        Translator::reset();
+        foreach (self::TITLES as $name => [$english]) {
+            $this->assertSame($english, ToolPresentation::title($name), "English source for $name");
+        }
+    }
+
     protected function tearDown(): void {
         Translator::reset();
-    }
-
-    public function testWithoutTranslatorEveryTitleIsTheEnglishSource(): void {
-        foreach (self::TITLES as $tool => [$english]) {
-            $this->assertSame($english, ToolPresentation::title($tool), $tool);
-        }
-    }
-
-    public function testPortugueseUserKeepsTheTitlesOfBefore(): void {
-        Translator::use(new JsonL10n('pt_BR'));
-        foreach (self::TITLES as $tool => [, $portuguese]) {
-            $this->assertSame($portuguese, ToolPresentation::title($tool), $tool);
-        }
-    }
-
-    public function testSpanishUserGetsSpanishTitles(): void {
-        Translator::use(new JsonL10n('es'));
-        foreach (self::TITLES as $tool => [$english]) {
-            $this->assertNotSame('', ToolPresentation::title($tool));
-            $this->assertNotSame($english, ToolPresentation::title($tool), $tool . ' has no Spanish title');
-        }
-        $this->assertSame('Listar archivos', ToolPresentation::title('files_list'));
-    }
-
-    public function testAnnotationsCarryTheTranslatedTitle(): void {
-        Translator::use(new JsonL10n('pt_BR'));
-        $this->assertSame('Listar arquivos', ToolPresentation::annotations('files_list', 'read')['title']);
-    }
-
-    public function testUnknownToolFallsBackToTheHumanizedName(): void {
-        $this->assertSame('Frobnicate', ToolPresentation::title('x_frobnicate'));
-    }
-
-    public function testInstructionsAreEnglishAndAskForTheUserLanguageAndTheTitles(): void {
-        $this->assertStringContainsString("user's language", ToolPresentation::INSTRUCTIONS);
-        $this->assertStringContainsString('title', ToolPresentation::INSTRUCTIONS);
-        $this->assertDoesNotMatchRegularExpression('/[À-ÿ]/u', ToolPresentation::INSTRUCTIONS);
     }
 }

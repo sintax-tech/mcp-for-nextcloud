@@ -95,4 +95,37 @@ final class DavCalendarStoreTest extends TestCase {
         $this->assertInstanceOf(ToolFailure::class, CalendarException::notFound());
         $this->assertSame('Calendar or event not found.', CalendarException::notFound()->getMessage());
     }
+
+    /**
+     * @param \Closure $backendSetup receives the CalDavBackend mock before the call
+     */
+    private function storeWithShares(\Closure $backendSetup): DavCalendarStore {
+        $backend = $this->createMock(\OCA\DAV\CalDAV\CalDavBackend::class);
+        $backendSetup($backend);
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('get')->willReturnMap([['OCA\DAV\CalDAV\CalDavBackend', $backend]]);
+        return new DavCalendarStore($container);
+    }
+
+    public function testSharesOfNormalizesTheCoreHrefAndReadOnlyFlag(): void {
+        $store = $this->storeWithShares(function ($backend): void {
+            $backend->expects($this->once())->method('getShares')->with(7)->willReturn([
+                ['href' => 'principal:principals/users/bob', 'readOnly' => false, 'commonName' => 'Bob'],
+                ['href' => 'principal:principals/groups/sales', 'readOnly' => 1],
+                ['href' => 'principals/users/carol', 'readOnly' => true],
+            ]);
+        });
+        self::assertSame([
+            ['principal' => 'principals/users/bob', 'readOnly' => false],
+            ['principal' => 'principals/groups/sales', 'readOnly' => true],
+            ['principal' => 'principals/users/carol', 'readOnly' => true],
+        ], $store->sharesOf(7));
+    }
+
+    public function testSharesOfReturnsEmptyListWhenNothingIsShared(): void {
+        $store = $this->storeWithShares(function ($backend): void {
+            $backend->method('getShares')->willReturn([]);
+        });
+        self::assertSame([], $store->sharesOf(7));
+    }
 }

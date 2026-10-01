@@ -152,6 +152,25 @@ class DavCalendarStore implements CalendarStore {
     }
 
     /**
+     * Assumes `public function getShares(int $resourceId): array`, whose rows carry `href`
+     * ("principal:principals/users/<uid>" or ".../groups/<gid>") and `readOnly`.
+     *
+     * @param int $calendarId backend calendar id
+     * @return list<array{principal:string, readOnly:bool}>
+     */
+    public function sharesOf(int $calendarId): array {
+        $out = [];
+        foreach ($this->backend()->getShares($calendarId) as $row) {
+            $href = (string)($row['href'] ?? '');
+            $out[] = [
+                'principal' => str_starts_with($href, 'principal:') ? substr($href, strlen('principal:')) : $href,
+                'readOnly' => (bool)($row['readOnly'] ?? false),
+            ];
+        }
+        return $out;
+    }
+
+    /**
      * @param array<string, mixed> $row backend calendar object row
      * @return array{id:int, uri:string, etag:string, data:string, deleted:bool}
      */

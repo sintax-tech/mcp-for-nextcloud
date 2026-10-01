@@ -17,4 +17,12 @@ class CalDavBackend {
     public function getCalendarObject($calendarId, $objectUri, int $calendarType = 0) {
         return null;
     }
+
+    /**
+     * @param int $resourceId backend calendar id
+     * @return list<array<string, mixed>> share rows ("href" like "principal:principals/users/bob", "readOnly")
+     */
+    public function getShares($resourceId) {
+        return [];
+    }
 }

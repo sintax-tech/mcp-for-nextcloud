@@ -63,6 +63,24 @@ final class PlanRendererTest extends TestCase {
         self::assertStringContainsString('Destination: /target', PlanRenderer::render($this->module(null, true), 'fake', ['destination' => '/target']));
     }
 
+    /** Repeated no-change advice is omitted only from the readable footer, keeping its instruction. */
+    public function testFooterDoesNotRepeatTheNoChangeSentence(): void {
+        foreach (['en', 'pt_BR', 'es'] as $language) {
+            Translator::use(new JsonL10n($language));
+            $message = \OCA\Mcp\Tools\Common\CommonMessages::planNothingChanged();
+            $firstSentence = explode('.', $message, 2)[0] . '.';
+            $instruction = trim(substr($message, strlen($firstSentence)));
+            $plan = ['message' => $message];
+            $text = PlanRenderer::render($this->module(), 'fake', $plan);
+            self::assertSame(1, substr_count($text, $firstSentence), $language);
+            self::assertStringContainsString('*' . $instruction . '*', $text);
+            self::assertSame($message, $plan['message']);
+            $onlySentence = PlanRenderer::render($this->module(), 'fake', ['message' => $firstSentence]);
+            self::assertStringNotContainsString('*', $onlySentence);
+            self::assertSame(1, substr_count($onlySentence, $firstSentence));
+        }
+    }
+
     public function testEmptyPlan(): void {
         self::assertSame('Nothing was changed. Confirm to execute.', PlanRenderer::render($this->module(), 'fake', []));
     }
@@ -102,7 +120,7 @@ final class PlanRendererTest extends TestCase {
             'path' => '/file.md', 'size' => ['before' => 0, 'after' => 30], 'recoverable' => true,
             'suggestedCalendar' => ['path' => '/cal/team', 'name' => 'Equipo'],
         ]);
-        foreach (['Ruta: /file.md', 'Tamaño (bytes):', 'Antes: 0', 'Después: 30', 'Recuperable: sí', 'Sugerencia: usar *Equipo*', 'No se ha cambiado nada. Confirme para ejecutar.'] as $part) {
+        foreach (['Ruta: /file.md', 'Tamaño (bytes):', 'Antes: 0', 'Después: 30', 'Recuperable: sí', 'Sugerencia: usar *Equipo*', 'No se cambió nada. Confirme para ejecutar.'] as $part) {
             self::assertStringContainsString($part, $text);
         }
         self::assertStringNotContainsString('###', $text);

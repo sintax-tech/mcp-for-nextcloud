@@ -60,7 +60,17 @@ final class PlanRenderer {
         }
         $footer = Translator::t('Nothing was changed. Confirm to execute.');
         if (isset($plan['message']) && is_scalar($plan['message']) && $plan['message'] !== '') {
-            $footer .= "\n\n*" . self::text($plan['message'], false) . '*';
+            $instruction = trim((string)$plan['message']);
+            // The common model advice starts with the same no-change sentence the person just read.
+            // Strip only that exact sentence, leaving all remaining confirmation advice intact.
+            $firstSentence = explode('.', $footer, 2)[0] . '.';
+            if ($instruction === $firstSentence || str_starts_with($instruction, $firstSentence . ' ')
+                || str_starts_with($instruction, $firstSentence . "\n")) {
+                $instruction = trim(substr($instruction, strlen($firstSentence)));
+            }
+            if ($instruction !== '') {
+                $footer .= "\n\n*" . self::text($instruction, false) . '*';
+            }
         }
         $parts[] = $footer;
         return implode("\n\n", $parts);

@@ -21,6 +21,9 @@
 	const nextButton = document.getElementById('mcp-connections-next')
 	const pageInfo = document.getElementById('mcp-connections-page-info')
 	const status = document.getElementById('mcp-connections-status')
+	// t() escapes variables as HTML by default; the confirm dialog and the status region take plain text, where
+	// that would show "D&#039;Avila". Never pass this for a result that is inserted as HTML.
+	const PLAIN_TEXT = { escape: false }
 
 	/**
 	 * @param {string} method HTTP method
@@ -155,8 +158,8 @@
 	async function revoke(connection) {
 		const name = connection.client.kind === 'native' ? t('mcp', 'Local program (native client)') : connection.client.host
 		const question = admin
-			? t('mcp', 'Revoke the connection of {user} through {client}? The client is signed out at once.', { user: connection.displayName, client: name })
-			: t('mcp', 'Revoke the connection through {client}? The client is signed out at once.', { client: name })
+			? t('mcp', 'Revoke the connection of {user} through {client}? The client is signed out at once.', { user: connection.displayName, client: name }, undefined, PLAIN_TEXT)
+			: t('mcp', 'Revoke the connection through {client}? The client is signed out at once.', { client: name }, undefined, PLAIN_TEXT)
 		if (!window.confirm(question)) {
 			return
 		}
@@ -171,12 +174,12 @@
 
 	/** @param {object} connection any row of the user whose connections are revoked */
 	async function revokeUser(connection) {
-		if (!window.confirm(t('mcp', 'Revoke every connection of {user}? Their clients are signed out at once; the user can sign in again.', { user: connection.displayName }))) {
+		if (!window.confirm(t('mcp', 'Revoke every connection of {user}? Their clients are signed out at once; the user can sign in again.', { user: connection.displayName }, undefined, PLAIN_TEXT))) {
 			return
 		}
 		try {
 			await api('DELETE', '/api/connections/users/' + encodeURIComponent(connection.uid))
-			say(t('mcp', 'Connections of {user} revoked.', { user: connection.displayName }))
+			say(t('mcp', 'Connections of {user} revoked.', { user: connection.displayName }, undefined, PLAIN_TEXT))
 		} catch (e) {
 			notifyError(t('mcp', 'Could not revoke the connections of {user}.', { user: connection.displayName }))
 		}

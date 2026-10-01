@@ -6,7 +6,7 @@ OC.L10N.register(
     "Warnings" : "Advertencias",
     "Calendars shared with participants" : "Calendarios compartidos con los participantes",
     "Suggestion: use %s" : "Sugerencia: usar %s",
-    "Nothing was changed. Confirm to execute." : "No se ha cambiado nada. Confirme para ejecutar.",
+    "Nothing was changed. Confirm to execute." : "No se cambió nada. Confirme para ejecutar.",
     "from %s → to %s" : "de %s → a %s",
     "Arguments" : "Argumentos",
     "Destination" : "Destino",

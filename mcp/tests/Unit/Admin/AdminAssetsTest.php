@@ -42,7 +42,7 @@ final class AdminAssetsTest extends TestCase {
         foreach (['settings#global', 'settings#user', 'users#index'] as $gone) {
             $this->assertNotContains($gone, $routes);
         }
-        foreach (['settings#personal', 'grants#index', 'grants#update', 'grants#bulk', 'grants#service', 'o_auth#token', 'metadata#protectedResource'] as $kept) {
+        foreach (['settings#personal', 'grants#index', 'grants#update', 'grants#bulk', 'grants#service', 'grants#oauthClients', 'grants#updateOauthClients', 'o_auth#token', 'metadata#protectedResource'] as $kept) {
             $this->assertContains($kept, $routes);
         }
     }

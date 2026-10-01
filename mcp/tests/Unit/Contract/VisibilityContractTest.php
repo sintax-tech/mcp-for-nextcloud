@@ -68,6 +68,7 @@ final class VisibilityContractTest extends TestCase {
         'files_images_view' => 'images_view',
         'files_image_search' => 'image_search',
         'files_list_shares' => 'list_shares',
+        'files_share' => 'share',
         'notes_list' => 'notes_list',
         'notes_search' => 'notes_search',
         'notes_read' => 'notes_read',
@@ -467,6 +468,16 @@ final class VisibilityContractTest extends TestCase {
         $this->assertArrayNotHasKey('isError', $res);
         $this->assertSame(['/shared_visible.txt'], array_column(json_decode($res['content'][0]['text'], true)['shares'], 'path'));
         $assertNoLeak($res['content'][0]['text']);
+
+        // 18c. files_share: a hidden node cannot be shared, neither in the plan nor in the confirmed call
+        foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
+            foreach ([[], ['confirm' => true]] as $confirm) {
+                $res = $registry->call('files_share', ['path' => $p, 'with' => 'user:alice-colleague'] + $confirm, 'alice');
+                $this->assertTrue($res['isError'] ?? false);
+                $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+                $assertNoLeak($res['content'][0]['text']);
+            }
+        }
 
         // 19. notes_list
         $res = $registry->call('notes_list', [], 'alice');

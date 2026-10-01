@@ -40,6 +40,7 @@ final class FilesPlanRenderer {
                 'files_move_batch' => self::batch($plan),
                 'files_undo_batch' => self::undo($plan),
                 'files_version_restore' => self::restore($plan),
+                'files_share' => self::share($plan),
                 default => null,
             };
         } catch (\Throwable) {
@@ -293,6 +294,84 @@ final class FilesPlanRenderer {
             $lines[] = '- ' . Translator::t('Because other people are affected, an extra confirmation of the shared content is needed.');
         }
         return $lines;
+    }
+
+    /**
+     * The plan of files_share: who receives what, before → after on an update, and what the person must know. A
+     * re-share right the update takes away is said in words, since a share made on the web carries it.
+     *
+     * @return list<string>|null
+     */
+    private static function share(array $plan): ?array {
+        $path = self::text($plan, 'path');
+        $with = is_array($plan['with'] ?? null) ? $plan['with'] : [];
+        $name = self::text($with, 'displayName');
+        $after = is_array($plan['after'] ?? null) ? $plan['after'] : null;
+        $before = is_array($plan['before'] ?? null) ? $plan['before'] : null;
+        $action = $plan['action'] ?? null;
+        if ($path === null || $name === null || $after === null || !in_array($action, ['create', 'update', 'none'], true)
+            || ($action !== 'create' && $before === null)) {
+            return null;
+        }
+        $isDir = ($plan['isDir'] ?? false) === true;
+        $who = ($with['type'] ?? null) === 'group' ? Translator::t('the group %s', [self::bold($name)]) : self::bold($name);
+        $lines = [match ($action) {
+            'create' => Translator::t('Share %s with %s.', [self::bold($path), $who]),
+            'update' => Translator::t('Change how %s is shared with %s.', [self::bold($path), $who]),
+            'none' => Translator::t('%s is already shared with %s exactly like this: nothing to change.', [self::bold($path), $who]),
+        }, ''];
+        $access = self::access($after['permission'] ?? null, $isDir);
+        if ($action === 'update' && ($before['permission'] ?? null) !== ($after['permission'] ?? null)) {
+            $lines[] = '- ' . Translator::t('Access: %s → %s', [self::access($before['permission'] ?? null, $isDir), $access]);
+        } else {
+            $lines[] = '- ' . Translator::t('Access: %s', [$access]);
+        }
+        if ($action === 'update' && ($before['reshare'] ?? false) === true) {
+            $lines[] = '- ' . Translator::t('Passing it on: %s can share it with other people today and will no longer be able to.', [self::bold($name)]);
+        }
+        $until = self::until($after['expires'] ?? null);
+        if ($action === 'update' && ($before['expires'] ?? null) !== ($after['expires'] ?? null)) {
+            $lines[] = '- ' . Translator::t('Valid until: %s → %s.', [self::until($before['expires'] ?? null), $until]);
+        } elseif ($action === 'create' && ($plan['expiresSource'] ?? null) === 'default') {
+            $lines[] = '- ' . Translator::t('Valid until: %s (the administrator\'s default).', [$until]);
+        } else {
+            $lines[] = '- ' . Translator::t('Valid until: %s.', [$until]);
+        }
+        $note = is_string($after['note'] ?? null) ? $after['note'] : '';
+        $old = is_string($before['note'] ?? null) ? $before['note'] : '';
+        if ($action === 'create' && $note !== '') {
+            $lines[] = '- ' . Translator::t('Note for the recipient: %s', [self::quote($note)]);
+        } elseif ($action === 'update' && $note !== $old) {
+            $lines[] = '- ' . Translator::t('Note for the recipient: %s → %s', [
+                $old === '' ? Translator::t('none') : self::quote($old),
+                $note === '' ? Translator::t('none') : self::quote($note),
+            ]);
+        }
+        if ($action === 'create') {
+            $lines[] = '- ' . (($with['type'] ?? null) === 'group'
+                ? Translator::t('Nextcloud notifies the members of %s.', [self::bold($name)])
+                : Translator::t('Nextcloud notifies %s.', [self::bold($name)]));
+        }
+        return $lines;
+    }
+
+    /** @return string what a share level lets the recipient do, in words */
+    private static function access(mixed $level, bool $isDir): string {
+        return match ($level) {
+            'view' => Translator::t('can view and download'),
+            'edit' => $isDir ? Translator::t('can view, add, edit and delete inside it') : Translator::t('can view and edit'),
+            'custom' => Translator::t('custom access set elsewhere'),
+            default => PlanText::inline(is_scalar($level) ? (string)$level : ''),
+        };
+    }
+
+    /** @return string the last day of a share as the person reads it, or that there is none */
+    private static function until(mixed $date): string {
+        if (!is_string($date) || $date === '') {
+            return Translator::t('no end date');
+        }
+        $parsed = \DateTimeImmutable::createFromFormat('!Y-m-d', $date);
+        return $parsed === false || $parsed->format('Y-m-d') !== $date ? PlanText::inline($date) : $parsed->format(Translator::t('m/d/Y'));
     }
 
     /**

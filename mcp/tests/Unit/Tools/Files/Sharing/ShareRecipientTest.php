@@ -82,6 +82,16 @@ final class ShareRecipientTest extends TestCase {
         }
     }
 
+    /** A backend without a display name still gives the plan something to show: the id. */
+    public function testAnAccountWithoutDisplayNameIsNamedByItsId(): void {
+        $nameless = $this->createMock(IUser::class);
+        $nameless->method('getUID')->willReturn('svc');
+        $users = $this->createMock(IUserManager::class);
+        $users->method('get')->willReturn($nameless);
+        $resolver = new ShareRecipientResolver($users, $this->createMock(IGroupManager::class));
+        self::assertSame('svc', $resolver->resolve('user:svc')->displayName);
+    }
+
     public function testTheFieldFollowsTheCaller(): void {
         try {
             $this->resolver->resolve('nobody', 'recipients.0');

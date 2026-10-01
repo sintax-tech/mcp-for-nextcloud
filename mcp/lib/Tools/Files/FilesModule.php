@@ -9,6 +9,8 @@ use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\Sharing\ShareAccess;
 use OCA\Mcp\Tools\Files\Sharing\ShareLister;
+use OCA\Mcp\Tools\Files\Sharing\SharePermission;
+use OCA\Mcp\Tools\Files\Sharing\ShareWriter;
 use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Tools\RendersPlans;
@@ -30,7 +32,7 @@ use OCP\IUserManager;
 
 /**
  * Files tools: list, search, tree, mkdir, copy, move, batch, read, protected edit, snippet replace, local
- * checkout, versions, undo and the list of the user's own shares.
+ * checkout, versions, undo, and the list and creation of the user's own shares.
  *
  * There is deliberately no delete. Moving a node is allowed and happens in Reorganization, behind the
  * storage, destination and shared-write guards; the only removal in the module is the empty folder a batch
@@ -76,6 +78,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
         private ?IFullTextSearchManager $ftsManager = null,
         private ?UserTimezone $timezone = null,
         private ?ShareLister $shareLister = null,
+        private ?ShareWriter $shareWriter = null,
     ) {}
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app?:string}> */
@@ -217,6 +220,19 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
                     'offset' => ['type' => 'integer', 'minimum' => 0, 'maximum' => ShareAccess::MAX_OFFSET, 'default' => 0,
                         'description' => FilesMessages::listSharesOffset()],
                 ])],
+            // One tool for both kinds of share: the registry lets the call in with either grant, and ShareWriter checks
+            // the one the recipient needs (share for a person or a group, link for a public link).
+            ['name' => 'files_share', 'module' => 'files', 'operation' => 'share', 'grantAnyOf' => ['share', 'link'],
+                'destructiveHint' => true,
+                'description' => FilesMessages::shareTool(),
+                'inputSchema' => self::schema([
+                    'path' => $path,
+                    'with' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::shareWithParam()],
+                    'permission' => ['type' => 'string', 'enum' => SharePermission::LEVELS, 'default' => SharePermission::VIEW,
+                        'description' => FilesMessages::sharePermissionParam()],
+                    'expires' => ['type' => 'string', 'minLength' => 1, 'description' => FilesMessages::shareExpiresParam()],
+                    'note' => ['type' => 'string', 'maxLength' => ShareWriter::NOTE_MAX, 'description' => FilesMessages::shareNoteParam()],
+                ], ['path', 'with'])],
         ];
     }
 
@@ -251,6 +267,10 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
                 . 'again later; otherwise view the page as an image with the image tools.',
             'There is no delete: files_undo_batch is the way back from files_move_batch, and files_version_restore '
                 . 'restores content as a new version.',
+            'files_share shares a file or folder of yours with a person (with: user:<uid>) or a group (group:<gid>); '
+                . 'find the id with users_search (include_groups: true for groups) and never guess it. Sharing again '
+                . 'with the same recipient changes that share; the plan shows before → after, including a re-share '
+                . 'right a web-made share loses. Nextcloud notifies the recipient.',
             'files_list_shares shows only the shares you created and only of your own files; a file you received '
                 . 'cannot be re-shared here. A password is never shown, only hasPassword. A room share is a Talk '
                 . 'attachment and is removed in Talk. Sharing with people or groups needs the "share" permission and '
@@ -304,6 +324,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             'files_images_view' => $this->images->viewMany($root, $userId, $arguments['paths'] ?? null, $arguments['folder'] ?? null, $arguments['limit'], $arguments['max_size']),
             'files_image_search' => ToolResult::json($this->images->search($root, $userId, $arguments)),
             'files_list_shares' => ToolResult::json($this->listShares($root, $userId, $arguments['path'] ?? null, (int)$arguments['offset'])),
+            'files_share' => ToolResult::json($this->shareWriter()->apply($root, $userId, $arguments)),
             default => throw new \InvalidArgumentException('Unknown tool'),
         });
     }
@@ -321,6 +342,11 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
     private function listShares(Folder $root, string $userId, ?string $path, int $offset): array {
         $lister = $this->shareLister ?? throw new \LogicException('ShareLister is not wired');
         return $path === null ? $lister->mine($root, $userId, $offset) : $lister->forPath($root, $userId, $path);
+    }
+
+    /** @return ShareWriter the writer of files_share, which the container always injects */
+    private function shareWriter(): ShareWriter {
+        return $this->shareWriter ?? throw new \LogicException('ShareWriter is not wired');
     }
 
     /**
@@ -343,6 +369,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             'files_replace' => $this->planReplace($root, $userId, $arguments['path'], $arguments['old'], $arguments['new'], $etag),
             'files_checkout' => $this->planCheckout($root, $userId, $arguments['path'], $etag),
             'files_version_restore' => $this->planRestore($root, $userId, $arguments['path'], $arguments['version']),
+            'files_share' => $this->shareWriter()->plan($root, $userId, $arguments),
             default => throw new \InvalidArgumentException('Unknown tool'),
         });
     }

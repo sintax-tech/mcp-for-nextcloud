@@ -44,6 +44,7 @@ final class ToolRegistryTest extends TestCase {
                     ['name' => 'c_read', 'description' => 'c', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'calendar', 'operation' => 'read', 'app' => 'calendar'],
                     ['name' => 'd_read', 'description' => 'd', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'deck', 'operation' => 'read', 'app' => 'deck'],
                     ['name' => 't_read', 'description' => 't', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'talk', 'operation' => 'read', 'app' => 'spreed'],
+                    ['name' => 's_share', 'description' => 's', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'files', 'operation' => 'share', 'grantAnyOf' => ['share', 'link']],
                 ];
             }
             public function call(string $name, array $arguments, string $userId): array {
@@ -137,6 +138,32 @@ final class ToolRegistryTest extends TestCase {
         $this->assertSame(['mcp_guide', 'a_read'], array_column($this->registry()->list('bob'), 'name'));
     }
 
+    /**
+     * A tool whose kind of write depends on its arguments (files_share: a person or a public link) is reachable with any
+     * of the operations it lists; the module then checks the one the call really needs.
+     */
+    public function testAToolWithAlternativeGrantsIsReachableWithAnyOfThem(): void {
+        $names = fn (string $uid): array => array_column($this->registry()->list($uid), 'name');
+        $this->assertNotContains('s_share', $names('alice'), 'nenhuma das duas liberada');
+        $this->assertUnknown('s_share');
+        $this->assertUnknownWith('s_share', ['confirm' => true]);
+        $this->assertSame([], $this->calls, 'sem nenhuma das duas, a chamada nem chega ao módulo');
+
+        $this->policy->setGrant('alice', 'files', 'link', true);
+        $this->assertContains('s_share', $names('alice'));
+        $this->registry()->call('s_share', ['confirm' => true], 'alice');
+        $this->assertSame('s_share', $this->calls[0][0], 'só link: chama');
+
+        $this->policy->setGrant('alice', 'files', 'link', false);
+        $this->policy->setGrant('alice', 'files', 'share', true);
+        $this->assertContains('s_share', $names('alice'));
+        $this->registry()->call('s_share', ['confirm' => true], 'alice');
+        $this->assertSame('s_share', $this->calls[1][0], 'só share: chama');
+        $this->assertSame('share', array_column($this->registry()->definitions('alice'), null, 'name')['s_share']['operation']);
+        $guide = $this->registry()->call('mcp_guide', ['tool' => 's_share'], 'alice')['content'][0]['text'];
+        $this->assertStringContainsString('Grant operation: `share` or `link`.', $guide);
+    }
+
     public function testListedDefinitionsExposeOnlyMcpFields(): void {
         $this->assertSame(['name', 'title', 'description', 'inputSchema', 'annotations'], array_keys($this->registry()->list('alice')[0]));
         $this->assertSame(['name', 'title', 'description', 'inputSchema', 'annotations'], array_keys($this->registry()->list('alice')[1]));
@@ -224,6 +251,22 @@ final class ToolRegistryTest extends TestCase {
         $this->assertStringStartsWith('cannot open [path]: xxx', $logged['exception_message']);
         $this->assertSame(300, mb_strlen($logged['exception_message']));
         $this->assertStringNotContainsString('alice', $logged['exception_message']);
+    }
+
+    /** The refusal of a hidden tool, called with arguments: the same as for a tool that does not exist. */
+    private function assertUnknownWith(string $name, array $arguments): void {
+        try {
+            $this->registry()->call($name, $arguments, 'alice');
+            $this->fail("$name was callable");
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame('Unknown tool', $e->getMessage());
+            try {
+                $this->registry()->call('no_such_tool', $arguments, 'alice');
+            } catch (\InvalidArgumentException $missing) {
+                $this->assertSame($missing::class, $e::class);
+                $this->assertSame($missing->getMessage(), $e->getMessage());
+            }
+        }
     }
 
     private function assertUnknown(string $name): void {

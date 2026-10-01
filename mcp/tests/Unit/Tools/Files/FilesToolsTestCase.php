@@ -61,6 +61,14 @@ abstract class FilesToolsTestCase extends TestCase {
     protected ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null;
     /** @var list<string> tokens handed out per route, in order */
     protected array $issued = [];
+    /** @var array<string, string> accounts the sharing tools know, uid => display name */
+    protected array $people = ['alice' => 'Alice', 'bruno' => 'Bruno Lima', 'carla' => 'Carla Dias'];
+    /** @var array<string, array{name:string, members:list<string>}> groups the sharing tools know, by gid */
+    protected array $groups = ['finance' => ['name' => 'Financeiro', 'members' => ['alice', 'bruno']], 'board' => ['name' => 'Diretoria', 'members' => ['carla']]];
+    /** Grants of the sharing tools: read only until a test allows share or link. */
+    protected \OCA\Mcp\Service\GrantPolicy $sharePolicy;
+    /** Logger of the share writer, to check that only the exception class is logged. */
+    protected \Psr\Log\LoggerInterface $shareLogger;
     /** Shares alice created, behind the IShareManager double of files_list_shares. */
     protected \OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeShares $shares;
     /** @var list<string> apps enabled for alice; a test can empty it to simulate files_versions being off */
@@ -138,21 +146,54 @@ abstract class FilesToolsTestCase extends TestCase {
             $imageTools,
             new OcrSupport($this->apps),
             $this->visibilityGuard,
-            shareLister: $this->shareLister($urls),
+            ...$this->sharing($urls),
         );
     }
 
-    /** The lister of files_list_shares over {@see self::$shares}, with the same users, tree and guard. */
-    private function shareLister(IURLGenerator $urls): \OCA\Mcp\Tools\Files\Sharing\ShareLister {
+    /**
+     * The sharing services of files_list_shares and files_share over {@see self::$shares}, with the same tree and guard.
+     *
+     * The accounts and groups they know are {@see self::$people} and {@see self::$groups}, read at call time so a test
+     * can add one; the grants are in {@see self::$sharePolicy}, all denied but read, as on a fresh install.
+     *
+     * @return array{shareLister: \OCA\Mcp\Tools\Files\Sharing\ShareLister, shareWriter: \OCA\Mcp\Tools\Files\Sharing\ShareWriter}
+     */
+    private function sharing(IURLGenerator $urls): array {
         $this->shares = new \OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeShares($this);
-        $policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
-        return new \OCA\Mcp\Tools\Files\Sharing\ShareLister(
-            new \OCA\Mcp\Tools\Files\Sharing\ShareAccess($this->shares->manager(), $policy, $this->visibilityGuard ?? $this->shares->guardShowingAll()),
-            new \OCA\Mcp\Tools\Files\Sharing\ShareFormatter(
-                new \OCA\Mcp\Tools\Files\Sharing\ShareRecipientResolver($this->users, $this->createMock(\OCP\IGroupManager::class)),
-                $urls,
-            ),
-        );
+        $this->sharePolicy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+        $accounts = $this->createMock(IUserManager::class);
+        $accounts->method('get')->willReturnCallback(function (string $uid): ?IUser {
+            if (!isset($this->people[$uid])) {
+                return null;
+            }
+            $user = $this->createMock(IUser::class);
+            $user->method('getUID')->willReturn($uid);
+            $user->method('getDisplayName')->willReturn($this->people[$uid]);
+            return $user;
+        });
+        $groups = $this->createMock(\OCP\IGroupManager::class);
+        $groups->method('get')->willReturnCallback(function (string $gid): ?\OCP\IGroup {
+            if (!isset($this->groups[$gid])) {
+                return null;
+            }
+            $group = $this->createMock(\OCP\IGroup::class);
+            $group->method('getGID')->willReturn($gid);
+            $group->method('getDisplayName')->willReturn($this->groups[$gid]['name']);
+            $group->method('inGroup')->willReturnCallback(fn (IUser $user): bool => in_array($user->getUID(), $this->groups[$gid]['members'], true));
+            return $group;
+        });
+        $groups->method('getUserGroupIds')->willReturnCallback(fn (IUser $user): array => array_keys(array_filter(
+            $this->groups, fn (array $group): bool => in_array($user->getUID(), $group['members'], true))));
+        $manager = $this->shares->manager();
+        $access = new \OCA\Mcp\Tools\Files\Sharing\ShareAccess($manager, $this->sharePolicy, $this->visibilityGuard ?? $this->shares->guardShowingAll());
+        $recipients = new \OCA\Mcp\Tools\Files\Sharing\ShareRecipientResolver($accounts, $groups);
+        $formatter = new \OCA\Mcp\Tools\Files\Sharing\ShareFormatter($recipients, $urls);
+        $this->shareLogger = $this->createMock(\Psr\Log\LoggerInterface::class);
+        return [
+            'shareLister' => new \OCA\Mcp\Tools\Files\Sharing\ShareLister($access, $formatter),
+            'shareWriter' => new \OCA\Mcp\Tools\Files\Sharing\ShareWriter($access, $recipients, $formatter, $manager, $accounts, $groups,
+                new \OCA\Mcp\Service\UserTimezone($this->config->mock($this)), $this->time, $this->shareLogger),
+        ];
     }
 
     /** The post-condition report, wired against the same version and share doubles the module uses. */

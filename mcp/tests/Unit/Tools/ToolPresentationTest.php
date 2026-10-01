@@ -13,6 +13,7 @@ final class ToolPresentationTest extends TestCase {
     private const TITLES = [
         'mcp_status' => ['Check MCP status', 'Verificar o status do MCP'],
         'mcp_guide' => ['Tool guide', 'Guia das ferramentas'],
+        'users_search' => ['Search people', 'Buscar pessoas'],
         'files_list' => ['List files', 'Listar arquivos'],
         'files_search' => ['Search files', 'Buscar arquivos'],
         'files_read' => ['Read file', 'Ler arquivo'],

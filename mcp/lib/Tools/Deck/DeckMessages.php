@@ -38,7 +38,7 @@ final class DeckMessages {
 	public const PARAM_STACK_ID = 'Id of the Deck list (stack).';
 	public const PARAM_CARD_ID = 'Id of the Deck card.';
 	public const PARAM_STATUS = 'Status filter: overdue (due before today), open, done or all. Default: overdue.';
-	public const PARAM_ASSIGNEE = 'UID of the assignee; returns only the cards assigned to that person.';
+	public const PARAM_ASSIGNEE = 'UID of the assignee (if you are not sure of someone\'s ID, call users_search first); returns only the cards assigned to that person.';
 	public const PARAM_DUE_BEFORE = 'Returns only cards due on or before this date, in YYYY-MM-DD format.';
 	public const PARAM_TITLE = 'Card title.';
 	public const PARAM_DESCRIPTION = 'Card description, in plain text.';

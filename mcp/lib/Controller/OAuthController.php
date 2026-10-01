@@ -5,6 +5,7 @@ namespace OCA\Mcp\Controller;
 
 use OCA\Mcp\OAuth\AuthorizationRequest;
 use OCA\Mcp\OAuth\AuthorizationValidator;
+use OCA\Mcp\OAuth\NativeClient;
 use OCA\Mcp\OAuth\OAuthException;
 use OCA\Mcp\OAuth\RedirectUriMatcher;
 use OCA\Mcp\OAuth\ResourceUrl;
@@ -71,6 +72,7 @@ class OAuthController extends Controller {
             'pending' => $pendingId,
             'client' => $authRequest->client->name,
             'clientHost' => $authRequest->client->host(),
+            'nativeClient' => $authRequest->client->clientId === NativeClient::CLIENT_ID,
             'redirectHost' => (string)parse_url($authRequest->redirectUri, PHP_URL_HOST),
             'loopback' => RedirectUriMatcher::isLoopback($authRequest->redirectUri),
             'account' => $user->getDisplayName(),
@@ -99,13 +101,13 @@ class OAuthController extends Controller {
         $authRequest = AuthorizationRequest::fromArray($stored[$pending]);
         $uid = $this->userSession->getUser()->getUID();
         if ($decision !== 'allow') {
-            return new RedirectResponse($authRequest->redirectWith(['error' => 'access_denied']));
+            return new RedirectResponse($authRequest->redirectWith(['error' => 'access_denied'], $this->urls->issuer()));
         }
         if (!$this->policy->globalEnabled() || !$this->policy->eligible($uid)) {
             return $this->page(['blocked' => true, 'client' => $authRequest->client->name]);
         }
         $this->policy->setConnected($uid, true);
-        return new RedirectResponse($authRequest->redirectWith(['code' => $this->tokens->createCode($authRequest, $uid)]));
+        return new RedirectResponse($authRequest->redirectWith(['code' => $this->tokens->createCode($authRequest, $uid)], $this->urls->issuer()));
     }
 
     /** @return JSONResponse token response (no-store) or an RFC 6749 error; failed grants are throttled */
@@ -148,11 +150,9 @@ class OAuthController extends Controller {
     private function redirectableError(OAuthException $e): string {
         $params = $this->request->getParams();
         $redirectUri = (string)$params['redirect_uri'];
-        $query = ['error' => $e->error, 'error_description' => $e->getMessage()];
-        if (is_string($params['state'] ?? null) && $params['state'] !== '') {
-            $query['state'] = $params['state'];
-        }
-        return $redirectUri . (str_contains($redirectUri, '?') ? '&' : '?') . http_build_query($query);
+        $state = is_string($params['state'] ?? null) ? $params['state'] : '';
+        return AuthorizationRequest::buildRedirect($redirectUri,
+            ['error' => $e->error, 'error_description' => $e->getMessage()], $state, $this->urls->issuer());
     }
 
     /**

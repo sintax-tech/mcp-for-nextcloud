@@ -45,12 +45,27 @@ class AuthorizationRequest {
 
     /**
      * @param array<string,string> $params code or error parameters
-     * @return string redirect_uri with the parameters and the original state appended
+     * @param string $issuer authorization server issuer, appended as `iss` (RFC 9207)
+     * @return string redirect_uri with the parameters, `iss` and the original state appended
      */
-    public function redirectWith(array $params): string {
-        if ($this->state !== '') {
-            $params['state'] = $this->state;
+    public function redirectWith(array $params, string $issuer): string {
+        return self::buildRedirect($this->redirectUri, $params, $this->state, $issuer);
+    }
+
+    /**
+     * The single place that builds a redirect back to a client: appends `iss` exactly once, then `state` if any.
+     *
+     * @param string $redirectUri verified redirect_uri (may already carry a query)
+     * @param array<string,string> $params code or error parameters
+     * @param string $state client state, preserved when not empty
+     * @param string $issuer authorization server issuer
+     * @return string the redirect URL
+     */
+    public static function buildRedirect(string $redirectUri, array $params, string $state, string $issuer): string {
+        $params['iss'] = $issuer;
+        if ($state !== '') {
+            $params['state'] = $state;
         }
-        return $this->redirectUri . (str_contains($this->redirectUri, '?') ? '&' : '?') . http_build_query($params);
+        return $redirectUri . (str_contains($redirectUri, '?') ? '&' : '?') . http_build_query($params);
     }
 }

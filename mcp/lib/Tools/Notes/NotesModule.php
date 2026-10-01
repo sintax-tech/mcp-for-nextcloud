@@ -57,6 +57,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
                 . 'instead of removing it for good.',
             'Notes are capped at ' . self::MAX_BYTES . ' bytes read or written, and a title at 200 characters.',
             'Pass `etag` to make a change fail instead of overwriting somebody else\'s version of the same note.',
+            'Some notes or categories may be hidden by administrator policy and will appear as if they do not exist.',
         ];
     }
 

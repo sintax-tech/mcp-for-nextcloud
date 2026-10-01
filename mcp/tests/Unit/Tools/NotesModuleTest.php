@@ -13,6 +13,8 @@ use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Notes\NotesModule;
 use OCA\Mcp\Tools\Notes\NotesRepository;
 use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\WriteGate;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
@@ -241,5 +243,30 @@ final class NotesModuleTest extends TestCase {
         $this->tree->nodes['/alice/files/Notes/Reuniões/Ata.md']['deletable'] = false;
         $this->assertSame(ToolFailure::FORBIDDEN, $this->failure('notes_delete', ['id' => $this->ata, 'confirm' => true]));
         $this->assertSame([], $this->tree->ops);
+    }
+
+    public function testHiddenNoteIsOmittedFromListAndNotFoundOnGet(): void {
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $this->config->app['mcp'][VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $tagMapper->method('getTagIdsForObjects')->willReturn([(string)$this->ata => ['999']]);
+        $guard = new VisibilityGuard($this->config->mock($this), $tagMapper);
+
+        $root = $this->createMock(IRootFolder::class);
+        $root->method('getUserFolder')->willReturnCallback(fn () => $this->tree->rootFolder());
+        $apps = $this->createMock(IAppManager::class);
+        $apps->method('isEnabledForUser')->willReturnCallback(fn (string $app) => in_array($app, $this->apps, true));
+        $users = $this->createMock(IUserManager::class);
+        $users->method('get')->willReturn($this->createMock(IUser::class));
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
+        $repo = new NotesRepository($root, $this->config->mock($this), $guard);
+        $module = new NotesModule($repo, $apps, $users, new SharedWriteGuard($access), $access);
+
+        $list = json_decode($module->call('notes_list', [], 'alice')['content'][0]['text'], true);
+        $ids = array_column($list, 'id');
+        $this->assertNotContains($this->ata, $ids);
+
+        $this->expectException(ToolFailure::class);
+        $this->expectExceptionMessage(CommonMessages::notFound());
+        $module->call('notes_read', ['id' => $this->ata], 'alice');
     }
 }

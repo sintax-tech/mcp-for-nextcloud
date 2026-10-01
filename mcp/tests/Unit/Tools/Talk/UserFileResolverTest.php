@@ -126,6 +126,21 @@ class UserFileResolverTest extends TestCase {
      * @param bool $readable Whether the node says it can be read
      * @return File&MockObject The node the user folder returns
      */
+    public function testHiddenFileIsRefusedAsNotFound(): void {
+        $file = $this->givenFile(Constants::PERMISSION_READ | Constants::PERMISSION_SHARE);
+        $file->method('getId')->willReturn(12345);
+        $config = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
+        $config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $tagMapper->method('getTagIdsForObjects')->willReturn(['12345' => ['999']]);
+        $guard = new \OCA\Mcp\Service\VisibilityGuard($config->mock($this), $tagMapper);
+        $resolver = new UserFileResolver($this->rootFolder, $guard);
+
+        $this->expectException(FileAccessException::class);
+        $this->expectExceptionMessage(Messages::fileNotFound());
+        $resolver->resolveShareableFile('alice', 'relatorio.pdf');
+    }
+
     private function givenFile(int $permissions, bool $readable = true): File&MockObject {
         $file = $this->createMock(File::class);
         $file->method('getPermissions')->willReturn($permissions);

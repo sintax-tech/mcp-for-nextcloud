@@ -30,6 +30,7 @@ class NotesRepository {
     public function __construct(
         private IRootFolder $rootFolder,
         private IConfig $config,
+        private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
     ) {}
 
     /**
@@ -60,6 +61,9 @@ class NotesRepository {
         $pending = [$root];
         while ($pending !== [] && count($notes) < self::MAX_NOTES) {
             foreach (array_shift($pending)->getDirectoryListing() as $node) {
+                if ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($node)) {
+                    continue;
+                }
                 if ($node instanceof Folder) {
                     $pending[] = $node;
                 } elseif ($node instanceof File && self::isNote($node) && count($notes) < self::MAX_NOTES) {
@@ -80,7 +84,7 @@ class NotesRepository {
      */
     public function find(?Folder $root, int $id): File {
         foreach ($root?->getById($id) ?? [] as $node) {
-            if ($node instanceof File && self::isNote($node) && $node->isReadable()) {
+            if ($node instanceof File && self::isNote($node) && $node->isReadable() && ($this->visibilityGuard === null || $this->visibilityGuard->isVisible($node))) {
                 return $node;
             }
         }
@@ -116,7 +120,11 @@ class NotesRepository {
         } catch (InvalidArgumentException) {
             throw new InvalidArgumentException('Invalid argument: category');
         }
-        return NodeAccess::ensureFolder($root, $relative);
+        $folder = NodeAccess::ensureFolder($root, $relative, $this->visibilityGuard);
+        if ($this->visibilityGuard !== null) {
+            $this->visibilityGuard->assertVisible($folder);
+        }
+        return $folder;
     }
 
     /**

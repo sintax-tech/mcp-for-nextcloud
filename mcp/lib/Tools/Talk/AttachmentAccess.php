@@ -14,7 +14,10 @@ use Throwable;
  * already approved.
  */
 class AttachmentAccess {
-    public function __construct(private IShareManager $shareManager) {}
+    public function __construct(
+        private IShareManager $shareManager,
+        private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
+    ) {}
 
     /**
      * Checks that the id really is a room share of this conversation, and not a link share, a file of another
@@ -39,6 +42,17 @@ class AttachmentAccess {
             throw new ConversationAccessException(Messages::attachmentNotFound());
         }
 
+        if ($this->visibilityGuard !== null) {
+            try {
+                $node = $share->getNode();
+                if ($node instanceof \OCP\Files\Node && !$this->visibilityGuard->isVisible($node)) {
+                    throw new ConversationAccessException(Messages::attachmentNotFound());
+                }
+            } catch (ConversationAccessException $e) {
+                throw $e;
+            } catch (\Throwable) {}
+        }
+
         return $share;
     }
 
@@ -60,6 +74,9 @@ class AttachmentAccess {
 
         try {
             $node = $share->getNode();
+            if ($this->visibilityGuard !== null && $node instanceof \OCP\Files\Node && !$this->visibilityGuard->isVisible($node)) {
+                return $description;
+            }
         } catch (Throwable) {
             return $description;
         }

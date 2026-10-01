@@ -35,7 +35,7 @@ final class MatrixFixture {
     public function __construct(private TestCase $test) {
         $this->config = new InMemoryConfig();
         $this->oauth = new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore();
-        $this->policy = new GrantPolicy($this->config->mock($test), $this->oauth);
+        $this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->config->mock($test), $this->oauth);
     }
 
     public function addUser(string $uid, string $name, string $email = '', bool $enabled = true, array $groups = []): void {

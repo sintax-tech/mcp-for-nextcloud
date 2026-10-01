@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Service;
 
 use InvalidArgumentException;
+use OCP\Config\IUserConfig;
 use OCP\IConfig;
 use OCA\Mcp\OAuth\OAuthStore;
 
@@ -42,7 +43,7 @@ class GrantPolicy {
      */
     public const RESERVED_APP_KEYS = ['enabled', 'installed_version', 'types', 'levels', 'ocsid'];
 
-    public function __construct(private IConfig $config, private OAuthStore $oauth) {}
+    public function __construct(private IConfig $config, private OAuthStore $oauth, private IUserConfig $userConfig) {}
 
     /** @return bool whether the administrator enabled the MCP service (off by default) */
     public function globalEnabled(): bool {
@@ -103,7 +104,7 @@ class GrantPolicy {
         if (!in_array($key, [self::ELIGIBLE_KEY, self::CONNECTED_KEY], true)) {
             throw new InvalidArgumentException('Invalid request');
         }
-        $uids = array_map('strval', $this->config->getUsersForUserValue(self::APP, $key, '1'));
+        $uids = array_map('strval', iterator_to_array($this->userConfig->searchUsersByValueString(self::APP, $key, '1'), false));
         sort($uids);
         return array_values(array_unique($uids));
     }

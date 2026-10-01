@@ -56,7 +56,7 @@ final class ConnectionsFixture {
         $system = $this->mock(IConfig::class);
         $system->method('getSystemValueString')->willReturn('instance-secret');
         $tokens = new TokenService($this->store, new TokenHasher($system), $time,
-            new TokenOwnerGate($users, new GrantPolicy($config, $this->store), $this->store), $config);
+            new TokenOwnerGate($users, \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($config, $this->store), $this->store), $config);
         return new ConnectionList($this->store, $tokens, $users, $time);
     }
 

@@ -37,7 +37,7 @@ final class TokenFlowTest extends TestCase {
         $this->store = new InMemoryOAuthStore();
         $this->appConfig = new InMemoryConfig();
         $appConfigMock = $this->appConfig->mock($this);
-        $this->policy = new GrantPolicy($appConfigMock, $this->store);
+        $this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($appConfigMock, $this->store);
         $this->policy->setGlobalEnabled(true);
         $this->policy->setEligible('alice', true);
         $this->policy->setConnected('alice', true);

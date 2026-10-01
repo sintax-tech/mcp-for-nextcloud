@@ -54,9 +54,6 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
         private ?UserTimezone $zones = null,
     ) {}
 
-    /** The account of the request in flight, whose timezone the plan text is read in. */
-    private ?string $userId = null;
-
     /**
      * Declares the tool schemas and their operations for the central write gate.
      *
@@ -185,28 +182,21 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
      * @throws InvalidArgumentException when the tool or supplied fields are invalid
      */
     public function preview(string $name, array $arguments, string $userId): array {
-        $this->userId = $userId;
-
         return $this->prepare($name, $arguments, $userId)['plan'];
     }
 
     /**
-     * Describes the plan as the text the person confirms, in their own language and timezone.
+     * Describes the plan as the text the person confirms, in the language of the request.
      *
-     * The account is the one {@see self::preview()} ran for: the registry builds the plan and renders
-     * it in the same request, so the timezone of the user who asked is the one the dates speak.
+     * Stateless on purpose: this module is a shared container service, so the timezone comes from the
+     * plan {@see self::preview()} built, not from anything this object remembers about the caller.
      *
      * @param string $name registered write tool name
      * @param array<string, mixed> $plan the plan preview() returned for that tool
      * @return string|null Markdown body, or null when this renderer has nothing to say about it
      */
     public function renderPlan(string $name, array $plan): ?string {
-        // A plan rendered before any preview, or without a timezone to read dates in, stays generic.
-        if ($this->zones === null || $this->userId === null) {
-            return null;
-        }
-
-        return (new TasksPlanRenderer($this->zones))->render($name, $plan, $this->userId);
+        return (new TasksPlanRenderer())->render($name, $plan);
     }
 
     /**
@@ -221,7 +211,6 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
      * @throws RuntimeException when the native write or its read-back verification fails
      */
     public function call(string $name, array $arguments, string $userId): array {
-        $this->userId = $userId;
         if ($name === 'tasks_list_calendars') {
             return ToolResult::json(
                 array_map(static fn ($calendar) => (array) $calendar, $this->access->visible($userId, 'VTODO'))
@@ -381,6 +370,9 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
             'shared' => $shared,
             'recoverable' => $deleting,
             'consequence' => $deleting ? Translator::t('The task will be moved to the calendar trash.') : null,
+            // The timezone travels with the plan, so whoever renders it later reads the dates of the
+            // account that asked, without this module having to remember who that was.
+            'timezone' => $this->zones?->forUser($userId)->getName(),
         ];
         return compact('calendar', 'row', 'after', 'plan');
     }

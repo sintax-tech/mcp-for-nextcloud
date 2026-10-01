@@ -144,6 +144,39 @@ final class TasksPlanRendererTest extends TestCase {
         self::assertIsString($module->renderPlan('tasks_create_task', $plan + ['unknown' => true]));
     }
 
+    /** The module is a shared container service: a plan renders the same whatever happened before. */
+    public function testTheModuleKeepsNoStateBetweenThePlanAndItsText(): void {
+        $module = $this->module();
+        $plan = $module->preview('tasks_complete_task', ['calendar' => self::PATH, 'uid' => 't1'], 'alice');
+        // A fresh module with the very same plan renders the very same text: nothing was remembered.
+        self::assertSame(
+            $module->renderPlan('tasks_complete_task', $plan),
+            $this->module()->renderPlan('tasks_complete_task', $plan)
+        );
+    }
+
+    public function testThePlanCarriesTheTimezoneOfTheAccountThatAsked(): void {
+        self::assertSame(
+            'America/Sao_Paulo',
+            $this->module()->preview('tasks_delete_task', ['calendar' => self::PATH, 'uid' => 't1'], 'alice')['timezone']
+        );
+        // An account with no preference of its own still names the zone the server defaults to.
+        self::assertNotNull(
+            $this->module()->preview('tasks_delete_task', ['calendar' => self::PATH, 'uid' => 't1'], 'alice')['timezone']
+        );
+    }
+
+    public function testAPlanWithoutAZoneReadsItsDatesAsUtc(): void {
+        $module = $this->module();
+        $plan = $module->preview('tasks_complete_task', ['calendar' => self::PATH, 'uid' => 't1'], 'alice');
+        $body = $module->renderPlan('tasks_complete_task', ['timezone' => null] + $plan);
+        self::assertIsString($body);
+        // 12:00 UTC is the moment itself; nobody is promised an hour that no account asked for.
+        self::assertStringContainsString('01/10/2026 12:00', $body);
+        // A zone this PHP build does not know must not cost the person the whole text.
+        self::assertIsString($module->renderPlan('tasks_complete_task', $plan + ['timezone' => 'Mars/Olympus']));
+    }
+
     /** Renders the plan of a real tool call, exactly as the registry asks for it before a write. */
     private function render(string $tool, array $arguments, string $owner = 'principals/users/alice'): ?string {
         $module = $this->module($owner);

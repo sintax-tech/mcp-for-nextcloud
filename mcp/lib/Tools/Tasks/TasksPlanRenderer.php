@@ -6,16 +6,19 @@ namespace OCA\Mcp\Tools\Tasks;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Exception;
+use DateTimeZone;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\UserTimezone;
 
 /**
  * Writes the plan of a task write as the text the person asked to confirm reads.
  *
  * The module already knows everything the plan carries, so this class only decides what to say:
  * the task by the title its author gave it, the calendar it lives in, and only the fields an
- * edit really changes. Dates reach the reader in the timezone of their own account, because a due
- * date that moves a day when it crosses the Atlantic is a date the person cannot trust.
+ * edit really changes. Dates reach the reader in the timezone the plan names, because a due date
+ * that moves a day when it crosses the Atlantic is a date the person cannot trust.
+ *
+ * The timezone is read from the plan and nowhere else: this renderer holds no account, so it can
+ * render any plan without knowing which request it came from.
  *
  * A plan that does not carry what this renderer expects gives back `null`, and the caller falls
  * back to the generic body, which is worse but never missing.
@@ -32,27 +35,20 @@ final class TasksPlanRenderer {
     private const FIELDS = ['summary', 'description', 'start', 'due', 'priority', 'percentComplete'];
 
     /**
-     * Receives the timezone resolver of the account.
-     *
-     * @param UserTimezone $zones the timezone of the user whose plan this is
-     */
-    public function __construct(private UserTimezone $zones) {}
-
-    /**
      * @param string $tool write tool of this module
      * @param array<string, mixed> $plan plan returned by TasksModule::preview()
-     * @param string $userId the user the plan belongs to, whose timezone dates are read in
      * @return string|null Markdown body, or null when the plan lacks what this renderer needs
      */
-    public function render(string $tool, array $plan, string $userId): ?string {
+    public function render(string $tool, array $plan): ?string {
         $calendar = $this->name($plan['calendar'] ?? null);
         if ($calendar === null) {
             return null;
         }
+        $zone = $this->zone($plan);
         $body = match ($tool) {
-            'tasks_create_task' => $this->create($calendar, $plan, $userId),
-            'tasks_edit_task' => $this->edit($calendar, $plan, $userId),
-            'tasks_complete_task' => $this->complete($calendar, $plan, $userId),
+            'tasks_create_task' => $this->create($calendar, $plan, $zone),
+            'tasks_edit_task' => $this->edit($calendar, $plan, $zone),
+            'tasks_complete_task' => $this->complete($calendar, $plan, $zone),
             'tasks_delete_task' => $this->delete($calendar, $plan),
             default => null,
         };
@@ -67,10 +63,10 @@ final class TasksPlanRenderer {
      *
      * @param string $calendar display name of the calendar the task goes into
      * @param array<string, mixed> $plan the plan of a create
-     * @param string $userId user whose timezone dates are read in
+     * @param DateTimeZone $zone timezone the plan names, deciding the hour a date reads as
      * @return string|null the body, or null when the task has no title to show
      */
-    private function create(string $calendar, array $plan, string $userId): ?string {
+    private function create(string $calendar, array $plan, DateTimeZone $zone): ?string {
         $after = $this->task($plan['after'] ?? null);
         $summary = $after === null ? '' : $this->text($after['summary'] ?? '');
         if ($summary === '') {
@@ -84,7 +80,7 @@ final class TasksPlanRenderer {
             if ($field === 'summary') {
                 continue;
             }
-            $value = $this->value($after[$field] ?? null, $field, $userId);
+            $value = $this->value($after[$field] ?? null, $field, $zone);
             if ($value !== null) {
                 $lines[] = '- ' . $this->label($field) . ': ' . $value;
             }
@@ -98,10 +94,10 @@ final class TasksPlanRenderer {
      *
      * @param string $calendar display name of the calendar of the task
      * @param array<string, mixed> $plan the plan of an edit
-     * @param string $userId user whose timezone dates are read in
+     * @param DateTimeZone $zone timezone the plan names, deciding the hour a date reads as
      * @return string|null the body, or null when the plan carries no task to compare
      */
-    private function edit(string $calendar, array $plan, string $userId): ?string {
+    private function edit(string $calendar, array $plan, DateTimeZone $zone): ?string {
         $before = $this->task($plan['before'] ?? null);
         $after = $this->task($plan['after'] ?? null);
         if ($before === null || $after === null) {
@@ -116,7 +112,7 @@ final class TasksPlanRenderer {
             [$this->strong($summary), $this->emphasis($calendar)]
         )];
 
-        return $this->changes($lines, $before, $after, $userId);
+        return $this->changes($lines, $before, $after, $zone);
     }
 
     /**
@@ -124,10 +120,10 @@ final class TasksPlanRenderer {
      *
      * @param string $calendar display name of the calendar of the task
      * @param array<string, mixed> $plan the plan of a completion
-     * @param string $userId user whose timezone dates are read in
+     * @param DateTimeZone $zone timezone the plan names, deciding the hour a date reads as
      * @return string|null the body, or null when the plan carries no task to complete
      */
-    private function complete(string $calendar, array $plan, string $userId): ?string {
+    private function complete(string $calendar, array $plan, DateTimeZone $zone): ?string {
         $before = $this->task($plan['before'] ?? null);
         $after = $this->task($plan['after'] ?? null);
         if ($before === null || $after === null) {
@@ -141,11 +137,11 @@ final class TasksPlanRenderer {
             'Marking the task %s as completed in the calendar %s.',
             [$this->strong($summary), $this->emphasis($calendar)]
         )];
-        $progress = $this->value($after['percentComplete'] ?? null, 'percentComplete', $userId);
+        $progress = $this->value($after['percentComplete'] ?? null, 'percentComplete', $zone);
         if ($progress !== null) {
             $lines[] = '- ' . Translator::t('Progress') . ': ' . $progress;
         }
-        $completed = $this->value($after['completed'] ?? null, 'completed', $userId);
+        $completed = $this->value($after['completed'] ?? null, 'completed', $zone);
         if ($completed !== null) {
             $lines[] = '- ' . Translator::t('Completed at') . ': ' . $completed;
         }
@@ -181,13 +177,13 @@ final class TasksPlanRenderer {
      * @param list<string> $lines the body so far
      * @param array<string, mixed> $before task as it is
      * @param array<string, mixed> $after task as it will be
-     * @param string $userId user whose timezone dates are read in
+     * @param DateTimeZone $zone timezone the plan names, deciding the hour a date reads as
      * @return string the body with the changed fields
      */
-    private function changes(array $lines, array $before, array $after, string $userId): string {
+    private function changes(array $lines, array $before, array $after, DateTimeZone $zone): string {
         foreach (self::FIELDS as $field) {
-            $from = $this->value($before[$field] ?? null, $field, $userId);
-            $to = $this->value($after[$field] ?? null, $field, $userId);
+            $from = $this->value($before[$field] ?? null, $field, $zone);
+            $to = $this->value($after[$field] ?? null, $field, $zone);
             if ($from === $to) {
                 continue;
             }
@@ -249,10 +245,10 @@ final class TasksPlanRenderer {
     /**
      * @param mixed $value raw plan value of one field
      * @param string $field key of the field, which decides how its value is read
-     * @param string $userId user whose timezone dates are read in
+     * @param DateTimeZone $zone timezone the plan names, deciding the hour a date reads as
      * @return string|null the value a person reads, or null when it is empty
      */
-    private function value(mixed $value, string $field, string $userId): ?string {
+    private function value(mixed $value, string $field, DateTimeZone $zone): ?string {
         if ($field === 'percentComplete') {
             return is_numeric($value) ? $this->text($value) . '%' : null;
         }
@@ -260,7 +256,7 @@ final class TasksPlanRenderer {
             return is_numeric($value) ? $this->priority((int) $value) : null;
         }
         if (in_array($field, ['start', 'due', 'completed'], true)) {
-            return $this->date($value, $userId);
+            return $this->date($value, $zone);
         }
         $text = $this->text($value);
 
@@ -271,10 +267,10 @@ final class TasksPlanRenderer {
      * A date of the task in the timezone of the reader: a due date must fall on the day they see.
      *
      * @param mixed $value raw plan value of a date field
-     * @param string $userId user whose timezone decides
+     * @param DateTimeZone $zone timezone the reader is in
      * @return string|null the formatted date, or null when the field carries none
      */
-    private function date(mixed $value, string $userId): ?string {
+    private function date(mixed $value, DateTimeZone $zone): ?string {
         $text = $this->text($value);
         if ($text === '') {
             return null;
@@ -289,7 +285,7 @@ final class TasksPlanRenderer {
             return $text;
         }
 
-        return $date->setTimezone($this->zones->forUser($userId))->format('d/m/Y H:i');
+        return $date->setTimezone($zone)->format('d/m/Y H:i');
     }
 
     /** @param int $priority iCalendar priority, 0 undefined and 1 the highest */
@@ -303,6 +299,28 @@ final class TasksPlanRenderer {
             $priority <= 8 => Translator::t('low priority'),
             default => Translator::t('lowest priority'),
         };
+    }
+
+    /**
+     * The timezone the plan carries, resolved once and reused for every date of the body.
+     *
+     * A plan built without an account behind it, or one naming a zone this PHP build does not know,
+     * reads as UTC: the instant is right, only its hour is one the reader may not expect, which beats
+     * failing to describe the write at all.
+     *
+     * @param array<string, mixed> $plan the whole plan
+     * @return DateTimeZone timezone every date of this plan reads as
+     */
+    private function zone(array $plan): DateTimeZone {
+        $name = $this->text($plan['timezone'] ?? '');
+        if ($name === '') {
+            return new DateTimeZone('UTC');
+        }
+        try {
+            return new DateTimeZone($name);
+        } catch (Exception) {
+            return new DateTimeZone('UTC');
+        }
     }
 
     /** @param string $field key of a task field */

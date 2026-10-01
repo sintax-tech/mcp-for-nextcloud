@@ -193,6 +193,29 @@ final class McpControllerTest extends TestCase {
         $this->assertSame($bob, $this->volatileUser);
     }
 
+    public function testOwnBearerWithAnotherSessionIsRejected(): void {
+        $this->headers['Authorization'] = 'Bearer ncmcp_at_valid';
+        $bob = $this->createMock(IUser::class);
+        $bob->method('getUID')->willReturn('bob');
+        $bob->method('isEnabled')->willReturn(true);
+        $this->authenticator->expects($this->once())->method('authenticate')->willReturn($bob);
+        $this->assertSame([401, ''], $this->listTools());
+        $this->assertNull($this->volatileUser);
+    }
+
+    public function testInvalidOwnBearerCannotFallBackToAnActiveSession(): void {
+        $this->headers['Authorization'] = 'Bearer ncmcp_at_invalid';
+        $this->authenticator->expects($this->once())->method('authenticate')->willReturn(null);
+        $this->assertSame([401, ''], $this->listTools());
+    }
+
+    public function testMatchingSessionAndBearerUsesValidatedBearer(): void {
+        $this->headers['Authorization'] = 'Bearer ncmcp_at_valid';
+        $this->authenticator->expects($this->once())->method('authenticate')->willReturn($this->user);
+        $this->assertSame(200, $this->listTools()[0]);
+        $this->assertSame($this->user, $this->volatileUser);
+    }
+
     public function testInvalidBearerGetsInvalidTokenChallenge(): void {
         $this->login(null);
         $this->headers['Authorization'] = 'Bearer ncmcp_at_expired';

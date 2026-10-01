@@ -114,9 +114,10 @@ class McpController extends Controller {
         }
         $user = $this->userSession->getUser();
         $authorization = $this->request->getHeader('Authorization');
-        if ($user === null && AccessTokenAuthenticator::isOwnBearer($authorization)) {
+        if (AccessTokenAuthenticator::isOwnBearer($authorization)) {
+            $sessionUser = $user;
             $user = $this->tokens->authenticate($authorization, $this->resourceUrl->base());
-            if ($user === null) {
+            if ($user === null || ($sessionUser !== null && $sessionUser->getUID() !== $user->getUID())) {
                 return $this->unauthorized('Bearer error="invalid_token", ' . $this->bearerParameters());
             }
             $this->userSession->setVolatileActiveUser($user);

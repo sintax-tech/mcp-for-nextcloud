@@ -7,7 +7,9 @@ use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolGuideNotes;
 use OCA\Mcp\Tools\ToolModule;
@@ -41,7 +43,7 @@ use OCP\IUserManager;
  * that would be created, the node the batch would touch — and writes nothing: no folder is created, no
  * checkout token is minted and no file is backed up before the user has said yes.
  */
-class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
+class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuideNotes {
     /** Characters returned by files_read before the text is truncated. */
     public const MAX_CHARS = TextExtractor::MAX_CHARS;
     /** Maximum size of the new content accepted by files_edit and files_replace, in bytes. */
@@ -70,6 +72,7 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
         private ?VisibilityGuard $visibilityGuard = null,
         private ?IAppManager $appManager = null,
         private ?IFullTextSearchManager $ftsManager = null,
+        private ?UserTimezone $timezone = null,
     ) {}
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app?:string}> */
@@ -315,6 +318,15 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     }
 
     /**
+     * {@inheritDoc}
+     *
+     * The words live in {@see FilesPlanRenderer}; this module only hands the plan over.
+     */
+    public function renderPlan(string $tool, array $plan): ?string {
+        return FilesPlanRenderer::render($tool, $plan);
+    }
+
+    /**
      * The plan of `files_edit`: the diff the write would produce and the backup it would take first.
      *
      * @param Folder $root the user's folder
@@ -469,6 +481,7 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
             'action' => 'files_version_restore',
             'path' => $path,
             'version' => $this->versions->describe($file, $version, $userId),
+            'timezone' => $this->timezone?->forUser($userId)->getName(),
             'current' => ['etag' => (string)$file->getEtag(), 'size' => (int)$file->getSize()],
             'backup' => '/' . self::BACKUP_FOLDER,
             'access' => $this->accessInfo->describe($file, $userId),

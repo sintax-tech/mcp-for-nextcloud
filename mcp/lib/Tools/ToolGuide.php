@@ -34,7 +34,7 @@ final class ToolGuide {
      * Arguments a module may declare besides the confirmation every write gets. They are read from the
      * schema the registry handed over, so a module that adds a gate of its own shows up here on its own.
      */
-    private const EXTRA_GATES = ['confirm_shared', 'approval_id'];
+    private const EXTRA_GATES = ['confirm_shared'];
 
     /** @param list<ToolModule> $modules modules in tools/list order, to read their notes */
     public function __construct(private array $modules) {

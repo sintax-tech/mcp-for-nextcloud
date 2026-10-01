@@ -11,6 +11,7 @@ use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Dav\CollectionSchema as Schema;
 use OCA\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolGuideNotes;
 use OCA\Mcp\Tools\ToolModule;
@@ -20,7 +21,7 @@ use Sabre\VObject\Component\VCard;
 use RuntimeException;
 
 /** Personal CardDAV contacts; writes use the same native ACL/validation pipeline as the web UI. */
-final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
+final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes, RendersPlans {
     /**
      * Receives collection access, CardDAV ports, preserving vCard edits and verified backups.
      *
@@ -167,6 +168,19 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
      */
     public function preview(string $name, array $arguments, string $userId): array {
         return $this->prepare($name, $arguments, $userId)['plan'];
+    }
+
+    /**
+     * Describes the plan as the text the person confirms, in their own language.
+     *
+     * @param string $name registered write tool name
+     * @param array<string, mixed> $plan the plan preview() returned for that tool
+     * @return string|null Markdown body, or null when this renderer has nothing to say about it
+     */
+    public function renderPlan(string $name, array $plan): ?string {
+        // Built on demand and not injected: a contact plan carries no date, so the renderer needs
+        // nothing this module does not already hold, and a constructor parameter would reach every caller.
+        return (new ContactsPlanRenderer())->render($name, $plan);
     }
 
     /**

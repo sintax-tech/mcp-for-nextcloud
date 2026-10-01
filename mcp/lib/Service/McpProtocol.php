@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Service;
 
+use InvalidArgumentException;
+use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolPresentation;
 use OCA\Mcp\Tools\ToolRegistry;
 use Psr\Log\LoggerInterface;
@@ -47,6 +49,7 @@ class McpProtocol {
         private PromptCatalog $prompts,
         private GrantPolicy $policy,
         private LoggerInterface $logger,
+        private ?ResourceRegistry $resources = null,
     ) {}
 
     /**
@@ -108,7 +111,7 @@ class McpProtocol {
             // Version negotiation: always answer with the single supported legacy version.
             return $this->result($id, [
                 'protocolVersion' => self::VERSION,
-                'capabilities' => ['tools' => new \stdClass(), 'prompts' => new \stdClass()],
+                'capabilities' => ['tools' => new \stdClass(), 'prompts' => new \stdClass(), 'resources' => new \stdClass()],
                 'serverInfo' => self::SERVER_INFO,
                 'instructions' => ToolPresentation::INSTRUCTIONS,
             ]);
@@ -128,6 +131,15 @@ class McpProtocol {
         if ($method === 'prompts/get') {
             $prompt = $this->prompt($params, $userId);
             return $prompt === null ? $this->error($id, -32602, 'Invalid params') : $this->result($id, $prompt);
+        }
+        if ($method === 'resources/list') {
+            return $this->legacyResourceList($id, $params, $userId);
+        }
+        if ($method === 'resources/templates/list') {
+            return $this->legacyResourceTemplates($id, $params, $userId);
+        }
+        if ($method === 'resources/read') {
+            return $this->legacyResourceRead($id, $params, $userId);
         }
         return $this->error($id, -32601, 'Method not found');
     }
@@ -168,7 +180,7 @@ class McpProtocol {
                 'resultType' => 'complete',
                 'supportedVersions' => self::SUPPORTED_VERSIONS,
                 // The prompt set is static, so no listChanged notification is ever needed.
-                'capabilities' => ['tools' => new \stdClass(), 'prompts' => ['listChanged' => false]],
+                'capabilities' => ['tools' => new \stdClass(), 'prompts' => ['listChanged' => false], 'resources' => new \stdClass()],
                 // DiscoverResult carries the same display guidance the legacy initialize does.
                 'instructions' => ToolPresentation::INSTRUCTIONS,
                 // Discovery is only answered to an authenticated user, so shared caches must not keep it.
@@ -194,8 +206,113 @@ class McpProtocol {
                 '_meta' => $meta,
             ]),
             'prompts/get' => $this->modernPrompt($id, $params, $userId, $meta),
+            'resources/list' => $this->modernResourceList($id, $params, $userId, $meta),
+            'resources/templates/list' => $this->modernResourceTemplates($id, $params, $userId, $meta),
+            'resources/read' => $this->modernResourceRead($id, $params, $userId, $meta),
             default => $this->error($id, -32601, 'Method not found', 404),
         };
+    }
+
+    private function legacyResourceList(int|string $id, array $params, string $userId): array {
+        if ($this->resources === null) {
+            return $this->error($id, -32601, 'Method not found');
+        }
+        try {
+            $cursor = isset($params['cursor']) ? (string)$params['cursor'] : null;
+            return $this->result($id, $this->resources->list($userId, $cursor));
+        } catch (InvalidArgumentException $e) {
+            return $this->error($id, -32602, $this->safeMessage($e->getMessage()));
+        }
+    }
+
+    private function legacyResourceTemplates(int|string $id, array $params, string $userId): array {
+        if ($this->resources === null) {
+            return $this->error($id, -32601, 'Method not found');
+        }
+        try {
+            $cursor = isset($params['cursor']) ? (string)$params['cursor'] : null;
+            return $this->result($id, $this->resources->templates($userId, $cursor));
+        } catch (InvalidArgumentException $e) {
+            return $this->error($id, -32602, $this->safeMessage($e->getMessage()));
+        }
+    }
+
+    private function legacyResourceRead(int|string $id, array $params, string $userId): array {
+        if ($this->resources === null) {
+            return $this->error($id, -32601, 'Method not found');
+        }
+        if (!isset($params['uri']) || !is_string($params['uri'])) {
+            return $this->error($id, -32602, 'Invalid argument: uri');
+        }
+        try {
+            $read = $this->resources->read($params['uri'], $userId);
+            return $this->result($id, $read);
+        } catch (ToolFailure $e) {
+            return $this->error($id, -32002, $e->getMessage());
+        } catch (InvalidArgumentException $e) {
+            return $this->error($id, -32602, $this->safeMessage($e->getMessage()));
+        }
+    }
+
+    private function modernResourceList(int|string $id, array $params, string $userId, array $meta): array {
+        if ($this->resources === null) {
+            return $this->error($id, -32601, 'Method not found', 404);
+        }
+        try {
+            $cursor = isset($params['cursor']) ? (string)$params['cursor'] : null;
+            $list = $this->resources->list($userId, $cursor);
+            return $this->result($id, [
+                'resultType' => 'complete',
+                'resources' => $list['resources'],
+                'ttlMs' => 0,
+                'cacheScope' => 'private',
+                '_meta' => $meta,
+            ]);
+        } catch (InvalidArgumentException $e) {
+            return $this->error($id, -32602, $this->safeMessage($e->getMessage()));
+        }
+    }
+
+    private function modernResourceTemplates(int|string $id, array $params, string $userId, array $meta): array {
+        if ($this->resources === null) {
+            return $this->error($id, -32601, 'Method not found', 404);
+        }
+        try {
+            $cursor = isset($params['cursor']) ? (string)$params['cursor'] : null;
+            $templates = $this->resources->templates($userId, $cursor);
+            return $this->result($id, [
+                'resultType' => 'complete',
+                'resourceTemplates' => $templates['resourceTemplates'],
+                'ttlMs' => 0,
+                'cacheScope' => 'private',
+                '_meta' => $meta,
+            ]);
+        } catch (InvalidArgumentException $e) {
+            return $this->error($id, -32602, $this->safeMessage($e->getMessage()));
+        }
+    }
+
+    private function modernResourceRead(int|string $id, array $params, string $userId, array $meta): array {
+        if ($this->resources === null) {
+            return $this->error($id, -32601, 'Method not found', 404);
+        }
+        if (!isset($params['uri']) || !is_string($params['uri'])) {
+            return $this->error($id, -32602, 'Invalid argument: uri');
+        }
+        try {
+            $read = $this->resources->read($params['uri'], $userId);
+            return $this->result($id, [
+                'resultType' => 'complete',
+                'contents' => $read['contents'],
+                'ttlMs' => 0,
+                'cacheScope' => 'private',
+                '_meta' => $meta,
+            ]);
+        } catch (ToolFailure $e) {
+            return $this->error($id, -32602, $e->getMessage());
+        } catch (InvalidArgumentException $e) {
+            return $this->error($id, -32602, $this->safeMessage($e->getMessage()));
+        }
     }
 
     /**
@@ -260,7 +377,7 @@ class McpProtocol {
         } else {
             try {
                 $result = $this->tools->call($name, $arguments, $userId);
-            } catch (\InvalidArgumentException $e) {
+            } catch (InvalidArgumentException $e) {
                 return $this->error($id, -32602, $this->safeMessage($e->getMessage()));
             }
         }
@@ -322,7 +439,7 @@ class McpProtocol {
         // dueBefore, and a lowercase-only charset turned every one of them into "Invalid arguments". The
         // charset stays strict otherwise, so nothing built from server state (a path, a file name, an
         // exception) can slip through: no slash, no space, no quote, no backslash.
-        return preg_match('/^(Unknown tool|Invalid arguments|(Unknown|Missing|Invalid) argument: [A-Za-z_0-9]+(?:[.\[][A-Za-z_0-9]+\]?)*)$/', $message) === 1
+        return preg_match('/^(Unknown tool|Invalid arguments|(Unknown|Missing|Invalid) argument: [A-Za-z_0-9]+(?:[.\\[][A-Za-z_0-9]+\\]?)*)$/', $message) === 1
             ? $message
             : 'Invalid arguments';
     }

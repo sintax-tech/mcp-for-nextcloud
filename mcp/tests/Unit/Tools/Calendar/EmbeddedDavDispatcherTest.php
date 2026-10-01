@@ -81,7 +81,7 @@ final class EmbeddedDavDispatcherTest extends TestCase {
             $this->dispatcher->put('alice', 'personal', 'taken.ics', $this->ics('other'));
             self::fail('Expected the If-None-Match precondition to fail.');
         } catch (CalendarException $exception) {
-            self::assertStringContainsString('Conflito', $exception->getMessage());
+            self::assertStringContainsString('Conflict', $exception->getMessage());
         }
 
         self::assertSame('*', $this->observed?->getHeader('If-None-Match'));
@@ -104,7 +104,7 @@ final class EmbeddedDavDispatcherTest extends TestCase {
             self::fail('Expected a stale If-Match to be refused.');
         } catch (CalendarException $exception) {
             self::assertSame(412, $exception->getCode());
-            self::assertStringContainsString('alterado por outra pessoa', $exception->getMessage());
+            self::assertStringContainsString('changed by another person', $exception->getMessage());
         }
 
         self::assertStringContainsString('edited', $this->backend->objects[$this->personalId]['e.ics']['calendardata']);
@@ -165,7 +165,7 @@ final class EmbeddedDavDispatcherTest extends TestCase {
             $this->dispatcher->move('alice', 'personal', 'blocker.ics', 'work');
             self::fail('Expected Overwrite: F to refuse the occupied destination.');
         } catch (CalendarException $exception) {
-            self::assertStringContainsString('Conflito', $exception->getMessage());
+            self::assertStringContainsString('Conflict', $exception->getMessage());
         }
 
         self::assertStringContainsString('occupied', $this->backend->objects[$this->workId]['blocker.ics']['calendardata']);
@@ -198,7 +198,7 @@ final class EmbeddedDavDispatcherTest extends TestCase {
             $dispatcher->put('bob', 'team_shared_by_alice', 'x.ics', $this->ics('x'));
             self::fail('Expected the ACL to refuse the write.');
         } catch (CalendarException $exception) {
-            self::assertStringContainsString('Sem permissão', $exception->getMessage());
+            self::assertStringContainsString('No permission', $exception->getMessage());
         }
 
         self::assertArrayNotHasKey('x.ics', $this->backend->objects[$foreign] ?? []);
@@ -271,7 +271,7 @@ final class EmbeddedDavDispatcherTest extends TestCase {
             $this->dispatcher->put('alice', 'personal', 'big.ics', str_repeat('x', 200), false, 100);
             self::fail('Expected the size limit to refuse the write.');
         } catch (CalendarException $exception) {
-            self::assertStringContainsString('limite', strtolower($exception->getMessage()));
+            self::assertStringContainsString('limit', strtolower($exception->getMessage()));
         }
 
         self::assertCount($calls, $this->backend->calls);
@@ -405,7 +405,7 @@ final class EmbeddedDavDispatcherTest extends TestCase {
                 DavPathBuilder::objectPath('alice', 'personal', $segment);
                 self::fail('Expected the segment to be refused: ' . var_export($segment, true));
             } catch (CalendarException $exception) {
-                self::assertStringContainsString('objeto', $exception->getMessage());
+                self::assertStringContainsString('object', $exception->getMessage());
             }
         }
     }

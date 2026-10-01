@@ -3,6 +3,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Service;
 
+use OCA\Mcp\L10n\Translator;
+
 /**
  * The MCP prompts this server offers, in the shape both protocol eras expect.
  *
@@ -27,9 +29,8 @@ final class PromptCatalog {
         }
         return [[
             'name' => self::EDIT_LOCALLY,
-            'title' => 'Editar um arquivo do Nextcloud localmente',
-            'description' => 'Ensina a baixar um arquivo do Nextcloud, editá-lo com as ferramentas locais e '
-                . 'devolvê-lo, sem passar o conteúdo pelo modelo.',
+            'title' => Translator::t('Edit a Nextcloud file locally'),
+            'description' => Translator::t('Teaches how to download a Nextcloud file, edit it with local tools, and send it back without passing the content through the model.'),
             'arguments' => [],
         ]];
     }
@@ -46,38 +47,38 @@ final class PromptCatalog {
             return null;
         }
         return [
-            'description' => 'Fluxo de edição local de um arquivo do Nextcloud.',
+            'description' => Translator::t('Local editing workflow for a Nextcloud file.'),
             'messages' => [['role' => 'user', 'content' => ['type' => 'text', 'text' => self::text()]]],
         ];
     }
 
-    /** @return string the workflow handed to the model, in Portuguese like every other user-facing string */
+    /** @return string the workflow handed to the model, in fixed English */
     private static function text(): string {
         return implode("\n", [
-            'Para editar um arquivo do Nextcloud sem que o conteúdo passe pelo modelo, use o fluxo de checkout:',
+            'To edit a Nextcloud file without passing its content through the model, use the checkout workflow:',
             '',
-            '1. Chame files_checkout com o caminho. Ele devolve download_url, upload_url, o ETag atual e expires_at.',
-            '2. Baixe o arquivo com a sua shell: curl -sS -o /tmp/arquivo "$DOWNLOAD_URL".',
-            '   O link vale poucos minutos e é de uso único: se falhar, faça o checkout de novo.',
-            '3. Edite /tmp/arquivo com as suas ferramentas locais. O usuário vê o diff; não escreva nada fora do arquivo.',
-            '4. Devolva o arquivo com curl -sS -T /tmp/arquivo -X PUT "$UPLOAD_URL".',
-            '   O servidor confere o token e o ETag, faz o backup em "/MCP backups", grava e devolve o novo ETag.',
-            '   Se o arquivo mudou no meio, a resposta é um conflito e nada foi gravado: releia e repita.',
+            '1. Call files_checkout with the path. It returns download_url, upload_url, the current ETag, and expires_at.',
+            '2. Download the file using your shell: curl -sS -o /tmp/file "$DOWNLOAD_URL".',
+            '   The link is valid for a few minutes and single-use: if it fails, run files_checkout again.',
+            '3. Edit /tmp/file with your local tools. The user sees the diff; do not write anything outside the file.',
+            '4. Return the file with curl -sS -T /tmp/file -X PUT "$UPLOAD_URL".',
+            '   The server validates the token and ETag, creates a backup in "/MCP backups", saves the file, and returns the new ETag.',
+            '   If the file changed in the meantime, the response is a conflict (409) and nothing was written: re-read and repeat.',
             '',
-            'Se você não tem shell para baixar e enviar o arquivo, não use o checkout: aplique a mudança com',
-            'files_replace (troca um trecho único e devolve o diff) ou com files_edit (conteúdo completo).',
-            'files_edit e files_replace devolvem o diff unificado do antes e do depois, truncado em 20 000 caracteres.',
+            'If you do not have a shell to download and upload the file, do not use checkout: apply the change with',
+            'files_replace (replaces a unique snippet and returns the diff) or with files_edit (full content).',
+            'files_edit and files_replace return the unified diff of before and after, truncated at 20,000 characters.',
             '',
-            'Escopo compartilhado: qualquer resposta com "requiresConfirmation": true significa que o arquivo está',
-            'fora da sua pasta pessoal (compartilhado, pasta de time ou armazenamento externo). Nesse caso NÃO repita',
-            'a chamada de imediato: mostre ao usuário a mensagem recebida e pergunte se quer continuar. Depois,',
-            'confirme de novo com confirm_shared: true. Sem essa confirmação nada é gravado.',
+            'Shared scope: any response with "requiresConfirmation": true means the file is outside your personal',
+            'folder (shared, group folder, or external storage). In that case, DO NOT repeat the call immediately:',
+            'show the received message to the user and ask if they wish to proceed. Then, confirm with confirm_shared: true.',
+            'Without this confirmation, nothing is written.',
             '',
-            'Atenção ao upload: os links do checkout são de uso único e já foram gastos quando a resposta chega.',
-            'Se o upload voltar com um aviso de confirmação ou com conflito, refaça o files_checkout — passando',
-            'confirm_shared: true se o usuário já tiver confirmado — em vez de tentar o mesmo link de novo.',
+            'Upload note: checkout links are single-use and already consumed once the response arrives.',
+            'If the upload returns a confirmation prompt or a conflict, run files_checkout again — passing',
+            'confirm_shared: true if the user has already confirmed — instead of retrying the same link.',
             '',
-            'Para desfazer, use files_versions_list e files_version_restore; a restauração também faz backup antes.',
+            'To revert, use files_versions_list and files_version_restore; restoring also creates a backup beforehand.',
         ]);
     }
 }

@@ -33,9 +33,9 @@ final class CalendarDraftApproval {
         }
         $plan = $this->plan($name, $prepared, $arguments) + ['shared' => $shared];
         if (!$confirm) {
-            return ToolSchema::result(['requiresConfirmation' => true, 'message' => CalendarMessages::APPROVAL_PROMPT] + $plan);
+            return ToolSchema::result(['requiresConfirmation' => true, 'message' => CalendarMessages::approvalPrompt()] + $plan);
         }
-        if ($shared !== [] && ($arguments['confirm_shared'] ?? false) !== true) { throw CalendarException::blocked(CalendarMessages::APPROVAL_SHARED); }
+        if ($shared !== [] && ($arguments['confirm_shared'] ?? false) !== true) { throw CalendarException::blocked(CalendarMessages::approvalShared()); }
         // Every confirmed call is prepared again: grants, ACL, ownership, ETag (when sent) and If-Match are rechecked at dispatch time.
         $result = $prepared->dispatch();
         return $prepared->target === null ? $result : ToolSchema::result($result);
@@ -53,10 +53,10 @@ final class CalendarDraftApproval {
             'uid' => $prepared->before === null ? null : (string)$prepared->before->master()?->UID,
             'etag' => $prepared->before?->etag, 'before' => $before, 'after' => $after,
             'participants' => ['current' => $old, 'proposed' => $new, 'added' => array_values(array_diff($new, $old)), 'removed' => array_values(array_diff($old, $new))],
-            'recoverable' => $deleting, 'consequence' => $deleting ? CalendarMessages::PREVIEW_TRASH : null,
+            'recoverable' => $deleting, 'consequence' => $deleting ? CalendarMessages::previewTrash() : null,
             'scheduling' => ['requested' => $notify, 'imipEnabled' => $this->scheduling->imipEnabled(), 'invitationsVerified' => $this->gate->invitationsVerified(), 'participantsNotified' => false,
-                'message' => $moving ? CalendarMessages::PARTICIPANTS_NOT_NOTIFIED : ($notify ? ($deleting ? CalendarMessages::PREVIEW_CANCEL : CalendarMessages::PREVIEW_INVITATIONS) : CalendarMessages::PREVIEW_SUPPRESSED),
-                'proofScope' => CalendarMessages::PREVIEW_INVITATION_PROOF]];
+                'message' => $moving ? CalendarMessages::participantsNotNotified() : ($notify ? ($deleting ? CalendarMessages::previewCancel() : CalendarMessages::previewInvitations()) : CalendarMessages::previewSuppressed()),
+                'proofScope' => CalendarMessages::previewInvitationProof()]];
     }
 
     private function event(?VCalendar $calendar): ?array {

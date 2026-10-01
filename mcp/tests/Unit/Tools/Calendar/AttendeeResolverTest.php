@@ -72,7 +72,7 @@ final class AttendeeResolverTest extends TestCase {
             $resolver->resolve(['bob'], 'alice');
             self::fail('Expected the organizer without e-mail to be refused.');
         } catch (CalendarArgumentException $exception) {
-            self::assertStringContainsString('e-mail', $exception->getMessage());
+            self::assertStringContainsString('email', $exception->getMessage());
         }
     }
 

@@ -7,6 +7,29 @@ use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
+use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarDav;
+use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarStore;
+use OCA\Mcp\Tools\Calendar\AttendeeResolver;
+use OCA\Mcp\Tools\Calendar\CalendarAccess;
+use OCA\Mcp\Tools\Calendar\CalendarModule;
+use OCA\Mcp\Tools\Calendar\CalendarWriteGate;
+use OCA\Mcp\Tools\Calendar\Classification;
+use OCA\Mcp\Tools\Calendar\DateInput;
+use OCA\Mcp\Tools\Calendar\EventBuilder;
+use OCA\Mcp\Tools\Calendar\EventExpander;
+use OCA\Mcp\Tools\Calendar\EventMapper;
+use OCA\Mcp\Tools\Calendar\EventRelocator;
+use OCA\Mcp\Tools\Calendar\EventRepository;
+use OCA\Mcp\Tools\Calendar\Handler\CreateEvent;
+use OCA\Mcp\Tools\Calendar\Handler\DeleteEvent;
+use OCA\Mcp\Tools\Calendar\Handler\ListCalendars;
+use OCA\Mcp\Tools\Calendar\Handler\ListEvents;
+use OCA\Mcp\Tools\Calendar\Handler\MoveEvent;
+use OCA\Mcp\Tools\Calendar\Handler\TransferEvent;
+use OCA\Mcp\Tools\Calendar\Handler\UpdateEvent;
+use OCA\Mcp\Tools\Calendar\Scheduling;
+use OCA\Mcp\Tools\Calendar\SharedGuard;
+use OCA\Mcp\Tools\Calendar\TrashPolicy;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCA\Mcp\Tools\Notes\NotesModule;
@@ -28,8 +51,10 @@ use OCA\Mcp\Tools\ToolModule;
 use OCA\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Db\DoesNotExistException;
+use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
+use OCP\IAppConfig;
 use OCP\IConfig;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -39,7 +64,7 @@ use Psr\Log\LoggerInterface;
 
 /**
  * A failure the server refuses to run is the most read text of the app: it is what the person sees when
- * something did not work. Deck, Notes and Talk each have one here, triggered the way the client would
+ * something did not work. Deck, Notes, Talk and Calendar each have one here, triggered the way the client would
  * trigger it, and it has to reach the result in the language of the account in all three languages.
  */
 final class ToolErrorsLanguagesTest extends TestCase {
@@ -57,11 +82,25 @@ final class ToolErrorsLanguagesTest extends TestCase {
         'es' => 'conversación no encontrada o sin acceso',
     ];
 
+    /** `notes_read` against a note id that does not exist. */
+    private const NOTES_NOT_FOUND = [
+        'en' => 'Resource not found in Nextcloud.',
+        'pt_BR' => 'Recurso não encontrado no Nextcloud.',
+        'es' => 'Recurso no encontrado en Nextcloud.',
+    ];
+
     /** `notes_delete` where the trash bin would not take the note back. */
     private const NOTES = [
         'en' => 'Deletion blocked: the trash bin (files_trashbin) is not active for this note, so it would not be recoverable.',
         'pt_BR' => 'Exclusão bloqueada: a lixeira (files_trashbin) não está ativa para esta nota, então ela não seria recuperável.',
         'es' => 'Eliminación bloqueada: la papelera (files_trashbin) no está activa para esta nota, por lo que no sería recuperable.',
+    ];
+
+    /** `calendar_list_events` against a missing calendar. */
+    private const CALENDAR_NOT_FOUND = [
+        'en' => 'Calendar or event not found.',
+        'pt_BR' => 'Calendário ou evento não encontrado.',
+        'es' => 'Calendario o evento no encontrado.',
     ];
 
     protected function tearDown(): void {
@@ -94,10 +133,24 @@ final class ToolErrorsLanguagesTest extends TestCase {
         }
     }
 
+    public function testANotesNotFoundFailureReachesTheClientInTheLanguageOfTheAccount(): void {
+        foreach (self::NOTES_NOT_FOUND as $language => $expected) {
+            Translator::use(new JsonL10n($language));
+            $this->assertSame($expected, $this->call($this->notesModule(), 'notes_read', ['id' => 9999]), $language);
+        }
+    }
+
     public function testANotesFailureReachesTheClientInTheLanguageOfTheAccount(): void {
         foreach (self::NOTES as $language => $expected) {
             Translator::use(new JsonL10n($language));
             $this->assertSame($expected, $this->call($this->notesModule(), 'notes_delete', ['id' => 1, 'confirm' => true]), $language);
+        }
+    }
+
+    public function testACalendarFailureReachesTheClientInTheLanguageOfTheAccount(): void {
+        foreach (self::CALENDAR_NOT_FOUND as $language => $expected) {
+            Translator::use(new JsonL10n($language));
+            $this->assertSame($expected, $this->call($this->calendarModule(), 'calendar_list_events', ['calendar' => '/remote.php/dav/calendars/alice/missing/']), $language);
         }
     }
 
@@ -163,6 +216,47 @@ final class ToolErrorsLanguagesTest extends TestCase {
             $this->createMock(GroupCreator::class),
             $this->createMock(ReferenceLinker::class),
             $this->createMock(LoggerInterface::class),
+        );
+    }
+
+    private function calendarModule(): CalendarModule {
+        $store = new FakeCalendarStore();
+        $access = new CalendarAccess($store);
+        $classification = new Classification();
+        $repository = new EventRepository($store, $classification);
+        $dates = new DateInput();
+        $mapper = new EventMapper();
+        $time = $this->createMock(ITimeFactory::class);
+        $time->method('now')->willReturn(new \DateTimeImmutable('2026-03-10T12:00:00Z'));
+        $logger = $this->createMock(LoggerInterface::class);
+        $appConfig = $this->createMock(IAppConfig::class);
+        $appConfig->method('getValueString')->willReturn('');
+        $config = $this->createMock(IConfig::class);
+        $gate = new CalendarWriteGate($appConfig, $this->appManager(), $config);
+        $listCalendars = new ListCalendars($access);
+        $listEvents = new ListEvents($access, $store, $repository, $classification, new EventExpander(), $mapper, $dates, $time, $logger);
+        $users = $this->userManager();
+        $guard = new SharedGuard($users);
+        $dav = new FakeCalendarDav($store);
+        $builder = new EventBuilder();
+        $attendees = new AttendeeResolver($users);
+        $scheduling = new Scheduling($appConfig);
+        $relocator = new EventRelocator($access, $store, $dav, $repository);
+        $createEvent = new CreateEvent($access, $guard, $dav, $store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time);
+        $updateEvent = new UpdateEvent($access, $guard, $dav, $store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time);
+        $moveEvent = new MoveEvent($access, $relocator, $guard);
+        $deleteEvent = new DeleteEvent($access, $guard, $dav, $store, $repository, new TrashPolicy($config), $scheduling);
+        $transferEvent = new TransferEvent($relocator);
+        return new CalendarModule(
+            $listCalendars,
+            $listEvents,
+            $createEvent,
+            $updateEvent,
+            $moveEvent,
+            $deleteEvent,
+            $transferEvent,
+            $gate,
+            new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($gate, $scheduling, $builder, $guard),
         );
     }
 }

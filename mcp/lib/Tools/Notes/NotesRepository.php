@@ -5,6 +5,7 @@ namespace OCA\Mcp\Tools\Notes;
 
 use InvalidArgumentException;
 use OCA\Mcp\Tools\Common\NodeAccess;
+use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\Files\File;
@@ -83,7 +84,7 @@ class NotesRepository {
                 return $node;
             }
         }
-        throw new ToolFailure(ToolFailure::NOT_FOUND);
+        throw new ToolFailure(CommonMessages::notFound());
     }
 
     /**

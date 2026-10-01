@@ -24,11 +24,7 @@ final class L10nSourceTextTest extends TestCase {
      *
      * @var list<string>
      */
-    private const ALLOWED = [
-        'lib/Tools/Calendar/',
-        'lib/Service/Calendar/',
-        'lib/Service/PromptCatalog.php',
-    ];
+    private const ALLOWED = [];
 
     /**
      * Every file of lib/ holding an accented string literal, which is what a Portuguese text looks like.
@@ -71,7 +67,12 @@ final class L10nSourceTextTest extends TestCase {
     }
 
     public function testNoLiteralOfLibIsWrittenInTheLanguageOfTheUser(): void {
-        foreach (array_keys($this->accentedFiles()) as $file) {
+        $accented = array_keys($this->accentedFiles());
+        if ($accented === []) {
+            $this->assertSame([], $accented);
+            return;
+        }
+        foreach ($accented as $file) {
             $this->assertTrue(
                 $this->allowed($file),
                 $file . ': a user-visible text must go through Translator::t() with an English source literal',
@@ -80,6 +81,10 @@ final class L10nSourceTextTest extends TestCase {
     }
 
     public function testEveryEntryOfTheAllowlistStillHoldsAnUntranslatedText(): void {
+        if (self::ALLOWED === []) {
+            $this->assertSame([], self::ALLOWED);
+            return;
+        }
         $accented = $this->accentedFiles();
         foreach (self::ALLOWED as $prefix) {
             $pending = array_filter(array_keys($accented), fn (string $file): bool => str_contains($file, $prefix));

@@ -108,7 +108,7 @@ final class UpdateEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
         $textChanges = array_intersect_key($arguments, array_flip(self::TEXT_FIELDS));
         $guestChanges = array_key_exists('attendees', $arguments);
         if ($timingChanges === [] && $textChanges === [] && !$guestChanges) {
-            throw new CalendarArgumentException(CalendarMessages::NO_FIELD_GIVEN);
+            throw new CalendarArgumentException(CalendarMessages::noFieldGiven());
         }
         $calendar = $this->access->resolveWritable($userId, $arguments['calendar']);
         if (($confirmation = $this->guard->confirm($calendar, $userId, $arguments)) !== null) {
@@ -119,7 +119,7 @@ final class UpdateEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
         $master = $stored->master() ?? throw CalendarException::notFound();
         if ($timingChanges !== []) {
             if ($stored->recurring()) {
-                throw CalendarException::conflict(CalendarMessages::RECURRING_TIMING);
+                throw CalendarException::conflict(CalendarMessages::recurringTiming());
             }
             $this->builder->setTiming($master, $this->mergeTiming($master, $timingChanges));
         }
@@ -158,10 +158,10 @@ final class UpdateEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
      */
     private function replaceGuests(VEvent $master, \OCA\Mcp\Tools\Calendar\StoredEvent $stored, array $uids, string $userId): void {
         if ($stored->recurring()) {
-            throw CalendarException::blocked(CalendarMessages::RECURRING_ATTENDEES);
+            throw CalendarException::blocked(CalendarMessages::recurringAttendees());
         }
         if (!$this->isOrganizer($master, $userId)) {
-            throw CalendarException::blocked(CalendarMessages::NOT_ORGANIZER);
+            throw CalendarException::blocked(CalendarMessages::notOrganizer());
         }
         if ($uids === []) {
             unset($master->ATTENDEE);
@@ -194,7 +194,7 @@ final class UpdateEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
         $current = $this->builder->timing($master);
         $allDay = $changes['allDay'] ?? $current['allDay'];
         if ($allDay !== $current['allDay'] && (!isset($changes['start']) || !isset($changes['end']))) {
-            throw new CalendarArgumentException(CalendarMessages::ALL_DAY_NEEDS_DATES);
+            throw new CalendarArgumentException(CalendarMessages::allDayNeedsDates());
         }
         $parse = fn (string $value, string $label) => $allDay ? $this->dates->day($value, $label) : $this->dates->parse($value, $label);
         $start = isset($changes['start']) ? $parse($changes['start'], 'start') : $current['start'];

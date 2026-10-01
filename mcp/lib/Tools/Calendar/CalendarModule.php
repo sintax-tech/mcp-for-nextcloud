@@ -76,7 +76,7 @@ final class CalendarModule implements ToolModule {
         // Fail closed for explicit scheduling until the optional internal-delivery proof passed.
         // This also covers cancellation and existing guests not present in the arguments.
         if (($arguments['send_invitations'] ?? false) === true && !$this->gate->invitationsVerified()) {
-            return ToolSchema::error(CalendarMessages::INVITATIONS_UNVERIFIED);
+            return ToolSchema::error(CalendarMessages::invitationsUnverified());
         }
         try {
             return $tool instanceof CalendarWriteTool ? $this->approval->call($tool, $arguments, $userId) : $tool->execute($arguments, $userId);

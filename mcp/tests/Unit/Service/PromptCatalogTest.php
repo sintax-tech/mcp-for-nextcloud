@@ -80,10 +80,28 @@ final class PromptCatalogTest extends TestCase {
         $text = $this->catalog->get(PromptCatalog::EDIT_LOCALLY, $this->policy, 'alice')['messages'][0]['content']['text'];
         $this->assertSame('user', $this->catalog->get(PromptCatalog::EDIT_LOCALLY, $this->policy, 'alice')['messages'][0]['role']);
         foreach (['files_checkout', 'curl -sS -o', 'curl -sS -T', 'files_replace', 'files_edit',
-            'requiresConfirmation', 'confirm_shared', 'files_version_restore', 'uso único', 'faça o files_checkout'] as $needle) {
+            'requiresConfirmation', 'confirm_shared', 'files_version_restore', 'single-use', 'run files_checkout'] as $needle) {
             $this->assertStringContainsString($needle, $text, $needle);
         }
         $this->assertStringNotContainsString('ncmcp_co_', $text);
+    }
+
+    public function testThePromptTitlesAndDescriptionsAreTranslated(): void {
+        $this->policy->setGrant('alice', 'files', 'edit', true);
+        $listEn = $this->catalog->list($this->policy, 'alice');
+        $this->assertSame('Edit a Nextcloud file locally', $listEn[0]['title']);
+        $this->assertSame('Local editing workflow for a Nextcloud file.', $this->catalog->get(PromptCatalog::EDIT_LOCALLY, $this->policy, 'alice')['description']);
+
+        \OCA\Mcp\L10n\Translator::use(new \OCA\Mcp\Tests\Unit\L10n\JsonL10n('pt_BR'));
+        $listPt = $this->catalog->list($this->policy, 'alice');
+        $this->assertSame('Editar um arquivo do Nextcloud localmente', $listPt[0]['title']);
+        $this->assertSame('Fluxo de edição local de um arquivo do Nextcloud.', $this->catalog->get(PromptCatalog::EDIT_LOCALLY, $this->policy, 'alice')['description']);
+
+        \OCA\Mcp\L10n\Translator::use(new \OCA\Mcp\Tests\Unit\L10n\JsonL10n('es'));
+        $listEs = $this->catalog->list($this->policy, 'alice');
+        $this->assertSame('Editar un archivo de Nextcloud localmente', $listEs[0]['title']);
+        $this->assertSame('Flujo de edición local de un archivo de Nextcloud.', $this->catalog->get(PromptCatalog::EDIT_LOCALLY, $this->policy, 'alice')['description']);
+        \OCA\Mcp\L10n\Translator::reset();
     }
 
     public function testLegacyInitializeAdvertisesThePromptsCapability(): void {

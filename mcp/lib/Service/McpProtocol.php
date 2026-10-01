@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Service;
 
+use OCA\Mcp\Tools\ArgumentValidationException;
 use InvalidArgumentException;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolPresentation;
@@ -433,6 +434,13 @@ class McpProtocol {
         } else {
             try {
                 $result = $this->tools->call($name, $arguments, $userId);
+            } catch (ArgumentValidationException $e) {
+                if ($e->details()['rule'] !== '') {
+                    $response = $this->error($id, -32602, $e->clientMessage());
+                    $response['body']['error']['data'] = $e->details();
+                    return $response;
+                }
+                return $this->error($id, -32602, $this->safeMessage($e->getMessage()));
             } catch (InvalidArgumentException $e) {
                 return $this->error($id, -32602, $this->safeMessage($e->getMessage()));
             }

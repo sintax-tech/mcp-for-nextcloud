@@ -143,13 +143,20 @@ final class McpProtocolTest extends TestCase {
             }
         };
         $casos = [
-            [['boardId' => 1], 'Invalid argument: boardId'],
-            [['moves' => [['from' => '/a', 'to' => '/b'], ['from' => '/a']]], 'Missing argument: moves[1].to'],
+            [['boardId' => 1], 'boardId: expected string'],
+            [['moves' => [['from' => 987654, 'to' => '/b']]], 'moves[0].from: expected string'],
+            [['secret-key' => 'secret-value'], 'arguments: unknown property; use only declared arguments'],
+            [['moves' => [['from' => '/a', 'to' => '/b'], ['from' => '/a']]], 'moves[1].to: required argument'],
         ];
         foreach ($casos as [$arguments, $esperado]) {
             $out = $this->callWith($module, ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call',
                 'params' => ['name' => 'exemplo', 'arguments' => $arguments]]);
             $this->assertSame($esperado, $out['body']['error']['message'], json_encode($arguments));
+            $this->assertArrayHasKey('field', $out['body']['error']['data']);
+            $this->assertArrayHasKey('rule', $out['body']['error']['data']);
+            foreach (['987654', 'secret-key', 'secret-value'] as $secret) {
+                $this->assertStringNotContainsString($secret, json_encode($out));
+            }
         }
     }
 
@@ -165,6 +172,27 @@ final class McpProtocolTest extends TestCase {
             $this->assertSame('Invalid arguments', $this->filtered('Invalid argument: ' . $vazamento), $vazamento);
             $this->assertSame([200, -32602], $this->codes($out));
         }
+    }
+
+    /** Semantic date failures retain the field and rule without disclosing input. */
+    public function testInvalidDateHasStructuredDetails(): void {
+        $module = new class implements \OCA\Mcp\Tools\ToolModule {
+            public function definitions(): array {
+                return [['name' => 'date_test', 'description' => 'x', 'module' => 'files', 'operation' => 'read',
+                    'inputSchema' => ['properties' => ['start' => ['type' => 'string']]]]];
+            }
+            public function call(string $name, array $arguments, string $userId): array {
+                (new \OCA\Mcp\Tools\Calendar\DateInput())->parse($arguments['start'], 'start');
+                return [];
+            }
+        };
+        $out = $this->callWith($module, ['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call',
+            'params' => ['name' => 'date_test', 'arguments' => ['start' => '2026-10-01T17:00:00']]]);
+        $this->assertSame(-32602, $out['body']['error']['code']);
+        $this->assertSame('start', $out['body']['error']['data']['field']);
+        $this->assertStringContainsString('Z or offset', $out['body']['error']['data']['rule']);
+        $this->assertStringContainsString('start:', $out['body']['error']['message']);
+        $this->assertStringNotContainsString('2026-10-01T17:00:00', json_encode($out));
     }
 
     /** What the client is told for a message the validator produced. */

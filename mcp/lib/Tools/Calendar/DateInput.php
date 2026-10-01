@@ -5,6 +5,7 @@ namespace OCA\Mcp\Tools\Calendar;
 
 use DateTimeImmutable;
 use DateTimeZone;
+use OCA\Mcp\L10n\Translator;
 
 /**
  * Parses and validates the ISO dates, windows and time zones accepted by the calendar tools,
@@ -48,7 +49,7 @@ final class DateInput {
                 return (new DateTimeImmutable($input))->setTimezone($utc);
             }
         }
-        throw new CalendarArgumentException(CalendarMessages::invalidIsoDate($label));
+        throw new CalendarArgumentException(CalendarMessages::invalidIsoDate($label), $label, Translator::t('expected ISO date or date-time with Z or offset'));
     }
 
     /**
@@ -61,7 +62,7 @@ final class DateInput {
      */
     public function day(string $input, string $label): DateTimeImmutable {
         if (!$this->isDateOnly($input)) {
-            throw new CalendarArgumentException(CalendarMessages::invalidAllDayFormat($label));
+            throw new CalendarArgumentException(CalendarMessages::invalidAllDayFormat($label), $label, Translator::t('expected YYYY-MM-DD for an all-day date'));
         }
         return $this->parse($input, $label);
     }
@@ -80,7 +81,7 @@ final class DateInput {
         $start = $from === null ? $now->setTimezone(new DateTimeZone('UTC')) : $this->parse($from, 'from');
         $end = $to === null ? $start->modify('+' . self::DEFAULT_WINDOW_SECONDS . ' seconds') : $this->parse($to, 'to');
         if ($start >= $end) {
-            throw new CalendarArgumentException(CalendarMessages::rangeFromAfterTo());
+            throw new CalendarArgumentException(CalendarMessages::rangeFromAfterTo(), 'to', Translator::t('must be after from'));
         }
         if ($end->getTimestamp() - $start->getTimestamp() > self::MAX_WINDOW_SECONDS) {
             throw CalendarException::limit(CalendarMessages::windowTooWide());
@@ -113,7 +114,7 @@ final class DateInput {
      */
     public function timeZone(string $name): DateTimeZone {
         if (!in_array($name, DateTimeZone::listIdentifiers(DateTimeZone::ALL_WITH_BC), true)) {
-            throw new CalendarArgumentException(CalendarMessages::invalidTimeZone());
+            throw new CalendarArgumentException(CalendarMessages::invalidTimeZone(), 'timeZone', Translator::t('expected an IANA time zone'));
         }
         return new DateTimeZone($name);
     }

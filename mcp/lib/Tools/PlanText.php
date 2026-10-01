@@ -15,7 +15,7 @@ final class PlanText {
     /** Default cut for one inline value. */
     public const INLINE_MAX = 200;
     /** Characters the Markdown inline syntax gives a meaning to, and the HTML and entity openers. */
-    private const SPECIAL = ['\\', '`', '*', '_', '[', ']', '(', ')', '<', '>', '#', '|', '~', '&'];
+    private const SPECIAL = ['\\', '`', '*', '_', '[', ']', '<', '>', '#', '|', '~', '&'];
 
     /**
      * One line of inert text: no line break survives, nothing is read as Markdown, HTML or a link.
@@ -89,6 +89,8 @@ final class PlanText {
         foreach (mb_str_split($line) as $char) {
             $out .= in_array($char, self::SPECIAL, true) ? '\\' . $char : $char;
         }
+        // "(" matters only right after "]", where it would open a link target; elsewhere "(pedro)" reads better as it is.
+        $out = str_replace('\\](', '\\]\\(', $out);
         // A bare address becomes a link in most renderers: break the scheme separator and the www form.
         $out = preg_replace('#:(?=//)#', '\\:', $out) ?? $out;
         $out = preg_replace('/\b(www)\./i', '$1\\.', $out) ?? $out;

@@ -17,6 +17,7 @@ final class PlanTextTest extends TestCase {
     public function testLinksAndHtmlCannotForm(): void {
         $out = PlanText::inline('[l](javascript:alert(1)) <b>y</b> <https://evil.example/x> ![i](http://e/p.png)');
         self::assertStringNotContainsString('](', $out);
+        self::assertSame('Pedro (pedro)', PlanText::inline('Pedro (pedro)'));
         self::assertSame(0, preg_match('/(?<!\\\\)</', $out), 'every < is escaped');
         self::assertStringNotContainsString('<b>', $out);
         self::assertStringContainsString('\\[l\\]', $out);
@@ -80,7 +81,7 @@ final class PlanTextTest extends TestCase {
     public function testQuoteKeepsEveryLineInsideTheBlock(): void {
         $out = PlanText::quote("hi [x](javascript:alert(1))\r# Heading\r\n**b**\n\nend");
         self::assertSame(
-            "> hi \\[x\\]\\(javascript:alert\\(1\\)\\)\n> \\# Heading\n> \\*\\*b\\*\\*\n>\n> end",
+            "> hi \\[x\\]\\(javascript:alert(1))\n> \\# Heading\n> \\*\\*b\\*\\*\n>\n> end",
             $out
         );
         foreach (explode("\n", $out) as $line) {

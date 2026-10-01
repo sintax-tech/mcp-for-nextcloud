@@ -34,7 +34,7 @@ final class McpModernProtocolTest extends TestCase {
         $this->assertFalse($result->capabilities->prompts->listChanged);
         $this->assertSame(['name' => 'nextcloud-mcp', 'version' => McpProtocol::SERVER_INFO['version']], (array)$result->_meta->{'io.modelcontextprotocol/serverInfo'});
         $this->assertSame([0, 'private'], [$result->ttlMs, $result->cacheScope]);
-        $this->assertStringContainsString('"capabilities":{"tools":{},"prompts":{"listChanged":false}}', json_encode($out['json']));
+        $this->assertStringContainsString('"capabilities":{"tools":{},"prompts":{"listChanged":false},"resources":{}}', json_encode($out['json']));
     }
 
     public function testFullModernFlowWithoutInitialize(): void {

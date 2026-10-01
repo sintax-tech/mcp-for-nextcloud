@@ -194,6 +194,7 @@ OC.L10N.register(
     "Read note" : "Ler nota",
     "Replace part of a file" : "Substituir trecho do arquivo",
     "Reply in Talk" : "Responder no Talk",
+    "Resource exceeds the binary read limit of %s bytes." : "Recurso excede o limite de leitura binária de %s bytes.",
     "Resource locked by another operation; try again." : "Recurso bloqueado por outra operação; tente novamente.",
     "Resource not found in Nextcloud." : "Recurso não encontrado no Nextcloud.",
     "Restore file version" : "Restaurar versão do arquivo",

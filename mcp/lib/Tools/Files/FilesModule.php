@@ -39,7 +39,7 @@ use OCP\IUserManager;
  */
 class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
     /** Characters returned by files_read before the text is truncated. */
-    public const MAX_CHARS = 100000;
+    public const MAX_CHARS = TextExtractor::MAX_CHARS;
     /** Maximum size of the new content accepted by files_edit and files_replace, in bytes. */
     public const MAX_EDIT_BYTES = 10 * 1024 * 1024;
     /** Folder in the user's root that receives a copy of every file before an edit writes it. */
@@ -511,13 +511,13 @@ class FilesModule implements ToolModule, PreviewsWrites, ToolGuideNotes {
             'mime' => (string)$file->getMimetype(), 'access' => $this->accessInfo->describe($file, $userId)];
         $scannable = OcrSupport::canLackText($file->getName(), (string)$file->getMimetype());
         $isImage = $scannable && str_starts_with(strtolower((string)$file->getMimetype()), 'image/');
-        $text = $isImage ? '' : $this->extractor->extract($file);
+        $text = $isImage ? '' : $this->extractor->readText($file);
         if ($scannable && trim($text) === '') {
             $notice = $this->ocr->noTextNotice();
             return $this->text($notice, $meta + ['text_layer' => false, 'ocr_active' => $this->ocr->isActive(), 'notice' => $notice]);
         }
         return $this->text(
-            mb_strlen($text) > self::MAX_CHARS ? mb_substr($text, 0, self::MAX_CHARS) . "\n\n" . FilesMessages::textTruncated() : $text,
+            $text,
             $meta,
         );
     }

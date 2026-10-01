@@ -307,7 +307,7 @@ final class ToolsListContractTest extends TestCase {
             'protocolVersion' => '2025-11-25', 'capabilities' => new \stdClass(), 'clientInfo' => ['name' => 'Claude-User', 'version' => '1.0'],
         ]]), '', 'alice');
         $json = json_encode($out['body']);
-        $this->assertStringContainsString('"capabilities":{"tools":{},"prompts":{}}', $json);
+        $this->assertStringContainsString('"capabilities":{"tools":{},"prompts":{},"resources":{}}', $json);
         $result = json_decode($json)->result;
         $this->assertSame('2025-06-18', $result->protocolVersion);
         $this->assertIsString($result->serverInfo->name);

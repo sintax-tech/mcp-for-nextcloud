@@ -12,6 +12,12 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 - OCR: detects the Workflow OCR app (`workflow_ocr`), with no terminal step and nothing that blocks the app. It writes the recognised text into the PDF as a new version, so `files_read` already reads it. A PDF or image with no text layer now comes back as a normal answer with `text_layer: false` and a notice that depends on whether the app is active (ask the admin to install it or view the page as an image; or wait, since it processes in the background by the admin's rule). `files_version_read` does the same.
 - Admin: an "OCR" block shows whether Workflow OCR is active and, when it is not, a link to the App Store and the note that it needs `ocrmypdf` on the server.
 - Tool guide: the Files notes explain `text_layer` and OCR.
+- MCP Resources: capability advertised as `resources: {}` in both legacy `initialize` (2025-06-18) and modern `server/discover` (2026-07-28) eras.
+- MCP Resources: `resources/list` exposes `mcp://guide`, rendering the tool guide in Markdown dynamically filtered by the authenticated user's active grants and enabled apps.
+- MCP Resources: `resources/templates/list` exposes URI templates `nc://files/{path}` (when `files.read` is granted) and `nc://notes/{id}` (when `notes.read` is granted and the Notes app is enabled).
+- MCP Resources: `resources/read` fetches file contents (with text extraction and truncation up to 100,000 characters; small binary files returned as base64 blobs up to 512 KiB) and note contents (up to 1 MiB).
+- MCP Resources: non-existent, ungranted, or hidden resources return standard JSON-RPC errors (`-32602` in modern era, `-32002` in legacy era) and never return empty content.
+- Visibility: stub and integration for `VisibilityGuard::assertVisible` on all file and note resource reads to respect hidden tags.
 
 ### Changed
 - Files: `files_read` of an image no longer fails as unsupported; it answers with `text_layer: false` and the notice.

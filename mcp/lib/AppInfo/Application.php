@@ -4,7 +4,11 @@ declare(strict_types=1);
 namespace OCA\Mcp\AppInfo;
 
 use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Service\McpProtocol;
+use OCA\Mcp\Service\PromptCatalog;
+use OCA\Mcp\Service\ResourceRegistry;
 use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tools\Calendar\CalendarModule;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckServiceGateway;
@@ -18,7 +22,10 @@ use OCA\Mcp\Tools\Calendar\DavCalendarStore;
 use OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher;
 use OCA\Mcp\Tools\Calendar\Session;
 use OCA\Mcp\Tools\Files\FilesModule;
+use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Notes\NotesModule;
+use OCA\Mcp\Tools\Notes\NotesRepository;
+use OCA\Mcp\Tools\ToolGuide;
 use OCA\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\AppFramework\App;
@@ -26,7 +33,9 @@ use OCP\AppFramework\Bootstrap\IBootContext;
 use OCP\AppFramework\Bootstrap\IBootstrap;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\Files\IRootFolder;
 use OCP\IConfig;
+use OCP\ITempManager;
 use OCP\IUserManager;
 use OCP\IUserSession;
 use Psr\Container\ContainerInterface;
@@ -91,6 +100,25 @@ class Application extends App implements IBootstrap {
             $c->get(IAppManager::class),
             $c->get(IUserManager::class),
             $c->get(LoggerInterface::class),
+        ));
+        $context->registerService(VisibilityGuard::class, static fn (ContainerInterface $c): VisibilityGuard => new VisibilityGuard());
+        $context->registerService(ResourceRegistry::class, static fn (ContainerInterface $c): ResourceRegistry => new ResourceRegistry(
+            $c->get(ToolRegistry::class),
+            $c->get(GrantPolicy::class),
+            $c->get(IAppManager::class),
+            $c->get(IUserManager::class),
+            $c->get(IRootFolder::class),
+            $c->get(VisibilityGuard::class),
+            new TextExtractor($c->get(ITempManager::class)),
+            new NotesRepository($c->get(IRootFolder::class), $c->get(IConfig::class)),
+            new ToolGuide(),
+        ));
+        $context->registerService(McpProtocol::class, static fn (ContainerInterface $c): McpProtocol => new McpProtocol(
+            $c->get(ToolRegistry::class),
+            $c->get(PromptCatalog::class),
+            $c->get(GrantPolicy::class),
+            $c->get(LoggerInterface::class),
+            $c->get(ResourceRegistry::class),
         ));
     }
 

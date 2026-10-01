@@ -490,6 +490,14 @@ final class FilesMessages {
     }
 
     /**
+     * @param int $limit binary read limit in bytes
+     * @return string a binary resource over the read limit
+     */
+    public static function binaryResourceTooLarge(int $limit): string {
+        return Translator::t('Resource exceeds the binary read limit of %s bytes.', [(string)$limit]);
+    }
+
+    /**
      * @param string $name file name
      * @return string a corrupt document whose text could not be extracted
      */

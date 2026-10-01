@@ -668,6 +668,16 @@ OC.L10N.register(
     "low priority" : "prioridad baja",
     "lowest priority" : "prioridad mínima",
     "normal priority" : "prioridad normal",
-    "without priority" : "sin prioridad"
+    "without priority" : "sin prioridad",
+    "Overlaps %s (%s)" : "Se superpone con %s (%s)",
+    "Overlaps a busy appointment (%s)" : "Se superpone con una cita ocupada (%s)",
+    "+ %d more" : "+ %d más",
+    "%s is busy at this time." : "%s está ocupado/a en este horario.",
+    "Could not check the availability of %s." : "No se pudo comprobar la disponibilidad de %s.",
+    "Could not check the participants' availability." : "No se pudo comprobar la disponibilidad de los participantes.",
+    "The calendar %s is not shared with %s." : "El calendario %s no está compartido con %s.",
+    "Suggested: %s." : "Sugerencia: %s.",
+    "Ask the user which calendar to use." : "Pregunte al usuario qué calendario usar.",
+    "%s, of %s" : "%s, de %s"
 },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

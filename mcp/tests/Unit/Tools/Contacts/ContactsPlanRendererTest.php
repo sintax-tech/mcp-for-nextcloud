@@ -26,6 +26,8 @@ use PHPUnit\Framework\TestCase;
  * confirm.
  */
 final class ContactsPlanRendererTest extends TestCase {
+    use \OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
+
     private const BOOK = '/remote.php/dav/addressbooks/users/alice/personal/';
     private const CARD = "BEGIN:VCARD\r\n"
         . "VERSION:3.0\r\n"
@@ -153,6 +155,16 @@ final class ContactsPlanRendererTest extends TestCase {
     }
 
     /** Renders the plan of a real tool call, exactly as the registry asks for it before a write. */
+    /** Every write tool of the module renders a plan of its own: none falls back to the generic field list. */
+    public function testEveryWriteToolHasAReadablePlan(): void {
+        $module = $this->module();
+        $this->assertEveryWriteToolHasAReadablePlan($module, [
+            'contacts_create_contact' => $module->preview('contacts_create_contact', ['addressbook' => self::BOOK, 'name' => 'Ana Silva'], 'alice'),
+            'contacts_edit_contact' => $module->preview('contacts_edit_contact', ['addressbook' => self::BOOK, 'uri' => 'c1.vcf', 'name' => 'New Name'], 'alice'),
+            'contacts_delete_contact' => $module->preview('contacts_delete_contact', ['addressbook' => self::BOOK, 'uri' => 'c1.vcf'], 'alice'),
+        ]);
+    }
+
     private function render(string $tool, array $arguments): ?string {
         $module = $this->module();
         return $module->renderPlan($tool, $module->preview($tool, $arguments, 'alice'));

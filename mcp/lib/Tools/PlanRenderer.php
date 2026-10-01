@@ -48,8 +48,12 @@ final class PlanRenderer {
         }
         $calendars = [];
         foreach ((array)($plan['sharedCalendars'] ?? []) as $calendar) {
-            if (is_array($calendar) && isset($calendar['name'], $calendar['path'])) {
-                $calendars[] = '- ' . self::text($calendar['name']) . ' (' . self::text($calendar['path']) . ')';
+            // The person recognizes a calendar by its name (and its owner, when it is not theirs); the path is for the model.
+            if (is_array($calendar) && isset($calendar['name']) && is_scalar($calendar['name'])) {
+                $owner = isset($calendar['owner']) && is_scalar($calendar['owner']) ? trim((string)$calendar['owner']) : '';
+                $calendars[] = '- ' . ($owner === ''
+                    ? self::text($calendar['name'])
+                    : Translator::t('%s, of %s', [self::text($calendar['name']), self::text($owner)]));
             }
         }
         if ($calendars !== []) {

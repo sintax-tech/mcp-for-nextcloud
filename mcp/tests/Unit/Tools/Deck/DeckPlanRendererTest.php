@@ -27,6 +27,7 @@ require_once __DIR__ . '/Stubs/deck_stubs.php';
  */
 final class DeckPlanRendererTest extends TestCase {
 	use DeckTestHelpers;
+	use \OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
 
 	private DeckGatewayInterface&MockObject $gateway;
 	private DeckToolModule $module;
@@ -290,5 +291,15 @@ final class DeckPlanRendererTest extends TestCase {
 		$this->assertNull($this->renderer->render('deck_delete_card', []));
 		$this->assertNull($this->renderer->render('deck_create_card', ['card' => ['title' => '']]));
 		$this->assertNull($this->renderer->render('unknown_tool', ['card' => ['title' => 'Test']]));
+	}
+
+	/** Every write tool of the module renders a plan of its own: none falls back to the generic field list. */
+	public function testEveryWriteToolHasAReadablePlan(): void {
+		$this->assertEveryWriteToolHasAReadablePlan($this->module, [
+			'deck_create_card' => $this->module->preview('deck_create_card', ['stackId' => 10, 'title' => 'Comprar café'], 'alice'),
+			'deck_edit_card' => $this->module->preview('deck_edit_card', ['cardId' => 7, 'title' => 'Tarefa Nova'], 'alice'),
+			'deck_move_card' => $this->module->preview('deck_move_card', ['cardId' => 7, 'stackId' => 11], 'alice'),
+			'deck_delete_card' => $this->module->preview('deck_delete_card', ['cardId' => 7], 'alice'),
+		]);
 	}
 }

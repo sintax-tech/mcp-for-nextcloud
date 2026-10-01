@@ -293,6 +293,69 @@ final class CalendarMessages {
         return Translator::t('The calendar \'%s\' belongs to %s and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true.', [$calendar, $owner]);
     }
 
+    // ---- Scheduling warnings shown in the plan ----
+
+    /**
+     * @param string $summary title of the overlapping event
+     * @param string $when its time, already formatted for the person
+     * @return string translated collision warning
+     */
+    public static function collisionWith(string $summary, string $when): string {
+        return Translator::t('Overlaps %s (%s)', [$summary, $when]);
+    }
+
+    /**
+     * @param string $when time of the overlapping appointment, already formatted
+     * @return string translated collision warning that does not reveal the appointment
+     */
+    public static function collisionBusy(string $when): string {
+        return Translator::t('Overlaps a busy appointment (%s)', [$when]);
+    }
+
+    /**
+     * @param int $more how many overlaps are not listed
+     * @return string translated remainder of the collision list
+     */
+    public static function collisionMore(int $more): string {
+        return Translator::t('+ %d more', [$more]);
+    }
+
+    /**
+     * @param string $name display name of the busy participant
+     * @return string translated busy warning
+     */
+    public static function attendeeBusy(string $name): string {
+        return Translator::t('%s is busy at this time.', [$name]);
+    }
+
+    /**
+     * @param string $name display name of the participant whose agenda could not be read
+     * @return string translated warning
+     */
+    public static function attendeeUnverifiable(string $name): string {
+        return Translator::t('Could not check the availability of %s.', [$name]);
+    }
+
+    /** @return string translated warning for a failed availability lookup */
+    public static function availabilityFailed(): string {
+        return Translator::t('Could not check the participants\' availability.');
+    }
+
+    /**
+     * @param string $calendar name of the calendar the event would go to
+     * @param string $names display names of the participants
+     * @param string|null $suggested name of the only shared candidate, if any
+     * @param bool $ask whether several candidates exist and the user has to choose
+     * @return string translated warning, with the suggestion or the instruction to ask
+     */
+    public static function calendarNotShared(string $calendar, string $names, ?string $suggested, bool $ask): string {
+        $text = Translator::t('The calendar %s is not shared with %s.', [$calendar, $names]);
+        if ($suggested !== null) {
+            return $text . ' ' . Translator::t('Suggested: %s.', [$suggested]);
+        }
+        return $ask ? $text . ' ' . Translator::t('Ask the user which calendar to use.') : $text;
+    }
+
     /** @return string translated note that moving an event does not notify its attendees */
     public static function participantsNotNotified(): string {
         return Translator::t('Event attendees are not notified, just like when moving in the Calendar app.');

@@ -159,8 +159,8 @@ final class CalendarPlanRenderer implements RendersPlans {
         }
 
         // 5. Participants change
-        $beforeParts = $this->rawParticipants($plan['participants']['current'] ?? $before['attendees'] ?? []);
-        $afterParts = $this->rawParticipants($plan['participants']['proposed'] ?? $after['attendees'] ?? []);
+        $beforeParts = $this->rawParticipants($plan['participants']['current'] ?? $before['attendees'] ?? [], $this->names($plan));
+        $afterParts = $this->rawParticipants($plan['participants']['proposed'] ?? $after['attendees'] ?? [], $this->names($plan));
         if ($beforeParts !== $afterParts) {
             $from = !empty($beforeParts) ? implode(', ', $beforeParts) : Translator::t('(none)');
             $to = !empty($afterParts) ? implode(', ', $afterParts) : Translator::t('(none)');
@@ -426,15 +426,30 @@ final class CalendarPlanRenderer implements RendersPlans {
      */
     private function participants(array $plan, array $event): string {
         $raw = $plan['participants']['proposed'] ?? $event['attendees'] ?? [];
-        $list = $this->rawParticipants($raw);
+        $list = $this->rawParticipants($raw, $this->names($plan));
         return implode(', ', $list);
     }
 
     /**
-     * @param mixed $raw
-     * @return list<string>
+     * @param array<string, mixed> $plan
+     * @return array<string, string> display name by lower-case address, as the plan carries them
      */
-    private function rawParticipants(mixed $raw): array {
+    private function names(array $plan): array {
+        $names = [];
+        foreach ((array)($plan['participants']['names'] ?? []) as $email => $name) {
+            if (is_string($name) && trim($name) !== '') {
+                $names[strtolower((string)$email)] = trim($name);
+            }
+        }
+        return $names;
+    }
+
+    /**
+     * @param mixed $raw participants as the plan lists them: addresses (with or without `mailto:`) or ready-made labels
+     * @param array<string, string> $names display name by lower-case address
+     * @return list<string> the name when the plan has one, otherwise the bare address, never the `mailto:` prefix
+     */
+    private function rawParticipants(mixed $raw, array $names = []): array {
         if (!is_array($raw)) {
             return [];
         }
@@ -442,7 +457,7 @@ final class CalendarPlanRenderer implements RendersPlans {
         foreach ($raw as $item) {
             if (is_array($item)) {
                 $name = trim((string)($item['name'] ?? ''));
-                $uid = trim((string)($item['uid'] ?? $item['email'] ?? ''));
+                $uid = trim((string)preg_replace('/^mailto:/i', '', trim((string)($item['uid'] ?? $item['email'] ?? ''))));
                 if ($name !== '' && $uid !== '' && $name !== $uid) {
                     $formatted[] = $name . ' (' . $uid . ')';
                 } elseif ($name !== '') {
@@ -451,7 +466,8 @@ final class CalendarPlanRenderer implements RendersPlans {
                     $formatted[] = $uid;
                 }
             } elseif (is_string($item) && trim($item) !== '') {
-                $formatted[] = trim($item);
+                $address = trim((string)preg_replace('/^mailto:/i', '', trim($item)));
+                $formatted[] = $names[strtolower($address)] ?? $address;
             }
         }
         return array_values($formatted);

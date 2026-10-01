@@ -22,6 +22,10 @@ final class FakeCalendarStore implements CalendarStore {
     public array $shares = [];
     /** Failure thrown by every read method when set. */
     public ?Throwable $failure = null;
+    /** Failure thrown by eventUrisInRange alone when set (the collision lookup). */
+    public ?Throwable $rangeFailure = null;
+    /** Failure thrown by sharesOf alone when set (the shared-calendar lookup). */
+    public ?Throwable $sharesFailure = null;
     /** Result returned by moveCalendarObject in the fake DAV. */
     public bool $moveResult = true;
     private int $nextObjectId = 1000;
@@ -74,6 +78,9 @@ final class FakeCalendarStore implements CalendarStore {
     /** @return list<string> */
     public function eventUrisInRange(int $calendarId, DateTimeImmutable $from, DateTimeImmutable $to): array {
         $this->fail();
+        if ($this->rangeFailure !== null) {
+            throw $this->rangeFailure;
+        }
         return array_keys(array_filter($this->objects[$calendarId] ?? [], static fn (array $o) => !$o['deleted']));
     }
 
@@ -103,6 +110,9 @@ final class FakeCalendarStore implements CalendarStore {
     /** @return list<array{principal:string, readOnly:bool}> */
     public function sharesOf(int $calendarId): array {
         $this->fail();
+        if ($this->sharesFailure !== null) {
+            throw $this->sharesFailure;
+        }
         return $this->shares[$calendarId] ?? [];
     }
 

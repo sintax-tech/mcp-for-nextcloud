@@ -6,6 +6,8 @@ use PHPUnit\Framework\Attributes\DataProvider;
 
 /** Conversational approval: no confirm means a plan and zero DAV calls; the ETag in the plan protects the confirmed call. */
 final class CalendarApprovalTest extends CalendarTestCase {
+    use \OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
+
     protected function setUp(): void {
         parent::setUp();
         $this->store->addObject(1, 'event.ics', self::ics("UID:event\nSUMMARY:Before\nDTSTART:20261001T120000Z\nDTEND:20261001T130000Z"));
@@ -24,6 +26,16 @@ final class CalendarApprovalTest extends CalendarTestCase {
 
     public static function existingEventWrites(): array {
         return array_diff_key(self::writes(), ['create' => true]);
+    }
+
+    /** Every write tool of the module renders a plan of its own: none falls back to the generic field list. */
+    public function testEveryWriteToolHasAReadablePlan(): void {
+        $plans = [];
+        foreach (self::writes() as [$tool, $arguments]) {
+            $plans[$tool] = $this->module->preview($tool, $arguments, 'alice');
+        }
+        $this->assertEveryWriteToolHasAReadablePlan($this->module, $plans);
+        $this->assertNoWrites();
     }
 
     #[DataProvider('writes')]

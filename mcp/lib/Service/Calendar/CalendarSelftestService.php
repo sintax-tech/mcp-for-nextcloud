@@ -391,6 +391,6 @@ final class CalendarSelftestService {
 
     /** @return void emits an optional stage without claiming proof */
     private function skip(callable $report, string $step): void {
-        $report(['step' => $step, 'status' => 'NÃO TESTADO', 'detail' => CalendarSelftestMessages::OPTIONAL]);
+        $report(['step' => $step, 'status' => 'NOT TESTED', 'detail' => CalendarSelftestMessages::OPTIONAL]);
     }
 }

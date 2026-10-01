@@ -39,7 +39,7 @@ Se você vem da 0.7.0, isto é o que a nova versão acrescenta. A lista completa
 - **Uma seção de configurações de verdade.** O app tem uma entrada própria **MCP for Nextcloud**, com ícone, nos menus de administração e pessoal, e a página de admin é dividida em blocos: Status, Clientes OAuth, Arquivos ocultos e etiquetas, OCR, Permissões e Conexões ativas.
 - **Retirar qualquer tipo de arquivo.** O `files_checkout` agora aceita DOCX, XLSX, PDF e imagens até o limite de envio, e não só texto. O próprio limite passa a ser editável em MiB pela página de admin, em vez de só por `occ`.
 
-Quem vem de uma versão mais antiga deve fazer backup do `config/config.php` antes, e ler o [CHANGELOG](CHANGELOG.md) para as mudanças de segurança desta versão.
+Quem vem da 0.7.0: ao atualizar o app, o servidor roda duas migrações de esquema, que criam as tabelas `mcp_file_batches` (o registro das reorganizações de pasta executadas, para o `files_undo_batch` poder desfazê-las) e `mcp_oauth_spent` (hashes de refresh consumidos, guardados até expirar para detectar reuso). O Nextcloud executa as duas sozinho: nenhum passo manual, nenhum `occ`, e nada muda no `config.php`. Voltar para a 0.7.0 deixa as duas tabelas sem uso e inofensivas. Leia o [CHANGELOG](CHANGELOG.md) para as mudanças de segurança desta versão.
 
 ## Funcionalidades
 

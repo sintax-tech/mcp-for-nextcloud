@@ -39,7 +39,7 @@ If you are upgrading from 0.7.0, this is what the new release adds. The full lis
 - **A real settings section.** The app has its own **MCP for Nextcloud** entry, with an icon, in both the administration and the personal settings menus, and the admin page is split into blocks: Status, OAuth clients, Hidden files & tags, OCR, Permissions and Active connections.
 - **Check out any file type.** `files_checkout` now accepts DOCX, XLSX, PDF and images up to the upload limit, not just text. The limit itself is editable in MiB from the admin page instead of only through `occ`.
 
-Upgrading from an earlier release? Take a backup of `config/config.php` first, and read the [CHANGELOG](CHANGELOG.md) for the security changes in this release.
+Upgrading from 0.7.0? Updating the app runs two schema migrations on the server, creating the tables `mcp_file_batches` (the record of executed folder reorganizations, so `files_undo_batch` can undo them) and `mcp_oauth_spent` (consumed refresh hashes, kept until expiry to detect a replayed rotation). Nextcloud runs both by itself: no manual step, no `occ`, and nothing changes in `config.php`. Rolling back to 0.7.0 leaves the two tables unused and harmless. Read the [CHANGELOG](CHANGELOG.md) for the security changes in this release.
 
 ## Features
 

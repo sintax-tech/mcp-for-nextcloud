@@ -81,7 +81,7 @@ final class UpdateEvent implements CalendarTool {
                 'timeZone' => ToolSchema::text('fuso IANA, ex.: America/Sao_Paulo', 1, 64),
                 'location' => ToolSchema::text('novo local; vazio remove', 0, 255),
                 'description' => ToolSchema::text('nova descrição; vazio remove', 0, 65536),
-                'attendees' => ToolSchema::attendees(),
+                'attendees' => ToolSchema::attendees(true),
                 'send_invitations' => ToolSchema::sendInvitations(),
                 'etag' => ToolSchema::etag(),
                 'confirm_shared' => SharedGuard::property(),
@@ -148,15 +148,15 @@ final class UpdateEvent implements CalendarTool {
      * @throws CalendarException when the guest list may not be changed here
      */
     private function replaceGuests(VEvent $master, \OCA\Mcp\Tools\Calendar\StoredEvent $stored, array $uids, string $userId): void {
-        if ($uids === []) {
-            unset($master->ATTENDEE);
-            return;
-        }
         if ($stored->recurring()) {
             throw CalendarException::blocked(CalendarMessages::RECURRING_ATTENDEES);
         }
         if (!$this->isOrganizer($master, $userId)) {
             throw CalendarException::blocked(CalendarMessages::NOT_ORGANIZER);
+        }
+        if ($uids === []) {
+            unset($master->ATTENDEE);
+            return;
         }
         $guests = $this->attendees->resolve($uids, $userId);
         $this->builder->setAttendees($master, $guests, $this->attendees->organizer($userId)['email'], $this->attendees->organizer($userId)['displayName']);

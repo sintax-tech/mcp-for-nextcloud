@@ -143,6 +143,7 @@ final class UpdateEventTest extends CalendarTestCase {
     }
 
     public function testAnEmptyGuestListRemovesEveryone(): void {
+        $this->store->objects[1]['e.ics']['data'] = str_replace('alice@example.com', 'alice@example.invalid', $this->store->objects[1]['e.ics']['data']);
         $item = self::json($this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'e', 'attendees' => []]));
 
         $this->assertFalse(isset($this->written()->ATTENDEE));
@@ -157,6 +158,19 @@ final class UpdateEventTest extends CalendarTestCase {
         // The event of the fixture is organized by alice@example.com, which is not alice@...invalid.
         self::assertToolError($this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'e', 'attendees' => ['carla']]), 'organizador');
         $this->assertNoWrites();
+    }
+
+    public function testRemovingGuestsCannotBypassRecurringAndOrganizerGuards(): void {
+        $this->store->addObject(1, 'r.ics', self::ics("UID:r\nDTSTART:20260302T100000Z\nDTEND:20260302T110000Z\nRRULE:FREQ=WEEKLY\nATTENDEE:mailto:bob@example.invalid"));
+        self::assertToolError($this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'r', 'attendees' => []]), 'série recorrente');
+        self::assertToolError($this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'e', 'attendees' => []]), 'organizador');
+        $this->assertNoWrites();
+    }
+
+    public function testUpdateSchemaAcceptsEmptyAttendeesToRemoveEveryone(): void {
+        $schema = $this->writeHandlers['calendar_update_event']->definition()['inputSchema'];
+        $validated = \OCA\Mcp\Tools\ArgumentValidator::validate($schema, ['calendar' => self::PERSONAL, 'uid' => 'e', 'attendees' => []]);
+        self::assertSame([], $validated['attendees']);
     }
 
     public function testRefusedGuestListWritesNothing(): void {

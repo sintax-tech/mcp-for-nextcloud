@@ -83,13 +83,14 @@ final class ToolSchema {
     }
 
     /**
+     * @param bool $allowEmpty update accepts [] to remove every attendee
      * @return array<string, mixed> guest list property: internal account ids only
      */
-    public static function attendees(): array {
+    public static function attendees(bool $allowEmpty = false): array {
         return [
             'type' => 'array',
             'items' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 64],
-            'minItems' => 1,
+            'minItems' => $allowEmpty ? 0 : 1,
             'maxItems' => AttendeeResolver::MAX_ATTENDEES,
             'uniqueItems' => true,
             'description' => CalendarMessages::PROP_ATTENDEES,

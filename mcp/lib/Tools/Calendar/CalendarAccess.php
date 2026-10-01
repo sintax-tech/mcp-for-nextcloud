@@ -25,10 +25,10 @@ class CalendarAccess {
      * @param string $userId authenticated UID
      * @return list<Calendar>
      */
-    public function visible(string $userId): array {
+    public function visible(string $userId, string $component = 'VEVENT'): array {
         $out = [];
         foreach ($this->store->calendarsForPrincipal(self::PRINCIPAL_PREFIX . $userId) as $row) {
-            if ($row['deleted'] || ($row['components'] !== [] && !in_array('VEVENT', $row['components'], true))) {
+            if ($row['deleted'] || ($row['components'] !== [] && !in_array($component, $row['components'], true))) {
                 continue;
             }
             $owner = $row['ownerPrincipal'];
@@ -55,9 +55,9 @@ class CalendarAccess {
      * @return Calendar
      * @throws CalendarException when the path is foreign, malformed or not visible
      */
-    public function resolve(string $userId, string $path): Calendar {
+    public function resolve(string $userId, string $path, string $component = 'VEVENT'): Calendar {
         $uri = $this->uriFromPath($userId, $path);
-        foreach ($this->visible($userId) as $calendar) {
+        foreach ($this->visible($userId, $component) as $calendar) {
             if ($calendar->uri === $uri) {
                 return $calendar;
             }
@@ -73,8 +73,8 @@ class CalendarAccess {
      * @return Calendar
      * @throws CalendarException when not visible or not writable
      */
-    public function resolveWritable(string $userId, string $path): Calendar {
-        $calendar = $this->resolve($userId, $path);
+    public function resolveWritable(string $userId, string $path, string $component = 'VEVENT'): Calendar {
+        $calendar = $this->resolve($userId, $path, $component);
         if (!$calendar->writable) {
             throw CalendarException::forbidden();
         }

@@ -42,6 +42,8 @@ class Application extends App implements IBootstrap {
         FilesModule::class,
         NotesModule::class,
         CalendarModule::class,
+        \OCA\Mcp\Tools\Contacts\ContactsModule::class,
+        \OCA\Mcp\Tools\Tasks\TasksModule::class,
         DeckToolModule::class,
         TalkModule::class,
     ];
@@ -59,6 +61,12 @@ class Application extends App implements IBootstrap {
         }
         $context->registerService(CalendarSelftestReader::class, static fn (ContainerInterface $c): CalendarSelftestReader => new DavCalendarSelftestReader($c));
         $context->registerService(CalendarDav::class, static fn (ContainerInterface $c): CalendarDav => $c->get(EmbeddedDavDispatcher::class));
+        $context->registerService(\OCA\Mcp\Tools\Contacts\ContactStore::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Contacts\DavContactStore($c));
+        $context->registerService(\OCA\Mcp\Tools\Tasks\TaskStore::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Tasks\DavTaskStore($c));
+        $context->registerService(\OCA\Mcp\Tools\Contacts\ContactDav::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Contacts\EmbeddedCardDavDispatcher(
+            static fn (): \Sabre\DAV\Server => \OCA\Mcp\Tools\Contacts\EmbeddedCardDavServer::create(),
+            new Session($c->get(IUserSession::class)), $c->get(\OCP\IAppConfig::class), $c->get(LoggerInterface::class),
+        ));
         // DavCalendarStore resolves CalDavBackend lazily (the app container falls back to the server one) on first use.
         $context->registerService(CalendarStore::class, static fn (ContainerInterface $c): CalendarStore => new DavCalendarStore($c));
         // The dispatcher builds one embedded CalDAV server per operation, so building the module never

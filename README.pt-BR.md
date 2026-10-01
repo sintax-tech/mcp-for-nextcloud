@@ -3,7 +3,7 @@
 # MCP for Nextcloud
 
 **App nativo do Nextcloud que transforma o seu Nextcloud em um servidor MCP.**
-Deixe o Claude e outros clientes MCP trabalharem com seus arquivos, notas, calendários, quadros do Deck e conversas do Talk. Cada usuário usa as próprias permissões, e nada sai do servidor sem liberação do admin.
+Deixe o Claude e outros clientes MCP trabalharem com seus arquivos, notas, calendários, contatos, tarefas, quadros do Deck e conversas do Talk. Cada usuário usa as próprias permissões, e nada sai do servidor sem liberação do admin.
 
 [![Nextcloud 33](https://img.shields.io/badge/Nextcloud-33-0082c9?logo=nextcloud&logoColor=white)](https://nextcloud.com)
 [![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777bb4?logo=php&logoColor=white)](https://www.php.net)
@@ -32,6 +32,8 @@ Assistentes de IA rendem mais quando alcançam as ferramentas que o time já usa
 | **Arquivos** | listar, buscar por nome, buscar imagens por tag/data, ver imagens e prévias em lote (JPEG, PNG, WebP, GIF, TIFF, PDF), ler texto (TXT/MD, PDF, DOCX, ODT), listar e ler versões do arquivo | editar com diff e substituição de trecho, com backup conferido em `/MCP backups` e versão do Nextcloud antes de cada gravação; restaurar uma versão guardada; retirar um arquivo para um agente com terminal por um link de uso único; reorganizar pastas: varrer a árvore, criar pasta, copiar, mover, mover um lote e desfazer. **Nunca exclui.** |
 | **Notas** | listar, ler | criar, editar, mover entre categorias, excluir (só quando a lixeira permite recuperar) |
 | **Calendário** | listar calendários e eventos (recorrência, fusos, dia inteiro) | criar, editar, mover, excluir e transferir eventos pelo pipeline CalDAV de verdade, com participantes. As escritas ficam desligadas até o administrador liberá-las na matriz de permissões (sem passo no terminal), e cada uma devolve antes um plano: **nada é gravado antes de o usuário aprovar.** |
+| **Contatos** | listar catálogos pessoais/compartilhados, buscar e ler contatos (sem catálogo de usuários do sistema) | criar e editar preservando campos desconhecidos do vCard; excluir permanentemente só após backup `.vcf` verificado em `/MCP backups/Contacts` |
+| **Tarefas** | listar agendas de tarefas e VTODO, incluindo tarefas sem data; ler tarefas | criar, editar, concluir e excluir tarefas simples pelo CalDAV; exclusão usa a lixeira do calendário e recusa retenção zero |
 | **Deck** | quadros, listas, cards e **acompanhamento** dos quadros que você gerencia: cards por responsável, com prazo, indicação de atraso (no seu fuso) e link do card | criar, editar, mover e excluir cards |
 | **Talk** | conversas e mensagens (nunca marca como lido) | responder (podendo citar uma mensagem ou incluir o link de um card do Deck ou evento que você pode ver), mensagem direta para um usuário, lote de mensagens, compartilhar ou citar arquivo, criar conversa em grupo (permissão própria, desligada por padrão). **Nada é enviado antes de o usuário aprovar: chamada sem `confirm: true` devolve só o plano (destinatário, texto final, anexos, o que será criado ou compartilhado) e não executa nada; com `confirm: true` revalida as permissões e envia. Não há approval_id, token nem registro no servidor.** |
 
@@ -42,14 +44,24 @@ E também:
 - **Nomes amigáveis das ferramentas** no cliente ("Buscar arquivos", "Listar calendários") e anotações MCP (`readOnlyHint`, `destructiveHint`), para o cliente pedir confirmação em ações de risco.
 - **Confirmação de segurança** em recursos de outras pessoas: pastas compartilhadas, pastas de time, quadros do Deck e calendários de outro dono. O servidor recusa a primeira chamada e devolve uma mensagem pronta. O assistente precisa perguntar ao usuário antes de repetir com `confirm_shared: true`. *(Deck e Calendário desde a 0.6.6; Arquivos e Notas desde a 0.7.0)*
 - **Apps opcionais respeitados**: as tools e as colunas da matriz de admin de um app desativado (para todos ou para um usuário) ficam ocultas.
-- **Interface traduzida**: a matriz de admin, a página pessoal, a tela de consentimento e toda mensagem mostrada por uma tool seguem o idioma da conta Nextcloud do usuário. Todos os módulos estão cobertos (Arquivos, Notas, Calendário, Deck, Talk, as mensagens compartilhadas, as páginas de checkout e o selftest do calendário). Inglês, português do Brasil e espanhol vêm incluídos (o espanhol é uma primeira tradução e ainda precisa de revisão de um nativo); as descrições das tools ficam em inglês, porque quem as lê é o modelo.
+- **Interface traduzida**: a matriz de admin, a página pessoal, a tela de consentimento e toda mensagem mostrada por uma tool seguem o idioma da conta Nextcloud do usuário. Todos os módulos estão cobertos (Arquivos, Notas, Calendário, Contatos, Tarefas, Deck, Talk, as mensagens compartilhadas, as páginas de checkout e o selftest do calendário). Inglês, português do Brasil e espanhol vêm incluídos (o espanhol é uma primeira tradução e ainda precisa de revisão de um nativo); as descrições das tools ficam em inglês, porque quem as lê é o modelo.
 - **As duas gerações do MCP** no mesmo endpoint: `2026-07-28`, sem estado (`server/discover`), e o fluxo clássico com `initialize` (`2025-06-18` e anteriores).
+
+## Contatos e tarefas
+
+Contatos usam o CardDAV do core e apenas os catálogos próprios e compartilhados com você. A edição altera os campos fornecidos e preserva propriedades desconhecidas, parâmetros, grupos e a versão do vCard. O app Contacts precisa estar habilitado para o usuário. Tarefas usam VTODO nas agendas que suportam esse componente, sem depender do app opcional Tasks nem da interface Calendar.
+
+Os dois módulos têm grants próprios de `read`, `create`, `edit` e `delete`; toda escrita começa desligada. Sem `confirm: true`, a chamada devolve o plano real de antes/depois e não cria backups nem faz escritas DAV. Coleções de outro dono exigem `confirm_shared: true`. O ETag é opcional; quando enviado, precisa conferir, e edições/exclusões confirmadas sempre usam o ETag atual em `If-Match`.
+
+**Excluir contato é permanente: o Nextcloud não tem lixeira de contatos.** O plano mostra todos os campos do vCard e esse aviso. Após a confirmação, o vCard original completo é salvo e relido na pasta do usuário que executa a ação: `/MCP backups/Contacts/<catálogo>/<nome-ou-uid>.<AAAAmmdd-HHMMSS>-<sufixo-único>.vcf`. Arquivos existentes nunca são escolhidos para sobrescrita; falha no backup impede a exclusão. O resultado informa `backupPath`; importe o arquivo pela interface Contacts para recuperar o contato. Essa cópia é uma proteção, não uma lixeira nativa de contatos.
+
+A exclusão de tarefas usa a lixeira nativa do calendário e é recusada com `dav/calendarRetentionObligation` em `0`. Tarefas recorrentes podem ser lidas; alterar tarefas recorrentes ou com participantes é recusado para proteger a série e o agendamento. Tarefas concluídas ficam fora da listagem por padrão; `include_completed` permite incluí-las. Busca de contatos e listagem de tarefas aceitam `limit` (até 200) e `offset`, devolvendo `nextOffset` quando há mais resultados.
 
 ## Requisitos
 
 - Nextcloud **33**
 - PHP **8.2+** com `zip`, `mbstring` e `dom`
-- Apps opcionais, só para as próprias ferramentas (ocultas enquanto o app estiver desativado): Notes, Calendar, Deck, Talk (`spreed`), Versões (`files_versions`, obrigatório para editar), Arquivos excluídos (`files_trashbin`, obrigatório para excluir)
+- Apps opcionais, só para as próprias ferramentas (ocultas enquanto o app estiver desativado): Notes, Calendar, Contacts, Deck, Talk (`spreed`), Versões (`files_versions`, obrigatório para editar), Arquivos excluídos (`files_trashbin`, obrigatório para excluir)
 
 ## Instalação
 

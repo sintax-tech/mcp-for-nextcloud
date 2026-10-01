@@ -24,7 +24,7 @@ class GrantMatrix {
     /** Longest search term accepted. */
     public const MAX_SEARCH = 100;
     /** Nextcloud app that provides each module of GrantPolicy::CATALOG. */
-    public const MODULE_APPS = ['files' => 'files', 'notes' => 'notes', 'deck' => 'deck', 'calendar' => 'calendar', 'talk' => 'spreed'];
+    public const MODULE_APPS = ['files' => 'files', 'notes' => 'notes', 'deck' => 'deck', 'calendar' => 'calendar', 'talk' => 'spreed', 'contacts' => 'contacts', 'tasks' => 'dav'];
 
     public function __construct(
         private GrantPolicy $policy,

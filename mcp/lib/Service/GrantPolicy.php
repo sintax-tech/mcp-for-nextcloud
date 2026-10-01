@@ -19,6 +19,8 @@ class GrantPolicy {
         'files' => ['read', 'edit', 'create', 'move', 'restore'],
         'notes' => ['read', 'create', 'edit', 'move', 'delete'],
         'deck' => ['read', 'create', 'edit', 'move', 'delete'],
+        'contacts' => ['read', 'create', 'edit', 'delete'],
+        'tasks' => ['read', 'create', 'edit', 'delete'],
         'calendar' => ['read', 'create', 'edit', 'move', 'delete', 'transfer'],
         // 'create' is what talk_create_group asks for: opening a conversation invites people, so it is denied by
         // default like every other operation that is not a read.

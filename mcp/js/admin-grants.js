@@ -30,6 +30,8 @@
 			notes: t('mcp', 'Notes'),
 			deck: t('mcp', 'Deck'),
 			calendar: t('mcp', 'Calendar'),
+			contacts: t('mcp', 'Contacts'),
+			tasks: t('mcp', 'Tasks'),
 			talk: t('mcp', 'Talk'),
 		}
 	}

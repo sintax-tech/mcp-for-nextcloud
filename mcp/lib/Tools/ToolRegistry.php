@@ -162,8 +162,13 @@ class ToolRegistry {
         ] + (isset($definition['app']) ? ['app' => $definition['app']] : []);
     }
 
-    /** The guide is built once with the module list it reads the behaviour notes from. */
-    private function guide(): ToolGuide {
+    /**
+     * The guide is built once with the module list it reads the behaviour notes from. Public so the resource
+     * registry renders mcp://guide from the very same guide the mcp_guide tool returns.
+     *
+     * @return ToolGuide the shared guide for this registry's modules
+     */
+    public function guide(): ToolGuide {
         return $this->guide ??= new ToolGuide($this->modules);
     }
 

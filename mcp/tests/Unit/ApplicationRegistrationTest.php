@@ -91,4 +91,70 @@ final class ApplicationRegistrationTest extends TestCase {
 
         $this->assertInstanceOf(DavCalendarStore::class, $factories[CalendarStore::class]($this->container()));
     }
+
+    /**
+     * What the container serves for an id the app did not register: a double, the final tool modules through
+     * the ToolModule contract, and any other final class (which PHPUnit cannot double) autowired from its
+     * constructor types, as Nextcloud's own container does.
+     *
+     * @param \Closure(string):object $get resolver for the constructor dependencies
+     */
+    private function unregistered(string $id, \Closure $get): object {
+        $class = new \ReflectionClass($id);
+        if (!$class->isFinal()) {
+            return $this->createMock($id);
+        }
+        if ($class->implementsInterface(\OCA\Mcp\Tools\ToolModule::class)) {
+            return $this->createMock(\OCA\Mcp\Tools\ToolModule::class);
+        }
+        $arguments = [];
+        foreach ($class->getConstructor()?->getParameters() ?? [] as $parameter) {
+            $type = $parameter->getType();
+            if ($parameter->isDefaultValueAvailable()) {
+                $arguments[] = $parameter->getDefaultValue();
+            } elseif ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
+                $arguments[] = $get($type->getName());
+            } else {
+                $this->fail('cannot autowire ' . $id . '::$' . $parameter->getName());
+            }
+        }
+
+        return $class->newInstanceArgs($arguments);
+    }
+
+    /**
+     * Boots every factory register() declares, the way the server does on the first get(): a service the app
+     * registered is built by its own factory, anything else is a double. A constructor that drifts from its
+     * factory, or a factory that builds a collaborator without what it needs, fails here instead of with an
+     * HTTP 500 on every request in production.
+     */
+    public function testEveryRegisteredFactoryBuildsItsService(): void {
+        $factories = $this->registeredFactories();
+        $built = [];
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('get')->willReturnCallback(
+            function (string $id) use (&$built, &$container, $factories): object {
+                if (isset($built[$id])) {
+                    return $built[$id];
+                }
+                $service = isset($factories[$id])
+                    ? $factories[$id]($container)
+                    : $this->unregistered($id, static fn (string $dependency): object => $container->get($dependency));
+
+                return $built[$id] = $service;
+            },
+        );
+
+        $this->assertArrayHasKey(\OCA\Mcp\Service\ResourceRegistry::class, $factories);
+        foreach ($factories as $id => $factory) {
+            $service = $container->get($id);
+            $this->assertIsObject($service, 'factory of ' . $id . ' returned no object');
+        }
+
+        // mcp://guide must render the guide the mcp_guide tool returns, so both come from one ToolGuide.
+        $tools = $container->get(\OCA\Mcp\Tools\ToolRegistry::class);
+        $guide = (new \ReflectionProperty(\OCA\Mcp\Service\ResourceRegistry::class, 'guide'))
+            ->getValue($container->get(\OCA\Mcp\Service\ResourceRegistry::class));
+        $this->assertSame($tools->guide(), $guide);
+    }
 }

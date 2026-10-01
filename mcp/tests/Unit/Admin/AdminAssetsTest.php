@@ -96,6 +96,16 @@ final class AdminAssetsTest extends TestCase {
         $this->assertSame(preg_match_all('/<div\b/', $template), preg_match_all('/<\/div>/', $template), 'div tags must balance');
     }
 
+    /** The checkout limit field repeats the controller's ceiling in its max attribute; the two must not drift apart. */
+    public function testCheckoutLimitFieldMaxMatchesTheController(): void {
+        $app = dirname(__DIR__, 3);
+        $template = (string)file_get_contents($app . '/templates/admin.php');
+        $this->assertSame(1, preg_match('/<input[^>]*id="mcp-checkout-limit"[^>]*>/', $template, $input));
+        $this->assertSame(1, preg_match('/\bmax="(\d+)"/', $input[0], $max));
+        $this->assertSame(\OCA\Mcp\Controller\CheckoutLimitController::MAX_MIB, (int)$max[1]);
+        $this->assertStringContainsString('Math.max(1, Math.ceil(data.configuredBytes / 1048576))', (string)file_get_contents($app . '/js/admin-grants.js'));
+    }
+
     public function testRoutesDropTheOldAdminFormsAndKeepOAuth(): void {
         $routes = array_column((require dirname(__DIR__, 3) . '/appinfo/routes.php')['routes'], 'name');
         foreach (['settings#global', 'settings#user', 'users#index'] as $gone) {

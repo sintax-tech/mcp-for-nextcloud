@@ -642,7 +642,8 @@
 
 		/** @param {object} data limit returned by the API, in bytes */
 		function show(data) {
-			input.value = String(Math.floor(data.configuredBytes / 1048576))
+			// Round up and never show 0: a stored value below 1 MiB would fail the field's own min of 1 on the next save.
+			input.value = String(Math.max(1, Math.ceil(data.configuredBytes / 1048576)))
 			const effective = t('mcp', 'Effective limit: {size} MiB.', { size: mib(data.effectiveBytes) })
 			const php = data.phpBytes > 0
 				? t('mcp', 'PHP allows up to {size} MiB (post_max_size).', { size: mib(data.phpBytes) })

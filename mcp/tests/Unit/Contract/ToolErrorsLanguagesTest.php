@@ -259,6 +259,7 @@ final class ToolErrorsLanguagesTest extends TestCase {
                 new \OCA\Mcp\Tools\Calendar\Scheduling\SharedCalendarFinder($access, $store, $users, $this->createMock(\OCP\IGroupManager::class)),
                 $attendees,
                 $builder,
+                $users,
                 $logger,
             )),
         );

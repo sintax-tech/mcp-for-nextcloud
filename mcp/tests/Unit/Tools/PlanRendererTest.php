@@ -49,12 +49,24 @@ final class PlanRendererTest extends TestCase {
         Translator::use(new JsonL10n('pt_BR'));
         $text = PlanRenderer::render($this->module('Corpo específico.'), 'calendar_create_event', [
             'title' => 'Criar evento', 'warnings' => [['type' => 'overlap', 'message' => 'Há conflito.']],
-            'sharedCalendars' => [['path' => '/cal/team', 'name' => 'Equipe']],
+            'sharedCalendars' => [['path' => '/cal/team', 'name' => 'Equipe', 'owner' => 'Roberto Almeida'], ['path' => '/cal/work', 'name' => 'Trabalho']],
             'suggestedCalendar' => ['path' => '/cal/team', 'name' => 'Equipe'],
         ]);
-        foreach (['Corpo específico.', '### Avisos', '- Há conflito.', '### Calendários compartilhados com os participantes', '- Equipe (/cal/team)', 'Sugestão: usar *Equipe*', 'Nada foi alterado. Confirme para executar.'] as $part) {
+        foreach (['Corpo específico.', '### Avisos', '- Há conflito.', '### Calendários compartilhados com os participantes', "- Equipe, de Roberto Almeida\n- Trabalho\n", 'Sugestão: usar *Equipe*', 'Nada foi alterado. Confirme para executar.'] as $part) {
             self::assertStringContainsString($part, $text);
         }
+        // The DAV path is for the model (structured content), never for the person.
+        self::assertStringNotContainsString('/cal/', $text);
+        self::assertStringNotContainsString('/cal/team', $text);
+    }
+
+    public function testSharedCalendarsInSpanishNameTheOwnerOnlyWhenThereIsOne(): void {
+        Translator::use(new JsonL10n('es'));
+        $text = PlanRenderer::render($this->module(), 'fake', [
+            'sharedCalendars' => [['path' => '/cal/team', 'name' => 'Equipo', 'owner' => 'Roberto'], ['path' => '/cal/work', 'name' => 'Trabajo']],
+        ]);
+        self::assertStringContainsString("- Equipo, de Roberto\n- Trabajo", $text);
+        self::assertStringNotContainsString('/cal/', $text);
     }
 
     public function testModuleBodyAndExceptionFallback(): void {

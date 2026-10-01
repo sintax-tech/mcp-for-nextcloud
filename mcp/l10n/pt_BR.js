@@ -677,6 +677,7 @@ OC.L10N.register(
     "Could not check the participants' availability." : "Não foi possível verificar a disponibilidade dos participantes.",
     "The calendar %s is not shared with %s." : "O calendário %s não é compartilhado com %s.",
     "Suggested: %s." : "Sugestão: %s.",
-    "Ask the user which calendar to use." : "Pergunte ao usuário qual calendário usar."
+    "Ask the user which calendar to use." : "Pergunte ao usuário qual calendário usar.",
+    "%s, of %s" : "%s, de %s"
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

@@ -99,7 +99,7 @@ final class PlanWarningsTest extends CalendarTestCase {
         // alice/team_shared_by_bob is owned by bob, so it is the only calendar bob already sees.
         $plan = $this->createPlan(['attendees' => ['bob']]);
         self::assertSame(['O calendário Pessoal não é compartilhado com Roberto Almeida. Sugestão: Equipe (bob).'], self::messages($plan['warnings'], 'calendarNotShared'));
-        self::assertSame([['path' => self::TEAM, 'name' => 'Equipe (bob)']], $plan['sharedCalendars']);
+        self::assertSame([['path' => self::TEAM, 'name' => 'Equipe (bob)', 'owner' => 'Roberto Almeida']], $plan['sharedCalendars']);
         self::assertSame(['path' => self::TEAM, 'name' => 'Equipe (bob)'], $plan['suggestedCalendar']);
     }
 
@@ -107,7 +107,7 @@ final class PlanWarningsTest extends CalendarTestCase {
         $this->store->addShare(2, 'principals/users/bob');
         $plan = $this->createPlan(['attendees' => ['bob']]);
         self::assertSame(['O calendário Pessoal não é compartilhado com Roberto Almeida. Pergunte ao usuário qual calendário usar.'], self::messages($plan['warnings'], 'calendarNotShared'));
-        self::assertSame([['path' => self::TEAM, 'name' => 'Equipe (bob)'], ['path' => self::WORK, 'name' => 'Trabalho']], $plan['sharedCalendars']);
+        self::assertSame([['path' => self::TEAM, 'name' => 'Equipe (bob)', 'owner' => 'Roberto Almeida'], ['path' => self::WORK, 'name' => 'Trabalho']], $plan['sharedCalendars']);
         self::assertNull($plan['suggestedCalendar']);
     }
 
@@ -148,7 +148,9 @@ final class PlanWarningsTest extends CalendarTestCase {
         self::assertStringContainsString('Sobrepõe Dentista', $text);
         self::assertStringContainsString('Roberto Almeida está ocupado(a) neste horário.', $text);
         self::assertStringContainsString('### Calendários compartilhados com os participantes', $text);
-        self::assertStringContainsString('Sugestão: usar *Equipe \\(bob\\)*', str_replace('(', '\\(', str_replace(')', '\\)', $text)));
+        self::assertStringContainsString('- Equipe (bob), de Roberto Almeida', $text);
+        self::assertStringContainsString('Sugestão: usar *Equipe (bob)*', $text);
+        self::assertStringNotContainsString('/remote.php', $text);
     }
 
     public function testFailureOfAWarningSourceNeverBreaksThePlan(): void {

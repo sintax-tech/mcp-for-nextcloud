@@ -12,6 +12,7 @@ use OCA\Mcp\Tools\Calendar\Calendar;
 use OCA\Mcp\Tools\Calendar\CalendarMessages;
 use OCA\Mcp\Tools\Calendar\EventBuilder;
 use OCA\Mcp\Tools\Calendar\PreparedCalendarWrite;
+use OCP\IUserManager;
 use Psr\Log\LoggerInterface;
 use Sabre\VObject\Component\VEvent;
 use Throwable;
@@ -34,6 +35,7 @@ final class PlanWarnings {
      * @param SharedCalendarFinder $sharedCalendars calendars every participant already sees
      * @param AttendeeResolver $attendees resolves the participant UIDs of the arguments
      * @param EventBuilder $builder reads the timing of the proposed event
+     * @param IUserManager $users names the owner of a shared calendar that is not the user's
      * @param LoggerInterface|null $logger receives the class of a failure, never its message
      */
     public function __construct(
@@ -42,6 +44,7 @@ final class PlanWarnings {
         private SharedCalendarFinder $sharedCalendars,
         private AttendeeResolver $attendees,
         private EventBuilder $builder,
+        private IUserManager $users,
         private ?LoggerInterface $logger = null,
     ) {}
 
@@ -64,7 +67,7 @@ final class PlanWarnings {
      * @param PreparedCalendarWrite $prepared proposed write
      * @param array<string, mixed> $arguments tool arguments, as validated
      * @param string $userId acting user
-     * @return array{warnings: list<array{type:string, message:string}>, sharedCalendars: list<array{path:string, name:string}>, suggestedCalendar: array{path:string, name:string}|null}
+     * @return array{warnings: list<array{type:string, message:string}>, sharedCalendars: list<array{path:string, name:string, owner?:string}>, suggestedCalendar: array{path:string, name:string}|null}
      */
     public function forWrite(string $tool, PreparedCalendarWrite $prepared, array $arguments, string $userId): array {
         $none = ['warnings' => [], 'sharedCalendars' => [], 'suggestedCalendar' => null];
@@ -211,7 +214,7 @@ final class PlanWarnings {
      * @param Calendar $calendar calendar the event would live in
      * @param string $userId acting user
      * @param list<array{uid:string, email:string, displayName:string}> $guests participants
-     * @return array{0: list<array{type:string, message:string}>, 1: list<array{path:string, name:string}>, 2: array{path:string, name:string}|null} warnings, candidates and the suggestion
+     * @return array{0: list<array{type:string, message:string}>, 1: list<array{path:string, name:string, owner?:string}>, 2: array{path:string, name:string}|null} warnings, candidates and the suggestion
      */
     private function sharingWarnings(Calendar $calendar, string $userId, array $guests): array {
         try {
@@ -225,8 +228,15 @@ final class PlanWarnings {
                 return [[], [], null];
             }
         }
-        $list = array_map(static fn (array $c): array => ['path' => $c['path'], 'name' => $c['name']], $candidates);
-        $suggested = count($list) === 1 ? $list[0] : null;
+        // The owner is named only when the calendar is somebody else's; the path stays for the model to repeat the call.
+        $list = array_map(function (array $c) use ($userId): array {
+            $item = ['path' => $c['path'], 'name' => $c['name']];
+            if ($c['ownerId'] !== $userId) {
+                $item['owner'] = $this->users->get($c['ownerId'])?->getDisplayName() ?: $c['ownerId'];
+            }
+            return $item;
+        }, $candidates);
+        $suggested = count($list) === 1 ? ['path' => $list[0]['path'], 'name' => $list[0]['name']] : null;
         $names = implode(', ', array_column($guests, 'displayName'));
         $message = CalendarMessages::calendarNotShared($calendar->name, $names, $suggested['name'] ?? null, count($list) > 1);
         return [[['type' => 'calendarNotShared', 'message' => $message]], $list, $suggested];

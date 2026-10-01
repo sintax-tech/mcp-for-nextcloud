@@ -147,6 +147,7 @@ abstract class CalendarTestCase extends TestCase {
             new SharedCalendarFinder($access, $this->store, $this->users(), $groups),
             $attendees,
             $builder,
+            $this->users(),
             $logger,
         );
         $this->module = new CalendarModule(

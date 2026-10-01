@@ -17,8 +17,10 @@ class GrantPolicy {
     /** Operations an admin can grant per module; Files deliberately has no delete. */
     public const CATALOG = [
         // 'restore' rolls a file back to a stored version and 'create' adds a folder or a copy;
-        // like every operation but read, both start denied.
-        'files' => ['read', 'edit', 'create', 'move', 'restore'],
+        // like every operation but read, both start denied. 'share' shares an own file with a person or a
+        // group and 'link' creates a public link; they are separate so an admin can allow one without the
+        // other, and removing a share asks for the operation of its type. Listing shares stays a 'read'.
+        'files' => ['read', 'edit', 'create', 'move', 'restore', 'share', 'link'],
         'notes' => ['read', 'create', 'edit', 'move', 'delete'],
         'deck' => ['read', 'create', 'edit', 'move', 'delete'],
         'contacts' => ['read', 'create', 'edit', 'delete'],

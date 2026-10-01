@@ -701,6 +701,10 @@ OC.L10N.register(
     "%s, of %s" : "%s, de %s",
     "unnamed calendar" : "calendario sin nombre",
     "To confirm, repeat the call with etag %s." : "Para confirmar, repita la llamada con etag %s.",
-    "To use another calendar, repeat the call with calendar %s." : "Para usar otro calendario, repita la llamada con calendar %s."
+    "To use another calendar, repeat the call with calendar %s." : "Para usar otro calendario, repita la llamada con calendar %s.",
+    "share" : "compartir",
+    "link" : "enlace público",
+    "Share own files with people and groups" : "Compartir los archivos propios con personas y grupos",
+    "Create public links to own files" : "Crear enlaces públicos a los archivos propios"
 },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

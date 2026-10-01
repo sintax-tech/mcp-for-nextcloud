@@ -35,9 +35,18 @@ final class CollisionCheck {
     ) {}
 
     /**
+     * Finds colliding occurrences in the target calendar within [start, end).
+     *
+     * @param Calendar $calendar target calendar
+     * @param string $userId authenticated user id viewing or scheduling
+     * @param DateTimeImmutable $start window start instant or civil day
+     * @param DateTimeImmutable $end window end instant or civil day
+     * @param bool $allDay whether the window represents full civil day(s)
+     * @param string|null $excludeUri object URI to exclude (e.g. self when editing or moving)
+     * @param int $limit maximum number of colliding items to return
      * @return array{items: list<array{uri:string, summary:?string, start:string, end:string, allDay:bool, busyOnly:bool}>, more:int}
-     *   items: até $limit ocorrências que cruzam [start, end) no calendário, ordenadas por início; summary null quando busyOnly;
-     *   start/end ISO 8601 UTC; more: quantas além do limite.
+     *   items: up to $limit occurrences overlapping [start, end) in the calendar, ordered by start time;
+     *   summary is null when busyOnly; start/end are ISO 8601 UTC; more: count of collisions beyond limit.
      */
     public function find(
         Calendar $calendar,
@@ -133,7 +142,12 @@ final class CollisionCheck {
     }
 
     /**
-     * @return array{0: DateTimeImmutable, 1: DateTimeImmutable}
+     * Resolves the half-open search window, expanding all-day events to midnight-to-midnight in the event timezone.
+     *
+     * @param DateTimeImmutable $start window start
+     * @param DateTimeImmutable $end window end
+     * @param bool $allDay whether to expand to civil day boundaries
+     * @return array{0: DateTimeImmutable, 1: DateTimeImmutable} [searchStart, searchEnd)
      */
     private function window(DateTimeImmutable $start, DateTimeImmutable $end, bool $allDay): array {
         if (!$allDay) {
@@ -157,6 +171,13 @@ final class CollisionCheck {
         return [$searchStart, $searchEnd];
     }
 
+    /**
+     * Determines whether an event occurrence has transparent time availability (TRANSP:TRANSPARENT).
+     *
+     * @param VEvent $event occurrence or master event component
+     * @param VCalendar $vcalendar parent calendar document to resolve recurrence master transparency
+     * @return bool true if the event does not block calendar time
+     */
     private function isTransparent(VEvent $event, VCalendar $vcalendar): bool {
         if (isset($event->TRANSP)) {
             return strtoupper(trim((string)$event->TRANSP)) === 'TRANSPARENT';
@@ -174,11 +195,23 @@ final class CollisionCheck {
         return false;
     }
 
+    /**
+     * Checks if an event is an all-day event without a time component.
+     *
+     * @param VEvent $event event component
+     * @return bool true if DTSTART is a DATE rather than a DATE-TIME
+     */
     private function isAllDay(VEvent $event): bool {
         $start = $event->DTSTART ?? null;
         return $start instanceof DateTimeProperty ? !$start->hasTime() : false;
     }
 
+    /**
+     * Formats an instant as an ISO 8601 UTC string.
+     *
+     * @param DateTimeImmutable $date instant to format
+     * @return string formatted UTC string (YYYY-MM-DDTHH:MM:SSZ)
+     */
     private function formatUtc(DateTimeImmutable $date): string {
         return $date->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z');
     }

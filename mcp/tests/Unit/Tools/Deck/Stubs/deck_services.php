@@ -189,6 +189,16 @@ namespace OCA\Deck\Service {
 		public function assignUser(int $cardId, string $userId, int $type = 0): \OCA\Deck\Db\Assignment {
 			throw new \LogicException('Stub: expected a PHPUnit mock.');
 		}
+
+		/**
+		 * @param int $cardId Card the account leaves.
+		 * @param string $userId Account to unassign.
+		 * @param int $type Assignment type (user by default).
+		 * @return \OCA\Deck\Db\Assignment Removed assignment.
+		 */
+		public function unassignUser(int $cardId, string $userId, int $type = 0): \OCA\Deck\Db\Assignment {
+			throw new \LogicException('Stub: expected a PHPUnit mock.');
+		}
 	}
 
 	/** Permission service double; signature mirrors Deck `v1.17.5` `lib/Service/PermissionService.php:112`. */

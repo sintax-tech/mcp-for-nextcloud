@@ -433,6 +433,76 @@
 		}
 	}
 
+	/**
+	 * OAuth clients section: allowed client_id hosts and the native client switch, through
+	 * GET and PUT /apps/mcp/api/oauth-clients.
+	 */
+	async function initOauthClients() {
+		const hostsInput = document.getElementById('mcp-oauth-hosts')
+		const hostsSave = document.getElementById('mcp-oauth-hosts-save')
+		const hostsStatus = document.getElementById('mcp-oauth-hosts-status')
+		const nativeBox = document.getElementById('mcp-native-client')
+		const nativeStatus = document.getElementById('mcp-native-client-status')
+		const details = document.getElementById('mcp-native-client-details')
+		const clientId = document.getElementById('mcp-native-client-id')
+		const redirects = document.getElementById('mcp-native-redirects')
+
+		/** @param {object} data settings returned by the API */
+		function show(data) {
+			hostsInput.value = data.hosts.join(', ')
+			nativeBox.checked = data.nativeClientEnabled
+			details.hidden = !data.nativeClientEnabled
+			clientId.textContent = data.nativeClientId
+			redirects.replaceChildren(...data.nativeRedirectUris.map((uri) => el('li', {}, [el('code', { textContent: uri })])))
+		}
+
+		/**
+		 * @param {HTMLElement} status status span next to the control
+		 * @param {boolean} ok whether the save worked
+		 * @param {string} [message] text shown on failure
+		 */
+		function report(status, ok, message) {
+			status.textContent = ok ? t('mcp', 'Saved') : (message || t('mcp', 'Not saved'))
+			flash(status, ok)
+		}
+
+		try {
+			show(await api('GET', '/api/oauth-clients'))
+		} catch (e) {
+			notifyError(t('mcp', 'Could not load the OAuth client settings.'))
+			return
+		}
+
+		hostsSave.addEventListener('click', async () => {
+			const hosts = hostsInput.value.split(',').map((host) => host.trim()).filter((host) => host !== '')
+			hostsSave.disabled = true
+			try {
+				show(await api('PUT', '/api/oauth-clients', { hosts }))
+				report(hostsStatus, true)
+			} catch (e) {
+				report(hostsStatus, false, t('mcp', 'Invalid host list: use lowercase host names only, without https://, port, path or *, and keep at least one.'))
+			} finally {
+				hostsSave.disabled = false
+			}
+		})
+
+		nativeBox.addEventListener('change', async () => {
+			const value = nativeBox.checked
+			nativeBox.disabled = true
+			try {
+				show(await api('PUT', '/api/oauth-clients', { nativeClientEnabled: value }))
+				report(nativeStatus, true)
+			} catch (e) {
+				nativeBox.checked = !value
+				report(nativeStatus, false)
+				notifyError(t('mcp', 'Could not change the native client.'))
+			} finally {
+				nativeBox.disabled = false
+			}
+		})
+	}
+
 	load()
 	initTagsSection()
+	initOauthClients()
 })()

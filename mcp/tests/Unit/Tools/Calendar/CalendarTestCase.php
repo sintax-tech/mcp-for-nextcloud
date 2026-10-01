@@ -68,6 +68,12 @@ abstract class CalendarTestCase extends TestCase {
     protected string $sendInvitations = 'yes';
     /** @var list<string> e-mail addresses the availability API reports as busy */
     protected array $busyEmails = [];
+    /** @var array<string, list<array{string, string}>> busy blocks (ISO start, ISO end) per address, as the core free/busy sees them */
+    protected array $busyBlocks = [];
+    /** @var list<array{string, string}> ranges the availability API was asked about, as UTC ISO start and end, in order */
+    protected array $availabilityAsked = [];
+    /** Timezone of alice's account, as UserTimezone reads it. */
+    protected string $accountTimezone = 'America/Sao_Paulo';
     /** @var list<string> e-mail addresses the availability API gives no verdict for */
     protected array $unknownEmails = [];
     /** Whether the availability API throws. */
@@ -124,6 +130,7 @@ abstract class CalendarTestCase extends TestCase {
         ];
         $calendarManager = $this->createMock(IManager::class);
         $calendarManager->method('checkAvailability')->willReturnCallback(function ($start, $end, $organizer, array $emails): array {
+            $this->availabilityAsked[] = [$start->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z'), $end->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z')];
             if ($this->availabilityFails) {
                 throw new \RuntimeException('availability unavailable');
             }
@@ -134,11 +141,15 @@ abstract class CalendarTestCase extends TestCase {
                 }
                 $result = $this->createMock(IAvailabilityResult::class);
                 $result->method('getAttendeeEmail')->willReturn($email);
-                $result->method('isAvailable')->willReturn(!in_array($email, $this->busyEmails, true));
+                $result->method('isAvailable')->willReturn(!in_array($email, $this->busyEmails, true) && !$this->busyIn($email, $start, $end));
                 $results[] = $result;
             }
             return $results;
         });
+        $zoneConfig = $this->createMock(IConfig::class);
+        $zoneConfig->method('getUserValue')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $this->accountTimezone : '');
+        $zoneConfig->method('getSystemValueString')->willReturn('');
+        $zones = new \OCA\Mcp\Service\UserTimezone($zoneConfig);
         $groups = $this->createMock(IGroupManager::class);
         $groups->method('getUserGroupIds')->willReturn([]);
         $warnings = new PlanWarnings(
@@ -149,6 +160,7 @@ abstract class CalendarTestCase extends TestCase {
             $builder,
             $this->users(),
             $logger,
+            $zones,
         );
         $this->module = new CalendarModule(
             $listCalendars,
@@ -158,7 +170,7 @@ abstract class CalendarTestCase extends TestCase {
             $moveEvent,
             $deleteEvent,
             $transferEvent,
-            new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($scheduling, $builder, $guard, $warnings),
+            new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($scheduling, $builder, $guard, $warnings, $zones),
         );
         $policy = $this->createMock(\OCA\Mcp\Service\GrantPolicy::class);
         $policy->method('granted')->willReturn(true);
@@ -174,14 +186,29 @@ abstract class CalendarTestCase extends TestCase {
     }
 
     /**
-     * User manager resolving alice, bob and carla, for the guest list and the shared-calendar messages.
-     *
-     * @return IUserManager double
+     * @param string $email attendee address, lower case
+     * @param \DateTimeInterface $start start of the asked range
+     * @param \DateTimeInterface $end end of the asked range
+     * @return bool whether one of the busy blocks of the address overlaps the range, as the core free/busy would say
      */
+    private function busyIn(string $email, \DateTimeInterface $start, \DateTimeInterface $end): bool {
+        foreach ($this->busyBlocks[$email] ?? [] as [$from, $to]) {
+            if (new \DateTimeImmutable($from) < $end && new \DateTimeImmutable($to) > $start) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected function tearDown(): void {
         \OCA\Mcp\L10n\Translator::reset();
     }
 
+    /**
+     * User manager resolving alice, bob and carla, for the guest list and the shared-calendar messages.
+     *
+     * @return IUserManager double
+     */
     private function users(): IUserManager {
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturnCallback(function ($uid): ?IUser {

@@ -17,9 +17,9 @@ class ArgumentValidationException extends InvalidArgumentException {
         parent::__construct($message);
     }
 
-    /** @return array{field: string, rule: string} Safe metadata for JSON-RPC error.data. */
+    /** @return array{field: string, rule: string} Safe metadata for JSON-RPC error.data; the field is "arguments" when the whole call is meant. */
     public function details(): array {
-        return ['field' => $this->field, 'rule' => $this->rule];
+        return ['field' => $this->field === '' ? 'arguments' : $this->field, 'rule' => $this->rule];
     }
 
     /** @return string Short localized explanation for the client. */

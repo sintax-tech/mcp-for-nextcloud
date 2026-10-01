@@ -166,7 +166,7 @@ final class ImageTools {
     public function search(Folder $root, string $userId, array $args): array {
         $limit = max(1, min(self::SEARCH_MAX_LIMIT, (int)$args['limit']));
         $query = isset($args['query']) ? trim((string)$args['query']) : '';
-        $folder = isset($args['folder']) ? PathGuard::normalize((string)$args['folder']) : '/';
+        $folder = isset($args['folder']) ? PathGuard::normalize((string)$args['folder'], 'folder') : '/';
         $after = $this->parseDate($args['modified_after'] ?? null);
         $before = $this->parseDate($args['modified_before'] ?? null);
         $tag = isset($args['tag']) && trim((string)$args['tag']) !== '' ? trim((string)$args['tag']) : null;
@@ -352,7 +352,7 @@ final class ImageTools {
      * @throws ToolFailure when the folder path is not a folder
      */
     private function selectFromFolder(Folder $root, string $userId, string $folder, int $limit): array {
-        $normalized = PathGuard::normalize($folder);
+        $normalized = PathGuard::normalize($folder, 'folder');
         $scope = NodeAccess::get($root, $normalized, $this->visibilityGuard);
         if (!$scope instanceof Folder) {
             throw new ToolFailure(FilesMessages::notAFolder());
@@ -380,7 +380,7 @@ final class ImageTools {
     private function selectPaths(Folder $root, array $paths): array {
         $out = [];
         foreach ($paths as $raw) {
-            $path = PathGuard::normalize((string)$raw);
+            $path = PathGuard::normalize((string)$raw, 'paths');
             try {
                 $node = NodeAccess::get($root, $path, $this->visibilityGuard);
                 if (!$node instanceof File) {

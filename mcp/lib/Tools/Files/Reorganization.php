@@ -202,7 +202,7 @@ final class Reorganization {
     public function copy(Folder $root, string $userId, string $from, string $to, ?string $etag, bool $confirmedShared): array {
         $source = $this->writable($root, $from);
         NodeAccess::checkEtag($source, $etag);
-        $to = PathGuard::normalize($to);
+        $to = PathGuard::normalize($to, 'to');
         $this->assertFree($root, $to);
         $measured = $this->measure($source);
         if (($payload = $this->confirmBoth($source, $from, $this->destination($root, $to), $to, $userId, $confirmedShared)) !== null) {
@@ -282,7 +282,7 @@ final class Reorganization {
     public function inspect(Folder $root, string $from, string $to, ?string $etag = null, array $mkdirs = []): Inspection {
         $source = $this->writable($root, $from);
         NodeAccess::checkEtag($source, $etag);
-        $to = PathGuard::normalize($to);
+        $to = PathGuard::normalize($to, 'to');
         // A folder landing inside itself is refused before the destination check, so the user hears the real
         // reason instead of "something is already there" for a subfolder of the folder they are moving.
         $this->assertNotIntoItself($root, $source, $to);
@@ -430,7 +430,7 @@ final class Reorganization {
     public function planCopy(Folder $root, string $userId, string $from, string $to, ?string $etag): array {
         $source = $this->writable($root, $from);
         NodeAccess::checkEtag($source, $etag);
-        $to = PathGuard::normalize($to);
+        $to = PathGuard::normalize($to, 'to');
         $this->assertFree($root, $to);
         $measured = $this->measure($source);
         $destination = $this->destination($root, $to);
@@ -644,7 +644,7 @@ final class Reorganization {
         if ((int)$there->getId() !== $move['toId']) {
             throw new ToolFailure(FilesMessages::notTheBatchNode());
         }
-        if ($root->nodeExists(ltrim(PathGuard::normalize($move['from']), '/'))) {
+        if ($root->nodeExists(ltrim(PathGuard::normalize($move['from'], 'moves'), '/'))) {
             throw new MoveConflict(FilesMessages::destinationExists());
         }
         if (!$there->isDeletable()) {
@@ -752,7 +752,7 @@ final class Reorganization {
     private function missingRecordedParents(Folder $root, Batch $batch): array {
         $missing = [];
         foreach ($batch->moves as $move) {
-            $segments = array_values(array_filter(explode('/', PathGuard::normalize($move['from']))));
+            $segments = array_values(array_filter(explode('/', PathGuard::normalize($move['from'], 'moves'))));
             array_pop($segments);
             while ($segments !== []) {
                 $candidate = '/' . implode('/', $segments);

@@ -164,7 +164,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
                 ], ['path', 'old', 'new'])],
             ['name' => 'files_checkout', 'module' => 'files', 'operation' => 'edit',
                 'description' => FilesMessages::checkoutTool(),
-                'inputSchema' => self::schema(['path' => $path, 'confirm_shared' => $confirmShared], ['path'])],
+                'inputSchema' => self::schema(['path' => $path, 'etag' => $etag, 'confirm_shared' => $confirmShared], ['path'])],
             ['name' => 'files_versions_list', 'module' => 'files', 'operation' => 'read', 'app' => VersionTools::APP,
                 'description' => FilesMessages::versionsListTool(),
                 'inputSchema' => self::schema([
@@ -296,7 +296,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             'files_read' => $this->read($root, $userId, $arguments['path']),
             'files_edit' => $this->write($root, $userId, $arguments['path'], $arguments['content'], $arguments['etag'] ?? null, $confirmed),
             'files_replace' => $this->replace($root, $userId, $arguments['path'], $arguments['old'], $arguments['new'], $arguments['etag'] ?? null, $confirmed),
-            'files_checkout' => $this->checkoutOut($root, $userId, $arguments['path'], $confirmed),
+            'files_checkout' => $this->checkoutOut($root, $userId, $arguments['path'], $arguments['etag'] ?? null, $confirmed),
             'files_versions_list' => ToolResult::json($this->versions->list($root, $this->file($root, $arguments['path']), PathGuard::normalize($arguments['path']), $arguments['limit'], $userId)),
             'files_version_read' => ToolResult::json($this->versions->read($this->file($root, $arguments['path']), PathGuard::normalize($arguments['path']), $arguments['version'], $userId)),
             'files_version_restore' => $this->restore($root, $userId, $arguments['path'], $arguments['version'], $confirmed),
@@ -341,7 +341,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             'files_undo_batch' => $this->reorganization->planUndoBatch($root, $userId, $arguments['batch_id'], $this->batches, $this->time->getTime()),
             'files_edit' => $this->planWrite($root, $userId, $arguments['path'], $arguments['content'], $etag),
             'files_replace' => $this->planReplace($root, $userId, $arguments['path'], $arguments['old'], $arguments['new'], $etag),
-            'files_checkout' => $this->planCheckout($root, $userId, $arguments['path']),
+            'files_checkout' => $this->planCheckout($root, $userId, $arguments['path'], $etag),
             'files_version_restore' => $this->planRestore($root, $userId, $arguments['path'], $arguments['version']),
             default => throw new \InvalidArgumentException('Unknown tool'),
         });
@@ -460,13 +460,15 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
      * @param Folder $root the user's folder
      * @param string $userId authenticated user
      * @param string $path file to download and upload, user-relative
+     * @param string|null $etag ETag the caller read before, null to skip the check
      * @return array<string, mixed>
-     * @throws ToolFailure when the path is the backup folder or not a file, versioning is off or the write would be refused
+     * @throws ToolFailure when the path is the backup folder or not a file, the etag is stale, versioning is off or the write would be refused
      */
-    private function planCheckout(Folder $root, string $userId, string $path): array {
+    private function planCheckout(Folder $root, string $userId, string $path, ?string $etag): array {
         $path = PathGuard::normalize($path);
         $this->assertNotBackup($path);
         $file = $this->file($root, $path);
+        NodeAccess::checkEtag($file, $etag);
         $shared = $this->guard->guard($file, $userId, $path, false);
         // The same refusal the mint gives, so the plan cannot promise links the upload would not honour.
         $this->checkout->assertAvailable($userId);
@@ -794,14 +796,16 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
      * @param Folder $root the user's folder
      * @param string $userId authenticated user
      * @param string $path file to download and upload, user-relative
+     * @param string|null $etag ETag the plan showed, null to skip the check; a different one mints no link
      * @param bool $confirmed whether the caller passed confirm_shared
      * @return array{content: list<array{type:string, text:string}>}
-     * @throws ToolFailure when the path is the backup folder or not a file, or the write is refused
+     * @throws ToolFailure when the path is the backup folder or not a file, the etag is stale, or the write is refused
      */
-    private function checkoutOut(Folder $root, string $userId, string $path, bool $confirmed): array {
+    private function checkoutOut(Folder $root, string $userId, string $path, ?string $etag, bool $confirmed): array {
         $path = PathGuard::normalize($path);
         $this->assertNotBackup($path);
         $file = $this->file($root, $path);
+        NodeAccess::checkEtag($file, $etag);
         $access = $this->accessInfo->describe($file, $userId);
         if (($payload = $this->guard->guard($file, $userId, $path, $confirmed)) !== null) {
             return ToolResult::json($payload);

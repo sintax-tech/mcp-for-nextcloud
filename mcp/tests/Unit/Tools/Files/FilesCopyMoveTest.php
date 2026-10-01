@@ -28,6 +28,20 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
         $this->tree->addFolder('/alice/files/Arquivado');
     }
 
+    /** A traversal in the destination names `to`, not `path`, and never repeats the path. */
+    public function testTraversalInTheDestinationNamesTheDestinationArgument(): void {
+        foreach (['files_copy', 'files_move'] as $tool) {
+            try {
+                $this->tool($tool, ['from' => self::SOURCE_PATH, 'to' => '/Copia/../../fora/ata.md']);
+                $this->fail("$tool accepted a traversal");
+            } catch (\OCA\Mcp\Tools\ArgumentValidationException $e) {
+                $this->assertSame('to', $e->details()['field'], $tool);
+                $this->assertStringNotContainsString('fora', json_encode($e->details()), $tool);
+            }
+        }
+        $this->assertSame([], $this->tree->ops);
+    }
+
     // ------------------------------------------------------------------ copy
 
     public function testCopyIsDeclaredForCreatingFiles(): void {

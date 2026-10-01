@@ -38,7 +38,7 @@ final class TransferEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
     /**
      * @param array{calendar: string, uid: string, targetCalendar: string, etag?: string} $arguments
      * @param string $userId authenticated UID
-     * @return array{content: list<array{type:string, text:string}>} {uid, from, to}
+     * @return array{content: list<array{type:string, text:string}>} {uid, etag, from, to}
      * @throws \OCA\Mcp\Tools\Calendar\CalendarException when the transfer is not allowed or conflicts
      */
     public function execute(array $arguments, string $userId): array {

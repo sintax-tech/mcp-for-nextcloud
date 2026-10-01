@@ -65,7 +65,8 @@ final class CalendarPlanRenderer implements RendersPlans {
             $after['start'] ?? null,
             $after['end'] ?? null,
             (bool)($after['allDay'] ?? false),
-            $this->eventTimezone($plan)
+            $this->eventTimezone($plan),
+            $this->accountZone($plan)
         );
         if ($timing === null) {
             return null;
@@ -130,13 +131,15 @@ final class CalendarPlanRenderer implements RendersPlans {
                 $before['start'] ?? null,
                 $before['end'] ?? null,
                 (bool)($before['allDay'] ?? false),
-                $before['timeZone'] ?? $this->eventTimezone($plan)
+                $before['timeZone'] ?? $this->eventTimezone($plan),
+                $this->accountZone($plan)
             );
             $afterTiming = $this->formatTiming(
                 $after['start'] ?? null,
                 $after['end'] ?? null,
                 (bool)($after['allDay'] ?? false),
-                $after['timeZone'] ?? $this->eventTimezone($plan)
+                $after['timeZone'] ?? $this->eventTimezone($plan),
+                $this->accountZone($plan)
             );
             if ($beforeTiming === null || $afterTiming === null) {
                 return null;
@@ -203,7 +206,8 @@ final class CalendarPlanRenderer implements RendersPlans {
             $event['start'] ?? null,
             $event['end'] ?? null,
             (bool)($event['allDay'] ?? false),
-            $this->eventTimezone($plan)
+            $this->eventTimezone($plan),
+            $this->accountZone($plan)
         );
         if ($timing === null) {
             return null;
@@ -247,7 +251,8 @@ final class CalendarPlanRenderer implements RendersPlans {
             $event['start'] ?? null,
             $event['end'] ?? null,
             (bool)($event['allDay'] ?? false),
-            $this->eventTimezone($plan)
+            $this->eventTimezone($plan),
+            $this->accountZone($plan)
         );
         if ($timing === null) {
             return null;
@@ -290,7 +295,8 @@ final class CalendarPlanRenderer implements RendersPlans {
             $before['start'] ?? null,
             $before['end'] ?? null,
             (bool)($before['allDay'] ?? false),
-            $this->eventTimezone($plan)
+            $this->eventTimezone($plan),
+            $this->accountZone($plan)
         );
         if ($timing === null) {
             return null;
@@ -311,9 +317,12 @@ final class CalendarPlanRenderer implements RendersPlans {
     }
 
     /**
-     * Formats start and end into a localized string with weekday, date, time and timezone.
+     * Formats start and end into a localized string with weekday, date, time and, when it is not the account's, the timezone.
+     *
+     * @param string|null $tzStr zone of the event itself, null when it was written with an offset only
+     * @param string|null $accountTz zone the plan names for the account: the zone of an event without its own, and the one that needs no label
      */
-    private function formatTiming(mixed $startVal, mixed $endVal, bool $allDay, ?string $tzStr): ?string {
+    private function formatTiming(mixed $startVal, mixed $endVal, bool $allDay, ?string $tzStr, ?string $accountTz = null): ?string {
         if (!is_string($startVal) || !is_string($endVal) || $startVal === '' || $endVal === '') {
             return null;
         }
@@ -358,7 +367,7 @@ final class CalendarPlanRenderer implements RendersPlans {
                 return null;
             }
         }
-        $tzTarget = $tz ?? new DateTimeZone(date_default_timezone_get() ?: 'UTC');
+        $tzTarget = $tz ?? ($accountTz !== null ? new DateTimeZone($accountTz) : new DateTimeZone(date_default_timezone_get() ?: 'UTC'));
 
         try {
             $start = new DateTimeImmutable($startVal);
@@ -383,7 +392,8 @@ final class CalendarPlanRenderer implements RendersPlans {
             return $weekday . ', ' . $df->format($d);
         };
 
-        $tzSuffix = $tzStr !== null && $tzStr !== '' ? ' (' . $tzStr . ')' : '';
+        // The account's own zone is the default the person reads in; any other zone is named.
+        $tzSuffix = $tzStr !== null && $tzStr !== '' && $tzStr !== $accountTz ? ' (' . $tzStr . ')' : '';
 
         // Same day in the event timezone
         if ($start->format('Y-m-d') === $end->format('Y-m-d')) {
@@ -395,6 +405,23 @@ final class CalendarPlanRenderer implements RendersPlans {
 
         // Multi-day timed event
         return $formatDate($start) . ', ' . $tf->format($start) . ' – ' . $formatDate($end) . ', ' . $tf->format($end) . $tzSuffix;
+    }
+
+    /**
+     * @param array<string, mixed> $plan
+     * @return string|null the account's timezone as the plan carries it, null when it is absent or not a zone
+     */
+    private function accountZone(array $plan): ?string {
+        $name = $this->text($plan['timezone'] ?? null);
+        if ($name === '') {
+            return null;
+        }
+        try {
+            new DateTimeZone($name);
+        } catch (Throwable) {
+            return null;
+        }
+        return $name;
     }
 
     /**

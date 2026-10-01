@@ -194,6 +194,52 @@ final class PlanWarningsTest extends CalendarTestCase {
         self::assertSame(['Carla Dias está ocupado(a) neste horário.'], self::messages($plan['warnings'], 'busy'));
     }
 
+    /** The guest's own copy of the event is a busy block of the core free/busy; it must not be reported as a conflict. */
+    public function testUpdateInsideTheCurrentSlotDoesNotReportTheGuestBusyByTheEventItself(): void {
+        $this->seedEvent("\nATTENDEE;CN=Carla Dias:mailto:carla@example.invalid");
+        $this->busyBlocks = ['carla@example.invalid' => [['2026-10-01T12:00:00Z', '2026-10-01T13:00:00Z']]];
+        $plan = self::json($this->registry->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'event', 'start' => '2026-10-01T12:15:00Z', 'end' => '2026-10-01T12:45:00Z'], 'alice'));
+        self::assertSame([], self::messages($plan['warnings'], 'busy'));
+        self::assertSame([], $this->availabilityAsked, 'nothing outside the own slot is left to ask');
+    }
+
+    public function testUpdateOverlappingTheCurrentSlotOnlyAsksAboutTheNewPart(): void {
+        $this->seedEvent("\nATTENDEE;CN=Carla Dias:mailto:carla@example.invalid");
+        $this->busyBlocks = ['carla@example.invalid' => [['2026-10-01T12:00:00Z', '2026-10-01T13:00:00Z']]];
+        $plan = self::json($this->registry->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'event', 'start' => '2026-10-01T12:30:00Z', 'end' => '2026-10-01T13:30:00Z'], 'alice'));
+        self::assertSame([], self::messages($plan['warnings'], 'busy'));
+        self::assertSame([['2026-10-01T13:00:00Z', '2026-10-01T13:30:00Z']], $this->availabilityAsked);
+    }
+
+    public function testUpdateStillReportsAnotherAppointmentOfTheGuestOutsideTheCurrentSlot(): void {
+        $this->seedEvent("\nATTENDEE;CN=Carla Dias:mailto:carla@example.invalid");
+        $this->busyBlocks = ['carla@example.invalid' => [['2026-10-01T12:00:00Z', '2026-10-01T13:00:00Z'], ['2026-10-01T13:10:00Z', '2026-10-01T13:20:00Z']]];
+        $plan = self::json($this->registry->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'event', 'start' => '2026-10-01T12:30:00Z', 'end' => '2026-10-01T13:30:00Z'], 'alice'));
+        self::assertSame(['Carla Dias está ocupado(a) neste horário.'], self::messages($plan['warnings'], 'busy'));
+    }
+
+    public function testUpdateAskingBeforeAndAfterTheCurrentSlotAsksBothParts(): void {
+        $this->seedEvent("\nATTENDEE;CN=Carla Dias:mailto:carla@example.invalid");
+        $this->busyBlocks = ['carla@example.invalid' => [['2026-10-01T12:00:00Z', '2026-10-01T13:00:00Z']]];
+        self::json($this->registry->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'event', 'start' => '2026-10-01T11:30:00Z', 'end' => '2026-10-01T13:30:00Z'], 'alice'));
+        self::assertSame([['2026-10-01T11:30:00Z', '2026-10-01T12:00:00Z'], ['2026-10-01T13:00:00Z', '2026-10-01T13:30:00Z']], $this->availabilityAsked);
+    }
+
+    /** A guest who is not in the stored event has no copy of it: the whole new range is asked, own slot included. */
+    public function testUpdateAddingAGuestStillChecksTheCurrentSlotForThem(): void {
+        $this->seedEvent();
+        $this->busyBlocks = ['bob@example.invalid' => [['2026-10-01T12:00:00Z', '2026-10-01T13:00:00Z']]];
+        $plan = self::json($this->registry->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'event', 'attendees' => ['bob']], 'alice'));
+        self::assertSame(['Roberto Almeida está ocupado(a) neste horário.'], self::messages($plan['warnings'], 'busy'));
+    }
+
+    public function testCreateStillChecksTheWholeRangeOfEveryGuest(): void {
+        $this->busyBlocks = ['carla@example.invalid' => [['2026-10-01T17:00:00Z', '2026-10-01T18:00:00Z']]];
+        $plan = $this->createPlan(['attendees' => ['carla']]);
+        self::assertSame(['Carla Dias está ocupado(a) neste horário.'], self::messages($plan['warnings'], 'busy'));
+        self::assertSame([['2026-10-01T17:00:00Z', '2026-10-01T18:00:00Z']], $this->availabilityAsked);
+    }
+
     public function testUpdateOfGuestsChecksAvailabilityAndSharing(): void {
         $this->seedEvent();
         $this->busyEmails = ['bob@example.invalid'];
@@ -210,6 +256,26 @@ final class PlanWarningsTest extends CalendarTestCase {
         self::assertNotSame([], self::json($this->registry->call('calendar_update_event', $args, 'alice'))['warnings']);
         self::assertArrayNotHasKey('isError', $this->registry->call('calendar_update_event', $args + ['confirm' => true], 'alice'));
         self::assertCount(1, $this->dav->calls);
+    }
+
+    // ---- timezone of the plan ----
+
+    /** The plan names the zone of the account and reads the times of an event without a zone in it, not in UTC. */
+    public function testThePlanNamesTheAccountZoneAndReadsAZonelessEventInIt(): void {
+        $this->seedEvent();
+        $args = ['calendar' => self::PERSONAL, 'uid' => 'event', 'start' => '2026-10-01T12:30:00Z', 'end' => '2026-10-01T13:30:00Z'];
+        $plan = self::json($this->registry->call('calendar_update_event', $args, 'alice'));
+        self::assertSame('America/Sao_Paulo', $plan['timezone']);
+        $text = $this->registry->call('calendar_update_event', $args, 'alice')['content'][0]['text'];
+        self::assertStringContainsString('09:00–10:00 → qui, 1 de out. de 2026, 09:30–10:30', $text);
+        self::assertStringNotContainsString('12:00', $text);
+    }
+
+    /** The collision warning of an event without a zone is written in the zone of the account too. */
+    public function testACollisionOfAZonelessEventIsWrittenInTheAccountZone(): void {
+        $this->store->addObject(1, 'dentist.ics', self::ics("UID:dentist\nSUMMARY:Dentista\nDTSTART:20261001T173000Z\nDTEND:20261001T183000Z"));
+        $plan = self::json($this->registry->call('calendar_create_event', ['calendar' => self::PERSONAL, 'summary' => 'Planejamento', 'start' => '2026-10-01T14:00:00-03:00', 'end' => '2026-10-01T15:00:00-03:00'], 'alice'));
+        self::assertSame([['type' => 'collision', 'message' => 'Sobrepõe Dentista (qui, 1 de out. de 2026, 14:30–15:30)']], $plan['warnings']);
     }
 
     // ---- move, transfer, delete ----

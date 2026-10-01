@@ -26,6 +26,44 @@ final class ArgumentValidatorTest extends TestCase {
         }
     }
 
+    /**
+     * @return array<string, mixed> a root with one declared argument and an array whose items declare other names
+     */
+    private function nestedSchema(): array {
+        return ['type' => 'object', 'additionalProperties' => false, 'properties' => [
+            'path' => ['type' => 'string'],
+            'moves' => ['type' => 'array', 'items' => ['type' => 'object', 'additionalProperties' => false,
+                'properties' => ['from' => ['type' => 'string'], 'to' => ['type' => 'string']]]],
+        ]];
+    }
+
+    /** @return array{field: string, rule: string} the details the validator gives for an argument set */
+    private function details(array $arguments): array {
+        try {
+            ArgumentValidator::validate($this->nestedSchema(), $arguments);
+        } catch (\OCA\Mcp\Tools\ArgumentValidationException $e) {
+            return $e->details();
+        }
+        $this->fail('accepted ' . json_encode($arguments));
+    }
+
+    /** A name nobody declared is not echoed: the field is the object it was found in, and never empty. */
+    public function testAnUndeclaredPropertyNamesTheParentInsteadOfEchoingIt(): void {
+        $root = $this->details(['bogus' => 'secret-value']);
+        $this->assertSame('arguments', $root['field']);
+        $this->assertNotSame('', $root['rule']);
+        $nested = $this->details(['moves' => [['from' => '/a', 'bogus' => 'x']]]);
+        $this->assertSame('moves[0]', $nested['field']);
+        $this->assertStringNotContainsString('bogus', json_encode([$root, $nested]));
+        $this->assertStringNotContainsString('secret-value', json_encode([$root, $nested]));
+    }
+
+    /** A name the schema declares somewhere is the argument the client meant, so it is named in the field. */
+    public function testAPropertyDeclaredAtAnotherLevelIsNamedAsTheField(): void {
+        $this->assertSame('from', $this->details(['from' => '/a'])['field']);
+        $this->assertSame('moves[0].path', $this->details(['moves' => [['path' => '/a']]])['field']);
+    }
+
     /** @return array<string, mixed> schema with a nullable string and no default */
     private function schema(): array {
         return ['type' => 'object', 'additionalProperties' => false, 'properties' => [

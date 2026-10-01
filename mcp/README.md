@@ -35,10 +35,12 @@ Calendar começa com apenas leitura. As cinco escritas entram no `tools/list` e 
 | `calendar_create_event` | calendar.create | Evento simples; `attendees` são UIDs internos resolvidos para o e-mail da conta. |
 | `calendar_update_event` | calendar.edit | Atualiza texto/datas e substitui participantes; `attendees: []` remove todos. Mudança de participantes em série ou por outro organizador é recusada. |
 | `calendar_move_event` | calendar.move | MOVE no mesmo dono; participantes não são avisados, como no app Calendar. |
-| `calendar_delete_event` | calendar.delete | Exclui a série na lixeira; exige `confirm: true` e retenção ativa. |
-| `calendar_transfer_event` | calendar.transfer | MOVE para agenda de outro dono compartilhada com escrita; exige `confirm: true`, recusa participantes e só é liberado com prova `--shared-calendar`. |
+| `calendar_delete_event` | calendar.delete | Exclui a série na lixeira; exige retenção ativa. |
+| `calendar_transfer_event` | calendar.transfer | MOVE para agenda de outro dono compartilhada com escrita; recusa participantes e só é liberado com prova `--shared-calendar`. |
 
-Create, update e delete usam `send_invitations: false` por padrão (`x-nc-scheduling: false`). `true` requer a prova opcional `--attendee-uid`, inclusive para convidados existentes e CANCEL. O resultado informa o agendamento do Nextcloud, `imipEnabled` e os estados observados; nunca confirma recebimento de e-mail. A configuração `dav/sendInvitations=no` desliga iMIP, mas não impede iTIP interno. Escritas em agenda de outra pessoa ainda exigem `confirm_shared: true` após confirmação do usuário; transfer já exige a confirmação explícita própria.
+Create, update e delete usam `send_invitations: false` por padrão (`x-nc-scheduling: false`). `true` requer a prova opcional `--attendee-uid`, inclusive para convidados existentes e CANCEL. O resultado informa o agendamento do Nextcloud, `imipEnabled` e os estados observados; nunca confirma recebimento de e-mail. A configuração `dav/sendInvitations=no` desliga iMIP, mas não impede iTIP interno. Escritas em agenda de outra pessoa ainda exigem `confirm_shared: true` após confirmação do usuário.
+
+**Confirmação antes de toda escrita (sem estado no servidor).** As cinco escritas, chamadas sem `confirm: true`, só devolvem um plano (`requiresConfirmation: true`): valores atuais e propostos, participantes adicionados/removidos, destino, consequência para convites/CANCEL/lixeira e o `etag` atual. Nada é escrito nem agendado. O assistente deve mostrar o plano, perguntar ao usuário e só após um sim explícito repetir a chamada com `confirm: true` e os mesmos argumentos, reenviando o `etag` do plano (opcional; se vier e divergir, a escrita é recusada e um novo plano é necessário). Não há tabela, token nem registro de aprovação: o servidor não prova o sim humano, mas permissões, ACL, grants, gate e `confirm_shared` seguem valendo. O selftest usa os handlers diretamente e não passa por esse fluxo.
 
 ### Verificação Calendar no servidor
 

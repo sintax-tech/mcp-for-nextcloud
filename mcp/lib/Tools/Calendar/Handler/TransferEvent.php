@@ -11,7 +11,7 @@ use OCA\Mcp\Tools\Calendar\ToolSchema;
 /**
  * calendar_transfer_event: moves an event to a calendar of another owner that the user can write.
  */
-final class TransferEvent implements CalendarTool {
+final class TransferEvent implements \OCA\Mcp\Tools\Calendar\CalendarWriteTool {
     /**
      * @param EventRelocator $relocator shared move/transfer logic
      */
@@ -43,6 +43,12 @@ final class TransferEvent implements CalendarTool {
      * @throws \OCA\Mcp\Tools\Calendar\CalendarException when the transfer is not allowed or conflicts
      */
     public function execute(array $arguments, string $userId): array {
-        return ToolSchema::result($this->relocator->relocate($userId, $arguments['calendar'], $arguments['uid'], $arguments['targetCalendar'], $arguments['etag'] ?? null, true));
+        $prepared = $this->prepare($arguments, $userId);
+        return is_array($prepared) ? $prepared : ToolSchema::result($prepared->dispatch());
+    }
+
+    /** Prepare without performing a MOVE. */
+    public function prepare(array $arguments, string $userId): \OCA\Mcp\Tools\Calendar\PreparedCalendarWrite|array {
+        return $this->relocator->prepare($userId, $arguments['calendar'], $arguments['uid'], $arguments['targetCalendar'], $arguments['etag'] ?? null, true);
     }
 }

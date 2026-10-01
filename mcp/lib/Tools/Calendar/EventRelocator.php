@@ -44,6 +44,11 @@ class EventRelocator {
      *                           or a transfer would carry the guests to another owner
      */
     public function relocate(string $userId, string $sourcePath, string $uid, string $targetPath, ?string $etag, bool $crossOwner): array {
+        return $this->prepare($userId, $sourcePath, $uid, $targetPath, $etag, $crossOwner)->dispatch();
+    }
+
+    /** Validate both sides and prepare the same MOVE used by the internal handlers. */
+    public function prepare(string $userId, string $sourcePath, string $uid, string $targetPath, ?string $etag, bool $crossOwner): PreparedCalendarWrite {
         $source = $this->access->resolveWritable($userId, $sourcePath);
         $target = $this->access->resolveWritable($userId, $targetPath);
         if ($source->id === $target->id) {
@@ -61,20 +66,22 @@ class EventRelocator {
             throw CalendarException::blocked(CalendarMessages::TRANSFER_WITH_ATTENDEES);
         }
         $this->events->assertFree($target, $uid, $stored->uri);
-        $this->dav->move($userId, $source->uri, $stored->uri, $target->uri, $stored->etag);
-        // Tree::move falls back to copy plus delete when the target declines moveInto
-        // (sabre/dav/lib/DAV/Tree.php:163-187), and that fallback swallows exceptions
-        // (apps/dav/lib/CalDAV/Calendar.php:416-432), so the 201 alone proves nothing.
-        if ($this->store->objectByUid($target->id, $uid) === null || $this->store->objectByUid($source->id, $uid) !== null) {
-            throw new \RuntimeException(CalendarMessages::MOVE_NOT_CONFIRMED);
-        }
-        return [
-            'uid' => $uid,
-            'from' => $source->path,
-            'to' => $target->path,
-            'participantsNotified' => false,
-            'note' => CalendarMessages::PARTICIPANTS_NOT_NOTIFIED,
-        ];
+        return new PreparedCalendarWrite($source, $target, $stored, $stored->vcalendar, function () use ($userId, $source, $target, $stored, $uid): array {
+            $this->dav->move($userId, $source->uri, $stored->uri, $target->uri, $stored->etag);
+            // Tree::move falls back to copy plus delete when the target declines moveInto
+            // (sabre/dav/lib/DAV/Tree.php:163-187), and that fallback swallows exceptions
+            // (apps/dav/lib/CalDAV/Calendar.php:416-432), so the 201 alone proves nothing.
+            if ($this->store->objectByUid($target->id, $uid) === null || $this->store->objectByUid($source->id, $uid) !== null) {
+                throw new \RuntimeException(CalendarMessages::MOVE_NOT_CONFIRMED);
+            }
+            return [
+                'uid' => $uid,
+                'from' => $source->path,
+                'to' => $target->path,
+                'participantsNotified' => false,
+                'note' => CalendarMessages::PARTICIPANTS_NOT_NOTIFIED,
+            ];
+        });
     }
 
     /**

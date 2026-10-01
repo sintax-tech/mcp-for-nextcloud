@@ -44,6 +44,16 @@ final class FilesMessages {
             . 'batch itself created; a folder with content is preserved and listed in kept_dirs.';
     }
 
+    /** @return string files_move_batch executed without confirm: true */
+    public static function batchNeedsConfirm(): string {
+        return Translator::t('files_move_batch with dry_run: false requires confirm: true.');
+    }
+
+    /** @return string an unexpected failure while moving one item of a batch */
+    public static function moveFailed(): string {
+        return Translator::t('Failed to move the item.');
+    }
+
     /** @return string a batch that does not exist, is not this user's, or is past its lifetime */
     public static function batchNotFound(): string {
         return Translator::t('Batch not found.');

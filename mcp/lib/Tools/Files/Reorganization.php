@@ -316,7 +316,7 @@ final class Reorganization {
             return $result->confirmation === null ? $result->plan : array_merge($result->confirmation, $result->plan);
         }
         if ($confirmed !== true) {
-            throw new \InvalidArgumentException('files_move_batch com dry_run: false exige confirm: true.');
+            throw new \InvalidArgumentException(FilesMessages::batchNeedsConfirm());
         }
         if (!$result->isOk()) {
             throw new ToolFailure(FilesMessages::batchNotOk(
@@ -336,7 +336,7 @@ final class Reorganization {
                 $movedNode = NodeAccess::run(fn () => $check->source->move($this->absolute($root, $check->to)));
                 $moved[] = ['from' => $item['from'], 'to' => $check->to, 'toId' => (int)$movedNode->getId()];
             } catch (\Throwable $e) {
-                $failure = $e instanceof ToolFailure ? $e->getMessage() : 'Falha ao mover o item.';
+                $failure = $e instanceof ToolFailure ? $e->getMessage() : FilesMessages::moveFailed();
                 $batchId = $store->insert(new Batch(null, $userId, $now, $moved, $created, null));
                 return [
                     'batch_id' => $batchId,

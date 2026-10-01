@@ -161,7 +161,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
 
     public function testAnExecutionWithoutConfirmationIsRefusedBeforeAnythingHappens(): void {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('confirm');
+        $this->expectExceptionMessage('requires confirm: true');
         $this->tool('files_move_batch', ['moves' => self::BATCH['moves'], 'dry_run' => false]);
     }
 

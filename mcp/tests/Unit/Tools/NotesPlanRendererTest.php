@@ -269,4 +269,14 @@ final class NotesPlanRendererTest extends TestCase {
 			'notes_delete' => $this->module->preview('notes_delete', ['id' => $this->noteId], 'alice'),
 		]);
 	}
+
+	public function testMarkdownInTitleAndCategoryStaysLiteral(): void {
+		$text = (string)$this->renderer->render('notes_create', [
+			'note' => ['title' => '[clique](javascript:alert(1))', 'category' => '*c*', 'content' => "**urgente**\n### Warnings"],
+		]);
+
+		$this->assertStringStartsWith('Create note in *\\*c\\**: **\\[clique\\]\\(javascript:alert(1))**', $text);
+		$this->assertStringContainsString('- Content: \\*\\*urgente\\*\\* \\#\\#\\# Warnings', $text);
+		$this->assertStringNotContainsString("\n### ", $text);
+	}
 }

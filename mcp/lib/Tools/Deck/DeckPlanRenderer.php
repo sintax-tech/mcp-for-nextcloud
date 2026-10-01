@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Deck;
 
 use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Tools\PlanText;
 
 /**
  * Renders human-readable confirmation Markdown plans for Deck write operations.
@@ -66,11 +67,8 @@ final class DeckPlanRenderer {
 			return null;
 		}
 
-		$title = $card['title'];
-		$board = $dest['board'];
-		$list = isset($dest['list']) && is_string($dest['list']) ? $dest['list'] : '';
-
-		$place = $list !== '' ? "*{$board}* › *{$list}*" : "*{$board}*";
+		$title = $this->name($card['title']);
+		$place = $this->place($dest['board'], $dest['list'] ?? null);
 
 		$lines = [];
 		$lines[] = Translator::t('Create card in %s: **%s**', [$place, $title]);
@@ -87,14 +85,15 @@ final class DeckPlanRenderer {
 		$assignees = $this->extractAssignees($card);
 		if ($assignees !== []) {
 			$lines[] = count($assignees) === 1
-				? Translator::t('- Assignee: %s', [$assignees[0]])
-				: Translator::t('- Assignees: %s', [implode(', ', $assignees)]);
+				? Translator::t('- Assignee: %s', [PlanText::inline($assignees[0])])
+				: Translator::t('- Assignees: %s', [PlanText::inline(implode(', ', $assignees), 300)]);
 		}
 
 		if (!empty($dest['shared'])) {
 			$owner = !empty($dest['ownerDisplayName']) && is_string($dest['ownerDisplayName'])
 				? $dest['ownerDisplayName']
 				: (string)($dest['owner'] ?? '');
+			$owner = PlanText::inline($owner);
 			if ($owner !== '') {
 				$lines[] = Translator::t('- Shared board of %s.', [$owner]);
 			}
@@ -122,20 +121,21 @@ final class DeckPlanRenderer {
 		if (!is_string($title) || $title === '') {
 			return null;
 		}
+		$title = $this->name($title);
 
 		$board = $plan['board'] ?? null;
-		$boardName = is_array($board) && isset($board['board']) && is_string($board['board']) ? $board['board'] : '';
+		$boardName = is_array($board) && isset($board['board']) && is_string($board['board']) ? PlanText::em($board['board']) : '';
 
 		$lines = [];
 		if ($boardName !== '') {
-			$lines[] = Translator::t('Edit card in %s: **%s**', ['*' . $boardName . '*', $title]);
+			$lines[] = Translator::t('Edit card in %s: **%s**', [$boardName, $title]);
 		} else {
 			$lines[] = Translator::t('Edit card: **%s**', [$title]);
 		}
 
 		foreach ($changed as $field) {
 			if ($field === 'title' && isset($before['title'], $after['title'])) {
-				$lines[] = Translator::t('- Title: %s → %s', [(string)$before['title'], (string)$after['title']]);
+				$lines[] = Translator::t('- Title: %s → %s', [$this->name((string)$before['title']), $this->name((string)$after['title'])]);
 			} elseif ($field === 'description' && (array_key_exists('description', $before) || array_key_exists('description', $after))) {
 				$beforeDesc = !empty($before['description']) ? $this->truncate((string)$before['description']) : Translator::t('(empty)');
 				$afterDesc = !empty($after['description']) ? $this->truncate((string)$after['description']) : Translator::t('(empty)');
@@ -151,6 +151,7 @@ final class DeckPlanRenderer {
 			$owner = !empty($board['ownerDisplayName']) && is_string($board['ownerDisplayName'])
 				? $board['ownerDisplayName']
 				: (string)($board['owner'] ?? '');
+			$owner = PlanText::inline($owner);
 			if ($owner !== '') {
 				$lines[] = Translator::t('- Shared board of %s.', [$owner]);
 			}
@@ -176,14 +177,12 @@ final class DeckPlanRenderer {
 			return null;
 		}
 
-		$title = $card['title'];
+		$title = $this->name($card['title']);
 		$lines = [];
 		$lines[] = Translator::t('Move card: **%s**', [$title]);
 
-		$origList = isset($orig['list']) && is_string($orig['list']) ? $orig['list'] : '';
-		$destList = isset($dest['list']) && is_string($dest['list']) ? $dest['list'] : '';
-		$origPlace = $origList !== '' ? "*{$orig['board']}* › *{$origList}*" : "*{$orig['board']}*";
-		$destPlace = $destList !== '' ? "*{$dest['board']}* › *{$destList}*" : "*{$dest['board']}*";
+		$origPlace = $this->place($orig['board'], $orig['list'] ?? null);
+		$destPlace = $this->place($dest['board'], $dest['list'] ?? null);
 
 		if (!empty($plan['sameList'])) {
 			$lines[] = Translator::t('- Reorder in list: %s', [$origPlace]);
@@ -200,6 +199,7 @@ final class DeckPlanRenderer {
 			$owner = !empty($dest['ownerDisplayName']) && is_string($dest['ownerDisplayName'])
 				? $dest['ownerDisplayName']
 				: (string)($dest['owner'] ?? '');
+			$owner = PlanText::inline($owner);
 			if ($owner !== '') {
 				$lines[] = Translator::t('- Destination board shared by %s.', [$owner]);
 			}
@@ -207,6 +207,7 @@ final class DeckPlanRenderer {
 			$owner = !empty($orig['ownerDisplayName']) && is_string($orig['ownerDisplayName'])
 				? $orig['ownerDisplayName']
 				: (string)($orig['owner'] ?? '');
+			$owner = PlanText::inline($owner);
 			if ($owner !== '') {
 				$lines[] = Translator::t('- Origin board shared by %s.', [$owner]);
 			}
@@ -224,25 +225,26 @@ final class DeckPlanRenderer {
 			return null;
 		}
 
-		$title = $card['title'];
+		$title = $this->name($card['title']);
 		$board = $plan['board'] ?? null;
-		$boardName = is_array($board) && isset($board['board']) && is_string($board['board']) ? $board['board'] : '';
+		$boardName = is_array($board) && isset($board['board']) && is_string($board['board']) ? PlanText::em($board['board']) : '';
 
 		$lines = [];
 		if ($boardName !== '') {
-			$lines[] = Translator::t('Delete card in %s: **%s**', ['*' . $boardName . '*', $title]);
+			$lines[] = Translator::t('Delete card in %s: **%s**', [$boardName, $title]);
 		} else {
 			$lines[] = Translator::t('Delete card: **%s**', [$title]);
 		}
 
 		if (isset($plan['consequence']) && is_string($plan['consequence']) && $plan['consequence'] !== '') {
-			$lines[] = '- ' . $plan['consequence'];
+			$lines[] = '- ' . PlanText::inline($plan['consequence'], 300);
 		}
 
 		if (is_array($board) && !empty($board['shared'])) {
 			$owner = !empty($board['ownerDisplayName']) && is_string($board['ownerDisplayName'])
 				? $board['ownerDisplayName']
 				: (string)($board['owner'] ?? '');
+			$owner = PlanText::inline($owner);
 			if ($owner !== '') {
 				$lines[] = Translator::t('- Shared board of %s.', [$owner]);
 			}
@@ -285,15 +287,28 @@ final class DeckPlanRenderer {
 			}
 			return $dt->format('Y-m-d H:i');
 		} catch (\Throwable) {
-			return $raw;
+			return PlanText::inline($raw);
 		}
 	}
 
 	private function truncate(string $text): string {
-		$clean = trim(str_replace(["\r\n", "\r", "\n"], ' ', $text));
-		if (mb_strlen($clean) <= self::MAX_TEXT_LENGTH) {
-			return $clean;
-		}
-		return mb_substr($clean, 0, self::MAX_TEXT_LENGTH - 1) . '…';
+		return PlanText::inline($text, self::MAX_TEXT_LENGTH);
+	}
+
+	/** @param string $title card title typed by somebody else @return string inert text, or the placeholder when nothing is left */
+	private function name(string $title): string {
+		$inline = PlanText::inline($title);
+		return $inline !== '' ? $inline : Translator::t('(no title)');
+	}
+
+	/**
+	 * @param string $board board name
+	 * @param mixed $list list name, when the plan has one
+	 * @return string "*board* › *list*" with both names inert
+	 */
+	private function place(string $board, mixed $list): string {
+		$place = PlanText::em($board);
+		$listName = is_string($list) ? PlanText::em($list) : '';
+		return $listName !== '' ? $place . ' › ' . $listName : $place;
 	}
 }

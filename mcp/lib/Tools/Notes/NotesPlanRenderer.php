@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Notes;
 
 use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Tools\PlanText;
 
 /**
  * Renders human-readable confirmation Markdown plans for Notes write operations.
@@ -39,8 +40,8 @@ final class NotesPlanRenderer {
 			return null;
 		}
 
-		$title = $note['title'];
-		$category = isset($note['category']) && is_string($note['category']) ? trim($note['category'], '/') : '';
+		$title = $this->name($note['title']);
+		$category = isset($note['category']) && is_string($note['category']) ? PlanText::inline(trim($note['category'], '/')) : '';
 
 		$lines = [];
 		if ($category !== '') {
@@ -81,8 +82,9 @@ final class NotesPlanRenderer {
 		if (!is_string($title) || $title === '') {
 			return null;
 		}
+		$title = $this->name($title);
 
-		$category = (string)($before['category'] ?? $after['category'] ?? '');
+		$category = PlanText::inline((string)($before['category'] ?? $after['category'] ?? ''));
 		$lines = [];
 		if ($category !== '') {
 			$lines[] = Translator::t('Edit note in *%s*: **%s**', [$category, $title]);
@@ -92,7 +94,7 @@ final class NotesPlanRenderer {
 
 		foreach ($changed as $field) {
 			if ($field === 'title' && isset($before['title'], $after['title'])) {
-				$lines[] = Translator::t('- Title: %s → %s', [(string)$before['title'], (string)$after['title']]);
+				$lines[] = Translator::t('- Title: %s → %s', [$this->name((string)$before['title']), $this->name((string)$after['title'])]);
 			} elseif ($field === 'content' && (array_key_exists('content', $before) || array_key_exists('content', $after))) {
 				$beforeExcerpt = $this->truncate((string)($before['content'] ?? ''));
 				$afterExcerpt = $this->truncate((string)($after['content'] ?? ''));
@@ -117,9 +119,9 @@ final class NotesPlanRenderer {
 			return null;
 		}
 
-		$title = $note['title'];
-		$from = trim($plan['from'], '/');
-		$to = trim($plan['to'], '/');
+		$title = $this->name($note['title']);
+		$from = PlanText::inline(trim($plan['from'], '/'));
+		$to = PlanText::inline(trim($plan['to'], '/'));
 
 		$lines = [];
 		$lines[] = Translator::t('Move note: **%s**', [$title]);
@@ -150,8 +152,8 @@ final class NotesPlanRenderer {
 			return null;
 		}
 
-		$title = $note['title'];
-		$category = isset($note['category']) && is_string($note['category']) ? trim($note['category'], '/') : '';
+		$title = $this->name($note['title']);
+		$category = isset($note['category']) && is_string($note['category']) ? PlanText::inline(trim($note['category'], '/')) : '';
 
 		$lines = [];
 		if ($category !== '') {
@@ -161,7 +163,7 @@ final class NotesPlanRenderer {
 		}
 
 		if (isset($plan['consequence']) && is_string($plan['consequence']) && $plan['consequence'] !== '') {
-			$lines[] = '- ' . $plan['consequence'];
+			$lines[] = '- ' . PlanText::inline($plan['consequence'], 300);
 		}
 
 		$this->appendSharedConsequences($lines, $plan['shared'] ?? []);
@@ -180,11 +182,11 @@ final class NotesPlanRenderer {
 		$first = $shared[0] ?? null;
 		if (is_array($first)) {
 			if (!empty($first['teamFolder']) && is_string($first['teamFolder'])) {
-				$lines[] = Translator::t('- Team folder: %s', [$first['teamFolder']]);
+				$lines[] = Translator::t('- Team folder: %s', [PlanText::inline($first['teamFolder'])]);
 				return;
 			}
 			if (!empty($first['sharedBy']) && is_string($first['sharedBy'])) {
-				$lines[] = Translator::t('- Note shared by %s', [$first['sharedBy']]);
+				$lines[] = Translator::t('- Note shared by %s', [PlanText::inline($first['sharedBy'])]);
 				return;
 			}
 		}
@@ -192,10 +194,12 @@ final class NotesPlanRenderer {
 	}
 
 	private function truncate(string $text): string {
-		$clean = trim(str_replace(["\r\n", "\r", "\n"], ' ', $text));
-		if (mb_strlen($clean) <= self::MAX_TEXT_LENGTH) {
-			return $clean;
-		}
-		return mb_substr($clean, 0, self::MAX_TEXT_LENGTH - 1) . '…';
+		return PlanText::inline($text, self::MAX_TEXT_LENGTH);
+	}
+
+	/** @param string $title note title typed by somebody else @return string inert text, or the placeholder when nothing is left */
+	private function name(string $title): string {
+		$inline = PlanText::inline($title);
+		return $inline !== '' ? $inline : Translator::t('(no title)');
 	}
 }

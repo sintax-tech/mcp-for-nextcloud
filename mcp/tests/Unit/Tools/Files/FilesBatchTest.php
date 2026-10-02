@@ -298,6 +298,37 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->assertSame([], $this->batches->rows);
     }
 
+    /**
+     * With confirm_shared the user said yes to the whole list, the shared item included: it moves in its place in the
+     * order, is recorded and can be undone. Dropping it would hand the user a reorganization they did not approve.
+     */
+    public function testABatchConfirmedForSharedItemsMovesThemTooInOrder(): void {
+        $this->tree->addFile('/alice/files/Engenharia/plano.md', 'plano', 'text/markdown', ['scope' => 'team']);
+        $this->tree->mountPath = '/alice/files/Engenharia';
+        $out = $this->json('files_move_batch', [
+            'moves' => [
+                ['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md'],
+                ['from' => '/Engenharia/plano.md', 'to' => '/Arquivado/plano.md'],
+                ['from' => '/Documentos/orcamento.md', 'to' => '/Arquivado/orcamento.md'],
+            ],
+            'confirm_shared' => true,
+        ]);
+        $this->assertSame(['/Documentos/ata.md', '/Engenharia/plano.md', '/Documentos/orcamento.md'], array_column($out['moved'], 'from'));
+        $this->assertSame(3, $out['undos']);
+        $this->assertArrayNotHasKey('failed', $out);
+        $this->assertSame([
+            'move /alice/files/Documentos/ata.md /alice/files/Arquivado/ata.md',
+            'move /alice/files/Engenharia/plano.md /alice/files/Arquivado/plano.md',
+            'move /alice/files/Documentos/orcamento.md /alice/files/Arquivado/orcamento.md',
+        ], $this->tree->ops, 'o item compartilhado vai no lugar dele na ordem');
+        $this->assertSame(['/Documentos/ata.md', '/Engenharia/plano.md', '/Documentos/orcamento.md'],
+            array_column($this->batches->find($out['batch_id'], 'alice')->moves, 'from'), 'e o desfazer o conhece');
+
+        $undo = $this->json('files_undo_batch', ['batch_id' => $out['batch_id']]);
+        $this->assertSame(3, $undo['undone']);
+        $this->assertArrayHasKey('/alice/files/Engenharia/plano.md', $this->tree->nodes);
+    }
+
     public function testAnExecutionStopsAtTheFirstErrorAndRecordsOnlyWhatItMoved(): void {
         $this->tree->failMove = ['/alice/files/Documentos/ata.md'];
         $out = $this->json('files_move_batch', [

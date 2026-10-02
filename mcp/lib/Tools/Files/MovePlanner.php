@@ -12,7 +12,8 @@ use OCP\Files\Folder;
 final class MovePlan {
     /**
      * @param array<string, mixed> $plan the plan as the client sees it
-     * @param list<array{from:string, to:string}> $planned the items that may run, in order
+     * @param list<array{from:string, to:string}> $planned every item that passed the checks, in the order of the batch,
+     *   the shared ones included: they run once the caller has the shared confirmation
      * @param array<string, mixed>|null $confirmation the guard payload for the first non-personal item
      */
     public function __construct(
@@ -53,6 +54,7 @@ final class MovePlanner {
      */
     public function plan(Folder $root, string $userId, array $moves, array $mkdirs): MovePlan {
         $planned = [];
+        $personal = [];
         $conflicts = [];
         $denied = [];
         $shared = [];
@@ -71,25 +73,28 @@ final class MovePlanner {
             }
             $payload = $this->guard->guard($check->source, $userId, $from, false)
                 ?? $this->guard->guard($check->destination, $userId, $to, false);
+            // A shared item stays in the run, in its place in the order: once the user confirms the shared ones, the
+            // batch they approved is the whole list, and dropping an item would run one nobody asked for.
+            $planned[] = ['from' => $from, 'to' => $to];
             if ($payload !== null) {
                 $shared[] = ['from' => $from, 'to' => $to, 'scope' => $payload['scope'] ?? 'shared'];
                 // The first non-personal item is the one the user is asked about; the rest are in the plan.
                 $confirmation ??= $payload;
                 continue;
             }
-            $planned[] = ['from' => $from, 'to' => $to];
+            $personal[] = ['from' => $from, 'to' => $to];
         }
         $dirs = $this->planDirs($root, $mkdirs);
         $plan = [
             'ok' => $conflicts === [] && $denied === [],
-            'moves' => array_map(fn (array $item) => $item + ['ok' => true], $planned),
+            'moves' => array_map(fn (array $item) => $item + ['ok' => true], $personal),
             'conflicts' => $conflicts,
             'denied' => $denied,
             'shared' => $shared,
             'mkdirs' => $dirs,
             'summary' => [
                 'total' => count($moves),
-                'planned' => count($planned),
+                'planned' => count($personal),
                 'conflicts' => count($conflicts),
                 'denied' => count($denied),
                 'shared' => count($shared),

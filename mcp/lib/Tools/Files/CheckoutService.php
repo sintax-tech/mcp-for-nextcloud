@@ -18,8 +18,9 @@ use OCP\IURLGenerator;
 /**
  * Issues the temporary links that let an agent edit a file with its own local tools: one single-use
  * download link and one single-use upload link, both bound to the user, the file id and the ETag read at
- * checkout time. Only keyed hashes of the tokens are persisted; the plain values leave this class once,
- * inside the two URLs.
+ * checkout time. files_upload gets a third kind, a single-use create link bound to the user and a path that
+ * must still be free. Only keyed hashes of the tokens are persisted; the plain values leave this class once,
+ * inside the URLs.
  */
 final class CheckoutService {
     /** Lifetime of a download link, in seconds. */
@@ -38,6 +39,8 @@ final class CheckoutService {
     private const ROUTES = [
         CheckoutToken::KIND_DOWNLOAD => 'mcp.checkout.download',
         CheckoutToken::KIND_UPLOAD => 'mcp.checkout.upload',
+        // A create link is a raw upload too, so it is spent on the same route and the controller tells them apart.
+        CheckoutToken::KIND_CREATE => 'mcp.checkout.upload',
     ];
 
     public function __construct(
@@ -98,6 +101,53 @@ final class CheckoutService {
     }
 
     /**
+     * Mints the single-use link files_upload hands out: one PUT that creates the file at $path.
+     *
+     * The row keeps the path and never a node id, because there is no node yet; the upload resolves the folder
+     * again and refuses when the name was taken in the meantime. No versioning check: a new file has nothing to back up.
+     *
+     * @param string $userId authenticated user
+     * @param string $path normalized user-relative path of the file to create
+     * @param array<string, mixed> $access ownership description of the destination folder, from NodeAccessInfo
+     * @param bool $confirmed whether the caller passed confirm_shared; stored so the upload trusts the plan
+     * @return array{upload_url:string, expires_at:string} the link and when it stops working
+     */
+    public function issueCreate(string $userId, string $path, array $access, bool $confirmed): array {
+        $now = $this->time->getTime();
+        $token = $this->mint(CheckoutToken::KIND_CREATE);
+        $this->store->insert([
+            'token_hash' => $this->hasher->hash($token),
+            'kind' => CheckoutToken::KIND_CREATE,
+            'user_id' => $userId,
+            'file_id' => 0,
+            'path' => $path,
+            'etag' => CheckoutToken::NO_ETAG,
+            'scope' => (string)$access['scope'],
+            'shared_confirmed' => $confirmed ? 1 : 0,
+            'created_at' => $now,
+            'expires_at' => $now + self::UPLOAD_TTL,
+        ], $now);
+        return [
+            'upload_url' => $this->url(CheckoutToken::KIND_CREATE, $token),
+            'expires_at' => gmdate('Y-m-d\TH:i:s\Z', $now + self::UPLOAD_TTL),
+        ];
+    }
+
+    /**
+     * Whether a presented token was minted as a create link, read from its prefix alone.
+     *
+     * Only for decisions taken before the store is read (an empty body is a valid new file but would erase an
+     * existing one). The prefix is part of the hashed value, so a token whose prefix lies matches no row; the kind
+     * that authorises anything is still the one stored with the row.
+     *
+     * @param string $token plain token from the route
+     * @return bool true when the token carries the create prefix
+     */
+    public static function isCreateToken(string $token): bool {
+        return str_starts_with($token, self::TOKEN_PREFIX . CheckoutToken::KIND_CREATE[0] . '_');
+    }
+
+    /**
      * Refuses a checkout whose upload could never be honoured, without minting anything.
      *
      * The upload always takes a backup, so a checkout without files_versions would hand out two links
@@ -139,7 +189,7 @@ final class CheckoutService {
     }
 
     /**
-     * @param string $kind CheckoutToken::KIND_DOWNLOAD or KIND_UPLOAD
+     * @param string $kind CheckoutToken::KIND_DOWNLOAD, KIND_UPLOAD or KIND_CREATE
      * @param string $token plain token, never logged or persisted
      * @return string absolute URL of the route that spends it
      */

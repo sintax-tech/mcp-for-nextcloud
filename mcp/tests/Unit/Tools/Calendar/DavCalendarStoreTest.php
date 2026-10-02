@@ -138,4 +138,79 @@ final class DavCalendarStoreTest extends TestCase {
         });
         self::assertSame([], $store->sharesOf(7));
     }
+
+    /**
+     * The rows the core builds for alice: her own calendar, a read-write share from bob, a read-only share from bob
+     * and a calendar in the trash. Keys are the DAV property names CalDavBackend::getCalendarsForUser() writes.
+     *
+     * @return list<array<string, mixed>> raw backend rows
+     */
+    private static function coreRows(): array {
+        $components = static fn (array $names) => new \Sabre\CalDAV\Xml\Property\SupportedCalendarComponentSet($names);
+        return [
+            ['id' => '1', 'uri' => 'personal', 'principaluri' => 'principals/users/alice', '{DAV:}displayname' => 'Pessoal',
+                '{http://owncloud.org/ns}owner-principal' => 'principals/users/alice',
+                '{urn:ietf:params:xml:ns:caldav}supported-calendar-component-set' => $components(['VEVENT', 'VTODO'])],
+            ['id' => '3', 'uri' => 'team_shared_by_bob', 'principaluri' => 'principals/users/alice', '{DAV:}displayname' => 'Equipe',
+                '{http://owncloud.org/ns}owner-principal' => 'principals/users/bob',
+                '{urn:ietf:params:xml:ns:caldav}supported-calendar-component-set' => $components(['VEVENT'])],
+            ['id' => '4', 'uri' => 'private_shared_by_bob', 'principaluri' => 'principals/users/alice',
+                '{http://owncloud.org/ns}owner-principal' => 'principals/users/bob', '{http://owncloud.org/ns}read-only' => true,
+                '{urn:ietf:params:xml:ns:caldav}supported-calendar-component-set' => $components(['VEVENT'])],
+            ['id' => '7', 'uri' => 'old', 'principaluri' => 'principals/users/alice', '{http://nextcloud.com/ns}deleted-at' => 1_790_000_000],
+        ];
+    }
+
+    /** The owner, the read-only flag, the trash flag and the component set come out of the core's DAV property keys. */
+    public function testCalendarsForPrincipalMapsOwnerReadOnlyTrashAndComponents(): void {
+        $store = $this->storeWithShares(function ($backend): void {
+            $backend->expects($this->once())->method('getCalendarsForUser')->with('principals/users/alice')->willReturn(self::coreRows());
+        });
+
+        self::assertSame([
+            ['id' => 1, 'uri' => 'personal', 'displayName' => 'Pessoal', 'ownerPrincipal' => 'principals/users/alice', 'readOnly' => false, 'components' => ['VEVENT', 'VTODO'], 'deleted' => false],
+            ['id' => 3, 'uri' => 'team_shared_by_bob', 'displayName' => 'Equipe', 'ownerPrincipal' => 'principals/users/bob', 'readOnly' => false, 'components' => ['VEVENT'], 'deleted' => false],
+            ['id' => 4, 'uri' => 'private_shared_by_bob', 'displayName' => 'private_shared_by_bob', 'ownerPrincipal' => 'principals/users/bob', 'readOnly' => true, 'components' => ['VEVENT'], 'deleted' => false],
+            ['id' => 7, 'uri' => 'old', 'displayName' => 'old', 'ownerPrincipal' => 'principals/users/alice', 'readOnly' => false, 'components' => [], 'deleted' => true],
+        ], $store->calendarsForPrincipal('principals/users/alice'));
+    }
+
+    /** A row with no owner-principal falls back to the principal that holds it. */
+    public function testOwnerFallsBackToThePrincipalOfTheRow(): void {
+        $store = $this->storeWithShares(function ($backend): void {
+            $backend->method('getCalendarsForUser')->willReturn([['id' => 9, 'uri' => 'x', 'principaluri' => 'principals/users/alice']]);
+        });
+        self::assertSame('principals/users/alice', $store->calendarsForPrincipal('principals/users/alice')[0]['ownerPrincipal']);
+    }
+
+    /** The time window reaches the core as a VEVENT time-range with the same from and to, never swapped. */
+    public function testEventUrisInRangeSendsTheTimeRangeAsAVeventFilter(): void {
+        $from = new \DateTimeImmutable('2026-03-01T00:00:00Z');
+        $to = new \DateTimeImmutable('2026-04-01T00:00:00Z');
+        $store = $this->storeWithShares(function ($backend) use ($from, $to): void {
+            $backend->expects($this->once())->method('calendarQuery')->with(
+                7,
+                $this->callback(function (array $filters) use ($from, $to): bool {
+                    $range = $filters['comp-filters'][0]['time-range'] ?? null;
+                    return $filters['name'] === 'VCALENDAR'
+                        && $filters['comp-filters'][0]['name'] === 'VEVENT'
+                        && $range !== null
+                        && $range['start']->format(DATE_ATOM) === $from->format(DATE_ATOM)
+                        && $range['end']->format(DATE_ATOM) === $to->format(DATE_ATOM);
+                }),
+            )->willReturn(['a.ics', 'b.ics']);
+        });
+        self::assertSame(['a.ics', 'b.ics'], $store->eventUrisInRange(7, $from, $to));
+    }
+
+    /** Rows come back keyed the way the tools read them; an empty list never reaches the core. */
+    public function testObjectsMapsTheCoreRowsAndSkipsTheCallForNoUris(): void {
+        $store = $this->storeWithShares(function ($backend): void {
+            $backend->expects($this->once())->method('getMultipleCalendarObjects')->with(7, ['a.ics'])->willReturn([
+                ['id' => '5', 'uri' => 'a.ics', 'etag' => '"abc"', 'calendardata' => 'ICS'],
+            ]);
+        });
+        self::assertSame([], $store->objects(7, []));
+        self::assertSame([['id' => 5, 'uri' => 'a.ics', 'etag' => '"abc"', 'data' => 'ICS', 'deleted' => false]], $store->objects(7, ['a.ics']));
+    }
 }

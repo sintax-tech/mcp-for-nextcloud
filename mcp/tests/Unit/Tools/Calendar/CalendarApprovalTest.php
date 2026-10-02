@@ -131,6 +131,77 @@ final class CalendarApprovalTest extends CalendarTestCase {
         $this->assertNoWrites();
     }
 
+    /**
+     * Writes that touch bob's shared calendar, on either side of the change, with no `confirm_shared`.
+     *
+     * @return array<string, array{0: string, 1: array<string, mixed>}> tool and arguments
+     */
+    public static function writesOnSomebodyElsesCalendar(): array {
+        $inTeam = ['calendar' => self::TEAM, 'uid' => 'shared'];
+        return [
+            'create' => ['calendar_create_event', ['calendar' => self::TEAM, 'summary' => 'Draft', 'start' => '2026-10-02', 'end' => '2026-10-03', 'allDay' => true]],
+            'update' => ['calendar_update_event', $inTeam + ['summary' => 'After']],
+            'delete' => ['calendar_delete_event', $inTeam],
+            'move inside bob\'s calendars' => ['calendar_move_event', $inTeam + ['targetCalendar' => '/remote.php/dav/calendars/alice/other_shared_by_bob/']],
+            'transfer out of it' => ['calendar_transfer_event', $inTeam + ['targetCalendar' => self::PERSONAL]],
+            'transfer into it' => ['calendar_transfer_event', ['calendar' => self::PERSONAL, 'uid' => 'event', 'targetCalendar' => self::TEAM]],
+        ];
+    }
+
+    /**
+     * @return array<string, array{0: string, 1: array<string, mixed>}> the writes that exist between one's own calendars (a transfer is between owners by definition)
+     */
+    public static function writesBetweenOwnCalendars(): array {
+        return array_diff_key(self::existingEventWrites(), ['transfer' => true]);
+    }
+
+    /**
+     * The production gate: the registry sends a confirmed write through CalendarDraftApproval::execute, which prepares it
+     * with the acknowledgement forced on, so the check of the handler never fires; this is the check that stands.
+     * The execution has to be refused before anything reaches DAV, with `confirm: true` alone and with an explicit false
+     * (a value that is not a boolean never gets this far: the schema validation refuses it).
+     */
+    #[DataProvider('writesOnSomebodyElsesCalendar')]
+    public function testConfirmedWriteOnSomebodyElsesCalendarNeedsTheSharedAcknowledgement(string $tool, array $args): void {
+        $this->store->addCalendar(self::ALICE, 8, 'other_shared_by_bob', self::BOB);
+        $this->store->addObject(3, 'shared.ics', self::ics("UID:shared\nSUMMARY:Reuniao do Roberto\nDTSTART:20261001T120000Z\nDTEND:20261001T130000Z"));
+
+        foreach ([[], ['confirm_shared' => false]] as $extra) {
+            self::assertToolError($this->registry->call($tool, $args + $extra + ['confirm' => true], 'alice'), 'compartilhado');
+            $this->assertNoWrites();
+        }
+
+        self::assertArrayNotHasKey('isError', $this->registry->call($tool, $args + ['confirm' => true, 'confirm_shared' => true], 'alice'));
+        self::assertCount(1, $this->dav->calls);
+    }
+
+    /** The plan of the same call is not an error: it carries the notice and writes nothing. */
+    #[DataProvider('writesOnSomebodyElsesCalendar')]
+    public function testPlanOnSomebodyElsesCalendarNamesTheOwnerAndWritesNothing(string $tool, array $args): void {
+        $this->store->addCalendar(self::ALICE, 8, 'other_shared_by_bob', self::BOB);
+        $this->store->addObject(3, 'shared.ics', self::ics("UID:shared\nSUMMARY:Reuniao do Roberto\nDTSTART:20261001T120000Z\nDTEND:20261001T130000Z"));
+        $plan = self::json($this->registry->call($tool, $args, 'alice'));
+        self::assertTrue($plan['requiresConfirmation']);
+        self::assertSame('bob', $plan['shared'][0]['owner']);
+        $this->assertNoWrites();
+    }
+
+    /** The gate is for calendars of other people only: between her own calendars no acknowledgement is asked. */
+    #[DataProvider('writesBetweenOwnCalendars')]
+    public function testConfirmedWriteOnOwnCalendarsNeedsNoSharedAcknowledgement(string $tool, array $args): void {
+        self::assertArrayNotHasKey('isError', $this->registry->call($tool, $args + ['confirm' => true], 'alice'));
+        self::assertCount(1, $this->dav->calls);
+    }
+
+    /** The text of the plan, which is what the person reads, names the owner of the shared calendar. */
+    public function testThePlanTextNamesTheOwnerOfTheSharedCalendar(): void {
+        $result = $this->registry->call('calendar_create_event', ['calendar' => self::TEAM, 'summary' => 'Planejamento', 'start' => '2026-10-02', 'end' => '2026-10-03', 'allDay' => true], 'alice');
+        self::assertStringContainsString('- Calendário *Equipe (bob)* compartilhado por Roberto Almeida.', $result['content'][0]['text']);
+
+        $own = $this->registry->call('calendar_create_event', ['calendar' => self::PERSONAL, 'summary' => 'Planejamento', 'start' => '2026-10-02', 'end' => '2026-10-03', 'allDay' => true], 'alice');
+        self::assertStringNotContainsString('compartilhado por', $own['content'][0]['text']);
+    }
+
     public function testSharedCalendarPlanWarnsAndExecutionStillNeedsTheSharedAcknowledgement(): void {
         $args = ['calendar' => self::PERSONAL, 'uid' => 'event', 'targetCalendar' => self::TEAM];
         $plan = self::json($this->registry->call('calendar_transfer_event', $args, 'alice'));

@@ -26,6 +26,8 @@ final class FakeCalendarStore implements CalendarStore {
     public ?Throwable $rangeFailure = null;
     /** Failure thrown by sharesOf alone when set (the shared-calendar lookup). */
     public ?Throwable $sharesFailure = null;
+    /** @var list<array{0:int, 1:string, 2:string}> windows eventUrisInRange was asked for: calendar id, UTC ISO from and to, in order */
+    public array $rangesAsked = [];
     /** Result returned by moveCalendarObject in the fake DAV. */
     public bool $moveResult = true;
     private int $nextObjectId = 1000;
@@ -81,7 +83,44 @@ final class FakeCalendarStore implements CalendarStore {
         if ($this->rangeFailure !== null) {
             throw $this->rangeFailure;
         }
-        return array_keys(array_filter($this->objects[$calendarId] ?? [], static fn (array $o) => !$o['deleted']));
+        $this->rangesAsked[] = [$calendarId, $from->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z'), $to->setTimezone(new \DateTimeZone('UTC'))->format('Y-m-d\TH:i:s\Z')];
+        return array_keys(array_filter($this->objects[$calendarId] ?? [], fn (array $o) => !$o['deleted'] && $this->mayOverlap($o['data'], $from, $to)));
+    }
+
+    /**
+     * The coarse time-range prefilter the core applies from the first and last occurrence it stores: a window that does
+     * not reach the object leaves it out. A series is kept as long as it starts before the window ends, since the
+     * expander decides which occurrences fall inside; an unreadable object is kept so the tools can skip it and log it.
+     *
+     * @param string $data iCalendar text
+     * @param DateTimeImmutable $from inclusive window start
+     * @param DateTimeImmutable $to exclusive window end
+     * @return bool whether the object can have an occurrence inside the window
+     */
+    private function mayOverlap(string $data, DateTimeImmutable $from, DateTimeImmutable $to): bool {
+        try {
+            $vcalendar = \Sabre\VObject\Reader::read($data);
+        } catch (Throwable) {
+            return true;
+        }
+        $utc = new \DateTimeZone('UTC');
+        $first = null;
+        $last = null;
+        $series = false;
+        foreach ($vcalendar->select('VEVENT') as $event) {
+            if (!isset($event->DTSTART)) {
+                return true;
+            }
+            $start = DateTimeImmutable::createFromInterface($event->DTSTART->getDateTime($utc));
+            $end = isset($event->DTEND) ? DateTimeImmutable::createFromInterface($event->DTEND->getDateTime($utc)) : $start;
+            $series = $series || isset($event->RRULE) || isset($event->RDATE);
+            $first = $first === null || $start < $first ? $start : $first;
+            $last = $last === null || $end > $last ? $end : $last;
+        }
+        if ($first === null) {
+            return true;
+        }
+        return $first < $to && ($series || $last > $from || $first == $last && $first >= $from);
     }
 
     /** @return list<array{id:int, uri:string, etag:string, data:string, deleted:bool}> */

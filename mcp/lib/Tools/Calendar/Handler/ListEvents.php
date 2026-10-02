@@ -77,11 +77,13 @@ final class ListEvents implements CalendarTool {
                     $this->logger->warning('MCP calendar: invalid calendar object skipped', ['app' => 'mcp', 'exception_class' => 'Sabre\VObject\ParseException']);
                     continue;
                 }
-                $visibility = $this->classification->visibility($vcalendar, $calendar, $userId);
-                if ($visibility === Classification::HIDDEN) {
-                    continue;
-                }
                 foreach ($this->expander->occurrences($vcalendar, $from, $to) as $occurrence) {
+                    // The CLASS belongs to the component the occurrence comes from: a private override of a public series
+                    // is hidden alone, and an override with no CLASS takes the one of its master.
+                    $visibility = $this->classification->visibilityOf($occurrence['event'], $vcalendar, $calendar, $userId);
+                    if ($visibility === Classification::HIDDEN) {
+                        continue;
+                    }
                     if (count($items) >= self::MAX_ITEMS) {
                         return ToolSchema::result($items, ['truncated' => true, 'limit' => self::MAX_ITEMS]);
                     }

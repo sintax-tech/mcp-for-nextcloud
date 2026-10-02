@@ -76,6 +76,133 @@ final class PlanWarningsTest extends CalendarTestCase {
         self::assertStringContainsString('Dentista', $plan['warnings'][0]['message']);
     }
 
+    /**
+     * @param string $day civil day of the all-day event, Y-m-d
+     * @return list<array<string, mixed>> collision warnings of the plan of an all-day event on that day, built the way the registry builds it
+     */
+    private function allDayCollisions(string $day = '2026-10-01'): array {
+        $next = (new \DateTimeImmutable($day))->modify('+1 day')->format('Y-m-d');
+        $plan = self::json($this->registry->call('calendar_create_event', ['calendar' => self::PERSONAL, 'summary' => 'Feriado', 'start' => $day, 'end' => $next, 'allDay' => true], 'alice'));
+        return array_values(array_filter($plan['warnings'], static fn (array $w): bool => $w['type'] === 'collision'));
+    }
+
+    /** The day of an all-day event is the day in the account's zone: 22:00 of the day before there is not on it, 23:00 of the day is. */
+    public function testAllDayEventCollidesByTheDayOfTheAccountZoneNotByTheDayInUtc(): void {
+        // 30/09 22:00-23:00 in Sao Paulo is 01/10 01:00-02:00 UTC: the day before, though it falls on 01/10 in UTC.
+        $this->store->addObject(1, 'night30.ics', self::ics("UID:night30\nSUMMARY:Noite do dia 30\nDTSTART:20261001T010000Z\nDTEND:20261001T020000Z"));
+        // 01/10 23:00-23:30 in Sao Paulo is 02/10 02:00-02:30 UTC: on the day, though it falls on 02/10 in UTC.
+        $this->store->addObject(1, 'night1.ics', self::ics("UID:night1\nSUMMARY:Noite do dia 1\nDTSTART:20261002T020000Z\nDTEND:20261002T023000Z"));
+
+        $collisions = $this->allDayCollisions();
+
+        self::assertCount(1, $collisions);
+        self::assertStringContainsString('Noite do dia 1', $collisions[0]['message']);
+        self::assertStringNotContainsString('Noite do dia 30', $collisions[0]['message']);
+    }
+
+    /** The same holds east of UTC, where the day starts the evening before in UTC. */
+    public function testAllDayEventUsesTheZoneOfAnAccountEastOfUtc(): void {
+        $this->accountTimezone = 'Asia/Tokyo';
+        // 01/10 00:30-01:30 in Tokyo is 30/09 15:30-16:30 UTC.
+        $this->store->addObject(1, 'dawn.ics', self::ics("UID:dawn\nSUMMARY:Madrugada\nDTSTART:20260930T153000Z\nDTEND:20260930T163000Z"));
+        // 02/10 00:30 in Tokyo is 01/10 15:30 UTC: the next day, though it falls on 01/10 in UTC.
+        $this->store->addObject(1, 'next.ics', self::ics("UID:next\nSUMMARY:Dia seguinte\nDTSTART:20261001T153000Z\nDTEND:20261001T163000Z"));
+
+        $collisions = $this->allDayCollisions();
+
+        self::assertCount(1, $collisions);
+        self::assertStringContainsString('Madrugada', $collisions[0]['message']);
+    }
+
+    /** All-day events compare day with day: the one of the next day does not collide, the one of the same day does, in any zone. */
+    public function testAllDayEventsCollideOnlyOnTheSameCivilDay(): void {
+        foreach (['America/Sao_Paulo', 'Asia/Tokyo', 'UTC'] as $zone) {
+            $this->accountTimezone = $zone;
+            $this->store->objects[1] = [];
+            $this->store->addObject(1, 'same.ics', self::ics("UID:same\nSUMMARY:Mesmo dia\nDTSTART;VALUE=DATE:20261001\nDTEND;VALUE=DATE:20261002"));
+            $this->store->addObject(1, 'before.ics', self::ics("UID:before\nSUMMARY:Dia anterior\nDTSTART;VALUE=DATE:20260930\nDTEND;VALUE=DATE:20261001"));
+            $this->store->addObject(1, 'after.ics', self::ics("UID:after\nSUMMARY:Dia seguinte\nDTSTART;VALUE=DATE:20261002\nDTEND;VALUE=DATE:20261003"));
+
+            $collisions = $this->allDayCollisions();
+
+            self::assertCount(1, $collisions, $zone);
+            self::assertStringContainsString('Mesmo dia', $collisions[0]['message'], $zone);
+        }
+    }
+
+    /** The title of a private occurrence of somebody else's series never reaches the plan, and the occurrence does not collide. */
+    public function testPrivateOverrideOfAnotherPersonsSeriesIsNotInThePlan(): void {
+        $master = "UID:serie\nSUMMARY:Serie publica\nDTSTART:20260930T090000Z\nDTEND:20260930T100000Z\nRRULE:FREQ=DAILY;COUNT=3";
+        // 01/10 14:00-15:00 in Sao Paulo, the very slot of the new event, moved by its organiser and marked private.
+        $override = "BEGIN:VEVENT\nUID:serie\nRECURRENCE-ID:20261001T090000Z\nCLASS:PRIVATE\nSUMMARY:Segredo do Roberto\nDTSTART:20261001T170000Z\nDTEND:20261001T180000Z\nEND:VEVENT";
+        $this->store->addObject(3, 'serie.ics', self::ics($master, $override));
+
+        $result = $this->registry->call('calendar_create_event', ['calendar' => self::TEAM, 'confirm_shared' => true] + self::EVENT, 'alice');
+
+        self::assertSame([], self::json($result)['warnings']);
+        self::assertStringNotContainsString('Segredo do Roberto', json_encode($result, JSON_UNESCAPED_UNICODE));
+    }
+
+    /** The plan does not reveal an appointment whose CLASS is unknown either: it is handled as private. */
+    public function testUnknownClassOfAnotherPersonsEventIsNotInThePlan(): void {
+        $this->store->addObject(3, 'x.ics', self::ics("UID:x\nCLASS:X-FOO\nSUMMARY:Segredo desconhecido\nDTSTART:20261001T170000Z\nDTEND:20261001T180000Z"));
+        $result = $this->registry->call('calendar_create_event', ['calendar' => self::TEAM, 'confirm_shared' => true] + self::EVENT, 'alice');
+        self::assertSame([], self::json($result)['warnings']);
+        self::assertStringNotContainsString('Segredo desconhecido', json_encode($result, JSON_UNESCAPED_UNICODE));
+    }
+
+    /** A confidential occurrence collides as a busy block without its title. */
+    public function testConfidentialOverrideOfAnotherPersonsSeriesCollidesAsBusy(): void {
+        $master = "UID:serie\nSUMMARY:Serie publica\nDTSTART:20260930T090000Z\nDTEND:20260930T100000Z\nRRULE:FREQ=DAILY;COUNT=3";
+        $override = "BEGIN:VEVENT\nUID:serie\nRECURRENCE-ID:20261001T090000Z\nCLASS:CONFIDENTIAL\nSUMMARY:Segredo do Roberto\nDTSTART:20261001T170000Z\nDTEND:20261001T180000Z\nEND:VEVENT";
+        $this->store->addObject(3, 'serie.ics', self::ics($master, $override));
+
+        $result = $this->registry->call('calendar_create_event', ['calendar' => self::TEAM, 'confirm_shared' => true] + self::EVENT, 'alice');
+
+        $plan = self::json($result);
+        self::assertCount(1, $plan['warnings']);
+        self::assertStringStartsWith('Sobrepõe um compromisso ocupado (', $plan['warnings'][0]['message']);
+        self::assertStringNotContainsString('Segredo do Roberto', json_encode($result, JSON_UNESCAPED_UNICODE));
+        self::assertStringNotContainsString('Segredo do Roberto', $result['content'][0]['text']);
+    }
+
+    /**
+     * @param string $zone zone of alice's account
+     * @return array<string, array{0: string, 1: string, 2: string}> account zone, UTC start and UTC end of 01/10 in that zone
+     */
+    public static function dayInEachZone(): array {
+        return [
+            'Sao Paulo' => ['America/Sao_Paulo', '2026-10-01T03:00:00Z', '2026-10-02T03:00:00Z'],
+            'Tokyo' => ['Asia/Tokyo', '2026-09-30T15:00:00Z', '2026-10-01T15:00:00Z'],
+        ];
+    }
+
+    /** The guests of an all-day event are asked about the day in the zone of the account, not about the day in UTC. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('dayInEachZone')]
+    public function testAllDayEventAsksTheGuestsAboutTheDayInTheAccountZone(string $zone, string $from, string $to): void {
+        $this->accountTimezone = $zone;
+        self::json($this->registry->call('calendar_create_event', ['calendar' => self::PERSONAL, 'summary' => 'Feriado', 'start' => '2026-10-01', 'end' => '2026-10-02', 'allDay' => true, 'attendees' => ['carla']], 'alice'));
+        self::assertSame([[$from, $to]], $this->availabilityAsked);
+    }
+
+    /** A guest busy the evening before the day (in the zone of the account) is not busy on it; one busy late on the day is. */
+    public function testAllDayEventReportsAGuestBusyOnlyWithinTheDayOfTheAccountZone(): void {
+        $args = ['calendar' => self::PERSONAL, 'summary' => 'Feriado', 'start' => '2026-10-01', 'end' => '2026-10-02', 'allDay' => true, 'attendees' => ['carla']];
+        // 30/09 22:00-23:00 in Sao Paulo is 01/10 01:00-02:00 UTC: inside the UTC day, outside the day of the account.
+        $this->busyBlocks = ['carla@example.invalid' => [['2026-10-01T01:00:00Z', '2026-10-01T02:00:00Z']]];
+        self::assertSame([], self::messages(self::json($this->registry->call('calendar_create_event', $args, 'alice'))['warnings'], 'busy'));
+        // 01/10 23:00-23:30 in Sao Paulo is 02/10 02:00-02:30 UTC: outside the UTC day, inside the day of the account.
+        $this->busyBlocks = ['carla@example.invalid' => [['2026-10-02T02:00:00Z', '2026-10-02T02:30:00Z']]];
+        self::assertSame(['Carla Dias está ocupado(a) neste horário.'], self::messages(self::json($this->registry->call('calendar_create_event', $args, 'alice'))['warnings'], 'busy'));
+    }
+
+    /** The current slot of a stored all-day event is the same day in the same zone, so only the days added are asked. */
+    public function testUpdateExtendingAnAllDayEventAsksOnlyAboutTheDaysAdded(): void {
+        $this->store->addObject(1, 'event.ics', self::ics("UID:event\nSUMMARY:Feriado\nDTSTART;VALUE=DATE:20261001\nDTEND;VALUE=DATE:20261002\nATTENDEE;CN=Carla Dias:mailto:carla@example.invalid"));
+        self::json($this->registry->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'event', 'start' => '2026-10-01', 'end' => '2026-10-03', 'allDay' => true], 'alice'));
+        self::assertSame([['2026-10-02T03:00:00Z', '2026-10-03T03:00:00Z']], $this->availabilityAsked);
+    }
+
     public function testBusyAttendeeIsNamedAndDoesNotBlock(): void {
         $this->busyEmails = ['carla@example.invalid'];
         $plan = $this->createPlan(['attendees' => ['carla']]);

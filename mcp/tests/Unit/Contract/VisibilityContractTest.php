@@ -326,26 +326,32 @@ final class VisibilityContractTest extends TestCase {
 
         // 2. files_edit
         foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
-            $res = $registry->call('files_edit', ['path' => $p, 'content' => 'new', 'confirm_shared' => true], 'alice');
-            $this->assertTrue($res['isError'] ?? false);
-            $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
-            $assertNoLeak($res['content'][0]['text']);
+            foreach ([[], ['confirm' => true]] as $confirm) {
+                $res = $registry->call('files_edit', ['path' => $p, 'content' => 'new', 'confirm_shared' => true] + $confirm, 'alice');
+                $this->assertTrue($res['isError'] ?? false);
+                $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+                $assertNoLeak($res['content'][0]['text']);
+            }
         }
 
         // 3. files_replace
         foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
-            $res = $registry->call('files_replace', ['path' => $p, 'old' => 'foo', 'new' => 'bar', 'confirm_shared' => true], 'alice');
-            $this->assertTrue($res['isError'] ?? false);
-            $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
-            $assertNoLeak($res['content'][0]['text']);
+            foreach ([[], ['confirm' => true]] as $confirm) {
+                $res = $registry->call('files_replace', ['path' => $p, 'old' => 'foo', 'new' => 'bar', 'confirm_shared' => true] + $confirm, 'alice');
+                $this->assertTrue($res['isError'] ?? false);
+                $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+                $assertNoLeak($res['content'][0]['text']);
+            }
         }
 
         // 4. files_checkout
         foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
-            $res = $registry->call('files_checkout', ['path' => $p, 'confirm_shared' => true], 'alice');
-            $this->assertTrue($res['isError'] ?? false);
-            $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
-            $assertNoLeak($res['content'][0]['text']);
+            foreach ([[], ['confirm' => true]] as $confirm) {
+                $res = $registry->call('files_checkout', ['path' => $p, 'confirm_shared' => true] + $confirm, 'alice');
+                $this->assertTrue($res['isError'] ?? false);
+                $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+                $assertNoLeak($res['content'][0]['text']);
+            }
         }
 
         // 5. files_versions_list
@@ -366,10 +372,12 @@ final class VisibilityContractTest extends TestCase {
 
         // 7. files_version_restore
         foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
-            $res = $registry->call('files_version_restore', ['path' => $p, 'version' => '1', 'confirm_shared' => true], 'alice');
-            $this->assertTrue($res['isError'] ?? false);
-            $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
-            $assertNoLeak($res['content'][0]['text']);
+            foreach ([[], ['confirm' => true]] as $confirm) {
+                $res = $registry->call('files_version_restore', ['path' => $p, 'version' => '1', 'confirm_shared' => true] + $confirm, 'alice');
+                $this->assertTrue($res['isError'] ?? false);
+                $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+                $assertNoLeak($res['content'][0]['text']);
+            }
         }
 
         // 8. files_image_view
@@ -390,10 +398,37 @@ final class VisibilityContractTest extends TestCase {
             $this->assertSame(CommonMessages::notFound(), $s['reason']);
         }
 
-        // 10. files_image_search
+        // 9b. files_images_view {folder}: the visible image comes back, the hidden ones never, not even as skipped
+        $visibleImgId = $this->tree->addFile('/alice/files/visible.jpg', 'img visible', 'image/jpeg');
+        $res = $registry->call('files_images_view', ['folder' => '/'], 'alice');
+        $this->assertArrayNotHasKey('isError', $res);
+        $viewed = [];
+        foreach ($res['content'] as $item) {
+            if ($item['type'] === 'text' && isset(json_decode($item['text'], true)['path'])) {
+                $viewed[] = json_decode($item['text'], true)['path'];
+            }
+        }
+        $this->assertSame(['/visible.jpg'], $viewed);
+        $assertNoLeak(json_encode($res));
+
+        // 10. files_image_search, by query and by a tag that marks a hidden image and a visible one
         $res = $registry->call('files_image_search', ['query' => 'secret'], 'alice');
         $this->assertArrayNotHasKey('isError', $res);
         $assertNoLeak($res['content'][0]['text']);
+        $holidays = $this->createMock(ISystemTag::class);
+        $holidays->method('getId')->willReturn('30');
+        $holidays->method('getName')->willReturn('ferias');
+        $holidays->method('isUserVisible')->willReturn(true);
+        $this->tagManager->method('getAllTags')->willReturn([$holidays]);
+        $this->tagMapper->method('getObjectIdsForTags')->willReturn([(string)$directImgId, (string)$ancestralImgId, (string)$visibleImgId]);
+        $res = $registry->call('files_image_search', ['tag' => 'ferias'], 'alice');
+        $this->assertArrayNotHasKey('isError', $res);
+        $this->assertSame(['/visible.jpg'], array_column(json_decode($res['content'][0]['text'], true), 'path'));
+        $assertNoLeak($res['content'][0]['text']);
+        // A hidden folder answers like a missing one: an empty list would say it is there.
+        $res = $registry->call('files_image_search', ['folder' => '/SecretFolder'], 'alice');
+        $this->assertTrue($res['isError'] ?? false);
+        $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
 
         // 11. files_list
         $res = $registry->call('files_list', ['path' => '/'], 'alice');
@@ -418,13 +453,15 @@ final class VisibilityContractTest extends TestCase {
         $assertNoLeak($res['content'][0]['text']);
 
         // 14. files_mkdir (collision and inside hidden folder)
-        $res = $registry->call('files_mkdir', ['path' => '/secret_direct.txt', 'confirm_shared' => true], 'alice');
-        $this->assertTrue($res['isError'] ?? false);
-        $this->assertSame(CommonMessages::forbidden(), $res['content'][0]['text']);
-        $res = $registry->call('files_mkdir', ['path' => '/SecretFolder/newdir', 'confirm_shared' => true], 'alice');
-        $this->assertTrue($res['isError'] ?? false);
-        $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
-        $assertNoLeak($res['content'][0]['text']);
+        foreach ([[], ['confirm' => true]] as $confirm) {
+            $res = $registry->call('files_mkdir', ['path' => '/secret_direct.txt', 'confirm_shared' => true] + $confirm, 'alice');
+            $this->assertTrue($res['isError'] ?? false);
+            $this->assertSame(CommonMessages::forbidden(), $res['content'][0]['text']);
+            $res = $registry->call('files_mkdir', ['path' => '/SecretFolder/newdir', 'confirm_shared' => true] + $confirm, 'alice');
+            $this->assertTrue($res['isError'] ?? false);
+            $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+            $assertNoLeak($res['content'][0]['text']);
+        }
 
         // 14b. files_upload and files_create (collision with a hidden file, inside a hidden folder), confirmed and planned:
         // a hidden folder answers like a missing one and nothing names it; no link is minted and nothing is written.
@@ -443,33 +480,37 @@ final class VisibilityContractTest extends TestCase {
         $this->assertArrayNotHasKey('/alice/files/SecretFolder/novo.txt', $this->tree->nodes);
 
         // 15. files_copy (source hidden, destination hidden, destination collision)
-        foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
-            $res = $registry->call('files_copy', ['from' => $p, 'to' => '/dest.txt', 'confirm_shared' => true], 'alice');
+        $this->tree->addFile('/alice/files/visible.txt', 'visible');
+        foreach ([[], ['confirm' => true]] as $confirm) {
+            foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
+                $res = $registry->call('files_copy', ['from' => $p, 'to' => '/dest.txt', 'confirm_shared' => true] + $confirm, 'alice');
+                $this->assertTrue($res['isError'] ?? false);
+                $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+                $assertNoLeak($res['content'][0]['text']);
+            }
+            $res = $registry->call('files_copy', ['from' => '/visible.txt', 'to' => '/SecretFolder/dest.txt', 'confirm_shared' => true] + $confirm, 'alice');
             $this->assertTrue($res['isError'] ?? false);
             $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
-            $assertNoLeak($res['content'][0]['text']);
+            $res = $registry->call('files_copy', ['from' => '/visible.txt', 'to' => '/secret_direct.txt', 'confirm_shared' => true] + $confirm, 'alice');
+            $this->assertTrue($res['isError'] ?? false);
+            $this->assertSame(CommonMessages::forbidden(), $res['content'][0]['text']);
         }
-        $this->tree->addFile('/alice/files/visible.txt', 'visible');
-        $res = $registry->call('files_copy', ['from' => '/visible.txt', 'to' => '/SecretFolder/dest.txt', 'confirm_shared' => true], 'alice');
-        $this->assertTrue($res['isError'] ?? false);
-        $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
-        $res = $registry->call('files_copy', ['from' => '/visible.txt', 'to' => '/secret_direct.txt', 'confirm_shared' => true], 'alice');
-        $this->assertTrue($res['isError'] ?? false);
-        $this->assertSame(CommonMessages::forbidden(), $res['content'][0]['text']);
 
         // 16. files_move (source hidden, destination hidden, destination collision)
-        foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
-            $res = $registry->call('files_move', ['from' => $p, 'to' => '/dest_move.txt', 'confirm_shared' => true], 'alice');
+        foreach ([[], ['confirm' => true]] as $confirm) {
+            foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
+                $res = $registry->call('files_move', ['from' => $p, 'to' => '/dest_move.txt', 'confirm_shared' => true] + $confirm, 'alice');
+                $this->assertTrue($res['isError'] ?? false);
+                $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+                $assertNoLeak($res['content'][0]['text']);
+            }
+            $res = $registry->call('files_move', ['from' => '/visible.txt', 'to' => '/SecretFolder/dest_move.txt', 'confirm_shared' => true] + $confirm, 'alice');
             $this->assertTrue($res['isError'] ?? false);
             $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
-            $assertNoLeak($res['content'][0]['text']);
+            $res = $registry->call('files_move', ['from' => '/visible.txt', 'to' => '/secret_direct.txt', 'confirm_shared' => true] + $confirm, 'alice');
+            $this->assertTrue($res['isError'] ?? false);
+            $this->assertSame(CommonMessages::forbidden(), $res['content'][0]['text']);
         }
-        $res = $registry->call('files_move', ['from' => '/visible.txt', 'to' => '/SecretFolder/dest_move.txt', 'confirm_shared' => true], 'alice');
-        $this->assertTrue($res['isError'] ?? false);
-        $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
-        $res = $registry->call('files_move', ['from' => '/visible.txt', 'to' => '/secret_direct.txt', 'confirm_shared' => true], 'alice');
-        $this->assertTrue($res['isError'] ?? false);
-        $this->assertSame(CommonMessages::forbidden(), $res['content'][0]['text']);
 
         // 17. files_move_batch
         $res = $registry->call('files_move_batch', [
@@ -485,6 +526,16 @@ final class VisibilityContractTest extends TestCase {
         $this->assertTrue($res['isError'] ?? false);
         // Batch denied/conflict reasons must be generic notFound / forbidden
         $assertNoLeak($res['content'][0]['text']);
+        // A folder created under a hidden one, next to a move that is fine on its own: refused in the plan and in the run.
+        $harmless = ['moves' => [['from' => '/visible.txt', 'to' => '/moved.txt']], 'mkdirs' => ['/SecretFolder/newdir'], 'confirm_shared' => true];
+        $plan = $filesModule->preview('files_move_batch', $harmless, 'alice');
+        $this->assertFalse($plan['ok']);
+        $this->assertSame(CommonMessages::notFound(), $plan['mkdirs'][0]['reason']);
+        $res = $registry->call('files_move_batch', $harmless + ['confirm' => true], 'alice');
+        $this->assertTrue($res['isError'] ?? false);
+        $assertNoLeak($res['content'][0]['text']);
+        $this->assertArrayNotHasKey('/alice/files/SecretFolder/newdir', $this->tree->nodes);
+        $this->assertArrayHasKey('/alice/files/visible.txt', $this->tree->nodes, 'nem o movimento inofensivo roda');
 
         // 18. files_undo_batch: unknown or hidden batch id throws batchNotFound
         $res = $registry->call('files_undo_batch', ['batch_id' => 9999], 'alice');
@@ -573,27 +624,36 @@ final class VisibilityContractTest extends TestCase {
 
         // 22. notes_edit
         foreach ([$directNoteId, $ancestralNoteId] as $id) {
-            $res = $registry->call('notes_edit', ['id' => $id, 'content' => 'updated'], 'alice');
-            $this->assertTrue($res['isError'] ?? false);
-            $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
-            $assertNoLeak($res['content'][0]['text']);
+            foreach ([[], ['confirm' => true]] as $confirm) {
+                $res = $registry->call('notes_edit', ['id' => $id, 'content' => 'updated'] + $confirm, 'alice');
+                $this->assertTrue($res['isError'] ?? false);
+                $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+                $assertNoLeak($res['content'][0]['text']);
+            }
         }
 
         // 23. notes_move
         foreach ([$directNoteId, $ancestralNoteId] as $id) {
-            $res = $registry->call('notes_move', ['id' => $id, 'category' => 'General'], 'alice');
-            $this->assertTrue($res['isError'] ?? false);
-            $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
-            $assertNoLeak($res['content'][0]['text']);
+            foreach ([[], ['confirm' => true]] as $confirm) {
+                $res = $registry->call('notes_move', ['id' => $id, 'category' => 'General'] + $confirm, 'alice');
+                $this->assertTrue($res['isError'] ?? false);
+                $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+                $assertNoLeak($res['content'][0]['text']);
+            }
         }
 
         // 24. notes_delete
         foreach ([$directNoteId, $ancestralNoteId] as $id) {
-            $res = $registry->call('notes_delete', ['id' => $id], 'alice');
-            $this->assertTrue($res['isError'] ?? false);
-            $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
-            $assertNoLeak($res['content'][0]['text']);
+            foreach ([[], ['confirm' => true]] as $confirm) {
+                $res = $registry->call('notes_delete', ['id' => $id] + $confirm, 'alice');
+                $this->assertTrue($res['isError'] ?? false);
+                $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+                $assertNoLeak($res['content'][0]['text']);
+            }
         }
+
+        // Every write above was refused in the plan and in the confirmed call: nothing was written, moved, copied or made.
+        $this->assertSame([], $this->tree->ops);
 
         // 25. talk_attach_file
         $rootFolder = $this->createMock(IRootFolder::class);
@@ -697,9 +757,11 @@ final class VisibilityContractTest extends TestCase {
         foreach ($batchPlan['denied'] as $d) {
             $this->assertSame(CommonMessages::notFound(), $d['reason']);
         }
-        // mkdirs of hidden folder in batch plan reports exists: false so it does not leak existence
-        $this->assertFalse($batchPlan['mkdirs'][0]['exists']);
-        $this->assertTrue($batchPlan['mkdirs'][0]['willCreate']);
+        // mkdirs of a hidden folder answers like files_mkdir does for it: taken, without saying by what. It used to
+        // say willCreate, a folder the run would never make.
+        $this->assertSame(['path' => '/SecretFolder', 'exists' => false, 'willCreate' => false,
+            'reason' => CommonMessages::forbidden()], $batchPlan['mkdirs'][0]);
+        $this->assertFalse($batchPlan['ok']);
 
         // Notes preview
         $this->tree->addFolder('/alice/files/Notes');

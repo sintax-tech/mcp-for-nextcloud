@@ -78,7 +78,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->assertSame([['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md'],
             ['from' => '/Documentos/plano.md', 'to' => '/Arquivado/plano.md']], $plan['order'], 'a ordem do lote faz parte do que o usuário aprova');
         $this->assertSame([], $this->tree->ops, 'um plano não toca em nada');
-        $this->assertSame([], $this->batches->all(), 'um plano não grava lote');
+        $this->assertSame([], $this->batches->rows, 'um plano não grava lote');
     }
 
     public function testThePlanSeesTheFoldersItWouldCreate(): void {
@@ -144,6 +144,80 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->assertSame(CommonMessages::notFound(), $plan['denied'][0]['reason']);
         $this->failure('files_move_batch', $args);
         $this->assertSame([], $this->tree->ops);
+    }
+
+    /**
+     * A folder the batch only creates, with a move that does not go there, still lands under the hidden folder: the
+     * creation itself has to be refused, in the plan and in the confirmed run, and nothing may be made.
+     */
+    public function testMkdirsNeverCreatesAFolderInsideAHiddenOne(): void {
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $this->visibilityGuard = new \OCA\Mcp\Service\VisibilityGuard($this->config->mock($this), $tagMapper);
+        $this->setUp();
+        $hiddenId = $this->tree->addFolder('/alice/files/Hidden');
+        $tagMapper->method('getTagIdsForObjects')->willReturnCallback(static function (array $ids) use ($hiddenId): array {
+            return array_combine($ids, array_map(static fn ($id) => (string)$id === (string)$hiddenId ? ['999'] : [], $ids));
+        });
+        foreach (['/Hidden/New' => CommonMessages::notFound(), '/Hidden' => CommonMessages::forbidden()] as $dir => $reason) {
+            $args = ['moves' => [['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md']], 'mkdirs' => [$dir]];
+            $plan = $this->plan('files_move_batch', $args);
+            $this->assertFalse($plan['ok'], "plano de $dir");
+            $this->assertSame([['path' => $dir, 'exists' => false, 'willCreate' => false, 'reason' => $reason]], $plan['mkdirs']);
+            $this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $args + ['confirm' => true]), "execução de $dir");
+        }
+        $this->assertSame([], $this->tree->ops, 'nem a pasta nem o movimento');
+        $this->assertArrayNotHasKey('/alice/files/Hidden/New', $this->tree->nodes);
+        $this->assertSame([], $this->batches->rows);
+    }
+
+    /**
+     * A requested folder whose name a file already uses cannot be made. The plan says so instead of `ok`, and the run
+     * refuses before the first folder is created: half of the folders made and no batch recorded would be folders
+     * nobody can undo.
+     */
+    public function testMkdirsOverAFileIsRefusedBeforeAnyFolderIsCreated(): void {
+        $this->tree->addFile('/alice/files/C', 'um arquivo', 'text/plain');
+        $args = ['moves' => [['from' => '/Documentos/ata.md', 'to' => '/A/B/ata.md']], 'mkdirs' => ['/A/B', '/C']];
+        $plan = $this->plan('files_move_batch', $args);
+        $this->assertFalse($plan['ok'], 'o plano não diz ok para uma pasta que não pode ser criada');
+        $this->assertSame([
+            ['path' => '/A/B', 'exists' => false, 'willCreate' => true],
+            ['path' => '/C', 'exists' => false, 'willCreate' => false, 'reason' => FilesMessages::destinationExists()],
+        ], $plan['mkdirs']);
+        $this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $args + ['confirm' => true]));
+        $this->assertSame([], $this->tree->ops, 'nenhuma pasta órfã');
+        $this->assertArrayNotHasKey('/alice/files/A', $this->tree->nodes);
+        $this->assertSame([], $this->batches->rows);
+    }
+
+    /**
+     * createFolders() checks the whole list itself, not only through the plan: the undo calls it too, and a caller
+     * that skipped the plan must still not be left with half of the folders made.
+     */
+    public function testCreateFoldersChecksEveryFolderBeforeMakingTheFirst(): void {
+        $this->tree->addFile('/alice/files/C', 'um arquivo', 'text/plain');
+        $access = new \OCA\Mcp\Tools\Common\NodeAccessInfo(
+            \OCA\Mcp\Tests\Unit\Tools\FakeUsers::manager($this, \OCA\Mcp\Tests\Unit\Tools\FakeUsers::DEFAULTS), $this->tree->shareManager());
+        $reorganization = new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Tools\Common\SharedWriteGuard($access),
+            $this->report(), $this->users);
+        try {
+            $reorganization->createFolders($this->tree->rootFolder(), ['/A/B', '/C']);
+            $this->fail('createFolders aceitou uma pasta sobre um arquivo');
+        } catch (\OCA\Mcp\Tools\ToolFailure $e) {
+            $this->assertSame(FilesMessages::destinationExists(), $e->getMessage());
+        }
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    /** A folder that cannot take a new entry is refused for mkdirs as it is for a move into it. */
+    public function testMkdirsIntoAFolderThatCannotTakeItIsRefusedBeforeAnythingIsCreated(): void {
+        $this->tree->addFolder('/alice/files/ReadOnly', ['permissions' => \OCP\Constants::PERMISSION_READ]);
+        $args = ['moves' => [['from' => '/Documentos/ata.md', 'to' => '/New/ata.md']], 'mkdirs' => ['/New', '/ReadOnly/Sub']];
+        $this->assertSame(CommonMessages::forbidden(), $this->plan('files_move_batch', $args)['mkdirs'][1]['reason']);
+        $this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $args + ['confirm' => true]));
+        $this->assertSame([], $this->tree->ops);
+        $this->assertArrayNotHasKey('/alice/files/New', $this->tree->nodes);
     }
 
     /** A future folder inherits the storage boundary of its real parent. */
@@ -295,7 +369,38 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->assertTrue($out['requiresConfirmation']);
         $this->assertArrayNotHasKey('batch_id', $out, 'sem confirm_shared nada é executado nem gravado');
         $this->assertSame([], $this->tree->ops);
-        $this->assertSame([], $this->batches->all());
+        $this->assertSame([], $this->batches->rows);
+    }
+
+    /**
+     * With confirm_shared the user said yes to the whole list, the shared item included: it moves in its place in the
+     * order, is recorded and can be undone. Dropping it would hand the user a reorganization they did not approve.
+     */
+    public function testABatchConfirmedForSharedItemsMovesThemTooInOrder(): void {
+        $this->tree->addFile('/alice/files/Engenharia/plano.md', 'plano', 'text/markdown', ['scope' => 'team']);
+        $this->tree->mountPath = '/alice/files/Engenharia';
+        $out = $this->json('files_move_batch', [
+            'moves' => [
+                ['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md'],
+                ['from' => '/Engenharia/plano.md', 'to' => '/Arquivado/plano.md'],
+                ['from' => '/Documentos/orcamento.md', 'to' => '/Arquivado/orcamento.md'],
+            ],
+            'confirm_shared' => true,
+        ]);
+        $this->assertSame(['/Documentos/ata.md', '/Engenharia/plano.md', '/Documentos/orcamento.md'], array_column($out['moved'], 'from'));
+        $this->assertSame(3, $out['undos']);
+        $this->assertArrayNotHasKey('failed', $out);
+        $this->assertSame([
+            'move /alice/files/Documentos/ata.md /alice/files/Arquivado/ata.md',
+            'move /alice/files/Engenharia/plano.md /alice/files/Arquivado/plano.md',
+            'move /alice/files/Documentos/orcamento.md /alice/files/Arquivado/orcamento.md',
+        ], $this->tree->ops, 'o item compartilhado vai no lugar dele na ordem');
+        $this->assertSame(['/Documentos/ata.md', '/Engenharia/plano.md', '/Documentos/orcamento.md'],
+            array_column($this->batches->find($out['batch_id'], 'alice')->moves, 'from'), 'e o desfazer o conhece');
+
+        $undo = $this->json('files_undo_batch', ['batch_id' => $out['batch_id']]);
+        $this->assertSame(3, $undo['undone']);
+        $this->assertArrayHasKey('/alice/files/Engenharia/plano.md', $this->tree->nodes);
     }
 
     public function testAnExecutionStopsAtTheFirstErrorAndRecordsOnlyWhatItMoved(): void {
@@ -319,8 +424,29 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->assertSame([], $this->batches->find(1, 'alice')->moves);
     }
 
+    /**
+     * Through the production store: the batch alice ran is not bob's, and a batch of bob is answered to alice exactly
+     * like one that never existed, in the plan of the undo (which would list its paths) and in the undo itself.
+     */
     public function testABatchOfSomebodyElseIsNotFound(): void {
-        $this->json('files_move_batch', self::BATCH);
-        $this->assertNull($this->batches->find(1, 'bob'), 'o lote existe, mas não é de bob');
+        $db = new \OCA\Mcp\Tests\Unit\SqliteDatabase($this, [new \OCA\Mcp\Migration\Version000800Date20261002000000()]);
+        $this->batchStore = new \OCA\Mcp\Tools\Files\BatchStore($db->connection());
+        $this->setUp();
+        $mine = $this->json('files_move_batch', self::BATCH)['batch_id'];
+        $this->assertNull($this->batchStore->find($mine, 'bob'), 'o lote existe, mas não é de bob');
+        $this->assertNotNull($this->batchStore->find($mine, 'alice'));
+
+        $theirs = $this->batchStore->insert(new \OCA\Mcp\Tools\Files\Batch(null, 'bob', 1790000000,
+            [['from' => '/Documentos/orcamento.md', 'to' => '/Arquivado/orcamento.md', 'toId' => 1]], [], null));
+        foreach ([fn () => $this->plan('files_undo_batch', ['batch_id' => $theirs]),
+            fn () => $this->tool('files_undo_batch', ['batch_id' => $theirs, 'confirm' => true])] as $call) {
+            try {
+                $call();
+                $this->fail('o lote de bob foi achado por alice');
+            } catch (\OCA\Mcp\Tools\ToolFailure $e) {
+                $this->assertSame(FilesMessages::batchNotFound(), $e->getMessage());
+            }
+        }
+        $this->assertNull($db->rows(\OCA\Mcp\Tools\Files\BatchStore::TABLE)[1]['undone_at'], 'o lote de bob segue intacto');
     }
 }

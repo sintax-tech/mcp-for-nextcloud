@@ -253,17 +253,44 @@ final class FilesUnshareTest extends FilesToolsTestCase {
         self::assertSame(CommonMessages::notFound(), $this->planFailure(['shareId' => $theirLink->getFullId()]));
     }
 
+    /** Each confirmed with the plan_state of its plan, as the model's would be: a removal that trusted the plan would go. */
     public function testTheConfirmedCallChecksEverythingAgain(): void {
         $share = $this->share();
-        $this->plan('files_unshare', ['shareId' => $share->getFullId()]);
+        $state = [\OCA\Mcp\Tools\PlanState::ARGUMENT => $this->stateOf('files_unshare', ['shareId' => $share->getFullId()])];
 
         $this->sharePolicy->setGrant('alice', 'files', 'share', false);
-        self::assertSame(FilesMessages::shareNotGranted(), $this->confirmFailure(['shareId' => $share->getFullId()]));
+        self::assertSame(FilesMessages::shareNotGranted(), $this->confirmFailure(['shareId' => $share->getFullId()] + $state));
+        self::assertSame(FilesMessages::shareNotGranted(), $this->confirmFailure(['path' => '/Documentos/ata.md', 'with' => 'user:bruno'] + $state));
 
         $this->sharePolicy->setGrant('alice', 'files', 'share', true);
         $this->shares->shares = [];
-        self::assertSame(CommonMessages::notFound(), $this->confirmFailure(['shareId' => $share->getFullId()]), 'já removido por outro caminho');
+        self::assertSame(CommonMessages::notFound(), $this->confirmFailure(['shareId' => $share->getFullId()] + $state), 'já removido por outro caminho');
         self::assertSame([], $this->shares->writes);
+    }
+
+    /** A node hidden between the plan and the confirmation: the share is not found, and it stays. */
+    public function testANodeHiddenAfterThePlanIsNotFoundByTheConfirmedCall(): void {
+        $hidden = [];
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $tagMapper->method('getTagIdsForObjects')->willReturnCallback(static function (array $ids) use (&$hidden): array {
+            return array_combine($ids, array_map(static fn ($id): array => in_array((string)$id, $hidden, true) ? ['999'] : [], $ids));
+        });
+        $this->config->app['mcp'][VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $this->visibilityGuard = new VisibilityGuard($this->config->mock($this), $tagMapper);
+        $this->setUp();
+        $share = $this->share();
+        $room = $this->share(['type' => IShare::TYPE_ROOM, 'with' => 'room1']);
+        $byId = ['shareId' => $share->getFullId()];
+        $state = [\OCA\Mcp\Tools\PlanState::ARGUMENT => $this->stateOf('files_unshare', $byId)];
+
+        $hidden = [(string)$this->id('/Documentos/ata.md')];
+        $this->visibilityGuard->clearCache();
+        self::assertSame(CommonMessages::notFound(), $this->confirmFailure($byId + $state));
+        self::assertSame(CommonMessages::notFound(), $this->confirmFailure(['path' => '/Documentos/ata.md', 'with' => 'user:bruno'] + $state));
+        self::assertSame(CommonMessages::notFound(), $this->confirmFailure(['shareId' => $room->getFullId()] + $state),
+            'nem a mensagem do Talk, que diria que o arquivo existe');
+        self::assertSame([], $this->shares->writes);
+        self::assertCount(2, $this->shares->shares);
     }
 
     public function testACoreRefusalIsTranslatedAndOnlyItsClassIsLogged(): void {

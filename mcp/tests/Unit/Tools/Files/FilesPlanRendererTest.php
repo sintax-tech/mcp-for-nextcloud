@@ -160,6 +160,20 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
         $this->assertStringContainsString('confirmação', $body);
     }
 
+    /** A folder the batch cannot create is named with its reason, and is not listed among the folders to be made. */
+    public function testMoveBatchNamesAFolderItCannotCreate(): void {
+        $this->tree->addFile('/alice/files/Documentos/ata.md', 'ata', 'text/markdown');
+        $this->tree->addFile('/alice/files/Ocupado', 'um arquivo', 'text/plain');
+        Translator::use(new JsonL10n('pt_BR'));
+        $body = $this->body('files_move_batch', [
+            'moves' => [['from' => '/Documentos/ata.md', 'to' => '/Novo/ata.md']],
+            'mkdirs' => ['/Novo', '/Ocupado'],
+        ]);
+
+        $this->assertStringContainsString("Pastas que não podem ser criadas, então nada do lote é executado:\n- **/Ocupado** — ", $body);
+        $this->assertStringContainsString('Pastas que serão criadas antes: **/Novo**' . "\n", $body);
+    }
+
     public function testMoveBatchInPortugueseListsFromToCreatedFoldersAndUndo(): void {
         $this->tree->addFile('/alice/files/Documentos/ata.md', 'ata', 'text/markdown');
         Translator::use(new JsonL10n('pt_BR'));

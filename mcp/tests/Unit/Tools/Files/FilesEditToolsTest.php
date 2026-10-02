@@ -87,15 +87,58 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
         $this->assertSame('# Ata', $this->tree->nodes[$copy]['content']);
     }
 
-    /** The restore path is guarded exactly like the edit path, before the guard and before any backup. */
+    /**
+     * /MCP backups is where the copy of an overwritten file waits; a write tool that reached into it could change,
+     * move or expose that copy. Every tool that takes a path refuses it as source and as destination, in the plan
+     * and in the confirmed call, before anything is written. The backup sits inside the user's own folder here, so
+     * the refusal has to come from the rule and not from a file that does not exist.
+     */
     public function testTheBackupFolderIsRefusedForEveryWriteTool(): void {
-        $this->tree->addFile('/MCP backups/ata.md', '# Ata', 'text/markdown');
-        foreach (['files_edit', 'files_replace', 'files_checkout'] as $tool) {
-            $arguments = $tool === 'files_replace' ? ['old' => 'Ata', 'new' => 'x'] : ($tool === 'files_edit' ? ['content' => 'x'] : []);
-            $this->assertSame(FilesMessages::backupPath(),
-                $this->failure($tool, ['path' => '/MCP backups/ata.md'] + $arguments), $tool);
+        $backup = '/MCP backups/Documentos/ata.md.20260921-141320.bak';
+        $this->tree->addFile('/alice/files' . $backup, '# Ata', 'text/markdown');
+        $calls = [
+            'edit' => ['files_edit', ['path' => $backup, 'content' => 'x']],
+            'replace' => ['files_replace', ['path' => $backup, 'old' => 'Ata', 'new' => 'x']],
+            'checkout' => ['files_checkout', ['path' => $backup]],
+            'restore' => ['files_version_restore', ['path' => $backup, 'version' => '1759100000']],
+            'mkdir' => ['files_mkdir', ['path' => '/MCP backups/novo']],
+            'upload' => ['files_upload', ['path' => '/MCP backups/novo.pdf']],
+            'create' => ['files_create', ['path' => '/MCP backups/novo.md', 'content' => 'x']],
+            'copy from' => ['files_copy', ['from' => $backup, 'to' => '/Documentos/copia.md']],
+            'copy to' => ['files_copy', ['from' => '/Documentos/ata.md', 'to' => '/MCP backups/lixo.md']],
+            'move from' => ['files_move', ['from' => $backup, 'to' => '/Documentos/x.md']],
+            'move to' => ['files_move', ['from' => '/Documentos/ata.md', 'to' => '/MCP backups/x.md']],
+            'move the folder' => ['files_move', ['from' => '/MCP backups', 'to' => '/Arquivo/renomeada']],
+        ];
+        foreach ($calls as $case => [$tool, $arguments]) {
+            $this->assertSame(FilesMessages::backupPath(), $this->planFailure($tool, $arguments), "plano de $case");
+            $this->assertSame(FilesMessages::backupPath(), $this->failure($tool, $arguments + ['confirm' => true]), "confirmação de $case");
         }
+        // A batch lists each blocked item in its plan and runs none of them.
+        foreach ([['from' => $backup, 'to' => '/Documentos/x.md'], ['from' => '/Documentos/ata.md', 'to' => '/MCP backups/x.md']] as $move) {
+            $plan = $this->plan('files_move_batch', ['moves' => [$move]]);
+            $this->assertFalse($plan['ok']);
+            $this->assertSame([$move + ['reason' => FilesMessages::backupPath()]], $plan['denied']);
+            $this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', ['moves' => [$move], 'confirm' => true]));
+        }
+        $mkdirs = ['moves' => [['from' => '/Documentos/ata.md', 'to' => '/Documentos/ata2.md']], 'mkdirs' => ['/MCP backups/x']];
+        $plan = $this->plan('files_move_batch', $mkdirs);
+        $this->assertFalse($plan['ok']);
+        $this->assertSame(FilesMessages::backupPath(), $plan['mkdirs'][0]['reason']);
+        $this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $mkdirs + ['confirm' => true]));
         $this->assertSame([], $this->tree->ops);
+        $this->assertSame('# Ata', $this->tree->nodes['/alice/files' . $backup]['content']);
+        $this->assertSame([], $this->batches->rows);
+    }
+
+    /** @return string the message of the ToolFailure the plan of a write raised */
+    private function planFailure(string $name, array $arguments): string {
+        try {
+            $this->plan($name, $arguments);
+        } catch (ToolFailure $e) {
+            return $e->getMessage();
+        }
+        $this->fail("the plan of $name did not fail");
     }
 
     /**

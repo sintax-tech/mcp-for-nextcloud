@@ -304,4 +304,35 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
         $this->assertSame(CommonMessages::notFound(),
             $this->failure('files_move', ['from' => self::SOURCE_PATH, 'to' => '/Arquivado/ata-moved.md']));
     }
+
+    /**
+     * A visible folder with a hidden file inside: the copy gives every node a new id, and the hidden tag belongs to
+     * the id of the original, so the copy of that file would be readable. The copy is refused before anything is
+     * copied, in the plan and in the confirmed call, and a folder without hidden content still copies.
+     */
+    public function testCopyOfAFolderWithAHiddenFileInsideIsRefusedBeforeAnythingIsCopied(): void {
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $this->visibilityGuard = new \OCA\Mcp\Service\VisibilityGuard($this->config->mock($this), $tagMapper);
+        $this->setUp();
+        $this->tree->addFile('/alice/files/Pasta/visivel.md', 'visível', 'text/markdown');
+        $secret = $this->tree->addFile('/alice/files/Pasta/Sub/segredo.md', 'SEGREDO', 'text/markdown');
+        $tagMapper->method('getTagIdsForObjects')->willReturnCallback(static fn (array $ids): array => array_combine($ids,
+            array_map(static fn ($id): array => (string)$id === (string)$secret ? ['999'] : [], $ids)));
+        $this->assertSame(CommonMessages::notFound(), $this->failure('files_read', ['path' => '/Pasta/Sub/segredo.md']));
+
+        $arguments = ['from' => '/Pasta', 'to' => '/Copia/Pasta'];
+        try {
+            $this->plan('files_copy', $arguments);
+            $this->fail('o plano aceitou copiar uma pasta com arquivo oculto');
+        } catch (\OCA\Mcp\Tools\ToolFailure $e) {
+            $this->assertSame(CommonMessages::forbidden(), $e->getMessage());
+        }
+        $this->assertSame(CommonMessages::forbidden(), $this->failure('files_copy', $arguments + ['confirm' => true]));
+        $this->assertSame([], $this->tree->ops, 'nada copiado');
+        $this->assertArrayNotHasKey('/alice/files/Copia/Pasta', $this->tree->nodes);
+
+        $out = $this->json('files_copy', ['from' => '/Documentos/2026', 'to' => '/Copia/2026', 'confirm' => true]);
+        $this->assertSame(2, $out['nodes'], 'uma pasta sem oculto continua sendo copiada');
+    }
 }

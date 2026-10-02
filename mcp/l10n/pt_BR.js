@@ -572,6 +572,7 @@ OC.L10N.register(
     "Move the folder %s to %s." : "Mover a pasta %s para %s.",
     "Move %s to %s." : "Mover %s para %s.",
     "Folders that will be created first: %s" : "Pastas que serão criadas antes: %s",
+    "Folders that cannot be created, so nothing of the batch runs:" : "Pastas que não podem ser criadas, então nada do lote é executado:",
     "Cannot be moved, the destination is taken or invalid:" : "Não podem ser movidos, o destino já existe ou é inválido:",
     "Not allowed by Nextcloud:" : "Não permitidos pelo Nextcloud:",
     "These items belong to someone else or are shared, so moving them also needs the shared-content confirmation:" : "Estes itens são de outra pessoa ou compartilhados; movê-los exige também a confirmação de conteúdo compartilhado:",

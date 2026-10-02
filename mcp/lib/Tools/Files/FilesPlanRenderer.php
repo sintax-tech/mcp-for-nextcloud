@@ -243,6 +243,14 @@ final class FilesPlanRenderer {
             $lines[] = '';
             $lines[] = Translator::t('Folders that will be created first: %s', [implode(', ', $created)]);
         }
+        $refused = array_filter((array)($plan['mkdirs'] ?? []), static fn ($dir): bool => is_array($dir) && isset($dir['path'], $dir['reason']));
+        if ($refused !== []) {
+            $lines[] = '';
+            $lines[] = Translator::t('Folders that cannot be created, so nothing of the batch runs:');
+            foreach ($refused as $dir) {
+                $lines[] = '- ' . self::bold((string)$dir['path']) . ' — ' . self::excerpt((string)$dir['reason']);
+            }
+        }
         foreach (['conflicts', 'denied'] as $key) {
             $items = array_filter((array)($plan[$key] ?? []), 'is_array');
             if ($items === []) {

@@ -45,6 +45,8 @@ use PHPUnit\Framework\TestCase;
 abstract class FilesToolsTestCase extends TestCase {
     /** Tools whose confirmed call gives back the plan_state of its plan. */
     protected const STATEFUL_PLANS = ['files_share', 'files_unshare'];
+    /** The plan_state of a confirmed call whose plan refused: no state the write could ever compute. */
+    protected const UNPLANNED_STATE = 'no-plan-was-shown';
     protected FakeTree $tree;
     protected InMemoryCheckoutTokenStore $store;
     protected IAppManager $apps;
@@ -54,6 +56,8 @@ abstract class FilesToolsTestCase extends TestCase {
     protected IUser $user;
     protected ITimeFactory $time;
     protected InMemoryBatchStore $batches;
+    /** The store the module records batches in, when a test needs the production one instead of {@see self::$batches}. */
+    protected ?\OCA\Mcp\Tools\Files\BatchStore $batchStore = null;
     protected ITempManager $temp;
     protected \OCA\Mcp\Tests\Unit\InMemoryConfig $config;
     protected IPreview $previewManager;
@@ -157,7 +161,7 @@ abstract class FilesToolsTestCase extends TestCase {
             new VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class), new OcrSupport($this->apps)),
             new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users, $this->visibilityGuard),
             new MovePlanner(new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users, $this->visibilityGuard), $access, new SharedWriteGuard($access), $this->visibilityGuard),
-            $this->batches,
+            $this->batchStore ?? $this->batches,
             $this->time,
             $imageTools,
             new OcrSupport($this->apps),
@@ -255,14 +259,28 @@ abstract class FilesToolsTestCase extends TestCase {
      * for every module; here the call goes straight to the module so a test can state what the write does
      * without repeating the confirmation on every line. The tools of {@see self::STATEFUL_PLANS} get the plan_state of
      * their plan, read just before, unless the test gives one.
+     *
+     * A plan that refuses never answers for the confirmed call: production sends the confirmed call straight to the
+     * write, which has to refuse on its own. So a refused plan gives {@see self::UNPLANNED_STATE}, and the write is
+     * what the test sees — a write that skipped a check would answer "the plan changed" or write, never the refusal.
      */
     protected function tool(string $name, array $arguments = []): array {
         if (in_array($name, self::STATEFUL_PLANS, true) && !array_key_exists(\OCA\Mcp\Tools\PlanState::ARGUMENT, $arguments)) {
             // These confirm only the state their plan showed: like the model, the test reads the plan first and gives
             // its plan_state back. A test about a changed state or a missing one passes plan_state itself.
-            $arguments[\OCA\Mcp\Tools\PlanState::ARGUMENT] = $this->plan($name, $arguments)[\OCA\Mcp\Tools\PlanState::ARGUMENT];
+            try {
+                $state = $this->plan($name, $arguments)[\OCA\Mcp\Tools\PlanState::ARGUMENT];
+            } catch (ToolFailure|\InvalidArgumentException) {
+                $state = self::UNPLANNED_STATE;
+            }
+            $arguments[\OCA\Mcp\Tools\PlanState::ARGUMENT] = $state;
         }
         return $this->module->call($name, $this->validated($name, $arguments), 'alice');
+    }
+
+    /** @return string the plan_state the plan of a stateful write gives right now, for a test that changes things after it */
+    protected function stateOf(string $name, array $arguments): string {
+        return $this->plan($name, $arguments)[\OCA\Mcp\Tools\PlanState::ARGUMENT];
     }
 
     /** @return array<string, mixed> the decoded JSON of the plan of a write */

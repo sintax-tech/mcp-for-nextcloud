@@ -171,7 +171,8 @@ final class ImageTools {
         $before = $this->parseDate($args['modified_before'] ?? null);
         $tag = isset($args['tag']) && trim((string)$args['tag']) !== '' ? trim((string)$args['tag']) : null;
 
-        $scope = NodeAccess::get($root, $folder);
+        // A hidden folder answers like a missing one: an empty list would tell that it is there.
+        $scope = NodeAccess::get($root, $folder, $this->visibilityGuard);
         if (!$scope instanceof Folder) {
             throw new ToolFailure(FilesMessages::notAFolder());
         }

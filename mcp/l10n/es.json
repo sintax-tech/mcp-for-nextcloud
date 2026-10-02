@@ -570,6 +570,7 @@
     "Move the folder %s to %s." : "Mover la carpeta %s a %s.",
     "Move %s to %s." : "Mover %s a %s.",
     "Folders that will be created first: %s" : "Carpetas que se crearán antes: %s",
+    "Folders that cannot be created, so nothing of the batch runs:" : "Carpetas que no se pueden crear, así que no se ejecuta nada del lote:",
     "Cannot be moved, the destination is taken or invalid:" : "No se pueden mover, el destino ya existe o no es válido:",
     "Not allowed by Nextcloud:" : "No permitidos por Nextcloud:",
     "These items belong to someone else or are shared, so moving them also needs the shared-content confirmation:" : "Estos elementos son de otra persona o están compartidos; moverlos requiere también la confirmación de contenido compartido:",

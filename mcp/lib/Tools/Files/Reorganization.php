@@ -71,12 +71,14 @@ final class Reorganization {
                     if ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($node)) {
                         continue;
                     }
-                    $relative = $root->getRelativePath($node->getPath()) ?? '';
-                    $entries[] = $this->entry($root, $userId, $node, $relative);
+                    // The cut is only a cut once there is one more entry to leave out: a limit equal to the number
+                    // of entries returns them all, and saying `truncated` then sends the agent after nothing.
                     if (count($entries) >= $limit) {
                         $truncated = true;
                         break 3;
                     }
+                    $relative = $root->getRelativePath($node->getPath()) ?? '';
+                    $entries[] = $this->entry($root, $userId, $node, $relative);
                     if ($node instanceof Folder && $levelBelow + 1 < $depth) {
                         $next[] = [$node, $levelBelow + 1];
                     }
@@ -202,7 +204,7 @@ final class Reorganization {
     public function copy(Folder $root, string $userId, string $from, string $to, ?string $etag, bool $confirmedShared): array {
         $source = $this->writable($root, $from);
         NodeAccess::checkEtag($source, $etag);
-        $to = PathGuard::normalize($to, 'to');
+        $to = self::notBackup(PathGuard::normalize($to, 'to'));
         $this->assertFree($root, $to);
         $measured = $this->measure($source);
         if (($payload = $this->confirmBoth($source, $from, $this->destination($root, $to), $to, $userId, $confirmedShared)) !== null) {
@@ -282,7 +284,7 @@ final class Reorganization {
     public function inspect(Folder $root, string $from, string $to, ?string $etag = null, array $mkdirs = []): Inspection {
         $source = $this->writable($root, $from);
         NodeAccess::checkEtag($source, $etag);
-        $to = PathGuard::normalize($to, 'to');
+        $to = self::notBackup(PathGuard::normalize($to, 'to'));
         // A folder landing inside itself is refused before the destination check, so the user hears the real
         // reason instead of "something is already there" for a subfolder of the folder they are moving.
         $this->assertNotIntoItself($root, $source, $to);
@@ -326,9 +328,11 @@ final class Reorganization {
     ): array {
         $result = $planner->plan($root, $userId, $moves, $mkdirs);
         if (!$result->isOk()) {
+            // A folder the batch cannot create is an item without permission too: nothing of the list runs.
+            $refusedDirs = array_filter($result->plan['mkdirs'], static fn (array $dir): bool => isset($dir['reason']));
             throw new ToolFailure(FilesMessages::batchNotOk(
                 count($result->plan['conflicts']),
-                count($result->plan['denied']),
+                count($result->plan['denied']) + count($refusedDirs),
             ));
         }
         if ($result->confirmation !== null && !$confirmedShared) {
@@ -430,7 +434,7 @@ final class Reorganization {
     public function planCopy(Folder $root, string $userId, string $from, string $to, ?string $etag): array {
         $source = $this->writable($root, $from);
         NodeAccess::checkEtag($source, $etag);
-        $to = PathGuard::normalize($to, 'to');
+        $to = self::notBackup(PathGuard::normalize($to, 'to'));
         $this->assertFree($root, $to);
         $measured = $this->measure($source);
         $destination = $this->destination($root, $to);
@@ -674,7 +678,8 @@ final class Reorganization {
      *
      * Only an empty folder the batch itself created goes; a folder with content, one the user cannot delete
      * and one that is not there any more are all kept. Reading it is what lets the plan answer the question
-     * before anything is moved back.
+     * before anything is moved back, so it reads the tree as the undo will leave it: the items the batch moved
+     * in are gone by the time the folders are looked at.
      *
      * @param Folder $root the user's folder
      * @param Batch $batch batch being undone
@@ -683,7 +688,7 @@ final class Reorganization {
     private function emptyDirs(Folder $root, Batch $batch): array {
         $removed = [];
         $kept = [];
-        $simulatedRemoved = [];
+        $simulatedRemoved = array_map(static fn (array $move): string => PathGuard::normalize($move['to'], 'moves'), $batch->moves);
         foreach ($this->byDepth($batch->dirs) as $dir) {
             $relative = ltrim($dir, '/');
             if (!$root->nodeExists($relative)) {
@@ -786,6 +791,44 @@ final class Reorganization {
     }
 
     /**
+     * Runs on one folder of a batch every check files_mkdir runs, without creating anything.
+     *
+     * The plan calls it for each folder so it never approves one the run would refuse, and the run calls it for
+     * all of them again before the first folder is made.
+     *
+     * @param Folder $root the user's folder
+     * @param string $path requested folder, user-relative
+     * @throws \InvalidArgumentException for a malformed path
+     * @throws ToolFailure when the folder is in the backup folder, a file already uses one of its names, it is or
+     *   sits under a hidden node, or the folder that would receive it cannot take a new entry
+     */
+    public function checkFolder(Folder $root, string $path): void {
+        $relative = ltrim(self::notBackup(PathGuard::normalize($path)), '/');
+        $parent = $root;
+        $walk = [];
+        foreach (array_filter(explode('/', $relative)) as $segment) {
+            $walk[] = $segment;
+            $below = implode('/', $walk);
+            if (!$root->nodeExists($below)) {
+                // The first missing level is created in the last one that exists, so that one has to take it.
+                if (!$parent->isCreatable()) {
+                    throw new ToolFailure(CommonMessages::forbidden());
+                }
+                return;
+            }
+            $existing = $root->get($below);
+            if ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($existing)) {
+                // Same answers as files_mkdir: the folder itself is taken, a folder under it is not found.
+                throw new ToolFailure($below === $relative ? CommonMessages::forbidden() : CommonMessages::notFound());
+            }
+            if (!$existing instanceof Folder) {
+                throw new ToolFailure(FilesMessages::destinationExists());
+            }
+            $parent = $existing;
+        }
+    }
+
+    /**
      * Creates the folders a batch asked for and answers which ones it really made.
      *
      * Every folder created counts, including a parent created on the way, because the undo removes what the
@@ -795,9 +838,14 @@ final class Reorganization {
      * @param list<string> $paths requested folders
      * @return list<string> the created folders, shallowest first
      * @throws \InvalidArgumentException for a malformed path
-     * @throws ToolFailure when a file already uses one of the folder names, or the folder cannot be created
+     * @throws ToolFailure when {@see self::checkFolder()} refuses one of them, or the folder cannot be created
      */
     public function createFolders(Folder $root, array $paths): array {
+        // Every folder is checked before the first one is made: stopping halfway would leave folders that no
+        // recorded batch knows about, and so that no undo can remove.
+        foreach ($paths as $path) {
+            $this->checkFolder($root, $path);
+        }
         $created = [];
         foreach ($paths as $path) {
             $relative = ltrim(PathGuard::normalize($path), '/');
@@ -826,15 +874,22 @@ final class Reorganization {
      * Counts the nodes and bytes a copy would bring, stopping as soon as a ceiling is passed so a huge
      * tree is not measured to the end just to be refused.
      *
+     * A hidden node inside the tree stops the copy too: every copied node gets a new id, the hidden tag belongs
+     * to the id of the original, and the copy of a hidden file would be readable by anyone who can read the
+     * folder it lands in. The answer is the generic denial, so the count of what is hidden is never told.
+     *
      * @param Node $node the node a copy would start from, a file or a whole folder
      * @return array{nodes:int, bytes:int}
-     * @throws ToolFailure when the source is over either ceiling
+     * @throws ToolFailure when the source is over either ceiling or holds a hidden node
      */
     public function measure(Node $node): array {
         $nodes = $bytes = 0;
         $pending = [$node];
         while ($pending !== []) {
             $current = array_pop($pending);
+            if ($current !== $node && $this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($current)) {
+                throw new ToolFailure(CommonMessages::forbidden());
+            }
             $nodes++;
             if ($nodes > ReorganizationLimits::NODES) {
                 throw new ToolFailure(FilesMessages::copyTooManyNodes(ReorganizationLimits::NODES));
@@ -857,16 +912,32 @@ final class Reorganization {
      * @param Folder $root the user's folder
      * @param string $path source path to resolve and check
      * @return Node the readable, writable source
-     * @throws ToolFailure when it does not exist, cannot be read or cannot be changed
+     * @throws ToolFailure when it is in the backup folder, does not exist, cannot be read or cannot be changed
      */
     private function writable(Folder $root, string $path): Node {
         // run() turns a missing node into a ToolFailure here, so a batch plan can put the item in its
         // denied list instead of the whole call failing.
-        $node = NodeAccess::run(fn () => NodeAccess::get($root, PathGuard::normalize($path), $this->visibilityGuard));
+        $path = self::notBackup(PathGuard::normalize($path));
+        $node = NodeAccess::run(fn () => NodeAccess::get($root, $path, $this->visibilityGuard));
         if (!$node->isUpdateable()) {
             throw new ToolFailure(CommonMessages::forbidden());
         }
         return $node;
+    }
+
+    /**
+     * The backup folder holds the copies of what MCP overwrote, and they stay hidden only while they sit where the
+     * mirror rule expects them: moving, copying or renaming anything in or into it is refused, like an edit is.
+     *
+     * @param string $path normalized user-relative path, a source or a destination
+     * @return string the same path
+     * @throws ToolFailure when the path is /MCP backups or inside it
+     */
+    private static function notBackup(string $path): string {
+        if (FileBackup::isBackupPath($path)) {
+            throw new ToolFailure(FilesMessages::backupPath());
+        }
+        return $path;
     }
 
     /**

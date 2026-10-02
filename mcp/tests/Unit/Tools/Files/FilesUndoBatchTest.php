@@ -55,6 +55,35 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
         $this->assertArrayHasKey('/alice/files/Arquivado/ata.md', $this->tree->nodes);
     }
 
+    /**
+     * The only removal of the module is previewed exactly: a folder the batch created and filled is empty once the
+     * undo moves its items back, so the plan says it goes, and the run removes just that. A folder the user filled
+     * afterwards is kept in both.
+     */
+    public function testTheUndoPlanSaysWhichFoldersGoExactlyAsTheRunDoes(): void {
+        $id = $this->json('files_move_batch', [
+            'moves' => [
+                ['from' => '/Documentos/ata.md', 'to' => '/Novo/ata.md'],
+                ['from' => '/Documentos/plano.md', 'to' => '/Outro/plano.md'],
+            ],
+            'mkdirs' => ['/Novo', '/Outro'],
+            'confirm' => true,
+        ])['batch_id'];
+        $this->tree->addFile('/alice/files/Outro/notas.md', 'do usuário', 'text/markdown');
+
+        $plan = $this->plan('files_undo_batch', ['batch_id' => $id]);
+        $this->assertSame(['/Novo'], $plan['removed_dirs'], 'a pasta fica vazia depois do desfazer');
+        $this->assertSame(['/Outro'], $plan['kept_dirs'], 'a pasta com conteúdo do usuário fica');
+        $this->assertSame([['to' => '/Outro/plano.md', 'from' => '/Documentos/plano.md'], ['to' => '/Novo/ata.md', 'from' => '/Documentos/ata.md']],
+            $plan['undo'], 'na ordem inversa do lote');
+
+        $out = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
+        $this->assertSame($plan['removed_dirs'], $out['removed_dirs']);
+        $this->assertSame($plan['kept_dirs'], $out['kept_dirs']);
+        $this->assertArrayNotHasKey('/alice/files/Novo', $this->tree->nodes);
+        $this->assertArrayHasKey('/alice/files/Outro/notas.md', $this->tree->nodes);
+    }
+
     // ------------------------------------------------------------- what it does
 
     public function testAnUndoPutsEveryNodeBackWhereItWas(): void {
@@ -233,6 +262,41 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
         // was narrowed out then. undone_at, not the list, is what stops the batch being replayed.
         $this->assertCount(2, $finished->moves);
         $this->assertTrue($finished->isUndone());
+    }
+
+    /**
+     * The same retry against the production store over SQLite. The double used to carry a method the real store did
+     * not have, so this path was green in the tests and a fatal "undefined method" on the server: the undo stopped
+     * halfway, recorded nothing, and the next attempt read the items already home as conflicts.
+     */
+    public function testAnUndoThatStoppedHalfwayCanBeRetriedWithTheProductionStore(): void {
+        $db = new \OCA\Mcp\Tests\Unit\SqliteDatabase($this, [new \OCA\Mcp\Migration\Version000800Date20261002000000()]);
+        $this->batchStore = new BatchStore($db->connection());
+        $this->setUp();
+        $this->tree->addFile('/alice/files/Documentos/notas.md', 'notas', 'text/markdown');
+        $id = $this->json('files_move_batch', [
+            'moves' => [
+                ['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md'],
+                ['from' => '/Documentos/plano.md', 'to' => '/Arquivado/plano.md'],
+                ['from' => '/Documentos/notas.md', 'to' => '/Arquivado/notas.md'],
+            ],
+            'confirm' => true,
+        ])['batch_id'];
+        $this->tree->failMove = ['/alice/files/Arquivado/plano.md'];
+
+        $first = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
+        $this->assertSame(1, $first['undone']);
+        $this->assertSame(['/Documentos/ata.md', '/Documentos/plano.md'],
+            array_column($this->batchStore->find($id, 'alice')->moves, 'from'), 'a linha guarda só o que não voltou');
+
+        $this->tree->failMove = [];
+        $second = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
+        $this->assertSame([], $second['conflicts']);
+        $this->assertSame(2, $second['undone']);
+        foreach (['ata.md', 'plano.md', 'notas.md'] as $name) {
+            $this->assertArrayHasKey("/alice/files/Documentos/$name", $this->tree->nodes, "$name voltou para casa");
+        }
+        $this->assertTrue($this->batchStore->find($id, 'alice')->isUndone());
     }
 
     /** Once the batch is whole there is nothing left to undo, and saying so beats moving things twice. */

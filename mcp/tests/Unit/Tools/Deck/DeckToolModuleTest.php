@@ -334,6 +334,26 @@ final class DeckToolModuleTest extends TestCase {
 		$module->call(ListBoardsHandler::TOOL, [], 'alice');
 	}
 
+	/** A Deck older than the supported minimum is refused by the module too, not only hidden by the registry. */
+	public function testADeckOlderThanTheSupportedMinimumIsRefusedByTheModule(): void {
+		$users = $this->createMock(\OCP\IUserManager::class);
+		$users->method('get')->with('alice')->willReturn($this->createMock(\OCP\IUser::class));
+		$appManager = $this->createMock(IAppManager::class);
+		$appManager->method('isEnabledForUser')->willReturn(true);
+		$appManager->method('getAppVersion')->with('deck')->willReturn('1.14.11');
+		$module = $this->module(
+			$this->createMock(ContainerInterface::class),
+			$appManager,
+			$this->createMock(LoggerInterface::class),
+			$users,
+		);
+
+		$this->expectException(InvalidArgumentException::class);
+		$this->expectExceptionMessage(DeckMessages::errorDeckAppUnavailable());
+
+		$module->call(ListBoardsHandler::TOOL, [], 'alice');
+	}
+
 	public function testEveryDefinitionIsHandled(): void {
 		foreach ($this->module->definitions() as $definition) {
 			$appManager = $this->createMock(IAppManager::class);

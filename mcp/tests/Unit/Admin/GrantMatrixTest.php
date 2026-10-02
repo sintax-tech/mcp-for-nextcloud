@@ -151,6 +151,22 @@ final class GrantMatrixTest extends TestCase {
         $this->assertTrue($page['users'][0]['grants']['notes']['edit']);
     }
 
+    /** A Talk older than the supported minimum is a missing app for the matrix: no column, no per-user availability. */
+    public function testAnOptionalAppInAnUnsupportedVersionIsOmittedLikeAMissingOne(): void {
+        $this->fx->enabledApps = ['spreed', 'deck'];
+        $this->fx->appVersions = ['spreed' => '21.0.4', 'deck' => '1.15.10'];
+        $this->fx->policy->setGrant('bruno', 'talk', 'reply', true);
+
+        $page = $this->fx->matrix()->page('Bruno', '', 1);
+
+        $this->assertArrayNotHasKey('talk', $page['catalog']);
+        $this->assertArrayHasKey('deck', $page['catalog']);
+        $this->assertFalse($page['appsEnabled']['talk']);
+        $this->assertFalse($page['users'][0]['appsEnabled']['talk']);
+        $this->assertTrue($page['users'][0]['appsEnabled']['deck']);
+        $this->assertTrue($page['users'][0]['grants']['talk']['reply'], 'the saved permission is kept for when Talk is updated');
+    }
+
     public function testRestrictedAppIsUnavailableForUsersWithoutClearingTheirGrant(): void {
         $this->fx->appUsers['notes'] = ['ana'];
         $this->fx->policy->setGrant('bruno', 'notes', 'edit', true);

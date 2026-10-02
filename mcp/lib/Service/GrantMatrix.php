@@ -81,7 +81,7 @@ class GrantMatrix {
         return array_map(function (IUser $user) use ($state): array {
             $appsEnabled = [];
             foreach (self::MODULE_APPS as $module => $app) {
-                $appsEnabled[$module] = $app === 'files' || $app === '' || $this->appManager->isEnabledForUser($app, $user);
+                $appsEnabled[$module] = $app === 'files' || $app === '' || AppEnablement::forUser($this->appManager, $app, $user);
             }
             return [
                 'uid' => $user->getUID(),

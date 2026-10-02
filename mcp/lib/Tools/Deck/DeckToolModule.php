@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Deck;
 
 use InvalidArgumentException;
+use OCA\Mcp\Service\Compat\AppEnablement;
 use OCA\Mcp\Tools\Deck\Handler\AbstractHandler;
 use OCA\Mcp\Tools\Deck\Handler\CreateBoardHandler;
 use OCA\Mcp\Tools\Deck\Handler\CreateCardHandler;
@@ -371,7 +372,7 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 		// The registry already filters by app; this is the safety net for any other caller.
 		// isEnabledForUser() takes an IUser, never the UID string: passing the string breaks at runtime.
 		$user = $this->userManager?->get($userId);
-		if (($this->userManager !== null && $user === null) || !$this->appManager->isEnabledForUser(self::DECK_APP, $user)) {
+		if (($this->userManager !== null && $user === null) || !AppEnablement::forUser($this->appManager, self::DECK_APP, $user)) {
 			throw new InvalidArgumentException(DeckMessages::errorDeckAppUnavailable());
 		}
 

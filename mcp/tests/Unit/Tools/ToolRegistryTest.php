@@ -19,6 +19,8 @@ final class ToolRegistryTest extends TestCase {
     private array $enabledApps = ['notes'];
     /** @var array<string, list<string>> per-user enabled apps for restricted-app cases */
     private array $userEnabledApps = [];
+    /** @var array<string, string> installed version per app id; an app left out answers '' (unknown) */
+    private array $appVersions = [];
     public array $calls = [];
     public ?\Throwable $throw = null;
     private LoggerInterface $logger;
@@ -60,6 +62,7 @@ final class ToolRegistryTest extends TestCase {
             isset($this->userEnabledApps[$user->getUID()])
                 ? in_array($app, $this->userEnabledApps[$user->getUID()], true)
                 : in_array($app, $this->enabledApps, true));
+        $apps->method('getAppVersion')->willReturnCallback(fn (string $app): string => $this->appVersions[$app] ?? '');
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturnCallback(function (string $uid): IUser {
             $user = $this->createMock(IUser::class);
@@ -223,6 +226,21 @@ final class ToolRegistryTest extends TestCase {
         $this->assertContains('n_read', array_column($this->registry()->list('bob'), 'name'));
         $this->assertUnknown('n_read');
         $this->assertSame([], $this->calls);
+    }
+
+    /** A Talk older than the oldest release MCP supports counts as off: its tools leave the list and a call is refused. */
+    public function testToolsOfAnOptionalAppInAnUnsupportedVersionDisappear(): void {
+        $this->enabledApps = ['spreed', 'deck'];
+        $this->appVersions = ['spreed' => '21.1.3', 'deck' => '1.15.0'];
+
+        $names = array_column($this->registry()->list('alice'), 'name');
+        $this->assertNotContains('t_read', $names);
+        $this->assertContains('d_read', $names);
+        $this->assertUnknown('t_read');
+        $this->assertSame([], $this->calls);
+
+        $this->appVersions['spreed'] = '21.1.4';
+        $this->assertContains('t_read', array_column($this->registry()->list('alice'), 'name'));
     }
 
     public function testCallValidatesArgumentsAndAppliesDefaults(): void {

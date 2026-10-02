@@ -98,7 +98,12 @@ final class NotesPlanRenderer {
 			} elseif ($field === 'content' && (array_key_exists('content', $before) || array_key_exists('content', $after))) {
 				$beforeExcerpt = $this->truncate((string)($before['content'] ?? ''));
 				$afterExcerpt = $this->truncate((string)($after['content'] ?? ''));
-				$lines[] = Translator::t('- Content: %s → %s', [$beforeExcerpt, $afterExcerpt]);
+				if ($beforeExcerpt === $afterExcerpt && isset($before['bytes'], $after['bytes'])) {
+					// The plan only carries an excerpt of each side; two equal ones would read as "nothing changed".
+					$lines[] = Translator::t('- Content: the change is past the part shown (%d → %d bytes)', [(int)$before['bytes'], (int)$after['bytes']]);
+				} else {
+					$lines[] = Translator::t('- Content: %s → %s', [$beforeExcerpt, $afterExcerpt]);
+				}
 			}
 		}
 

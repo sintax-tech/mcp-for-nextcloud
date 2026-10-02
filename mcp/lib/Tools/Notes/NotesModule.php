@@ -19,6 +19,7 @@ use OCA\Mcp\Tools\ToolResult;
 use OCP\App\IAppManager;
 use OCP\Files\File;
 use OCP\Files\Folder;
+use OCP\Files\Node;
 use OCP\IUserManager;
 
 /**
@@ -85,6 +86,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
                 'title' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 200, 'description' => NotesMessages::PARAM_TITLE],
                 'content' => ['type' => 'string', 'default' => '', 'description' => NotesMessages::PARAM_CONTENT],
                 'category' => ['type' => 'string', 'default' => '', 'description' => NotesMessages::PARAM_CATEGORY],
+                'confirm_shared' => $confirmShared,
             ], ['title']),
             self::tool('notes_edit', 'edit', NotesMessages::TOOL_EDIT_DESCRIPTION, [
                 'id' => $id,
@@ -117,12 +119,13 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
      */
     public function call(string $name, array $arguments, string $userId): array {
         return NodeAccess::run(function () use ($name, $arguments, $userId): array {
-            $root = $this->notes->folder($userId, $name === 'notes_create');
+            // A creation makes the notes folder itself, and only after the shared-write guard has looked at it.
+            $root = $name === 'notes_create' ? null : $this->notes->folder($userId, false);
             return ToolResult::json(match ($name) {
                 'notes_list' => $this->list($root, $userId),
                 'notes_search' => $this->search($root, $userId, $arguments['query'], (int)$arguments['limit'], (string)($arguments['category'] ?? '')),
                 'notes_read' => $this->read($root, $userId, $arguments['id']),
-                'notes_create' => $this->create($root, $arguments['title'], $arguments['content'], $arguments['category']),
+                'notes_create' => $this->create($userId, $arguments),
                 'notes_edit' => $this->edit($root, $userId, $arguments),
                 'notes_move' => $this->move($root, $userId, $arguments),
                 'notes_delete' => $this->delete($root, $userId, $arguments),
@@ -218,11 +221,22 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
         ];
     }
 
-    /** @return array{id:int, title:string, category:string, modified:int, etag:string} */
-    private function create(Folder $root, string $title, string $content, string $category): array {
+    /**
+     * @param array{title:string, content?:string, category?:string, confirm_shared?:bool} $arguments
+     * @return array<string, mixed> the note, or the shared-write confirmation without creating anything
+     */
+    private function create(string $userId, array $arguments): array {
+        $content = (string)($arguments['content'] ?? '');
+        $category = (string)($arguments['category'] ?? '');
         self::checkSize($content);
+        $target = $this->notes->existingAncestor($userId, $category);
+        $resource = trim($category, '/') === '' ? '/' : trim($category, '/');
+        if (($payload = $this->guard->guard($target, $userId, $resource, (bool)($arguments['confirm_shared'] ?? false))) !== null) {
+            return $payload;
+        }
+        $root = $this->notes->folder($userId, true);
         $folder = $this->notes->category($root, $category);
-        return $this->notes->info($folder->newFile($this->notes->freeName($folder, $title), $content), $root);
+        return $this->notes->info($folder->newFile($this->notes->freeName($folder, (string)$arguments['title']), $content), $root);
     }
 
     /**
@@ -237,21 +251,40 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
             return $payload;
         }
         $note = $this->notes->find($root, $arguments['id']);
+        // Everything that can refuse is checked before the first write: the content has no backup, so
+        // a refusal after it would leave the note overwritten by a call that reports failure.
         if (isset($arguments['content'])) {
             self::checkSize($arguments['content']);
+        }
+        $rename = isset($arguments['title']) ? $this->renameTarget($note, $arguments['title']) : null;
+        if (isset($arguments['content'])) {
             $note->putContent($arguments['content']);
         }
-        if (isset($arguments['title'])) {
-            $name = $this->notes->renamedName($note, $arguments['title']);
-            if ($name !== $note->getName()) {
-                $parent = $note->getParent();
-                if ($parent->nodeExists($name)) {
-                    throw new ToolFailure(NotesMessages::titleExistsInCategory());
-                }
-                $note->move($parent->getPath() . '/' . $name);
-            }
+        if ($rename !== null) {
+            $note->move($rename);
         }
         return $this->described($root, $userId, $arguments);
+    }
+
+    /**
+     * Where a note goes when it gets a new title.
+     *
+     * @param File $note note being renamed
+     * @param string $title raw new title
+     * @return string|null the new path, null when the name does not change
+     * @throws InvalidArgumentException when nothing usable is left of the title
+     * @throws ToolFailure when another note in the category already has that name
+     */
+    private function renameTarget(File $note, string $title): ?string {
+        $name = $this->notes->renamedName($note, $title);
+        if ($name === $note->getName()) {
+            return null;
+        }
+        $parent = $note->getParent();
+        if ($parent->nodeExists($name)) {
+            throw new ToolFailure(NotesMessages::titleExistsInCategory());
+        }
+        return $parent->getPath() . '/' . $name;
     }
 
     /**
@@ -305,7 +338,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
     public function preview(string $name, array $arguments, string $userId): array {
         $root = $this->notes->folder($userId, false);
         return match ($name) {
-            'notes_create' => $this->previewCreate($root, $arguments),
+            'notes_create' => $this->previewCreate($root, $userId, $arguments),
             'notes_edit' => $this->previewEdit($root, $userId, $arguments),
             'notes_move' => $this->previewMove($root, $userId, $arguments),
             'notes_delete' => $this->previewDelete($root, $userId, $arguments),
@@ -322,12 +355,14 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
 
     /**
      * @param Folder|null $root notes folder
+     * @param string $userId authenticated user
      * @param array{title:string, content?:string, category?:string} $arguments
      * @return array<string, mixed> the note the call would create
      */
-    private function previewCreate(?Folder $root, array $arguments): array {
+    private function previewCreate(?Folder $root, string $userId, array $arguments): array {
         self::checkSize((string)($arguments['content'] ?? ''));
         $category = (string)($arguments['category'] ?? '');
+        $shared = $this->shared($this->notes->existingAncestor($userId, $category), $userId);
         if ($root !== null && trim($category, '/') !== '') {
             try {
                 $relative = ltrim(PathGuard::normalize($category, 'category'), '/');
@@ -348,6 +383,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
             return [
                 'action' => 'notes_create',
                 'note' => ['title' => (string)$arguments['title'], 'category' => trim($category, '/'), 'categoryCreated' => $category !== ''],
+                'shared' => $shared,
                 'recoverable' => true,
                 'message' => NotesMessages::planCreate(),
             ];
@@ -362,6 +398,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
                 'content' => self::excerpt((string)($arguments['content'] ?? '')),
                 'bytes' => strlen((string)($arguments['content'] ?? '')),
             ],
+            'shared' => $shared,
             'recoverable' => true,
             'message' => NotesMessages::planCreate(),
         ];
@@ -385,21 +422,29 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
         if (!$note->isUpdateable()) {
             throw new ToolFailure(CommonMessages::forbidden());
         }
+        // The same refusal the write gives, so the user is never asked to approve what would fail.
+        if (isset($arguments['title'])) {
+            $this->renameTarget($note, $arguments['title']);
+        }
         $before = $this->snapshot($root, $note);
         $after = $before;
         $after['title'] = isset($arguments['title'])
             ? pathinfo($this->notes->renamedName($note, $arguments['title']), PATHINFO_FILENAME)
             : $before['title'];
+        // `changed` compares the whole content: the excerpts a plan shows are cut and can be equal for
+        // two different notes.
+        $contentChanged = false;
         if (isset($arguments['content'])) {
             $after['content'] = self::excerpt($arguments['content']);
             $after['bytes'] = strlen($arguments['content']);
+            $contentChanged = $arguments['content'] !== (string)$note->getContent();
         }
         return [
             'action' => 'notes_edit',
             'note' => ['id' => (int)$note->getId(), 'before' => $before, 'after' => $after],
             'changed' => array_values(array_filter(
                 ['title', 'content'],
-                static fn (string $field): bool => $before[$field] !== $after[$field],
+                static fn (string $field): bool => $field === 'title' ? $before['title'] !== $after['title'] : $contentChanged,
             )),
             'access' => $this->accessInfo->describe($note, $userId),
             'shared' => $this->shared($note, $userId),
@@ -543,7 +588,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
      * @param string $userId authenticated user
      * @return array<string, mixed> the ownership description when the note reaches other people
      */
-    private function shared(File $note, string $userId): array {
+    private function shared(Node $note, string $userId): array {
         $access = $this->accessInfo->describe($note, $userId);
         return $access['scope'] === NodeAccessInfo::PERSONAL ? [] : [$access];
     }

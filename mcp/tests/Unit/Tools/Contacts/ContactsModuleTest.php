@@ -36,6 +36,8 @@ final class ContactsModuleTest extends TestCase {
     private ContactsModule $module;
     private array $books;
     private array $rows;
+    /** @var array{uri:string, etag:string, data:string} what the store answers for the contact, changeable to play another client */
+    private array $card;
     private ContactBackup $backup;
     private SystemContacts $system;
 
@@ -65,7 +67,8 @@ final class ContactsModuleTest extends TestCase {
         ];
         $this->store = $this->createMock(ContactStore::class);
         $this->store->method('books')->willReturnCallback(fn () => $this->books);
-        $this->store->method('card')->willReturn(['uri' => 'c1.vcf', 'etag' => '"v1"', 'data' => self::CARD]);
+        $this->card = ['uri' => 'c1.vcf', 'etag' => '"v1"', 'data' => self::CARD];
+        $this->store->method('card')->willReturnCallback(fn (): array => $this->card);
         $this->rows = [['uri' => 'c1.vcf', 'etag' => '"v1"', 'data' => self::CARD]];
         $this->store->method('cards')->willReturnCallback(fn (int $bookId): array => $bookId === 1 ? $this->rows : []);
         $this->dav = $this->createMock(ContactDav::class);
@@ -245,6 +248,58 @@ final class ContactsModuleTest extends TestCase {
             $this->module->call('contacts_delete_contact', $args + ['confirm' => true], 'alice')
         );
         self::assertStringEndsWith('.vcf', $result['backupPath']);
+    }
+
+    /**
+     * g6-2: the contact changes while the backup is being written (another client saved it). The backup holds the
+     * old version, so deleting now would destroy the new one with nothing to restore it from.
+     */
+    public function testAContactEditedWhileTheBackupWasBeingSavedIsNotDeleted(): void {
+        $this->backup->expects(self::once())->method('save')->willReturnCallback(function (): string {
+            $this->card = ['uri' => 'c1.vcf', 'etag' => '"v2"', 'data' => str_replace('Old Name', 'Edited Elsewhere', self::CARD)];
+            return '/MCP backups/Contacts/Personal/Old Name.vcf';
+        });
+        $this->dav->expects(self::never())->method('delete');
+
+        try {
+            $this->module->call('contacts_delete_contact', ['addressbook' => self::BOOK, 'uri' => 'c1.vcf', 'confirm' => true], 'alice');
+            self::fail('the delete went through over a newer version');
+        } catch (ToolFailure $e) {
+            self::assertSame(ToolFailure::CONFLICT, $e->getMessage());
+        }
+    }
+
+    public function testWriteAccessLostWhileTheBackupWasBeingSavedStopsTheDelete(): void {
+        $this->backup->expects(self::once())->method('save')->willReturnCallback(function (): string {
+            $this->books[0]['readOnly'] = true;
+            return '/MCP backups/Contacts/Personal/Old Name.vcf';
+        });
+        $this->dav->expects(self::never())->method('delete');
+
+        $this->expectException(ToolFailure::class);
+        $this->module->call('contacts_delete_contact', ['addressbook' => self::BOOK, 'uri' => 'c1.vcf', 'confirm' => true], 'alice');
+    }
+
+    public function testAnAddressBookThatChangedOwnerWhileTheBackupWasBeingSavedStopsTheDelete(): void {
+        $this->backup->expects(self::once())->method('save')->willReturnCallback(function (): string {
+            $this->books[0]['ownerPrincipal'] = 'principals/users/mallory';
+            return '/MCP backups/Contacts/Personal/Old Name.vcf';
+        });
+        $this->dav->expects(self::never())->method('delete');
+
+        try {
+            $this->module->call('contacts_delete_contact', ['addressbook' => self::BOOK, 'uri' => 'c1.vcf', 'confirm' => true], 'alice');
+            self::fail('the delete went through in a book that changed owner');
+        } catch (ToolFailure $e) {
+            self::assertSame(ToolFailure::CONFLICT, $e->getMessage());
+        }
+    }
+
+    public function testTheDeleteSendsTheEtagItPlannedWithAndNoOther(): void {
+        $this->backup->method('save')->willReturn('/MCP backups/Contacts/Personal/Old Name.vcf');
+        $this->dav->expects(self::once())->method('delete')->with('alice', 'personal', 'c1.vcf', '"v1"')->willReturn(new DavResult(204));
+
+        $this->module->call('contacts_delete_contact', ['addressbook' => self::BOOK, 'uri' => 'c1.vcf', 'confirm' => true], 'alice');
     }
 
     public function testBackupFailureNeverDeletesContact(): void {

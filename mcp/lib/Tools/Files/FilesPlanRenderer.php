@@ -42,6 +42,8 @@ final class FilesPlanRenderer {
                 'files_version_restore' => self::restore($plan),
                 'files_share' => self::share($plan),
                 'files_unshare' => self::unshare($plan),
+                'files_upload' => self::upload($plan),
+                'files_create' => self::create($plan),
                 default => null,
             };
         } catch (\Throwable) {
@@ -99,6 +101,65 @@ final class FilesPlanRenderer {
         }
         $lines[] = '- ' . Translator::t('Nothing is changed until the new version is uploaded.');
         return array_merge($lines, self::backup($plan), self::sharing($plan));
+    }
+
+    /**
+     * The plan of files_upload: the new file, where it goes, how long the link lasts and what it may weigh.
+     *
+     * @return list<string>|null
+     */
+    private static function upload(array $plan): ?array {
+        $path = self::text($plan, 'path');
+        if ($path === null) {
+            return null;
+        }
+        $lines = [Translator::t('Create the new file %s with the content you send.', [self::bold($path)]), ''];
+        $lines = array_merge($lines, self::folderLine($plan));
+        if (isset($plan['size'])) {
+            $lines[] = '- ' . Translator::t('Size: %s', [self::bytes((int)$plan['size'])]);
+        }
+        if (isset($plan['uploadTtlSeconds'])) {
+            $lines[] = '- ' . Translator::t('The upload link works once, for %s minutes.', [(int)ceil((int)$plan['uploadTtlSeconds'] / 60)]);
+        }
+        if (isset($plan['uploadMaxBytes'])) {
+            $lines[] = '- ' . Translator::t('The file can weigh up to %s.', [self::bytes((int)$plan['uploadMaxBytes'])]);
+        }
+        $lines[] = '- ' . FilesMessages::planNewFileConsequence();
+        return array_merge($lines, self::sharing($plan));
+    }
+
+    /**
+     * The plan of files_create: the new text file, where it goes, its size and the beginning of its text as a quote.
+     *
+     * @return list<string>|null
+     */
+    private static function create(array $plan): ?array {
+        $path = self::text($plan, 'path');
+        if ($path === null) {
+            return null;
+        }
+        $lines = [Translator::t('Create the text file %s.', [self::bold($path)]), ''];
+        $lines = array_merge($lines, self::folderLine($plan));
+        if (isset($plan['size'])) {
+            $lines[] = '- ' . Translator::t('Size: %s', [self::bytes((int)$plan['size'])]);
+        }
+        $lines[] = '- ' . FilesMessages::planNewFileConsequence();
+        $lines = array_merge($lines, self::sharing($plan));
+        $preview = is_string($plan['preview'] ?? null) ? PlanText::quote($plan['preview'], FileCreation::PREVIEW_CHARS) : '';
+        if ($preview === '') {
+            return array_merge($lines, ['', Translator::t('The file is empty.')]);
+        }
+        $cut = ($plan['previewTruncated'] ?? false) === true;
+        $lines[] = '';
+        $lines[] = $cut ? Translator::t('Beginning of the content:') : Translator::t('Content:');
+        $lines[] = $preview . ($cut && !str_ends_with($preview, '…') ? '…' : '');
+        return $lines;
+    }
+
+    /** @return list<string> the folder that receives a new file, when the plan names it */
+    private static function folderLine(array $plan): array {
+        $folder = self::text($plan, 'folder');
+        return $folder === null ? [] : ['- ' . Translator::t('Inside: %s', [self::bold($folder)])];
     }
 
     /** @return list<string>|null */

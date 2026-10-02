@@ -12,6 +12,7 @@ use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\Reorganization;
 use OCA\Mcp\Tools\Notes\NotesModule;
@@ -70,6 +71,8 @@ final class VisibilityContractTest extends TestCase {
         'files_list_shares' => 'list_shares',
         'files_share' => 'share',
         'files_unshare' => 'unshare',
+        'files_upload' => 'upload',
+        'files_create' => 'create',
         'notes_list' => 'notes_list',
         'notes_search' => 'notes_search',
         'notes_read' => 'notes_read',
@@ -422,6 +425,22 @@ final class VisibilityContractTest extends TestCase {
         $this->assertTrue($res['isError'] ?? false);
         $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
         $assertNoLeak($res['content'][0]['text']);
+
+        // 14b. files_upload and files_create (collision with a hidden file, inside a hidden folder), confirmed and planned:
+        // a hidden folder answers like a missing one and nothing names it; no link is minted and nothing is written.
+        foreach (['files_upload' => [], 'files_create' => ['content' => 'x']] as $tool => $extra) {
+            $res = $registry->call($tool, ['path' => '/secret_direct.txt', 'confirm' => true, 'confirm_shared' => true] + $extra, 'alice');
+            $this->assertTrue($res['isError'] ?? false, $tool);
+            $this->assertSame(CommonMessages::forbidden(), $res['content'][0]['text'], $tool);
+            foreach ([true, false] as $confirm) {
+                $res = $registry->call($tool, ['path' => '/SecretFolder/novo.txt', 'confirm' => $confirm, 'confirm_shared' => true] + $extra, 'alice');
+                $this->assertTrue($res['isError'] ?? false, $tool);
+                $this->assertStringStartsWith(CommonMessages::notFound(), $res['content'][0]['text'], $tool);
+                $this->assertSame(FilesMessages::createFolderMissing(), $res['content'][0]['text'], $tool);
+                $assertNoLeak($res['content'][0]['text']);
+            }
+        }
+        $this->assertArrayNotHasKey('/alice/files/SecretFolder/novo.txt', $this->tree->nodes);
 
         // 15. files_copy (source hidden, destination hidden, destination collision)
         foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {

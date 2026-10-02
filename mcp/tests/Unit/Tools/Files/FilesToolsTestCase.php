@@ -14,6 +14,7 @@ use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileBackup;
+use OCA\Mcp\Tools\Files\FileCreation;
 use OCA\Mcp\Tools\Files\ImageTools;
 use OCA\Mcp\Tools\Files\MovePlanner;
 use OCA\Mcp\Tools\Files\MoveReport;
@@ -79,6 +80,8 @@ abstract class FilesToolsTestCase extends TestCase {
     protected \Psr\Log\LoggerInterface $shareLogger;
     /** Shares alice created, behind the IShareManager double of files_list_shares. */
     protected \OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeShares $shares;
+    /** Nextcloud's file name rules, as a default install applies them. */
+    protected FakeFilenameValidator $filenames;
     /** @var list<string> apps enabled for alice; a test can empty it to simulate files_versions being off */
     protected array $enabled = ['files_versions'];
 
@@ -125,6 +128,8 @@ abstract class FilesToolsTestCase extends TestCase {
         $this->tagManager = $this->createMock(ISystemTagManager::class);
         $this->tagMapper = $this->createMock(ISystemTagObjectMapper::class);
         $this->logger = $this->createMock(\Psr\Log\LoggerInterface::class);
+        $this->filenames = new FakeFilenameValidator();
+        $checkout = new CheckoutService($urls, $config, $this->time, new TokenHasher($config), $this->store, $this->apps, $this->users);
         $imageTools = new ImageTools(
             $this->previewManager,
             $access,
@@ -145,7 +150,7 @@ abstract class FilesToolsTestCase extends TestCase {
             $db,
             $access,
             new SharedWriteGuard($access),
-            new CheckoutService($urls, $config, $this->time, new TokenHasher($config), $this->store, $this->apps, $this->users),
+            $checkout,
             new VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class), new OcrSupport($this->apps)),
             new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users, $this->visibilityGuard),
             new MovePlanner(new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users, $this->visibilityGuard), $access, new SharedWriteGuard($access), $this->visibilityGuard),
@@ -155,6 +160,8 @@ abstract class FilesToolsTestCase extends TestCase {
             new OcrSupport($this->apps),
             $this->visibilityGuard,
             ...$this->sharing($urls),
+            creation: new FileCreation($access, new SharedWriteGuard($access), $checkout, $this->filenames,
+                $this->visibilityGuard ?? new \OCA\Mcp\Service\VisibilityGuard($config, $this->tagMapper)),
         );
     }
 

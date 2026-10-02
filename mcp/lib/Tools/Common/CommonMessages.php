@@ -69,6 +69,11 @@ final class CommonMessages {
         return Translator::t('Changes affect other people. Confirm with the user before continuing and run a new files_checkout with confirm_shared: true, because this edit link has already been used.');
     }
 
+    /** @return string translated confirmation instruction for a consumed single-use create link of files_upload */
+    public static function confirmAdviceUpload(): string {
+        return Translator::t('Changes affect other people. Confirm with the user before continuing and run a new files_upload with confirm_shared: true, because this upload link has already been used.');
+    }
+
     /** @return string translated message when a resource cannot be found in Nextcloud */
     public static function notFound(): string {
         return Translator::t('Resource not found in Nextcloud.');

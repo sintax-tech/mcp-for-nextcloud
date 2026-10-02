@@ -845,6 +845,27 @@
     "%s Some items could not be confirmed; see 'warnings' before retrying." : "%s Alguns itens não puderam ser confirmados; veja 'warnings' antes de tentar de novo.",
     "Probably created: check it before continuing." : "Provavelmente criado: confira antes de continuar.",
     "The assignees were not assigned because the card was only probably created. Check it first." : "Os responsáveis não foram atribuídos porque o cartão foi apenas provavelmente criado. Confira-o antes.",
-    "Not created: what it belongs to was only probably created. Check it, then create this one." : "Não criado: aquilo a que pertence foi apenas provavelmente criado. Confira e depois crie este."
+    "Not created: what it belongs to was only probably created. Check it, then create this one." : "Não criado: aquilo a que pertence foi apenas provavelmente criado. Confira e depois crie este.",
+    "Upload new file" : "Enviar arquivo novo",
+    "Create text file" : "Criar arquivo de texto",
+    "A file with this name already exists; use files_checkout to replace it or choose another name." : "Já existe um arquivo com esse nome; use files_checkout para substituí-lo ou escolha outro nome.",
+    "Beginning of the content:" : "Início do conteúdo:",
+    "Changes affect other people. Confirm with the user before continuing and run a new files_upload with confirm_shared: true, because this upload link has already been used." : "As alterações afetam outras pessoas. Confirme com o usuário antes de continuar e rode um novo files_upload com confirm_shared: true, porque este link de envio já foi usado.",
+    "Content exceeds the limit of %s bytes for files_create; use files_upload for a larger file." : "O conteúdo passa do limite de %s bytes do files_create; use files_upload para um arquivo maior.",
+    "Content:" : "Conteúdo:",
+    "Create the new file %s with the content you send." : "Criar o arquivo novo %s com o conteúdo que você enviar.",
+    "Create the text file %s." : "Criar o arquivo de texto %s.",
+    "Failed to write file; an empty file with this name may have been left in place." : "Falha ao gravar o arquivo; pode ter ficado um arquivo vazio com esse nome.",
+    "If the destination folder does not exist yet, create it first with files_mkdir." : "Se a pasta de destino ainda não existe, crie-a antes com files_mkdir.",
+    "Nothing is overwritten: if a file with this name exists when the content arrives, nothing is written." : "Nada é sobrescrito: se já existir um arquivo com esse nome quando o conteúdo chegar, nada é gravado.",
+    "Nothing was changed. After your approval a single-use upload link is issued that creates this new file; the file only appears once the bytes are sent to it." : "Nada foi alterado. Após sua aprovação é emitido um link de envio de uso único que cria este arquivo novo; o arquivo só aparece quando os bytes forem enviados a ele.",
+    "Nothing was changed. After your approval the new text file below is created." : "Nada foi alterado. Após sua aprovação o arquivo de texto novo abaixo é criado.",
+    "Send the file with the curl command below before the link expires. The link works once: if the upload is refused before it is used, fix the request and send it again; otherwise call files_upload again." : "Envie o arquivo com o comando curl abaixo antes que o link expire. O link funciona uma vez: se o envio for recusado antes de usá-lo, corrija a requisição e envie de novo; caso contrário, chame files_upload de novo.",
+    "The file can weigh up to %s." : "O arquivo pode ter até %s.",
+    "The file is empty." : "O arquivo está vazio.",
+    "The upload link works once, for %s minutes." : "O link de envio funciona uma vez, por %s minutos.",
+    "This upload link has expired or has already been used. Call files_upload again." : "Este link de envio expirou ou já foi usado. Chame files_upload de novo.",
+    "files_create only writes text files (%s); use files_upload for any other type" : "files_create só grava arquivos de texto (%s); use files_upload para qualquer outro tipo",
+    "must end in a file name Nextcloud accepts: no reserved name, forbidden character or extension, at most 250 bytes" : "precisa terminar em um nome de arquivo que o Nextcloud aceite: sem nome reservado, caractere ou extensão proibidos, até 250 bytes"
 },"pluralForm" :"nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

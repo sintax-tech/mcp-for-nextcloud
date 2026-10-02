@@ -45,6 +45,11 @@ class FileSharer {
      * @throws TalkUnavailableException When spreed is unavailable
      */
     public function attach(Conversation $conversation, string $userId, string $path, ?string $caption = null): array {
+        // The share publishes the card the moment it exists, so a caption that cannot be sent is refused
+        // while there is still nothing to take back.
+        if ($caption !== null) {
+            ConversationWriter::normalizeMessage($caption);
+        }
         $file = $this->resolveShareable($conversation, $userId, $path);
         $token = $conversation->token();
 

@@ -130,6 +130,50 @@ final class GrantsControllerTest extends TestCase {
         $this->assertTrue($this->fx->policy->globalEnabled());
     }
 
+    /** The general switch off must reach the policy and take every credential with it, not just flip a flag. */
+    public function testSwitchingTheServiceOffReachesThePolicyAndRevokesEverything(): void {
+        $this->fx->policy->setGlobalEnabled(true);
+        $this->fx->oauth->insertToken(['user_id' => 'ana'], 0);
+        $this->fx->oauth->insertCode(['user_id' => 'bob'], 0);
+
+        $this->assertSame(['enabled' => false], $this->controller(['enabled' => false])->service()->getData());
+
+        $this->assertFalse($this->fx->policy->globalEnabled());
+        $this->assertSame('0', $this->fx->config->app['mcp']['service_enabled']);
+        $this->assertSame([], $this->fx->oauth->tokens);
+        $this->assertSame([], $this->fx->oauth->codes);
+    }
+
+    public function testBulkRevokingAGrantRevokesItAndNeverGrantsIt(): void {
+        $this->fx->policy->setEligible('ana', true);
+        $this->fx->policy->setGrant('ana', 'notes', 'edit', true);
+        $this->fx->policy->setEligible('bob', true);
+        $this->fx->policy->setGrant('bob', 'notes', 'edit', true);
+
+        $this->assertSame(200, $this->controller(['uids' => ['ana'], 'module' => 'notes', 'operation' => 'edit', 'granted' => false])->bulk()->getStatus());
+
+        $this->assertFalse($this->fx->policy->granted('ana', 'notes', 'edit'));
+        $this->assertTrue($this->fx->policy->granted('bob', 'notes', 'edit'), 'only the selected users');
+    }
+
+    /** @return array<string, array{array<string, mixed>}> */
+    public static function badBulkUidsProvider(): array {
+        return [
+            'a number among the ids' => [['uids' => [42], 'module' => 'notes', 'operation' => 'edit', 'granted' => true]],
+            'an object instead of a list' => [['uids' => ['a' => 'ana'], 'module' => 'notes', 'operation' => 'edit', 'granted' => true]],
+            'a null among the ids' => [['uids' => ['ana', null], 'module' => 'notes', 'operation' => 'edit', 'granted' => true]],
+            'no module for a grant' => [['uids' => ['ana'], 'module' => null, 'operation' => 'edit', 'granted' => true]],
+        ];
+    }
+
+    /** @param array<string, mixed> $body */
+    #[\PHPUnit\Framework\Attributes\DataProvider('badBulkUidsProvider')]
+    public function testABadBulkIsRefusedAndChangesNothing(array $body): void {
+        self::assertBad($this->controller($body)->bulk());
+
+        $this->assertFalse($this->fx->policy->granted('ana', 'notes', 'edit'));
+    }
+
     public function testOauthClientsShowsTheDefaultHostsWhenUnset(): void {
         $data = $this->controller()->oauthClients()->getData();
         $this->assertSame([

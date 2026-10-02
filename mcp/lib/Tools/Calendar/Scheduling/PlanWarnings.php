@@ -86,11 +86,13 @@ final class PlanWarnings {
         }
         $zone = $timing['timeZone'] ?? $this->zones?->forUser($userId) ?? new DateTimeZone(date_default_timezone_get() ?: 'UTC');
         $calendar = $prepared->target ?? $prepared->source;
+        // The days of an all-day event belong to the zone of the account: collision and free/busy both look at them there.
+        $timing = $this->inZone($timing, $zone);
         $warnings = $this->collisionWarnings($calendar, $userId, $timing, $prepared->before?->uri, $zone);
         $shared = [];
         $suggested = null;
         if ($guests !== null && $guests !== []) {
-            array_push($warnings, ...$this->availabilityWarnings($userId, $timing, $guests, $this->ownSlot($prepared)));
+            array_push($warnings, ...$this->availabilityWarnings($userId, $timing, $guests, $this->ownSlot($prepared, $zone)));
             if ($tool === 'calendar_create_event' || array_key_exists('attendees', $arguments)) {
                 [$sharing, $shared, $suggested] = $this->sharingWarnings($calendar, $userId, $guests);
                 array_push($warnings, ...$sharing);
@@ -160,6 +162,23 @@ final class PlanWarnings {
     }
 
     /**
+     * The timing of an all-day event carries its civil days as UTC midnights; the days themselves belong to the zone the
+     * account lives in. Moves them to midnight there, so a window is not 3 hours (or 9) off. Timed events are returned as they are.
+     *
+     * @param array{start: DateTimeImmutable, end: DateTimeImmutable, allDay: bool, timeZone: DateTimeZone|null} $timing timing as the builder reads it
+     * @param DateTimeZone $zone zone of the account
+     * @return array{start: DateTimeImmutable, end: DateTimeImmutable, allDay: bool, timeZone: DateTimeZone|null} the same timing, with the days of an all-day event at midnight in that zone
+     */
+    private function inZone(array $timing, DateTimeZone $zone): array {
+        if (!$timing['allDay']) {
+            return $timing;
+        }
+        $timing['start'] = new DateTimeImmutable($timing['start']->format('Y-m-d'), $zone);
+        $timing['end'] = new DateTimeImmutable($timing['end']->format('Y-m-d'), $zone);
+        return $timing;
+    }
+
+    /**
      * @param Calendar $calendar calendar the event would live in
      * @param string $userId acting user
      * @param array{start: DateTimeImmutable, end: DateTimeImmutable, allDay: bool, timeZone: DateTimeZone|null} $timing proposed timing
@@ -195,14 +214,15 @@ final class PlanWarnings {
      * edited. Create has no stored event and returns null.
      *
      * @param PreparedCalendarWrite $prepared write being planned
+     * @param DateTimeZone $zone zone of the account, where the days of an all-day event are
      * @return array{start: DateTimeImmutable, end: DateTimeImmutable, guests: list<string>}|null current slot and guest addresses (lower case, no `mailto:`), null when the event is new
      */
-    private function ownSlot(PreparedCalendarWrite $prepared): ?array {
+    private function ownSlot(PreparedCalendarWrite $prepared, DateTimeZone $zone): ?array {
         $before = $prepared->before?->master();
         if ($before === null) {
             return null;
         }
-        $old = $this->builder->timing($before);
+        $old = $this->inZone($this->builder->timing($before), $zone);
         return [
             'start' => $old['start'],
             'end' => $old['end'],

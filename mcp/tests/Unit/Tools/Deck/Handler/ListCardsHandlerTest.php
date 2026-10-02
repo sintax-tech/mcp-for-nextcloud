@@ -88,6 +88,28 @@ final class ListCardsHandlerTest extends TestCase {
 		self::assertNull($full['total']);
 	}
 
+	/** The total counts the cards before this page: a short page at offset 50 is not the whole stack. */
+	public function testTotalOfAShortPageCountsTheOffset(): void {
+		$payload = $this->payload($this->handler([
+			$this->card(['id' => 1]),
+			$this->card(['id' => 2]),
+			$this->card(['id' => 3]),
+		])->handle(['stackId' => 10, 'limit' => 25, 'offset' => 50], 'alice'));
+
+		self::assertSame(53, $payload['total']);
+	}
+
+	/** Whether the page is short is decided on what Deck returned, not on what is left after the filter. */
+	public function testAFullPageIsNeverClaimedAsTheEndEvenWhenTheFilterDropsCards(): void {
+		$payload = $this->payload($this->handler([
+			$this->card(['id' => 1]),
+			$this->card(['id' => 2, 'archived' => true]),
+		])->handle(['stackId' => 10, 'limit' => 2], 'alice'));
+
+		self::assertSame([1], array_column($payload['cards'], 'id'));
+		self::assertNull($payload['total']);
+	}
+
 	public function testDeniedAccessBecomesTheGenericMessage(): void {
 		$gateway = $this->createMock(DeckGatewayInterface::class);
 		$gateway->method('listCards')->willThrowException(new NoPermissionException('Permission denied'));

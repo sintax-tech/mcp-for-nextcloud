@@ -608,6 +608,8 @@ OC.L10N.register(
     "Move event from *%s* to *%s*: **%s**" : "Mover evento de *%s* para *%s*: **%s**",
     "Transfer event from *%s* to *%s*: **%s**" : "Transferir evento de *%s* para *%s*: **%s**",
     "Delete event in *%s*: **%s**" : "Excluir evento em *%s*: **%s**",
+    "- Shared calendar *%s* of %s." : "- Calendário *%s* compartilhado por %s.",
+    "- Shared calendar of %s." : "- Calendário compartilhado por %s.",
     "- Consequence: %s" : "- Consequência: %s",
     "Enter at least 2 characters to search the accounts catalog." : "Digite pelo menos 2 caracteres para buscar no catálogo de contas.",
     "Account contacts are read-only; ask the administrator." : "Os contatos de contas são somente leitura; peça ao administrador.",
@@ -874,6 +876,7 @@ OC.L10N.register(
     "Create a new Nextcloud file" : "Criar um arquivo novo no Nextcloud",
     "Teaches how to send a file generated locally to Nextcloud as a new file, or to create a small text file inline." : "Ensina a enviar ao Nextcloud, como arquivo novo, um arquivo gerado localmente, ou a criar um arquivo de texto pequeno inline.",
     "Workflow for creating a new Nextcloud file." : "Fluxo de criação de um arquivo novo no Nextcloud.",
-    "Create folders, copies and new files" : "Criar pastas, cópias e arquivos novos"
+    "Create folders, copies and new files" : "Criar pastas, cópias e arquivos novos",
+    "- Content: the change is past the part shown (%d → %d bytes)" : "- Conteúdo: a mudança está além do trecho mostrado (%d → %d bytes)"
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

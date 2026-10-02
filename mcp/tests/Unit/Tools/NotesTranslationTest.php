@@ -87,7 +87,7 @@ final class NotesTranslationTest extends TestCase {
                 $texts[] = $value;
             }
         });
-        self::assertCount(26, $texts);
+        self::assertCount(27, $texts);
         foreach ($texts as $text) {
             self::assertDoesNotMatchRegularExpression('/[À-ÿ]/u', $text);
         }

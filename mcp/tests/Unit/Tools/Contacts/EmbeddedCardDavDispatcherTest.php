@@ -28,6 +28,8 @@ final class EmbeddedCardDavDispatcherTest extends TestCase {
     private MemoryCardBackend $backend;
     private EmbeddedCardDavDispatcher $dav;
     private Server $server;
+    /** How many times a native DAV server was built: a refusal that costs none happened before any DAV call. */
+    private int $serversBuilt = 0;
     private const CARD = "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Alice Contact\r\nN:Contact;Alice;;;\r\nEND:VCARD\r\n";
 
     protected function setUp(): void {
@@ -92,9 +94,37 @@ final class EmbeddedCardDavDispatcherTest extends TestCase {
         $this->dav->put('alice', 'personal', 'broken.vcf', 'not a card');
     }
 
-    public function testSessionMismatchAndPathEscapeFailBeforeServerCreation(): void {
-        $this->expectException(RuntimeException::class);
-        $this->dav->put('bob', 'personal', 'c1.vcf', self::CARD);
+    /**
+     * g6-1: a ToolFailure is a RuntimeException too, so expecting the superclass would also pass when the
+     * session check is gone and the 404 of the server stands in for it. This asserts the very refusal, and that
+     * nothing was built or written.
+     */
+    public function testSessionMismatchFailsBeforeServerCreation(): void {
+        try {
+            $this->dav->put('bob', 'personal', 'c1.vcf', self::CARD);
+            self::fail('the write ran as another principal than the session');
+        } catch (RuntimeException $e) {
+            self::assertNotInstanceOf(ToolFailure::class, $e, 'the server answered, so the session was not checked first');
+            self::assertSame('CardDAV session mismatch', $e->getMessage());
+        }
+        self::assertSame(0, $this->serversBuilt);
+        self::assertSame([], $this->backend->cards);
+    }
+
+    public function testEverySessionMismatchOfEveryVerbFailsBeforeServerCreation(): void {
+        foreach ([
+            fn () => $this->dav->put('bob', 'personal', 'c1.vcf', self::CARD),
+            fn () => $this->dav->update('bob', 'personal', 'c1.vcf', '"e"', self::CARD),
+            fn () => $this->dav->delete('bob', 'personal', 'c1.vcf', '"e"'),
+        ] as $call) {
+            try {
+                $call();
+                self::fail('a verb ran as another principal');
+            } catch (RuntimeException $e) {
+                self::assertSame('CardDAV session mismatch', $e->getMessage());
+            }
+        }
+        self::assertSame(0, $this->serversBuilt);
     }
 
     public function testEncodedSegmentsCannotEscapeBook(): void {
@@ -102,10 +132,87 @@ final class EmbeddedCardDavDispatcherTest extends TestCase {
         $this->dav->put('alice', 'personal', '../outside', self::CARD);
     }
 
+    /** @return array<string, array{string, string, string}> user, book, object */
+    public static function unsafeSegmentsProvider(): array {
+        return [
+            'object is ..' => ['alice', 'personal', '..'], 'object is .' => ['alice', 'personal', '.'], 'object empty' => ['alice', 'personal', ''],
+            'object with NUL' => ['alice', 'personal', "a\0b"], 'object with newline' => ['alice', 'personal', "x\n.vcf"],
+            'object with slash' => ['alice', 'personal', 'a/b.vcf'], 'object with backslash' => ['alice', 'personal', 'a\\b.vcf'],
+            'book is ..' => ['alice', '..', 'c1.vcf'], 'book is .' => ['alice', '.', 'c1.vcf'], 'book empty' => ['alice', '', 'c1.vcf'],
+            'book with slash' => ['alice', 'a/b', 'c1.vcf'],
+        ];
+    }
+
+    /** The segments are refused by the rule itself, before a server exists: a stale ETag would also stop most of them, later and for another reason. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('unsafeSegmentsProvider')]
+    public function testAnUnsafeSegmentIsRefusedBeforeAnyServerIsBuilt(string $user, string $book, string $object): void {
+        foreach ([
+            fn () => $this->dav->put($user, $book, $object, self::CARD),
+            fn () => $this->dav->update($user, $book, $object, '"e"', self::CARD),
+            fn () => $this->dav->delete($user, $book, $object, '"e"'),
+        ] as $call) {
+            try {
+                $call();
+                self::fail('an unsafe segment reached the server');
+            } catch (ToolFailure $e) {
+                self::assertSame(\OCA\Mcp\Tools\Common\CommonMessages::notFound(), $e->getMessage());
+            }
+        }
+        self::assertSame(0, $this->serversBuilt);
+    }
+
+    /** g6-2: DELETE carries If-Match, so a card edited since the plan is not removed by a delete that was approved for the old one. */
+    public function testDeleteWithAStaleEtagIsRefusedAndTheCardSurvives(): void {
+        $this->dav->put('alice', 'personal', 'c1.vcf', self::CARD);
+
+        try {
+            $this->dav->delete('alice', 'personal', 'c1.vcf', '"old"');
+            self::fail('the card was deleted over a stale ETag');
+        } catch (ToolFailure $e) {
+            self::assertSame(412, $e->getCode());
+        }
+        self::assertSame(self::CARD, $this->backend->cards['c1.vcf']['carddata']);
+    }
+
+    public function testDeleteWithTheCurrentEtagRemovesTheCard(): void {
+        $created = $this->dav->put('alice', 'personal', 'c1.vcf', self::CARD);
+
+        self::assertSame(204, $this->dav->delete('alice', 'personal', 'c1.vcf', $created->etag)->status);
+        self::assertSame([], $this->backend->cards);
+    }
+
+    public function testRefusedWritesLeaveTheBookExactlyAsItWas(): void {
+        $this->dav->put('alice', 'personal', 'c1.vcf', self::CARD);
+        $before = $this->backend->cards;
+        $this->dav = $this->dispatcher('alice', 10);
+        try {
+            $this->dav->put('alice', 'personal', 'c2.vcf', self::CARD);
+        } catch (ToolFailure) {
+        }
+        $this->dav = $this->dispatcher('alice');
+        try {
+            $this->dav->put('alice', 'personal', 'broken.vcf', 'not a card');
+        } catch (ToolFailure) {
+        }
+        $this->backend->owner = 'principals/users/bob';
+        try {
+            $this->dav->put('alice', 'personal', 'c3.vcf', self::CARD);
+        } catch (ToolFailure) {
+        }
+
+        self::assertSame($before, $this->backend->cards);
+    }
+
     public function testSizeLimitBeforeAnyDavCallAndNoOutput(): void {
         $this->dav = $this->dispatcher('alice', 10);
-        $this->expectException(ToolFailure::class);
-        $this->dav->put('alice', 'personal', 'c1.vcf', self::CARD);
+        $built = $this->serversBuilt;
+        try {
+            $this->dav->put('alice', 'personal', 'c1.vcf', self::CARD);
+            self::fail('an oversized card was sent');
+        } catch (ToolFailure) {
+            self::assertSame($built, $this->serversBuilt, 'refused before any DAV call');
+            self::assertSame([], $this->backend->cards);
+        }
     }
 
     public function testDispatchCapturesOutputAndUsesFreshServerEachTime(): void {
@@ -124,7 +231,10 @@ final class EmbeddedCardDavDispatcherTest extends TestCase {
         $session->method('getUser')->willReturn($user);
         $config = $this->createMock(IAppConfig::class);
         $config->method('getValueInt')->willReturn($limit);
-        return new EmbeddedCardDavDispatcher(fn () => $this->server(), new Session($session), $config, new NullLogger());
+        return new EmbeddedCardDavDispatcher(function (): Server {
+            $this->serversBuilt++;
+            return $this->server();
+        }, new Session($session), $config, new NullLogger());
     }
 
     private function server(): Server {

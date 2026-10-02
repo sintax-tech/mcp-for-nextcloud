@@ -87,7 +87,8 @@ final class DeckServiceGatewayTest extends TestCase {
 
 	/** Board ACLs are evaluated for each assignee by Deck, including group-derived access. */
 	public function testAssigneesNeedExistingAccountsAndBoardReadAccess(): void {
-		$this->services[PermissionService::class]->method('checkPermission')->willReturn(true);
+		$this->services[PermissionService::class]->expects(self::once())->method('checkPermission')
+			->with(self::isInstanceOf(StackMapper::class), 10, Acl::PERMISSION_EDIT)->willReturn(true);
 		$this->services[StackMapper::class]->method('findBoardId')->with(10)->willReturn(4);
 		$this->recordUser('pedro', 'Pedro');
 		$this->services[PermissionService::class]->expects(self::once())->method('getPermissions')
@@ -101,9 +102,21 @@ final class DeckServiceGatewayTest extends TestCase {
 		$this->services[StackMapper::class]->method('findBoardId')->willReturn(4);
 		$this->recordUser('pedro', 'Pedro');
 		$this->services[PermissionService::class]->method('getPermissions')->willReturn([Acl::PERMISSION_READ => false]);
-		$this->services[CardService::class]->expects(self::never())->method('create');
 		$this->expectException(\InvalidArgumentException::class);
 		$this->expectExceptionMessage('Invalid argument: assignees');
+		$this->gateway->validateAssignees('alice', 10, ['pedro']);
+	}
+
+	/** Whoever cannot edit the list learns nothing about which accounts exist or reach the board. */
+	public function testValidatingAssigneesNeedsEditPermissionOnTheListBeforeAnyProbe(): void {
+		$this->services[PermissionService::class]->expects(self::once())->method('checkPermission')
+			->with(self::isInstanceOf(StackMapper::class), 10, Acl::PERMISSION_EDIT)
+			->willThrowException(new NoPermissionException('Permission denied'));
+		$this->services[PermissionService::class]->expects(self::never())->method('getPermissions');
+		$this->services[IUserManager::class]->expects(self::never())->method('get');
+		$this->services[StackMapper::class]->expects(self::never())->method('findBoardId');
+
+		$this->expectException(NoPermissionException::class);
 		$this->gateway->validateAssignees('alice', 10, ['pedro']);
 	}
 
@@ -113,7 +126,6 @@ final class DeckServiceGatewayTest extends TestCase {
 		$this->services[StackMapper::class]->method('findBoardId')->willReturn(4);
 		$this->services[IUserManager::class]->method('get')->willReturn(null);
 		$this->services[PermissionService::class]->expects(self::never())->method('getPermissions');
-		$this->services[CardService::class]->expects(self::never())->method('create');
 		try {
 			$this->gateway->validateAssignees('alice', 10, ['secret-account']);
 			self::fail('accepted a missing account');

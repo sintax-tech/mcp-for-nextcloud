@@ -63,4 +63,37 @@ final class ClientMetadataFetcherTest extends TestCase {
         $this->expectException(OAuthException::class);
         $this->fetcher($stream, '65537')->fetch(self::CLIENT);
     }
+
+    /** A document one byte over the cap that is valid JSON up to the cap: only the size limit can refuse it. */
+    public function testAValidDocumentOneByteOverTheLimitIsRefused(): void {
+        $json = json_encode(['client_id' => self::CLIENT, 'client_name' => 'Claude',
+            'redirect_uris' => ['https://claude.ai/callback'], 'token_endpoint_auth_method' => 'none']);
+        $stream = fopen('php://memory', 'w+');
+        fwrite($stream, $json . str_repeat(' ', 65537 - strlen($json)));
+        rewind($stream);
+
+        try {
+            $this->fetcher($stream)->fetch(self::CLIENT);
+            $this->fail('a document over the limit was accepted');
+        } catch (OAuthException $e) {
+            $this->assertSame('invalid_client', $e->error);
+        }
+        $this->assertFalse(is_resource($stream));
+    }
+
+    /** A declared length over the cap is refused even though the document behind it is valid, so only that check can refuse it. */
+    public function testADeclaredLengthOverTheLimitIsRefusedEvenForAValidDocument(): void {
+        $json = json_encode(['client_id' => self::CLIENT, 'client_name' => 'Claude',
+            'redirect_uris' => ['https://claude.ai/callback'], 'token_endpoint_auth_method' => 'none']);
+        $stream = fopen('php://memory', 'w+');
+        fwrite($stream, $json);
+        rewind($stream);
+
+        try {
+            $this->fetcher($stream, '65537')->fetch(self::CLIENT);
+            $this->fail('a declared oversize was accepted');
+        } catch (OAuthException $e) {
+            $this->assertSame('invalid_client', $e->error);
+        }
+    }
 }

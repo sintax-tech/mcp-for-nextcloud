@@ -179,6 +179,59 @@ final class TasksModuleTest extends TestCase {
         $this->module->call('tasks_read_task', ['calendar' => self::PATH, 'uid' => 't1'], 'alice');
     }
 
+    /** @return array<string, array{string, string}> the write tool and the class that protects the task */
+    public static function protectedWritesProvider(): array {
+        $cases = [];
+        foreach (['tasks_edit_task', 'tasks_complete_task', 'tasks_delete_task'] as $tool) {
+            foreach (['PRIVATE', 'CONFIDENTIAL'] as $class) {
+                $cases[$tool . ' on a ' . $class . ' task'] = [$tool, $class];
+            }
+        }
+        return $cases;
+    }
+
+    /**
+     * P17: the plan of a write shows the task as it is now, so a task that list and read hide must not be
+     * shown by the plan of an edit, a completion or a delete either, nor be changed by the confirmed call.
+     */
+    #[\PHPUnit\Framework\Attributes\DataProvider('protectedWritesProvider')]
+    public function testAProtectedTaskOfSomebodyElseIsNeitherPlannedNorChanged(string $tool, string $class): void {
+        $this->owner = 'principals/users/bob';
+        $this->data = str_replace('SUMMARY:Work', 'CLASS:' . $class . "\r\n" . 'SUMMARY:Work', $this->data);
+        $this->dav->expects(self::never())->method('update');
+        $this->dav->expects(self::never())->method('delete');
+        $args = ['calendar' => self::PATH, 'uid' => 't1'] + ($tool === 'tasks_edit_task' ? ['summary' => 'Novo'] : []);
+
+        foreach (['preview', 'call'] as $how) {
+            try {
+                $how === 'preview'
+                    ? $this->module->preview($tool, $args, 'alice')
+                    : $this->module->call($tool, $args + ['confirm' => true, 'confirm_shared' => true], 'alice');
+                self::fail($how . ' of ' . $tool . ' served a ' . $class . ' task of somebody else');
+            } catch (ToolFailure $e) {
+                self::assertSame(ToolFailure::NOT_FOUND, $e->getMessage(), $how);
+            }
+        }
+    }
+
+    public function testTheOwnProtectedTaskIsStillPlannedAndRead(): void {
+        $this->data = str_replace('SUMMARY:Work', 'CLASS:PRIVATE' . "\r\n" . 'SUMMARY:Work', $this->data);
+        $args = ['calendar' => self::PATH, 'uid' => 't1'];
+
+        self::assertSame('Work', $this->module->preview('tasks_complete_task', $args, 'alice')['before']['summary']);
+        self::assertSame('Work', $this->json($this->module->call('tasks_read_task', $args, 'alice'))['summary']);
+        self::assertCount(1, $this->json($this->module->call('tasks_list_tasks', ['calendar' => self::PATH], 'alice'))['tasks']);
+    }
+
+    public function testASharedTaskWithoutClassificationIsPlannedForAWriter(): void {
+        $this->owner = 'principals/users/bob';
+
+        $plan = $this->module->preview('tasks_complete_task', ['calendar' => self::PATH, 'uid' => 't1'], 'alice');
+
+        self::assertSame('Work', $plan['before']['summary']);
+        self::assertNotSame([], $plan['shared'], 'the plan says it reaches other people');
+    }
+
     public function testRecurringTaskWriteIsRefusedWithoutDamagingSeries(): void {
         $this->data = str_replace('SUMMARY:Work', 'RRULE:FREQ=DAILY' . "\r\n" . 'SUMMARY:Work', $this->data);
         $this->dav->expects(self::never())->method('update');

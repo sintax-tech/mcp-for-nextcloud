@@ -55,6 +55,38 @@ class NotesRepository {
     }
 
     /**
+     * The deepest folder that already exists on the way to a category, which is where a creation lands:
+     * the notes folder or a category in it when they exist, otherwise the nearest one that does. The
+     * walk stops at anything hidden or not a folder, so what it returns is always something the caller
+     * may be told about. Nothing is created.
+     *
+     * @param string $userId authenticated user
+     * @param string $category requested category; '' is the notes folder
+     * @return Folder the existing folder the write would reach
+     * @throws InvalidArgumentException on traversal or control characters
+     */
+    public function existingAncestor(string $userId, string $category): Folder {
+        $folder = $this->rootFolder->getUserFolder($userId);
+        $notes = PathGuard::normalize($this->config->getUserValue($userId, 'notes', 'notesPath', self::DEFAULT_FOLDER) ?: self::DEFAULT_FOLDER);
+        try {
+            $below = PathGuard::normalize($category);
+        } catch (InvalidArgumentException) {
+            throw new InvalidArgumentException('Invalid argument: category');
+        }
+        foreach (array_filter(explode('/', $notes . '/' . $below)) as $segment) {
+            if (!$folder->nodeExists($segment)) {
+                break;
+            }
+            $next = $folder->get($segment);
+            if (!$next instanceof Folder || ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($next))) {
+                break;
+            }
+            $folder = $next;
+        }
+        return $folder;
+    }
+
+    /**
      * @param Folder $root notes folder
      * @return list<File> notes below $root, recursively, at most MAX_NOTES
      */

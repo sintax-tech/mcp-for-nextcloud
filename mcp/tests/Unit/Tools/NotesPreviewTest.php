@@ -90,6 +90,69 @@ final class NotesPreviewTest extends TestCase {
         $this->assertNothingWritten();
     }
 
+    /** P9: `changed` compares the whole content; only the excerpt shown is cut. */
+    public function testAChangeAfterTheExcerptIsStillListedAsChanged(): void {
+        $long = str_repeat('a', 500);
+        $id = $this->tree->addFile('/alice/files/Notes/Longa.md', $long, 'text/markdown');
+        $this->before = $this->tree->nodes;
+
+        $plan = $this->module->preview('notes_edit', ['id' => $id, 'content' => $long . ' fim'], 'alice');
+
+        $this->assertSame(['content'], $plan['changed']);
+        $this->assertSame($plan['note']['before']['content'], $plan['note']['after']['content'], 'the excerpts are the same');
+        $this->assertSame(500, $plan['note']['before']['bytes']);
+        $this->assertSame(504, $plan['note']['after']['bytes']);
+        $this->assertLessThan(500, mb_strlen($plan['note']['after']['content']), 'the preview stays cut');
+        $this->assertNothingWritten();
+    }
+
+    public function testAnEditThatSendsTheSameLongContentChangesNothing(): void {
+        $long = str_repeat('a', 500);
+        $id = $this->tree->addFile('/alice/files/Notes/Longa.md', $long, 'text/markdown');
+        $this->before = $this->tree->nodes;
+
+        $plan = $this->module->preview('notes_edit', ['id' => $id, 'content' => $long], 'alice');
+
+        $this->assertSame([], $plan['changed']);
+    }
+
+    public function testAChangeInTheMiddleOfALongNoteBeyondTheExcerptIsListed(): void {
+        $before = str_repeat('a', 600);
+        $id = $this->tree->addFile('/alice/files/Notes/Longa.md', $before, 'text/markdown');
+        $this->before = $this->tree->nodes;
+
+        $plan = $this->module->preview('notes_edit', ['id' => $id, 'content' => substr_replace($before, 'b', 450, 1)], 'alice');
+
+        $this->assertSame(['content'], $plan['changed']);
+    }
+
+    /** P2: the plan refuses what the execution would refuse, so the user is never asked to approve it. */
+    public function testEditPlanRefusesATitleAlreadyTakenInTheCategory(): void {
+        $this->tree->addFile('/alice/files/Notes/Reuniões/Outra.md', 'o');
+        $this->before = $this->tree->nodes;
+
+        try {
+            $this->module->preview('notes_edit', ['id' => $this->ata, 'content' => 'novo', 'title' => 'Outra'], 'alice');
+            $this->fail('the plan accepted a title that is taken');
+        } catch (\OCA\Mcp\Tools\ToolFailure $e) {
+            $this->assertSame(\OCA\Mcp\Tools\Notes\NotesMessages::titleExistsInCategory(), $e->getMessage());
+        }
+        $this->assertNothingWritten();
+    }
+
+    public function testCreatePlanInASharedNotesFolderListsItAsShared(): void {
+        $this->config->user['alice']['notes']['notesPath'] = 'Equipe';
+        $this->tree->addFolder('/alice/files/Equipe', ['scope' => 'team']);
+        $this->tree->mountPath = '/alice/files/Equipe';
+        $this->before = $this->tree->nodes;
+
+        $plan = $this->module->preview('notes_create', ['title' => 'Nova', 'content' => 'x'], 'alice');
+
+        $this->assertCount(1, $plan['shared']);
+        $this->assertSame('team', $plan['shared'][0]['scope']);
+        $this->assertNothingWritten();
+    }
+
     public function testEditPlanOfANoteInATeamFolderListsItAsShared(): void {
         $this->config->user['alice']['notes']['notesPath'] = 'Equipe';
         $id = $this->tree->addFile('/alice/files/Equipe/Ata.md', 'x', 'text/markdown', ['scope' => 'team']);

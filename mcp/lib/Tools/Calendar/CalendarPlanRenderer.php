@@ -93,6 +93,7 @@ final class CalendarPlanRenderer implements RendersPlans {
             $lines[] = Translator::t('- Invitations: %s', [$invitations]);
         }
 
+        array_push($lines, ...$this->sharedLines($plan));
         return implode("\n", $lines);
     }
 
@@ -184,6 +185,7 @@ final class CalendarPlanRenderer implements RendersPlans {
             $lines[] = Translator::t('- No changes');
         }
 
+        array_push($lines, ...$this->sharedLines($plan));
         return implode("\n", $lines);
     }
 
@@ -229,6 +231,7 @@ final class CalendarPlanRenderer implements RendersPlans {
             $lines[] = Translator::t('- Invitations: %s', [$invitations]);
         }
 
+        array_push($lines, ...$this->sharedLines($plan));
         return implode("\n", $lines);
     }
 
@@ -274,6 +277,7 @@ final class CalendarPlanRenderer implements RendersPlans {
             $lines[] = Translator::t('- Invitations: %s', [$invitations]);
         }
 
+        array_push($lines, ...$this->sharedLines($plan));
         return implode("\n", $lines);
     }
 
@@ -313,7 +317,31 @@ final class CalendarPlanRenderer implements RendersPlans {
             $lines[] = Translator::t('- Invitations: %s', [$invitations]);
         }
 
+        array_push($lines, ...$this->sharedLines($plan));
         return implode("\n", $lines);
+    }
+
+    /**
+     * The calendars of somebody else the write reaches, named with their owner, so the person approving it reads whose they are.
+     *
+     * @param array<string, mixed> $plan plan from preview()
+     * @return list<string> one line per shared calendar of the plan, or nothing
+     */
+    private function sharedLines(array $plan): array {
+        $lines = [];
+        foreach (is_array($plan['shared'] ?? null) ? $plan['shared'] : [] as $notice) {
+            if (!is_array($notice)) {
+                continue;
+            }
+            $name = PlanText::inline($this->text($notice['resource'] ?? null));
+            $owner = PlanText::inline($this->text($notice['ownerDisplayName'] ?? ($notice['owner'] ?? null)));
+            if ($owner !== '') {
+                $lines[] = $name !== ''
+                    ? Translator::t('- Shared calendar *%s* of %s.', [$name, $owner])
+                    : Translator::t('- Shared calendar of %s.', [$owner]);
+            }
+        }
+        return $lines;
     }
 
     /**

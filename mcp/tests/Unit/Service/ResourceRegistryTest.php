@@ -467,6 +467,95 @@ final class ResourceRegistryTest extends TestCase {
         $this->assertSame(CommonMessages::notFound(), $out['body']['error']['message']);
     }
 
+    /**
+     * A real guard with one hidden tag, assigned to the given file ids. In production the notes repository of
+     * the registry is built without a guard, so the `assertVisible` of the registry is the only barrier.
+     *
+     * @param list<int> $hiddenIds file ids carrying the hidden tag
+     */
+    private function guardHiding(array $hiddenIds): VisibilityGuard {
+        $config = new InMemoryConfig();
+        $config->app['mcp'][VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $mapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $mapper->method('getTagIdsForObjects')->willReturnCallback(static function (array $ids) use ($hiddenIds): array {
+            $out = [];
+            foreach ($ids as $id) {
+                $out[(string)$id] = in_array((int)$id, $hiddenIds, true) ? ['999'] : [];
+            }
+            return $out;
+        });
+        $tag = $this->createMock(\OCP\SystemTag\ISystemTag::class);
+        $tag->method('getId')->willReturn('999');
+        $manager = $this->createMock(\OCP\SystemTag\ISystemTagManager::class);
+        $manager->method('getTagsByIds')->willReturn(['999' => $tag]);
+        return new VisibilityGuard($config->mock($this), $mapper, null, $manager);
+    }
+
+    private function registryWith(VisibilityGuard $guard): ResourceRegistry {
+        return new ResourceRegistry($this->toolRegistry, $this->policy, $this->appManager, $this->userManager, $this->rootFolder,
+            $guard, $this->extractor, $this->notesRepo, new ToolGuide([]));
+    }
+
+    private function assertNotFound(callable $read): void {
+        try {
+            $read();
+            $this->fail('the resource was served');
+        } catch (ToolFailure $e) {
+            $this->assertSame(CommonMessages::notFound(), $e->getMessage());
+        }
+    }
+
+    public function testANoteWithAHiddenTagIsNotReadableAsAResource(): void {
+        $registry = $this->registryWith($this->guardHiding([$this->noteId]));
+
+        $this->assertNotFound(fn () => $registry->read('nc://notes/' . $this->noteId, 'alice'));
+    }
+
+    public function testANoteInAHiddenCategoryIsNotReadableAsAResource(): void {
+        $folderId = $this->tree->addFolder('/alice/files/Notes/Segredos');
+        $inside = $this->tree->addFile('/alice/files/Notes/Segredos/Plano.md', '# plano secreto', 'text/markdown');
+        $registry = $this->registryWith($this->guardHiding([$folderId]));
+
+        $this->assertNotFound(fn () => $registry->read('nc://notes/' . $inside, 'alice'));
+    }
+
+    public function testAVisibleNoteStaysReadableWhileAnotherIsHidden(): void {
+        $hidden = $this->tree->addFile('/alice/files/Notes/Oculta.md', '# oculta', 'text/markdown');
+        $registry = $this->registryWith($this->guardHiding([$hidden]));
+
+        $this->assertSame('# Ideia', $registry->read('nc://notes/' . $this->noteId, 'alice')['contents'][0]['text']);
+        $this->assertNotFound(fn () => $registry->read('nc://notes/' . $hidden, 'alice'));
+    }
+
+    public function testAFileWithAHiddenTagIsNotReadableAsAResource(): void {
+        $id = $this->tree->addFile('/alice/files/Documentos/oculto.txt', 'segredo', 'text/plain');
+        $registry = $this->registryWith($this->guardHiding([$id]));
+
+        $this->assertNotFound(fn () => $registry->read('nc://files/Documentos/oculto.txt', 'alice'));
+        $this->assertSame('Ola mundo', $registry->read('nc://files/Documentos/texto.txt', 'alice')['contents'][0]['text']);
+    }
+
+    /** @return array<string, array{int, string}> the code of each era for a resource the guard hides */
+    public static function erasProvider(): array {
+        return ['legacy' => [-32002, McpProtocol::VERSION], 'modern' => [-32602, McpProtocol::MODERN_VERSION]];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('erasProvider')]
+    public function testAHiddenNoteAnswersAsAMissingResourceInBothEras(int $code, string $version): void {
+        $protocol = new McpProtocol($this->toolRegistry, new PromptCatalog(), $this->policy, $this->createMock(LoggerInterface::class),
+            $this->registryWith($this->guardHiding([$this->noteId])));
+        $params = ['uri' => 'nc://notes/' . $this->noteId]
+            + ($version === McpProtocol::MODERN_VERSION ? ['_meta' => [McpProtocol::META_VERSION => McpProtocol::MODERN_VERSION]] : []);
+
+        $out = $protocol->handle(json_encode(['jsonrpc' => '2.0', 'id' => 7, 'method' => 'resources/read', 'params' => $params]),
+            $version, 'alice', ['method' => 'resources/read']);
+
+        $this->assertArrayNotHasKey('result', $out['body']);
+        $this->assertSame($code, $out['body']['error']['code']);
+        $this->assertSame(CommonMessages::notFound(), $out['body']['error']['message']);
+        $this->assertStringNotContainsString('# Ideia', json_encode($out['body']));
+    }
+
     /** A real guard with no hidden tag configured: every node is visible. */
     private function openGuard(): VisibilityGuard {
         $config = $this->createMock(\OCP\IConfig::class);

@@ -358,14 +358,18 @@ class WritePreviewTest extends TestCase {
             ->willReturn(['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 1]);
         $this->givenQuotedComment('42', 'bob', 'oi');
 
-        // The only writes Talk knows are these three: a draft must reach none of them.
-        $this->writer->expects($this->never())->method('reply');
-        $this->writer->expects($this->never())->method('quoteAttachment');
+        // Every way the writer or the sharer has to put something in a room: a draft of any tool must reach none.
+        foreach (['reply', 'replyMany', 'sendText', 'quoteAttachment'] as $write) {
+            $this->writer->expects($this->never())->method($write);
+        }
         $this->sharer->expects($this->never())->method('attach');
 
         $this->previews->reply($conversation, 'alice', 'oi', 42);
+        $this->previews->batch($conversation, 'alice', [['message' => 'um'], ['message' => 'dois', 'replyTo' => 42]]);
         $this->previews->attach($conversation, 'alice', 'relatorio.pdf', 'oi');
         $this->previews->quote($conversation, 'alice', 77, null);
+        $this->previews->directMessage(new DirectContact('bob', 'Bob Souza'), 'alice', 'oi');
+        $this->previews->group('alice', 'Projeto X', [new DirectContact('bob', 'Bob Souza')]);
     }
 
     /**

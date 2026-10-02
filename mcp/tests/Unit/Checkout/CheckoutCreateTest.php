@@ -78,6 +78,7 @@ final class CheckoutCreateTest extends TestCase {
     private array $headers = [];
     /** Temporary files the controller asked for, i.e. bodies it copied to disk. */
     private int $tempFiles = 0;
+    private bool $aliceEnabled = true;
     private StagedCreateController $controller;
 
     protected function setUp(): void {
@@ -117,6 +118,7 @@ final class CheckoutCreateTest extends TestCase {
         $apps->method('isEnabledForUser')->willReturn(true);
         $alice = $this->createMock(IUser::class);
         $alice->method('getUID')->willReturn('alice');
+        $alice->method('isEnabled')->willReturnCallback(fn (): bool => $this->aliceEnabled);
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $alice : null);
         $request = $this->createMock(IRequest::class);
@@ -167,6 +169,29 @@ final class CheckoutCreateTest extends TestCase {
 
     private function spent(): bool {
         return in_array('consume', $this->store->ops, true);
+    }
+
+    /** P16 for the create link: a disabled account does not create files with a link issued earlier. */
+    public function testADisabledAccountCannotCreateAFileWithAnEarlierLink(): void {
+        $this->issue();
+        $this->aliceEnabled = false;
+
+        $response = $this->controller->upload();
+
+        $this->assertSame(403, $response->getStatus());
+        $this->assertSame([], $this->tree->ops);
+        $this->assertArrayNotHasKey(self::FILE, $this->tree->nodes);
+        $this->assertFalse($this->spent(), 'the link was not spent');
+        $this->assertSame(0, $this->tempFiles, 'the body was not even read');
+    }
+
+    public function testTheCreateLinkWorksAgainOnceTheAccountIsEnabled(): void {
+        $this->issue();
+        $this->aliceEnabled = false;
+        $this->assertSame(403, $this->controller->upload()->getStatus());
+        $this->aliceEnabled = true;
+
+        $this->assertSame(201, $this->controller->upload()->getStatus());
     }
 
     public function testTheLinkCreatesTheFileAndReturnsTheReceipt(): void {

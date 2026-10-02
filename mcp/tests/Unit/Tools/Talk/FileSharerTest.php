@@ -197,6 +197,140 @@ class FileSharerTest extends TestCase {
         $this->sharer->attach($this->givenConversation('abcd'), 'alice', 'relatorio.pdf');
     }
 
+    /**
+     * P14: a caption Talk would refuse is refused before the share exists. The share publishes the card by itself
+     * as it is created, so a caption checked afterwards would leave a published card behind a failed call.
+     *
+     * @return array<string, array{string}>
+     */
+    public static function unusableCaptionsProvider(): array {
+        return [
+            'blank' => ['   '],
+            'only a line break' => ["\n"],
+            'empty' => [''],
+            'over the limit' => [str_repeat('a', ConversationWriter::MAX_MESSAGE_LENGTH + 1)],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('unusableCaptionsProvider')]
+    public function testAnUnusableCaptionCreatesNoShareAtAll(string $caption): void {
+        $this->givenNoExistingShare();
+        $this->fileResolver->method('resolveShareableFile')->willReturn($this->file);
+        $this->shareManager->expects($this->never())->method('newShare');
+        $this->shareManager->expects($this->never())->method('createShare');
+        $this->writer->expects($this->never())->method('sendText');
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->sharer->attach($this->givenConversation('abcd'), 'alice', 'relatorio.pdf', $caption);
+    }
+
+    public function testACaptionAtTheLimitIsAccepted(): void {
+        $this->givenNoExistingShare();
+        $this->fileResolver->method('resolveShareableFile')->willReturn($this->file);
+        $this->givenCreatedShare(77);
+        $this->writer->method('sendText')->willReturn(5);
+
+        $result = $this->sharer->attach($this->givenConversation('abcd'), 'alice', 'relatorio.pdf', str_repeat('á', ConversationWriter::MAX_MESSAGE_LENGTH));
+
+        $this->assertTrue($result['captionSent']);
+    }
+
+    /** A caption sent before the share would stay in the room, orphaned, when the share is then refused. */
+    public function testACaptionIsNeverSentWhenTheShareIsRefused(): void {
+        $this->givenNoExistingShare();
+        $this->fileResolver->method('resolveShareableFile')->willReturn($this->file);
+        $this->shareManager->method('newShare')->willThrowException(new RuntimeException('Room is read only'));
+        $this->writer->expects($this->never())->method('sendText');
+
+        try {
+            $this->sharer->attach($this->givenConversation('abcd'), 'alice', 'relatorio.pdf', 'legenda');
+            $this->fail('the refused share was reported as done');
+        } catch (FileAccessException $e) {
+            $this->assertSame(Messages::fileNotShared(), $e->getMessage());
+        }
+    }
+
+    public function testTheCaptionFollowsTheShareInThatOrder(): void {
+        $this->givenNoExistingShare();
+        $this->fileResolver->method('resolveShareableFile')->willReturn($this->file);
+        $order = [];
+        $this->givenCreatedShare(77);
+        $this->shareManager->method('createShare')->willReturnCallback(function ($share) use (&$order) {
+            $order[] = 'share';
+            return $share;
+        });
+        $this->writer->method('sendText')->willReturnCallback(function () use (&$order): int {
+            $order[] = 'caption';
+            return 1;
+        });
+
+        $this->sharer->attach($this->givenConversation('abcd'), 'alice', 'relatorio.pdf', 'legenda');
+
+        $this->assertSame(['share', 'caption'], $order);
+    }
+
+    /** The resolver is the privacy barrier: it must be asked about this user and this path, in that order. */
+    public function testTheFileIsResolvedForTheUserAndThePathAsked(): void {
+        $this->givenNoExistingShare();
+        $this->fileResolver->expects($this->once())->method('resolveShareableFile')->with('alice', 'relatorio.pdf')->willReturn($this->file);
+        $this->givenCreatedShare(77);
+
+        $this->sharer->attach($this->givenConversation('abcd'), 'alice', 'relatorio.pdf');
+    }
+
+    /** P15-adjacent: the preview of talk_attach_file runs through here, so it must publish nothing. */
+    public function testPreviewingAFileDescribesItAndCreatesNothing(): void {
+        $this->givenNoExistingShare();
+        $this->fileResolver->expects($this->once())->method('resolveShareableFile')->with('alice', 'relatorio.pdf')->willReturn($this->file);
+        $this->shareManager->expects($this->never())->method('newShare');
+        $this->shareManager->expects($this->never())->method('createShare');
+        $this->shareManager->expects($this->never())->method('deleteShare');
+        $this->writer->expects($this->never())->method('sendText');
+        $this->writer->expects($this->never())->method('reply');
+        $this->writer->expects($this->never())->method('quoteAttachment');
+
+        $out = $this->sharer->previewFile($this->givenConversation('abcd'), 'alice', 'relatorio.pdf');
+
+        $this->assertSame(['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 2048], $out);
+    }
+
+    public function testPreviewingAFileAlreadySharedInTheConversationIsRefusedByEitherLookup(): void {
+        foreach ([[[$this->givenExistingShare('abcd')], []], [[], [$this->givenExistingShare('abcd')]]] as [$by, $with]) {
+            $manager = $this->createMock(IShareManager::class);
+            $manager->method('getSharesBy')->willReturn($by);
+            $manager->method('getSharedWith')->willReturn($with);
+            $manager->expects($this->never())->method('newShare');
+            $resolver = $this->createMock(ShareableFileResolverStub::class);
+            $resolver->method('resolveShareableFile')->willReturn($this->file);
+            $sharer = new FileSharer($manager, $resolver, $this->writer);
+
+            try {
+                $sharer->previewFile($this->givenConversation('abcd'), 'alice', 'relatorio.pdf');
+                $this->fail('the duplicate was accepted by the preview');
+            } catch (FileAccessException $e) {
+                $this->assertSame(Messages::fileAlreadyShared(), $e->getMessage());
+            }
+        }
+    }
+
+    public function testPreviewingAFileSharedElsewhereIsNotARefusal(): void {
+        $other = $this->givenExistingShare('zzzz');
+        $this->shareManager->method('getSharesBy')->willReturn([$other]);
+        $this->shareManager->method('getSharedWith')->willReturn([$other]);
+        $this->fileResolver->method('resolveShareableFile')->willReturn($this->file);
+
+        $this->assertSame('relatorio.pdf', $this->sharer->previewFile($this->givenConversation('abcd'), 'alice', 'relatorio.pdf')['name']);
+    }
+
+    public function testPreviewingAnUnreadableFileStopsBeforeAnyShareLookup(): void {
+        $this->fileResolver->method('resolveShareableFile')->willThrowException(new FileAccessException(Messages::fileNotFound()));
+        $this->shareManager->expects($this->never())->method('getSharesBy');
+
+        $this->expectException(FileAccessException::class);
+        $this->expectExceptionMessage(Messages::fileNotFound());
+        $this->sharer->previewFile($this->givenConversation('abcd'), 'alice', 'relatorio.pdf');
+    }
+
     private function givenConversation(string $token): Conversation {
         return new Conversation(new SharerRoomStub($token), new SharerParticipantStub());
     }

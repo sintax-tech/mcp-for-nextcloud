@@ -255,9 +255,19 @@ final class FilesShareLinkTest extends FilesToolsTestCase {
 
     /** Invariant 1: a grant revoked between the plan and the confirmation stops the link. */
     public function testTheConfirmedCallChecksAgain(): void {
-        $this->plan('files_share', ['path' => self::FILE, 'with' => 'link']);
+        $state = $this->stateOf('files_share', ['path' => self::FILE, 'with' => 'link']);
         $this->sharePolicy->setGrant('alice', 'files', 'link', false);
-        self::assertSame(FilesMessages::shareNotGranted(), $this->refusal('confirm', ['path' => self::FILE, 'with' => 'link']));
+        self::assertSame(FilesMessages::shareNotGranted(), $this->refusal('confirm',
+            ['path' => self::FILE, 'with' => 'link', \OCA\Mcp\Tools\PlanState::ARGUMENT => $state]));
+        self::assertSame([], $this->shares->writes);
+    }
+
+    /** Links turned off by the administrator after the plan: the confirmed call refuses with the plan's own state. */
+    public function testLinksTurnedOffAfterThePlanAreRefusedByTheConfirmedCall(): void {
+        $state = $this->stateOf('files_share', ['path' => self::FILE, 'with' => 'link']);
+        $this->shares->settings['shareApiAllowLinks'] = false;
+        self::assertSame(FilesMessages::shareLinksDisabled(), $this->refusal('confirm',
+            ['path' => self::FILE, 'with' => 'link', \OCA\Mcp\Tools\PlanState::ARGUMENT => $state]));
         self::assertSame([], $this->shares->writes);
     }
 }

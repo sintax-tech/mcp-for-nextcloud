@@ -4,7 +4,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Files\FilesMessages;
+use OCA\Mcp\Tools\PlanState;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\Constants;
 use OCP\Share\Exceptions\AlreadySharedException;
@@ -319,16 +321,145 @@ final class FilesShareTest extends FilesToolsTestCase {
         }
     }
 
-    /** Invariant 1: the confirmed call checks everything again, here a grant revoked after the plan. */
+    /**
+     * Invariant 1: the confirmed call checks everything again, here a grant revoked after the plan. The call carries the
+     * plan_state of that plan, as the model's would, so a write that trusted the plan would go through.
+     */
     public function testTheConfirmedCallChecksAgain(): void {
-        $this->plan('files_share', ['path' => '/Documentos/ata.md', 'with' => 'user:bruno']);
+        $arguments = ['path' => '/Documentos/ata.md', 'with' => 'user:bruno'];
+        $state = $this->stateOf('files_share', $arguments);
         $this->sharePolicy->setGrant('alice', 'files', 'share', false);
         try {
-            $this->confirm(['path' => '/Documentos/ata.md', 'with' => 'user:bruno']);
+            $this->confirm($arguments + [PlanState::ARGUMENT => $state]);
             self::fail('no failure');
         } catch (ToolFailure $e) {
             self::assertSame(FilesMessages::shareNotGranted(), $e->getMessage());
         }
         self::assertSame([], $this->shares->writes);
+    }
+
+    /** @return array<string, array{\Closure(self): array<string, mixed>, string}> setup returning the call, and the refusal */
+    public static function refusals(): array {
+        $minutes = ['path' => '/Documentos/ata.md', 'with' => 'user:bruno'];
+        return [
+            'yourself' => [static fn (self $t): array => ['path' => '/Documentos/ata.md', 'with' => 'user:alice'], 'shareWithSelf'],
+            'node of another owner' => [static function (self $t): array {
+                $t->tree->addFile('/alice/files/Recebido.pdf', 'x', 'application/pdf', ['scope' => 'shared']);
+                return ['path' => '/Recebido.pdf', 'with' => 'user:bruno'];
+            }, 'shareNotOwner'],
+            'no share grant' => [static function (self $t) use ($minutes): array {
+                $t->sharePolicy->setGrant('alice', 'files', 'share', false);
+                $t->sharePolicy->setGrant('alice', 'files', 'link', true);
+                return $minutes;
+            }, 'shareNotGranted'],
+            'no link grant' => [static function (self $t): array {
+                $t->sharePolicy->setGrant('alice', 'files', 'link', false);
+                return ['path' => '/Documentos/ata.md', 'with' => 'link'];
+            }, 'shareNotGranted'],
+            'links off' => [static function (self $t): array {
+                $t->sharePolicy->setGrant('alice', 'files', 'link', true);
+                $t->shares->settings['shareApiAllowLinks'] = false;
+                return ['path' => '/Documentos/ata.md', 'with' => 'link'];
+            }, 'shareLinksDisabled'],
+            'sharing off' => [static function (self $t) use ($minutes): array {
+                $t->shares->settings['shareApiEnabled'] = false;
+                return $minutes;
+            }, 'shareDisabled'],
+            'only group members' => [static function (self $t): array {
+                $t->shares->settings['shareWithGroupMembersOnly'] = true;
+                return ['path' => '/Documentos/ata.md', 'with' => 'user:carla'];
+            }, 'shareOnlyGroupMembers'],
+            'not shareable' => [static function (self $t): array {
+                $t->tree->addFile('/alice/files/Travado.md', 'x', 'text/markdown', ['shareable' => false]);
+                return ['path' => '/Travado.md', 'with' => 'user:bruno'];
+            }, 'shareNodeNotShareable'],
+            'edit above own permissions' => [static function (self $t): array {
+                $t->tree->addFile('/alice/files/SoLeitura.md', 'x', 'text/markdown', ['permissions' => Constants::PERMISSION_READ | Constants::PERMISSION_SHARE]);
+                return ['path' => '/SoLeitura.md', 'with' => 'user:bruno', 'permission' => 'edit'];
+            }, 'shareAboveOwnPermissions'],
+        ];
+    }
+
+    /**
+     * G2-01: production sends the confirmed call straight to the write, without a plan before it, so every refusal of
+     * the plan has to be a refusal of the write too — and nothing is written.
+     *
+     * @dataProvider refusals
+     * @param \Closure(self): array<string, mixed> $setup prepares the refusal and returns the call
+     * @param string $message the FilesMessages method of the refusal
+     */
+    public function testTheConfirmedCallRefusesOnItsOwn(\Closure $setup, string $message): void {
+        $arguments = $setup($this);
+        self::assertSame(FilesMessages::$message(), $this->planFailure($arguments), 'o plano');
+        try {
+            $this->confirm($arguments);
+            self::fail('the confirmed call went through');
+        } catch (ToolFailure $e) {
+            self::assertSame(FilesMessages::$message(), $e->getMessage(), 'a confirmação');
+        }
+        self::assertSame([], $this->shares->writes);
+    }
+
+    /** The administrator's maximum validity is a rule of the write too, not only of the plan. */
+    public function testTheConfirmedCallEnforcesTheMaximumValidityOnItsOwn(): void {
+        $arguments = ['path' => '/Documentos/ata.md', 'with' => 'user:bruno', 'expires' => '2026-09-29'];
+        $state = $this->stateOf('files_share', $arguments);
+        $this->shares->settings['shareApiInternalDefaultExpireDateEnforced'] = true;
+        $this->shares->settings['shareApiInternalDefaultExpireDate'] = true;
+        $this->shares->settings['shareApiInternalDefaultExpireDays'] = 7;
+        try {
+            $this->confirm($arguments + [PlanState::ARGUMENT => $state]);
+            self::fail('a share over the maximum validity was written');
+        } catch (ArgumentValidationException $e) {
+            self::assertSame(['field' => 'expires', 'rule' => 'at most 7 days from today (administrator rule)'], $e->details());
+        }
+        self::assertSame([], $this->shares->writes);
+    }
+
+    /**
+     * Things that change between the plan and the confirmation, each confirmed with the plan_state of its plan: the
+     * server turning sharing off, the node losing the permission the share would give, the node becoming hidden.
+     */
+    public function testWhatChangedAfterThePlanIsRefusedByTheConfirmedCall(): void {
+        $arguments = ['path' => '/Documentos/ata.md', 'with' => 'user:bruno'];
+        $state = $this->stateOf('files_share', $arguments);
+        $this->shares->settings['shareApiEnabled'] = false;
+        self::assertSame(FilesMessages::shareDisabled(), $this->confirmFailure($arguments + [PlanState::ARGUMENT => $state]));
+        $this->shares->settings['shareApiEnabled'] = true;
+
+        $edit = $arguments + ['permission' => 'edit'];
+        $state = $this->stateOf('files_share', $edit);
+        $this->tree->nodes['/alice/files/Documentos/ata.md']['permissions'] = Constants::PERMISSION_READ | Constants::PERMISSION_SHARE;
+        self::assertSame(FilesMessages::shareAboveOwnPermissions(), $this->confirmFailure($edit + [PlanState::ARGUMENT => $state]));
+        self::assertSame([], $this->shares->writes);
+    }
+
+    /** G2-02 at the tool: a hidden node answers "not found", in the plan and in the confirmed call, even after a plan. */
+    public function testAHiddenNodeIsNotFoundEvenWhenItBecameHiddenAfterThePlan(): void {
+        $hidden = [];
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $tagMapper->method('getTagIdsForObjects')->willReturnCallback(static function (array $ids) use (&$hidden): array {
+            return array_combine($ids, array_map(static fn ($id): array => in_array((string)$id, $hidden, true) ? ['999'] : [], $ids));
+        });
+        $this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $this->visibilityGuard = new \OCA\Mcp\Service\VisibilityGuard($this->config->mock($this), $tagMapper);
+        $this->setUp();
+        $this->tree->addFile('/alice/files/Recebido.pdf', 'x', 'application/pdf', ['scope' => 'shared']);
+        $arguments = ['path' => '/Documentos/ata.md', 'with' => 'user:bruno'];
+        $state = $this->stateOf('files_share', $arguments);
+
+        $hidden = [(string)$this->id('/Documentos/ata.md'), (string)$this->id('/Recebido.pdf')];
+        $this->visibilityGuard->clearCache();
+        self::assertSame(CommonMessages::notFound(), $this->confirmFailure($arguments + [PlanState::ARGUMENT => $state]));
+        // Received from somebody else and hidden: not found, never "it belongs to someone else", which would say it exists.
+        $received = ['path' => '/Recebido.pdf', 'with' => 'user:bruno'];
+        self::assertSame(CommonMessages::notFound(), $this->planFailure($received));
+        self::assertSame(CommonMessages::notFound(), $this->confirmFailure($received));
+        self::assertSame([], $this->shares->writes);
+    }
+
+    /** @return string the message of the ToolFailure of the confirmed call */
+    private function confirmFailure(array $arguments): string {
+        return $this->failure('files_share', $arguments + ['confirm' => true]);
     }
 }

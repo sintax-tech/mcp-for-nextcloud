@@ -39,6 +39,15 @@ final class FakeTree {
     /** Absolute path of the mount a node lives in; null means "the node's own folder". */
     public ?string $mountPath = null;
     public bool $failWrite = false;
+    /** What putContent() of a file that is not a backup throws, when a test needs a lock or a full quota instead of a denial. */
+    public ?\Throwable $writeFailure = null;
+    /**
+     * Runs inside Folder::get() before the node is read back, with its absolute path: a test stands for another client
+     * that changes the node between two reads of the caller.
+     *
+     * @var (\Closure(string): void)|null
+     */
+    public ?\Closure $beforeGet = null;
     public bool $failBackupWrite = false;
     public bool $shortBackupWrite = false;
     /**
@@ -181,6 +190,9 @@ final class FakeTree {
             if (($isBackup && $this->failBackupWrite) || (!$isBackup && $this->failWrite)) {
                 throw new NotPermittedException();
             }
+            if (!$isBackup && $this->writeFailure !== null) {
+                throw $this->writeFailure;
+            }
             $this->nodes[$path]['content'] = is_resource($data) ? stream_get_contents($data) : $data;
             if ($isBackup && $this->shortBackupWrite) {
                 $this->nodes[$path]['content'] = '';
@@ -199,7 +211,12 @@ final class FakeTree {
         // Nextcloud decides isCreatable from the create permission on the node itself.
         $folder->method('isCreatable')->willReturnCallback(fn () => ($this->nodes[$path]['permissions'] ?? \OCP\Constants::PERMISSION_ALL)
             & \OCP\Constants::PERMISSION_CREATE);
-        $folder->method('get')->willReturnCallback(fn (string $rel) => $this->node($path . '/' . ltrim($rel, '/')));
+        $folder->method('get')->willReturnCallback(function (string $rel) use ($path): Node {
+            if ($this->beforeGet !== null) {
+                ($this->beforeGet)($path . '/' . ltrim($rel, '/'));
+            }
+            return $this->node($path . '/' . ltrim($rel, '/'));
+        });
         $folder->method('nodeExists')->willReturnCallback(fn (string $rel) => isset($this->nodes[$path . '/' . ltrim($rel, '/')]));
         $folder->method('getDirectoryListing')->willReturnCallback(fn () => array_map(fn ($p) => $this->node($p), $this->children($path)));
         $folder->method('getRelativePath')->willReturnCallback(fn (string $abs) => $abs === $path ? '/' : (str_starts_with($abs, $path . '/') ? substr($abs, strlen($path)) : null));

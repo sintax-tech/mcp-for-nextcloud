@@ -15,8 +15,12 @@ use Throwable;
  */
 class ConversationReader {
     public const MAX_MESSAGES = 200;
-    /** Comment verbs under which Talk stores its own JSON envelopes: rich objects (shares) and system messages. */
-    private const ENVELOPE_VERBS = ['object_shared', 'system'];
+    /**
+     * Comment verbs under which Talk stores its own JSON envelopes: rich objects (shares), system messages and the
+     * verbs of a voice message and of an audio or video recording (ChatManager::VERB_VOICE_MESSAGE,
+     * VERB_RECORD_AUDIO and VERB_RECORD_VIDEO), which carry a shared file as well.
+     */
+    private const ENVELOPE_VERBS = ['object_shared', 'system', 'voice-message', 'record-audio', 'record-video'];
 
     /** Default amount of messages when the caller does not ask for a number, matching the module schema. */
     public const DEFAULT_MESSAGES = 50;

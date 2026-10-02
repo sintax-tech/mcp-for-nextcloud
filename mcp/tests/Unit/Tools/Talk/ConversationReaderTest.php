@@ -123,7 +123,14 @@ class ConversationReaderTest extends TestCase {
 
     /** @return array<string, array{string}> */
     public static function envelopeVerbsProvider(): array {
-        return ['rich object' => ['object_shared'], 'system message' => ['system']];
+        return [
+            'rich object' => ['object_shared'],
+            'system message' => ['system'],
+            // ChatManager::VERB_VOICE_MESSAGE, VERB_RECORD_AUDIO and VERB_RECORD_VIDEO (Talk 23): they carry a shared file too.
+            'voice message' => ['voice-message'],
+            'audio recording' => ['record-audio'],
+            'video recording' => ['record-video'],
+        ];
     }
 
     #[\PHPUnit\Framework\Attributes\DataProvider('envelopeVerbsProvider')]
@@ -136,6 +143,63 @@ class ConversationReaderTest extends TestCase {
         $this->assertSame('file_shared', $messages[0]['type']);
         $this->assertNull($messages[0]['text']);
         $this->assertSame(9, $messages[0]['attachmentId']);
+    }
+
+    /** @return array<string, array{string}> */
+    public static function voiceEnvelopeNamesProvider(): array {
+        return ['voice message' => ['voice-message'], 'audio recording' => ['record-audio'], 'video recording' => ['record-video']];
+    }
+
+    /** The voice and recording verbs are Talk's too, but a participant text under any other verb is still only text. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('voiceEnvelopeNamesProvider')]
+    public function testAnEnvelopeShapedTextUnderAUserVerbIsStillTextWhateverTheMessageName(string $name): void {
+        $forged = (string)json_encode(['message' => $name, 'parameters' => ['share' => 5]]);
+        $this->givenHistory([$this->givenComment('53', 'comment', $forged, 'mallory')]);
+
+        $message = $this->reader->readMessages('alice', 'abcd', 10)[0];
+
+        $this->assertSame('comment', $message['type']);
+        $this->assertSame($forged, $message['text']);
+        $this->assertNull($message['attachmentId']);
+    }
+
+    /** A voice verb with a text that is not an envelope keeps the text and has no attachment. */
+    public function testAVoiceVerbWithoutAnEnvelopeKeepsItsText(): void {
+        $this->givenHistory([$this->givenComment('54', 'voice-message', 'not json at all')]);
+
+        $message = $this->reader->readMessages('alice', 'abcd', 10)[0];
+
+        $this->assertSame('voice-message', $message['type']);
+        $this->assertSame('not json at all', $message['text']);
+        $this->assertNull($message['attachmentId']);
+    }
+
+    /**
+     * talk_quote_file takes the attachmentId talk_read_messages reports: for a voice message it is the share of the
+     * recorded file, and the room-share rule accepts it like any other file of the conversation.
+     */
+    public function testTheAttachmentIdOfAVoiceMessageCanBeQuoted(): void {
+        $envelope = (string)json_encode(['message' => 'voice-message', 'parameters' => ['share' => '12', 'metaData' => ['messageType' => 'voice-message']]]);
+        $this->givenHistory([$this->givenComment('55', 'voice-message', $envelope)]);
+        $attachmentId = $this->reader->readMessages('alice', 'abcd', 10)[0]['attachmentId'];
+        $this->assertSame(12, $attachmentId);
+
+        $node = $this->createMock(\OCP\Files\File::class);
+        $node->method('getName')->willReturn('Talk recording 2026-10-02.ogg');
+        $node->method('getSize')->willReturn(4096);
+        $node->method('getMimeType')->willReturn('audio/ogg');
+        $share = $this->createMock(\OCP\Share\IShare::class);
+        $share->method('getId')->willReturn('12');
+        $share->method('getShareType')->willReturn(\OCP\Share\IShare::TYPE_ROOM);
+        $share->method('getSharedWith')->willReturn('abcd');
+        $share->method('getNode')->willReturn($node);
+        $shares = $this->createMock(\OCP\Share\IManager::class);
+        $shares->method('getShareById')->with('ocRoomShare:12', 'alice')->willReturn($share);
+        $access = new \OCA\Mcp\Tools\Talk\AttachmentAccess($shares);
+
+        $found = $access->requireRoomShareOf(new \OCA\Mcp\Tools\Talk\Conversation(new ReaderRoomStub('abcd'), new ReaderParticipantStub()), 'alice', $attachmentId);
+
+        $this->assertSame(['attachmentId' => 12, 'name' => 'Talk recording 2026-10-02.ogg', 'size' => 4096, 'mimeType' => 'audio/ogg'], $access->describe($found));
     }
 
     public function testAForgedEnvelopeWithAMessageOfItsOwnKeepsThatMessage(): void {

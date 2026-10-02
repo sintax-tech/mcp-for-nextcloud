@@ -9,8 +9,9 @@ use OCA\Mcp\L10n\Translator;
  * The MCP prompts this server offers, in the shape both protocol eras expect.
  *
  * A prompt is a workflow the client can pull on demand. `edit_nextcloud_file_locally` teaches the
- * checkout → download → edit locally → upload round trip to an agent that has a disk and a shell, and
- * names the in-context tools to fall back on when it has none.
+ * checkout → download → edit locally → upload round trip to an agent that has a disk and a shell, names the
+ * in-context tools to fall back on when it has none, and sends a file generated locally to files_upload or
+ * files_create instead of a checkout, which only replaces a file that already exists.
  */
 final class PromptCatalog {
     /** Name of the only prompt, as the client sees it. */
@@ -79,6 +80,13 @@ final class PromptCatalog {
             'confirm_shared: true if the user has already confirmed — instead of retrying the same link.',
             '',
             'To revert, use files_versions_list and files_version_restore; restoring also creates a backup beforehand.',
+            '',
+            'A NEW file is not a checkout: files_checkout only replaces a file that already exists. To create a new file',
+            'you generated locally (docx, xlsx, pdf, image, any type), call files_upload with the full path, show the plan',
+            'to the user and confirm it; it returns uploadUrl, a single-use link valid for a few minutes. Send the file with',
+            'curl -sS -T /tmp/file -X PUT -H "Content-Type: application/octet-stream" "$UPLOAD_URL".',
+            'For a small text file (.md, .txt, .csv, .json, .html, .xml, .yaml) use files_create with the content inline.',
+            'These tools never overwrite an existing name, and the folder must already exist (create it with files_mkdir).',
         ]);
     }
 }

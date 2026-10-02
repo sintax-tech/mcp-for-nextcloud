@@ -152,7 +152,9 @@ final class DeckStructureToolsTest extends TestCase {
 			// Accepted residual window (third round): a card created right after the second count may go along.
 			self::assertStringContainsString('right after the second count', $description, $name);
 		}
-		self::assertStringContainsString('deck_create_board', implode(' ', $this->moduleWith($this->createMock(DeckGatewayInterface::class))->guideNotes()));
+		$guide = implode(' ', $this->moduleWith($this->createMock(DeckGatewayInterface::class))->guideNotes());
+		self::assertStringContainsString('deck_create_board', $guide);
+		self::assertStringContainsString('right after the second count', $guide);
 	}
 
 	public function testTheSchemaOfCreateBoardValidatesTheWholeNestedStructure(): void {

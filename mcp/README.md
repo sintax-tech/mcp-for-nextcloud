@@ -1,6 +1,6 @@
 # App MCP para Nextcloud
 
-Versão de teste interno para **Nextcloud 33**. O endpoint atende clientes MCP 2026-07-28, sem estado, via `server/discover` e `_meta` por requisição, e também clientes anteriores, que usam `initialize` com 2025-06-18. Expõe MCP `2025-06-18` via Streamable HTTP sem sessão e sem SSE, na rota do próprio app:
+Versão de teste interno para **Nextcloud 31, 32 e 33**. O endpoint atende clientes MCP 2026-07-28, sem estado, via `server/discover` e `_meta` por requisição, e também clientes anteriores, que usam `initialize` com 2025-06-18. Expõe MCP `2025-06-18` via Streamable HTTP sem sessão e sem SSE, na rota do próprio app:
 
 - `https://<instância>/apps/mcp/` com URLs limpas;
 - `https://<instância>/index.php/apps/mcp/` sem URLs limpas.

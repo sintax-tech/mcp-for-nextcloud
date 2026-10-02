@@ -5,7 +5,7 @@
 **App nativo do Nextcloud que transforma o seu Nextcloud em um servidor MCP.**
 Deixe o Claude e outros clientes MCP trabalharem com seus arquivos, notas, calendários, contatos, tarefas, quadros do Deck e conversas do Talk. Cada usuário usa as próprias permissões, e nada sai do servidor sem liberação do admin.
 
-[![Nextcloud 33](https://img.shields.io/badge/Nextcloud-33-0082c9?logo=nextcloud&logoColor=white)](https://nextcloud.com)
+[![Nextcloud 31–33](https://img.shields.io/badge/Nextcloud-31%E2%80%9333-0082c9?logo=nextcloud&logoColor=white)](https://nextcloud.com)
 [![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777bb4?logo=php&logoColor=white)](https://www.php.net)
 [![MCP](https://img.shields.io/badge/MCP-2025--06--18%20%7C%202026--07--28-111)](https://modelcontextprotocol.io)
 [![Licença: AGPL-3.0](https://img.shields.io/badge/Licen%C3%A7a-AGPL--3.0-blue)](#licença)
@@ -77,9 +77,10 @@ A exclusão de tarefas usa a lixeira nativa do calendário e é recusada com `da
 
 ## Requisitos
 
-- Nextcloud **33**
+- Nextcloud **31, 32 ou 33**
 - PHP **8.2+** com `zip`, `mbstring` e `dom`
 - Apps opcionais, só para as próprias ferramentas (ocultas enquanto o app estiver desativado): Notes, Calendar, Contacts, Deck, Talk (`spreed`), Versões (`files_versions`, obrigatório para editar), Arquivos excluídos (`files_trashbin`, obrigatório para excluir)
+- Deck **1.15+** e Talk **21.1.4+**: uma versão anterior conta como desativada, as ferramentas dela ficam ocultas e a página de administração diz qual versão as traz de volta
 
 ## Instalação
 

@@ -168,8 +168,16 @@ final class PlanWarnings {
      * @return list<array{type:string, message:string}> one warning per overlap, plus the remainder
      */
     private function collisionWarnings(Calendar $calendar, string $userId, array $timing, ?string $excludeUri, DateTimeZone $zone): array {
+        $start = $timing['start'];
+        $end = $timing['end'];
+        if ($timing['allDay']) {
+            // The timing of an all-day event carries its civil days as UTC midnights; the days themselves belong to the zone
+            // the account lives in, so the window is those midnights there and not 3 hours (or 9) off.
+            $start = new DateTimeImmutable($start->format('Y-m-d'), $zone);
+            $end = new DateTimeImmutable($end->format('Y-m-d'), $zone);
+        }
         try {
-            $found = $this->collisions->find($calendar, $userId, $timing['start'], $timing['end'], $timing['allDay'], $excludeUri);
+            $found = $this->collisions->find($calendar, $userId, $start, $end, $timing['allDay'], $excludeUri);
         } catch (Throwable $e) {
             $this->failed($e);
             return [];

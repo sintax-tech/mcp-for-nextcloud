@@ -156,6 +156,74 @@ final class CollisionCheckTest extends CalendarTestCase {
         $this->assertSame(['items' => [], 'more' => 0], $result);
     }
 
+    /**
+     * A daily series in bob's shared calendar whose 2026-03-11 occurrence (15:00-16:00Z) is an override.
+     *
+     * @param string $masterClass CLASS line of the master, or '' for none
+     * @param string $overrideClass CLASS line of the override, or '' for none
+     */
+    private function addTeamSeriesWithOverride(string $masterClass, string $overrideClass): void {
+        $master = "UID:s\n" . ($masterClass === '' ? '' : $masterClass . "\n") . "SUMMARY:Serie publica\nDTSTART:20260310T100000Z\nDTEND:20260310T110000Z\nRRULE:FREQ=DAILY;COUNT=3";
+        $override = "BEGIN:VEVENT\nUID:s\nRECURRENCE-ID:20260311T100000Z\n" . ($overrideClass === '' ? '' : $overrideClass . "\n") . "SUMMARY:Segredo do Roberto\nDTSTART:20260311T150000Z\nDTEND:20260311T160000Z\nEND:VEVENT";
+        $this->store->addObject(3, 's.ics', self::ics($master, $override));
+    }
+
+    /**
+     * @return array{items: list<array<string, mixed>>, more: int} collisions of alice with bob's shared calendar over the three days
+     */
+    private function findInTeam(): array {
+        return $this->checker->find($this->team, 'alice', new DateTimeImmutable('2026-03-10T00:00:00Z'), new DateTimeImmutable('2026-03-14T00:00:00Z'), false);
+    }
+
+    /** A private override of a public series is left out of the collisions; the other occurrences still collide. */
+    public function testAPrivateOverrideOfAPublicSeriesNeverCollidesNorShowsItsTitle(): void {
+        $this->addTeamSeriesWithOverride('', 'CLASS:PRIVATE');
+        $result = $this->findInTeam();
+        $this->assertSame(['2026-03-10T10:00:00Z', '2026-03-12T10:00:00Z'], array_column($result['items'], 'start'));
+        $this->assertSame(0, $result['more']);
+        $this->assertStringNotContainsString('Segredo do Roberto', json_encode($result, JSON_UNESCAPED_UNICODE));
+    }
+
+    /** A confidential override collides as a busy block with no title. */
+    public function testAConfidentialOverrideOfAPublicSeriesCollidesAsBusyOnly(): void {
+        $this->addTeamSeriesWithOverride('', 'CLASS:CONFIDENTIAL');
+        $result = $this->findInTeam();
+        $this->assertSame([['2026-03-10T10:00:00Z', 'Serie publica', false], ['2026-03-11T15:00:00Z', null, true], ['2026-03-12T10:00:00Z', 'Serie publica', false]],
+            array_map(static fn (array $i) => [$i['start'], $i['summary'], $i['busyOnly']], $result['items']));
+    }
+
+    /** An override with no CLASS of its own takes the one of the master. */
+    public function testAnOverrideWithoutClassInheritsTheClassOfTheMaster(): void {
+        $this->addTeamSeriesWithOverride('CLASS:PRIVATE', '');
+        $this->assertSame(['items' => [], 'more' => 0], $this->findInTeam());
+
+        $this->addTeamSeriesWithOverride('CLASS:CONFIDENTIAL', '');
+        $result = $this->findInTeam();
+        $this->assertSame([true, true, true], array_column($result['items'], 'busyOnly'));
+        $this->assertSame([null, null, null], array_column($result['items'], 'summary'));
+    }
+
+    /** The CLASS of the override itself is the one that counts, in either direction. */
+    public function testAnOverrideWithItsOwnClassIsTreatedByIt(): void {
+        $this->addTeamSeriesWithOverride('CLASS:PRIVATE', 'CLASS:PUBLIC');
+        $result = $this->findInTeam();
+        $this->assertSame([['2026-03-11T15:00:00Z', 'Segredo do Roberto', false]], array_map(static fn (array $i) => [$i['start'], $i['summary'], $i['busyOnly']], $result['items']));
+    }
+
+    /** CLASS values are case-insensitive in iCalendar. */
+    public function testClassValuesAreCaseInsensitive(): void {
+        $this->store->addObject(3, 'p.ics', self::ics("UID:p\nCLASS:private\nSUMMARY:Segredo\nDTSTART:20260310T100000Z\nDTEND:20260310T110000Z"));
+        $this->store->addObject(3, 'c.ics', self::ics("UID:c\nCLASS:Confidential\nSUMMARY:Medico\nDTSTART:20260310T100000Z\nDTEND:20260310T110000Z"));
+        $result = $this->findInTeam();
+        $this->assertSame([['c.ics', null, true]], array_map(static fn (array $i) => [$i['uri'], $i['summary'], $i['busyOnly']], $result['items']));
+    }
+
+    /** The window asked of the store is the one searched, in the right order. */
+    public function testTheStoreIsAskedForTheSearchWindow(): void {
+        $this->checker->find($this->personal, 'alice', new DateTimeImmutable('2026-03-10T10:00:00Z'), new DateTimeImmutable('2026-03-10T11:00:00Z'), false);
+        $this->assertSame([[1, '2026-03-10T10:00:00Z', '2026-03-10T11:00:00Z']], $this->store->rangesAsked);
+    }
+
     public function testTransparentEventDoesNotCollide(): void {
         $this->store->addObject(1, 'free.ics', self::ics("UID:free\nTRANSP:TRANSPARENT\nSUMMARY:Lembrete\nDTSTART:20260310T100000Z\nDTEND:20260310T110000Z"));
 
@@ -205,6 +273,19 @@ final class CollisionCheckTest extends CalendarTestCase {
         $result2 = $this->checker->find($this->personal, 'alice', $start, $end, true);
         $this->assertCount(1, $result2['items']);
         $this->assertSame('afternoon.ics', $result2['items'][0]['uri']);
+    }
+
+    /** An all-day window whose end is not a midnight still covers the whole last day, and no day beyond it. */
+    public function testAllDayWindowEndingInsideADayCoversThatDayOnly(): void {
+        $tz = new DateTimeZone('America/Sao_Paulo');
+        // 10/03 20:00 in Sao Paulo, and 11/03 12:00, 12/03 12:00.
+        $this->store->addObject(1, 'evening.ics', self::ics("UID:eve\nSUMMARY:Noite\nDTSTART:20260310T230000Z\nDTEND:20260311T000000Z"));
+        $this->store->addObject(1, 'next.ics', self::ics("UID:nxt\nSUMMARY:Dia seguinte\nDTSTART:20260311T150000Z\nDTEND:20260311T160000Z"));
+        $this->store->addObject(1, 'later.ics', self::ics("UID:ltr\nSUMMARY:Depois\nDTSTART:20260312T150000Z\nDTEND:20260312T160000Z"));
+
+        $result = $this->checker->find($this->personal, 'alice', new DateTimeImmutable('2026-03-10 00:00:00', $tz), new DateTimeImmutable('2026-03-10 10:00:00', $tz), true);
+
+        $this->assertSame(['evening.ics'], array_column($result['items'], 'uri'));
     }
 
     public function testExistingAllDayEventCollidesWithTimedEvent(): void {

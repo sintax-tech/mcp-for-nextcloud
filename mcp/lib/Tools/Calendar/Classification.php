@@ -36,10 +36,11 @@ final class Classification {
         if ($class === null && $event->{'RECURRENCE-ID'} !== null) {
             $class = $this->classOf($this->masterOf($event, $vcalendar));
         }
+        // RFC 5545 3.8.1.3: a value the standard does not define is to be handled as PRIVATE.
         return match ($class) {
-            'PRIVATE' => self::HIDDEN,
+            null, 'PUBLIC' => self::FULL,
             'CONFIDENTIAL' => self::BUSY,
-            default => self::FULL,
+            default => self::HIDDEN,
         };
     }
 

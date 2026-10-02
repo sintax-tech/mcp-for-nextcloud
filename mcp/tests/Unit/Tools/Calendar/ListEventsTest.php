@@ -169,6 +169,18 @@ final class ListEventsTest extends CalendarTestCase {
         $this->assertStringNotContainsString('Segredo do Roberto', json_encode($result, JSON_UNESCAPED_UNICODE));
     }
 
+    /** A CLASS value the standard does not define is handled as PRIVATE, for a whole object and for an override alone. */
+    public function testAnUnknownClassValueIsTreatedAsPrivate(): void {
+        $this->store->addObject(3, 'x.ics', self::ics("UID:x\nCLASS:X-FOO\nSUMMARY:Segredo desconhecido\nDTSTART:20260311T100000Z\nDTEND:20260311T110000Z"));
+        $this->assertSame([], $this->list(['calendar' => self::TEAM]));
+
+        $this->store->objects[3] = [];
+        $this->addSeriesWithOverride('', 'CLASS:X-FOO');
+        $result = $this->call('calendar_list_events', ['calendar' => self::TEAM, 'from' => '2026-03-10', 'to' => '2026-03-14']);
+        $this->assertSame(['2026-03-10T10:00:00.000Z', '2026-03-12T10:00:00.000Z'], array_column(self::json($result), 'start'));
+        $this->assertStringNotContainsString('Segredo do Roberto', json_encode($result, JSON_UNESCAPED_UNICODE));
+    }
+
     /** In the user's own calendar nothing is hidden, whatever the CLASS of the component. */
     public function testOwnSeriesWithAPrivateOverrideIsShownInFull(): void {
         $master = "UID:s\nSUMMARY:Serie\nDTSTART:20260310T100000Z\nDTEND:20260310T110000Z\nRRULE:FREQ=DAILY;COUNT=2";

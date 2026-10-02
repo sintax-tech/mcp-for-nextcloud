@@ -44,6 +44,9 @@ final class ClassificationTest extends TestCase {
             'override inherits confidential' => ['CLASS:CONFIDENTIAL', '', Classification::BUSY, Classification::BUSY, Classification::BUSY],
             'public override of a private master' => ['CLASS:PRIVATE', 'CLASS:PUBLIC', Classification::HIDDEN, Classification::FULL, Classification::HIDDEN],
             'confidential override of a private master' => ['CLASS:PRIVATE', 'CLASS:CONFIDENTIAL', Classification::HIDDEN, Classification::BUSY, Classification::HIDDEN],
+            'unknown value of the master (RFC 5545 3.8.1.3)' => ['CLASS:X-FOO', '', Classification::HIDDEN, Classification::HIDDEN, Classification::HIDDEN],
+            'unknown value of the override' => ['', 'CLASS:X-FOO', Classification::FULL, Classification::HIDDEN, Classification::HIDDEN],
+            'public override of an unknown master' => ['CLASS:X-FOO', 'CLASS:public', Classification::HIDDEN, Classification::FULL, Classification::HIDDEN],
             'lower case' => ['CLASS:private', 'CLASS:confidential', Classification::HIDDEN, Classification::BUSY, Classification::HIDDEN],
         ];
     }

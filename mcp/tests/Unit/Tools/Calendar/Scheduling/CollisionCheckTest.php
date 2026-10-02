@@ -218,6 +218,12 @@ final class CollisionCheckTest extends CalendarTestCase {
         $this->assertSame([['c.ics', null, true]], array_map(static fn (array $i) => [$i['uri'], $i['summary'], $i['busyOnly']], $result['items']));
     }
 
+    /** A CLASS value the standard does not define never collides nor shows its title: it is handled as PRIVATE. */
+    public function testAnUnknownClassValueIsTreatedAsPrivate(): void {
+        $this->store->addObject(3, 'x.ics', self::ics("UID:x\nCLASS:X-FOO\nSUMMARY:Segredo desconhecido\nDTSTART:20260310T100000Z\nDTEND:20260310T110000Z"));
+        $this->assertSame(['items' => [], 'more' => 0], $this->findInTeam());
+    }
+
     /** The window asked of the store is the one searched, in the right order. */
     public function testTheStoreIsAskedForTheSearchWindow(): void {
         $this->checker->find($this->personal, 'alice', new DateTimeImmutable('2026-03-10T10:00:00Z'), new DateTimeImmutable('2026-03-10T11:00:00Z'), false);

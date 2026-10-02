@@ -143,6 +143,14 @@ final class PlanWarningsTest extends CalendarTestCase {
         self::assertStringNotContainsString('Segredo do Roberto', json_encode($result, JSON_UNESCAPED_UNICODE));
     }
 
+    /** The plan does not reveal an appointment whose CLASS is unknown either: it is handled as private. */
+    public function testUnknownClassOfAnotherPersonsEventIsNotInThePlan(): void {
+        $this->store->addObject(3, 'x.ics', self::ics("UID:x\nCLASS:X-FOO\nSUMMARY:Segredo desconhecido\nDTSTART:20261001T170000Z\nDTEND:20261001T180000Z"));
+        $result = $this->registry->call('calendar_create_event', ['calendar' => self::TEAM, 'confirm_shared' => true] + self::EVENT, 'alice');
+        self::assertSame([], self::json($result)['warnings']);
+        self::assertStringNotContainsString('Segredo desconhecido', json_encode($result, JSON_UNESCAPED_UNICODE));
+    }
+
     /** A confidential occurrence collides as a busy block without its title. */
     public function testConfidentialOverrideOfAnotherPersonsSeriesCollidesAsBusy(): void {
         $master = "UID:serie\nSUMMARY:Serie publica\nDTSTART:20260930T090000Z\nDTEND:20260930T100000Z\nRRULE:FREQ=DAILY;COUNT=3";

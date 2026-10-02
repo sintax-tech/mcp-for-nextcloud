@@ -326,6 +326,80 @@ final class FilesImageToolsTest extends FilesToolsTestCase {
         $paths = array_column($results, 'path');
         $this->assertNotContains('/Photos/secret.jpg', $paths);
     }
+
+    /**
+     * A visible /Photos with one hidden image and one visible, behind the guard of the tag 999.
+     *
+     * @return array{secret:int, visible:int} the ids of the two images
+     */
+    private function photosWithAHiddenImage(): array {
+        $guardTags = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $this->visibilityGuard = new \OCA\Mcp\Service\VisibilityGuard($this->config->mock($this), $guardTags);
+        $this->setUp();
+        $ids = [
+            'secret' => $this->tree->addFile('/alice/files/Photos/secret.jpg', 'S', 'image/jpeg'),
+            'visible' => $this->tree->addFile('/alice/files/Photos/visible.jpg', 'V', 'image/jpeg'),
+        ];
+        $guardTags->method('getTagIdsForObjects')->willReturnCallback(static fn (array $objects): array => array_combine($objects,
+            array_map(static fn ($id): array => (string)$id === (string)$ids['secret'] ? ['999'] : [], $objects)));
+        return $ids;
+    }
+
+    /** @return list<string> the paths files_images_view returned images of */
+    private function viewedPaths(array $result): array {
+        $paths = [];
+        foreach ($result['content'] as $item) {
+            if ($item['type'] === 'text') {
+                $meta = json_decode($item['text'], true, 512, JSON_THROW_ON_ERROR);
+                if (isset($meta['path'])) {
+                    $paths[] = $meta['path'];
+                }
+            }
+        }
+        return $paths;
+    }
+
+    /** Picking a folder must not hand out the bytes of a hidden image that sits in it, next to a visible one. */
+    public function testImagesViewOfAFolderNeverReturnsAHiddenImage(): void {
+        $this->photosWithAHiddenImage();
+        $this->preparePreview('image/jpeg', 'preview');
+        $result = $this->tool('files_images_view', ['folder' => '/Photos']);
+        $this->assertSame(['/Photos/visible.jpg'], $this->viewedPaths($result), 'a visível vem, a oculta não');
+        $this->assertCount(1, array_filter($result['content'], static fn (array $item): bool => $item['type'] === 'image'));
+        $this->assertStringNotContainsString('secret', json_encode($result, JSON_THROW_ON_ERROR));
+    }
+
+    /** A tag that marks a hidden image and a visible one finds only the visible one. */
+    public function testImageSearchByTagNeverReturnsAHiddenImage(): void {
+        $ids = $this->photosWithAHiddenImage();
+        $tag = $this->createMock(ISystemTag::class);
+        $tag->method('getId')->willReturn('30');
+        $tag->method('getName')->willReturn('ferias');
+        $tag->method('isUserVisible')->willReturn(true);
+        $this->tagManager->method('getAllTags')->willReturn([$tag]);
+        $this->tagMapper->method('getObjectIdsForTags')->willReturn([(string)$ids['secret'], (string)$ids['visible']]);
+
+        $this->assertSame(['/Photos/visible.jpg'], array_column($this->json('files_image_search', ['tag' => 'ferias']), 'path'));
+    }
+
+    /** A hidden folder answers exactly like one that does not exist: an empty list would say it is there. */
+    public function testImageSearchInAHiddenFolderAnswersLikeAMissingOne(): void {
+        $guardTags = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $this->visibilityGuard = new \OCA\Mcp\Service\VisibilityGuard($this->config->mock($this), $guardTags);
+        $this->setUp();
+        $hidden = $this->tree->addFolder('/alice/files/Secreta');
+        $this->tree->addFile('/alice/files/Secreta/foto.jpg', 'F', 'image/jpeg');
+        $guardTags->method('getTagIdsForObjects')->willReturnCallback(static fn (array $objects): array => array_combine($objects,
+            array_map(static fn ($id): array => (string)$id === (string)$hidden ? ['999'] : [], $objects)));
+
+        $missing = $this->failure('files_image_search', ['folder' => '/NaoExiste']);
+        $this->assertSame(CommonMessages::notFound(), $missing);
+        $this->assertSame($missing, $this->failure('files_image_search', ['folder' => '/Secreta']));
+        $this->assertSame($missing, $this->failure('files_image_search', ['folder' => '/Secreta', 'tag' => 'qualquer']));
+    }
+
     private function preparePreview(string $mime, string $bytes): void {
         $simple = $this->createMock(ISimpleFile::class);
         $simple->method('getMimeType')->willReturn($mime);

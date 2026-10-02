@@ -471,7 +471,10 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	 * table, so a concurrent insert is not blocked, and on MySQL's default REPEATABLE READ the second count would
 	 * not even see it. It would also run Deck's notifications inside a transaction that may be rolled back. What
 	 * remains is a window of a few milliseconds, between the recount and a request that had already passed Deck's
-	 * checks; a card created in it sits in the trashed list, which stays recoverable from the Deck trash.
+	 * checks (`CardService::create()` never looks at the `deleted_at` of the list); a card created in the instant right
+	 * after the second count sits in the trashed list, which stays recoverable from the Deck trash. This residual
+	 * window is accepted (third round of the review): closing it would need a lock shared with every card write of
+	 * the Deck app, which this app cannot take, and the tool guide says so.
 	 */
 	public function deleteEmptyStack(string $userId, int $stackId): Stack {
 		// The count runs the manage check and binds the caller; it is taken again here and not trusted from the plan.
@@ -497,6 +500,9 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	 *
 	 * The board is counted again after the delete and, when a card showed up in one of its lists, brought back with
 	 * Deck's own `BoardService::deleteUndo()` (it clears `deleted_at` and writes the restore activity).
+	 *
+	 * The same residual window as {@see self::deleteEmptyStack()} remains and is accepted: a card created in the
+	 * instant right after the second count may go to the trash with the board, where it is recoverable.
 	 */
 	public function deleteEmptyBoard(string $userId, int $boardId): Board {
 		// Owner first: somebody who merely manages the board is refused before a single card is counted.

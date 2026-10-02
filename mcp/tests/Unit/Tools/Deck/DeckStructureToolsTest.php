@@ -149,6 +149,8 @@ final class DeckStructureToolsTest extends TestCase {
 			self::assertMatchesRegularExpression('/\bonly\b/', $description, $name);
 			self::assertStringContainsString('archived', $description, $name);
 			self::assertStringContainsString('trash', $description, $name);
+			// Accepted residual window (third round): a card created right after the second count may go along.
+			self::assertStringContainsString('right after the second count', $description, $name);
 		}
 		self::assertStringContainsString('deck_create_board', implode(' ', $this->moduleWith($this->createMock(DeckGatewayInterface::class))->guideNotes()));
 	}

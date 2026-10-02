@@ -38,9 +38,9 @@ final class DeckMessages {
 	public const TOOL_CREATE_STACK_DESCRIPTION
 		= 'Creates a list (stack) on a Deck board you manage, at the end or at the given position. To build a whole board with its lists and cards, use deck_create_board.';
 	public const TOOL_DELETE_STACK_DESCRIPTION
-		= 'Deletes a Deck list (stack), only if it holds no cards, active or archived: move or delete the cards first. Deck moves the list to the trash of the board, where it can be recovered.';
+		= 'Deletes a Deck list (stack), only if it holds no cards, active or archived: move or delete the cards first. Deck moves the list to the trash of the board, where it can be recovered. A card created by someone else right after the second count the tool takes before finishing may go to the trash with the list; it is recoverable there.';
 	public const TOOL_DELETE_BOARD_DESCRIPTION
-		= 'Deletes a Deck board you own, only if none of its lists holds a card, active or archived. Its empty lists go with it. Deck moves the board to its trash, where it can be recovered.';
+		= 'Deletes a Deck board you own, only if none of its lists holds a card, active or archived. Its empty lists go with it. Deck moves the board to its trash, where it can be recovered. A card created by someone else right after the second count the tool takes before finishing may go to the trash with the board; it is recoverable there.';
 
 	/* Parameter descriptions. */
 	public const PARAM_BOARD_ID = 'Id of the Deck board.';

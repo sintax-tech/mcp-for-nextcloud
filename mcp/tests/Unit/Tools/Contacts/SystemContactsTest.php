@@ -24,6 +24,10 @@ final class SystemContactsTest extends TestCase {
     private array $groups = [];
     /** @var list<string> accounts that exist and are enabled */
     private array $accounts = ['alice', 'pedro', 'maria', 'joao'];
+    /** @var list<string> accounts that exist but an administrator switched off */
+    private array $disabled = [];
+    /** @var array<string, string> user backend by uid, 'Database' for the others */
+    private array $backends = [];
     private bool $systemRegistered = true;
     private SystemContacts $system;
 
@@ -60,8 +64,8 @@ final class SystemContactsTest extends TestCase {
             }
             $user = $this->createMock(IUser::class);
             $user->method('getUID')->willReturn($uid);
-            $user->method('isEnabled')->willReturn(true);
-            $user->method('getBackendClassName')->willReturn('Database');
+            $user->method('isEnabled')->willReturn(!in_array($uid, $this->disabled, true));
+            $user->method('getBackendClassName')->willReturn($this->backends[$uid] ?? 'Database');
             return $user;
         });
         $groups = $this->createMock(IGroupManager::class);
@@ -195,6 +199,58 @@ final class SystemContactsTest extends TestCase {
         $guest['URI'] = 'Guests:guestx.vcf';
         $this->rows = [$guest, $this->row('ghost', 'Ghost Account', [], '9'), $this->row('pedro', 'Pedro Almeida', [], '9')];
         self::assertSame(['pedro'], array_column($this->system->search('alice', 'Pedro'), 'accountId'));
+    }
+
+    /**
+     * g6-4: each filter on its own. The accounts below exist, so nothing but the filter under test can drop them;
+     * in the test above every dropped row also fails the "unknown account" lookup, which hides the others.
+     */
+    public function testAnAccountAnAdministratorDisabledIsDroppedAndTheOthersStay(): void {
+        $this->disabled = ['maria'];
+
+        self::assertSame(['pedro'], array_column($this->system->search('alice', 'Pedro'), 'accountId'));
+    }
+
+    public function testAnAccountOfTheGuestsBackendIsDroppedEvenWithAnOrdinaryUri(): void {
+        $this->accounts[] = 'guest1';
+        $this->backends['guest1'] = 'Guests';
+        $this->rows = [$this->row('guest1', 'Guest One', ['g@example.invalid'], '9'), $this->row('pedro', 'Pedro Almeida', [], '9')];
+
+        self::assertSame(['pedro'], array_column($this->system->search('alice', 'Pedro'), 'accountId'));
+    }
+
+    public function testARowWithAGuestsUriIsDroppedEvenWhenTheAccountIsAnOrdinaryOne(): void {
+        $row = $this->row('maria', 'Pedro Maria', [], '9');
+        $row['URI'] = 'Guests:maria.vcf';
+        $this->rows = [$row, $this->row('pedro', 'Pedro Almeida', [], '9')];
+
+        self::assertSame(['pedro'], array_column($this->system->search('alice', 'Pedro'), 'accountId'));
+    }
+
+    /** g6-5: a guest looking at the catalog sees nothing, whatever the enumeration settings let everybody else see. */
+    public function testAGuestViewerGetsAnEmptyCatalogEvenWithEnumerationOn(): void {
+        $this->accounts[] = 'guest1';
+        $this->backends['guest1'] = 'Guests';
+        $this->config = ['shareapi_allow_share_dialog_user_enumeration' => 'yes'];
+
+        self::assertSame([], $this->system->search('guest1', 'Pedro'));
+        self::assertNull($this->system->find('guest1', 'Database:pedro.vcf'));
+        self::assertNotSame([], $this->system->search('alice', 'Pedro'), 'the same query works for an ordinary viewer');
+    }
+
+    public function testAViewerWhoIsNotAnAccountGetsAnEmptyCatalog(): void {
+        self::assertSame([], $this->system->search('nobody', 'Pedro'));
+        self::assertNull($this->system->find('nobody', 'Database:pedro.vcf'));
+    }
+
+    /** A card of a personal book is not an account, even when its UID happens to be the login of one. */
+    public function testAPersonalCardWhoseUidIsALoginIsNotAnAccount(): void {
+        $this->rows = [
+            ['addressbook-key' => '1', 'UID' => 'pedro', 'URI' => 'imported.vcf', 'FN' => 'Pedro Importado'],
+            $this->row('maria', 'Pedro Maria', [], '9'),
+        ];
+
+        self::assertSame(['maria'], array_column($this->system->search('alice', 'Pedro'), 'accountId'));
     }
 
     public function testDuplicateRowsOfOneAccountAppearOnce(): void {

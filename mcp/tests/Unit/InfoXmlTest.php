@@ -106,9 +106,9 @@ final class InfoXmlTest extends TestCase {
         $this->assertSame('AGPL-3.0-or-later', (string)$manifest->licence);
     }
 
-    /** The two screenshots live in the repository's docs/screenshots on main, under the names agreed for the listing. */
+    /** The two screenshots live in the repository's root screenshots/ folder on main, outside the app package, under the names agreed for the listing. */
     public function testScreenshotsComeFromTheRepository(): void {
-        $base = 'https://raw.githubusercontent.com/sintax-tech/mcp-for-nextcloud/main/docs/screenshots/';
+        $base = 'https://raw.githubusercontent.com/sintax-tech/mcp-for-nextcloud/main/screenshots/';
 
         $this->assertSame([$base . 'admin.png', $base . 'plan.png'], array_map('strval', iterator_to_array($this->manifest()->screenshot, false)));
     }

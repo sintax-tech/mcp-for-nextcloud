@@ -103,8 +103,8 @@ Nextcloud 31, 32 o 33 y PHP 8.2 o superior. Deck (1.15 o superior) y Talk (21.1.
     <website>https://github.com/sintax-tech/mcp-for-nextcloud</website>
     <bugs>https://github.com/sintax-tech/mcp-for-nextcloud/issues</bugs>
     <repository type="git">https://github.com/sintax-tech/mcp-for-nextcloud.git</repository>
-    <screenshot>https://raw.githubusercontent.com/sintax-tech/mcp-for-nextcloud/main/docs/screenshots/admin.png</screenshot>
-    <screenshot>https://raw.githubusercontent.com/sintax-tech/mcp-for-nextcloud/main/docs/screenshots/plan.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/sintax-tech/mcp-for-nextcloud/main/screenshots/admin.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/sintax-tech/mcp-for-nextcloud/main/screenshots/plan.png</screenshot>
     <dependencies>
         <php min-version="8.2"/>
         <nextcloud min-version="31" max-version="33"/>

@@ -85,6 +85,13 @@ final class FakeVersionManager {
     public array $ops = [];
     /** Value rollback() answers; null is what files_versions returns on success. */
     public bool|null $rollbackResult = null;
+    /**
+     * What the rollback does to the file, as the real one overwrites it with the version: a test puts the effect in
+     * the tree so the order against the backup is observable on one timeline.
+     *
+     * @var (\Closure(FakeVersion): void)|null
+     */
+    public ?\Closure $onRollback = null;
 
     /**
      * @param list<FakeVersion> $versions versions of the file
@@ -112,6 +119,9 @@ final class FakeVersionManager {
      */
     public function rollback(FakeVersion $version): bool|null {
         $this->ops[] = 'rollback';
+        if ($this->onRollback !== null) {
+            ($this->onRollback)($version);
+        }
         return $this->rollbackResult;
     }
 

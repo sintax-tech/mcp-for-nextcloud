@@ -182,8 +182,46 @@ final class VersionToolsTest extends TestCase {
 
     public function testRestoreRefusesAFileNextcloudWillNotUpdate(): void {
         $this->tree->nodes[self::FILE]['updateable'] = false;
-        $this->expectException(ToolFailure::class);
-        $this->expectExceptionMessage(CommonMessages::forbidden());
-        $this->tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+        try {
+            $this->tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+            $this->fail('a file Nextcloud will not update was restored');
+        } catch (ToolFailure $e) {
+            $this->assertSame(CommonMessages::forbidden(), $e->getMessage());
+        }
+        $this->assertNotContains('rollback', $this->manager->ops, 'a recusa vem antes de a versão sobrescrever o arquivo');
+        $this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+    }
+
+    /** Turns the rollback into what the real one does: the file now holds the version. */
+    private function rollbackOverwritesTheFile(): void {
+        $this->manager->onRollback = function (): void {
+            $this->tree->ops[] = 'rollback';
+            $this->tree->nodes[self::FILE]['content'] = 'versão antiga';
+        };
+    }
+
+    /**
+     * The point of the restore: the backup keeps what the file held before the version overwrote it. A rollback
+     * that ran first would leave a "backup" of the restored version and lose the current content for good.
+     */
+    public function testTheBackupHoldsTheCurrentContentBecauseItIsTakenBeforeTheRollback(): void {
+        $this->rollbackOverwritesTheFile();
+        $out = $this->tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+        $this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files' . $out['backup']]['content'], 'o conteúdo de antes está no backup');
+        $this->assertSame('versão antiga', $this->tree->nodes[self::FILE]['content']);
+        $this->assertSame(['write /alice/files' . $out['backup'], 'rollback'], array_slice($this->tree->ops, -2), 'o backup antes da versão');
+    }
+
+    /** A backup that could not be written stops the restore before the version touches the file. */
+    public function testARestoreWhoseBackupFailsNeverRollsBack(): void {
+        $this->rollbackOverwritesTheFile();
+        $this->tree->failBackupWrite = true;
+        try {
+            $this->tools->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+            $this->fail('a restore without its backup went on');
+        } catch (ToolFailure) {
+        }
+        $this->assertNotContains('rollback', $this->manager->ops);
+        $this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
     }
 }

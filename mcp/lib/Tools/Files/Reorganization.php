@@ -145,6 +145,28 @@ final class Reorganization {
     }
 
     /**
+     * The shared-content confirmation a folder creation needs, the one `files_mkdir` asks for.
+     *
+     * The folder is judged by the closest folder that already exists above it: that is where it is made, and
+     * so whose people it reaches. A folder that is already there is not made, so it asks for nothing. The
+     * batch plan calls this for each folder of `mkdirs`, so a folder no move uses is guarded like the rest.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param string $path requested folder, user-relative
+     * @return array<string, mixed>|null the guard payload, null when the folder is not made in a shared place
+     * @throws \InvalidArgumentException for a malformed path
+     */
+    public function guardFolder(Folder $root, string $userId, string $path): ?array {
+        $path = PathGuard::normalize($path);
+        $relative = ltrim($path, '/');
+        if ($relative === '' || $root->nodeExists($relative)) {
+            return null;
+        }
+        return $this->guard->guard($this->existingAncestor($root, $path), $userId, $path, false);
+    }
+
+    /**
      * The closest folder above $path that already exists, without creating anything on the way.
      *
      * @param Folder $root the user's folder

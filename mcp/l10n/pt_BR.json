@@ -867,6 +867,10 @@
     "This upload link has expired or has already been used. Call files_upload again." : "Este link de envio expirou ou já foi usado. Chame files_upload de novo.",
     "files_create only writes text files (%s); use files_upload for any other type" : "files_create só grava arquivos de texto (%s); use files_upload para qualquer outro tipo",
     "must end in a file name Nextcloud accepts: no reserved name, forbidden character or extension, at most 250 bytes" : "precisa terminar em um nome de arquivo que o Nextcloud aceite: sem nome reservado, caractere ou extensão proibidos, até 250 bytes",
-    "The uploaded body is empty, but files_upload declared %s bytes; nothing was written and the link still works." : "O corpo enviado está vazio, mas o files_upload declarou %s bytes; nada foi gravado e o link continua valendo."
+    "The uploaded body is empty, but files_upload declared %s bytes; nothing was written and the link still works." : "O corpo enviado está vazio, mas o files_upload declarou %s bytes; nada foi gravado e o link continua valendo.",
+    "Create a new Nextcloud file" : "Criar um arquivo novo no Nextcloud",
+    "Teaches how to send a file generated locally to Nextcloud as a new file, or to create a small text file inline." : "Ensina a enviar ao Nextcloud, como arquivo novo, um arquivo gerado localmente, ou a criar um arquivo de texto pequeno inline.",
+    "Workflow for creating a new Nextcloud file." : "Fluxo de criação de um arquivo novo no Nextcloud.",
+    "Create folders, copies and new files" : "Criar pastas, cópias e arquivos novos"
 },"pluralForm" :"nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

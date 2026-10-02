@@ -16,7 +16,7 @@ use OCA\Mcp\OAuth\OAuthStore;
 class GrantPolicy {
     /** Operations an admin can grant per module; Files deliberately has no delete. */
     public const CATALOG = [
-        // 'restore' rolls a file back to a stored version and 'create' adds a folder or a copy;
+        // 'restore' rolls a file back to a stored version and 'create' adds a folder, a copy or a new file;
         // like every operation but read, both start denied. 'share' shares an own file with a person or a
         // group and 'link' creates a public link; they are separate so an admin can allow one without the
         // other, and removing a share asks for the operation of its type. Listing shares stays a 'read'.

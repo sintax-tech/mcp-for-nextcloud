@@ -70,6 +70,9 @@
 		if (module === 'talk' && operation === 'create') {
 			return t('mcp', 'Open new conversations, which invites people')
 		}
+		if (module === 'files' && operation === 'create') {
+			return t('mcp', 'Create folders, copies and new files')
+		}
 		if (module === 'calendar' && operation === 'transfer') {
 			return t('mcp', 'Move an event to another person’s calendar')
 		}

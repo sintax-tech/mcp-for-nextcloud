@@ -90,12 +90,55 @@ final class PromptCatalogTest extends TestCase {
     /** A file generated locally is new: the prompt sends it to files_upload, small text to files_create, never over a checkout. */
     public function testThePromptTeachesHowToCreateANewFile(): void {
         $this->policy->setGrant('alice', 'files', 'edit', true);
+        $this->policy->setGrant('alice', 'files', 'create', true);
         $text = $this->catalog->get(PromptCatalog::EDIT_LOCALLY, $this->policy, 'alice')['messages'][0]['content']['text'];
         foreach (['files_upload', 'files_create', 'uploadUrl', 'curl -sS -T /tmp/file -X PUT -H "Content-Type: application/octet-stream" "$UPLOAD_URL"',
             'never overwrite a file with content', 'files_mkdir'] as $needle) {
             $this->assertStringContainsString($needle, $text, $needle);
         }
         $this->assertLessThan(strpos($text, 'files_upload'), strpos($text, 'files_checkout'), 'the checkout flow comes first');
+    }
+
+    /** B6: the edit prompt only names files_upload and files_create to someone who may use them. */
+    public function testTheEditPromptTeachesNewFilesOnlyWithTheCreateGrant(): void {
+        $this->policy->setGrant('alice', 'files', 'edit', true);
+        $text = $this->catalog->get(PromptCatalog::EDIT_LOCALLY, $this->policy, 'alice')['messages'][0]['content']['text'];
+        $this->assertStringNotContainsString('files_upload', $text);
+        $this->assertStringNotContainsString('files_create', $text);
+        $this->assertSame([PromptCatalog::EDIT_LOCALLY], array_column($this->catalog->list($this->policy, 'alice'), 'name'));
+    }
+
+    /** B6: files.create alone offers its own prompt, the new-file flow without the checkout it cannot run. */
+    public function testTheCreatePromptFollowsTheFilesCreateGrant(): void {
+        $this->policy->setGrant('alice', 'files', 'create', true);
+        $list = $this->catalog->list($this->policy, 'alice');
+        $this->assertSame([PromptCatalog::CREATE_FILE], array_column($list, 'name'));
+        $this->assertSame([], $list[0]['arguments']);
+        $this->assertSame('Create a new Nextcloud file', $list[0]['title']);
+        $this->assertNull($this->catalog->get(PromptCatalog::EDIT_LOCALLY, $this->policy, 'alice'));
+
+        $prompt = $this->catalog->get(PromptCatalog::CREATE_FILE, $this->policy, 'alice');
+        $this->assertSame('user', $prompt['messages'][0]['role']);
+        $text = $prompt['messages'][0]['content']['text'];
+        foreach (['files_upload', 'files_create', 'uploadUrl', 'curl -sS -T /tmp/file -X PUT -H "Content-Type: application/octet-stream" "$UPLOAD_URL"',
+            'never overwrite a file with content', 'files_mkdir', 'confirm_shared'] as $needle) {
+            $this->assertStringContainsString($needle, $text, $needle);
+        }
+        $this->assertStringNotContainsString('files_replace', $text);
+
+        $this->policy->setGrant('alice', 'files', 'edit', true);
+        $this->assertSame([PromptCatalog::EDIT_LOCALLY, PromptCatalog::CREATE_FILE], array_column($this->catalog->list($this->policy, 'alice'), 'name'));
+        \OCA\Mcp\L10n\Translator::use(new \OCA\Mcp\Tests\Unit\L10n\JsonL10n('pt_BR'));
+        $this->assertSame('Criar um arquivo novo no Nextcloud', $this->catalog->list($this->policy, 'alice')[1]['title']);
+        \OCA\Mcp\L10n\Translator::reset();
+    }
+
+    /** B6: the grant comment names what files.create allows now. */
+    public function testTheCreateGrantIsDescribedAsNewFilesToo(): void {
+        $policy = (string)file_get_contents(dirname(__DIR__, 3) . '/lib/Service/GrantPolicy.php');
+        $this->assertStringContainsString("'create' adds a folder, a copy or a new file", $policy);
+        $admin = (string)file_get_contents(dirname(__DIR__, 3) . '/js/admin-grants.js');
+        $this->assertStringContainsString("t('mcp', 'Create folders, copies and new files')", $admin);
     }
 
     public function testThePromptTitlesAndDescriptionsAreTranslated(): void {

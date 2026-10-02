@@ -869,6 +869,10 @@ OC.L10N.register(
     "This upload link has expired or has already been used. Call files_upload again." : "Este enlace de subida caducó o ya se usó. Llame a files_upload de nuevo.",
     "files_create only writes text files (%s); use files_upload for any other type" : "files_create solo escribe archivos de texto (%s); use files_upload para cualquier otro tipo",
     "must end in a file name Nextcloud accepts: no reserved name, forbidden character or extension, at most 250 bytes" : "debe terminar en un nombre de archivo que Nextcloud acepte: sin nombre reservado, carácter o extensión prohibidos, hasta 250 bytes",
-    "The uploaded body is empty, but files_upload declared %s bytes; nothing was written and the link still works." : "El cuerpo enviado está vacío, pero files_upload declaró %s bytes; no se escribió nada y el enlace sigue sirviendo."
+    "The uploaded body is empty, but files_upload declared %s bytes; nothing was written and the link still works." : "El cuerpo enviado está vacío, pero files_upload declaró %s bytes; no se escribió nada y el enlace sigue sirviendo.",
+    "Create a new Nextcloud file" : "Crear un archivo nuevo en Nextcloud",
+    "Teaches how to send a file generated locally to Nextcloud as a new file, or to create a small text file inline." : "Enseña a enviar a Nextcloud, como archivo nuevo, un archivo generado localmente, o a crear un archivo de texto pequeño en línea.",
+    "Workflow for creating a new Nextcloud file." : "Flujo para crear un archivo nuevo en Nextcloud.",
+    "Create folders, copies and new files" : "Crear carpetas, copias y archivos nuevos"
 },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

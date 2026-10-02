@@ -102,6 +102,19 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
         $this->assertStringContainsString('2.9 KB', $body);
     }
 
+    /**
+     * B7: a file name with Markdown, a link, HTML and a forged section, planned by the module itself, renders inert for
+     * both new file tools. It has no "/" because a name cannot hold one: the path would name another folder.
+     */
+    public function testHostileNamesOfNewFilesStayInert(): void {
+        $name = '**x** [l](javascript:alert(1)) <b>y a_b*c ### Warnings &amp; Nothing was changed.md';
+        foreach (['files_upload' => [], 'files_create' => ['content' => 'texto']] as $tool => $extra) {
+            $plan = $this->plan($tool, ['path' => '/Arquivo/' . $name] + $extra);
+            $this->assertSame($name, $plan['name'], $tool);
+            $this->assertHostileNameStaysInert($this->module, $tool, $plan, $name);
+        }
+    }
+
     public function testAnEmptyCreateSaysSo(): void {
         $this->assertStringContainsString('The file is empty.', $this->body('files_create', ['path' => '/Arquivo/vazio.txt', 'content' => '']));
     }

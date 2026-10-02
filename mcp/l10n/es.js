@@ -607,6 +607,8 @@ OC.L10N.register(
     "Move event from *%s* to *%s*: **%s**" : "Mover evento de *%s* a *%s*: **%s**",
     "Transfer event from *%s* to *%s*: **%s**" : "Transferir evento de *%s* a *%s*: **%s**",
     "Delete event in *%s*: **%s**" : "Eliminar evento en *%s*: **%s**",
+    "- Shared calendar *%s* of %s." : "- Calendario *%s* compartido por %s.",
+    "- Shared calendar of %s." : "- Calendario compartido por %s.",
     "- Consequence: %s" : "- Consecuencia: %s",
     "Enter at least 2 characters to search the accounts catalog." : "Escriba al menos 2 caracteres para buscar en el catálogo de cuentas.",
     "Account contacts are read-only; ask the administrator." : "Los contactos de cuentas son de solo lectura; pídaselo al administrador.",

@@ -22,6 +22,7 @@ final class UpdateEventTest extends CalendarTestCase {
     }
 
     public function testChangesTextAndPreservesEverythingElse(): void {
+        $etagBefore = $this->store->objects[1]['e.ics']['etag'];
         $item = self::json($this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'e', 'summary' => 'Novo', 'location' => '']));
         $this->assertSame(['Novo', ''], [$item['summary'], $item['location']]);
         $event = $this->written();
@@ -34,7 +35,8 @@ final class UpdateEventTest extends CalendarTestCase {
         $this->assertSame(['update', 'personal', 'e.ics'], [$this->dav->calls[0][0], $this->dav->calls[0][1][0], $this->dav->calls[0][1][1]]);
         // If-Match always carries the ETag that was read before the write, even when the client sent
         // none: a concurrent change between the read and the write has to lose, not win.
-        self::assertNotSame($item['etag'], $this->dav->calls[0][1][2]);
+        self::assertSame($etagBefore, $this->dav->calls[0][1][2]);
+        self::assertNotSame($etagBefore, $item['etag']);
         $this->assertFalse($this->dav->calls[0][1][4], 'scheduling is off by default');
         $this->assertSame($this->store->objects[1]['e.ics']['etag'], $item['etag']);
         // With scheduling suppressed the guest is still reported, and it carries no SCHEDULE-STATUS:
@@ -45,6 +47,31 @@ final class UpdateEventTest extends CalendarTestCase {
             'message' => 'nenhum convite foi agendado',
             'participants' => [['email' => 'mailto:bob@example.com', 'scheduleStatus' => null, 'meaning' => 'sem registro de envio']],
         ], $item['scheduling']);
+    }
+
+    /** The write carries the ETag read at preparation: an object changed by someone else in between is refused, not overwritten. */
+    public function testAChangeMadeBetweenThePlanAndTheWriteIsRefusedByIfMatch(): void {
+        $prepared = $this->writeHandlers['calendar_update_event']->prepare(['calendar' => self::PERSONAL, 'uid' => 'e', 'summary' => 'Meu texto'], 'alice');
+        $concurrent = str_replace('SUMMARY:Antigo', 'SUMMARY:Texto de outra pessoa', $this->store->objects[1]['e.ics']['data']);
+        self::assertNotSame($this->store->objects[1]['e.ics']['data'], $concurrent, 'the concurrent change has to differ');
+        $this->store->applyUpdate(1, 'e.ics', $concurrent);
+
+        try {
+            $prepared->dispatch();
+            self::fail('the write overwrote a concurrent change');
+        } catch (\OCA\Mcp\Tools\Calendar\CalendarException $e) {
+            self::assertSame(412, $e->getCode());
+        }
+        self::assertStringContainsString('Texto de outra pessoa', $this->store->objects[1]['e.ics']['data']);
+    }
+
+    /** The invitations the person asked for are handed to the scheduler, and the result says so without claiming delivery. */
+    public function testSendInvitationsTrueHandsTheChangeToTheScheduler(): void {
+        $item = self::json($this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'e', 'summary' => 'Novo', 'send_invitations' => true]));
+
+        $this->assertTrue($this->dav->calls[0][1][4], 'scheduling must be on when send_invitations is true');
+        $this->assertTrue($item['scheduling']['requested']);
+        $this->assertSame('convite entregue ao agendamento do Nextcloud', $item['scheduling']['message']);
     }
 
     public function testChangesTimingKeepingMissingBound(): void {

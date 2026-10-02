@@ -101,6 +101,100 @@ final class ListEventsTest extends CalendarTestCase {
         $this->assertSame([['c', 'Ocupado', '']], array_map(static fn (array $i) => [$i['uid'], $i['summary'], $i['location']], $items));
     }
 
+    /**
+     * A daily series of three days in bob's shared calendar whose 2026-03-11 occurrence is an override.
+     *
+     * @param string $masterClass CLASS line of the master, or '' for none
+     * @param string $overrideClass CLASS line of the override, or '' for none
+     */
+    private function addSeriesWithOverride(string $masterClass, string $overrideClass): void {
+        $master = "UID:s\n" . ($masterClass === '' ? '' : $masterClass . "\n") . "SUMMARY:Serie publica\nLOCATION:Sala\nDTSTART:20260310T100000Z\nDTEND:20260310T110000Z\nRRULE:FREQ=DAILY;COUNT=3";
+        $override = "BEGIN:VEVENT\nUID:s\nRECURRENCE-ID:20260311T100000Z\n" . ($overrideClass === '' ? '' : $overrideClass . "\n") . "SUMMARY:Segredo do Roberto\nLOCATION:Consultorio\nDTSTART:20260311T150000Z\nDTEND:20260311T160000Z\nEND:VEVENT";
+        $this->store->addObject(3, 's.ics', self::ics($master, $override));
+    }
+
+    /** The CLASS is read per component: a private override of a public series is hidden, the rest of the series stays. */
+    public function testAPrivateOverrideOfAPublicSeriesIsHiddenAndTheOtherOccurrencesStay(): void {
+        $this->addSeriesWithOverride('', 'CLASS:PRIVATE');
+        $result = $this->call('calendar_list_events', ['calendar' => self::TEAM, 'from' => '2026-03-10', 'to' => '2026-03-14']);
+        $items = self::json($result);
+        $this->assertSame(['2026-03-10T10:00:00.000Z', '2026-03-12T10:00:00.000Z'], array_column($items, 'start'));
+        $this->assertSame(['Serie publica', 'Serie publica'], array_column($items, 'summary'));
+        $this->assertStringNotContainsString('Segredo do Roberto', json_encode($result, JSON_UNESCAPED_UNICODE));
+        $this->assertStringNotContainsString('Consultorio', json_encode($result, JSON_UNESCAPED_UNICODE));
+    }
+
+    /** A confidential override of a public series shows only that it is busy. */
+    public function testAConfidentialOverrideOfAPublicSeriesIsRedacted(): void {
+        $this->addSeriesWithOverride('', 'CLASS:CONFIDENTIAL');
+        $items = $this->list(['calendar' => self::TEAM, 'from' => '2026-03-10', 'to' => '2026-03-14']);
+        $this->assertSame(
+            [['2026-03-10T10:00:00.000Z', 'Serie publica', 'Sala'], ['2026-03-11T15:00:00.000Z', 'Ocupado', ''], ['2026-03-12T10:00:00.000Z', 'Serie publica', 'Sala']],
+            array_map(static fn (array $i) => [$i['start'], $i['summary'], $i['location']], $items),
+        );
+    }
+
+    /** An override without a CLASS of its own takes the one of the master, so a private series hides all of it. */
+    public function testAnOverrideWithoutClassInheritsThePrivateOfTheMaster(): void {
+        $this->addSeriesWithOverride('CLASS:PRIVATE', '');
+        $result = $this->call('calendar_list_events', ['calendar' => self::TEAM, 'from' => '2026-03-10', 'to' => '2026-03-14']);
+        $this->assertSame([], self::json($result));
+        $this->assertStringNotContainsString('Segredo do Roberto', json_encode($result, JSON_UNESCAPED_UNICODE));
+    }
+
+    /** The inherited CONFIDENTIAL redacts the override as it redacts the series. */
+    public function testAnOverrideWithoutClassInheritsTheConfidentialOfTheMaster(): void {
+        $this->addSeriesWithOverride('CLASS:CONFIDENTIAL', '');
+        $items = $this->list(['calendar' => self::TEAM, 'from' => '2026-03-10', 'to' => '2026-03-14']);
+        $this->assertSame(['Ocupado', 'Ocupado', 'Ocupado'], array_column($items, 'summary'));
+        $this->assertSame(['', '', ''], array_column($items, 'location'));
+    }
+
+    /** The CLASS of the override itself wins over the master's: a public override of a private series is shown. */
+    public function testAnOverrideWithItsOwnClassIsTreatedByIt(): void {
+        $this->addSeriesWithOverride('CLASS:PRIVATE', 'CLASS:PUBLIC');
+        $items = $this->list(['calendar' => self::TEAM, 'from' => '2026-03-10', 'to' => '2026-03-14']);
+        $this->assertSame([['2026-03-11T15:00:00.000Z', 'Segredo do Roberto']], array_map(static fn (array $i) => [$i['start'], $i['summary']], $items));
+    }
+
+    /** iCalendar values are case-insensitive: `private` hides and `Confidential` redacts, for the master and for the override. */
+    public function testClassValuesAreCaseInsensitive(): void {
+        $this->store->addObject(3, 'p.ics', self::ics("UID:p\nCLASS:private\nSUMMARY:Segredo\nDTSTART:20260311T100000Z\nDTEND:20260311T110000Z"));
+        $this->store->addObject(3, 'c.ics', self::ics("UID:c\nCLASS:Confidential\nSUMMARY:Medico\nLOCATION:Clinica\nDTSTART:20260311T100000Z\nDTEND:20260311T110000Z"));
+        $items = $this->list(['calendar' => self::TEAM]);
+        $this->assertSame([['c', 'Ocupado', '']], array_map(static fn (array $i) => [$i['uid'], $i['summary'], $i['location']], $items));
+
+        $this->addSeriesWithOverride('', 'CLASS:private');
+        $result = $this->call('calendar_list_events', ['calendar' => self::TEAM, 'from' => '2026-03-10', 'to' => '2026-03-14']);
+        $this->assertStringNotContainsString('Segredo do Roberto', json_encode($result, JSON_UNESCAPED_UNICODE));
+    }
+
+    /** A CLASS value the standard does not define is handled as PRIVATE, for a whole object and for an override alone. */
+    public function testAnUnknownClassValueIsTreatedAsPrivate(): void {
+        $this->store->addObject(3, 'x.ics', self::ics("UID:x\nCLASS:X-FOO\nSUMMARY:Segredo desconhecido\nDTSTART:20260311T100000Z\nDTEND:20260311T110000Z"));
+        $this->assertSame([], $this->list(['calendar' => self::TEAM]));
+
+        $this->store->objects[3] = [];
+        $this->addSeriesWithOverride('', 'CLASS:X-FOO');
+        $result = $this->call('calendar_list_events', ['calendar' => self::TEAM, 'from' => '2026-03-10', 'to' => '2026-03-14']);
+        $this->assertSame(['2026-03-10T10:00:00.000Z', '2026-03-12T10:00:00.000Z'], array_column(self::json($result), 'start'));
+        $this->assertStringNotContainsString('Segredo do Roberto', json_encode($result, JSON_UNESCAPED_UNICODE));
+    }
+
+    /** In the user's own calendar nothing is hidden, whatever the CLASS of the component. */
+    public function testOwnSeriesWithAPrivateOverrideIsShownInFull(): void {
+        $master = "UID:s\nSUMMARY:Serie\nDTSTART:20260310T100000Z\nDTEND:20260310T110000Z\nRRULE:FREQ=DAILY;COUNT=2";
+        $override = "BEGIN:VEVENT\nUID:s\nRECURRENCE-ID:20260311T100000Z\nCLASS:PRIVATE\nSUMMARY:Meu segredo\nDTSTART:20260311T150000Z\nDTEND:20260311T160000Z\nEND:VEVENT";
+        $this->store->addObject(1, 's.ics', self::ics($master, $override));
+        $this->assertSame(['Serie', 'Meu segredo'], array_column($this->list(['calendar' => self::PERSONAL, 'from' => '2026-03-10', 'to' => '2026-03-14']), 'summary'));
+    }
+
+    /** The window the tool asks the store for is the one the user gave, from before to after. */
+    public function testTheStoreIsAskedForTheWindowTheUserGave(): void {
+        $this->list(['calendar' => self::PERSONAL, 'from' => '2026-03-01', 'to' => '2026-03-20']);
+        $this->assertSame([[1, '2026-03-01T00:00:00Z', '2026-03-20T00:00:00Z']], $this->store->rangesAsked);
+    }
+
     public function testOwnPrivateEventsAreShown(): void {
         $this->store->addObject(1, 'p.ics', self::ics("UID:p\nCLASS:PRIVATE\nSUMMARY:Segredo\nDTSTART:20260311T100000Z\nDTEND:20260311T110000Z"));
         $this->assertSame('Segredo', $this->list(['calendar' => self::PERSONAL])[0]['summary']);

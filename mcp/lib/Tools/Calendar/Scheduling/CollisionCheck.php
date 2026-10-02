@@ -58,8 +58,14 @@ final class CollisionCheck {
         int $limit = 5,
     ): array {
         [$searchStart, $searchEnd] = $this->window($start, $end, $allDay);
+        // An all-day event has no zone: its days, as the expander reads them, are UTC midnights. Against another all-day
+        // event the days are compared as days, against a timed one the window in the zone of the day applies, so
+        // the store is asked about both at once.
+        $civil = $allDay ? $this->civilDays($searchStart, $searchEnd) : null;
+        $queryStart = $civil === null ? $searchStart : min($searchStart, $civil[0]);
+        $queryEnd = $civil === null ? $searchEnd : max($searchEnd, $civil[1]);
 
-        $uris = $this->store->eventUrisInRange($calendar->id, $searchStart, $searchEnd);
+        $uris = $this->store->eventUrisInRange($calendar->id, $queryStart, $queryEnd);
         if ($excludeUri !== null) {
             $uris = array_values(array_filter($uris, static fn (string $uri) => $uri !== $excludeUri));
         }
@@ -85,15 +91,20 @@ final class CollisionCheck {
                 continue;
             }
 
-            $visibility = $this->classification->visibility($vcalendar, $calendar, $userId);
-            if ($visibility === Classification::HIDDEN) {
-                continue;
-            }
-
-            $busyOnly = $visibility === Classification::BUSY;
-
-            foreach ($this->expander->occurrences($vcalendar, $searchStart, $searchEnd) as $occurrence) {
+            foreach ($this->expander->occurrences($vcalendar, $queryStart, $queryEnd) as $occurrence) {
                 $event = $occurrence['event'];
+                if ($civil !== null) {
+                    [$from, $to] = $this->isAllDay($event) ? $civil : [$searchStart, $searchEnd];
+                    if ($occurrence['start'] >= $to || $occurrence['end'] <= $from) {
+                        continue;
+                    }
+                }
+                // The CLASS belongs to the component the occurrence comes from, as in calendar_list_events.
+                $visibility = $this->classification->visibilityOf($event, $vcalendar, $calendar, $userId);
+                if ($visibility === Classification::HIDDEN) {
+                    continue;
+                }
+                $busyOnly = $visibility === Classification::BUSY;
                 if ($this->isTransparent($event, $vcalendar)) {
                     continue;
                 }
@@ -142,7 +153,7 @@ final class CollisionCheck {
     }
 
     /**
-     * Resolves the half-open search window, expanding all-day events to midnight-to-midnight in the event timezone.
+     * Resolves the half-open search window, expanding all-day events to midnight-to-midnight in the zone of the start.
      *
      * @param DateTimeImmutable $start window start
      * @param DateTimeImmutable $end window end
@@ -169,6 +180,16 @@ final class CollisionCheck {
         }
 
         return [$searchStart, $searchEnd];
+    }
+
+    /**
+     * @param DateTimeImmutable $searchStart first midnight of the window, in the zone of the day
+     * @param DateTimeImmutable $searchEnd closing midnight of the window, in the zone of the day
+     * @return array{0: DateTimeImmutable, 1: DateTimeImmutable} the same civil days as UTC midnights, how all-day events are read
+     */
+    private function civilDays(DateTimeImmutable $searchStart, DateTimeImmutable $searchEnd): array {
+        $utc = new DateTimeZone('UTC');
+        return [new DateTimeImmutable($searchStart->format('Y-m-d'), $utc), new DateTimeImmutable($searchEnd->format('Y-m-d'), $utc)];
     }
 
     /**

@@ -46,7 +46,8 @@ final class FakeCalendarDav implements CalendarDav {
     /** @inheritDoc */
     public function update(string $userId, string $calendarUri, string $objectUri, string $etag, string $ics, bool $scheduling = false, ?int $sizeLimit = null, array $acceptedStatuses = [204]): DavResult {
         return $this->apply('update', [$calendarUri, $objectUri, $etag, $ics, $scheduling], function () use ($calendarUri, $objectUri, $etag, $ics, $scheduling): DavResult {
-            if ($this->selftestMode && $this->store->object($this->calendarId($calendarUri), $objectUri)['etag'] !== $etag) {
+            // If-Match is honoured in every mode, as the Sabre pipeline does: a stale or empty ETag is a 412.
+            if (($this->store->object($this->calendarId($calendarUri), $objectUri)['etag'] ?? null) !== $etag) {
                 throw new CalendarException('Conflito', 412);
             }
             if ($scheduling && $this->schedule !== null) { $ics = ($this->schedule)($ics, 'PUT'); }

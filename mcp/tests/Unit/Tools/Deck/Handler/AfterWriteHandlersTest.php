@@ -14,6 +14,7 @@ use OCA\Mcp\Tools\Deck\DeckConflictException;
 use OCA\Mcp\Tools\Deck\DeckMessages;
 use OCA\Mcp\Tools\Deck\DeckRefusalException;
 use OCA\Mcp\Tools\Deck\DeckSessionException;
+use OCA\Mcp\Tools\Deck\DeckUnconfirmedException;
 use OCA\Mcp\Tools\Deck\Handler\CreateBoardHandler;
 use OCA\Mcp\Tools\Deck\Handler\CreateCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\CreateStackHandler;
@@ -406,6 +407,18 @@ final class AfterWriteHandlersTest extends TestCase {
 		self::assertSame(['partial' => true, 'message' => DeckMessages::errorStackReceivedCards(false)], $this->payload($stack));
 		self::assertArrayNotHasKey('isError', $board);
 		self::assertSame(['partial' => true, 'message' => DeckMessages::errorBoardReceivedCards(false)], $this->payload($board));
+	}
+
+	/** The gateway already read the list again and could not tell: the handler does not read it a second time. */
+	public function testAnUnconfirmedRestoreOfTheGatewayIsNotReadBackAgain(): void {
+		$gateway = $this->structureGateway();
+		$gateway->method('deleteEmptyStack')->willThrowException(new DeckUnconfirmedException('deck_list_stacks', $this->afterWrite()));
+		$gateway->method('deleteEmptyBoard')->willThrowException(new DeckUnconfirmedException('deck_list_boards', $this->afterWrite()));
+		$gateway->expects(self::never())->method('deletedStack');
+		$gateway->expects(self::never())->method('ownedBoards');
+
+		$this->assertUnconfirmed((new DeleteStackHandler($gateway, $this->logger))->handle(['stackId' => 10, 'confirm' => true], 'alice'), 'deck_list_stacks');
+		$this->assertUnconfirmed((new DeleteBoardHandler($gateway, $this->logger))->handle(['boardId' => 4, 'confirm' => true], 'alice'), 'deck_list_boards');
 	}
 
 	public function testABoardDeletionReadBackAsDeletedIsASuccessWithAWarning(): void {

@@ -79,6 +79,8 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
         $this->assertStringContainsString('15 minutos', $body);
         $this->assertStringContainsString('50 MB', $body);
         $this->assertStringContainsString('nada é sobrescrito', mb_strtolower($body));
+        // M1: the promise is about a file WITH content; an empty one created in the same instant may be taken over.
+        $this->assertStringContainsString('com conteúdo', $body);
     }
 
     /** The text of files_create is shown as a quote: a heading or a link in it stays inert and cannot open a section. */

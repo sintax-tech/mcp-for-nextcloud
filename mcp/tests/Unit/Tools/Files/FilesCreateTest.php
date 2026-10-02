@@ -67,6 +67,10 @@ final class FilesCreateTest extends FilesToolsTestCase {
         $this->assertStringContainsString('-H "Content-Type: application/octet-stream"', $definitions['files_upload']['description']);
         $this->assertStringContainsString('files_checkout', $definitions['files_upload']['description']);
         $this->assertStringContainsString('files_upload', $definitions['files_create']['description']);
+        foreach (['files_upload', 'files_create'] as $tool) {
+            $this->assertStringContainsString('with content', $definitions[$tool]['description'], $tool);
+        }
+        $this->assertStringContainsString('with content', implode(' ', $this->module->guideNotes()));
     }
 
     public function testTheUploadPlanNamesTheFileTheFolderAndTheLimitAndMintsNothing(): void {

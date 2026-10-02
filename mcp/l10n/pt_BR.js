@@ -859,7 +859,7 @@ OC.L10N.register(
     "Create the text file %s." : "Criar o arquivo de texto %s.",
     "Failed to write file; an empty file with this name may have been left in place." : "Falha ao gravar o arquivo; pode ter ficado um arquivo vazio com esse nome.",
     "If the destination folder does not exist yet, create it first with files_mkdir." : "Se a pasta de destino ainda não existe, crie-a antes com files_mkdir.",
-    "Nothing is overwritten: if a file with this name exists when the content arrives, nothing is written." : "Nada é sobrescrito: se já existir um arquivo com esse nome quando o conteúdo chegar, nada é gravado.",
+    "Nothing is overwritten: if a file with this name already exists, with content, nothing is written." : "Nada é sobrescrito: se já existir um arquivo com esse nome, com conteúdo, nada é gravado.",
     "Nothing was changed. After your approval a single-use upload link is issued that creates this new file; the file only appears once the bytes are sent to it." : "Nada foi alterado. Após sua aprovação é emitido um link de envio de uso único que cria este arquivo novo; o arquivo só aparece quando os bytes forem enviados a ele.",
     "Nothing was changed. After your approval the new text file below is created." : "Nada foi alterado. Após sua aprovação o arquivo de texto novo abaixo é criado.",
     "Send the file with the curl command below before the link expires. The link works once: if the upload is refused before it is used, fix the request and send it again; otherwise call files_upload again." : "Envie o arquivo com o comando curl abaixo antes que o link expire. O link funciona uma vez: se o envio for recusado antes de usá-lo, corrija a requisição e envie de novo; caso contrário, chame files_upload de novo.",

@@ -654,7 +654,7 @@ final class FilesMessages {
             . 'its content through the model. Without confirm: true it returns the plan; with confirm: true it returns '
             . 'uploadUrl, a single-use link valid for 15 minutes and bound to you and this path. Send the bytes with '
             . 'curl -sS -T /tmp/file -X PUT -H "Content-Type: application/octet-stream" "$UPLOAD_URL"; the answer '
-            . 'carries path, size, etag and fileId. Never overwrites: if the name exists it is refused, so use '
+            . 'carries path, size, etag and fileId. Never overwrites a file with content: an existing name is refused, so use '
             . 'files_checkout to replace an existing file. For a small text file use files_create. The folder must '
             . 'exist (files_mkdir creates it); outside your personal folder ask the user and retry with confirm_shared.';
     }
@@ -663,7 +663,7 @@ final class FilesMessages {
     public static function createTool(): string {
         return 'Create a NEW small text file with its content inline: ' . implode(', ', array_map(
             static fn (string $extension): string => '.' . $extension, FileCreation::TEXT_EXTENSIONS))
-            . ', up to 1 MB of UTF-8. Never overwrites: an existing name is refused (use files_edit or files_checkout '
+            . ', up to 1 MB of UTF-8. Never overwrites a file with content: an existing name is refused (use files_edit or files_checkout '
             . 'to change it). For any other type or a larger file use files_upload. The folder must exist '
             . '(files_mkdir creates it); outside your personal folder ask the user and retry with confirm_shared.';
     }
@@ -695,7 +695,7 @@ final class FilesMessages {
 
     /** @return string the consequence of a new file, shared by files_upload and files_create */
     public static function planNewFileConsequence(): string {
-        return Translator::t('Nothing is overwritten: if a file with this name exists when the content arrives, nothing is written.');
+        return Translator::t('Nothing is overwritten: if a file with this name already exists, with content, nothing is written.');
     }
 
     /** @return string the confirmed files_upload, telling the agent what to do with the link */

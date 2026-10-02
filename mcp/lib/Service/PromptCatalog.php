@@ -86,7 +86,7 @@ final class PromptCatalog {
             'to the user and confirm it; it returns uploadUrl, a single-use link valid for a few minutes. Send the file with',
             'curl -sS -T /tmp/file -X PUT -H "Content-Type: application/octet-stream" "$UPLOAD_URL".',
             'For a small text file (.md, .txt, .csv, .json, .html, .xml, .yaml) use files_create with the content inline.',
-            'These tools never overwrite an existing name, and the folder must already exist (create it with files_mkdir).',
+            'These tools never overwrite a file with content, and the folder must already exist (create it with files_mkdir).',
         ]);
     }
 }

@@ -163,6 +163,40 @@ final class ApplicationRegistrationTest extends TestCase {
     }
 
     /**
+     * FileCreation (files_upload, files_create and the create link of the checkout route) is autowired like the sharing
+     * services: the server builds it from its constructor types and hands it to FilesModule and CheckoutController
+     * through their typed parameters. The visibility guard and the file name validator of the core are mandatory, so a
+     * hidden folder or a name Nextcloud refuses can never be skipped because the container left one out.
+     */
+    public function testFileCreationAutowiresWithItsGuardsAndReachesTheModuleAndTheController(): void {
+        $built = [];
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('get')->willReturnCallback(
+            function (string $id) use (&$built, &$container): object {
+                return $built[$id] ??= $this->unregistered($id, static fn (string $dependency): object => $container->get($dependency));
+            },
+        );
+
+        $creation = $container->get(\OCA\Mcp\Tools\Files\FileCreation::class);
+        $this->assertInstanceOf(\OCA\Mcp\Tools\Files\FileCreation::class, $creation);
+        $this->assertInstanceOf(\OCA\Mcp\Service\VisibilityGuard::class,
+            (new \ReflectionProperty(\OCA\Mcp\Tools\Files\FileCreation::class, 'visibilityGuard'))->getValue($creation));
+        $this->assertInstanceOf(\OCP\Files\IFilenameValidator::class,
+            (new \ReflectionProperty(\OCA\Mcp\Tools\Files\FileCreation::class, 'filenames'))->getValue($creation));
+        foreach ((new \ReflectionMethod(\OCA\Mcp\Tools\Files\FileCreation::class, '__construct'))->getParameters() as $parameter) {
+            $this->assertFalse($parameter->allowsNull(), 'FileCreation::$' . $parameter->getName() . ' é obrigatório');
+        }
+
+        foreach ([\OCA\Mcp\Tools\Files\FilesModule::class, \OCA\Mcp\Controller\CheckoutController::class] as $class) {
+            $parameters = array_column(array_map(
+                static fn (\ReflectionParameter $p): array => ['name' => $p->getName(), 'type' => (string)$p->getType()],
+                (new \ReflectionMethod($class, '__construct'))->getParameters(),
+            ), 'type', 'name');
+            $this->assertSame('?' . \OCA\Mcp\Tools\Files\FileCreation::class, $parameters['creation'], $class);
+        }
+    }
+
+    /**
      * Boots every factory register() declares, the way the server does on the first get(): a service the app
      * registered is built by its own factory, anything else is a double. A constructor that drifts from its
      * factory, or a factory that builds a collaborator without what it needs, fails here instead of with an

@@ -538,6 +538,20 @@ final class CheckoutControllerTest extends TestCase {
         }
     }
 
+    /**
+     * A body longer than it declared is not kept, and what was not kept is never written: the file stays as it was,
+     * nothing is backed up and the link still works for a correct request.
+     */
+    public function testABodyThatCouldNotBeKeptIsNeverWritten(): void {
+        $this->issue();
+        $this->controller->staged = str_repeat('x', self::UPLOAD_LIMIT + 1);
+        $this->headers['Content-Length'] = '12';
+        $this->assertSame(413, $this->code($this->controller->upload()));
+        $this->assertSame('# Ata', $this->tree->nodes[self::FILE]['content']);
+        $this->assertSame([], $this->tree->ops);
+        $this->assertNotContains('consume', $this->store->ops, 'o link tem que continuar valendo');
+    }
+
     /** A failed write names the copy, so the user knows where the original still is. */
     public function testAFailedWriteNamesTheBackupCopy(): void {
         $this->issue();

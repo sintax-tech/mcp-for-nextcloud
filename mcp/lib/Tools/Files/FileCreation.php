@@ -15,7 +15,10 @@ use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\IFilenameValidator;
 use OCP\Files\InvalidPathException;
+use OCP\Files\NotEnoughSpaceException;
 use OCP\Files\NotFoundException;
+use OCP\Lock\LockedException;
+use Psr\Log\LoggerInterface;
 
 /**
  * New files: files_upload (any type, through a single-use link) and files_create (small text inline), plus the
@@ -43,6 +46,7 @@ final class FileCreation {
         private CheckoutService $checkout,
         private IFilenameValidator $filenames,
         private VisibilityGuard $visibilityGuard,
+        private LoggerInterface $logger,
     ) {}
 
     /**
@@ -98,7 +102,7 @@ final class FileCreation {
         }
         self::assertCreatable($target['folder']);
         $limit = $this->assertSize($size);
-        $link = $this->checkout->issueCreate($userId, $target['path'], $this->access->describe($target['folder'], $userId), $confirmed);
+        $link = $this->checkout->issueCreate($userId, $target['path'], $this->access->describe($target['folder'], $userId), $confirmed, $size);
         return [
             'path' => $target['path'],
             'uploadUrl' => $link['upload_url'],
@@ -206,22 +210,26 @@ final class FileCreation {
     }
 
     /**
-     * Creates the file and writes its content, never over somebody else's file.
+     * Creates the file and writes its content, never over a file with somebody else's content.
      *
      * Nextcloud has no create-if-absent: Folder::newFile() with content overwrites a file that appeared since the
-     * check. So the file is first created empty — newFile() without content only touches a file that already exists
-     * and keeps its bytes — and a file that turns out not to be empty belongs to somebody else and is left alone.
-     * The window left is a client writing that very name after the empty file appeared, which is an ordinary
-     * overwrite of our own file and leaves their content as a version. A write that fails after the empty file
+     * check. So the file is first created empty — newFile() without content is View::touch(), which keeps the bytes
+     * of a file that is already there — and a file that turns out not to be empty belongs to somebody else and is
+     * left alone. Right before the content is written the file is read again, and any change since the creation (its
+     * id, its ETag, a size) is a 409 that writes nothing.
+     *
+     * What stays possible: an EMPTY file with the same name that another client created in the instant before ours
+     * is taken over, and a client writing that very name between the second read and our write overwrites us or is
+     * overwritten as with any other write, its content kept as a version. A write that fails after the empty file
      * appeared leaves it in place; nothing is deleted.
      *
      * @param Folder $folder destination folder, already checked
      * @param string $name file name, already validated
      * @param string|resource $content the bytes; '' creates an empty file
      * @return File the new file
-     * @throws FileExists when the name is taken before or during the creation
+     * @throws FileExists when the name is taken before the creation, or the file changed before the write
      * @throws ArgumentValidationException when the storage refuses the name
-     * @throws ToolFailure when the content cannot be written
+     * @throws ToolFailure with the message of a lock or a full quota, or {@see FilesMessages::createFailed()}
      */
     public function write(Folder $folder, string $name, mixed $content): File {
         if ($folder->nodeExists($name)) {
@@ -238,12 +246,22 @@ final class FileCreation {
         if ($content === '') {
             return $file;
         }
+        $created = [(int)$file->getId(), (string)$file->getEtag()];
+        $current = NodeAccess::requireFile($folder->get($name));
+        if ([(int)$current->getId(), (string)$current->getEtag()] !== $created || (int)$current->getSize() > 0) {
+            throw new FileExists(FilesMessages::fileExists());
+        }
         try {
-            $file->putContent($content);
-        } catch (\Throwable) {
+            $current->putContent($content);
+        } catch (LockedException|NotEnoughSpaceException $e) {
+            // The two failures the agent can act on keep the message NodeAccess::run() gives them everywhere else.
+            NodeAccess::run(static fn () => throw $e);
+        } catch (\Throwable $e) {
+            // Only the class: the message of a storage exception may carry the path.
+            $this->logger->error('MCP new file write failed', ['app' => 'mcp', 'exception_class' => $e::class]);
             throw new ToolFailure(FilesMessages::createFailed());
         }
-        return $file;
+        return $current;
     }
 
     /**

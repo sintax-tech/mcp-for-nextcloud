@@ -703,6 +703,14 @@ final class FilesMessages {
         return Translator::t('Send the file with the curl command below before the link expires. The link works once: if the upload is refused before it is used, fix the request and send it again; otherwise call files_upload again.');
     }
 
+    /**
+     * @param int $declared size files_upload declared for the file
+     * @return string an empty body for a link that expected bytes: the client failed to build the file
+     */
+    public static function uploadEmptyDeclared(int $declared): string {
+        return Translator::t('The uploaded body is empty, but files_upload declared %s bytes; nothing was written and the link still works.', [(string)$declared]);
+    }
+
     /** @return string the create link of files_upload expired or was already used */
     public static function createTokenSpent(): string {
         return Translator::t('This upload link has expired or has already been used. Call files_upload again.');

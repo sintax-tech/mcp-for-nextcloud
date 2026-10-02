@@ -313,4 +313,60 @@ final class FilesCreateTest extends FilesToolsTestCase {
         $this->json('files_create', ['path' => '/Compartilhado/notas.md', 'content' => 'x', 'confirm_shared' => true]);
         $this->assertSame('x', $this->tree->nodes['/alice/files/Compartilhado/notas.md']['content']);
     }
+
+    // ---------------------------------------------------------------- review of 0.10.0 (B3, M1, B2)
+
+    /** B3: the size the agent declared travels with the link, so the upload can tell an empty body from a failed client. */
+    public function testTheDeclaredSizeIsKeptWithTheLink(): void {
+        $this->json('files_upload', ['path' => '/com-tamanho.docx', 'size' => 48213]);
+        $this->assertSame(48213, $this->createToken()->declaredSize());
+
+        $this->store->rows = [];
+        $this->json('files_upload', ['path' => '/sem-tamanho.docx']);
+        $this->assertNull($this->createToken()->declaredSize());
+        $this->assertSame(\OCA\Mcp\Checkout\CheckoutToken::NO_ETAG, $this->createToken()->etag);
+    }
+
+    /**
+     * M1, documented: an EMPTY file that another client created with the same name in the instant before ours is
+     * taken over — the touch keeps it, it has no content to lose, and our content goes into it.
+     */
+    public function testAnEmptyFileCreatedInTheWindowIsTakenOver(): void {
+        $this->tree->beforeCreate = function (string $path): void {
+            $this->tree->addFile($path, '', 'text/plain');
+        };
+        $out = $this->json('files_create', ['path' => '/Documentos/notas.md', 'content' => 'meu']);
+        $this->assertSame('meu', $this->tree->nodes['/alice/files/Documentos/notas.md']['content']);
+        $this->assertSame(3, $out['size']);
+    }
+
+    /** M1: the file changes between the empty creation and the write (another client touched or wrote it): 409, nothing written. */
+    public function testAChangeBetweenTheCreationAndTheWriteIsRefused(): void {
+        foreach (['touched' => '', 'written' => 'do outro'] as $label => $content) {
+            $path = '/alice/files/Documentos/' . $label . '.md';
+            $this->tree->beforeGet = function (string $read) use ($path, $content): void {
+                if ($read === $path) {
+                    $this->tree->beforeGet = null;
+                    $this->tree->nodes[$path]['content'] = $content;
+                    $this->tree->nodes[$path]['etag'] .= '+';
+                }
+            };
+            $this->assertSame(FilesMessages::fileExists(), $this->failure('files_create', ['path' => '/Documentos/' . $label . '.md', 'content' => 'meu']), $label);
+            $this->assertSame($content, $this->tree->nodes[$path]['content'], $label);
+            $this->assertNotContains('write ' . $path, $this->tree->ops, $label);
+        }
+    }
+
+    /** B2: a lock or a full quota keeps its own message; any other failure is the generic one, logged by class only. */
+    public function testAFailedWriteKeepsTheLockAndQuotaMessagesAndLogsTheClassOnly(): void {
+        foreach ([[new \OCP\Lock\LockedException('/alice/files/a.md'), CommonMessages::locked()],
+            [new \OCP\Files\NotEnoughSpaceException('/alice/files/b.md'), CommonMessages::insufficientQuota()]] as $i => [$failure, $message]) {
+            $this->tree->writeFailure = $failure;
+            $this->assertSame($message, $this->failure('files_create', ['path' => "/falha$i.md", 'content' => 'x']), $failure::class);
+        }
+        $this->tree->writeFailure = new \RuntimeException('disk /alice/files/segredo.md broke');
+        $this->creationLogger->expects($this->once())->method('error')->with('MCP new file write failed',
+            ['app' => 'mcp', 'exception_class' => \RuntimeException::class]);
+        $this->assertSame(FilesMessages::createFailed(), $this->failure('files_create', ['path' => '/falha.md', 'content' => 'x']));
+    }
 }

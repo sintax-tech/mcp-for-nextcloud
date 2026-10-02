@@ -80,6 +80,8 @@ abstract class FilesToolsTestCase extends TestCase {
     protected \Psr\Log\LoggerInterface $shareLogger;
     /** Shares alice created, behind the IShareManager double of files_list_shares. */
     protected \OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeShares $shares;
+    /** Logger of files_upload and files_create, to check that a failed write logs the exception class only. */
+    protected \Psr\Log\LoggerInterface $creationLogger;
     /** Nextcloud's file name rules, as a default install applies them. */
     protected FakeFilenameValidator $filenames;
     /** @var list<string> apps enabled for alice; a test can empty it to simulate files_versions being off */
@@ -129,6 +131,7 @@ abstract class FilesToolsTestCase extends TestCase {
         $this->tagMapper = $this->createMock(ISystemTagObjectMapper::class);
         $this->logger = $this->createMock(\Psr\Log\LoggerInterface::class);
         $this->filenames = new FakeFilenameValidator();
+        $this->creationLogger = $this->createMock(\Psr\Log\LoggerInterface::class);
         $checkout = new CheckoutService($urls, $config, $this->time, new TokenHasher($config), $this->store, $this->apps, $this->users);
         $imageTools = new ImageTools(
             $this->previewManager,
@@ -161,7 +164,7 @@ abstract class FilesToolsTestCase extends TestCase {
             $this->visibilityGuard,
             ...$this->sharing($urls),
             creation: new FileCreation($access, new SharedWriteGuard($access), $checkout, $this->filenames,
-                $this->visibilityGuard ?? new \OCA\Mcp\Service\VisibilityGuard($config, $this->tagMapper)),
+                $this->visibilityGuard ?? new \OCA\Mcp\Service\VisibilityGuard($config, $this->tagMapper), $this->creationLogger),
         );
     }
 

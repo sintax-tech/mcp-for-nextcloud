@@ -850,7 +850,7 @@
     "Create text file" : "Crear archivo de texto",
     "A file with this name already exists; use files_checkout to replace it or choose another name." : "Ya existe un archivo con ese nombre; use files_checkout para reemplazarlo o elija otro nombre.",
     "Beginning of the content:" : "Comienzo del contenido:",
-    "Changes affect other people. Confirm with the user before continuing and run a new files_upload with confirm_shared: true, because this upload link has already been used." : "Los cambios afectan a otras personas. Confirme con el usuario antes de continuar y ejecute un nuevo files_upload con confirm_shared: true, porque este enlace de subida ya se usó.",
+    "Changes affect other people. Confirm with the user before continuing and run a new files_upload with confirm_shared: true; this upload link was issued without that confirmation." : "Los cambios afectan a otras personas. Confirme con el usuario antes de continuar y ejecute un nuevo files_upload con confirm_shared: true; este enlace de subida se emitió sin esa confirmación.",
     "Content exceeds the limit of %s bytes for files_create; use files_upload for a larger file." : "El contenido supera el límite de %s bytes de files_create; use files_upload para un archivo más grande.",
     "Content:" : "Contenido:",
     "Create the new file %s with the content you send." : "Crear el archivo nuevo %s con el contenido que usted envíe.",
@@ -866,6 +866,7 @@
     "The upload link works once, for %s minutes." : "El enlace de subida funciona una vez, durante %s minutos.",
     "This upload link has expired or has already been used. Call files_upload again." : "Este enlace de subida caducó o ya se usó. Llame a files_upload de nuevo.",
     "files_create only writes text files (%s); use files_upload for any other type" : "files_create solo escribe archivos de texto (%s); use files_upload para cualquier otro tipo",
-    "must end in a file name Nextcloud accepts: no reserved name, forbidden character or extension, at most 250 bytes" : "debe terminar en un nombre de archivo que Nextcloud acepte: sin nombre reservado, carácter o extensión prohibidos, hasta 250 bytes"
+    "must end in a file name Nextcloud accepts: no reserved name, forbidden character or extension, at most 250 bytes" : "debe terminar en un nombre de archivo que Nextcloud acepte: sin nombre reservado, carácter o extensión prohibidos, hasta 250 bytes",
+    "The uploaded body is empty, but files_upload declared %s bytes; nothing was written and the link still works." : "El cuerpo enviado está vacío, pero files_upload declaró %s bytes; no se escribió nada y el enlace sigue sirviendo."
 },"pluralForm" :"nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

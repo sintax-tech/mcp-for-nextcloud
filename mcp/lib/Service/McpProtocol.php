@@ -39,7 +39,7 @@ class McpProtocol {
     /** _meta key of the server identity in modern results. */
     public const META_SERVER_INFO = 'io.modelcontextprotocol/serverInfo';
     /** Server identity reported in initialize and modern results. */
-    public const SERVER_INFO = ['name' => 'nextcloud-mcp', 'version' => '0.10.0'];
+    public const SERVER_INFO = ['name' => 'nextcloud-mcp', 'version' => '0.11.0'];
     /** HeaderMismatch error code of the 2026-07-28 specification. */
     public const HEADER_MISMATCH = -32020;
     /** UnsupportedProtocolVersion error code of the 2026-07-28 specification. */

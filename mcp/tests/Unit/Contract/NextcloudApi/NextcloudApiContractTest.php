@@ -8,10 +8,11 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Every Nextcloud API the app uses exists, in the shape it is used, in every Nextcloud major appinfo/info.xml declares.
+ * Every Nextcloud API the app uses exists, in the shape it is used, in every Nextcloud major the fixtures cover: the
+ * declared range and any older release kept ready for the next widening.
  *
  * The suite runs against `nextcloud/ocp` of one branch and doubles of Deck, Talk and DAV, so nothing else would notice
- * a class, method, constant or parameter that an older declared release lacks: the call would only fail on that
+ * a class, method, constant or parameter that an older covered release lacks: the call would only fail on that
  * server. The truth per release is a fixture of tests/fixtures/nextcloud-api, generated from the release sources by
  * generate.php there; {@see LibScanner} reads what lib/ uses and {@see NextcloudApiUsage} adds what a scanner cannot
  * see. An API a release lacks is accepted only in {@see NextcloudApiUsage::VERSION_GATED}, with its fallback.
@@ -29,6 +30,16 @@ final class NextcloudApiContractTest extends TestCase {
     private static function declaredMajors(): array {
         $nextcloud = simplexml_load_file(self::INFO_XML)->dependencies->nextcloud;
         return array_map('strval', range((int)$nextcloud['min-version'], (int)$nextcloud['max-version']));
+    }
+
+    /**
+     * @return list<string> every major there is a fixture of, oldest first: the declared range, plus the older
+     * releases kept checked so widening info.xml is a matter of declaring them again
+     */
+    private static function checkedMajors(): array {
+        $majors = array_map(static fn (string $file): string => basename($file, '.php'), glob(self::FIXTURES . '/[0-9]*.php') ?: []);
+        sort($majors);
+        return $majors;
     }
 
     /** @return array{sources: array<string, string>, classes: array<string, array<string, mixed>|null>} */
@@ -70,31 +81,38 @@ final class NextcloudApiContractTest extends TestCase {
         return in_array($major, NextcloudApiUsage::VERSION_GATED[$api]['missing'] ?? [], true);
     }
 
-    public function testThereIsAFixtureForEveryDeclaredMajorAndNoOther(): void {
-        $fixtures = array_map(static fn (string $file): string => basename($file, '.php'), glob(self::FIXTURES . '/[0-9]*.php') ?: []);
-        sort($fixtures);
-
-        $this->assertSame(self::declaredMajors(), $fixtures, 'regenerate tests/fixtures/nextcloud-api after changing the declared range');
-        $this->assertSame(self::declaredMajors(), array_map('strval', array_keys(NextcloudApiUsage::SOURCES)));
+    /**
+     * Every declared major is checked; a fixture of a release older than the declared range is allowed and kept, so the
+     * code can be declared for 31 and 32 again without regenerating anything.
+     */
+    public function testThereIsAFixtureForEveryDeclaredMajor(): void {
+        $sources = array_map('strval', array_keys(NextcloudApiUsage::SOURCES));
+        foreach (self::declaredMajors() as $major) {
+            $this->assertContains($major, self::checkedMajors(), "no fixture for the declared Nextcloud $major: regenerate tests/fixtures/nextcloud-api");
+            $this->assertContains($major, $sources, "NextcloudApiUsage::SOURCES has no entry for the declared major $major");
+        }
+        foreach (self::checkedMajors() as $major) {
+            $this->assertContains($major, $sources, "NextcloudApiUsage::SOURCES has no entry for the fixture $major");
+        }
     }
 
-    /** The fixtures come from the oldest supported releases; for Deck and Talk, those are the minimums the app enforces. */
-    public function testFixturesWereGeneratedFromTheOldestSupportedReleases(): void {
+    /** The fixtures come from the oldest release of each major covered; for Deck and Talk, the oldest one checks the minimums the app enforces. */
+    public function testFixturesWereGeneratedFromTheOldestCoveredReleases(): void {
         foreach (NextcloudApiUsage::SOURCES as $major => $sources) {
             $this->assertSame($sources, self::fixture((string)$major)['sources'], "fixture $major");
             $this->assertStringStartsWith($major . '.', $sources['server']);
         }
-        $oldest = NextcloudApiUsage::SOURCES[self::declaredMajors()[0]];
+        $oldest = NextcloudApiUsage::SOURCES[self::checkedMajors()[0]];
         foreach (AppEnablement::MINIMUM_VERSIONS as $app => $minimum) {
             $this->assertSame($minimum, $oldest[$app], "the $app minimum must be the release the oldest fixture checks");
         }
     }
 
-    /** @return array<string, array{string, string}> one case per Nextcloud class lib/ names and per declared major */
+    /** @return array<string, array{string, string}> one case per Nextcloud class lib/ names and per covered major */
     public static function namedClasses(): array {
         $cases = [];
         foreach (self::scanner()->classes() as $class => $files) {
-            foreach (self::declaredMajors() as $major) {
+            foreach (self::checkedMajors() as $major) {
                 $cases["$class @ $major"] = [$class, $major];
             }
         }
@@ -117,10 +135,10 @@ final class NextcloudApiContractTest extends TestCase {
      * Every method name lib/ calls, on a class that declares it in the newest release, exists in every older one too.
      * The pairing is by name, so a name the class only shares with another object is listed in NAME_CLASHES.
      *
-     * @return array<string, array{string, list<string>, string}> one case per class and declared major, with its methods
+     * @return array<string, array{string, list<string>, string}> one case per class and covered major, with its methods
      */
     public static function calledMethods(): array {
-        $majors = self::declaredMajors();
+        $majors = self::checkedMajors();
         $newest = end($majors);
         $cases = [];
         foreach (array_keys(self::scanner()->classes()) as $class) {
@@ -143,7 +161,7 @@ final class NextcloudApiContractTest extends TestCase {
      * @param list<string> $methods method names lib/ calls that the class declares in the newest release
      */
     #[DataProvider('calledMethods')]
-    public function testEveryCalledMethodExistsInEveryDeclaredMajor(string $class, array $methods, string $major): void {
+    public function testEveryCalledMethodExistsInEveryCoveredMajor(string $class, array $methods, string $major): void {
         if (self::gated($class, $major)) {
             $this->assertNull(self::surface($major, $class));
             return;
@@ -164,7 +182,7 @@ final class NextcloudApiContractTest extends TestCase {
     public static function positionalCalls(): array {
         $cases = [];
         foreach (NextcloudApiUsage::POSITIONAL as $call => $parameters) {
-            foreach (self::declaredMajors() as $major) {
+            foreach (self::checkedMajors() as $major) {
                 $cases["$call @ $major"] = [$call, $parameters, $major];
             }
         }
@@ -175,7 +193,7 @@ final class NextcloudApiContractTest extends TestCase {
      * @param list<string> $parameters what the app passes, in order
      */
     #[DataProvider('positionalCalls')]
-    public function testPositionalCallsKeepTheirParametersInEveryDeclaredMajor(string $call, array $parameters, string $major): void {
+    public function testPositionalCallsKeepTheirParametersInEveryCoveredMajor(string $call, array $parameters, string $major): void {
         [$class, $method] = explode('::', $call);
         if (self::gated($class, $major)) {
             $this->assertNull(self::surface($major, $class));
@@ -202,7 +220,7 @@ final class NextcloudApiContractTest extends TestCase {
         $cases = [];
         foreach (NextcloudApiUsage::CONSTANTS as $class => $constants) {
             foreach ($constants as $constant) {
-                foreach (self::declaredMajors() as $major) {
+                foreach (self::checkedMajors() as $major) {
                     $cases["$class::$constant @ $major"] = [$class, $constant, $major];
                 }
             }
@@ -211,15 +229,15 @@ final class NextcloudApiContractTest extends TestCase {
     }
 
     #[DataProvider('readConstants')]
-    public function testConstantsReadByNameExistInEveryDeclaredMajor(string $class, string $constant, string $major): void {
+    public function testConstantsReadByNameExistInEveryCoveredMajor(string $class, string $constant, string $major): void {
         $this->assertContains($constant, self::surface($major, $class)['constants'] ?? [], "$class::$constant does not exist in Nextcloud $major");
     }
 
-    public function testStaticPropertiesTheAppReadsExistInEveryDeclaredMajor(): void {
+    public function testStaticPropertiesTheAppReadsExistInEveryCoveredMajor(): void {
         $this->assertNotSame([], self::scanner()->properties(), 'the scanner no longer sees OC::$server and OC::$WEBROOT');
         foreach (array_keys(self::scanner()->properties()) as $property) {
             [$class, $name] = explode('::$', $property);
-            foreach (self::declaredMajors() as $major) {
+            foreach (self::checkedMajors() as $major) {
                 $this->assertContains($name, self::surface($major, $class)['properties'] ?? [], "$property does not exist in Nextcloud $major");
             }
         }
@@ -229,7 +247,7 @@ final class NextcloudApiContractTest extends TestCase {
     public function testEveryVersionGatedApiHasItsFallbackWhereItIsMissing(): void {
         foreach (NextcloudApiUsage::VERSION_GATED as $api => $gate) {
             [$class, $member] = explode('::', $api) + [1 => null];
-            foreach (self::declaredMajors() as $major) {
+            foreach (self::checkedMajors() as $major) {
                 $present = $member === null ? self::surface($major, $class) !== null : self::serves(self::surface($major, $class), $member);
                 $this->assertSame(!in_array($major, $gate['missing'], true), $present, "$api in Nextcloud $major");
             }

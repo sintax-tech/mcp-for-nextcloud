@@ -50,6 +50,14 @@ final class CalDavBackendContractTest extends TestCase {
     }
 
     /**
+     * @return list<string> every major there is a list of, oldest first: the declared range, plus the older releases
+     * kept checked so widening info.xml is a matter of declaring them again
+     */
+    private static function checkedMajors(): array {
+        return array_map('strval', array_keys(CalDavBackendMethods::CALDAV));
+    }
+
+    /**
      * @param string $class backend class name
      * @param string $major Nextcloud major
      * @return list<string> public method names in the oldest release of that major
@@ -60,9 +68,13 @@ final class CalDavBackendContractTest extends TestCase {
         return $lists[$major];
     }
 
+    /** Every declared major is checked; a list for a release older than the declared range is allowed and kept. */
     public function testThereIsAListForEveryDeclaredMajor(): void {
-        self::assertSame(self::declaredMajors(), array_map('strval', array_keys(CalDavBackendMethods::CALDAV)));
-        self::assertSame(self::declaredMajors(), array_map('strval', array_keys(CalDavBackendMethods::CARDDAV)));
+        self::assertSame(self::checkedMajors(), array_map('strval', array_keys(CalDavBackendMethods::CARDDAV)));
+        foreach (self::declaredMajors() as $major) {
+            self::assertArrayHasKey($major, CalDavBackendMethods::CALDAV, "CalDavBackendMethods::CALDAV has no list for the declared Nextcloud $major");
+            self::assertArrayHasKey($major, CalDavBackendMethods::CARDDAV, "CalDavBackendMethods::CARDDAV has no list for the declared Nextcloud $major");
+        }
     }
 
     /**
@@ -85,7 +97,7 @@ final class CalDavBackendContractTest extends TestCase {
      */
     #[DataProvider('calledMethods')]
     public function testEveryBackendMethodTheAdaptersCallExists(string $class, string $method, array $files): void {
-        foreach (self::declaredMajors() as $major) {
+        foreach (self::checkedMajors() as $major) {
             self::assertContains($method, self::publicMethods($class, $major), sprintf('%s::%s() is called from %s but is not a public method of Nextcloud %s', $class, $method, implode(', ', $files), $major));
         }
     }

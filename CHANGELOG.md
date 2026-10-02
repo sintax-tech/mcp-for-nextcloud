@@ -2,13 +2,13 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
-## Unreleased
+## 0.11.0
 
 ### Added
 
-- compat: the app supports Nextcloud 31, 32 and 33 (`info.xml` declared only 33). Every Nextcloud API it uses — `OCP`, the DAV app and the internal classes of Deck and Talk, with their methods, constants and the parameters of the untyped calls — is checked by `NextcloudApiContractTest` against the oldest release of each major (v31.0.0, v32.0.0, v33.0.0, with Deck 1.15.0/1.16.0/1.17.0 and Talk 21.1.4/22.0.0/23.0.0), from fixtures generated from their sources; an API a declared release lacks fails the suite unless it has a fallback. The CalDAV/CardDAV backend lists of `CalDavBackendContractTest` now cover the three majors.
+- compat: the code runs on Nextcloud 31, 32 and 33; `info.xml` declares only Nextcloud 33 for now, so the store listing offers 33, and widening the range is a one-line change while the contracts below keep 31 and 32 ready. Every Nextcloud API it uses — `OCP`, the DAV app and the internal classes of Deck and Talk, with their methods, constants and the parameters of the untyped calls — is checked by `NextcloudApiContractTest` against the oldest release of each major (v31.0.0, v32.0.0, v33.0.0, with Deck 1.15.0/1.16.0/1.17.0 and Talk 21.1.4/22.0.0/23.0.0), from fixtures generated from their sources; an API a covered release lacks fails the suite unless it has a fallback. The CalDAV/CardDAV backend lists of `CalDavBackendContractTest` now cover the three majors, and a fixture of a release older than the declared range is kept: every declared major must be checked, extra older ones are allowed.
 - compat: an optional app older than MCP supports counts as off, exactly as one that is not installed: its tools leave `tools/list`, a call is refused and the admin matrix hides its columns, keeping the saved permissions. The minimums are Talk 21.1.4 (the first Nextcloud 31 release whose `ChatManager::addSystemMessage()` takes the participant) and Deck 1.15.0. The admin page names the app, the installed version and the minimum, in English, Brazilian Portuguese and Spanish.
-- appinfo: the store listing. Name "MCP for Nextcloud", summary and Markdown description in English, Brazilian Portuguese and Spanish (modules, safeguards, clients, requirements), author, website, Git repository, two screenshots from `screenshots/` at the repository root (outside the app package), the `integration` category next to `tools`, and PHP 8.2 or later.
+- appinfo: the store listing. Name "MCP for Nextcloud", summary and Markdown description in English, Brazilian Portuguese and Spanish (modules, safeguards, clients, requirements), author, website, Git repository, two screenshots from `screenshots/` at the repository root (outside the app package), the `integration` category next to `tools`, PHP 8.2 or later and Nextcloud 33 as the only declared release.
 
 ### Fixed
 

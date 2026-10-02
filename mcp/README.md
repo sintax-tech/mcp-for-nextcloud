@@ -1,6 +1,6 @@
 # App MCP para Nextcloud
 
-Versão de teste interno para **Nextcloud 31, 32 e 33**. O endpoint atende clientes MCP 2026-07-28, sem estado, via `server/discover` e `_meta` por requisição, e também clientes anteriores, que usam `initialize` com 2025-06-18. Expõe MCP `2025-06-18` via Streamable HTTP sem sessão e sem SSE, na rota do próprio app:
+Versão de teste interno para **Nextcloud 33** (o `info.xml` declara só o 33; o código já roda no 31 e no 32, com contrato de API e fixtures para as três versões). O endpoint atende clientes MCP 2026-07-28, sem estado, via `server/discover` e `_meta` por requisição, e também clientes anteriores, que usam `initialize` com 2025-06-18. Expõe MCP `2025-06-18` via Streamable HTTP sem sessão e sem SSE, na rota do próprio app:
 
 - `https://<instância>/apps/mcp/` com URLs limpas;
 - `https://<instância>/index.php/apps/mcp/` sem URLs limpas.
@@ -205,9 +205,9 @@ Os arquivos de licença acompanham cada pacote em `vendor/`. O `vendor/autoload.
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-0.10.0.tar.gz <servidor>:/tmp/
+scp build/mcp-0.11.0.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-0.10.0.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-0.11.0.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp

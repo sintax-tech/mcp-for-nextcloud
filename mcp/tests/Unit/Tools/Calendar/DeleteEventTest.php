@@ -25,6 +25,15 @@ final class DeleteEventTest extends CalendarTestCase {
         $this->assertTrue($this->store->objects[1]['d-deleted.ics']['deleted'], 'the object must be in the trash under the renamed URI');
     }
 
+    /** The cancellation the person asked for is handed to the scheduler, and the result says so without claiming delivery. */
+    public function testSendInvitationsTrueHandsTheCancellationToTheScheduler(): void {
+        $result = self::json($this->delete(['send_invitations' => true]));
+
+        $this->assertTrue($this->dav->calls[0][1][3], 'scheduling must be on when send_invitations is true');
+        $this->assertTrue($result['scheduling']['requested']);
+        $this->assertSame('convite entregue ao agendamento do Nextcloud', $result['scheduling']['message']);
+    }
+
     public function testDeleteSucceedsWhenTheCoreRenamesTheTrashedObject(): void {
         // Reproduces the production false error: the verification looked for "d.ics" and found nothing.
         $result = $this->delete([]);

@@ -65,6 +65,15 @@ final class UpdateEventTest extends CalendarTestCase {
         self::assertStringContainsString('Texto de outra pessoa', $this->store->objects[1]['e.ics']['data']);
     }
 
+    /** The invitations the person asked for are handed to the scheduler, and the result says so without claiming delivery. */
+    public function testSendInvitationsTrueHandsTheChangeToTheScheduler(): void {
+        $item = self::json($this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'e', 'summary' => 'Novo', 'send_invitations' => true]));
+
+        $this->assertTrue($this->dav->calls[0][1][4], 'scheduling must be on when send_invitations is true');
+        $this->assertTrue($item['scheduling']['requested']);
+        $this->assertSame('convite entregue ao agendamento do Nextcloud', $item['scheduling']['message']);
+    }
+
     public function testChangesTimingKeepingMissingBound(): void {
         $item = self::json($this->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'e', 'start' => '2026-03-12T08:00:00Z']));
         $this->assertSame(['2026-03-12T08:00:00.000Z', '2026-03-12T10:00:00.000Z'], [$item['start'], $item['end']]);

@@ -613,4 +613,52 @@ final class CalendarPlanRendererTest extends TestCase {
         Translator::use(new JsonL10n('pt_BR'));
         $this->assertStringContainsString('calendário sem nome', (string)$this->renderer->renderPlan('calendar_create_event', $this->createPlan([], null)));
     }
+
+    /**
+     * @return array<string, mixed> plan of an event created in the shared calendar of bob
+     */
+    private static function sharedPlan(): array {
+        return [
+            'action' => 'calendar_create_event',
+            'calendar' => ['name' => 'Equipe (bob)', 'path' => '/calendars/alice/team_shared_by_bob/'],
+            'after' => ['summary' => 'Planejamento', 'start' => '2026-10-01T17:00:00Z', 'end' => '2026-10-01T18:00:00Z', 'allDay' => false, 'timeZone' => 'America/Sao_Paulo'],
+            'scheduling' => ['message' => ''],
+            'shared' => [['requiresConfirmation' => true, 'scope' => 'shared', 'owner' => 'bob', 'ownerDisplayName' => 'Roberto Almeida', 'resource' => 'Equipe (bob)']],
+        ];
+    }
+
+    /** Whoever approves a write on somebody else's calendar reads whose it is, in the language of the account. */
+    public function testASharedCalendarIsNamedWithItsOwnerInEachLanguage(): void {
+        foreach (['pt_BR' => '- Calendário *Equipe (bob)* compartilhado por Roberto Almeida.', 'es' => '- Calendario *Equipe (bob)* compartido por Roberto Almeida.', 'en' => '- Shared calendar *Equipe (bob)* of Roberto Almeida.'] as $locale => $line) {
+            Translator::use(new JsonL10n($locale));
+            $markdown = $this->renderer->renderPlan('calendar_create_event', self::sharedPlan());
+            $this->assertNotNull($markdown);
+            $this->assertStringEndsWith("\n" . $line, $markdown, $locale);
+        }
+    }
+
+    /** Every write tool of the module carries the line, not only the create. */
+    public function testEveryWriteToolNamesTheSharedCalendar(): void {
+        Translator::use(new JsonL10n('pt_BR'));
+        $event = ['summary' => 'Planejamento', 'start' => '2026-10-01T17:00:00Z', 'end' => '2026-10-01T18:00:00Z', 'allDay' => false, 'timeZone' => 'America/Sao_Paulo'];
+        foreach (['calendar_update_event', 'calendar_delete_event', 'calendar_move_event', 'calendar_transfer_event'] as $tool) {
+            $plan = ['action' => $tool, 'before' => $event, 'after' => ['summary' => 'Novo'] + $event, 'destination' => ['name' => 'Outro'], 'consequence' => 'vai para a lixeira'] + self::sharedPlan();
+            $markdown = $this->renderer->renderPlan($tool, $plan);
+            $this->assertNotNull($markdown, $tool);
+            $this->assertStringContainsString('- Calendário *Equipe (bob)* compartilhado por Roberto Almeida.', $markdown, $tool);
+        }
+    }
+
+    public function testAPlanWithoutSharedCalendarsHasNoSuchLine(): void {
+        Translator::use(new JsonL10n('pt_BR'));
+        $plan = ['shared' => []] + self::sharedPlan();
+        $this->assertStringNotContainsString('compartilhado por', (string)$this->renderer->renderPlan('calendar_create_event', $plan));
+    }
+
+    /** The owner falls back to the account id, and the name of the calendar is left out when the notice has none. */
+    public function testTheOwnerFallsBackToTheAccountId(): void {
+        Translator::use(new JsonL10n('pt_BR'));
+        $plan = ['shared' => [['owner' => 'bob']]] + self::sharedPlan();
+        $this->assertStringEndsWith("\n- Calendário compartilhado por bob.", (string)$this->renderer->renderPlan('calendar_create_event', $plan));
+    }
 }

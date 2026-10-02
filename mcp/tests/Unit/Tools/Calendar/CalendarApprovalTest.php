@@ -193,6 +193,15 @@ final class CalendarApprovalTest extends CalendarTestCase {
         self::assertCount(1, $this->dav->calls);
     }
 
+    /** The text of the plan, which is what the person reads, names the owner of the shared calendar. */
+    public function testThePlanTextNamesTheOwnerOfTheSharedCalendar(): void {
+        $result = $this->registry->call('calendar_create_event', ['calendar' => self::TEAM, 'summary' => 'Planejamento', 'start' => '2026-10-02', 'end' => '2026-10-03', 'allDay' => true], 'alice');
+        self::assertStringContainsString('- Calendário *Equipe (bob)* compartilhado por Roberto Almeida.', $result['content'][0]['text']);
+
+        $own = $this->registry->call('calendar_create_event', ['calendar' => self::PERSONAL, 'summary' => 'Planejamento', 'start' => '2026-10-02', 'end' => '2026-10-03', 'allDay' => true], 'alice');
+        self::assertStringNotContainsString('compartilhado por', $own['content'][0]['text']);
+    }
+
     public function testSharedCalendarPlanWarnsAndExecutionStillNeedsTheSharedAcknowledgement(): void {
         $args = ['calendar' => self::PERSONAL, 'uid' => 'event', 'targetCalendar' => self::TEAM];
         $plan = self::json($this->registry->call('calendar_transfer_event', $args, 'alice'));

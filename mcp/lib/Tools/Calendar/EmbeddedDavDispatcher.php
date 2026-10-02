@@ -52,6 +52,8 @@ class EmbeddedDavDispatcher implements CalendarDav {
     private const SCHEDULING_OFF = 'false';
     /** Principal prefix of Nextcloud users. */
     private const PRINCIPAL_PREFIX = 'principals/users/';
+    /** Sabre name of the CalDAV schedule plugin, the Nextcloud one included. */
+    private const SCHEDULE_PLUGIN = 'caldav-schedule';
 
     /**
      * @param \Closure(): Server $serverFactory builds one embedded CalDAV server per operation
@@ -180,6 +182,9 @@ class EmbeddedDavDispatcher implements CalendarDav {
         CapturingSapi::reset();
         $server = ($this->serverFactory)();
         $this->pinPrincipal($server, $userId);
+        if ($method === 'DELETE' && ($headers[self::SCHEDULING_HEADER] ?? null) === self::SCHEDULING_OFF) {
+            $this->detachUnbindScheduling($server);
+        }
         $baseUri = $server->getBaseUri();
         $request = new Request($method, $baseUri . $path, $headers, $body);
         // Sabre derives the node path from the URL relative to the base URI
@@ -203,6 +208,25 @@ class EmbeddedDavDispatcher implements CalendarDav {
             throw new \RuntimeException(CalendarMessages::DAV_FAILURE, 0, $exception);
         }
         return $this->result($response, $acceptedStatuses, $method);
+    }
+
+    /**
+     * Keeps a DELETE with scheduling off from sending cancellations or declines.
+     *
+     * The Nextcloud Schedule plugin honours `x-nc-scheduling: false` before an unbind only from 32.0.7 and 33.0.1
+     * on (apps/dav/lib/CalDAV/Schedule/Plugin.php:223-229 of v33.0.2); 31, 32.0.0–32.0.6 and 33.0.0 read it on a
+     * calendar object change only, and their `beforeUnbind` schedules the deletion regardless. Detaching the
+     * plugin's `beforeUnbind` from this one-off server is what the later plugin does when it sees the header, and it
+     * leaves every other listener and plugin as they are.
+     *
+     * @param Server $server fresh embedded server of this DELETE
+     * @return void
+     */
+    private function detachUnbindScheduling(Server $server): void {
+        $schedule = $server->getPlugin(self::SCHEDULE_PLUGIN);
+        if ($schedule !== null) {
+            $server->removeListener('beforeUnbind', [$schedule, 'beforeUnbind']);
+        }
     }
 
     /**

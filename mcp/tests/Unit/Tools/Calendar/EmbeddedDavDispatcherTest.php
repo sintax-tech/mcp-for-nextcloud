@@ -153,6 +153,34 @@ final class EmbeddedDavDispatcherTest extends TestCase {
         self::assertArrayNotHasKey('gone.ics', $this->backend->objects[$this->personalId]);
     }
 
+    /**
+     * Nextcloud 31, 32.0.0–32.0.6 and 33.0.0 read `x-nc-scheduling` only on a calendar object change, never before an
+     * unbind, so a DELETE with invitations off would still send the cancellations. The dispatcher detaches the
+     * schedule plugin from that one unbind, which is what the later Nextcloud plugin does when it sees the header.
+     *
+     * @return void
+     */
+    public function testAQuietDeleteNeverReachesTheSchedulePluginBeforeUnbind(): void {
+        $schedule = $this->useRecordingSchedulePlugin();
+        $this->backend->addObject($this->personalId, 'quiet.ics', $this->ics('quiet'));
+
+        $result = $this->dispatcher->delete('alice', 'personal', 'quiet.ics', null, false);
+
+        self::assertSame(204, $result->status);
+        self::assertArrayNotHasKey('quiet.ics', $this->backend->objects[$this->personalId]);
+        self::assertSame([], $schedule->unbinds);
+    }
+
+    /** @return void */
+    public function testADeleteWithInvitationsStillGoesThroughTheSchedulePlugin(): void {
+        $schedule = $this->useRecordingSchedulePlugin();
+        $this->backend->addObject($this->personalId, 'loud.ics', $this->ics('loud'));
+
+        $this->dispatcher->delete('alice', 'personal', 'loud.ics', null, true);
+
+        self::assertSame(['calendars/alice/personal/loud.ics'], $schedule->unbinds);
+    }
+
     /** @return void */
     public function testDeleteOnAMissingObjectIsNotFound(): void {
         $this->expectException(CalendarException::class);
@@ -448,12 +476,31 @@ final class EmbeddedDavDispatcherTest extends TestCase {
     }
 
     /**
+     * Points the dispatcher at a server whose schedule plugin records every unbind it is told about.
+     *
+     * @return RecordingSchedulePlugin the plugin of that server
+     */
+    private function useRecordingSchedulePlugin(): RecordingSchedulePlugin {
+        $schedule = new RecordingSchedulePlugin();
+        $server = $this->serverFor(self::ALICE, '', false, $schedule);
+        $this->dispatcher = new EmbeddedDavDispatcher(
+            fn () => $server,
+            new Session($this->sessionFor('alice')),
+            $this->configFor(''),
+            new NullLogger(),
+        );
+        $this->server = $server;
+        return $schedule;
+    }
+
+    /**
      * @param string $principal owner principal of the calendar home that is mounted
      * @param string $viewer UID whose home is mounted, when it differs from the owner
      * @param bool $publicPrincipal true to build the server with the public principal plugin
+     * @param SchedulePlugin|null $schedule schedule plugin to load instead of a plain one
      * @return Server Sabre server with the plugins that decide a calendar write
      */
-    private function serverFor(string $principal, string $viewer = '', bool $publicPrincipal = false): Server {
+    private function serverFor(string $principal, string $viewer = '', bool $publicPrincipal = false, ?SchedulePlugin $schedule = null): Server {
         // CalendarHome::getName() is the last segment of the principal URI, so it is mounted
         // directly under calendars/, exactly as the Nextcloud root collection does.
         $uid = $viewer === '' ? substr($principal, strlen('principals/users/')) : $viewer;
@@ -474,7 +521,7 @@ final class EmbeddedDavDispatcherTest extends TestCase {
         $acl->principalCollectionSet = ['principals/users', 'principals/groups'];
         $server->addPlugin($acl);
         $server->addPlugin(new CalDavPlugin());
-        $server->addPlugin(new SchedulePlugin());
+        $server->addPlugin($schedule ?? new SchedulePlugin());
         return $server;
     }
 
@@ -567,5 +614,16 @@ final class PublicPrincipalFixture extends AuthPlugin {
     /** @return string|null */
     public function getCurrentPrincipal(): ?string {
         return 'principals/system/public';
+    }
+}
+
+/** Sabre schedule plugin that records the unbinds it is told about instead of scheduling anything. */
+final class RecordingSchedulePlugin extends SchedulePlugin {
+    /** @var list<string> path of every beforeUnbind call */
+    public array $unbinds = [];
+
+    /** @param string $path path of the node about to be unbound */
+    public function beforeUnbind($path) {
+        $this->unbinds[] = $path;
     }
 }

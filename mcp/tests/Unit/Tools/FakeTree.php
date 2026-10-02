@@ -29,6 +29,9 @@ final class FakeTree {
     public array $failCopy = [];
     /** Paths whose move() must fail, as a lock or a permission that changed since the plan. */
     public array $failMove = [];
+
+    /** @var array<string, \Throwable> paths whose move throws this exception, for failures Nextcloud has no typed answer for */
+    public array $throwOnMove = [];
     public array $shortCopy = [];
     /** Display name of the owner returned for every node. */
     public string $ownerName = 'Alice';
@@ -127,6 +130,9 @@ final class FakeTree {
         });
         $mock->method('move')->willReturnCallback(function (string $target) use ($path): Node {
             $this->ops[] = "move $path $target";
+            if (isset($this->throwOnMove[$path])) {
+                throw $this->throwOnMove[$path];
+            }
             if (in_array($path, $this->failMove, true)) {
                 throw new NotPermittedException();
             }

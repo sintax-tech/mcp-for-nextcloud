@@ -99,6 +99,21 @@ final class ListCardsHandlerTest extends TestCase {
 		self::assertSame(53, $payload['total']);
 	}
 
+	/** An empty page past the end says nothing about the size of the stack: the total is unknown, never the offset asked. */
+	public function testAnEmptyPageBeyondTheEndHasNoTotal(): void {
+		$payload = $this->payload($this->handler([])->handle(['stackId' => 10, 'limit' => 25, 'offset' => 50], 'alice'));
+
+		self::assertSame([], $payload['cards']);
+		self::assertNull($payload['total']);
+	}
+
+	/** An empty first page is an empty stack. */
+	public function testAnEmptyFirstPageIsAnEmptyStack(): void {
+		$payload = $this->payload($this->handler([])->handle(['stackId' => 10, 'limit' => 25], 'alice'));
+
+		self::assertSame(0, $payload['total']);
+	}
+
 	/** Whether the page is short is decided on what Deck returned, not on what is left after the filter. */
 	public function testAFullPageIsNeverClaimedAsTheEndEvenWhenTheFilterDropsCards(): void {
 		$payload = $this->payload($this->handler([

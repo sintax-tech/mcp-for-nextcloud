@@ -231,6 +231,75 @@ final class NotesModuleTest extends TestCase {
         $this->assertSame([], $this->tree->ops);
     }
 
+    /**
+     * M2: a new title is a rename, which Nextcloud allows only with update on the note, delete at the
+     * source and create at the destination. The permission is checked in the plan and in the write,
+     * before the content is put, so a refusal never leaves the note overwritten.
+     *
+     * @return array<string, array{0:string}> what is missing on the note or its folder
+     */
+    public static function missingRenamePermissions(): array {
+        return [
+            'note cannot be deleted' => ['deletable'],
+            'folder cannot create' => ['creatable'],
+        ];
+    }
+
+    private function revokeRenamePermission(string $missing): void {
+        if ($missing === 'deletable') {
+            $this->tree->nodes['/alice/files/Notes/Reuniões/Ata.md']['deletable'] = false;
+            return;
+        }
+        $this->tree->nodes['/alice/files/Notes/Reuniões']['permissions'] = \OCP\Constants::PERMISSION_ALL & ~\OCP\Constants::PERMISSION_CREATE;
+    }
+
+    /** @dataProvider missingRenamePermissions */
+    public function testARenameWithoutPermissionRefusesTheWholeEditAndLeavesTheNoteIntact(string $missing): void {
+        $this->revokeRenamePermission($missing);
+
+        foreach ([['content' => 'NOVO', 'title' => 'Outra'], ['title' => 'Outra']] as $arguments) {
+            $this->assertSame(ToolFailure::FORBIDDEN, $this->failure('notes_edit', ['id' => $this->ata] + $arguments));
+            $this->assertSame(ToolFailure::FORBIDDEN, $this->failure('notes_edit', ['id' => $this->ata, 'confirm_shared' => true] + $arguments));
+        }
+
+        $this->assertSame('decisões...', $this->tree->nodes['/alice/files/Notes/Reuniões/Ata.md']['content']);
+        $this->assertArrayNotHasKey('/alice/files/Notes/Reuniões/Outra.md', $this->tree->nodes);
+        $this->assertSame([], $this->tree->ops, 'nothing may be written, moved or deleted');
+    }
+
+    /** @dataProvider missingRenamePermissions */
+    public function testThePlanOfARenameWithoutPermissionIsRefusedLikeTheWrite(string $missing): void {
+        $this->revokeRenamePermission($missing);
+
+        try {
+            $this->module->preview('notes_edit', ['id' => $this->ata, 'title' => 'Outra'], 'alice');
+            $this->fail('the plan accepted a rename the write would refuse');
+        } catch (ToolFailure $e) {
+            $this->assertSame(ToolFailure::FORBIDDEN, $e->getMessage());
+        }
+    }
+
+    /** @dataProvider missingRenamePermissions */
+    public function testAContentOnlyEditDoesNotNeedTheRenamePermissions(string $missing): void {
+        $this->revokeRenamePermission($missing);
+
+        $this->tool('notes_edit', ['id' => $this->ata, 'content' => 'v2']);
+        $this->tool('notes_edit', ['id' => $this->ata, 'content' => 'v3', 'title' => 'Ata']);
+
+        $this->assertSame('v3', $this->tree->nodes['/alice/files/Notes/Reuniões/Ata.md']['content']);
+    }
+
+    /** In a share the refusal comes before the shared-write confirmation: the user is never asked to approve it. */
+    public function testARenameWithoutPermissionInASharedNotesFolderIsRefusedBeforeTheConfirmation(): void {
+        $this->config->user['alice']['notes']['notesPath'] = 'Equipe';
+        $id = $this->tree->addFile('/alice/files/Equipe/Ata.md', 'decisões', 'text/markdown', ['scope' => 'shared', 'deletable' => false]);
+        $this->tree->mountPath = '/alice/files/Equipe';
+
+        $this->assertSame(ToolFailure::FORBIDDEN, $this->failure('notes_edit', ['id' => $id, 'content' => 'NOVO', 'title' => 'Outra']));
+        $this->assertSame('decisões', $this->tree->nodes['/alice/files/Equipe/Ata.md']['content']);
+        $this->assertSame([], $this->tree->ops);
+    }
+
     public function testKeepingTheSameTitleIsNotACollisionWithItself(): void {
         $out = $this->tool('notes_edit', ['id' => $this->ata, 'content' => 'v2', 'title' => 'Ata']);
 

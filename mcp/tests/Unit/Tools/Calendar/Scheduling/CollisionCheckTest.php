@@ -224,10 +224,13 @@ final class CollisionCheckTest extends CalendarTestCase {
         $this->assertSame(['items' => [], 'more' => 0], $this->findInTeam());
     }
 
-    /** The window asked of the store is the one searched, in the right order. */
-    public function testTheStoreIsAskedForTheSearchWindow(): void {
+    /**
+     * The window asked of the store holds the one searched and the civil days it covers (an existing all-day event is
+     * read as UTC midnights), in the right order.
+     */
+    public function testTheStoreIsAskedForTheSearchWindowAndItsCivilDays(): void {
         $this->checker->find($this->personal, 'alice', new DateTimeImmutable('2026-03-10T10:00:00Z'), new DateTimeImmutable('2026-03-10T11:00:00Z'), false);
-        $this->assertSame([[1, '2026-03-10T10:00:00Z', '2026-03-10T11:00:00Z']], $this->store->rangesAsked);
+        $this->assertSame([[1, '2026-03-10T00:00:00Z', '2026-03-11T00:00:00Z']], $this->store->rangesAsked);
     }
 
     public function testTransparentEventDoesNotCollide(): void {
@@ -307,6 +310,27 @@ final class CollisionCheckTest extends CalendarTestCase {
         $this->assertSame('holiday.ics', $result['items'][0]['uri']);
         $this->assertSame('Feriado', $result['items'][0]['summary']);
         $this->assertTrue($result['items'][0]['allDay']);
+    }
+
+    /** A timed event meets an all-day one on the civil day of its own zone: 22:00 of 10/03 in Sao Paulo is 11/03 in UTC. */
+    public function testTimedEventCollidesWithAnAllDayEventOnItsCivilDayInItsZone(): void {
+        $this->store->addObject(1, 'day10.ics', self::ics("UID:d10\nSUMMARY:Dia 10\nDTSTART;VALUE=DATE:20260310\nDTEND;VALUE=DATE:20260311"));
+        $this->store->addObject(1, 'day11.ics', self::ics("UID:d11\nSUMMARY:Dia 11\nDTSTART;VALUE=DATE:20260311\nDTEND;VALUE=DATE:20260312"));
+        $tz = new DateTimeZone('America/Sao_Paulo');
+
+        $result = $this->checker->find($this->personal, 'alice', new DateTimeImmutable('2026-03-10 22:00:00', $tz), new DateTimeImmutable('2026-03-10 23:00:00', $tz), false);
+
+        $this->assertSame(['day10.ics'], array_column($result['items'], 'uri'));
+    }
+
+    /** An event ending exactly at midnight does not reach the next day. */
+    public function testTimedEventEndingAtMidnightDoesNotReachTheNextAllDayEvent(): void {
+        $this->store->addObject(1, 'day11.ics', self::ics("UID:d11\nSUMMARY:Dia 11\nDTSTART;VALUE=DATE:20260311\nDTEND;VALUE=DATE:20260312"));
+        $tz = new DateTimeZone('America/Sao_Paulo');
+
+        $result = $this->checker->find($this->personal, 'alice', new DateTimeImmutable('2026-03-10 22:00:00', $tz), new DateTimeImmutable('2026-03-11 00:00:00', $tz), false);
+
+        $this->assertSame([], $result['items']);
     }
 
     public function testHalfOpenIntervalBoundaryDoesNotCollide(): void {

@@ -174,6 +174,25 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
         $this->assertStringContainsString('Pastas que serão criadas antes: **/Novo**' . "\n", $body);
     }
 
+    /** M1: a folder made in somebody else's share is named in the plan, in every language, with the extra confirmation. */
+    public function testMoveBatchNamesAFolderCreatedInASharedFolder(): void {
+        $this->tree->addFile('/alice/files/Documentos/ata.md', 'ata', 'text/markdown');
+        $this->tree->addFolder('/alice/files/Arquivado');
+        $this->tree->addFolder('/alice/files/Engenharia', ['scope' => 'team']);
+        $this->tree->mountPath = '/alice/files/Engenharia';
+        foreach (['pt_BR' => 'Pastas criadas em local compartilhado, que também exigem a confirmação de conteúdo compartilhado:',
+            'es' => 'Carpetas creadas en un lugar compartido, que también requieren la confirmación de contenido compartido:',
+            'en' => 'Folders created in a shared location, which also need the shared-content confirmation:'] as $language => $heading) {
+            Translator::use(new JsonL10n($language));
+            $body = $this->body('files_move_batch', [
+                'moves' => [['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md']],
+                'mkdirs' => ['/Engenharia/Nova'],
+            ]);
+
+            $this->assertStringContainsString($heading . "\n- **/Engenharia/Nova**", $body, $language);
+        }
+    }
+
     public function testMoveBatchInPortugueseListsFromToCreatedFoldersAndUndo(): void {
         $this->tree->addFile('/alice/files/Documentos/ata.md', 'ata', 'text/markdown');
         Translator::use(new JsonL10n('pt_BR'));

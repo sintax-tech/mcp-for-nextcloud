@@ -86,12 +86,26 @@ final class MovePlanner {
             $personal[] = ['from' => $from, 'to' => $to];
         }
         $dirs = $this->planDirs($root, $mkdirs);
+        // A folder made inside somebody else's share asks for the same confirmation as `files_mkdir`, whether
+        // or not a move uses it: the moves above only reach it when they land in it.
+        $sharedDirs = [];
+        foreach ($dirs as $dir) {
+            if (!$dir['willCreate']) {
+                continue;
+            }
+            $payload = $this->reorganization->guardFolder($root, $userId, $dir['path']);
+            if ($payload !== null) {
+                $sharedDirs[] = ['path' => $dir['path'], 'scope' => $payload['scope'] ?? 'shared'];
+                $confirmation ??= $payload;
+            }
+        }
         $plan = [
             'ok' => $conflicts === [] && $denied === [] && array_filter($dirs, fn (array $dir) => isset($dir['reason'])) === [],
             'moves' => array_map(fn (array $item) => $item + ['ok' => true], $personal),
             'conflicts' => $conflicts,
             'denied' => $denied,
             'shared' => $shared,
+            'sharedDirs' => $sharedDirs,
             'mkdirs' => $dirs,
             'summary' => [
                 'total' => count($moves),
@@ -99,6 +113,7 @@ final class MovePlanner {
                 'conflicts' => count($conflicts),
                 'denied' => count($denied),
                 'shared' => count($shared),
+                'sharedDirs' => count($sharedDirs),
                 'mkdirs' => count(array_filter($dirs, fn (array $dir) => $dir['willCreate'])),
             ],
         ];

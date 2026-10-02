@@ -130,6 +130,39 @@ final class PlanWarningsTest extends CalendarTestCase {
         }
     }
 
+    /**
+     * @return array<string, array{0: string, 1: string, 2: string, 3: string, 4: string}> account zone, start and end of the timed event in
+     *   its own zone, the all-day event that shares its civil day and the one of the neighbouring day that does not
+     */
+    public static function timedEventOverAllDayEvents(): array {
+        return [
+            // 22:00-23:00 of 05/10 in Sao Paulo is 06/10 01:00-02:00 UTC: on the day 05, though it falls on 06 in UTC.
+            'Sao Paulo, late evening' => ['America/Sao_Paulo', '2026-10-05T22:00:00-03:00', '2026-10-05T23:00:00-03:00', '20261005', '20261006'],
+            // 06/10 22:00 in Sao Paulo is 07/10 01:00 UTC: on the day 06, where a UTC comparison no longer finds it.
+            'Sao Paulo, next evening' => ['America/Sao_Paulo', '2026-10-06T22:00:00-03:00', '2026-10-06T23:00:00-03:00', '20261006', '20261007'],
+            // 06/10 00:30-01:30 in Tokyo is 05/10 15:30-16:30 UTC: on the day 06, though it falls on 05 in UTC.
+            'Tokyo, early morning' => ['Asia/Tokyo', '2026-10-06T00:30:00+09:00', '2026-10-06T01:30:00+09:00', '20261006', '20261005'],
+        ];
+    }
+
+    /** A timed event is compared with an all-day event by the day in the zone of the account, as an all-day event is with a timed one. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('timedEventOverAllDayEvents')]
+    public function testTimedEventCollidesWithAnAllDayEventByTheDayOfTheAccountZone(string $zone, string $start, string $end, string $sameDay, string $otherDay): void {
+        $this->accountTimezone = $zone;
+        $next = static fn (string $day): string => (new \DateTimeImmutable($day))->modify('+1 day')->format('Ymd');
+        $this->store->addObject(1, 'same.ics', self::ics("UID:same\nSUMMARY:Mesmo dia\nDTSTART;VALUE=DATE:$sameDay\nDTEND;VALUE=DATE:" . $next($sameDay)));
+        $this->store->addObject(1, 'other.ics', self::ics("UID:other\nSUMMARY:Outro dia\nDTSTART;VALUE=DATE:$otherDay\nDTEND;VALUE=DATE:" . $next($otherDay)));
+
+        $collisions = array_values(array_filter(
+            $this->createPlan(['start' => $start, 'end' => $end, 'timeZone' => $zone])['warnings'],
+            static fn (array $w): bool => $w['type'] === 'collision',
+        ));
+
+        self::assertCount(1, $collisions, $zone);
+        self::assertStringContainsString('Mesmo dia', $collisions[0]['message']);
+        self::assertStringNotContainsString('Outro dia', $collisions[0]['message']);
+    }
+
     /** The title of a private occurrence of somebody else's series never reaches the plan, and the occurrence does not collide. */
     public function testPrivateOverrideOfAnotherPersonsSeriesIsNotInThePlan(): void {
         $master = "UID:serie\nSUMMARY:Serie publica\nDTSTART:20260930T090000Z\nDTEND:20260930T100000Z\nRRULE:FREQ=DAILY;COUNT=3";

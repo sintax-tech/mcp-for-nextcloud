@@ -39,7 +39,8 @@ final class ListCardsHandler extends AbstractHandler {
 	 * {@inheritDoc}
 	 *
 	 * The payload is `{cards: list<card>, limit: int, offset: int, total: int|null}`, where `total`
-	 * is only known when the page came back short (cards before the offset plus the page).
+	 * is only known when the page came back short (cards before the offset plus the page). An empty page
+	 * past the first one leaves it null: the stack ends somewhere before the offset, and the offset is not it.
 	 *
 	 * @param array<string, mixed> $arguments Requires `stackId`; accepts `limit` and `offset`.
 	 * @param string $userId UID of the authenticated caller.
@@ -62,7 +63,8 @@ final class ListCardsHandler extends AbstractHandler {
 				'offset' => $offset,
 				// Deck skips deleted and archived cards in the query itself, so the offset counts listed cards:
 				// a page that came back short ends the stack, and the total is what precedes it plus the page.
-				'total' => count($page['items']) < $limit ? $offset + count($cards) : null,
+				// With no card on it past the first page, what precedes it is not known.
+				'total' => count($page['items']) < $limit && ($offset === 0 || $cards !== []) ? $offset + count($cards) : null,
 			];
 		});
 	}

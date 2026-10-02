@@ -576,6 +576,7 @@ OC.L10N.register(
     "Cannot be moved, the destination is taken or invalid:" : "Não podem ser movidos, o destino já existe ou é inválido:",
     "Not allowed by Nextcloud:" : "Não permitidos pelo Nextcloud:",
     "These items belong to someone else or are shared, so moving them also needs the shared-content confirmation:" : "Estes itens são de outra pessoa ou compartilhados; movê-los exige também a confirmação de conteúdo compartilhado:",
+    "Folders created in a shared location, which also need the shared-content confirmation:" : "Pastas criadas em local compartilhado, que também exigem a confirmação de conteúdo compartilhado:",
     "You can undo the whole batch afterwards." : "Depois você pode desfazer o lote inteiro.",
     "Empty folders the batch created will be removed: %s" : "As pastas vazias que o lote criou serão removidas: %s",
     "The undo is blocked because these items changed since the batch:" : "O desfazer está bloqueado porque estes itens mudaram depois do lote:",

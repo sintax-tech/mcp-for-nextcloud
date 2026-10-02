@@ -574,6 +574,7 @@
     "Cannot be moved, the destination is taken or invalid:" : "No se pueden mover, el destino ya existe o no es válido:",
     "Not allowed by Nextcloud:" : "No permitidos por Nextcloud:",
     "These items belong to someone else or are shared, so moving them also needs the shared-content confirmation:" : "Estos elementos son de otra persona o están compartidos; moverlos requiere también la confirmación de contenido compartido:",
+    "Folders created in a shared location, which also need the shared-content confirmation:" : "Carpetas creadas en un lugar compartido, que también requieren la confirmación de contenido compartido:",
     "You can undo the whole batch afterwards." : "Después puede deshacer el lote completo.",
     "Empty folders the batch created will be removed: %s" : "Las carpetas vacías que creó el lote se eliminarán: %s",
     "The undo is blocked because these items changed since the batch:" : "Deshacer está bloqueado porque estos elementos cambiaron después del lote:",

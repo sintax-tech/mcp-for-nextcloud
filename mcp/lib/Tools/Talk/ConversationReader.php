@@ -15,8 +15,15 @@ use Throwable;
  */
 class ConversationReader {
     public const MAX_MESSAGES = 200;
-    /** Comment verbs under which Talk stores its own JSON envelopes: rich objects (shares) and system messages. */
-    private const ENVELOPE_VERBS = ['object_shared', 'system'];
+    /**
+     * Comment verbs under which Talk stores its own JSON envelopes: rich objects (shares) and system messages.
+     *
+     * Talk 23 writes every comment that carries a file, voice messages and recordings included, as `object_shared`,
+     * with the kind in `parameters.metaData.messageType` (`voice-message`, `record-audio`, `record-video`). The three
+     * last verbs stay only for legacy rows, written under those verbs before the spreed migration
+     * Version14000Date20220330141647; the reader looks at the raw verb, so they match nothing else.
+     */
+    private const ENVELOPE_VERBS = ['object_shared', 'system', 'voice-message', 'record-audio', 'record-video'];
 
     /** Default amount of messages when the caller does not ask for a number, matching the module schema. */
     public const DEFAULT_MESSAGES = 50;

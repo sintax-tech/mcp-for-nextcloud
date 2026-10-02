@@ -163,7 +163,8 @@ final class PlanWarnings {
 
     /**
      * The timing of an all-day event carries its civil days as UTC midnights; the days themselves belong to the zone the
-     * account lives in. Moves them to midnight there, so a window is not 3 hours (or 9) off. Timed events are returned as they are.
+     * account lives in. Moves them to midnight there, so a window is not 3 hours (or 9) off. A timed event keeps its instants and
+     * is only expressed in that zone, so the civil days it covers, which an existing all-day event is compared with, are the ones there.
      *
      * @param array{start: DateTimeImmutable, end: DateTimeImmutable, allDay: bool, timeZone: DateTimeZone|null} $timing timing as the builder reads it
      * @param DateTimeZone $zone zone of the account
@@ -171,6 +172,8 @@ final class PlanWarnings {
      */
     private function inZone(array $timing, DateTimeZone $zone): array {
         if (!$timing['allDay']) {
+            $timing['start'] = $timing['start']->setTimezone($zone);
+            $timing['end'] = $timing['end']->setTimezone($zone);
             return $timing;
         }
         $timing['start'] = new DateTimeImmutable($timing['start']->format('Y-m-d'), $zone);

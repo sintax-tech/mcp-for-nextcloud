@@ -73,7 +73,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->assertSame([], $plan['denied']);
         $this->assertSame([], $plan['shared']);
         $this->assertSame([], $plan['mkdirs']);
-        $this->assertSame(['total' => 2, 'planned' => 2, 'conflicts' => 0, 'denied' => 0, 'shared' => 0, 'mkdirs' => 0],
+        $this->assertSame(['total' => 2, 'planned' => 2, 'conflicts' => 0, 'denied' => 0, 'shared' => 0, 'sharedDirs' => 0, 'mkdirs' => 0],
             $plan['summary']);
         $this->assertSame([['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md'],
             ['from' => '/Documentos/plano.md', 'to' => '/Arquivado/plano.md']], $plan['order'], 'a ordem do lote faz parte do que o usuário aprova');
@@ -272,7 +272,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
             'reason' => FilesMessages::destinationExists()]], $plan['conflicts']);
         $this->assertSame([['from' => '/Documentos/orcamento.md', 'to' => '/Arquivado/orcamento.md',
             'reason' => CommonMessages::forbidden()]], $plan['denied']);
-        $this->assertSame(['total' => 3, 'planned' => 1, 'conflicts' => 1, 'denied' => 1, 'shared' => 0, 'mkdirs' => 0],
+        $this->assertSame(['total' => 3, 'planned' => 1, 'conflicts' => 1, 'denied' => 1, 'shared' => 0, 'sharedDirs' => 0, 'mkdirs' => 0],
             $plan['summary']);
     }
 
@@ -309,6 +309,82 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->assertSame([['from' => '/Engenharia/plano.md', 'to' => '/Arquivado/plano.md', 'scope' => 'team']], $out['shared']);
         $this->assertSame(1, $out['summary']['shared']);
         $this->assertSame([], $this->tree->ops);
+    }
+
+    /**
+     * M1: a folder the batch creates inside somebody else's share reaches them like `files_mkdir` does, so it asks
+     * for the same shared-content confirmation, even when no move uses the folder and only personal items move.
+     */
+    private function teamFolderForMkdirs(): void {
+        $this->tree->addFolder('/alice/files/Engenharia', ['scope' => 'team']);
+        $this->tree->mountPath = '/alice/files/Engenharia';
+    }
+
+    public function testThePlanAsksForTheSharedConfirmationForAFolderCreatedInASharedFolder(): void {
+        $this->teamFolderForMkdirs();
+        $out = $this->plan('files_move_batch', [
+            'moves' => [['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md']],
+            'mkdirs' => ['/Engenharia/Nova'],
+        ]);
+
+        $this->assertTrue($out['ok']);
+        $this->assertTrue($out['requiresSharedConfirmation']);
+        $this->assertSame([['path' => '/Engenharia/Nova', 'scope' => 'team']], $out['sharedDirs']);
+        $this->assertSame(1, $out['summary']['sharedDirs']);
+        $this->assertSame([], $out['shared'], 'the move itself is personal');
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    public function testAnExecutionAsksForTheSharedConfirmationBeforeCreatingAFolderInASharedFolder(): void {
+        $this->teamFolderForMkdirs();
+        $out = $this->json('files_move_batch', [
+            'moves' => [['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md']],
+            'mkdirs' => ['/Engenharia/Nova'],
+        ]);
+
+        $this->assertTrue($out['requiresConfirmation']);
+        $this->assertSame('team', $out['scope']);
+        $this->assertArrayNotHasKey('batch_id', $out);
+        $this->assertSame([], $this->tree->ops, 'neither the folder nor the move may happen before the confirmation');
+        $this->assertSame([], $this->batches->rows);
+    }
+
+    public function testAConfirmedExecutionCreatesTheFolderInTheSharedFolderAndRecordsIt(): void {
+        $this->teamFolderForMkdirs();
+        $out = $this->json('files_move_batch', [
+            'moves' => [['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md']],
+            'mkdirs' => ['/Engenharia/Nova'],
+            'confirm_shared' => true,
+        ]);
+
+        $this->assertSame(['/Engenharia/Nova'], $out['created_dirs']);
+        $this->assertArrayHasKey('/alice/files/Engenharia/Nova', $this->tree->nodes);
+        $this->assertSame(['/Engenharia/Nova'], $this->batches->find($out['batch_id'], 'alice')->dirs);
+    }
+
+    /** Only a folder the batch would really make counts: one already there is not created, so nothing to confirm. */
+    public function testAFolderThatAlreadyExistsInASharedFolderNeedsNoSharedConfirmation(): void {
+        $this->teamFolderForMkdirs();
+        $this->tree->addFolder('/alice/files/Engenharia/Nova', ['scope' => 'team']);
+        $out = $this->plan('files_move_batch', [
+            'moves' => [['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md']],
+            'mkdirs' => ['/Engenharia/Nova'],
+        ]);
+
+        $this->assertFalse($out['requiresSharedConfirmation']);
+        $this->assertSame([], $out['sharedDirs']);
+    }
+
+    /** A folder in the user's own tree stays as before: no confirmation. */
+    public function testAFolderInThePersonalTreeNeedsNoSharedConfirmation(): void {
+        $out = $this->plan('files_move_batch', [
+            'moves' => [['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md']],
+            'mkdirs' => ['/Arquivado/Nova'],
+        ]);
+
+        $this->assertFalse($out['requiresSharedConfirmation']);
+        $this->assertSame([], $out['sharedDirs']);
+        $this->assertSame(0, $out['summary']['sharedDirs']);
     }
 
     // ------------------------------------------------------------- execution

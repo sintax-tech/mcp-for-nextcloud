@@ -145,6 +145,28 @@ final class Reorganization {
     }
 
     /**
+     * The shared-content confirmation a folder creation needs, the one `files_mkdir` asks for.
+     *
+     * The folder is judged by the closest folder that already exists above it: that is where it is made, and
+     * so whose people it reaches. A folder that is already there is not made, so it asks for nothing. The
+     * batch plan calls this for each folder of `mkdirs`, so a folder no move uses is guarded like the rest.
+     *
+     * @param Folder $root the user's folder
+     * @param string $userId authenticated user
+     * @param string $path requested folder, user-relative
+     * @return array<string, mixed>|null the guard payload, null when the folder is not made in a shared place
+     * @throws \InvalidArgumentException for a malformed path
+     */
+    public function guardFolder(Folder $root, string $userId, string $path): ?array {
+        $path = PathGuard::normalize($path);
+        $relative = ltrim($path, '/');
+        if ($relative === '' || $root->nodeExists($relative)) {
+            return null;
+        }
+        return $this->guard->guard($this->existingAncestor($root, $path), $userId, $path, false);
+    }
+
+    /**
      * The closest folder above $path that already exists, without creating anything on the way.
      *
      * @param Folder $root the user's folder
@@ -581,14 +603,17 @@ final class Reorganization {
             try {
                 $node = NodeAccess::run(fn () => NodeAccess::get($root, $move['to']));
                 NodeAccess::run(fn () => $node->move($this->absolute($root, $move['from'])));
-            } catch (ToolFailure $e) {
+            } catch (\Throwable $e) {
                 // Every condition was checked above, so this is a lock or a permission that changed in
                 // between. The row keeps only what did not go back: an item that already moved is no longer
                 // in its destination, and leaving it there would make the next attempt read that absence as
-                // a conflict and refuse the batch for good. So the retry picks up exactly the rest.
+                // a conflict and refuse the batch for good. So the retry picks up exactly the rest. Any exception
+                // counts, as in the run of the batch: one Nextcloud has no typed answer for leaves the same state,
+                // and what it says is not repeated to the caller.
                 $store->keepRemaining($batchId, $userId, array_slice($batch->moves, 0, count($batch->moves) - $undone));
                 return ['batch_id' => $batchId, 'undone' => $undone, 'removed_dirs' => [], 'kept_dirs' => [],
-                    'conflicts' => [['from' => $move['from'], 'to' => $move['to'], 'reason' => $e->getMessage()]]];
+                    'conflicts' => [['from' => $move['from'], 'to' => $move['to'],
+                        'reason' => $e instanceof ToolFailure ? $e->getMessage() : FilesMessages::moveFailed()]]];
             }
             $undone++;
         }

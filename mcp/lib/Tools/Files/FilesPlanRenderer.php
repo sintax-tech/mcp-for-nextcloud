@@ -273,6 +273,14 @@ final class FilesPlanRenderer {
                 $lines[] = '- ' . self::bold((string)($item['from'] ?? '')) . ' → ' . self::bold((string)($item['to'] ?? ''));
             }
         }
+        $sharedDirs = array_filter((array)($plan['sharedDirs'] ?? []), static fn ($dir): bool => is_array($dir) && isset($dir['path']));
+        if ($sharedDirs !== []) {
+            $lines[] = '';
+            $lines[] = Translator::t('Folders created in a shared location, which also need the shared-content confirmation:');
+            foreach ($sharedDirs as $dir) {
+                $lines[] = '- ' . self::bold((string)$dir['path']);
+            }
+        }
         if ($moving !== []) {
             $lines[] = '';
             $lines[] = Translator::t('You can undo the whole batch afterwards.');

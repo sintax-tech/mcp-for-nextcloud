@@ -43,6 +43,33 @@ final class GrantPolicyTest extends TestCase {
         $this->assertSame(['alice', 'bob'], $this->policy->connectedUsers());
     }
 
+    /**
+     * Nextcloud 31 has no IUserConfig: the container passes null and the flagged users come from
+     * IConfig::getUsersForUserValue, with the same answer.
+     */
+    public function testWithoutUserConfigFlaggedUsersComeFromIConfig(): void {
+        $config = $this->store->mock($this);
+        $policy = new GrantPolicy($config, new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+        foreach (['carl', 'alice', 'bob'] as $uid) {
+            $policy->setEligible($uid, true);
+        }
+        $policy->setEligible('bob', false);
+        $policy->setConnected('alice', true);
+
+        $this->assertSame(['alice', 'carl'], $policy->flaggedUsers(GrantPolicy::ELIGIBLE_KEY));
+        $this->assertSame(['alice'], $policy->connectedUsers());
+        // One search for the eligible list, then one per flag for the connected users: all through IConfig.
+        $this->assertSame(3, $this->store->legacySearches);
+    }
+
+    /** Nextcloud 31's container cannot build an IUserConfig, so the parameter must take the default instead of failing. */
+    public function testTheUserConfigParameterIsOptionalForTheContainer(): void {
+        $parameter = (new \ReflectionMethod(GrantPolicy::class, '__construct'))->getParameters()[2];
+
+        $this->assertTrue($parameter->isDefaultValueAvailable());
+        $this->assertNull($parameter->getDefaultValue());
+    }
+
     public function testEachSwitchRevokesOnNextCheck(): void {
         $this->policy->setGlobalEnabled(true);
         $this->policy->setEligible('alice', true);

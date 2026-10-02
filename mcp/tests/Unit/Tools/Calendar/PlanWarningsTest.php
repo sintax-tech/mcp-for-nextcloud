@@ -166,6 +166,43 @@ final class PlanWarningsTest extends CalendarTestCase {
         self::assertStringNotContainsString('Segredo do Roberto', $result['content'][0]['text']);
     }
 
+    /**
+     * @param string $zone zone of alice's account
+     * @return array<string, array{0: string, 1: string, 2: string}> account zone, UTC start and UTC end of 01/10 in that zone
+     */
+    public static function dayInEachZone(): array {
+        return [
+            'Sao Paulo' => ['America/Sao_Paulo', '2026-10-01T03:00:00Z', '2026-10-02T03:00:00Z'],
+            'Tokyo' => ['Asia/Tokyo', '2026-09-30T15:00:00Z', '2026-10-01T15:00:00Z'],
+        ];
+    }
+
+    /** The guests of an all-day event are asked about the day in the zone of the account, not about the day in UTC. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('dayInEachZone')]
+    public function testAllDayEventAsksTheGuestsAboutTheDayInTheAccountZone(string $zone, string $from, string $to): void {
+        $this->accountTimezone = $zone;
+        self::json($this->registry->call('calendar_create_event', ['calendar' => self::PERSONAL, 'summary' => 'Feriado', 'start' => '2026-10-01', 'end' => '2026-10-02', 'allDay' => true, 'attendees' => ['carla']], 'alice'));
+        self::assertSame([[$from, $to]], $this->availabilityAsked);
+    }
+
+    /** A guest busy the evening before the day (in the zone of the account) is not busy on it; one busy late on the day is. */
+    public function testAllDayEventReportsAGuestBusyOnlyWithinTheDayOfTheAccountZone(): void {
+        $args = ['calendar' => self::PERSONAL, 'summary' => 'Feriado', 'start' => '2026-10-01', 'end' => '2026-10-02', 'allDay' => true, 'attendees' => ['carla']];
+        // 30/09 22:00-23:00 in Sao Paulo is 01/10 01:00-02:00 UTC: inside the UTC day, outside the day of the account.
+        $this->busyBlocks = ['carla@example.invalid' => [['2026-10-01T01:00:00Z', '2026-10-01T02:00:00Z']]];
+        self::assertSame([], self::messages(self::json($this->registry->call('calendar_create_event', $args, 'alice'))['warnings'], 'busy'));
+        // 01/10 23:00-23:30 in Sao Paulo is 02/10 02:00-02:30 UTC: outside the UTC day, inside the day of the account.
+        $this->busyBlocks = ['carla@example.invalid' => [['2026-10-02T02:00:00Z', '2026-10-02T02:30:00Z']]];
+        self::assertSame(['Carla Dias está ocupado(a) neste horário.'], self::messages(self::json($this->registry->call('calendar_create_event', $args, 'alice'))['warnings'], 'busy'));
+    }
+
+    /** The current slot of a stored all-day event is the same day in the same zone, so only the days added are asked. */
+    public function testUpdateExtendingAnAllDayEventAsksOnlyAboutTheDaysAdded(): void {
+        $this->store->addObject(1, 'event.ics', self::ics("UID:event\nSUMMARY:Feriado\nDTSTART;VALUE=DATE:20261001\nDTEND;VALUE=DATE:20261002\nATTENDEE;CN=Carla Dias:mailto:carla@example.invalid"));
+        self::json($this->registry->call('calendar_update_event', ['calendar' => self::PERSONAL, 'uid' => 'event', 'start' => '2026-10-01', 'end' => '2026-10-03', 'allDay' => true], 'alice'));
+        self::assertSame([['2026-10-02T03:00:00Z', '2026-10-03T03:00:00Z']], $this->availabilityAsked);
+    }
+
     public function testBusyAttendeeIsNamedAndDoesNotBlock(): void {
         $this->busyEmails = ['carla@example.invalid'];
         $plan = $this->createPlan(['attendees' => ['carla']]);

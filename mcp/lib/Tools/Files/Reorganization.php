@@ -71,12 +71,14 @@ final class Reorganization {
                     if ($this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($node)) {
                         continue;
                     }
-                    $relative = $root->getRelativePath($node->getPath()) ?? '';
-                    $entries[] = $this->entry($root, $userId, $node, $relative);
+                    // The cut is only a cut once there is one more entry to leave out: a limit equal to the number
+                    // of entries returns them all, and saying `truncated` then sends the agent after nothing.
                     if (count($entries) >= $limit) {
                         $truncated = true;
                         break 3;
                     }
+                    $relative = $root->getRelativePath($node->getPath()) ?? '';
+                    $entries[] = $this->entry($root, $userId, $node, $relative);
                     if ($node instanceof Folder && $levelBelow + 1 < $depth) {
                         $next[] = [$node, $levelBelow + 1];
                     }

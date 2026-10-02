@@ -115,6 +115,21 @@ final class FilesTreeTest extends FilesToolsTestCase {
         $this->assertFalse($this->tree(['path' => '/Documentos', 'limit' => 2000])['truncated']);
     }
 
+    /**
+     * `truncated` says something was left out, so a limit equal to the number of entries is not a cut: the agent
+     * would go looking for entries that do not exist. One entry fewer is.
+     */
+    public function testALimitOfExactlyEveryEntryIsNotACut(): void {
+        $this->seed();
+        $all = $this->tree(['path' => '/Documentos', 'limit' => 7]);
+        $this->assertSame(7, $all['count']);
+        $this->assertFalse($all['truncated']);
+        $this->assertTrue($this->tree(['path' => '/Documentos', 'limit' => 6])['truncated']);
+        // The deepest level is not walked at depth 2, so its six entries are everything that was asked for.
+        $this->assertFalse($this->tree(['path' => '/Documentos', 'depth' => 2, 'limit' => 6])['truncated']);
+        $this->assertTrue($this->tree(['path' => '/Documentos', 'depth' => 2, 'limit' => 5])['truncated']);
+    }
+
     /** A cutoff stops the walk; it must not walk the whole tree first and then throw most of it away. */
     public function testTheWalkStopsAtTheLimit(): void {
         for ($i = 0; $i < 40; $i++) {

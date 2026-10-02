@@ -111,10 +111,11 @@ abstract class AbstractHandler {
 	 * Runs one Deck write and, when the write call itself throws, answers with what Deck really holds.
 	 *
 	 * A refusal of this app ({@see self::RAISED_BY_THE_APP}) is rethrown as it is. Any other exception, Deck's own
-	 * `NoPermissionException` and `BadRequestException` included, is followed by `$verify`, which reads the state again: what it returns is the saved result, and the call goes on
-	 * as a success with {@see DeckMessages::writtenThenFailed()} in `$warnings`; null means nothing was saved and the
-	 * original exception goes on to become the usual error; an exception of `$verify` means nobody can tell, which
-	 * becomes {@see DeckUnconfirmedException}. Only exception classes are logged.
+	 * `NoPermissionException` and `BadRequestException` included, is followed by `$verify`, which reads the state
+	 * again by identifier: what it returns is the saved result, and the call goes on as a success with
+	 * {@see DeckMessages::writtenThenFailed()} in `$warnings`; null means nothing was saved and the original exception
+	 * goes on to become the usual error; an exception of `$verify` means nobody can tell, which becomes
+	 * {@see DeckUnconfirmedException}. Only exception classes are logged.
 	 *
 	 * @template T
 	 * @param callable(): T $write The Deck write.
@@ -125,6 +126,43 @@ abstract class AbstractHandler {
 	 * @throws \Throwable The original exception, when nothing was saved.
 	 */
 	protected function afterWrite(callable $write, callable $verify, array &$warnings): mixed {
+		$probable = false;
+
+		return $this->guardedWrite($write, $verify, $warnings, false, $probable);
+	}
+
+	/**
+	 * Like {@see self::afterWrite()}, for a creation whose read-back only finds the item by likeness (owner, title and
+	 * moment; a title that was not in the snapshot) and so cannot prove that this call made it.
+	 *
+	 * What `$verify` finds is only probably the item: `$probable` becomes true and `$warnings` gets
+	 * {@see DeckMessages::probablyCreated()} in place of the "saved" warning. The caller must not write anything
+	 * else on that item (no assignment, no list or card inside it).
+	 *
+	 * @template T
+	 * @param callable(): T $write The Deck write.
+	 * @param callable(): mixed $verify Read-back by likeness: the item found, or null when there is none.
+	 * @param list<string> $warnings Receives the warning.
+	 * @param bool $probable Set to true when the result came from the read-back by likeness.
+	 * @return mixed What the write returned, or what `$verify` found.
+	 * @throws DeckUnconfirmedException When the read-back fails too.
+	 * @throws \Throwable The original exception, when nothing was found.
+	 */
+	protected function afterApproximateWrite(callable $write, callable $verify, array &$warnings, bool &$probable): mixed {
+		return $this->guardedWrite($write, $verify, $warnings, true, $probable);
+	}
+
+	/**
+	 * Shared body of {@see self::afterWrite()} and {@see self::afterApproximateWrite()}.
+	 *
+	 * @param callable(): mixed $write The Deck write.
+	 * @param callable(): mixed $verify Read-back.
+	 * @param list<string> $warnings Receives the warning.
+	 * @param bool $approximate Whether the read-back only finds the item by likeness.
+	 * @param bool $probable Set to true when `$approximate` and the read-back found something.
+	 * @return mixed What the write returned, or what `$verify` found.
+	 */
+	private function guardedWrite(callable $write, callable $verify, array &$warnings, bool $approximate, bool &$probable): mixed {
 		try {
 			return $write();
 		} catch (\Throwable $e) {
@@ -145,8 +183,10 @@ abstract class AbstractHandler {
 				'tool' => $this->toolName(),
 				'exception' => $e::class,
 			]);
-			if (!in_array(DeckMessages::writtenThenFailed(), $warnings, true)) {
-				$warnings[] = DeckMessages::writtenThenFailed();
+			$warning = $approximate ? DeckMessages::probablyCreated() : DeckMessages::writtenThenFailed();
+			$probable = $approximate;
+			if (!in_array($warning, $warnings, true)) {
+				$warnings[] = $warning;
 			}
 
 			return $saved;

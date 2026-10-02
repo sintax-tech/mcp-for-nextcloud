@@ -842,6 +842,9 @@
     "Could not confirm whether Deck saved this change; read it with %s before trying again." : "Não foi possível confirmar se o Deck gravou esta alteração; leia com %s antes de tentar de novo.",
     "Could not confirm whether the list '%s' was created; read the board before retrying." : "Não foi possível confirmar se a lista '%s' foi criada; leia o quadro antes de tentar de novo.",
     "Could not confirm whether the card '%s' was created; read the list before retrying." : "Não foi possível confirmar se o cartão '%s' foi criado; leia a lista antes de tentar de novo.",
-    "%s Some items could not be confirmed; see 'warnings' before retrying." : "%s Alguns itens não puderam ser confirmados; veja 'warnings' antes de tentar de novo."
+    "%s Some items could not be confirmed; see 'warnings' before retrying." : "%s Alguns itens não puderam ser confirmados; veja 'warnings' antes de tentar de novo.",
+    "Probably created: check it before continuing." : "Provavelmente criado: confira antes de continuar.",
+    "The assignees were not assigned because the card was only probably created. Check it first." : "Os responsáveis não foram atribuídos porque o cartão foi apenas provavelmente criado. Confira-o antes.",
+    "Not created: what it belongs to was only probably created. Check it, then create this one." : "Não criado: aquilo a que pertence foi apenas provavelmente criado. Confira e depois crie este."
 },"pluralForm" :"nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

@@ -140,6 +140,32 @@ final class DeckMessages {
 	}
 
 	/**
+	 * A creation threw and the read-back found an item that only looks like it (same title, owner and moment, or a
+	 * list or board that was not in the snapshot): it may belong to another call, so nothing is built on it.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function probablyCreated(): string {
+		return Translator::t('Probably created: check it before continuing.');
+	}
+
+	/**
+	 * Assignees of a card that was only probably created are left alone.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function probableCardNotAssigned(): string {
+		return Translator::t('The assignees were not assigned because the card was only probably created. Check it first.');
+	}
+
+	/**
+	 * Reason of a list or card of deck_create_board that was not created because the board or list it belongs to
+	 * was found only by a likeness.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function probableParentNotBuilt(): string {
+		return Translator::t('Not created: what it belongs to was only probably created. Check it, then create this one.');
+	}
+
+	/**
 	 * A write threw and the state could not be read back: unknown, so read before retrying instead of repeating.
 	 * @param string $readWith Tool that reads the item back.
 	 * @return string The message in the language of the current user.

@@ -27,6 +27,18 @@ final class DeckStructureTranslationTest extends TestCase {
 		Translator::reset();
 	}
 
+	public function testProbableMessagesAreWordedForThePerson(): void {
+		Translator::use(new JsonL10n('pt_BR'));
+		self::assertSame('Provavelmente criado: confira antes de continuar.', DeckMessages::probablyCreated());
+		self::assertSame('Os responsáveis não foram atribuídos porque o cartão foi apenas provavelmente criado. Confira-o antes.', DeckMessages::probableCardNotAssigned());
+		self::assertSame('Não criado: aquilo a que pertence foi apenas provavelmente criado. Confira e depois crie este.', DeckMessages::probableParentNotBuilt());
+
+		Translator::use(new JsonL10n('es'));
+		self::assertSame('Probablemente creado: compruébelo antes de continuar.', DeckMessages::probablyCreated());
+		self::assertSame('No se asignó a los responsables porque la tarjeta solo se creó probablemente. Compruébela antes.', DeckMessages::probableCardNotAssigned());
+		self::assertSame('No creado: aquello a lo que pertenece solo se creó probablemente. Compruébelo y luego cree este.', DeckMessages::probableParentNotBuilt());
+	}
+
 	public function testRefusalsAreWordedForThePerson(): void {
 		Translator::use(new JsonL10n('pt_BR'));
 		self::assertSame('A lista tem 3 cartões; mova ou exclua antes.', DeckRefusalException::stackNotEmpty(3)->getMessage());

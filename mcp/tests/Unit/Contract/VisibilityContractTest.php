@@ -697,9 +697,11 @@ final class VisibilityContractTest extends TestCase {
         foreach ($batchPlan['denied'] as $d) {
             $this->assertSame(CommonMessages::notFound(), $d['reason']);
         }
-        // mkdirs of hidden folder in batch plan reports exists: false so it does not leak existence
-        $this->assertFalse($batchPlan['mkdirs'][0]['exists']);
-        $this->assertTrue($batchPlan['mkdirs'][0]['willCreate']);
+        // mkdirs of a hidden folder answers like files_mkdir does for it: taken, without saying by what. It used to
+        // say willCreate, a folder the run would never make.
+        $this->assertSame(['path' => '/SecretFolder', 'exists' => false, 'willCreate' => false,
+            'reason' => CommonMessages::forbidden()], $batchPlan['mkdirs'][0]);
+        $this->assertFalse($batchPlan['ok']);
 
         // Notes preview
         $this->tree->addFolder('/alice/files/Notes');

@@ -51,6 +51,7 @@ final class MovePlanner {
      * @param list<array{from:string, to:string}> $moves requested moves
      * @param list<string> $mkdirs folders the batch would create
      * @return MovePlan the plan, the runnable items and the pending confirmation
+     * @throws \InvalidArgumentException for a malformed folder path
      */
     public function plan(Folder $root, string $userId, array $moves, array $mkdirs): MovePlan {
         $planned = [];
@@ -86,7 +87,7 @@ final class MovePlanner {
         }
         $dirs = $this->planDirs($root, $mkdirs);
         $plan = [
-            'ok' => $conflicts === [] && $denied === [],
+            'ok' => $conflicts === [] && $denied === [] && array_filter($dirs, fn (array $dir) => isset($dir['reason'])) === [],
             'moves' => array_map(fn (array $item) => $item + ['ok' => true], $personal),
             'conflicts' => $conflicts,
             'denied' => $denied,
@@ -107,14 +108,22 @@ final class MovePlanner {
     /**
      * What the batch would do about the folders it was asked to create. A path that is already there is
      * reported as such and not counted as a creation: the undo only removes what the batch really made.
+     * A folder the run would refuse to create carries the reason, and the plan is not ok: a batch never
+     * starts by making half of its folders.
      *
      * @param Folder $root the user's folder
      * @param list<string> $paths requested folders
-     * @return list<array{path:string, exists:bool, willCreate:bool}>
+     * @return list<array{path:string, exists:bool, willCreate:bool, reason?:string}>
      */
     private function planDirs(Folder $root, array $paths): array {
         $dirs = [];
         foreach ($paths as $path) {
+            try {
+                $this->reorganization->checkFolder($root, $path);
+            } catch (ToolFailure $e) {
+                $dirs[] = ['path' => $path, 'exists' => false, 'willCreate' => false, 'reason' => $e->getMessage()];
+                continue;
+            }
             $relative = ltrim(\OCA\Mcp\Tools\Common\PathGuard::normalize($path), '/');
             $exists = false;
             if ($relative === '') {

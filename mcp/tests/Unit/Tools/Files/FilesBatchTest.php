@@ -146,6 +146,61 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->assertSame([], $this->tree->ops);
     }
 
+    /**
+     * A folder the batch only creates, with a move that does not go there, still lands under the hidden folder: the
+     * creation itself has to be refused, in the plan and in the confirmed run, and nothing may be made.
+     */
+    public function testMkdirsNeverCreatesAFolderInsideAHiddenOne(): void {
+        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+        $this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+        $this->visibilityGuard = new \OCA\Mcp\Service\VisibilityGuard($this->config->mock($this), $tagMapper);
+        $this->setUp();
+        $hiddenId = $this->tree->addFolder('/alice/files/Hidden');
+        $tagMapper->method('getTagIdsForObjects')->willReturnCallback(static function (array $ids) use ($hiddenId): array {
+            return array_combine($ids, array_map(static fn ($id) => (string)$id === (string)$hiddenId ? ['999'] : [], $ids));
+        });
+        foreach (['/Hidden/New' => CommonMessages::notFound(), '/Hidden' => CommonMessages::forbidden()] as $dir => $reason) {
+            $args = ['moves' => [['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md']], 'mkdirs' => [$dir]];
+            $plan = $this->plan('files_move_batch', $args);
+            $this->assertFalse($plan['ok'], "plano de $dir");
+            $this->assertSame([['path' => $dir, 'exists' => false, 'willCreate' => false, 'reason' => $reason]], $plan['mkdirs']);
+            $this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $args + ['confirm' => true]), "execução de $dir");
+        }
+        $this->assertSame([], $this->tree->ops, 'nem a pasta nem o movimento');
+        $this->assertArrayNotHasKey('/alice/files/Hidden/New', $this->tree->nodes);
+        $this->assertSame([], $this->batches->rows);
+    }
+
+    /**
+     * A requested folder whose name a file already uses cannot be made. The plan says so instead of `ok`, and the run
+     * refuses before the first folder is created: half of the folders made and no batch recorded would be folders
+     * nobody can undo.
+     */
+    public function testMkdirsOverAFileIsRefusedBeforeAnyFolderIsCreated(): void {
+        $this->tree->addFile('/alice/files/C', 'um arquivo', 'text/plain');
+        $args = ['moves' => [['from' => '/Documentos/ata.md', 'to' => '/A/B/ata.md']], 'mkdirs' => ['/A/B', '/C']];
+        $plan = $this->plan('files_move_batch', $args);
+        $this->assertFalse($plan['ok'], 'o plano não diz ok para uma pasta que não pode ser criada');
+        $this->assertSame([
+            ['path' => '/A/B', 'exists' => false, 'willCreate' => true],
+            ['path' => '/C', 'exists' => false, 'willCreate' => false, 'reason' => FilesMessages::destinationExists()],
+        ], $plan['mkdirs']);
+        $this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $args + ['confirm' => true]));
+        $this->assertSame([], $this->tree->ops, 'nenhuma pasta órfã');
+        $this->assertArrayNotHasKey('/alice/files/A', $this->tree->nodes);
+        $this->assertSame([], $this->batches->rows);
+    }
+
+    /** A folder that cannot take a new entry is refused for mkdirs as it is for a move into it. */
+    public function testMkdirsIntoAFolderThatCannotTakeItIsRefusedBeforeAnythingIsCreated(): void {
+        $this->tree->addFolder('/alice/files/ReadOnly', ['permissions' => \OCP\Constants::PERMISSION_READ]);
+        $args = ['moves' => [['from' => '/Documentos/ata.md', 'to' => '/New/ata.md']], 'mkdirs' => ['/New', '/ReadOnly/Sub']];
+        $this->assertSame(CommonMessages::forbidden(), $this->plan('files_move_batch', $args)['mkdirs'][1]['reason']);
+        $this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $args + ['confirm' => true]));
+        $this->assertSame([], $this->tree->ops);
+        $this->assertArrayNotHasKey('/alice/files/New', $this->tree->nodes);
+    }
+
     /** A future folder inherits the storage boundary of its real parent. */
     public function testMkdirsDoesNotBypassStorageBoundaries(): void {
         $this->tree->addFolder('/alice/files/External', ['storageId' => 'external']);

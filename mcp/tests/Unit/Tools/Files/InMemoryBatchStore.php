@@ -11,7 +11,7 @@ use OCP\IDBConnection;
  * In-memory BatchStore for the tool tests, keeping the two rules the real store exists to enforce: the
  * owner decides whether a batch is found, and a batch can only be marked undone once.
  *
- * It only overrides what {@see BatchStore} has ({@see \OCA\Mcp\Tests\Unit\Contract\StoreDoubleContractTest}); a test
+ * It only overrides what {@see BatchStore} has ({@see \OCA\Mcp\Tests\Unit\StoreDoublesContractTest}); a test
  * looks inside it through {@see self::$rows}, and the SQL itself is covered by {@see BatchStoreTest}.
  */
 final class InMemoryBatchStore extends BatchStore {
@@ -25,6 +25,9 @@ final class InMemoryBatchStore extends BatchStore {
     }
 
     public function insert(Batch $batch): int {
+        // Like the real store, an insert first drops the batches whose lifetime has ended.
+        $cutoff = $batch->createdAt - self::LIFETIME_SECONDS;
+        $this->rows = array_filter($this->rows, static fn (array $row): bool => $row['created_at'] >= $cutoff);
         $id = $this->nextId++;
         $this->rows[$id] = $batch->toRow() + ['id' => $id];
         return $id;

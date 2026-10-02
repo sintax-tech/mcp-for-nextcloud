@@ -8,6 +8,9 @@ use OCA\Mcp\Checkout\CheckoutTokenStore;
 use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\Tests\Unit\Checkout\InMemoryCheckoutTokenStore;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\Tools\Files\InMemoryBatchStore;
+use OCA\Mcp\Tools\Files\Batch;
+use OCA\Mcp\Tools\Files\BatchStore;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -26,6 +29,7 @@ final class StoreDoublesContractTest extends TestCase {
         return [
             'OAuthStore' => [InMemoryOAuthStore::class, OAuthStore::class],
             'CheckoutTokenStore' => [InMemoryCheckoutTokenStore::class, CheckoutTokenStore::class],
+            'BatchStore' => [InMemoryBatchStore::class, BatchStore::class],
         ];
     }
 
@@ -194,5 +198,40 @@ final class StoreDoublesContractTest extends TestCase {
         $db = new FakeDatabase($this, ['mcp_checkout_tokens' => []], ['mcp_checkout_tokens'], ['mcp_checkout_tokens' => ['used_at' => null]]);
 
         $this->assertEquals(self::checkoutScenario(new CheckoutTokenStore($db->connection())), self::checkoutScenario(new InMemoryCheckoutTokenStore()));
+    }
+
+    /** One run of the batch store, as a log that has no ids in it: owner, undo once, the narrowing of a stopped undo, purge. */
+    private static function batchScenario(BatchStore $store): array {
+        $moves = [['from' => '/a.md', 'to' => '/B/a.md', 'toId' => 7], ['from' => '/c.md', 'to' => '/B/c.md', 'toId' => 9]];
+        $batch = static fn (string $uid, int $at): Batch => new Batch(null, $uid, $at, $moves, ['/B'], null);
+        $log = [];
+        $alice = $store->insert($batch('alice', 1000));
+        $bob = $store->insert($batch('bob', 1000));
+        $log['found by the owner'] = $store->find($alice, 'alice')?->moves;
+        $log['not by another'] = $store->find($alice, 'bob');
+        $store->keepRemaining($alice, 'bob', []);
+        $log['another cannot narrow it'] = $store->find($alice, 'alice')?->moves;
+        $store->keepRemaining($alice, 'alice', [$moves[0]]);
+        $log['narrowed'] = [$store->find($alice, 'alice')?->moves, $store->find($alice, 'alice')?->dirs];
+        $log['undone by another'] = $store->markUndone($alice, 'bob', 2000);
+        $log['undone'] = $store->markUndone($alice, 'alice', 2000);
+        $log['undone twice'] = $store->markUndone($alice, 'alice', 2001);
+        $store->keepRemaining($alice, 'alice', []);
+        $log['an undone batch is not narrowed'] = [$store->find($alice, 'alice')?->moves, $store->find($alice, 'alice')?->undoneAt];
+        $store->insert($batch('carol', 1000 + BatchStore::LIFETIME_SECONDS + 1));
+        $log['purged past its lifetime'] = [$store->find($alice, 'alice'), $store->find($bob, 'bob')];
+        $store->deleteForUser('carol');
+        return $log;
+    }
+
+    /**
+     * The batch double against the production store on SQLite: unlike the two above, its SQL runs against the table the
+     * migration creates ({@see SqliteDatabase}), so a column the store names and the migration does not is caught too.
+     */
+    public function testTheBatchDoubleAnswersLikeTheRealStore(): void {
+        $db = new SqliteDatabase($this, [new \OCA\Mcp\Migration\Version000800Date20261002000000()]);
+
+        $this->assertEquals(self::batchScenario(new BatchStore($db->connection())),
+            self::batchScenario(new InMemoryBatchStore($this->createMock(\OCP\IDBConnection::class))));
     }
 }

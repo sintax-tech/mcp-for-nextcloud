@@ -676,7 +676,8 @@ final class Reorganization {
      *
      * Only an empty folder the batch itself created goes; a folder with content, one the user cannot delete
      * and one that is not there any more are all kept. Reading it is what lets the plan answer the question
-     * before anything is moved back.
+     * before anything is moved back, so it reads the tree as the undo will leave it: the items the batch moved
+     * in are gone by the time the folders are looked at.
      *
      * @param Folder $root the user's folder
      * @param Batch $batch batch being undone
@@ -685,7 +686,7 @@ final class Reorganization {
     private function emptyDirs(Folder $root, Batch $batch): array {
         $removed = [];
         $kept = [];
-        $simulatedRemoved = [];
+        $simulatedRemoved = array_map(static fn (array $move): string => PathGuard::normalize($move['to'], 'moves'), $batch->moves);
         foreach ($this->byDepth($batch->dirs) as $dir) {
             $relative = ltrim($dir, '/');
             if (!$root->nodeExists($relative)) {

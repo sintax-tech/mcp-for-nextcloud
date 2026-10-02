@@ -55,6 +55,35 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
         $this->assertArrayHasKey('/alice/files/Arquivado/ata.md', $this->tree->nodes);
     }
 
+    /**
+     * The only removal of the module is previewed exactly: a folder the batch created and filled is empty once the
+     * undo moves its items back, so the plan says it goes, and the run removes just that. A folder the user filled
+     * afterwards is kept in both.
+     */
+    public function testTheUndoPlanSaysWhichFoldersGoExactlyAsTheRunDoes(): void {
+        $id = $this->json('files_move_batch', [
+            'moves' => [
+                ['from' => '/Documentos/ata.md', 'to' => '/Novo/ata.md'],
+                ['from' => '/Documentos/plano.md', 'to' => '/Outro/plano.md'],
+            ],
+            'mkdirs' => ['/Novo', '/Outro'],
+            'confirm' => true,
+        ])['batch_id'];
+        $this->tree->addFile('/alice/files/Outro/notas.md', 'do usuário', 'text/markdown');
+
+        $plan = $this->plan('files_undo_batch', ['batch_id' => $id]);
+        $this->assertSame(['/Novo'], $plan['removed_dirs'], 'a pasta fica vazia depois do desfazer');
+        $this->assertSame(['/Outro'], $plan['kept_dirs'], 'a pasta com conteúdo do usuário fica');
+        $this->assertSame([['to' => '/Outro/plano.md', 'from' => '/Documentos/plano.md'], ['to' => '/Novo/ata.md', 'from' => '/Documentos/ata.md']],
+            $plan['undo'], 'na ordem inversa do lote');
+
+        $out = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
+        $this->assertSame($plan['removed_dirs'], $out['removed_dirs']);
+        $this->assertSame($plan['kept_dirs'], $out['kept_dirs']);
+        $this->assertArrayNotHasKey('/alice/files/Novo', $this->tree->nodes);
+        $this->assertArrayHasKey('/alice/files/Outro/notas.md', $this->tree->nodes);
+    }
+
     // ------------------------------------------------------------- what it does
 
     public function testAnUndoPutsEveryNodeBackWhereItWas(): void {

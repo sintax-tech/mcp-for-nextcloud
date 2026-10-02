@@ -871,15 +871,22 @@ final class Reorganization {
      * Counts the nodes and bytes a copy would bring, stopping as soon as a ceiling is passed so a huge
      * tree is not measured to the end just to be refused.
      *
+     * A hidden node inside the tree stops the copy too: every copied node gets a new id, the hidden tag belongs
+     * to the id of the original, and the copy of a hidden file would be readable by anyone who can read the
+     * folder it lands in. The answer is the generic denial, so the count of what is hidden is never told.
+     *
      * @param Node $node the node a copy would start from, a file or a whole folder
      * @return array{nodes:int, bytes:int}
-     * @throws ToolFailure when the source is over either ceiling
+     * @throws ToolFailure when the source is over either ceiling or holds a hidden node
      */
     public function measure(Node $node): array {
         $nodes = $bytes = 0;
         $pending = [$node];
         while ($pending !== []) {
             $current = array_pop($pending);
+            if ($current !== $node && $this->visibilityGuard !== null && !$this->visibilityGuard->isVisible($current)) {
+                throw new ToolFailure(CommonMessages::forbidden());
+            }
             $nodes++;
             if ($nodes > ReorganizationLimits::NODES) {
                 throw new ToolFailure(FilesMessages::copyTooManyNodes(ReorganizationLimits::NODES));

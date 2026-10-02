@@ -603,14 +603,17 @@ final class Reorganization {
             try {
                 $node = NodeAccess::run(fn () => NodeAccess::get($root, $move['to']));
                 NodeAccess::run(fn () => $node->move($this->absolute($root, $move['from'])));
-            } catch (ToolFailure $e) {
+            } catch (\Throwable $e) {
                 // Every condition was checked above, so this is a lock or a permission that changed in
                 // between. The row keeps only what did not go back: an item that already moved is no longer
                 // in its destination, and leaving it there would make the next attempt read that absence as
-                // a conflict and refuse the batch for good. So the retry picks up exactly the rest.
+                // a conflict and refuse the batch for good. So the retry picks up exactly the rest. Any exception
+                // counts, as in the run of the batch: one Nextcloud has no typed answer for leaves the same state,
+                // and what it says is not repeated to the caller.
                 $store->keepRemaining($batchId, $userId, array_slice($batch->moves, 0, count($batch->moves) - $undone));
                 return ['batch_id' => $batchId, 'undone' => $undone, 'removed_dirs' => [], 'kept_dirs' => [],
-                    'conflicts' => [['from' => $move['from'], 'to' => $move['to'], 'reason' => $e->getMessage()]]];
+                    'conflicts' => [['from' => $move['from'], 'to' => $move['to'],
+                        'reason' => $e instanceof ToolFailure ? $e->getMessage() : FilesMessages::moveFailed()]]];
             }
             $undone++;
         }

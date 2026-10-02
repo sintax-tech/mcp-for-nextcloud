@@ -265,6 +265,42 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
     }
 
     /**
+     * B3: any exception in the middle of the undo keeps only what did not go back, not only the ones Nextcloud types.
+     * A generic file exception used to leave the row whole, and the retry read the items already home as conflicts.
+     */
+    public function testAGenericExceptionInTheMiddleOfTheUndoKeepsOnlyWhatDidNotGoBack(): void {
+        $this->tree->addFile('/alice/files/Documentos/notas.md', 'notas', 'text/markdown');
+        $id = $this->json('files_move_batch', [
+            'moves' => [
+                ['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md'],
+                ['from' => '/Documentos/plano.md', 'to' => '/Arquivado/plano.md'],
+                ['from' => '/Documentos/notas.md', 'to' => '/Arquivado/notas.md'],
+            ],
+            'confirm' => true,
+        ])['batch_id'];
+        // Reverse order is notas, plano, ata: the middle one breaks with an exception nobody typed.
+        $this->tree->throwOnMove = ['/alice/files/Arquivado/plano.md' => new \RuntimeException('disk exploded: /secret/path')];
+
+        $first = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
+
+        $this->assertSame(1, $first['undone']);
+        $this->assertSame(FilesMessages::moveFailed(), $first['conflicts'][0]['reason'], 'the message is the generic one');
+        $this->assertStringNotContainsString('secret', json_encode($first));
+        $this->assertSame(['/Documentos/ata.md', '/Documentos/plano.md'],
+            array_column($this->batches->find($id, 'alice')->moves, 'from'), 'the row keeps only what did not go back');
+        $this->assertNull($this->batches->find($id, 'alice')->undoneAt);
+
+        $this->tree->throwOnMove = [];
+        $second = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
+        $this->assertSame([], $second['conflicts']);
+        $this->assertSame(2, $second['undone']);
+        foreach (['ata.md', 'plano.md', 'notas.md'] as $name) {
+            $this->assertArrayHasKey("/alice/files/Documentos/$name", $this->tree->nodes);
+        }
+        $this->assertTrue($this->batches->find($id, 'alice')->isUndone());
+    }
+
+    /**
      * The same retry against the production store over SQLite. The double used to carry a method the real store did
      * not have, so this path was green in the tests and a fatal "undefined method" on the server: the undo stopped
      * halfway, recorded nothing, and the next attempt read the items already home as conflicts.

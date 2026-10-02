@@ -269,6 +269,10 @@ class CheckoutController extends Controller {
         if ($session !== null && $session->getUID() !== $row->userId) {
             return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
         }
+        // The account is asked before the body is read, so a disabled one costs neither a temporary file nor the link.
+        if (!$this->ownerUsable($row->userId)) {
+            return $this->refuse(Http::STATUS_FORBIDDEN, FilesMessages::checkoutRevoked());
+        }
         // A spent or expired link says so before anything else, even when the file of a create link now exists.
         if ($row->used || $row->expiresAt <= $this->time->getTime()) {
             return $this->refuse(Http::STATUS_GONE, $kind === CheckoutToken::KIND_CREATE ? FilesMessages::createTokenSpent() : FilesMessages::tokenSpent());
@@ -332,7 +336,7 @@ class CheckoutController extends Controller {
      */
     private function create(CheckoutToken $row, string $body): Response {
         $uid = $row->userId;
-        if (!$this->policy->canConnect($uid) || !$this->policy->granted($uid, self::MODULE, self::OPERATION_CREATE)) {
+        if (!$this->ownerUsable($uid) || !$this->policy->canConnect($uid) || !$this->policy->granted($uid, self::MODULE, self::OPERATION_CREATE)) {
             return $this->refuse(Http::STATUS_FORBIDDEN, FilesMessages::checkoutRevoked());
         }
         if ($this->l10n !== null && $this->userManager !== null && ($user = $this->userManager->get($uid)) !== null) {
@@ -407,6 +411,19 @@ class CheckoutController extends Controller {
     }
 
     /**
+     * Whether the account the link was issued to still exists and is enabled. The policy only knows the app's switches:
+     * an administrator disabling or deleting the account does not touch them, so without this a link would outlive it
+     * until it expires. A controller that cannot ask the account refuses, because it cannot tell.
+     *
+     * @param string $uid owner of the link
+     * @return bool true when the account is there and enabled
+     */
+    private function ownerUsable(string $uid): bool {
+        $user = $this->userManager?->get($uid);
+        return $user !== null && $user->isEnabled();
+    }
+
+    /**
      * Configures the translator for the token owner before body or permission checks,
      * so early refusals are delivered in the user language when the token is known.
      */
@@ -453,7 +470,7 @@ class CheckoutController extends Controller {
             return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
         }
         $uid = $row->userId;
-        if (!$this->policy->canConnect($uid) || !$this->policy->granted($uid, self::MODULE, self::OPERATION)) {
+        if (!$this->ownerUsable($uid) || !$this->policy->canConnect($uid) || !$this->policy->granted($uid, self::MODULE, self::OPERATION)) {
             return $this->refuse(Http::STATUS_FORBIDDEN, FilesMessages::checkoutRevoked());
         }
         if ($this->l10n !== null && $this->userManager !== null) {

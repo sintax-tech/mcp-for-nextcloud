@@ -10,8 +10,10 @@ use OCA\Deck\Db\Stack;
 use OCA\Deck\NoPermissionException;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Tools\Deck\DeckConflictException;
 use OCA\Mcp\Tools\Deck\DeckMessages;
 use OCA\Mcp\Tools\Deck\DeckRefusalException;
+use OCA\Mcp\Tools\Deck\DeckSessionException;
 use OCA\Mcp\Tools\Deck\Handler\CreateBoardHandler;
 use OCA\Mcp\Tools\Deck\Handler\CreateCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\CreateStackHandler;
@@ -126,9 +128,9 @@ final class AfterWriteHandlersTest extends TestCase {
 		$this->assertUnconfirmed($this->cards($gateway)['create']->handle(['stackId' => 10, 'title' => 'Fechar'], 'alice'), 'deck_list_cards');
 	}
 
-	/** A refusal before the write stays an error and is not even checked: nothing could have been written. */
-	public function testARefusalBeforeTheWriteIsNeverChecked(): void {
-		foreach ([new NoPermissionException('Permission denied'), new BadRequestException('title too long')] as $refusal) {
+	/** The refusals of this app, raised before Deck is called, stay errors and are not even checked. */
+	public function testARefusalOfTheAppBeforeTheWriteIsNeverChecked(): void {
+		foreach ([DeckRefusalException::boardNotOwned(), new DeckSessionException('session'), new DeckConflictException('conflict')] as $refusal) {
 			$gateway = $this->gatewayOwnedBy('alice');
 			$gateway->method('createCard')->willThrowException($refusal);
 			$gateway->expects(self::never())->method('findCreatedCard');
@@ -136,6 +138,33 @@ final class AfterWriteHandlersTest extends TestCase {
 			$result = $this->cards($gateway)['create']->handle(['stackId' => 10, 'title' => 'Fechar'], 'alice');
 			self::assertTrue($result['isError']);
 		}
+	}
+
+	/**
+	 * Third round: a Deck listener may throw the very classes Deck uses for its own checks, after the card is saved.
+	 * The class alone proves nothing, so the state is read again.
+	 */
+	public function testADeckExceptionRaisedByAListenerAfterTheWriteIsStillReadBack(): void {
+		foreach ([new NoPermissionException('Permission denied'), new BadRequestException('listener says no')] as $thrown) {
+			$gateway = $this->gatewayOwnedBy('alice');
+			$gateway->method('findCard')->willReturn($this->card(['id' => 7, 'title' => 'Antigo', 'lastModified' => 1_700_000_000]));
+			$gateway->method('updateCard')->willThrowException($thrown);
+			$gateway->expects(self::once())->method('cardState')->with('alice', 7)
+				->willReturn($this->card(['id' => 7, 'title' => 'Novo', 'lastModified' => 1_700_000_100]));
+
+			$result = $this->cards($gateway)['edit']->handle(['cardId' => 7, 'title' => 'Novo'], 'alice');
+			self::assertArrayNotHasKey('isError', $result);
+			self::assertContains(DeckMessages::writtenThenFailed(), $this->payload($result)['warnings']);
+		}
+	}
+
+	/** A real refusal of Deck, read back, finds nothing: the usual error. */
+	public function testARealDeckRefusalReadBackAsNotWrittenIsTheUsualError(): void {
+		$gateway = $this->gatewayOwnedBy('alice');
+		$gateway->method('createCard')->willThrowException(new NoPermissionException('Permission denied'));
+		$gateway->expects(self::once())->method('findCreatedCard')->willReturn(null);
+
+		self::assertTrue($this->cards($gateway)['create']->handle(['stackId' => 10, 'title' => 'Fechar'], 'alice')['isError']);
 	}
 
 	public function testAnAssignmentSavedBeforeTheListenerFailedIsKept(): void {

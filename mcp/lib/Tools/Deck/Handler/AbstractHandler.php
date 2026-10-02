@@ -28,16 +28,17 @@ use Psr\Log\LoggerInterface;
  */
 abstract class AbstractHandler {
 	/**
-	 * Exceptions raised before anything is written: the refusals of this module and of Deck's permission check and
-	 * validator. They stay errors and are not read back.
+	 * Exceptions this app raises itself before it calls Deck, or after it already read the state: they stay as they
+	 * are and are not read back. Deck's own `NoPermissionException` and `BadRequestException` are deliberately not
+	 * here (third round of the review): Deck dispatches events after it writes, and a listener of another app may throw
+	 * those classes with the data already saved, so the class proves nothing and the state is read again.
 	 */
-	private const REFUSED_BEFORE_WRITE = [
+	private const RAISED_BY_THE_APP = [
 		DeckRefusalException::class,
 		DeckSessionException::class,
 		DeckConflictException::class,
+		DeckUnconfirmedException::class,
 		InvalidArgumentException::class,
-		'OCA\Deck\NoPermissionException',
-		'OCA\Deck\BadRequestException',
 	];
 
 	/**
@@ -109,8 +110,8 @@ abstract class AbstractHandler {
 	/**
 	 * Runs one Deck write and, when the write call itself throws, answers with what Deck really holds.
 	 *
-	 * A refusal raised before the write ({@see self::REFUSED_BEFORE_WRITE}) is rethrown as it is. Any other exception
-	 * is followed by `$verify`, which reads the state again: what it returns is the saved result, and the call goes on
+	 * A refusal of this app ({@see self::RAISED_BY_THE_APP}) is rethrown as it is. Any other exception, Deck's own
+	 * `NoPermissionException` and `BadRequestException` included, is followed by `$verify`, which reads the state again: what it returns is the saved result, and the call goes on
 	 * as a success with {@see DeckMessages::writtenThenFailed()} in `$warnings`; null means nothing was saved and the
 	 * original exception goes on to become the usual error; an exception of `$verify` means nobody can tell, which
 	 * becomes {@see DeckUnconfirmedException}. Only exception classes are logged.
@@ -127,7 +128,7 @@ abstract class AbstractHandler {
 		try {
 			return $write();
 		} catch (\Throwable $e) {
-			foreach (self::REFUSED_BEFORE_WRITE as $class) {
+			foreach (self::RAISED_BY_THE_APP as $class) {
 				if (is_a($e, $class)) {
 					throw $e;
 				}

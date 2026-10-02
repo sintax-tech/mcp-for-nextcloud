@@ -471,7 +471,10 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	 * table, so a concurrent insert is not blocked, and on MySQL's default REPEATABLE READ the second count would
 	 * not even see it. It would also run Deck's notifications inside a transaction that may be rolled back. What
 	 * remains is a window of a few milliseconds, between the recount and a request that had already passed Deck's
-	 * checks; a card created in it sits in the trashed list, which stays recoverable from the Deck trash.
+	 * checks (`CardService::create()` never looks at the `deleted_at` of the list); a card created in the instant right
+	 * after the second count sits in the trashed list, which stays recoverable from the Deck trash. This residual
+	 * window is accepted (third round of the review): closing it would need a lock shared with every card write of
+	 * the Deck app, which this app cannot take, and the tool guide says so.
 	 */
 	public function deleteEmptyStack(string $userId, int $stackId): Stack {
 		// The count runs the manage check and binds the caller; it is taken again here and not trusted from the plan.
@@ -486,7 +489,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		// Soft delete: Deck stamps `deleted_at` on the list and keeps the row.
 		$stack = $stackService->delete($stackId);
 		if ($this->cardsInStack($stackId) > 0) {
-			$this->restoreStack($stackService, $stack);
+			$this->restoreStack($userId, $stackService, $stack);
 		}
 
 		return $stack;
@@ -497,6 +500,9 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	 *
 	 * The board is counted again after the delete and, when a card showed up in one of its lists, brought back with
 	 * Deck's own `BoardService::deleteUndo()` (it clears `deleted_at` and writes the restore activity).
+	 *
+	 * The same residual window as {@see self::deleteEmptyStack()} remains and is accepted: a card created in the
+	 * instant right after the second count may go to the trash with the board, where it is recoverable.
 	 */
 	public function deleteEmptyBoard(string $userId, int $boardId): Board {
 		// Owner first: somebody who merely manages the board is refused before a single card is counted.
@@ -515,7 +521,7 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		// can be brought back from the Deck deleted items.
 		$board = $boardService->delete($boardId);
 		if ($this->cardsInBoard($boardId) > 0) {
-			$this->undoBoardDelete($boardService, $boardId);
+			$this->undoBoardDelete($userId, $boardService, $boardId);
 		}
 
 		return $board;
@@ -524,17 +530,29 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	/**
 	 * Brings a list back after a card arrived during its deletion, and refuses the call either way.
 	 *
+	 * `StackService::update()` writes `deleted_at = 0` before it records activity and dispatches events, so an
+	 * exception of the restore does not prove that the list stayed in the trash: the list is read again
+	 * ({@see self::deletedStack()}) and only a list that is still in the trash is reported as not restored.
+	 *
+	 * @param string $userId UID of the authenticated caller.
 	 * @param StackService $stackService Deck list service, already bound to the caller.
 	 * @param Stack $deleted The list as `StackService::delete()` returned it.
 	 * @return never
 	 * @throws DeckRefusalException Always: "nothing was deleted" when the list is back, a message that points to the
-	 *     Deck trash when the restore itself failed (no Deck detail is carried).
+	 *     Deck trash when it is still there (no Deck detail is carried).
+	 * @throws DeckUnconfirmedException When the restore threw and the list cannot be read again.
 	 */
-	private function restoreStack(StackService $stackService, Stack $deleted): never {
+	private function restoreStack(string $userId, StackService $stackService, Stack $deleted): never {
 		try {
 			$stackService->update((int)$deleted->getId(), (string)$deleted->getTitle(), (int)$deleted->getBoardId(), (int)$deleted->getOrder(), 0);
-		} catch (\Throwable) {
-			throw DeckRefusalException::stackReceivedCards(false);
+		} catch (\Throwable $e) {
+			try {
+				$stillDeleted = $this->deletedStack($userId, (int)$deleted->getId()) !== null;
+			} catch (\Throwable) {
+				throw new DeckUnconfirmedException('deck_list_stacks', $e);
+			}
+
+			throw DeckRefusalException::stackReceivedCards(!$stillDeleted);
 		}
 
 		throw DeckRefusalException::stackReceivedCards(true);
@@ -543,17 +561,36 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 	/**
 	 * Brings a board back after a card arrived during its deletion, and refuses the call either way.
 	 *
+	 * `BoardService::deleteUndo()` writes `deleted_at = 0` before its activity and events, so after an exception the
+	 * board is read again among the caller's own boards and only one still in the trash is reported as not restored.
+	 *
+	 * @param string $userId UID of the authenticated caller, the owner.
 	 * @param BoardService $boardService Deck board service, already bound to the caller.
 	 * @param int $boardId Board that was just deleted.
 	 * @return never
 	 * @throws DeckRefusalException Always: "nothing was deleted" when the board is back, a message that points to the
-	 *     Deck trash when the undo itself failed (no Deck detail is carried).
+	 *     Deck trash when it is still there (no Deck detail is carried).
+	 * @throws DeckUnconfirmedException When the undo threw and the board cannot be read again.
 	 */
-	private function undoBoardDelete(BoardService $boardService, int $boardId): never {
+	private function undoBoardDelete(string $userId, BoardService $boardService, int $boardId): never {
 		try {
 			$boardService->deleteUndo($boardId);
-		} catch (\Throwable) {
-			throw DeckRefusalException::boardReceivedCards(false);
+		} catch (\Throwable $e) {
+			try {
+				$stillDeleted = null;
+				foreach ($this->ownedBoards($userId) as $board) {
+					if ((int)$board->getId() === $boardId) {
+						$stillDeleted = (int)$board->getDeletedAt() !== 0;
+					}
+				}
+				if ($stillDeleted === null) {
+					throw new \RuntimeException('The board is not among the boards of the caller');
+				}
+			} catch (\Throwable) {
+				throw new DeckUnconfirmedException('deck_list_boards', $e);
+			}
+
+			throw DeckRefusalException::boardReceivedCards(!$stillDeleted);
 		}
 
 		throw DeckRefusalException::boardReceivedCards(true);

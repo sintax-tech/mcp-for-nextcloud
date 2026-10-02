@@ -5,6 +5,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use LogicException;
 use OCA\Deck\Db\Acl;
+use OCA\Deck\Db\Board;
+use OCA\Deck\Db\BoardMapper;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Db\Stack;
@@ -17,6 +19,7 @@ use OCA\Deck\Service\StackService;
 use OCA\Mcp\Tools\Deck\DeckRefusalException;
 use OCA\Mcp\Tools\Deck\DeckServiceGateway;
 use OCA\Mcp\Tools\Deck\DeckSessionException;
+use OCA\Mcp\Tools\Deck\DeckUnconfirmedException;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\ISession;
 use OCP\IUserManager;
@@ -52,6 +55,7 @@ final class DeckStructureGatewayTest extends TestCase {
 			PermissionService::class => $this->createMock(PermissionService::class),
 			CardMapper::class => $this->createMock(CardMapper::class),
 			StackMapper::class => $this->createMock(StackMapper::class),
+			BoardMapper::class => $this->createMock(BoardMapper::class),
 			IUserManager::class => $this->createMock(IUserManager::class),
 		];
 		$container = $this->createMock(ContainerInterface::class);
@@ -283,6 +287,9 @@ final class DeckStructureGatewayTest extends TestCase {
 			return new Stack(['id' => 10, 'boardId' => 4, 'title' => 'A fazer', 'order' => 2]);
 		});
 		$this->services[StackService::class]->method('update')->willThrowException(new \RuntimeException('secret detail'));
+		// Read again, the list is still in the trash.
+		$this->services[StackMapper::class]->method('findBoardId')->willReturn(4);
+		$this->services[StackMapper::class]->method('findDeleted')->willReturn([new Stack(['id' => 10, 'boardId' => 4])]);
 
 		try {
 			$this->gateway->deleteEmptyStack('alice', 10);
@@ -290,6 +297,53 @@ final class DeckStructureGatewayTest extends TestCase {
 		} catch (DeckRefusalException $e) {
 			self::assertSame('The list received cards while it was being deleted and could not be restored; recover it from the Deck trash.', $e->getMessage());
 			self::assertStringNotContainsString('secret', $e->getMessage());
+		}
+	}
+
+	/** Arranges a list that received a card during its delete and whose restore throws; the trash decides what is told. */
+	private function stackWhoseRestoreThrows(): void {
+		$deleted = false;
+		$this->services[PermissionService::class]->method('checkPermission')->willReturn(true);
+		$this->services[CardMapper::class]->method('findAll')->willReturnCallback(
+			function () use (&$deleted): array {
+				return $deleted ? [$this->card(['id' => 7])] : [];
+			},
+		);
+		$this->services[CardMapper::class]->method('findAllArchived')->willReturn([]);
+		$this->services[StackService::class]->method('delete')->willReturnCallback(function () use (&$deleted): Stack {
+			$deleted = true;
+
+			return new Stack(['id' => 10, 'boardId' => 4, 'title' => 'A fazer', 'order' => 2]);
+		});
+		$this->services[StackService::class]->method('update')->willThrowException(new \RuntimeException('listener failed after the update'));
+		$this->services[StackMapper::class]->method('findBoardId')->willReturn(4);
+	}
+
+	/** Third round: `StackService::update()` writes `deleted_at = 0` before its events; a listener throwing leaves the list active. */
+	public function testDeleteEmptyStackReadsTheListAgainWhenTheRestoreThrowsAfterRestoring(): void {
+		$this->stackWhoseRestoreThrows();
+		$this->services[StackMapper::class]->method('findDeleted')->willReturn([]);
+		$this->services[StackMapper::class]->method('findAll')->willReturn([new Stack(['id' => 10, 'boardId' => 4])]);
+
+		try {
+			$this->gateway->deleteEmptyStack('alice', 10);
+			self::fail('refused nothing although the list is active');
+		} catch (DeckRefusalException $e) {
+			self::assertSame('The list received cards while it was being deleted; nothing was deleted.', $e->getMessage());
+			self::assertFalse($e->afterWrite());
+		}
+	}
+
+	/** When the list cannot be read again, nobody can say where it is: unconfirmed, never a claim of either state. */
+	public function testDeleteEmptyStackIsUnconfirmedWhenTheListCannotBeReadAfterTheRestoreThrew(): void {
+		$this->stackWhoseRestoreThrows();
+		$this->services[StackMapper::class]->method('findDeleted')->willThrowException(new \RuntimeException('db gone'));
+
+		try {
+			$this->gateway->deleteEmptyStack('alice', 10);
+			self::fail('claimed a state that was not read');
+		} catch (DeckUnconfirmedException $e) {
+			self::assertSame('deck_list_stacks', $e->readWith);
 		}
 	}
 
@@ -356,6 +410,8 @@ final class DeckStructureGatewayTest extends TestCase {
 			return new \OCA\Deck\Db\Board(['id' => 4]);
 		});
 		$this->services[BoardService::class]->method('deleteUndo')->willThrowException(new \RuntimeException('secret detail'));
+		// Read again, the board is still in the trash.
+		$this->services[BoardMapper::class]->method('findAllByOwner')->willReturn([new Board(['id' => 4, 'owner' => 'alice', 'deletedAt' => 1_700_000_500])]);
 
 		try {
 			$this->gateway->deleteEmptyBoard('alice', 4);
@@ -363,6 +419,52 @@ final class DeckStructureGatewayTest extends TestCase {
 		} catch (DeckRefusalException $e) {
 			self::assertSame('The board received cards while it was being deleted and could not be restored; recover it from the Deck trash.', $e->getMessage());
 			self::assertStringNotContainsString('secret', $e->getMessage());
+		}
+	}
+
+	/** Arranges a board that received a card during its delete and whose undo throws. */
+	private function boardWhoseUndoThrows(): void {
+		$deleted = false;
+		$this->services[PermissionService::class]->method('checkPermission')->willReturn(true);
+		$this->services[BoardService::class]->method('find')->willReturn(new Board(['id' => 4, 'title' => 'Meu', 'owner' => 'alice']));
+		$this->services[StackMapper::class]->method('findAll')->willReturn([new Stack(['id' => 10])]);
+		$this->services[CardMapper::class]->method('findAll')->willReturnCallback(
+			function () use (&$deleted): array {
+				return $deleted ? [$this->card(['id' => 7])] : [];
+			},
+		);
+		$this->services[CardMapper::class]->method('findAllArchived')->willReturn([]);
+		$this->services[BoardService::class]->method('delete')->willReturnCallback(function () use (&$deleted): Board {
+			$deleted = true;
+
+			return new Board(['id' => 4]);
+		});
+		$this->services[BoardService::class]->method('deleteUndo')->willThrowException(new \RuntimeException('listener failed after the undo'));
+	}
+
+	/** Third round: `BoardService::deleteUndo()` writes `deleted_at = 0` before its events; a listener throwing leaves the board active. */
+	public function testDeleteEmptyBoardReadsTheBoardAgainWhenTheUndoThrowsAfterRestoring(): void {
+		$this->boardWhoseUndoThrows();
+		$this->services[BoardMapper::class]->method('findAllByOwner')->willReturn([new Board(['id' => 4, 'owner' => 'alice', 'deletedAt' => 0])]);
+
+		try {
+			$this->gateway->deleteEmptyBoard('alice', 4);
+			self::fail('refused nothing although the board is active');
+		} catch (DeckRefusalException $e) {
+			self::assertSame('The board received cards while it was being deleted; nothing was deleted.', $e->getMessage());
+			self::assertFalse($e->afterWrite());
+		}
+	}
+
+	public function testDeleteEmptyBoardIsUnconfirmedWhenTheBoardCannotBeReadAfterTheUndoThrew(): void {
+		$this->boardWhoseUndoThrows();
+		$this->services[BoardMapper::class]->method('findAllByOwner')->willThrowException(new \RuntimeException('db gone'));
+
+		try {
+			$this->gateway->deleteEmptyBoard('alice', 4);
+			self::fail('claimed a state that was not read');
+		} catch (DeckUnconfirmedException $e) {
+			self::assertSame('deck_list_boards', $e->readWith);
 		}
 	}
 

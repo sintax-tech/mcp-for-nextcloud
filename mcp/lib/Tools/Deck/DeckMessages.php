@@ -38,9 +38,9 @@ final class DeckMessages {
 	public const TOOL_CREATE_STACK_DESCRIPTION
 		= 'Creates a list (stack) on a Deck board you manage, at the end or at the given position. To build a whole board with its lists and cards, use deck_create_board.';
 	public const TOOL_DELETE_STACK_DESCRIPTION
-		= 'Deletes a Deck list (stack), only if it holds no cards, active or archived: move or delete the cards first. Deck moves the list to the trash of the board, where it can be recovered.';
+		= 'Deletes a Deck list (stack), only if it holds no cards, active or archived: move or delete the cards first. Deck moves the list to the trash of the board, where it can be recovered. A card created by someone else right after the second count the tool takes before finishing may go to the trash with the list; it is recoverable there.';
 	public const TOOL_DELETE_BOARD_DESCRIPTION
-		= 'Deletes a Deck board you own, only if none of its lists holds a card, active or archived. Its empty lists go with it. Deck moves the board to its trash, where it can be recovered.';
+		= 'Deletes a Deck board you own, only if none of its lists holds a card, active or archived. Its empty lists go with it. Deck moves the board to its trash, where it can be recovered. A card created by someone else right after the second count the tool takes before finishing may go to the trash with the board; it is recoverable there.';
 
 	/* Parameter descriptions. */
 	public const PARAM_BOARD_ID = 'Id of the Deck board.';
@@ -137,6 +137,32 @@ final class DeckMessages {
 	 */
 	public static function writtenThenFailed(): string {
 		return Translator::t('Saved; Deck reported an error afterwards (notification or activity).');
+	}
+
+	/**
+	 * A creation threw and the read-back found an item that only looks like it (same title, owner and moment, or a
+	 * list or board that was not in the snapshot): it may belong to another call, so nothing is built on it.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function probablyCreated(): string {
+		return Translator::t('Probably created: check it before continuing.');
+	}
+
+	/**
+	 * Assignees of a card that was only probably created are left alone.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function probableCardNotAssigned(): string {
+		return Translator::t('The assignees were not assigned because the card was only probably created. Check it first.');
+	}
+
+	/**
+	 * Reason of a list or card of deck_create_board that was not created because the board or list it belongs to
+	 * was found only by a likeness.
+	 * @return string The message in the language of the current user.
+	 */
+	public static function probableParentNotBuilt(): string {
+		return Translator::t('Not created: what it belongs to was only probably created. Check it, then create this one.');
 	}
 
 	/**

@@ -7,6 +7,7 @@ use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tools\Deck\CardFormatter;
 use OCA\Mcp\Tools\Deck\CardInput;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
+use OCA\Mcp\Tools\Deck\DeckMessages;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -14,7 +15,8 @@ use Psr\Log\LoggerInterface;
  *
  * The caller owns the card; optional assignees are checked against Deck board ACLs before creation. A creation or
  * assignment that throws after Deck saved it is read back and answered as saved, with a warning
- * ({@see AbstractHandler::afterWrite()}).
+ * ({@see AbstractHandler::afterWrite()}). A card found again only by owner, title and time is answered as
+ * `confirmed: "probable"` and gets no assignment ({@see AbstractHandler::afterApproximateWrite()}).
  */
 final class CreateCardHandler extends AbstractHandler {
 	/** MCP tool name this handler serves. */
@@ -67,11 +69,22 @@ final class CreateCardHandler extends AbstractHandler {
 			$warnings = [];
 			// Deck inserts the card before its activity, events and enrichment: a failure after that point is a card
 			// that exists, found again by owner, title and creation time.
-			$card = $this->afterWrite(
+			$probable = false;
+			$card = $this->afterApproximateWrite(
 				fn () => $this->gateway->createCard($userId, $stackId, $title, $description, $duedate),
 				fn () => $this->gateway->findCreatedCard($userId, $stackId, $title, []),
 				$warnings,
+				$probable,
 			);
+
+			if ($probable) {
+				// Found by likeness, so maybe somebody else's card: nothing is written on it.
+				if ($assignees !== []) {
+					$warnings[] = DeckMessages::probableCardNotAssigned();
+				}
+
+				return ['confirmed' => 'probable'] + $this->formatter->card($card) + ['warnings' => $warnings];
+			}
 
 			$assignmentFailed = false;
 			foreach ($assignees as $assignee) {

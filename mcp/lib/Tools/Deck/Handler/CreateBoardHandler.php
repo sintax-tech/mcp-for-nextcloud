@@ -20,6 +20,10 @@ use Psr\Log\LoggerInterface;
  * after a write is what made the client retry and build the same card twice in 0.9.0. A step that throws after Deck
  * saved it (the board before its default labels, a list or a card before its activity) is read back and counts as
  * created, with a warning; one whose state cannot be read back is a warning, never an entry of `failed`.
+ *
+ * A board, list or card found again only by likeness (title, owner and time) may belong to another call: it is
+ * reported with `confirmed: "probable"` and nothing is built on it. The lists of a probable board and the cards of a
+ * probable list go to `failed` with the reason, and the assignees of a probable card are not assigned.
  */
 final class CreateBoardHandler extends AbstractHandler {
 	/** MCP tool name this handler serves. */
@@ -52,13 +56,15 @@ final class CreateBoardHandler extends AbstractHandler {
 			// before its labels and activity, so the boards of the caller before and after tell whether it does.
 			$before = array_map(static fn ($board): int => (int)$board->getId(), $this->gateway->ownedBoards($userId));
 			$warnings = [];
-			$board = $this->afterWrite(
+			$probable = false;
+			$board = $this->afterApproximateWrite(
 				fn () => $this->gateway->createBoard($userId, $blueprint['title'], $blueprint['color']),
 				fn () => $this->newBoard($userId, $blueprint['title'], $before),
 				$warnings,
+				$probable,
 			);
 
-			return $this->build((int)$board->getId(), (string)$board->getTitle(), $blueprint, $userId, $warnings);
+			return $this->build((int)$board->getId(), (string)$board->getTitle(), $blueprint, $userId, $warnings, $probable);
 		});
 	}
 
@@ -106,21 +112,30 @@ final class CreateBoardHandler extends AbstractHandler {
 	 * @param array{stacks: list<array{title: string, cards: list<array{title: string, description: string, duedate: string|null, assignees: list<string>}>}>} $blueprint Validated structure.
 	 * @param string $userId UID of the authenticated caller.
 	 * @param list<string> $warnings Warnings so far, such as a board saved before Deck failed.
+	 * @param bool $probableBoard Whether the board was found again only by its title: nothing is built inside it.
 	 * @return array<string, mixed> Payload that says what exists and what does not.
 	 */
-	private function build(int $boardId, string $boardTitle, array $blueprint, string $userId, array $warnings = []): array {
+	private function build(int $boardId, string $boardTitle, array $blueprint, string $userId, array $warnings = [], bool $probableBoard = false): array {
 		$stacks = [];
 		$failed = [];
 		$unconfirmed = 0;
+		$probables = $probableBoard ? 1 : 0;
 		$cardTotal = 0;
 
 		foreach ($blueprint['stacks'] as $position => $wanted) {
+			if ($probableBoard) {
+				// A board that may be somebody else's call: no list is written in it.
+				$failed[] = ['kind' => 'list', 'title' => $wanted['title'], 'reason' => DeckMessages::probableParentNotBuilt(), 'cardsNotCreated' => count($wanted['cards'])];
+				continue;
+			}
+			$probableStack = false;
 			try {
 				$known = array_column($stacks, 'id');
-				$stack = $this->afterWrite(
+				$stack = $this->afterApproximateWrite(
 					fn () => $this->gateway->createStack($userId, $boardId, $wanted['title'], $position),
 					fn () => self::newStack($this->gateway->stacksOf($userId, $boardId), $wanted['title'], $known),
 					$warnings,
+					$probableStack,
 				);
 			} catch (DeckUnconfirmedException $e) {
 				$warnings[] = $this->unconfirmed('list', $wanted['title'], $e);
@@ -136,14 +151,22 @@ final class CreateBoardHandler extends AbstractHandler {
 				continue;
 			}
 
+			$probables += $probableStack ? 1 : 0;
 			$cards = [];
 			foreach ($wanted['cards'] as $order => $card) {
+				if ($probableStack) {
+					// A list that may be somebody else's call: no card is written in it.
+					$failed[] = ['kind' => 'card', 'list' => $wanted['title'], 'title' => $card['title'], 'reason' => DeckMessages::probableParentNotBuilt()];
+					continue;
+				}
+				$probableCard = false;
 				try {
 					$known = array_column($cards, 'id');
-					$created = $this->afterWrite(
+					$created = $this->afterApproximateWrite(
 						fn () => $this->gateway->createCard($userId, (int)$stack->getId(), $card['title'], $card['description'], $card['duedate'], $order),
 						fn () => $this->gateway->findCreatedCard($userId, (int)$stack->getId(), $card['title'], $known),
 						$warnings,
+						$probableCard,
 					);
 				} catch (DeckUnconfirmedException $e) {
 					$warnings[] = $this->unconfirmed('card', $card['title'], $e);
@@ -153,7 +176,15 @@ final class CreateBoardHandler extends AbstractHandler {
 					$failed[] = ['kind' => 'card', 'list' => $wanted['title'], 'title' => $card['title'], 'reason' => $this->reason($e)];
 					continue;
 				}
-				$cards[] = ['id' => (int)$created->getId(), 'title' => $card['title']];
+				$cards[] = ['id' => (int)$created->getId(), 'title' => $card['title']] + ($probableCard ? ['confirmed' => 'probable'] : []);
+				if ($probableCard) {
+					$probables++;
+					// Found by likeness, so maybe somebody else's card: nothing is written on it.
+					if ($card['assignees'] !== []) {
+						$warnings[] = DeckMessages::probableCardNotAssigned();
+					}
+					continue;
+				}
 
 				foreach ($card['assignees'] as $assignee) {
 					try {
@@ -170,17 +201,17 @@ final class CreateBoardHandler extends AbstractHandler {
 				}
 			}
 			$cardTotal += count($cards);
-			$stacks[] = ['id' => (int)$stack->getId(), 'title' => $wanted['title'], 'cards' => $cards];
+			$stacks[] = ['id' => (int)$stack->getId(), 'title' => $wanted['title']] + ($probableStack ? ['confirmed' => 'probable'] : []) + ['cards' => $cards];
 		}
 
-		$summary = $this->summary($boardTitle, count($stacks), $cardTotal, count($failed));
+		$summary = $probableBoard ? DeckMessages::probablyCreated() : $this->summary($boardTitle, count($stacks), $cardTotal, count($failed));
 
 		return [
-			'created' => ['board' => ['id' => $boardId, 'title' => $boardTitle], 'stacks' => $stacks],
+			'created' => ['board' => ['id' => $boardId, 'title' => $boardTitle] + ($probableBoard ? ['confirmed' => 'probable'] : []), 'stacks' => $stacks],
 			'failed' => $failed,
 			'warnings' => $warnings,
-			'complete' => $failed === [] && $unconfirmed === 0,
-			'summary' => $unconfirmed === 0 ? $summary
+			'complete' => $failed === [] && $unconfirmed === 0 && $probables === 0,
+			'summary' => ($unconfirmed === 0 && $probables === 0) || $probableBoard ? $summary
 				: Translator::t('%s Some items could not be confirmed; see \'warnings\' before retrying.', [$summary]),
 		];
 	}

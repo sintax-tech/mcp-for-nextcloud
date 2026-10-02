@@ -11,7 +11,7 @@ use Psr\Log\LoggerInterface;
  * Backs `deck_create_stack`: a new list on a board the caller manages.
  *
  * The board decides whose it is; on somebody else's board nothing is written until the call repeats with
- * `confirm_shared: true`.
+ * `confirm_shared: true`. A list found again only by its title is answered as `confirmed: "probable"`.
  */
 final class CreateStackHandler extends AbstractHandler {
 	/** MCP tool name this handler serves. */
@@ -51,13 +51,15 @@ final class CreateStackHandler extends AbstractHandler {
 			// Deck inserts the list before its activity and the board event.
 			$before = array_map(static fn ($stack): int => (int)$stack->getId(), $this->gateway->stacksOf($userId, $boardId));
 			$warnings = [];
-			$stack = $this->afterWrite(
+			$probable = false;
+			$stack = $this->afterApproximateWrite(
 				fn () => $this->gateway->createStack($userId, $boardId, $title, $order),
 				fn () => self::newStack($this->gateway->stacksOf($userId, $boardId), $title, $before),
 				$warnings,
+				$probable,
 			);
 
-			return [
+			return ($probable ? ['confirmed' => 'probable'] : []) + [
 				'id' => (int)$stack->getId(),
 				'boardId' => (int)$stack->getBoardId(),
 				'title' => (string)$stack->getTitle(),

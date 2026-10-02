@@ -4,7 +4,7 @@
  * status, OAuth clients, hidden files & tags, OCR, the users × permissions matrix and the active connections.
  * The matrix, OAuth clients and tags are filled by js/admin-grants.js, the connections by js/connections.js.
  *
- * @var array{endpoint:string, serviceEnabled:bool, ocrActive:bool, ocrUrl:string, version:string, eligibleUsers:int, connectedUsers:int, activeConnections:int} $_
+ * @var array{endpoint:string, serviceEnabled:bool, ocrActive:bool, ocrUrl:string, version:string, eligibleUsers:int, connectedUsers:int, activeConnections:int, unsupportedApps:list<array{name:string, installed:string, required:string}>} $_
  * @var \OCP\IL10N $l
  */
 \OCP\Util::addScript('mcp', 'admin-grants');
@@ -117,6 +117,9 @@
         <h2><?php p($l->t('Permissions')); ?></h2>
         <p class="settings-hint mcp-hint"><?php p($l->t('Users need “Can connect” and must activate the connection in their personal settings. Read permissions start allowed; write, delete and transfer start denied. Nextcloud permissions and shares still apply.')); ?></p>
         <p class="settings-hint mcp-hint"><?php p($l->t('Each change is saved at once. The “All” menus in the header allow or deny a permission for every user on the current page.')); ?></p>
+        <?php foreach ($_['unsupportedApps'] as $app) { ?>
+            <p class="mcp-unsupported-app"><?php p($l->t('%1$s %2$s is installed, but MCP for Nextcloud supports it from version %3$s on. Its tools stay hidden until the app is updated; the saved permissions are kept.', [$app['name'], $app['installed'], $app['required']])); ?></p>
+        <?php } ?>
         <div class="mcp-toolbar">
             <input type="search" id="mcp-search" placeholder="<?php p($l->t('Search user (name, user ID or e-mail)')); ?>" aria-label="<?php p($l->t('Search user')); ?>">
             <select id="mcp-group" aria-label="<?php p($l->t('Group')); ?>">

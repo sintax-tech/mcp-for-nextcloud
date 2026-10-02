@@ -10,7 +10,8 @@ use PHPUnit\Framework\TestCase;
  * Every method the adapters call on the Nextcloud DAV backends must exist there. A unit test with a mocked backend
  * cannot notice a method that does not exist in the real class, which is how a call to a missing method reached
  * production in 0.8.1. `nextcloud/ocp` does not ship `OCA\DAV` and the test stubs of it are partial, so the public
- * methods always come from {@see CalDavBackendMethods}, a fixed list taken from the Nextcloud 33.0.2 source.
+ * methods always come from {@see CalDavBackendMethods}, fixed lists taken from the oldest release of every Nextcloud
+ * major appinfo/info.xml declares; a method must exist in all of them.
  */
 final class CalDavBackendContractTest extends TestCase {
     private const CALDAV_CLASS = 'OCA\DAV\CalDAV\CalDavBackend';
@@ -42,12 +43,26 @@ final class CalDavBackendContractTest extends TestCase {
         return $calls;
     }
 
+    /** @return list<string> the Nextcloud majors info.xml declares, oldest first */
+    private static function declaredMajors(): array {
+        $nextcloud = simplexml_load_file(dirname(__DIR__, 4) . '/appinfo/info.xml')->dependencies->nextcloud;
+        return array_map('strval', range((int)$nextcloud['min-version'], (int)$nextcloud['max-version']));
+    }
+
     /**
      * @param string $class backend class name
-     * @return list<string> public method names
+     * @param string $major Nextcloud major
+     * @return list<string> public method names in the oldest release of that major
      */
-    private static function publicMethods(string $class): array {
-        return $class === self::CALDAV_CLASS ? CalDavBackendMethods::CALDAV : CalDavBackendMethods::CARDDAV;
+    private static function publicMethods(string $class, string $major): array {
+        $lists = $class === self::CALDAV_CLASS ? CalDavBackendMethods::CALDAV : CalDavBackendMethods::CARDDAV;
+        self::assertArrayHasKey($major, $lists, "CalDavBackendMethods has no list for Nextcloud $major");
+        return $lists[$major];
+    }
+
+    public function testThereIsAListForEveryDeclaredMajor(): void {
+        self::assertSame(self::declaredMajors(), array_map('strval', array_keys(CalDavBackendMethods::CALDAV)));
+        self::assertSame(self::declaredMajors(), array_map('strval', array_keys(CalDavBackendMethods::CARDDAV)));
     }
 
     /**
@@ -70,7 +85,9 @@ final class CalDavBackendContractTest extends TestCase {
      */
     #[DataProvider('calledMethods')]
     public function testEveryBackendMethodTheAdaptersCallExists(string $class, string $method, array $files): void {
-        self::assertContains($method, self::publicMethods($class), sprintf('%s::%s() is called from %s but is not a public method of Nextcloud 33.0.2', $class, $method, implode(', ', $files)));
+        foreach (self::declaredMajors() as $major) {
+            self::assertContains($method, self::publicMethods($class, $major), sprintf('%s::%s() is called from %s but is not a public method of Nextcloud %s', $class, $method, implode(', ', $files), $major));
+        }
     }
 
     public function testTheScannerSeesTheKnownAdapterCalls(): void {

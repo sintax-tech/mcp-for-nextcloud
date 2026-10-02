@@ -5,6 +5,7 @@ namespace OCA\Mcp\Tools;
 
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Service\Compat\AppEnablement;
 use OCA\Mcp\Service\GrantPolicy;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
@@ -218,7 +219,8 @@ class ToolRegistry {
         }
         if (isset($definition['app'])) {
             $user = $this->userManager->get($userId);
-            return $user !== null && $this->appManager->isEnabledForUser($definition['app'], $user);
+            // An optional app in a version older than MCP supports counts as off (AppEnablement::MINIMUM_VERSIONS).
+            return $user !== null && AppEnablement::forUser($this->appManager, $definition['app'], $user);
         }
         return true;
     }

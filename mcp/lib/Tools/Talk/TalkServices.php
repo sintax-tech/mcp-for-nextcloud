@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Talk;
 
+use OCA\Mcp\Service\Compat\AppEnablement;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
 use Psr\Container\ContainerInterface;
@@ -41,7 +42,8 @@ class TalkServices {
         if ($this->userManager !== null && $user === null) {
             return false;
         }
-        return $this->appManager->isEnabledForUser(self::APP_ID, $user);
+        // A Talk older than MCP supports (AppEnablement::MINIMUM_VERSIONS) counts as off.
+        return AppEnablement::forUser($this->appManager, self::APP_ID, $user);
     }
 
     /**

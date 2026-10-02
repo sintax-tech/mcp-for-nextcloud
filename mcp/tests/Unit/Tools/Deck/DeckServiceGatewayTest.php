@@ -591,6 +591,42 @@ final class DeckServiceGatewayTest extends TestCase {
 		self::assertSame(['setUserId:alice'], $this->record('setUserId'));
 	}
 
+	/**
+	 * Deck 1.15 (Nextcloud 31) and 1.16 (Nextcloud 32) have no CardMapper::findAllForStacks(): the board is read stack
+	 * by stack with findAll(), the query that grouped one repeats, with the same filters and the same order.
+	 */
+	public function testFollowupReadsStackByStackOnADeckWithoutFindAllForStacks(): void {
+		$this->services[BoardService::class]->method('findAll')->willReturn([$this->boardDouble(4)]);
+		$this->services[PermissionService::class]->method('getPermissions')->willReturn([Acl::PERMISSION_MANAGE => true]);
+		$this->services[StackMapper::class]
+			->method('findAll')
+			->with(4)
+			->willReturn([new Stack(['id' => 10, 'boardId' => 4]), new Stack(['id' => 20, 'boardId' => 4]), new Stack(['id' => 30, 'boardId' => 4])]);
+		$late = fn (int $id, int $stackId): Card => $this->card(['id' => $id, 'stackId' => $stackId, 'duedate' => new \DateTime('2026-03-01 00:00:00')]);
+		$legacy = new class([10 => [$late(2, 10), $late(1, 10)], 30 => [$late(3, 30)]]) {
+			/** @var list<int> stack id of every findAll() call */
+			public array $asked = [];
+
+			/** @param array<int, list<Card>> $cards cards per stack, in Deck's order */
+			public function __construct(private array $cards) {
+			}
+
+			/** Deck 1.15/1.16 signature: `findAll($stackId, $limit = null, $offset = null, $since = -1)`. */
+			public function findAll($stackId, $limit = null, $offset = null, $since = -1): array {
+				$this->asked[] = $stackId;
+
+				return $this->cards[$stackId] ?? [];
+			}
+		};
+		$this->services[CardMapper::class] = $legacy;
+
+		$page = $this->gateway->followupCards('alice', 'overdue', null, null, null, 10);
+
+		self::assertSame([10, 20, 30], $legacy->asked);
+		self::assertSame([2, 1, 3], array_map(static fn (array $item): int => $item['card']->getId(), $page['items']));
+		self::assertFalse($page['truncated']);
+	}
+
 	public function testFollowupClassifiesCardsWithTheInjectedClock(): void {
 		$late = $this->card(['id' => 1, 'stackId' => 10, 'duedate' => new \DateTime('2026-03-01 00:00:00')]);
 		$today = $this->card(['id' => 2, 'stackId' => 10, 'duedate' => new \DateTime('2026-03-05 00:00:00')]);

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Service;
 
 use InvalidArgumentException;
+use OCA\Mcp\Service\Compat\AppEnablement;
 use OCP\App\IAppManager;
 use OCP\IGroupManager;
 use OCP\IUser;
@@ -80,7 +81,7 @@ class GrantMatrix {
         return array_map(function (IUser $user) use ($state): array {
             $appsEnabled = [];
             foreach (self::MODULE_APPS as $module => $app) {
-                $appsEnabled[$module] = $app === 'files' || $app === '' || $this->appManager->isEnabledForUser($app, $user);
+                $appsEnabled[$module] = $app === 'files' || $app === '' || AppEnablement::forUser($this->appManager, $app, $user);
             }
             return [
                 'uid' => $user->getUID(),
@@ -93,7 +94,7 @@ class GrantMatrix {
 
     /** @return array<string, bool> whether each module's app is enabled for anyone on the server */
     public function appsEnabled(): array {
-        return array_map(fn (string $app) => $app === 'files' || $app === '' || $this->appManager->isEnabledForAnyone($app), self::MODULE_APPS);
+        return array_map(fn (string $app) => $app === 'files' || $app === '' || AppEnablement::forAnyone($this->appManager, $app), self::MODULE_APPS);
     }
 
     /** @return list<array{id:string, displayName:string}> groups for the filter, at most MAX_GROUPS */

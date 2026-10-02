@@ -2,6 +2,21 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased
+
+### Added
+
+- compat: the app supports Nextcloud 31, 32 and 33 (`info.xml` declared only 33). Every Nextcloud API it uses — `OCP`, the DAV app and the internal classes of Deck and Talk, with their methods, constants and the parameters of the untyped calls — is checked by `NextcloudApiContractTest` against the oldest release of each major (v31.0.0, v32.0.0, v33.0.0, with Deck 1.15.0/1.16.0/1.17.0 and Talk 21.1.4/22.0.0/23.0.0), from fixtures generated from their sources; an API a declared release lacks fails the suite unless it has a fallback. The CalDAV/CardDAV backend lists of `CalDavBackendContractTest` now cover the three majors.
+- compat: an optional app older than MCP supports counts as off, exactly as one that is not installed: its tools leave `tools/list`, a call is refused and the admin matrix hides its columns, keeping the saved permissions. The minimums are Talk 21.1.4 (the first Nextcloud 31 release whose `ChatManager::addSystemMessage()` takes the participant) and Deck 1.15.0. The admin page names the app, the installed version and the minimum, in English, Brazilian Portuguese and Spanish.
+- appinfo: the store listing. Name "MCP for Nextcloud", summary and Markdown description in English, Brazilian Portuguese and Spanish (modules, safeguards, clients, requirements), author, website, Git repository, two screenshots from `screenshots/` at the repository root (outside the app package), the `integration` category next to `tools`, and PHP 8.2 or later.
+
+### Fixed
+
+- compat (Nextcloud 31): the app no longer depends on what only exists from Nextcloud 32 on. The embedded CalDAV server is `InvitationResponseServer` there, the predecessor of `EmbeddedCalDavServer`, with the `IMipPlugin` added under `dav/sendInvitations` as 32 does, so invitations still go out by e-mail; the users flagged in the policy are listed through `IConfig::getUsersForUserValue` when there is no `IUserConfig` (the container passes null); and the availability of an app uses `isInstalled()` when there is no `IAppManager::isEnabledForAnyone()`.
+- calendar: deleting an event with `send_invitations: false` no longer sends cancellations on Nextcloud 31, 32.0.0–32.0.6 and 33.0.0, whose Schedule plugin reads `x-nc-scheduling` on a change but not before an unbind. The dispatcher detaches the plugin's `beforeUnbind` from that one-off server, which is what later releases do when they see the header.
+- deck: `deck_followup_cards` works with Deck 1.15 and 1.16 (Nextcloud 31 and 32), which have no `CardMapper::findAllForStacks()`: the cards are read stack by stack with `findAll()`, with the same filters and order.
+- deck: a Deck conflict is mapped to its own message. The mapping named `OCA\Deck\ConflictException`, which does not exist in any Deck release; the class is `OCA\Deck\Exceptions\ConflictException`, a `StatusException`, so it was answered as "not allowed".
+
 ## 0.10.0
 
 ### Added

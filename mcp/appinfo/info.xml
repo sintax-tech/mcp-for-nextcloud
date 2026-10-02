@@ -1,18 +1,114 @@
 <?xml version="1.0"?>
 <info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>mcp</id>
-    <name>MCP</name>
-    <summary>Instance-local MCP endpoint with per-user grants</summary>
-    <summary lang="pt-br">Endpoint MCP local na instância com concessões por usuário</summary>
-    <description>Native MCP endpoint for Nextcloud. Test release with per-user grants, Files (read, content search, backed-up edit, tree, mkdir, copy, move, batch with undo, local checkout and version restore, never delete), Notes, Calendar, Contacts, Tasks, Deck and Talk tools, OCR through Workflow OCR and MCP Resources. Sign-in from Claude, ChatGPT and Gemini CLI with OAuth. Sensitive files can be hidden by system tag, and the app has its own "MCP for Nextcloud" settings section.</description>
-    <description lang="pt-br">Endpoint MCP nativo para o Nextcloud. Versão de teste com concessões por usuário, ferramentas de Arquivos (leitura, busca por conteúdo, edição com backup, árvore, mkdir, cópia, movimentação, lote com desfazer, edição local e restauração de versão, nunca exclusão), Notas, Calendário, Contatos, Tarefas, Deck e Talk, OCR pelo Workflow OCR e MCP Resources. Login pelo Claude, ChatGPT e Gemini CLI com OAuth. Arquivos sensíveis podem ser ocultados por etiqueta do sistema, e o app tem uma seção própria "MCP for Nextcloud" nas configurações.</description>
+    <name>MCP for Nextcloud</name>
+    <name lang="pt-br">MCP for Nextcloud</name>
+    <name lang="es">MCP for Nextcloud</name>
+    <summary>Turn Nextcloud into an MCP server for Claude, ChatGPT and other AI assistants, with per-user permissions</summary>
+    <summary lang="pt-br">Transforma o Nextcloud em um servidor MCP para o Claude, o ChatGPT e outros assistentes de IA, com permissões por usuário</summary>
+    <summary lang="es">Convierte Nextcloud en un servidor MCP para Claude, ChatGPT y otros asistentes de IA, con permisos por usuario</summary>
+    <description><![CDATA[
+**MCP for Nextcloud** is a native Nextcloud app that turns your instance into a Model Context Protocol (MCP) server. AI assistants work with your files, notes, calendars, contacts, tasks, Deck boards and Talk conversations through one URL on your own server: no extra service, no Docker, no copy of your data elsewhere.
+
+## What the assistant can do
+
+- **Files**: list, search by name or content, read text, PDF, DOCX and ODT, view images, list and restore versions; edit text with a diff and a verified backup, create files and folders, upload, copy, move and reorganize folders with undo; share with people, groups or a public link.
+- **Notes**: list, read, search, create, edit, move and delete (only when the trash bin can recover it).
+- **Calendar**: list calendars and events, create, edit, move, delete and transfer events through the real CalDAV pipeline, with participants; invitations are sent only when asked.
+- **Contacts**: search and read contacts, create and edit them while keeping every unknown vCard field.
+- **Tasks**: list, read, create, edit, complete and delete tasks.
+- **Deck**: boards, lists and cards, a follow-up of the cards you manage, and card assignments.
+- **Talk**: read conversations, reply, message a user, share or quote a file and create group conversations.
+
+## You stay in control
+
+- **Per-user permissions.** The administrator turns the service on, chooses who may connect and grants each operation per user in a users × permissions matrix. Reading starts allowed; every write, move, delete, transfer, restore or share starts denied.
+- **Plan and confirmation.** A tool that changes something first returns a plan of exactly what it will do; nothing is written until the user approves it.
+- **Hidden tag.** Files and folders carrying the system tags the administrator picks are invisible to every tool.
+- **The app never deletes a file.** There is no tool for it, and every edit keeps a backup and a Nextcloud version.
+- **Nextcloud permissions always apply.** The app never widens what a user can already do.
+
+## Clients
+
+Claude (claude.ai and Claude Desktop), ChatGPT and Gemini CLI sign in with OAuth: the user logs into their own Nextcloud and clicks **Allow**. Other MCP clients can use an app password.
+
+## Requirements
+
+Nextcloud 31, 32 or 33 and PHP 8.2 or later. Deck (1.15 or later) and Talk (21.1.4 or later) are optional: their tools appear only when the app is enabled in a supported version.
+    ]]></description>
+    <description lang="pt-br"><![CDATA[
+**MCP for Nextcloud** é um app nativo do Nextcloud que transforma a sua instância em um servidor Model Context Protocol (MCP). Os assistentes de IA trabalham com os seus arquivos, notas, calendários, contatos, tarefas, quadros do Deck e conversas do Talk por um único endereço no seu próprio servidor: sem serviço extra, sem Docker, sem cópia dos seus dados em outro lugar.
+
+## O que o assistente pode fazer
+
+- **Arquivos**: listar, buscar por nome ou conteúdo, ler texto, PDF, DOCX e ODT, ver imagens, listar e restaurar versões; editar texto com diff e backup verificado, criar arquivos e pastas, enviar arquivos, copiar, mover e reorganizar pastas com desfazer; compartilhar com pessoas, grupos ou por link público.
+- **Notas**: listar, ler, buscar, criar, editar, mover e excluir (só quando a lixeira consegue recuperar).
+- **Calendário**: listar calendários e eventos, criar, editar, mover, excluir e transferir eventos pelo CalDAV de verdade, com participantes; os convites só são enviados quando pedidos.
+- **Contatos**: buscar e ler contatos, criar e editar mantendo todos os campos desconhecidos do vCard.
+- **Tarefas**: listar, ler, criar, editar, concluir e excluir tarefas.
+- **Deck**: quadros, listas e cartões, um acompanhamento dos cartões que você gerencia e a atribuição de cartões.
+- **Talk**: ler conversas, responder, mandar mensagem a um usuário, compartilhar ou citar um arquivo e criar conversas em grupo.
+
+## Você no controle
+
+- **Permissões por usuário.** O administrador liga o serviço, escolhe quem pode se conectar e libera cada operação por usuário numa matriz de usuários × permissões. A leitura começa liberada; toda escrita, movimentação, exclusão, transferência, restauração ou compartilhamento começa negada.
+- **Plano e confirmação.** Uma ferramenta que altera algo primeiro devolve o plano exato do que vai fazer; nada é gravado antes de o usuário aprovar.
+- **Etiqueta oculta.** Arquivos e pastas com as etiquetas do sistema escolhidas pelo administrador ficam invisíveis para todas as ferramentas.
+- **O app nunca apaga arquivo.** Não existe ferramenta que exclua um arquivo, e toda edição guarda um backup e uma versão do Nextcloud.
+- **As permissões do Nextcloud sempre valem.** O app nunca amplia o que o usuário já pode fazer.
+
+## Clientes
+
+O Claude (claude.ai e Claude Desktop), o ChatGPT e o Gemini CLI entram com OAuth: o usuário faz login no próprio Nextcloud e clica em **Permitir**. Outros clientes MCP podem usar uma senha de app.
+
+## Requisitos
+
+Nextcloud 31, 32 ou 33 e PHP 8.2 ou superior. O Deck (1.15 ou superior) e o Talk (21.1.4 ou superior) são opcionais: as ferramentas deles só aparecem com o app ativo numa versão suportada.
+    ]]></description>
+    <description lang="es"><![CDATA[
+**MCP for Nextcloud** es una aplicación nativa de Nextcloud que convierte su instancia en un servidor Model Context Protocol (MCP). Los asistentes de IA trabajan con sus archivos, notas, calendarios, contactos, tareas, tableros de Deck y conversaciones de Talk a través de una sola dirección en su propio servidor: sin servicio adicional, sin Docker, sin copia de sus datos en otro lugar.
+
+## Lo que el asistente puede hacer
+
+- **Archivos**: listar, buscar por nombre o contenido, leer texto, PDF, DOCX y ODT, ver imágenes, listar y restaurar versiones; editar texto con diff y copia de seguridad verificada, crear archivos y carpetas, subir archivos, copiar, mover y reorganizar carpetas con deshacer; compartir con personas, grupos o mediante un enlace público.
+- **Notas**: listar, leer, buscar, crear, editar, mover y eliminar (solo cuando la papelera puede recuperarla).
+- **Calendario**: listar calendarios y eventos, crear, editar, mover, eliminar y transferir eventos por el CalDAV real, con participantes; las invitaciones solo se envían cuando se piden.
+- **Contactos**: buscar y leer contactos, crearlos y editarlos conservando todos los campos desconocidos del vCard.
+- **Tareas**: listar, leer, crear, editar, completar y eliminar tareas.
+- **Deck**: tableros, listas y tarjetas, un seguimiento de las tarjetas que usted gestiona y la asignación de tarjetas.
+- **Talk**: leer conversaciones, responder, enviar un mensaje a un usuario, compartir o citar un archivo y crear conversaciones de grupo.
+
+## Usted tiene el control
+
+- **Permisos por usuario.** El administrador activa el servicio, elige quién puede conectarse y concede cada operación por usuario en una matriz de usuarios × permisos. La lectura empieza permitida; toda escritura, movimiento, eliminación, transferencia, restauración o uso compartido empieza denegado.
+- **Plan y confirmación.** Una herramienta que cambia algo devuelve primero el plan exacto de lo que hará; nada se escribe hasta que el usuario lo aprueba.
+- **Etiqueta oculta.** Los archivos y carpetas con las etiquetas del sistema que elija el administrador son invisibles para todas las herramientas.
+- **La aplicación nunca borra archivos.** No hay ninguna herramienta que elimine un archivo, y cada edición guarda una copia de seguridad y una versión de Nextcloud.
+- **Los permisos de Nextcloud siempre se aplican.** La aplicación nunca amplía lo que el usuario ya puede hacer.
+
+## Clientes
+
+Claude (claude.ai y Claude Desktop), ChatGPT y Gemini CLI inician sesión con OAuth: el usuario entra en su propio Nextcloud y pulsa **Permitir**. Otros clientes MCP pueden usar una contraseña de aplicación.
+
+## Requisitos
+
+Nextcloud 31, 32 o 33 y PHP 8.2 o superior. Deck (1.15 o superior) y Talk (21.1.4 o superior) son opcionales: sus herramientas solo aparecen con la aplicación activa en una versión compatible.
+    ]]></description>
     <version>0.10.0</version>
     <licence>AGPL-3.0-or-later</licence>
-    <author>Sintax Tech</author>
+    <author mail="jhonatan@sintax.tech">Jhonatan Jaworski</author>
     <namespace>Mcp</namespace>
+    <category>integration</category>
     <category>tools</category>
+    <website>https://github.com/sintax-tech/mcp-for-nextcloud</website>
     <bugs>https://github.com/sintax-tech/mcp-for-nextcloud/issues</bugs>
-    <dependencies><nextcloud min-version="33" max-version="33"/></dependencies>
+    <repository type="git">https://github.com/sintax-tech/mcp-for-nextcloud.git</repository>
+    <screenshot>https://raw.githubusercontent.com/sintax-tech/mcp-for-nextcloud/main/screenshots/admin.png</screenshot>
+    <screenshot>https://raw.githubusercontent.com/sintax-tech/mcp-for-nextcloud/main/screenshots/plan.png</screenshot>
+    <dependencies>
+        <php min-version="8.2"/>
+        <nextcloud min-version="31" max-version="33"/>
+    </dependencies>
     <commands><command>OCA\Mcp\Command\CalendarSelftest</command></commands>
     <settings>
         <admin>OCA\Mcp\Settings\AdminSettings</admin>

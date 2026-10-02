@@ -15,7 +15,8 @@ use PHPUnit\Framework\TestCase;
 final class AdminOcrStatusTest extends TestCase {
     private function params(bool $active): array {
         $apps = $this->createMock(IAppManager::class);
-        $apps->method('isEnabledForAnyone')->with('workflow_ocr')->willReturn($active);
+        // The page also asks about the optional apps with a minimum version, for the unsupported-version notice.
+        $apps->method('isEnabledForAnyone')->willReturnCallback(static fn (string $app): bool => $app === 'workflow_ocr' && $active);
         $policy = $this->createMock(GrantPolicy::class);
         $policy->method('globalEnabled')->willReturn(true);
         $urls = $this->createMock(IURLGenerator::class);

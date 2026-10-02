@@ -47,7 +47,13 @@ class GrantPolicy {
      */
     public const RESERVED_APP_KEYS = ['enabled', 'installed_version', 'types', 'levels', 'ocsid'];
 
-    public function __construct(private IConfig $config, private OAuthStore $oauth, private IUserConfig $userConfig) {}
+    /**
+     * @param IConfig $config Nextcloud configuration, where every value of the policy lives
+     * @param OAuthStore $oauth OAuth tokens, revoked when a switch closes
+     * @param IUserConfig|null $userConfig the user config service of Nextcloud 32 and later; Nextcloud 31 has no such
+     *     interface, so its container falls back to the null default and the policy searches through IConfig
+     */
+    public function __construct(private IConfig $config, private OAuthStore $oauth, private ?IUserConfig $userConfig = null) {}
 
     /** @return bool whether the administrator enabled the MCP service (off by default) */
     public function globalEnabled(): bool {
@@ -108,7 +114,11 @@ class GrantPolicy {
         if (!in_array($key, [self::ELIGIBLE_KEY, self::CONNECTED_KEY], true)) {
             throw new InvalidArgumentException('Invalid request');
         }
-        $uids = array_map('strval', iterator_to_array($this->userConfig->searchUsersByValueString(self::APP, $key, '1'), false));
+        // IConfig::getUsersForUserValue is the only search Nextcloud 31 has; 33 deprecates it in favour of IUserConfig.
+        $found = $this->userConfig === null
+            ? $this->config->getUsersForUserValue(self::APP, $key, '1')
+            : iterator_to_array($this->userConfig->searchUsersByValueString(self::APP, $key, '1'), false);
+        $uids = array_map('strval', $found);
         sort($uids);
         return array_values(array_unique($uids));
     }

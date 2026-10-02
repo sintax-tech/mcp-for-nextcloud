@@ -31,6 +31,8 @@ final class MatrixFixture {
     public array $enabledApps = ['notes', 'calendar'];
     /** @var array<string, list<string>> optional per-app user allowlists */
     public array $appUsers = [];
+    /** @var array<string, string> installed version per app id; an app left out answers '' (unknown) */
+    public array $appVersions = [];
 
     public function __construct(private TestCase $test) {
         $this->config = new InMemoryConfig();
@@ -87,6 +89,7 @@ final class MatrixFixture {
         $apps->method('isEnabledForUser')->willReturnCallback(fn (string $app, IUser $user) =>
             in_array($app, $this->enabledApps, true)
             && (!isset($this->appUsers[$app]) || in_array($user->getUID(), $this->appUsers[$app], true)));
+        $apps->method('getAppVersion')->willReturnCallback(fn (string $app): string => $this->appVersions[$app] ?? '');
         return $apps;
     }
 

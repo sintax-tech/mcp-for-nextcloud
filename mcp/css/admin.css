@@ -306,7 +306,8 @@
 	color: var(--color-primary-element-text, #000);
 }
 
-#mcp-admin .mcp-tags-warning {
+#mcp-admin .mcp-tags-warning,
+#mcp-admin .mcp-unsupported-app {
 	margin: 8px 0;
 	padding: 8px 12px;
 	background-color: var(--color-warning-background, #fff3cd);

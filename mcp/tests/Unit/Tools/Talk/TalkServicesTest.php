@@ -45,6 +45,17 @@ class TalkServicesTest extends TestCase {
         $this->assertFalse((new TalkServices($this->appManager, $this->container, $users))->isEnabledFor('ghost'));
     }
 
+    /** A Talk older than 21.1.4 is treated as absent: no Talk service is ever resolved for it. */
+    public function testATalkOlderThanTheSupportedMinimumIsNotEnabled(): void {
+        $this->appManager->method('isEnabledForUser')->willReturn(true);
+        $this->appManager->method('getAppVersion')->with(TalkServices::APP_ID)->willReturn('21.1.3');
+        $this->container->expects($this->never())->method('get');
+
+        $this->assertFalse($this->services->isEnabledFor('alice'));
+        $this->expectException(TalkUnavailableException::class);
+        $this->services->chatManager('alice');
+    }
+
     public function testManagerRefusesToResolveWhenSpreedIsDisabled(): void {
         $this->appManager->method('isEnabledForUser')->willReturn(false);
         $this->container->expects($this->never())->method('get');

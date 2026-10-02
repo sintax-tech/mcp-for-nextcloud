@@ -89,6 +89,31 @@ final class ApplicationRegistrationTest extends TestCase {
         self::assertInstanceOf(\OCA\Mcp\Service\Calendar\DavCalendarSelftestReader::class, $factories[\OCA\Mcp\Service\Calendar\CalendarSelftestReader::class]($container));
     }
 
+    /**
+     * The dispatcher builds its server through EmbeddedCalDavServerFactory, which knows the Nextcloud 31 class too.
+     * Without the DAV app (as in this suite) the factory answers with the generic calendar failure; a direct
+     * `new EmbeddedCalDavServer()` would die with "class not found" on Nextcloud 31 instead.
+     */
+    public function testTheDispatcherBuildsItsServerThroughTheVersionAwareFactory(): void {
+        $factories = $this->registeredFactories();
+        $services = [
+            \OCP\IUserSession::class => $this->createMock(\OCP\IUserSession::class),
+            IConfig::class => $this->createMock(IConfig::class),
+            \Psr\Log\LoggerInterface::class => new \Psr\Log\NullLogger(),
+        ];
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('get')->willReturnCallback(
+            static fn (string $id): object => $services[$id] ?? throw new \RuntimeException('unexpected service ' . $id),
+        );
+
+        $dispatcher = $factories[\OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher::class]($container);
+        $serverFactory = (new \ReflectionProperty(\OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher::class, 'serverFactory'))->getValue($dispatcher);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage(\OCA\Mcp\Tools\Calendar\CalendarMessages::DAV_FAILURE);
+        $serverFactory();
+    }
+
     public function testTheCalendarStoreFactoryBuildsTheDavStore(): void {
         $factories = $this->registeredFactories();
 

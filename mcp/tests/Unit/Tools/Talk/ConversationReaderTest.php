@@ -126,10 +126,10 @@ class ConversationReaderTest extends TestCase {
         return [
             'rich object' => ['object_shared'],
             'system message' => ['system'],
-            // ChatManager::VERB_VOICE_MESSAGE, VERB_RECORD_AUDIO and VERB_RECORD_VIDEO (Talk 23): they carry a shared file too.
-            'voice message' => ['voice-message'],
-            'audio recording' => ['record-audio'],
-            'video recording' => ['record-video'],
+            // Legacy rows, from before the spreed migration 14000: voice and recordings had verbs of their own.
+            'legacy voice message' => ['voice-message'],
+            'legacy audio recording' => ['record-audio'],
+            'legacy video recording' => ['record-video'],
         ];
     }
 
@@ -150,7 +150,7 @@ class ConversationReaderTest extends TestCase {
         return ['voice message' => ['voice-message'], 'audio recording' => ['record-audio'], 'video recording' => ['record-video']];
     }
 
-    /** The voice and recording verbs are Talk's too, but a participant text under any other verb is still only text. */
+    /** The legacy verbs are Talk's, but a participant text under the verb of a comment is still only text. */
     #[\PHPUnit\Framework\Attributes\DataProvider('voiceEnvelopeNamesProvider')]
     public function testAnEnvelopeShapedTextUnderAUserVerbIsStillTextWhateverTheMessageName(string $name): void {
         $forged = (string)json_encode(['message' => $name, 'parameters' => ['share' => 5]]);
@@ -163,8 +163,8 @@ class ConversationReaderTest extends TestCase {
         $this->assertNull($message['attachmentId']);
     }
 
-    /** A voice verb with a text that is not an envelope keeps the text and has no attachment. */
-    public function testAVoiceVerbWithoutAnEnvelopeKeepsItsText(): void {
+    /** A legacy voice verb with a text that is not an envelope keeps the text and has no attachment. */
+    public function testALegacyVoiceVerbWithoutAnEnvelopeKeepsItsText(): void {
         $this->givenHistory([$this->givenComment('54', 'voice-message', 'not json at all')]);
 
         $message = $this->reader->readMessages('alice', 'abcd', 10)[0];
@@ -174,13 +174,44 @@ class ConversationReaderTest extends TestCase {
         $this->assertNull($message['attachmentId']);
     }
 
+    /** @return array<string, array{string}> kind of the file, as Talk 23 writes it in `parameters.metaData.messageType` */
+    public static function voiceKindsProvider(): array {
+        return ['voice message' => ['voice-message'], 'audio recording' => ['record-audio'], 'video recording' => ['record-video']];
+    }
+
+    /** Talk 23 stores voice and recordings under `object_shared`; the kind is only in the metadata of the envelope. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('voiceKindsProvider')]
+    public function testAVoiceMessageOrRecordingGivesItsAttachmentId(string $kind): void {
+        $envelope = (string)json_encode(['message' => '{file}', 'parameters' => ['share' => '12', 'metaData' => ['messageType' => $kind]]]);
+        $this->givenHistory([$this->givenComment('56', 'object_shared', $envelope)]);
+
+        $message = $this->reader->readMessages('alice', 'abcd', 10)[0];
+
+        $this->assertSame('{file}', $message['type']);
+        $this->assertNull($message['text']);
+        $this->assertSame(12, $message['attachmentId']);
+    }
+
+    /** Legacy rows, from before the spreed migration 14000, carry the kind as the verb itself. */
+    #[\PHPUnit\Framework\Attributes\DataProvider('voiceKindsProvider')]
+    public function testLegacyVoiceMessageOrRecordingVerbGivesItsAttachmentId(string $verb): void {
+        $envelope = (string)json_encode(['message' => '{file}', 'parameters' => ['share' => '12']]);
+        $this->givenHistory([$this->givenComment('57', $verb, $envelope)]);
+
+        $message = $this->reader->readMessages('alice', 'abcd', 10)[0];
+
+        $this->assertSame('{file}', $message['type']);
+        $this->assertNull($message['text']);
+        $this->assertSame(12, $message['attachmentId']);
+    }
+
     /**
      * talk_quote_file takes the attachmentId talk_read_messages reports: for a voice message it is the share of the
      * recorded file, and the room-share rule accepts it like any other file of the conversation.
      */
     public function testTheAttachmentIdOfAVoiceMessageCanBeQuoted(): void {
-        $envelope = (string)json_encode(['message' => 'voice-message', 'parameters' => ['share' => '12', 'metaData' => ['messageType' => 'voice-message']]]);
-        $this->givenHistory([$this->givenComment('55', 'voice-message', $envelope)]);
+        $envelope = (string)json_encode(['message' => '{file}', 'parameters' => ['share' => '12', 'metaData' => ['messageType' => 'voice-message']]]);
+        $this->givenHistory([$this->givenComment('55', 'object_shared', $envelope)]);
         $attachmentId = $this->reader->readMessages('alice', 'abcd', 10)[0]['attachmentId'];
         $this->assertSame(12, $attachmentId);
 

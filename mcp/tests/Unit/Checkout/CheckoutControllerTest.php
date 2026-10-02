@@ -79,6 +79,9 @@ final class CheckoutControllerTest extends TestCase {
     private ITempManager $temp;
     private TokenHasher $hasher;
     private string $body = 'conteúdo novo';
+    /** What the account of alice answers to isEnabled(): an administrator can switch it off after the link was issued. */
+    private bool $aliceEnabled = true;
+    private bool $aliceExists = true;
     /** Temporary files the controller asked for, i.e. bodies it copied to disk. */
     private int $tempFiles = 0;
 
@@ -124,8 +127,8 @@ final class CheckoutControllerTest extends TestCase {
         $this->users = $this->createMock(IUserManager::class);
         $alice = $this->createMock(IUser::class);
         $alice->method('getUID')->willReturn('alice');
-        $alice->method('isEnabled')->willReturn(true);
-        $this->users->method('get')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $alice : null);
+        $alice->method('isEnabled')->willReturnCallback(fn (): bool => $this->aliceEnabled);
+        $this->users->method('get')->willReturnCallback(fn (string $uid) => $uid === 'alice' && $this->aliceExists ? $alice : null);
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturnCallback(fn (string $route, array $args = []) => '/apps/mcp/' . ($args['token'] ?? ''));
         $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
@@ -295,6 +298,75 @@ final class CheckoutControllerTest extends TestCase {
         $this->issue();
         $this->policy->setConnected('alice', false);
         $this->assertSame(403, $this->code($this->controller->upload()));
+    }
+
+    /**
+     * P16: a disabled account keeps whatever link it was issued, unless the controller asks the account. The
+     * refusal is the same as for a revoked grant (it does not say why), and it must not spend the link.
+     */
+    public function testADisabledAccountCannotUploadWithAnEarlierLink(): void {
+        $this->issue();
+        $this->aliceEnabled = false;
+
+        $response = $this->controller->upload();
+
+        $this->assertSame(403, $this->code($response));
+        $this->assertSame([], $this->tree->ops, 'nothing was backed up or written');
+        $this->assertSame('# Ata', $this->tree->nodes[self::FILE]['content']);
+        $this->assertNotContains('consume', $this->store->ops, 'the link was not spent');
+        $this->assertSame(0, $this->tempFiles, 'the body was not even read');
+    }
+
+    public function testTheSameRefusalComesViaThePostAlias(): void {
+        $this->issue();
+        $this->aliceEnabled = false;
+
+        $this->assertSame(403, $this->code($this->controller->uploadPost()));
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    public function testADisabledAccountCannotDownloadWithAnEarlierLink(): void {
+        $this->issue(CheckoutToken::KIND_DOWNLOAD);
+        $this->aliceEnabled = false;
+
+        $response = $this->controller->download();
+
+        $this->assertSame(403, $this->code($response));
+        $this->assertNotContains('consume', $this->store->ops);
+    }
+
+    public function testAnAccountThatWasRemovedIsRefusedTheSameWay(): void {
+        $this->issue();
+        $this->aliceExists = false;
+
+        $this->assertSame(403, $this->code($this->controller->upload()));
+        $this->assertSame([], $this->tree->ops);
+        $this->assertNotContains('consume', $this->store->ops);
+    }
+
+    /** The agent learns that the link is no longer valid, not that the administrator switched the account off. */
+    public function testTheRefusalOfADisabledAccountIsTheOneOfARevokedGrant(): void {
+        $this->issue();
+        $this->policy->setGrant('alice', 'files', 'edit', false);
+        $revoked = $this->controller->upload();
+        $this->policy->setGrant('alice', 'files', 'edit', true);
+        $this->aliceEnabled = false;
+        $disabled = $this->controller->upload();
+
+        $this->assertSame($revoked->getStatus(), $disabled->getStatus());
+        $this->assertSame((string)$revoked->render(), (string)$disabled->render());
+    }
+
+    /** The account coming back is the proof that the refusal did not burn the link. */
+    public function testTheLinkWorksAgainOnceTheAccountIsEnabled(): void {
+        $this->issue();
+        $this->stage('conteúdo novo');
+        $this->aliceEnabled = false;
+        $this->assertSame(403, $this->code($this->controller->upload()));
+        $this->aliceEnabled = true;
+
+        $this->assertSame(200, $this->code($this->controller->upload()));
+        $this->assertSame('conteúdo novo', $this->tree->nodes[self::FILE]['content']);
     }
 
     public function testALinkOfAnotherUserIsRefusedEvenWithThatUsersSession(): void {

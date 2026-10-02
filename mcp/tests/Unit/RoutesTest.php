@@ -125,4 +125,95 @@ final class RoutesTest extends TestCase {
         }
         $this->assertTrue(class_exists(CheckoutController::class), 'the checkout controller must be reachable by the router');
     }
+
+    /**
+     * The access attributes every route must carry, written out. A route without a row fails the test, so a
+     * new one cannot ship without somebody deciding who may call it: `PublicPage` skips the login,
+     * `NoAdminRequired` opens it to non-admin users and `NoCSRFRequired` switches the CSRF check off.
+     *
+     * @return array<string, list<string>> attributes (short names, sorted) by route name
+     */
+    private static function expectedAccess(): array {
+        $open = ['NoAdminRequired', 'NoCSRFRequired', 'PublicPage'];
+        return [
+            // The bearer token or the link token is the credential, not the session.
+            'mcp#post' => $open, 'mcp#get' => $open, 'mcp#delete' => $open,
+            'checkout#download' => $open, 'checkout#upload' => $open, 'checkout#uploadPost' => $open,
+            // Logged-in users, session and CSRF token intact.
+            'settings#personal' => ['NoAdminRequired'],
+            'my_connections#index' => ['NoAdminRequired'], 'my_connections#destroy' => ['NoAdminRequired'],
+            // No attribute at all is what makes a Nextcloud route admin-only.
+            'grants#index' => [], 'grants#bulk' => [], 'grants#update' => [], 'grants#service' => [],
+            'grants#oauthClients' => [], 'grants#updateOauthClients' => [],
+            'connections#index' => [], 'connections#revokeUser' => [], 'connections#destroy' => [],
+            'checkout_limit#show' => [], 'checkout_limit#update' => [],
+            'tags#index' => [], 'tags#update' => [],
+            // Discovery documents are public by design.
+            'metadata#protectedResource' => ['NoCSRFRequired', 'PublicPage'], 'metadata#authorizationServer' => ['NoCSRFRequired', 'PublicPage'],
+            'metadata#oauthServer' => ['NoCSRFRequired', 'PublicPage'], 'metadata#jwks' => ['NoCSRFRequired', 'PublicPage'],
+            // authorize is a GET that only shows the consent page; consent is the state-changing POST and keeps CSRF.
+            'o_auth#authorize' => ['NoAdminRequired', 'NoCSRFRequired', 'UseSession'],
+            'o_auth#consent' => ['NoAdminRequired', 'UseSession'],
+            'o_auth#token' => ['BruteForceProtection', 'NoCSRFRequired', 'PublicPage'],
+        ];
+    }
+
+    /** @return list<string> short names of the attributes of a route's method, sorted */
+    private function attributesOf(string $routeName): array {
+        [$controller, $action] = explode('#', $routeName, 2);
+        $names = array_map(
+            static fn (\ReflectionAttribute $attribute): string => (new \ReflectionClass($attribute->getName()))->getShortName(),
+            (new \ReflectionMethod(self::controllerClass($controller), self::actionMethod($action)))->getAttributes(),
+        );
+        sort($names);
+        return $names;
+    }
+
+    public function testEveryRouteCarriesExactlyTheAccessAttributesExpectedOfIt(): void {
+        $expected = self::expectedAccess();
+        $names = array_column($this->routes(), 'name');
+
+        $this->assertEqualsCanonicalizing(array_keys($expected), $names, 'every route needs a row in the table, and every row a route');
+        foreach ($names as $name) {
+            $this->assertSame($expected[$name], $this->attributesOf($name), $name);
+        }
+    }
+
+    /** The consent POST is what turns a logged-in user into a grant for a client: a cross-site form must not reach it. */
+    public function testTheConsentPostKeepsTheCsrfCheckAndTheLogin(): void {
+        $attributes = $this->attributesOf('o_auth#consent');
+
+        $this->assertNotContains('NoCSRFRequired', $attributes);
+        $this->assertNotContains('PublicPage', $attributes);
+        $this->assertContains('UseSession', $attributes, 'the pending request lives in the session');
+    }
+
+    public function testTheTokenEndpointIsThrottledUnderItsOwnAction(): void {
+        $attribute = (new \ReflectionMethod(\OCA\Mcp\Controller\OAuthController::class, 'token'))
+            ->getAttributes(\OCP\AppFramework\Http\Attribute\BruteForceProtection::class)[0] ?? null;
+
+        $this->assertNotNull($attribute);
+        $this->assertSame(['action' => 'mcp_oauth_token'], $attribute->getArguments());
+    }
+
+    /** Routes are the contract, but a public method nobody routes to must not slip an attribute in unseen. */
+    public function testNoControllerMethodOutsideTheRoutesIsPubliclyAnnotated(): void {
+        $routed = [];
+        foreach ($this->routes() as $route) {
+            [$controller, $action] = explode('#', $route['name'], 2);
+            $routed[self::controllerClass($controller)][] = self::actionMethod($action);
+        }
+        foreach (glob(__DIR__ . '/../../lib/Controller/*.php') ?: [] as $file) {
+            $class = self::NAMESPACE . 'Controller\\' . basename($file, '.php');
+            foreach ((new \ReflectionClass($class))->getMethods(\ReflectionMethod::IS_PUBLIC) as $method) {
+                if ($method->getDeclaringClass()->getName() !== $class || $method->isConstructor()) {
+                    continue;
+                }
+                if (in_array($method->getName(), $routed[$class] ?? [], true)) {
+                    continue;
+                }
+                $this->assertSame([], $method->getAttributes(), "$class::{$method->getName()} has access attributes but no route");
+            }
+        }
+    }
 }

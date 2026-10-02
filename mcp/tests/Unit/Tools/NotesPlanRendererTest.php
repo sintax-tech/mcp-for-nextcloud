@@ -234,6 +234,41 @@ final class NotesPlanRendererTest extends TestCase {
 		$this->assertStringContainsString('- Pasta de equipe: Marketing', $text);
 	}
 
+	/** P9: a change past the excerpt must not render as "nothing changed" nor as two identical excerpts. */
+	public function testAChangePastTheExcerptSaysSoAndGivesTheSizes(): void {
+		$long = str_repeat('a', 500);
+		$id = $this->tree->addFile('/alice/files/Notes/Longa.md', $long, 'text/markdown');
+		$plan = $this->module->preview('notes_edit', ['id' => $id, 'content' => $long . ' fim'], 'alice');
+
+		$en = $this->renderer->render('notes_edit', $plan);
+		$this->assertNotNull($en);
+		$this->assertStringContainsString('- Content: the change is past the part shown (500 → 504 bytes)', $en);
+		$this->assertStringNotContainsString('→ aaaa', $en);
+
+		Translator::use(new JsonL10n('pt_BR'));
+		$pt = $this->renderer->render('notes_edit', $plan);
+		$this->assertStringContainsString('- Conteúdo: a mudança está além do trecho mostrado (500 → 504 bytes)', $pt);
+
+		Translator::use(new JsonL10n('es'));
+		$es = $this->renderer->render('notes_edit', $plan);
+		$this->assertStringContainsString('- Contenido: el cambio está más allá del fragmento mostrado (500 → 504 bytes)', $es);
+	}
+
+	public function testAContentChangeInsideTheExcerptStillShowsBothExcerpts(): void {
+		$plan = $this->module->preview('notes_edit', ['id' => $this->noteId, 'content' => 'Novo conteúdo'], 'alice');
+
+		$this->assertStringContainsString('- Content: Linha 1 Linha 2 → Novo conteúdo', (string)$this->renderer->render('notes_edit', $plan));
+	}
+
+	public function testACreatePlanInASharedFolderWarnsAboutIt(): void {
+		$this->config->user['alice']['notes']['notesPath'] = 'Equipe';
+		$this->tree->addFolder('/alice/files/Equipe', ['scope' => 'team']);
+		$this->tree->mountPath = '/alice/files/Equipe';
+		$plan = $this->module->preview('notes_create', ['title' => 'Nova', 'content' => 'x'], 'alice');
+
+		$this->assertStringContainsString('- Team folder: Equipe', (string)$this->renderer->render('notes_create', $plan));
+	}
+
 	public function testTruncationOfLongContent(): void {
 		$longText = str_repeat('abcde ', 50); // 300 chars
 		$plan = [

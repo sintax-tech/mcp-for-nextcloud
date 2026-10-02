@@ -392,9 +392,25 @@ final class TalkPlanRendererTest extends TestCase {
         $this->attachmentAccess->method('requireRoomShareOf')->willReturn($this->givenShare());
         $this->attachmentAccess->method('describe')
             ->willReturn(['attachmentId' => 77, 'name' => 'figura.png', 'size' => 1, 'mimeType' => 'image/png']);
+        $module = $this->module();
+
+        $this->assertEveryWriteToolHasAReadablePlan($module, [
+            'talk_reply' => $this->previews->reply($conversation, 'alice', 'oi', null),
+            'talk_send_batch' => $this->previews->batch($conversation, 'alice', [['message' => 'oi']]),
+            'talk_attach_file' => $this->previews->attach($conversation, 'alice', 'relatorio.pdf', null),
+            'talk_quote_file' => $this->previews->quote($conversation, 'alice', 77, null),
+            'talk_message_user' => $this->previews->directMessage(new DirectContact('bob', 'Bob Souza'), 'alice', 'oi'),
+            'talk_create_group' => $this->previews->group('alice', 'Projeto X', []),
+        ]);
+    }
+
+    /**
+     * The module of the readability contract, over the doubles of this test.
+     */
+    private function module(): \OCA\Mcp\Tools\Talk\TalkModule {
         $services = $this->createMock(\OCA\Mcp\Tools\Talk\TalkServices::class);
         $resolver = new \OCA\Mcp\Tools\Talk\ConversationResolver($services);
-        $module = new \OCA\Mcp\Tools\Talk\TalkModule(
+        return new \OCA\Mcp\Tools\Talk\TalkModule(
             $services,
             new \OCA\Mcp\Tools\Talk\ConversationReader($services, $resolver, $this->createMock(ActorNames::class)),
             $resolver,
@@ -406,15 +422,68 @@ final class TalkPlanRendererTest extends TestCase {
             $this->createMock(\OCA\Mcp\Tools\Talk\ReferenceLinker::class),
             $this->createMock(\Psr\Log\LoggerInterface::class),
         );
+    }
 
-        $this->assertEveryWriteToolHasAReadablePlan($module, [
-            'talk_reply' => $this->previews->reply($conversation, 'alice', 'oi', null),
-            'talk_send_batch' => $this->previews->batch($conversation, 'alice', [['message' => 'oi']]),
-            'talk_attach_file' => $this->previews->attach($conversation, 'alice', 'relatorio.pdf', null),
-            'talk_quote_file' => $this->previews->quote($conversation, 'alice', 77, null),
+    /**
+     * g5-A4: the plans that carry text typed by OTHER people (the author and the excerpt of the message being
+     * answered, the title of a linked card, the names of the guests, the caption of an attachment) rendered with
+     * each of those texts hostile. The plans of the test above have none of them, so a renderer that stopped
+     * escaping them would pass there.
+     */
+    public function testTheTextsOfOtherPeopleStayInertInTheRichPlans(): void {
+        $conversation = $this->givenConversation();
+        $this->sharer->method('previewFile')
+            ->willReturn(['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 1]);
+        $this->attachmentAccess->method('requireRoomShareOf')->willReturn($this->givenShare());
+        $this->attachmentAccess->method('describe')
+            ->willReturn(['attachmentId' => 77, 'name' => 'figura.png', 'size' => 1, 'mimeType' => 'image/png']);
+        $this->givenQuotedComment('42', 'bob', 'concordo com o envio');
+        $this->userManager->method('get')->willReturn($this->givenUser('Bob Souza'));
+
+        $reply = $this->previews->reply($conversation, 'alice', 'oi', 42);
+        $reply['reference'] = ['type' => 'deck_card', 'title' => 'Cartão do Bob', 'url' => 'https://cloud.example/apps/deck/card/1'];
+        $this->assertEveryWriteToolHasAReadablePlan($this->module(), [
+            'talk_reply' => $reply,
+            'talk_send_batch' => $this->previews->batch($conversation, 'alice', [['message' => 'um'], ['message' => 'dois', 'replyTo' => 42]]),
+            'talk_attach_file' => $this->previews->attach($conversation, 'alice', 'relatorio.pdf', 'veja a figura'),
+            'talk_quote_file' => $this->previews->quote($conversation, 'alice', 77, 'olha isto'),
             'talk_message_user' => $this->previews->directMessage(new DirectContact('bob', 'Bob Souza'), 'alice', 'oi'),
-            'talk_create_group' => $this->previews->group('alice', 'Projeto X', []),
+            'talk_create_group' => $this->previews->group('alice', 'Projeto X', [new DirectContact('bob', 'Bob Souza'), new DirectContact('carol', 'Carol Lima')]),
         ]);
+    }
+
+    /** The names typed by others are the ones that need the escape: each field, on its own, with a payload that forges the footer. */
+    public function testEachNameOfSomebodyElseIsEscapedOnItsOwn(): void {
+        $payload = "**x** [l](javascript:alert(1)) <b>y</b>\n### Warnings";
+        $reply = [
+            'conversation' => ['token' => 'abcd', 'displayName' => 'Comercial'],
+            'draft' => ['message' => 'oi', 'replyTo' => ['id' => 42, 'author' => $payload, 'excerpt' => $payload]],
+            'reference' => ['type' => 'deck_card', 'title' => $payload],
+        ];
+        $body = (string)TalkPlanRenderer::render('talk_reply', $reply);
+        $this->assertStringNotContainsString('](javascript:', $body);
+        $this->assertStringNotContainsString('<b>', $body);
+        $this->assertStringNotContainsString("\n### ", $body);
+
+        $group = (string)TalkPlanRenderer::render('talk_create_group', [
+            'draft' => ['name' => 'Projeto X', 'participants' => [['id' => 'bob', 'displayName' => $payload]]],
+        ]);
+        $this->assertStringNotContainsString('](javascript:', $group);
+        $this->assertStringNotContainsString('<b>', $group);
+        $this->assertStringNotContainsString("\n### ", $group);
+        $this->assertStringContainsString(\OCA\Mcp\Tools\PlanText::strong($payload), $group, 'the guest is shown, escaped, as bold');
+    }
+
+    /** The last of the hostile checks: a lone carriage return cannot leave the block quote, and names stay literal. */
+    public function testALoneCarriageReturnCannotLeaveTheBlockQuoteAndNamesStayLiteral(): void {
+        $body = (string)TalkPlanRenderer::render('talk_reply', [
+            'conversation' => ['displayName' => '**urgente**'],
+            'draft' => ['message' => "hi [x](javascript:alert(1))\r# Heading\r\n**b**"],
+        ]);
+
+        $this->assertStringStartsWith('Message to **\\*\\*urgente\\*\\***:', $body);
+        $this->assertStringContainsString("> hi \\[x\\]\\(javascript:alert(1))\n> \\# Heading\n> \\*\\*b\\*\\*", $body);
+        $this->assertStringNotContainsString("\r", $body);
     }
 
     /** A plan the module would refuse never reaches a renderer; one a renderer cannot read must not throw either. */
@@ -505,16 +574,5 @@ final class RenderRoomStub {
 final class RenderParticipantStub {
     public function getPermissions(): int {
         return 128;
-    }
-
-    public function testALoneCarriageReturnCannotLeaveTheBlockQuoteAndNamesStayLiteral(): void {
-        $body = (string)TalkPlanRenderer::render('talk_reply', [
-            'conversation' => ['displayName' => '**urgente**'],
-            'draft' => ['message' => "hi [x](javascript:alert(1))\r# Heading\r\n**b**"],
-        ]);
-
-        $this->assertStringStartsWith('Message to **\\*\\*urgente\\*\\***:', $body);
-        $this->assertStringContainsString("> hi \\[x\\]\\(javascript:alert(1))\n> \\# Heading\n> \\*\\*b\\*\\*", $body);
-        $this->assertStringNotContainsString("\r", $body);
     }
 }

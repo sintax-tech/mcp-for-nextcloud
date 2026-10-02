@@ -19,6 +19,8 @@ final class InMemoryCheckoutTokenStore extends CheckoutTokenStore {
     /** @param array<string, mixed> $row token without its id */
     public function insert(array $row, int $now): void {
         $this->ops[] = 'insert';
+        // The real store purges what expired before it stores the new row.
+        $this->rows = array_filter($this->rows, static fn (array $stored): bool => $stored['expires_at'] >= $now);
         $this->rows[$this->nextId] = ['used_at' => null] + $row + ['id' => $this->nextId++];
     }
 

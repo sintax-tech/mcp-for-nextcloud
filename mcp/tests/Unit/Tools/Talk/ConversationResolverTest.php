@@ -75,7 +75,8 @@ class ConversationResolverTest extends TestCase {
     }
 
     public function testWritingRefusesAReadOnlyConversation(): void {
-        $this->givenRoom(readOnly: 1, type: 7, federated: false, lobby: 0, permissions: 128);
+        // An ordinary room (type 1) with every other condition satisfied, so the read-only flag is the only reason to refuse.
+        $this->givenRoom(readOnly: 1, type: 1, federated: false, lobby: 0, permissions: 128);
 
         $this->expectException(ConversationAccessException::class);
         $this->expectExceptionMessage(Messages::conversationNotWritable());
@@ -103,6 +104,44 @@ class ConversationResolverTest extends TestCase {
 
         $this->expectException(ConversationAccessException::class);
         $this->expectExceptionMessage(Messages::conversationNotWritable());
+        $this->resolver->resolveForWriting('alice', 'abcd');
+    }
+
+    /**
+     * The chat permission is one bit among others, and Talk hands out custom permission sets: a participant
+     * holding any combination without that bit cannot write, whatever else they hold.
+     *
+     * @return array<string, array{int}>
+     */
+    public static function permissionsWithoutTheChatBitProvider(): array {
+        return ['custom flag only' => [1], 'lobby bypass only' => [8], 'every other bit' => [127], 'two other bits' => [1 | 8 | 64]];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('permissionsWithoutTheChatBitProvider')]
+    public function testWritingRefusesAnyPermissionSetWithoutTheChatBit(int $permissions): void {
+        $this->givenRoom(readOnly: 0, type: 1, federated: false, lobby: 0, permissions: $permissions);
+
+        $this->expectException(ConversationAccessException::class);
+        $this->expectExceptionMessage(Messages::conversationNotWritable());
+        $this->resolver->resolveForWriting('alice', 'abcd');
+    }
+
+    /** @return array<string, array{int}> */
+    public static function permissionsWithTheChatBitProvider(): array {
+        return ['chat bit alone' => [128], 'chat and another' => [128 | 1], 'all bits' => [255]];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('permissionsWithTheChatBitProvider')]
+    public function testWritingAllowsAnyPermissionSetWithTheChatBit(int $permissions): void {
+        $this->givenRoom(readOnly: 0, type: 1, federated: false, lobby: 0, permissions: $permissions);
+
+        $this->assertSame('abcd', $this->resolver->resolveForWriting('alice', 'abcd')->room->getToken());
+    }
+
+    public function testAnActiveLobbyNeedsTheBypassBitSpecificallyNotJustAnyOtherBit(): void {
+        $this->givenRoom(readOnly: 0, type: 1, federated: false, lobby: 2, permissions: 255 & ~8);
+
+        $this->expectException(ConversationAccessException::class);
         $this->resolver->resolveForWriting('alice', 'abcd');
     }
 

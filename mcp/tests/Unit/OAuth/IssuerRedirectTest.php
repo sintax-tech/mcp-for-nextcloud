@@ -96,7 +96,49 @@ final class IssuerRedirectTest extends TestCase {
 
     public function testUnregisteredRedirectUriStaysOnTheLocalPageWithoutIssuer(): void {
         $response = $this->controller($this->params(['redirect_uri' => 'https://evil.example/cb']))->authorize();
+
         $this->assertInstanceOf(TemplateResponse::class, $response);
+        $this->assertNotNull($response->getParams()['error'], 'the local page says why');
+        $this->assertNull($response->getParams()['pending'], 'no consent can be given for this request');
+        $this->assertFalse($response->getParams()['blocked']);
+        $this->assertSame([], $this->stored, 'nothing is kept in the session');
+    }
+
+    /**
+     * The redirect_uri is judged before anything else: whatever else is wrong with the request, an
+     * unregistered redirect never gets an error redirected to it, because the redirect is the attacker's.
+     *
+     * @return array<string, array{array<string,string>}>
+     */
+    public static function otherInvalidParametersProvider(): array {
+        return [
+            'response_type=token' => [['response_type' => 'token']],
+            'unknown scope' => [['scope' => 'bogus']],
+            'scope without mcp' => [['scope' => 'offline_access']],
+            'other resource' => [['resource' => 'https://other.example/']],
+            'PKCE plain' => [['code_challenge_method' => 'plain']],
+            'no PKCE method' => [['code_challenge_method' => '']],
+            'malformed challenge' => [['code_challenge' => 'short']],
+            'everything wrong at once' => [['response_type' => 'token', 'scope' => 'bogus', 'code_challenge_method' => 'plain']],
+        ];
+    }
+
+    /** @param array<string,string> $broken */
+    #[\PHPUnit\Framework\Attributes\DataProvider('otherInvalidParametersProvider')]
+    public function testAnUnregisteredRedirectNeverReceivesAnErrorWhateverElseIsWrong(array $broken): void {
+        $response = $this->controller($this->params($broken + ['redirect_uri' => 'https://evil.example/cb']))->authorize();
+
+        $this->assertNotInstanceOf(RedirectResponse::class, $response, 'an error was sent to the attacker redirect');
+        $this->assertInstanceOf(TemplateResponse::class, $response);
+        $this->assertNotNull($response->getParams()['error']);
+        $this->assertNull($response->getParams()['pending']);
+    }
+
+    public function testARedirectableErrorGoesToTheRegisteredRedirectAndNowhereElse(): void {
+        $response = $this->controller($this->params(['response_type' => 'token']))->authorize();
+
+        $this->assertInstanceOf(RedirectResponse::class, $response);
+        $this->assertSame('https://claude.ai/cb', strtok($response->getRedirectURL(), '?'));
     }
 
     public function testConsentSuccessAndDenialCarryIssuer(): void {

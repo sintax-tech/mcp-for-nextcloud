@@ -96,6 +96,56 @@ final class ClientMetadataMethodsTest extends TestCase {
         $this->assertRefused($fetcher, 'https://chatgpt.com.attacker.tld/oauth/x/client.json');
     }
 
+    /**
+     * The document each of these ids would download is valid and names the very id asked for, so the only
+     * thing standing between the id and a download is the allowlist: a match by suffix or substring would
+     * let a host the administrator never listed be fetched.
+     *
+     * @return array<string, array{string}>
+     */
+    public static function lookalikeHostsProvider(): array {
+        return [
+            'allowed name inside a longer domain' => ['https://chatgpt.com.attacker.tld/oauth/x/client.json'],
+            'subdomain chain below an attacker domain' => ['https://evil.chatgpt.com.attacker.tld/oauth/x/client.json'],
+            'suffix of the allowed name glued to a prefix' => ['https://evilchatgpt.com/oauth/x/client.json'],
+            'allowed name as a label of another host' => ['https://notclaude.ai/oauth/x/client.json'],
+            'subdomain of an allowed host' => ['https://sub.claude.ai/oauth/x/client.json'],
+            'unrelated host' => ['https://attacker.tld/client.json'],
+            'allowed host only in the userinfo' => ['https://claude.ai@attacker.tld/oauth/x/client.json'],
+            'allowed host only in the path' => ['https://attacker.tld/claude.ai/client.json'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('lookalikeHostsProvider')]
+    public function testAHostOutsideTheAllowlistIsRefusedWithoutAnyDownload(string $id): void {
+        $fetcher = $this->fetcher(['client_id' => $id, 'client_name' => 'Attacker',
+            'redirect_uris' => ['https://attacker.tld/cb'], 'token_endpoint_auth_method' => 'none']);
+
+        $this->assertRefused($fetcher, $id);
+        $this->assertSame(0, $this->downloads, 'the allowlist refuses before the network is touched');
+    }
+
+    /** @return array<string, array{string}> */
+    public static function malformedIdsProvider(): array {
+        return [
+            'plain http' => ['http://claude.ai/oauth/x/client.json'],
+            'userinfo with credentials' => ['https://user:pass@claude.ai/oauth/x/client.json'],
+            'fragment' => ['https://claude.ai/oauth/x/client.json#frag'],
+            'empty path' => ['https://claude.ai'],
+            'only a slash' => ['https://claude.ai/'],
+            'not a URL' => ['claude.ai'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('malformedIdsProvider')]
+    public function testAMalformedIdOnAnAllowedHostIsRefusedWithoutAnyDownload(string $id): void {
+        $fetcher = $this->fetcher(['client_id' => $id, 'client_name' => 'Claude',
+            'redirect_uris' => ['https://claude.ai/cb'], 'token_endpoint_auth_method' => 'none']);
+
+        $this->assertRefused($fetcher, $id);
+        $this->assertSame(0, $this->downloads);
+    }
+
     public function testEmptyHostConfigUsesDefaultsForClaudeAndChatGpt(): void {
         foreach (['', " , , \t "] as $raw) {
             foreach ([self::CLAUDE, self::CHATGPT] as $id) {

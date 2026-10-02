@@ -208,6 +208,92 @@ final class NotesModuleTest extends TestCase {
         $this->assertSame([], array_filter($this->tree->ops, fn ($op) => str_starts_with($op, 'write') || str_starts_with($op, 'move')));
     }
 
+    /**
+     * P2: the whole call is validated before the first write. A title already taken in the category used
+     * to be refused only after the new content had been written over the note, which has no backup.
+     */
+    public function testATitleThatCollidesRefusesTheWholeEditAndLeavesTheContentIntact(): void {
+        $this->tree->addFile('/alice/files/Notes/Reuniões/Outra.md', 'o');
+
+        $this->assertSame(NotesMessages::titleExistsInCategory(),
+            $this->failure('notes_edit', ['id' => $this->ata, 'content' => 'NOVO', 'title' => 'Outra']));
+
+        $this->assertSame('decisões...', $this->tree->nodes['/alice/files/Notes/Reuniões/Ata.md']['content']);
+        $this->assertArrayHasKey('/alice/files/Notes/Reuniões/Ata.md', $this->tree->nodes);
+        $this->assertSame('o', $this->tree->nodes['/alice/files/Notes/Reuniões/Outra.md']['content']);
+        $this->assertSame([], $this->tree->ops, 'nothing may be written, moved or deleted');
+    }
+
+    public function testATitleThatSanitizesToNothingRefusesTheWholeEditBeforeWriting(): void {
+        $this->invalid('notes_edit', ['id' => $this->ata, 'content' => 'NOVO', 'title' => ' ../ ']);
+
+        $this->assertSame('decisões...', $this->tree->nodes['/alice/files/Notes/Reuniões/Ata.md']['content']);
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    public function testKeepingTheSameTitleIsNotACollisionWithItself(): void {
+        $out = $this->tool('notes_edit', ['id' => $this->ata, 'content' => 'v2', 'title' => 'Ata']);
+
+        $this->assertSame('Ata', $out['title']);
+        $this->assertSame('v2', $this->tree->nodes['/alice/files/Notes/Reuniões/Ata.md']['content']);
+    }
+
+    public function testAnOversizedContentWithATitleWritesNothing(): void {
+        $this->assertSame(NotesMessages::noteTooLarge(NotesModule::MAX_BYTES),
+            $this->failure('notes_edit', ['id' => $this->ata, 'content' => str_repeat('x', NotesModule::MAX_BYTES + 1), 'title' => 'Novo']));
+
+        $this->assertSame('decisões...', $this->tree->nodes['/alice/files/Notes/Reuniões/Ata.md']['content']);
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    /** P18: notes_create is a write in the notes folder like any other, so a shared folder asks first. */
+    public function testCreatingInASharedNotesFolderAsksForConfirmationAndWritesNothing(): void {
+        $this->config->user['alice']['notes']['notesPath'] = 'Equipe';
+        $this->tree->addFolder('/alice/files/Equipe', ['scope' => 'team']);
+        $this->tree->mountPath = '/alice/files/Equipe';
+        $before = $this->tree->nodes;
+
+        $out = $this->tool('notes_create', ['title' => 'Nova', 'content' => 'x']);
+
+        $this->assertTrue($out['requiresConfirmation']);
+        $this->assertSame('team', $out['scope']);
+        $this->assertSame('Equipe', $out['teamFolder']);
+        $this->assertSame($before, $this->tree->nodes);
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    public function testCreatingInASharedNotesFolderGoesThroughOnceConfirmed(): void {
+        $this->config->user['alice']['notes']['notesPath'] = 'Equipe';
+        $this->tree->addFolder('/alice/files/Equipe', ['scope' => 'team']);
+        $this->tree->mountPath = '/alice/files/Equipe';
+
+        $out = $this->tool('notes_create', ['title' => 'Nova', 'content' => 'x', 'confirm_shared' => true]);
+
+        $this->assertArrayNotHasKey('requiresConfirmation', $out);
+        $this->assertSame('x', $this->tree->nodes['/alice/files/Equipe/Nova.md']['content']);
+    }
+
+    /** The category that does not exist yet is created inside the nearest folder that does, so that one is what is guarded. */
+    public function testANewCategoryInsideASharedNotesFolderAsksBeforeCreatingIt(): void {
+        $this->config->user['alice']['notes']['notesPath'] = 'Equipe';
+        $this->tree->addFolder('/alice/files/Equipe', ['scope' => 'team']);
+        $this->tree->mountPath = '/alice/files/Equipe';
+        $before = $this->tree->nodes;
+
+        $out = $this->tool('notes_create', ['title' => 'Nova', 'category' => 'Sub/Pasta']);
+
+        $this->assertTrue($out['requiresConfirmation']);
+        $this->assertSame($before, $this->tree->nodes);
+    }
+
+    public function testCreatingInThePersonalNotesFolderNeedsNoSharedConfirmation(): void {
+        $out = $this->tool('notes_create', ['title' => 'Pessoal', 'content' => 'x']);
+
+        $this->assertArrayNotHasKey('requiresConfirmation', $out);
+        $this->assertSame('personal', $out['access']['scope'] ?? 'personal');
+        $this->assertArrayHasKey('/alice/files/Notes/Pessoal.md', $this->tree->nodes);
+    }
+
     public function testMoveBetweenCategoriesWithoutOverwriting(): void {
         $moved = $this->tool('notes_move', ['id' => $this->ata, 'category' => 'Arquivo/2026']);
         $this->assertSame('Arquivo/2026', $moved['category']);

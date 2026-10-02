@@ -1,6 +1,7 @@
 OC.L10N.register(
     "mcp",
     {
+    "%1$s %2$s is installed, but MCP for Nextcloud supports it from version %3$s on. Its tools stay hidden until the app is updated; the saved permissions are kept." : "%1$s %2$s está instalado, mas o MCP for Nextcloud só o suporta a partir da versão %3$s. As ferramentas dele ficam ocultas até o app ser atualizado; as permissões salvas são mantidas.",
     "%s: %s" : "%s: %s",
     "The search for people failed; try again." : "A busca de pessoas falhou; tente de novo.",
     "required with confirm: true; send the plan_state of the plan" : "obrigatório com confirm: true; envie o plan_state do plano",

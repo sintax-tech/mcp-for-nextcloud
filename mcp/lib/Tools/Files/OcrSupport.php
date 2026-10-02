@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
+use OCA\Mcp\Service\Compat\AppEnablement;
 use OCP\App\IAppManager;
 
 /**
@@ -21,7 +22,7 @@ class OcrSupport {
 
     /** @return bool whether Workflow OCR is installed and enabled */
     public function isActive(): bool {
-        return $this->appManager->isEnabledForAnyone(self::APP);
+        return AppEnablement::forAnyone($this->appManager, self::APP);
     }
 
     /**

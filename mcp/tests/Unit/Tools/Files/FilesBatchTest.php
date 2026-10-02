@@ -191,6 +191,25 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->assertSame([], $this->batches->rows);
     }
 
+    /**
+     * createFolders() checks the whole list itself, not only through the plan: the undo calls it too, and a caller
+     * that skipped the plan must still not be left with half of the folders made.
+     */
+    public function testCreateFoldersChecksEveryFolderBeforeMakingTheFirst(): void {
+        $this->tree->addFile('/alice/files/C', 'um arquivo', 'text/plain');
+        $access = new \OCA\Mcp\Tools\Common\NodeAccessInfo(
+            \OCA\Mcp\Tests\Unit\Tools\FakeUsers::manager($this, \OCA\Mcp\Tests\Unit\Tools\FakeUsers::DEFAULTS), $this->tree->shareManager());
+        $reorganization = new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Tools\Common\SharedWriteGuard($access),
+            $this->report(), $this->users);
+        try {
+            $reorganization->createFolders($this->tree->rootFolder(), ['/A/B', '/C']);
+            $this->fail('createFolders aceitou uma pasta sobre um arquivo');
+        } catch (\OCA\Mcp\Tools\ToolFailure $e) {
+            $this->assertSame(FilesMessages::destinationExists(), $e->getMessage());
+        }
+        $this->assertSame([], $this->tree->ops);
+    }
+
     /** A folder that cannot take a new entry is refused for mkdirs as it is for a move into it. */
     public function testMkdirsIntoAFolderThatCannotTakeItIsRefusedBeforeAnythingIsCreated(): void {
         $this->tree->addFolder('/alice/files/ReadOnly', ['permissions' => \OCP\Constants::PERMISSION_READ]);
@@ -405,8 +424,29 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->assertSame([], $this->batches->find(1, 'alice')->moves);
     }
 
+    /**
+     * Through the production store: the batch alice ran is not bob's, and a batch of bob is answered to alice exactly
+     * like one that never existed, in the plan of the undo (which would list its paths) and in the undo itself.
+     */
     public function testABatchOfSomebodyElseIsNotFound(): void {
-        $this->json('files_move_batch', self::BATCH);
-        $this->assertNull($this->batches->find(1, 'bob'), 'o lote existe, mas não é de bob');
+        $db = new \OCA\Mcp\Tests\Unit\SqliteDatabase($this, [new \OCA\Mcp\Migration\Version000800Date20261002000000()]);
+        $this->batchStore = new \OCA\Mcp\Tools\Files\BatchStore($db->connection());
+        $this->setUp();
+        $mine = $this->json('files_move_batch', self::BATCH)['batch_id'];
+        $this->assertNull($this->batchStore->find($mine, 'bob'), 'o lote existe, mas não é de bob');
+        $this->assertNotNull($this->batchStore->find($mine, 'alice'));
+
+        $theirs = $this->batchStore->insert(new \OCA\Mcp\Tools\Files\Batch(null, 'bob', 1790000000,
+            [['from' => '/Documentos/orcamento.md', 'to' => '/Arquivado/orcamento.md', 'toId' => 1]], [], null));
+        foreach ([fn () => $this->plan('files_undo_batch', ['batch_id' => $theirs]),
+            fn () => $this->tool('files_undo_batch', ['batch_id' => $theirs, 'confirm' => true])] as $call) {
+            try {
+                $call();
+                $this->fail('o lote de bob foi achado por alice');
+            } catch (\OCA\Mcp\Tools\ToolFailure $e) {
+                $this->assertSame(FilesMessages::batchNotFound(), $e->getMessage());
+            }
+        }
+        $this->assertNull($db->rows(\OCA\Mcp\Tools\Files\BatchStore::TABLE)[1]['undone_at'], 'o lote de bob segue intacto');
     }
 }

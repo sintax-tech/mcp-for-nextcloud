@@ -10,6 +10,9 @@ use OCP\IDBConnection;
 /**
  * In-memory BatchStore for the tool tests, keeping the two rules the real store exists to enforce: the
  * owner decides whether a batch is found, and a batch can only be marked undone once.
+ *
+ * It only overrides what {@see BatchStore} has ({@see \OCA\Mcp\Tests\Unit\Contract\StoreDoubleContractTest}); a test
+ * looks inside it through {@see self::$rows}, and the SQL itself is covered by {@see BatchStoreTest}.
  */
 final class InMemoryBatchStore extends BatchStore {
     /** @var array<int, array<string, mixed>> */
@@ -49,10 +52,5 @@ final class InMemoryBatchStore extends BatchStore {
 
     public function deleteForUser(string $uid): void {
         $this->rows = array_filter($this->rows, fn (array $row) => $row['user_id'] !== $uid);
-    }
-
-    /** @return list<Batch> every stored batch, whoever owns it */
-    public function all(): array {
-        return array_map(fn (array $row) => Batch::fromRow($row), array_values($this->rows));
     }
 }

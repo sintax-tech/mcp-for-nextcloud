@@ -78,7 +78,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->assertSame([['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md'],
             ['from' => '/Documentos/plano.md', 'to' => '/Arquivado/plano.md']], $plan['order'], 'a ordem do lote faz parte do que o usuário aprova');
         $this->assertSame([], $this->tree->ops, 'um plano não toca em nada');
-        $this->assertSame([], $this->batches->all(), 'um plano não grava lote');
+        $this->assertSame([], $this->batches->rows, 'um plano não grava lote');
     }
 
     public function testThePlanSeesTheFoldersItWouldCreate(): void {
@@ -295,7 +295,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
         $this->assertTrue($out['requiresConfirmation']);
         $this->assertArrayNotHasKey('batch_id', $out, 'sem confirm_shared nada é executado nem gravado');
         $this->assertSame([], $this->tree->ops);
-        $this->assertSame([], $this->batches->all());
+        $this->assertSame([], $this->batches->rows);
     }
 
     public function testAnExecutionStopsAtTheFirstErrorAndRecordsOnlyWhatItMoved(): void {

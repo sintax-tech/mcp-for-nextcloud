@@ -82,6 +82,27 @@ class BatchStore {
     }
 
     /**
+     * Narrows an open batch to the moves that did not go back, after an undo that stopped halfway.
+     *
+     * The items already home are no longer in their destination, and a retry that still listed them would read
+     * that absence as a conflict and refuse the batch for good. A batch of somebody else, or one already undone,
+     * is left exactly as it is.
+     *
+     * @param int $id batch id
+     * @param string $userId the account that owns it
+     * @param list<array{from:string, to:string, toId:int}> $moves the moves still to undo, in the order they ran
+     */
+    public function keepRemaining(int $id, string $userId, array $moves): void {
+        $qb = $this->db->getQueryBuilder();
+        $qb->update(self::TABLE)
+            ->set('moves_json', $qb->createNamedParameter(json_encode($moves, JSON_THROW_ON_ERROR)))
+            ->where($qb->expr()->eq('id', $qb->createNamedParameter($id, IQueryBuilder::PARAM_INT)))
+            ->andWhere($qb->expr()->eq('user_id', $qb->createNamedParameter($userId)))
+            ->andWhere($qb->expr()->isNull('undone_at'))
+            ->executeStatement();
+    }
+
+    /**
      * Deletes every batch of a user, so a personal disconnect leaves nothing undoable behind.
      *
      * @param string $uid Nextcloud user id

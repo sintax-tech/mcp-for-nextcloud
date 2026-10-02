@@ -61,13 +61,13 @@ final class FilesPlanTest extends FilesToolsTestCase {
 
     private function snapshot(): void {
         $this->nodesBefore = $this->tree->nodes;
-        $this->batchesBefore = $this->batches->all();
+        $this->batchesBefore = $this->batches->rows;
     }
 
     private function assertNothingWritten(): void {
         $this->assertSame([], $this->tree->ops);
         $this->assertSame($this->nodesBefore, $this->tree->nodes);
-        $this->assertEquals($this->batchesBefore, $this->batches->all());
+        $this->assertEquals($this->batchesBefore, $this->batches->rows);
         $this->assertSame([], $this->issued, 'no checkout link may be minted by a plan');
     }
 

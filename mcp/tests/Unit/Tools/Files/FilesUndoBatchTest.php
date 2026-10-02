@@ -235,6 +235,41 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
         $this->assertTrue($finished->isUndone());
     }
 
+    /**
+     * The same retry against the production store over SQLite. The double used to carry a method the real store did
+     * not have, so this path was green in the tests and a fatal "undefined method" on the server: the undo stopped
+     * halfway, recorded nothing, and the next attempt read the items already home as conflicts.
+     */
+    public function testAnUndoThatStoppedHalfwayCanBeRetriedWithTheProductionStore(): void {
+        $db = new \OCA\Mcp\Tests\Unit\SqliteDatabase($this, [new \OCA\Mcp\Migration\Version000800Date20261002000000()]);
+        $this->batchStore = new BatchStore($db->connection());
+        $this->setUp();
+        $this->tree->addFile('/alice/files/Documentos/notas.md', 'notas', 'text/markdown');
+        $id = $this->json('files_move_batch', [
+            'moves' => [
+                ['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md'],
+                ['from' => '/Documentos/plano.md', 'to' => '/Arquivado/plano.md'],
+                ['from' => '/Documentos/notas.md', 'to' => '/Arquivado/notas.md'],
+            ],
+            'confirm' => true,
+        ])['batch_id'];
+        $this->tree->failMove = ['/alice/files/Arquivado/plano.md'];
+
+        $first = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
+        $this->assertSame(1, $first['undone']);
+        $this->assertSame(['/Documentos/ata.md', '/Documentos/plano.md'],
+            array_column($this->batchStore->find($id, 'alice')->moves, 'from'), 'a linha guarda só o que não voltou');
+
+        $this->tree->failMove = [];
+        $second = $this->json('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
+        $this->assertSame([], $second['conflicts']);
+        $this->assertSame(2, $second['undone']);
+        foreach (['ata.md', 'plano.md', 'notas.md'] as $name) {
+            $this->assertArrayHasKey("/alice/files/Documentos/$name", $this->tree->nodes, "$name voltou para casa");
+        }
+        $this->assertTrue($this->batchStore->find($id, 'alice')->isUndone());
+    }
+
     /** Once the batch is whole there is nothing left to undo, and saying so beats moving things twice. */
     public function testAFinishedBatchCannotBeUndoneAgain(): void {
         $id = $this->runBatch();

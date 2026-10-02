@@ -54,6 +54,8 @@ abstract class FilesToolsTestCase extends TestCase {
     protected IUser $user;
     protected ITimeFactory $time;
     protected InMemoryBatchStore $batches;
+    /** The store the module records batches in, when a test needs the production one instead of {@see self::$batches}. */
+    protected ?\OCA\Mcp\Tools\Files\BatchStore $batchStore = null;
     protected ITempManager $temp;
     protected \OCA\Mcp\Tests\Unit\InMemoryConfig $config;
     protected IPreview $previewManager;
@@ -157,7 +159,7 @@ abstract class FilesToolsTestCase extends TestCase {
             new VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class), new OcrSupport($this->apps)),
             new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users, $this->visibilityGuard),
             new MovePlanner(new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users, $this->visibilityGuard), $access, new SharedWriteGuard($access), $this->visibilityGuard),
-            $this->batches,
+            $this->batchStore ?? $this->batches,
             $this->time,
             $imageTools,
             new OcrSupport($this->apps),

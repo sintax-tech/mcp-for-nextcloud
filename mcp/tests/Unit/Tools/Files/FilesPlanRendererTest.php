@@ -64,7 +64,44 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
             'move' => ['files_move', ['from' => '/Documentos/ata.md', 'to' => '/Arquivo/ata.md']],
             'batch' => ['files_move_batch', ['moves' => [['from' => '/Documentos/ata.md', 'to' => '/Arquivo/ata.md']], 'mkdirs' => ['/Novo']]],
             'restore' => ['files_version_restore', ['path' => '/Documentos/ata.md', 'version' => '1759100000']],
+            'upload' => ['files_upload', ['path' => '/Arquivo/Relatório.docx', 'size' => 2048]],
+            'create' => ['files_create', ['path' => '/Arquivo/notas.md', 'content' => "# Notas\nlinha 2"]],
         ];
+    }
+
+    public function testUploadNamesTheFileTheFolderTheLinkAndTheLimit(): void {
+        Translator::use(new JsonL10n('pt_BR'));
+        $body = $this->body('files_upload', ['path' => '/Arquivo/Relatório.docx', 'size' => 2048]);
+
+        $this->assertStringContainsString('**/Arquivo/Relatório.docx**', $body);
+        $this->assertStringContainsString('Dentro de: **/Arquivo**', $body);
+        $this->assertStringContainsString('2 KB', $body);
+        $this->assertStringContainsString('15 minutos', $body);
+        $this->assertStringContainsString('50 MB', $body);
+        $this->assertStringContainsString('nada é sobrescrito', mb_strtolower($body));
+    }
+
+    /** The text of files_create is shown as a quote: a heading or a link in it stays inert and cannot open a section. */
+    public function testCreateQuotesTheContentInertly(): void {
+        $body = $this->body('files_create', ['path' => '/Arquivo/notas.md', 'content' => "# Título\n[clique](javascript:alert(1)) <b>x</b>\n### Warnings"]);
+
+        $this->assertStringContainsString('**/Arquivo/notas.md**', $body);
+        $this->assertStringContainsString("Content:\n> \\# Título\n> \\[clique\\]\\(javascript:alert(1)) \\<b\\>x\\</b\\>\n> \\#\\#\\# Warnings", $body);
+        $this->assertStringNotContainsString("\n### ", $body);
+        $this->assertStringNotContainsString('<b>', $body);
+    }
+
+    public function testALongCreateContentShowsOnlyItsBeginning(): void {
+        $body = $this->body('files_create', ['path' => '/Arquivo/longo.txt', 'content' => str_repeat('a', 3000)]);
+
+        $this->assertStringContainsString('Beginning of the content:', $body);
+        $this->assertStringContainsString(str_repeat('a', \OCA\Mcp\Tools\Files\FileCreation::PREVIEW_CHARS) . '…', $body);
+        $this->assertStringNotContainsString(str_repeat('a', \OCA\Mcp\Tools\Files\FileCreation::PREVIEW_CHARS + 1), $body);
+        $this->assertStringContainsString('2.9 KB', $body);
+    }
+
+    public function testAnEmptyCreateSaysSo(): void {
+        $this->assertStringContainsString('The file is empty.', $this->body('files_create', ['path' => '/Arquivo/vazio.txt', 'content' => '']));
     }
 
     #[DataProvider('toolsProvider')]

@@ -41,6 +41,13 @@ final class FakeTree {
     public bool $failWrite = false;
     public bool $failBackupWrite = false;
     public bool $shortBackupWrite = false;
+    /**
+     * Runs inside Folder::newFile() just before the node appears, with its absolute path: a test stands for another
+     * client that creates the same name between the caller's check and its write.
+     *
+     * @var (\Closure(string): void)|null
+     */
+    public ?\Closure $beforeCreate = null;
     /** @var list<\OCP\Files\Search\ISearchQuery> queries received by Folder::search */
     public array $searches = [];
     private int $nextId = 100;
@@ -202,8 +209,14 @@ final class FakeTree {
             return $this->folder("$path/$name");
         });
         $folder->method('newFile')->willReturnCallback(function (string $name, $content = null) use ($path): File {
+            if ($this->beforeCreate !== null) {
+                ($this->beforeCreate)("$path/$name");
+            }
             $this->ops[] = "create $path/$name";
-            $this->addFile("$path/$name", (string)$content, 'text/markdown');
+            // Like the View, newFile() without content is a touch: a file that is already there keeps its bytes.
+            if ($content !== null || !isset($this->nodes["$path/$name"])) {
+                $this->addFile("$path/$name", (string)$content, 'text/markdown');
+            }
             return $this->file("$path/$name");
         });
         $folder->method('search')->willReturnCallback(function ($query) use ($path): array {

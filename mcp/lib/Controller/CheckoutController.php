@@ -13,8 +13,11 @@ use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Tools\ArgumentValidationException;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileBackup;
+use OCA\Mcp\Tools\Files\FileCreation;
+use OCA\Mcp\Tools\Files\FileExists;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\AppFramework\Controller;
@@ -35,7 +38,8 @@ use OCP\IUserSession;
 use Psr\Log\LoggerInterface;
 
 /**
- * The two routes a checkout hands to an agent: GET downloads the file, PUT/POST uploads the edited one.
+ * The two routes a checkout hands to an agent: GET downloads the file, PUT/POST uploads the edited one. The
+ * PUT/POST route also spends the create link of files_upload, which creates one new file at the path it remembers.
  *
  * Both are public pages without CSRF because the 256-bit token in the path IS the credential: it is
  * single use, expires in minutes and is bound to one user, one file id and one ETag. Nothing about the
@@ -52,6 +56,8 @@ class CheckoutController extends Controller {
     /** Grant the whole checkout flow needs; checkout, upload and replace all use files.edit. */
     private const MODULE = 'files';
     private const OPERATION = 'edit';
+    /** Grant the create link of files_upload needs, re-read when it is spent. */
+    private const OPERATION_CREATE = 'create';
 
     public function __construct(
         string $appName,
@@ -71,6 +77,7 @@ class CheckoutController extends Controller {
         private ?UserL10n $l10n = null,
         private ?IUserManager $userManager = null,
         private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
+        private ?FileCreation $creation = null,
     ) {
         parent::__construct($appName, $request);
     }
@@ -123,12 +130,15 @@ class CheckoutController extends Controller {
      * empty body, a body over the limit — still leaves the link usable. Everything from the guard on leaves
      * it spent, because from there the write may or may not have happened and a retry would be ambiguous.
      *
+     * A create link of files_upload takes the same route and the same body checks, except that an empty body is
+     * a valid empty file: it cannot erase anything, because the link never writes over an existing file.
+     *
      * The token is read from the route only, never as a method argument: Request::decodeContent() merges a
      * JSON or urlencoded body into the same parameter array (lib/private/AppFramework/Http/Request.php:388-425),
      * so an argument would let a body choose which file it writes.
      *
-     * @return Response the JSON receipt, or 409 for a conflict, 403 for a refused write, and
-     *         400/404/410/413/500 for the rest
+     * @return Response the JSON receipt (201 for a created file), or 409 for a conflict or a taken name, 403 for a
+     *         refused write, and 400/404/410/413/500 for the rest
      */
     #[PublicPage]
     #[NoAdminRequired]
@@ -143,13 +153,26 @@ class CheckoutController extends Controller {
             if ($token === null) {
                 return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
             }
+            // Decided from the prefix because the store is not read before the body passes; the stored kind still rules.
+            $create = CheckoutService::isCreateToken($token);
             $limit = $this->checkout->maxBytes();
             $body = $this->storeBody($limit);
-            if ($failure = $this->checkBody($limit)) {
+            if ($failure = $this->checkBody($limit, $create)) {
                 if ($body !== null) {
                     @unlink($body);
                 }
                 return $failure;
+            }
+            // A body that could not be kept (larger than declared, or unreadable) is never written, and costs no link.
+            if ($body === null) {
+                return $this->refuse(Http::STATUS_REQUEST_ENTITY_TOO_LARGE, FilesMessages::uploadTooLarge($limit));
+            }
+            if ($create) {
+                try {
+                    return $this->create($body);
+                } finally {
+                    @unlink($body);
+                }
             }
             $opened = $this->resolve(CheckoutToken::KIND_UPLOAD);
             if ($opened instanceof Response) {
@@ -189,11 +212,12 @@ class CheckoutController extends Controller {
 
     /**
      * @param int $limit effective upload limit in bytes
+     * @param bool $allowEmpty whether an empty body is a valid upload, true only for a create link
      * @return Response|null the refusal, or null when the body is usable
      */
-    private function checkBody(int $limit): ?Response {
+    private function checkBody(int $limit, bool $allowEmpty = false): ?Response {
         $declared = (int)$this->request->getHeader('Content-Length');
-        if ($declared === 0) {
+        if ($declared === 0 && !$allowEmpty) {
             return $this->refuse(Http::STATUS_BAD_REQUEST, FilesMessages::uploadEmpty());
         }
         if ($declared > $limit) {
@@ -262,6 +286,100 @@ class CheckoutController extends Controller {
             'access' => $this->accessInfo->describe($node, $row->userId),
             'backup' => $copy,
         ]);
+    }
+
+    /**
+     * Creates the new file a files_upload link names, after the body was accepted.
+     *
+     * The same order as an upload: the token, the session and the files.create grant, then where the file goes —
+     * the name is still one Nextcloud accepts, the folder still exists, is visible and the name is still free.
+     * None of these has written anything, so none of them costs the link. Then the link is spent, the shared
+     * scope and the create permission of the folder are read again and the file is written, never over a file that
+     * appeared in the meantime.
+     *
+     * @param string $body temporary file holding the uploaded bytes, possibly empty
+     * @return Response 201 with the receipt, 409 for a taken name or a missing shared confirmation, or a refusal
+     */
+    private function create(string $body): Response {
+        $row = $this->store->find($this->hasher->hash($this->routeToken() ?? ''));
+        if ($row === null || $row->kind !== CheckoutToken::KIND_CREATE) {
+            return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenWrongKind());
+        }
+        $session = $this->userSession->getUser();
+        if ($session !== null && $session->getUID() !== $row->userId) {
+            return $this->refuse(Http::STATUS_NOT_FOUND, FilesMessages::tokenInvalid());
+        }
+        // A spent or expired link says so before anything else, even when its file now exists.
+        if ($row->used || $row->expiresAt <= $this->time->getTime()) {
+            return $this->refuse(Http::STATUS_GONE, FilesMessages::createTokenSpent());
+        }
+        $uid = $row->userId;
+        if (!$this->policy->canConnect($uid) || !$this->policy->granted($uid, self::MODULE, self::OPERATION_CREATE)) {
+            return $this->refuse(Http::STATUS_FORBIDDEN, FilesMessages::checkoutRevoked());
+        }
+        if ($this->l10n !== null && $this->userManager !== null && ($user = $this->userManager->get($uid)) !== null) {
+            Translator::use($this->l10n->forUser($user));
+        }
+        $creation = $this->creation ?? throw new \LogicException('FileCreation is not wired');
+        try {
+            $target = NodeAccess::run(fn (): array => $creation->target($this->rootFolder->getUserFolder($uid), $row->path));
+        } catch (\Throwable $e) {
+            return $this->createRefusal($e);
+        }
+        if ($failure = $this->spend($row, FilesMessages::createTokenSpent())) {
+            return $failure;
+        }
+        $access = $this->accessInfo->describe($target['folder'], $uid);
+        if ($access['permissions']['update'] === false) {
+            return $this->refuse(Http::STATUS_FORBIDDEN, CommonMessages::forbidden());
+        }
+        // The scope recorded with the link can be stale: the folder may have been shared in between.
+        if ($access['scope'] !== NodeAccessInfo::PERSONAL && !$row->sharedConfirmed) {
+            return $this->json(Http::STATUS_CONFLICT, $this->guard->request($access, $row->path, CommonMessages::confirmAdviceUpload()));
+        }
+        $handle = null;
+        try {
+            FileCreation::assertCreatable($target['folder']);
+            $content = (int)filesize($body) === 0 ? '' : ($handle = fopen($body, 'rb'));
+            if ($content === false) {
+                throw new ToolFailure(FilesMessages::createFailed());
+            }
+            $file = NodeAccess::run(fn (): \OCP\Files\File => $creation->write($target['folder'], $target['name'], $content));
+            return $this->json(Http::STATUS_CREATED, $creation->receipt($target, $file, $uid));
+        } catch (\Throwable $e) {
+            return $this->createRefusal($e);
+        } finally {
+            if (is_resource($handle)) {
+                fclose($handle);
+            }
+        }
+    }
+
+    /**
+     * The status a refusal of a new file maps to, so the agent knows whether to rename, ask or give up.
+     *
+     * @param \Throwable $e what target() or write() raised
+     * @return Response 409 for a taken name, 400 for a name or a path Nextcloud refuses, 403 for a denied folder,
+     *         404 for a missing or hidden one and 500 for a write that failed
+     */
+    private function createRefusal(\Throwable $e): Response {
+        if ($e instanceof FileExists) {
+            return $this->refuse(Http::STATUS_CONFLICT, $e->getMessage());
+        }
+        if ($e instanceof ArgumentValidationException) {
+            return $this->refuse(Http::STATUS_BAD_REQUEST, $e->clientMessage());
+        }
+        if (!$e instanceof ToolFailure) {
+            $this->logger->error('MCP create upload failed', ['app' => 'mcp', 'exception_class' => $e::class]);
+            return $this->refuse(Http::STATUS_INTERNAL_SERVER_ERROR, FilesMessages::createFailed());
+        }
+        return match ($e->getMessage()) {
+            CommonMessages::forbidden() => $this->refuse(Http::STATUS_FORBIDDEN, $e->getMessage()),
+            FilesMessages::backupPath() => $this->refuse(Http::STATUS_BAD_REQUEST, $e->getMessage()),
+            FilesMessages::createFailed(), CommonMessages::insufficientQuota(), CommonMessages::locked()
+                => $this->refuse(Http::STATUS_INTERNAL_SERVER_ERROR, $e->getMessage()),
+            default => $this->refuse(Http::STATUS_NOT_FOUND, $e->getMessage()),
+        };
     }
 
     /**
@@ -336,10 +454,11 @@ class CheckoutController extends Controller {
 
     /**
      * @param CheckoutToken $row the token about to be used
+     * @param string|null $spent the refusal of a spent token, the checkout one when null
      * @return Response|null 410 when another request spent it first, which is what makes the token single use
      */
-    private function spend(CheckoutToken $row): ?Response {
-        return $this->store->consume($row, $this->time->getTime()) ? null : $this->refuse(Http::STATUS_GONE, FilesMessages::tokenSpent());
+    private function spend(CheckoutToken $row, ?string $spent = null): ?Response {
+        return $this->store->consume($row, $this->time->getTime()) ? null : $this->refuse(Http::STATUS_GONE, $spent ?? FilesMessages::tokenSpent());
     }
 
     /**

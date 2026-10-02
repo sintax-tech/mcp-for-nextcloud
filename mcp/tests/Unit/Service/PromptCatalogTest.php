@@ -87,6 +87,17 @@ final class PromptCatalogTest extends TestCase {
         $this->assertStringNotContainsString('ncmcp_co_', $text);
     }
 
+    /** A file generated locally is new: the prompt sends it to files_upload, small text to files_create, never over a checkout. */
+    public function testThePromptTeachesHowToCreateANewFile(): void {
+        $this->policy->setGrant('alice', 'files', 'edit', true);
+        $text = $this->catalog->get(PromptCatalog::EDIT_LOCALLY, $this->policy, 'alice')['messages'][0]['content']['text'];
+        foreach (['files_upload', 'files_create', 'uploadUrl', 'curl -sS -T /tmp/file -X PUT -H "Content-Type: application/octet-stream" "$UPLOAD_URL"',
+            'never overwrite', 'files_mkdir'] as $needle) {
+            $this->assertStringContainsString($needle, $text, $needle);
+        }
+        $this->assertLessThan(strpos($text, 'files_upload'), strpos($text, 'files_checkout'), 'the checkout flow comes first');
+    }
+
     public function testThePromptTitlesAndDescriptionsAreTranslated(): void {
         $this->policy->setGrant('alice', 'files', 'edit', true);
         $listEn = $this->catalog->list($this->policy, 'alice');

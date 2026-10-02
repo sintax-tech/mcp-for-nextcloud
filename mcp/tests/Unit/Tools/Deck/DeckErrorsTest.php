@@ -5,7 +5,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Deck\ArchivedItemException;
 use OCA\Deck\BadRequestException;
-use OCA\Deck\ConflictException;
+use OCA\Deck\Exceptions\ConflictException;
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\StatusException;
 use OCA\Mcp\Tools\Deck\DeckConflictException;

@@ -24,6 +24,11 @@ final class DeckErrors {
 			['OCA\Deck\NoPermissionException', 'OCP\AppFramework\Db\DoesNotExistException', 'OCP\AppFramework\Db\IMapperException'],
 			'errorNotFoundOrForbidden',
 		],
+		// Before StatusException, which Deck's ConflictException extends; it lives in OCA\Deck\Exceptions.
+		[
+			['OCA\Deck\Exceptions\ConflictException'],
+			'errorConflict',
+		],
 		[
 			['OCA\Deck\StatusException', 'OCA\Deck\ArchivedItemException'],
 			'errorNotAllowed',
@@ -31,10 +36,6 @@ final class DeckErrors {
 		[
 			['OCA\Deck\BadRequestException'],
 			'errorInvalid',
-		],
-		[
-			['OCA\Deck\ConflictException'],
-			'errorConflict',
 		],
 	];
 

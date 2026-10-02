@@ -45,8 +45,17 @@ namespace OCA\Deck {
 	class BadRequestException extends \Exception {
 	}
 
-	/** Raised by Deck on a conflicting concurrent change. */
-	class ConflictException extends \Exception {
+}
+
+namespace OCA\Deck\Exceptions {
+
+	use OCA\Deck\StatusException;
+
+	/**
+	 * Raised by Deck on a conflicting change. It lives in `OCA\Deck\Exceptions` and is a StatusException, as in Deck
+	 * 1.15, 1.16 and 1.17 (`lib/Exceptions/ConflictException.php`).
+	 */
+	class ConflictException extends StatusException {
 	}
 }
 

@@ -52,6 +52,7 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 - calendar: a `CLASS` the standard does not define (`X-FOO`, for example) is handled as `PRIVATE`, as RFC 5545 §3.8.1.3 asks, in `calendar_list_events`, the collision warning, the plans and the changes of someone else's events; it used to show the event in full.
 - calendar: the plan of a write in a calendar that belongs to someone else names the calendar and its owner in the text the person reads, not only in the structured `shared` block.
 - deck: the `total` of `deck_list_cards` counts the cards before `offset`: a short page at `offset: 50` with 3 cards answers 53, not 3. Whether the page was short is decided on what Deck returned, not on what is left after the filter, so a full page is never taken for the end of the list.
+- notes: `notes_edit` with a new `title` also checks the permission before it writes anything, as Nextcloud requires for a rename: update on the note, delete at the source and create in the folder. A note in a share without the create or delete permission is refused in the plan and in the write, before the shared-content confirmation and before the content is put, so it is no longer overwritten by a call that then reports failure.
 
 ### Known limits
 

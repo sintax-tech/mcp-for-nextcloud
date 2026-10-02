@@ -247,16 +247,19 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
         if (!isset($arguments['content']) && !isset($arguments['title'])) {
             throw new InvalidArgumentException('Missing argument: content');
         }
-        if (($payload = $this->writable($root, $userId, $arguments)) !== null) {
-            return $payload;
-        }
         $note = $this->notes->find($root, $arguments['id']);
+        $this->assertWritable($note, $arguments);
         // Everything that can refuse is checked before the first write: the content has no backup, so
-        // a refusal after it would leave the note overwritten by a call that reports failure.
+        // a refusal after it would leave the note overwritten by a call that reports failure. It is also
+        // checked before the shared-write confirmation, so the user is never asked to approve a call
+        // the server would refuse.
         if (isset($arguments['content'])) {
             self::checkSize($arguments['content']);
         }
         $rename = isset($arguments['title']) ? $this->renameTarget($note, $arguments['title']) : null;
+        if (($payload = $this->guard->guard($note, $userId, (string)$arguments['id'], (bool)($arguments['confirm_shared'] ?? false))) !== null) {
+            return $payload;
+        }
         if (isset($arguments['content'])) {
             $note->putContent($arguments['content']);
         }
@@ -273,7 +276,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
      * @param string $title raw new title
      * @return string|null the new path, null when the name does not change
      * @throws InvalidArgumentException when nothing usable is left of the title
-     * @throws ToolFailure when another note in the category already has that name
+     * @throws ToolFailure when the rename is not permitted or another note in the category already has that name
      */
     private function renameTarget(File $note, string $title): ?string {
         $name = $this->notes->renamedName($note, $title);
@@ -281,6 +284,11 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
             return null;
         }
         $parent = $note->getParent();
+        // A new title is a move inside the folder, and Nextcloud allows a move only with update on the
+        // node, delete at the source and create at the destination (the same folder).
+        if (!$note->isUpdateable() || !$note->isDeletable() || !$parent->isCreatable()) {
+            throw new ToolFailure(CommonMessages::forbidden());
+        }
         if ($parent->nodeExists($name)) {
             throw new ToolFailure(NotesMessages::titleExistsInCategory());
         }
@@ -627,11 +635,22 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
      */
     private function writable(?Folder $root, string $userId, array $arguments): ?array {
         $note = $this->notes->find($root, $arguments['id']);
+        $this->assertWritable($note, $arguments);
+        return $this->guard->guard($note, $userId, (string)$arguments['id'], (bool)($arguments['confirm_shared'] ?? false));
+    }
+
+    /**
+     * The checks every note write shares, before anything is asked of the user.
+     *
+     * @param File $note the note about to change
+     * @param array{etag?:string} $arguments validated tool arguments
+     * @throws ToolFailure when the note cannot be updated or changed since the caller read it
+     */
+    private function assertWritable(File $note, array $arguments): void {
         if (!$note->isUpdateable()) {
             throw new ToolFailure(CommonMessages::forbidden());
         }
         NodeAccess::checkEtag($note, $arguments['etag'] ?? null);
-        return $this->guard->guard($note, $userId, (string)$arguments['id'], (bool)($arguments['confirm_shared'] ?? false));
     }
 
     /**

@@ -9,6 +9,7 @@ use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Stack;
 use OCA\Deck\NoPermissionException;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckTestHelpers;
+use OCA\Mcp\Tools\ArgumentValidationException;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckConflictException;
 use OCA\Mcp\Tools\Deck\DeckMessages;
@@ -158,6 +159,38 @@ final class AfterWriteHandlersTest extends TestCase {
 			self::assertArrayNotHasKey('isError', $result);
 			self::assertContains(DeckMessages::writtenThenFailed(), $this->payload($result)['warnings']);
 		}
+	}
+
+	/**
+	 * A listener of another app may throw a plain `\InvalidArgumentException` after Deck saved the card; only the
+	 * exclusive `ArgumentValidationException` of this app is a refusal that skips the read-back.
+	 */
+	public function testAPlainInvalidArgumentExceptionFromAListenerAfterTheWriteIsReadBack(): void {
+		$gateway = $this->gatewayOwnedBy('alice');
+		$gateway->method('createCard')->willThrowException(new \InvalidArgumentException('listener says no'));
+		$gateway->expects(self::once())->method('findCreatedCard')->willReturn($this->card(['id' => 77, 'title' => 'Fechar']));
+
+		$payload = $this->assertProbable($this->cards($gateway)['create']->handle(['stackId' => 10, 'title' => 'Fechar'], 'alice'));
+		self::assertSame(77, $payload['id']);
+
+		$edit = $this->gatewayOwnedBy('alice');
+		$edit->method('findCard')->willReturn($this->card(['id' => 7, 'title' => 'Antigo', 'lastModified' => 1_700_000_000]));
+		$edit->method('updateCard')->willThrowException(new \InvalidArgumentException('listener says no'));
+		$edit->expects(self::once())->method('cardState')
+			->willReturn($this->card(['id' => 7, 'title' => 'Novo', 'lastModified' => 1_700_000_100]));
+		$result = $this->cards($edit)['edit']->handle(['cardId' => 7, 'title' => 'Novo'], 'alice');
+		self::assertArrayNotHasKey('isError', $result);
+		self::assertContains(DeckMessages::writtenThenFailed(), $this->payload($result)['warnings']);
+	}
+
+	/** The validation exception of this app is a refusal before the write: never read back. */
+	public function testAnArgumentValidationExceptionOfTheAppIsNeverReadBack(): void {
+		$gateway = $this->gatewayOwnedBy('alice');
+		$gateway->method('createCard')->willThrowException(new ArgumentValidationException('bad', 'title', 'required'));
+		$gateway->expects(self::never())->method('findCreatedCard');
+
+		$this->expectException(ArgumentValidationException::class);
+		$this->cards($gateway)['create']->handle(['stackId' => 10, 'title' => 'Fechar'], 'alice');
 	}
 
 	/** A real refusal of Deck, read back, finds nothing: the usual error. */

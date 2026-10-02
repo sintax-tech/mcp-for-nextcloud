@@ -6,6 +6,7 @@ namespace OCA\Mcp\Tools\Deck\Handler;
 use InvalidArgumentException;
 use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\Stack;
+use OCA\Mcp\Tools\ArgumentValidationException;
 use OCA\Mcp\Tools\Deck\DeckConflictException;
 use OCA\Mcp\Tools\Deck\DeckErrors;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
@@ -29,16 +30,18 @@ use Psr\Log\LoggerInterface;
 abstract class AbstractHandler {
 	/**
 	 * Exceptions this app raises itself before it calls Deck, or after it already read the state: they stay as they
-	 * are and are not read back. Deck's own `NoPermissionException` and `BadRequestException` are deliberately not
-	 * here (third round of the review): Deck dispatches events after it writes, and a listener of another app may throw
-	 * those classes with the data already saved, so the class proves nothing and the state is read again.
+	 * are and are not read back. Deck's own `NoPermissionException` and `BadRequestException`, and a plain
+	 * `\InvalidArgumentException`, are deliberately not here (third round of the review): Deck dispatches events after
+	 * it writes, and a listener of another app may throw those classes with the data already saved, so the class
+	 * proves nothing and the state is read again. The validations of this app run before the write, or throw the
+	 * exclusive {@see ArgumentValidationException}.
 	 */
 	private const RAISED_BY_THE_APP = [
 		DeckRefusalException::class,
 		DeckSessionException::class,
 		DeckConflictException::class,
 		DeckUnconfirmedException::class,
-		InvalidArgumentException::class,
+		ArgumentValidationException::class,
 	];
 
 	/**

@@ -104,7 +104,8 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 				. 'cards after a single confirmation (at most ' . BoardBlueprint::MAX_STACKS . ' lists and ' . BoardBlueprint::MAX_CARDS . ' cards). '
 				. 'The board is open only to its owner, so share it in Deck before assigning anybody else. deck_create_stack adds a '
 				. 'list to an existing board. deck_delete_stack and deck_delete_board work only on something empty: they refuse, '
-				. 'saying how many cards are left, while any card (active or archived) remains, and what they delete goes to the Deck trash.',
+				. 'saying how many cards are left, while any card (active or archived) remains, and what they delete goes to the Deck trash. A card created by somebody else right after the second count '
+				. 'they take before finishing may go to the trash with the list or board; it is recoverable there.',
 			'duedate is a plain day (Y-m-d) and is read in the timezone of the account; a card description is capped '
 				. 'at ' . CardInput::MAX_DESCRIPTION_LENGTH . ' characters and a title at 255.',
 			'deck_move_card only changes the position inside the list of the card; moving it to another list or another '

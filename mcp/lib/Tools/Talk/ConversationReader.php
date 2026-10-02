@@ -15,6 +15,8 @@ use Throwable;
  */
 class ConversationReader {
     public const MAX_MESSAGES = 200;
+    /** Comment verbs under which Talk stores its own JSON envelopes: rich objects (shares) and system messages. */
+    private const ENVELOPE_VERBS = ['object_shared', 'system'];
 
     /** Default amount of messages when the caller does not ask for a number, matching the module schema. */
     public const DEFAULT_MESSAGES = 50;
@@ -107,7 +109,9 @@ class ConversationReader {
         $text = $raw;
         $attachmentId = null;
 
-        $envelope = json_decode(ltrim($raw), true);
+        // Only what Talk writes itself is an envelope. Any participant can type JSON as a plain comment, and
+        // reading that as an attachment would hide their text and forge the attachment id.
+        $envelope = in_array($type, self::ENVELOPE_VERBS, true) ? json_decode(ltrim($raw), true) : null;
         if (is_array($envelope) && isset($envelope['message']) && is_string($envelope['message'])) {
             $type = $envelope['message'];
             $text = null;

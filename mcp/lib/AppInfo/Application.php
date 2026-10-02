@@ -19,6 +19,7 @@ use OCA\Mcp\Tools\Calendar\CalendarDav;
 use OCA\Mcp\Service\Calendar\CalendarSelftestReader;
 use OCA\Mcp\Service\Calendar\DavCalendarSelftestReader;
 use OCA\Mcp\Tools\Calendar\DavCalendarStore;
+use OCA\Mcp\Tools\Calendar\EmbeddedCalDavServerFactory;
 use OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher;
 use OCA\Mcp\Tools\Calendar\Session;
 use OCA\Mcp\Tools\Files\FilesModule;
@@ -83,9 +84,9 @@ class Application extends App implements IBootstrap {
         // The dispatcher builds one embedded CalDAV server per operation, so building the module never
         // loads the DAV app; a DAV app that fails to load only breaks the calendar writes.
         $context->registerService(EmbeddedDavDispatcher::class, static fn (ContainerInterface $c): EmbeddedDavDispatcher => new EmbeddedDavDispatcher(
-            // EmbeddedCalDavServer(false) is the non-public server, the one that takes a principal from
-            // CustomPrincipalPlugin instead of answering with principals/system/public.
-            static fn (): \Sabre\DAV\Server => (new \OCA\DAV\CalDAV\EmbeddedCalDavServer(false))->getServer(),
+            // The non-public embedded server, the one that takes a principal from CustomPrincipalPlugin instead of
+            // answering with principals/system/public; the factory knows the Nextcloud 31 class as well.
+            static fn (): \Sabre\DAV\Server => (new EmbeddedCalDavServerFactory($c))->create(),
             new Session($c->get(IUserSession::class)),
             $c->get(IConfig::class),
             $c->get(LoggerInterface::class),

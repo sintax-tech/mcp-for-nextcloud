@@ -14,7 +14,8 @@ use Sabre\HTTP\Response;
 /**
  * Runs calendar writes through the embedded Nextcloud CalDAV server.
  *
- * Every operation gets a fresh `EmbeddedCalDavServer(false)` and is dispatched with
+ * Every operation gets a fresh `EmbeddedCalDavServer(false)`, or its Nextcloud 31 predecessor
+ * ({@see EmbeddedCalDavServerFactory}), and is dispatched with
  * `Server::invokeMethod($request, $response, false)`, so the effect is the same as the user's acting
  * in the Calendar app or through any CalDAV client: the same ACL, the same iCalendar validation, the
  * same scheduling rules, the same trash and the same sync notifications.

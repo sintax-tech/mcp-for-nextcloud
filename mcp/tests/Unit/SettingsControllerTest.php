@@ -24,14 +24,16 @@ final class SettingsControllerTest extends TestCase {
     private TokenService $tokens;
     private CheckoutTokenStore $checkoutTokens;
     private BatchStore $batches;
+    private bool $aliceEnabled = true;
+    private bool $signedIn = true;
 
     protected function setUp(): void {
         $this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
         $alice = $this->createMock(IUser::class);
         $alice->method('getUID')->willReturn('alice');
-        $alice->method('isEnabled')->willReturn(true);
+        $alice->method('isEnabled')->willReturnCallback(fn (): bool => $this->aliceEnabled);
         $session = $this->createMock(IUserSession::class);
-        $session->method('getUser')->willReturn($alice);
+        $session->method('getUser')->willReturnCallback(fn () => $this->signedIn ? $alice : null);
         $this->tokens = $this->createMock(TokenService::class);
         $this->checkoutTokens = $this->createMock(CheckoutTokenStore::class);
         $this->batches = $this->createMock(BatchStore::class);
@@ -94,6 +96,58 @@ final class SettingsControllerTest extends TestCase {
         $this->assertTrue($this->policy->canConnect('alice'));
         $this->controller->personal('0');
         $this->assertFalse($this->policy->canConnect('alice'));
+    }
+
+    /** The two conditions of an activation are independent: each alone is enough to refuse it. */
+    public function testActivationIsRefusedWhenOnlyTheServiceIsOff(): void {
+        $this->policy->setGlobalEnabled(false);
+        $this->policy->setEligible('alice', true);
+
+        $this->assertSame(400, $this->controller->personal('1')->getStatus());
+        $this->assertFalse($this->policy->connected('alice'));
+    }
+
+    public function testActivationIsRefusedWhenOnlyTheEligibilityIsMissing(): void {
+        $this->policy->setGlobalEnabled(true);
+        $this->policy->setEligible('alice', false);
+
+        $this->assertSame(400, $this->controller->personal('1')->getStatus());
+        $this->assertFalse($this->policy->connected('alice'));
+    }
+
+    /** @return array<string, array{string}> */
+    public static function invalidValuesProvider(): array {
+        return ['two' => ['2'], 'word' => ['true'], 'yes' => ['yes'], 'empty' => [''], 'padded' => [' 1']];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('invalidValuesProvider')]
+    public function testAnyValueButZeroOrOneIsRefusedAndChangesNothing(string $value): void {
+        $this->policy->setGlobalEnabled(true);
+        $this->policy->setEligible('alice', true);
+        $this->policy->setConnected('alice', true);
+        $this->tokens->expects($this->never())->method('revokeUser');
+
+        $this->assertSame(400, $this->controller->personal($value)->getStatus());
+        $this->assertTrue($this->policy->connected('alice'), 'the connection stayed as it was');
+    }
+
+    public function testADisabledAccountOrNoSessionCannotChangeTheConnection(): void {
+        $this->policy->setGlobalEnabled(true);
+        $this->policy->setEligible('alice', true);
+        $this->policy->setConnected('alice', true);
+        $this->aliceEnabled = false;
+        $this->assertSame(400, $this->controller->personal('0')->getStatus());
+        $this->aliceEnabled = true;
+        $this->signedIn = false;
+        $this->assertSame(400, $this->controller->personal('0')->getStatus());
+        $this->assertTrue($this->policy->connected('alice'));
+    }
+
+    public function testASuccessfulChangeRedirectsBackToThePersonalSection(): void {
+        $this->policy->setGlobalEnabled(true);
+        $this->policy->setEligible('alice', true);
+
+        $this->assertInstanceOf(\OCP\AppFramework\Http\RedirectResponse::class, $this->controller->personal('1'));
     }
 
     private function attributes(string $class, string $method): array {

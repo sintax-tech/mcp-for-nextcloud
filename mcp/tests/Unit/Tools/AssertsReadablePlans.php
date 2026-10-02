@@ -95,6 +95,28 @@ trait AssertsReadablePlans {
     }
 
     /**
+     * The name of a file or folder is typed by somebody: a plan built by the module for a hostile name must show it
+     * inert — bold and escaped, never a link, HTML, a heading or a forged footer — in every line that names it.
+     *
+     * Unlike {@see self::assertHostileTextStaysInert()}, which swaps texts of a finished plan, this one takes a plan the
+     * module really produced for that name, so the path the name travels from the arguments to the text is covered.
+     *
+     * @param ToolModule $module module under test
+     * @param string $tool write tool
+     * @param array<string, mixed> $plan plan the module produced for a path ending in $name
+     * @param string $name the hostile file name, as the person typed it
+     * @return void
+     */
+    private function assertHostileNameStaysInert(ToolModule $module, string $tool, array $plan, string $name): void {
+        $body = $module->renderPlan($tool, $plan);
+        self::assertIsString($body, $tool . ' fell back to the generic plan');
+        self::assertStringNotContainsString('](javascript:', $body, $tool);
+        self::assertStringNotContainsString('<b>', $body, $tool);
+        self::assertStringNotContainsString('**x**', $body, $tool);
+        self::assertStringContainsString(PlanText::inline($name), $body, $tool . ' does not show the name escaped');
+    }
+
+    /**
      * @param array<array-key, mixed> $value plan or part of it
      * @param list<array-key> $prefix keys leading to $value
      * @return list<list<array-key>> path of every non-empty string in the plan

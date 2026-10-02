@@ -110,9 +110,10 @@ final class CheckoutService {
      * @param string $path normalized user-relative path of the file to create
      * @param array<string, mixed> $access ownership description of the destination folder, from NodeAccessInfo
      * @param bool $confirmed whether the caller passed confirm_shared; stored so the upload trusts the plan
+     * @param int|null $size size the agent declared for the file, kept so an empty body can be told from a failed client
      * @return array{upload_url:string, expires_at:string} the link and when it stops working
      */
-    public function issueCreate(string $userId, string $path, array $access, bool $confirmed): array {
+    public function issueCreate(string $userId, string $path, array $access, bool $confirmed, ?int $size = null): array {
         $now = $this->time->getTime();
         $token = $this->mint(CheckoutToken::KIND_CREATE);
         $this->store->insert([
@@ -121,7 +122,7 @@ final class CheckoutService {
             'user_id' => $userId,
             'file_id' => 0,
             'path' => $path,
-            'etag' => CheckoutToken::NO_ETAG,
+            'etag' => CheckoutToken::declaredSizeMarker($size),
             'scope' => (string)$access['scope'],
             'shared_confirmed' => $confirmed ? 1 : 0,
             'created_at' => $now,

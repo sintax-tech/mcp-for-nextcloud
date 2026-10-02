@@ -76,6 +76,8 @@ final class CheckoutCreateTest extends TestCase {
     private FakeFilenameValidator $filenames;
     /** @var array<string, string> headers the fake request answers */
     private array $headers = [];
+    /** Temporary files the controller asked for, i.e. bodies it copied to disk. */
+    private int $tempFiles = 0;
     private StagedCreateController $controller;
 
     protected function setUp(): void {
@@ -107,7 +109,10 @@ final class CheckoutCreateTest extends TestCase {
         $time = $this->createMock(ITimeFactory::class);
         $time->method('getTime')->willReturn(1790000000);
         $temp = $this->createMock(ITempManager::class);
-        $temp->method('getTemporaryFile')->willReturnCallback(fn () => tempnam(sys_get_temp_dir(), 'mcp'));
+        $temp->method('getTemporaryFile')->willReturnCallback(function () {
+            $this->tempFiles++;
+            return tempnam(sys_get_temp_dir(), 'mcp');
+        });
         $apps = $this->createMock(IAppManager::class);
         $apps->method('isEnabledForUser')->willReturn(true);
         $alice = $this->createMock(IUser::class);
@@ -122,7 +127,7 @@ final class CheckoutCreateTest extends TestCase {
         $this->controller = new StagedCreateController('mcp', $request, $root, $this->session, $temp, $time, $this->policy,
             $this->store, $this->hasher, $checkout, new FileBackup($apps, $users, $time, $config),
             new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class), null, $users, $this->guard,
-            new FileCreation($access, new SharedWriteGuard($access), $checkout, $this->filenames, $guard));
+            new FileCreation($access, new SharedWriteGuard($access), $checkout, $this->filenames, $guard, $this->createMock(LoggerInterface::class)));
         $this->controller->route = ['token' => self::TOKEN];
     }
 
@@ -133,14 +138,15 @@ final class CheckoutCreateTest extends TestCase {
     }
 
     /** Stores the link files_upload would have minted for a path. */
-    private function issue(string $path = self::PATH, string $scope = 'personal', bool $confirmed = false, string $kind = CheckoutToken::KIND_CREATE): void {
+    private function issue(string $path = self::PATH, string $scope = 'personal', bool $confirmed = false, string $kind = CheckoutToken::KIND_CREATE,
+        ?int $size = null, string $token = self::TOKEN): void {
         $this->store->insert([
-            'token_hash' => $this->hasher->hash(self::TOKEN),
+            'token_hash' => $this->hasher->hash($token),
             'kind' => $kind,
             'user_id' => 'alice',
             'file_id' => 0,
             'path' => $path,
-            'etag' => CheckoutToken::NO_ETAG,
+            'etag' => CheckoutToken::declaredSizeMarker($size),
             'scope' => $scope,
             'shared_confirmed' => $confirmed ? 1 : 0,
             'created_at' => 1790000000,
@@ -403,5 +409,134 @@ final class CheckoutCreateTest extends TestCase {
         $this->assertSame(500, $response->getStatus());
         $this->assertSame(FilesMessages::createFailed(), $this->text($response));
         $this->assertNotContains('delete ' . self::FILE, $this->tree->ops);
+    }
+
+    // ---------------------------------------------------------------- review of 0.10.0 (B5, B1, B3, M1, B2)
+
+    /** B5: a request without a valid link never makes the server copy its body to disk. */
+    public function testNoBodyIsStoredBeforeTheLinkIsKnownToBeValid(): void {
+        $this->controller->route = ['token' => 'ncmcp_co_c_desconhecido'];
+        $this->assertSame(404, $this->controller->upload()->getStatus(), 'unknown link');
+        $this->assertSame(0, $this->tempFiles, 'unknown link');
+
+        $this->controller->route = ['token' => self::TOKEN];
+        $this->issue();
+        $this->store->rows[array_key_first($this->store->rows)]['used_at'] = 1789999999;
+        $this->assertSame(410, $this->controller->upload()->getStatus(), 'spent link');
+        $this->assertSame(0, $this->tempFiles, 'spent link');
+
+        $this->store->rows = [];
+        $this->issue();
+        $this->store->rows[array_key_first($this->store->rows)]['expires_at'] = 1789999999;
+        $this->assertSame(410, $this->controller->upload()->getStatus(), 'expired link');
+        $this->assertSame(0, $this->tempFiles, 'expired link');
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    /** B5: a declared length over the limit is refused from the header, before a byte is copied. */
+    public function testADeclaredLengthOverTheLimitIsRefusedBeforeCopying(): void {
+        $this->issue();
+        $this->stage(str_repeat('x', self::LIMIT + 1));
+        $this->assertSame(413, $this->controller->upload()->getStatus());
+        $this->assertSame(0, $this->tempFiles);
+        $this->assertFalse($this->spent());
+    }
+
+    /** B1: a folder that became shared is refused before the link is spent, so it is not burned by a read. */
+    public function testASharedFolderWithoutConfirmationDoesNotSpendTheLink(): void {
+        $this->tree->addFolder('/alice/files/Compartilhado', ['scope' => 'shared']);
+        $this->issue('/Compartilhado/novo.docx');
+        $response = $this->controller->upload();
+        $this->assertSame(409, $response->getStatus());
+        $this->assertTrue($this->payload($response)['requiresConfirmation']);
+        $this->assertStringNotContainsString('already been used', $this->payload($response)['message']);
+        $this->assertFalse($this->spent());
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    /** B1: a folder without the create permission, or one Nextcloud will not update, costs no link either. */
+    public function testADeniedFolderDoesNotSpendTheLink(): void {
+        foreach (['no create' => ['permissions' => \OCP\Constants::PERMISSION_READ], 'no update' => ['permissions' => \OCP\Constants::PERMISSION_ALL & ~\OCP\Constants::PERMISSION_UPDATE]] as $label => $flags) {
+            $this->store->rows = [];
+            $this->store->ops = [];
+            $this->tree->nodes['/alice/files/Documentos'] = $flags + $this->tree->nodes['/alice/files/Documentos'];
+            $this->issue();
+            $this->assertSame(403, $this->controller->upload()->getStatus(), $label);
+            $this->assertFalse($this->spent(), $label);
+            $this->assertSame([], $this->tree->ops, $label);
+            $this->tree->nodes['/alice/files/Documentos'] = ['permissions' => \OCP\Constants::PERMISSION_ALL, 'updateable' => true]
+                + $this->tree->nodes['/alice/files/Documentos'];
+        }
+    }
+
+    /** B3: an empty body for a link whose plan declared a size is a failed client, refused without spending the link. */
+    public function testAnEmptyBodyIsRefusedWhenTheLinkDeclaredASize(): void {
+        $this->issue(self::PATH, 'personal', false, CheckoutToken::KIND_CREATE, 48213);
+        $this->stage('');
+        $response = $this->controller->upload();
+        $this->assertSame(400, $response->getStatus());
+        $this->assertSame(FilesMessages::uploadEmptyDeclared(48213), $this->text($response));
+        $this->assertFalse($this->spent());
+        $this->assertArrayNotHasKey(self::FILE, $this->tree->nodes);
+
+        $this->stage('PK docx bytes');
+        $this->assertSame(201, $this->controller->upload()->getStatus(), 'the same link takes the real body');
+    }
+
+    /** B3: a declared size of zero is an empty file on purpose. */
+    public function testAnEmptyBodyIsAcceptedWhenTheLinkDeclaredZero(): void {
+        $this->issue('/Documentos/vazio.txt', 'personal', false, CheckoutToken::KIND_CREATE, 0);
+        $this->stage('');
+        $this->assertSame(201, $this->controller->upload()->getStatus());
+    }
+
+    /**
+     * M1: two links minted for the same path. The first creates the file; the second finds the name taken, answers 409
+     * and stays unspent, because nothing was touched.
+     */
+    public function testTwoLinksForTheSamePathCreateOnlyOnce(): void {
+        $second = 'ncmcp_co_c_SEGUNDOdefghijklmnopqrstuvwxyz0123456789ABCD';
+        $this->issue();
+        $this->issue(self::PATH, 'personal', false, CheckoutToken::KIND_CREATE, null, $second);
+        $this->assertSame(201, $this->controller->upload()->getStatus());
+
+        $this->store->ops = [];
+        $this->controller->route = ['token' => $second];
+        $this->stage('outro conteúdo');
+        $response = $this->controller->upload();
+        $this->assertSame(409, $response->getStatus());
+        $this->assertSame(FilesMessages::fileExists(), $this->text($response));
+        $this->assertSame('PK docx bytes', $this->tree->nodes[self::FILE]['content']);
+        $this->assertFalse($this->spent());
+    }
+
+    /** M1: the file changes between the empty creation and the write: 409, and what the other client wrote stays. */
+    public function testAChangeBetweenTheCreationAndTheWriteIsRefused(): void {
+        $this->issue();
+        $this->tree->beforeGet = function (string $path): void {
+            if ($path === self::FILE) {
+                $this->tree->beforeGet = null;
+                $this->tree->nodes[$path]['content'] = 'do outro';
+                $this->tree->nodes[$path]['etag'] .= '+';
+            }
+        };
+        $response = $this->controller->upload();
+        $this->assertSame(409, $response->getStatus());
+        $this->assertSame('do outro', $this->tree->nodes[self::FILE]['content']);
+        $this->assertNotContains('write ' . self::FILE, $this->tree->ops);
+    }
+
+    /** B2: a lock or a full quota at write time keeps its own message and status, and the log has the class only. */
+    public function testALockOrAFullQuotaKeepsItsMessage(): void {
+        foreach ([[new \OCP\Lock\LockedException(self::FILE), 423, CommonMessages::locked()],
+            [new \OCP\Files\NotEnoughSpaceException(self::FILE), 507, CommonMessages::insufficientQuota()]] as [$failure, $status, $message]) {
+            unset($this->tree->nodes[self::FILE]);
+            $this->store->rows = [];
+            $this->issue();
+            $this->tree->writeFailure = $failure;
+            $response = $this->controller->upload();
+            $this->assertSame($status, $response->getStatus(), $failure::class);
+            $this->assertSame($message, $this->text($response), $failure::class);
+        }
     }
 }

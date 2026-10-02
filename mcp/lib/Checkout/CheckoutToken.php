@@ -16,7 +16,11 @@ final class CheckoutToken {
     public const KIND_UPLOAD = 'upload';
     /** Token may be spent once on the upload route to create a new file at its path, never over an existing one. */
     public const KIND_CREATE = 'create';
-    /** What a create token stores as ETag and file id do not exist yet: a non-empty marker, since the column is NOT NULL. */
+    /**
+     * What a create token stores as ETag when files_upload declared no size: the file does not exist yet, so the
+     * column, which is NOT NULL, holds the declared size in decimal or this marker. Keeping it in an existing column
+     * spares a migration of a release that may already be installed.
+     */
     public const NO_ETAG = '-';
 
     /**
@@ -25,7 +29,7 @@ final class CheckoutToken {
      * @param string $userId owner of the checkout; the upload always runs in this user's folder
      * @param int $fileId numeric id of the file at checkout time, 0 for a create token
      * @param string $path normalized user-relative path of that file, or of the file to create
-     * @param string $etag ETag the file had at checkout time, NO_ETAG for a create token
+     * @param string $etag ETag the file had at checkout time; for a create token, {@see self::declaredSizeMarker()}
      * @param string $scope ownership scope the file (or, for a create token, its folder) was in at checkout time
      * @param bool $sharedConfirmed whether the user confirmed the shared write when checking out
      * @param int $expiresAt unix time after which the token is worthless
@@ -43,6 +47,19 @@ final class CheckoutToken {
         public readonly int $expiresAt,
         public readonly bool $used,
     ) {}
+
+    /**
+     * @param int|null $size size files_upload declared for the new file, null when it declared none
+     * @return string what the etag column of a create token holds for it
+     */
+    public static function declaredSizeMarker(?int $size): string {
+        return $size === null ? self::NO_ETAG : (string)$size;
+    }
+
+    /** @return int|null the size declared for a create token, null for another kind or when none was declared */
+    public function declaredSize(): ?int {
+        return $this->kind === self::KIND_CREATE && ctype_digit($this->etag) ? (int)$this->etag : null;
+    }
 
     /**
      * @param array<string, mixed> $row raw database row

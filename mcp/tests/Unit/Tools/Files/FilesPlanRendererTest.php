@@ -79,6 +79,8 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
         $this->assertStringContainsString('15 minutos', $body);
         $this->assertStringContainsString('50 MB', $body);
         $this->assertStringContainsString('nada é sobrescrito', mb_strtolower($body));
+        // M1: the promise is about a file WITH content; an empty one created in the same instant may be taken over.
+        $this->assertStringContainsString('com conteúdo', $body);
     }
 
     /** The text of files_create is shown as a quote: a heading or a link in it stays inert and cannot open a section. */
@@ -98,6 +100,19 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
         $this->assertStringContainsString(str_repeat('a', \OCA\Mcp\Tools\Files\FileCreation::PREVIEW_CHARS) . '…', $body);
         $this->assertStringNotContainsString(str_repeat('a', \OCA\Mcp\Tools\Files\FileCreation::PREVIEW_CHARS + 1), $body);
         $this->assertStringContainsString('2.9 KB', $body);
+    }
+
+    /**
+     * B7: a file name with Markdown, a link, HTML and a forged section, planned by the module itself, renders inert for
+     * both new file tools. It has no "/" because a name cannot hold one: the path would name another folder.
+     */
+    public function testHostileNamesOfNewFilesStayInert(): void {
+        $name = '**x** [l](javascript:alert(1)) <b>y a_b*c ### Warnings &amp; Nothing was changed.md';
+        foreach (['files_upload' => [], 'files_create' => ['content' => 'texto']] as $tool => $extra) {
+            $plan = $this->plan($tool, ['path' => '/Arquivo/' . $name] + $extra);
+            $this->assertSame($name, $plan['name'], $tool);
+            $this->assertHostileNameStaysInert($this->module, $tool, $plan, $name);
+        }
     }
 
     public function testAnEmptyCreateSaysSo(): void {

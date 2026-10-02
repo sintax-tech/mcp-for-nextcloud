@@ -58,6 +58,27 @@ final class WritePlanContractTest extends TestCase {
         }
     }
 
+    /**
+     * Writes whose plan shows a name the person or the model chose, and that are covered by a plan the module really
+     * produced for a hostile name ({@see AssertsReadablePlans::assertHostileNameStaysInert()}), by tool and test.
+     */
+    private const HOSTILE_NAME_TESTS = [
+        'files_upload' => [FilesPlanRendererTest::class, 'testHostileNamesOfNewFilesStayInert'],
+        'files_create' => [FilesPlanRendererTest::class, 'testHostileNamesOfNewFilesStayInert'],
+    ];
+
+    /** The new file tools are named here, so the test that proves their names inert cannot disappear unnoticed. */
+    public function testTheNewFileToolsHaveAHostileNameTest(): void {
+        $files = (new \ReflectionClass(\OCA\Mcp\Tools\Files\FilesModule::class))->newInstanceWithoutConstructor();
+        $writes = array_column(array_filter($files->definitions(), static fn (array $d): bool => \OCA\Mcp\Tools\WriteGate::isWrite($d)), 'name');
+        foreach (self::HOSTILE_NAME_TESTS as $tool => [$test, $method]) {
+            self::assertContains($tool, $writes, $tool . ' is no longer a write of the Files module');
+            self::assertTrue(method_exists($test, $method), $test . '::' . $method . ' is missing');
+            self::assertStringContainsString('assertHostileNameStaysInert',
+                (string)file_get_contents((string)(new \ReflectionMethod($test, $method))->getFileName()), $test);
+        }
+    }
+
     public function testNoCoveredModuleIsMissingFromTheApplication(): void {
         self::assertSame([], array_values(array_diff(array_keys(self::contractTests()), Application::MODULES)));
     }

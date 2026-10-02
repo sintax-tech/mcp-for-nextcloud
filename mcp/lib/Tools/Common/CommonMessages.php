@@ -69,9 +69,14 @@ final class CommonMessages {
         return Translator::t('Changes affect other people. Confirm with the user before continuing and run a new files_checkout with confirm_shared: true, because this edit link has already been used.');
     }
 
-    /** @return string translated confirmation instruction for a consumed single-use create link of files_upload */
+    /**
+     * The confirmation a create link of files_upload asks for when its folder became shared after it was issued. The
+     * link is not spent, but it was issued without confirm_shared and can never carry it, so the way on is a new one.
+     *
+     * @return string translated confirmation instruction
+     */
     public static function confirmAdviceUpload(): string {
-        return Translator::t('Changes affect other people. Confirm with the user before continuing and run a new files_upload with confirm_shared: true, because this upload link has already been used.');
+        return Translator::t('Changes affect other people. Confirm with the user before continuing and run a new files_upload with confirm_shared: true; this upload link was issued without that confirmation.');
     }
 
     /** @return string translated message when a resource cannot be found in Nextcloud */

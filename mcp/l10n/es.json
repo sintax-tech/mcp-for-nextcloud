@@ -850,14 +850,14 @@
     "Create text file" : "Crear archivo de texto",
     "A file with this name already exists; use files_checkout to replace it or choose another name." : "Ya existe un archivo con ese nombre; use files_checkout para reemplazarlo o elija otro nombre.",
     "Beginning of the content:" : "Comienzo del contenido:",
-    "Changes affect other people. Confirm with the user before continuing and run a new files_upload with confirm_shared: true, because this upload link has already been used." : "Los cambios afectan a otras personas. Confirme con el usuario antes de continuar y ejecute un nuevo files_upload con confirm_shared: true, porque este enlace de subida ya se usó.",
+    "Changes affect other people. Confirm with the user before continuing and run a new files_upload with confirm_shared: true; this upload link was issued without that confirmation." : "Los cambios afectan a otras personas. Confirme con el usuario antes de continuar y ejecute un nuevo files_upload con confirm_shared: true; este enlace de subida se emitió sin esa confirmación.",
     "Content exceeds the limit of %s bytes for files_create; use files_upload for a larger file." : "El contenido supera el límite de %s bytes de files_create; use files_upload para un archivo más grande.",
     "Content:" : "Contenido:",
     "Create the new file %s with the content you send." : "Crear el archivo nuevo %s con el contenido que usted envíe.",
     "Create the text file %s." : "Crear el archivo de texto %s.",
     "Failed to write file; an empty file with this name may have been left in place." : "No se pudo escribir el archivo; puede haber quedado un archivo vacío con ese nombre.",
     "If the destination folder does not exist yet, create it first with files_mkdir." : "Si la carpeta de destino aún no existe, créela antes con files_mkdir.",
-    "Nothing is overwritten: if a file with this name exists when the content arrives, nothing is written." : "Nada se sobrescribe: si ya existe un archivo con ese nombre cuando llegue el contenido, no se escribe nada.",
+    "Nothing is overwritten: if a file with this name already exists, with content, nothing is written." : "Nada se sobrescribe: si ya existe un archivo con ese nombre, con contenido, no se escribe nada.",
     "Nothing was changed. After your approval a single-use upload link is issued that creates this new file; the file only appears once the bytes are sent to it." : "No se cambió nada. Tras su aprobación se emite un enlace de subida de un solo uso que crea este archivo nuevo; el archivo solo aparece cuando se le envían los bytes.",
     "Nothing was changed. After your approval the new text file below is created." : "No se cambió nada. Tras su aprobación se crea el archivo de texto nuevo de abajo.",
     "Send the file with the curl command below before the link expires. The link works once: if the upload is refused before it is used, fix the request and send it again; otherwise call files_upload again." : "Envíe el archivo con el comando curl de abajo antes de que el enlace caduque. El enlace funciona una vez: si la subida se rechaza antes de usarlo, corrija la solicitud y envíela de nuevo; si no, llame a files_upload de nuevo.",
@@ -866,6 +866,11 @@
     "The upload link works once, for %s minutes." : "El enlace de subida funciona una vez, durante %s minutos.",
     "This upload link has expired or has already been used. Call files_upload again." : "Este enlace de subida caducó o ya se usó. Llame a files_upload de nuevo.",
     "files_create only writes text files (%s); use files_upload for any other type" : "files_create solo escribe archivos de texto (%s); use files_upload para cualquier otro tipo",
-    "must end in a file name Nextcloud accepts: no reserved name, forbidden character or extension, at most 250 bytes" : "debe terminar en un nombre de archivo que Nextcloud acepte: sin nombre reservado, carácter o extensión prohibidos, hasta 250 bytes"
+    "must end in a file name Nextcloud accepts: no reserved name, forbidden character or extension, at most 250 bytes" : "debe terminar en un nombre de archivo que Nextcloud acepte: sin nombre reservado, carácter o extensión prohibidos, hasta 250 bytes",
+    "The uploaded body is empty, but files_upload declared %s bytes; nothing was written and the link still works." : "El cuerpo enviado está vacío, pero files_upload declaró %s bytes; no se escribió nada y el enlace sigue sirviendo.",
+    "Create a new Nextcloud file" : "Crear un archivo nuevo en Nextcloud",
+    "Teaches how to send a file generated locally to Nextcloud as a new file, or to create a small text file inline." : "Enseña a enviar a Nextcloud, como archivo nuevo, un archivo generado localmente, o a crear un archivo de texto pequeño en línea.",
+    "Workflow for creating a new Nextcloud file." : "Flujo para crear un archivo nuevo en Nextcloud.",
+    "Create folders, copies and new files" : "Crear carpetas, copias y archivos nuevos"
 },"pluralForm" :"nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

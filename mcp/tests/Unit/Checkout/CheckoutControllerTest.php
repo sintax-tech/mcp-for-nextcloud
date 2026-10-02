@@ -79,6 +79,8 @@ final class CheckoutControllerTest extends TestCase {
     private ITempManager $temp;
     private TokenHasher $hasher;
     private string $body = 'conteúdo novo';
+    /** Temporary files the controller asked for, i.e. bodies it copied to disk. */
+    private int $tempFiles = 0;
 
     /** Stages the request body the controller will stream into its temporary file. */
     private function stage(string $body): void {
@@ -105,7 +107,10 @@ final class CheckoutControllerTest extends TestCase {
         $this->session = $this->createMock(IUserSession::class);
         $this->session->method('getUser')->willReturn(null);
         $this->temp = $this->createMock(ITempManager::class);
-        $this->temp->method('getTemporaryFile')->willReturnCallback(fn () => tempnam(sys_get_temp_dir(), 'mcp'));
+        $this->temp->method('getTemporaryFile')->willReturnCallback(function () {
+            $this->tempFiles++;
+            return tempnam(sys_get_temp_dir(), 'mcp');
+        });
         $this->time = $this->createMock(ITimeFactory::class);
         $this->time->method('getTime')->willReturn(1790000000);
         // Alice's timezone stamps the backup copy, exactly as in the Files tool tests; the small upload
@@ -550,6 +555,25 @@ final class CheckoutControllerTest extends TestCase {
         $this->assertSame('# Ata', $this->tree->nodes[self::FILE]['content']);
         $this->assertSame([], $this->tree->ops);
         $this->assertNotContains('consume', $this->store->ops, 'o link tem que continuar valendo');
+    }
+
+    /**
+     * The upload route is public: a request without a valid link (unknown, of another kind, spent, expired or of
+     * another user's session) is refused before its body is copied to disk, so it cannot fill the temporary folder.
+     */
+    public function testNoBodyIsStoredBeforeTheLinkIsKnownToBeValid(): void {
+        $this->assertSame(404, $this->code($this->unknown()), 'unknown');
+        $this->controller->route = ['token' => self::TOKEN];
+        $this->issue(CheckoutToken::KIND_DOWNLOAD);
+        $this->assertSame(404, $this->code($this->controller->upload()), 'download link');
+        foreach (['used_at' => 1789999999, 'expires_at' => 1789999999] as $column => $value) {
+            $this->store->rows = [];
+            $this->issue();
+            $this->store->rows[array_key_first($this->store->rows)][$column] = $value;
+            $this->assertSame(410, $this->code($this->controller->upload()), $column);
+        }
+        $this->assertSame(0, $this->tempFiles);
+        $this->assertSame([], $this->tree->ops);
     }
 
     /** A failed write names the copy, so the user knows where the original still is. */

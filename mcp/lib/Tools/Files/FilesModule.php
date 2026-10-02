@@ -297,7 +297,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
                 . 'send the bytes with curl -sS -T /tmp/file -X PUT -H "Content-Type: application/octet-stream" "$UPLOAD_URL" '
                 . 'to the single-use uploadUrl it returns (' . (int)(CheckoutService::UPLOAD_TTL / 60) . ' minutes, the same '
                 . 'limit as files_checkout). For a small text file (.md, .txt, .csv, .json, .html, .xml, .yaml) use '
-                . 'files_create with the content inline, up to 1 MB. Neither ever overwrites: to replace an existing file '
+                . 'files_create with the content inline, up to 1 MB. Neither ever overwrites a file with content: to replace an existing file '
                 . 'use files_checkout. The folder must already exist (files_mkdir).',
             'files_read and files_version_read of a PDF or image with no text return text_layer: false and a notice '
                 . 'instead of an error: the file is a scan. If the Workflow OCR app is active it recognises the text in '

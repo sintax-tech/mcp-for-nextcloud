@@ -149,9 +149,9 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 				continue;
 			}
 
-			// One query for the whole board; Deck already leaves archived and deleted cards out.
+			// Deck already leaves archived and deleted cards out.
 			$matching = [];
-			foreach ($cardMapper->findAllForStacks($stackIds) ?: [] as $cardsOfStack) {
+			foreach ($this->cardsOfStacks($cardMapper, $stackIds) as $cardsOfStack) {
 				foreach ($cardsOfStack ?? [] as $card) {
 					if (CardCriteria::matches($card, $status, $dueBefore, $now, $zone)) {
 						$matching[] = $card;
@@ -840,6 +840,31 @@ final class DeckServiceGateway implements DeckGatewayInterface {
 		foreach ($cards as $card) {
 			$card->setAssignedUsers($byCardId[$card->getId()] ?? []);
 		}
+	}
+
+	/**
+	 * Open cards of a board's stacks, grouped by stack in the order given.
+	 *
+	 * Deck 1.17 (Nextcloud 33) reads them in one query with `CardMapper::findAllForStacks()`; Deck 1.15 and 1.16
+	 * (Nextcloud 31 and 32) do not have it, so their cards are read stack by stack with `findAll()`, the query the
+	 * grouped one repeats: same filters (not archived, not deleted) and the same order (`order`, then `id`).
+	 *
+	 * @param object $cardMapper Deck's CardMapper, of whichever supported Deck is installed.
+	 * @param list<int> $stackIds Stacks of one board.
+	 * @return array<int, Card[]|null> Cards per stack id; a stack without cards may be null.
+	 */
+	private function cardsOfStacks(object $cardMapper, array $stackIds): array {
+		if (method_exists($cardMapper, 'findAllForStacks')) {
+			return $cardMapper->findAllForStacks($stackIds) ?: [];
+		}
+
+		$cards = [];
+		foreach ($stackIds as $stackId) {
+			$found = $cardMapper->findAll($stackId);
+			$cards[$stackId] = is_array($found) ? array_values($found) : [];
+		}
+
+		return $cards;
 	}
 
 	/**

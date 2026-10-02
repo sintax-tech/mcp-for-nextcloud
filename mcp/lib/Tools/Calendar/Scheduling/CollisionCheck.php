@@ -58,12 +58,13 @@ final class CollisionCheck {
         int $limit = 5,
     ): array {
         [$searchStart, $searchEnd] = $this->window($start, $end, $allDay);
-        // An all-day event has no zone: its days, as the expander reads them, are UTC midnights. Against another all-day
-        // event the days are compared as days, against a timed one the window in the zone of the day applies, so
-        // the store is asked about both at once.
-        $civil = $allDay ? $this->civilDays($searchStart, $searchEnd) : null;
-        $queryStart = $civil === null ? $searchStart : min($searchStart, $civil[0]);
-        $queryEnd = $civil === null ? $searchEnd : max($searchEnd, $civil[1]);
+        // An all-day event has no zone: its days, as the expander reads them, are UTC midnights. Whatever the new event
+        // is, an existing all-day event is compared as days: the civil days the new event covers in its own zone, as
+        // UTC midnights. Against a timed one the window applies as instants. The store is asked about both at once.
+        [$dayStart, $dayEnd] = $allDay ? [$searchStart, $searchEnd] : $this->window($start, $end, true);
+        $civil = $this->civilDays($dayStart, $dayEnd);
+        $queryStart = min($searchStart, $civil[0]);
+        $queryEnd = max($searchEnd, $civil[1]);
 
         $uris = $this->store->eventUrisInRange($calendar->id, $queryStart, $queryEnd);
         if ($excludeUri !== null) {
@@ -93,11 +94,9 @@ final class CollisionCheck {
 
             foreach ($this->expander->occurrences($vcalendar, $queryStart, $queryEnd) as $occurrence) {
                 $event = $occurrence['event'];
-                if ($civil !== null) {
-                    [$from, $to] = $this->isAllDay($event) ? $civil : [$searchStart, $searchEnd];
-                    if ($occurrence['start'] >= $to || $occurrence['end'] <= $from) {
-                        continue;
-                    }
+                [$from, $to] = $this->isAllDay($event) ? $civil : [$searchStart, $searchEnd];
+                if ($occurrence['start'] >= $to || $occurrence['end'] <= $from) {
+                    continue;
                 }
                 // The CLASS belongs to the component the occurrence comes from, as in calendar_list_events.
                 $visibility = $this->classification->visibilityOf($event, $vcalendar, $calendar, $userId);

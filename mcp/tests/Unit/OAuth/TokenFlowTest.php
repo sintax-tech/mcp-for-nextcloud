@@ -32,6 +32,8 @@ final class TokenFlowTest extends TestCase {
     private TokenService $service;
     private InMemoryConfig $appConfig;
     private AccessTokenAuthenticator $authenticator;
+    private bool $aliceEnabled = true;
+    private bool $aliceExists = true;
 
     protected function setUp(): void {
         $this->store = new InMemoryOAuthStore();
@@ -48,9 +50,9 @@ final class TokenFlowTest extends TestCase {
         $time->method('getTime')->willReturnCallback(fn () => $this->now);
         $alice = $this->createMock(IUser::class);
         $alice->method('getUID')->willReturn('alice');
-        $alice->method('isEnabled')->willReturn(true);
+        $alice->method('isEnabled')->willReturnCallback(fn (): bool => $this->aliceEnabled);
         $users = $this->createMock(IUserManager::class);
-        $users->method('get')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $alice : null);
+        $users->method('get')->willReturnCallback(fn (string $uid) => $uid === 'alice' && $this->aliceExists ? $alice : null);
         $gate = new TokenOwnerGate($users, $this->policy, $this->store);
         $this->service = new TokenService($this->store, $hasher, $time, $gate, $appConfigMock);
         $this->authenticator = new AccessTokenAuthenticator($this->store, $hasher, $time, $gate, $appConfigMock);
@@ -268,5 +270,79 @@ final class TokenFlowTest extends TestCase {
         $this->service->revokeUser('alice');
         $this->assertSame([], $this->store->spent);
         $this->assertNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE));
+    }
+
+    /** A refresh token that is still alive is not a bearer credential for whoever holds it: it belongs to one client. */
+    public function testALiveRefreshTokenIsRefusedToAnotherClientAndStaysUsableByItsOwn(): void {
+        $tokens = $this->exchange($this->code());
+
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $tokens['refresh_token'], 'client_id' => 'https://other.example/client']));
+
+        $this->assertNotNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE), 'the theft attempt did not revoke the grant');
+        $next = $this->service->refresh(['refresh_token' => $tokens['refresh_token'], 'client_id' => self::CLIENT]);
+        $this->assertNotSame($tokens['refresh_token'], $next['refresh_token']);
+    }
+
+    public function testARefreshTokenExpiresAfterItsLifetime(): void {
+        $tokens = $this->exchange($this->code());
+
+        $this->now += TokenService::REFRESH_TTL;
+        $this->assertNotEmpty($this->service->refresh(['refresh_token' => $tokens['refresh_token'], 'client_id' => self::CLIENT]), 'still alive on the last second');
+
+        $second = $this->exchange($this->code());
+        $this->now += TokenService::REFRESH_TTL + 1;
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $second['refresh_token'], 'client_id' => self::CLIENT]));
+    }
+
+    public function testACodeIsRefusedForAResourceOfAnotherServer(): void {
+        $this->assertGrantFails(fn () => $this->exchange($this->code(), ['resource' => 'https://other.example.org/apps/mcp/']));
+    }
+
+    public function testACodeExchangedWithoutAResourceKeepsTheOneItWasIssuedFor(): void {
+        $tokens = $this->exchange($this->code(), ['resource' => '']);
+
+        $this->assertNotNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE));
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], 'https://other.example.org/apps/mcp/'));
+    }
+
+    /**
+     * The gate is what stops a token the moment its owner is no longer allowed, without anything having
+     * revoked it first: GrantPolicy::setConnected(false) keeps the rows, so only the gate refuses them.
+     */
+    public function testAPersonalDisconnectStopsTheBearerThroughTheGate(): void {
+        $tokens = $this->exchange($this->code());
+        $this->policy->setConnected('alice', false);
+
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE));
+
+        $this->assertSame([], $this->store->tokens, 'the gate deleted the grants, so reconnecting needs a new consent');
+        $this->policy->setConnected('alice', true);
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE));
+    }
+
+    public function testADisabledAccountStopsTheBearerAndTheRefresh(): void {
+        $tokens = $this->exchange($this->code());
+        $this->aliceEnabled = false;
+
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE));
+        $this->assertSame([], $this->store->tokens);
+        $this->aliceEnabled = true;
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $tokens['refresh_token'], 'client_id' => self::CLIENT]));
+    }
+
+    public function testARemovedAccountStopsTheBearer(): void {
+        $tokens = $this->exchange($this->code());
+        $this->aliceExists = false;
+
+        $this->assertNull($this->authenticator->authenticate('Bearer ' . $tokens['access_token'], self::RESOURCE));
+        $this->assertSame([], $this->store->tokens);
+    }
+
+    public function testADisabledAccountCannotExchangeAnIssuedCode(): void {
+        $code = $this->code();
+        $this->aliceEnabled = false;
+
+        $this->assertGrantFails(fn () => $this->exchange($code));
+        $this->assertSame([], $this->store->tokens);
     }
 }

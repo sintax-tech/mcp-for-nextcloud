@@ -234,6 +234,16 @@ final class AfterWriteHandlersTest extends TestCase {
 		self::assertSame('Novo', $payload['title']);
 	}
 
+	/** A database without 4-byte UTF-8 stores an emoji as U+FFFD: the card it read back is still the one just written. */
+	public function testAnEditWithAnEmojiReadBackWithItsReplacementCharacterIsASuccessWithAWarning(): void {
+		$gateway = $this->editGateway();
+		$gateway->expects(self::once())->method('cardState')->with('alice', 7)
+			->willReturn($this->card(['id' => 7, 'title' => 'Novo', 'description' => "Feito \u{FFFD}", 'lastModified' => 1_700_000_100]));
+
+		$payload = $this->assertWrittenWithWarning($this->cards($gateway)['edit']->handle(['cardId' => 7, 'title' => 'Novo', 'description' => "Feito \u{1F680}"], 'alice'));
+		self::assertSame('Novo', $payload['title']);
+	}
+
 	public function testAnEditReadBackUnchangedIsTheUsualError(): void {
 		$gateway = $this->editGateway();
 		$gateway->method('cardState')->willReturn($this->card(['id' => 7, 'title' => 'Antigo', 'lastModified' => 1_700_000_000]));

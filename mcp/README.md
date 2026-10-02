@@ -90,6 +90,23 @@ Create, update e delete usam `send_invitations: false` por padrão (`x-nc-schedu
 
 **Confirmação antes de toda escrita (sem estado no servidor).** As cinco escritas, chamadas sem `confirm: true`, só devolvem um plano (`requiresConfirmation: true`): valores atuais e propostos, participantes adicionados/removidos, destino, consequência para convites/CANCEL/lixeira e o `etag` atual. Nada é escrito nem agendado. O assistente deve mostrar o plano, perguntar ao usuário e só após um sim explícito repetir a chamada com `confirm: true` e os mesmos argumentos, reenviando o `etag` do plano (opcional; se vier e divergir, a escrita é recusada e um novo plano é necessário). Não há tabela, token nem registro de aprovação: o servidor não prova o sim humano, mas permissões, ACL, grants e `confirm_shared` seguem valendo. O selftest usa os handlers diretamente e não passa por esse fluxo.
 
+### Deck: cartões, quadros e listas
+
+As escritas do Deck usam os grants `deck.create`, `deck.edit`, `deck.move` e `deck.delete`, todas desligadas por padrão, e `confirm_shared: true` em quadro de outro dono. O app sempre confirma com o Deck se a escrita foi gravada, mesmo depois de um erro do Deck.
+
+| Tool de escrita | Grant | Comportamento |
+| --- | --- | --- |
+| `deck_create_board` `{title, stacks?, confirm: true}` | deck.create | Cria um quadro do próprio usuário com suas listas e primeiros cards (até 20 listas e 100 cards), com cor opcional. Num quadro novo os responsáveis são o próprio usuário, porque mais ninguém tem acesso. O plano mostra a árvore inteira; se um passo falhar no meio, nada é desfeito e o resultado traz `created`, `failed` (com motivo seguro) e `warnings`, para a repetição não duplicar nada. |
+| `deck_create_stack` `{boardId, title, position?, confirm: true}` | deck.create | Acrescenta uma lista a um quadro que o usuário gerencia, no fim ou numa posição. |
+| `deck_delete_stack` `{stackId, confirm: true}` | deck.delete | Exclui uma lista **somente quando está vazia**: qualquer card, ativo ou arquivado, recusa a chamada dizendo quantos restam, e a contagem é refeita no confirm. Vai para a lixeira do Deck. |
+| `deck_delete_board` `{boardId, confirm: true}` | deck.delete | Igual para o quadro, e só o dono pode excluir. Se um card aparecer entre a contagem e a exclusão, o quadro volta com o próprio undo do Deck e a chamada é recusada dizendo que nada foi excluído. |
+
+`deck_create_card`, `deck_edit_card`, `deck_move_card`, `deck_delete_card` e a atribuição de responsáveis usam os mesmos grants e a mesma confirmação; os responsáveis são membros do quadro.
+
+Depois de um erro vindo do Deck, toda escrita relê o estado real antes de responder: se o item foi gravado, a resposta é sucesso com o aviso "Saved; Deck reported an error afterwards (notification or activity)"; se não foi, é o erro de sempre; e se o estado não pode ser lido, a resposta não é erro e manda ler com `deck_list_cards`, `deck_read_card`, `deck_list_stacks` ou `deck_list_boards`. Um item reencontrado só por semelhança (mesmo dono, mesmo título, criado há pouco) vem como `confirmed: "probable"`, com aviso para conferir, e nada mais é escrito nele. Só as recusas que o próprio app faz antes de chamar o Deck (regras da tool, sessão, conflitos, argumentos) pulam essa releitura.
+
+A exclusão "somente quando vazia" não é atômica: o Deck não olha o `deleted_at` da lista ao criar um card, então um card criado por outra requisição logo após a segunda contagem pode ir para a lixeira junto com a lista ou o quadro, de onde é recuperável. Isso está na descrição da tool e no gateway.
+
 ### Diagnóstico opcional do Calendar (`occ mcp:calendar-selftest`)
 
 Não é pré-requisito: nada depende dele para as tools aparecerem ou funcionarem, e ele não grava nem esconde nada. É uma ferramenta de diagnóstico opcional e avançada para quem administra o servidor e quer ver, passo a passo, o CalDAV real respondendo. Rode na raiz do Nextcloud como o usuário do servidor web. O UID organizador precisa ter conta habilitada, e-mail válido e Calendar habilitado; a retenção `dav/calendarRetentionObligation` não pode ser `0` (a limpeza seria permanente, então ele falha antes de criar qualquer objeto).
@@ -186,9 +203,9 @@ Os arquivos de licença acompanham cada pacote em `vendor/`. O `vendor/autoload.
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-0.9.1.tar.gz <servidor>:/tmp/
+scp build/mcp-0.10.0.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-0.9.1.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-0.10.0.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp
@@ -211,7 +228,7 @@ Para atualizar: `occ app:disable mcp`, remover `<apps>/mcp`, extrair o novo paco
    - Usuários desativados aparecem marcados e não podem ser editados. Módulos cujo app não está disponível no servidor não aparecem na matriz; para um usuário sem acesso ao app, a célula fica desativada. As permissões salvas são preservadas.
    - O e-mail só serve para a busca e nunca é exibido.
 2. **Arquivos e etiquetas ocultas**: selecione etiquetas de sistema para que arquivos e pastas etiquetados fiquem totalmente invisíveis às ferramentas do MCP (leitura, busca, listagem, imagens, notas, talk e checkout). Recomenda-se o uso de etiquetas restritas ou invisíveis.
-   - Serviço, elegibilidade e conexão pessoal começam desligados para todos, inclusive administradores. Leitura começa permitida; escrita, exclusão e transferência começam negadas.
+   - Serviço, elegibilidade e conexão pessoal começam desligados para todos, inclusive administradores. Leitura começa permitida; escrita, exclusão, transferência e compartilhamento começam negadas. Em Arquivos, `files.share` (compartilhar com pessoa ou grupo) e `files.link` (link público) são duas operações separadas, para o admin liberar uma sem a outra; as duas vêm desligadas. Listar compartilhamentos continua sendo leitura.
    - A página usa a API JSON admin-only `GET /apps/mcp/api/grants` (`search`, `group`, `filter` = `eligible`/`connected`, `page`), `PUT /apps/mcp/api/grants/{uid}`, `POST /apps/mcp/api/grants/bulk`, `PUT /apps/mcp/api/service`, `GET`/`PUT /apps/mcp/api/checkout-limit` (`{mib}` inteiro ≥ 1) e, para as conexões, `GET /apps/mcp/api/connections`, `DELETE /apps/mcp/api/connections/{id}` e `DELETE /apps/mcp/api/connections/users/{uid}`. Nenhuma resposta traz hash de token.
 2. **Clientes OAuth**: o bloco *OAuth clients* da seção **MCP for Nextcloud** edita os hosts de cliente permitidos e liga o cliente nativo para programas locais, sem passo de terminal. A API é `GET /apps/mcp/api/oauth-clients` e `PUT /apps/mcp/api/oauth-clients` (admin-only, com CSRF do Nextcloud), aceita `hosts` e/ou `nativeClientEnabled`, valida tudo antes de gravar e recusa uma lista de hosts inválida em vez de escrevê-la. Desligar o cliente nativo revoga na hora os tokens já emitidos para ele.
 3. **Configurações pessoais → MCP for Nextcloud**: o próprio usuário clica em *Connect*. A página mostra o estado (serviço, permissão do administrador, conexão) e a lista **Seus clientes conectados** (cliente, conectado em, expira em) com *Revogar*, pela API `GET /apps/mcp/api/my/connections` e `DELETE /apps/mcp/api/my/connections/{id}`, restrita às conexões do próprio usuário.

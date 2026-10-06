@@ -1,4 +1,5 @@
 # ---- Dependencies / build ----
+node_modules/
 build/
 coverage/
 .cache/
@@ -15,10 +16,13 @@ secrets.*
 *.crt
 *.p12
 *.pfx
+.env
+.env.*
 app-password*
 credentials*
 auth.json
 tokens.json
+mcp.json
 
 # ---- Dados do usuário / cache de conteúdo (NUNCA versionar) ----
 data/

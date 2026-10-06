@@ -2,6 +2,12 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased
+
+### Removed
+
+- the original Node.js stdio prototype at the repository root (`src/`, `tests/`, `package.json`, `tsconfig.json`, `vitest.config.ts`, `.env.example`), unused by the app and its packaging; it remains in the git history up to commit 27739f0 (tag v0.11.0).
+
 ## 0.11.0
 
 ### Added

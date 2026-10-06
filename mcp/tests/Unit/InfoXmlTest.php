@@ -61,9 +61,12 @@ final class InfoXmlTest extends TestCase {
         return $texts;
     }
 
-    /** The store shows the name, the summary and the description in English, Brazilian Portuguese and Spanish. */
-    public function testNameSummaryAndDescriptionComeInEveryLanguageOfTheApp(): void {
-        foreach (['name', 'summary', 'description'] as $element) {
+    /**
+     * The store shows the summary and the description in English, Brazilian Portuguese and Spanish.
+     * The name is not translated: it is a single <name> without lang (see the test below).
+     */
+    public function testSummaryAndDescriptionComeInEveryLanguageOfTheApp(): void {
+        foreach (['summary', 'description'] as $element) {
             $texts = $this->localized($element);
             $this->assertSame(['en', 'pt-br', 'es'], array_keys($texts), $element);
             foreach ($texts as $lang => $text) {
@@ -73,7 +76,17 @@ final class InfoXmlTest extends TestCase {
                 $this->assertStringNotContainsStringIgnoringCase('dalcomad', $text, "$element ($lang): no customer's data in the store listing");
             }
         }
-        $this->assertSame(['en' => 'MCP for Nextcloud', 'pt-br' => 'MCP for Nextcloud', 'es' => 'MCP for Nextcloud'], $this->localized('name'));
+    }
+
+    /**
+     * Exactly one <name>, without a lang attribute. Nextcloud's InfoParser turns repeated
+     * <name> elements into an array, and the admin app list then shows that array as raw JSON.
+     */
+    public function testTheNameIsASingleUntranslatedElement(): void {
+        $names = $this->manifest()->name;
+        $this->assertCount(1, $names, 'appinfo/info.xml must have exactly one <name>');
+        $this->assertNull($names[0]['lang'], '<name> must not carry a lang attribute');
+        $this->assertSame('MCP for Nextcloud', trim((string)$names[0]));
     }
 
     /** The description says what the app does, how it keeps the user in control and which clients connect to it. */

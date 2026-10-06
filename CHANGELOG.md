@@ -2,6 +2,12 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased
+
+### Fixed
+
+- appinfo: `info.xml` has a single `<name>`, without `lang`. Nextcloud accepts only one; with the translated copies the `InfoParser` turned the name into an array and the admin app list showed it as raw JSON. The summary and the description keep their English, Brazilian Portuguese and Spanish versions.
+
 ## 0.11.0
 
 ### Added

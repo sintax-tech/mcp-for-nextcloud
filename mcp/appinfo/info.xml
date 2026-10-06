@@ -2,8 +2,6 @@
 <info xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://apps.nextcloud.com/schema/apps/info.xsd">
     <id>mcp</id>
     <name>MCP for Nextcloud</name>
-    <name lang="pt-br">MCP for Nextcloud</name>
-    <name lang="es">MCP for Nextcloud</name>
     <summary>Turn Nextcloud into an MCP server for Claude, ChatGPT and other AI assistants, with per-user permissions</summary>
     <summary lang="pt-br">Transforma o Nextcloud em um servidor MCP para o Claude, o ChatGPT e outros assistentes de IA, com permissões por usuário</summary>
     <summary lang="es">Convierte Nextcloud en un servidor MCP para Claude, ChatGPT y otros asistentes de IA, con permisos por usuario</summary>

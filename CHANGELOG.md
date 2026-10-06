@@ -2,6 +2,16 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased
+
+### Fixed
+
+- appinfo: `info.xml` has a single `<name>`, without `lang`. Nextcloud accepts only one; with the translated copies the `InfoParser` turned the name into an array and the admin app list showed it as raw JSON. The summary and the description keep their English, Brazilian Portuguese and Spanish versions.
+
+### Changed
+
+- build: the package check is `scripts/check_package.php`, replacing `scripts/check_package.py`, so packaging needs only `composer` and `php`. The rules are the same (`._*`/`.DS_Store` at any depth, PaxHeader entries and pax extended headers, a top level other than `mcp/`, a `vendor/` entry outside the runtime dependencies, an `addScript`/`addStyle` asset missing from the package); the archive is read by a minimal tar reader of its own because `PharData` hides the pax headers. It is stricter than the Python script: an archive that ends right after a pax header, a GNU long name or long link, a truncated or corrupt gzip stream, a negative or oversized base-256 size and a GNU long name over 64 KiB are refused, and metadata bodies are never held in memory beyond that limit. On every older package it was compared with, its report matched the Python one line by line.
+
 ## 0.11.0
 
 ### Added

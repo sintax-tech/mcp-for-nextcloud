@@ -175,21 +175,22 @@ No diretório `mcp/`:
 ./scripts/package.sh
 ```
 
-Gera `build/mcp-<versão>.tar.gz` com raiz `mcp/` contendo `appinfo/`, `lib/`, `templates/`, as pastas de assets que existirem (`js/`, `css/`, `img/`, `l10n/`), este README e um `vendor/` só de produção, criado com `composer install --no-dev`. Testes e dependências de desenvolvimento ficam fora. O script falha, e não deixa pacote, quando um `Util::addScript('mcp', X)` ou `Util::addStyle('mcp', X)` em `templates/` ou `lib/` aponta para `js/X.js` ou `css/X.css` ausente do pacote. O script precisa de `composer` na máquina que empacota.
+Gera `build/mcp-<versão>.tar.gz` com raiz `mcp/` contendo `appinfo/`, `lib/`, `templates/`, as pastas de assets que existirem (`js/`, `css/`, `img/`, `l10n/`), este README e um `vendor/` só de produção, criado com `composer install --no-dev`. Testes e dependências de desenvolvimento ficam fora. O script falha, e não deixa pacote, quando um `Util::addScript('mcp', X)` ou `Util::addStyle('mcp', X)` em `templates/` ou `lib/` aponta para `js/X.js` ou `css/X.css` ausente do pacote. O script precisa de `composer` e `php` na máquina que empacota.
 
 ### Regra do pacote: sem metadados do macOS
 
 Um pacote com `._*` (AppleDouble), `.DS_Store` ou cabeçalhos PAX com xattrs `com.apple.*` é recusado pela App Store e pode quebrar a instalação. Por isso:
 
 - o tar roda como `COPYFILE_DISABLE=1 tar --no-xattrs --exclude='._*' --exclude='.DS_Store'`. O `--no-xattrs` foi acrescentado porque, sem ele, o bsdtar grava `com.apple.provenance` em cabeçalhos PAX de todas as entradas;
-- a conferência é feita por `scripts/check_package.py`, com o `tarfile` do Python, porque o `tar -tzf` do macOS esconde as entradas `._*`;
+- a conferência é feita por `scripts/check_package.php`, que lê o tar com um leitor próprio em PHP, porque o `tar -tzf` do macOS esconde as entradas `._*` e o `PharData` não expõe os cabeçalhos PAX;
 - o pacote é recusado, apagado, e o script termina com código 1, se tiver:
   - entrada `._*` ou `.DS_Store`;
   - entrada PaxHeader ou cabeçalho PAX estendido;
   - entrada de topo diferente de `mcp/`;
+  - pacote em `vendor/` fora das dependências de runtime (`smalot/`, `symfony/polyfill-mbstring/`, `composer/`, `autoload.php`), como `sabre/*` ou `symfony/console`;
   - script ou estilo referenciado por `Util::addScript('mcp', X)`/`Util::addStyle('mcp', X)` ausente do pacote.
 
-Para conferir um pacote avulso: `python3 scripts/check_package.py build/mcp-<versão>.tar.gz`.
+Para conferir um pacote avulso: `php scripts/check_package.php build/mcp-<versão>.tar.gz`.
 
 ### Dependências de runtime
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Scripts;
 
 use OCA\Mcp\Scripts\PackageCheck;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
@@ -156,6 +157,112 @@ final class CheckPackageTest extends TestCase {
         PackageCheck::members($this->dir . '/broken.tar.gz');
     }
 
+    /**
+     * @return array<string, array{0: string, 1: bool}> typeflag of the extension header and whether the end-of-archive
+     *                                                 zero blocks follow it (otherwise the data just ends)
+     */
+    public static function terminalExtensions(): array {
+        $cases = [];
+        foreach (['x', 'X', 'g', 'L', 'K'] as $type) {
+            $cases["$type, zero blocks"] = [$type, true];
+            $cases["$type, end of data"] = [$type, false];
+        }
+        return $cases;
+    }
+
+    /**
+     * A pax header, GNU long name or long link with no entry after it is refused, never silently dropped: the
+     * xattrs of a terminal pax header would otherwise ship unreported.
+     */
+    #[DataProvider('terminalExtensions')]
+    public function testAnExtensionHeaderWithNoEntryAfterItIsAnError(string $type, bool $zeroBlocks): void {
+        $extension = match ($type) {
+            'L' => self::longName('mcp/._x'),
+            'K' => self::header('././@LongLink', 'K', 8) . self::pad("target\0\0"),
+            default => self::pax($type, ['SCHILY.xattr.com.apple.provenance' => "\x01\x02"]),
+        };
+        $archive = $this->archive([...$this->clean(), $extension], end: $zeroBlocks);
+        [$code, $stdout, $stderr] = $this->runScript([$archive, 'templates']);
+        $this->assertSame([1, ''], [$code, $stdout]);
+        $this->assertStringContainsString("(typeflag $type) with no entry for it", $stderr);
+    }
+
+    /** A gzip file cut before its CRC-32/size trailer is truncated, not a normal end of the archive. */
+    public function testAGzipStreamWithoutItsTrailerIsAnError(): void {
+        $archive = $this->archive($this->clean());
+        file_put_contents($archive, substr((string)file_get_contents($archive), 0, -8));
+        [$code, , $stderr] = $this->runScript([$archive, 'templates']);
+        $this->assertSame(1, $code);
+        $this->assertStringContainsString('is truncated (the gzip stream ends early)', $stderr);
+    }
+
+    /** A gzip trailer whose CRC-32 does not match the data is refused. */
+    public function testAGzipStreamWithABadChecksumIsAnError(): void {
+        $archive = $this->archive($this->clean());
+        $bytes = (string)file_get_contents($archive);
+        $bytes[strlen($bytes) - 8] = chr(ord($bytes[strlen($bytes) - 8]) ^ 1);
+        file_put_contents($archive, $bytes);
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('is not a valid gzip file');
+        PackageCheck::members($archive);
+    }
+
+    /** A plain tar, a gzip file of several members and NUL padding after the gzip stream are all read whole. */
+    public function testPlainTarMultiMemberGzipAndNulPaddingAreRead(): void {
+        $tar = implode('', $this->clean()) . str_repeat("\0", 1024);
+        $plain = $this->dir . '/plain.tar';
+        file_put_contents($plain, $tar);
+        $split = $this->dir . '/split.tar.gz';
+        file_put_contents($split, gzencode(substr($tar, 0, 1500)) . gzencode(substr($tar, 1500)) . str_repeat("\0", 700));
+        $expected = count($this->clean());
+        $this->assertCount($expected, PackageCheck::members($plain));
+        $this->assertCount($expected, PackageCheck::members($split));
+        $this->assertSame([], $this->checkArchive($split));
+    }
+
+    /** Base-256 sizes are decoded up to PHP_INT_MAX; a negative or larger one is a controlled error. */
+    public function testBase256SizesAreBoundedAndNeverNegative(): void {
+        $this->assertSame(0x1234, PackageCheck::size("\x80" . str_repeat("\0", 9) . "\x12\x34"));
+        $this->assertSame(PHP_INT_MAX, PackageCheck::size("\x80\0\0\0\x7f" . str_repeat("\xff", 7)));
+        foreach (["\x80\0\0\0\x80" . str_repeat("\0", 7), "\x80" . str_repeat("\xff", 11), str_repeat("\xff", 12), "\xc0" . str_repeat("\0", 11)] as $field) {
+            try {
+                PackageCheck::size($field);
+                $this->fail('accepted ' . bin2hex($field));
+            } catch (RuntimeException $e) {
+                $this->assertStringContainsString('base-256', $e->getMessage());
+            }
+        }
+    }
+
+    /** An entry whose base-256 size overflows ends the command line with exit 1 and a message, not a fatal error. */
+    public function testAnOverflowingSizeIsReportedByTheCommandLine(): void {
+        $entry = self::header('mcp/huge', '0', 0, sizeField: "\x80" . str_repeat("\xff", 11));
+        [$code, $stdout, $stderr] = $this->runScript([$this->archive([...$this->clean(), $entry]), 'templates']);
+        $this->assertSame([1, ''], [$code, $stdout]);
+        $this->assertStringContainsString('base-256 field in a header is too large', $stderr);
+    }
+
+    /**
+     * Metadata bodies never have to fit in memory: with memory_limit=16M a 24 MiB GNU long link is skipped, a
+     * 24 MiB pax header is still reported and a 24 MiB long name is refused, each with a message and exit code.
+     */
+    public function testLargeMetadataBodiesStayWithinASmallMemoryLimit(): void {
+        $size = 24 << 20;
+        $body = str_repeat("\0", $size);
+        $cases = [
+            [self::header('././@LongLink', 'K', $size) . $body, 0, ''],
+            [self::header('PaxHeader/x', 'x', $size) . $body, 1, "pax header on: mcp/after\n"],
+            [self::header('././@LongLink', 'L', $size) . $body, 1, "has a GNU long name of $size bytes, over the limit of 65536\n"],
+        ];
+        foreach ($cases as [$extension, $expectedCode, $expectedEnd]) {
+            $archive = $this->archive([...$this->clean(), $extension, self::file('mcp/after')]);
+            [$code, $stdout, $stderr] = $this->runScript([$archive, 'templates'], ['-d', 'memory_limit=16M']);
+            $this->assertSame([$expectedCode, ''], [$code, $stdout], $stderr);
+            $this->assertSame($expectedEnd, $expectedEnd === '' ? $stderr : substr($stderr, -strlen($expectedEnd)));
+            unlink($archive);
+        }
+    }
+
     /** @return list<string> the raw tar blocks of a production-shaped package */
     private function clean(): array {
         return [
@@ -177,7 +284,14 @@ final class CheckPackageTest extends TestCase {
      * @return list<string> the problems PackageCheck finds, with templates/ as the source
      */
     private function check(array $entries): array {
-        $archive = $this->archive($entries);
+        return $this->checkArchive($this->archive($entries));
+    }
+
+    /**
+     * @param string $archive path of an archive in the temporary folder
+     * @return list<string> the problems PackageCheck finds, with templates/ as the source
+     */
+    private function checkArchive(string $archive): array {
         $cwd = getcwd();
         chdir($this->dir);
         try {
@@ -189,11 +303,12 @@ final class CheckPackageTest extends TestCase {
 
     /**
      * @param list<string> $entries raw tar blocks
+     * @param bool $end whether the two end-of-archive zero blocks follow the entries
      * @return string path of the gzip-compressed archive written to the temporary folder
      */
-    private function archive(array $entries): string {
+    private function archive(array $entries, bool $end = true): string {
         $path = $this->dir . '/package-' . bin2hex(random_bytes(4)) . '.tar.gz';
-        file_put_contents($path, gzencode(implode('', $entries) . str_repeat("\0", 1024)));
+        file_put_contents($path, gzencode(implode('', $entries) . ($end ? str_repeat("\0", 1024) : '')));
         return $path;
     }
 
@@ -201,10 +316,11 @@ final class CheckPackageTest extends TestCase {
      * Runs the script as package.sh does, from the temporary folder.
      *
      * @param list<string> $args arguments after the script path
+     * @param list<string> $options options of the PHP binary, before the script path
      * @return array{0: int, 1: string, 2: string} exit code, stdout and stderr
      */
-    private function runScript(array $args): array {
-        $process = proc_open([PHP_BINARY, realpath(self::SCRIPT), ...$args], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, $this->dir);
+    private function runScript(array $args, array $options = []): array {
+        $process = proc_open([PHP_BINARY, ...$options, realpath(self::SCRIPT), ...$args], [1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes, $this->dir);
         $this->assertIsResource($process);
         $stdout = stream_get_contents($pipes[1]);
         $stderr = stream_get_contents($pipes[2]);
@@ -243,13 +359,13 @@ final class CheckPackageTest extends TestCase {
         return self::header('././@LongLink', 'L', strlen($name) + 1) . self::pad($name . "\0");
     }
 
-    /** A ustar header with a valid checksum. */
-    private static function header(string $name, string $type, int $size, string $prefix = ''): string {
+    /** A ustar header with a valid checksum; $sizeField replaces the octal size field (12 raw bytes). */
+    private static function header(string $name, string $type, int $size, string $prefix = '', ?string $sizeField = null): string {
         $header = str_pad(substr($name, 0, 100), 100, "\0")
             . sprintf('%07o', 0644) . "\0"
             . sprintf('%07o', 0) . "\0"
             . sprintf('%07o', 0) . "\0"
-            . sprintf('%011o', $size) . "\0"
+            . ($sizeField ?? sprintf('%011o', $size) . "\0")
             . sprintf('%011o', 0) . "\0"
             . str_repeat(' ', 8)
             . $type

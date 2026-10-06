@@ -2,7 +2,7 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
-## Unreleased
+## 0.11.1
 
 ### Fixed
 

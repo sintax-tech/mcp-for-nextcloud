@@ -1,7 +1,7 @@
 #!/bin/sh
 # Builds build/mcp-<version>.tar.gz with a single mcp/ root holding only production files
 # and a production-only vendor/ (composer --no-dev); tests and dev dependencies stay out.
-# scripts/check_package.php rejects the archive (and deletes it) on macOS metadata, extra top-level entries
+# scripts/check_package.php rejects the archive (and deletes it) on macOS metadata, extra top-level entries,
 # a dev dependency in vendor/ or a missing script/style referenced with Util::addScript/addStyle.
 set -eu
 cd "$(dirname "$0")/.."

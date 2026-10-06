@@ -1,8 +1,5 @@
 # ---- Dependencies / build ----
-node_modules/
-dist/
 build/
-*.tsbuildinfo
 coverage/
 .cache/
 __pycache__/
@@ -10,9 +7,6 @@ __pycache__/
 .phpunit.cache/
 
 # ---- Secrets / credentials (NUNCA versionar) ----
-.env
-.env.*
-!.env.example
 *.local
 config.local.*
 secrets.*
@@ -25,7 +19,6 @@ app-password*
 credentials*
 auth.json
 tokens.json
-mcp.json
 
 # ---- Dados do usuário / cache de conteúdo (NUNCA versionar) ----
 data/
@@ -41,7 +34,6 @@ attachments/
 # ---- Logs ----
 *.log
 logs/
-npm-debug.log*
 
 # ---- OS / editores ----
 .DS_Store

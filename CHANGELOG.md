@@ -2,6 +2,10 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 1.0.0
+
+First version published in the Nextcloud App Store, signed with the app's store certificate. No functional changes since 0.11.1.
+
 ## 0.11.1
 
 ### Fixed

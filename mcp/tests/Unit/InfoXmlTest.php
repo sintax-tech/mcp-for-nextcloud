@@ -115,7 +115,7 @@ final class InfoXmlTest extends TestCase {
         $this->assertSame('git', (string)$manifest->repository['type']);
         $this->assertSame('Jhonatan Jaworski', (string)$manifest->author);
         $this->assertSame('jhonatan@sintax.tech', (string)$manifest->author['mail']);
-        $this->assertSame(['integration', 'tools'], array_map('strval', iterator_to_array($manifest->category, false)));
+        $this->assertSame(['ai', 'integration', 'tools'], array_map('strval', iterator_to_array($manifest->category, false)));
         $this->assertSame('AGPL-3.0-or-later', (string)$manifest->licence);
     }
 

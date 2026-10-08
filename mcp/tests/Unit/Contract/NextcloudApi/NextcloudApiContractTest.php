@@ -349,6 +349,85 @@ final class NextcloudApiContractTest extends TestCase {
         return null;
     }
 
+    /** @return array<string, array{string, string}> one case per Nextcloud class lib/ builds with `new` and per covered major */
+    public static function constructedClasses(): array {
+        $cases = [];
+        foreach (array_keys(self::scanner()->constructions()) as $class) {
+            foreach (self::checkedMajors() as $major) {
+                $cases["$class @ $major"] = [$class, $major];
+            }
+        }
+        return $cases;
+    }
+
+    /**
+     * Every `new` of a Nextcloud class in lib/ fits the constructor of every covered major: no fewer arguments than it
+     * requires, no more than it takes, and only names it declares. The argument names of a positional call are checked
+     * by POSITIONAL; this covers every construction without a hand-kept list.
+     */
+    #[DataProvider('constructedClasses')]
+    public function testEveryConstructionFitsTheConstructorInEveryCoveredMajor(string $class, string $major): void {
+        if (self::gated($class, $major)) {
+            $this->assertNull(self::surface($major, $class));
+            return;
+        }
+        $surface = self::surface($major, $class);
+        $this->assertNotNull($surface, "$class does not exist in Nextcloud $major");
+        $declared = $surface['methods']['__construct'] ?? null;
+        if ($declared === null && $surface['external'] !== []) {
+            // The constructor comes from an ancestor outside Nextcloud (an exception, a Sabre class): not in the tree.
+            $this->addToAssertionCount(1);
+            return;
+        }
+        foreach (self::scanner()->constructions()[$class] as $call) {
+            $this->assertNull(self::constructionMismatch($declared ?? [], $call), "new $class in {$call['file']}, Nextcloud $major");
+        }
+    }
+
+    /** The construction rule must fail on a constructor that no longer fits, or every case above passes vacuously. */
+    public function testTheConstructionRuleCatchesAChangedConstructor(): void {
+        $class = 'OCP\\Security\\Events\\ValidatePasswordPolicyEvent';
+        $declared = self::fixture('35')['classes'][$class]['methods']['__construct'];
+        $call = self::scanner()->constructions()[$class][0];
+        $this->assertNull(self::constructionMismatch($declared, $call), 'the real constructor is accepted');
+
+        $this->assertNotNull(self::constructionMismatch([...$declared, 'policy'], $call), 'a new required parameter');
+        $this->assertNotNull(self::constructionMismatch(['password'], $call), 'a parameter removed');
+        // What the generator wrote before it read parameters behind #[SensitiveParameter].
+        $this->assertNotNull(self::constructionMismatch([], $call), 'a constructor read without its parameters');
+        $this->assertNotNull(self::constructionMismatch(['data?', 'statusCode?'], ['arguments' => 1, 'spread' => false, 'named' => ['status']]), 'a named argument the constructor does not declare');
+    }
+
+    /**
+     * @param list<string> $declared the constructor parameters of the release, as the fixture writes them
+     * @param array{arguments: int, spread: bool, named: list<string>} $call a `new` of {@see LibScanner::constructions()}
+     * @return string|null why the construction no longer fits, null when it does
+     */
+    private static function constructionMismatch(array $declared, array $call): ?string {
+        $names = array_map(static fn (string $name): string => rtrim(ltrim($name, '.'), '?'), $declared);
+        // A required parameter after optional ones makes them required too: the minimum runs to the last required one.
+        $required = 0;
+        foreach ($declared as $position => $name) {
+            if (!str_ends_with($name, '?') && !str_starts_with($name, '...')) {
+                $required = $position + 1;
+            }
+        }
+        $variadic = $declared !== [] && str_starts_with(end($declared), '...');
+        $takes = 'takes (' . implode(', ', $declared) . ')';
+        foreach ($call['named'] as $name) {
+            if (!in_array($name, $names, true)) {
+                return "$takes: no parameter \$$name";
+            }
+        }
+        if (!$call['spread'] && $call['named'] === [] && $call['arguments'] < $required) {
+            return "$takes: {$call['arguments']} arguments are too few";
+        }
+        if (!$variadic && $call['arguments'] > count($declared)) {
+            return "$takes: {$call['arguments']} arguments are too many";
+        }
+        return null;
+    }
+
     /** @return array<string, array{string, string, string}> */
     public static function readConstants(): array {
         $cases = [];

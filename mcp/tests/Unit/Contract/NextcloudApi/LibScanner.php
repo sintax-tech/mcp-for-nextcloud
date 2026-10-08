@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi;
  * A class counts when it is named in code — imported with `use`, written fully qualified, or held in a string such as
  * `'OCA\\Talk\\Manager'`, the way the optional apps are resolved without loading them. A method counts by name only:
  * the tokenizer cannot tell the type of `$room->getToken()`, so {@see NextcloudApiContractTest} pairs a name with the
- * classes that declare it.
+ * classes that declare it. Every `new` of a Nextcloud class is listed with how many arguments it passes.
  */
 final class LibScanner {
     /** Namespaces whose classes come from Nextcloud and its apps; `OC` alone is the server's global class. */
@@ -24,6 +24,8 @@ final class LibScanner {
     private array $methods = [];
     /** @var array<string, list<string>> "Class::$property" => files reading it */
     private array $properties = [];
+    /** @var array<string, list<array{file: string, arguments: int, spread: bool, named: list<string>}>> class => its `new` */
+    private array $constructions = [];
 
     /** @param string $root directory scanned, normally the app's lib/ */
     public function __construct(private string $root) {
@@ -36,6 +38,16 @@ final class LibScanner {
         ksort($this->classes);
         ksort($this->methods);
         ksort($this->properties);
+        ksort($this->constructions);
+    }
+
+    /**
+     * @return array<string, list<array{file: string, arguments: int, spread: bool, named: list<string>}>> every
+     *     `new` of a Nextcloud class, with the number of arguments, whether one is unpacked with `...` and the names of
+     *     the named ones
+     */
+    public function constructions(): array {
+        return $this->constructions;
     }
 
     /** @return array<string, list<string>> Nextcloud classes named in code, with the files naming them */
@@ -81,6 +93,12 @@ final class LibScanner {
                 $this->addClass($name, $relative);
                 continue;
             }
+            if ($token->id === T_NEW && isset($tokens[$i + 1]) && in_array($tokens[$i + 1]->id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+                $class = $this->resolve($tokens[$i + 1], $namespace, $imports);
+                if ($class !== null && $this->isNextcloud($class)) {
+                    $this->constructions[$class][] = ['file' => $relative, ...$this->arguments($tokens, $i + 2)];
+                }
+            }
             $previous = $tokens[$i - 1] ?? null;
             if ($token->id === T_STRING && $previous !== null && in_array($previous->id, [T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_DOUBLE_COLON], true)) {
                 if (($tokens[$i + 1]->text ?? '') === '(') {
@@ -109,6 +127,49 @@ final class LibScanner {
                 }
             }
         }
+    }
+
+    /**
+     * @param list<\PhpToken> $tokens tokens of the file, without whitespace and comments
+     * @param int $at position right after the class name of a `new`
+     * @return array{arguments: int, spread: bool, named: list<string>} the arguments of the call, none without parentheses
+     */
+    private function arguments(array $tokens, int $at): array {
+        $found = ['arguments' => 0, 'spread' => false, 'named' => []];
+        if (($tokens[$at]->text ?? '') !== '(') {
+            return $found;
+        }
+        $nesting = 0;
+        $pending = false;
+        for ($i = $at + 1; isset($tokens[$i]); $i++) {
+            $text = $tokens[$i]->text;
+            if (in_array($text, ['(', '[', '{'], true) || in_array($tokens[$i]->id, [T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES, T_ATTRIBUTE], true)) {
+                $nesting++;
+            } elseif (in_array($text, [')', ']', '}'], true)) {
+                if ($nesting === 0) {
+                    break;
+                }
+                $nesting--;
+            }
+            if ($nesting !== 0 || $text === ')') {
+                $pending = $pending || $nesting !== 0;
+                continue;
+            }
+            if ($text === ',') {
+                // A trailing comma closes the last argument and opens none.
+                $found['arguments'] += $pending ? 1 : 0;
+                $pending = false;
+                continue;
+            }
+            if ($tokens[$i]->id === T_ELLIPSIS) {
+                $found['spread'] = true;
+            } elseif ($tokens[$i]->id === T_STRING && ($tokens[$i + 1]->text ?? '') === ':' && !$pending) {
+                $found['named'][] = $text;
+            }
+            $pending = true;
+        }
+        $found['arguments'] += $pending ? 1 : 0;
+        return $found;
     }
 
     /**

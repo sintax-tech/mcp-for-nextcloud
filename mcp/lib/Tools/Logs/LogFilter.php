@@ -18,8 +18,16 @@ final class LogFilter {
     public const SKIP = 'skip';
     /** A date filter is set and the time of the entry cannot be read: left out and counted. */
     public const UNPARSED = 'unparsed';
-    /** The entry is older than `since`: the log is written oldest first, so the ones read after it are older too. */
+    /**
+     * The entry is older than `since` by more than ORDER_TOLERANCE: the log is written oldest first, so the ones read
+     * after it are older too.
+     */
     public const BEFORE_WINDOW = 'before';
+    /**
+     * Seconds an entry may be stamped before a newer one: a request writes the time it started, and a long one is
+     * written after shorter ones that began later. Inside this margin an entry before `since` is only skipped.
+     */
+    public const ORDER_TOLERANCE = 300;
     /** Highest log level, fatal. */
     public const MAX_LEVEL = 4;
     /** Longest text accepted by `contains`. */
@@ -96,7 +104,7 @@ final class LogFilter {
                 return self::UNPARSED;
             }
             if ($this->since !== null && $at < $this->since) {
-                return self::BEFORE_WINDOW;
+                return $at->getTimestamp() < $this->since->getTimestamp() - self::ORDER_TOLERANCE ? self::BEFORE_WINDOW : self::SKIP;
             }
             if ($this->until !== null && $at > $this->until) {
                 return self::SKIP;

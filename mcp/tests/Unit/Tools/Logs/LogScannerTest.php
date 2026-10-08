@@ -77,16 +77,32 @@ final class LogScannerTest extends TestCase {
         $this->assertNull($rest['nextOffset']);
     }
 
-    /** The log is written oldest first: the first entry before `since` ends the search, nothing older can match. */
-    public function testTheSearchStopsAtTheFirstEntryBeforeSince(): void {
+    /**
+     * The log is written oldest first, give or take the requests that finish out of order: entries up to five
+     * minutes before `since` are skipped, and the first one older than that ends the search.
+     */
+    public function testTheSearchStopsOnlyPastTheToleranceBeforeSince(): void {
         $log = new FakeFileLog(FakeFileLog::lines(100, static fn (int $i): array => []));
         $since = gmdate(DATE_ATOM, 1791400000 + 90 * 60);
         $window = $this->scanner($log)->scan(self::filter(['since' => $since]), 0, 50);
 
         $this->assertCount(10, $window['entries']);
-        $this->assertSame(11, $window['scanned']);
+        // Entries 99..90 match, 89..85 are within five minutes and skipped, 84 ends the search.
+        $this->assertSame(16, $window['scanned']);
         $this->assertFalse($window['truncated']);
         $this->assertNull($window['nextOffset']);
+    }
+
+    /** An entry written after a newer one but stamped a little earlier must not hide the ones before it. */
+    public function testEntriesOutOfOrderInsideTheToleranceAreNotLost(): void {
+        $at = static fn (int $minutes): string => gmdate(DATE_ATOM, 1791400000 + $minutes * 60);
+        $order = [0, 10, 11, 12, 9, 13, 14, 8, 15];
+        $log = new FakeFileLog(FakeFileLog::lines(count($order), static fn (int $i): array => ['time' => $at($order[$i]), 'message' => 'm' . $order[$i]]));
+
+        $window = $this->scanner($log)->scan(self::filter(['since' => $at(10)]), 0, 50);
+
+        $this->assertSame(['m15', 'm14', 'm13', 'm12', 'm11', 'm10'], array_column($window['entries'], 'message'));
+        $this->assertSame(9, $window['scanned'], 'the entry of minute 0 is past the tolerance and ends the search');
     }
 
     /** A line the core could not decode comes back as null: counted, never shown, never fatal. */

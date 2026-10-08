@@ -11,6 +11,8 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 
 ### Fixed
 
+- deck: editing a card (title, description or due date) on Deck 1.18 and 1.19 (Nextcloud 34 and 35) cleared its start date, and on 1.18 its colour, because `CardService::update()` writes both fields when they are left out. The current values are now sent back, in the form each release expects.
+- talk: reading the history of a conversation whose lobby is on no longer works for a participant who cannot bypass the lobby, as in Talk itself (`#[RequireModeratorOrNoLobby]`); an expired lobby timer is honoured first.
 - talk: on Talk 24 (Nextcloud 34) and later, writing in a webinar whose lobby timer has passed was refused, because `Room::getLobbyState()` no longer opens an expired lobby by itself. The module now calls `RoomService::validateLobbyTimer()` first, as Talk's own controllers do; a failing check keeps the lobby closed.
 - admin: an error on the admin and personal pages no longer depends on `OC.Notification`, removed in Nextcloud 34. It still goes through `OCP.Toast`, and without it to the connections list's live region or a browser dialog instead of being lost. A test keeps `js/` and `templates/` free of the front-end globals 34 and 35 removed.
 

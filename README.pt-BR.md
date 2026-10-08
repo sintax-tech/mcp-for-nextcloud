@@ -133,8 +133,6 @@ O `claude.ai` já está na lista de hosts de clientes permitidos, então nada pr
 
 ### ChatGPT
 
-> **Compatível por código, ainda não comprovado em cliente real.** O lado do servidor está implementado e coberto por testes, mas ainda não há registro de teste de ponta a ponta contra um conector real do ChatGPT. Trate como esperado funcionar e ainda não verificado.
-
 1. No ChatGPT, adicione um novo conector para servidor MCP e cole `https://cloud.example.com/apps/mcp/` como URL.
 2. Autenticação: **Sign in** (OAuth). O ChatGPT se identifica com o documento de identidade de cliente publicado em `chatgpt.com`; o app baixa esse documento para descobrir os redirect URIs registrados. Não precisa de cabeçalho nem de senha de app.
 3. **Conectar**: o seu Nextcloud abre, você faz login e clica em **Permitir**.
@@ -142,8 +140,6 @@ O `claude.ai` já está na lista de hosts de clientes permitidos, então nada pr
 O `chatgpt.com` é permitido por padrão, então uma instalação nunca configurada já aceita o ChatGPT. Se um administrador restringiu a lista para outros hosts, o ChatGPT é recusado com `invalid_client` antes da tela de login — peça para ele recolocar o `chatgpt.com` em *Configurações de administração → MCP for Nextcloud → Clientes OAuth → Hosts de clientes permitidos*.
 
 ### Gemini CLI
-
-> **Compatível por código, ainda não comprovado em cliente real.** O lado do servidor está implementado e coberto por testes, mas ainda não há registro de teste de ponta a ponta contra um login real do Gemini CLI. Trate como esperado funcionar e ainda não verificado.
 
 Dois passos, um do administrador e um do usuário, sem nenhum passo no terminal do servidor.
 

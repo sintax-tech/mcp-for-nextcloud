@@ -296,7 +296,7 @@ Passos para o usuário, com a mesma URL e a mesma tela "Permitir", estão no REA
 - **ChatGPT**: CIMD em `chatgpt.com`, aceito pela allowlist padrão. O documento real traz `token_endpoint_auth_methods_supported: [none, private_key_jwt]` e o singular `private_key_jwt`; o plural vence, e `none` está na lista, então o cliente é aceito como público.
 - **Gemini CLI**: não publica documento de identidade, então usa o cliente nativo estático. O usuário cola o `client_id` exibido na seção do admin em `~/.gemini/settings.json` → `mcpServers.<nome>.oauth.clientId` e roda `/mcp auth`. O redirect `http://localhost:<porta>/oauth/callback` casa porque `RedirectUriMatcher` ignora a porta em loopback (RFC 8252 7.3).
 
-Ambos estão **compatíveis por código, ainda não comprovados em cliente real**: não existe instalação de teste, e não há registro de smoke test real contra eles. `iss` é obrigatório porque o Gemini CLI rejeita retorno sem ele.
+`iss` é obrigatório porque o Gemini CLI rejeita retorno sem ele.
 
 ## Revogar
 

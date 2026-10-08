@@ -133,8 +133,6 @@ Every client talks to the same URL, `https://cloud.example.com/apps/mcp/`, and a
 
 ### ChatGPT
 
-> **Compatible by code, not yet proven on a real client.** The server side is implemented and covered by tests, but no end-to-end test against a live ChatGPT connector has been recorded yet. Treat it as expected to work and unverified until then.
-
 1. In ChatGPT, add a new connector for an MCP server and paste `https://cloud.example.com/apps/mcp/` as its URL.
 2. Authentication: **Sign in** (OAuth). ChatGPT identifies itself with the client identity document published at `chatgpt.com`; the app downloads that document to learn the redirect URIs it registered. No headers, no app password.
 3. **Connect**: your Nextcloud opens, you log in and click **Allow**.
@@ -142,8 +140,6 @@ Every client talks to the same URL, `https://cloud.example.com/apps/mcp/`, and a
 `chatgpt.com` is allowed by default, so an installation that was never configured already accepts ChatGPT. If an administrator narrowed the list to other hosts, ChatGPT is refused with `invalid_client` before the login page opens — ask them to add `chatgpt.com` back in *Administration settings → MCP for Nextcloud → OAuth clients → Allowed client hosts*.
 
 ### Gemini CLI
-
-> **Compatible by code, not yet proven on a real client.** The server side is implemented and covered by tests, but no end-to-end test against a real Gemini CLI login has been recorded yet. Treat it as expected to work and unverified until then.
 
 Two steps, one from the administrator and one from the user, with no terminal on the server.
 

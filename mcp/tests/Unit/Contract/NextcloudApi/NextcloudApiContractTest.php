@@ -216,12 +216,45 @@ final class NextcloudApiContractTest extends TestCase {
             $this->assertSame([], $parameters);
             return;
         }
-        $declared = $surface['methods'][$method];
+        $this->assertNull(self::signatureMismatch($surface['methods'][$method], $parameters), "$call in Nextcloud $major");
+    }
+
+    /**
+     * The rule above must fail on a real change of signature, or every positional case passes vacuously: here it is
+     * fed the Nextcloud 35 signatures with the changes the contract exists to catch.
+     */
+    public function testThePositionalRuleCatchesAChangedSignature(): void {
+        $sendMessage = self::fixture('35')['classes']['OCA\\Talk\\Chat\\ChatManager']['methods']['sendMessage'];
+        $passes = NextcloudApiUsage::POSITIONAL['OCA\\Talk\\Chat\\ChatManager::sendMessage'];
+        $this->assertNull(self::signatureMismatch($sendMessage, $passes), 'the real signature is accepted');
+
+        $required = $sendMessage;
+        array_splice($required, 6, 0, ['threadId']);
+        $this->assertNotNull(self::signatureMismatch($required, $passes), 'a required parameter inserted before the ones passed');
+        $renamed = $sendMessage;
+        $renamed[4] = 'comment';
+        $this->assertNotNull(self::signatureMismatch($renamed, $passes), 'a parameter renamed at a passed position');
+        $this->assertNotNull(self::signatureMismatch([...$sendMessage, 'verb'], $passes), 'a new required trailing parameter');
+        // What the generator wrote before it read parameters behind #[SensitiveParameter].
+        $this->assertNotNull(self::signatureMismatch([], NextcloudApiUsage::POSITIONAL['OCP\\Security\\Events\\ValidatePasswordPolicyEvent::__construct']), 'a signature read without its parameters');
+    }
+
+    /**
+     * @param list<string> $declared the parameters of the release, as the fixture writes them
+     * @param list<string> $parameters what the app passes, in order
+     * @return string|null why the call no longer fits the signature, null when it does
+     */
+    private static function signatureMismatch(array $declared, array $parameters): ?string {
         $names = array_map(static fn (string $name): string => rtrim(ltrim($name, '.'), '?'), $declared);
-        $this->assertSame($parameters, array_slice($names, 0, count($parameters)), "$call in Nextcloud $major takes (" . implode(', ', $declared) . ')');
-        foreach (array_slice($declared, count($parameters)) as $rest) {
-            $this->assertTrue(str_ends_with($rest, '?') || str_starts_with($rest, '...'), "$call in Nextcloud $major requires \$$rest, which the app does not pass");
+        if (array_slice($names, 0, count($parameters)) !== $parameters) {
+            return 'takes (' . implode(', ', $declared) . ')';
         }
+        foreach (array_slice($declared, count($parameters)) as $rest) {
+            if (!str_ends_with($rest, '?') && !str_starts_with($rest, '...')) {
+                return "requires \$$rest, which the app does not pass";
+            }
+        }
+        return null;
     }
 
     /** @return array<string, array{string, string, string}> */

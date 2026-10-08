@@ -105,6 +105,9 @@ final class NextcloudApiUsage {
         'OCA\\DAV\\CalDAV\\InvitationResponse\\InvitationResponseServer::__construct' => ['public'],
         'OCA\\DAV\\CalDAV\\InvitationResponse\\InvitationResponseServer::getServer' => [],
         'OCA\\DAV\\CalDAV\\Schedule\\Plugin::beforeUnbind' => ['path'],
+        // Password events, built with arguments by position; 35 marks the password #[SensitiveParameter].
+        'OCP\\Security\\Events\\GenerateSecurePasswordEvent::__construct' => ['context'],
+        'OCP\\Security\\Events\\ValidatePasswordPolicyEvent::__construct' => ['password', 'context'],
         // Files versions and metadata, resolved by class name.
         'OCA\\Files_Versions\\Versions\\IVersionManager::getVersionsForFile' => ['user', 'file'],
         'OCA\\Files_Versions\\Versions\\IVersionManager::read' => ['version'],

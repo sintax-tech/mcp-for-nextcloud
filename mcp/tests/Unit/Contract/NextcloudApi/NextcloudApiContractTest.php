@@ -313,6 +313,11 @@ final class NextcloudApiContractTest extends TestCase {
             $files = $member === null ? self::scanner()->classes()[$class] ?? [] : self::scanner()->methods()[$member] ?? [];
             $handler = substr((string)(new \ReflectionClass($gate['by']))->getFileName(), strlen((string)realpath(self::LIB)) + 1);
             $this->assertNotSame([], $files, "$api is no longer used: drop it from VERSION_GATED");
+            // A file listed in `elsewhere` calls the same name on another object; the entry must stay true.
+            foreach (array_keys($gate['elsewhere'] ?? []) as $file) {
+                $this->assertContains($file, $files, "$api: $file no longer calls that name, drop it from `elsewhere`");
+            }
+            $files = array_diff($files, array_keys($gate['elsewhere'] ?? []));
             $this->assertSame([$handler], array_values(array_unique($files)), "$api must only be used through {$gate['by']}");
         }
     }

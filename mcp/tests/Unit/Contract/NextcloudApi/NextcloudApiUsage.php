@@ -130,7 +130,9 @@ final class NextcloudApiUsage {
      * APIs a declared release does not have, the majors that lack them, the fallback those majors use instead and the
      * class that chooses. The test checks all three, so a gap can neither appear nor close unnoticed.
      *
-     * @var array<string, array{missing: list<string>, fallback: string, by: string}>
+     * A method name the scanner also sees on another object lists those files in `elsewhere`, with the call it really is.
+     *
+     * @var array<string, array{missing: list<string>, fallback: string, by: string, elsewhere?: array<string, string>}>
      */
     public const VERSION_GATED = [
         'OCA\\DAV\\CalDAV\\EmbeddedCalDavServer' => [
@@ -152,6 +154,19 @@ final class NextcloudApiUsage {
             'missing' => ['31', '32'],
             'fallback' => 'OCA\\Deck\\Db\\CardMapper::findAll',
             'by' => \OCA\Mcp\Tools\Deck\DeckServiceGateway::class,
+        ],
+        // Deck 1.18 (Nextcloud 34) gave cards a start date and a colour, and CardService::update() clears both when they
+        // are left out. Up to 1.17 the update ends at `done`, so there is nothing to send back.
+        'OCA\\Deck\\Db\\Card::getStartdate' => [
+            'missing' => ['31', '32', '33'],
+            'fallback' => 'OCA\\Deck\\Service\\CardService::update',
+            'by' => \OCA\Mcp\Tools\Deck\DeckServiceGateway::class,
+        ],
+        'OCA\\Deck\\Db\\Card::getColor' => [
+            'missing' => ['31', '32', '33'],
+            'fallback' => 'OCA\\Deck\\Service\\CardService::update',
+            'by' => \OCA\Mcp\Tools\Deck\DeckServiceGateway::class,
+            'elsewhere' => ['Tools/Deck/CardFormatter.php' => 'OCA\\Deck\\Db\\Board::getColor'],
         ],
         // Up to Talk 23 Room::getLobbyState() opens a lobby whose timer has passed by itself.
         'OCA\\Talk\\Service\\RoomService::validateLobbyTimer' => [
@@ -180,7 +195,6 @@ final class NextcloudApiUsage {
         'OCA\\Deck\\Db\\Acl::getToken' => 'OCP\\Share\\IShare::getToken and OCA\\Talk\\Room::getToken, in Tools/Files/Sharing and Tools/Talk',
         'OCA\\Deck\\Db\\Acl::getCreatedAt' => 'OCA\\Deck\\Db\\Card::getCreatedAt, in Tools/Deck/DeckServiceGateway',
         'OCP\\Files\\IRootFolder::removeListener' => 'Sabre\\DAV\\Server::removeListener, in Tools/Calendar/EmbeddedDavDispatcher',
-        'OCA\\Deck\\Db\\Card::getColor' => 'OCA\\Deck\\Db\\Board::getColor, in Tools/Deck/CardFormatter',
         'OCP\\DB\\QueryBuilder\\IQueryBuilder::execute' => 'the app\'s own tools, in Tools/Calendar/CalendarModule and Service/Calendar/CalendarSelftestService',
     ];
 }

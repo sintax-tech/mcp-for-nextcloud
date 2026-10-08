@@ -321,6 +321,90 @@ final class DeckServiceGatewayTest extends TestCase {
 		self::assertSame($card, $this->gateway->updateCard('alice', $card, 'Fechar', 'Novo texto', null));
 	}
 
+	/**
+	 * Deck 1.18 (Nextcloud 34) added `?string $startdate` and `?string $color` after `done` and writes both on every
+	 * update, so an edit that leaves them out clears the start date and the colour of the card.
+	 */
+	public function testUpdateCardKeepsTheStartDateAndTheColourOnDeck118(): void {
+		$deck = new class {
+			/** @var list<mixed> */
+			public array $arguments = [];
+
+			public function update(int $id, string $title, int $stackId, string $type, string $owner, string $description = '', int $order = 0, ?string $duedate = null, ?int $deletedAt = null, ?bool $archived = null, ?OptionalNullableValue $done = null, ?string $startdate = null, ?string $color = null): Card {
+				$this->arguments = func_get_args();
+				return new Card(['id' => $id]);
+			}
+		};
+		$this->services[CardService::class] = $deck;
+		$this->recordSetUserId();
+
+		$this->gateway->updateCard('alice', $this->deck118Card(new \DateTime('2026-02-01 09:00:00', new \DateTimeZone('UTC')), 'e9322d'), 'Fechar', 'Novo texto', null);
+
+		self::assertCount(13, $deck->arguments);
+		self::assertSame('2026-02-01T09:00:00+00:00', $deck->arguments[11]);
+		self::assertEquals(new \DateTime('2026-02-01 09:00:00', new \DateTimeZone('UTC')), new \DateTime($deck->arguments[11]), 'Deck reads it back with new DateTime()');
+		self::assertSame('e9322d', $deck->arguments[12]);
+	}
+
+	/** Deck 1.19 (Nextcloud 35) leaves the colour alone on a null argument, but still clears a start date left out. */
+	public function testUpdateCardKeepsTheStartDateAndTheColourOnDeck119(): void {
+		$deck = new class {
+			/** @var list<mixed> */
+			public array $arguments = [];
+
+			public function update(int $id, string $title, int $stackId, string $type, string $owner, string $description = '', int $order = 0, ?string $duedate = null, ?int $deletedAt = null, ?bool $archived = null, ?OptionalNullableValue $done = null, ?string $startdate = null, ?OptionalNullableValue $color = null): Card {
+				$this->arguments = func_get_args();
+				return new Card(['id' => $id]);
+			}
+		};
+		$this->services[CardService::class] = $deck;
+		$this->recordSetUserId();
+
+		$this->gateway->updateCard('alice', $this->deck118Card(new \DateTime('2026-02-01 09:00:00', new \DateTimeZone('UTC')), 'e9322d'), 'Fechar', 'Novo texto', null);
+
+		self::assertCount(13, $deck->arguments);
+		self::assertSame('2026-02-01T09:00:00+00:00', $deck->arguments[11]);
+		self::assertInstanceOf(OptionalNullableValue::class, $deck->arguments[12]);
+		self::assertSame('e9322d', $deck->arguments[12]->getValue());
+	}
+
+	/** A card without a start date or a colour keeps having none. */
+	public function testUpdateCardSendsNoStartDateOrColourWhenTheCardHasNone(): void {
+		$deck = new class {
+			/** @var list<mixed> */
+			public array $arguments = [];
+
+			public function update(int $id, string $title, int $stackId, string $type, string $owner, string $description = '', int $order = 0, ?string $duedate = null, ?int $deletedAt = null, ?bool $archived = null, ?OptionalNullableValue $done = null, ?string $startdate = null, ?string $color = null): Card {
+				$this->arguments = func_get_args();
+				return new Card(['id' => $id]);
+			}
+		};
+		$this->services[CardService::class] = $deck;
+		$this->recordSetUserId();
+
+		$this->gateway->updateCard('alice', $this->deck118Card(null, null), 'Fechar', '', null);
+
+		self::assertSame([null, null], array_slice($deck->arguments, 11));
+	}
+
+	/**
+	 * Up to Deck 1.17 the update ends at `done` and the card has no start date or colour: reading either would fail
+	 * on the real entity, and the stub card of these tests has neither getter.
+	 */
+	public function testUpdateCardSendsNothingAfterDoneOnDeck117(): void {
+		$card = $this->card(['id' => 7]);
+		$this->recordSetUserId();
+		$this->services[CardService::class]
+			->expects(self::once())
+			->method('update')
+			->willReturnCallback(static function (mixed ...$arguments) use ($card): Card {
+				self::assertCount(11, $arguments);
+				return $card;
+			});
+
+		$this->gateway->updateCard('alice', $card, 'Fechar', '', null);
+	}
+
 	public function testMoveCardWithoutOrderChecksTheDestinationStackBeforeReadingIt(): void {
 		$this->recordSetUserId();
 		$this->services[PermissionService::class]
@@ -811,6 +895,28 @@ final class DeckServiceGatewayTest extends TestCase {
 	 *
 	 * @return void
 	 */
+	/**
+	 * A card as Deck 1.18 and later load it, with the start date and colour fields 1.17 does not have.
+	 *
+	 * @param \DateTime|null $startdate Start date the card holds.
+	 * @param string|null $color Colour the card holds, as Deck stores it (hex without "#").
+	 */
+	private function deck118Card(?\DateTime $startdate, ?string $color): Card {
+		return new class (['id' => 7, 'stackId' => 10, 'owner' => 'alice', 'type' => 'note'], $startdate, $color) extends Card {
+			public function __construct(array $fields, private ?\DateTime $startdate, private ?string $color) {
+				parent::__construct($fields);
+			}
+
+			public function getStartdate(): ?\DateTime {
+				return $this->startdate;
+			}
+
+			public function getColor(): ?string {
+				return $this->color;
+			}
+		};
+	}
+
 	private function recordSetUserId(): void {
 		$this->services[BoardService::class]
 			->method('setUserId')

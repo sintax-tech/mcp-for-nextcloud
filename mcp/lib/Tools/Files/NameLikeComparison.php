@@ -52,4 +52,9 @@ final class NameLikeComparison implements ISearchComparison {
     public function setQueryHint(string $name, $value): void {
         $this->hints[$name] = $value;
     }
+
+    /** Same text core builds; core implodes operators into a string, so this must exist. */
+    public function __toString(): string {
+        return $this->getField() . ' ' . $this->getType() . ' ' . json_encode($this->pattern);
+    }
 }

@@ -60,4 +60,12 @@ final class SearchBinaryOperator implements ISearchBinaryOperator {
         }
         return $result;
     }
+
+    /** Same text core builds; nested operators are implode()d by core, so this must exist. */
+    public function __toString(): string {
+        if ($this->type === self::OPERATOR_NOT) {
+            return 'not ' . $this->arguments[0];
+        }
+        return '(' . implode(' ' . $this->type . ' ', $this->arguments) . ')';
+    }
 }

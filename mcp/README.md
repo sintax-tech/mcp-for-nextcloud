@@ -211,9 +211,9 @@ A instalação normal é pela App Store do Nextcloud: *Apps* → buscar **MCP fo
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-1.0.3.tar.gz <servidor>:/tmp/
+scp build/mcp-1.0.4.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-1.0.3.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-1.0.4.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp

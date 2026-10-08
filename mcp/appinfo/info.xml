@@ -17,6 +17,7 @@
 - **Tasks**: list, read, create, edit, complete and delete tasks.
 - **Deck**: boards, lists and cards, a follow-up of the cards you manage, and card assignments.
 - **Talk**: read conversations, reply, message a user, share or quote a file and create group conversations.
+- **Server log**: read and analyze `nextcloud.log`, for administrators or the IT groups they choose. Off by default, read only, IPs masked, the output is treated as untrusted data and every query is audited.
 
 ## You stay in control
 
@@ -46,6 +47,7 @@ Nextcloud 32–35 and PHP 8.2 or later. Deck and Talk are optional: their tools 
 - **Tarefas**: listar, ler, criar, editar, concluir e excluir tarefas.
 - **Deck**: quadros, listas e cartões, um acompanhamento dos cartões que você gerencia e a atribuição de cartões.
 - **Talk**: ler conversas, responder, mandar mensagem a um usuário, compartilhar ou citar um arquivo e criar conversas em grupo.
+- **Log do servidor**: ler e analisar o `nextcloud.log`, só para administradores ou para os grupos de TI que eles escolherem. Desligado por padrão, somente leitura, IPs mascarados, a saída é tratada como dado não confiável e cada consulta é auditada.
 
 ## Você no controle
 
@@ -75,6 +77,7 @@ Nextcloud 32–35 e PHP 8.2 ou superior. O Deck e o Talk são opcionais: as ferr
 - **Tareas**: listar, leer, crear, editar, completar y eliminar tareas.
 - **Deck**: tableros, listas y tarjetas, un seguimiento de las tarjetas que usted gestiona y la asignación de tarjetas.
 - **Talk**: leer conversaciones, responder, enviar un mensaje a un usuario, compartir o citar un archivo y crear conversaciones de grupo.
+- **Registro del servidor**: leer y analizar `nextcloud.log`, solo para administradores o para los grupos de TI que ellos elijan. Desactivado por defecto, solo lectura, IPs enmascaradas, la salida se trata como dato no confiable y cada consulta queda auditada.
 
 ## Usted tiene el control
 
@@ -92,7 +95,7 @@ Claude (claude.ai y Claude Desktop), ChatGPT y Gemini CLI inician sesión con OA
 
 Nextcloud 32–35 y PHP 8.2 o superior. Deck y Talk son opcionales: sus herramientas solo aparecen con la aplicación activa en una versión compatible.
     ]]></description>
-    <version>1.0.3</version>
+    <version>1.0.4</version>
     <licence>AGPL-3.0-or-later</licence>
     <author mail="jhonatan@sintax.tech">Jhonatan Jaworski</author>
     <namespace>Mcp</namespace>

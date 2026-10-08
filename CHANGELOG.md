@@ -2,6 +2,12 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 1.0.4
+
+### Changed
+
+- appinfo: the store description (en, pt-BR, es) lists the server log module added in 1.0.2.
+
 ## 1.0.3
 
 ### Changed

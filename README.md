@@ -34,6 +34,7 @@ From 1.0.0 on the app is published in the [Nextcloud App Store](https://apps.nex
 - **1.0.0 and 1.0.1: the App Store.** First signed release in the store (no functional change since 0.11.1); 1.0.1 adds the `ai` category.
 - **1.0.2: server log.** A read-only module for IT staff, `logs_list` and `logs_analyze`, over `nextcloud.log` through the core's own reader. Only administrators and the groups they choose see the tools, the grant starts off, IPs are masked, the output is marked as untrusted and every read is audited. See [Features](#features). It also fixes `files_image_search`, which failed on Nextcloud 33.
 - **1.0.3: Nextcloud 32–35.** The app declares support for Nextcloud 32 to 35, checked by API contract tests against Deck 1.16–1.19 and Talk 22–25. Fixes: editing a Deck card on 1.18/1.19 no longer clears its start date or colour, and Talk respects the lobby when reading and writing.
+- **1.0.4: store description.** The description in the App Store (English, Portuguese and Spanish) now lists the server log module added in 1.0.2. No functional change.
 
 Upgrading from 0.7.0 or later runs the schema migrations by itself (tables `mcp_file_batches`, `mcp_oauth_spent` and `mcp_logs_groups`): no manual step, no `occ`, and nothing changes in `config.php`.
 

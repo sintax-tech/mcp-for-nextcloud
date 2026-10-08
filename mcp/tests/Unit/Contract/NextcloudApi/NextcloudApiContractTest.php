@@ -216,7 +216,77 @@ final class NextcloudApiContractTest extends TestCase {
             $this->assertSame([], $parameters);
             return;
         }
-        $this->assertNull(self::signatureMismatch($surface['methods'][$method], $parameters), "$call in Nextcloud $major");
+        $this->assertNull(self::signatureMismatch($surface['methods'][$method], $parameters, NextcloudApiUsage::REVIEWED_TRAILING[$call] ?? []), "$call in Nextcloud $major");
+    }
+
+    /** @return array<string, array{string}> one case per positional call */
+    public static function positionalCallNames(): array {
+        $cases = [];
+        foreach (array_keys(NextcloudApiUsage::POSITIONAL) as $call) {
+            $cases[$call] = [$call];
+        }
+        return $cases;
+    }
+
+    /**
+     * A parameter the app passes or leaves to its reviewed default keeps one declared type across the covered majors,
+     * or the change is reviewed in REVIEWED_TYPE_CHANGES.
+     */
+    #[DataProvider('positionalCallNames')]
+    public function testPositionalCallsKeepTheirParameterTypesInEveryCoveredMajor(string $call): void {
+        $reviewed = NextcloudApiUsage::REVIEWED_TYPE_CHANGES[$call] ?? [];
+        $changes = self::typeChanges(self::typesByParameter($call), $reviewed);
+        $this->assertSame([], $changes, "$call: the type of " . implode(', ', $changes) . ' differs between majors');
+        foreach (array_keys($reviewed) as $parameter) {
+            $this->assertNotSame([], self::typeChanges(self::typesByParameter($call), array_diff_key($reviewed, [$parameter => true])), "$call: \$$parameter no longer changes type, drop it from REVIEWED_TYPE_CHANGES");
+        }
+    }
+
+    /** Every reviewed trailing parameter still exists after the passed ones in some covered major: no stale review. */
+    public function testEveryReviewedTrailingParameterStillExists(): void {
+        foreach (NextcloudApiUsage::REVIEWED_TRAILING as $call => $parameters) {
+            $this->assertArrayHasKey($call, NextcloudApiUsage::POSITIONAL, "$call is no positional call");
+            foreach (array_keys($parameters) as $parameter) {
+                $found = false;
+                foreach (self::checkedMajors() as $major) {
+                    [$class, $method] = explode('::', $call);
+                    $declared = array_map(static fn (string $name): string => rtrim(ltrim($name, '.'), '?'), self::surface($major, $class)['methods'][$method] ?? []);
+                    $found = $found || in_array($parameter, array_slice($declared, count(NextcloudApiUsage::POSITIONAL[$call])), true);
+                }
+                $this->assertTrue($found, "$call has no trailing \$$parameter in any covered major: drop it from REVIEWED_TRAILING");
+            }
+        }
+    }
+
+    /**
+     * @return array<string, array<string, string>> parameter => major => declared type, for every parameter of the
+     *     call in every covered major that has it
+     */
+    private static function typesByParameter(string $call): array {
+        [$class, $method] = explode('::', $call);
+        $types = [];
+        foreach (self::checkedMajors() as $major) {
+            $surface = self::surface($major, $class);
+            foreach ($surface['methods'][$method] ?? [] as $i => $name) {
+                $types[rtrim(ltrim($name, '.'), '?')][$major] = $surface['types'][$method][$i] ?? '';
+            }
+        }
+        return $types;
+    }
+
+    /**
+     * @param array<string, array<string, string>> $types parameter => major => declared type
+     * @param array<string, string> $reviewed parameters whose change is reviewed
+     * @return list<string> parameters declared with more than one type, untyped releases left out
+     */
+    private static function typeChanges(array $types, array $reviewed): array {
+        $changed = [];
+        foreach ($types as $parameter => $byMajor) {
+            if (!isset($reviewed[$parameter]) && count(array_unique(array_filter($byMajor, static fn (string $type): bool => $type !== ''))) > 1) {
+                $changed[] = $parameter;
+            }
+        }
+        return $changed;
     }
 
     /**
@@ -224,27 +294,45 @@ final class NextcloudApiContractTest extends TestCase {
      * fed the Nextcloud 35 signatures with the changes the contract exists to catch.
      */
     public function testThePositionalRuleCatchesAChangedSignature(): void {
+        $call = 'OCA\\Talk\\Chat\\ChatManager::sendMessage';
         $sendMessage = self::fixture('35')['classes']['OCA\\Talk\\Chat\\ChatManager']['methods']['sendMessage'];
-        $passes = NextcloudApiUsage::POSITIONAL['OCA\\Talk\\Chat\\ChatManager::sendMessage'];
-        $this->assertNull(self::signatureMismatch($sendMessage, $passes), 'the real signature is accepted');
+        $passes = NextcloudApiUsage::POSITIONAL[$call];
+        $reviewed = NextcloudApiUsage::REVIEWED_TRAILING[$call];
+        $this->assertNull(self::signatureMismatch($sendMessage, $passes, $reviewed), 'the real signature is accepted');
 
         $required = $sendMessage;
         array_splice($required, 6, 0, ['threadId']);
-        $this->assertNotNull(self::signatureMismatch($required, $passes), 'a required parameter inserted before the ones passed');
+        $this->assertNotNull(self::signatureMismatch($required, $passes, $reviewed), 'a required parameter inserted before the ones passed');
         $renamed = $sendMessage;
         $renamed[4] = 'comment';
-        $this->assertNotNull(self::signatureMismatch($renamed, $passes), 'a parameter renamed at a passed position');
-        $this->assertNotNull(self::signatureMismatch([...$sendMessage, 'verb'], $passes), 'a new required trailing parameter');
+        $this->assertNotNull(self::signatureMismatch($renamed, $passes, $reviewed), 'a parameter renamed at a passed position');
+        $this->assertNotNull(self::signatureMismatch([...$sendMessage, 'verb'], $passes, $reviewed), 'a new required trailing parameter');
+        // An optional parameter is no harmless default by itself: Deck 1.18 appended two that clear the card when left out.
+        $this->assertNotNull(self::signatureMismatch([...$sendMessage, 'clearsTheMessage?'], $passes, $reviewed), 'a new optional trailing parameter nobody reviewed');
         // What the generator wrote before it read parameters behind #[SensitiveParameter].
         $this->assertNotNull(self::signatureMismatch([], NextcloudApiUsage::POSITIONAL['OCP\\Security\\Events\\ValidatePasswordPolicyEvent::__construct']), 'a signature read without its parameters');
+    }
+
+    /** The type rule must fail on a parameter that kept its name and changed type, as `color` did in Deck 1.19. */
+    public function testTheTypeRuleCatchesAParameterThatChangedType(): void {
+        $call = 'OCA\\Talk\\Chat\\ChatManager::sendMessage';
+        $types = self::typesByParameter($call);
+        $this->assertSame([], self::typeChanges($types, []), 'the real types are stable across the covered majors');
+
+        $types['message']['35'] = 'array';
+        $this->assertSame(['message'], self::typeChanges($types, []), 'a passed parameter whose type changed');
+        $this->assertSame([], self::typeChanges($types, ['message' => 'reviewed']), 'unless the change is reviewed');
+        $types['actorId']['31'] = '';
+        $this->assertSame(['message'], self::typeChanges($types, []), 'an untyped parameter accepts anything: gaining a type is no change');
     }
 
     /**
      * @param list<string> $declared the parameters of the release, as the fixture writes them
      * @param list<string> $parameters what the app passes, in order
+     * @param array<string, string> $reviewed parameters after those, reviewed in REVIEWED_TRAILING
      * @return string|null why the call no longer fits the signature, null when it does
      */
-    private static function signatureMismatch(array $declared, array $parameters): ?string {
+    private static function signatureMismatch(array $declared, array $parameters, array $reviewed = []): ?string {
         $names = array_map(static fn (string $name): string => rtrim(ltrim($name, '.'), '?'), $declared);
         if (array_slice($names, 0, count($parameters)) !== $parameters) {
             return 'takes (' . implode(', ', $declared) . ')';
@@ -252,6 +340,10 @@ final class NextcloudApiContractTest extends TestCase {
         foreach (array_slice($declared, count($parameters)) as $rest) {
             if (!str_ends_with($rest, '?') && !str_starts_with($rest, '...')) {
                 return "requires \$$rest, which the app does not pass";
+            }
+            $name = rtrim(ltrim($rest, '.'), '?');
+            if (!isset($reviewed[$name])) {
+                return "has \$$name after the passed parameters, not reviewed in REVIEWED_TRAILING";
             }
         }
         return null;

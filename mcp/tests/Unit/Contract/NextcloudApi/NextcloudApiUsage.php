@@ -118,6 +118,129 @@ final class NextcloudApiUsage {
         'OCP\\FilesMetadata\\Model\\IFilesMetadata::getString' => ['key'],
     ];
 
+    /**
+     * Parameters after the ones {@see self::POSITIONAL} passes, reviewed one by one: each is left to its default, and
+     * the reason says why that default is what the app wants. A trailing parameter missing here fails the contract,
+     * optional or not, because a default can still change the outcome: Deck 1.18 appended `startdate` and `color` to
+     * `CardService::update()` and clears both when they are left out.
+     *
+     * @var array<string, array<string, string>> "Class::method" => parameter => why its default is right
+     */
+    public const REVIEWED_TRAILING = [
+        'OCA\\Talk\\Manager::getRoomForUserByToken' => [
+            'sessionId' => 'null: the module reads no session, it never joins the room',
+            'includeLastMessage' => 'false: the last message is not part of what the module answers',
+            'isSIPBridgeRequest' => 'false: the caller is a user, not the SIP bridge',
+        ],
+        'OCA\\Talk\\Manager::getRoomsForUser' => [
+            'sessionIds' => '[]: no session is joined',
+            'includeLastMessage' => 'false: the listing reads the last activity, not the last message',
+        ],
+        'OCA\\Talk\\Service\\ParticipantService::ensureOneToOneRoomIsFilled' => [
+            'enforceUserId' => 'null: both members of the one-to-one room are restored, as Talk does when it opens one',
+        ],
+        'OCA\\Talk\\Service\\ParticipantService::addUsers' => [
+            'bansAlreadyChecked' => 'false: Talk checks the bans itself',
+        ],
+        'OCA\\Talk\\Chat\\ChatManager::sendMessage' => [
+            'referenceId' => "'': the module sends no client reference id",
+            'silent' => 'false: a message the user confirmed notifies like any other',
+            'rateLimitGuestMentions' => 'true: Talk keeps its rate limit',
+            'threadId' => '0 (Talk 22+): the message goes to the main conversation',
+            'threadTitle' => "'' (Talk 23+): no thread is created",
+            'fromScheduledMessage' => 'false (Talk 23+): the message is sent now',
+            'verb' => 'VERB_MESSAGE (Talk 24+): an ordinary message, not a private reply',
+            'extraMetaData' => '[] (Talk 24+): no extra metadata',
+        ],
+        'OCA\\Talk\\Chat\\ChatManager::addSystemMessage' => [
+            'referenceId' => 'null: no client reference id',
+            'replyTo' => 'null: a system message replies to nothing',
+            'shouldSkipLastMessageUpdate' => 'false: the system message is the last activity, as in Talk',
+            'silent' => 'false: notifies as Talk does',
+            'threadId' => '0 (Talk 22+): main conversation',
+        ],
+        'OCA\\Talk\\Chat\\ChatManager::getHistory' => [
+            'threadId' => '0 (Talk 22+): the history of the whole conversation',
+        ],
+        'OCA\\Talk\\Service\\RoomService::createConversation' => [
+            'objectType' => "'': a plain group conversation, attached to no object",
+            'objectId' => "'': same",
+            'password' => "'': only public rooms take a password; the module creates group rooms",
+            'readOnly' => 'READ_WRITE: members can write',
+            'listable' => 'LISTABLE_NONE: not listed, as the Talk UI creates a group room',
+            'messageExpiration' => '0: messages do not expire',
+            'lobbyState' => 'LOBBY_NONE: no lobby',
+            'lobbyTimer' => 'null: no lobby timer',
+            'sipEnabled' => 'SIP_DISABLED: no dial-in',
+            'permissions' => 'PERMISSIONS_DEFAULT: Talk\'s default permissions',
+            'recordingConsent' => 'CONSENT_REQUIRED_NO: Talk\'s default',
+            'mentionPermissions' => 'MENTION_PERMISSIONS_EVERYONE: Talk\'s default',
+            'description' => "'': no description",
+            'emoji' => 'null: no avatar emoji',
+            'avatarColor' => 'null: no avatar colour',
+            'attributes' => 'RoomAttributes::NONE (Talk 24+): a plain room',
+            'allowInternalTypes' => 'true: Talk\'s default; the module only asks for the group type',
+        ],
+        'OCA\\Talk\\Room::getLobbyState' => [
+            'validateTime' => 'true (up to Talk 23): the expired timer opens the lobby, what Talk 24 does in RoomService::validateLobbyTimer()',
+        ],
+        'OCA\\Deck\\Service\\AssignmentService::assignUser' => [
+            'type' => 'TYPE_USER: the module assigns users only',
+        ],
+        'OCA\\Deck\\Service\\AssignmentService::unassignUser' => [
+            'type' => '0, the user type: the module unassigns users only',
+        ],
+        'OCA\\Deck\\Service\\CardService::create' => [
+            'startdate' => 'null (Deck 1.18+): a new card has no start date',
+            'color' => 'null (Deck 1.18+): a new card has no colour',
+        ],
+        'OCA\\Deck\\Service\\CardService::update' => [
+            'startdate' => 'not left to its default: DeckServiceGateway::fieldsAfterDone() sends the current value back (Deck 1.18+ clears it otherwise)',
+            'color' => 'not left to its default: DeckServiceGateway::fieldsAfterDone() sends the current value back, typed per release',
+        ],
+        'OCA\\Deck\\Service\\PermissionService::checkPermission' => [
+            'allowDeletedBoard' => 'false (Deck 1.17+): a deleted board refuses, as the module wants',
+        ],
+        'OCA\\Deck\\Service\\PermissionService::getPermissions' => [
+            'allowDeleted' => 'false (Deck 1.17+): no permission on a deleted board',
+        ],
+        'OCA\\Deck\\Service\\StackService::findAll' => [
+            'since' => '-1: no change-tracking filter',
+        ],
+        'OCA\\Deck\\Db\\StackMapper::findAll' => [
+            'limit' => 'null: every stack of the board',
+            'offset' => '0: from the first one',
+        ],
+        'OCA\\Deck\\Db\\StackMapper::findDeleted' => [
+            'limit' => 'null: every deleted stack',
+            'offset' => '0: from the first one',
+        ],
+        'OCA\\Deck\\Db\\CardMapper::findAll' => [
+            'since' => '-1: no change-tracking filter',
+        ],
+        'OCA\\Deck\\Db\\CardMapper::findAllArchived' => [
+            'limit' => 'null: every archived card of the stack',
+            'offset' => 'null: from the first one',
+        ],
+        'OCA\\Deck\\Db\\BoardMapper::findAllByOwner' => [
+            'limit' => 'null: every board the user owns',
+            'offset' => 'null: from the first one',
+        ],
+    ];
+
+    /**
+     * Parameters of {@see self::POSITIONAL} and {@see self::REVIEWED_TRAILING} whose declared type differs between
+     * covered majors, with how the app copes. An untyped parameter (Deck up to 1.16) accepts anything, so only
+     * releases that declare a type are compared.
+     *
+     * @var array<string, array<string, string>> "Class::method" => parameter => how the app handles each type
+     */
+    public const REVIEWED_TYPE_CHANGES = [
+        'OCA\\Deck\\Service\\CardService::update' => [
+            'color' => '?string in Deck 1.18, ?OptionalNullableValue in 1.19: DeckServiceGateway::fieldsAfterDone() reads the type and wraps the colour when asked',
+        ],
+    ];
+
     /** Constants the app reads by name from classes it holds untyped. */
     public const CONSTANTS = [
         'OCA\\Talk\\Model\\Attendee' => ['ACTOR_USERS', 'PERMISSIONS_CHAT', 'PERMISSIONS_LOBBY_IGNORE'],

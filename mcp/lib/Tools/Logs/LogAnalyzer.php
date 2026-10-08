@@ -20,8 +20,18 @@ final class LogAnalyzer {
     public const SIGNATURE_LIMIT = 200;
     /** Level names, highest first, by the number the core writes. */
     public const LEVELS = [4 => 'fatal', 3 => 'error', 2 => 'warning', 1 => 'info', 0 => 'debug'];
-    /** WebDAV paths that name a file of somebody: the endpoint and the account are kept, the rest is folded. */
-    private const DAV_PATH = '#^(/(?:remote|public)\.php/(?:dav/(?:files|uploads|trashbin|versions|comments|systemtags-relations)/[^/]+|webdav))(?:/.*)?$#';
+    /**
+     * Paths that name a file of somebody, under any webroot ("/nextcloud/remote.php/…"); what is kept before the fold:
+     * - the account of a WebDAV path (files, uploads, trashbin, versions, comments, systemtags-relations);
+     * - nothing after the legacy /webdav endpoint, of remote.php or public.php;
+     * - nothing of a public share: its token opens the share, in /public.php/dav/files/<token> and in /s/<token>.
+     */
+    private const FOLDED_PATHS = [
+        '#^((?:/[^/]+)*?/remote\.php/dav/(?:files|uploads|trashbin|versions|comments|systemtags-relations)/[^/]+)(?:/.*)?$#',
+        '#^((?:/[^/]+)*?/(?:remote|public)\.php/webdav)(?:/.*)?$#',
+        '#^((?:/[^/]+)*?/public\.php/dav/files)(?:/.*)?$#',
+        '#^((?:/[^/]+)*?/s)/[^/]+(?:/.*)?$#',
+    ];
 
     public function __construct(private LogTime $time) {}
 
@@ -107,15 +117,18 @@ final class LogAnalyzer {
     }
 
     /**
-     * The path of a URL without its query, with the file part of a WebDAV path and every number folded.
+     * The path of a URL without its query, with the file part of a WebDAV path, the token of a public share and every
+     * number folded.
      *
      * @param string $url the redacted url field
      * @return string the path to count
      */
     private static function path(string $url): string {
         $path = explode('?', $url, 2)[0];
-        if (preg_match(self::DAV_PATH, $path, $match) === 1) {
-            return $match[1] . '/…';
+        foreach (self::FOLDED_PATHS as $pattern) {
+            if (preg_match($pattern, $path, $match) === 1) {
+                return mb_substr($match[1], 0, self::SIGNATURE_LIMIT) . '/…';
+            }
         }
         return mb_substr(preg_replace(['/\d+/', '/#+/'], '#', $path) ?? '', 0, self::SIGNATURE_LIMIT);
     }

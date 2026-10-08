@@ -108,4 +108,27 @@ final class LogAnalyzerTest extends TestCase {
         $this->assertSame([], $result['signatures']);
         $this->assertSame([], $result['hourly']);
     }
+
+    /**
+     * Every WebDAV endpoint that names a file is folded, under any webroot: the account stays, a public share token
+     * does not (it opens the share), and neither does the token of a share link page.
+     */
+    public function testEveryDavEndpointIsFoldedUnderAnyWebroot(): void {
+        $paths = [
+            '/nextcloud/remote.php/dav/files/alice/RH/Folha.xlsx' => '/nextcloud/remote.php/dav/files/alice/…',
+            '/remote.php/webdav/RH/Folha.xlsx' => '/remote.php/webdav/…',
+            '/cloud/remote.php/webdav' => '/cloud/remote.php/webdav/…',
+            '/remote.php/dav/uploads/alice/web-file-upload-81/1' => '/remote.php/dav/uploads/alice/…',
+            '/remote.php/dav/trashbin/alice/trash/Folha.xlsx.d1791400000' => '/remote.php/dav/trashbin/alice/…',
+            '/remote.php/dav/versions/alice/versions/551203/1791400000' => '/remote.php/dav/versions/alice/…',
+            '/public.php/dav/files/AbCdEfGh1234/Contrato.pdf' => '/public.php/dav/files/…',
+            '/nextcloud/public.php/webdav/Contrato.pdf' => '/nextcloud/public.php/webdav/…',
+            '/index.php/s/AbCdEfGh1234/download?path=/' => '/index.php/s/…',
+            '/nextcloud/s/AbCdEfGh1234' => '/nextcloud/s/…',
+            '/remote.php/dav/calendars/alice/personal/' => '/remote.php/dav/calendars/alice/personal/',
+        ];
+        foreach ($paths as $url => $expected) {
+            $this->assertSame($expected, self::analyze([['url' => $url]])['topUrls'][0]['path'], $url);
+        }
+    }
 }

@@ -48,7 +48,12 @@ final class MatrixFixture {
     }
 
     public function matrix(): GrantMatrix {
-        return new GrantMatrix($this->policy, $this->userManager(), $this->groupManager(), $this->appManager());
+        return new GrantMatrix($this->policy, $this->userManager(), $this->groupManager(), $this->appManager(), $this->logsAccess());
+    }
+
+    /** The role gate of the logs module over the same config and groups; members of 'admin' are the administrators. */
+    public function logsAccess(): \OCA\Mcp\Service\LogsAccess {
+        return new \OCA\Mcp\Service\LogsAccess($this->config->mock($this->test), $this->groupManager());
     }
 
     public function userManager(): IUserManager {
@@ -75,6 +80,7 @@ final class MatrixFixture {
         $manager->method('get')->willReturnCallback(fn (string $gid) => isset($this->groups[$gid]) ? $this->group($gid) : null);
         $manager->method('search')->willReturnCallback(fn () => array_map(fn ($gid) => $this->group($gid), array_keys($this->groups)));
         $manager->method('isInGroup')->willReturnCallback(fn (string $uid, string $gid) => in_array($uid, $this->groups[$gid] ?? [], true));
+        $manager->method('isAdmin')->willReturnCallback(fn (string $uid) => in_array($uid, $this->groups['admin'], true));
         $manager->method('displayNamesInGroup')->willReturnCallback(function ($gid, $search = '', $limit = -1, $offset = 0): array {
             $uids = array_values(array_intersect($this->matching($search), $this->groups[$gid] ?? []));
             $uids = array_slice($uids, $offset, $limit === -1 ? null : $limit);

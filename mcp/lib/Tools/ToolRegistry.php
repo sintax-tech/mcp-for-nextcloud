@@ -76,6 +76,9 @@ class ToolRegistry {
     public function definitions(string $userId): array {
         $tools = [];
         foreach ($this->modules as $module) {
+            if (!self::permits($module, $userId)) {
+                continue;
+            }
             foreach ($module->definitions() as $definition) {
                 if ($this->allowed($definition, $userId)) {
                     $tools[] = $this->present($definition);
@@ -109,7 +112,7 @@ class ToolRegistry {
                 if ($definition['name'] !== $name) {
                     continue;
                 }
-                if (!$this->allowed($definition, $userId)) {
+                if (!self::permits($module, $userId) || !$this->allowed($definition, $userId)) {
                     break 2;
                 }
                 $published = WriteGate::publish($definition);
@@ -195,6 +198,16 @@ class ToolRegistry {
      */
     public function guide(): ToolGuide {
         return $this->guide ??= new ToolGuide($this->modules);
+    }
+
+    /**
+     * The role of a {@see RestrictedModule} comes before everything else: outside it the module does not exist.
+     *
+     * @param ToolModule $module module whose tools are about to be listed or called
+     * @param string $userId authenticated user
+     */
+    private static function permits(ToolModule $module, string $userId): bool {
+        return !$module instanceof RestrictedModule || $module->permits($userId);
     }
 
     /**

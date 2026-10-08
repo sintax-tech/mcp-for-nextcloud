@@ -31,7 +31,15 @@ class GrantPolicy {
         // Account search; read only, so the model can find who to invite or message.
         'people' => ['read'],
         'talk' => ['read', 'reply', 'attach', 'quote', 'create'],
+        // Reading the server log; read only, and the one read that starts denied (see DENIED_READS).
+        'logs' => ['read'],
     ];
+
+    /**
+     * Modules whose read starts denied like a write. The server log shows the file names, URLs and accounts of every
+     * user, so nobody may read it by omission: an administrator turns it on user by user.
+     */
+    public const DENIED_READS = ['logs'];
 
     /** App id under which every value of this policy is stored. */
     public const APP = 'mcp';
@@ -145,12 +153,24 @@ class GrantPolicy {
      * @param string $uid Nextcloud user id
      * @param string $module key of CATALOG
      * @param string $operation operation listed for the module in CATALOG
-     * @return bool the stored grant; read defaults to allowed, every other operation to denied
+     * @return bool the stored grant, or {@see self::defaultGranted()} when none is stored
      * @throws InvalidArgumentException for a module or operation outside CATALOG
      */
     public function granted(string $uid, string $module, string $operation): bool {
         $key = self::grantKey($module, $operation);
-        return $this->config->getUserValue($uid, self::APP, $key, $operation === 'read' ? '1' : '0') === '1';
+        return $this->config->getUserValue($uid, self::APP, $key, self::defaultValue($module, $operation)) === '1';
+    }
+
+    /**
+     * What a user who was never given nor denied the grant gets: read is allowed, except in DENIED_READS, and every
+     * other operation is denied.
+     *
+     * @param string $module key of CATALOG
+     * @param string $operation operation of the module
+     * @return bool the default grant
+     */
+    public static function defaultGranted(string $module, string $operation): bool {
+        return $operation === 'read' && !in_array($module, self::DENIED_READS, true);
     }
 
     /**
@@ -191,7 +211,7 @@ class GrantPolicy {
             $state = ['eligible' => ($eligible[$uid] ?? '0') === '1', 'connected' => ($connected[$uid] ?? '0') === '1', 'grants' => []];
             foreach (self::CATALOG as $module => $operations) {
                 foreach ($operations as $operation) {
-                    $state['grants'][$module][$operation] = ($grants[$module][$operation][$uid] ?? ($operation === 'read' ? '1' : '0')) === '1';
+                    $state['grants'][$module][$operation] = ($grants[$module][$operation][$uid] ?? self::defaultValue($module, $operation)) === '1';
                 }
             }
             $out[$uid] = $state;
@@ -206,6 +226,11 @@ class GrantPolicy {
      */
     public static function inCatalog(string $module, string $operation): bool {
         return isset(self::CATALOG[$module]) && in_array($operation, self::CATALOG[$module], true);
+    }
+
+    /** @return string {@see self::defaultGranted()} as the stored value */
+    private static function defaultValue(string $module, string $operation): string {
+        return self::defaultGranted($module, $operation) ? '1' : '0';
     }
 
     /** @throws InvalidArgumentException for a module or operation outside CATALOG */

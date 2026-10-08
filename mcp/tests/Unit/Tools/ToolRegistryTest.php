@@ -219,6 +219,51 @@ final class ToolRegistryTest extends TestCase {
         $this->assertSame([], $this->calls);
     }
 
+    /**
+     * A restricted module answers for itself who may see it, before the grant is even read: a user outside its role
+     * neither lists nor calls its tools, granted or not, and the grant still decides for a user inside it.
+     */
+    public function testARestrictedModuleIsHiddenFromUsersOutsideItsRoleWhateverTheGrant(): void {
+        $test = $this;
+        $module = new class($test) implements ToolModule, \OCA\Mcp\Tools\RestrictedModule {
+            /** @var list<string> */
+            public array $members = ['root'];
+            public function __construct(private ToolRegistryTest $test) {}
+            public function permits(string $userId): bool {
+                return in_array($userId, $this->members, true);
+            }
+            public function definitions(): array {
+                return [['name' => 'logs_list', 'description' => 'l', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'logs', 'operation' => 'read']];
+            }
+            public function call(string $name, array $arguments, string $userId): array {
+                $this->test->calls[] = [$name, $arguments, $userId];
+                return ['content' => [['type' => 'text', 'text' => 'ok']]];
+            }
+        };
+        $registry = new ToolRegistry([$module], $this->policy, $this->createMock(IAppManager::class), $this->createMock(IUserManager::class), $this->logger);
+        foreach (['root', 'alice'] as $uid) {
+            $this->policy->setGrant($uid, 'logs', 'read', true);
+        }
+
+        $this->assertSame(['mcp_guide', 'logs_list'], array_column($registry->list('root'), 'name'));
+        $this->assertSame(['mcp_guide'], array_column($registry->list('alice'), 'name'));
+        try {
+            $registry->call('logs_list', [], 'alice');
+            $this->fail('a user outside the role must not reach the module');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame('Unknown tool', $e->getMessage());
+        }
+        $this->assertSame([], $this->calls);
+
+        $registry->call('logs_list', [], 'root');
+        $this->assertSame([['logs_list', ['n' => 5], 'root']], $this->calls);
+
+        // Inside the role the grant still decides, and logs.read starts denied.
+        $this->assertSame(['mcp_guide'], array_column($registry->list('carl'), 'name'));
+        $module->members[] = 'carl';
+        $this->assertSame(['mcp_guide'], array_column($registry->list('carl'), 'name'));
+    }
+
     public function testToolsStayHiddenForUsersOutsideAnAppAllowlist(): void {
         $this->userEnabledApps['alice'] = [];
 

@@ -90,9 +90,27 @@ final class GrantPolicyTest extends TestCase {
     public function testReadStartsAllowedAndWriteStartsDenied(): void {
         foreach (GrantPolicy::CATALOG as $module => $operations) {
             foreach ($operations as $operation) {
-                $this->assertSame($operation === 'read', $this->policy->granted('alice', $module, $operation), "$module.$operation");
+                $expected = $operation === 'read' && $module !== 'logs';
+                $this->assertSame($expected, $this->policy->granted('alice', $module, $operation), "$module.$operation");
+                $this->assertSame($expected, GrantPolicy::defaultGranted($module, $operation), "$module.$operation");
             }
         }
+    }
+
+    /**
+     * The server log shows the file names of every user, so reading it is the one read that starts denied: nobody
+     * gets it by omission, and an administrator who turns it on for one user turns it on for that user only.
+     */
+    public function testLogsReadStartsDeniedAndIsGrantedPerUser(): void {
+        $this->assertSame(['read'], GrantPolicy::CATALOG['logs']);
+        $this->assertFalse($this->policy->granted('alice', 'logs', 'read'));
+        $this->policy->setGrant('alice', 'logs', 'read', true);
+        $this->assertTrue($this->policy->granted('alice', 'logs', 'read'));
+        $this->assertFalse($this->policy->granted('bob', 'logs', 'read'));
+        $state = $this->policy->forUsers(['alice', 'bob']);
+        $this->assertTrue($state['alice']['grants']['logs']['read']);
+        $this->assertFalse($state['bob']['grants']['logs']['read']);
+        $this->assertTrue($state['bob']['grants']['files']['read']);
     }
 
     public function testCatalogMatchesContractAndFilesHasNoDelete(): void {

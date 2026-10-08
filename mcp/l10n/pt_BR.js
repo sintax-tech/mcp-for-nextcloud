@@ -879,6 +879,7 @@ OC.L10N.register(
     "Teaches how to send a file generated locally to Nextcloud as a new file, or to create a small text file inline." : "Ensina a enviar ao Nextcloud, como arquivo novo, um arquivo gerado localmente, ou a criar um arquivo de texto pequeno inline.",
     "Workflow for creating a new Nextcloud file." : "Fluxo de criação de um arquivo novo no Nextcloud.",
     "Create folders, copies and new files" : "Criar pastas, cópias e arquivos novos",
-    "- Content: the change is past the part shown (%d → %d bytes)" : "- Conteúdo: a mudança está além do trecho mostrado (%d → %d bytes)"
+    "- Content: the change is past the part shown (%d → %d bytes)" : "- Conteúdo: a mudança está além do trecho mostrado (%d → %d bytes)",
+    "logs" : "logs"
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

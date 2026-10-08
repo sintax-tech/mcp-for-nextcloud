@@ -26,14 +26,20 @@ class GrantMatrix {
     public const MAX_SEARCH = 100;
     /** Matrix filters: '' every user, 'eligible' the eligible ones, 'connected' the eligible ones who also connected. */
     public const FILTERS = ['' => null, 'eligible' => GrantPolicy::ELIGIBLE_KEY, 'connected' => GrantPolicy::CONNECTED_KEY];
-    /** Nextcloud app that provides each module of GrantPolicy::CATALOG. */
-    public const MODULE_APPS = ['files' => 'files', 'notes' => 'notes', 'deck' => 'deck', 'calendar' => 'calendar', 'talk' => 'spreed', 'contacts' => 'contacts', 'tasks' => 'dav', 'people' => ''];
+    /**
+     * Nextcloud app that provides each module of GrantPolicy::CATALOG; '' for a module of the core. The logs column
+     * follows {@see LogsAccess} instead: offered while the log is a file, and open only to the users of its role.
+     */
+    public const MODULE_APPS = ['files' => 'files', 'notes' => 'notes', 'deck' => 'deck', 'calendar' => 'calendar', 'talk' => 'spreed', 'contacts' => 'contacts', 'tasks' => 'dav', 'people' => '', 'logs' => ''];
+    /** Module whose column follows the role gate of {@see LogsAccess}. */
+    private const LOGS = 'logs';
 
     public function __construct(
         private GrantPolicy $policy,
         private IUserManager $userManager,
         private IGroupManager $groupManager,
         private IAppManager $appManager,
+        private LogsAccess $logs,
     ) {}
 
     /**
@@ -81,7 +87,9 @@ class GrantMatrix {
         return array_map(function (IUser $user) use ($state): array {
             $appsEnabled = [];
             foreach (self::MODULE_APPS as $module => $app) {
-                $appsEnabled[$module] = $app === 'files' || $app === '' || AppEnablement::forUser($this->appManager, $app, $user);
+                $appsEnabled[$module] = $module === self::LOGS
+                    ? $this->logs->permits($user->getUID())
+                    : $app === 'files' || $app === '' || AppEnablement::forUser($this->appManager, $app, $user);
             }
             return [
                 'uid' => $user->getUID(),
@@ -92,9 +100,11 @@ class GrantMatrix {
         }, $users);
     }
 
-    /** @return array<string, bool> whether each module's app is enabled for anyone on the server */
+    /** @return array<string, bool> whether each module's app is enabled for anyone on the server, and the log is a file */
     public function appsEnabled(): array {
-        return array_map(fn (string $app) => $app === 'files' || $app === '' || AppEnablement::forAnyone($this->appManager, $app), self::MODULE_APPS);
+        $enabled = array_map(fn (string $app) => $app === 'files' || $app === '' || AppEnablement::forAnyone($this->appManager, $app), self::MODULE_APPS);
+        $enabled[self::LOGS] = $this->logs->available();
+        return $enabled;
     }
 
     /** @return list<array{id:string, displayName:string}> groups for the filter, at most MAX_GROUPS */

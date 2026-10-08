@@ -196,4 +196,32 @@ final class LogRedactorTest extends TestCase {
         $this->assertLessThanOrEqual(16385, mb_strlen($redacted));
     }
 
+    public function testIpv6AfterLabelsOfAnyLengthIsMaskedIdempotently(): void {
+        $address = '2001:db8:abcd:1234:5678:90ab:cdef:1234';
+        foreach ([str_repeat('x', 63), str_repeat('x', 64), str_repeat('x', 1000), str_repeat('x-', 500), str_repeat('a', 1000)] as $label) {
+            foreach (['', '/128'] as $cidr) {
+                $raw = $label . ':' . $address . $cidr;
+                $expected = $label . ':2001:db8:abcd::/48';
+                $redacted = LogRedactor::text($raw, 2000);
+                $this->assertSame($expected, $redacted);
+                $this->assertSame($redacted, LogRedactor::text($redacted, 2000));
+            }
+        }
+    }
+
+    public function testLongLabelNearProcessingBoundaryNeverExposesAnAddress(): void {
+        $token = str_repeat('x-', 500) . ':2001:db8:abcd:1234:5678:90ab:cdef:1234';
+        // The complete token just fits; it must be masked before the processing cut.
+        $prefix = str_repeat('z ', intdiv(LogRedactor::PROCESSING_LIMIT - strlen($token) - 2, 2));
+        $raw = $prefix . $token . ' ' . str_repeat('tail ', 100);
+        $redacted = LogRedactor::text($raw, 20000);
+        $this->assertStringContainsString(':2001:db8:abcd::/48', $redacted);
+        $this->assertStringNotContainsString(':1234:5678:90ab:cdef:1234', $redacted);
+        $this->assertSame($redacted, LogRedactor::text($redacted, 20000));
+        // Move the same token over the boundary: the whole unfinished token is discarded.
+        $redacted = LogRedactor::text($prefix . 'pad ' . $token . ' tail', 20000);
+        $this->assertStringNotContainsString('2001:', $redacted);
+        $this->assertSame($redacted, LogRedactor::text($redacted, 20000));
+    }
+
 }

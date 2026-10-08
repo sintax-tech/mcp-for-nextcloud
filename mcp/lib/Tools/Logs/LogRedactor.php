@@ -39,10 +39,11 @@ final class LogRedactor {
     private const IPV6 = '/(?<![\w:.%s])(?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}(?!\w)(?!\.\w)(?!:[0-9a-f])(?:\/\d+)?/i';
     /**
      * An IPv6 candidate glued to a label by a colon ("IP:2001:db8::1", "clientAddress:2001:db8::9"), which the pattern
-     * above cannot see, since an address never starts right after a colon there. Labels are bounded and possessive;
-     * the hyphen boundary prevents restarting inside one long label.
+     * above cannot see, since an address never starts right after a colon there. The label is consumed once, possessively, with no length cap;
+     * the boundary excludes every label character (including hyphens), so matching never restarts inside it.
+     * Together these make the pass linear even for a long label with no valid address.
      */
-    private const LABELED_IPV6 = '/(?<![\w:.%s-])([a-z_][\w-]{0,62}+):((?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}(?!\w)(?!\.\w)(?!:[0-9a-f])(?:\/\d+)?)/i';
+    private const LABELED_IPV6 = '/(?<![\w:.%s-])([a-z_][\w-]*+):((?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}(?!\w)(?!\.\w)(?!:[0-9a-f])(?:\/\d+)?)/i';
     /** ANSI escape sequences (CSI and OSC). */
     private const ANSI = '/\x{1B}(?:\[[0-9;?]*[ -\/]*[@-~]|\][^\x{07}\x{1B}]*(?:\x{07}|\x{1B}\\\\)?)?/u';
     /**

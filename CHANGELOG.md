@@ -13,7 +13,7 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 ### Changed
 
 - logs: role groups now live in the app's own `mcp_logs_groups` table, created by a packaged native migration and read through `QBMapper`. The first read imports existing `logs_groups` from appconfig without overwriting a previously migrated state. GET returns `version` and PUT requires it; an atomic version increment with compare-and-swap rejects stale writes with 409. `ILockingProvider` remains an extra layer: with `filelocking.enabled=false` it becomes Noop, but the database CAS still protects revocations.
-- logs: IPv6 CIDRs are reduced to the canonical /48, including labeled addresses and invalid prefix lengths. Redaction bounds labels to 63 characters and processing to 16 KiB per field, discarding a token crossing that boundary before masking and applying the final 2,000-character message limit. Audit fallback logger failures preserve refusals and withhold successful data.
+- logs: IPv6 CIDRs are reduced to the canonical /48, including labeled addresses and invalid prefix lengths. Redaction consumes labels of any length in a linear pass (possessive matching without restarting inside a label) and bounds processing to 16 KiB per field, discarding a token crossing that boundary before masking and applying the final 2,000-character message limit. Audit fallback logger failures preserve refusals and withhold successful data.
 
 - grants: the default of a grant is now per module and operation (`GrantPolicy::defaultGranted`); every existing module keeps read on and the rest off.
 

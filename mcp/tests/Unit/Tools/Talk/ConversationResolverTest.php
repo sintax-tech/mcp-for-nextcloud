@@ -56,6 +56,7 @@ class ConversationResolverTest extends TestCase {
         $participant = $this->createMock(ResolverParticipantGateway::class);
         $participant->expects($this->never())->method('markAsRead');
         $this->givenServicesReturning($room, $participant);
+        $this->givenConstants();
 
         $this->resolver->resolveForReading('alice', 'abcd');
     }
@@ -236,6 +237,49 @@ class ConversationResolverTest extends TestCase {
         $this->assertSame('abcd', $this->resolver->resolveForWriting('alice', 'abcd')->room->getToken());
     }
 
+    /**
+     * Talk serves the history (`ChatController::receiveMessages`) only under `#[RequireModeratorOrNoLobby]`: with the
+     * lobby on, a participant without the bypass cannot read it in Talk, so not through the module either.
+     */
+    public function testReadingRefusesAnActiveLobbyWithoutTheBypassPermission(): void {
+        $this->givenLobbyRoom(lobby: 2);
+
+        $this->expectException(ConversationAccessException::class);
+        $this->expectExceptionMessage(Messages::conversationNotFound());
+        $this->resolver->resolveForReading('alice', 'abcd');
+    }
+
+    /** Moderators hold every permission bit in Talk, the bypass included; anyone holding it reads behind the lobby. */
+    public function testReadingAllowsAnActiveLobbyWithTheBypassPermission(): void {
+        $this->givenLobbyRoom(lobby: 2, permissions: 128 | 8);
+
+        $this->assertSame('abcd', $this->resolver->resolveForReading('alice', 'abcd')->room->getToken());
+    }
+
+    public function testReadingOpensALobbyWhoseTimerHasPassedOnTalk24(): void {
+        $room = $this->givenLobbyRoom(lobby: 2);
+        $this->talkServices->method('roomService')->willReturn(new class {
+            public function validateLobbyTimer(object $room): void {
+                $room->setLobbyState(0);
+            }
+        });
+
+        $this->assertSame($room, $this->resolver->resolveForReading('alice', 'abcd')->room);
+    }
+
+    public function testReadingWithAFailingLobbyTimerCheckKeepsTheLobbyClosed(): void {
+        $this->givenLobbyRoom(lobby: 2);
+        $this->talkServices->method('roomService')->willReturn(new class {
+            public function validateLobbyTimer(object $room): void {
+                throw new RuntimeException('database gone');
+            }
+        });
+
+        $this->expectException(ConversationAccessException::class);
+        $this->expectExceptionMessage(Messages::conversationNotFound());
+        $this->resolver->resolveForReading('alice', 'abcd');
+    }
+
     public function testUnavailableTalkStaysUnavailableThroughTheResolver(): void {
         $this->talkServices->method('manager')->willThrowException(new TalkUnavailableException());
 
@@ -252,8 +296,20 @@ class ConversationResolverTest extends TestCase {
         $participant = $this->createMock(ResolverParticipantGateway::class);
         $participant->method('getPermissions')->willReturn(128);
         $this->givenServicesReturning($room, $participant);
+        $this->givenConstants();
 
         return [$room, $participant];
+    }
+
+    /** The Talk constants the checks read, as the other helpers of this test give them. */
+    private function givenConstants(): void {
+        $this->talkServices->method('conversationConstants')->willReturn([
+            'chatPermission' => 128,
+            'lobbyIgnorePermission' => 8,
+            'readOnly' => 1,
+            'changelogType' => 7,
+            'lobbyNone' => 0,
+        ]);
     }
 
     private function givenServicesReturning(object $room, object $participant): void {
@@ -293,8 +349,9 @@ class ConversationResolverTest extends TestCase {
      * it, with a participant holding the chat permission but not the lobby bypass.
      *
      * @param int $lobby Initial lobby state, where 0 means none
+     * @param int $permissions Participant permission bits, the chat permission without the lobby bypass by default
      */
-    private function givenLobbyRoom(int $lobby): ResolverRoomGateway {
+    private function givenLobbyRoom(int $lobby, int $permissions = 128): ResolverRoomGateway {
         $room = new class ($lobby) implements ResolverRoomGateway {
             public function __construct(private int $lobby) {}
 
@@ -326,7 +383,7 @@ class ConversationResolverTest extends TestCase {
             }
         };
         $participant = $this->createMock(ResolverParticipantGateway::class);
-        $participant->method('getPermissions')->willReturn(128);
+        $participant->method('getPermissions')->willReturn($permissions);
         $this->givenServicesReturning($room, $participant);
         $this->talkServices->method('conversationConstants')->willReturn([
             'chatPermission' => 128,

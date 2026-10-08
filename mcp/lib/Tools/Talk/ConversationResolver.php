@@ -23,7 +23,63 @@ class ConversationResolver {
     ) {}
 
     /**
-     * Resolves a conversation the user takes part in. Enough to list its history.
+     * Resolves a conversation the user may read: one they take part in, behind its lobby only with the permission
+     * that bypasses it, as Talk serves the history (`ChatController::receiveMessages`, `#[RequireModeratorOrNoLobby]`).
+     *
+     * @param string $userId Authenticated user
+     * @param string $token Conversation token
+     * @throws InvalidArgumentException When the token is malformed
+     * @throws ConversationAccessException When the conversation is missing, the user is not a participant or the
+     *     lobby keeps them out
+     * @throws TalkUnavailableException When spreed is unavailable
+     */
+    public function resolveForReading(string $userId, string $token): Conversation {
+        $conversation = $this->resolve($userId, $token);
+        $constants = $this->talkServices->conversationConstants($userId);
+        if ($this->lobbyKeepsOut($userId, $conversation, $constants)) {
+            throw new ConversationAccessException(Messages::conversationNotFound());
+        }
+
+        return $conversation;
+    }
+
+    /**
+     * Resolves a conversation the user may write in: no read-only rooms, no changelog and a participant holding
+     * the chat permission, with the lobby bypassed only by the permission that allows it.
+     *
+     * @param string $userId Authenticated user
+     * @param string $token Conversation token
+     * @throws InvalidArgumentException When the token is malformed
+     * @throws ConversationAccessException When the conversation is missing or the user may not write in it
+     * @throws TalkUnavailableException When spreed is unavailable
+     */
+    public function resolveForWriting(string $userId, string $token): Conversation {
+        $conversation = $this->resolve($userId, $token);
+        $constants = $this->talkServices->conversationConstants($userId);
+        $room = $conversation->room;
+        $participant = $conversation->participant;
+
+        if ($room->isFederatedConversation()
+            || $room->getReadOnly() === $constants['readOnly']
+            || $room->getType() === $constants['changelogType']) {
+            throw new ConversationAccessException(Messages::conversationNotWritable());
+        }
+
+        $permissions = (int)$participant->getPermissions();
+        if (($permissions & $constants['chatPermission']) === 0) {
+            throw new ConversationAccessException(Messages::conversationNotWritable());
+        }
+        if ($this->lobbyKeepsOut($userId, $conversation, $constants)) {
+            throw new ConversationAccessException(Messages::conversationNotWritable());
+        }
+
+        return $conversation;
+    }
+
+    /**
+     * Turns a conversation token into the room and the caller's participant, nothing else checked.
+     *
+     * Every resolution error becomes the same answer, see the class description.
      *
      * @param string $userId Authenticated user
      * @param string $token Conversation token
@@ -31,7 +87,7 @@ class ConversationResolver {
      * @throws ConversationAccessException When the conversation is missing or the user is not a participant
      * @throws TalkUnavailableException When spreed is unavailable
      */
-    public function resolveForReading(string $userId, string $token): Conversation {
+    private function resolve(string $userId, string $token): Conversation {
         $this->assertValidToken($token);
 
         try {
@@ -51,40 +107,24 @@ class ConversationResolver {
     }
 
     /**
-     * Resolves a conversation the user may write in: no read-only rooms, no changelog and a participant holding
-     * the chat permission, with the lobby bypassed only by the permission that allows it.
+     * Whether the lobby keeps the caller out, as Talk's `RequireModeratorOrNoLobby` decides: the lobby is on and the
+     * participant lacks the bypass, which moderators always hold. A lobby whose timer has passed is opened first.
      *
      * @param string $userId Authenticated user
-     * @param string $token Conversation token
-     * @throws InvalidArgumentException When the token is malformed
-     * @throws ConversationAccessException When the conversation is missing or the user may not write in it
-     * @throws TalkUnavailableException When spreed is unavailable
+     * @param Conversation $conversation Room and participant of the caller
+     * @param array{lobbyNone:int, lobbyIgnorePermission:int} $constants Talk constants of {@see TalkServices::conversationConstants()}
      */
-    public function resolveForWriting(string $userId, string $token): Conversation {
-        $conversation = $this->resolveForReading($userId, $token);
-        $constants = $this->talkServices->conversationConstants($userId);
+    private function lobbyKeepsOut(string $userId, Conversation $conversation, array $constants): bool {
         $room = $conversation->room;
-        $participant = $conversation->participant;
+        if ($room->getLobbyState() === $constants['lobbyNone']) {
+            return false;
+        }
+        if (((int)$conversation->participant->getPermissions() & $constants['lobbyIgnorePermission']) !== 0) {
+            return false;
+        }
+        $this->expireLobbyTimer($userId, $room);
 
-        if ($room->isFederatedConversation()
-            || $room->getReadOnly() === $constants['readOnly']
-            || $room->getType() === $constants['changelogType']) {
-            throw new ConversationAccessException(Messages::conversationNotWritable());
-        }
-
-        $permissions = (int)$participant->getPermissions();
-        if (($permissions & $constants['chatPermission']) === 0) {
-            throw new ConversationAccessException(Messages::conversationNotWritable());
-        }
-        if ($room->getLobbyState() !== $constants['lobbyNone']) {
-            $this->expireLobbyTimer($userId, $room);
-        }
-        if ($room->getLobbyState() !== $constants['lobbyNone']
-            && ($permissions & $constants['lobbyIgnorePermission']) === 0) {
-            throw new ConversationAccessException(Messages::conversationNotWritable());
-        }
-
-        return $conversation;
+        return $room->getLobbyState() !== $constants['lobbyNone'];
     }
 
     /**
@@ -92,7 +132,9 @@ class ConversationResolver {
      *
      * Up to Talk 23 Room::getLobbyState() does it by itself. Talk 24 (Nextcloud 34) moved it to
      * RoomService::validateLobbyTimer(), which its controllers call first; without the call a webinar past its start
-     * time would stay closed here. A failing check leaves the lobby as Talk reports it, closed.
+     * time would stay closed here. The check fails closed: a missing method, a changed signature (a TypeError or
+     * ArgumentCountError is caught like any other Throwable) or a database error leaves the lobby as Talk reports it,
+     * closed, so the worst case is a refusal, never an opened lobby.
      *
      * @param string $userId Authenticated user
      * @param object $room OCA\Talk\Room

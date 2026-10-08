@@ -89,6 +89,73 @@ final class SourceParserTest extends TestCase {
         $this->assertSame(['value'], $methods['after'], 'the methods after an attributed signature are still read');
     }
 
+    /**
+     * The types are what tells a parameter that kept its name but changed meaning, as Deck 1.19 turned
+     * `CardService::update(?string $color)` into `?OptionalNullableValue $color`.
+     */
+    public function testParameterTypesAreReadResolvedAndAlignedWithTheNames(): void {
+        file_put_contents($this->tree . '/lib/public/Sample/Event.php', <<<'PHP'
+            <?php
+            namespace OCP\Sample;
+
+            use OCA\Deck\Model\OptionalNullableValue;
+            use Other\Thing as Alias;
+
+            class Event {
+                public function update(
+                    int $id,
+                    ?string $color = null,
+                    ?OptionalNullableValue $wrapped = null,
+                    Local|Alias|null $union = null,
+                    #[\SensitiveParameter] private readonly \Fully\Qualified $promoted = new \Fully\Qualified(['x' => (1)]),
+                    &$byReference = [],
+                    (Local&Alias)|null $dnf = null,
+                    $untyped = null,
+                    string &...$rest,
+                ): void {
+                }
+            }
+            PHP);
+        $surface = (new SourceParser($this->tree))->surface('OCP\\Sample\\Event');
+
+        $this->assertSame(['id', 'color?', 'wrapped?', 'union?', 'promoted?', 'byReference?', 'dnf?', 'untyped?', '...rest'], $surface['methods']['update']);
+        $this->assertSame([
+            'int', '?string', '?OCA\\Deck\\Model\\OptionalNullableValue', 'OCP\\Sample\\Local|Other\\Thing|null',
+            'Fully\\Qualified', '', '(OCP\\Sample\\Local&Other\\Thing)|null', '', 'string',
+        ], $surface['types']['update']);
+    }
+
+    /** A trait's public methods are the class's own: `use Trait;` in the body was skipped, and they went missing. */
+    public function testMethodsOfAUsedTraitBelongToTheClass(): void {
+        file_put_contents($this->tree . '/lib/public/Sample/Helper.php', <<<'PHP'
+            <?php
+            namespace OCP\Sample;
+
+            trait Helper {
+                public function fromTrait(string $value): void {
+                }
+
+                private function hidden(): void {
+                }
+            }
+            PHP);
+        file_put_contents($this->tree . '/lib/public/Sample/Other.php', "<?php\nnamespace OCP\\Sample;\n\ntrait Other {\n    public function fromTrait(): void {\n    }\n}\n");
+        $methods = $this->methodsOf(<<<'PHP'
+            class Event {
+                use Helper, Other {
+                    Helper::fromTrait insteadof Other;
+                }
+
+                public function own(): void {
+                    $callback = function () use ($x) {
+                    };
+                }
+            }
+            PHP);
+
+        $this->assertSame(['fromTrait' => ['value'], 'own' => []], $methods);
+    }
+
     public function testSignaturesWithoutAttributesAreReadAsBefore(): void {
         $methods = $this->methodsOf(<<<'PHP'
             class Event {

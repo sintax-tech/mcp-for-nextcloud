@@ -116,10 +116,12 @@
 
 	/** @param {string} message error shown to the admin */
 	function notifyError(message) {
+		// The old notification global is gone since Nextcloud 34 and OCP.Toast is deprecated, so without it the browser's own dialog
+		// still shows the message instead of losing it.
 		if (window.OCP && OCP.Toast) {
 			OCP.Toast.error(message)
-		} else if (OC.Notification) {
-			OC.Notification.showTemporary(message)
+		} else {
+			window.alert(message)
 		}
 	}
 

@@ -7,6 +7,55 @@ use PHPUnit\Framework\TestCase;
 
 /** The admin template's scripts and styles exist, and the removed user picker is gone. */
 final class AdminAssetsTest extends TestCase {
+    /**
+     * Front-end globals Nextcloud 34 and 35 removed (developer manual, "Upgrade to Nextcloud 34/35"). The scripts have
+     * no build step and run on every declared major, so none of them may appear.
+     */
+    private const REMOVED_GLOBALS = [
+        '/\bOC\.Notifications?\b/' => 'OC.Notification (34)',
+        '/\bOC\.Dialogs\.fileexists\b/' => 'OC.Dialogs.fileexists (34)',
+        '/\bOC\.Apps\b/' => 'OC.Apps (34)',
+        '/\bOC\.\w*[mM]enu\w*\b/' => 'OC.*menu* (34)',
+        '/\bOC\.Files\.Client\b/' => 'OC.Files.Client (34)',
+        '/\bsnapper\b/' => 'snapper (34)',
+        '/\bjQuery\b|(?<![\w.])\$\s*\(/' => 'jQuery (34)',
+        '/\bBackbone\b/' => 'Backbone (34)',
+        '/\bHandlebars\b/' => 'Handlebars (34)',
+        '/\boc_(?:appswebroots|config|current_user|debug|defaults|isadmin|requesttoken|webroot)\b/' => 'oc_* aliases (35)',
+        '/\bOCDialogs\b/' => 'OCDialogs (35)',
+        '/(?<![\w.$])_\.\w/' => 'underscore (35)',
+        '/\bClipboard(?:JS)?\b/' => 'Clipboard (35)',
+        '/(?<![\w.])dav\./' => 'dav (35)',
+        '/(?<![\w.])moment\b/' => 'moment (35)',
+    ];
+
+    public function testScriptsAndTemplatesUseNoFrontEndGlobalRemovedUpToNextcloud35(): void {
+        $app = dirname(__DIR__, 3);
+        $files = [...glob($app . '/js/*.js') ?: [], ...glob($app . '/templates/*.php') ?: []];
+        $this->assertNotEmpty($files);
+        foreach ($files as $file) {
+            $source = (string)file_get_contents($file);
+            foreach (self::REMOVED_GLOBALS as $pattern => $global) {
+                $this->assertSame(0, preg_match($pattern, $source, $match), basename($file) . " uses $global: " . ($match[0] ?? ''));
+            }
+        }
+    }
+
+    /**
+     * OCP.Toast still exists up to 35 but is deprecated: when it is missing the error must still reach the user through
+     * something that is no Nextcloud global, never be dropped.
+     */
+    public function testErrorsReachTheUserEvenWithoutTheToastGlobal(): void {
+        $app = dirname(__DIR__, 3);
+        foreach (['connections', 'admin-grants'] as $script) {
+            $source = (string)file_get_contents("$app/js/$script.js");
+            $this->assertSame(1, preg_match('/function notifyError\(message\) \{(.*?)\n\t\}/s', $source, $body), $script);
+            $this->assertStringContainsString('OCP.Toast.error(message)', $body[1], $script);
+            $this->assertMatchesRegularExpression('/\} else \{/', $body[1], "$script: no unconditional fallback after OCP.Toast");
+            $this->assertMatchesRegularExpression('/textContent = message|window\.alert\(message\)/', $body[1], "$script: the fallback must show the message");
+        }
+    }
+
     public function testReferencedScriptsAndStylesExist(): void {
         $app = dirname(__DIR__, 3);
         $template = (string)file_get_contents($app . '/templates/admin.php');

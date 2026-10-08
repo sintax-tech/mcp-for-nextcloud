@@ -1,0 +1,131 @@
+<?php
+declare(strict_types=1);
+
+namespace OCA\Mcp\Tools\Logs;
+
+/**
+ * Minimizes what a log entry carries before it reaches the model, without losing its diagnostic value.
+ *
+ * - IP addresses are masked: IPv4 keeps the first two octets (`203.0.x.x`), IPv6 its /48 prefix, in the remoteAddr
+ *   field and inside any text.
+ * - Control characters, ANSI escape sequences and invisible or bidirectional marks are removed: a file name or a
+ *   message is written by users, and those are the characters that hide or disguise text.
+ * - A text is cut at a limit; an exception keeps class, message, code, place and ten frames of class->function and
+ *   file:line, never the arguments.
+ */
+final class LogRedactor {
+    /** Frames of a stack trace kept. */
+    public const TRACE_FRAMES = 10;
+    /** Previous exceptions kept below the one logged: three levels in all. */
+    public const PREVIOUS_LEVELS = 2;
+    /** Longest exception message, as the longest log message. */
+    public const MESSAGE_LIMIT = 2000;
+    /** Shown in place of a value that is not an IP address. */
+    private const NOT_AN_ADDRESS = 'x';
+    /** IPv4 addresses inside a text, not glued to another number or word. */
+    private const IPV4 = '/(?<![\w.])(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(?![\w.])/';
+    /** Candidates for an IPv6 address inside a text; filter_var() decides, so a clock time or a MAC address stays. */
+    private const IPV6 = '/(?<![\w:.])(?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}(?![\w:.])/i';
+    /** ANSI escape sequences (CSI and OSC). */
+    private const ANSI = '/\x{1B}(?:\[[0-9;?]*[ -\/]*[@-~]|\][^\x{07}\x{1B}]*(?:\x{07}|\x{1B}\\\\)?)?/u';
+    /** Control characters, C1 controls and zero-width or bidirectional marks. */
+    private const INVISIBLE = '/[\x{00}-\x{08}\x{0B}\x{0C}\x{0E}-\x{1F}\x{7F}-\x{9F}\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2060}-\x{2064}\x{2066}-\x{2069}\x{FEFF}]/u';
+
+    private function __construct() {
+    }
+
+    /**
+     * @param string $address the remoteAddr of an entry
+     * @return string the masked address; '' and '--' unchanged; anything that is not an address becomes 'x'
+     */
+    public static function ip(string $address): string {
+        $address = trim($address);
+        if ($address === '' || $address === '--') {
+            return $address;
+        }
+        if (filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4) !== false) {
+            $octets = explode('.', $address);
+            return $octets[0] . '.' . $octets[1] . '.x.x';
+        }
+        if (filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) === false) {
+            return self::NOT_AN_ADDRESS;
+        }
+        // An IPv4-mapped address is the IPv4 one.
+        if (preg_match('/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i', $address, $mapped) === 1) {
+            return self::ip($mapped[1]);
+        }
+        $prefix = substr((string)inet_pton($address), 0, 6) . str_repeat("\0", 10);
+        return inet_ntop($prefix) . '/48';
+    }
+
+    /**
+     * A text fit to show: valid UTF-8, no control or invisible characters, addresses masked, cut at the limit.
+     *
+     * @param string $text a message, a URL, a user agent
+     * @param int $limit longest result in characters, before the marker of a cut
+     * @return string the cleaned text, with '…' when it was cut
+     */
+    public static function text(string $text, int $limit): string {
+        // Invalid bytes become U+FFFD, so the patterns below, which need valid UTF-8, never fail on them.
+        $text = (string)json_decode(json_encode($text, JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR));
+        $text = preg_replace(self::ANSI, '', $text) ?? '';
+        $text = str_replace(["\r\n", "\r", "\n", "\t"], ' ', $text);
+        $text = preg_replace(self::INVISIBLE, '', $text) ?? '';
+        $text = preg_replace_callback(self::IPV4, static fn (array $m): string => self::ip($m[0]) === self::NOT_AN_ADDRESS ? $m[0] : self::ip($m[0]), $text) ?? '';
+        $text = preg_replace_callback(self::IPV6, static fn (array $m): string => filter_var($m[0], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false ? self::ip($m[0]) : $m[0], $text) ?? '';
+        $text = trim($text);
+        return mb_strlen($text) > $limit ? mb_substr($text, 0, $limit) . '…' : $text;
+    }
+
+    /**
+     * @param mixed $exception the `exception` field of an entry, as json_decode() gave it
+     * @return array<string, mixed>|null class, message, code, place, the first frames and the previous exceptions; null
+     *     when the value is not an exception
+     */
+    public static function exception(mixed $exception): ?array {
+        return self::summary(is_object($exception) || is_array($exception) ? json_decode(json_encode($exception), true) : null, self::PREVIOUS_LEVELS);
+    }
+
+    /**
+     * @param mixed $exception the exception as an array
+     * @param int $levels previous exceptions still allowed below this one
+     * @return array<string, mixed>|null the summary
+     */
+    private static function summary(mixed $exception, int $levels): ?array {
+        if (!is_array($exception) || !is_string($exception['Exception'] ?? null) || $exception['Exception'] === '') {
+            return null;
+        }
+        $trace = is_array($exception['Trace'] ?? null) ? array_values(array_filter($exception['Trace'], 'is_array')) : [];
+        $summary = [
+            'class' => self::text($exception['Exception'], 200),
+            'message' => self::text(is_scalar($exception['Message'] ?? null) ? (string)$exception['Message'] : '', self::MESSAGE_LIMIT),
+            'code' => is_int($exception['Code'] ?? null) ? $exception['Code'] : 0,
+            'at' => self::place($exception['File'] ?? null, $exception['Line'] ?? null),
+            'trace' => array_map(self::frame(...), array_slice($trace, 0, self::TRACE_FRAMES)),
+            'traceFrames' => count($trace),
+        ];
+        $previous = $levels > 0 ? self::summary($exception['Previous'] ?? null, $levels - 1) : null;
+        if ($previous !== null) {
+            $summary['previous'] = $previous;
+        }
+        return $summary;
+    }
+
+    /**
+     * @param array<string, mixed> $frame one frame of the trace
+     * @return array{call:string, at:string} class->function and file:line; the arguments are left behind
+     */
+    private static function frame(array $frame): array {
+        $function = is_string($frame['function'] ?? null) ? $frame['function'] : '';
+        $class = is_string($frame['class'] ?? null) ? $frame['class'] . (is_string($frame['type'] ?? null) ? $frame['type'] : '->') : '';
+        return ['call' => self::text($class . $function, 300), 'at' => self::place($frame['file'] ?? null, $frame['line'] ?? null)];
+    }
+
+    /** @return string file:line, or '' without a file */
+    private static function place(mixed $file, mixed $line): string {
+        if (!is_string($file) || $file === '') {
+            return '';
+        }
+        return self::text($file, 300) . (is_int($line) ? ':' . $line : '');
+    }
+}

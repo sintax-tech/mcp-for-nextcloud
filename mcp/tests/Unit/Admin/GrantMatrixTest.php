@@ -99,8 +99,8 @@ final class GrantMatrixTest extends TestCase {
 
     public function testCatalogAppsAndService(): void {
         $page = $this->fx->matrix()->page('', '', 1);
-        $this->assertSame(['files' => GrantPolicy::CATALOG['files'], 'notes' => GrantPolicy::CATALOG['notes'], 'calendar' => GrantPolicy::CATALOG['calendar'], 'people' => GrantPolicy::CATALOG['people']], $page['catalog']);
-        $this->assertSame(['files' => true, 'notes' => true, 'deck' => false, 'calendar' => true, 'talk' => false, 'contacts' => false, 'tasks' => false, 'people' => true], $page['appsEnabled']);
+        $this->assertSame(['files' => GrantPolicy::CATALOG['files'], 'notes' => GrantPolicy::CATALOG['notes'], 'calendar' => GrantPolicy::CATALOG['calendar'], 'people' => GrantPolicy::CATALOG['people'], 'logs' => ['read']], $page['catalog']);
+        $this->assertSame(['files' => true, 'notes' => true, 'deck' => false, 'calendar' => true, 'talk' => false, 'contacts' => false, 'tasks' => false, 'people' => true, 'logs' => true], $page['appsEnabled']);
         $this->assertFalse($page['serviceEnabled']);
     }
 
@@ -146,8 +146,9 @@ final class GrantMatrixTest extends TestCase {
 
         $page = $this->fx->matrix()->page('Bruno', '', 1);
 
-        $this->assertSame(['files' => GrantPolicy::CATALOG['files'], 'people' => GrantPolicy::CATALOG['people']], $page['catalog']);
-        $this->assertSame(['files' => true, 'notes' => false, 'deck' => false, 'calendar' => false, 'talk' => false, 'contacts' => false, 'tasks' => false, 'people' => true], $page['appsEnabled']);
+        // People and logs come with the core, so they stay whatever optional app is missing.
+        $this->assertSame(['files' => GrantPolicy::CATALOG['files'], 'people' => GrantPolicy::CATALOG['people'], 'logs' => GrantPolicy::CATALOG['logs']], $page['catalog']);
+        $this->assertSame(['files' => true, 'notes' => false, 'deck' => false, 'calendar' => false, 'talk' => false, 'contacts' => false, 'tasks' => false, 'people' => true, 'logs' => true], $page['appsEnabled']);
         $this->assertTrue($page['users'][0]['grants']['notes']['edit']);
     }
 
@@ -243,5 +244,36 @@ final class GrantMatrixTest extends TestCase {
                 $this->addToAssertionCount(1);
             }
         }
+    }
+
+    /**
+     * The logs column is offered for the users who pass the role gate only: an administrator or a member of a listed
+     * group gets a checkbox that starts off, everybody else a locked cell, and the saved grant is kept either way.
+     */
+    public function testTheLogsColumnIsOpenOnlyToUsersWhoPassTheRoleGate(): void {
+        $this->fx->groups['admin'][] = 'ana';
+        $this->fx->addUser('tina', 'Tina TI', 'tina@corp.example', true, ['ti']);
+        $this->fx->policy->setGrant('u001', 'logs', 'read', true);
+        $rows = array_column($this->fx->matrix()->page('', '', 1)['users'], null, 'uid');
+        $this->assertTrue($rows['ana']['appsEnabled']['logs']);
+        $this->assertFalse($rows['ana']['grants']['logs']['read']);
+        $this->assertFalse($rows['tina']['appsEnabled']['logs']);
+        $this->assertFalse($rows['u001']['appsEnabled']['logs']);
+        $this->assertTrue($rows['u001']['grants']['logs']['read']);
+
+        $this->fx->logsAccess()->setGroups(['ti']);
+        $rows = array_column($this->fx->matrix()->page('', '', 1)['users'], null, 'uid');
+        $this->assertTrue($rows['tina']['appsEnabled']['logs']);
+        $this->assertFalse($rows['u002']['appsEnabled']['logs']);
+    }
+
+    /** With the log in syslog, errorlog or systemd there is nothing to read: the column goes away, the grants stay. */
+    public function testWithoutAFileLogTheLogsColumnIsOmitted(): void {
+        $this->fx->config->system['log_type'] = 'syslog';
+        $this->fx->groups['admin'][] = 'ana';
+        $page = $this->fx->matrix()->page('', '', 1);
+        $this->assertArrayNotHasKey('logs', $page['catalog']);
+        $this->assertFalse($page['appsEnabled']['logs']);
+        $this->assertFalse(array_column($page['users'], null, 'uid')['ana']['appsEnabled']['logs']);
     }
 }

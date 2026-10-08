@@ -26,7 +26,7 @@ final class GrantsControllerTest extends TestCase {
         $this->body = $body;
         $request = $this->createMock(IRequest::class);
         $request->method('getParam')->willReturnCallback(fn (string $key, $default = null) => array_key_exists($key, $this->body) ? $this->body[$key] : $default);
-        return new GrantsController('mcp', $request, $this->fx->matrix(), $this->fx->policy, $this->fx->userManager(), $this->fx->config->mock($this), $this->fx->oauth);
+        return new GrantsController('mcp', $request, $this->fx->matrix(), $this->fx->policy, $this->fx->userManager(), $this->fx->config->mock($this), $this->fx->oauth, $this->fx->logsAccess());
     }
 
     private static function assertBad(JSONResponse $response): void {
@@ -34,7 +34,7 @@ final class GrantsControllerTest extends TestCase {
     }
 
     public function testEveryEndpointIsAdminOnlyAndCsrfProtected(): void {
-        foreach (['index', 'update', 'bulk', 'service', 'oauthClients', 'updateOauthClients'] as $method) {
+        foreach (['index', 'update', 'bulk', 'service', 'oauthClients', 'updateOauthClients', 'logsAccess', 'updateLogsAccess'] as $method) {
             $this->assertSame([], (new \ReflectionMethod(GrantsController::class, $method))->getAttributes(), $method);
         }
     }
@@ -265,4 +265,79 @@ final class GrantsControllerTest extends TestCase {
         }
         $this->assertSame([], array_intersect_key($this->fx->config->app['mcp'] ?? [], ['oauth_client_hosts' => 1, 'oauth_native_client_enabled' => 1]));
     }
+
+    /** The groups that may read the server log: none by default (administrators only), every group offered. */
+    public function testLogsAccessShowsTheListedGroupsAndTheLogType(): void {
+        $data = $this->controller()->logsAccess()->getData();
+        $this->assertSame([], $data['groups']);
+        $this->assertTrue($data['available']);
+        $this->assertSame('file', $data['logType']);
+        $this->assertSame(['sales', 'admin'], array_column($data['allGroups'], 'id'));
+
+        $this->fx->config->system['log_type'] = 'systemd';
+        $data = $this->controller()->logsAccess()->getData();
+        $this->assertFalse($data['available']);
+        $this->assertSame('systemd', $data['logType']);
+    }
+
+    public function testUpdateLogsAccessStoresTheGroupsAndOpensTheGate(): void {
+        $this->fx->addUser('tina', 'Tina', 'tina@corp.example', true, ['sales']);
+        $this->assertFalse($this->fx->logsAccess()->permits('tina'));
+
+        $response = $this->controller(['groups' => ['sales'], 'version' => 0, 'previous' => []])->updateLogsAccess();
+
+        $this->assertSame(200, $response->getStatus());
+        $this->assertSame(['sales'], $response->getData()['groups']);
+        $this->assertTrue($this->fx->logsAccess()->permits('tina'));
+        $this->assertSame([], $this->controller(['groups' => [], 'version' => 1, 'previous' => ['sales']])->updateLogsAccess()->getData()['groups']);
+        $this->assertFalse($this->fx->logsAccess()->permits('tina'));
+    }
+
+    public function testUpdateLogsAccessRefusesBadInputWithoutWriting(): void {
+        $this->controller(['groups' => ['sales'], 'version' => 0, 'previous' => []])->updateLogsAccess();
+        foreach ([[], ['groups' => 'sales', 'version' => 1, 'previous' => ['sales']], ['groups' => ['sales', 'ghost'], 'version' => 1, 'previous' => ['sales']], ['groups' => [3], 'version' => 1, 'previous' => ['sales']],
+            ['groups' => ['a' => 'sales'], 'version' => 1, 'previous' => ['sales']], ['groups' => ['sales']], ['groups' => ['sales'], 'version' => 1, 'previous' => 'sales']] as $body) {
+            self::assertBad($this->controller($body)->updateLogsAccess());
+        }
+        $this->assertSame(['sales'], $this->fx->logsAccess()->groups());
+    }
+
+    /** Two tabs or two administrators: the second save, based on the old list, gets 409 and the current state. */
+    public function testAStaleSaveIsAConflictWithTheCurrentState(): void {
+        $this->controller(['groups' => ['admin', 'sales'], 'version' => 0, 'previous' => []])->updateLogsAccess();
+        $this->controller(['groups' => ['admin'], 'version' => 1, 'previous' => ['admin', 'sales']])->updateLogsAccess();
+
+        $response = $this->controller(['groups' => ['admin', 'sales'], 'version' => 1, 'previous' => ['admin', 'sales']])->updateLogsAccess();
+
+        $this->assertSame(409, $response->getStatus());
+        $this->assertSame('Conflict', $response->getData()['error']);
+        $this->assertSame(['admin'], $response->getData()['state']['groups']);
+        $this->assertSame(['admin'], $this->fx->logsAccess()->groups());
+    }
+
+    /** A listed group deleted afterwards is reported, so the page can show it and offer its removal. */
+    public function testADeletedGroupIsReportedAsMissing(): void {
+        $this->controller(['groups' => ['sales'], 'version' => 0, 'previous' => []])->updateLogsAccess();
+        unset($this->fx->groups['sales']);
+
+        $data = $this->controller()->logsAccess()->getData();
+        $this->assertSame(['sales'], $data['groups']);
+        $this->assertSame(['sales'], $data['missing']);
+        $this->assertSame(200, $this->controller(['groups' => [], 'version' => 1, 'previous' => ['sales']])->updateLogsAccess()->getStatus());
+        $this->assertSame([], $this->controller()->logsAccess()->getData()['missing']);
+    }
+    public function testVersionIsReturnedAndRequiredAsANonNegativeInteger(): void {
+        $this->assertSame(0, $this->controller()->logsAccess()->getData()['version']);
+        foreach ([null, -1, '0', 0.0, true] as $version) {
+            self::assertBad($this->controller(['groups' => ['sales'], 'previous' => [], 'version' => $version])->updateLogsAccess());
+        }
+        self::assertBad($this->controller(['groups' => ['sales'], 'previous' => []])->updateLogsAccess());
+        $saved = $this->controller(['groups' => ['sales'], 'previous' => [], 'version' => 0])->updateLogsAccess();
+        $this->assertSame(1, $saved->getData()['version']);
+        $conflict = $this->controller(['groups' => [], 'previous' => ['sales'], 'version' => 0])->updateLogsAccess();
+        $this->assertSame(409, $conflict->getStatus());
+        $this->assertSame(1, $conflict->getData()['state']['version']);
+        $this->assertSame(['sales'], $conflict->getData()['state']['groups']);
+    }
+
 }

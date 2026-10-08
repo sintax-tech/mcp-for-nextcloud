@@ -69,12 +69,12 @@ final class AdminAssetsTest extends TestCase {
         }
     }
 
-    /** Six blocks, each a core settings section with its own heading, in the planned order. */
-    public function testAdminPageHasSixSectionBlocks(): void {
+    /** Seven blocks, each a core settings section with its own heading, in the planned order. */
+    public function testAdminPageHasSevenSectionBlocks(): void {
         $template = (string)file_get_contents(dirname(__DIR__, 3) . '/templates/admin.php');
         preg_match_all('/<div class="section mcp-block" id="([^"]+)"[^>]*>\s*<h2><\?php p\(\$l->t\(\'([^\']+)\'\)\); \?><\/h2>/', $template, $blocks);
-        $this->assertSame(['mcp-block-status', 'mcp-block-oauth', 'mcp-block-tags', 'mcp-block-ocr', 'mcp-block-matrix', 'mcp-connections'], $blocks[1]);
-        $this->assertSame(['Status', 'OAuth clients', 'Hidden files & tags', 'OCR', 'Permissions', 'Active connections'], $blocks[2]);
+        $this->assertSame(['mcp-block-status', 'mcp-block-oauth', 'mcp-block-tags', 'mcp-block-ocr', 'mcp-block-matrix', 'mcp-block-logs', 'mcp-connections'], $blocks[1]);
+        $this->assertSame(['Status', 'OAuth clients', 'Hidden files & tags', 'OCR', 'Permissions', 'Server log', 'Active connections'], $blocks[2]);
         $this->assertStringContainsString('data-scope="admin"', $template);
     }
 
@@ -140,5 +140,23 @@ final class AdminAssetsTest extends TestCase {
             array_column($checkout, 'name'));
         $this->assertSame(['/checkout/{token}', '/checkout/{token}', '/checkout/{token}'], array_column($checkout, 'url'));
         $this->assertSame(['GET', 'PUT', 'POST'], array_column($checkout, 'verb'));
+    }
+
+    /**
+     * The groups that may read the server log are saved one change at a time: every box is locked while a save runs,
+     * the save carries the list it changed, a 409 reloads the list and says so, and a deleted group is shown so it
+     * can be removed.
+     */
+    public function testTheLogGroupsAreSavedOneAtATimeWithTheListTheyChanged(): void {
+        $script = (string)file_get_contents(dirname(__DIR__, 3) . '/js/admin-grants.js');
+        $logs = substr($script, (int)strpos($script, 'async function initLogsAccess'));
+        $this->assertStringContainsString("previous: Array.from(selected)", $logs);
+        $this->assertStringContainsString("version: version", $logs);
+        $this->assertStringContainsString("version = data.version", $logs);
+        $this->assertStringContainsString('setLocked(true)', $logs);
+        $this->assertStringContainsString("e.message === '409'", $logs);
+        $this->assertStringContainsString("t('mcp', 'The groups were changed in another window or by another administrator; the current list was loaded.')", $logs);
+        $this->assertStringContainsString("t('mcp', '{group} (group removed)'", $logs);
+        $this->assertMatchesRegularExpression('/if \(saving\) \{\s*return/', $logs);
     }
 }

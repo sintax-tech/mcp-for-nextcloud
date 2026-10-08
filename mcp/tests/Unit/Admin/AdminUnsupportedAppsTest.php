@@ -31,7 +31,7 @@ final class AdminUnsupportedAppsTest extends TestCase {
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturn('https://cloud.test/mcp');
         $connections = $this->createMock(ConnectionList::class);
-        return (new AdminSettings($this->createMock(GrantPolicy::class), $urls, new OcrSupport($apps), $apps, $connections))->getForm()->getParams();
+        return (new AdminSettings($this->createMock(GrantPolicy::class), $urls, new OcrSupport($apps), $apps, $connections, $this->createMock(\OCA\Mcp\Service\LogsAccess::class)))->getForm()->getParams();
     }
 
     public function testAnOldTalkIsListedWithItsProductNameAndBothVersions(): void {

@@ -10,6 +10,8 @@ use OCA\Mcp\OAuth\NativeClient;
 use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\Service\GrantMatrix;
 use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Service\LogsAccess;
+use OCA\Mcp\Service\LogsGroupsConflict;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -34,6 +36,7 @@ class GrantsController extends Controller {
         private IUserManager $userManager,
         private IConfig $config,
         private OAuthStore $oauth,
+        private LogsAccess $logs,
     ) {
         parent::__construct($appName, $request);
     }
@@ -156,6 +159,54 @@ class GrantsController extends Controller {
             }
             return $this->oauthState();
         });
+    }
+
+    /**
+     * Who may read the server log besides the administrators, for the "Server log" block.
+     *
+     * @return JSONResponse {groups, version, missing, allGroups, available, logType}
+     */
+    public function logsAccess(): JSONResponse {
+        return $this->guard(fn (): array => $this->logsState());
+    }
+
+    /**
+     * Body {groups: list<string>, previous: list<string>, version: int}: the groups whose members pass the role gate of the logs
+     * module, and the list/version the page showed when the change was made. When the stored version differs,
+     * another tab or administrator saved first: the answer is 409 {error: "Conflict", state} and nothing is written,
+     * so a stale save never puts a removed group back. An empty list leaves the administrators only.
+     *
+     * @return JSONResponse the same shape as logsAccess(), 400 for an invalid body, or 409
+     */
+    public function updateLogsAccess(): JSONResponse {
+        $groups = $this->request->getParam('groups');
+        $previous = $this->request->getParam('previous');
+        $version = $this->request->getParam('version');
+        $valid = static fn (mixed $list): bool => is_array($list) && array_is_list($list) && count($list) <= GrantMatrix::MAX_GROUPS;
+        if (!$valid($groups) || !$valid($previous) || !is_int($version) || $version < 0) {
+            return new JSONResponse(['error' => 'Invalid request'], Http::STATUS_BAD_REQUEST);
+        }
+        try {
+            return $this->guard(function () use ($groups, $previous, $version): array {
+                $this->logs->setGroups($groups, $previous, $version);
+                return $this->logsState();
+            });
+        } catch (LogsGroupsConflict) {
+            return new JSONResponse(['error' => 'Conflict', 'state' => $this->logsState()], Http::STATUS_CONFLICT);
+        }
+    }
+
+    /** @return array{groups:list<string>, version:int, missing:list<string>, allGroups:list<array{id:string, displayName:string}>, available:bool, logType:string} */
+    private function logsState(): array {
+        $state = $this->logs->state();
+        return [
+            'groups' => $state['groups'],
+            'version' => $state['version'],
+            'missing' => $this->logs->missingGroups($state['groups']),
+            'allGroups' => $this->matrix->groups(),
+            'available' => $this->logs->available(),
+            'logType' => $this->logs->logType(),
+        ];
     }
 
     /** @return array{hosts:list<string>, hostsDefault:bool, nativeClientEnabled:bool, nativeClientId:string, nativeRedirectUris:list<string>} */

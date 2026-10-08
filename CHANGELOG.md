@@ -2,6 +2,21 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased
+
+### Added
+
+- logs: new read-only module for the IT staff, `logs_list` and `logs_analyze`, over the Nextcloud server log through the core's own reader (`ILogFactory` + `IFileBased::getEntries`): no file opened by the app, no shell, no `occ`. `logs_list` filters by minimum level, app, user, time window (ISO 8601), plain text and request id, 1 to 100 entries per page; `logs_analyze` gives totals by level, app and user, the 20 most frequent message signatures with first and last occurrence, the top URL paths and user agents and a histogram by hour. Each answer makes a single `getEntries` call of at most 5,000 entries from the end of the current file and never reads deeper than the last 20,000 eligible entries (at or above the log level; the core walks the file from its end through every line and has no budget of its own); `since` skips older entries without ending the search, since the file is not in time order. It answers `scanned`, `truncated`, `budgetReached`, `oldestScanned` and `nextOffset`. The rotated `nextcloud.log.1` is not read.
+- logs: double gate. Only a Nextcloud administrator or a member of a group listed in the new **Server log** block of the admin page sees the tools at all (no group listed = administrators only), and the per-user grant `logs.read` starts **off**, unlike every other read. With `log_type` set to syslog, errorlog or systemd the tools are hidden and the admin page says why.
+- logs: every answer is wrapped as untrusted data (`untrusted_log_data: true`, after a fixed warning), with control and invisible characters removed, IPs masked (IPv4 `a.b.x.x`, IPv6 /48), messages cut at 2,000 characters and stack traces reduced to ten frames without arguments. Every call raises the core's `CriticalActionPerformedEvent` (written by admin_audit when enabled) and a line in the app log, with its outcome: a read (`success`) is recorded as a read, and a call denied by the role or the grant, refused for its arguments or failed (`denied`, `invalid`, `read_error`) under a message of its own.
+
+### Changed
+
+- logs: role groups now live in the app's own `mcp_logs_groups` table, created by a packaged native migration and read through `QBMapper`. The first read imports existing `logs_groups` from appconfig without overwriting a previously migrated state. Legacy key cleanup retries on subsequent reads if it fails, without blocking reads or reimporting stale groups. GET returns `version` and PUT requires it; an atomic version increment with compare-and-swap rejects stale writes with 409. `ILockingProvider` remains an extra layer: with `filelocking.enabled=false` it becomes Noop, but the database CAS still protects revocations.
+- logs: IPv6 CIDRs are reduced to the canonical /48, including labeled addresses and invalid prefix lengths. Redaction consumes labels of any length in a linear pass (possessive matching without restarting inside a label) and bounds processing to 16 KiB per field, discarding a token crossing that boundary before masking and applying the final 2,000-character message limit. Audit fallback logger failures preserve refusals and withhold successful data.
+
+- grants: the default of a grant is now per module and operation (`GrantPolicy::defaultGranted`); every existing module keeps read on and the rest off.
+
 ## 1.0.1
 
 - appinfo: adds the `ai` store category.

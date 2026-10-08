@@ -20,6 +20,10 @@ use PHPUnit\Framework\TestCase;
  */
 final class MatrixFixture {
     public InMemoryConfig $config;
+    /** App config of the logs groups, shared by every worker of the fixture. */
+    public \OCA\Mcp\Tests\Unit\InMemoryAppConfig $appConfig;
+    public \OCA\Mcp\Tests\Unit\InMemoryLocks $locks;
+    public \OCA\Mcp\Tests\Unit\SqliteDatabase $logsDb;
     public GrantPolicy $policy;
     public \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore $oauth;
     /** @var array<string, array{name:string, email:string, enabled:bool}> */
@@ -36,6 +40,9 @@ final class MatrixFixture {
 
     public function __construct(private TestCase $test) {
         $this->config = new InMemoryConfig();
+        $this->appConfig = new \OCA\Mcp\Tests\Unit\InMemoryAppConfig();
+        $this->locks = new \OCA\Mcp\Tests\Unit\InMemoryLocks();
+        $this->logsDb = new \OCA\Mcp\Tests\Unit\SqliteDatabase($test, [new \OCA\Mcp\Migration\Version001002Date20261008000000()]);
         $this->oauth = new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore();
         $this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->config->mock($test), $this->oauth);
     }
@@ -48,7 +55,12 @@ final class MatrixFixture {
     }
 
     public function matrix(): GrantMatrix {
-        return new GrantMatrix($this->policy, $this->userManager(), $this->groupManager(), $this->appManager());
+        return new GrantMatrix($this->policy, $this->userManager(), $this->groupManager(), $this->appManager(), $this->logsAccess());
+    }
+
+    /** The role gate of the logs module over the same config and groups; members of 'admin' are the administrators. */
+    public function logsAccess(): \OCA\Mcp\Service\LogsAccess {
+        return new \OCA\Mcp\Service\LogsAccess($this->config->mock($this->test), $this->groupManager(), new \OCA\Mcp\Db\LogsGroupsMapper($this->logsDb->connection(), $this->appConfig->worker($this->test)), $this->locks);
     }
 
     public function userManager(): IUserManager {
@@ -75,6 +87,7 @@ final class MatrixFixture {
         $manager->method('get')->willReturnCallback(fn (string $gid) => isset($this->groups[$gid]) ? $this->group($gid) : null);
         $manager->method('search')->willReturnCallback(fn () => array_map(fn ($gid) => $this->group($gid), array_keys($this->groups)));
         $manager->method('isInGroup')->willReturnCallback(fn (string $uid, string $gid) => in_array($uid, $this->groups[$gid] ?? [], true));
+        $manager->method('isAdmin')->willReturnCallback(fn (string $uid) => in_array($uid, $this->groups['admin'], true));
         $manager->method('displayNamesInGroup')->willReturnCallback(function ($gid, $search = '', $limit = -1, $offset = 0): array {
             $uids = array_values(array_intersect($this->matching($search), $this->groups[$gid] ?? []));
             $uids = array_slice($uids, $offset, $limit === -1 ? null : $limit);

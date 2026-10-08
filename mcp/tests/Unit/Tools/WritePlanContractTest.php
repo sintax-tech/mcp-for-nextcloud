@@ -24,7 +24,7 @@ use PHPUnit\Framework\TestCase;
  */
 final class WritePlanContractTest extends TestCase {
     /** Registered modules that publish no write tool. */
-    private const READ_ONLY = [\OCA\Mcp\Tools\People\PeopleModule::class];
+    private const READ_ONLY = [\OCA\Mcp\Tools\People\PeopleModule::class, \OCA\Mcp\Tools\Logs\LogsModule::class];
 
     /** @return array<class-string, class-string> test class of each writing module, which runs the contract with that module's fakes */
     private static function contractTests(): array {

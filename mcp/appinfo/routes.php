@@ -18,6 +18,8 @@ return ['routes' => [
     ['name' => 'grants#service', 'url' => '/api/service', 'verb' => 'PUT'],
     ['name' => 'grants#oauthClients', 'url' => '/api/oauth-clients', 'verb' => 'GET'],
     ['name' => 'grants#updateOauthClients', 'url' => '/api/oauth-clients', 'verb' => 'PUT'],
+    ['name' => 'grants#logsAccess', 'url' => '/api/logs-access', 'verb' => 'GET'],
+    ['name' => 'grants#updateLogsAccess', 'url' => '/api/logs-access', 'verb' => 'PUT'],
     ['name' => 'connections#index', 'url' => '/api/connections', 'verb' => 'GET'],
     // Two path segments, so a user id never collides with a numeric connection id.
     ['name' => 'connections#revokeUser', 'url' => '/api/connections/users/{uid}', 'verb' => 'DELETE'],

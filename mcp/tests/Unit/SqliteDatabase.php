@@ -27,6 +27,8 @@ use PHPUnit\Framework\TestCase;
  */
 final class SqliteDatabase {
     public readonly Connection $dbal;
+    /** One-shot interleaving hook, invoked just before a database write. */
+    public $beforeStatement = null;
 
     /**
      * @param TestCase $test the test that owns the mocks
@@ -70,6 +72,7 @@ final class SqliteDatabase {
         $qb = $this->mock(IQueryBuilder::class);
         $chain = static function (string $method) use ($qb, $inner): void {
             $qb->method($method)->willReturnCallback(function (...$args) use ($qb, $inner, $method): IQueryBuilder {
+                $args = array_map(static fn ($arg) => $arg instanceof \OCP\DB\QueryBuilder\IQueryFunction ? (string)$arg : $arg, $args);
                 $inner->{$method}(...$args);
                 return $qb;
             });
@@ -79,8 +82,29 @@ final class SqliteDatabase {
         }
         $qb->method('createNamedParameter')->willReturnCallback(
             fn ($value, $type = IQueryBuilder::PARAM_STR): string => $inner->createNamedParameter($value, $type));
+        $qb->method('createFunction')->willReturnCallback(function (string $expression) {
+            $function = $this->mock(\OCP\DB\QueryBuilder\IQueryFunction::class);
+            $function->method('__toString')->willReturn($expression);
+            return $function;
+        });
         $qb->method('expr')->willReturnCallback(fn (): IExpressionBuilder => $this->expressions($inner));
-        $qb->method('executeStatement')->willReturnCallback(fn (): int => (int)$inner->executeStatement());
+        $qb->method('executeStatement')->willReturnCallback(function () use ($inner): int {
+            if ($this->beforeStatement !== null) {
+                $hook = $this->beforeStatement;
+                $this->beforeStatement = null;
+                $hook();
+            }
+            try {
+                return (int)$inner->executeStatement();
+            } catch (\Doctrine\DBAL\Exception\UniqueConstraintViolationException $e) {
+                // The official connection translates driver errors into OCP database exceptions.
+                throw new class($e->getMessage(), 0, $e) extends \OCP\DB\Exception {
+                    public function getReason(): ?int {
+                        return self::REASON_UNIQUE_CONSTRAINT_VIOLATION;
+                    }
+                };
+            }
+        });
         $qb->method('executeQuery')->willReturnCallback(fn (): IResult => $this->result($inner));
         return $qb;
     }

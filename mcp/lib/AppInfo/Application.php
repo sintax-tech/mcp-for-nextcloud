@@ -56,6 +56,7 @@ class Application extends App implements IBootstrap {
         DeckToolModule::class,
         TalkModule::class,
         \OCA\Mcp\Tools\People\PeopleModule::class,
+        \OCA\Mcp\Tools\Logs\LogsModule::class,
     ];
 
     public function __construct() {

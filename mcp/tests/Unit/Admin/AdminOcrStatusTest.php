@@ -21,7 +21,7 @@ final class AdminOcrStatusTest extends TestCase {
         $policy->method('globalEnabled')->willReturn(true);
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturn('https://cloud.test/mcp');
-        return (new AdminSettings($policy, $urls, new OcrSupport($apps), $apps, $this->connections()))->getForm()->getParams();
+        return (new AdminSettings($policy, $urls, new OcrSupport($apps), $apps, $this->connections(), $this->createMock(\OCA\Mcp\Service\LogsAccess::class)))->getForm()->getParams();
     }
 
     private function connections(): ConnectionList {
@@ -46,7 +46,7 @@ final class AdminOcrStatusTest extends TestCase {
         $policy->method('connectedUsers')->willReturn(['bob']);
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturn('https://cloud.test/mcp');
-        $params = (new AdminSettings($policy, $urls, new OcrSupport($apps), $apps, $this->connections()))->getForm()->getParams();
+        $params = (new AdminSettings($policy, $urls, new OcrSupport($apps), $apps, $this->connections(), $this->createMock(\OCA\Mcp\Service\LogsAccess::class)))->getForm()->getParams();
         $this->assertSame(['0.8.0', 3, 1, 4], [$params['version'], $params['eligibleUsers'], $params['connectedUsers'], $params['activeConnections']]);
     }
 

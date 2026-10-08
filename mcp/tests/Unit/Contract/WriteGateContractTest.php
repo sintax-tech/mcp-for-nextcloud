@@ -23,6 +23,10 @@ use Psr\Log\LoggerInterface;
 final class WriteGateContractTest extends TestCase {
     /** Builds a concrete app class with real app collaborators and mocks for everything else. */
     private function build(string $class): object {
+        if ($class === \OCA\Mcp\Db\LogsGroupsMapper::class) {
+            $db = new \OCA\Mcp\Tests\Unit\SqliteDatabase($this, [new \OCA\Mcp\Migration\Version001002Date20261008000000()]);
+            return new \OCA\Mcp\Db\LogsGroupsMapper($db->connection(), (new \OCA\Mcp\Tests\Unit\InMemoryAppConfig())->worker($this));
+        }
         $constructor = (new \ReflectionClass($class))->getConstructor();
         $args = [];
         foreach ($constructor?->getParameters() ?? [] as $parameter) {

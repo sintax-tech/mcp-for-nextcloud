@@ -76,6 +76,9 @@ class ToolRegistry {
     public function definitions(string $userId): array {
         $tools = [];
         foreach ($this->modules as $module) {
+            if (!self::permits($module, $userId)) {
+                continue;
+            }
             foreach ($module->definitions() as $definition) {
                 if ($this->allowed($definition, $userId)) {
                     $tools[] = $this->present($definition);
@@ -109,29 +112,61 @@ class ToolRegistry {
                 if ($definition['name'] !== $name) {
                     continue;
                 }
-                if (!$this->allowed($definition, $userId)) {
+                // A restricted module records every attempt with its outcome, the refused ones included. A failing audit
+                // is logged without the arguments and reported as false: the caller decides what that costs.
+                $audit = function (string $outcome) use ($module, $name, $userId, &$arguments): bool {
+                    if (!$module instanceof RestrictedModule) {
+                        return true;
+                    }
+                    try {
+                        $module->audit($name, $userId, $outcome, $arguments);
+                        return true;
+                    } catch (\Throwable $e) {
+                        try {
+                            $this->logger->error('MCP audit failed', ['app' => 'mcp', 'tool' => $name, 'outcome' => $outcome, 'exception_class' => $e::class]);
+                        } catch (\Throwable) {
+                            // Even the contingency logger can fail; preserve the original outcome.
+                        }
+                        return false;
+                    }
+                };
+                if (!self::permits($module, $userId) || !$this->allowed($definition, $userId)) {
+                    $audit(RestrictedModule::DENIED);
                     break 2;
                 }
                 $published = WriteGate::publish($definition);
-                $arguments = ArgumentValidator::validate($published['inputSchema'], $arguments);
+                try {
+                    $arguments = ArgumentValidator::validate($published['inputSchema'], $arguments);
+                } catch (InvalidArgumentException $e) {
+                    $audit(RestrictedModule::INVALID);
+                    throw $e;
+                }
                 try {
                     if (WriteGate::isWrite($definition) && !WriteGate::confirmed($arguments)) {
                         $plan = WriteGate::plan($module, $definition, $arguments, $userId);
                         return ToolResult::structured(PlanRenderer::render($module, $name, $plan), $plan);
                     }
-                    return $module->call($name, $arguments, $userId);
+                    $result = $module->call($name, $arguments, $userId);
                 } catch (InvalidArgumentException $e) {
+                    $audit(RestrictedModule::INVALID);
                     throw $e;
                 } catch (PlanChanged $e) {
                     // Nothing was written: the person approved another state, so the answer is the new plan to approve.
                     $plan = WriteGate::envelope($definition, $e->plan);
                     return ToolResult::structured(PlanRenderer::render($module, $name, $plan), $plan);
                 } catch (ToolFailure $e) {
+                    $audit(RestrictedModule::READ_ERROR);
                     return ToolResult::error($e->getMessage());
                 } catch (\Throwable $e) {
                     $this->logger->error('MCP tool failed', ['app' => 'mcp', 'tool' => $name, 'exception_class' => $e::class, 'exception_message' => self::loggable($e)]);
+                    $audit(RestrictedModule::READ_ERROR);
                     return ToolResult::error(Translator::t('Unexpected error while accessing Nextcloud.'));
                 }
+                // A read that could not be audited hands no data out.
+                if (!$audit(RestrictedModule::SUCCESS)) {
+                    return ToolResult::error(Translator::t('Unexpected error while accessing Nextcloud.'));
+                }
+                return $result;
             }
         }
         throw new UnknownToolException();
@@ -195,6 +230,16 @@ class ToolRegistry {
      */
     public function guide(): ToolGuide {
         return $this->guide ??= new ToolGuide($this->modules);
+    }
+
+    /**
+     * The role of a {@see RestrictedModule} comes before everything else: outside it the module does not exist.
+     *
+     * @param ToolModule $module module whose tools are about to be listed or called
+     * @param string $userId authenticated user
+     */
+    private static function permits(ToolModule $module, string $userId): bool {
+        return !$module instanceof RestrictedModule || $module->permits($userId);
     }
 
     /**

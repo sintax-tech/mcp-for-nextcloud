@@ -36,6 +36,9 @@ attachments/
 # ---- Logs ----
 *.log
 logs/
+# O módulo de logs do app é código: no macOS (ignorecase) Logs/ casaria com logs/.
+!mcp/lib/Tools/Logs/
+!mcp/tests/Unit/Tools/Logs/
 
 # ---- OS / editores ----
 .DS_Store

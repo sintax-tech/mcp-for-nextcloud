@@ -11,7 +11,7 @@ version=$(sed -n 's:.*<version>\(.*\)</version>.*:\1:p' appinfo/info.xml)
 stage=$(mktemp -d)
 trap 'rm -rf "$stage"' EXIT
 mkdir -p "$stage/mcp" build
-cp -R appinfo lib templates README.md composer.json composer.lock "$stage/mcp/"
+cp -R appinfo lib templates README.md LICENSE NOTICE THIRD-PARTY-NOTICES.md LICENSES composer.json composer.lock "$stage/mcp/"
 # Optional asset folders: copied when present, skipped otherwise.
 for dir in js css img l10n; do
     if [ -d "$dir" ]; then

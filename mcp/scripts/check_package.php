@@ -21,6 +21,7 @@ use RuntimeException;
  * - any top-level entry other than `mcp`;
  * - a `mcp/vendor/` entry outside {@see self::ALLOWED_VENDOR}: a dev dependency such as sabre/* or
  *   symfony/console must never ship in the production package;
+ * - a missing license or attribution file from REQUIRED_LEGAL_FILES;
  * - a script or style referenced with `Util::addScript/addStyle('mcp', X)` in the .php files of the sources
  *   (`templates lib` by default) that is not packaged as `mcp/js/X.js` or `mcp/css/X.css`.
  *
@@ -44,6 +45,22 @@ final class PackageCheck {
      * else means a dev dependency leaked into the package. A trailing slash marks a directory.
      */
     public const ALLOWED_VENDOR = ['smalot/', 'symfony/polyfill-mbstring/', 'composer/', 'autoload.php'];
+
+    /** License and attribution documents required in every production archive. */
+    public const REQUIRED_LEGAL_FILES = [
+        'mcp/LICENSE',
+        'mcp/NOTICE',
+        'mcp/THIRD-PARTY-NOTICES.md',
+        'mcp/LICENSES/AGPL-3.0-or-later.txt',
+        'mcp/LICENSES/LGPL-3.0-or-later.txt',
+        'mcp/LICENSES/GPL-3.0-or-later.txt',
+        'mcp/LICENSES/MIT.txt',
+        'mcp/LICENSES/Unicode-3.0.txt',
+        'mcp/LICENSES/BSD-3-Clause.txt',
+        'mcp/vendor/smalot/pdfparser/LICENSE.txt',
+        'mcp/vendor/symfony/polyfill-mbstring/LICENSE',
+        'mcp/vendor/composer/LICENSE',
+    ];
 
     /** A script or style the app registers: the kind (Script or Style) and the name. */
     private const REFERENCE = '/add(Script|Style)\(\s*[\'"]mcp[\'"]\s*,\s*[\'"]([^\'"]+)[\'"]/';
@@ -85,7 +102,7 @@ final class PackageCheck {
         $names = [];
         $entries = [];
         foreach ($members as $member) {
-            $names[rtrim($member['name'], '/')] = true;
+            $names[rtrim($member['name'], '/')] = !$member['dir'];
             $entries[] = [$member['name'], $member['dir']];
             $parts = explode('/', rtrim($member['name'], '/'));
             $base = end($parts);
@@ -100,6 +117,11 @@ final class PackageCheck {
         sort($tops, SORT_STRING);
         if ($tops !== ['mcp']) {
             $found[] = 'top-level entries must be only mcp/, found: [' . implode(', ', array_map(static fn (string $top): string => "'$top'", $tops)) . ']';
+        }
+        foreach (self::REQUIRED_LEGAL_FILES as $required) {
+            if (!($names[$required] ?? false)) {
+                $found[] = "missing legal file: $required";
+            }
         }
         array_push($found, ...self::vendorProblems($entries));
         foreach ($sources as $source) {

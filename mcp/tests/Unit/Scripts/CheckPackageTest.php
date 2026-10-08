@@ -48,6 +48,15 @@ final class CheckPackageTest extends TestCase {
         $this->assertSame([], $this->check($this->clean()));
     }
 
+    /** Each license and attribution notice is mandatory, including original vendor licenses. */
+    public function testMissingLegalFilesAreRejected(): void {
+        foreach (PackageCheck::REQUIRED_LEGAL_FILES as $required) {
+            $entries = array_values(array_filter($this->clean(), static fn (string $entry): bool => rtrim(substr($entry, 0, 100), "\0") !== $required));
+            $this->assertSame(["missing legal file: $required"], $this->check($entries), $required);
+            $this->assertSame(["missing legal file: $required"], $this->check([...$entries, self::dir($required)]), 'A directory must not pass as a legal document');
+        }
+    }
+
     /** The command line exits 0 and prints nothing for a clean package, and exits 1 with the problems on stderr otherwise. */
     public function testTheCommandLineReportsOnStderrWithTheExitCode(): void {
         [$code, $stdout, $stderr] = $this->runScript([$this->archive($this->clean()), 'templates']);
@@ -273,6 +282,7 @@ final class CheckPackageTest extends TestCase {
             self::dir('mcp'),
             self::dir('mcp/appinfo'),
             self::file('mcp/appinfo/info.xml', '<info/>'),
+            ...array_map(static fn (string $path): string => self::file($path, 'License or notice'), PackageCheck::REQUIRED_LEGAL_FILES),
             self::file('mcp/js/admin.js', 'x'),
             self::file('mcp/css/admin.css', 'x'),
             self::dir('mcp/vendor'),

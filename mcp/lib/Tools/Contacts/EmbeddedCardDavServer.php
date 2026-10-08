@@ -3,7 +3,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Contacts;
 
-use OC;
 use OCA\DAV\AppInfo\PluginManager;
 use OCA\DAV\CalDAV\Auth\CustomPrincipalPlugin;
 use OCA\DAV\CardDAV\HasPhotoPlugin;
@@ -24,9 +23,11 @@ use OCA\DAV\RootCollection;
 use OCP\App\IAppManager;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\IConfig;
+use OCP\IURLGenerator;
 use OCP\L10N\IFactory;
 use OCP\Server;
 use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use Sabre\CardDAV\VCFExportPlugin;
 use Sabre\DAV\Server as DavServer;
@@ -48,7 +49,7 @@ final class EmbeddedCardDavServer {
     public static function create(): DavServer {
         $root = new RootCollection();
         $server = new EmbeddedServer(new CachingTree($root));
-        $base = OC::$WEBROOT . '/remote.php/dav/';
+        $base = Server::get(IURLGenerator::class)->getWebroot() . '/remote.php/dav/';
         $server->setBaseUri($base);
         $server->httpRequest->setUrl($base);
         $logger = Server::get(LoggerInterface::class);
@@ -74,7 +75,8 @@ final class EmbeddedCardDavServer {
         $server->on(
             'beforeMethod:*',
             static function () use ($server, $root): void {
-                $manager = new PluginManager(OC::$server, Server::get(IAppManager::class));
+                // The server container itself, which PluginManager requires, without the private \OC::$server.
+                $manager = new PluginManager(Server::get(ContainerInterface::class), Server::get(IAppManager::class));
                 foreach ($manager->getAppPlugins() as $plugin) {
                     $server->addPlugin($plugin);
                 }

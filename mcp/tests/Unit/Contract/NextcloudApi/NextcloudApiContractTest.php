@@ -242,14 +242,13 @@ final class NextcloudApiContractTest extends TestCase {
         $this->assertContains($constant, self::surface($major, $class)['constants'] ?? [], "$class::$constant does not exist in Nextcloud $major");
     }
 
-    public function testStaticPropertiesTheAppReadsExistInEveryCoveredMajor(): void {
-        $this->assertNotSame([], self::scanner()->properties(), 'the scanner no longer sees OC::$server and OC::$WEBROOT');
-        foreach (array_keys(self::scanner()->properties()) as $property) {
-            [$class, $name] = explode('::$', $property);
-            foreach (self::checkedMajors() as $major) {
-                $this->assertContains($name, self::surface($major, $class)['properties'] ?? [], "$property does not exist in Nextcloud $major");
-            }
-        }
+    /**
+     * \OC is private and lost members across majors (Nextcloud 34 dropped OC\Server getters, 35 moved the class out of
+     * lib/base.php): the app reaches the server container and the web root through OCP only.
+     */
+    public function testTheAppNeverTouchesThePrivateOcClass(): void {
+        $this->assertArrayNotHasKey('OC', self::scanner()->classes(), 'lib/ uses \\OC; use OCP\\Server::get(ContainerInterface::class) or IURLGenerator::getWebroot()');
+        $this->assertSame([], self::scanner()->properties(), 'lib/ reads a static property of a Nextcloud class');
     }
 
     /** A gap is accepted only where its fallback exists, and the class that handles the gap names that fallback. */
@@ -288,7 +287,7 @@ final class NextcloudApiContractTest extends TestCase {
     /** The scanner itself still sees what it is there to see; an empty answer would make every case above vacuous. */
     public function testTheScannerSeesTheKnownUses(): void {
         $classes = self::scanner()->classes();
-        foreach (['OCP\\IUserManager', 'OCA\\Talk\\Chat\\ChatManager', 'OCA\\Deck\\Db\\CardMapper', 'OCA\\DAV\\CalDAV\\EmbeddedCalDavServer', 'OC'] as $class) {
+        foreach (['OCP\\IUserManager', 'OCA\\Talk\\Chat\\ChatManager', 'OCA\\Deck\\Db\\CardMapper', 'OCA\\DAV\\CalDAV\\EmbeddedCalDavServer', 'OCA\\DAV\\AppInfo\\PluginManager'] as $class) {
             $this->assertArrayHasKey($class, $classes);
         }
         $this->assertArrayNotHasKey('OCA\\Mcp\\Service\\GrantPolicy', $classes, 'the app is not a dependency of itself');

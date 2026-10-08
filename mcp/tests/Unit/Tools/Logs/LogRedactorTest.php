@@ -159,6 +159,23 @@ final class LogRedactorTest extends TestCase {
         }
         $this->assertSame('Agent/1.0 ip:2001:db8::/48', LogRedactor::text('Agent/1.0 ip:2001:db8::1', 300, true));
         // A network already written with its prefix length is not an address to mask again.
-        $this->assertSame('route 2001:db8::/32 via IP:2001:db8:abcd::/48', LogRedactor::text('route 2001:db8::/32 via IP:2001:db8:abcd:1::7', 2000));
+        $this->assertSame('route 2001:db8::/48 via IP:2001:db8:abcd::/48', LogRedactor::text('route 2001:db8::/32 via IP:2001:db8:abcd:1::7', 2000));
     }
+    public function testIpv6WithAnyCidrIsMaskedAndRedactionIsIdempotent(): void {
+        $cases = [
+            '2001:db8:abcd:1234:5678:90ab:cdef:1234/128' => '2001:db8:abcd::/48',
+            '2001:db8:abcd:1234:5678:90ab:cdef:1234/64' => '2001:db8:abcd::/48',
+            'IP:2001:db8:abcd:1234:5678:90ab:cdef:1234/128' => 'IP:2001:db8:abcd::/48',
+            '::1/9999' => '::/48',
+            '2001:db8:abcd:1234::1/48' => '2001:db8:abcd::/48',
+            '2001:0db8:abcd::/48' => '2001:db8:abcd::/48',
+            '2001:db8:abcd::/48' => '2001:db8:abcd::/48',
+        ];
+        foreach ($cases as $raw => $expected) {
+            $once = LogRedactor::text($raw, 2000);
+            $this->assertSame($expected, $once, $raw);
+            $this->assertSame($once, LogRedactor::text($once, 2000), $raw);
+        }
+    }
+
 }

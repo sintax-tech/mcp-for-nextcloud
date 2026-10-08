@@ -31,15 +31,14 @@ final class LogRedactor {
     private const IPV4 = '/(?<![\w.%s])\d{1,3}(?:\.\d{1,3}){3}(?!\.?\d)(?!\w)/';
     /**
      * Candidates for an IPv6 address inside a text; filter_var() decides, so a clock time or a MAC address stays. A
-     * trailing colon may be punctuation ("Remote IP: 2001:db8::9:"), so the callback tries once without it. Followed by
-     * a prefix length ("2001:db8::/32", or an address already masked) it is a network, left as it is.
+     * trailing colon may be punctuation ("Remote IP: 2001:db8::9:"), so the callback tries once without it. CIDR suffixes are consumed and reduced to the same canonical /48.
      */
-    private const IPV6 = '/(?<![\w:.%s])(?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}(?!\w)(?!\.\w)(?!:[0-9a-f])(?!\/\d)/i';
+    private const IPV6 = '/(?<![\w:.%s])(?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}(?!\w)(?!\.\w)(?!:[0-9a-f])(?:\/\d+)?/i';
     /**
      * An IPv6 candidate glued to a label by a colon ("IP:2001:db8::1", "clientAddress:2001:db8::9"), which the pattern
      * above cannot see, since an address never starts right after a colon there.
      */
-    private const LABELED_IPV6 = '/(?<![\w:.%s])([a-z_][\w-]*):((?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4})(?!\w)(?!\.\w)(?!:[0-9a-f])(?!\/\d)/i';
+    private const LABELED_IPV6 = '/(?<![\w:.%s])([a-z_][\w-]*):((?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}(?!\w)(?!\.\w)(?!:[0-9a-f])(?:\/\d+)?)/i';
     /** ANSI escape sequences (CSI and OSC). */
     private const ANSI = '/\x{1B}(?:\[[0-9;?]*[ -\/]*[@-~]|\][^\x{07}\x{1B}]*(?:\x{07}|\x{1B}\\\\)?)?/u';
     /**
@@ -97,29 +96,28 @@ final class LogRedactor {
             $masked = self::ip($m[0]);
             return $masked === self::NOT_AN_ADDRESS ? $m[0] : $masked;
         }, $text) ?? '';
-        $text = preg_replace_callback(sprintf(self::IPV6, $notAfter), static function (array $m): string {
-            $candidate = $m[0];
-            $suffix = '';
-            if (!self::isIpv6($candidate) && str_ends_with($candidate, ':') && !str_ends_with($candidate, '::')) {
-                $candidate = substr($candidate, 0, -1);
-                $suffix = ':';
-            }
-            return self::isIpv6($candidate) ? self::ip($candidate) . $suffix : $m[0];
-        }, $text) ?? '';
+        $text = preg_replace_callback(sprintf(self::IPV6, $notAfter), static fn (array $m): string => self::maskedIpv6($m[0]) ?? $m[0], $text) ?? '';
         $text = preg_replace_callback(sprintf(self::LABELED_IPV6, $notAfter), static function (array $m): string {
-            [$whole, $label, $address] = $m;
-            $suffix = '';
-            if (str_ends_with($whole, ':') && !str_ends_with($whole, '::') && !self::isIpv6($address)) {
-                [$whole, $address, $suffix] = [substr($whole, 0, -1), substr($address, 0, -1), ':'];
-            }
-            // A label made of hexadecimal digits may be the first group: then the whole run is one address.
-            if (self::isIpv6($whole)) {
-                return self::ip($whole) . $suffix;
-            }
-            return self::isIpv6($address) ? $label . ':' . self::ip($address) . $suffix : $m[0];
+            // A hexadecimal label may actually be the first group of the whole address.
+            return self::maskedIpv6($m[0]) ?? ($m[1] . ':' . (self::maskedIpv6($m[2]) ?? $m[2]));
         }, $text) ?? '';
         $text = trim($text);
         return mb_strlen($text) > $limit ? mb_substr($text, 0, $limit) . '…' : $text;
+    }
+
+    /** Only our exact canonical /48 output is already redacted; all other CIDRs still need masking. */
+    private static function maskedIpv6(string $candidate): ?string {
+        $address = explode('/', $candidate, 2)[0];
+        $suffix = '';
+        if (!self::isIpv6($address) && str_ends_with($address, ':') && !str_ends_with($address, '::')) {
+            $address = substr($address, 0, -1);
+            $suffix = ':';
+        }
+        if (!self::isIpv6($address)) {
+            return null;
+        }
+        $masked = self::ip($address);
+        return $candidate === $masked ? $candidate : $masked . $suffix;
     }
 
     /** @return bool whether the whole string is an IPv6 address */

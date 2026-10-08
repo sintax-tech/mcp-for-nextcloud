@@ -59,4 +59,28 @@ final class LogsGroupsMapperTest extends TestCase {
         $this->assertCount(1, $db->rows('mcp_logs_groups'));
     }
 
+    public function testLegacyCleanupRetriesWithoutBreakingReadsOrReimporting(): void {
+        $db = new SqliteDatabase($this, [new Version001002Date20261008000000()]);
+        $legacy = $this->createMock(\OCP\IAppConfig::class);
+        $present = true;
+        $attempts = 0;
+        $legacy->expects($this->once())->method('getValueString')->willReturn('["ti"]');
+        $legacy->method('hasKey')->willReturnCallback(function () use (&$present): bool { return $present; });
+        $legacy->method('deleteKey')->willReturnCallback(function () use (&$attempts, &$present): void {
+            if (++$attempts === 1) {
+                throw new \RuntimeException('legacy cleanup unavailable');
+            }
+            $present = false;
+        });
+        $mapper = new LogsGroupsMapper($db->connection(), $legacy);
+        $this->assertSame(['groups' => ['ti'], 'version' => 0], $mapper->state());
+        $this->assertSame(1, $attempts);
+        $mapper->compareAndSet([], 0);
+        $this->assertSame(['groups' => [], 'version' => 1], $mapper->state());
+        $this->assertSame(2, $attempts);
+        $this->assertFalse($present);
+        $this->assertSame(['groups' => [], 'version' => 1], $mapper->state());
+        $this->assertSame(2, $attempts, 'no further cleanup after the key is gone');
+    }
+
 }

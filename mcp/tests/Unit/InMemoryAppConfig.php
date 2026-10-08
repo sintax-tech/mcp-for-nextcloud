@@ -20,6 +20,7 @@ final class InMemoryAppConfig {
     public function worker(TestCase $test): IAppConfig {
         $config = (new \ReflectionMethod($test, 'createMock'))->invoke($test, IAppConfig::class);
         $cache = null;
+        $config->method('hasKey')->willReturnCallback(fn (string $app, string $key): bool => isset($this->stored[$app][$key]));
         $config->method('getValueString')->willReturnCallback(function (string $app, string $key, string $default = '') use (&$cache): string {
             $cache ??= $this->stored;
             return $cache[$app][$key] ?? $default;

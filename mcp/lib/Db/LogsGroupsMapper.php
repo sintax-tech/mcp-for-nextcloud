@@ -41,7 +41,13 @@ class LogsGroupsMapper extends QBMapper {
             if ($row === false) {
                 throw new \RuntimeException('Missing logs groups state');
             }
-            $this->legacy->deleteKey('mcp', self::LEGACY_KEY);
+        }
+        try {
+            if ($this->legacy->hasKey('mcp', self::LEGACY_KEY, null)) {
+                $this->legacy->deleteKey('mcp', self::LEGACY_KEY);
+            }
+        } catch (\Throwable) {
+            // The table is authoritative. Retry optional legacy cleanup on the next read.
         }
         return ['groups' => self::decode((string)$row['groups']), 'version' => (int)$row['version']];
     }

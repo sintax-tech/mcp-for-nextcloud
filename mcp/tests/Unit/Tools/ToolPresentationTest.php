@@ -60,6 +60,8 @@ final class ToolPresentationTest extends TestCase {
         'talk_message_user' => ['Direct message in Talk', 'Mensagem direta no Talk'],
         'talk_send_batch' => ['Send batch in Talk', 'Enviar lote no Talk'],
         'talk_create_group' => ['Create group in Talk', 'Criar grupo no Talk'],
+        'logs_list' => ['Read server log', 'Ler log do servidor'],
+        'logs_analyze' => ['Analyze server log', 'Analisar log do servidor'],
     ];
 
     protected function tearDown(): void {

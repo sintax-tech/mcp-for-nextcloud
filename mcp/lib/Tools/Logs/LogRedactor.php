@@ -121,6 +121,34 @@ final class LogRedactor {
         return ['call' => self::text($class . $function, 300), 'at' => self::place($frame['file'] ?? null, $frame['line'] ?? null)];
     }
 
+    /**
+     * The fields of an entry the logs tools show, redacted: the extra `data` of the core and the version stay behind.
+     *
+     * @param \stdClass $entry one well-formed entry of the log
+     * @return array<string, mixed> time, level by name, app, user, method, url, message, reqId, userAgent, masked
+     *     remoteAddr and, when the entry has one, the exception summary
+     */
+    public static function entry(\stdClass $entry): array {
+        $field = static fn (string $name, int $limit): string => is_scalar($entry->{$name} ?? null) ? self::text((string)$entry->{$name}, $limit) : '';
+        $row = [
+            'time' => $field('time', 64),
+            'level' => LogAnalyzer::LEVELS[(int)$entry->level] ?? (string)$entry->level,
+            'app' => $field('app', 100),
+            'user' => $field('user', 100),
+            'method' => $field('method', 16),
+            'url' => $field('url', self::MESSAGE_LIMIT),
+            'message' => $field('message', self::MESSAGE_LIMIT),
+            'reqId' => $field('reqId', 64),
+            'userAgent' => $field('userAgent', 300),
+            'remoteAddr' => is_string($entry->remoteAddr ?? null) ? self::ip($entry->remoteAddr) : '',
+        ];
+        $exception = self::exception($entry->exception ?? null);
+        if ($exception !== null) {
+            $row['exception'] = $exception;
+        }
+        return $row;
+    }
+
     /** @return string file:line, or '' without a file */
     private static function place(mixed $file, mixed $line): string {
         if (!is_string($file) || $file === '') {

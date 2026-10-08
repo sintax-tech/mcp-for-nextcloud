@@ -6,6 +6,7 @@ namespace OCA\Mcp\Tests\Unit\Contract;
 use OCA\Mcp\AppInfo\Application;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Service\LogsAccess;
 use OCA\Mcp\Service\McpProtocol;
 use OCA\Mcp\Service\PromptCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
@@ -38,6 +39,13 @@ final class ToolsListContractTest extends TestCase {
                 continue;
             }
             $reflection = new \ReflectionClass($name);
+            if ($name === LogsAccess::class) {
+                // The role gate of the logs module lets this account in, so its tools are listed and checked like the others.
+                $access = $this->createMock(LogsAccess::class);
+                $access->method('permits')->willReturn(true);
+                $args[] = $access;
+                continue;
+            }
             $args[] = str_starts_with($name, 'OCA\\Mcp\\') && $reflection->isInstantiable() ? $this->build($name) : $this->createMock($name);
         }
         return new $class(...$args);
@@ -111,6 +119,8 @@ final class ToolsListContractTest extends TestCase {
             }
         }
         $this->assertSame(count($names), count(array_unique($names)), 'tool names must be unique');
+        $this->assertContains('logs_list', $names);
+        $this->assertContains('logs_analyze', $names);
     }
 
     public function testAppInitializesAndListsFilesWhenOptionalAppsAreUnavailable(): void {

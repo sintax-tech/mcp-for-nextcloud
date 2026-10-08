@@ -25,13 +25,14 @@ final class NextcloudApiUsage {
 
     /**
      * Classes the fixtures carry although lib/ never names them: objects the app only receives (a Talk participant,
-     * a metadata set) and the Nextcloud plugin whose listener {@see \OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher}
-     * detaches.
+     * a metadata set, the log writer ILogFactory::get() returns) and the Nextcloud plugin whose listener
+     * {@see \OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher} detaches.
      */
     public const EXTRA_CLASSES = [
         'OCA\\Talk\\Participant',
         'OCP\\FilesMetadata\\Model\\IFilesMetadata',
         'OCA\\DAV\\CalDAV\\Schedule\\Plugin',
+        'OCP\\Log\\IWriter',
     ];
 
     /**

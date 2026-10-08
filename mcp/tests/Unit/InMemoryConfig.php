@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 final class InMemoryConfig {
     public array $app = [];
     public array $user = [];
-    /** @var array<string, string> system values served by getSystemValueString */
+    /** @var array<string, string|int> system values served by getSystemValueString and getSystemValueInt */
     public array $system = [];
     /** @var list<array{string, string, string}> every [scope, app, key] read or written ('app' or 'user') */
     public array $accessed = [];
@@ -41,7 +41,10 @@ final class InMemoryConfig {
             yield from array_keys(array_filter($this->user, static fn (array $apps) => ($apps[$app][$key] ?? null) === $value));
         });
         $config->method('getSystemValueString')->willReturnCallback(function ($key, $default = '') {
-            return $this->system[$key] ?? $default;
+            return (string)($this->system[$key] ?? $default);
+        });
+        $config->method('getSystemValueInt')->willReturnCallback(function ($key, $default = 0) {
+            return (int)($this->system[$key] ?? $default);
         });
         $config->method('getAppValue')->willReturnCallback(function ($app, $key, $default = '') {
             $this->accessed[] = ['app', $app, $key];

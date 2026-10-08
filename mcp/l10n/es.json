@@ -878,6 +878,11 @@
     "Workflow for creating a new Nextcloud file." : "Flujo para crear un archivo nuevo en Nextcloud.",
     "Create folders, copies and new files" : "Crear carpetas, copias y archivos nuevos",
     "- Content: the change is past the part shown (%d → %d bytes)" : "- Contenido: el cambio está más allá del fragmento mostrado (%d → %d bytes)",
-    "logs" : "registros"
+    "logs" : "registros",
+    "The server log could not be read." : "No se pudo leer el registro del servidor.",
+    "This server does not write its log to a file, so there is nothing to read." : "Este servidor no escribe su registro en un archivo, así que no hay nada que leer.",
+    "Read server log" : "Leer registro del servidor",
+    "Analyze server log" : "Analizar registro del servidor",
+    "Server log" : "Registro del servidor"
 },"pluralForm" :"nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

@@ -58,7 +58,7 @@ class LogsAccess {
 
     /** @return list<string> the group ids listed by the administrator; a garbled value reads as none */
     public function groups(): array {
-        $decoded = json_decode($this->config->getAppValue(GrantPolicy::APP, self::GROUPS_KEY, '[]'), true);
+        $decoded = json_decode((string)$this->config->getAppValue(GrantPolicy::APP, self::GROUPS_KEY, '[]'), true);
         if (!is_array($decoded)) {
             return [];
         }

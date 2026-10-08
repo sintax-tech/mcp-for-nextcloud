@@ -880,6 +880,11 @@ OC.L10N.register(
     "Workflow for creating a new Nextcloud file." : "Fluxo de criação de um arquivo novo no Nextcloud.",
     "Create folders, copies and new files" : "Criar pastas, cópias e arquivos novos",
     "- Content: the change is past the part shown (%d → %d bytes)" : "- Conteúdo: a mudança está além do trecho mostrado (%d → %d bytes)",
-    "logs" : "logs"
+    "logs" : "logs",
+    "The server log could not be read." : "Não foi possível ler o log do servidor.",
+    "This server does not write its log to a file, so there is nothing to read." : "Este servidor não grava o log em arquivo, então não há o que ler.",
+    "Read server log" : "Ler log do servidor",
+    "Analyze server log" : "Analisar log do servidor",
+    "Server log" : "Log do servidor"
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

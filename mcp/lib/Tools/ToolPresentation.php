@@ -143,6 +143,9 @@ final class ToolPresentation {
             'talk_create_group' => Translator::t('Create group in Talk'),
             // People
             'users_search' => Translator::t('Search people'),
+            // Logs
+            'logs_list' => Translator::t('Read server log'),
+            'logs_analyze' => Translator::t('Analyze server log'),
             default => self::humanized($name),
         };
     }
@@ -172,7 +175,7 @@ final class ToolPresentation {
     /**
      * Title of a grant module, in the language of the current user, for the guide and for the admin matrix.
      *
-     * @param string $module grant module a tool declares (files, notes, calendar, deck, talk)
+     * @param string $module grant module a tool declares (files, notes, calendar, contacts, tasks, deck, talk, people, logs)
      */
     public static function moduleTitle(string $module): string {
         return match ($module) {
@@ -184,6 +187,7 @@ final class ToolPresentation {
             'deck' => Translator::t('Deck'),
             'talk' => Translator::t('Talk'),
             'people' => Translator::t('People'),
+            'logs' => Translator::t('Server log'),
             default => ucfirst($module),
         };
     }

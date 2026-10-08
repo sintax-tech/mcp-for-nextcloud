@@ -123,8 +123,8 @@ final class LogAnalyzer {
     /** @return string a text field of the entry, redacted; '' when it is missing */
     private static function field(\stdClass $entry, string $name, int $limit): string {
         $value = $entry->{$name} ?? '';
-        // The user agent keeps its dotted versions, as in logs_list.
-        return is_scalar($value) ? LogRedactor::text((string)$value, $limit, $name !== 'userAgent') : '';
+        // The user agent keeps the versions after a slash, as in logs_list.
+        return is_scalar($value) ? LogRedactor::text((string)$value, $limit, $name === 'userAgent') : '';
     }
 
     /**

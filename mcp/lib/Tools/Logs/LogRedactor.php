@@ -7,7 +7,8 @@ namespace OCA\Mcp\Tools\Logs;
  * Minimizes what a log entry carries before it reaches the model, without losing its diagnostic value.
  *
  * - IP addresses are masked: IPv4 keeps the first two octets (`203.0.x.x`), IPv6 its /48 prefix, in the remoteAddr
- *   field and inside any text but the user agent, whose version numbers ("Chrome/141.0.0.0") are what makes it useful.
+ *   field and inside any text; in the user agent an address right after a slash is a version ("Chrome/141.0.0.0") and
+ *   stays, since the version of the client is what makes it useful.
  * - Control characters, ANSI escape sequences and invisible or bidirectional marks are removed: a file name or a
  *   message is written by users, and those are the characters that hide or disguise text.
  * - A text is cut at a limit; an exception keeps class, message, code, place and ten frames of class->function and
@@ -22,14 +23,26 @@ final class LogRedactor {
     public const MESSAGE_LIMIT = 2000;
     /** Shown in place of a value that is not an IP address. */
     private const NOT_AN_ADDRESS = 'x';
-    /** IPv4 addresses inside a text, not glued to another number or word. */
-    private const IPV4 = '/(?<![\w.])(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})(?![\w.])/';
-    /** Candidates for an IPv6 address inside a text; filter_var() decides, so a clock time or a MAC address stays. */
-    private const IPV6 = '/(?<![\w:.])(?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}(?![\w:.])/i';
+    /**
+     * IPv4 addresses inside a text, not glued to a word or to another number: "1.2.3.4.5" and "v31.0.9.1" are versions,
+     * while a full stop, a comma or a colon after the address is punctuation and stays outside the match. %s is where
+     * the characters the address may not follow go: a slash too in a user agent, where "Chrome/141.0.0.0" is a version.
+     */
+    private const IPV4 = '/(?<![\w.%s])\d{1,3}(?:\.\d{1,3}){3}(?!\.?\d)(?!\w)/';
+    /**
+     * Candidates for an IPv6 address inside a text; filter_var() decides, so a clock time or a MAC address stays. A
+     * trailing colon may be punctuation ("Remote IP: 2001:db8::9:"), so the callback tries once without it.
+     */
+    private const IPV6 = '/(?<![\w:.%s])(?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}(?!\w)(?!\.\w)(?!:[0-9a-f])/i';
     /** ANSI escape sequences (CSI and OSC). */
     private const ANSI = '/\x{1B}(?:\[[0-9;?]*[ -\/]*[@-~]|\][^\x{07}\x{1B}]*(?:\x{07}|\x{1B}\\\\)?)?/u';
-    /** Control characters, C1 controls and zero-width or bidirectional marks. */
-    private const INVISIBLE = '/[\x{00}-\x{08}\x{0B}\x{0C}\x{0E}-\x{1F}\x{7F}-\x{9F}\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2060}-\x{2064}\x{2066}-\x{2069}\x{FEFF}]/u';
+    /**
+     * Control characters, C1 controls, the soft hyphen, every bidirectional control (ALM, LRM, RLM, the embeddings,
+     * overrides and isolates) and the zero-width characters, the Mongolian vowel separator and the BOM included.
+     */
+    private const INVISIBLE = '/[\x{00}-\x{08}\x{0B}\x{0C}\x{0E}-\x{1F}\x{7F}-\x{9F}\x{00AD}\x{061C}\x{180E}\x{200B}-\x{200F}\x{202A}-\x{202E}\x{2060}-\x{2064}\x{2066}-\x{2069}\x{FEFF}]/u';
+    /** Line breaks, tabs and the Unicode line and paragraph separators: each becomes a space. */
+    private const BREAKS = ["\r\n", "\r", "\n", "\t", "\u{2028}", "\u{2029}"];
 
     private function __construct() {
     }
@@ -63,21 +76,37 @@ final class LogRedactor {
      *
      * @param string $text a message, a URL, a user agent
      * @param int $limit longest result in characters, before the marker of a cut
-     * @param bool $maskAddresses false for a user agent, whose dotted versions would read as IPv4 addresses
+     * @param bool $userAgent true for a user agent: an address right after a slash is a version ("Chrome/141.0.0.0")
+     *     and stays; any other address is masked as in every text
      * @return string the cleaned text, with '…' when it was cut
      */
-    public static function text(string $text, int $limit, bool $maskAddresses = true): string {
+    public static function text(string $text, int $limit, bool $userAgent = false): string {
         // Invalid bytes become U+FFFD, so the patterns below, which need valid UTF-8, never fail on them.
         $text = (string)json_decode(json_encode($text, JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR));
         $text = preg_replace(self::ANSI, '', $text) ?? '';
-        $text = str_replace(["\r\n", "\r", "\n", "\t"], ' ', $text);
+        $text = str_replace(self::BREAKS, ' ', $text);
         $text = preg_replace(self::INVISIBLE, '', $text) ?? '';
-        if ($maskAddresses) {
-            $text = preg_replace_callback(self::IPV4, static fn (array $m): string => self::ip($m[0]) === self::NOT_AN_ADDRESS ? $m[0] : self::ip($m[0]), $text) ?? '';
-            $text = preg_replace_callback(self::IPV6, static fn (array $m): string => filter_var($m[0], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false ? self::ip($m[0]) : $m[0], $text) ?? '';
-        }
+        $notAfter = $userAgent ? '\/' : '';
+        $text = preg_replace_callback(sprintf(self::IPV4, $notAfter), static function (array $m): string {
+            $masked = self::ip($m[0]);
+            return $masked === self::NOT_AN_ADDRESS ? $m[0] : $masked;
+        }, $text) ?? '';
+        $text = preg_replace_callback(sprintf(self::IPV6, $notAfter), static function (array $m): string {
+            $candidate = $m[0];
+            $suffix = '';
+            if (!self::isIpv6($candidate) && str_ends_with($candidate, ':') && !str_ends_with($candidate, '::')) {
+                $candidate = substr($candidate, 0, -1);
+                $suffix = ':';
+            }
+            return self::isIpv6($candidate) ? self::ip($candidate) . $suffix : $m[0];
+        }, $text) ?? '';
         $text = trim($text);
         return mb_strlen($text) > $limit ? mb_substr($text, 0, $limit) . '…' : $text;
+    }
+
+    /** @return bool whether the whole string is an IPv6 address */
+    private static function isIpv6(string $candidate): bool {
+        return filter_var($candidate, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false;
     }
 
     /**
@@ -132,7 +161,7 @@ final class LogRedactor {
      *     remoteAddr and, when the entry has one, the exception summary
      */
     public static function entry(\stdClass $entry): array {
-        $field = static fn (string $name, int $limit, bool $mask = true): string => is_scalar($entry->{$name} ?? null) ? self::text((string)$entry->{$name}, $limit, $mask) : '';
+        $field = static fn (string $name, int $limit, bool $userAgent = false): string => is_scalar($entry->{$name} ?? null) ? self::text((string)$entry->{$name}, $limit, $userAgent) : '';
         $row = [
             'time' => $field('time', 64),
             'level' => LogAnalyzer::LEVELS[(int)$entry->level] ?? (string)$entry->level,
@@ -142,7 +171,7 @@ final class LogRedactor {
             'url' => $field('url', self::MESSAGE_LIMIT),
             'message' => $field('message', self::MESSAGE_LIMIT),
             'reqId' => $field('reqId', 64),
-            'userAgent' => $field('userAgent', 300, false),
+            'userAgent' => $field('userAgent', 300, true),
             'remoteAddr' => is_string($entry->remoteAddr ?? null) ? self::ip($entry->remoteAddr) : '',
         ];
         $exception = self::exception($entry->exception ?? null);

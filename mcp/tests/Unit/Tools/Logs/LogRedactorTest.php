@@ -104,4 +104,37 @@ final class LogRedactorTest extends TestCase {
         $this->assertNull(LogRedactor::exception('text'));
         $this->assertNull(LogRedactor::exception(json_decode('{"Message":"no class"}')));
     }
+
+    /** An address at the end of a sentence or before a colon is still an address; the punctuation stays outside. */
+    public function testAnAddressFollowedByPunctuationIsMasked(): void {
+        $this->assertSame('ip=203.0.x.x.', LogRedactor::text('ip=203.0.113.45.', 2000));
+        $this->assertSame('from 203.0.x.x, then 198.51.x.x;', LogRedactor::text('from 203.0.113.45, then 198.51.100.7;', 2000));
+        $this->assertSame('2001:db8::/48.', LogRedactor::text('2001:db8::1.', 2000));
+        $this->assertSame('Remote IP: 2001:db8:abcd::/48:', LogRedactor::text('Remote IP: 2001:db8:abcd:12:34::9:', 2000));
+        $this->assertSame('(2001:db8:abcd::/48)', LogRedactor::text('(2001:db8:abcd:12:34::9)', 2000));
+    }
+
+    /** What only looks like an address is left alone: longer dotted versions, versions glued to a word, clock times. */
+    public function testVersionsAndTimesAreNotAddresses(): void {
+        foreach (['version 1.2.3.4.5', 'v31.0.9.1', 'build 300.1.1.1', 'at 10:15:00', 'mac aa:bb:cc:dd:ee:ff', 'ratio 1.5.'] as $text) {
+            $this->assertSame($text, LogRedactor::text($text, 2000));
+        }
+    }
+
+    /** In a user agent the version after a slash is kept, and an address anywhere else is masked like in any text. */
+    public function testAUserAgentMasksAddressesButNotVersionsAfterASlash(): void {
+        $this->assertSame('Mozilla/5.0 (proxy 10.1.x.x) Chrome/141.0.0.0', LogRedactor::text('Mozilla/5.0 (proxy 10.1.2.3) Chrome/141.0.0.0', 300, true));
+        $this->assertSame('client 2001:db8:abcd::/48 mirall/3.14.1', LogRedactor::text('client 2001:db8:abcd:1::2 mirall/3.14.1', 300, true));
+        $this->assertSame('Agent/10.1.2.3 via 10.1.x.x', LogRedactor::text('Agent/10.1.2.3 via 10.1.2.3', 300, true));
+    }
+
+    /** Every bidirectional control and zero-width character goes, and the Unicode line separators become spaces. */
+    public function testTheWholeSetOfInvisibleCharactersIsRemoved(): void {
+        $invisible = ["\u{061C}", "\u{00AD}", "\u{180E}", "\u{200B}", "\u{200C}", "\u{200D}", "\u{200E}", "\u{200F}", "\u{202A}", "\u{202B}", "\u{202C}", "\u{202D}", "\u{202E}",
+            "\u{2060}", "\u{2061}", "\u{2062}", "\u{2063}", "\u{2064}", "\u{2066}", "\u{2067}", "\u{2068}", "\u{2069}", "\u{FEFF}"];
+        foreach ($invisible as $char) {
+            $this->assertSame('ab', LogRedactor::text('a' . $char . 'b', 2000), bin2hex($char));
+        }
+        $this->assertSame('line one line two next', LogRedactor::text("line one\u{2028}line two\u{2029}next", 2000));
+    }
 }

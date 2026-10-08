@@ -14,6 +14,8 @@ use OCP\Log\IWriter;
 final class FakeFileLog implements IWriter, IFileBased {
     /** @var list<array{int, int}> every getEntries call: limit, offset */
     public array $calls = [];
+    /** Lines appended to the file after each getEntries call, as a busy server keeps writing. */
+    public int $growth = 0;
 
     /** @param list<string> $lines the file, oldest line first */
     public function __construct(public array $lines, private int $minLevel = 0) {}
@@ -44,6 +46,9 @@ final class FakeFileLog implements IWriter, IFileBased {
                     $entries[] = $entry;
                 }
             }
+        }
+        if ($this->growth > 0) {
+            $this->lines = [...$this->lines, ...self::lines($this->growth, static fn (int $i): array => ['reqId' => 'new' . bin2hex(random_bytes(4))])];
         }
         return $entries;
     }

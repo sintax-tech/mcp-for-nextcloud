@@ -72,9 +72,13 @@ class LogsModule implements ToolModule, ToolGuideNotes, RestrictedModule {
             'They read the current log file from its end, at most ' . LogScanner::SCAN_LIMIT . ' entries per call, and only '
                 . 'what the server wrote: entries below its log level (source.serverLogLevel) do not exist. When scan.nextOffset '
                 . 'is a number, call again with offset set to it to go further back; the rotated nextcloud.log.1 is never read.',
-            'The core reads the log backwards from the end of the file and offers no budget of its own, so these tools never '
-                . 'read deeper than the last ' . LogScanner::READ_BUDGET . ' entries (scan.readBudget). When scan.budgetReached '
-                . 'is true, older entries are out of reach: narrow the question with since, app or req_id instead.',
+            'The core reads the log backwards from the end of the file, through every line, and offers no budget of its own, so '
+                . 'each answer makes one read and these tools never go deeper than the last ' . LogScanner::READ_BUDGET
+                . ' entries at or above the server log level (scan.readBudget), which is not a count of lines in the file. '
+                . 'When scan.budgetReached is true, older entries are out of reach: narrow the question with app or req_id.',
+            'The log is not in time order, so since never ends a search: older entries are skipped and the whole window is '
+                . 'read. A null scan.nextOffset means the file ended or the budget is spent, never that nothing older exists '
+                . 'in the window still unread.',
             'Start with logs_analyze to see what dominates a period, then call logs_list with app, contains or req_id to read '
                 . 'the entries behind one signature. IP addresses are masked, stack traces keep ten frames without arguments '
                 . 'and every call is recorded in the audit log.',

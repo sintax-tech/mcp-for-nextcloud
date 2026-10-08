@@ -49,7 +49,7 @@ final class LogScannerTest extends TestCase {
         $scanner = $this->scanner($log);
 
         $first = $scanner->scan(self::filter(['min_level' => 3]), 0, 5);
-        $this->assertSame([[LogScanner::FIRST_BLOCK, 0]], $log->calls, 'the first block already holds the page');
+        $this->assertSame([[LogScanner::SCAN_LIMIT, 0]], $log->calls, 'one read of the window, then the page is cut');
         $this->assertSame(['entry 290', 'entry 280', 'entry 270', 'entry 260', 'entry 250'], array_column($first['entries'], 'message'));
         $this->assertSame(50, $first['scanned']);
         $this->assertSame(50, $first['nextOffset']);
@@ -65,8 +65,7 @@ final class LogScannerTest extends TestCase {
         $scanner = $this->scanner($log);
 
         $window = $scanner->scan(self::filter(['app' => 'workflow_ocr']), 0, 50);
-        // Blocks that double from 500, so a page found early costs one small read and a miss costs about twice the window.
-        $this->assertSame([[500, 0], [1000, 500], [2000, 1500], [1500, 3500]], $log->calls);
+        $this->assertSame([[LogScanner::SCAN_LIMIT, 0]], $log->calls);
         $this->assertSame([], $window['entries']);
         $this->assertSame(LogScanner::SCAN_LIMIT, $window['scanned']);
         $this->assertTrue($window['truncated']);
@@ -80,31 +79,34 @@ final class LogScannerTest extends TestCase {
     }
 
     /**
-     * The log is written oldest first, give or take the requests that finish out of order: entries up to five
-     * minutes before `since` are skipped, and the first one older than that ends the search.
+     * An entry before `since` is skipped and the window goes on: the order of the file is never trusted to end the
+     * search, and the answer never claims that nothing older exists while the budget lasts.
      */
-    public function testTheSearchStopsOnlyPastTheToleranceBeforeSince(): void {
-        $log = new FakeFileLog(FakeFileLog::lines(100, static fn (int $i): array => []));
-        $since = gmdate(DATE_ATOM, 1791400000 + 90 * 60);
+    public function testEntriesBeforeSinceAreSkippedAndTheWindowGoesOn(): void {
+        $log = new FakeFileLog(FakeFileLog::lines(LogScanner::SCAN_LIMIT + 100, static fn (int $i): array => []));
+        $since = gmdate(DATE_ATOM, 1791400000 + (LogScanner::SCAN_LIMIT + 90) * 60);
         $window = $this->scanner($log)->scan(self::filter(['since' => $since]), 0, 50);
 
         $this->assertCount(10, $window['entries']);
-        // Entries 99..90 match, 89..85 are within five minutes and skipped, 84 ends the search.
-        $this->assertSame(16, $window['scanned']);
-        $this->assertFalse($window['truncated']);
-        $this->assertNull($window['nextOffset']);
+        $this->assertSame(LogScanner::SCAN_LIMIT, $window['scanned']);
+        $this->assertTrue($window['truncated']);
+        $this->assertSame(LogScanner::SCAN_LIMIT, $window['nextOffset']);
+
+        $small = new FakeFileLog(FakeFileLog::lines(100, static fn (int $i): array => []));
+        $all = $this->scanner($small)->scan(self::filter(['since' => gmdate(DATE_ATOM, 1791400000 + 90 * 60)]), 0, 50);
+        $this->assertSame([10, 100, null], [count($all['entries']), $all['scanned'], $all['nextOffset']], 'only the end of the file ends it');
     }
 
-    /** An entry written after a newer one but stamped a little earlier must not hide the ones before it. */
-    public function testEntriesOutOfOrderInsideTheToleranceAreNotLost(): void {
+    /** Entries written out of order, by minutes or by hours, are all found: none hides the ones before it. */
+    public function testEntriesOutOfOrderAreNeverLost(): void {
         $at = static fn (int $minutes): string => gmdate(DATE_ATOM, 1791400000 + $minutes * 60);
-        $order = [0, 10, 11, 12, 9, 13, 14, 8, 15];
+        $order = [100, 0, 101, 102, 9, 103, 104, 2, 105];
         $log = new FakeFileLog(FakeFileLog::lines(count($order), static fn (int $i): array => ['time' => $at($order[$i]), 'message' => 'm' . $order[$i]]));
 
-        $window = $this->scanner($log)->scan(self::filter(['since' => $at(10)]), 0, 50);
+        $window = $this->scanner($log)->scan(self::filter(['since' => $at(100)]), 0, 50);
 
-        $this->assertSame(['m15', 'm14', 'm13', 'm12', 'm11', 'm10'], array_column($window['entries'], 'message'));
-        $this->assertSame(9, $window['scanned'], 'the entry of minute 0 is past the tolerance and ends the search');
+        $this->assertSame(['m105', 'm104', 'm103', 'm102', 'm101', 'm100'], array_column($window['entries'], 'message'));
+        $this->assertSame(9, $window['scanned']);
     }
 
     /** A line the core could not decode comes back as null: counted, never shown, never fatal. */
@@ -192,14 +194,31 @@ final class LogScannerTest extends TestCase {
         $this->assertSame([], $log->calls);
     }
 
-    /** With `since` the analysis reads in blocks too, so a recent window costs a small read. */
-    public function testTheAnalysisReadsInBlocksOnlyWhenSinceCanEndIt(): void {
-        $log = new FakeFileLog(FakeFileLog::lines(3000, static fn (int $i): array => []));
-        $this->scanner($log)->scan(self::filter(['since' => gmdate(DATE_ATOM, 1791400000 + 2900 * 60)]), 0, null);
-        $this->assertSame([[500, 0]], $log->calls);
+    /**
+     * One getEntries per answer, whatever the filters: each call reopens the file from its end, so a second read
+     * would cost the walk again and, with the log growing in between, return an entry twice.
+     */
+    public function testEveryAnswerReadsTheLogOnceAndNeverRepeatsAnEntry(): void {
+        // Sparse matches over a log larger than one block of the old reader, which read 500 entries and then the next.
+        $log = new FakeFileLog(FakeFileLog::lines(3000, static fn (int $i): array => ['level' => $i % 100 === 0 ? 3 : 2]));
+        $log->growth = 40;
+        $scanner = $this->scanner($log);
+        foreach ([
+            [['min_level' => 3], 50], [['since' => gmdate(DATE_ATOM, 1791400000 + 200 * 60)], 50], [['app' => 'core'], null],
+            [['since' => gmdate(DATE_ATOM, 1791400000)], null], [[], 20],
+        ] as [$arguments, $limit]) {
+            $log->calls = [];
+            $window = $scanner->scan(self::filter($arguments), 0, $limit);
+            $this->assertCount(1, $log->calls, json_encode($arguments));
+            $ids = array_column($window['entries'], 'reqId');
+            $this->assertSame(count($ids), count(array_unique($ids)), json_encode($arguments));
+        }
+    }
 
-        $log->calls = [];
-        $this->scanner($log)->scan(self::filter(['app' => 'core']), 0, null);
-        $this->assertSame([[LogScanner::SCAN_LIMIT, 0]], $log->calls, 'nothing can end it early: one read');
+    /** At a high offset the window shrinks to the budget, in the same single read. */
+    public function testAHighOffsetReadsOnlyWhatIsLeftOfTheBudget(): void {
+        $log = new FakeFileLog(FakeFileLog::lines(10, static fn (int $i): array => []));
+        $this->scanner($log)->scan(self::filter(['app' => 'x']), LogScanner::READ_BUDGET - 2000, 50);
+        $this->assertSame([[2000, LogScanner::READ_BUDGET - 2000]], $log->calls);
     }
 }

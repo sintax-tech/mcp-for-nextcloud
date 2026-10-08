@@ -51,12 +51,10 @@ final class LogFilterTest extends TestCase {
         $this->assertSame(LogFilter::MATCH, $filter->test(self::entry(['time' => '2026-10-07T21:14:03+00:00'])));
         $this->assertSame(LogFilter::MATCH, $filter->test(self::entry(['time' => '2026-10-07T21:00:00+00:00'])));
         $this->assertSame(LogFilter::SKIP, $filter->test(self::entry(['time' => '2026-10-07T21:31:00+00:00'])));
-        // Requests finish out of order, so an entry a little before `since` is only skipped...
+        // Before `since`, by a second or by a day, an entry is skipped: the order of the file never ends a search.
         $this->assertSame(LogFilter::SKIP, $filter->test(self::entry(['time' => '2026-10-07T20:59:59+00:00'])));
-        $this->assertSame(LogFilter::SKIP, $filter->test(self::entry(['time' => '2026-10-07T20:55:00+00:00'])));
-        // ...and only one older than `since` minus the tolerance ends the search when read from the end.
-        $this->assertSame(LogFilter::BEFORE_WINDOW, $filter->test(self::entry(['time' => '2026-10-07T20:54:59+00:00'])));
-        $this->assertSame(300, LogFilter::ORDER_TOLERANCE);
+        $this->assertSame(LogFilter::SKIP, $filter->test(self::entry(['time' => '2026-10-06T20:59:59+00:00'])));
+        $this->assertFalse(defined(LogFilter::class . '::BEFORE_WINDOW'));
     }
 
     /** A time the configured format cannot read is left out of a date filter and counted, never guessed. */

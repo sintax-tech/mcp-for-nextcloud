@@ -18,16 +18,6 @@ final class LogFilter {
     public const SKIP = 'skip';
     /** A date filter is set and the time of the entry cannot be read: left out and counted. */
     public const UNPARSED = 'unparsed';
-    /**
-     * The entry is older than `since` by more than ORDER_TOLERANCE: the log is written oldest first, so the ones read
-     * after it are older too.
-     */
-    public const BEFORE_WINDOW = 'before';
-    /**
-     * Seconds an entry may be stamped before a newer one: a request writes the time it started, and a long one is
-     * written after shorter ones that began later. Inside this margin an entry before `since` is only skipped.
-     */
-    public const ORDER_TOLERANCE = 300;
     /** Highest log level, fatal. */
     public const MAX_LEVEL = 4;
     /** Longest text accepted by `contains`. */
@@ -88,11 +78,6 @@ final class LogFilter {
         return $this->described;
     }
 
-    /** @return bool whether `since` is set, the one filter that can end a search before the window does */
-    public function hasSince(): bool {
-        return $this->since !== null;
-    }
-
     /** @return bool whether a date filter is set */
     public function hasDates(): bool {
         return $this->since !== null || $this->until !== null;
@@ -100,7 +85,7 @@ final class LogFilter {
 
     /**
      * @param \stdClass $entry one decoded entry of the log
-     * @return string MATCH, SKIP, UNPARSED or BEFORE_WINDOW
+     * @return string MATCH, SKIP or UNPARSED
      */
     public function test(\stdClass $entry): string {
         if ($this->hasDates()) {
@@ -108,10 +93,9 @@ final class LogFilter {
             if ($at === null) {
                 return self::UNPARSED;
             }
-            if ($this->since !== null && $at < $this->since) {
-                return $at->getTimestamp() < $this->since->getTimestamp() - self::ORDER_TOLERANCE ? self::BEFORE_WINDOW : self::SKIP;
-            }
-            if ($this->until !== null && $at > $this->until) {
+            // The file is not in time order: the core stamps an entry with microtime() when it builds it, and concurrent
+            // workers append theirs in any order, so an entry before `since` is skipped and the search goes on.
+            if (($this->since !== null && $at < $this->since) || ($this->until !== null && $at > $this->until)) {
                 return self::SKIP;
             }
         }

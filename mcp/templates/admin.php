@@ -198,4 +198,7 @@
             <tbody><tr><td colspan="5" class="mcp-empty"><?php p($l->t('Loading…')); ?></td></tr></tbody>
         </table>
     </div>
+    <footer class="mcp-attribution">
+        <?php p($l->t('Developed by Sintax')); ?> · <a href="https://sintax.tech" target="_blank" rel="noopener noreferrer">sintax.tech</a>
+    </footer>
 </div>

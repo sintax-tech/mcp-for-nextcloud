@@ -448,3 +448,13 @@
 		overflow-x: auto;
 	}
 }
+
+/* Visible attribution at the end of the administration page. */
+#mcp-admin .mcp-attribution {
+    margin: 24px 30px;
+    font-size: var(--default-font-size);
+    color: var(--color-main-text);
+}
+#mcp-admin .mcp-attribution a {
+    text-decoration: underline;
+}

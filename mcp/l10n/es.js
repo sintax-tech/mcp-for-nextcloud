@@ -1,6 +1,7 @@
 OC.L10N.register(
     "mcp",
     {
+    "Developed by Sintax" : "Desarrollado por Sintax",
     "%1$s %2$s is installed, but MCP for Nextcloud supports it from version %3$s on. Its tools stay hidden until the app is updated; the saved permissions are kept." : "%1$s %2$s está instalado, pero MCP for Nextcloud lo admite a partir de la versión %3$s. Sus herramientas permanecen ocultas hasta que se actualice la aplicación; los permisos guardados se conservan.",
     "%s: %s" : "%s: %s",
     "The search for people failed; try again." : "La búsqueda de personas falló; inténtelo de nuevo.",

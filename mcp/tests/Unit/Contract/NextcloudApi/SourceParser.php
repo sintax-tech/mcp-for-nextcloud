@@ -217,7 +217,9 @@ final class SourceParser {
         $variadic = false;
         for ($i++; isset($tokens[$i]); $i++) {
             $text = $tokens[$i]->text;
-            if ($text === '(' || $text === '[') {
+            // An attribute opens with the single token "#[" and closes with a plain "]": counted as a bracket, its
+            // closing does not end the list and nothing inside it is read as a parameter.
+            if ($text === '(' || $text === '[' || $tokens[$i]->id === T_ATTRIBUTE) {
                 $nesting++;
             } elseif ($text === ')' || $text === ']') {
                 if ($nesting === 0) {

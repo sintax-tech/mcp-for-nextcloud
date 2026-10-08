@@ -57,12 +57,15 @@ class ConversationReader {
 
             $attendee = $participant->getAttendee();
             $lastActivity = $room->getLastActivity();
+            // Talk's RoomFormatter reports no unread messages to a participant the lobby keeps out: the count would
+            // tell what the history refuses to show.
+            $unread = $this->resolver->keepsOutOfLobby($userId, new Conversation($room, $participant)) ? 0 : $attendee->getUnreadMessages();
             $conversations[] = [
                 'token' => $room->getToken(),
                 'displayName' => $room->getDisplayName($userId, false),
                 'type' => $room->getType(),
                 'participantType' => $attendee->getParticipantType(),
-                'unreadMessages' => $attendee->getUnreadMessages(),
+                'unreadMessages' => $unread,
                 'archived' => $attendee->isArchived(),
                 'lastActivity' => $lastActivity instanceof DateTimeInterface ? $lastActivity->getTimestamp() : null,
             ];

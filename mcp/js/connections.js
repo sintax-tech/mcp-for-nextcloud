@@ -44,10 +44,12 @@
 
 	/** @param {string} message error shown to the user */
 	function notifyError(message) {
+		// The old notification global is gone since Nextcloud 34 and OCP.Toast is deprecated, so without it the message goes to the
+		// list's own live region instead of being lost.
 		if (window.OCP && OCP.Toast) {
 			OCP.Toast.error(message)
-		} else if (OC.Notification) {
-			OC.Notification.showTemporary(message)
+		} else {
+			status.textContent = message
 		}
 	}
 

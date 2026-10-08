@@ -2,6 +2,20 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased
+
+### Changed
+
+- compat: the app now declares Nextcloud 32–35 (it declared only 33). `NextcloudApiContractTest` gained fixtures of v34.0.0 with Deck 1.18.0 and Talk 24.0.0 and of v35.0.0 with Deck 1.19.0 and Talk 25.0.0, and now also fails on a method a newer major removed, not only on one an older major lacks. `CalDavBackendContractTest` covers the DAV backends of 34 and 35. PHP stays 8.2 or later: 32 and 33 still run on it, and 35 requires 8.3 by itself.
+- contacts: the embedded CardDAV server no longer touches the private `\OC` class: the web root comes from `IURLGenerator::getWebroot()` and the server container handed to the DAV `PluginManager` from `Server::get(ContainerInterface::class)`. The contract test refuses any use of `\OC` in `lib/`.
+
+### Fixed
+
+- deck: editing a card (title, description or due date) on Deck 1.18 and 1.19 (Nextcloud 34 and 35) cleared its start date, and on 1.18 its colour, because `CardService::update()` writes both fields when they are left out. The current values are now sent back, in the form each release expects.
+- talk: reading the history of a conversation whose lobby is on no longer works for a participant who cannot bypass the lobby, as in Talk itself (`#[RequireModeratorOrNoLobby]`); an expired lobby timer is honoured first.
+- talk: on Talk 24 (Nextcloud 34) and later, writing in a webinar whose lobby timer has passed was refused, because `Room::getLobbyState()` no longer opens an expired lobby by itself. The module now calls `RoomService::validateLobbyTimer()` first, as Talk's own controllers do; a failing check keeps the lobby closed.
+- admin: an error on the admin and personal pages no longer depends on `OC.Notification`, removed in Nextcloud 34. It still goes through `OCP.Toast`, and without it to the connections list's live region or a browser dialog instead of being lost. A test keeps `js/` and `templates/` free of the front-end globals 34 and 35 removed.
+
 ## 1.0.2
 
 ### Added

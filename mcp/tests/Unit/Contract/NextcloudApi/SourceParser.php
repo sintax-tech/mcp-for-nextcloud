@@ -31,10 +31,11 @@ final class SourceParser {
 
     /**
      * @param string $class fully qualified class, interface, trait or enum
-     * @return array{kind:string, methods:array<string, list<string>>, constants:list<string>, properties:list<string>, fields:list<string>, external:list<string>}|null
-     *     its public surface, inherited members included, and the ancestors outside the tree (Sabre, Doctrine…) whose
-     *     members it also inherits; a parameter with a default ends in "?", a variadic one starts
-     *     with "..."; null when the tree has no such class
+     * @return array{kind:string, methods:array<string, list<string>>, types:array<string, list<string>>, constants:list<string>, properties:list<string>, fields:list<string>, external:list<string>}|null
+     *     its public surface, inherited members included (from parents, interfaces and used traits), and the ancestors
+     *     outside the tree (Sabre, Doctrine…) whose members it also inherits; a parameter with a default ends in "?", a
+     *     variadic one starts with "..."; `types` holds the declared type of each parameter, in the same order, with
+     *     class names resolved and "" for an untyped one; null when the tree has no such class
      */
     public function surface(string $class): ?array {
         if (array_key_exists($class, $this->parsed)) {
@@ -46,7 +47,7 @@ final class SourceParser {
             return null;
         }
         $own = $this->parse($file);
-        $surface = ['kind' => $own['kind'], 'methods' => $own['methods'], 'constants' => $own['constants'], 'properties' => $own['properties'], 'fields' => $own['fields'], 'external' => []];
+        $surface = ['kind' => $own['kind'], 'methods' => $own['methods'], 'types' => $own['types'], 'constants' => $own['constants'], 'properties' => $own['properties'], 'fields' => $own['fields'], 'external' => []];
         foreach ($own['parents'] as $parent) {
             $inherited = $this->surface($parent);
             if ($inherited === null) {
@@ -57,11 +58,13 @@ final class SourceParser {
             }
             $surface['external'] = array_values(array_unique([...$surface['external'], ...$inherited['external']]));
             $surface['methods'] += $inherited['methods'];
+            $surface['types'] += $inherited['types'];
             $surface['constants'] = array_values(array_unique([...$surface['constants'], ...$inherited['constants']]));
             $surface['properties'] = array_values(array_unique([...$surface['properties'], ...$inherited['properties']]));
             $surface['fields'] = array_values(array_unique([...$surface['fields'], ...$inherited['fields']]));
         }
         ksort($surface['methods']);
+        ksort($surface['types']);
         sort($surface['constants']);
         sort($surface['properties']);
         sort($surface['fields']);
@@ -82,7 +85,13 @@ final class SourceParser {
     /** @return string|null the file declaring the class, if the tree has it */
     private function file(string $class): ?string {
         if ($class === 'OC') {
-            return is_file($this->root . '/lib/base.php') ? $this->root . '/lib/base.php' : null;
+            // Nextcloud 35 moved the class out of lib/base.php, which now only requires lib/OC.php.
+            foreach (['/lib/OC.php', '/lib/base.php'] as $file) {
+                if (is_file($this->root . $file)) {
+                    return $this->root . $file;
+                }
+            }
+            return null;
         }
         foreach (self::DIRECTORIES as $prefix => $directory) {
             if (str_starts_with($class, $prefix)) {
@@ -94,7 +103,7 @@ final class SourceParser {
     }
 
     /**
-     * @return array{kind:string, parents:list<string>, methods:array<string, list<string>>, constants:list<string>, properties:list<string>, fields:list<string>}
+     * @return array{kind:string, parents:list<string>, methods:array<string, list<string>>, types:array<string, list<string>>, constants:list<string>, properties:list<string>, fields:list<string>}
      *     the members the first class-like declaration of the file declares itself
      */
     private function parse(string $file): array {
@@ -104,7 +113,7 @@ final class SourceParser {
         ));
         $namespace = '';
         $imports = [];
-        $result = ['kind' => '', 'parents' => [], 'methods' => [], 'constants' => [], 'properties' => [], 'fields' => []];
+        $result = ['kind' => '', 'parents' => [], 'methods' => [], 'types' => [], 'constants' => [], 'properties' => [], 'fields' => []];
         $depth = 0;
         $body = null;
         $count = count($tokens);
@@ -144,6 +153,17 @@ final class SourceParser {
             if ($depth !== $body) {
                 continue;
             }
+            // `use A, B;` in the body pulls in traits, whose public methods are the class's own. A conflict block
+            // `{ … }` that may follow is a nested depth and is skipped like a method body.
+            if ($token->id === T_USE) {
+                for ($i++; $i < $count && $tokens[$i]->text !== ';' && $tokens[$i]->text !== '{'; $i++) {
+                    if (in_array($tokens[$i]->id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED], true)) {
+                        $result['parents'][] = $this->resolve($tokens[$i]->text, $namespace, $imports);
+                    }
+                }
+                $i--;
+                continue;
+            }
             $modifiers = $this->modifiers($tokens, $i);
             // A protected field is what an Entity serves through its magic getX()/setX(); a private one never is.
             if ($token->id === T_VARIABLE && $modifiers !== [] && !in_array('static', $modifiers, true) && !in_array('private', $modifiers, true)) {
@@ -155,7 +175,7 @@ final class SourceParser {
             }
             if ($token->id === T_FUNCTION) {
                 $name = $tokens[$i + 1]->text === '&' ? $tokens[$i + 2]->text : $tokens[$i + 1]->text;
-                $result['methods'][$name] = $this->parameters($tokens, $i);
+                [$result['methods'][$name], $result['types'][$name]] = $this->parameters($tokens, $i, $namespace, $imports);
             } elseif ($token->id === T_CONST) {
                 for ($j = $i + 1; $j < $count && $tokens[$j]->text !== ';'; $j++) {
                     if ($tokens[$j]->id === T_STRING && ($tokens[$j + 1]->text ?? '') === '=') {
@@ -199,18 +219,34 @@ final class SourceParser {
     /**
      * @param list<\PhpToken> $tokens tokens of the file, without whitespace and comments
      * @param int $at position of the `function` keyword
-     * @return list<string> parameter names, "?" appended to an optional one and "..." prepended to a variadic one
+     * @param string $namespace namespace of the file, for the class names of the types
+     * @param array<string, string> $imports alias => imported class of the file
+     * @return array{list<string>, list<string>} the parameter names, "?" appended to an optional one and "..."
+     *     prepended to a variadic one, and the declared type of each, "" when it has none
      */
-    private function parameters(array $tokens, int $at): array {
+    private function parameters(array $tokens, int $at, string $namespace, array $imports): array {
         $i = $at;
         while ($tokens[$i]->text !== '(') {
             $i++;
         }
         $parameters = [];
+        $types = [];
+        $type = '';
         $nesting = 0;
+        // Nesting at which the attribute being read opened, null outside one.
+        $attribute = null;
         $variadic = false;
+        $named = false;
         for ($i++; isset($tokens[$i]); $i++) {
-            $text = $tokens[$i]->text;
+            $token = $tokens[$i];
+            $text = $token->text;
+            // An attribute opens with the single token "#[" and closes with a plain "]": counted as a bracket, its
+            // closing does not end the list and nothing inside it is read as a parameter or a type.
+            if ($token->id === T_ATTRIBUTE) {
+                $attribute ??= $nesting;
+                $nesting++;
+                continue;
+            }
             if ($text === '(' || $text === '[') {
                 $nesting++;
             } elseif ($text === ')' || $text === ']') {
@@ -218,16 +254,48 @@ final class SourceParser {
                     break;
                 }
                 $nesting--;
-            } elseif ($nesting === 0 && $tokens[$i]->id === T_ELLIPSIS) {
-                $variadic = true;
-            } elseif ($nesting === 0 && $tokens[$i]->id === T_VARIABLE) {
-                $parameters[] = ($variadic ? '...' : '') . substr($text, 1);
-                $variadic = false;
-            } elseif ($nesting === 0 && $text === '=' && $parameters !== []) {
+                if ($attribute === $nesting) {
+                    $attribute = null;
+                    continue;
+                }
+            }
+            if ($attribute !== null) {
+                continue;
+            }
+            if ($text === ',' && $nesting === 0) {
+                [$type, $named] = ['', false];
+                continue;
+            }
+            if (!$named) {
+                if ($token->id === T_VARIABLE) {
+                    $parameters[] = ($variadic ? '...' : '') . substr($text, 1);
+                    $types[] = $type;
+                    [$variadic, $named] = [false, true];
+                } elseif ($token->id === T_ELLIPSIS) {
+                    $variadic = true;
+                } elseif (in_array($token->id, [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED, T_ARRAY, T_CALLABLE, T_STATIC], true)) {
+                    $type .= $this->typeName($text, $namespace, $imports);
+                } elseif (in_array($text, ['?', '|', '(', ')'], true)
+                    || ($text === '&' && !in_array($tokens[$i + 1]->id ?? null, [T_VARIABLE, T_ELLIPSIS], true))) {
+                    // "&" right before the variable passes by reference; anywhere else it joins an intersection type.
+                    $type .= $text;
+                }
+                continue;
+            }
+            if ($nesting === 0 && $text === '=') {
                 $parameters[count($parameters) - 1] .= '?';
             }
         }
-        return $parameters;
+        return [$parameters, $types];
+    }
+
+    /**
+     * @param array<string, string> $imports alias => imported class of the file
+     * @return string a type name as written, resolved to its class when it is not a built-in type
+     */
+    private function typeName(string $name, string $namespace, array $imports): string {
+        $builtin = ['array', 'bool', 'callable', 'false', 'float', 'int', 'iterable', 'mixed', 'never', 'null', 'object', 'parent', 'self', 'static', 'string', 'true', 'void'];
+        return in_array(strtolower($name), $builtin, true) ? strtolower($name) : $this->resolve($name, $namespace, $imports);
     }
 
     /** @param array<string, string> $imports alias => imported class */

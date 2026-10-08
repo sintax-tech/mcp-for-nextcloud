@@ -9,7 +9,7 @@ declare(strict_types=1);
  * Usage: php tests/fixtures/nextcloud-api/generate.php <major> <tree>
  *
  * <tree> is a nextcloud/server checkout of the release in NextcloudApiUsage::SOURCES (lib/public, lib/private/Hooks,
- * lib/base.php and apps/dav, apps/files_versions, apps/files_trashbin, apps/files_sharing are enough), with the
+ * lib/base.php, lib/OC.php from 35 on, and apps/dav, apps/files_versions, apps/files_trashbin, apps/files_sharing are enough), with the
  * nextcloud/deck and nextcloud/spreed tags of that row checked out under apps/deck and apps/spreed. The script refuses
  * a tree whose versions differ from that row.
  */

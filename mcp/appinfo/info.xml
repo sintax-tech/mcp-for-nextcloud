@@ -32,7 +32,7 @@ Claude (claude.ai and Claude Desktop), ChatGPT and Gemini CLI sign in with OAuth
 
 ## Requirements
 
-Nextcloud 33 and PHP 8.2 or later. Deck and Talk are optional: their tools appear only when the app is enabled in a supported version.
+Nextcloud 32–35 and PHP 8.2 or later. Deck and Talk are optional: their tools appear only when the app is enabled in a supported version.
     ]]></description>
     <description lang="pt-br"><![CDATA[
 **MCP for Nextcloud** é um app nativo do Nextcloud que transforma a sua instância em um servidor Model Context Protocol (MCP). Os assistentes de IA trabalham com os seus arquivos, notas, calendários, contatos, tarefas, quadros do Deck e conversas do Talk por um único endereço no seu próprio servidor: sem serviço extra, sem Docker, sem cópia dos seus dados em outro lugar.
@@ -61,7 +61,7 @@ O Claude (claude.ai e Claude Desktop), o ChatGPT e o Gemini CLI entram com OAuth
 
 ## Requisitos
 
-Nextcloud 33 e PHP 8.2 ou superior. O Deck e o Talk são opcionais: as ferramentas deles só aparecem com o app ativo numa versão suportada.
+Nextcloud 32–35 e PHP 8.2 ou superior. O Deck e o Talk são opcionais: as ferramentas deles só aparecem com o app ativo numa versão suportada.
     ]]></description>
     <description lang="es"><![CDATA[
 **MCP for Nextcloud** es una aplicación nativa de Nextcloud que convierte su instancia en un servidor Model Context Protocol (MCP). Los asistentes de IA trabajan con sus archivos, notas, calendarios, contactos, tareas, tableros de Deck y conversaciones de Talk a través de una sola dirección en su propio servidor: sin servicio adicional, sin Docker, sin copia de sus datos en otro lugar.
@@ -90,7 +90,7 @@ Claude (claude.ai y Claude Desktop), ChatGPT y Gemini CLI inician sesión con OA
 
 ## Requisitos
 
-Nextcloud 33 y PHP 8.2 o superior. Deck y Talk son opcionales: sus herramientas solo aparecen con la aplicación activa en una versión compatible.
+Nextcloud 32–35 y PHP 8.2 o superior. Deck y Talk son opcionales: sus herramientas solo aparecen con la aplicación activa en una versión compatible.
     ]]></description>
     <version>1.0.2</version>
     <licence>AGPL-3.0-or-later</licence>
@@ -106,7 +106,7 @@ Nextcloud 33 y PHP 8.2 o superior. Deck y Talk son opcionales: sus herramientas 
     <screenshot>https://raw.githubusercontent.com/sintax-tech/mcp-for-nextcloud/main/screenshots/plan.png</screenshot>
     <dependencies>
         <php min-version="8.2"/>
-        <nextcloud min-version="33" max-version="33"/>
+        <nextcloud min-version="32" max-version="35"/>
     </dependencies>
     <commands><command>OCA\Mcp\Command\CalendarSelftest</command></commands>
     <settings>

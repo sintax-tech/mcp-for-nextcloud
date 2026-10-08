@@ -5,7 +5,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
 /**
  * Public methods of the Nextcloud DAV backends that the adapters may call, per Nextcloud major, taken from
- * `apps/dav/lib` at the oldest release of each major appinfo/info.xml declares: v31.0.0, v32.0.0 and v33.0.0.
+ * `apps/dav/lib` at the oldest release of each major appinfo/info.xml declares: v31.0.0, v32.0.0, v33.0.0, v34.0.0
+ * and v35.0.0.
  * `nextcloud/ocp` does not ship `OCA\DAV`, so the contract test cannot reflect on the real classes and reads these
  * fixed lists instead.
  *
@@ -73,6 +74,43 @@ final class CalDavBackendMethods {
             'unshare', 'updateCalendar', 'updateCalendarObject', 'updateProperties', 'updateShares',
             'updateSubscription',
         ],
+        '34' => [
+            'applyShareAcl', 'calendarQuery', 'calendarSearch', 'createCalendar', 'createCalendarObject',
+            'createSchedulingObject', 'createSubscription', 'deleteAllBirthdayCalendars', 'deleteAllSharesByUser',
+            'deleteCalendar', 'deleteCalendarObject', 'deleteOutdatedSchedulingObjects', 'deleteSchedulingObject',
+            'deleteSubscription', 'exportCalendar', 'getCalendarById', 'getCalendarByUri', 'getCalendarObject',
+            'getCalendarObjectById', 'getCalendarObjectByUID', 'getCalendarObjects', 'getCalendarsForUser',
+            'getCalendarsForUserCount', 'getChangesForCalendar', 'getDeletedCalendarObjectByIdForPrincipal',
+            'getDeletedCalendarObjects', 'getDeletedCalendarObjectsByPrincipal', 'getDeletedCalendars',
+            'getDenormalizedData', 'getFederatedCalendarByUri', 'getFederatedCalendarsForUser',
+            'getLimitedCalendarObjects', 'getMultipleCalendarObjects', 'getPublicCalendar', 'getPublicCalendars',
+            'getPublishStatus', 'getSchedulingObject', 'getSchedulingObjects', 'getShares',
+            'getSharesByShareePrincipal', 'getSubscriptionById', 'getSubscriptionByUri', 'getSubscriptionsForUser',
+            'getSubscriptionsForUserCount', 'getUsersOwnCalendars', 'moveCalendar', 'moveCalendarObject',
+            'preloadPublishStatuses', 'preloadShares', 'pruneOutdatedSyncTokens', 'purgeAllCachedEventsForSubscription',
+            'purgeCachedEventsForSubscription', 'restoreCalendar', 'restoreCalendarObject', 'restoreChanges', 'search',
+            'searchPrincipalUri', 'setPublishStatus', 'unshare', 'updateCalendar', 'updateCalendarObject',
+            'updateProperties', 'updateShares', 'updateSubscription',
+        ],
+        '35' => [
+            'applyShareAcl', 'calendarQuery', 'calendarSearch', 'createCalendar', 'createCalendarObject',
+            'createSchedulingObject', 'createSubscription', 'deleteAllBirthdayCalendars', 'deleteAllSharesByUser',
+            'deleteCalendar', 'deleteCalendarObject', 'deleteOutdatedSchedulingObjects', 'deleteSchedulingObject',
+            'deleteSubscription', 'exportCalendar', 'findCalendarObjectByUid', 'getCalendarById', 'getCalendarByUri',
+            'getCalendarObject', 'getCalendarObjectById', 'getCalendarObjectByUID', 'getCalendarObjects',
+            'getCalendarsForUser', 'getCalendarsForUserCount', 'getChangesForCalendar',
+            'getDeletedCalendarObjectByIdForPrincipal', 'getDeletedCalendarObjects',
+            'getDeletedCalendarObjectsByPrincipal', 'getDeletedCalendars', 'getDenormalizedData',
+            'getFederatedCalendarByUri', 'getFederatedCalendarsForUser', 'getLimitedCalendarObjects',
+            'getMultipleCalendarObjects', 'getPublicCalendar', 'getPublicCalendars', 'getPublishStatus',
+            'getSchedulingObject', 'getSchedulingObjects', 'getShares', 'getSharesByShareePrincipal',
+            'getSubscriptionById', 'getSubscriptionByUri', 'getSubscriptionsForUser', 'getSubscriptionsForUserCount',
+            'getUsersOwnCalendars', 'moveCalendar', 'moveCalendarObject', 'preloadPublishStatuses', 'preloadShares',
+            'pruneOutdatedSyncTokens', 'purgeAllCachedEventsForSubscription', 'purgeCachedEventsForSubscription',
+            'restoreCalendar', 'restoreCalendarObject', 'restoreChanges', 'search', 'searchPrincipalUri',
+            'setPublishStatus', 'unshare', 'updateCalendar', 'updateCalendarObject', 'updateProperties', 'updateShares',
+            'updateSubscription',
+        ],
     ];
 
     /** @var array<string, list<string>> public methods of OCA\DAV\CardDAV\CardDavBackend, per Nextcloud major */
@@ -100,6 +138,22 @@ final class CalDavBackendMethods {
             'getChangesForAddressBook', 'getContact', 'getMultipleCards', 'getShares', 'getUsersOwnAddressBooks',
             'moveCard', 'pruneOutdatedSyncTokens', 'search', 'searchPrincipalUri', 'updateAddressBook',
             'updateCard', 'updateShares',
+        ],
+        '34' => [
+            'applyShareAcl', 'collectCardProperties', 'createAddressBook', 'createCard', 'deleteAddressBook',
+            'deleteAllSharesByUser', 'deleteCard', 'getAddressBookById', 'getAddressBooksByUri',
+            'getAddressBooksForUser', 'getAddressBooksForUserCount', 'getCard', 'getCardUri', 'getCards',
+            'getChangesForAddressBook', 'getContact', 'getMultipleCards', 'getPendingCards', 'getShares',
+            'getUsersOwnAddressBooks', 'markCardsAsPending', 'moveCard', 'pruneOutdatedSyncTokens', 'search',
+            'searchPrincipalUri', 'updateAddressBook', 'updateCard', 'updateShares',
+        ],
+        '35' => [
+            'applyShareAcl', 'collectCardProperties', 'createAddressBook', 'createCard', 'deleteAddressBook',
+            'deleteAllSharesByUser', 'deleteCard', 'getAddressBookById', 'getAddressBooksByUri',
+            'getAddressBooksForUser', 'getAddressBooksForUserCount', 'getCard', 'getCardByUid', 'getCardUri',
+            'getCards', 'getChangesForAddressBook', 'getContact', 'getMultipleCards', 'getPendingCards', 'getShares',
+            'getUsersOwnAddressBooks', 'markCardsAsPending', 'moveCard', 'pruneOutdatedSyncTokens', 'search',
+            'searchPrincipalUri', 'updateAddressBook', 'updateCard', 'updateShares',
         ],
     ];
 }

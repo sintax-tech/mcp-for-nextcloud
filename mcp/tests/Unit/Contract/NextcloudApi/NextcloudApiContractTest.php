@@ -132,20 +132,29 @@ final class NextcloudApiContractTest extends TestCase {
     }
 
     /**
-     * Every method name lib/ calls, on a class that declares it in the newest release, exists in every older one too.
-     * The pairing is by name, so a name the class only shares with another object is listed in NAME_CLASHES.
+     * Every method name lib/ calls, on a class that declares it in any covered release, exists in all of them: a
+     * method a newer major removed is caught as surely as one an older major lacks. The pairing is by name, so a name
+     * the class only shares with another object is listed in NAME_CLASHES.
      *
      * @return array<string, array{string, list<string>, string}> one case per class and covered major, with its methods
      */
     public static function calledMethods(): array {
         $majors = self::checkedMajors();
-        $newest = end($majors);
         $cases = [];
         foreach (array_keys(self::scanner()->classes()) as $class) {
-            $surface = self::surface($newest, $class);
             $methods = array_values(array_filter(
                 array_keys(self::scanner()->methods()),
-                static fn (string $method): bool => self::serves($surface, $method) && !isset(NextcloudApiUsage::NAME_CLASHES["$class::$method"]),
+                static function (string $method) use ($class, $majors): bool {
+                    if (isset(NextcloudApiUsage::NAME_CLASHES["$class::$method"])) {
+                        return false;
+                    }
+                    foreach ($majors as $major) {
+                        if (self::serves(self::surface($major, $class), $method)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
             ));
             if ($methods === []) {
                 continue;
@@ -207,12 +216,216 @@ final class NextcloudApiContractTest extends TestCase {
             $this->assertSame([], $parameters);
             return;
         }
-        $declared = $surface['methods'][$method];
-        $names = array_map(static fn (string $name): string => rtrim(ltrim($name, '.'), '?'), $declared);
-        $this->assertSame($parameters, array_slice($names, 0, count($parameters)), "$call in Nextcloud $major takes (" . implode(', ', $declared) . ')');
-        foreach (array_slice($declared, count($parameters)) as $rest) {
-            $this->assertTrue(str_ends_with($rest, '?') || str_starts_with($rest, '...'), "$call in Nextcloud $major requires \$$rest, which the app does not pass");
+        $this->assertNull(self::signatureMismatch($surface['methods'][$method], $parameters, NextcloudApiUsage::REVIEWED_TRAILING[$call] ?? []), "$call in Nextcloud $major");
+    }
+
+    /** @return array<string, array{string}> one case per positional call */
+    public static function positionalCallNames(): array {
+        $cases = [];
+        foreach (array_keys(NextcloudApiUsage::POSITIONAL) as $call) {
+            $cases[$call] = [$call];
         }
+        return $cases;
+    }
+
+    /**
+     * A parameter the app passes or leaves to its reviewed default keeps one declared type across the covered majors,
+     * or the change is reviewed in REVIEWED_TYPE_CHANGES.
+     */
+    #[DataProvider('positionalCallNames')]
+    public function testPositionalCallsKeepTheirParameterTypesInEveryCoveredMajor(string $call): void {
+        $reviewed = NextcloudApiUsage::REVIEWED_TYPE_CHANGES[$call] ?? [];
+        $changes = self::typeChanges(self::typesByParameter($call), $reviewed);
+        $this->assertSame([], $changes, "$call: the type of " . implode(', ', $changes) . ' differs between majors');
+        foreach (array_keys($reviewed) as $parameter) {
+            $this->assertNotSame([], self::typeChanges(self::typesByParameter($call), array_diff_key($reviewed, [$parameter => true])), "$call: \$$parameter no longer changes type, drop it from REVIEWED_TYPE_CHANGES");
+        }
+    }
+
+    /** Every reviewed trailing parameter still exists after the passed ones in some covered major: no stale review. */
+    public function testEveryReviewedTrailingParameterStillExists(): void {
+        foreach (NextcloudApiUsage::REVIEWED_TRAILING as $call => $parameters) {
+            $this->assertArrayHasKey($call, NextcloudApiUsage::POSITIONAL, "$call is no positional call");
+            foreach (array_keys($parameters) as $parameter) {
+                $found = false;
+                foreach (self::checkedMajors() as $major) {
+                    [$class, $method] = explode('::', $call);
+                    $declared = array_map(static fn (string $name): string => rtrim(ltrim($name, '.'), '?'), self::surface($major, $class)['methods'][$method] ?? []);
+                    $found = $found || in_array($parameter, array_slice($declared, count(NextcloudApiUsage::POSITIONAL[$call])), true);
+                }
+                $this->assertTrue($found, "$call has no trailing \$$parameter in any covered major: drop it from REVIEWED_TRAILING");
+            }
+        }
+    }
+
+    /**
+     * @return array<string, array<string, string>> parameter => major => declared type, for every parameter of the
+     *     call in every covered major that has it
+     */
+    private static function typesByParameter(string $call): array {
+        [$class, $method] = explode('::', $call);
+        $types = [];
+        foreach (self::checkedMajors() as $major) {
+            $surface = self::surface($major, $class);
+            foreach ($surface['methods'][$method] ?? [] as $i => $name) {
+                $types[rtrim(ltrim($name, '.'), '?')][$major] = $surface['types'][$method][$i] ?? '';
+            }
+        }
+        return $types;
+    }
+
+    /**
+     * @param array<string, array<string, string>> $types parameter => major => declared type
+     * @param array<string, string> $reviewed parameters whose change is reviewed
+     * @return list<string> parameters declared with more than one type, untyped releases left out
+     */
+    private static function typeChanges(array $types, array $reviewed): array {
+        $changed = [];
+        foreach ($types as $parameter => $byMajor) {
+            if (!isset($reviewed[$parameter]) && count(array_unique(array_filter($byMajor, static fn (string $type): bool => $type !== ''))) > 1) {
+                $changed[] = $parameter;
+            }
+        }
+        return $changed;
+    }
+
+    /**
+     * The rule above must fail on a real change of signature, or every positional case passes vacuously: here it is
+     * fed the Nextcloud 35 signatures with the changes the contract exists to catch.
+     */
+    public function testThePositionalRuleCatchesAChangedSignature(): void {
+        $call = 'OCA\\Talk\\Chat\\ChatManager::sendMessage';
+        $sendMessage = self::fixture('35')['classes']['OCA\\Talk\\Chat\\ChatManager']['methods']['sendMessage'];
+        $passes = NextcloudApiUsage::POSITIONAL[$call];
+        $reviewed = NextcloudApiUsage::REVIEWED_TRAILING[$call];
+        $this->assertNull(self::signatureMismatch($sendMessage, $passes, $reviewed), 'the real signature is accepted');
+
+        $required = $sendMessage;
+        array_splice($required, 6, 0, ['threadId']);
+        $this->assertNotNull(self::signatureMismatch($required, $passes, $reviewed), 'a required parameter inserted before the ones passed');
+        $renamed = $sendMessage;
+        $renamed[4] = 'comment';
+        $this->assertNotNull(self::signatureMismatch($renamed, $passes, $reviewed), 'a parameter renamed at a passed position');
+        $this->assertNotNull(self::signatureMismatch([...$sendMessage, 'verb'], $passes, $reviewed), 'a new required trailing parameter');
+        // An optional parameter is no harmless default by itself: Deck 1.18 appended two that clear the card when left out.
+        $this->assertNotNull(self::signatureMismatch([...$sendMessage, 'clearsTheMessage?'], $passes, $reviewed), 'a new optional trailing parameter nobody reviewed');
+        // What the generator wrote before it read parameters behind #[SensitiveParameter].
+        $this->assertNotNull(self::signatureMismatch([], NextcloudApiUsage::POSITIONAL['OCP\\Security\\Events\\ValidatePasswordPolicyEvent::__construct']), 'a signature read without its parameters');
+    }
+
+    /** The type rule must fail on a parameter that kept its name and changed type, as `color` did in Deck 1.19. */
+    public function testTheTypeRuleCatchesAParameterThatChangedType(): void {
+        $call = 'OCA\\Talk\\Chat\\ChatManager::sendMessage';
+        $types = self::typesByParameter($call);
+        $this->assertSame([], self::typeChanges($types, []), 'the real types are stable across the covered majors');
+
+        $types['message']['35'] = 'array';
+        $this->assertSame(['message'], self::typeChanges($types, []), 'a passed parameter whose type changed');
+        $this->assertSame([], self::typeChanges($types, ['message' => 'reviewed']), 'unless the change is reviewed');
+        $types['actorId']['31'] = '';
+        $this->assertSame(['message'], self::typeChanges($types, []), 'an untyped parameter accepts anything: gaining a type is no change');
+    }
+
+    /**
+     * @param list<string> $declared the parameters of the release, as the fixture writes them
+     * @param list<string> $parameters what the app passes, in order
+     * @param array<string, string> $reviewed parameters after those, reviewed in REVIEWED_TRAILING
+     * @return string|null why the call no longer fits the signature, null when it does
+     */
+    private static function signatureMismatch(array $declared, array $parameters, array $reviewed = []): ?string {
+        $names = array_map(static fn (string $name): string => rtrim(ltrim($name, '.'), '?'), $declared);
+        if (array_slice($names, 0, count($parameters)) !== $parameters) {
+            return 'takes (' . implode(', ', $declared) . ')';
+        }
+        foreach (array_slice($declared, count($parameters)) as $rest) {
+            if (!str_ends_with($rest, '?') && !str_starts_with($rest, '...')) {
+                return "requires \$$rest, which the app does not pass";
+            }
+            $name = rtrim(ltrim($rest, '.'), '?');
+            if (!isset($reviewed[$name])) {
+                return "has \$$name after the passed parameters, not reviewed in REVIEWED_TRAILING";
+            }
+        }
+        return null;
+    }
+
+    /** @return array<string, array{string, string}> one case per Nextcloud class lib/ builds with `new` and per covered major */
+    public static function constructedClasses(): array {
+        $cases = [];
+        foreach (array_keys(self::scanner()->constructions()) as $class) {
+            foreach (self::checkedMajors() as $major) {
+                $cases["$class @ $major"] = [$class, $major];
+            }
+        }
+        return $cases;
+    }
+
+    /**
+     * Every `new` of a Nextcloud class in lib/ fits the constructor of every covered major: no fewer arguments than it
+     * requires, no more than it takes, and only names it declares. The argument names of a positional call are checked
+     * by POSITIONAL; this covers every construction without a hand-kept list.
+     */
+    #[DataProvider('constructedClasses')]
+    public function testEveryConstructionFitsTheConstructorInEveryCoveredMajor(string $class, string $major): void {
+        if (self::gated($class, $major)) {
+            $this->assertNull(self::surface($major, $class));
+            return;
+        }
+        $surface = self::surface($major, $class);
+        $this->assertNotNull($surface, "$class does not exist in Nextcloud $major");
+        $declared = $surface['methods']['__construct'] ?? null;
+        if ($declared === null && $surface['external'] !== []) {
+            // The constructor comes from an ancestor outside Nextcloud (an exception, a Sabre class): not in the tree.
+            $this->addToAssertionCount(1);
+            return;
+        }
+        foreach (self::scanner()->constructions()[$class] as $call) {
+            $this->assertNull(self::constructionMismatch($declared ?? [], $call), "new $class in {$call['file']}, Nextcloud $major");
+        }
+    }
+
+    /** The construction rule must fail on a constructor that no longer fits, or every case above passes vacuously. */
+    public function testTheConstructionRuleCatchesAChangedConstructor(): void {
+        $class = 'OCP\\Security\\Events\\ValidatePasswordPolicyEvent';
+        $declared = self::fixture('35')['classes'][$class]['methods']['__construct'];
+        $call = self::scanner()->constructions()[$class][0];
+        $this->assertNull(self::constructionMismatch($declared, $call), 'the real constructor is accepted');
+
+        $this->assertNotNull(self::constructionMismatch([...$declared, 'policy'], $call), 'a new required parameter');
+        $this->assertNotNull(self::constructionMismatch(['password'], $call), 'a parameter removed');
+        // What the generator wrote before it read parameters behind #[SensitiveParameter].
+        $this->assertNotNull(self::constructionMismatch([], $call), 'a constructor read without its parameters');
+        $this->assertNotNull(self::constructionMismatch(['data?', 'statusCode?'], ['arguments' => 1, 'spread' => false, 'named' => ['status']]), 'a named argument the constructor does not declare');
+    }
+
+    /**
+     * @param list<string> $declared the constructor parameters of the release, as the fixture writes them
+     * @param array{arguments: int, spread: bool, named: list<string>} $call a `new` of {@see LibScanner::constructions()}
+     * @return string|null why the construction no longer fits, null when it does
+     */
+    private static function constructionMismatch(array $declared, array $call): ?string {
+        $names = array_map(static fn (string $name): string => rtrim(ltrim($name, '.'), '?'), $declared);
+        // A required parameter after optional ones makes them required too: the minimum runs to the last required one.
+        $required = 0;
+        foreach ($declared as $position => $name) {
+            if (!str_ends_with($name, '?') && !str_starts_with($name, '...')) {
+                $required = $position + 1;
+            }
+        }
+        $variadic = $declared !== [] && str_starts_with(end($declared), '...');
+        $takes = 'takes (' . implode(', ', $declared) . ')';
+        foreach ($call['named'] as $name) {
+            if (!in_array($name, $names, true)) {
+                return "$takes: no parameter \$$name";
+            }
+        }
+        if (!$call['spread'] && $call['named'] === [] && $call['arguments'] < $required) {
+            return "$takes: {$call['arguments']} arguments are too few";
+        }
+        if (!$variadic && $call['arguments'] > count($declared)) {
+            return "$takes: {$call['arguments']} arguments are too many";
+        }
+        return null;
     }
 
     /** @return array<string, array{string, string, string}> */
@@ -233,14 +446,13 @@ final class NextcloudApiContractTest extends TestCase {
         $this->assertContains($constant, self::surface($major, $class)['constants'] ?? [], "$class::$constant does not exist in Nextcloud $major");
     }
 
-    public function testStaticPropertiesTheAppReadsExistInEveryCoveredMajor(): void {
-        $this->assertNotSame([], self::scanner()->properties(), 'the scanner no longer sees OC::$server and OC::$WEBROOT');
-        foreach (array_keys(self::scanner()->properties()) as $property) {
-            [$class, $name] = explode('::$', $property);
-            foreach (self::checkedMajors() as $major) {
-                $this->assertContains($name, self::surface($major, $class)['properties'] ?? [], "$property does not exist in Nextcloud $major");
-            }
-        }
+    /**
+     * \OC is private and lost members across majors (Nextcloud 34 dropped OC\Server getters, 35 moved the class out of
+     * lib/base.php): the app reaches the server container and the web root through OCP only.
+     */
+    public function testTheAppNeverTouchesThePrivateOcClass(): void {
+        $this->assertArrayNotHasKey('OC', self::scanner()->classes(), 'lib/ uses \\OC; use OCP\\Server::get(ContainerInterface::class) or IURLGenerator::getWebroot()');
+        $this->assertSame([], self::scanner()->properties(), 'lib/ reads a static property of a Nextcloud class');
     }
 
     /** A gap is accepted only where its fallback exists, and the class that handles the gap names that fallback. */
@@ -272,6 +484,11 @@ final class NextcloudApiContractTest extends TestCase {
             $files = $member === null ? self::scanner()->classes()[$class] ?? [] : self::scanner()->methods()[$member] ?? [];
             $handler = substr((string)(new \ReflectionClass($gate['by']))->getFileName(), strlen((string)realpath(self::LIB)) + 1);
             $this->assertNotSame([], $files, "$api is no longer used: drop it from VERSION_GATED");
+            // A file listed in `elsewhere` calls the same name on another object; the entry must stay true.
+            foreach (array_keys($gate['elsewhere'] ?? []) as $file) {
+                $this->assertContains($file, $files, "$api: $file no longer calls that name, drop it from `elsewhere`");
+            }
+            $files = array_diff($files, array_keys($gate['elsewhere'] ?? []));
             $this->assertSame([$handler], array_values(array_unique($files)), "$api must only be used through {$gate['by']}");
         }
     }
@@ -279,7 +496,7 @@ final class NextcloudApiContractTest extends TestCase {
     /** The scanner itself still sees what it is there to see; an empty answer would make every case above vacuous. */
     public function testTheScannerSeesTheKnownUses(): void {
         $classes = self::scanner()->classes();
-        foreach (['OCP\\IUserManager', 'OCA\\Talk\\Chat\\ChatManager', 'OCA\\Deck\\Db\\CardMapper', 'OCA\\DAV\\CalDAV\\EmbeddedCalDavServer', 'OC'] as $class) {
+        foreach (['OCP\\IUserManager', 'OCA\\Talk\\Chat\\ChatManager', 'OCA\\Deck\\Db\\CardMapper', 'OCA\\DAV\\CalDAV\\EmbeddedCalDavServer', 'OCA\\DAV\\AppInfo\\PluginManager'] as $class) {
             $this->assertArrayHasKey($class, $classes);
         }
         $this->assertArrayNotHasKey('OCA\\Mcp\\Service\\GrantPolicy', $classes, 'the app is not a dependency of itself');

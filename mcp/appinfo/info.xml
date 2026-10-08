@@ -92,7 +92,7 @@ Claude (claude.ai y Claude Desktop), ChatGPT y Gemini CLI inician sesión con OA
 
 Nextcloud 32–35 y PHP 8.2 o superior. Deck y Talk son opcionales: sus herramientas solo aparecen con la aplicación activa en una versión compatible.
     ]]></description>
-    <version>1.0.2</version>
+    <version>1.0.3</version>
     <licence>AGPL-3.0-or-later</licence>
     <author mail="jhonatan@sintax.tech">Jhonatan Jaworski</author>
     <namespace>Mcp</namespace>

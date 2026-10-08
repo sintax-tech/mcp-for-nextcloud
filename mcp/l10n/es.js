@@ -893,6 +893,8 @@ OC.L10N.register(
     "Only administrators and members of the groups selected in “Server log” can read the log; the saved permission is kept." : "Solo los administradores y los miembros de los grupos marcados en «Registro del servidor» pueden leer el registro; el permiso guardado se conserva.",
     "No groups found; only administrators can read the log." : "No se encontraron grupos; solo los administradores pueden leer el registro.",
     "Could not save the groups that may read the server log." : "No se pudieron guardar los grupos que pueden leer el registro del servidor.",
-    "Could not load the groups." : "No se pudieron cargar los grupos."
+    "Could not load the groups." : "No se pudieron cargar los grupos.",
+    "{group} (group removed)" : "{group} (grupo eliminado)",
+    "The groups were changed in another window or by another administrator; the current list was loaded." : "Los grupos se cambiaron en otra ventana o por otro administrador; se cargó la lista actual."
 },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

@@ -696,7 +696,9 @@
 
 	/**
 	 * Server log section: the groups whose members may read the log besides the administrators, through
-	 * GET and PUT /apps/mcp/api/logs-access. Each checkbox is saved at once with the whole list.
+	 * GET and PUT /apps/mcp/api/logs-access. Saves run one at a time: every box is locked while one runs, and each
+	 * save carries the list it changed (`previous`), so the server answers 409 when another window or administrator
+	 * saved first and a removed group is never put back. A listed group that was deleted is shown, to be removed.
 	 */
 	async function initLogsAccess() {
 		const container = document.getElementById('mcp-logs-groups')
@@ -705,20 +707,47 @@
 			return
 		}
 		let selected = new Set()
+		let saving = false
+
+		/** @param {boolean} locked whether every box is locked while a save runs */
+		function setLocked(locked) {
+			container.setAttribute('aria-busy', locked ? 'true' : 'false')
+			for (const box of container.querySelectorAll('input[type="checkbox"]')) {
+				box.disabled = locked
+			}
+		}
+
+		/**
+		 * @param {string} id group id
+		 * @param {string} label text of the checkbox
+		 * @return {HTMLLabelElement}
+		 */
+		function groupBox(id, label) {
+			const box = el('input', { type: 'checkbox', className: 'checkbox', id: 'mcp-logs-group-' + id, checked: selected.has(id) })
+			box.addEventListener('change', () => save(box, id))
+			return el('label', { htmlFor: box.id, className: 'mcp-tag-item' }, [box, label])
+		}
 
 		/** @param {object} data state returned by the API */
 		function show(data) {
 			selected = new Set(data.groups)
 			container.setAttribute('aria-busy', 'false')
-			if (data.allGroups.length === 0) {
+			const missing = data.missing.map((id) => groupBox(id, t('mcp', '{group} (group removed)', { group: id })))
+			if (data.allGroups.length === 0 && missing.length === 0) {
 				container.replaceChildren(el('p', { className: 'mcp-empty', textContent: t('mcp', 'No groups found; only administrators can read the log.') }))
 				return
 			}
-			container.replaceChildren(...data.allGroups.map((group) => {
-				const box = el('input', { type: 'checkbox', className: 'checkbox', id: 'mcp-logs-group-' + group.id, checked: selected.has(group.id) })
-				box.addEventListener('change', () => save(box, group.id))
-				return el('label', { htmlFor: box.id, className: 'mcp-tag-item' }, [box, group.displayName])
-			}))
+			container.replaceChildren(...data.allGroups.map((group) => groupBox(group.id, group.displayName)), ...missing)
+		}
+
+		/** Loads the list again, after a conflict or a failure. */
+		async function reload() {
+			try {
+				show(await api('GET', '/api/logs-access'))
+			} catch (e) {
+				container.setAttribute('aria-busy', 'false')
+				container.replaceChildren(el('p', { className: 'mcp-empty', textContent: t('mcp', 'Could not load the groups.') }))
+			}
 		}
 
 		/**
@@ -726,33 +755,39 @@
 		 * @param {string} gid group id of the checkbox
 		 */
 		async function save(box, gid) {
+			if (saving) {
+				return
+			}
+			saving = true
 			const next = new Set(selected)
 			if (box.checked) {
 				next.add(gid)
 			} else {
 				next.delete(gid)
 			}
-			box.disabled = true
+			setLocked(true)
 			status.textContent = t('mcp', 'Saving…')
 			try {
-				show(await api('PUT', '/api/logs-access', { groups: Array.from(next) }))
+				show(await api('PUT', '/api/logs-access', { groups: Array.from(next), previous: Array.from(selected) }))
 				status.textContent = t('mcp', 'Saved')
 				// The matrix shows the log column per user from the same gate, so it is reloaded.
 				load()
 			} catch (e) {
-				box.checked = !box.checked
-				box.disabled = false
 				status.textContent = t('mcp', 'Not saved')
-				notifyError(t('mcp', 'Could not save the groups that may read the server log.'))
+				if (e.message === '409') {
+					notifyError(t('mcp', 'The groups were changed in another window or by another administrator; the current list was loaded.'))
+					load()
+				} else {
+					notifyError(t('mcp', 'Could not save the groups that may read the server log.'))
+				}
+				await reload()
+			} finally {
+				saving = false
+				setLocked(false)
 			}
 		}
 
-		try {
-			show(await api('GET', '/api/logs-access'))
-		} catch (e) {
-			container.setAttribute('aria-busy', 'false')
-			container.replaceChildren(el('p', { className: 'mcp-empty', textContent: t('mcp', 'Could not load the groups.') }))
-		}
+		await reload()
 	}
 
 	load()

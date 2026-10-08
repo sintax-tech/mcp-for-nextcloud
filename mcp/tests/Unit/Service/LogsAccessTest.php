@@ -76,6 +76,45 @@ final class LogsAccessTest extends TestCase {
         $this->assertFalse($access->permits('tina'));
     }
 
+    /**
+     * A group deleted after it was listed must not lock the list: it shows up as missing, it may stay or be removed,
+     * and only a group that was not listed before has to exist.
+     */
+    public function testAGroupDeletedLaterCanBeKeptOrRemovedButNotAdded(): void {
+        $access = $this->access();
+        $access->setGroups(['ti', 'rh']);
+        unset($this->groups['ti']);
+        $this->assertSame(['ti'], $access->missingGroups());
+
+        $access->setGroups(['ti', 'rh'], ['rh', 'ti']);
+        $this->assertSame(['rh', 'ti'], $access->groups());
+        $access->setGroups(['rh'], ['rh', 'ti']);
+        $this->assertSame(['rh'], $access->groups());
+        $this->assertSame([], $access->missingGroups());
+        try {
+            $access->setGroups(['rh', 'ti'], ['rh']);
+            $this->fail('a group that no longer exists cannot be added again');
+        } catch (InvalidArgumentException) {
+        }
+        $this->assertSame(['rh'], $access->groups());
+    }
+
+    /**
+     * Optimistic control: the caller says which list it changed, and a list changed meanwhile (another tab, another
+     * administrator) is a conflict, so a removed group is never put back by a stale save.
+     */
+    public function testAStaleListIsAConflictAndNothingIsWritten(): void {
+        $access = $this->access();
+        $access->setGroups(['rh', 'ti'], []);
+        $access->setGroups(['ti'], ['ti', 'rh']);
+        try {
+            $access->setGroups(['rh', 'ti'], ['rh', 'ti']);
+            $this->fail('a save based on an old list must be refused');
+        } catch (\OCA\Mcp\Service\LogsGroupsConflict) {
+        }
+        $this->assertSame(['ti'], $access->groups());
+    }
+
     public function testAGarbledStoredValueReadsAsNoGroup(): void {
         $this->store->app['mcp'][LogsAccess::GROUPS_KEY] = '{not json';
         $this->assertSame([], $this->access()->groups());

@@ -65,16 +65,30 @@ class LogsAccess {
         return array_values(array_filter($decoded, static fn ($gid): bool => is_string($gid) && $gid !== ''));
     }
 
+    /** @return list<string> listed group ids whose group no longer exists, so the page can offer their removal */
+    public function missingGroups(): array {
+        return array_values(array_filter($this->groups(), fn (string $gid): bool => $this->groupManager->get($gid) === null));
+    }
+
     /**
-     * Replaces the list; every group is checked before anything is written, and an empty list removes the key.
+     * Replaces the list. A group not listed yet must exist; a listed group may stay or go even after it was deleted,
+     * so a deleted group never locks the list. Everything is checked before anything is written, and an empty list
+     * removes the key.
      *
      * @param list<string> $gids group ids
-     * @throws InvalidArgumentException for an id that is not an existing group
+     * @param list<string>|null $previous the list the caller changed; when it differs from the stored one, another
+     *     save came first and nothing is written. Null skips the check (tests and internal callers).
+     * @throws InvalidArgumentException for an id that is not a string or a new group that does not exist
+     * @throws LogsGroupsConflict when $previous is not the stored list
      */
-    public function setGroups(array $gids): void {
+    public function setGroups(array $gids, ?array $previous = null): void {
+        $stored = $this->groups();
+        if ($previous !== null && self::normalized($previous) !== self::normalized($stored)) {
+            throw new LogsGroupsConflict('The groups changed since they were read');
+        }
         $gids = array_values(array_unique($gids));
         foreach ($gids as $gid) {
-            if (!is_string($gid) || $gid === '' || $this->groupManager->get($gid) === null) {
+            if (!is_string($gid) || $gid === '' || (!in_array($gid, $stored, true) && $this->groupManager->get($gid) === null)) {
                 throw new InvalidArgumentException('Invalid request');
             }
         }
@@ -84,5 +98,12 @@ class LogsAccess {
             return;
         }
         $this->config->setAppValue(GrantPolicy::APP, self::GROUPS_KEY, json_encode($gids, JSON_THROW_ON_ERROR));
+    }
+
+    /** @param list<mixed> $gids @return list<mixed> the ids sorted and without repetition, to compare two lists */
+    private static function normalized(array $gids): array {
+        $gids = array_values(array_unique($gids, SORT_REGULAR));
+        sort($gids);
+        return $gids;
     }
 }

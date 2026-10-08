@@ -284,20 +284,46 @@ final class GrantsControllerTest extends TestCase {
         $this->fx->addUser('tina', 'Tina', 'tina@corp.example', true, ['sales']);
         $this->assertFalse($this->fx->logsAccess()->permits('tina'));
 
-        $response = $this->controller(['groups' => ['sales']])->updateLogsAccess();
+        $response = $this->controller(['groups' => ['sales'], 'previous' => []])->updateLogsAccess();
 
         $this->assertSame(200, $response->getStatus());
         $this->assertSame(['sales'], $response->getData()['groups']);
         $this->assertTrue($this->fx->logsAccess()->permits('tina'));
-        $this->assertSame([], $this->controller(['groups' => []])->updateLogsAccess()->getData()['groups']);
+        $this->assertSame([], $this->controller(['groups' => [], 'previous' => ['sales']])->updateLogsAccess()->getData()['groups']);
         $this->assertFalse($this->fx->logsAccess()->permits('tina'));
     }
 
     public function testUpdateLogsAccessRefusesBadInputWithoutWriting(): void {
-        $this->controller(['groups' => ['sales']])->updateLogsAccess();
-        foreach ([[], ['groups' => 'sales'], ['groups' => ['sales', 'ghost']], ['groups' => [3]], ['groups' => ['a' => 'sales']]] as $body) {
+        $this->controller(['groups' => ['sales'], 'previous' => []])->updateLogsAccess();
+        foreach ([[], ['groups' => 'sales', 'previous' => ['sales']], ['groups' => ['sales', 'ghost'], 'previous' => ['sales']], ['groups' => [3], 'previous' => ['sales']],
+            ['groups' => ['a' => 'sales'], 'previous' => ['sales']], ['groups' => ['sales']], ['groups' => ['sales'], 'previous' => 'sales']] as $body) {
             self::assertBad($this->controller($body)->updateLogsAccess());
         }
         $this->assertSame(['sales'], $this->fx->logsAccess()->groups());
+    }
+
+    /** Two tabs or two administrators: the second save, based on the old list, gets 409 and the current state. */
+    public function testAStaleSaveIsAConflictWithTheCurrentState(): void {
+        $this->controller(['groups' => ['admin', 'sales'], 'previous' => []])->updateLogsAccess();
+        $this->controller(['groups' => ['admin'], 'previous' => ['admin', 'sales']])->updateLogsAccess();
+
+        $response = $this->controller(['groups' => ['admin', 'sales'], 'previous' => ['admin', 'sales']])->updateLogsAccess();
+
+        $this->assertSame(409, $response->getStatus());
+        $this->assertSame('Conflict', $response->getData()['error']);
+        $this->assertSame(['admin'], $response->getData()['state']['groups']);
+        $this->assertSame(['admin'], $this->fx->logsAccess()->groups());
+    }
+
+    /** A listed group deleted afterwards is reported, so the page can show it and offer its removal. */
+    public function testADeletedGroupIsReportedAsMissing(): void {
+        $this->controller(['groups' => ['sales'], 'previous' => []])->updateLogsAccess();
+        unset($this->fx->groups['sales']);
+
+        $data = $this->controller()->logsAccess()->getData();
+        $this->assertSame(['sales'], $data['groups']);
+        $this->assertSame(['sales'], $data['missing']);
+        $this->assertSame(200, $this->controller(['groups' => [], 'previous' => ['sales']])->updateLogsAccess()->getStatus());
+        $this->assertSame([], $this->controller()->logsAccess()->getData()['missing']);
     }
 }

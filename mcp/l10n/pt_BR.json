@@ -891,6 +891,8 @@
     "Only administrators and members of the groups selected in “Server log” can read the log; the saved permission is kept." : "Só administradores e membros dos grupos marcados em “Log do servidor” podem ler o log; a permissão salva é mantida.",
     "No groups found; only administrators can read the log." : "Nenhum grupo encontrado; só administradores podem ler o log.",
     "Could not save the groups that may read the server log." : "Não foi possível salvar os grupos que podem ler o log do servidor.",
-    "Could not load the groups." : "Não foi possível carregar os grupos."
+    "Could not load the groups." : "Não foi possível carregar os grupos.",
+    "{group} (group removed)" : "{group} (grupo removido)",
+    "The groups were changed in another window or by another administrator; the current list was loaded." : "Os grupos foram alterados em outra janela ou por outro administrador; a lista atual foi carregada."
 },"pluralForm" :"nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

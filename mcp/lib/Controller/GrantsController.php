@@ -11,6 +11,7 @@ use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\Service\GrantMatrix;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\LogsAccess;
+use OCA\Mcp\Service\LogsGroupsConflict;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -163,33 +164,42 @@ class GrantsController extends Controller {
     /**
      * Who may read the server log besides the administrators, for the "Server log" block.
      *
-     * @return JSONResponse {groups, allGroups, available, logType}
+     * @return JSONResponse {groups, missing, allGroups, available, logType}
      */
     public function logsAccess(): JSONResponse {
         return $this->guard(fn (): array => $this->logsState());
     }
 
     /**
-     * Body {groups: list<string>}: the groups whose members pass the role gate of the logs module; an empty list
-     * leaves the administrators only. Every group is checked before anything is written.
+     * Body {groups: list<string>, previous: list<string>}: the groups whose members pass the role gate of the logs
+     * module, and the list the page showed when the change was made. When the stored list is no longer that one,
+     * another tab or administrator saved first: the answer is 409 {error: "Conflict", state} and nothing is written,
+     * so a stale save never puts a removed group back. An empty list leaves the administrators only.
      *
-     * @return JSONResponse the same shape as logsAccess(), or 400
+     * @return JSONResponse the same shape as logsAccess(), 400 for an invalid body, or 409
      */
     public function updateLogsAccess(): JSONResponse {
-        return $this->guard(function (): array {
-            $groups = $this->request->getParam('groups');
-            if (!is_array($groups) || !array_is_list($groups) || count($groups) > GrantMatrix::MAX_GROUPS) {
-                throw new InvalidArgumentException('Invalid request');
-            }
-            $this->logs->setGroups($groups);
-            return $this->logsState();
-        });
+        $groups = $this->request->getParam('groups');
+        $previous = $this->request->getParam('previous');
+        $valid = static fn (mixed $list): bool => is_array($list) && array_is_list($list) && count($list) <= GrantMatrix::MAX_GROUPS;
+        if (!$valid($groups) || !$valid($previous)) {
+            return new JSONResponse(['error' => 'Invalid request'], Http::STATUS_BAD_REQUEST);
+        }
+        try {
+            return $this->guard(function () use ($groups, $previous): array {
+                $this->logs->setGroups($groups, $previous);
+                return $this->logsState();
+            });
+        } catch (LogsGroupsConflict) {
+            return new JSONResponse(['error' => 'Conflict', 'state' => $this->logsState()], Http::STATUS_CONFLICT);
+        }
     }
 
-    /** @return array{groups:list<string>, allGroups:list<array{id:string, displayName:string}>, available:bool, logType:string} */
+    /** @return array{groups:list<string>, missing:list<string>, allGroups:list<array{id:string, displayName:string}>, available:bool, logType:string} */
     private function logsState(): array {
         return [
             'groups' => $this->logs->groups(),
+            'missing' => $this->logs->missingGroups(),
             'allGroups' => $this->matrix->groups(),
             'available' => $this->logs->available(),
             'logType' => $this->logs->logType(),

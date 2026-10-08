@@ -33,6 +33,13 @@ final class LogRedactorTest extends TestCase {
         $this->assertSame('Bruteforce attempt from ::ffff:192.0.x.x detected', LogRedactor::text('Bruteforce attempt from ::ffff:192.0.2.9 detected', 2000));
     }
 
+    /** The user agent is kept whole: "Chrome/141.0.0.0" is a version, and the version of the client is the useful part. */
+    public function testAUserAgentKeepsItsVersionNumbers(): void {
+        $entry = LogRedactor::entry((object)['level' => 2, 'userAgent' => "Mozilla/5.0 Chrome/141.0.0.0 Safari/537.36\n", 'message' => 'from 10.1.2.3']);
+        $this->assertSame('Mozilla/5.0 Chrome/141.0.0.0 Safari/537.36', $entry['userAgent']);
+        $this->assertSame('from 10.1.x.x', $entry['message']);
+    }
+
     /** A file name may carry a line break, an escape sequence or a bidi override meant to hide what follows. */
     public function testControlAndInvisibleCharactersAreRemoved(): void {
         $this->assertSame(

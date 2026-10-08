@@ -21,7 +21,7 @@ final class LogAnalyzer {
     /** Level names, highest first, by the number the core writes. */
     public const LEVELS = [4 => 'fatal', 3 => 'error', 2 => 'warning', 1 => 'info', 0 => 'debug'];
     /** WebDAV paths that name a file of somebody: the endpoint and the account are kept, the rest is folded. */
-    private const DAV_PATH = '#^(/(?:remote|public)\.php/(?:dav/(?:files|uploads|trashbin|versions|comments|systemtags-relations)/[^/]+|webdav))/.+$#';
+    private const DAV_PATH = '#^(/(?:remote|public)\.php/(?:dav/(?:files|uploads|trashbin|versions|comments|systemtags-relations)/[^/]+|webdav))(?:/.*)?$#';
 
     public function __construct(private LogTime $time) {}
 
@@ -123,7 +123,8 @@ final class LogAnalyzer {
     /** @return string a text field of the entry, redacted; '' when it is missing */
     private static function field(\stdClass $entry, string $name, int $limit): string {
         $value = $entry->{$name} ?? '';
-        return is_scalar($value) ? LogRedactor::text((string)$value, $limit) : '';
+        // The user agent keeps its dotted versions, as in logs_list.
+        return is_scalar($value) ? LogRedactor::text((string)$value, $limit, $name !== 'userAgent') : '';
     }
 
     /**

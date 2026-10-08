@@ -77,13 +77,14 @@ final class LogAnalyzerTest extends TestCase {
             ['url' => '/ocs/v2.php/apps/notifications/api/v2/notifications?format=json'],
             ['url' => '/index.php/apps/files/api/v1/thumbnail/256/256/a.jpg'],
             ['url' => '--'],
+            ['url' => '/remote.php/dav/files/bob/'],
         ]);
         $this->assertSame([
             ['path' => '/remote.php/dav/files/alice/…', 'count' => 2],
+            ['path' => '/remote.php/dav/files/bob/…', 'count' => 2],
             ['path' => '--', 'count' => 1],
             ['path' => '/index.php/apps/files/api/v#/thumbnail/#/#/a.jpg', 'count' => 1],
             ['path' => '/ocs/v#.php/apps/notifications/api/v#/notifications', 'count' => 1],
-            ['path' => '/remote.php/dav/files/bob/…', 'count' => 1],
         ], $result['topUrls']);
     }
 
@@ -95,6 +96,7 @@ final class LogAnalyzerTest extends TestCase {
             ['time' => 'garbled'],
         ]);
         $this->assertSame([['userAgent' => 'Mozilla/5.0 (Macintosh) mirall/3.14.1', 'count' => 2], ['userAgent' => 'mirall/3.14', 'count' => 2]], $result['topUserAgents']);
+        $this->assertSame('Chrome/141.0.0.0', self::analyze([['userAgent' => 'Chrome/141.0.0.0']])['topUserAgents'][0]['userAgent']);
         $this->assertSame([['hour' => '2026-10-07T17:00-03:00', 'count' => 1], ['hour' => '2026-10-07T18:00-03:00', 'count' => 2]], $result['hourly']);
         $this->assertSame(1, $result['hourlyUnparsed']);
     }

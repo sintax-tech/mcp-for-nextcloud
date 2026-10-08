@@ -7,7 +7,7 @@ namespace OCA\Mcp\Tools\Logs;
  * Minimizes what a log entry carries before it reaches the model, without losing its diagnostic value.
  *
  * - IP addresses are masked: IPv4 keeps the first two octets (`203.0.x.x`), IPv6 its /48 prefix, in the remoteAddr
- *   field and inside any text.
+ *   field and inside any text but the user agent, whose version numbers ("Chrome/141.0.0.0") are what makes it useful.
  * - Control characters, ANSI escape sequences and invisible or bidirectional marks are removed: a file name or a
  *   message is written by users, and those are the characters that hide or disguise text.
  * - A text is cut at a limit; an exception keeps class, message, code, place and ten frames of class->function and
@@ -63,16 +63,19 @@ final class LogRedactor {
      *
      * @param string $text a message, a URL, a user agent
      * @param int $limit longest result in characters, before the marker of a cut
+     * @param bool $maskAddresses false for a user agent, whose dotted versions would read as IPv4 addresses
      * @return string the cleaned text, with '…' when it was cut
      */
-    public static function text(string $text, int $limit): string {
+    public static function text(string $text, int $limit, bool $maskAddresses = true): string {
         // Invalid bytes become U+FFFD, so the patterns below, which need valid UTF-8, never fail on them.
         $text = (string)json_decode(json_encode($text, JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR));
         $text = preg_replace(self::ANSI, '', $text) ?? '';
         $text = str_replace(["\r\n", "\r", "\n", "\t"], ' ', $text);
         $text = preg_replace(self::INVISIBLE, '', $text) ?? '';
-        $text = preg_replace_callback(self::IPV4, static fn (array $m): string => self::ip($m[0]) === self::NOT_AN_ADDRESS ? $m[0] : self::ip($m[0]), $text) ?? '';
-        $text = preg_replace_callback(self::IPV6, static fn (array $m): string => filter_var($m[0], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false ? self::ip($m[0]) : $m[0], $text) ?? '';
+        if ($maskAddresses) {
+            $text = preg_replace_callback(self::IPV4, static fn (array $m): string => self::ip($m[0]) === self::NOT_AN_ADDRESS ? $m[0] : self::ip($m[0]), $text) ?? '';
+            $text = preg_replace_callback(self::IPV6, static fn (array $m): string => filter_var($m[0], FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false ? self::ip($m[0]) : $m[0], $text) ?? '';
+        }
         $text = trim($text);
         return mb_strlen($text) > $limit ? mb_substr($text, 0, $limit) . '…' : $text;
     }
@@ -129,7 +132,7 @@ final class LogRedactor {
      *     remoteAddr and, when the entry has one, the exception summary
      */
     public static function entry(\stdClass $entry): array {
-        $field = static fn (string $name, int $limit): string => is_scalar($entry->{$name} ?? null) ? self::text((string)$entry->{$name}, $limit) : '';
+        $field = static fn (string $name, int $limit, bool $mask = true): string => is_scalar($entry->{$name} ?? null) ? self::text((string)$entry->{$name}, $limit, $mask) : '';
         $row = [
             'time' => $field('time', 64),
             'level' => LogAnalyzer::LEVELS[(int)$entry->level] ?? (string)$entry->level,
@@ -139,7 +142,7 @@ final class LogRedactor {
             'url' => $field('url', self::MESSAGE_LIMIT),
             'message' => $field('message', self::MESSAGE_LIMIT),
             'reqId' => $field('reqId', 64),
-            'userAgent' => $field('userAgent', 300),
+            'userAgent' => $field('userAgent', 300, false),
             'remoteAddr' => is_string($entry->remoteAddr ?? null) ? self::ip($entry->remoteAddr) : '',
         ];
         $exception = self::exception($entry->exception ?? null);

@@ -70,7 +70,9 @@ final class LogsModuleTest extends TestCase {
                 $this->infos[] = [$message, $context, $level];
             });
         }
-        $access = new LogsAccess($config, $groups, (new \OCA\Mcp\Tests\Unit\InMemoryAppConfig())->worker($this), new \OCA\Mcp\Tests\Unit\InMemoryLocks());
+        $db = new \OCA\Mcp\Tests\Unit\SqliteDatabase($this, [new \OCA\Mcp\Migration\Version001002Date20261008000000()]);
+        $mapper = new \OCA\Mcp\Db\LogsGroupsMapper($db->connection(), (new \OCA\Mcp\Tests\Unit\InMemoryAppConfig())->worker($this));
+        $access = new LogsAccess($config, $groups, $mapper, new \OCA\Mcp\Tests\Unit\InMemoryLocks());
         return new LogsModule($access, new LogScanner(new LogReader($factory)), new LogAudit($dispatcher, $logger), $config);
     }
 

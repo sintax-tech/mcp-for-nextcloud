@@ -164,15 +164,15 @@ class GrantsController extends Controller {
     /**
      * Who may read the server log besides the administrators, for the "Server log" block.
      *
-     * @return JSONResponse {groups, missing, allGroups, available, logType}
+     * @return JSONResponse {groups, version, missing, allGroups, available, logType}
      */
     public function logsAccess(): JSONResponse {
         return $this->guard(fn (): array => $this->logsState());
     }
 
     /**
-     * Body {groups: list<string>, previous: list<string>}: the groups whose members pass the role gate of the logs
-     * module, and the list the page showed when the change was made. When the stored list is no longer that one,
+     * Body {groups: list<string>, previous: list<string>, version: int}: the groups whose members pass the role gate of the logs
+     * module, and the list/version the page showed when the change was made. When the stored version differs,
      * another tab or administrator saved first: the answer is 409 {error: "Conflict", state} and nothing is written,
      * so a stale save never puts a removed group back. An empty list leaves the administrators only.
      *
@@ -181,13 +181,14 @@ class GrantsController extends Controller {
     public function updateLogsAccess(): JSONResponse {
         $groups = $this->request->getParam('groups');
         $previous = $this->request->getParam('previous');
+        $version = $this->request->getParam('version');
         $valid = static fn (mixed $list): bool => is_array($list) && array_is_list($list) && count($list) <= GrantMatrix::MAX_GROUPS;
-        if (!$valid($groups) || !$valid($previous)) {
+        if (!$valid($groups) || !$valid($previous) || !is_int($version) || $version < 0) {
             return new JSONResponse(['error' => 'Invalid request'], Http::STATUS_BAD_REQUEST);
         }
         try {
-            return $this->guard(function () use ($groups, $previous): array {
-                $this->logs->setGroups($groups, $previous);
+            return $this->guard(function () use ($groups, $previous, $version): array {
+                $this->logs->setGroups($groups, $previous, $version);
                 return $this->logsState();
             });
         } catch (LogsGroupsConflict) {
@@ -195,11 +196,13 @@ class GrantsController extends Controller {
         }
     }
 
-    /** @return array{groups:list<string>, missing:list<string>, allGroups:list<array{id:string, displayName:string}>, available:bool, logType:string} */
+    /** @return array{groups:list<string>, version:int, missing:list<string>, allGroups:list<array{id:string, displayName:string}>, available:bool, logType:string} */
     private function logsState(): array {
+        $state = $this->logs->state();
         return [
-            'groups' => $this->logs->groups(),
-            'missing' => $this->logs->missingGroups(),
+            'groups' => $state['groups'],
+            'version' => $state['version'],
+            'missing' => $this->logs->missingGroups($state['groups']),
             'allGroups' => $this->matrix->groups(),
             'available' => $this->logs->available(),
             'logType' => $this->logs->logType(),

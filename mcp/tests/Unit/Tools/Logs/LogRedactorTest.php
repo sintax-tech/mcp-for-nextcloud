@@ -158,7 +158,7 @@ final class LogRedactorTest extends TestCase {
             $this->assertSame($expected, LogRedactor::text($text, 2000), $text);
         }
         $this->assertSame('Agent/1.0 ip:2001:db8::/48', LogRedactor::text('Agent/1.0 ip:2001:db8::1', 300, true));
-        // A network already written with its prefix length is not an address to mask again.
+        // CIDRs are masked too; only the redactor's canonical /48 output is already safe.
         $this->assertSame('route 2001:db8::/48 via IP:2001:db8:abcd::/48', LogRedactor::text('route 2001:db8::/32 via IP:2001:db8:abcd:1::7', 2000));
     }
     public function testIpv6WithAnyCidrIsMaskedAndRedactionIsIdempotent(): void {
@@ -179,10 +179,12 @@ final class LogRedactorTest extends TestCase {
     }
 
     public function testLongHostileLabelsHaveBoundedProcessingCost(): void {
-        $text = str_repeat('a-', 80000) . 'label:gg';
-        $start = hrtime(true);
-        LogRedactor::text($text, 2000);
-        $this->assertLessThan(50, (hrtime(true) - $start) / 1e6, '160 KB must take less than 50 ms');
+        foreach ([8000, 80000] as $repetitions) {
+            $text = str_repeat('a-', $repetitions) . 'label:gg';
+            $start = hrtime(true);
+            LogRedactor::text($text, 2000);
+            $this->assertLessThan(50, (hrtime(true) - $start) / 1e6, '16 KB (regex) and 160 KB (cap) must take less than 50 ms');
+        }
     }
 
     public function testProcessingBoundaryDoesNotExposePartOfAnAddress(): void {

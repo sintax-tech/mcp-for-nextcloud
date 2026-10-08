@@ -284,19 +284,19 @@ final class GrantsControllerTest extends TestCase {
         $this->fx->addUser('tina', 'Tina', 'tina@corp.example', true, ['sales']);
         $this->assertFalse($this->fx->logsAccess()->permits('tina'));
 
-        $response = $this->controller(['groups' => ['sales'], 'previous' => []])->updateLogsAccess();
+        $response = $this->controller(['groups' => ['sales'], 'version' => 0, 'previous' => []])->updateLogsAccess();
 
         $this->assertSame(200, $response->getStatus());
         $this->assertSame(['sales'], $response->getData()['groups']);
         $this->assertTrue($this->fx->logsAccess()->permits('tina'));
-        $this->assertSame([], $this->controller(['groups' => [], 'previous' => ['sales']])->updateLogsAccess()->getData()['groups']);
+        $this->assertSame([], $this->controller(['groups' => [], 'version' => 1, 'previous' => ['sales']])->updateLogsAccess()->getData()['groups']);
         $this->assertFalse($this->fx->logsAccess()->permits('tina'));
     }
 
     public function testUpdateLogsAccessRefusesBadInputWithoutWriting(): void {
-        $this->controller(['groups' => ['sales'], 'previous' => []])->updateLogsAccess();
-        foreach ([[], ['groups' => 'sales', 'previous' => ['sales']], ['groups' => ['sales', 'ghost'], 'previous' => ['sales']], ['groups' => [3], 'previous' => ['sales']],
-            ['groups' => ['a' => 'sales'], 'previous' => ['sales']], ['groups' => ['sales']], ['groups' => ['sales'], 'previous' => 'sales']] as $body) {
+        $this->controller(['groups' => ['sales'], 'version' => 0, 'previous' => []])->updateLogsAccess();
+        foreach ([[], ['groups' => 'sales', 'version' => 1, 'previous' => ['sales']], ['groups' => ['sales', 'ghost'], 'version' => 1, 'previous' => ['sales']], ['groups' => [3], 'version' => 1, 'previous' => ['sales']],
+            ['groups' => ['a' => 'sales'], 'version' => 1, 'previous' => ['sales']], ['groups' => ['sales']], ['groups' => ['sales'], 'version' => 1, 'previous' => 'sales']] as $body) {
             self::assertBad($this->controller($body)->updateLogsAccess());
         }
         $this->assertSame(['sales'], $this->fx->logsAccess()->groups());
@@ -304,10 +304,10 @@ final class GrantsControllerTest extends TestCase {
 
     /** Two tabs or two administrators: the second save, based on the old list, gets 409 and the current state. */
     public function testAStaleSaveIsAConflictWithTheCurrentState(): void {
-        $this->controller(['groups' => ['admin', 'sales'], 'previous' => []])->updateLogsAccess();
-        $this->controller(['groups' => ['admin'], 'previous' => ['admin', 'sales']])->updateLogsAccess();
+        $this->controller(['groups' => ['admin', 'sales'], 'version' => 0, 'previous' => []])->updateLogsAccess();
+        $this->controller(['groups' => ['admin'], 'version' => 1, 'previous' => ['admin', 'sales']])->updateLogsAccess();
 
-        $response = $this->controller(['groups' => ['admin', 'sales'], 'previous' => ['admin', 'sales']])->updateLogsAccess();
+        $response = $this->controller(['groups' => ['admin', 'sales'], 'version' => 1, 'previous' => ['admin', 'sales']])->updateLogsAccess();
 
         $this->assertSame(409, $response->getStatus());
         $this->assertSame('Conflict', $response->getData()['error']);
@@ -317,13 +317,27 @@ final class GrantsControllerTest extends TestCase {
 
     /** A listed group deleted afterwards is reported, so the page can show it and offer its removal. */
     public function testADeletedGroupIsReportedAsMissing(): void {
-        $this->controller(['groups' => ['sales'], 'previous' => []])->updateLogsAccess();
+        $this->controller(['groups' => ['sales'], 'version' => 0, 'previous' => []])->updateLogsAccess();
         unset($this->fx->groups['sales']);
 
         $data = $this->controller()->logsAccess()->getData();
         $this->assertSame(['sales'], $data['groups']);
         $this->assertSame(['sales'], $data['missing']);
-        $this->assertSame(200, $this->controller(['groups' => [], 'previous' => ['sales']])->updateLogsAccess()->getStatus());
+        $this->assertSame(200, $this->controller(['groups' => [], 'version' => 1, 'previous' => ['sales']])->updateLogsAccess()->getStatus());
         $this->assertSame([], $this->controller()->logsAccess()->getData()['missing']);
     }
+    public function testVersionIsReturnedAndRequiredAsANonNegativeInteger(): void {
+        $this->assertSame(0, $this->controller()->logsAccess()->getData()['version']);
+        foreach ([null, -1, '0', 0.0, true] as $version) {
+            self::assertBad($this->controller(['groups' => ['sales'], 'previous' => [], 'version' => $version])->updateLogsAccess());
+        }
+        self::assertBad($this->controller(['groups' => ['sales'], 'previous' => []])->updateLogsAccess());
+        $saved = $this->controller(['groups' => ['sales'], 'previous' => [], 'version' => 0])->updateLogsAccess();
+        $this->assertSame(1, $saved->getData()['version']);
+        $conflict = $this->controller(['groups' => [], 'previous' => ['sales'], 'version' => 0])->updateLogsAccess();
+        $this->assertSame(409, $conflict->getStatus());
+        $this->assertSame(1, $conflict->getData()['state']['version']);
+        $this->assertSame(['sales'], $conflict->getData()['state']['groups']);
+    }
+
 }

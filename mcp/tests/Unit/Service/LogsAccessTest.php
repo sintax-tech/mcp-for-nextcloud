@@ -21,6 +21,7 @@ final class LogsAccessTest extends TestCase {
     private InMemoryConfig $store;
     private InMemoryAppConfig $appConfig;
     private InMemoryLocks $locks;
+    private \OCA\Mcp\Tests\Unit\SqliteDatabase $db;
     /** @var array<string, list<string>> members by group id */
     private array $groups = ['admin' => ['root'], 'ti' => ['tina'], 'rh' => ['rita'], '1' => ['uno'], '01' => ['zero-uno']];
 
@@ -28,6 +29,7 @@ final class LogsAccessTest extends TestCase {
         $this->store = new InMemoryConfig();
         $this->appConfig = new InMemoryAppConfig();
         $this->locks = new InMemoryLocks();
+        $this->db = new \OCA\Mcp\Tests\Unit\SqliteDatabase($this, [new \OCA\Mcp\Migration\Version001002Date20261008000000()]);
     }
 
     /** One request: its own app config cache over the shared store, and the shared locks. */
@@ -36,7 +38,7 @@ final class LogsAccessTest extends TestCase {
         $groups->method('isAdmin')->willReturnCallback(fn (string $uid): bool => in_array($uid, $this->groups['admin'], true));
         $groups->method('isInGroup')->willReturnCallback(fn (string $uid, string $gid): bool => in_array($uid, $this->groups[$gid] ?? [], true));
         $groups->method('get')->willReturnCallback(fn (string $gid): ?IGroup => isset($this->groups[$gid]) ? $this->createMock(IGroup::class) : null);
-        return new LogsAccess($this->store->mock($this), $groups, $this->appConfig->worker($this), $this->locks);
+        return new LogsAccess($this->store->mock($this), $groups, new \OCA\Mcp\Db\LogsGroupsMapper($this->db->connection(), $this->appConfig->worker($this)), $this->locks);
     }
 
     public function testOnlyAdministratorsPassWhileNoGroupIsListed(): void {
@@ -57,12 +59,13 @@ final class LogsAccessTest extends TestCase {
         $this->assertTrue($access->permits('root'));
     }
 
-    public function testTheGroupsAreStoredUnderTheirOwnKeyAndAnEmptyListRemovesIt(): void {
+    public function testTheGroupsAreStoredInTheirOwnTableAndEmptyListsKeepTheirVersion(): void {
         $access = $this->access();
         $access->setGroups(['ti', 'rh', 'ti']);
-        $this->assertSame(['rh', 'ti'], json_decode($this->appConfig->stored['mcp'][LogsAccess::GROUPS_KEY], true));
+        $this->assertSame(['rh', 'ti'], $access->groups());
         $access->setGroups([]);
-        $this->assertArrayNotHasKey(LogsAccess::GROUPS_KEY, $this->appConfig->stored['mcp'] ?? []);
+        $this->assertSame(['groups' => [], 'version' => 2], $access->state());
+        $this->assertSame([], $this->appConfig->stored);
         $this->assertFalse($access->permits('tina'));
     }
 
@@ -126,6 +129,7 @@ final class LogsAccessTest extends TestCase {
     public function testAGarbledStoredValueReadsAsNoGroup(): void {
         $this->appConfig->stored['mcp'][LogsAccess::GROUPS_KEY] = '{not json';
         $this->assertSame([], $this->access()->groups());
+        $this->db->dbal->executeStatement('DELETE FROM mcp_logs_groups');
         $this->appConfig->stored['mcp'][LogsAccess::GROUPS_KEY] = '["ti", 3, ""]';
         $this->assertSame(['ti'], $this->access()->groups());
     }
@@ -165,7 +169,7 @@ final class LogsAccessTest extends TestCase {
             $this->fail('the revocation of rh must not be undone');
         } catch (LogsGroupsConflict) {
         }
-        $this->assertSame(['ti'], json_decode($this->appConfig->stored['mcp'][LogsAccess::GROUPS_KEY], true));
+        $this->assertSame(['ti'], $this->access()->groups());
         $this->assertSame([], $this->locks->held, 'the lock is released after a conflict too');
     }
 
@@ -238,4 +242,37 @@ final class LogsAccessTest extends TestCase {
         }
         $this->assertSame([], $access->groups());
     }
+    public function testOldSharedAppconfigSnapshotCannotRestoreARevokedGroup(): void {
+        $a = $this->access();
+        $b = $this->access();
+        $a->setGroups(['rh', 'ti']);
+        $b->groups();
+        $a->setGroups(['ti'], ['rh', 'ti']);
+        // Reader C repopulates the appconfig cache with the snapshot from before the revocation.
+        $this->appConfig->stored['mcp'][LogsAccess::GROUPS_KEY] = '["rh","ti"]';
+        try {
+            $b->setGroups(['rh', 'ti'], ['rh', 'ti'], 1);
+            $this->fail('stale B must receive a conflict');
+        } catch (LogsGroupsConflict) {
+        }
+        $this->assertSame(['ti'], $a->groups());
+    }
+
+    public function testCasStillRejectsInterleavedWritesWhenFilelockingIsNoop(): void {
+        $groups = $this->createMock(IGroupManager::class);
+        $groups->method('get')->willReturn($this->createMock(IGroup::class));
+        $noop = $this->createMock(\OCP\Lock\ILockingProvider::class);
+        $a = new LogsAccess($this->store->mock($this), $groups, new \OCA\Mcp\Db\LogsGroupsMapper($this->db->connection(), $this->appConfig->worker($this)), $noop);
+        $b = new LogsAccess($this->store->mock($this), $groups, new \OCA\Mcp\Db\LogsGroupsMapper($this->db->connection(), $this->appConfig->worker($this)), $noop);
+        $a->setGroups(['rh', 'ti'], [], 0);
+        // Both pass their version/list checks. A commits exactly between B's check and UPDATE.
+        $this->db->beforeStatement = fn () => $a->setGroups(['ti'], ['rh', 'ti'], 1);
+        try {
+            $b->setGroups(['rh', 'ti'], ['rh', 'ti'], 1);
+            $this->fail('zero affected rows must be a conflict even without locks');
+        } catch (LogsGroupsConflict) {
+        }
+        $this->assertSame(['groups' => ['ti'], 'version' => 2], $a->state());
+    }
+
 }

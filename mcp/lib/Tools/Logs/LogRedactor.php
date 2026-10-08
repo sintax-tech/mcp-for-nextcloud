@@ -33,12 +33,14 @@ final class LogRedactor {
     private const IPV4 = '/(?<![\w.%s])\d{1,3}(?:\.\d{1,3}){3}(?!\.?\d)(?!\w)/';
     /**
      * Candidates for an IPv6 address inside a text; filter_var() decides, so a clock time or a MAC address stays. A
-     * trailing colon may be punctuation ("Remote IP: 2001:db8::9:"), so the callback tries once without it. CIDR suffixes are consumed and reduced to the same canonical /48.
+     * trailing colon may be punctuation ("Remote IP: 2001:db8::9:"), so the callback tries once without it.
+     * CIDR suffixes are consumed and reduced to the same canonical /48.
      */
     private const IPV6 = '/(?<![\w:.%s])(?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}(?!\w)(?!\.\w)(?!:[0-9a-f])(?:\/\d+)?/i';
     /**
      * An IPv6 candidate glued to a label by a colon ("IP:2001:db8::1", "clientAddress:2001:db8::9"), which the pattern
-     * above cannot see, since an address never starts right after a colon there.
+     * above cannot see, since an address never starts right after a colon there. Labels are bounded and possessive;
+     * the hyphen boundary prevents restarting inside one long label.
      */
     private const LABELED_IPV6 = '/(?<![\w:.%s-])([a-z_][\w-]{0,62}+):((?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}(?!\w)(?!\.\w)(?!:[0-9a-f])(?:\/\d+)?)/i';
     /** ANSI escape sequences (CSI and OSC). */

@@ -151,6 +151,8 @@ final class AdminAssetsTest extends TestCase {
         $script = (string)file_get_contents(dirname(__DIR__, 3) . '/js/admin-grants.js');
         $logs = substr($script, (int)strpos($script, 'async function initLogsAccess'));
         $this->assertStringContainsString("previous: Array.from(selected)", $logs);
+        $this->assertStringContainsString("version: version", $logs);
+        $this->assertStringContainsString("version = data.version", $logs);
         $this->assertStringContainsString('setLocked(true)', $logs);
         $this->assertStringContainsString("e.message === '409'", $logs);
         $this->assertStringContainsString("t('mcp', 'The groups were changed in another window or by another administrator; the current list was loaded.')", $logs);

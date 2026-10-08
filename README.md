@@ -108,6 +108,8 @@ Task deletion uses native calendar trash and is refused when `dav/calendarRetent
 
 3. **Configure** in *Administration settings → MCP for Nextcloud* (the app has its own entry with an icon in the settings menu): turn the service on, mark who may connect, grant write permissions where needed, and select system tags for hiding sensitive files. The page is split into blocks: **Status** (endpoint to copy, service switch, app version, eligible/connected users, active connections and the editable checkout upload limit in MiB, shown next to PHP's `post_max_size` ceiling), **OAuth clients**, **Hidden files & tags**, **OCR**, **Permissions** (the users × permissions matrix, with search, group and "can connect / connected" filters, an "All" menu per module for the users on the page, and pagers on top and bottom), **Server log** (the groups whose members may read the server log besides the administrators) and **Active connections**.
 
+   Server log access groups are stored in the app's own versioned table, created automatically by its native migration. Existing appconfig groups are imported on first read. The admin API returns `version` with GET and requires it on PUT; stale saves get 409. The database compare-and-swap still protects revocations with `filelocking.enabled=false`, when the extra Nextcloud lock becomes Noop.
+
 ## Connecting a client
 
 Every client talks to the same URL, `https://cloud.example.com/apps/mcp/`, and authenticates as the person using it, with that person's own permissions. Only the authentication step differs:

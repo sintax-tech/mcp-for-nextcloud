@@ -707,6 +707,7 @@
 			return
 		}
 		let selected = new Set()
+		let version = 0
 		let saving = false
 
 		/** @param {boolean} locked whether every box is locked while a save runs */
@@ -731,6 +732,7 @@
 		/** @param {object} data state returned by the API */
 		function show(data) {
 			selected = new Set(data.groups)
+			version = data.version
 			container.setAttribute('aria-busy', 'false')
 			const missing = data.missing.map((id) => groupBox(id, t('mcp', '{group} (group removed)', { group: id })))
 			if (data.allGroups.length === 0 && missing.length === 0) {
@@ -768,7 +770,7 @@
 			setLocked(true)
 			status.textContent = t('mcp', 'Saving…')
 			try {
-				show(await api('PUT', '/api/logs-access', { groups: Array.from(next), previous: Array.from(selected) }))
+				show(await api('PUT', '/api/logs-access', { groups: Array.from(next), previous: Array.from(selected), version: version }))
 				status.textContent = t('mcp', 'Saved')
 				// The matrix shows the log column per user from the same gate, so it is reloaded.
 				load()

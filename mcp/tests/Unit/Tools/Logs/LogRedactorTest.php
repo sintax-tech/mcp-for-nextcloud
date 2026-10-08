@@ -137,4 +137,28 @@ final class LogRedactorTest extends TestCase {
         }
         $this->assertSame('line one line two next', LogRedactor::text("line one\u{2028}line two\u{2029}next", 2000));
     }
+
+    /**
+     * An IPv6 address glued to its label by a colon ("IP:2001:db8::1") is still masked, the label kept; a MAC address,
+     * a clock time or an address whose first group only looks like a label stay what they are.
+     */
+    public function testAnIpv6AddressGluedToALabelIsMasked(): void {
+        $cases = [
+            'IP:2001:db8::1' => 'IP:2001:db8::/48',
+            'clientAddress:2001:db8:abcd:12::9' => 'clientAddress:2001:db8:abcd::/48',
+            'Remote IP:2001:db8:abcd:12:34::9:' => 'Remote IP:2001:db8:abcd::/48:',
+            'host=srv;ip:2001:db8::1.' => 'host=srv;ip:2001:db8::/48.',
+            'mac:aa:bb:cc:dd:ee:ff' => 'mac:aa:bb:cc:dd:ee:ff',
+            'hw:00:1a:2b:3c:4d:5e' => 'hw:00:1a:2b:3c:4d:5e',
+            'at:10:15:00' => 'at:10:15:00',
+            // "cafe" is a hexadecimal group, and the whole run is one address: masked as one, never cut in two.
+            'cafe:2001:db8::1' => 'cafe:2001:db8::/48',
+        ];
+        foreach ($cases as $text => $expected) {
+            $this->assertSame($expected, LogRedactor::text($text, 2000), $text);
+        }
+        $this->assertSame('Agent/1.0 ip:2001:db8::/48', LogRedactor::text('Agent/1.0 ip:2001:db8::1', 300, true));
+        // A network already written with its prefix length is not an address to mask again.
+        $this->assertSame('route 2001:db8::/32 via IP:2001:db8:abcd::/48', LogRedactor::text('route 2001:db8::/32 via IP:2001:db8:abcd:1::7', 2000));
+    }
 }

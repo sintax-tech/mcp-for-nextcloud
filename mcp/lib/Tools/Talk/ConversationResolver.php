@@ -76,12 +76,36 @@ class ConversationResolver {
         if (($permissions & $constants['chatPermission']) === 0) {
             throw new ConversationAccessException(Messages::conversationNotWritable());
         }
+        if ($room->getLobbyState() !== $constants['lobbyNone']) {
+            $this->expireLobbyTimer($userId, $room);
+        }
         if ($room->getLobbyState() !== $constants['lobbyNone']
             && ($permissions & $constants['lobbyIgnorePermission']) === 0) {
             throw new ConversationAccessException(Messages::conversationNotWritable());
         }
 
         return $conversation;
+    }
+
+    /**
+     * Opens a lobby whose timer has passed, as Talk does before it reads the lobby state.
+     *
+     * Up to Talk 23 Room::getLobbyState() does it by itself. Talk 24 (Nextcloud 34) moved it to
+     * RoomService::validateLobbyTimer(), which its controllers call first; without the call a webinar past its start
+     * time would stay closed here. A failing check leaves the lobby as Talk reports it, closed.
+     *
+     * @param string $userId Authenticated user
+     * @param object $room OCA\Talk\Room
+     */
+    private function expireLobbyTimer(string $userId, object $room): void {
+        try {
+            $roomService = $this->talkServices->roomService($userId);
+            if (method_exists($roomService, 'validateLobbyTimer')) {
+                $roomService->validateLobbyTimer($room);
+            }
+        } catch (Throwable) {
+            // The lobby stays as getLobbyState() reports it.
+        }
     }
 
     /**

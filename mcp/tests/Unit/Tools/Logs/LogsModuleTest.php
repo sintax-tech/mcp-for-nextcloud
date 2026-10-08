@@ -65,7 +65,8 @@ final class LogsModuleTest extends TestCase {
                 $this->infos[] = [$message, $context, $level];
             });
         }
-        return new LogsModule(new LogsAccess($config, $groups), new LogScanner(new LogReader($factory)), new LogAudit($dispatcher, $logger), $config);
+        $access = new LogsAccess($config, $groups, (new \OCA\Mcp\Tests\Unit\InMemoryAppConfig())->worker($this), new \OCA\Mcp\Tests\Unit\InMemoryLocks());
+        return new LogsModule($access, new LogScanner(new LogReader($factory)), new LogAudit($dispatcher, $logger), $config);
     }
 
     /** @return array{0: string, 1: array<string, mixed>} the text and the structured content of a call */

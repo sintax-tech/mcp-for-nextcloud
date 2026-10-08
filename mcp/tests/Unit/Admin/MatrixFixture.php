@@ -20,6 +20,9 @@ use PHPUnit\Framework\TestCase;
  */
 final class MatrixFixture {
     public InMemoryConfig $config;
+    /** App config of the logs groups, shared by every worker of the fixture. */
+    public \OCA\Mcp\Tests\Unit\InMemoryAppConfig $appConfig;
+    public \OCA\Mcp\Tests\Unit\InMemoryLocks $locks;
     public GrantPolicy $policy;
     public \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore $oauth;
     /** @var array<string, array{name:string, email:string, enabled:bool}> */
@@ -36,6 +39,8 @@ final class MatrixFixture {
 
     public function __construct(private TestCase $test) {
         $this->config = new InMemoryConfig();
+        $this->appConfig = new \OCA\Mcp\Tests\Unit\InMemoryAppConfig();
+        $this->locks = new \OCA\Mcp\Tests\Unit\InMemoryLocks();
         $this->oauth = new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore();
         $this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->config->mock($test), $this->oauth);
     }
@@ -53,7 +58,7 @@ final class MatrixFixture {
 
     /** The role gate of the logs module over the same config and groups; members of 'admin' are the administrators. */
     public function logsAccess(): \OCA\Mcp\Service\LogsAccess {
-        return new \OCA\Mcp\Service\LogsAccess($this->config->mock($this->test), $this->groupManager());
+        return new \OCA\Mcp\Service\LogsAccess($this->config->mock($this->test), $this->groupManager(), $this->appConfig->worker($this->test), $this->locks);
     }
 
     public function userManager(): IUserManager {

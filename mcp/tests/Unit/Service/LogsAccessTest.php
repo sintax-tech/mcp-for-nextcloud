@@ -5,7 +5,10 @@ namespace OCA\Mcp\Tests\Unit\Service;
 
 use InvalidArgumentException;
 use OCA\Mcp\Service\LogsAccess;
+use OCA\Mcp\Service\LogsGroupsConflict;
+use OCA\Mcp\Tests\Unit\InMemoryAppConfig;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCA\Mcp\Tests\Unit\InMemoryLocks;
 use OCP\IGroup;
 use OCP\IGroupManager;
 use PHPUnit\Framework\TestCase;
@@ -16,19 +19,24 @@ use PHPUnit\Framework\TestCase;
  */
 final class LogsAccessTest extends TestCase {
     private InMemoryConfig $store;
+    private InMemoryAppConfig $appConfig;
+    private InMemoryLocks $locks;
     /** @var array<string, list<string>> members by group id */
-    private array $groups = ['admin' => ['root'], 'ti' => ['tina'], 'rh' => ['rita']];
+    private array $groups = ['admin' => ['root'], 'ti' => ['tina'], 'rh' => ['rita'], '1' => ['uno'], '01' => ['zero-uno']];
 
     protected function setUp(): void {
         $this->store = new InMemoryConfig();
+        $this->appConfig = new InMemoryAppConfig();
+        $this->locks = new InMemoryLocks();
     }
 
+    /** One request: its own app config cache over the shared store, and the shared locks. */
     private function access(): LogsAccess {
         $groups = $this->createMock(IGroupManager::class);
         $groups->method('isAdmin')->willReturnCallback(fn (string $uid): bool => in_array($uid, $this->groups['admin'], true));
         $groups->method('isInGroup')->willReturnCallback(fn (string $uid, string $gid): bool => in_array($uid, $this->groups[$gid] ?? [], true));
         $groups->method('get')->willReturnCallback(fn (string $gid): ?IGroup => isset($this->groups[$gid]) ? $this->createMock(IGroup::class) : null);
-        return new LogsAccess($this->store->mock($this), $groups);
+        return new LogsAccess($this->store->mock($this), $groups, $this->appConfig->worker($this), $this->locks);
     }
 
     public function testOnlyAdministratorsPassWhileNoGroupIsListed(): void {
@@ -52,9 +60,9 @@ final class LogsAccessTest extends TestCase {
     public function testTheGroupsAreStoredUnderTheirOwnKeyAndAnEmptyListRemovesIt(): void {
         $access = $this->access();
         $access->setGroups(['ti', 'rh', 'ti']);
-        $this->assertSame(['rh', 'ti'], json_decode($this->store->app['mcp'][LogsAccess::GROUPS_KEY], true));
+        $this->assertSame(['rh', 'ti'], json_decode($this->appConfig->stored['mcp'][LogsAccess::GROUPS_KEY], true));
         $access->setGroups([]);
-        $this->assertArrayNotHasKey(LogsAccess::GROUPS_KEY, $this->store->app['mcp'] ?? []);
+        $this->assertArrayNotHasKey(LogsAccess::GROUPS_KEY, $this->appConfig->stored['mcp'] ?? []);
         $this->assertFalse($access->permits('tina'));
     }
 
@@ -116,9 +124,9 @@ final class LogsAccessTest extends TestCase {
     }
 
     public function testAGarbledStoredValueReadsAsNoGroup(): void {
-        $this->store->app['mcp'][LogsAccess::GROUPS_KEY] = '{not json';
+        $this->appConfig->stored['mcp'][LogsAccess::GROUPS_KEY] = '{not json';
         $this->assertSame([], $this->access()->groups());
-        $this->store->app['mcp'][LogsAccess::GROUPS_KEY] = '["ti", 3, ""]';
+        $this->appConfig->stored['mcp'][LogsAccess::GROUPS_KEY] = '["ti", 3, ""]';
         $this->assertSame(['ti'], $this->access()->groups());
     }
 
@@ -139,5 +147,95 @@ final class LogsAccessTest extends TestCase {
         $this->assertSame('file', $this->access()->logType());
         $this->store->system['log_type'] = 'owncloud';
         $this->assertTrue($this->access()->available());
+    }
+
+    /**
+     * Two workers read the same list; the second save, based on what it read before the first one wrote, must see the
+     * written list inside the lock and be refused, not trust the copy its request cached.
+     */
+    public function testTheCheckReadsTheStoredListInsideTheLockAndNotTheRequestCache(): void {
+        $first = $this->access();
+        $second = $this->access();
+        $first->setGroups(['rh', 'ti'], []);
+        $this->assertSame(['rh', 'ti'], $second->groups(), 'the second worker caches the list now');
+
+        $first->setGroups(['ti'], ['rh', 'ti']);
+        try {
+            $second->setGroups(['rh', 'ti'], ['rh', 'ti']);
+            $this->fail('the revocation of rh must not be undone');
+        } catch (LogsGroupsConflict) {
+        }
+        $this->assertSame(['ti'], json_decode($this->appConfig->stored['mcp'][LogsAccess::GROUPS_KEY], true));
+        $this->assertSame([], $this->locks->held, 'the lock is released after a conflict too');
+    }
+
+    /** Interleaving: while one worker holds the lock between its check and its write, another save is refused. */
+    public function testASaveWhileAnotherHoldsTheLockIsAConflict(): void {
+        $first = $this->access();
+        $second = $this->access();
+        $first->setGroups(['rh', 'ti'], []);
+        $refused = false;
+        $this->locks->onAcquire = function () use ($second, &$refused): void {
+            try {
+                $second->setGroups(['rh', 'ti'], ['rh', 'ti']);
+            } catch (LogsGroupsConflict) {
+                $refused = true;
+            }
+        };
+
+        $first->setGroups(['ti'], ['rh', 'ti']);
+
+        $this->assertTrue($refused);
+        $this->assertSame(['ti'], $this->access()->groups());
+        $this->assertSame([LogsAccess::LOCK_KEY, LogsAccess::LOCK_KEY], $this->locks->acquired);
+        $this->assertSame([], $this->locks->held);
+    }
+
+    /** An invalid group releases the lock and writes nothing. */
+    public function testTheLockIsReleasedWhenTheListIsRefused(): void {
+        $access = $this->access();
+        try {
+            $access->setGroups(['ghost'], []);
+            $this->fail('an unknown group must be refused');
+        } catch (InvalidArgumentException) {
+        }
+        $this->assertSame([], $this->locks->held);
+        $this->assertSame([], $this->appConfig->stored);
+    }
+
+    /** Group ids are strings: "1" and "01" are two groups, in the store and in the comparison alike. */
+    public function testNumericLookingIdsAreComparedAsStrings(): void {
+        $access = $this->access();
+        $access->setGroups(['01', '1', '1'], []);
+        $this->assertSame(['01', '1'], $this->access()->groups());
+        $access->setGroups(['01', '1'], ['1', '01']);
+        foreach ([['1'], ['01'], ['1', '1'], ['01', '01']] as $previous) {
+            try {
+                $access->setGroups(['1'], $previous);
+                $this->fail(json_encode($previous) . ' is not the stored list');
+            } catch (LogsGroupsConflict) {
+            }
+        }
+        $access->setGroups(['1'], ['1', '01']);
+        $this->assertSame(['1'], $this->access()->groups());
+        try {
+            $access->setGroups(['01'], ['01']);
+            $this->fail('the stored list is ["1"], not ["01"]');
+        } catch (LogsGroupsConflict) {
+        }
+        $this->assertTrue($this->access()->permits('uno'));
+        $this->assertFalse($this->access()->permits('zero-uno'));
+    }
+
+    public function testPreviousMustListNonEmptyStrings(): void {
+        $access = $this->access();
+        foreach ([[1], [''], [['ti']], [null]] as $previous) {
+            try {
+                $access->setGroups(['ti'], $previous);
+                $this->fail(json_encode($previous) . ' must be refused');
+            } catch (InvalidArgumentException) {
+            }
+        }
+        $this->assertSame([], $access->groups());
     }
 }

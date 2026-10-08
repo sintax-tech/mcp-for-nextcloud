@@ -10,6 +10,7 @@ use OCA\Mcp\OAuth\NativeClient;
 use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\Service\GrantMatrix;
 use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Service\LogsAccess;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -34,6 +35,7 @@ class GrantsController extends Controller {
         private IUserManager $userManager,
         private IConfig $config,
         private OAuthStore $oauth,
+        private LogsAccess $logs,
     ) {
         parent::__construct($appName, $request);
     }
@@ -156,6 +158,42 @@ class GrantsController extends Controller {
             }
             return $this->oauthState();
         });
+    }
+
+    /**
+     * Who may read the server log besides the administrators, for the "Server log" block.
+     *
+     * @return JSONResponse {groups, allGroups, available, logType}
+     */
+    public function logsAccess(): JSONResponse {
+        return $this->guard(fn (): array => $this->logsState());
+    }
+
+    /**
+     * Body {groups: list<string>}: the groups whose members pass the role gate of the logs module; an empty list
+     * leaves the administrators only. Every group is checked before anything is written.
+     *
+     * @return JSONResponse the same shape as logsAccess(), or 400
+     */
+    public function updateLogsAccess(): JSONResponse {
+        return $this->guard(function (): array {
+            $groups = $this->request->getParam('groups');
+            if (!is_array($groups) || !array_is_list($groups) || count($groups) > GrantMatrix::MAX_GROUPS) {
+                throw new InvalidArgumentException('Invalid request');
+            }
+            $this->logs->setGroups($groups);
+            return $this->logsState();
+        });
+    }
+
+    /** @return array{groups:list<string>, allGroups:list<array{id:string, displayName:string}>, available:bool, logType:string} */
+    private function logsState(): array {
+        return [
+            'groups' => $this->logs->groups(),
+            'allGroups' => $this->matrix->groups(),
+            'available' => $this->logs->available(),
+            'logType' => $this->logs->logType(),
+        ];
     }
 
     /** @return array{hosts:list<string>, hostsDefault:bool, nativeClientEnabled:bool, nativeClientId:string, nativeRedirectUris:list<string>} */

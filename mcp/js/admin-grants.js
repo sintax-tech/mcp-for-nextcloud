@@ -39,6 +39,7 @@
 			tasks: t('mcp', 'Tasks'),
 			talk: t('mcp', 'Talk'),
 			people: t('mcp', 'People'),
+			logs: t('mcp', 'Server log'),
 		}
 	}
 
@@ -72,6 +73,9 @@
 		}
 		if (module === 'files' && operation === 'create') {
 			return t('mcp', 'Create folders, copies and new files')
+		}
+		if (module === 'logs' && operation === 'read') {
+			return t('mcp', 'Read and analyze the server log; starts off')
 		}
 		if (module === 'calendar' && operation === 'transfer') {
 			return t('mcp', 'Move an event to another person’s calendar')
@@ -314,7 +318,9 @@
 					cell.classList.add('mcp-module')
 				}
 				if (!available) {
-					cell.title = t('mcp', 'This app is unavailable for this user; the saved permission is kept.')
+					cell.title = module === 'logs'
+						? t('mcp', 'Only administrators and members of the groups selected in “Server log” can read the log; the saved permission is kept.')
+						: t('mcp', 'This app is unavailable for this user; the saved permission is kept.')
 					cell.classList.add('mcp-dim')
 					const hint = el('span', { className: 'mcp-dim-hint', textContent: ' ⓘ' })
 					hint.setAttribute('aria-label', cell.title)
@@ -688,8 +694,70 @@
 		})
 	}
 
+	/**
+	 * Server log section: the groups whose members may read the log besides the administrators, through
+	 * GET and PUT /apps/mcp/api/logs-access. Each checkbox is saved at once with the whole list.
+	 */
+	async function initLogsAccess() {
+		const container = document.getElementById('mcp-logs-groups')
+		const status = document.getElementById('mcp-logs-status')
+		if (!container) {
+			return
+		}
+		let selected = new Set()
+
+		/** @param {object} data state returned by the API */
+		function show(data) {
+			selected = new Set(data.groups)
+			container.setAttribute('aria-busy', 'false')
+			if (data.allGroups.length === 0) {
+				container.replaceChildren(el('p', { className: 'mcp-empty', textContent: t('mcp', 'No groups found; only administrators can read the log.') }))
+				return
+			}
+			container.replaceChildren(...data.allGroups.map((group) => {
+				const box = el('input', { type: 'checkbox', className: 'checkbox', id: 'mcp-logs-group-' + group.id, checked: selected.has(group.id) })
+				box.addEventListener('change', () => save(box, group.id))
+				return el('label', { htmlFor: box.id, className: 'mcp-tag-item' }, [box, group.displayName])
+			}))
+		}
+
+		/**
+		 * @param {HTMLInputElement} box checkbox that changed
+		 * @param {string} gid group id of the checkbox
+		 */
+		async function save(box, gid) {
+			const next = new Set(selected)
+			if (box.checked) {
+				next.add(gid)
+			} else {
+				next.delete(gid)
+			}
+			box.disabled = true
+			status.textContent = t('mcp', 'Saving…')
+			try {
+				show(await api('PUT', '/api/logs-access', { groups: Array.from(next) }))
+				status.textContent = t('mcp', 'Saved')
+				// The matrix shows the log column per user from the same gate, so it is reloaded.
+				load()
+			} catch (e) {
+				box.checked = !box.checked
+				box.disabled = false
+				status.textContent = t('mcp', 'Not saved')
+				notifyError(t('mcp', 'Could not save the groups that may read the server log.'))
+			}
+		}
+
+		try {
+			show(await api('GET', '/api/logs-access'))
+		} catch (e) {
+			container.setAttribute('aria-busy', 'false')
+			container.replaceChildren(el('p', { className: 'mcp-empty', textContent: t('mcp', 'Could not load the groups.') }))
+		}
+	}
+
 	load()
 	initTagsSection()
 	initOauthClients()
 	initCheckoutLimit()
+	initLogsAccess()
 })()

@@ -459,7 +459,7 @@ OC.L10N.register(
     "User" : "Usuario",
     "user not found or no permission to message them" : "usuario no encontrado o sin permiso para escribirle",
     "Users can assign and remove this tag" : "Los usuarios pueden asignar y eliminar esta etiqueta",
-    "Users need “Can connect” and must activate the connection in their personal settings. Read permissions start allowed; write, delete and transfer start denied. Nextcloud permissions and shares still apply." : "Los usuarios necesitan «Puede conectar» y deben activar la conexión en sus ajustes personales. Los permisos de lectura empiezan permitidos; los de escritura, eliminación y transferencia empiezan denegados. Los permisos y los recursos compartidos de Nextcloud siguen vigentes.",
+    "Users need “Can connect” and must activate the connection in their personal settings. Read permissions start allowed, except the server log; write, delete and transfer start denied. Nextcloud permissions and shares still apply." : "Los usuarios necesitan «Puede conectar» y deben activar la conexión en sus ajustes personales. Los permisos de lectura empiezan permitidos, salvo el del registro del servidor; los de escritura, eliminación y transferencia empiezan denegados. Los permisos y los recursos compartidos de Nextcloud siguen vigentes.",
     "Version not found for this file: %s." : "Versión no encontrada para este archivo: %s.",
     "View folder tree" : "Ver árbol de carpetas",
     "View image" : "Ver imagen",
@@ -885,6 +885,14 @@ OC.L10N.register(
     "This server does not write its log to a file, so there is nothing to read." : "Este servidor no escribe su registro en un archivo, así que no hay nada que leer.",
     "Read server log" : "Leer registro del servidor",
     "Analyze server log" : "Analizar registro del servidor",
-    "Server log" : "Registro del servidor"
+    "Server log" : "Registro del servidor",
+    "This server writes its log to %s, not to a file, so the server log tools stay hidden. They need the file log, the default of Nextcloud." : "Este servidor escribe su registro en %s, no en un archivo, por eso las herramientas del registro del servidor quedan ocultas. Necesitan el registro en archivo, el predeterminado de Nextcloud.",
+    "The log shows file names, addresses and accounts of every user. Only Nextcloud administrators and members of the groups selected here can read it through MCP, and only after their “Server log” permission is turned on in the table above; it starts off." : "El registro muestra nombres de archivos, direcciones y cuentas de todos los usuarios. Solo los administradores de Nextcloud y los miembros de los grupos marcados aquí pueden leerlo por MCP, y solo después de activar su permiso «Registro del servidor» en la tabla de arriba; empieza desactivado.",
+    "Loading groups…" : "Cargando grupos…",
+    "Read and analyze the server log; starts off" : "Leer y analizar el registro del servidor; empieza desactivado",
+    "Only administrators and members of the groups selected in “Server log” can read the log; the saved permission is kept." : "Solo los administradores y los miembros de los grupos marcados en «Registro del servidor» pueden leer el registro; el permiso guardado se conserva.",
+    "No groups found; only administrators can read the log." : "No se encontraron grupos; solo los administradores pueden leer el registro.",
+    "Could not save the groups that may read the server log." : "No se pudieron guardar los grupos que pueden leer el registro del servidor.",
+    "Could not load the groups." : "No se pudieron cargar los grupos."
 },
 "nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

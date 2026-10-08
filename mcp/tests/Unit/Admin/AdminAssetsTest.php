@@ -69,12 +69,12 @@ final class AdminAssetsTest extends TestCase {
         }
     }
 
-    /** Six blocks, each a core settings section with its own heading, in the planned order. */
-    public function testAdminPageHasSixSectionBlocks(): void {
+    /** Seven blocks, each a core settings section with its own heading, in the planned order. */
+    public function testAdminPageHasSevenSectionBlocks(): void {
         $template = (string)file_get_contents(dirname(__DIR__, 3) . '/templates/admin.php');
         preg_match_all('/<div class="section mcp-block" id="([^"]+)"[^>]*>\s*<h2><\?php p\(\$l->t\(\'([^\']+)\'\)\); \?><\/h2>/', $template, $blocks);
-        $this->assertSame(['mcp-block-status', 'mcp-block-oauth', 'mcp-block-tags', 'mcp-block-ocr', 'mcp-block-matrix', 'mcp-connections'], $blocks[1]);
-        $this->assertSame(['Status', 'OAuth clients', 'Hidden files & tags', 'OCR', 'Permissions', 'Active connections'], $blocks[2]);
+        $this->assertSame(['mcp-block-status', 'mcp-block-oauth', 'mcp-block-tags', 'mcp-block-ocr', 'mcp-block-matrix', 'mcp-block-logs', 'mcp-connections'], $blocks[1]);
+        $this->assertSame(['Status', 'OAuth clients', 'Hidden files & tags', 'OCR', 'Permissions', 'Server log', 'Active connections'], $blocks[2]);
         $this->assertStringContainsString('data-scope="admin"', $template);
     }
 

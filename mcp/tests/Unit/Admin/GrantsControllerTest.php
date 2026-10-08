@@ -26,7 +26,7 @@ final class GrantsControllerTest extends TestCase {
         $this->body = $body;
         $request = $this->createMock(IRequest::class);
         $request->method('getParam')->willReturnCallback(fn (string $key, $default = null) => array_key_exists($key, $this->body) ? $this->body[$key] : $default);
-        return new GrantsController('mcp', $request, $this->fx->matrix(), $this->fx->policy, $this->fx->userManager(), $this->fx->config->mock($this), $this->fx->oauth);
+        return new GrantsController('mcp', $request, $this->fx->matrix(), $this->fx->policy, $this->fx->userManager(), $this->fx->config->mock($this), $this->fx->oauth, $this->fx->logsAccess());
     }
 
     private static function assertBad(JSONResponse $response): void {
@@ -34,7 +34,7 @@ final class GrantsControllerTest extends TestCase {
     }
 
     public function testEveryEndpointIsAdminOnlyAndCsrfProtected(): void {
-        foreach (['index', 'update', 'bulk', 'service', 'oauthClients', 'updateOauthClients'] as $method) {
+        foreach (['index', 'update', 'bulk', 'service', 'oauthClients', 'updateOauthClients', 'logsAccess', 'updateLogsAccess'] as $method) {
             $this->assertSame([], (new \ReflectionMethod(GrantsController::class, $method))->getAttributes(), $method);
         }
     }
@@ -264,5 +264,40 @@ final class GrantsControllerTest extends TestCase {
             self::assertBad($this->controller($body)->updateOauthClients());
         }
         $this->assertSame([], array_intersect_key($this->fx->config->app['mcp'] ?? [], ['oauth_client_hosts' => 1, 'oauth_native_client_enabled' => 1]));
+    }
+
+    /** The groups that may read the server log: none by default (administrators only), every group offered. */
+    public function testLogsAccessShowsTheListedGroupsAndTheLogType(): void {
+        $data = $this->controller()->logsAccess()->getData();
+        $this->assertSame([], $data['groups']);
+        $this->assertTrue($data['available']);
+        $this->assertSame('file', $data['logType']);
+        $this->assertSame(['sales', 'admin'], array_column($data['allGroups'], 'id'));
+
+        $this->fx->config->system['log_type'] = 'systemd';
+        $data = $this->controller()->logsAccess()->getData();
+        $this->assertFalse($data['available']);
+        $this->assertSame('systemd', $data['logType']);
+    }
+
+    public function testUpdateLogsAccessStoresTheGroupsAndOpensTheGate(): void {
+        $this->fx->addUser('tina', 'Tina', 'tina@corp.example', true, ['sales']);
+        $this->assertFalse($this->fx->logsAccess()->permits('tina'));
+
+        $response = $this->controller(['groups' => ['sales']])->updateLogsAccess();
+
+        $this->assertSame(200, $response->getStatus());
+        $this->assertSame(['sales'], $response->getData()['groups']);
+        $this->assertTrue($this->fx->logsAccess()->permits('tina'));
+        $this->assertSame([], $this->controller(['groups' => []])->updateLogsAccess()->getData()['groups']);
+        $this->assertFalse($this->fx->logsAccess()->permits('tina'));
+    }
+
+    public function testUpdateLogsAccessRefusesBadInputWithoutWriting(): void {
+        $this->controller(['groups' => ['sales']])->updateLogsAccess();
+        foreach ([[], ['groups' => 'sales'], ['groups' => ['sales', 'ghost']], ['groups' => [3]], ['groups' => ['a' => 'sales']]] as $body) {
+            self::assertBad($this->controller($body)->updateLogsAccess());
+        }
+        $this->assertSame(['sales'], $this->fx->logsAccess()->groups());
     }
 }

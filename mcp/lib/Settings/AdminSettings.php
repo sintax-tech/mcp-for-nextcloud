@@ -6,6 +6,7 @@ namespace OCA\Mcp\Settings;
 use OCA\Mcp\Service\Compat\AppEnablement;
 use OCA\Mcp\Service\ConnectionList;
 use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Service\LogsAccess;
 use OCA\Mcp\Tools\Files\OcrSupport;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Http\TemplateResponse;
@@ -14,9 +15,9 @@ use OCP\Settings\ISettings;
 
 /**
  * Admin page in the app's own "MCP for Nextcloud" section, in blocks: status (endpoint, service switch, version,
- * user summary), OAuth clients, hidden files & tags, OCR, the users × permissions matrix and the active
- * connections. The matrix, OAuth clients and tags are loaded and saved by js/admin-grants.js; the
- * connections by js/connections.js.
+ * user summary), OAuth clients, hidden files & tags, OCR, the users × permissions matrix, the groups that may read
+ * the server log and the active connections. The matrix, OAuth clients, tags and log groups are loaded and saved by
+ * js/admin-grants.js; the connections by js/connections.js.
  */
 class AdminSettings implements ISettings {
     /** Product name of each optional app with a minimum version, as the administrator knows it in the app list. */
@@ -28,6 +29,7 @@ class AdminSettings implements ISettings {
         private OcrSupport $ocr,
         private IAppManager $appManager,
         private ConnectionList $connections,
+        private LogsAccess $logs,
     ) {}
 
     /** @return TemplateResponse the rendered settings section */
@@ -43,6 +45,8 @@ class AdminSettings implements ISettings {
             'connectedUsers' => count($this->policy->connectedUsers()),
             'activeConnections' => $this->connections->count(),
             'unsupportedApps' => $this->unsupportedApps(),
+            'logsAvailable' => $this->logs->available(),
+            'logType' => $this->logs->logType(),
         ], '');
     }
 

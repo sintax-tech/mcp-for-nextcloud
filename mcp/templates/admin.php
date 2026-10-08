@@ -1,10 +1,11 @@
 <?php
 /**
  * Admin page of the "MCP for Nextcloud" settings section, one core `.section` per block:
- * status, OAuth clients, hidden files & tags, OCR, the users × permissions matrix and the active connections.
- * The matrix, OAuth clients and tags are filled by js/admin-grants.js, the connections by js/connections.js.
+ * status, OAuth clients, hidden files & tags, OCR, the users × permissions matrix, the server log and the active
+ * connections. The matrix, OAuth clients, tags and log groups are filled by js/admin-grants.js, the connections by
+ * js/connections.js.
  *
- * @var array{endpoint:string, serviceEnabled:bool, ocrActive:bool, ocrUrl:string, version:string, eligibleUsers:int, connectedUsers:int, activeConnections:int, unsupportedApps:list<array{name:string, installed:string, required:string}>} $_
+ * @var array{endpoint:string, serviceEnabled:bool, ocrActive:bool, ocrUrl:string, version:string, eligibleUsers:int, connectedUsers:int, activeConnections:int, unsupportedApps:list<array{name:string, installed:string, required:string}>, logsAvailable:bool, logType:string} $_
  * @var \OCP\IL10N $l
  */
 \OCP\Util::addScript('mcp', 'admin-grants');
@@ -115,7 +116,7 @@
 
     <div class="section mcp-block" id="mcp-block-matrix">
         <h2><?php p($l->t('Permissions')); ?></h2>
-        <p class="settings-hint mcp-hint"><?php p($l->t('Users need “Can connect” and must activate the connection in their personal settings. Read permissions start allowed; write, delete and transfer start denied. Nextcloud permissions and shares still apply.')); ?></p>
+        <p class="settings-hint mcp-hint"><?php p($l->t('Users need “Can connect” and must activate the connection in their personal settings. Read permissions start allowed, except the server log; write, delete and transfer start denied. Nextcloud permissions and shares still apply.')); ?></p>
         <p class="settings-hint mcp-hint"><?php p($l->t('Each change is saved at once. The “All” menus in the header allow or deny a permission for every user on the current page.')); ?></p>
         <?php foreach ($_['unsupportedApps'] as $app) { ?>
             <p class="mcp-unsupported-app"><?php p($l->t('%1$s %2$s is installed, but MCP for Nextcloud supports it from version %3$s on. Its tools stay hidden until the app is updated; the saved permissions are kept.', [$app['name'], $app['installed'], $app['required']])); ?></p>
@@ -154,6 +155,18 @@
                 <button type="button" id="mcp-next-bottom"><?php p($l->t('Next')); ?></button>
             </span>
         </div>
+    </div>
+
+    <div class="section mcp-block" id="mcp-block-logs">
+        <h2><?php p($l->t('Server log')); ?></h2>
+        <?php if (!$_['logsAvailable']) { ?>
+            <p class="mcp-unsupported-app" id="mcp-logs-unavailable"><?php p($l->t('This server writes its log to %s, not to a file, so the server log tools stay hidden. They need the file log, the default of Nextcloud.', [$_['logType']])); ?></p>
+        <?php } ?>
+        <p class="settings-hint mcp-hint"><?php p($l->t('The log shows file names, addresses and accounts of every user. Only Nextcloud administrators and members of the groups selected here can read it through MCP, and only after their “Server log” permission is turned on in the table above; it starts off.')); ?></p>
+        <div id="mcp-logs-groups" class="mcp-logs-groups" aria-busy="true">
+            <span class="mcp-tags-loading"><?php p($l->t('Loading groups…')); ?></span>
+        </div>
+        <span class="mcp-status" id="mcp-logs-status" aria-live="polite"></span>
     </div>
 
     <div class="section mcp-block" id="mcp-connections" data-scope="admin">

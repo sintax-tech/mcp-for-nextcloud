@@ -891,11 +891,6 @@ final class DeckServiceGatewayTest extends TestCase {
 	}
 
 	/**
-	 * Makes every `setUserId()` call record itself in the call log.
-	 *
-	 * @return void
-	 */
-	/**
 	 * A card as Deck 1.18 and later load it, with the start date and colour fields 1.17 does not have.
 	 *
 	 * @param \DateTime|null $startdate Start date the card holds.
@@ -917,6 +912,11 @@ final class DeckServiceGatewayTest extends TestCase {
 		};
 	}
 
+	/**
+	 * Makes every `setUserId()` call record itself in the call log.
+	 *
+	 * @return void
+	 */
 	private function recordSetUserId(): void {
 		$this->services[BoardService::class]
 			->method('setUserId')

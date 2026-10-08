@@ -137,7 +137,7 @@ final class NextcloudApiUsage {
             'includeLastMessage' => 'false: the listing reads the last activity, not the last message',
         ],
         'OCA\\Talk\\Service\\ParticipantService::ensureOneToOneRoomIsFilled' => [
-            'enforceUserId' => 'null: both members of the one-to-one room are restored, as Talk does when it opens one',
+            'enforceUserId' => 'null: every member named by the one-to-one room is restored, as ChatController does before sending (sendMessage and shareObjectToChat)',
         ],
         'OCA\\Talk\\Service\\ParticipantService::addUsers' => [
             'bansAlreadyChecked' => 'false: Talk checks the bans itself',

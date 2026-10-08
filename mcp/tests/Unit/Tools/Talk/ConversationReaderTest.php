@@ -314,6 +314,38 @@ class ConversationReaderTest extends TestCase {
         $this->assertNull($conversations[2]['lastActivity']);
     }
 
+    /**
+     * Talk's RoomFormatter reports no unread messages to a participant the lobby keeps out: the count would tell what
+     * the history refuses to show.
+     */
+    public function testListingHidesTheUnreadCountOfAConversationTheLobbyKeepsTheUserOutOf(): void {
+        [$webinar, $webinarParticipant] = $this->givenRoom('lobby1', 2, 7, 3, false, 1700);
+        [$open, $openParticipant] = $this->givenRoom('open1', 2, 4, 3, false, 1500);
+        $manager = new class ([$webinar, $open]) {
+            public function __construct(private array $rooms) {}
+
+            public function getRoomsForUser(string $userId, array $sessionIds = [], bool $includeLastMessage = false): array {
+                return $this->rooms;
+            }
+        };
+        $participantService = new class ($webinarParticipant, $openParticipant) {
+            public function __construct(private object $webinar, private object $open) {}
+
+            public function getParticipant(object $room, string $userId, bool $lazy = false): object {
+                return $room->getToken() === 'lobby1' ? $this->webinar : $this->open;
+            }
+        };
+        $this->talkServices->method('manager')->willReturn($manager);
+        $this->talkServices->method('participantService')->willReturn($participantService);
+        $this->resolver->method('keepsOutOfLobby')->willReturnCallback(
+            static fn (string $userId, \OCA\Mcp\Tools\Talk\Conversation $conversation): bool => $conversation->room->getToken() === 'lobby1',
+        );
+
+        $conversations = $this->reader->listConversations('alice');
+
+        $this->assertSame(['lobby1' => 0, 'open1' => 4], array_column($conversations, 'unreadMessages', 'token'));
+    }
+
     public function testListingSkipsRoomsWithoutAReadableParticipant(): void {
         [$readable, $readableParticipant] = $this->givenRoom('good1', 2, 0, 0, false, 1500);
         [$broken] = $this->givenRoom('bad1', 2, 0, 0, false, 1500);

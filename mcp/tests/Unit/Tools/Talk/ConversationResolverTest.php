@@ -280,6 +280,18 @@ class ConversationResolverTest extends TestCase {
         $this->resolver->resolveForReading('alice', 'abcd');
     }
 
+    /** The listing asks the same question for every room it shows, with the room and participant it already holds. */
+    public function testTheLobbyRuleAnswersForAConversationAlreadyResolved(): void {
+        $room = $this->givenLobbyRoom(lobby: 2);
+        $participant = $this->createMock(ResolverParticipantGateway::class);
+        $participant->method('getPermissions')->willReturn(128);
+        $bypass = $this->createMock(ResolverParticipantGateway::class);
+        $bypass->method('getPermissions')->willReturn(128 | 8);
+
+        $this->assertTrue($this->resolver->keepsOutOfLobby('alice', new Conversation($room, $participant)));
+        $this->assertFalse($this->resolver->keepsOutOfLobby('alice', new Conversation($room, $bypass)));
+    }
+
     public function testUnavailableTalkStaysUnavailableThroughTheResolver(): void {
         $this->talkServices->method('manager')->willThrowException(new TalkUnavailableException());
 

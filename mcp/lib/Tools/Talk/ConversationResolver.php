@@ -77,6 +77,18 @@ class ConversationResolver {
     }
 
     /**
+     * Whether the lobby keeps the caller out of a conversation already resolved, the question the listing asks for
+     * every room it shows; see {@see self::lobbyKeepsOut()}.
+     *
+     * @param string $userId Authenticated user
+     * @param Conversation $conversation Room and participant of the caller
+     * @throws TalkUnavailableException When spreed is unavailable
+     */
+    public function keepsOutOfLobby(string $userId, Conversation $conversation): bool {
+        return $this->lobbyKeepsOut($userId, $conversation, $this->talkServices->conversationConstants($userId));
+    }
+
+    /**
      * Turns a conversation token into the room and the caller's participant, nothing else checked.
      *
      * Every resolution error becomes the same answer, see the class description.

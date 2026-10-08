@@ -18,12 +18,15 @@ use OCP\IConfig;
  * the registry as a {@see RestrictedModule}, and then the per-user grant logs.read, which starts denied.
  *
  * The entries come from {@see LogReader} only, are redacted by {@see LogRedactor}, travel in the untrusted envelope of
- * {@see LogEnvelope}, and every call is recorded by {@see LogAudit}.
+ * {@see LogEnvelope}, and every call, refused ones included, is handed to audit() by the registry and recorded by
+ * {@see LogAudit}.
  */
 class LogsModule implements ToolModule, ToolGuideNotes, RestrictedModule {
     /** Default and largest page of logs_list. */
     public const DEFAULT_LIMIT = 50;
     public const MAX_LIMIT = 100;
+    /** Arguments recorded by the audit, in this order. */
+    private const AUDITED_ARGUMENTS = ['min_level', 'app', 'user', 'since', 'until', 'contains', 'req_id', 'offset', 'limit'];
     /** Level the core writes from when loglevel is not set: warning. */
     private const DEFAULT_LOG_LEVEL = 2;
 
@@ -37,6 +40,28 @@ class LogsModule implements ToolModule, ToolGuideNotes, RestrictedModule {
     /** @param string $userId authenticated user @return bool whether the user passes the role gate and the log is a file */
     public function permits(string $userId): bool {
         return $this->access->permits($userId);
+    }
+
+    /**
+     * Records a call with its outcome, as the registry reports it. The arguments are untrusted: only the known filters,
+     * offset and limit are kept, scalars only, each text cut.
+     *
+     * @param string $tool technical name of the tool called
+     * @param string $userId authenticated user
+     * @param string $outcome one of the RestrictedModule outcomes
+     * @param array<string, mixed> $arguments arguments of the call
+     */
+    public function audit(string $tool, string $userId, string $outcome, array $arguments): void {
+        $filters = [];
+        foreach (self::AUDITED_ARGUMENTS as $key) {
+            $value = $arguments[$key] ?? null;
+            if (is_int($value)) {
+                $filters[$key] = $value;
+            } elseif (is_string($value)) {
+                $filters[$key] = LogRedactor::text($value, LogFilter::MAX_CONTAINS);
+            }
+        }
+        $this->audit->record($userId, LogRedactor::text($tool, 64), $outcome, $filters);
     }
 
     /** @return list<string> short behaviour notes about this module */
@@ -87,9 +112,9 @@ class LogsModule implements ToolModule, ToolGuideNotes, RestrictedModule {
     /**
      * @param string $name logs_list or logs_analyze
      * @param array<string, mixed> $arguments arguments validated against the schema, defaults applied
-     * @param string $userId authenticated user, recorded by the audit
+     * @param string $userId authenticated user
      * @return array{content: list<array{type:string, text:string}>, structuredContent: array<string, mixed>}
-     * @throws InvalidArgumentException for an unknown tool or an invalid filter, before anything is read or audited
+     * @throws InvalidArgumentException for an unknown tool or an invalid filter, before anything is read
      * @throws \OCA\Mcp\Tools\ToolFailure when the log cannot be read
      */
     public function call(string $name, array $arguments, string $userId): array {
@@ -106,8 +131,6 @@ class LogsModule implements ToolModule, ToolGuideNotes, RestrictedModule {
             throw new InvalidArgumentException('offset must be between 0 and ' . LogScanner::MAX_OFFSET
                 . ': the log is read from its end and older entries are beyond the read budget of this tool');
         }
-        $this->audit->record($userId, $name, $filter->describe() + ['offset' => $offset] + ($limit === null ? [] : ['limit' => $limit]));
-
         $window = $this->scanner->scan($filter, $offset, $limit);
         $payload = [
             'filters' => $filter->describe(),

@@ -224,22 +224,7 @@ final class ToolRegistryTest extends TestCase {
      * neither lists nor calls its tools, granted or not, and the grant still decides for a user inside it.
      */
     public function testARestrictedModuleIsHiddenFromUsersOutsideItsRoleWhateverTheGrant(): void {
-        $test = $this;
-        $module = new class($test) implements ToolModule, \OCA\Mcp\Tools\RestrictedModule {
-            /** @var list<string> */
-            public array $members = ['root'];
-            public function __construct(private ToolRegistryTest $test) {}
-            public function permits(string $userId): bool {
-                return in_array($userId, $this->members, true);
-            }
-            public function definitions(): array {
-                return [['name' => 'logs_list', 'description' => 'l', 'inputSchema' => ToolRegistryTest::schema(), 'module' => 'logs', 'operation' => 'read']];
-            }
-            public function call(string $name, array $arguments, string $userId): array {
-                $this->test->calls[] = [$name, $arguments, $userId];
-                return ['content' => [['type' => 'text', 'text' => 'ok']]];
-            }
-        };
+        $module = new FakeRestrictedModule();
         $registry = new ToolRegistry([$module], $this->policy, $this->createMock(IAppManager::class), $this->createMock(IUserManager::class), $this->logger);
         foreach (['root', 'alice'] as $uid) {
             $this->policy->setGrant($uid, 'logs', 'read', true);
@@ -247,21 +232,71 @@ final class ToolRegistryTest extends TestCase {
 
         $this->assertSame(['mcp_guide', 'logs_list'], array_column($registry->list('root'), 'name'));
         $this->assertSame(['mcp_guide'], array_column($registry->list('alice'), 'name'));
-        try {
-            $registry->call('logs_list', [], 'alice');
-            $this->fail('a user outside the role must not reach the module');
-        } catch (\InvalidArgumentException $e) {
-            $this->assertSame('Unknown tool', $e->getMessage());
-        }
-        $this->assertSame([], $this->calls);
+        $this->assertUnknownIn($registry, 'logs_list', 'alice');
+        $this->assertSame([], $module->calls);
 
         $registry->call('logs_list', [], 'root');
-        $this->assertSame([['logs_list', ['n' => 5], 'root']], $this->calls);
+        $this->assertSame([['logs_list', ['n' => 5], 'root']], $module->calls);
 
         // Inside the role the grant still decides, and logs.read starts denied.
         $this->assertSame(['mcp_guide'], array_column($registry->list('carl'), 'name'));
         $module->members[] = 'carl';
         $this->assertSame(['mcp_guide'], array_column($registry->list('carl'), 'name'));
+    }
+
+    /**
+     * Every call to a restricted module is audited by the registry with its outcome, whatever stopped it: the role or
+     * the grant (denied, before the module), the arguments (invalid), a failure (read_error) or none (success). A
+     * denial is never recorded as a read, and listing the tools audits nothing.
+     */
+    public function testEveryCallToARestrictedModuleIsAuditedWithItsOutcome(): void {
+        $module = new FakeRestrictedModule();
+        $module->members[] = 'carl';
+        $registry = new ToolRegistry([$module], $this->policy, $this->createMock(IAppManager::class), $this->createMock(IUserManager::class), $this->logger);
+        $this->policy->setGrant('root', 'logs', 'read', true);
+        $registry->list('root');
+        $this->assertSame([], $module->audits);
+
+        $this->assertUnknownIn($registry, 'logs_list', 'alice');
+        $this->assertUnknownIn($registry, 'logs_list', 'carl');
+        try {
+            $registry->call('logs_list', ['n' => 0], 'root');
+            $this->fail('n below its minimum is invalid');
+        } catch (\InvalidArgumentException) {
+        }
+        $module->throw = new \InvalidArgumentException('since must be ISO 8601');
+        try {
+            $registry->call('logs_list', ['n' => 2], 'root');
+            $this->fail('the module refused the arguments');
+        } catch (\InvalidArgumentException) {
+        }
+        $module->throw = new ToolFailure('The server log could not be read.');
+        $this->assertTrue($registry->call('logs_list', [], 'root')['isError']);
+        $module->throw = new \RuntimeException('disk');
+        $this->assertTrue($registry->call('logs_list', [], 'root')['isError']);
+        $module->throw = null;
+        $registry->call('logs_list', ['n' => 3], 'root');
+
+        $this->assertSame([
+            ['logs_list', 'alice', 'denied', []],
+            ['logs_list', 'carl', 'denied', []],
+            ['logs_list', 'root', 'invalid', ['n' => 0]],
+            ['logs_list', 'root', 'invalid', ['n' => 2]],
+            ['logs_list', 'root', 'read_error', ['n' => 5]],
+            ['logs_list', 'root', 'read_error', ['n' => 5]],
+            ['logs_list', 'root', 'success', ['n' => 3]],
+        ], $module->audits);
+        $this->assertSame([\OCA\Mcp\Tools\RestrictedModule::DENIED, \OCA\Mcp\Tools\RestrictedModule::INVALID, \OCA\Mcp\Tools\RestrictedModule::READ_ERROR, \OCA\Mcp\Tools\RestrictedModule::SUCCESS],
+            ['denied', 'invalid', 'read_error', 'success']);
+    }
+
+    private function assertUnknownIn(ToolRegistry $registry, string $name, string $uid): void {
+        try {
+            $registry->call($name, [], $uid);
+            $this->fail($name . ' must stay unknown to ' . $uid);
+        } catch (\InvalidArgumentException $e) {
+            $this->assertSame('Unknown tool', $e->getMessage());
+        }
     }
 
     public function testToolsStayHiddenForUsersOutsideAnAppAllowlist(): void {

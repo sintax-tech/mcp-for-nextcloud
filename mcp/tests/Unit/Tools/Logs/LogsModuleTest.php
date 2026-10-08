@@ -13,11 +13,15 @@ use OCA\Mcp\Tools\Logs\LogScanner;
 use OCA\Mcp\Tools\Logs\LogsModule;
 use OCA\Mcp\Tools\RestrictedModule;
 use OCA\Mcp\Tools\ToolGuideNotes;
+use OCA\Mcp\Tools\ToolRegistry;
+use OCP\App\IAppManager;
+use OCP\IUserManager;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\IGroupManager;
 use OCP\Log\Audit\CriticalActionPerformedEvent;
 use OCP\Log\ILogFactory;
+use OCP\Log\IWriter;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -29,7 +33,7 @@ final class LogsModuleTest extends TestCase {
     private FakeFileLog $log;
     /** @var list<Event> */
     private array $events = [];
-    /** @var list<array{string, array<string, mixed>}> */
+    /** @var list<array{string, array<string, mixed>, string}> app log lines: message, context, level */
     private array $infos = [];
 
     protected function setUp(): void {
@@ -44,20 +48,23 @@ final class LogsModuleTest extends TestCase {
         return array_values(array_filter(explode("\n", (string)file_get_contents(self::FIXTURE)), static fn (string $line): bool => $line !== ''));
     }
 
-    private function module(): LogsModule {
+    /** @param IWriter|null $writer the writer ILogFactory returns; the fixture log when null */
+    private function module(?IWriter $writer = null): LogsModule {
         $config = $this->config->mock($this);
         $groups = $this->createMock(IGroupManager::class);
         $groups->method('isAdmin')->willReturnCallback(static fn (string $uid): bool => $uid === 'root');
         $factory = $this->createMock(ILogFactory::class);
-        $factory->method('get')->willReturn($this->log);
+        $factory->method('get')->willReturn($writer ?? $this->log);
         $dispatcher = $this->createMock(IEventDispatcher::class);
         $dispatcher->method('dispatchTyped')->willReturnCallback(function (Event $event): void {
             $this->events[] = $event;
         });
         $logger = $this->createMock(LoggerInterface::class);
-        $logger->method('info')->willReturnCallback(function (string $message, array $context = []): void {
-            $this->infos[] = [$message, $context];
-        });
+        foreach (['info', 'warning'] as $level) {
+            $logger->method($level)->willReturnCallback(function (string $message, array $context = []) use ($level): void {
+                $this->infos[] = [$message, $context, $level];
+            });
+        }
         return new LogsModule(new LogsAccess($config, $groups), new LogScanner(new LogReader($factory)), new LogAudit($dispatcher, $logger), $config);
     }
 
@@ -144,21 +151,75 @@ final class LogsModuleTest extends TestCase {
         $this->assertLessThanOrEqual(20, count($summary['signatures']));
     }
 
-    /** Every call is recorded through the core's audit event, which admin_audit writes when it is enabled. */
-    public function testEveryCallIsAudited(): void {
-        $this->call('logs_list', ['app' => 'webdav', 'limit' => 5]);
-        $this->call('logs_analyze');
-
-        $this->assertCount(2, $this->events);
-        $this->assertInstanceOf(CriticalActionPerformedEvent::class, $this->events[0]);
-        $this->assertSame('MCP logs read by %s: tool=%s filters=%s', $this->events[0]->getLogMessage());
-        $this->assertSame(['user' => 'root', 'tool' => 'logs_list', 'filters' => '{"app":"webdav","offset":0,"limit":5}'], $this->events[0]->getParameters());
-        $this->assertSame(['user' => 'root', 'tool' => 'logs_analyze', 'filters' => '{"offset":0}'], $this->events[1]->getParameters());
-        $this->assertSame('MCP logs read', $this->infos[0][0]);
-        $this->assertSame(['app' => 'mcp', 'user' => 'root', 'tool' => 'logs_list', 'filters' => '{"app":"webdav","offset":0,"limit":5}'], $this->infos[0][1]);
+    /** The registry around the module, as Application wires it; root holds the grant, alice is outside the role. */
+    private function registry(?IWriter $writer = null): ToolRegistry {
+        $policy = InMemoryConfig::policy($this->config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+        $policy->setGrant('root', 'logs', 'read', true);
+        $policy->setGrant('alice', 'logs', 'read', true);
+        return new ToolRegistry([$this->module($writer)], $policy, $this->createMock(IAppManager::class), $this->createMock(IUserManager::class), $this->createMock(LoggerInterface::class));
     }
 
-    public function testInvalidArgumentsAreRefusedBeforeAnythingIsReadOrAudited(): void {
+    /** @return list<array{string, array<string, string>}> message and parameters of each audit event */
+    private function audited(): array {
+        return array_map(static fn (CriticalActionPerformedEvent $event): array => [$event->getLogMessage(), $event->getParameters()], $this->events);
+    }
+
+    /**
+     * Every call is recorded through the core's audit event, which admin_audit writes when it is enabled: a read as a
+     * read, and a call refused or failed under its own message, so a denial never reads as a log read.
+     */
+    public function testEveryCallIsAuditedWithItsOutcome(): void {
+        $registry = $this->registry();
+        $registry->call('logs_list', ['app' => 'webdav', 'limit' => 5], 'root');
+        $registry->call('logs_analyze', [], 'root');
+        try {
+            $registry->call('logs_list', ['contains' => 'RH'], 'alice');
+            $this->fail('alice is outside the role');
+        } catch (InvalidArgumentException) {
+        }
+        try {
+            $registry->call('logs_list', ['since' => 'ontem'], 'root');
+            $this->fail('since is not ISO 8601');
+        } catch (InvalidArgumentException) {
+        }
+        $this->log = new FakeFileLog([]);
+        $registry = $this->registry();
+        $this->assertArrayNotHasKey('isError', $registry->call('logs_list', [], 'root'));
+
+        $this->assertSame([
+            [LogAudit::READ, ['user' => 'root', 'tool' => 'logs_list', 'filters' => '{"app":"webdav","offset":0,"limit":5}']],
+            [LogAudit::READ, ['user' => 'root', 'tool' => 'logs_analyze', 'filters' => '{"offset":0}']],
+            [LogAudit::REFUSED, ['outcome' => 'denied', 'user' => 'alice', 'tool' => 'logs_list', 'filters' => '{"contains":"RH"}']],
+            // Refused by the schema: the arguments as sent, without the defaults.
+            [LogAudit::REFUSED, ['outcome' => 'invalid', 'user' => 'root', 'tool' => 'logs_list', 'filters' => '{"since":"ontem"}']],
+            [LogAudit::READ, ['user' => 'root', 'tool' => 'logs_list', 'filters' => '{"offset":0,"limit":50}']],
+        ], $this->audited());
+        $this->assertSame('MCP logs read by %s: tool=%s filters=%s', LogAudit::READ);
+        $this->assertSame('MCP logs request %s for %s: tool=%s filters=%s', LogAudit::REFUSED);
+        $this->assertSame(['MCP logs read', 'MCP logs read', 'MCP logs request denied', 'MCP logs request invalid', 'MCP logs read'], array_column($this->infos, 0));
+        $this->assertSame('denied', $this->infos[2][1]['outcome']);
+        $this->assertSame(['info', 'info', 'warning', 'info', 'info'], array_column($this->infos, 2), 'a denial is a warning in the app log');
+    }
+
+    /** A log the core cannot read is a failure of the read, audited as such. */
+    public function testAReadErrorIsAudited(): void {
+        $registry = $this->registry($this->createMock(IWriter::class));
+
+        $this->assertTrue($registry->call('logs_analyze', [], 'root')['isError']);
+        $this->assertSame([[LogAudit::REFUSED, ['outcome' => 'read_error', 'user' => 'root', 'tool' => 'logs_analyze', 'filters' => '{"offset":0}']]], $this->audited());
+    }
+
+    /** What a refused call recorded is bounded: known filters only, scalars only, each cut, whatever the caller sent. */
+    public function testTheAuditKeepsOnlyBoundedKnownFilters(): void {
+        $this->module()->audit('logs_list', 'alice', 'denied', ['contains' => str_repeat('x', 500), 'evil' => 'drop me', 'app' => ['nested'], 'offset' => 3]);
+        $filters = json_decode($this->audited()[0][1]['filters'], true);
+        $this->assertSame(['contains', 'offset'], array_keys($filters));
+        $this->assertSame(201, mb_strlen($filters['contains']));
+        $this->assertSame(3, $filters['offset']);
+    }
+
+    /** The module refuses invalid arguments before reading anything; the registry is what audits the attempt. */
+    public function testInvalidArgumentsAreRefusedBeforeAnythingIsRead(): void {
         foreach ([['logs_list', ['since' => 'ontem']], ['logs_analyze', ['contains' => '']], ['logs_delete', []], ['logs_list', ['offset' => 20001]]] as [$tool, $arguments]) {
             try {
                 $this->module()->call($tool, $arguments, 'root');
@@ -168,7 +229,7 @@ final class LogsModuleTest extends TestCase {
             }
         }
         $this->assertSame([], $this->log->calls);
-        $this->assertSame([], $this->events);
+        $this->assertSame([], $this->events, 'the module itself never audits: the registry does');
     }
 
     /** A prompt hidden in a file name stays data: no control character, inside the envelope, after the warning. */

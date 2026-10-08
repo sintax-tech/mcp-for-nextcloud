@@ -112,29 +112,46 @@ class ToolRegistry {
                 if ($definition['name'] !== $name) {
                     continue;
                 }
+                // A restricted module records every attempt with its outcome, the refused ones included.
+                $audit = static function (string $outcome) use ($module, $name, $userId, &$arguments): void {
+                    if ($module instanceof RestrictedModule) {
+                        $module->audit($name, $userId, $outcome, $arguments);
+                    }
+                };
                 if (!self::permits($module, $userId) || !$this->allowed($definition, $userId)) {
+                    $audit(RestrictedModule::DENIED);
                     break 2;
                 }
                 $published = WriteGate::publish($definition);
-                $arguments = ArgumentValidator::validate($published['inputSchema'], $arguments);
+                try {
+                    $arguments = ArgumentValidator::validate($published['inputSchema'], $arguments);
+                } catch (InvalidArgumentException $e) {
+                    $audit(RestrictedModule::INVALID);
+                    throw $e;
+                }
                 try {
                     if (WriteGate::isWrite($definition) && !WriteGate::confirmed($arguments)) {
                         $plan = WriteGate::plan($module, $definition, $arguments, $userId);
                         return ToolResult::structured(PlanRenderer::render($module, $name, $plan), $plan);
                     }
-                    return $module->call($name, $arguments, $userId);
+                    $result = $module->call($name, $arguments, $userId);
                 } catch (InvalidArgumentException $e) {
+                    $audit(RestrictedModule::INVALID);
                     throw $e;
                 } catch (PlanChanged $e) {
                     // Nothing was written: the person approved another state, so the answer is the new plan to approve.
                     $plan = WriteGate::envelope($definition, $e->plan);
                     return ToolResult::structured(PlanRenderer::render($module, $name, $plan), $plan);
                 } catch (ToolFailure $e) {
+                    $audit(RestrictedModule::READ_ERROR);
                     return ToolResult::error($e->getMessage());
                 } catch (\Throwable $e) {
                     $this->logger->error('MCP tool failed', ['app' => 'mcp', 'tool' => $name, 'exception_class' => $e::class, 'exception_message' => self::loggable($e)]);
+                    $audit(RestrictedModule::READ_ERROR);
                     return ToolResult::error(Translator::t('Unexpected error while accessing Nextcloud.'));
                 }
+                $audit(RestrictedModule::SUCCESS);
+                return $result;
             }
         }
         throw new UnknownToolException();

@@ -231,7 +231,7 @@ Módulo `logs`, só leitura e só para TI: `logs_list` lista as entradas do `nex
 - **Datas:** `since`/`until` em ISO 8601; o `time` da entrada é lido no `logdateformat`/`logtimezone`; se não casar, a entrada fica de fora sob filtro de data e conta em `scan.unparsed`.
 - **Saída:** envelope `{"untrusted_log_data": true, "notice": …}` depois de um aviso fixo; controles, ANSI e marcas invisíveis removidos; IP mascarado (`a.b.x.x`, IPv6 /48) também dentro das mensagens; mensagem cortada em 2.000 caracteres; exceção com classe, mensagem, local e 10 frames `class->function` + `arquivo:linha`, sem `args`.
 - **Análise:** totais por nível/app/usuário, top 20 assinaturas (aspas, caminhos, UUIDs, hashes e números viram `#`), top 10 caminhos de URL (sem query; caminho WebDAV dobrado no endpoint + conta), top 10 user agents e histograma por hora.
-- **Auditoria:** cada chamada dispara `CriticalActionPerformedEvent` (`MCP logs read by %s: tool=%s filters=%s`), gravado pelo admin_audit quando ativo, e registra `info` no log do app.
+- **Auditoria:** o `ToolRegistry` entrega toda chamada a um `RestrictedModule` com o resultado (`denied` por papel ou grant, `invalid`, `read_error`, `success`), e o módulo dispara `CriticalActionPerformedEvent`, gravado pelo admin_audit quando ativo: `MCP logs read by %s: tool=%s filters=%s` só para leitura feita e `MCP logs request %s for %s: tool=%s filters=%s` para as demais, nunca uma negação como leitura. Dos argumentos ficam só os filtros conhecidos, escalares e cortados. No log do app, negação é `warning` e o resto `info`.
 - **API do admin:** `GET`/`PUT /apps/mcp/api/logs-access` (`{groups: list<string>}`), admin-only com CSRF; grupo inexistente dá 400 sem gravar.
 
 ## Configurar

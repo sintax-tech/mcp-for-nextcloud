@@ -229,3 +229,12 @@ Veja o [`CHANGELOG.md`](CHANGELOG.md) (em inglês).
 ## Licença
 
 AGPL-3.0-or-later. Dependência empacotada: [`smalot/pdfparser`](https://github.com/smalot/pdfparser) (LGPL-3.0).
+
+## Sobre a Sintax
+
+Desenvolvido e mantido pela [Sintax](https://sintax.tech).
+
+- Site: https://sintax.tech
+- GitHub: https://github.com/sintax-tech
+- Contato: contato@sintax.tech
+- Outros apps da Sintax para Nextcloud: [MCP for Nextcloud](https://apps.nextcloud.com/apps/mcp) · [Audiolog](https://apps.nextcloud.com/apps/audiolog)

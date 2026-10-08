@@ -5,7 +5,7 @@
 **A native Nextcloud app that turns your Nextcloud into an MCP server.**
 Let Claude and other MCP clients work with your files, notes, calendars, contacts, tasks, Deck boards and Talk conversations, with each user's own permissions, and nothing leaves your server that the admin did not allow.
 
-[![Nextcloud 33](https://img.shields.io/badge/Nextcloud-33-0082c9?logo=nextcloud&logoColor=white)](https://nextcloud.com)
+[![Nextcloud 32–35](https://img.shields.io/badge/Nextcloud-32--35-0082c9?logo=nextcloud&logoColor=white)](https://nextcloud.com)
 [![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777bb4?logo=php&logoColor=white)](https://www.php.net)
 [![MCP](https://img.shields.io/badge/MCP-2025--06--18%20%7C%202026--07--28-111)](https://modelcontextprotocol.io)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue)](#license)
@@ -78,7 +78,7 @@ Task deletion uses native calendar trash and is refused when `dav/calendarRetent
 
 ## Requirements
 
-- Nextcloud **33** (the code also runs on 31 and 32, checked by the API contract tests; the store listing declares 33 for now)
+- Nextcloud **32 to 35**, each release checked by the API contract tests against the oldest build of its major (with the matching Deck and Talk); Deck 1.16+ and Talk 22+ on 32, up to Deck 1.19 and Talk 25 on 35
 - PHP **8.2+** with `zip`, `mbstring` and `dom`
 - Optional apps, only for their own tools (hidden while the app is disabled): Notes, Calendar, Contacts, Deck, Talk (`spreed`), Versions (`files_versions`, required for edits), Deleted files (`files_trashbin`, required for deletes)
 - Deck and Talk are optional: their tools appear only when the app is enabled in a supported version; an older release counts as disabled, its tools stay hidden and the admin page says which version brings them back

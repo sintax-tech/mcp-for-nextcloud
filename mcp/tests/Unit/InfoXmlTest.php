@@ -100,7 +100,7 @@ final class InfoXmlTest extends TestCase {
             foreach ($expected[$lang] as $needle) {
                 $this->assertStringContainsString($needle, $text, "description ($lang)");
             }
-            $this->assertStringContainsString('Nextcloud 33', $text, "description ($lang) names the supported Nextcloud version");
+            $this->assertStringContainsString('Nextcloud 32–35', $text, "description ($lang) names the supported Nextcloud versions");
         }
     }
 
@@ -127,14 +127,14 @@ final class InfoXmlTest extends TestCase {
     }
 
     /**
-     * Nextcloud 33 only, the release the store listing offers; the code and the API contracts already cover 31 and 32,
-     * so the range widens by declaring them again. PHP from 8.2, the platform of composer.json and of the bundled
-     * vendor/; older Nextcloud releases also run on 8.1, which the app does not declare.
+     * Nextcloud 32 to 35, each checked by the API contracts; the code and the contracts also cover 31, which is not
+     * declared. PHP from 8.2, the platform of composer.json and of the bundled vendor/: 32 and 33 still run on it, 35
+     * requires 8.3 by itself, so nothing may need a later PHP than 8.2.
      */
-    public function testDependenciesDeclareNextcloud33AndPhp82(): void {
+    public function testDependenciesDeclareNextcloud32To35AndPhp82(): void {
         $dependencies = $this->manifest()->dependencies;
 
-        $this->assertSame(['33', '33'], [(string)$dependencies->nextcloud['min-version'], (string)$dependencies->nextcloud['max-version']]);
+        $this->assertSame(['32', '35'], [(string)$dependencies->nextcloud['min-version'], (string)$dependencies->nextcloud['max-version']]);
         $this->assertSame('8.2', (string)$dependencies->php['min-version']);
         $this->assertNull($dependencies->php['max-version']);
         $composer = json_decode((string)file_get_contents(dirname(self::MANIFEST, 2) . '/composer.json'), true);

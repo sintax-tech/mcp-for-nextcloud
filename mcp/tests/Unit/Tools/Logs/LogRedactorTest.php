@@ -178,4 +178,20 @@ final class LogRedactorTest extends TestCase {
         }
     }
 
+    public function testLongHostileLabelsHaveBoundedProcessingCost(): void {
+        $text = str_repeat('a-', 80000) . 'label:gg';
+        $start = hrtime(true);
+        LogRedactor::text($text, 2000);
+        $this->assertLessThan(50, (hrtime(true) - $start) / 1e6, '160 KB must take less than 50 ms');
+    }
+
+    public function testProcessingBoundaryDoesNotExposePartOfAnAddress(): void {
+        $text = str_repeat('x ', 8185) . 'IP:2001:db8:abcd:1234:5678:90ab:cdef:1234/128 tail';
+        $redacted = LogRedactor::text($text, 20000);
+        $this->assertStringNotContainsString('2001:', $redacted);
+        $this->assertStringNotContainsString('IP:', $redacted);
+        $this->assertStringEndsWith('…', $redacted);
+        $this->assertLessThanOrEqual(16385, mb_strlen($redacted));
+    }
+
 }

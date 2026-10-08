@@ -21,6 +21,8 @@ final class LogRedactor {
     public const PREVIOUS_LEVELS = 2;
     /** Longest exception message, as the longest log message. */
     public const MESSAGE_LIMIT = 2000;
+    /** Maximum bytes inspected per field before any regex. */
+    public const PROCESSING_LIMIT = 16384;
     /** Shown in place of a value that is not an IP address. */
     private const NOT_AN_ADDRESS = 'x';
     /**
@@ -38,7 +40,7 @@ final class LogRedactor {
      * An IPv6 candidate glued to a label by a colon ("IP:2001:db8::1", "clientAddress:2001:db8::9"), which the pattern
      * above cannot see, since an address never starts right after a colon there.
      */
-    private const LABELED_IPV6 = '/(?<![\w:.%s])([a-z_][\w-]*):((?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}(?!\w)(?!\.\w)(?!:[0-9a-f])(?:\/\d+)?)/i';
+    private const LABELED_IPV6 = '/(?<![\w:.%s-])([a-z_][\w-]{0,62}+):((?:[0-9a-f]{0,4}:){2,7}[0-9a-f]{0,4}(?!\w)(?!\.\w)(?!:[0-9a-f])(?:\/\d+)?)/i';
     /** ANSI escape sequences (CSI and OSC). */
     private const ANSI = '/\x{1B}(?:\[[0-9;?]*[ -\/]*[@-~]|\][^\x{07}\x{1B}]*(?:\x{07}|\x{1B}\\\\)?)?/u';
     /**
@@ -86,6 +88,11 @@ final class LogRedactor {
      * @return string the cleaned text, with '…' when it was cut
      */
     public static function text(string $text, int $limit, bool $userAgent = false): string {
+        $processingCut = strlen($text) > self::PROCESSING_LIMIT;
+        if ($processingCut) {
+            // Drop the final unfinished token: it could be an address crossing the boundary.
+            $text = preg_replace('/\S+$/', '', substr($text, 0, self::PROCESSING_LIMIT)) ?? '';
+        }
         // Invalid bytes become U+FFFD, so the patterns below, which need valid UTF-8, never fail on them.
         $text = (string)json_decode(json_encode($text, JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR));
         $text = preg_replace(self::ANSI, '', $text) ?? '';
@@ -102,7 +109,7 @@ final class LogRedactor {
             return self::maskedIpv6($m[0]) ?? ($m[1] . ':' . (self::maskedIpv6($m[2]) ?? $m[2]));
         }, $text) ?? '';
         $text = trim($text);
-        return mb_strlen($text) > $limit ? mb_substr($text, 0, $limit) . '…' : $text;
+        return mb_strlen($text) > $limit ? mb_substr($text, 0, $limit) . '…' : $text . ($processingCut ? '…' : '');
     }
 
     /** Only our exact canonical /48 output is already redacted; all other CIDRs still need masking. */

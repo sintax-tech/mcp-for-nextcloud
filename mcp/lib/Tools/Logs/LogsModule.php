@@ -24,8 +24,6 @@ class LogsModule implements ToolModule, ToolGuideNotes, RestrictedModule {
     /** Default and largest page of logs_list. */
     public const DEFAULT_LIMIT = 50;
     public const MAX_LIMIT = 100;
-    /** Largest offset accepted. */
-    public const MAX_OFFSET = 100000000;
     /** Level the core writes from when loglevel is not set: warning. */
     private const DEFAULT_LOG_LEVEL = 2;
 
@@ -49,6 +47,9 @@ class LogsModule implements ToolModule, ToolGuideNotes, RestrictedModule {
             'They read the current log file from its end, at most ' . LogScanner::SCAN_LIMIT . ' entries per call, and only '
                 . 'what the server wrote: entries below its log level (source.serverLogLevel) do not exist. When scan.nextOffset '
                 . 'is a number, call again with offset set to it to go further back; the rotated nextcloud.log.1 is never read.',
+            'The core reads the log backwards from the end of the file and offers no budget of its own, so these tools never '
+                . 'read deeper than the last ' . LogScanner::READ_BUDGET . ' entries (scan.readBudget). When scan.budgetReached '
+                . 'is true, older entries are out of reach: narrow the question with since, app or req_id instead.',
             'Start with logs_analyze to see what dominates a period, then call logs_list with app, contains or req_id to read '
                 . 'the entries behind one signature. IP addresses are masked, stack traces keep ten frames without arguments '
                 . 'and every call is recorded in the audit log.',
@@ -98,8 +99,12 @@ class LogsModule implements ToolModule, ToolGuideNotes, RestrictedModule {
         $filter = LogFilter::fromArguments($arguments, $this->time());
         $offset = (int)($arguments['offset'] ?? 0);
         $limit = $name === 'logs_list' ? (int)($arguments['limit'] ?? self::DEFAULT_LIMIT) : null;
-        if ($offset < 0 || $offset > self::MAX_OFFSET || ($limit !== null && ($limit < 1 || $limit > self::MAX_LIMIT))) {
-            throw new InvalidArgumentException('Invalid offset or limit');
+        if ($limit !== null && ($limit < 1 || $limit > self::MAX_LIMIT)) {
+            throw new InvalidArgumentException('Invalid limit');
+        }
+        if ($offset < 0 || $offset > LogScanner::MAX_OFFSET) {
+            throw new InvalidArgumentException('offset must be between 0 and ' . LogScanner::MAX_OFFSET
+                . ': the log is read from its end and older entries are beyond the read budget of this tool');
         }
         $this->audit->record($userId, $name, $filter->describe() + ['offset' => $offset] + ($limit === null ? [] : ['limit' => $limit]));
 
@@ -109,7 +114,9 @@ class LogsModule implements ToolModule, ToolGuideNotes, RestrictedModule {
             'scan' => [
                 'scanned' => $window['scanned'],
                 'scanLimit' => LogScanner::SCAN_LIMIT,
+                'readBudget' => LogScanner::READ_BUDGET,
                 'truncated' => $window['truncated'],
+                'budgetReached' => $window['budgetReached'],
                 'oldestScanned' => $window['oldestScanned'],
                 'nextOffset' => $window['nextOffset'],
                 'malformed' => $window['malformed'],
@@ -159,8 +166,9 @@ class LogsModule implements ToolModule, ToolGuideNotes, RestrictedModule {
             $properties['limit'] = ['type' => 'integer', 'minimum' => 1, 'maximum' => self::MAX_LIMIT, 'default' => self::DEFAULT_LIMIT,
                 'description' => 'Entries returned at most (default 50, at most 100).'];
         }
-        $properties['offset'] = ['type' => 'integer', 'minimum' => 0, 'maximum' => self::MAX_OFFSET, 'default' => 0,
-            'description' => 'Entries to skip from the end of the log: pass scan.nextOffset of the previous answer to go further back.'];
+        $properties['offset'] = ['type' => 'integer', 'minimum' => 0, 'maximum' => LogScanner::MAX_OFFSET, 'default' => 0,
+            'description' => 'Entries to skip from the end of the log: pass scan.nextOffset of the previous answer to go further back. '
+                . 'Nothing deeper than the last ' . LogScanner::READ_BUDGET . ' entries is read.'];
         return ['type' => 'object', 'properties' => $properties, 'additionalProperties' => false];
     }
 }

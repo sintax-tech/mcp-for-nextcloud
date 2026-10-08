@@ -101,6 +101,8 @@ final class LogsModuleTest extends TestCase {
             $this->assertSame(2, $data['source']['serverLogLevel']);
             $this->assertStringContainsString('nextcloud.log.1', $data['source']['file']);
             $this->assertSame(LogScanner::SCAN_LIMIT, $data['scan']['scanLimit']);
+            $this->assertSame(LogScanner::READ_BUDGET, $data['scan']['readBudget']);
+            $this->assertFalse($data['scan']['budgetReached']);
         }
     }
 
@@ -157,7 +159,7 @@ final class LogsModuleTest extends TestCase {
     }
 
     public function testInvalidArgumentsAreRefusedBeforeAnythingIsReadOrAudited(): void {
-        foreach ([['logs_list', ['since' => 'ontem']], ['logs_analyze', ['contains' => '']], ['logs_delete', []]] as [$tool, $arguments]) {
+        foreach ([['logs_list', ['since' => 'ontem']], ['logs_analyze', ['contains' => '']], ['logs_delete', []], ['logs_list', ['offset' => 20001]]] as [$tool, $arguments]) {
             try {
                 $this->module()->call($tool, $arguments, 'root');
                 $this->fail($tool . ' ' . json_encode($arguments) . ' must be refused');

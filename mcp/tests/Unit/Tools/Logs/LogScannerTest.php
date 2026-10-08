@@ -49,7 +49,7 @@ final class LogScannerTest extends TestCase {
         $scanner = $this->scanner($log);
 
         $first = $scanner->scan(self::filter(['min_level' => 3]), 0, 5);
-        $this->assertSame([[LogScanner::SCAN_LIMIT, 0]], $log->calls);
+        $this->assertSame([[LogScanner::FIRST_BLOCK, 0]], $log->calls, 'the first block already holds the page');
         $this->assertSame(['entry 290', 'entry 280', 'entry 270', 'entry 260', 'entry 250'], array_column($first['entries'], 'message'));
         $this->assertSame(50, $first['scanned']);
         $this->assertSame(50, $first['nextOffset']);
@@ -65,6 +65,8 @@ final class LogScannerTest extends TestCase {
         $scanner = $this->scanner($log);
 
         $window = $scanner->scan(self::filter(['app' => 'workflow_ocr']), 0, 50);
+        // Blocks that double from 500, so a page found early costs one small read and a miss costs about twice the window.
+        $this->assertSame([[500, 0], [1000, 500], [2000, 1500], [1500, 3500]], $log->calls);
         $this->assertSame([], $window['entries']);
         $this->assertSame(LogScanner::SCAN_LIMIT, $window['scanned']);
         $this->assertTrue($window['truncated']);
@@ -153,5 +155,51 @@ final class LogScannerTest extends TestCase {
         } catch (ToolFailure $e) {
             $this->assertStringNotContainsString('/secret', $e->getMessage());
         }
+    }
+
+    /**
+     * No call reads deeper than READ_BUDGET entries from the end, the core offering no budget of its own: near it the
+     * window shrinks, and once it is reached there is no further offset to give.
+     */
+    public function testTheReadBudgetEndsTheSearchAndOffersNoFurtherOffset(): void {
+        $this->assertSame(20000, LogScanner::READ_BUDGET);
+        $this->assertSame(LogScanner::READ_BUDGET, LogScanner::MAX_OFFSET);
+        $log = new FakeFileLog(FakeFileLog::lines(LogScanner::READ_BUDGET + 100, static fn (int $i): array => []));
+
+        $last = $this->scanner($log)->scan(self::filter(['app' => 'nothing']), LogScanner::READ_BUDGET - 2000, 50);
+        $this->assertSame(2000, $last['scanned']);
+        $this->assertTrue($last['truncated']);
+        $this->assertTrue($last['budgetReached']);
+        $this->assertNull($last['nextOffset']);
+
+        $early = $this->scanner($log)->scan(self::filter(['app' => 'nothing']), 0, 50);
+        $this->assertFalse($early['budgetReached']);
+        $this->assertSame(LogScanner::SCAN_LIMIT, $early['nextOffset']);
+
+        $log->calls = [];
+        $none = $this->scanner($log)->scan(self::filter(), LogScanner::READ_BUDGET, 50);
+        $this->assertSame([[0, 0], 0, true, null], [$log->calls[0] ?? [0, 0], $none['scanned'], $none['budgetReached'], $none['nextOffset']]);
+    }
+
+    public function testAnOffsetPastTheBudgetIsRefusedBeforeReading(): void {
+        $log = new FakeFileLog([]);
+        try {
+            $this->scanner($log)->scan(self::filter(), LogScanner::MAX_OFFSET + 1, 10);
+            $this->fail('an offset past the budget must be refused');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('20000', $e->getMessage());
+        }
+        $this->assertSame([], $log->calls);
+    }
+
+    /** With `since` the analysis reads in blocks too, so a recent window costs a small read. */
+    public function testTheAnalysisReadsInBlocksOnlyWhenSinceCanEndIt(): void {
+        $log = new FakeFileLog(FakeFileLog::lines(3000, static fn (int $i): array => []));
+        $this->scanner($log)->scan(self::filter(['since' => gmdate(DATE_ATOM, 1791400000 + 2900 * 60)]), 0, null);
+        $this->assertSame([[500, 0]], $log->calls);
+
+        $log->calls = [];
+        $this->scanner($log)->scan(self::filter(['app' => 'core']), 0, null);
+        $this->assertSame([[LogScanner::SCAN_LIMIT, 0]], $log->calls, 'nothing can end it early: one read');
     }
 }

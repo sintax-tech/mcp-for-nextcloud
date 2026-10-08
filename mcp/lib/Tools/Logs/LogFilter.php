@@ -88,6 +88,11 @@ final class LogFilter {
         return $this->described;
     }
 
+    /** @return bool whether `since` is set, the one filter that can end a search before the window does */
+    public function hasSince(): bool {
+        return $this->since !== null;
+    }
+
     /** @return bool whether a date filter is set */
     public function hasDates(): bool {
         return $this->since !== null || $this->until !== null;

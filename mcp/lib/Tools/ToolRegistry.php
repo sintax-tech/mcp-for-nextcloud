@@ -122,7 +122,11 @@ class ToolRegistry {
                         $module->audit($name, $userId, $outcome, $arguments);
                         return true;
                     } catch (\Throwable $e) {
-                        $this->logger->error('MCP audit failed', ['app' => 'mcp', 'tool' => $name, 'outcome' => $outcome, 'exception_class' => $e::class]);
+                        try {
+                            $this->logger->error('MCP audit failed', ['app' => 'mcp', 'tool' => $name, 'outcome' => $outcome, 'exception_class' => $e::class]);
+                        } catch (\Throwable) {
+                            // Even the contingency logger can fail; preserve the original outcome.
+                        }
                         return false;
                     }
                 };

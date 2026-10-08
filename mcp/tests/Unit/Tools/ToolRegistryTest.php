@@ -328,6 +328,26 @@ final class ToolRegistryTest extends TestCase {
         }
     }
 
+    public function testAFailingFallbackLoggerKeepsRefusalsAndWithholdsData(): void {
+        $module = new FakeRestrictedModule();
+        $module->auditThrow = new \RuntimeException('audit down');
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->method('error')->willThrowException(new \RuntimeException('logger down'));
+        $registry = new ToolRegistry([$module], $this->policy, $this->createMock(IAppManager::class), $this->createMock(IUserManager::class), $logger);
+        $this->policy->setGrant('root', 'logs', 'read', true);
+        $this->assertUnknownIn($registry, 'logs_list', 'alice');
+        try {
+            $registry->call('logs_list', ['n' => 0], 'root');
+            $this->fail('invalid input must stay invalid');
+        } catch (\InvalidArgumentException) {
+        }
+        $module->throw = new ToolFailure('The server log could not be read.');
+        $this->assertSame(ToolResult::error('The server log could not be read.'), $registry->call('logs_list', [], 'root'));
+        $module->throw = null;
+        $this->assertSame(ToolResult::error('Unexpected error while accessing Nextcloud.'), $registry->call('logs_list', [], 'root'));
+        $this->assertSame(['denied', 'invalid', 'read_error', 'success'], array_column($module->audits, 2));
+    }
+
     private function assertUnknownIn(ToolRegistry $registry, string $name, string $uid): void {
         try {
             $registry->call($name, [], $uid);

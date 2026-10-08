@@ -21,6 +21,8 @@ final class NextcloudApiUsage {
         '31' => ['server' => '31.0.0', 'deck' => '1.15.0', 'spreed' => '21.1.4'],
         '32' => ['server' => '32.0.0', 'deck' => '1.16.0', 'spreed' => '22.0.0'],
         '33' => ['server' => '33.0.0', 'deck' => '1.17.0', 'spreed' => '23.0.0'],
+        '34' => ['server' => '34.0.0', 'deck' => '1.18.0', 'spreed' => '24.0.0'],
+        '35' => ['server' => '35.0.0', 'deck' => '1.19.0', 'spreed' => '25.0.0'],
     ];
 
     /**
@@ -148,6 +150,12 @@ final class NextcloudApiUsage {
             'fallback' => 'OCA\\Deck\\Db\\CardMapper::findAll',
             'by' => \OCA\Mcp\Tools\Deck\DeckServiceGateway::class,
         ],
+        // Up to Talk 23 Room::getLobbyState() opens a lobby whose timer has passed by itself.
+        'OCA\\Talk\\Service\\RoomService::validateLobbyTimer' => [
+            'missing' => ['31', '32', '33'],
+            'fallback' => 'OCA\\Talk\\Room::getLobbyState',
+            'by' => \OCA\Mcp\Tools\Talk\ConversationResolver::class,
+        ],
     ];
 
     /**
@@ -163,5 +171,13 @@ final class NextcloudApiUsage {
         'OCP\\Files\\IRootFolder::getLastActivity' => 'OCA\\Talk\\Room::getLastActivity, in Tools/Talk/ConversationReader',
         'OCP\\Share\\IShare::getParent' => 'OCP\\Files\\Node::getParent, in Tools/Notes and Service/VisibilityGuard',
         'OCA\\DAV\\CalDAV\\CalDavBackend::unshare' => 'FilesPlanRenderer::unshare(), the app\'s own static method',
+        'OCA\\DAV\\CardDAV\\PhotoCache::setLogger' => 'Sabre\\DAV\\Server::setLogger, in Tools/Contacts/EmbeddedCardDavServer',
+        'OCA\\Talk\\Chat\\ChatManager::setLogger' => 'Sabre\\DAV\\Server::setLogger, in Tools/Contacts/EmbeddedCardDavServer',
+        'OCA\\Talk\\Service\\RoomService::setLogger' => 'Sabre\\DAV\\Server::setLogger, in Tools/Contacts/EmbeddedCardDavServer',
+        'OCA\\Deck\\Db\\Acl::getToken' => 'OCP\\Share\\IShare::getToken and OCA\\Talk\\Room::getToken, in Tools/Files/Sharing and Tools/Talk',
+        'OCA\\Deck\\Db\\Acl::getCreatedAt' => 'OCA\\Deck\\Db\\Card::getCreatedAt, in Tools/Deck/DeckServiceGateway',
+        'OCP\\Files\\IRootFolder::removeListener' => 'Sabre\\DAV\\Server::removeListener, in Tools/Calendar/EmbeddedDavDispatcher',
+        'OCA\\Deck\\Db\\Card::getColor' => 'OCA\\Deck\\Db\\Board::getColor, in Tools/Deck/CardFormatter',
+        'OCP\\DB\\QueryBuilder\\IQueryBuilder::execute' => 'the app\'s own tools, in Tools/Calendar/CalendarModule and Service/Calendar/CalendarSelftestService',
     ];
 }

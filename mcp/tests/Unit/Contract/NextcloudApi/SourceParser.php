@@ -82,7 +82,13 @@ final class SourceParser {
     /** @return string|null the file declaring the class, if the tree has it */
     private function file(string $class): ?string {
         if ($class === 'OC') {
-            return is_file($this->root . '/lib/base.php') ? $this->root . '/lib/base.php' : null;
+            // Nextcloud 35 moved the class out of lib/base.php, which now only requires lib/OC.php.
+            foreach (['/lib/OC.php', '/lib/base.php'] as $file) {
+                if (is_file($this->root . $file)) {
+                    return $this->root . $file;
+                }
+            }
+            return null;
         }
         foreach (self::DIRECTORIES as $prefix => $directory) {
             if (str_starts_with($class, $prefix)) {

@@ -132,20 +132,29 @@ final class NextcloudApiContractTest extends TestCase {
     }
 
     /**
-     * Every method name lib/ calls, on a class that declares it in the newest release, exists in every older one too.
-     * The pairing is by name, so a name the class only shares with another object is listed in NAME_CLASHES.
+     * Every method name lib/ calls, on a class that declares it in any covered release, exists in all of them: a
+     * method a newer major removed is caught as surely as one an older major lacks. The pairing is by name, so a name
+     * the class only shares with another object is listed in NAME_CLASHES.
      *
      * @return array<string, array{string, list<string>, string}> one case per class and covered major, with its methods
      */
     public static function calledMethods(): array {
         $majors = self::checkedMajors();
-        $newest = end($majors);
         $cases = [];
         foreach (array_keys(self::scanner()->classes()) as $class) {
-            $surface = self::surface($newest, $class);
             $methods = array_values(array_filter(
                 array_keys(self::scanner()->methods()),
-                static fn (string $method): bool => self::serves($surface, $method) && !isset(NextcloudApiUsage::NAME_CLASHES["$class::$method"]),
+                static function (string $method) use ($class, $majors): bool {
+                    if (isset(NextcloudApiUsage::NAME_CLASHES["$class::$method"])) {
+                        return false;
+                    }
+                    foreach ($majors as $major) {
+                        if (self::serves(self::surface($major, $class), $method)) {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
             ));
             if ($methods === []) {
                 continue;

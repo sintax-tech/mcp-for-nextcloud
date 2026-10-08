@@ -16,6 +16,8 @@ final class FakeRestrictedModule implements ToolModule, RestrictedModule {
     public array $audits = [];
     /** Thrown by the next calls when set. */
     public ?\Throwable $throw = null;
+    /** Thrown by audit() when set, as a failing audit backend would. */
+    public ?\Throwable $auditThrow = null;
 
     public function permits(string $userId): bool {
         return in_array($userId, $this->members, true);
@@ -23,6 +25,9 @@ final class FakeRestrictedModule implements ToolModule, RestrictedModule {
 
     public function audit(string $tool, string $userId, string $outcome, array $arguments): void {
         $this->audits[] = [$tool, $userId, $outcome, $arguments];
+        if ($this->auditThrow !== null) {
+            throw $this->auditThrow;
+        }
     }
 
     public function definitions(): array {

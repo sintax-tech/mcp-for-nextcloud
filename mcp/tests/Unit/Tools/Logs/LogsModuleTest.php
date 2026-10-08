@@ -33,6 +33,8 @@ final class LogsModuleTest extends TestCase {
     private FakeFileLog $log;
     /** @var list<Event> */
     private array $events = [];
+    /** Whether the event dispatcher throws, as a failing audit backend would. */
+    private bool $dispatcherDown = false;
     /** @var list<array{string, array<string, mixed>, string}> app log lines: message, context, level */
     private array $infos = [];
 
@@ -57,6 +59,9 @@ final class LogsModuleTest extends TestCase {
         $factory->method('get')->willReturn($writer ?? $this->log);
         $dispatcher = $this->createMock(IEventDispatcher::class);
         $dispatcher->method('dispatchTyped')->willReturnCallback(function (Event $event): void {
+            if ($this->dispatcherDown) {
+                throw new \RuntimeException('audit backend down');
+            }
             $this->events[] = $event;
         });
         $logger = $this->createMock(LoggerInterface::class);
@@ -239,5 +244,31 @@ final class LogsModuleTest extends TestCase {
         $this->assertCount(1, $data['entries']);
         $this->assertStringNotContainsString("\n<", $data['entries'][0]['message']);
         $this->assertLessThan(strpos($text, 'IGNORE'), strlen(LogEnvelope::NOTICE));
+    }
+
+    /** With the audit backend down: the refusals stay what they were, and a read hands no log data out. */
+    public function testWithTheAuditDownNoLogDataLeavesAndRefusalsStay(): void {
+        $this->dispatcherDown = true;
+        $registry = $this->registry();
+
+        $read = $registry->call('logs_list', ['limit' => 5], 'root');
+        $this->assertTrue($read['isError']);
+        $this->assertArrayNotHasKey('structuredContent', $read);
+        $this->assertStringNotContainsString(LogEnvelope::NOTICE, $read['content'][0]['text']);
+        try {
+            $registry->call('logs_list', [], 'alice');
+            $this->fail('denied stays denied');
+        } catch (InvalidArgumentException $e) {
+            $this->assertSame('Unknown tool', $e->getMessage());
+        }
+        try {
+            $registry->call('logs_list', ['since' => 'ontem'], 'root');
+            $this->fail('invalid stays invalid');
+        } catch (InvalidArgumentException $e) {
+            $this->assertNotSame('Unknown tool', $e->getMessage());
+        }
+        $failed = $this->registry($this->createMock(IWriter::class))->call('logs_analyze', [], 'root');
+        $this->assertSame('This server does not write its log to a file, so there is nothing to read.', $failed['content'][0]['text']);
+        $this->assertSame([], $this->events);
     }
 }

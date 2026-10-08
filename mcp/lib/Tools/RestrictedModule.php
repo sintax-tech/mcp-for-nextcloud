@@ -29,7 +29,9 @@ interface RestrictedModule {
     public function permits(string $userId): bool;
 
     /**
-     * Records one call. Called by the registry after the outcome is known; never throws on a call that already failed.
+     * Records one call. Called by the registry after the outcome is known. When it throws, the registry logs the failure
+     * without the arguments; a call that read nothing keeps its answer, and a SUCCESS is answered with a generic error
+     * instead of the data, so nothing leaves without its record.
      *
      * @param string $tool technical name of the tool called
      * @param string $userId authenticated user

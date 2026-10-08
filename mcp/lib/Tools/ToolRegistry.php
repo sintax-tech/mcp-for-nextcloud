@@ -112,10 +112,18 @@ class ToolRegistry {
                 if ($definition['name'] !== $name) {
                     continue;
                 }
-                // A restricted module records every attempt with its outcome, the refused ones included.
-                $audit = static function (string $outcome) use ($module, $name, $userId, &$arguments): void {
-                    if ($module instanceof RestrictedModule) {
+                // A restricted module records every attempt with its outcome, the refused ones included. A failing audit
+                // is logged without the arguments and reported as false: the caller decides what that costs.
+                $audit = function (string $outcome) use ($module, $name, $userId, &$arguments): bool {
+                    if (!$module instanceof RestrictedModule) {
+                        return true;
+                    }
+                    try {
                         $module->audit($name, $userId, $outcome, $arguments);
+                        return true;
+                    } catch (\Throwable $e) {
+                        $this->logger->error('MCP audit failed', ['app' => 'mcp', 'tool' => $name, 'outcome' => $outcome, 'exception_class' => $e::class]);
+                        return false;
                     }
                 };
                 if (!self::permits($module, $userId) || !$this->allowed($definition, $userId)) {
@@ -150,7 +158,10 @@ class ToolRegistry {
                     $audit(RestrictedModule::READ_ERROR);
                     return ToolResult::error(Translator::t('Unexpected error while accessing Nextcloud.'));
                 }
-                $audit(RestrictedModule::SUCCESS);
+                // A read that could not be audited hands no data out.
+                if (!$audit(RestrictedModule::SUCCESS)) {
+                    return ToolResult::error(Translator::t('Unexpected error while accessing Nextcloud.'));
+                }
                 return $result;
             }
         }

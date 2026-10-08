@@ -8,6 +8,7 @@ use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolModule;
 use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Tools\ToolResult;
 use OCP\App\IAppManager;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -288,6 +289,43 @@ final class ToolRegistryTest extends TestCase {
         ], $module->audits);
         $this->assertSame([\OCA\Mcp\Tools\RestrictedModule::DENIED, \OCA\Mcp\Tools\RestrictedModule::INVALID, \OCA\Mcp\Tools\RestrictedModule::READ_ERROR, \OCA\Mcp\Tools\RestrictedModule::SUCCESS],
             ['denied', 'invalid', 'read_error', 'success']);
+    }
+
+    /**
+     * A failing audit never replaces the answer of a call that read nothing (denied, invalid, failed), and is logged
+     * without arguments; but a read whose audit failed hands no data out: the answer is a generic error.
+     */
+    public function testAFailingAuditKeepsRefusalsAndWithholdsTheData(): void {
+        $module = new FakeRestrictedModule();
+        $module->auditThrow = new \RuntimeException('audit backend down: secret-filter');
+        $logged = [];
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->method('error')->willReturnCallback(function (string $message, array $context = []) use (&$logged): void {
+            $logged[] = [$message, $context];
+        });
+        $registry = new ToolRegistry([$module], $this->policy, $this->createMock(IAppManager::class), $this->createMock(IUserManager::class), $logger);
+        $this->policy->setGrant('root', 'logs', 'read', true);
+
+        $this->assertUnknownIn($registry, 'logs_list', 'alice');
+        try {
+            $registry->call('logs_list', ['n' => 0], 'root');
+            $this->fail('n below its minimum is invalid');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertNotSame('audit backend down: secret-filter', $e->getMessage());
+        }
+        $module->throw = new ToolFailure('The server log could not be read.');
+        $this->assertSame(ToolResult::error('The server log could not be read.'), $registry->call('logs_list', [], 'root'));
+        $module->throw = null;
+        $success = $registry->call('logs_list', ['n' => 3], 'root');
+
+        $this->assertSame(ToolResult::error('Unexpected error while accessing Nextcloud.'), $success, 'no data without its audit');
+        $this->assertSame(['denied', 'invalid', 'read_error', 'success'], array_column($module->audits, 2));
+        $audits = array_values(array_filter($logged, static fn (array $line): bool => $line[0] === 'MCP audit failed'));
+        $this->assertSame(['denied', 'invalid', 'read_error', 'success'], array_column(array_column($audits, 1), 'outcome'));
+        foreach ($audits as [, $context]) {
+            $this->assertSame(['app', 'tool', 'outcome', 'exception_class'], array_keys($context));
+            $this->assertSame(\RuntimeException::class, $context['exception_class']);
+        }
     }
 
     private function assertUnknownIn(ToolRegistry $registry, string $name, string $uid): void {

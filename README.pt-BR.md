@@ -228,11 +228,15 @@ Veja o [`CHANGELOG.md`](CHANGELOG.md) (em inglês).
 
 ## Licença
 
-AGPL-3.0-or-later. Dependência empacotada: [`smalot/pdfparser`](https://github.com/smalot/pdfparser) (LGPL-3.0).
+AGPL-3.0-or-later, com o termo adicional de atribuição da seção 7(b) no [NOTICE](NOTICE). O texto integral da licença está em [LICENSES/AGPL-3.0-or-later.txt](LICENSES/AGPL-3.0-or-later.txt). Preserve o crédito à Sintax na administração, na documentação e nos avisos de autoria ao redistribuir ou oferecer versões modificadas pela rede.
+
+## Créditos
+
+O pacote inclui Smalot PdfParser, Symfony Polyfill Mbstring e o autoloader do Composer. Consulte versões, licenças, autoria e dependências de desenvolvimento em [THIRD-PARTY-NOTICES.md](mcp/THIRD-PARTY-NOTICES.md).
 
 ## Sobre a Sintax
 
-Desenvolvido e mantido pela [Sintax](https://sintax.tech).
+Desenvolvido pela [Sintax](https://sintax.tech) · sintax.tech.
 
 - Site: https://sintax.tech
 - GitHub: https://github.com/sintax-tech

@@ -1,4 +1,8 @@
 <?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 /**
  * OAuth consent page (guest layout). Shows the client name from its metadata document next to the client_id host
  * and the redirect host; the form posts with the Nextcloud CSRF token.

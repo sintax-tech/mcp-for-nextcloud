@@ -1,3 +1,7 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 /* MCP for Nextcloud settings (admin and personal). Only Nextcloud theme variables are used, so light, dark and high-contrast themes work. */
 #mcp-admin .mcp-hint {
 	color: var(--color-text-maxcontrast);

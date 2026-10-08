@@ -1,3 +1,7 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 /**
  * Active OAuth connections of the MCP app, shared by the admin page (every user, GET/DELETE /apps/mcp/api/connections)
  * and the personal page (only the signed-in user, GET/DELETE /apps/mcp/api/my/connections). The root element's

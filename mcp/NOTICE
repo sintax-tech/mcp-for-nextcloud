@@ -1,0 +1,11 @@
+MCP for Nextcloud
+Copyright 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+Developed by Sintax — https://sintax.tech
+
+This program is licensed under AGPL-3.0-or-later. The complete, unmodified
+license text is in LICENSES/AGPL-3.0-or-later.txt.
+Third-party copyright and license notices are in THIRD-PARTY-NOTICES.md
+(mcp/THIRD-PARTY-NOTICES.md in the source repository). The additional term
+below applies to this program, not to the separately licensed dependencies.
+
+Additional terms under section 7(b) of the GNU AGPLv3. You must preserve the following author attribution in every copy, modified version or work based on this program that you convey or make available to users over a network: the notice "Developed by Sintax — https://sintax.tech" in the program's administration/settings page and in its user-facing documentation (README or equivalent), and the copyright and NOTICE files. This attribution must remain visible and legible; it may be reworded only to translate it. This term does not restrict use, modification or commercial distribution beyond the attribution requirement.

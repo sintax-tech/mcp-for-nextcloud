@@ -1,4 +1,6 @@
 #!/bin/sh
+# SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+# SPDX-License-Identifier: AGPL-3.0-or-later
 # Builds build/mcp-<version>.tar.gz with a single mcp/ root holding only production files
 # and a production-only vendor/ (composer --no-dev); tests and dev dependencies stay out.
 # scripts/check_package.php rejects the archive (and deletes it) on macOS metadata, extra top-level entries,

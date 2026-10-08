@@ -1,4 +1,8 @@
 <?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 /**
  * Admin page of the "MCP for Nextcloud" settings section, one core `.section` per block:
  * status, OAuth clients, hidden files & tags, OCR, the users × permissions matrix, the server log and the active

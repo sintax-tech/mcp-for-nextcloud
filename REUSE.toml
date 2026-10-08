@@ -1,0 +1,36 @@
+version = 1
+
+[[annotations]]
+path = [
+  ".gitignore",
+  "CHANGELOG.md",
+  "LICENSE",
+  "NOTICE",
+  "README.md",
+  "README.pt-BR.md",
+  "THIRD-PARTY-NOTICES.md",
+  "mcp/.gitignore",
+  "mcp/LICENSE",
+  "mcp/NOTICE",
+  "mcp/README.md",
+  "mcp/THIRD-PARTY-NOTICES.md",
+  "mcp/appinfo/info.xml",
+  "mcp/composer.json",
+  "mcp/composer.lock",
+  "mcp/img/app-dark.svg",
+  "mcp/img/app.svg",
+  "mcp/l10n/es.js",
+  "mcp/l10n/es.json",
+  "mcp/l10n/pt_BR.js",
+  "mcp/l10n/pt_BR.json",
+  "mcp/phpunit.xml",
+  "mcp/tests/fixtures/nextcloud-log/dalcloud-sample.jsonl",
+  "mcp/tests/fixtures/sample.docx",
+  "mcp/tests/fixtures/sample.pdf",
+  "screenshots/admin.png",
+  "screenshots/plan.png",
+  "mcp/tests/fixtures/nextcloud-api/*.php"
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"

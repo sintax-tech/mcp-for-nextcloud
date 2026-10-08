@@ -6,6 +6,7 @@
 Let Claude and other MCP clients work with your files, notes, calendars, contacts, tasks, Deck boards and Talk conversations, with each user's own permissions, and nothing leaves your server that the admin did not allow.
 
 [![Nextcloud 32–35](https://img.shields.io/badge/Nextcloud-32--35-0082c9?logo=nextcloud&logoColor=white)](https://nextcloud.com)
+[![Nextcloud App Store](https://img.shields.io/badge/App%20Store-mcp-0082c9?logo=nextcloud&logoColor=white)](https://apps.nextcloud.com/apps/mcp)
 [![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777bb4?logo=php&logoColor=white)](https://www.php.net)
 [![MCP](https://img.shields.io/badge/MCP-2025--06--18%20%7C%202026--07--28-111)](https://modelcontextprotocol.io)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue)](#license)
@@ -26,20 +27,15 @@ AI assistants are most useful when they can reach the tools a team already uses.
 - **Nextcloud ACLs always apply.** The app never widens what a user can already do in Nextcloud.
 - **Hide sensitive files by system tag.** Administrators can configure system tags (recommended: restricted or invisible) to make tagged files and folders completely invisible to MCP tools and resources, including every folder below them. It fails closed: if a tag lookup errors, the item stays hidden. Backups taken by the app inherit the tag before they receive any content.
 
-## What's new in 0.8.0
+## What's new in 1.0
 
-If you are upgrading from 0.7.0, this is what the new release adds. The full list, including the security fixes, is in [`CHANGELOG.md`](CHANGELOG.md).
+From 1.0.0 on the app is published in the [Nextcloud App Store](https://apps.nextcloud.com/apps/mcp), signed with the store certificate. The full list, including the security fixes, is in [`CHANGELOG.md`](CHANGELOG.md).
 
-- **Contacts and Tasks.** Address books and contacts (`contacts_list_addressbooks`, `contacts_search_contacts`, `contacts_read_contact`, `contacts_create_contact`, `contacts_edit_contact`, `contacts_delete_contact`) and VTODO tasks (`tasks_list_calendars`, `tasks_list_tasks`, `tasks_read_task`, `tasks_create_task`, `tasks_edit_task`, `tasks_complete_task`, `tasks_delete_task`). Contacts go through core CardDAV and preserve unknown vCard fields; tasks need no optional app. Both modules have their own `read`/`create`/`edit`/`delete` grants, all writes off by default. See [Contacts and tasks](#contacts-and-tasks) for the deletion and backup rules.
-- **Search by content.** `files_search` searches inside files and returns excerpts when the `fulltextsearch` app is active and indexed, and falls back to name search with a notice when it is not. `notes_search` searches note titles and Markdown.
-- **OCR through Workflow OCR.** When that optional app is installed, a scanned PDF gains a text layer that `files_read` reads normally. Without it, a page with no text comes back as `text_layer: false` plus a notice, and the admin page shows the OCR status. Nothing is blocked.
-- **MCP Resources.** Clients can list `mcp://guide` to read the tool guide, discover the templates `nc://files/{path}` and `nc://notes/{id}`, and read files and notes as resources. Granted, missing and hidden resources fail closed.
-- **Hide sensitive files by system tag.** Administrators pick system tags in the admin settings and anything carrying them, including everything below a tagged folder, becomes invisible to the tools — read, search, listing, image view and write destinations all behave as if it did not exist. It fails closed on error, and app backups inherit the tag before receiving any content.
-- **Sign in from ChatGPT and Gemini CLI.** `chatgpt.com` is allowed next to `claude.ai`, and an optional built-in native client (`nextcloud-mcp-native`, off by default) covers local programs like Gemini CLI. Both are configurable in the new admin **OAuth clients** section, with no terminal step. *Compatible by code, not yet proven against a live client* — see [Connecting a client](#connecting-a-client).
-- **A real settings section.** The app has its own **MCP for Nextcloud** entry, with an icon, in both the administration and the personal settings menus, and the admin page is split into blocks: Status, OAuth clients, Hidden files & tags, OCR, Permissions and Active connections.
-- **Check out any file type.** `files_checkout` now accepts DOCX, XLSX, PDF and images up to the upload limit, not just text. The limit itself is editable in MiB from the admin page instead of only through `occ`.
+- **1.0.0 and 1.0.1: the App Store.** First signed release in the store (no functional change since 0.11.1); 1.0.1 adds the `ai` category.
+- **1.0.2: server log.** A read-only module for IT staff, `logs_list` and `logs_analyze`, over `nextcloud.log` through the core's own reader. Only administrators and the groups they choose see the tools, the grant starts off, IPs are masked, the output is marked as untrusted and every read is audited. See [Features](#features). It also fixes `files_image_search`, which failed on Nextcloud 33.
+- **1.0.3: Nextcloud 32–35.** The app declares support for Nextcloud 32 to 35, checked by API contract tests against Deck 1.16–1.19 and Talk 22–25. Fixes: editing a Deck card on 1.18/1.19 no longer clears its start date or colour, and Talk respects the lobby when reading and writing.
 
-Upgrading from 0.7.0? Updating the app runs two schema migrations on the server, creating the tables `mcp_file_batches` (the record of executed folder reorganizations, so `files_undo_batch` can undo them) and `mcp_oauth_spent` (consumed refresh hashes, kept until expiry to detect a replayed rotation). Nextcloud runs both by itself: no manual step, no `occ`, and nothing changes in `config.php`. Rolling back to 0.7.0 leaves the two tables unused and harmless. Read the [CHANGELOG](CHANGELOG.md) for the security changes in this release.
+Upgrading from 0.7.0 or later runs the schema migrations by itself (tables `mcp_file_batches`, `mcp_oauth_spent` and `mcp_logs_groups`): no manual step, no `occ`, and nothing changes in `config.php`.
 
 ## Features
 
@@ -85,6 +81,10 @@ Task deletion uses native calendar trash and is refused when `dav/calendarRetent
 
 ## Installation
 
+**From the App Store (recommended).** As an administrator, open *Apps*, search for **MCP for Nextcloud** and click **Download and enable**. From a terminal, the equivalent is `sudo -u www-data php /var/www/nextcloud/occ app:install mcp`. The store package is signed, and updates arrive through the normal Nextcloud app updater.
+
+**Manual build (alternative, for development).**
+
 1. **Build the package** (on any machine with PHP and Composer):
 
    ```bash
@@ -104,11 +104,11 @@ Task deletion uses native calendar trash and is refused when `dav/calendarRetent
    sudo -u www-data php /var/www/nextcloud/occ app:enable mcp
    ```
 
-   Adjust paths and the web server user to your setup. With Docker, run `occ` inside the container. This manual route is only an alternative: installing from the Nextcloud App Store needs no terminal at all.
+   Adjust paths and the web server user to your setup. With Docker, run `occ` inside the container.
 
-3. **Configure** in *Administration settings → MCP for Nextcloud* (the app has its own entry with an icon in the settings menu): turn the service on, mark who may connect, grant write permissions where needed, and select system tags for hiding sensitive files. The page is split into blocks: **Status** (endpoint to copy, service switch, app version, eligible/connected users, active connections and the editable checkout upload limit in MiB, shown next to PHP's `post_max_size` ceiling), **OAuth clients**, **Hidden files & tags**, **OCR**, **Permissions** (the users × permissions matrix, with search, group and "can connect / connected" filters, an "All" menu per module for the users on the page, and pagers on top and bottom), **Server log** (the groups whose members may read the server log besides the administrators) and **Active connections**.
+Then, **configure** in *Administration settings → MCP for Nextcloud* (the app has its own entry with an icon in the settings menu): turn the service on, mark who may connect, grant write permissions where needed, and select system tags for hiding sensitive files. The page is split into blocks: **Status** (endpoint to copy, service switch, app version, eligible/connected users, active connections and the editable checkout upload limit in MiB, shown next to PHP's `post_max_size` ceiling), **OAuth clients**, **Hidden files & tags**, **OCR**, **Permissions** (the users × permissions matrix, with search, group and "can connect / connected" filters, an "All" menu per module for the users on the page, and pagers on top and bottom), **Server log** (the groups whose members may read the server log besides the administrators) and **Active connections**.
 
-   Server log access groups are stored in the app's own versioned table, created automatically by its native migration. Existing appconfig groups are imported on first read. The admin API returns `version` with GET and requires it on PUT; stale saves get 409. The database compare-and-swap still protects revocations with `filelocking.enabled=false`, when the extra Nextcloud lock becomes Noop.
+Server log access groups are stored in the app's own versioned table, created automatically by its native migration. Existing appconfig groups are imported on first read. The admin API returns `version` with GET and requires it on PUT; stale saves get 409. The database compare-and-swap still protects revocations with `filelocking.enabled=false`, when the extra Nextcloud lock becomes Noop.
 
 ## Connecting a client
 
@@ -132,7 +132,7 @@ Every client talks to the same URL, `https://cloud.example.com/apps/mcp/`, and a
 
 ### ChatGPT
 
-> **Compatible by code, not yet proven on a real client.** The server side is implemented and covered by tests, but the first end-to-end test against a live ChatGPT connector happens only after 0.8.0 is deployed. Treat it as expected to work and unverified until then.
+> **Compatible by code, not yet proven on a real client.** The server side is implemented and covered by tests, but no end-to-end test against a live ChatGPT connector has been recorded yet. Treat it as expected to work and unverified until then.
 
 1. In ChatGPT, add a new connector for an MCP server and paste `https://cloud.example.com/apps/mcp/` as its URL.
 2. Authentication: **Sign in** (OAuth). ChatGPT identifies itself with the client identity document published at `chatgpt.com`; the app downloads that document to learn the redirect URIs it registered. No headers, no app password.
@@ -142,7 +142,7 @@ Every client talks to the same URL, `https://cloud.example.com/apps/mcp/`, and a
 
 ### Gemini CLI
 
-> **Compatible by code, not yet proven on a real client.** The server side is implemented and covered by tests, but the first end-to-end test against a real Gemini CLI login happens only after 0.8.0 is deployed. Treat it as expected to work and unverified until then.
+> **Compatible by code, not yet proven on a real client.** The server side is implemented and covered by tests, but no end-to-end test against a real Gemini CLI login has been recorded yet. Treat it as expected to work and unverified until then.
 
 Two steps, one from the administrator and one from the user, with no terminal on the server.
 
@@ -227,7 +227,6 @@ See [`CHANGELOG.md`](CHANGELOG.md).
 ## Roadmap
 
 - Native review of the Spanish translation
-- Nextcloud App Store release
 
 ## License
 

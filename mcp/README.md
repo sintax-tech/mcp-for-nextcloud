@@ -202,7 +202,11 @@ Para conferir um pacote avulso: `php scripts/check_package.php build/mcp-<versã
 
 Os arquivos de licença acompanham cada pacote em `vendor/`. O `vendor/autoload.php` é carregado pelo `lib/AppInfo/Application.php`.
 
-## Instalar via SSH
+## Instalar
+
+A instalação normal é pela App Store do Nextcloud: *Apps* → buscar **MCP for Nextcloud** → **Baixar e ativar** (ou `occ app:install mcp`). O pacote da loja é assinado e atualiza pelo atualizador de apps. A instalação por SSH abaixo é a alternativa, para desenvolvimento ou testes de um build local.
+
+### Instalar via SSH
 
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
@@ -217,9 +221,7 @@ sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp
 
 Em Docker, rode os comandos `occ` dentro do container como o usuário do servidor web. Se o PHP usa OPcache com `validate_timestamps=0`, reinicie o PHP-FPM após copiar os arquivos.
 
-Este é o único ponto do app que ainda exige terminal: a instalação por SSH. Quando houver publicação na App Store, instalar por lá dispensa qualquer comando, e a configuração passa a ser só a tela de admin.
-
-Para atualizar: `occ app:disable mcp`, remover `<apps>/mcp`, extrair o novo pacote, `occ app:enable mcp` e `occ upgrade` se o Nextcloud pedir. A pasta precisa ser trocada inteira, para não sobrarem arquivos antigos em `vendor/`. Para remover: `occ app:remove mcp`.
+Para atualizar um build instalado por SSH: `occ app:disable mcp`, remover `<apps>/mcp`, extrair o novo pacote, `occ app:enable mcp` e `occ upgrade` se o Nextcloud pedir. A pasta precisa ser trocada inteira, para não sobrarem arquivos antigos em `vendor/`. Para remover: `occ app:remove mcp`.
 
 ## Log do servidor (1.0.2)
 
@@ -294,7 +296,7 @@ Passos para o usuário, com a mesma URL e a mesma tela "Permitir", estão no REA
 - **ChatGPT**: CIMD em `chatgpt.com`, aceito pela allowlist padrão. O documento real traz `token_endpoint_auth_methods_supported: [none, private_key_jwt]` e o singular `private_key_jwt`; o plural vence, e `none` está na lista, então o cliente é aceito como público.
 - **Gemini CLI**: não publica documento de identidade, então usa o cliente nativo estático. O usuário cola o `client_id` exibido na seção do admin em `~/.gemini/settings.json` → `mcpServers.<nome>.oauth.clientId` e roda `/mcp auth`. O redirect `http://localhost:<porta>/oauth/callback` casa porque `RedirectUriMatcher` ignora a porta em loopback (RFC 8252 7.3).
 
-Ambos estão **compatíveis por código, ainda não comprovados em cliente real**: não existe instalação de teste, e o smoke test real só acontece depois do deploy da 0.8.0. Até lá, `iss` é obrigatório porque o Gemini CLI rejeita retorno sem ele.
+Ambos estão **compatíveis por código, ainda não comprovados em cliente real**: não existe instalação de teste, e não há registro de smoke test real contra eles. `iss` é obrigatório porque o Gemini CLI rejeita retorno sem ele.
 
 ## Revogar
 

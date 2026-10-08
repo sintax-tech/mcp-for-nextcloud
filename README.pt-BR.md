@@ -6,6 +6,7 @@
 Deixe o Claude e outros clientes MCP trabalharem com seus arquivos, notas, calendários, contatos, tarefas, quadros do Deck e conversas do Talk. Cada usuário usa as próprias permissões, e nada sai do servidor sem liberação do admin.
 
 [![Nextcloud 32–35](https://img.shields.io/badge/Nextcloud-32--35-0082c9?logo=nextcloud&logoColor=white)](https://nextcloud.com)
+[![App Store do Nextcloud](https://img.shields.io/badge/App%20Store-mcp-0082c9?logo=nextcloud&logoColor=white)](https://apps.nextcloud.com/apps/mcp)
 [![PHP 8.2+](https://img.shields.io/badge/PHP-8.2%2B-777bb4?logo=php&logoColor=white)](https://www.php.net)
 [![MCP](https://img.shields.io/badge/MCP-2025--06--18%20%7C%202026--07--28-111)](https://modelcontextprotocol.io)
 [![Licença: AGPL-3.0](https://img.shields.io/badge/Licen%C3%A7a-AGPL--3.0-blue)](#licença)
@@ -26,20 +27,15 @@ Assistentes de IA rendem mais quando alcançam as ferramentas que o time já usa
 - **As permissões do Nextcloud sempre valem.** O app nunca amplia o que o usuário já pode fazer no Nextcloud.
 - **Ocultação de arquivos sensíveis por etiqueta.** O administrador pode escolher etiquetas de sistema (preferencialmente restritas ou invisíveis) para ocultar completamente arquivos e pastas das ferramentas e dos recursos MCP, incluindo tudo o que estiver dentro deles. Em caso de dúvida, oculta: se a consulta da etiqueta falhar, o item continua oculto. Os backups feitos pelo app recebem a etiqueta antes de receber qualquer conteúdo.
 
-## Novidades da 0.8.0
+## Novidades da 1.0
 
-Se você vem da 0.7.0, isto é o que a nova versão acrescenta. A lista completa, incluindo as correções de segurança, está no [`CHANGELOG.md`](CHANGELOG.md).
+Desde a 1.0.0 o app está publicado na [App Store do Nextcloud](https://apps.nextcloud.com/apps/mcp), assinado com o certificado da loja. A lista completa, incluindo as correções de segurança, está no [`CHANGELOG.md`](CHANGELOG.md).
 
-- **Contatos e Tarefas.** Catálogos e contatos (`contacts_list_addressbooks`, `contacts_search_contacts`, `contacts_read_contact`, `contacts_create_contact`, `contacts_edit_contact`, `contacts_delete_contact`) e tarefas VTODO (`tasks_list_calendars`, `tasks_list_tasks`, `tasks_read_task`, `tasks_create_task`, `tasks_edit_task`, `tasks_complete_task`, `tasks_delete_task`). Contatos passam pelo CardDAV do core e preservam campos desconhecidos do vCard; tarefas não dependem de app opcional. Os dois módulos têm grants próprios de `read`/`create`/`edit`/`delete`, todas as escritas desligadas por padrão. As regras de exclusão e de backup estão em [Contatos e tarefas](#contatos-e-tarefas).
-- **Busca por conteúdo.** `files_search` busca dentro dos arquivos e devolve trechos quando o app `fulltextsearch` está ativo e indexado, e cai para busca por nome com um aviso quando não está. `notes_search` busca no título e no Markdown das notas.
-- **OCR pelo Workflow OCR.** Com esse app opcional instalado, um PDF escaneado ganha uma camada de texto que o `files_read` lê normalmente. Sem ele, uma página sem texto volta como `text_layer: false` mais um aviso, e a página de admin mostra o status do OCR. Nada fica bloqueado.
-- **Recursos MCP (MCP Resources).** O cliente pode listar `mcp://guide` para ler o guia das ferramentas, descobrir os templates `nc://files/{path}` e `nc://notes/{id}` e ler arquivos e notas como recursos. Recurso sem permissão, inexistente ou oculto falha fechada.
-- **Ocultar arquivos sensíveis por etiqueta.** O administrador escolhe etiquetas de sistema nas configurações de admin e tudo o que as tiver, inclusive o conteúdo de uma pasta etiquetada, fica invisível para as ferramentas — leitura, busca, listagem, visão de imagens e destinos de escrita agem como se não existisse. Em caso de dúvida, oculta; e os backups do app recebem a etiqueta antes de receber qualquer conteúdo.
-- **Entrar pelo ChatGPT e pelo Gemini CLI.** `chatgpt.com` é aceito ao lado de `claude.ai`, e um cliente nativo embutido e opcional (`nextcloud-mcp-native`, desligado por padrão) cobre programas locais como o Gemini CLI. Ambos se configuram na nova seção de admin **Clientes OAuth**, sem passo no terminal. *Compatível por código, ainda não comprovado em cliente real* — veja [Conectando um cliente](#conectando-um-cliente).
-- **Uma seção de configurações de verdade.** O app tem uma entrada própria **MCP for Nextcloud**, com ícone, nos menus de administração e pessoal, e a página de admin é dividida em blocos: Status, Clientes OAuth, Arquivos ocultos e etiquetas, OCR, Permissões e Conexões ativas.
-- **Retirar qualquer tipo de arquivo.** O `files_checkout` agora aceita DOCX, XLSX, PDF e imagens até o limite de envio, e não só texto. O próprio limite passa a ser editável em MiB pela página de admin, em vez de só por `occ`.
+- **1.0.0 e 1.0.1: a App Store.** Primeira versão assinada na loja (sem mudança funcional desde a 0.11.1); a 1.0.1 acrescenta a categoria `ai`.
+- **1.0.2: log do servidor.** Um módulo somente leitura para a equipe de TI, `logs_list` e `logs_analyze`, sobre o `nextcloud.log` pelo leitor do próprio core. Só administradores e os grupos que eles escolherem veem as ferramentas, a permissão nasce desligada, IPs são mascarados, a saída é marcada como não confiável e toda leitura é auditada. Veja [Funcionalidades](#funcionalidades). Também corrige o `files_image_search`, que falhava no Nextcloud 33.
+- **1.0.3: Nextcloud 32–35.** O app declara suporte ao Nextcloud 32 a 35, conferido por testes de contrato de API com Deck 1.16–1.19 e Talk 22–25. Correções: editar um card do Deck na 1.18/1.19 não apaga mais a data de início nem a cor, e o Talk respeita o lobby na leitura e na escrita.
 
-Quem vem da 0.7.0: ao atualizar o app, o servidor roda duas migrações de esquema, que criam as tabelas `mcp_file_batches` (o registro das reorganizações de pasta executadas, para o `files_undo_batch` poder desfazê-las) e `mcp_oauth_spent` (hashes de refresh consumidos, guardados até expirar para detectar reuso). O Nextcloud executa as duas sozinho: nenhum passo manual, nenhum `occ`, e nada muda no `config.php`. Voltar para a 0.7.0 deixa as duas tabelas sem uso e inofensivas. Leia o [CHANGELOG](CHANGELOG.md) para as mudanças de segurança desta versão.
+Quem vem da 0.7.0 ou de uma versão posterior: as migrações de esquema rodam sozinhas (tabelas `mcp_file_batches`, `mcp_oauth_spent` e `mcp_logs_groups`), sem passo manual, sem `occ` e sem mudar o `config.php`.
 
 ## Funcionalidades
 
@@ -85,6 +81,10 @@ A exclusão de tarefas usa a lixeira nativa do calendário e é recusada com `da
 
 ## Instalação
 
+**Pela App Store (recomendado).** Como administrador, abra *Apps*, busque **MCP for Nextcloud** e clique em **Baixar e ativar**. Pelo terminal, o equivalente é `sudo -u www-data php /var/www/nextcloud/occ app:install mcp`. O pacote da loja é assinado, e as atualizações chegam pelo atualizador normal de apps do Nextcloud.
+
+**Build manual (alternativa, para desenvolvimento).**
+
 1. **Gere o pacote** em qualquer máquina com PHP e Composer:
 
    ```bash
@@ -104,9 +104,11 @@ A exclusão de tarefas usa a lixeira nativa do calendário e é recusada com `da
    sudo -u www-data php /var/www/nextcloud/occ app:enable mcp
    ```
 
-   Ajuste os caminhos e o usuário do servidor web ao seu ambiente. Com Docker, rode o `occ` dentro do container. Esse caminho manual é só uma alternativa: instalando pela App Store do Nextcloud não há passo no terminal.
+   Ajuste os caminhos e o usuário do servidor web ao seu ambiente. Com Docker, rode o `occ` dentro do container.
 
-3. **Configure** em *Configurações de administração → MCP for Nextcloud* (o app tem entrada própria, com ícone, no menu de configurações): ligue o serviço, marque quem pode conectar, libere as permissões de escrita necessárias e selecione etiquetas de sistema para ocultar arquivos sensíveis. A página é dividida em blocos: **Status** (endpoint para copiar, serviço, versão do app, usuários habilitados/conectados, conexões ativas e o limite de envio do checkout editável em MiB, ao lado do teto `post_max_size` do PHP), **Clientes OAuth**, **Arquivos e etiquetas ocultas**, **OCR**, **Permissões** (a matriz usuários × permissões, com busca, grupo, filtros "pode conectar / conectados", menu "Todos" por módulo para os usuários da página e paginação em cima e embaixo), **Log do servidor** (os grupos cujos membros podem ler o log do servidor, além dos administradores) e **Conexões ativas**.
+Depois, **configure** em *Configurações de administração → MCP for Nextcloud* (o app tem entrada própria, com ícone, no menu de configurações): ligue o serviço, marque quem pode conectar, libere as permissões de escrita necessárias e selecione etiquetas de sistema para ocultar arquivos sensíveis. A página é dividida em blocos: **Status** (endpoint para copiar, serviço, versão do app, usuários habilitados/conectados, conexões ativas e o limite de envio do checkout editável em MiB, ao lado do teto `post_max_size` do PHP), **Clientes OAuth**, **Arquivos e etiquetas ocultas**, **OCR**, **Permissões** (a matriz usuários × permissões, com busca, grupo, filtros "pode conectar / conectados", menu "Todos" por módulo para os usuários da página e paginação em cima e embaixo), **Log do servidor** (os grupos cujos membros podem ler o log do servidor, além dos administradores) e **Conexões ativas**.
+
+Os grupos com acesso ao log do servidor ficam na tabela versionada do próprio app, criada automaticamente pela migração nativa. Os grupos que já estavam no appconfig são importados na primeira leitura. A API de admin devolve `version` no GET e exige o campo no PUT; gravações desatualizadas recebem 409. A comparação atômica no banco continua protegendo as revogações com `filelocking.enabled=false`, quando o bloqueio extra do Nextcloud vira Noop.
 
 ## Conectando um cliente
 
@@ -130,7 +132,7 @@ O `claude.ai` já está na lista de hosts de clientes permitidos, então nada pr
 
 ### ChatGPT
 
-> **Compatível por código, ainda não comprovado em cliente real.** O lado do servidor está implementado e coberto por testes, mas o primeiro teste de ponta a ponta contra um conector real do ChatGPT só acontece depois que a 0.8.0 for publicada. Até lá, trate como esperado funcionar e ainda não verificado.
+> **Compatível por código, ainda não comprovado em cliente real.** O lado do servidor está implementado e coberto por testes, mas ainda não há registro de teste de ponta a ponta contra um conector real do ChatGPT. Trate como esperado funcionar e ainda não verificado.
 
 1. No ChatGPT, adicione um novo conector para servidor MCP e cole `https://cloud.example.com/apps/mcp/` como URL.
 2. Autenticação: **Sign in** (OAuth). O ChatGPT se identifica com o documento de identidade de cliente publicado em `chatgpt.com`; o app baixa esse documento para descobrir os redirect URIs registrados. Não precisa de cabeçalho nem de senha de app.
@@ -140,7 +142,7 @@ O `chatgpt.com` é permitido por padrão, então uma instalação nunca configur
 
 ### Gemini CLI
 
-> **Compatível por código, ainda não comprovado em cliente real.** O lado do servidor está implementado e coberto por testes, mas o primeiro teste de ponta a ponta contra um login real do Gemini CLI só acontece depois que a 0.8.0 for publicada. Até lá, trate como esperado funcionar e ainda não verificado.
+> **Compatível por código, ainda não comprovado em cliente real.** O lado do servidor está implementado e coberto por testes, mas ainda não há registro de teste de ponta a ponta contra um login real do Gemini CLI. Trate como esperado funcionar e ainda não verificado.
 
 Dois passos, um do administrador e um do usuário, sem nenhum passo no terminal do servidor.
 
@@ -226,7 +228,6 @@ Veja o [`CHANGELOG.md`](CHANGELOG.md) (em inglês).
 ## Roadmap
 
 - Revisão nativa da tradução para o espanhol
-- Publicação na App Store do Nextcloud
 
 ## Licença
 

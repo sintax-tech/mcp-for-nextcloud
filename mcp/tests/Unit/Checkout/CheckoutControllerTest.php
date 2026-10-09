@@ -32,6 +32,9 @@ use OCP\IUserManager;
 use OCP\IUserSession;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
+use OCA\Mcp\Tests\Unit\Tools\Common\FakeLock;
+use OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager;
+use OCP\Files\Lock\ILock;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
@@ -70,6 +73,8 @@ final class CheckoutControllerTest extends TestCase {
     private const UPLOAD_LIMIT = 64;
 
     private FakeTree $tree;
+    /** files_lock behind ILockManager, without any lock until a test puts one. */
+    private FakeLockManager $locks;
     private InMemoryCheckoutTokenStore $store;
     private InMemoryConfig $config;
     private TestableCheckoutController $controller;
@@ -99,6 +104,7 @@ final class CheckoutControllerTest extends TestCase {
     protected function setUp(): void {
         $this->tree = new FakeTree($this);
         $this->tree->addFile(self::FILE, '# Ata', 'text/markdown');
+        $this->locks = new FakeLockManager();
         $this->store = new InMemoryCheckoutTokenStore();
         $this->config = new InMemoryConfig();
         $this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
@@ -160,7 +166,7 @@ final class CheckoutControllerTest extends TestCase {
             $this->temp, $this->time, $this->policy, $this->store, $this->hasher,
             new CheckoutService($urls, $config, $this->time, $this->hasher, $this->store, $this->apps, $this->users), $backup,
             new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class),
-            $l10n, $this->users);
+            $l10n, $this->users, locks: $this->locks->service($this));
     }
 
     /** Stores an upload token for the file, standing for a checkout the agent already made. */
@@ -659,6 +665,52 @@ final class CheckoutControllerTest extends TestCase {
         $response = $this->controller->upload();
         $this->assertSame(500, $this->code($response));
         $this->assertStringContainsString('/MCP backups/Documentos/ata.md.', (string)$response->render());
+    }
+
+    /** A file open in an editor when the upload arrives: 423, nothing written, and the link still usable afterwards. */
+    public function testAnUploadOfAFileOpenInAnEditorIsALockedRefusalThatKeepsTheLink(): void {
+        $this->issue();
+        $this->locks->put(new FakeLock($this->tree->nodes[self::FILE]['id'], ILock::TYPE_APP, 'text'));
+        $response = $this->controller->upload();
+        $this->assertSame(423, $this->code($response));
+        $this->assertStringStartsWith('The file “/Documentos/ata.md” is open in Text', (string)$response->render());
+        $this->assertSame([], $this->tree->ops);
+        $this->assertNotContains('consume', $this->store->ops);
+        $this->assertSame([], $this->locks->forbidden);
+    }
+
+    /** The capability route runs without the user's session, where files_lock refuses even the user's own manual lock. */
+    public function testTheOwnManualLockIsRefusedOnTheLinkWithoutSession(): void {
+        $this->issue();
+        $this->locks->put(new FakeLock($this->tree->nodes[self::FILE]['id'], ILock::TYPE_USER, 'alice'));
+        $response = $this->controller->upload();
+        $this->assertSame(423, $this->code($response));
+        $this->assertStringContainsString('You locked this file yourself.', (string)$response->render());
+        $this->assertNotContains('consume', $this->store->ops);
+    }
+
+    public function testTheOwnManualLockLetsTheUploadThroughWithTheUsersSession(): void {
+        $this->issue();
+        $this->locks->put(new FakeLock($this->tree->nodes[self::FILE]['id'], ILock::TYPE_USER, 'alice'));
+        $alice = $this->createMock(IUser::class);
+        $alice->method('getUID')->willReturn('alice');
+        $this->session = $this->createMock(IUserSession::class);
+        $this->session->method('getUser')->willReturn($alice);
+        $this->refresh();
+        $this->assertSame(200, $this->code($this->controller->upload()));
+    }
+
+    /** A lock that appears after the link was spent: 423 instead of 500, the backup named, and a new checkout asked for. */
+    public function testALockAfterTheLinkWasSpentIsALockedRefusalThatAsksForANewCheckout(): void {
+        $this->issue();
+        $this->tree->writeFailure = FakeLockManager::refusal(new FakeLock($this->tree->nodes[self::FILE]['id'], ILock::TYPE_APP, 'richdocuments'));
+        $response = $this->controller->upload();
+        $text = (string)$response->render();
+        $this->assertSame(423, $this->code($response));
+        $this->assertStringContainsString('is open in Nextcloud Office', $text);
+        $this->assertStringContainsString('The original is kept in /MCP backups/Documentos/ata.md.', $text);
+        $this->assertStringEndsWith('This upload link has already been used: once the lock ends, run a new files_checkout.', $text);
+        $this->assertSame('# Ata', $this->tree->nodes[self::FILE]['content']);
     }
 
     /** The download offers the RFC 6266 form so a name with spaces survives. */

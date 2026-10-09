@@ -11,8 +11,10 @@ use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Service\Compat\AppEnablement;
 use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Tools\Common\NodeAccess;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
+use OCP\Lock\LockedException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -161,6 +163,10 @@ class ToolRegistry {
                 } catch (ToolFailure $e) {
                     $audit(RestrictedModule::READ_ERROR);
                     return ToolResult::error($e->getMessage());
+                } catch (LockedException $e) {
+                    // A locked file is an expected refusal, never a server error, even from a module that did not map it.
+                    $audit(RestrictedModule::READ_ERROR);
+                    return ToolResult::error(NodeAccess::lockFailure($e)->getMessage());
                 } catch (\Throwable $e) {
                     $this->logger->error('MCP tool failed', ['app' => 'mcp', 'tool' => $name, 'exception_class' => $e::class, 'exception_message' => self::loggable($e)]);
                     $audit(RestrictedModule::READ_ERROR);

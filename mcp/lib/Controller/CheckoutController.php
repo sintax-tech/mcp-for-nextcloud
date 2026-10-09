@@ -15,6 +15,9 @@ use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Tools\Common\LockAwareWrite;
+use OCA\Mcp\Tools\Common\LockMessages;
+use OCA\Mcp\Tools\Common\LockWriteFailure;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\ArgumentValidationException;
@@ -39,6 +42,7 @@ use OCP\IRequest;
 use OCP\ITempManager;
 use OCP\IUserManager;
 use OCP\IUserSession;
+use OCP\Lock\LockedException;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -54,6 +58,9 @@ use Psr\Log\LoggerInterface;
  * The order of the checks is itself the contract: refuse what the headers and the token alone can refuse before a
  * byte of the body reaches the disk, keep the body, re-read the policy, resolve the node, spend the token, re-check
  * the ETag, take the backup and only then write. A create link follows the same order with its own checks.
+ *
+ * A file locked by files_lock (open in Text or Office, locked by another person or a WebDAV client) is a 423. When the
+ * lock is there before the link is spent, the link stays usable; a lock met after that asks for a new checkout.
  */
 class CheckoutController extends Controller {
     /** Extra byte read past the limit, so an oversized body is detected without reading all of it. */
@@ -83,6 +90,7 @@ class CheckoutController extends Controller {
         private ?IUserManager $userManager = null,
         private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
         private ?FileCreation $creation = null,
+        private ?LockAwareWrite $locks = null,
     ) {
         parent::__construct($appName, $request);
     }
@@ -249,6 +257,12 @@ class CheckoutController extends Controller {
             return $opened;
         }
         [$row, $file] = $opened;
+        // A lock the agent can wait out: refused before the link is spent, so the same link works once it ends.
+        try {
+            $this->locks?->assertWritable($file, $row->userId, $row->path, $this->actsAsUser($row->userId));
+        } catch (LockWriteFailure $e) {
+            return $this->refuse(Http::STATUS_LOCKED, $e->getMessage());
+        }
         // The link is spent here, immediately before anything that can change the file. Everything above is
         // a refusal the agent can fix without a new checkout; everything below may already have written.
         if ($failure = $this->spend($row)) {
@@ -305,9 +319,20 @@ class CheckoutController extends Controller {
         $copy = '';
         try {
             NodeAccess::checkEtag($file, $row->etag);
-            $copy = $this->backup->prepare($root, $file, $row->path, $row->userId, $row->etag);
+            $copy = $this->backup->prepare($root, $file, $row->path, $row->userId, $row->etag, $this->actsAsUser($row->userId));
             $file->putContent((string)file_get_contents($body));
             $node = NodeAccess::requireFile(NodeAccess::get($root, $row->path));
+        } catch (LockWriteFailure $e) {
+            // Refused by the backup, before anything was copied or written; the link is spent all the same.
+            return $this->refuse(Http::STATUS_LOCKED, $e->getMessage() . ' ' . LockMessages::newCheckoutNeeded());
+        } catch (LockedException $e) {
+            // The lock came after the backup: the storage refused the write itself.
+            $failure = $this->locks?->failure($e, $file, $row->userId, $row->path) ?? NodeAccess::lockFailure($e);
+            return $this->refuse(Http::STATUS_LOCKED, implode(' ', array_filter([
+                $failure->getMessage(),
+                $copy === '' ? '' : FilesMessages::originalKept($copy),
+                LockMessages::newCheckoutNeeded(),
+            ])));
         } catch (ToolFailure $e) {
             $conflict = $e->getMessage() === CommonMessages::conflict();
             $message = $conflict ? FilesMessages::uploadConflict() : $e->getMessage();
@@ -400,6 +425,9 @@ class CheckoutController extends Controller {
         if ($e instanceof ArgumentValidationException) {
             return $this->refuse(Http::STATUS_BAD_REQUEST, $e->clientMessage());
         }
+        if ($e instanceof LockWriteFailure) {
+            return $this->refuse(Http::STATUS_LOCKED, $e->getMessage());
+        }
         if (!$e instanceof ToolFailure) {
             $this->logger->error('MCP create upload failed', ['app' => 'mcp', 'exception_class' => $e::class]);
             return $this->refuse(Http::STATUS_INTERNAL_SERVER_ERROR, FilesMessages::createFailed());
@@ -412,6 +440,17 @@ class CheckoutController extends Controller {
             FilesMessages::createFailed() => $this->refuse(Http::STATUS_INTERNAL_SERVER_ERROR, $e->getMessage()),
             default => $this->refuse(Http::STATUS_NOT_FOUND, $e->getMessage()),
         };
+    }
+
+    /**
+     * Whether this request writes as the owner of the link. A capability request has no user session, and files_lock
+     * then refuses even the owner's own manual lock, so the check has to refuse it too.
+     *
+     * @param string $uid owner of the link
+     * @return bool true when the session user is that owner
+     */
+    private function actsAsUser(string $uid): bool {
+        return $this->userSession->getUser()?->getUID() === $uid;
     }
 
     /**

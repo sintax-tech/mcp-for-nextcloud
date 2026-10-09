@@ -332,6 +332,22 @@ final class ToolRegistryTest extends TestCase {
         }
     }
 
+    /**
+     * A file lock that reaches the registry from any module is an expected refusal, not an unexpected failure: the
+     * client reads that the file is locked, and nothing is logged as an error.
+     */
+    public function testAFileLockThatEscapesAModuleIsALockedRefusalWithoutErrorLog(): void {
+        $module = new FakeRestrictedModule();
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger->expects($this->never())->method('error');
+        $registry = new ToolRegistry([$module], $this->policy, $this->createMock(IAppManager::class), $this->createMock(IUserManager::class), $logger);
+        $this->policy->setGrant('root', 'logs', 'read', true);
+        $module->throw = new \OCP\Lock\ManuallyLockedException('/root/files/x', null, 'files_lock/x', 'text', -1);
+        $this->assertSame(ToolResult::error(\OCA\Mcp\Tools\Common\LockMessages::lockedWithoutDetails()), $registry->call('logs_list', [], 'root'));
+        $module->throw = new \OCP\Lock\LockedException('/root/files/x');
+        $this->assertSame(ToolResult::error(\OCA\Mcp\Tools\Common\CommonMessages::locked()), $registry->call('logs_list', [], 'root'));
+    }
+
     public function testAFailingFallbackLoggerKeepsRefusalsAndWithholdsData(): void {
         $module = new FakeRestrictedModule();
         $module->auditThrow = new \RuntimeException('audit down');

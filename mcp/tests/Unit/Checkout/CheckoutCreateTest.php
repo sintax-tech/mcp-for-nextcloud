@@ -568,4 +568,13 @@ final class CheckoutCreateTest extends TestCase {
             $this->assertSame($message, $this->text($response), $failure::class);
         }
     }
+
+    /** A files_lock refusal at write time (Text opened the new file in between) is a 423 that says the file is locked. */
+    public function testAFileLockAtWriteTimeIsALockedRefusal(): void {
+        $this->issue();
+        $this->tree->writeFailure = new \OCP\Lock\ManuallyLockedException(self::FILE, null, 'files_lock/x', 'text', -1);
+        $response = $this->controller->upload();
+        $this->assertSame(423, $response->getStatus());
+        $this->assertSame(\OCA\Mcp\Tools\Common\LockMessages::lockedWithoutDetails(), $this->text($response));
+    }
 }

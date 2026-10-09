@@ -12,6 +12,10 @@ All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/a
 - admin: the administration page shows "Developed by Sintax" with a link to https://sintax.tech in its footer, in en, pt-BR and es. The READMEs end with an "About Sintax" section.
 - build: `scripts/check_package.php`, run by `scripts/package.sh`, refuses a package without `LICENSE`, `NOTICE`, `THIRD-PARTY-NOTICES.md`, the `LICENSES/` texts and the license files of the bundled dependencies.
 
+### Changed
+
+- appinfo: the store description (en, pt-BR, es) no longer promises a Nextcloud version for every edit: every edit keeps a backup, and Nextcloud versioning applies as usual.
+
 ### Fixed
 
 - files, notes: a file locked by `files_lock` (bundled with Nextcloud 35, an app before) is no longer a generic error. A file open in Text (also through Notes in rich mode) or Nextcloud Office, locked by another person or by a WebDAV client is refused with a message in en, pt-BR and es that names the app or the person, says since when and until when the lock lasts when that is known, and what to do. A person is named by display name only, and not at all when that name is just the uid; a lock token never appears.

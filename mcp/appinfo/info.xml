@@ -24,7 +24,7 @@
 - **Per-user permissions.** The administrator turns the service on, chooses who may connect and grants each operation per user in a users × permissions matrix. Reading starts allowed; every write, move, delete, transfer, restore or share starts denied.
 - **Plan and confirmation.** A tool that changes something first returns a plan of exactly what it will do; nothing is written until the user approves it.
 - **Hidden tag.** Files and folders carrying the system tags the administrator picks are invisible to every tool.
-- **The app never deletes a file.** There is no tool for it, and every edit keeps a backup and a Nextcloud version.
+- **The app never deletes a file.** There is no tool for it, and every edit keeps a backup; Nextcloud versioning applies as usual.
 - **Nextcloud permissions always apply.** The app never widens what a user can already do.
 
 ## Clients
@@ -54,7 +54,7 @@ Nextcloud 32–35 and PHP 8.2 or later. Deck and Talk are optional: their tools 
 - **Permissões por usuário.** O administrador liga o serviço, escolhe quem pode se conectar e libera cada operação por usuário numa matriz de usuários × permissões. A leitura começa liberada; toda escrita, movimentação, exclusão, transferência, restauração ou compartilhamento começa negada.
 - **Plano e confirmação.** Uma ferramenta que altera algo primeiro devolve o plano exato do que vai fazer; nada é gravado antes de o usuário aprovar.
 - **Etiqueta oculta.** Arquivos e pastas com as etiquetas do sistema escolhidas pelo administrador ficam invisíveis para todas as ferramentas.
-- **O app nunca apaga arquivo.** Não existe ferramenta que exclua um arquivo, e toda edição guarda um backup e uma versão do Nextcloud.
+- **O app nunca apaga arquivo.** Não existe ferramenta que exclua um arquivo, e toda edição guarda um backup; o versionamento do Nextcloud funciona como de costume.
 - **As permissões do Nextcloud sempre valem.** O app nunca amplia o que o usuário já pode fazer.
 
 ## Clientes
@@ -84,7 +84,7 @@ Nextcloud 32–35 e PHP 8.2 ou superior. O Deck e o Talk são opcionais: as ferr
 - **Permisos por usuario.** El administrador activa el servicio, elige quién puede conectarse y concede cada operación por usuario en una matriz de usuarios × permisos. La lectura empieza permitida; toda escritura, movimiento, eliminación, transferencia, restauración o uso compartido empieza denegado.
 - **Plan y confirmación.** Una herramienta que cambia algo devuelve primero el plan exacto de lo que hará; nada se escribe hasta que el usuario lo aprueba.
 - **Etiqueta oculta.** Los archivos y carpetas con las etiquetas del sistema que elija el administrador son invisibles para todas las herramientas.
-- **La aplicación nunca borra archivos.** No hay ninguna herramienta que elimine un archivo, y cada edición guarda una copia de seguridad y una versión de Nextcloud.
+- **La aplicación nunca borra archivos.** No hay ninguna herramienta que elimine un archivo, y cada edición guarda una copia de seguridad; el control de versiones de Nextcloud funciona como siempre.
 - **Los permisos de Nextcloud siempre se aplican.** La aplicación nunca amplía lo que el usuario ya puede hacer.
 
 ## Clientes

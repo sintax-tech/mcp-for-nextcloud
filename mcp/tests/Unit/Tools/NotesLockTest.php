@@ -121,6 +121,29 @@ final class NotesLockTest extends TestCase {
         $this->assertNotContains('move', array_map(static fn (string $op): string => explode(' ', $op)[0], $this->tree->ops));
     }
 
+    /** Any refusal of the rename after the content was saved says so: here the core's short transactional lock. */
+    public function testATransactionalLockOnTheRenameAfterTheContentWasSavedSaysTheEditIsPartial(): void {
+        $this->tree->throwOnMove[self::NOTE] = new \OCP\Lock\LockedException(self::NOTE);
+        try {
+            $this->call('notes_edit', ['id' => $this->id, 'content' => 'novo', 'title' => 'Outro']);
+            $this->fail('the refused rename was reported as a success');
+        } catch (\OCA\Mcp\Tools\ToolFailure $e) {
+            $this->assertSame(\OCA\Mcp\Tools\Common\CommonMessages::locked() . ' The new content was saved; only the title was not changed.', $e->getMessage());
+        }
+        $this->assertSame('novo', $this->tree->nodes[self::NOTE]['content']);
+    }
+
+    /** The same for a permission the storage refuses: the note says what happened, not only that it failed. */
+    public function testADeniedRenameAfterTheContentWasSavedSaysTheEditIsPartial(): void {
+        $this->tree->failMove[] = self::NOTE;
+        try {
+            $this->call('notes_edit', ['id' => $this->id, 'content' => 'novo', 'title' => 'Outro']);
+            $this->fail('the refused rename was reported as a success');
+        } catch (\OCA\Mcp\Tools\ToolFailure $e) {
+            $this->assertSame(\OCA\Mcp\Tools\Common\CommonMessages::forbidden() . ' The new content was saved; only the title was not changed.', $e->getMessage());
+        }
+    }
+
     public function testThePlanWarnsAboutTheLockAndStillDescribesTheChange(): void {
         $this->openInText();
         foreach (['notes_edit' => ['id' => $this->id, 'content' => 'novo'], 'notes_move' => ['id' => $this->id, 'category' => 'Arquivo'],

@@ -271,8 +271,9 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
         if (($payload = $this->guard->guard($note, $userId, (string)$arguments['id'], (bool)($arguments['confirm_shared'] ?? false))) !== null) {
             return $payload;
         }
-        // Two writes, each checked right before it: a lock taken after the content was saved stops the rename, and the
-        // refusal then says that the content did change.
+        // Two writes, each checked right before it. Whatever refuses the rename once the content is saved (a lock the
+        // check observes, the storage refusing it, a transactional lock, a permission), the answer says that the
+        // content did change.
         $saved = false;
         if (isset($arguments['content'])) {
             $this->locked(fn () => $note->putContent($arguments['content']), $note, $userId);
@@ -281,8 +282,8 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
         if ($rename !== null) {
             try {
                 $this->locked(fn () => $note->move($rename), $note, $userId, !$saved);
-            } catch (LockWriteFailure $e) {
-                throw $saved ? $e->withNote(NotesMessages::contentSavedTitleNot()) : $e;
+            } catch (\Throwable $e) {
+                throw $saved ? self::partialEdit($e) : $e;
             }
         }
         return $this->described($root, $userId, $arguments);
@@ -690,6 +691,26 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
      */
     private function locked(callable $write, File $note, string $userId, bool $untouched = true): mixed {
         return $this->locks === null ? $write() : $this->locks->run($write, $note, $userId, null, true, $untouched);
+    }
+
+    /**
+     * The refusal of a rename that came after the new content of the same edit was saved, saying so: a client-safe
+     * failure keeps its type and lock data and gains the sentence; a Nextcloud file exception is first mapped as
+     * everywhere else. Anything else is unexpected and stays as it is.
+     *
+     * @param \Throwable $e what refused the rename
+     * @return \Throwable the failure to throw
+     */
+    private static function partialEdit(\Throwable $e): \Throwable {
+        try {
+            NodeAccess::run(static fn () => throw $e);
+        } catch (ToolFailure $mapped) {
+            return $mapped instanceof LockWriteFailure
+                ? $mapped->withNote(NotesMessages::contentSavedTitleNot())
+                : new ToolFailure($mapped->getMessage() . ' ' . NotesMessages::contentSavedTitleNot(), 0, $mapped);
+        } catch (\Throwable) {
+        }
+        return $e;
     }
 
     /**

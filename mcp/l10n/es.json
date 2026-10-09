@@ -17,6 +17,7 @@
     "The file “%s” is locked by you. This change is allowed and keeps your lock." : "El archivo “%s” está bloqueado por usted. Este cambio está permitido y mantiene su bloqueo.",
     "The file is locked: it is open in an editor or another person locked it. Close it, or ask whoever locked it to unlock it, and then try again." : "El archivo está bloqueado: está abierto en un editor u otra persona lo bloqueó. Ciérrelo, o pida a quien lo bloqueó que lo desbloquee, y vuelva a intentarlo.",
     "This upload link has already been used: once the lock ends, run a new files_checkout." : "Este enlace de subida ya se usó: cuando termine el bloqueo, ejecute un nuevo files_checkout.",
+    "The original is kept in %s." : "El original se conserva en %s.",
     "Developed by Sintax" : "Desarrollado por Sintax",
     "%1$s %2$s is installed, but MCP for Nextcloud supports it from version %3$s on. Its tools stay hidden until the app is updated; the saved permissions are kept." : "%1$s %2$s está instalado, pero MCP for Nextcloud lo admite a partir de la versión %3$s. Sus herramientas permanecen ocultas hasta que se actualice la aplicación; los permisos guardados se conservan.",
     "%s: %s" : "%s: %s",

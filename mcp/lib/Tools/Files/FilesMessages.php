@@ -430,6 +430,14 @@ final class FilesMessages {
         return Translator::t('Failed to write file; original preserved in %s.', [$backup]);
     }
 
+    /**
+     * @param string $backup user-relative path of the backup taken before the refused write
+     * @return string closing sentence of a lock refusal that came after the backup
+     */
+    public static function originalKept(string $backup): string {
+        return Translator::t('The original is kept in %s.', [$backup]);
+    }
+
     /** @return string versioning is off for the user */
     public static function versioningOff(): string {
         return Translator::t('Editing blocked: file versioning (files_versions) is not active.');

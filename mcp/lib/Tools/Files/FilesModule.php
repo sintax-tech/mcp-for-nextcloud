@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
+use OCA\Mcp\Tools\Common\LockAwareWrite;
+use OCA\Mcp\Tools\Common\LockWriteFailure;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\PathGuard;
@@ -35,6 +37,7 @@ use OCP\FullTextSearch\IFullTextSearchManager;
 use OCP\FullTextSearch\Model\ISearchResult;
 use OCP\IDBConnection;
 use OCP\IUserManager;
+use OCP\Lock\LockedException;
 
 /**
  * Files tools: list, search, tree, mkdir, copy, move, batch, read, protected edit, snippet replace, local
@@ -53,6 +56,10 @@ use OCP\IUserManager;
  * arrives without `confirm: true`. A plan reads what it needs — the file, its ETag, the diff, the backup
  * that would be created, the node the batch would touch — and writes nothing: no folder is created, no
  * checkout token is minted and no file is backed up before the user has said yes.
+ *
+ * A file locked by files_lock (open in Text or Office, locked by another person or a WebDAV client) is a warning in
+ * the plan and a refusal of the confirmed call, decided before the shared-write confirmation and the backup
+ * ({@see LockAwareWrite}). The user's own manual lock lets the write through, as in the Files app.
  */
 class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuideNotes {
     /** Characters returned by files_read before the text is truncated. */
@@ -88,6 +95,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
         private ?ShareWriter $shareWriter = null,
         private ?ShareRemover $shareRemover = null,
         private ?FileCreation $creation = null,
+        private ?LockAwareWrite $locks = null,
     ) {}
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app?:string}> */
@@ -552,7 +560,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             'requiresSharedConfirmation' => $shared !== null,
             'recoverable' => true,
             'consequence' => FilesMessages::planBackupConsequence(),
-        ];
+        ] + $this->lockNotice($file, $userId, $path);
     }
 
     /**
@@ -592,7 +600,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             'linksAfterConfirmation' => true,
             'consequence' => FilesMessages::planCheckoutConsequence(),
             'message' => FilesMessages::planCheckout(),
-        ];
+        ] + $this->lockNotice($file, $userId, $path);
     }
 
     /**
@@ -625,7 +633,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             'recoverable' => true,
             'consequence' => FilesMessages::planBackupConsequence(),
             'message' => FilesMessages::planRestore(),
-        ];
+        ] + $this->lockNotice($file, $userId, $path);
     }
 
     /** @return list<array{name:string, path:string, isDir:bool, size:int, mtime:string, contentType:string, access:array<string, mixed>}> */
@@ -846,6 +854,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             throw new ToolFailure(FilesMessages::editTooLarge(self::MAX_EDIT_BYTES));
         }
         $file = $this->file($root, $path);
+        $this->locks?->assertWritable($file, $userId, $path);
         if (($payload = $this->guard->guard($file, $userId, $path, $confirmed)) !== null) {
             return ToolResult::json($payload);
         }
@@ -874,6 +883,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             throw new ToolFailure(FilesMessages::snippetNotUtf8());
         }
         $file = $this->file($root, $path);
+        $this->locks?->assertWritable($file, $userId, $path);
         if (($payload = $this->guard->guard($file, $userId, $path, $confirmed)) !== null) {
             return ToolResult::json($payload);
         }
@@ -909,6 +919,8 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
         $this->assertNotBackup($path);
         $file = $this->file($root, $path);
         NodeAccess::checkEtag($file, $etag);
+        // A link for a file the upload could not write is no use: the lock is refused before any link is minted.
+        $this->locks?->assertWritable($file, $userId, $path);
         $access = $this->accessInfo->describe($file, $userId);
         if (($payload = $this->guard->guard($file, $userId, $path, $confirmed)) !== null) {
             return ToolResult::json($payload);
@@ -930,6 +942,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             throw new ToolFailure(FilesMessages::backupPath());
         }
         $file = $this->file($root, $path);
+        $this->locks?->assertWritable($file, $userId, $path);
         if (($payload = $this->guard->guard($file, $userId, $path, $confirmed)) !== null) {
             return ToolResult::json($payload);
         }
@@ -954,6 +967,10 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
         $copy = $this->backup->prepare($root, $file, $path, $userId, $etag);
         try {
             $file->putContent($content);
+        } catch (LockedException $e) {
+            // A lock that appeared after the check: the refusal is explained, and says where the original is.
+            $failure = $this->locks?->failure($e, $file, $userId, $path) ?? NodeAccess::lockFailure($e);
+            throw $failure instanceof LockWriteFailure ? $failure->withNote(FilesMessages::originalKept($copy)) : new ToolFailure(FilesMessages::writeFailed($copy));
         } catch (\Throwable) {
             throw new ToolFailure(FilesMessages::writeFailed($copy));
         }
@@ -966,6 +983,16 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             'backup' => $copy,
             'diff' => UnifiedDiff::between($before, $content),
         ];
+    }
+
+    /**
+     * @param Node $node the file a plan would change
+     * @param string $userId authenticated user
+     * @param string $path its user-relative path
+     * @return array<string, mixed> the lock and its warning for the plan, nothing for a free file
+     */
+    private function lockNotice(Node $node, string $userId, string $path): array {
+        return $this->locks?->planNotice($node, $userId, $path) ?? [];
     }
 
     /**

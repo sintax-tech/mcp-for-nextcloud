@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
+use OCA\Mcp\Tools\Common\LockAwareWrite;
+use OCA\Mcp\Tools\Common\LockWriteFailure;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\ToolFailure;
@@ -15,6 +17,7 @@ use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\IUser;
 use OCP\IUserManager;
+use OCP\Lock\LockedException;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -45,6 +48,7 @@ final class VersionTools {
         private NodeAccessInfo $access,
         private ContainerInterface $container,
         private OcrSupport $ocr,
+        private ?LockAwareWrite $locks = null,
     ) {}
 
     /**
@@ -156,8 +160,17 @@ final class VersionTools {
     public function restore(Folder $root, File $file, string $path, string $revision, string $viewerUid): array {
         $user = $this->requireVersioning($viewerUid);
         $version = $this->find($user, $file, $revision);
+        // The backup refuses a locked file before copying it. The check also keeps the rollback out of the lock of an
+        // editor: files_versions retries a refused rollback inside the scope of Text or Office (VersionManager,
+        // handleAppLocks), which would write under the lock of the open editor.
         $copy = $this->backup->prepare($root, $file, $path, $viewerUid, null);
-        $result = $this->manager()->rollback($version);
+        $manager = $this->manager();
+        try {
+            $result = $manager->rollback($version);
+        } catch (LockedException $e) {
+            $failure = $this->locks?->failure($e, $file, $viewerUid, $path) ?? NodeAccess::lockFailure($e);
+            throw $failure instanceof LockWriteFailure ? $failure->withNote(FilesMessages::originalKept($copy)) : $failure;
+        }
         if ($result === false) {
             throw new ToolFailure(FilesMessages::versionRestoreFailed());
         }

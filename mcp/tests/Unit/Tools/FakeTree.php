@@ -36,6 +36,8 @@ final class FakeTree {
 
     /** @var array<string, \Throwable> paths whose move throws this exception, for failures Nextcloud has no typed answer for */
     public array $throwOnMove = [];
+    /** @var array<string, \Throwable> paths whose copy throws this exception, as files_lock refusing a locked source */
+    public array $throwOnCopy = [];
     public array $shortCopy = [];
     /** Display name of the owner returned for every node. */
     public string $ownerName = 'Alice';
@@ -145,6 +147,9 @@ final class FakeTree {
         });
         $mock->method('copy')->willReturnCallback(function (string $target) use ($path): Node {
             $this->ops[] = "copy $path $target";
+            if (isset($this->throwOnCopy[$path])) {
+                throw $this->throwOnCopy[$path];
+            }
             if (in_array($path, $this->failCopy, true)) {
                 throw new NotPermittedException();
             }

@@ -22,4 +22,12 @@ final class LockWriteFailure extends ToolFailure {
     public function __construct(string $message, public readonly ?array $lock = null) {
         parent::__construct($message);
     }
+
+    /**
+     * @param string $sentence what else the person needs to know, e.g. where the backup taken before the write is
+     * @return self the same refusal with that sentence at the end
+     */
+    public function withNote(string $sentence): self {
+        return new self($this->getMessage() . ' ' . $sentence, $this->lock);
+    }
 }

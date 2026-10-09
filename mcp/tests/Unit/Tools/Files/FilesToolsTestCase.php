@@ -11,6 +11,7 @@ use OCA\Mcp\Checkout\CheckoutTokenStore;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Tests\Unit\Checkout\InMemoryCheckoutTokenStore;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tools\ArgumentValidator;
@@ -69,6 +70,8 @@ abstract class FilesToolsTestCase extends TestCase {
     protected ISystemTagObjectMapper $tagMapper;
     protected \Psr\Log\LoggerInterface $logger;
     protected FilesModule $module;
+    /** files_lock behind ILockManager, without any lock until a test puts one. */
+    protected FakeLockManager $locks;
     protected ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null;
     /** @var list<string> tokens handed out per route, in order */
     protected array $issued = [];
@@ -133,7 +136,9 @@ abstract class FilesToolsTestCase extends TestCase {
 
         $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
         $extractor = new TextExtractor($this->temp);
-        $backup = new FileBackup($this->apps, $this->users, $this->time, $config, $this->visibilityGuard);
+        $this->locks = new FakeLockManager();
+        $locks = $this->locks->service($this);
+        $backup = new FileBackup($this->apps, $this->users, $this->time, $config, $this->visibilityGuard, $locks);
         $this->previewManager = $this->createMock(IPreview::class);
         $this->tagManager = $this->createMock(ISystemTagManager::class);
         $this->tagMapper = $this->createMock(ISystemTagObjectMapper::class);
@@ -162,9 +167,9 @@ abstract class FilesToolsTestCase extends TestCase {
             $access,
             new SharedWriteGuard($access),
             $checkout,
-            new VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class), new OcrSupport($this->apps)),
-            new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users, $this->visibilityGuard),
-            new MovePlanner(new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users, $this->visibilityGuard), $access, new SharedWriteGuard($access), $this->visibilityGuard),
+            new VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class), new OcrSupport($this->apps), $locks),
+            new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users, $this->visibilityGuard, $locks),
+            new MovePlanner(new Reorganization($access, new SharedWriteGuard($access), $this->report(), $this->users, $this->visibilityGuard, $locks), $access, new SharedWriteGuard($access), $this->visibilityGuard),
             $this->batchStore ?? $this->batches,
             $this->time,
             $imageTools,
@@ -173,6 +178,7 @@ abstract class FilesToolsTestCase extends TestCase {
             ...$this->sharing($urls),
             creation: new FileCreation($access, new SharedWriteGuard($access), $checkout, $this->filenames,
                 $this->visibilityGuard ?? new \OCA\Mcp\Service\VisibilityGuard($config, $this->tagMapper), $this->creationLogger),
+            locks: $locks,
         );
     }
 

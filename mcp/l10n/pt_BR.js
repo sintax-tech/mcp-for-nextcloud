@@ -19,6 +19,7 @@ OC.L10N.register(
     "The file “%s” is locked by you. This change is allowed and keeps your lock." : "O arquivo “%s” está travado por você. Esta alteração é permitida e mantém a sua trava.",
     "The file is locked: it is open in an editor or another person locked it. Close it, or ask whoever locked it to unlock it, and then try again." : "O arquivo está travado: está aberto em um editor ou outra pessoa o travou. Feche-o, ou peça a quem o travou que o destrave, e tente novamente.",
     "This upload link has already been used: once the lock ends, run a new files_checkout." : "Este link de envio já foi usado: quando a trava terminar, faça um novo files_checkout.",
+    "The original is kept in %s." : "O original está preservado em %s.",
     "Developed by Sintax" : "Desenvolvido pela Sintax",
     "%1$s %2$s is installed, but MCP for Nextcloud supports it from version %3$s on. Its tools stay hidden until the app is updated; the saved permissions are kept." : "%1$s %2$s está instalado, mas o MCP for Nextcloud só o suporta a partir da versão %3$s. As ferramentas dele ficam ocultas até o app ser atualizado; as permissões salvas são mantidas.",
     "%s: %s" : "%s: %s",

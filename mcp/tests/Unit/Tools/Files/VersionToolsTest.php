@@ -7,6 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
+use OCA\Mcp\Tests\Unit\Tools\Common\FakeLock;
+use OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager;
+use OCA\Mcp\Tools\Common\LockWriteFailure;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
@@ -19,6 +22,7 @@ use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\Files\Folder;
+use OCP\Files\Lock\ILock;
 use OCP\IUser;
 use OCP\IUserManager;
 use OCA\Files_Versions\Versions\FakeVersion;
@@ -194,6 +198,62 @@ final class VersionToolsTest extends TestCase {
         }
         $this->assertNotContains('rollback', $this->manager->ops, 'a recusa vem antes de a versão sobrescrever o arquivo');
         $this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+    }
+
+    /** @return VersionTools the tools with files_lock behind them, holding the given locks */
+    private function lockedTools(FakeLockManager $locks): VersionTools {
+        $config = (new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this);
+        $time = $this->createMock(\OCP\AppFramework\Utility\ITimeFactory::class);
+        $time->method('getTime')->willReturn(1790000000);
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('get')->willReturnCallback(fn (string $id) => $id === self::MANAGER ? $this->manager : null);
+        $service = $locks->service($this);
+        return new VersionTools($this->apps, $this->users, $this->createMock(TextExtractor::class),
+            new FileBackup($this->apps, $this->users, $time, $config, null, $service),
+            new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager()), $container,
+            new \OCA\Mcp\Tools\Files\OcrSupport($this->apps), $service);
+    }
+
+    /**
+     * files_versions retries a refused rollback inside the lock scope of Text or Office, so a restore of a file open
+     * in an editor would write under that editor. It is refused before the backup and before the rollback.
+     */
+    public function testARestoreOfAFileOpenInAnEditorIsRefusedBeforeTheBackupAndTheRollback(): void {
+        $locks = new FakeLockManager();
+        $locks->put(new FakeLock($this->tree->nodes[self::FILE]['id'], ILock::TYPE_APP, 'text'));
+        try {
+            $this->lockedTools($locks)->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+            $this->fail('the restore of a locked file went on');
+        } catch (LockWriteFailure $e) {
+            $this->assertStringStartsWith('The file “/Documentos/ata.md” is open in Text', $e->getMessage());
+        }
+        $this->assertNotContains('rollback', $this->manager->ops);
+        $this->assertSame([], $this->tree->ops);
+        $this->assertSame([], $locks->forbidden);
+    }
+
+    public function testARollbackRefusedByALockThatAppearedIsExplainedAndNamesTheBackup(): void {
+        $locks = new FakeLockManager();
+        $lock = new FakeLock($this->tree->nodes[self::FILE]['id'], ILock::TYPE_USER, 'pedro');
+        $this->manager->onRollback = function () use ($locks, $lock): void {
+            $locks->put($lock);
+            throw FakeLockManager::refusal($lock);
+        };
+        try {
+            $this->lockedTools($locks)->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+            $this->fail('the refused rollback was reported as a success');
+        } catch (LockWriteFailure $e) {
+            $this->assertStringContainsString('is locked by Pedro Almeida.', $e->getMessage());
+            $this->assertMatchesRegularExpression('#The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $e->getMessage());
+        }
+        $this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+    }
+
+    public function testTheOwnManualLockLetsTheRestoreThrough(): void {
+        $locks = new FakeLockManager();
+        $locks->put(new FakeLock($this->tree->nodes[self::FILE]['id'], ILock::TYPE_USER, 'alice'));
+        $this->lockedTools($locks)->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+        $this->assertContains('rollback', $this->manager->ops);
     }
 
     /** Turns the rollback into what the real one does: the file now holds the version. */

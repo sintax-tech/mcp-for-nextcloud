@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
+use OCA\Mcp\Tools\Common\LockAwareWrite;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\PathGuard;
@@ -39,6 +40,7 @@ final class Reorganization {
         private MoveReport $report,
         private \OCP\IUserManager $userManager,
         private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
+        private ?LockAwareWrite $locks = null,
     ) {}
 
     /**
@@ -237,7 +239,9 @@ final class Reorganization {
             return $payload;
         }
         $receipt = $root->getRelativePath($source->getPath()) ?? '';
-        $copy = $source->copy($this->absolute($root, $to));
+        // Reading a locked file is allowed, so the source is not checked; files_lock may still refuse a copy between
+        // storages, and that refusal is explained.
+        $copy = $this->locked(fn (): Node => $source->copy($this->absolute($root, $to)), $source, $userId);
         return [
             'from' => $receipt,
             'to' => $to,
@@ -266,6 +270,7 @@ final class Reorganization {
      */
     public function move(Folder $root, string $userId, string $from, string $to, ?string $etag, bool $confirmedShared): array {
         $check = $this->inspect($root, $from, $to, $etag);
+        $this->assertUnlocked($check->source, $userId);
         if (($payload = $this->confirmBoth($check->source, $from, $check->destination, $check->to, $userId, $confirmedShared)) !== null) {
             return $payload;
         }
@@ -275,7 +280,7 @@ final class Reorganization {
         $idBefore = (int)$check->source->getId();
         $versionsBefore = $this->versions($check->source, $userId);
         $sharesBefore = $this->report->shares($check->source, $userId);
-        $moved = $check->source->move($this->absolute($root, $check->to));
+        $moved = $this->locked(fn (): Node => $check->source->move($this->absolute($root, $check->to)), $check->source, $userId);
         $idAfter = (int)$moved->getId();
         return [
             'from' => $receipt,
@@ -289,6 +294,30 @@ final class Reorganization {
             'sharesAfter' => $this->report->shares($moved, $userId),
             'access' => $this->access->describe($moved, $userId),
         ];
+    }
+
+    /**
+     * Refuses to move a node that files_lock locks against the user: open in Text or Office, locked by another person
+     * or a WebDAV client. Only the node itself is looked at: the files inside a folder are not.
+     *
+     * @param Node $node the node about to move
+     * @param string $userId authenticated user
+     * @throws \OCA\Mcp\Tools\Common\LockWriteFailure when a lock stops the move
+     */
+    public function assertUnlocked(Node $node, string $userId): void {
+        $this->locks?->assertWritable($node, $userId);
+    }
+
+    /**
+     * Runs a move or a copy, explaining a lock refusal of the storage when the lock appeared after the check.
+     *
+     * @param callable():Node $write the move or the copy
+     * @param Node $node the node it reads or moves
+     * @param string $userId authenticated user
+     * @return Node what the write returned
+     */
+    private function locked(callable $write, Node $node, string $userId): Node {
+        return $this->locks === null ? $write() : $this->locks->run($write, $node, $userId);
     }
 
     /**
@@ -370,7 +399,7 @@ final class Reorganization {
         foreach ($result->planned as $index => $item) {
             try {
                 $check = $this->inspect($root, $item['from'], $item['to']);
-                $movedNode = NodeAccess::run(fn () => $check->source->move($this->absolute($root, $check->to)));
+                $movedNode = NodeAccess::run(fn () => $this->locked(fn (): Node => $check->source->move($this->absolute($root, $check->to)), $check->source, $userId));
                 $moved[] = ['from' => $item['from'], 'to' => $check->to, 'toId' => (int)$movedNode->getId()];
             } catch (\Throwable $e) {
                 $failure = $e instanceof ToolFailure ? $e->getMessage() : FilesMessages::moveFailed();
@@ -504,7 +533,7 @@ final class Reorganization {
             'shared' => $this->sharedOf($userId, $check->source, $check->destination),
             'recoverable' => true,
             'message' => FilesMessages::planMove(),
-        ];
+        ] + ($this->locks?->planNotice($check->source, $userId) ?? []);
     }
 
     /**
@@ -549,7 +578,7 @@ final class Reorganization {
         if ($batch->isUndone()) {
             throw new ToolFailure(FilesMessages::batchAlreadyUndone());
         }
-        $conflicts = $this->undoConflicts($root, $batch);
+        $conflicts = $this->undoConflicts($root, $batch, $userId);
         [$removed, $kept] = $this->emptyDirs($root, $batch);
         return [
             'action' => 'files_undo_batch',
@@ -595,7 +624,7 @@ final class Reorganization {
         if ($batch->isUndone()) {
             throw new ToolFailure(FilesMessages::batchAlreadyUndone());
         }
-        $conflicts = $this->undoConflicts($root, $batch);
+        $conflicts = $this->undoConflicts($root, $batch, $userId);
         if ($conflicts !== []) {
             return ['batch_id' => $batchId, 'undone' => 0, 'removed_dirs' => [], 'kept_dirs' => [], 'conflicts' => $conflicts];
         }
@@ -606,7 +635,7 @@ final class Reorganization {
         foreach (array_reverse($batch->moves) as $move) {
             try {
                 $node = NodeAccess::run(fn () => NodeAccess::get($root, $move['to']));
-                NodeAccess::run(fn () => $node->move($this->absolute($root, $move['from'])));
+                NodeAccess::run(fn () => $this->locked(fn (): Node => $node->move($this->absolute($root, $move['from'])), $node, $userId));
             } catch (\Throwable $e) {
                 // Every condition was checked above, so this is a lock or a permission that changed in
                 // between. The row keeps only what did not go back: an item that already moved is no longer
@@ -652,13 +681,14 @@ final class Reorganization {
      *
      * @param Folder $root the user's folder
      * @param Batch $batch the batch to check
+     * @param string $userId authenticated user
      * @return list<array{from:string, to:string, reason:string}> the items that block the undo, empty when it may run
      */
-    private function undoConflicts(Folder $root, Batch $batch): array {
+    private function undoConflicts(Folder $root, Batch $batch, string $userId): array {
         $conflicts = [];
         foreach (array_reverse($batch->moves) as $move) {
             try {
-                $this->assertUndoable($root, $batch, $move);
+                $this->assertUndoable($root, $batch, $move, $userId);
             } catch (ToolFailure $e) {
                 $conflicts[] = ['from' => $move['from'], 'to' => $move['to'], 'reason' => $e->getMessage()];
             }
@@ -670,13 +700,16 @@ final class Reorganization {
      * @param Folder $root the user's folder
      * @param Batch $batch the batch the move came from
      * @param array{from:string, to:string, toId:int} $move one recorded move
-     * @throws ToolFailure when the item is not what the batch left there, the way back is taken, or the permissions changed
+     * @param string $userId authenticated user
+     * @throws ToolFailure when the item is not what the batch left there, the way back is taken, the permissions
+     *         changed or a lock refuses the move back
      */
-    private function assertUndoable(Folder $root, Batch $batch, array $move): void {
+    private function assertUndoable(Folder $root, Batch $batch, array $move, string $userId): void {
         $there = NodeAccess::run(fn () => NodeAccess::get($root, $move['to']));
         if ((int)$there->getId() !== $move['toId']) {
             throw new ToolFailure(FilesMessages::notTheBatchNode());
         }
+        $this->assertUnlocked($there, $userId);
         if ($root->nodeExists(ltrim(PathGuard::normalize($move['from'], 'moves'), '/'))) {
             throw new MoveConflict(FilesMessages::destinationExists());
         }

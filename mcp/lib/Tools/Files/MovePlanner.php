@@ -69,6 +69,9 @@ final class MovePlanner {
             $to = (string)$item['to'];
             try {
                 $check = $this->reorganization->inspect($root, $from, $to, mkdirs: $mkdirs);
+                // A locked item is one the run would refuse: it is listed as denied with the explanation, so the plan
+                // still shows the whole list and the batch never starts by moving half of it.
+                $this->reorganization->assertUnlocked($check->source, $userId);
             } catch (MoveConflict $e) {
                 $conflicts[] = ['from' => $from, 'to' => $to, 'reason' => $e->getMessage()];
                 continue;

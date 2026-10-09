@@ -10,6 +10,7 @@ namespace OCA\Mcp\Tools\Files;
 use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Tools\Common\LockAwareWrite;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -19,8 +20,9 @@ use OCP\IConfig;
 use OCP\IUserManager;
 
 /**
- * Guards a file edit: versioning must be on, the file writable and unchanged (etag), and a verified
- * copy of the original must exist in the user's backup folder before the caller may write.
+ * Guards a file edit: versioning must be on, the file writable, unchanged (etag) and not locked against the write
+ * by files_lock, and a verified copy of the original must exist in the user's backup folder before the caller may
+ * write. The lock is checked before the copy, so a refused write leaves no useless backup behind.
  */
 class FileBackup {
     /** Folder in the user's root that receives a copy of every file before files_edit writes it. */
@@ -32,6 +34,7 @@ class FileBackup {
         private ITimeFactory $time,
         private IConfig $config,
         private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
+        private ?LockAwareWrite $locks = null,
     ) {}
 
     /**
@@ -50,10 +53,12 @@ class FileBackup {
      * @param string $path normalized user-relative path of $file
      * @param string $userId authenticated user
      * @param string|null $etag ETag the caller read before, null to skip the check
+     * @param bool $asUser whether the write runs as $userId; false on the checkout route without user session
      * @return string user-relative path of the verified backup copy
-     * @throws ToolFailure when versioning is off, the file is not writable, the etag differs or the copy fails
+     * @throws ToolFailure when versioning is off, the file is not writable, the etag differs, a lock refuses the
+     *         write ({@see \OCA\Mcp\Tools\Common\LockWriteFailure}) or the copy fails
      */
-    public function prepare(Folder $root, File $file, string $path, string $userId, ?string $etag): string {
+    public function prepare(Folder $root, File $file, string $path, string $userId, ?string $etag, bool $asUser = true): string {
         $user = $this->userManager->get($userId);
         if ($user === null || !$this->appManager->isEnabledForUser('files_versions', $user)) {
             throw new ToolFailure(FilesMessages::versioningOff());
@@ -62,6 +67,7 @@ class FileBackup {
             throw new ToolFailure(CommonMessages::forbidden());
         }
         NodeAccess::checkEtag($file, $etag);
+        $this->locks?->assertWritable($file, $userId, $path, $asUser);
         return $this->copy($root, $file, $path, $userId);
     }
 

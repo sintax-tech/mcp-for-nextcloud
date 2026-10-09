@@ -104,6 +104,23 @@ final class NotesLockTest extends TestCase {
         $this->assertSame('# Chamados', $this->tree->nodes[self::NOTE]['content']);
     }
 
+    /**
+     * Content and title change in two writes. A lock taken after the content was saved stops the rename, and the
+     * refusal says honestly that the content did change: never "nothing was changed".
+     */
+    public function testALockAfterTheContentWasSavedStopsTheRenameAndSaysTheEditIsPartial(): void {
+        $this->tree->afterWrite = function (): void {
+            $this->tree->afterWrite = null;
+            $this->locks->put(new FakeLock($this->id, ILock::TYPE_TOKEN, 'pedro'));
+        };
+        $e = $this->refused('notes_edit', ['id' => $this->id, 'content' => 'novo', 'title' => 'Outro']);
+        $this->assertStringContainsString('It was locked through a WebDAV client', $e->getMessage());
+        $this->assertStringEndsWith('The new content was saved; only the title was not changed.', $e->getMessage());
+        $this->assertStringNotContainsString('Nothing was changed.', $e->getMessage());
+        $this->assertSame('novo', $this->tree->nodes[self::NOTE]['content']);
+        $this->assertNotContains('move', array_map(static fn (string $op): string => explode(' ', $op)[0], $this->tree->ops));
+    }
+
     public function testThePlanWarnsAboutTheLockAndStillDescribesTheChange(): void {
         $this->openInText();
         foreach (['notes_edit' => ['id' => $this->id, 'content' => 'novo'], 'notes_move' => ['id' => $this->id, 'category' => 'Arquivo'],

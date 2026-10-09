@@ -13,6 +13,7 @@ use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
+use OCA\Mcp\Tools\Common\LockWriteFailure;
 use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\PreviewsWrites;
@@ -270,14 +271,20 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
         if (($payload = $this->guard->guard($note, $userId, (string)$arguments['id'], (bool)($arguments['confirm_shared'] ?? false))) !== null) {
             return $payload;
         }
-        $this->locked(function () use ($note, $arguments, $rename): void {
-            if (isset($arguments['content'])) {
-                $note->putContent($arguments['content']);
+        // Two writes, each checked right before it: a lock taken after the content was saved stops the rename, and the
+        // refusal then says that the content did change.
+        $saved = false;
+        if (isset($arguments['content'])) {
+            $this->locked(fn () => $note->putContent($arguments['content']), $note, $userId);
+            $saved = true;
+        }
+        if ($rename !== null) {
+            try {
+                $this->locked(fn () => $note->move($rename), $note, $userId, !$saved);
+            } catch (LockWriteFailure $e) {
+                throw $saved ? $e->withNote(NotesMessages::contentSavedTitleNot()) : $e;
             }
-            if ($rename !== null) {
-                $note->move($rename);
-            }
-        }, $note, $userId);
+        }
         return $this->described($root, $userId, $arguments);
     }
 
@@ -678,10 +685,11 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
      * @param callable():T $write the write
      * @param File $note the note it changes
      * @param string $userId authenticated user
+     * @param bool $untouched false when an earlier write of the same call already changed the note
      * @return T what the write returned
      */
-    private function locked(callable $write, File $note, string $userId): mixed {
-        return $this->locks === null ? $write() : $this->locks->run($write, $note, $userId);
+    private function locked(callable $write, File $note, string $userId, bool $untouched = true): mixed {
+        return $this->locks === null ? $write() : $this->locks->run($write, $note, $userId, null, true, $untouched);
     }
 
     /**

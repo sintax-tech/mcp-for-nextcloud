@@ -229,6 +229,16 @@ final class LockAwareWriteTest extends TestCase {
         $this->assertSame([], array_filter($this->logged, static fn (array $entry): bool => in_array($entry[0], ['error', 'critical', 'alert', 'emergency'], true)));
     }
 
+    /** A step after an earlier write of the same call never claims that nothing changed. */
+    public function testARefusalMidwayNeverSaysNothingChanged(): void {
+        $this->manager->put(new FakeLock($this->id, ILock::TYPE_USER, 'pedro', self::CREATED));
+        $e = $this->refusal(fn () => $this->locks()->assertWritable($this->note, 'alice', self::PATH, true, false));
+        $this->assertStringNotContainsString('Nothing was changed.', $e->getMessage());
+        $this->manager->failure = new \RuntimeException('down');
+        $e = $this->refusal(fn () => $this->locks()->assertWritable($this->note, 'alice', self::PATH, true, false));
+        $this->assertSame('Could not check whether the file “' . self::PATH . '” is locked, so the rest of the change was not made. Try again in a moment.', $e->getMessage());
+    }
+
     /** files_lock refuses only some locks itself (never a WebDAV token one), so run() checks again right before the write. */
     public function testRunChecksAgainRightBeforeTheWriteAndNeverRunsItUnderALock(): void {
         $this->manager->put(new FakeLock($this->id, ILock::TYPE_TOKEN, 'pedro', self::CREATED));

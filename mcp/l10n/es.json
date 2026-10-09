@@ -23,6 +23,8 @@
     "Could not check whether the file “%s” is locked, so nothing was changed. Try again in a moment." : "No se pudo comprobar si el archivo “%s” está bloqueado, por eso no se modificó nada. Vuelva a intentarlo en un momento.",
     "The folder “%s” has more than %s items, too many to check for locked files, so nothing was changed. Move it in smaller parts." : "La carpeta “%s” tiene más de %s elementos, demasiados para comprobar si hay archivos bloqueados, por eso no se modificó nada. Muévala en partes más pequeñas.",
     "Close it in any editor where it is open, or ask whoever locked it to unlock it, and then try again." : "Ciérrelo en cualquier editor donde esté abierto, o pida a quien lo bloqueó que lo desbloquee, y vuelva a intentarlo.",
+    "The new content was saved; only the title was not changed." : "El nuevo contenido se guardó; solo el título no se cambió.",
+    "Could not check whether the file “%s” is locked, so the rest of the change was not made. Try again in a moment." : "No se pudo comprobar si el archivo “%s” está bloqueado, por eso no se hizo el resto del cambio. Vuelva a intentarlo en un momento.",
     "Developed by Sintax" : "Desarrollado por Sintax",
     "%1$s %2$s is installed, but MCP for Nextcloud supports it from version %3$s on. Its tools stay hidden until the app is updated; the saved permissions are kept." : "%1$s %2$s está instalado, pero MCP for Nextcloud lo admite a partir de la versión %3$s. Sus herramientas permanecen ocultas hasta que se actualice la aplicación; los permisos guardados se conservan.",
     "%s: %s" : "%s: %s",

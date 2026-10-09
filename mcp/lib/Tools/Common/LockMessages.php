@@ -62,6 +62,11 @@ final class LockMessages {
         return Translator::t('Could not check whether the file “%s” is locked, so nothing was changed. Try again in a moment.', [$path]);
     }
 
+    /** @param string $path user-relative path of the file @return string the lock could not be read before a later step of a call that already wrote */
+    public static function unverifiedMidway(string $path): string {
+        return Translator::t('Could not check whether the file “%s” is locked, so the rest of the change was not made. Try again in a moment.', [$path]);
+    }
+
     /**
      * @param string $folder user-relative path of the folder
      * @param int $limit most items checked

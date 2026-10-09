@@ -78,16 +78,18 @@ class LockAwareWrite {
      * @param string|null $path user-relative path the message names, taken from the node when null
      * @param bool $asUser whether the write runs as that user; false on a route without user session, where even
      *                     the user's own manual lock refuses the write, as files_lock does there
+     * @param bool $untouched whether nothing of the call was written yet; false when an earlier step of the same call
+     *                        already changed the node, so the refusal never claims that nothing changed
      * @throws LockWriteFailure when a lock stops the write, or the locks could not be read
      */
-    public function assertWritable(Node $node, string $userId, ?string $path = null, bool $asUser = true): void {
+    public function assertWritable(Node $node, string $userId, ?string $path = null, bool $asUser = true, bool $untouched = true): void {
         $found = $this->evaluate($node, $userId, $asUser);
         if ($found['state'] === 'free' || $found['state'] === 'own') {
             return;
         }
         $this->logRefusal($found['described']['type'] ?? 'unknown', 'check');
-        $message = $this->explain($found, $userId, $path ?? self::userPath($node, $userId), false);
-        throw new LockWriteFailure($found['state'] === 'blocked' ? $message . ' ' . LockMessages::nothingChanged() : $message, $found['described'] ?? null);
+        $message = $this->explain($found, $userId, $path ?? self::userPath($node, $userId), false, $untouched);
+        throw new LockWriteFailure($found['state'] === 'blocked' && $untouched ? $message . ' ' . LockMessages::nothingChanged() : $message, $found['described'] ?? null);
     }
 
     /**
@@ -124,11 +126,12 @@ class LockAwareWrite {
      * @param string $userId authenticated user
      * @param string|null $path user-relative path the message names, taken from the node when null
      * @param bool $asUser see {@see assertWritable()}
+     * @param bool $untouched see {@see assertWritable()}
      * @return T what the write returned
      * @throws ToolFailure {@see LockWriteFailure} for a lock, the short retry message for a transactional lock
      */
-    public function run(callable $write, Node $node, string $userId, ?string $path = null, bool $asUser = true): mixed {
-        $this->assertWritable($node, $userId, $path, $asUser);
+    public function run(callable $write, Node $node, string $userId, ?string $path = null, bool $asUser = true, bool $untouched = true): mixed {
+        $this->assertWritable($node, $userId, $path, $asUser, $untouched);
         return $this->capture($write, $node, $userId, $path);
     }
 
@@ -235,12 +238,13 @@ class LockAwareWrite {
      * @param array<string, mixed> $found what evaluate() returned for a refused write
      * @param string $path user-relative path of the node the write targets
      * @param bool $plan whether the words are for a plan, which adds that the confirmed call would be refused
+     * @param bool $untouched see {@see assertWritable()}
      * @return string the explanation
      */
-    private function explain(array $found, string $userId, string $path, bool $plan): string {
+    private function explain(array $found, string $userId, string $path, bool $plan, bool $untouched = true): string {
         $path = self::clean($path);
         if ($found['state'] === 'unverified') {
-            return LockMessages::unverified($path);
+            return $untouched ? LockMessages::unverified($path) : LockMessages::unverifiedMidway($path);
         }
         if ($found['state'] === 'too_many') {
             return LockMessages::tooManyToCheck($path, $this->treeLimit);

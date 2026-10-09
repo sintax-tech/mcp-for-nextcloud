@@ -138,4 +138,12 @@ final class NotesMessages {
     public static function excerptTruncated(): string {
         return Translator::t('[content truncated]');
     }
+
+    /**
+     * Closes the lock refusal of a rename that came after the new content of the same edit was saved.
+     * @return string The message in the language of the current user.
+     */
+    public static function contentSavedTitleNot(): string {
+        return Translator::t('The new content was saved; only the title was not changed.');
+    }
 }

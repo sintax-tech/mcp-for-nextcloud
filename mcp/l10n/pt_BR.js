@@ -25,6 +25,8 @@ OC.L10N.register(
     "Could not check whether the file “%s” is locked, so nothing was changed. Try again in a moment." : "Não foi possível verificar se o arquivo “%s” está travado, por isso nada foi alterado. Tente novamente em instantes.",
     "The folder “%s” has more than %s items, too many to check for locked files, so nothing was changed. Move it in smaller parts." : "A pasta “%s” tem mais de %s itens, demais para verificar se há arquivos travados, por isso nada foi alterado. Mova-a em partes menores.",
     "Close it in any editor where it is open, or ask whoever locked it to unlock it, and then try again." : "Feche-o em qualquer editor em que esteja aberto, ou peça a quem o travou que o destrave, e tente novamente.",
+    "The new content was saved; only the title was not changed." : "O novo conteúdo foi salvo; só o título não foi alterado.",
+    "Could not check whether the file “%s” is locked, so the rest of the change was not made. Try again in a moment." : "Não foi possível verificar se o arquivo “%s” está travado, por isso o restante da alteração não foi feito. Tente novamente em instantes.",
     "Developed by Sintax" : "Desenvolvido pela Sintax",
     "%1$s %2$s is installed, but MCP for Nextcloud supports it from version %3$s on. Its tools stay hidden until the app is updated; the saved permissions are kept." : "%1$s %2$s está instalado, mas o MCP for Nextcloud só o suporta a partir da versão %3$s. As ferramentas dele ficam ocultas até o app ser atualizado; as permissões salvas são mantidas.",
     "%s: %s" : "%s: %s",

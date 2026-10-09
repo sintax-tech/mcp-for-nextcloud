@@ -17,6 +17,7 @@ use OCP\Files\NotEnoughSpaceException;
 use OCP\Files\NotFoundException;
 use OCP\Files\NotPermittedException;
 use OCP\Lock\LockedException;
+use OCP\Lock\ManuallyLockedException;
 
 /** Maps Nextcloud file exceptions to client-safe failures and shares node helpers between modules. */
 final class NodeAccess {
@@ -24,7 +25,9 @@ final class NodeAccess {
      * @template T
      * @param callable():T $action file operation to run
      * @return T
-     * @throws ToolFailure mapped from NotFound, NotPermitted/Forbidden, Locked and NotEnoughSpace
+     * @throws ToolFailure mapped from NotFound, NotPermitted/Forbidden, Locked and NotEnoughSpace; a files_lock
+     *         refusal becomes a {@see LockWriteFailure} that only says the file is locked, since nothing here knows
+     *         which file it is: the writes that do know ask {@see LockAwareWrite} for the whole explanation
      */
     public static function run(callable $action): mixed {
         try {
@@ -33,11 +36,21 @@ final class NodeAccess {
             throw new ToolFailure(CommonMessages::notFound());
         } catch (NotPermittedException|ForbiddenException) {
             throw new ToolFailure(CommonMessages::forbidden());
-        } catch (LockedException) {
-            throw new ToolFailure(CommonMessages::locked());
+        } catch (LockedException $e) {
+            throw self::lockFailure($e);
         } catch (NotEnoughSpaceException) {
             throw new ToolFailure(CommonMessages::insufficientQuota());
         }
+    }
+
+    /**
+     * @param LockedException $e a lock refusal without the file it concerns
+     * @return ToolFailure the files_lock refusal ({@see LockWriteFailure}) or the short transactional retry message
+     */
+    public static function lockFailure(LockedException $e): ToolFailure {
+        return $e instanceof ManuallyLockedException
+            ? new LockWriteFailure(LockMessages::lockedWithoutDetails())
+            : new ToolFailure(CommonMessages::locked());
     }
 
     /**

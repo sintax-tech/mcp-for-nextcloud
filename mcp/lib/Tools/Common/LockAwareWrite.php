@@ -89,7 +89,8 @@ class LockAwareWrite {
         }
         $this->logRefusal($found['described']['type'] ?? 'unknown', 'check');
         $message = $this->explain($found, $userId, $path ?? self::userPath($node, $userId), false, $untouched);
-        throw new LockWriteFailure($found['state'] === 'blocked' && $untouched ? $message . ' ' . LockMessages::nothingChanged() : $message, $found['described'] ?? null);
+        throw new LockWriteFailure($found['state'] === 'blocked' && $untouched ? $message . ' ' . LockMessages::nothingChanged() : $message,
+            ($found['hidden'] ?? false) ? self::hiddenLock() : $found['described'] ?? null);
     }
 
     /**
@@ -113,7 +114,12 @@ class LockAwareWrite {
         if ($message === null) {
             return [];
         }
-        return ['lock' => $found['described'] ?? ['blocking' => true, 'verified' => false], 'warnings' => [['type' => 'file_locked', 'message' => $message]]];
+        $lock = match (true) {
+            $found['hidden'] ?? false => self::hiddenLock(),
+            isset($found['described']) => $found['described'],
+            default => ['blocking' => true, 'verified' => false],
+        };
+        return ['lock' => $lock, 'warnings' => [['type' => 'file_locked', 'message' => $message]]];
     }
 
     /**
@@ -363,6 +369,16 @@ class LockAwareWrite {
             (bool)$described['own'] => LockMessages::adviceOwn(),
             default => LockMessages::advicePerson(),
         };
+    }
+
+    /**
+     * The lock of a file the user cannot see, inside a folder that would move: only that something blocks the move,
+     * never its holder, type or dates, which would say more about the hidden file than the user may know.
+     *
+     * @return array{blocking:true}
+     */
+    private static function hiddenLock(): array {
+        return ['blocking' => true];
     }
 
     /**

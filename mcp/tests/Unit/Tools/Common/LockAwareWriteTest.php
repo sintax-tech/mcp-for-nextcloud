@@ -293,6 +293,13 @@ final class LockAwareWriteTest extends TestCase {
         $e = $this->refusal(fn () => $locks->assertWritable($this->tree->node('/alice/files/Notes'), 'alice', '/Notes'));
         $this->assertSame('A file inside the folder “/Notes” is locked. Close it in any editor where it is open, or ask whoever locked it to unlock it, and then try again. Nothing was changed.', $e->getMessage());
         $this->assertStringNotContainsString('OUTUBRO', $e->getMessage());
+        $this->assertSame(['blocking' => true], $e->lock, 'no holder, type or date of a file the user cannot see');
+        $this->assertSame([
+            'lock' => ['blocking' => true],
+            'warnings' => [['type' => 'file_locked', 'message' => 'A file inside the folder “/Notes” is locked. '
+                . 'While the lock lasts the change is refused, even after confirmation. '
+                . 'Close it in any editor where it is open, or ask whoever locked it to unlock it, and then try again.']],
+        ], $locks->planNotice($this->tree->node('/alice/files/Notes'), 'alice', '/Notes'));
     }
 
     public function testThePlanOfALinkWithoutSessionWarnsAboutTheOwnLock(): void {

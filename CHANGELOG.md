@@ -2,6 +2,22 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased
+
+### Fixed
+
+- files, notes: a file locked by `files_lock` (bundled with Nextcloud 35, an app before) is no longer a generic error. A file open in Text (also through Notes in rich mode) or Nextcloud Office, locked by another person or by a WebDAV client is refused with a message in en, pt-BR and es that names the app or the person (by display name, never the uid or the lock token), says since when and until when the lock lasts when that is known, and what to do. The check runs through `ILockManager` (`isLockProviderAvailable` + `getLocks`) before the shared-write confirmation, the backup and the first write of `notes_edit`, `notes_move`, `notes_delete`, `files_edit`, `files_replace`, `files_checkout`, `files_version_restore`, `files_move`, `files_move_batch` and `files_undo_batch`; a lock refusal the storage raises later (`ManuallyLockedException`) in those paths, in `files_copy`, `files_create` and `files_upload`, is caught and explained the same way, naming the backup copy when one was already taken.
+- files, notes: the plan of a write (`confirm` missing) warns about a lock on the target (`lock` plus a `warnings` entry of type `file_locked`) without refusing the plan. In `files_move_batch` a locked item is listed under `denied`, so the batch is refused whole before any folder is created or anything is moved; in `files_undo_batch` it is a conflict.
+- files, notes: lock semantics follow `files_lock` and never work around it. The user's own manual lock (`TYPE_USER`) lets the write through and keeps the lock; an app lock (`TYPE_APP`, Text or Office) and a WebDAV token lock (`TYPE_TOKEN`) always refuse, even for their own user. The app never unlocks, never takes or reuses a lock token and never writes in the lock scope of Text or Office. Without a lock provider nothing changes.
+- files: `files_version_restore` of a file open in an editor is refused before the backup and the rollback, since `files_versions` retries a refused rollback inside the scope of Text or Office.
+- checkout: the upload route of `files_checkout` answers **423** for a locked file instead of 500. A lock present before the link is spent leaves the link usable; a lock met afterwards names the backup copy and asks for a new checkout. On that route, which has no user session, the user's own manual lock refuses as well, as `files_lock` does. The create link of `files_upload` maps a lock to 423 by the failure type instead of comparing translated messages.
+- logs: a lock refusal is an expected condition, not an error: the app logs it at debug level only, without the path or the token, and `ToolRegistry` no longer reports a `LockedException` from any module as `MCP tool failed`.
+
+### Known limitations
+
+- The lock check happens before the write and the storage refusal is caught afterwards, but this is not a strict guarantee against races: a lock taken between the check and the write is caught and explained, yet a `files_versions` rollback that meets a lock taken in that instant can still be retried by the core inside the editor's scope. A strict guarantee on every path, including WebDAV token locks and the hooks of Text that release the lock on delete or rename, needs a DAV/storage integration planned for 1.1.0.
+- Moving a folder checks the lock of the folder itself, not of the files inside it.
+
 ## 1.0.4
 
 ### Changed

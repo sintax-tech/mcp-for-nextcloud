@@ -285,6 +285,36 @@ final class LockAwareWriteTest extends TestCase {
         $this->assertSame('The folder “/Grande” has more than 3 items, too many to check for locked files, so nothing was changed. Move it in smaller parts.', $e->getMessage());
     }
 
+    /**
+     * A wide folder over the limit is refused as soon as its listing is read: none of its entries is queued and no lock
+     * of any of them is read, so a folder with 100,000 files costs one listing, not 100,000 lock lookups.
+     */
+    public function testAWideFolderIsRefusedWithoutReadingTheLocksOfItsEntries(): void {
+        $wide = $this->tree->addFolder('/alice/files/Larga');
+        for ($i = 0; $i < 50; $i++) {
+            $this->tree->addFile("/alice/files/Larga/f$i.md", 'x');
+        }
+        $locks = $this->locks();
+        $locks->treeLimit = 10;
+        $this->refusal(fn () => $locks->assertWritable($this->tree->node('/alice/files/Larga'), 'alice', '/Larga'));
+        $this->assertSame([$wide], $this->manager->asked);
+    }
+
+    /** The budget is shared by the whole tree: two folders under the limit each still exceed it together. */
+    public function testTheLimitCountsTheWholeTreeNotEachFolder(): void {
+        foreach (['a', 'b'] as $sub) {
+            for ($i = 0; $i < 3; $i++) {
+                $this->tree->addFile("/alice/files/Raiz/$sub/f$i.md", 'x');
+            }
+        }
+        $locks = $this->locks();
+        $locks->treeLimit = 6;
+        $e = $this->refusal(fn () => $locks->assertWritable($this->tree->node('/alice/files/Raiz'), 'alice', '/Raiz'));
+        $this->assertStringContainsString('has more than 6 items', $e->getMessage());
+        $locks->treeLimit = 9;
+        $locks->assertWritable($this->tree->node('/alice/files/Raiz'), 'alice', '/Raiz');
+    }
+
     public function testALockedFileHiddenFromTheUserIsNotNamed(): void {
         $this->manager->put(new FakeLock($this->id, ILock::TYPE_USER, 'pedro', self::CREATED));
         $guard = $this->createMock(\OCA\Mcp\Service\VisibilityGuard::class);

@@ -210,14 +210,15 @@ class LockAwareWrite {
             return ['state' => 'free'];
         }
         $own = null;
-        $queue = [$node];
-        $seen = 0;
+        $queue = new \SplQueue();
+        $queue->enqueue($node);
+        // Nodes that may still be queued: a listing larger than what is left refuses the folder at once, before any of
+        // its entries is queued or has its lock read. OCP has no count of a folder's entries, so that one listing is
+        // the only read beyond the budget.
+        $budget = $this->treeLimit - 1;
         try {
-            while ($queue !== []) {
-                $current = array_shift($queue);
-                if (++$seen > $this->treeLimit) {
-                    return ['state' => 'too_many', 'root' => $node];
-                }
+            while (!$queue->isEmpty()) {
+                $current = $queue->dequeue();
                 $lock = $this->lockOf($current);
                 if ($lock !== null) {
                     $described = $this->describe($lock, $userId, $asUser);
@@ -228,8 +229,13 @@ class LockAwareWrite {
                     $own ??= $described;
                 }
                 if ($current instanceof Folder) {
-                    foreach ($current->getDirectoryListing() as $child) {
-                        $queue[] = $child;
+                    $children = $current->getDirectoryListing();
+                    if (count($children) > $budget) {
+                        return ['state' => 'too_many', 'root' => $node];
+                    }
+                    $budget -= count($children);
+                    foreach ($children as $child) {
+                        $queue->enqueue($child);
                     }
                 }
             }

@@ -600,7 +600,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             'linksAfterConfirmation' => true,
             'consequence' => FilesMessages::planCheckoutConsequence(),
             'message' => FilesMessages::planCheckout(),
-        ] + $this->lockNotice($file, $userId, $path);
+        ] + $this->lockNotice($file, $userId, $path, false);
     }
 
     /**
@@ -919,8 +919,9 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
         $this->assertNotBackup($path);
         $file = $this->file($root, $path);
         NodeAccess::checkEtag($file, $etag);
-        // A link for a file the upload could not write is no use: the lock is refused before any link is minted.
-        $this->locks?->assertWritable($file, $userId, $path);
+        // A link for a file the upload could not write is no use: the lock is refused before any link is minted. The
+        // upload runs without the user's session, where files_lock refuses even the user's own manual lock.
+        $this->locks?->assertWritable($file, $userId, $path, false);
         $access = $this->accessInfo->describe($file, $userId);
         if (($payload = $this->guard->guard($file, $userId, $path, $confirmed)) !== null) {
             return ToolResult::json($payload);
@@ -966,10 +967,12 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
     private function commit(Folder $root, string $userId, File $file, string $path, string $content, ?string $etag, string $before): array {
         $copy = $this->backup->prepare($root, $file, $path, $userId, $etag);
         try {
-            $file->putContent($content);
+            // Checked again right before the write: the backup took time, and files_lock does not refuse every lock.
+            $this->locks === null ? $file->putContent($content) : $this->locks->run(fn () => $file->putContent($content), $file, $userId, $path);
+        } catch (LockWriteFailure $e) {
+            throw $e->withNote(FilesMessages::originalKept($copy));
         } catch (LockedException $e) {
-            // A lock that appeared after the check: the refusal is explained, and says where the original is.
-            $failure = $this->locks?->failure($e, $file, $userId, $path) ?? NodeAccess::lockFailure($e);
+            $failure = NodeAccess::lockFailure($e);
             throw $failure instanceof LockWriteFailure ? $failure->withNote(FilesMessages::originalKept($copy)) : new ToolFailure(FilesMessages::writeFailed($copy));
         } catch (\Throwable) {
             throw new ToolFailure(FilesMessages::writeFailed($copy));
@@ -989,10 +992,11 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
      * @param Node $node the file a plan would change
      * @param string $userId authenticated user
      * @param string $path its user-relative path
+     * @param bool $asUser false for the plan of a checkout, whose upload runs without the user's session
      * @return array<string, mixed> the lock and its warning for the plan, nothing for a free file
      */
-    private function lockNotice(Node $node, string $userId, string $path): array {
-        return $this->locks?->planNotice($node, $userId, $path) ?? [];
+    private function lockNotice(Node $node, string $userId, string $path, bool $asUser = true): array {
+        return $this->locks?->planNotice($node, $userId, $path, $asUser) ?? [];
     }
 
     /**

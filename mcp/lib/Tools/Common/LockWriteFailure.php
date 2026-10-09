@@ -17,7 +17,7 @@ use OCA\Mcp\Tools\ToolFailure;
 final class LockWriteFailure extends ToolFailure {
     /**
      * @param string $message translated explanation and advice, safe for the client
-     * @param array<string, mixed>|null $lock the lock as {@see LockAwareWrite::inspect()} describes it, null when unknown
+     * @param array<string, mixed>|null $lock the lock as {@see LockAwareWrite} describes it, null when unknown
      */
     public function __construct(string $message, public readonly ?array $lock = null) {
         parent::__construct($message);

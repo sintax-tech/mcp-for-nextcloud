@@ -47,7 +47,7 @@ final class FilesLockTest extends FilesToolsTestCase {
     public function testAnEditOfAFileOpenInOfficeIsRefusedBeforeTheBackup(): void {
         $this->lockBy(ILock::TYPE_APP, 'richdocuments');
         $e = $this->refused('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'novo']);
-        $this->assertStringStartsWith('The file “/Documentos/ata.md” is open in Nextcloud Office', $e->getMessage());
+        $this->assertStringStartsWith('The file “/Documentos/ata.md” is locked by Nextcloud Office', $e->getMessage());
         $this->assertStringEndsWith('Nothing was changed.', $e->getMessage());
         $this->assertUntouched();
     }
@@ -69,7 +69,7 @@ final class FilesLockTest extends FilesToolsTestCase {
     public function testALockThatAppearsAfterTheBackupIsExplainedAndNamesTheBackup(): void {
         $this->tree->writeFailure = FakeLockManager::refusal(new FakeLock($this->id(), ILock::TYPE_APP, 'text'));
         $e = $this->refused('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'novo']);
-        $this->assertStringContainsString('is open in Text', $e->getMessage());
+        $this->assertStringContainsString('is locked, and Nextcloud does not say by whom.', $e->getMessage());
         $this->assertMatchesRegularExpression('#The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.#', $e->getMessage());
         $this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
     }
@@ -83,7 +83,7 @@ final class FilesLockTest extends FilesToolsTestCase {
             $plan = $this->plan($tool, $arguments);
             $this->assertSame($tool, $plan['action']);
             $this->assertTrue($plan['lock']['blocking'], $tool);
-            $this->assertStringContainsString('is open in Text', $plan['warnings'][0]['message'], $tool);
+            $this->assertStringContainsString('is locked by Text', $plan['warnings'][0]['message'], $tool);
         }
         $this->assertUntouched();
         $this->assertSame([], $this->store->rows ?? []);
@@ -99,7 +99,7 @@ final class FilesLockTest extends FilesToolsTestCase {
     public function testAMoveOfALockedFileIsRefusedAndItsPlanSaysWhy(): void {
         $this->lockBy(ILock::TYPE_APP, 'text');
         $e = $this->refused('files_move', ['from' => '/Documentos/ata.md', 'to' => '/ata.md']);
-        $this->assertStringContainsString('is open in Text', $e->getMessage());
+        $this->assertStringContainsString('is locked by Text', $e->getMessage());
         $this->assertArrayHasKey(self::FILE, $this->tree->nodes);
         $this->assertUntouched();
     }
@@ -114,7 +114,7 @@ final class FilesLockTest extends FilesToolsTestCase {
         $plan = $this->plan('files_move_batch', $arguments);
         $this->assertFalse($plan['ok']);
         $this->assertSame('/Documentos/plano.md', $plan['denied'][0]['from']);
-        $this->assertStringContainsString('is open in Text', $plan['denied'][0]['reason']);
+        $this->assertStringContainsString('is locked by Text', $plan['denied'][0]['reason']);
         $this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $arguments));
         $this->assertSame([], $this->tree->ops, 'no folder created, nothing moved');
     }
@@ -123,13 +123,13 @@ final class FilesLockTest extends FilesToolsTestCase {
         $this->tree->addFolder('/alice/files/Arquivo');
         $this->tree->throwOnMove[self::FILE] = FakeLockManager::refusal(new FakeLock($this->id(), ILock::TYPE_USER, 'pedro'));
         $out = $this->json('files_move_batch', ['moves' => [['from' => '/Documentos/ata.md', 'to' => '/Arquivo/ata.md']]]);
-        $this->assertStringContainsString('is locked by Pedro Almeida.', $out['failed']['reason']);
+        $this->assertStringContainsString('is locked, and Nextcloud does not say by whom.', $out['failed']['reason']);
     }
 
     public function testACopyRefusedForALockedSourceIsExplained(): void {
         $this->tree->throwOnCopy[self::FILE] = FakeLockManager::refusal(new FakeLock($this->id(), ILock::TYPE_APP, 'richdocuments'));
         $e = $this->refused('files_copy', ['from' => '/Documentos/ata.md', 'to' => '/Documentos/ata-copia.md']);
-        $this->assertStringContainsString('is open in Nextcloud Office', $e->getMessage());
+        $this->assertStringContainsString('is locked, and Nextcloud does not say by whom.', $e->getMessage());
     }
 
     public function testAnUndoOfALockedItemIsAConflictWithTheExplanation(): void {
@@ -138,7 +138,7 @@ final class FilesLockTest extends FilesToolsTestCase {
         $this->locks->put(new FakeLock($this->id('/alice/files/Arquivo/ata.md'), ILock::TYPE_APP, 'text'));
         $plan = $this->plan('files_undo_batch', ['batch_id' => $id]);
         $this->assertFalse($plan['ok']);
-        $this->assertStringContainsString('is open in Text', $plan['conflicts'][0]['reason']);
+        $this->assertStringContainsString('is locked by Text', $plan['conflicts'][0]['reason']);
         $out = $this->json('files_undo_batch', ['batch_id' => $id]);
         $this->assertSame(0, $out['undone']);
         $this->assertArrayHasKey('/alice/files/Arquivo/ata.md', $this->tree->nodes);
@@ -150,6 +150,76 @@ final class FilesLockTest extends FilesToolsTestCase {
         };
         $e = $this->refused('files_create', ['path' => '/Documentos/novo.md', 'content' => 'texto']);
         $this->assertStringContainsString('locked', $e->getMessage());
+    }
+
+    /** The backup folder itself can be locked: that is a lock refusal too, and nothing reaches the file. */
+    public function testALockedBackupFolderRefusesTheEditAsALock(): void {
+        $this->tree->backupWriteFailure = new \OCP\Lock\ManuallyLockedException('/alice/files/MCP backups/x', null, 'files_lock/b', 'pedro', -1);
+        $e = $this->refused('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'novo']);
+        $this->assertStringContainsString('is locked, and Nextcloud does not say by whom.', $e->getMessage());
+        $this->assertStringEndsWith(FilesMessages::backupFailed(), $e->getMessage());
+        $this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+    }
+
+    /** Moving a folder moves what is inside: a file open in an editor in there stops the move and its plan says why. */
+    public function testAFolderWithALockedFileInsideIsNotMoved(): void {
+        $this->lockBy(ILock::TYPE_APP, 'text');
+        $plan = $this->plan('files_move', ['from' => '/Documentos', 'to' => '/Arquivo']);
+        $this->assertTrue($plan['lock']['blocking']);
+        $this->assertStringStartsWith('The file “/Documentos/ata.md” is locked by Text', $plan['warnings'][0]['message']);
+        $e = $this->refused('files_move', ['from' => '/Documentos', 'to' => '/Arquivo']);
+        $this->assertStringStartsWith('The file “/Documentos/ata.md” is locked by Text', $e->getMessage());
+        $this->assertUntouched();
+        $this->assertArrayHasKey(self::FILE, $this->tree->nodes);
+    }
+
+    public function testABatchMovingAFolderWithALockedFileInsideIsRefusedWhole(): void {
+        $this->lockBy(ILock::TYPE_USER, 'pedro');
+        $arguments = ['moves' => [['from' => '/Documentos', 'to' => '/Arquivo']]];
+        $plan = $this->plan('files_move_batch', $arguments);
+        $this->assertStringContainsString('“/Documentos/ata.md” is locked by Pedro Almeida', $plan['denied'][0]['reason']);
+        $this->assertSame(FilesMessages::batchNotOk(0, 1), $this->failure('files_move_batch', $arguments));
+        $this->assertSame([], $this->tree->ops);
+    }
+
+    public function testAnUndoOfAFolderWithALockedFileInsideIsAConflict(): void {
+        $id = $this->json('files_move_batch', ['moves' => [['from' => '/Documentos', 'to' => '/Arquivo']]])['batch_id'];
+        $this->locks->put(new FakeLock($this->id('/alice/files/Arquivo/ata.md'), ILock::TYPE_APP, 'text'));
+        $out = $this->json('files_undo_batch', ['batch_id' => $id]);
+        $this->assertSame(0, $out['undone']);
+        $this->assertStringContainsString('“/Arquivo/ata.md” is locked by Text', $out['conflicts'][0]['reason']);
+    }
+
+    /**
+     * files_lock never refuses a WebDAV token lock outside DAV, so the storage would let this write through: only the
+     * check repeated right before each item of the batch stops it, after the first item already moved.
+     */
+    public function testATokenLockTakenDuringABatchStopsTheNextItem(): void {
+        $this->tree->addFile('/alice/files/Documentos/plano.md', 'plano', 'text/markdown');
+        $this->tree->addFolder('/alice/files/Arquivo');
+        $this->tree->afterMove = function (): void {
+            $this->tree->afterMove = null;
+            $this->lockBy(ILock::TYPE_TOKEN, 'pedro', '/alice/files/Documentos/plano.md');
+        };
+        $out = $this->json('files_move_batch', ['moves' => [
+            ['from' => '/Documentos/ata.md', 'to' => '/Arquivo/ata.md'],
+            ['from' => '/Documentos/plano.md', 'to' => '/Arquivo/plano.md'],
+        ]]);
+        $this->assertCount(1, $out['moved']);
+        $this->assertSame('/Documentos/plano.md', $out['failed']['from']);
+        $this->assertStringContainsString('It was locked through a WebDAV client', $out['failed']['reason']);
+        $this->assertArrayHasKey('/alice/files/Documentos/plano.md', $this->tree->nodes);
+    }
+
+    /** A checkout is planned as its upload will run: without session, so the own manual lock is a refusal there. */
+    public function testTheCheckoutPlanWarnsThatTheLinkCannotWriteOverTheOwnLock(): void {
+        $this->lockBy(ILock::TYPE_USER, 'alice');
+        $plan = $this->plan('files_checkout', ['path' => '/Documentos/ata.md']);
+        $this->assertTrue($plan['lock']['blocking']);
+        $this->assertStringContainsString('change it with files_edit', $plan['warnings'][0]['message']);
+        $e = $this->refused('files_checkout', ['path' => '/Documentos/ata.md']);
+        $this->assertStringContainsString('You locked this file yourself.', $e->getMessage());
+        $this->assertSame([], $this->issued);
     }
 
     public function testWithoutFilesLockEverythingWorksAsBefore(): void {

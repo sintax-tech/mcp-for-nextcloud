@@ -11,6 +11,8 @@ use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
+use OCA\Mcp\Tools\Common\LockMessages;
+use OCA\Mcp\Tools\Common\LockWriteFailure;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -18,6 +20,7 @@ use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\IConfig;
 use OCP\IUserManager;
+use OCP\Lock\ManuallyLockedException;
 
 /**
  * Guards a file edit: versioning must be on, the file writable, unchanged (etag) and not locked against the write
@@ -81,8 +84,11 @@ class FileBackup {
      * @throws ToolFailure when the copy cannot be created or its size differs
      */
     private function copy(Folder $root, File $file, string $path, string $userId): string {
+        // The node the copy was working on when it failed, so a lock refusal names the backup and not the original.
+        $target = $root;
         try {
             $folder = NodeAccess::ensureFolder($root, self::FOLDER . dirname($path));
+            $target = $folder;
             $base = $file->getName() . '.' . $this->stamp($userId);
             $name = $base . '.bak';
             for ($i = 2; $folder->nodeExists($name); $i++) {
@@ -90,6 +96,7 @@ class FileBackup {
             }
             // Establish privacy while the new backup contains no sensitive bytes.
             $copy = $folder->newFile($name);
+            $target = $copy;
             $this->visibilityGuard?->copyHiddenTags($file, $copy);
             $stream = $file->fopen('rb');
             if (!is_resource($stream)) {
@@ -103,6 +110,11 @@ class FileBackup {
                 }
             }
             $valid = $copy->getSize() === $file->getSize();
+        } catch (ManuallyLockedException $e) {
+            // A backup folder locked by files_lock is a lock, and stays one: the checkout answers it with 423.
+            $failure = $this->locks?->failure($e, $target, $userId) ?? NodeAccess::lockFailure($e);
+            throw ($failure instanceof LockWriteFailure ? $failure : new LockWriteFailure(LockMessages::lockedWithoutDetails()))
+                ->withNote(FilesMessages::backupFailed());
         } catch (\Throwable) {
             $valid = false;
         }

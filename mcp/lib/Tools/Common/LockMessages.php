@@ -17,14 +17,14 @@ final class LockMessages {
     /**
      * @param string $path user-relative path of the file
      * @param string $app name of the app holding the lock, e.g. Text or Nextcloud Office
-     * @return string the file is open in an editor app
+     * @return string an editor app holds the lock
      */
-    public static function openInApp(string $path, string $app): string {
-        return Translator::t('The file “%s” is open in %s, which keeps it locked for editing.', [$path, $app]);
+    public static function lockedByApp(string $path, string $app): string {
+        return Translator::t('The file “%s” is locked by %s, usually because it is open there.', [$path, $app]);
     }
 
     /** @param string $path user-relative path of the file @return string an app without a known name holds the lock */
-    public static function lockedByApp(string $path): string {
+    public static function lockedByUnnamedApp(string $path): string {
         return Translator::t('The file “%s” is locked by an app, usually because it is open in an editor.', [$path]);
     }
 
@@ -45,6 +45,30 @@ final class LockMessages {
     /** @param string $path user-relative path of the file @return string nobody the app can name holds the lock */
     public static function lockedBySomeoneElse(string $path): string {
         return Translator::t('The file “%s” is locked by someone else.', [$path]);
+    }
+
+    /** @param string $path user-relative path of the file @return string a refusal that does not tell who holds the lock */
+    public static function lockedUnidentified(string $path): string {
+        return Translator::t('The file “%s” is locked, and Nextcloud does not say by whom.', [$path]);
+    }
+
+    /** @param string $folder user-relative path of the folder @return string a file the user cannot see, inside the folder, is locked */
+    public static function lockedInside(string $folder): string {
+        return Translator::t('A file inside the folder “%s” is locked.', [$folder]);
+    }
+
+    /** @param string $path user-relative path of the file or folder @return string the lock could not be read, so the write is refused */
+    public static function unverified(string $path): string {
+        return Translator::t('Could not check whether the file “%s” is locked, so nothing was changed. Try again in a moment.', [$path]);
+    }
+
+    /**
+     * @param string $folder user-relative path of the folder
+     * @param int $limit most items checked
+     * @return string the folder holds too many items to check them all
+     */
+    public static function tooManyToCheck(string $folder, int $limit): string {
+        return Translator::t('The folder “%s” has more than %s items, too many to check for locked files, so nothing was changed. Move it in smaller parts.', [$folder, $limit]);
     }
 
     /** @param string $when date and time in the user's timezone @return string when the lock was taken */
@@ -80,6 +104,11 @@ final class LockMessages {
     /** @return string what to do about a WebDAV client that locked the file */
     public static function adviceToken(): string {
         return Translator::t('It was locked through a WebDAV client, such as the desktop client or an office app. Close it there, or wait until the lock ends, and then try again.');
+    }
+
+    /** @return string what to do about a lock whose holder is not known */
+    public static function adviceUnknown(): string {
+        return Translator::t('Close it in any editor where it is open, or ask whoever locked it to unlock it, and then try again.');
     }
 
     /** @return string what to do about the user's own lock, on a route that cannot act as the user */

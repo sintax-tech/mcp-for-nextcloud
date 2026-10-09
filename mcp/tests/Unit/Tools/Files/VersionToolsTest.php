@@ -215,36 +215,76 @@ final class VersionToolsTest extends TestCase {
     }
 
     /**
-     * files_versions retries a refused rollback inside the lock scope of Text or Office, so a restore of a file open
-     * in an editor would write under that editor. It is refused before the backup and before the rollback.
+     * What VersionManager::rollback() does in Nextcloud 32 to 35 (handleAppLocks): the write refused by a lock of
+     * Text or Office is caught and repeated inside that app's lock scope, where files_lock lets it through. The
+     * double reproduces it: the first try meets the lock, the retry overwrites the file anyway.
      */
+    private function rollbackRetriesInsideTheEditorScope(): void {
+        $this->manager->onRollback = function (): void {
+            try {
+                throw new \OCP\Lock\ManuallyLockedException('/alice/files/Documentos/ata.md', null, 'files_lock/t', 'text', -1);
+            } catch (\OCP\Lock\ManuallyLockedException) {
+                $this->tree->ops[] = 'rollback in text scope';
+                $this->tree->nodes[self::FILE]['content'] = 'versão antiga';
+            }
+        };
+        $this->manager->versions[1]->withContent('versão antiga');
+    }
+
     public function testARestoreOfAFileOpenInAnEditorIsRefusedBeforeTheBackupAndTheRollback(): void {
         $locks = new FakeLockManager();
         $locks->put(new FakeLock($this->tree->nodes[self::FILE]['id'], ILock::TYPE_APP, 'text'));
+        $this->rollbackRetriesInsideTheEditorScope();
         try {
             $this->lockedTools($locks)->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
             $this->fail('the restore of a locked file went on');
         } catch (LockWriteFailure $e) {
-            $this->assertStringStartsWith('The file “/Documentos/ata.md” is open in Text', $e->getMessage());
+            $this->assertStringStartsWith('The file “/Documentos/ata.md” is locked by Text, usually because it is open there.', $e->getMessage());
         }
         $this->assertNotContains('rollback', $this->manager->ops);
         $this->assertSame([], $this->tree->ops);
+        $this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
         $this->assertSame([], $locks->forbidden);
     }
 
-    public function testARollbackRefusedByALockThatAppearedIsExplainedAndNamesTheBackup(): void {
+    /**
+     * The lock of the editor appears after the check, so only the storage sees it. The core's rollback would retry in
+     * the editor's scope and overwrite the open document; the restore writes the version through the file instead,
+     * which files_lock refuses, and the core rollback is never called.
+     */
+    public function testALockThatAppearsAfterTheCheckIsNeverWrittenOverByTheCoreRetry(): void {
         $locks = new FakeLockManager();
-        $lock = new FakeLock($this->tree->nodes[self::FILE]['id'], ILock::TYPE_USER, 'pedro');
-        $this->manager->onRollback = function () use ($locks, $lock): void {
-            $locks->put($lock);
-            throw FakeLockManager::refusal($lock);
-        };
+        $this->rollbackRetriesInsideTheEditorScope();
+        $this->tree->writeFailure = new \OCP\Lock\ManuallyLockedException('/alice/files/Documentos/ata.md', null, 'files_lock/t', 'text', -1);
         try {
             $this->lockedTools($locks)->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
-            $this->fail('the refused rollback was reported as a success');
+            $this->fail('the restore under the editor lock was reported as a success');
         } catch (LockWriteFailure $e) {
-            $this->assertStringContainsString('is locked by Pedro Almeida.', $e->getMessage());
+            $this->assertStringContainsString('is locked, and Nextcloud does not say by whom.', $e->getMessage());
             $this->assertMatchesRegularExpression('#The original is kept in /MCP backups/Documentos/ata\.md\.[0-9-]+\.bak\.$#', $e->getMessage());
+        }
+        $this->assertNotContains('rollback', $this->manager->ops);
+        $this->assertNotContains('rollback in text scope', $this->tree->ops);
+        $this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+    }
+
+    /** With files_lock there, the version is read through files_versions and written through the file: a new version of the current content comes first, as with any edit. */
+    public function testWithALockProviderTheVersionIsWrittenThroughTheFile(): void {
+        $this->rollbackRetriesInsideTheEditorScope();
+        $out = $this->lockedTools(new FakeLockManager())->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+        $this->assertSame('versão antiga', $this->tree->nodes[self::FILE]['content']);
+        $this->assertSame(['list', 'read'], $this->manager->ops);
+        $this->assertContains('write ' . self::FILE, $this->tree->ops);
+        $this->assertSame("# Ata\nolá", $this->tree->nodes['/alice/files' . $out['backup']]['content']);
+        $this->assertSame('1759100000', $out['version']);
+    }
+
+    public function testAVersionThatCannotBeReadIsNotRestored(): void {
+        try {
+            $this->lockedTools(new FakeLockManager())->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+            $this->fail('an unreadable version was restored');
+        } catch (ToolFailure $e) {
+            $this->assertSame(FilesMessages::versionRestoreFailed(), $e->getMessage());
         }
         $this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
     }
@@ -252,8 +292,18 @@ final class VersionToolsTest extends TestCase {
     public function testTheOwnManualLockLetsTheRestoreThrough(): void {
         $locks = new FakeLockManager();
         $locks->put(new FakeLock($this->tree->nodes[self::FILE]['id'], ILock::TYPE_USER, 'alice'));
+        $this->rollbackRetriesInsideTheEditorScope();
+        $this->lockedTools($locks)->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
+        $this->assertSame('versão antiga', $this->tree->nodes[self::FILE]['content']);
+    }
+
+    /** Without a lock provider no editor lock can exist, and the restore stays the core rollback it always was. */
+    public function testWithoutALockProviderTheCoreRollbackStillRestores(): void {
+        $locks = new FakeLockManager();
+        $locks->available = false;
         $this->lockedTools($locks)->restore($this->tree->rootFolder(), $this->file(), '/Documentos/ata.md', '1759100000', 'alice');
         $this->assertContains('rollback', $this->manager->ops);
+        $this->assertNotContains('read', $this->manager->ops);
     }
 
     /** Turns the rollback into what the real one does: the file now holds the version. */

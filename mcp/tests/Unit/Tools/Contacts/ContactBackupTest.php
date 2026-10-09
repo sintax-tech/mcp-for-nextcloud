@@ -81,6 +81,19 @@ final class ContactBackupTest extends TestCase {
         $this->backup->save('alice', 'Team', 'Name', self::CARD);
     }
 
+    /** A backup folder locked by files_lock is a lock refusal, not a generic failure; the contact stays. */
+    public function testALockedBackupFolderIsALockRefusal(): void {
+        $this->folder->method('newFile')->willThrowException(new \OCP\Lock\ManuallyLockedException('/alice/files/MCP backups/Contacts/Team/x.vcf', null, 'files_lock/x', 'pedro', -1));
+        $this->locks->expects(self::once())->method('releaseLock');
+        try {
+            $this->backup->save('alice', 'Team', 'Name', self::CARD);
+            self::fail('a locked backup folder was accepted');
+        } catch (\OCA\Mcp\Tools\Common\LockWriteFailure $e) {
+            self::assertStringStartsWith(\OCA\Mcp\Tools\Common\LockMessages::lockedWithoutDetails(), $e->getMessage());
+            self::assertStringEndsWith('The contact backup could not be saved and verified; the contact was not deleted.', $e->getMessage());
+        }
+    }
+
     public function testUnsafeNamesCannotEscapeBackupDirectory(): void {
         self::assertSame(
             '/MCP backups/Contacts/_.._etc_passwd',

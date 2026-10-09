@@ -50,7 +50,7 @@ final class LockAwareWriteTest extends TestCase {
         $this->manager = new FakeLockManager();
     }
 
-    private function locks(?FakeLockManager $manager = null): LockAwareWrite {
+    private function locks(?FakeLockManager $manager = null, ?\OCA\Mcp\Service\VisibilityGuard $visibility = null): LockAwareWrite {
         $apps = $this->createMock(IAppManager::class);
         $apps->method('getAppInfo')->willReturnCallback(static fn (string $app): ?array => match ($app) {
             'text' => ['id' => 'text', 'name' => 'Text'],
@@ -74,7 +74,14 @@ final class LockAwareWriteTest extends TestCase {
             $time,
             new UserTimezone($config),
             $logger,
+            $visibility,
         );
+    }
+
+    private function utc(): UserTimezone {
+        $config = $this->createMock(IConfig::class);
+        $config->method('getUserValue')->willReturn('UTC');
+        return new UserTimezone($config);
     }
 
     private function refusal(callable $action): LockWriteFailure {
@@ -90,7 +97,7 @@ final class LockAwareWriteTest extends TestCase {
         $this->manager->available = false;
         $locks = $this->locks();
         $locks->assertWritable($this->note, 'alice', self::PATH);
-        $this->assertNull($locks->inspect($this->note, 'alice'));
+        $this->assertFalse($locks->providerAvailable());
         $this->assertSame([], $locks->planNotice($this->note, 'alice', self::PATH));
         $this->assertSame([], $this->manager->asked);
     }
@@ -108,7 +115,7 @@ final class LockAwareWriteTest extends TestCase {
 
         $this->assertInstanceOf(ToolFailure::class, $e);
         $this->assertSame(
-            'The file “' . self::PATH . '” is open in Text, which keeps it locked for editing. '
+            'The file “' . self::PATH . '” is locked by Text, usually because it is open there. '
             . 'Locked since 2025-10-08 08:05 (America/Sao_Paulo). The lock has no end time. '
             . 'Close the file in that app (for a note, also in Notes) and try again. Nextcloud does not say who has it open. '
             . 'Nothing was changed.',
@@ -128,7 +135,7 @@ final class LockAwareWriteTest extends TestCase {
     public function testAnAppLockBlocksEvenItsOwnUserAndNamesOfficeByItsName(): void {
         $this->manager->put(new FakeLock($this->id, ILock::TYPE_APP, 'richdocuments', self::CREATED, 1800));
         $e = $this->refusal(fn () => $this->locks()->assertWritable($this->note, 'alice', self::PATH));
-        $this->assertStringContainsString('is open in Nextcloud Office', $e->getMessage());
+        $this->assertStringContainsString('is locked by Nextcloud Office, usually because it is open there.', $e->getMessage());
         $this->assertStringContainsString('The lock ends at 2025-10-08 08:35 (America/Sao_Paulo), unless it is renewed.', $e->getMessage());
         $this->assertSame('2025-10-08T11:35:00Z', $e->lock['expires_at']);
         $this->assertSame('known', $e->lock['expiry_status']);
@@ -200,7 +207,7 @@ final class LockAwareWriteTest extends TestCase {
         $this->assertTrue($notice['lock']['blocking']);
         $this->assertSame('file_locked', $notice['warnings'][0]['type']);
         $this->assertSame(
-            'The file “' . self::PATH . '” is open in Text, which keeps it locked for editing. '
+            'The file “' . self::PATH . '” is locked by Text, usually because it is open there. '
             . 'Locked since 2025-10-08 08:05 (America/Sao_Paulo). The lock has no end time. '
             . 'While the lock lasts the change is refused, even after confirmation. '
             . 'Close the file in that app (for a note, also in Notes) and try again. Nextcloud does not say who has it open.',
@@ -208,20 +215,89 @@ final class LockAwareWriteTest extends TestCase {
         );
     }
 
-    public function testAProviderThatFailsDoesNotBlockTheWriteWhichStillMeetsTheStorage(): void {
+    /** A lock provider that cannot answer is not a free file: the write is refused (fail closed) and the plan says so. */
+    public function testAProviderThatFailsRefusesTheWriteAndThePlanWarns(): void {
         $this->manager->failure = new \RuntimeException('remote lock lookup failed for /alice/files/x');
         $locks = $this->locks();
-        $locks->assertWritable($this->note, 'alice', self::PATH);
-        $this->assertSame([], $locks->planNotice($this->note, 'alice', self::PATH));
+        $e = $this->refusal(fn () => $locks->assertWritable($this->note, 'alice', self::PATH));
+        $this->assertSame('Could not check whether the file “' . self::PATH . '” is locked, so nothing was changed. Try again in a moment.', $e->getMessage());
+        $this->assertNull($e->lock);
+        $notice = $locks->planNotice($this->note, 'alice', self::PATH);
+        $this->assertSame(['blocking' => true, 'verified' => false], $notice['lock']);
+        $this->assertSame($e->getMessage(), $notice['warnings'][0]['message']);
+        $this->assertStringNotContainsString('remote lock lookup', json_encode($this->logged));
         $this->assertSame([], array_filter($this->logged, static fn (array $entry): bool => in_array($entry[0], ['error', 'critical', 'alert', 'emergency'], true)));
+    }
+
+    /** files_lock refuses only some locks itself (never a WebDAV token one), so run() checks again right before the write. */
+    public function testRunChecksAgainRightBeforeTheWriteAndNeverRunsItUnderALock(): void {
+        $this->manager->put(new FakeLock($this->id, ILock::TYPE_TOKEN, 'pedro', self::CREATED));
+        $ran = false;
+        $e = $this->refusal(fn () => $this->locks()->run(function () use (&$ran): void {
+            $ran = true;
+        }, $this->note, 'alice', self::PATH));
+        $this->assertFalse($ran);
+        $this->assertStringContainsString('It was locked through a WebDAV client', $e->getMessage());
+    }
+
+    public function testCaptureOnlyExplainsTheStorageRefusalWithoutCheckingFirst(): void {
+        $this->manager->put(new FakeLock($this->id, ILock::TYPE_APP, 'text', self::CREATED));
+        $this->assertSame('read', $this->locks()->capture(static fn (): string => 'read', $this->note, 'alice', self::PATH));
+    }
+
+    public function testADisplayNameThatIsTheUidIsNotShown(): void {
+        $locks = new LockAwareWrite($this->manager, FakeUsers::manager($this, ['alice' => 'Alice', 'jsilva' => 'jsilva']),
+            $this->createMock(IAppManager::class), $this->createMock(ITimeFactory::class), $this->utc(), new \Psr\Log\NullLogger());
+        $this->manager->put(new FakeLock($this->id, ILock::TYPE_USER, 'jsilva', self::CREATED));
+        $e = $this->refusal(fn () => $locks->assertWritable($this->note, 'alice', self::PATH));
+        $this->assertStringContainsString('is locked by someone else.', $e->getMessage());
+        $this->assertStringNotContainsString('jsilva', $e->getMessage());
+        $this->assertNull($e->lock['owner_display_name']);
+    }
+
+    /** A folder is only as free as everything in it: a move of the folder would move the locked file too. */
+    public function testAFolderWithALockedFileInsideIsRefusedNamingThatFile(): void {
+        $this->manager->put(new FakeLock($this->id, ILock::TYPE_APP, 'text', self::CREATED));
+        $folder = $this->tree->node('/alice/files/Notes');
+        $e = $this->refusal(fn () => $this->locks()->assertWritable($folder, 'alice', '/Notes'));
+        $this->assertStringStartsWith('The file “' . self::PATH . '” is locked by Text', $e->getMessage());
+        $notice = $this->locks()->planNotice($folder, 'alice', '/Notes');
+        $this->assertTrue($notice['lock']['blocking']);
+    }
+
+    public function testAFolderTooLargeToCheckIsRefused(): void {
+        for ($i = 0; $i < 4; $i++) {
+            $this->tree->addFile("/alice/files/Grande/f$i.md", 'x');
+        }
+        $locks = $this->locks();
+        $locks->treeLimit = 3;
+        $e = $this->refusal(fn () => $locks->assertWritable($this->tree->node('/alice/files/Grande'), 'alice', '/Grande'));
+        $this->assertSame('The folder “/Grande” has more than 3 items, too many to check for locked files, so nothing was changed. Move it in smaller parts.', $e->getMessage());
+    }
+
+    public function testALockedFileHiddenFromTheUserIsNotNamed(): void {
+        $this->manager->put(new FakeLock($this->id, ILock::TYPE_USER, 'pedro', self::CREATED));
+        $guard = $this->createMock(\OCA\Mcp\Service\VisibilityGuard::class);
+        $guard->method('isVisible')->willReturnCallback(fn (Node $node): bool => $node->getPath() !== '/alice/files' . self::PATH);
+        $locks = $this->locks(visibility: $guard);
+        $e = $this->refusal(fn () => $locks->assertWritable($this->tree->node('/alice/files/Notes'), 'alice', '/Notes'));
+        $this->assertSame('A file inside the folder “/Notes” is locked. Close it in any editor where it is open, or ask whoever locked it to unlock it, and then try again. Nothing was changed.', $e->getMessage());
+        $this->assertStringNotContainsString('OUTUBRO', $e->getMessage());
+    }
+
+    public function testThePlanOfALinkWithoutSessionWarnsAboutTheOwnLock(): void {
+        $this->manager->put(new FakeLock($this->id, ILock::TYPE_USER, 'alice', self::CREATED));
+        $notice = $this->locks()->planNotice($this->note, 'alice', self::PATH, false);
+        $this->assertTrue($notice['lock']['blocking']);
+        $this->assertStringContainsString('While the lock lasts the change is refused, even after confirmation. You locked this file yourself.', $notice['warnings'][0]['message']);
     }
 
     public function testTheStorageRefusalIsExplainedWithTheLockItCarries(): void {
         $lock = $this->manager->put(new FakeLock($this->id, ILock::TYPE_APP, 'text', self::CREATED));
-        $e = $this->refusal(fn () => $this->locks()->run(static function () use ($lock): void {
+        $e = $this->refusal(fn () => $this->locks()->capture(static function () use ($lock): void {
             throw FakeLockManager::refusal($lock);
         }, $this->note, 'alice', self::PATH));
-        $this->assertStringStartsWith('The file “' . self::PATH . '” is open in Text', $e->getMessage());
+        $this->assertStringStartsWith('The file “' . self::PATH . '” is locked by Text', $e->getMessage());
         $this->assertStringNotContainsString('Nothing was changed.', $e->getMessage());
         $this->assertStringNotContainsString('files_lock/', $e->getMessage());
     }
@@ -229,19 +305,37 @@ final class LockAwareWriteTest extends TestCase {
     public function testALockThatChangedSinceTheRefusalIsNotBlamedOnItsNewOwner(): void {
         $old = new FakeLock($this->id, ILock::TYPE_APP, 'text', self::CREATED, -1, 'files_lock/old');
         $this->manager->put(new FakeLock($this->id, ILock::TYPE_USER, 'pedro', self::CREATED, -1, 'files_lock/new'));
-        $e = $this->refusal(fn () => $this->locks()->run(static function () use ($old): void {
+        $e = $this->refusal(fn () => $this->locks()->capture(static function () use ($old): void {
             throw FakeLockManager::refusal($old, 300);
         }, $this->note, 'alice', self::PATH));
         $this->assertStringNotContainsString('Pedro', $e->getMessage());
-        $this->assertStringContainsString('is open in Text', $e->getMessage());
+        $this->assertStringNotContainsString('Text', $e->getMessage());
+        $this->assertStringContainsString('is locked, and Nextcloud does not say by whom.', $e->getMessage());
+        $this->assertSame('unknown', $e->lock['type']);
         $this->assertStringContainsString('The lock ends in about 5 minutes, unless it is renewed.', $e->getMessage());
     }
 
     public function testARefusalWithoutAnyLockLeftNamesNobody(): void {
-        $e = $this->refusal(fn () => $this->locks()->run(static function (): void {
+        $e = $this->refusal(fn () => $this->locks()->capture(static function (): void {
             throw new ManuallyLockedException('/alice/files/x', null, 'files_lock/gone', null, -1);
         }, $this->note, 'alice', self::PATH));
-        $this->assertStringContainsString('is locked by someone else.', $e->getMessage());
+        $this->assertStringContainsString('is locked, and Nextcloud does not say by whom.', $e->getMessage());
+    }
+
+    /**
+     * The owner of the exception is a uid or an app id, with nothing telling which: an account named `text` must not
+     * turn a lock of the Text app into a person, nor the reverse.
+     */
+    public function testAnExceptionOwnerIsNeverResolvedByGuessingWhetherItIsAnAccount(): void {
+        $locks = new LockAwareWrite($this->manager, FakeUsers::manager($this, ['alice' => 'Alice', 'text' => 'Texto Silva']),
+            $this->createMock(IAppManager::class), $this->createMock(ITimeFactory::class), $this->utc(), new \Psr\Log\NullLogger());
+        $e = $this->refusal(fn () => $locks->capture(static function (): void {
+            throw new ManuallyLockedException('/alice/files/x', null, 'files_lock/x', 'text', 120);
+        }, $this->note, 'alice', self::PATH));
+        $this->assertStringNotContainsString('Texto Silva', $e->getMessage());
+        $this->assertStringContainsString('is locked, and Nextcloud does not say by whom.', $e->getMessage());
+        $this->assertStringContainsString('The lock ends in about 2 minutes, unless it is renewed.', $e->getMessage());
+        $this->assertNull($e->lock['owner_display_name']);
     }
 
     public function testATransactionalLockKeepsTheShortRetryMessage(): void {

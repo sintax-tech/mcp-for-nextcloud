@@ -75,7 +75,7 @@ final class NotesLockTest extends TestCase {
         $this->openInText();
         $before = $this->tree->nodes;
         $e = $this->refused('notes_edit', ['id' => $this->id, 'content' => 'novo', 'title' => 'Outro']);
-        $this->assertStringStartsWith('The file “/Notes/CHAMADOS/CHAMADOS OUTUBRO.md” is open in Text', $e->getMessage());
+        $this->assertStringStartsWith('The file “/Notes/CHAMADOS/CHAMADOS OUTUBRO.md” is locked by Text', $e->getMessage());
         $this->assertStringContainsString('Nothing was changed.', $e->getMessage());
         $this->assertSame([], $this->tree->ops);
         $this->assertSame($before, $this->tree->nodes);
@@ -99,7 +99,7 @@ final class NotesLockTest extends TestCase {
         $this->tree->writeFailure = FakeLockManager::refusal(new FakeLock($this->id, ILock::TYPE_APP, 'text'));
         // The lock shows up only for the storage: the check saw a free note.
         $e = $this->refused('notes_edit', ['id' => $this->id, 'content' => 'novo']);
-        $this->assertStringContainsString('is open in Text', $e->getMessage());
+        $this->assertStringContainsString('is locked, and Nextcloud does not say by whom.', $e->getMessage());
         $this->assertStringNotContainsString('Nothing was changed.', $e->getMessage());
         $this->assertSame('# Chamados', $this->tree->nodes[self::NOTE]['content']);
     }

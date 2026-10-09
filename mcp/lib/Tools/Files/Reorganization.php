@@ -241,7 +241,7 @@ final class Reorganization {
         $receipt = $root->getRelativePath($source->getPath()) ?? '';
         // Reading a locked file is allowed, so the source is not checked; files_lock may still refuse a copy between
         // storages, and that refusal is explained.
-        $copy = $this->locked(fn (): Node => $source->copy($this->absolute($root, $to)), $source, $userId);
+        $copy = $this->locks === null ? $source->copy($this->absolute($root, $to)) : $this->locks->capture(fn (): Node => $source->copy($this->absolute($root, $to)), $source, $userId);
         return [
             'from' => $receipt,
             'to' => $to,
@@ -298,7 +298,7 @@ final class Reorganization {
 
     /**
      * Refuses to move a node that files_lock locks against the user: open in Text or Office, locked by another person
-     * or a WebDAV client. Only the node itself is looked at: the files inside a folder are not.
+     * or a WebDAV client. A folder is refused when anything the user can reach inside it is, or is too large to check.
      *
      * @param Node $node the node about to move
      * @param string $userId authenticated user
@@ -309,10 +309,11 @@ final class Reorganization {
     }
 
     /**
-     * Runs a move or a copy, explaining a lock refusal of the storage when the lock appeared after the check.
+     * Runs a move: checks the locks of the node, and of everything inside a folder, right before it, and explains a
+     * lock refusal of the storage.
      *
-     * @param callable():Node $write the move or the copy
-     * @param Node $node the node it reads or moves
+     * @param callable():Node $write the move
+     * @param Node $node the node it moves
      * @param string $userId authenticated user
      * @return Node what the write returned
      */

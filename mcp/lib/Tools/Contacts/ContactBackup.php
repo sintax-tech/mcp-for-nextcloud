@@ -9,6 +9,8 @@ namespace OCA\Mcp\Tools\Contacts;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Tools\Common\LockMessages;
+use OCA\Mcp\Tools\Common\LockWriteFailure;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Tools\ToolFailure;
@@ -16,6 +18,7 @@ use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\IRootFolder;
 use OCP\IConfig;
 use OCP\Lock\ILockingProvider;
+use OCP\Lock\ManuallyLockedException;
 use RuntimeException;
 use Throwable;
 
@@ -83,6 +86,11 @@ class ContactBackup {
                 throw new RuntimeException('Contact backup path unavailable');
             }
             return '/' . ltrim($relative, '/');
+        } catch (ManuallyLockedException $e) {
+            // A backup folder locked by files_lock: said as a lock, so the person knows what to release.
+            throw new LockWriteFailure(LockMessages::lockedWithoutDetails() . ' ' . Translator::t(
+                'The contact backup could not be saved and verified; the contact was not deleted.'
+            ));
         } catch (Throwable $e) {
             throw new ToolFailure(
                 Translator::t(

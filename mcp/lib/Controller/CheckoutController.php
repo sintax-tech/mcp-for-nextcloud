@@ -319,20 +319,20 @@ class CheckoutController extends Controller {
         $copy = '';
         try {
             NodeAccess::checkEtag($file, $row->etag);
-            $copy = $this->backup->prepare($root, $file, $row->path, $row->userId, $row->etag, $this->actsAsUser($row->userId));
-            $file->putContent((string)file_get_contents($body));
+            $asUser = $this->actsAsUser($row->userId);
+            $copy = $this->backup->prepare($root, $file, $row->path, $row->userId, $row->etag, $asUser);
+            $write = static fn () => $file->putContent((string)file_get_contents($body));
+            // Checked again right before the write: the backup took time, and files_lock does not refuse every lock.
+            $this->locks === null ? $write() : $this->locks->run($write, $file, $row->userId, $row->path, $asUser);
             $node = NodeAccess::requireFile(NodeAccess::get($root, $row->path));
         } catch (LockWriteFailure $e) {
-            // Refused by the backup, before anything was copied or written; the link is spent all the same.
-            return $this->refuse(Http::STATUS_LOCKED, $e->getMessage() . ' ' . LockMessages::newCheckoutNeeded());
+            // The link is spent all the same; a backup taken before the refusal holds the untouched original.
+            return $this->lockRefusal($e, $copy);
         } catch (LockedException $e) {
-            // The lock came after the backup: the storage refused the write itself.
-            $failure = $this->locks?->failure($e, $file, $row->userId, $row->path) ?? NodeAccess::lockFailure($e);
-            return $this->refuse(Http::STATUS_LOCKED, implode(' ', array_filter([
-                $failure->getMessage(),
-                $copy === '' ? '' : FilesMessages::originalKept($copy),
-                LockMessages::newCheckoutNeeded(),
-            ])));
+            $failure = NodeAccess::lockFailure($e);
+            return $failure instanceof LockWriteFailure
+                ? $this->lockRefusal($failure, $copy)
+                : $this->refuse(Http::STATUS_LOCKED, $failure->getMessage() . ' ' . LockMessages::newCheckoutNeeded());
         } catch (ToolFailure $e) {
             $conflict = $e->getMessage() === CommonMessages::conflict();
             $message = $conflict ? FilesMessages::uploadConflict() : $e->getMessage();
@@ -440,6 +440,19 @@ class CheckoutController extends Controller {
             FilesMessages::createFailed() => $this->refuse(Http::STATUS_INTERNAL_SERVER_ERROR, $e->getMessage()),
             default => $this->refuse(Http::STATUS_NOT_FOUND, $e->getMessage()),
         };
+    }
+
+    /**
+     * @param LockWriteFailure $e the lock that refused an upload whose link is already spent
+     * @param string $copy user-relative path of the backup taken before, '' when there is none
+     * @return Response 423 with the explanation, where the original is, and the advice to run a new checkout
+     */
+    private function lockRefusal(LockWriteFailure $e, string $copy): Response {
+        return $this->refuse(Http::STATUS_LOCKED, implode(' ', array_filter([
+            $e->getMessage(),
+            $copy === '' ? '' : FilesMessages::originalKept($copy),
+            LockMessages::newCheckoutNeeded(),
+        ])));
     }
 
     /**

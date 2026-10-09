@@ -17,7 +17,6 @@ use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\IUser;
 use OCP\IUserManager;
-use OCP\Lock\LockedException;
 use Psr\Container\ContainerInterface;
 use Psr\Container\NotFoundExceptionInterface;
 
@@ -144,34 +143,37 @@ final class VersionTools {
     }
 
     /**
-     * Rolls the file back to a stored version, after the same backup files_edit performs.
+     * Brings a stored version back, after the same backup files_edit performs.
+     *
+     * With a lock provider (files_lock) there, the version is read through files_versions and written through the
+     * file, like any edit: files_lock refuses the write when the file is locked, and the versions app keeps the
+     * current content as a version first. The core rollback is not used then, because VersionManager::rollback()
+     * (Nextcloud 32 to 35, handleAppLocks) catches the refusal of a Text or Office lock and repeats the write inside
+     * that app's lock scope, over the document still open in the editor. The file then shows the restore time as its
+     * modification time and the change as an edit, where the core rollback would show the version's time and a restore.
+     * Without a lock provider no lock can exist, and the core rollback runs as before.
      *
      * The shared-write guard runs in the module before this call, so the confirmation payload is a
      * non-error result produced there and never reaches this class.
      *
      * @param Folder $root the user's folder
-     * @param File $file file to roll back
+     * @param File $file file to restore
      * @param string $path normalized user-relative path of $file
      * @param string $revision version identifier as returned by list()
      * @param string $viewerUid authenticated user
      * @return array{path:string, size:int, etag:string, access:array<string, mixed>, backup:string, version:string}
-     * @throws ToolFailure when versioning is off, the version does not exist, the backup fails or the rollback reports failure
+     * @throws ToolFailure when versioning is off, the version does not exist or cannot be read, the backup fails, a
+     *         lock refuses the write ({@see LockWriteFailure}) or the rollback reports failure
      */
     public function restore(Folder $root, File $file, string $path, string $revision, string $viewerUid): array {
         $user = $this->requireVersioning($viewerUid);
         $version = $this->find($user, $file, $revision);
-        // The backup refuses a locked file before copying it. The check also keeps the rollback out of the lock of an
-        // editor: files_versions retries a refused rollback inside the scope of Text or Office (VersionManager,
-        // handleAppLocks), which would write under the lock of the open editor.
+        // The backup refuses a locked file before copying it.
         $copy = $this->backup->prepare($root, $file, $path, $viewerUid, null);
         $manager = $this->manager();
-        try {
-            $result = $manager->rollback($version);
-        } catch (LockedException $e) {
-            $failure = $this->locks?->failure($e, $file, $viewerUid, $path) ?? NodeAccess::lockFailure($e);
-            throw $failure instanceof LockWriteFailure ? $failure->withNote(FilesMessages::originalKept($copy)) : $failure;
-        }
-        if ($result === false) {
+        if ($this->locks !== null && $this->locks->providerAvailable()) {
+            $this->writeVersion($manager, $version, $file, $path, $viewerUid, $copy);
+        } elseif ($manager->rollback($version) === false) {
             throw new ToolFailure(FilesMessages::versionRestoreFailed());
         }
         $node = NodeAccess::requireFile(NodeAccess::get($root, $path));
@@ -183,6 +185,33 @@ final class VersionTools {
             'backup' => $copy,
             'version' => $revision,
         ];
+    }
+
+    /**
+     * Writes the content of a version over the file through the node, checking the locks right before.
+     *
+     * @param object $manager the files_versions manager
+     * @param object $version the IVersion to bring back
+     * @param File $file file to restore
+     * @param string $path normalized user-relative path of $file
+     * @param string $viewerUid authenticated user
+     * @param string $copy user-relative path of the backup taken before
+     * @throws ToolFailure when the version cannot be read or a lock refuses the write
+     */
+    private function writeVersion(object $manager, object $version, File $file, string $path, string $viewerUid, string $copy): void {
+        $stream = $manager->read($version);
+        if (!is_resource($stream)) {
+            throw new ToolFailure(FilesMessages::versionRestoreFailed());
+        }
+        try {
+            $this->locks->run(static fn () => $file->putContent($stream), $file, $viewerUid, $path);
+        } catch (LockWriteFailure $e) {
+            throw $e->withNote(FilesMessages::originalKept($copy));
+        } finally {
+            if (is_resource($stream)) {
+                fclose($stream);
+            }
+        }
     }
 
     /**

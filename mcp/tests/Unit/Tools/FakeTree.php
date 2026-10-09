@@ -36,6 +36,8 @@ final class FakeTree {
 
     /** @var array<string, \Throwable> paths whose move throws this exception, for failures Nextcloud has no typed answer for */
     public array $throwOnMove = [];
+    /** @var (\Closure(string, string): void)|null runs after each successful move with its source and target, to change the world between two moves */
+    public ?\Closure $afterMove = null;
     /** @var array<string, \Throwable> paths whose copy throws this exception, as files_lock refusing a locked source */
     public array $throwOnCopy = [];
     public array $shortCopy = [];
@@ -58,6 +60,8 @@ final class FakeTree {
      */
     public ?\Closure $beforeGet = null;
     public bool $failBackupWrite = false;
+    /** What putContent() of a backup copy throws, as files_lock refusing a write in a locked backup folder. */
+    public ?\Throwable $backupWriteFailure = null;
     public bool $shortBackupWrite = false;
     /**
      * Runs inside Folder::newFile() just before the node appears, with its absolute path: a test stands for another
@@ -143,6 +147,9 @@ final class FakeTree {
                 throw new NotPermittedException();
             }
             $this->reparent($path, $target);
+            if ($this->afterMove !== null) {
+                ($this->afterMove)($path, $target);
+            }
             return $this->node($target);
         });
         $mock->method('copy')->willReturnCallback(function (string $target) use ($path): Node {
@@ -204,6 +211,9 @@ final class FakeTree {
             $isBackup = str_starts_with($path, $this->root . '/MCP backups/');
             if (($isBackup && $this->failBackupWrite) || (!$isBackup && $this->failWrite)) {
                 throw new NotPermittedException();
+            }
+            if ($isBackup && $this->backupWriteFailure !== null) {
+                throw $this->backupWriteFailure;
             }
             if (!$isBackup && $this->writeFailure !== null) {
                 throw $this->writeFailure;

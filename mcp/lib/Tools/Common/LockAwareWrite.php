@@ -8,9 +8,11 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Common;
 
 use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\Files\Folder;
 use OCP\Files\Lock\ILock;
 use OCP\Files\Lock\ILockManager;
 use OCP\Files\Node;
@@ -26,18 +28,26 @@ use Psr\Log\LoggerInterface;
  * The rules are the storage wrapper's, read from files_lock 35.0.0, made stricter where the MCP cannot act as the
  * lock holder: a manual lock of the user themselves lets the write through, as in the Files app; a manual lock of
  * someone else, an app lock (Text, Office) and a WebDAV token lock refuse it, the last two even for their own user.
- * The check runs before anything is written, so a refusal costs no backup; {@see run()} catches the storage refusal
- * that still arrives when a lock appears in between.
+ * The storage wrapper never enforces a WebDAV token lock outside DAV, so the check is what refuses it: {@see run()}
+ * repeats it right before the write, and catches the storage refusal of a lock that appears even later.
  *
- * Nothing here takes, releases or borrows a lock, and no lock token reaches the answer or the log. A refusal is an
- * expected condition: it is logged at debug level, without the path.
+ * In doubt, the write is refused: a lock provider that cannot answer, a folder too large to check all of it, a type
+ * of lock this code does not know. A folder is only free when everything the user can reach inside it is.
+ *
+ * Nothing here takes, releases or borrows a lock, and no lock token or uid reaches the answer or the log. A refusal
+ * is an expected condition: it is logged at debug level, without the path.
  */
 class LockAwareWrite {
+    /** Most nodes of a folder whose locks are read before it moves. */
+    public const TREE_LIMIT = 5000;
     /** Longest holder name shown, in characters. */
     private const NAME_MAX = 80;
     /** Longest path shown, in characters: long enough to tell two deep paths apart. */
     private const PATH_MAX = 400;
     private const TYPES = [ILock::TYPE_USER => 'user', ILock::TYPE_APP => 'app', ILock::TYPE_TOKEN => 'token'];
+
+    /** Most nodes of a folder checked; {@see TREE_LIMIT}, lowered only by tests. */
+    public int $treeLimit = self::TREE_LIMIT;
 
     public function __construct(
         private ILockManager $lockManager,
@@ -46,101 +56,110 @@ class LockAwareWrite {
         private ITimeFactory $time,
         private UserTimezone $timezone,
         private LoggerInterface $logger,
+        private ?VisibilityGuard $visibility = null,
     ) {}
 
-    /**
-     * The lock on a file as the client may see it, without its token or the uid of its holder.
-     *
-     * A provider that cannot answer is not a free file, but it is not a refusal either: the write goes on and the
-     * storage wrapper of files_lock still refuses it if the file turns out to be locked, which {@see run()} explains.
-     *
-     * @param Node $node the file about to change, already resolved through the user's view
-     * @param string $userId authenticated user
-     * @param bool $asUser whether the write runs as that user; false on a route without user session, where even
-     *                     the user's own manual lock refuses the write
-     * @return array{type:string, owner_display_name:string|null, own:bool, blocking:bool, created_at:string|null, expires_at:string|null, expiry_status:string}|null
-     *         null when there is no lock, or no lock provider
-     */
-    public function inspect(Node $node, string $userId, bool $asUser = true): ?array {
-        $lock = $this->lockOf($node);
-        return $lock === null ? null : $this->describe($lock, $userId, $asUser);
+    /** @return bool whether a lock provider (files_lock) is there; without one, no lock can exist */
+    public function providerAvailable(): bool {
+        try {
+            return $this->lockManager->isLockProviderAvailable();
+        } catch (\Throwable $e) {
+            $this->logger->debug('MCP could not ask for the lock provider', ['app' => 'mcp', 'exception_class' => $e::class]);
+            return true;
+        }
     }
 
     /**
-     * Refuses the write before anything changes when the file is locked against it.
+     * Refuses the write before anything changes when the node, or anything the user can reach inside a folder, is
+     * locked against it, or when that cannot be told.
      *
-     * @param Node $node the file about to change
+     * @param Node $node the file or folder about to change, already resolved through the user's view
      * @param string $userId authenticated user
      * @param string|null $path user-relative path the message names, taken from the node when null
-     * @param bool $asUser see {@see inspect()}
-     * @throws LockWriteFailure when a lock stops the write
+     * @param bool $asUser whether the write runs as that user; false on a route without user session, where even
+     *                     the user's own manual lock refuses the write, as files_lock does there
+     * @throws LockWriteFailure when a lock stops the write, or the locks could not be read
      */
     public function assertWritable(Node $node, string $userId, ?string $path = null, bool $asUser = true): void {
-        $lock = $this->lockOf($node);
-        if ($lock === null) {
+        $found = $this->evaluate($node, $userId, $asUser);
+        if ($found['state'] === 'free' || $found['state'] === 'own') {
             return;
         }
-        $described = $this->describe($lock, $userId, $asUser);
-        if (!$described['blocking']) {
-            return;
-        }
-        $path ??= self::userPath($node, $userId);
-        $this->logRefusal($described['type'], 'check');
-        throw new LockWriteFailure(implode(' ', [
-            ...$this->sentences($lock, $described, $userId, $path),
-            $this->advice($described),
-            LockMessages::nothingChanged(),
-        ]), $described);
+        $this->logRefusal($found['described']['type'] ?? 'unknown', 'check');
+        $message = $this->explain($found, $userId, $path ?? self::userPath($node, $userId), false);
+        throw new LockWriteFailure($found['state'] === 'blocked' ? $message . ' ' . LockMessages::nothingChanged() : $message, $found['described'] ?? null);
     }
 
     /**
-     * What a plan says about the lock: nothing for a free file, a warning otherwise. The plan is never refused
+     * What a plan says about the lock: nothing when the write is free, a warning otherwise. The plan is never refused
      * for it, so the person sees the whole change and why the confirmed call would fail.
      *
-     * @param Node $node the file the write would change
+     * @param Node $node the file or folder the write would change
      * @param string $userId authenticated user
      * @param string|null $path user-relative path the message names, taken from the node when null
+     * @param bool $asUser see {@see assertWritable()}; false for the plan of a checkout, whose upload has no session
      * @return array{lock?: array<string, mixed>, warnings?: list<array{type:string, message:string}>} keys to add to the plan
      */
-    public function planNotice(Node $node, string $userId, ?string $path = null): array {
-        $lock = $this->lockOf($node);
-        if ($lock === null) {
+    public function planNotice(Node $node, string $userId, ?string $path = null, bool $asUser = true): array {
+        $found = $this->evaluate($node, $userId, $asUser);
+        $path ??= self::userPath($node, $userId);
+        $message = match ($found['state']) {
+            'free' => null,
+            'own' => LockMessages::planOwn(self::clean($path)),
+            default => $this->explain($found, $userId, $path, true),
+        };
+        if ($message === null) {
             return [];
         }
-        $described = $this->describe($lock, $userId, true);
-        $path ??= self::userPath($node, $userId);
-        $message = $described['blocking']
-            ? implode(' ', [...$this->sentences($lock, $described, $userId, $path), LockMessages::planRefused(), $this->advice($described)])
-            : LockMessages::planOwn(self::clean($path));
-        return ['lock' => $described, 'warnings' => [['type' => 'file_locked', 'message' => $message]]];
+        return ['lock' => $found['described'] ?? ['blocking' => true, 'verified' => false], 'warnings' => [['type' => 'file_locked', 'message' => $message]]];
     }
 
     /**
-     * Runs a write and turns a lock refusal of the storage into the explained one.
+     * Runs a write: checks the locks again right before it, then turns a lock refusal of the storage into the
+     * explained one. Every write that changes or moves a node goes through here.
      *
      * @template T
      * @param callable():T $write the write itself
-     * @param Node $node the file it changes
+     * @param Node $node the node it changes
      * @param string $userId authenticated user
      * @param string|null $path user-relative path the message names, taken from the node when null
+     * @param bool $asUser see {@see assertWritable()}
      * @return T what the write returned
-     * @throws ToolFailure {@see LockWriteFailure} for a files_lock refusal, the short retry message for a transactional lock
+     * @throws ToolFailure {@see LockWriteFailure} for a lock, the short retry message for a transactional lock
      */
-    public function run(callable $write, Node $node, string $userId, ?string $path = null): mixed {
+    public function run(callable $write, Node $node, string $userId, ?string $path = null, bool $asUser = true): mixed {
+        $this->assertWritable($node, $userId, $path, $asUser);
+        return $this->capture($write, $node, $userId, $path);
+    }
+
+    /**
+     * Runs an operation that only reads the node, such as the source of a copy, which a lock does not forbid, and
+     * explains the lock refusal the storage may still raise (files_lock refuses a locked source copied across storages).
+     *
+     * @template T
+     * @param callable():T $operation the copy or the write of a new file
+     * @param Node $node the node it reads or creates
+     * @param string $userId authenticated user
+     * @param string|null $path user-relative path the message names, taken from the node when null
+     * @return T what the operation returned
+     * @throws ToolFailure {@see LockWriteFailure} for a lock, the short retry message for a transactional lock
+     */
+    public function capture(callable $operation, Node $node, string $userId, ?string $path = null): mixed {
         try {
-            return $write();
+            return $operation();
         } catch (LockedException $e) {
             throw $this->failure($e, $node, $userId, $path);
         }
     }
 
     /**
-     * The failure a lock exception stands for. A ManuallyLockedException comes from files_lock: the lock of the
-     * file is read again to name its holder, but only when it is still the lock that refused the write. Any other
-     * LockedException is the core's short transactional lock, which only asks to try again.
+     * The failure a lock exception stands for. A ManuallyLockedException comes from files_lock: the lock of the node
+     * is read again to name its holder, but only when its token is the one the exception carries. Without that match
+     * the holder stays unidentified: the owner of the exception is a uid or an app id, and nothing says which. Any
+     * other LockedException is the core's short transactional lock, which only asks to try again.
      *
      * @param LockedException $e what the storage threw
-     * @param Node $node the file the write was changing
+     * @param Node $node the node the write was changing
      * @param string $userId authenticated user
      * @param string|null $path user-relative path the message names, taken from the node when null
      * @return ToolFailure the failure to throw
@@ -149,35 +168,105 @@ class LockAwareWrite {
         if (!$e instanceof ManuallyLockedException) {
             return new ToolFailure(CommonMessages::locked());
         }
-        $path ??= self::userPath($node, $userId);
-        $lock = $this->lockOf($node);
-        $token = $e->getExistingLock();
-        if ($lock !== null && ($token === null || $token === '' || $lock->getToken() === $token)) {
+        $path = self::clean($path ?? self::userPath($node, $userId));
+        $token = (string)$e->getExistingLock();
+        try {
+            $lock = $token === '' || !$this->lockManager->isLockProviderAvailable() ? null : $this->lockOf($node);
+        } catch (\Throwable) {
+            $lock = null;
+        }
+        if ($lock !== null && $lock->getToken() === $token) {
             $described = ['blocking' => true] + $this->describe($lock, $userId, true);
             $sentences = $this->sentences($lock, $described, $userId, $path);
         } else {
-            [$described, $sentences] = $this->fromException($e, $userId, $path);
+            $described = ['type' => 'unknown', 'owner_display_name' => null, 'own' => false, 'blocking' => true,
+                'created_at' => null, 'expires_at' => null, 'expiry_status' => 'unknown'];
+            $sentences = [LockMessages::lockedUnidentified($path)];
+            if ($e->getTimeout() > 0) {
+                $sentences[] = LockMessages::endsIn((int)ceil($e->getTimeout() / 60));
+            }
         }
         $this->logRefusal($described['type'], 'write');
         return new LockWriteFailure(implode(' ', [...$sentences, $this->advice($described)]), $described);
     }
 
     /**
-     * @param Node $node file to look at
-     * @return ILock|null the lock that matters most, a blocking-type one before a manual one, null when none
+     * Reads the locks of the node and, for a folder, of everything the user can reach inside it, up to the limit.
+     *
+     * @return array{state:string, described?:array<string, mixed>, lock?:ILock, node?:Node, hidden?:bool, root?:Node}
+     *         state free, own (only the user's own manual lock, which lets the write through), blocked, unverified or too_many
      */
-    private function lockOf(Node $node): ?ILock {
+    private function evaluate(Node $node, string $userId, bool $asUser): array {
+        if (!$this->providerAvailable()) {
+            return ['state' => 'free'];
+        }
+        $own = null;
+        $queue = [$node];
+        $seen = 0;
         try {
-            if (!$this->lockManager->isLockProviderAvailable()) {
-                return null;
+            while ($queue !== []) {
+                $current = array_shift($queue);
+                if (++$seen > $this->treeLimit) {
+                    return ['state' => 'too_many', 'root' => $node];
+                }
+                $lock = $this->lockOf($current);
+                if ($lock !== null) {
+                    $described = $this->describe($lock, $userId, $asUser);
+                    if ($described['blocking']) {
+                        $hidden = $current !== $node && $this->visibility !== null && !$this->visibility->isVisible($current);
+                        return ['state' => 'blocked', 'described' => $described, 'lock' => $lock, 'node' => $current, 'hidden' => $hidden, 'root' => $node];
+                    }
+                    $own ??= $described;
+                }
+                if ($current instanceof Folder) {
+                    foreach ($current->getDirectoryListing() as $child) {
+                        $queue[] = $child;
+                    }
+                }
             }
-            $locks = $this->lockManager->getLocks((int)$node->getId());
         } catch (\Throwable $e) {
             $this->logger->debug('MCP could not read the file lock', ['app' => 'mcp', 'exception_class' => $e::class]);
-            return null;
+            return ['state' => 'unverified', 'root' => $node];
         }
+        return $own === null ? ['state' => 'free'] : ['state' => 'own', 'described' => $own];
+    }
+
+    /**
+     * @param array<string, mixed> $found what evaluate() returned for a refused write
+     * @param string $path user-relative path of the node the write targets
+     * @param bool $plan whether the words are for a plan, which adds that the confirmed call would be refused
+     * @return string the explanation
+     */
+    private function explain(array $found, string $userId, string $path, bool $plan): string {
+        $path = self::clean($path);
+        if ($found['state'] === 'unverified') {
+            return LockMessages::unverified($path);
+        }
+        if ($found['state'] === 'too_many') {
+            return LockMessages::tooManyToCheck($path, $this->treeLimit);
+        }
+        if ($found['hidden']) {
+            $sentences = [LockMessages::lockedInside($path)];
+            $advice = LockMessages::adviceUnknown();
+        } else {
+            $named = $found['node'] === $found['root'] ? $path : self::clean(self::userPath($found['node'], $userId));
+            $sentences = $this->sentences($found['lock'], $found['described'], $userId, $named);
+            $advice = $this->advice($found['described']);
+        }
+        if ($plan) {
+            $sentences[] = LockMessages::planRefused();
+        }
+        return implode(' ', [...$sentences, $advice]);
+    }
+
+    /**
+     * @param Node $node node to look at
+     * @return ILock|null the lock that matters most, a blocking-type one before a manual one, null when none
+     * @throws \Throwable when the provider cannot answer
+     */
+    private function lockOf(Node $node): ?ILock {
         $found = null;
-        foreach ($locks as $lock) {
+        foreach ($this->lockManager->getLocks((int)$node->getId()) as $lock) {
             if (!$lock instanceof ILock) {
                 continue;
             }
@@ -194,13 +283,13 @@ class LockAwareWrite {
      */
     private function describe(ILock $lock, string $userId, bool $asUser): array {
         $type = self::TYPES[$lock->getType()] ?? 'unknown';
-        $own = $type !== 'app' && $lock->getOwner() === $userId;
+        $own = ($type === 'user' || $type === 'token') && $lock->getOwner() === $userId;
         $created = $lock->getCreatedAt() > 0 ? $lock->getCreatedAt() : null;
         $timeout = $lock->getTimeout();
         $expires = $created !== null && $timeout > 0 ? $created + $timeout : null;
         return [
             'type' => $type,
-            'owner_display_name' => $this->ownerName($type, $lock->getOwner()),
+            'owner_display_name' => $type === 'unknown' ? null : $this->ownerName($type, $lock->getOwner()),
             'own' => $own,
             'blocking' => !($type === 'user' && $own && $asUser),
             'created_at' => $created === null ? null : gmdate('Y-m-d\TH:i:s\Z', $created),
@@ -210,19 +299,23 @@ class LockAwareWrite {
     }
 
     /**
-     * @param string $type user, app, token or unknown
+     * @param string $type user, app or token: the type the lock itself declares
      * @param string $owner uid, or app id for an app lock
      * @return string|null the name a person recognizes, null when there is none to show: never a raw uid or app id
      */
     private function ownerName(string $type, string $owner): ?string {
-        if ($type === 'app') {
-            $info = $this->appManager->getAppInfo($owner);
-            $name = is_array($info) && is_string($info['name'] ?? null) ? $info['name'] : '';
-        } else {
-            $name = (string)$this->userManager->get($owner)?->getDisplayName();
+        try {
+            if ($type === 'app') {
+                $info = $this->appManager->getAppInfo($owner);
+                $name = is_array($info) && is_string($info['name'] ?? null) ? $info['name'] : '';
+            } else {
+                $name = (string)$this->userManager->get($owner)?->getDisplayName();
+            }
+        } catch (\Throwable) {
+            $name = '';
         }
         $name = self::clean($name, self::NAME_MAX);
-        return $name === '' ? null : $name;
+        return $name === '' || $name === $owner ? null : $name;
     }
 
     /**
@@ -232,7 +325,7 @@ class LockAwareWrite {
      * @return list<string>
      */
     private function sentences(ILock $lock, array $described, string $userId, string $path): array {
-        $sentences = [$this->headline($described, self::clean($path))];
+        $sentences = [$this->headline($described, $path)];
         if ($described['created_at'] !== null) {
             $sentences[] = LockMessages::since($this->local($lock->getCreatedAt(), $userId));
         }
@@ -246,17 +339,15 @@ class LockAwareWrite {
 
     /** @param array<string, mixed> $described @return string the first sentence: the file and who holds it */
     private function headline(array $described, string $path): string {
-        if ($described['type'] === 'app') {
-            return $described['owner_display_name'] === null
-                ? LockMessages::lockedByApp($path)
-                : LockMessages::openInApp($path, $described['owner_display_name']);
-        }
-        if ($described['own']) {
-            return LockMessages::lockedByYou($path);
-        }
-        return $described['owner_display_name'] === null
-            ? LockMessages::lockedBySomeoneElse($path)
-            : LockMessages::lockedBy($path, $described['owner_display_name']);
+        return match (true) {
+            $described['type'] === 'unknown' => LockMessages::lockedUnidentified($path),
+            $described['type'] === 'app' => $described['owner_display_name'] === null
+                ? LockMessages::lockedByUnnamedApp($path)
+                : LockMessages::lockedByApp($path, $described['owner_display_name']),
+            (bool)$described['own'] => LockMessages::lockedByYou($path),
+            $described['owner_display_name'] === null => LockMessages::lockedBySomeoneElse($path),
+            default => LockMessages::lockedBy($path, $described['owner_display_name']),
+        };
     }
 
     /** @param array<string, mixed> $described @return string what the person can do */
@@ -264,36 +355,10 @@ class LockAwareWrite {
         return match (true) {
             $described['type'] === 'app' => LockMessages::adviceApp(),
             $described['type'] === 'token' => LockMessages::adviceToken(),
+            $described['type'] === 'unknown' => LockMessages::adviceUnknown(),
             (bool)$described['own'] => LockMessages::adviceOwn(),
             default => LockMessages::advicePerson(),
         };
-    }
-
-    /**
-     * The explanation when the lock that refused the write is gone or was replaced: only what the exception says.
-     * Its owner is a uid or an app id, with no type; its timeout is the time left, not a duration.
-     *
-     * @return array{0: array<string, mixed>, 1: list<string>}
-     */
-    private function fromException(ManuallyLockedException $e, string $userId, string $path): array {
-        $owner = (string)$e->getOwner();
-        $person = $owner === '' ? null : $this->ownerName('user', $owner);
-        $app = $owner === '' || $person !== null ? null : $this->ownerName('app', $owner);
-        $type = $app !== null ? 'app' : ($person !== null ? 'user' : 'unknown');
-        $described = [
-            'type' => $type,
-            'owner_display_name' => $app ?? $person,
-            'own' => $person !== null && $owner === $userId,
-            'blocking' => true,
-            'created_at' => null,
-            'expires_at' => null,
-            'expiry_status' => 'unknown',
-        ];
-        $sentences = [$this->headline($described, self::clean($path))];
-        if ($e->getTimeout() > 0) {
-            $sentences[] = LockMessages::endsIn((int)ceil($e->getTimeout() / 60));
-        }
-        return [$described, $sentences];
     }
 
     /**
@@ -304,7 +369,7 @@ class LockAwareWrite {
     private static function userPath(Node $node, string $userId): string {
         $prefix = '/' . $userId . '/files';
         $path = (string)$node->getPath();
-        return str_starts_with($path, $prefix . '/') ? substr($path, strlen($prefix)) : (string)$node->getName();
+        return str_starts_with($path, $prefix . '/') ? substr($path, strlen($prefix)) : ($path === $prefix ? '/' : (string)$node->getName());
     }
 
     /** @return string the instant in the user's timezone, e.g. 2025-10-08 08:05 (America/Sao_Paulo) */

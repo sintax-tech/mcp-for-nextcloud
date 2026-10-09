@@ -673,7 +673,7 @@ final class CheckoutControllerTest extends TestCase {
         $this->locks->put(new FakeLock($this->tree->nodes[self::FILE]['id'], ILock::TYPE_APP, 'text'));
         $response = $this->controller->upload();
         $this->assertSame(423, $this->code($response));
-        $this->assertStringStartsWith('The file “/Documentos/ata.md” is open in Text', (string)$response->render());
+        $this->assertStringStartsWith('The file “/Documentos/ata.md” is locked by Text', (string)$response->render());
         $this->assertSame([], $this->tree->ops);
         $this->assertNotContains('consume', $this->store->ops);
         $this->assertSame([], $this->locks->forbidden);
@@ -707,9 +707,18 @@ final class CheckoutControllerTest extends TestCase {
         $response = $this->controller->upload();
         $text = (string)$response->render();
         $this->assertSame(423, $this->code($response));
-        $this->assertStringContainsString('is open in Nextcloud Office', $text);
+        $this->assertStringContainsString('is locked, and Nextcloud does not say by whom.', $text);
         $this->assertStringContainsString('The original is kept in /MCP backups/Documentos/ata.md.', $text);
         $this->assertStringEndsWith('This upload link has already been used: once the lock ends, run a new files_checkout.', $text);
+        $this->assertSame('# Ata', $this->tree->nodes[self::FILE]['content']);
+    }
+
+    public function testALockedBackupFolderIsALockedRefusalOfTheUpload(): void {
+        $this->issue();
+        $this->tree->backupWriteFailure = new \OCP\Lock\ManuallyLockedException('/alice/files/MCP backups/x', null, 'files_lock/b', 'pedro', -1);
+        $response = $this->controller->upload();
+        $this->assertSame(423, $this->code($response));
+        $this->assertStringContainsString(\OCA\Mcp\Tools\Files\FilesMessages::backupFailed(), (string)$response->render());
         $this->assertSame('# Ata', $this->tree->nodes[self::FILE]['content']);
     }
 

@@ -1,5 +1,4 @@
 { "translations": {
-    "The file “%s” is open in %s, which keeps it locked for editing." : "El archivo “%s” está abierto en %s, que lo mantiene bloqueado para la edición.",
     "The file “%s” is locked by an app, usually because it is open in an editor." : "El archivo “%s” está bloqueado por una aplicación, normalmente porque está abierto en un editor.",
     "The file “%s” is locked by %s." : "El archivo “%s” está bloqueado por %s.",
     "The file “%s” is locked by you." : "El archivo “%s” está bloqueado por usted.",
@@ -18,6 +17,12 @@
     "The file is locked: it is open in an editor or another person locked it. Close it, or ask whoever locked it to unlock it, and then try again." : "El archivo está bloqueado: está abierto en un editor u otra persona lo bloqueó. Ciérrelo, o pida a quien lo bloqueó que lo desbloquee, y vuelva a intentarlo.",
     "This upload link has already been used: once the lock ends, run a new files_checkout." : "Este enlace de subida ya se usó: cuando termine el bloqueo, ejecute un nuevo files_checkout.",
     "The original is kept in %s." : "El original se conserva en %s.",
+    "The file “%s” is locked by %s, usually because it is open there." : "El archivo “%s” está bloqueado por %s, normalmente porque está abierto allí.",
+    "The file “%s” is locked, and Nextcloud does not say by whom." : "El archivo “%s” está bloqueado, y Nextcloud no indica por quién.",
+    "A file inside the folder “%s” is locked." : "Un archivo dentro de la carpeta “%s” está bloqueado.",
+    "Could not check whether the file “%s” is locked, so nothing was changed. Try again in a moment." : "No se pudo comprobar si el archivo “%s” está bloqueado, por eso no se modificó nada. Vuelva a intentarlo en un momento.",
+    "The folder “%s” has more than %s items, too many to check for locked files, so nothing was changed. Move it in smaller parts." : "La carpeta “%s” tiene más de %s elementos, demasiados para comprobar si hay archivos bloqueados, por eso no se modificó nada. Muévala en partes más pequeñas.",
+    "Close it in any editor where it is open, or ask whoever locked it to unlock it, and then try again." : "Ciérrelo en cualquier editor donde esté abierto, o pida a quien lo bloqueó que lo desbloquee, y vuelva a intentarlo.",
     "Developed by Sintax" : "Desarrollado por Sintax",
     "%1$s %2$s is installed, but MCP for Nextcloud supports it from version %3$s on. Its tools stay hidden until the app is updated; the saved permissions are kept." : "%1$s %2$s está instalado, pero MCP for Nextcloud lo admite a partir de la versión %3$s. Sus herramientas permanecen ocultas hasta que se actualice la aplicación; los permisos guardados se conservan.",
     "%s: %s" : "%s: %s",

@@ -70,6 +70,15 @@ final class FakeTree {
      * @var (\Closure(string): void)|null
      */
     public ?\Closure $beforeCreate = null;
+    /**
+     * Runs inside Folder::newFile() right after the node appears, with its absolute path: a test stands for a client
+     * that locks the new file before its content arrives.
+     *
+     * @var (\Closure(string): void)|null
+     */
+    public ?\Closure $afterCreate = null;
+    /** @var (\Closure(string): void)|null runs after each successful putContent() with the path written */
+    public ?\Closure $afterWrite = null;
     /** @var list<\OCP\Files\Search\ISearchQuery> queries received by Folder::search */
     public array $searches = [];
     private int $nextId = 100;
@@ -223,6 +232,9 @@ final class FakeTree {
                 $this->nodes[$path]['content'] = '';
             }
             $this->nodes[$path]['etag'] .= '+';
+            if ($this->afterWrite !== null) {
+                ($this->afterWrite)($path);
+            }
         });
         return $file;
     }
@@ -258,6 +270,9 @@ final class FakeTree {
             // Like the View, newFile() without content is a touch: a file that is already there keeps its bytes.
             if ($content !== null || !isset($this->nodes["$path/$name"])) {
                 $this->addFile("$path/$name", (string)$content, 'text/markdown');
+            }
+            if ($this->afterCreate !== null) {
+                ($this->afterCreate)("$path/$name");
             }
             return $this->file("$path/$name");
         });

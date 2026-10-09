@@ -222,6 +222,33 @@ final class FilesLockTest extends FilesToolsTestCase {
         $this->assertSame([], $this->issued);
     }
 
+    /**
+     * A WebDAV client locks the new file between its creation and its content. The storage would not refuse a token
+     * lock, so the check right before the content is what keeps it from being written over.
+     */
+    public function testANewFileLockedByATokenBeforeItsContentIsNotWritten(): void {
+        $this->tree->afterCreate = function (string $path): void {
+            $this->lockBy(ILock::TYPE_TOKEN, 'pedro', $path);
+        };
+        $e = $this->refused('files_create', ['path' => '/Documentos/novo.md', 'content' => 'texto']);
+        $this->assertStringContainsString('It was locked through a WebDAV client', $e->getMessage());
+        $this->assertSame('', $this->tree->nodes['/alice/files/Documentos/novo.md']['content']);
+    }
+
+    /** The same for the backup copy: a token lock on it is refused before the original is copied into it. */
+    public function testABackupCopyLockedByATokenRefusesTheEdit(): void {
+        $this->tree->afterCreate = function (string $path): void {
+            if (str_contains($path, '/MCP backups/')) {
+                $this->lockBy(ILock::TYPE_TOKEN, 'pedro', $path);
+            }
+        };
+        $e = $this->refused('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'novo']);
+        $this->assertStringContainsString('It was locked through a WebDAV client', $e->getMessage());
+        $this->assertStringEndsWith(FilesMessages::backupFailed(), $e->getMessage());
+        $this->assertSame("# Ata\nolá", $this->tree->nodes[self::FILE]['content']);
+        $this->assertNotContains('write /alice/files/Documentos/ata.md', $this->tree->ops);
+    }
+
     public function testWithoutFilesLockEverythingWorksAsBefore(): void {
         $this->locks->available = false;
         $this->json('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'novo']);

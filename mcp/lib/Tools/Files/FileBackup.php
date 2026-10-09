@@ -71,7 +71,7 @@ class FileBackup {
         }
         NodeAccess::checkEtag($file, $etag);
         $this->locks?->assertWritable($file, $userId, $path, $asUser);
-        return $this->copy($root, $file, $path, $userId);
+        return $this->copy($root, $file, $path, $userId, $asUser);
     }
 
     /**
@@ -81,9 +81,10 @@ class FileBackup {
      * @param File $file file about to be overwritten
      * @param string $path normalized user-relative path of $file
      * @param string $userId authenticated user, whose timezone stamps the copy
-     * @throws ToolFailure when the copy cannot be created or its size differs
+     * @param bool $asUser whether the write runs as $userId; false on the checkout route without user session
+     * @throws ToolFailure when the copy cannot be created or its size differs, a {@see LockWriteFailure} when it is locked
      */
-    private function copy(Folder $root, File $file, string $path, string $userId): string {
+    private function copy(Folder $root, File $file, string $path, string $userId, bool $asUser = true): string {
         // The node the copy was working on when it failed, so a lock refusal names the backup and not the original.
         $target = $root;
         try {
@@ -103,13 +104,17 @@ class FileBackup {
                 throw new \RuntimeException('Backup source stream unavailable');
             }
             try {
-                $copy->putContent($stream);
+                // The new copy is checked right before the original goes into it: a WebDAV client may have locked it.
+                $put = static fn () => $copy->putContent($stream);
+                $this->locks === null ? $put() : $this->locks->run($put, $copy, $userId, null, $asUser);
             } finally {
                 if (is_resource($stream)) {
                     fclose($stream);
                 }
             }
             $valid = $copy->getSize() === $file->getSize();
+        } catch (LockWriteFailure $e) {
+            throw $e->withNote(FilesMessages::backupFailed());
         } catch (ManuallyLockedException $e) {
             // A backup folder locked by files_lock is a lock, and stays one: the checkout answers it with 423.
             $failure = $this->locks?->failure($e, $target, $userId) ?? NodeAccess::lockFailure($e);

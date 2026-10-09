@@ -71,6 +71,8 @@ final class CheckoutCreateTest extends TestCase {
     private const LIMIT = 64;
 
     private FakeTree $tree;
+    /** files_lock behind ILockManager, without any lock until a test puts one. */
+    private \OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager $locks;
     private InMemoryCheckoutTokenStore $store;
     private InMemoryConfig $config;
     private GrantPolicy $policy;
@@ -100,6 +102,7 @@ final class CheckoutCreateTest extends TestCase {
         $this->session = $this->createMock(IUserSession::class);
         $this->session->method('getUser')->willReturn(null);
         $this->filenames = new FakeFilenameValidator();
+        $this->locks = new \OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager();
         $this->rebuild();
         $this->stage('PK docx bytes');
     }
@@ -133,7 +136,8 @@ final class CheckoutCreateTest extends TestCase {
         $this->controller = new StagedCreateController('mcp', $request, $root, $this->session, $temp, $time, $this->policy,
             $this->store, $this->hasher, $checkout, new FileBackup($apps, $users, $time, $config),
             new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class), null, $users, $this->guard,
-            new FileCreation($access, new SharedWriteGuard($access), $checkout, $this->filenames, $guard, $this->createMock(LoggerInterface::class)));
+            new FileCreation($access, new SharedWriteGuard($access), $checkout, $this->filenames, $guard, $this->createMock(LoggerInterface::class), $this->locks->service($this)),
+            $this->locks->service($this));
         $this->controller->route = ['token' => self::TOKEN];
     }
 
@@ -569,12 +573,25 @@ final class CheckoutCreateTest extends TestCase {
         }
     }
 
+    /** A WebDAV token lock on the new file, which the storage would not refuse: the check before the content gives 423. */
+    public function testATokenLockOnTheNewFileIsALockedRefusal(): void {
+        $this->issue();
+        $this->tree->afterCreate = function (string $path): void {
+            $this->locks->put(new \OCA\Mcp\Tests\Unit\Tools\Common\FakeLock($this->tree->nodes[$path]['id'], \OCP\Files\Lock\ILock::TYPE_TOKEN, 'pedro'));
+        };
+        $response = $this->controller->upload();
+        $this->assertSame(423, $response->getStatus());
+        $this->assertStringContainsString('It was locked through a WebDAV client', $this->text($response));
+        $this->assertSame('', $this->tree->nodes[self::FILE]['content']);
+    }
+
     /** A files_lock refusal at write time (Text opened the new file in between) is a 423 that says the file is locked. */
     public function testAFileLockAtWriteTimeIsALockedRefusal(): void {
         $this->issue();
         $this->tree->writeFailure = new \OCP\Lock\ManuallyLockedException(self::FILE, null, 'files_lock/x', 'text', -1);
         $response = $this->controller->upload();
         $this->assertSame(423, $response->getStatus());
-        $this->assertSame(\OCA\Mcp\Tools\Common\LockMessages::lockedWithoutDetails(), $this->text($response));
+        $this->assertSame('The file “/Documentos/Relatório.docx” is locked, and Nextcloud does not say by whom. '
+            . 'Close it in any editor where it is open, or ask whoever locked it to unlock it, and then try again.', $this->text($response));
     }
 }

@@ -177,7 +177,7 @@ abstract class FilesToolsTestCase extends TestCase {
             $this->visibilityGuard,
             ...$this->sharing($urls),
             creation: new FileCreation($access, new SharedWriteGuard($access), $checkout, $this->filenames,
-                $this->visibilityGuard ?? new \OCA\Mcp\Service\VisibilityGuard($config, $this->tagMapper), $this->creationLogger),
+                $this->visibilityGuard ?? new \OCA\Mcp\Service\VisibilityGuard($config, $this->tagMapper), $this->creationLogger, $locks),
             locks: $locks,
         );
     }

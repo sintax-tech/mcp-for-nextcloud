@@ -400,7 +400,7 @@ class CheckoutController extends Controller {
             if ($content === false) {
                 throw new ToolFailure(FilesMessages::createFailed());
             }
-            $file = NodeAccess::run(fn (): \OCP\Files\File => $creation->write($target['folder'], $target['name'], $content));
+            $file = NodeAccess::run(fn (): \OCP\Files\File => $creation->write($target['folder'], $target['name'], $content, $uid, $this->actsAsUser($uid)));
             return $this->json(Http::STATUS_CREATED, $creation->receipt($target, $file, $uid));
         } catch (\Throwable $e) {
             return $this->createRefusal($e);

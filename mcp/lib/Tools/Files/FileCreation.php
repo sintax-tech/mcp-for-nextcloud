@@ -10,6 +10,7 @@ namespace OCA\Mcp\Tools\Files;
 use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tools\ArgumentValidationException;
 use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Tools\Common\LockAwareWrite;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\PathGuard;
@@ -51,6 +52,7 @@ final class FileCreation {
         private IFilenameValidator $filenames,
         private VisibilityGuard $visibilityGuard,
         private LoggerInterface $logger,
+        private LockAwareWrite $locks,
     ) {}
 
     /**
@@ -169,7 +171,7 @@ final class FileCreation {
             return $payload;
         }
         self::assertCreatable($target['folder']);
-        return $this->receipt($target, $this->write($target['folder'], $target['name'], $content), $userId);
+        return $this->receipt($target, $this->write($target['folder'], $target['name'], $content, $userId), $userId);
     }
 
     /**
@@ -225,17 +227,20 @@ final class FileCreation {
      * What stays possible: an EMPTY file with the same name that another client created in the instant before ours
      * is taken over, and a client writing that very name between the second read and our write overwrites us or is
      * overwritten as with any other write, its content kept as a version. A write that fails after the empty file
-     * appeared leaves it in place; nothing is deleted.
+     * appeared leaves it in place; nothing is deleted. A lock taken on the new file before its content arrives
+     * (files_lock, also a WebDAV token lock the storage would not refuse) is checked right before the content.
      *
      * @param Folder $folder destination folder, already checked
      * @param string $name file name, already validated
      * @param string|resource $content the bytes; '' creates an empty file
+     * @param string|null $userId user the file is written for, whose locks are checked; null skips the check
+     * @param bool $asUser whether the write runs as that user; false on the upload link, which has no session
      * @return File the new file
      * @throws FileExists when the name is taken before the creation, or the file changed before the write
      * @throws ArgumentValidationException when the storage refuses the name
-     * @throws ToolFailure with the message of a lock or a full quota, or {@see FilesMessages::createFailed()}
+     * @throws ToolFailure with the message of a lock ({@see \OCA\Mcp\Tools\Common\LockWriteFailure}) or a full quota, or {@see FilesMessages::createFailed()}
      */
-    public function write(Folder $folder, string $name, mixed $content): File {
+    public function write(Folder $folder, string $name, mixed $content, ?string $userId = null, bool $asUser = true): File {
         if ($folder->nodeExists($name)) {
             throw new FileExists(FilesMessages::fileExists());
         }
@@ -256,7 +261,11 @@ final class FileCreation {
             throw new FileExists(FilesMessages::fileExists());
         }
         try {
-            $current->putContent($content);
+            $put = static fn () => $current->putContent($content);
+            $userId === null ? $put() : $this->locks->run($put, $current, $userId, null, $asUser);
+        } catch (ToolFailure $e) {
+            // Already a readable refusal: a lock found by the check, or one the storage raised, explained.
+            throw $e;
         } catch (LockedException|NotEnoughSpaceException $e) {
             // The two failures the agent can act on keep the message NodeAccess::run() gives them everywhere else.
             NodeAccess::run(static fn () => throw $e);

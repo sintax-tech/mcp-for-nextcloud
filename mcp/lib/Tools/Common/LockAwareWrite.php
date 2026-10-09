@@ -28,8 +28,13 @@ use Psr\Log\LoggerInterface;
  * The rules are the storage wrapper's, read from files_lock 35.0.0, made stricter where the MCP cannot act as the
  * lock holder: a manual lock of the user themselves lets the write through, as in the Files app; a manual lock of
  * someone else, an app lock (Text, Office) and a WebDAV token lock refuse it, the last two even for their own user.
- * The storage wrapper never enforces a WebDAV token lock outside DAV, so the check is what refuses it: {@see run()}
- * repeats it right before the write, and catches the storage refusal of a lock that appears even later.
+ * What enforces what: a manual lock of someone else and an app lock are also refused by the storage wrapper of
+ * files_lock itself, at the write, whatever this check saw; {@see run()} catches that refusal and explains it. A
+ * WebDAV token lock is never enforced by that wrapper, only by Nextcloud's DAV layer, so outside DAV this check is
+ * the only thing that refuses it, and it is not atomic with the write: there is no atomic lock acquisition in
+ * files_lock 32 to 35 to make it so. Worse, getLocks() is answered from files_lock's per-request cache, negative
+ * results included, so {@see run()} repeating the check right before the write does not see a token lock taken after
+ * the first lookup of that node in the same request. Nothing here guarantees a write is never made under a token lock.
  *
  * In doubt, the write is refused: a lock provider that cannot answer, a folder too large to check all of it, a type
  * of lock this code does not know. A folder is only free when everything the user can reach inside it is.
@@ -124,7 +129,8 @@ class LockAwareWrite {
 
     /**
      * Runs a write: checks the locks again right before it, then turns a lock refusal of the storage into the
-     * explained one. Every write that changes or moves a node goes through here.
+     * explained one. Every write that changes or moves a node goes through here, so how the write is guarded can
+     * change in one place. The repeated check may be answered from files_lock's per-request cache (see the class).
      *
      * @template T
      * @param callable():T $write the write itself

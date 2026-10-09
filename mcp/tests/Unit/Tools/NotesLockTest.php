@@ -105,8 +105,9 @@ final class NotesLockTest extends TestCase {
     }
 
     /**
-     * Content and title change in two writes. A lock taken after the content was saved stops the rename, and the
-     * refusal says honestly that the content did change: never "nothing was changed".
+     * Content and title change in two writes, each checked right before it. A lock the check observes after the
+     * content was saved stops the rename, and the refusal says honestly that the content did change: never "nothing
+     * was changed".
      */
     public function testALockAfterTheContentWasSavedStopsTheRenameAndSaysTheEditIsPartial(): void {
         $this->tree->afterWrite = function (): void {

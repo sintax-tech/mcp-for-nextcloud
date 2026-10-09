@@ -27,9 +27,13 @@ use Psr\Log\LoggerInterface;
  *
  * The rules are the storage wrapper's, read from files_lock 35.0.0, made stricter where the MCP cannot act as the
  * lock holder: a manual lock of the user themselves lets the write through, as in the Files app; a manual lock of
- * someone else, an app lock (Text, Office) and a WebDAV token lock refuse it, the last two even for their own user.
+ * someone else, an app lock (Text, Office) and a WebDAV token lock, when the provider reports them, refuse it, the
+ * last two even for their own user. This check only refuses the locks the provider observes.
  * What enforces what: a manual lock of someone else and an app lock are also refused by the storage wrapper of
- * files_lock itself, at the write, whatever this check saw; {@see run()} catches that refusal and explains it. A
+ * files_lock itself, which reads the lock afresh at the write; {@see run()} catches that refusal and explains it.
+ * Not before a delete, or a rename to or from Markdown, of a document of Text: Text's listener for that event
+ * (BeforeNodeDeletedListener, BeforeNodeRenamedListener) runs before the storage and resets the document, releasing
+ * its app lock, so an app lock of Text taken after this check's lookup does not stop that delete or rename. A
  * WebDAV token lock is never enforced by that wrapper, only by Nextcloud's DAV layer, so outside DAV this check is
  * the only thing that refuses it, and it is not atomic with the write: there is no atomic lock acquisition in
  * files_lock 32 to 35 to make it so. Worse, getLocks() is answered from files_lock's per-request cache, negative

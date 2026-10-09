@@ -152,7 +152,7 @@ final class FilesMessages {
     /** @return string description of files_version_restore */
     public static function versionRestoreTool(): string {
         return 'Restore a previous file version, first creating a copy of current content in '
-            . '"/MCP backups" and a new version in Nextcloud. If the file is outside your personal folder, '
+            . '"/MCP backups". If the file is outside your personal folder, '
             . 'restore only after asking the user and retrying with confirm_shared.';
     }
 
@@ -305,14 +305,14 @@ final class FilesMessages {
      * @return string the plan of files_version_restore
      */
     public static function planRestore(): string {
-        return Translator::t('Nothing was changed. After your approval the file goes back to the version below, a copy of the current content is kept in the backup folder and a new version is created.');
+        return Translator::t('Nothing was changed. After your approval a copy of the current content is kept in the backup folder and the content of the version below is written back to the file; Nextcloud versioning applies as to any edit, according to its policy.');
     }
 
     /**
      * @return string what the backup taken by a write gives back
      */
     public static function planBackupConsequence(): string {
-        return Translator::t('The previous content stays available in the backup folder, and Nextcloud keeps the new content as a version of the file.');
+        return Translator::t('The previous content stays available in the backup folder. Nextcloud may also keep versions of the file, according to its versioning policy.');
     }
 
     /**

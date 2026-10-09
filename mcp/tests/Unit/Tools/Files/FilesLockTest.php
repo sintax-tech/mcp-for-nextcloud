@@ -249,6 +249,20 @@ final class FilesLockTest extends FilesToolsTestCase {
         $this->assertNotContains('write /alice/files/Documentos/ata.md', $this->tree->ops);
     }
 
+    /**
+     * What a plan promises about the content it replaces is the backup in /MCP backups. A version depends on the
+     * versioning policy of the backend, so no plan, tool description or guide note promises one unconditionally.
+     */
+    public function testNoPlanPromisesAVersionUnconditionally(): void {
+        $plan = $this->plan('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'novo']);
+        foreach ([$plan['consequence'], FilesMessages::planRestore(), FilesMessages::versionRestoreTool(),
+            implode(' ', $this->module->guideNotes())] as $text) {
+            $this->assertDoesNotMatchRegularExpression('/new version is created|keeps the new content as a version|a new version in Nextcloud|restores content as a new version/', $text);
+        }
+        $this->assertStringContainsString('backup folder', $plan['consequence']);
+        $this->assertStringContainsString('backup folder', FilesMessages::planRestore());
+    }
+
     public function testWithoutFilesLockEverythingWorksAsBefore(): void {
         $this->locks->available = false;
         $this->json('files_edit', ['path' => '/Documentos/ata.md', 'content' => 'novo']);

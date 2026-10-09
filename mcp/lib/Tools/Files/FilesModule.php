@@ -46,8 +46,8 @@ use OCP\Lock\LockedException;
  *
  * There is deliberately no delete. Moving a node is allowed and happens in Reorganization, behind the
  * storage, destination and shared-write guards; the only removal in the module is the empty folder a batch
- * itself created when it is undone, plus a version rollback, which is a write of new content and therefore
- * always creates a version.
+ * itself created when it is undone. A version restore is a write of new content, after the same backup as an edit;
+ * whether Nextcloud also keeps a version of what it replaces is up to the versioning policy of the backend.
  *
  * Every result that names a node also carries its `access` description, and every write outside the
  * personal scope goes through SharedWriteGuard first.
@@ -316,7 +316,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
                 . 'the background (by the administrator\'s rule) and writes it into the PDF as a new version, so read '
                 . 'again later; otherwise view the page as an image with the image tools.',
             'There is no delete: files_undo_batch is the way back from files_move_batch, and files_version_restore '
-                . 'restores content as a new version.',
+                . 'writes the content of a stored version back over the file, after a copy of the current content in /MCP backups.',
             'files_share shares a file or folder of yours with a person (with: user:<uid>) or a group (group:<gid>); '
                 . 'find the id with users_search (include_groups: true for groups) and never guess it. Sharing again '
                 . 'with the same recipient changes that share; the plan shows before → after, including a re-share '

@@ -146,8 +146,9 @@ final class VersionTools {
      * Brings a stored version back, after the same backup files_edit performs.
      *
      * With a lock provider (files_lock) there, the version is read through files_versions and written through the
-     * file, like any edit: files_lock refuses the write when the file is locked, and the versions app keeps the
-     * current content as a version first. The core rollback is not used then, because VersionManager::rollback()
+     * file, like any edit: files_lock refuses the write when the file is locked, and the write goes through the normal
+     * versioning of the file, as the versions backend decides it. What this method guarantees about the current
+     * content is the backup in /MCP backups, taken before. The core rollback is not used then, because VersionManager::rollback()
      * (Nextcloud 32 to 35, handleAppLocks) catches the refusal of a Text or Office lock and repeats the write inside
      * that app's lock scope, over the document still open in the editor. The file then shows the restore time as its
      * modification time and the change as an edit, where the core rollback would show the version's time and a restore.

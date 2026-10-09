@@ -12,7 +12,7 @@ use OCA\Mcp\L10n\Translator;
 /** Common confirmation envelope, with an optional module body and a bounded generic fallback. */
 final class PlanRenderer {
     /** Metadata rendered separately from the generic body. */
-    private const ENVELOPE_KEYS = ['tool', 'title', 'requiresConfirmation', 'message', 'action', 'etag', PlanState::ARGUMENT, 'warnings', 'sharedCalendars', 'suggestedCalendar'];
+    private const ENVELOPE_KEYS = ['tool', 'title', 'requiresConfirmation', 'message', 'action', 'etag', PlanState::ARGUMENT, 'warnings', 'lock', 'sharedCalendars', 'suggestedCalendar'];
     /** Text writes show their size rather than disclosing complete contents through a diff or snippet. */
     private const CONTENT_KEYS = ['content', 'old', 'new', 'diff'];
     /** Longest generic value shown to the person. */

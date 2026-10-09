@@ -49,6 +49,17 @@ final class PlanRendererTest extends TestCase {
         }
     }
 
+    public function testAFileLockIsAWarningAndNotRepeatedInTheGenericBody(): void {
+        $text = PlanRenderer::render($this->module(), 'files_move', [
+            'from' => '/a.md',
+            'lock' => ['type' => 'app', 'owner_display_name' => 'Text', 'blocking' => true],
+            'warnings' => [['type' => 'file_locked', 'message' => 'The file “/a.md” is open in Text.']],
+        ]);
+        $this->assertStringContainsString("### Warnings\n\n- The file “/a.md” is open in Text.", $text);
+        $this->assertStringNotContainsString('owner_display_name', $text);
+        $this->assertStringNotContainsString('Owner display name', $text);
+    }
+
     public function testWarningsSharedCalendarsAndSuggestionInPortuguese(): void {
         Translator::use(new JsonL10n('pt_BR'));
         $text = PlanRenderer::render($this->module('Corpo específico.'), 'calendar_create_event', [

@@ -12,6 +12,7 @@ use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Tools\Common\LockAwareWrite;
 use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\PreviewsWrites;
@@ -33,6 +34,9 @@ use OCP\IUserManager;
  * The four writing tools also answer {@see self::preview()}, which the registry asks for whenever a write
  * arrives without `confirm: true`: the note as it is now, what the call would do to it, and whether the
  * trash bin would take it back. A preview creates no category folder and writes nothing.
+ *
+ * A note open in Text (or in Notes in rich mode) is locked by files_lock: the plan warns about it and the write is
+ * refused, before anything changes, with the app and what to do ({@see LockAwareWrite}).
  */
 class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, RendersPlans {
     /** Maximum note size read or written, in bytes. */
@@ -49,6 +53,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
         private SharedWriteGuard $guard,
         private NodeAccessInfo $accessInfo,
         private ?VisibilityGuard $visibilityGuard = null,
+        private ?LockAwareWrite $locks = null,
     ) {}
 
     /**
@@ -253,6 +258,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
         }
         $note = $this->notes->find($root, $arguments['id']);
         $this->assertWritable($note, $arguments);
+        $this->locks?->assertWritable($note, $userId);
         // Everything that can refuse is checked before the first write: the content has no backup, so
         // a refusal after it would leave the note overwritten by a call that reports failure. It is also
         // checked before the shared-write confirmation, so the user is never asked to approve a call
@@ -264,12 +270,14 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
         if (($payload = $this->guard->guard($note, $userId, (string)$arguments['id'], (bool)($arguments['confirm_shared'] ?? false))) !== null) {
             return $payload;
         }
-        if (isset($arguments['content'])) {
-            $note->putContent($arguments['content']);
-        }
-        if ($rename !== null) {
-            $note->move($rename);
-        }
+        $this->locked(function () use ($note, $arguments, $rename): void {
+            if (isset($arguments['content'])) {
+                $note->putContent($arguments['content']);
+            }
+            if ($rename !== null) {
+                $note->move($rename);
+            }
+        }, $note, $userId);
         return $this->described($root, $userId, $arguments);
     }
 
@@ -313,7 +321,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
             if ($target->nodeExists($note->getName())) {
                 throw new ToolFailure(NotesMessages::titleExistsInTargetCategory());
             }
-            $note->move($target->getPath() . '/' . $note->getName());
+            $this->locked(fn () => $note->move($target->getPath() . '/' . $note->getName()), $note, $userId);
         }
         return $this->described($root, $userId, $arguments);
     }
@@ -335,7 +343,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
         if (!$note->getStorage()->instanceOfStorage(self::TRASH_STORAGE)) {
             throw new ToolFailure(NotesMessages::notRecoverable());
         }
-        $note->delete();
+        $this->locked(fn () => $note->delete(), $note, $userId);
         return ['id' => $arguments['id'], 'deleted' => true, 'trash' => true];
     }
 
@@ -345,17 +353,20 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
      * The plan says what the note looks like now and what the call does to it: the title and category it
      * would end up in, an excerpt of the content, and whether the trash bin would bring it back. A note
      * that would not be recoverable is refused here with the same message the write would give, so the
-     * model never asks the user about a deletion the server will not perform.
+     * model never asks the user about a deletion the server will not perform. A lock is not refused here: the
+     * plan carries it as a warning, so the person sees both the change and why it would not happen yet.
      */
     public function preview(string $name, array $arguments, string $userId): array {
-        $root = $this->notes->folder($userId, false);
-        return match ($name) {
-            'notes_create' => $this->previewCreate($root, $userId, $arguments),
-            'notes_edit' => $this->previewEdit($root, $userId, $arguments),
-            'notes_move' => $this->previewMove($root, $userId, $arguments),
-            'notes_delete' => $this->previewDelete($root, $userId, $arguments),
-            default => throw new InvalidArgumentException('Unknown tool'),
-        };
+        return NodeAccess::run(function () use ($name, $arguments, $userId): array {
+            $root = $this->notes->folder($userId, false);
+            return match ($name) {
+                'notes_create' => $this->previewCreate($root, $userId, $arguments),
+                'notes_edit' => $this->previewEdit($root, $userId, $arguments),
+                'notes_move' => $this->previewMove($root, $userId, $arguments),
+                'notes_delete' => $this->previewDelete($root, $userId, $arguments),
+                default => throw new InvalidArgumentException('Unknown tool'),
+            };
+        });
     }
 
     /**
@@ -462,7 +473,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
             'shared' => $this->shared($note, $userId),
             'recoverable' => true,
             'message' => NotesMessages::planEdit(),
-        ];
+        ] + $this->lockNotice($note, $userId);
     }
 
     /**
@@ -509,7 +520,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
             'shared' => $this->shared($note, $userId),
             'recoverable' => true,
             'message' => NotesMessages::planMove(),
-        ];
+        ] + $this->lockNotice($note, $userId);
     }
 
     /**
@@ -537,7 +548,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
             'recoverable' => true,
             'consequence' => NotesMessages::planDeleteConsequence(),
             'message' => NotesMessages::planDelete(),
-        ];
+        ] + $this->lockNotice($note, $userId);
     }
 
     /**
@@ -640,6 +651,9 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
     private function writable(?Folder $root, string $userId, array $arguments): ?array {
         $note = $this->notes->find($root, $arguments['id']);
         $this->assertWritable($note, $arguments);
+        // Before the shared-write confirmation, so nobody is asked to approve a write the lock refuses; and before a
+        // delete or a rename, whose hooks in Text could reset the document of the open editor.
+        $this->locks?->assertWritable($note, $userId);
         return $this->guard->guard($note, $userId, (string)$arguments['id'], (bool)($arguments['confirm_shared'] ?? false));
     }
 
@@ -655,6 +669,28 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
             throw new ToolFailure(CommonMessages::forbidden());
         }
         NodeAccess::checkEtag($note, $arguments['etag'] ?? null);
+    }
+
+    /**
+     * Runs a write on a note, explaining a lock refusal of the storage when the lock appeared after the check.
+     *
+     * @template T
+     * @param callable():T $write the write
+     * @param File $note the note it changes
+     * @param string $userId authenticated user
+     * @return T what the write returned
+     */
+    private function locked(callable $write, File $note, string $userId): mixed {
+        return $this->locks === null ? $write() : $this->locks->run($write, $note, $userId);
+    }
+
+    /**
+     * @param File $note the note a plan describes
+     * @param string $userId authenticated user
+     * @return array<string, mixed> the lock and its warning for the plan, nothing for a free note
+     */
+    private function lockNotice(File $note, string $userId): array {
+        return $this->locks?->planNotice($note, $userId) ?? [];
     }
 
     /**

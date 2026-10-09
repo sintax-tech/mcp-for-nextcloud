@@ -71,11 +71,11 @@ class LockAwareWrite {
      *
      * @param Node $node the file about to change
      * @param string $userId authenticated user
-     * @param string $path user-relative path the message names
+     * @param string|null $path user-relative path the message names, taken from the node when null
      * @param bool $asUser see {@see inspect()}
      * @throws LockWriteFailure when a lock stops the write
      */
-    public function assertWritable(Node $node, string $userId, string $path, bool $asUser = true): void {
+    public function assertWritable(Node $node, string $userId, ?string $path = null, bool $asUser = true): void {
         $lock = $this->lockOf($node);
         if ($lock === null) {
             return;
@@ -84,6 +84,7 @@ class LockAwareWrite {
         if (!$described['blocking']) {
             return;
         }
+        $path ??= self::userPath($node, $userId);
         $this->logRefusal($described['type'], 'check');
         throw new LockWriteFailure(implode(' ', [
             ...$this->sentences($lock, $described, $userId, $path),
@@ -98,15 +99,16 @@ class LockAwareWrite {
      *
      * @param Node $node the file the write would change
      * @param string $userId authenticated user
-     * @param string $path user-relative path the message names
+     * @param string|null $path user-relative path the message names, taken from the node when null
      * @return array{lock?: array<string, mixed>, warnings?: list<array{type:string, message:string}>} keys to add to the plan
      */
-    public function planNotice(Node $node, string $userId, string $path): array {
+    public function planNotice(Node $node, string $userId, ?string $path = null): array {
         $lock = $this->lockOf($node);
         if ($lock === null) {
             return [];
         }
         $described = $this->describe($lock, $userId, true);
+        $path ??= self::userPath($node, $userId);
         $message = $described['blocking']
             ? implode(' ', [...$this->sentences($lock, $described, $userId, $path), LockMessages::planRefused(), $this->advice($described)])
             : LockMessages::planOwn(self::clean($path));
@@ -120,11 +122,11 @@ class LockAwareWrite {
      * @param callable():T $write the write itself
      * @param Node $node the file it changes
      * @param string $userId authenticated user
-     * @param string $path user-relative path the message names
+     * @param string|null $path user-relative path the message names, taken from the node when null
      * @return T what the write returned
      * @throws ToolFailure {@see LockWriteFailure} for a files_lock refusal, the short retry message for a transactional lock
      */
-    public function run(callable $write, Node $node, string $userId, string $path): mixed {
+    public function run(callable $write, Node $node, string $userId, ?string $path = null): mixed {
         try {
             return $write();
         } catch (LockedException $e) {
@@ -140,13 +142,14 @@ class LockAwareWrite {
      * @param LockedException $e what the storage threw
      * @param Node $node the file the write was changing
      * @param string $userId authenticated user
-     * @param string $path user-relative path the message names
+     * @param string|null $path user-relative path the message names, taken from the node when null
      * @return ToolFailure the failure to throw
      */
-    public function failure(LockedException $e, Node $node, string $userId, string $path): ToolFailure {
+    public function failure(LockedException $e, Node $node, string $userId, ?string $path = null): ToolFailure {
         if (!$e instanceof ManuallyLockedException) {
             return new ToolFailure(CommonMessages::locked());
         }
+        $path ??= self::userPath($node, $userId);
         $lock = $this->lockOf($node);
         $token = $e->getExistingLock();
         if ($lock !== null && ($token === null || $token === '' || $lock->getToken() === $token)) {
@@ -291,6 +294,17 @@ class LockAwareWrite {
             $sentences[] = LockMessages::endsIn((int)ceil($e->getTimeout() / 60));
         }
         return [$described, $sentences];
+    }
+
+    /**
+     * @param Node $node a node of the user's view
+     * @param string $userId authenticated user
+     * @return string its path below the user's folder, the way the tools name it; the name alone outside that folder
+     */
+    private static function userPath(Node $node, string $userId): string {
+        $prefix = '/' . $userId . '/files';
+        $path = (string)$node->getPath();
+        return str_starts_with($path, $prefix . '/') ? substr($path, strlen($prefix)) : (string)$node->getName();
     }
 
     /** @return string the instant in the user's timezone, e.g. 2025-10-08 08:05 (America/Sao_Paulo) */

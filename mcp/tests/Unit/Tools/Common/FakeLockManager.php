@@ -7,12 +7,21 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Common;
 
+use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
+use OCA\Mcp\Tools\Common\LockAwareWrite;
+use OCP\App\IAppManager;
+use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\Lock\ILock;
 use OCP\Files\Lock\ILockManager;
 use OCP\Files\Lock\ILockProvider;
 use OCP\Files\Lock\LockContext;
 use OCP\Files\Lock\NoLockProviderException;
+use OCP\IConfig;
 use OCP\Lock\ManuallyLockedException;
+use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+use Psr\Log\NullLogger;
 
 /**
  * ILockManager of Nextcloud 32 to 35 with files_lock behind it, or without it ($available false). It only answers
@@ -39,6 +48,28 @@ final class FakeLockManager implements ILockManager {
     public function lock(LockContext $lockInfo): ILock {
         $this->forbidden[] = 'lock';
         throw new \LogicException('the app must never take a lock');
+    }
+
+    /**
+     * The service over this manager, as the modules get it: Text and Nextcloud Office are the known apps, Alice and
+     * Pedro Almeida the known people, and every date is shown in UTC.
+     *
+     * @param TestCase $test test building the mocks
+     * @param LoggerInterface|null $logger where refusals are logged, a NullLogger when omitted
+     */
+    public function service(TestCase $test, ?LoggerInterface $logger = null): LockAwareWrite {
+        $mock = static fn (string $class): object => (new \ReflectionMethod($test, 'createMock'))->invoke($test, $class);
+        $apps = $mock(IAppManager::class);
+        $apps->method('getAppInfo')->willReturnCallback(static fn (string $app): ?array => match ($app) {
+            'text' => ['id' => 'text', 'name' => 'Text'],
+            'richdocuments' => ['id' => 'richdocuments', 'name' => 'Nextcloud Office'],
+            default => null,
+        });
+        $time = $mock(ITimeFactory::class);
+        $time->method('getTime')->willReturn(1759922100);
+        $config = $mock(IConfig::class);
+        $config->method('getUserValue')->willReturn('UTC');
+        return new LockAwareWrite($this, FakeUsers::manager($test, FakeUsers::DEFAULTS), $apps, $time, new UserTimezone($config), $logger ?? new NullLogger());
     }
 
     /** The exception files_lock's storage wrapper throws for that lock. */

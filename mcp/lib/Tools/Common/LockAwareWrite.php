@@ -219,8 +219,10 @@ class LockAwareWrite {
         $queue = new \SplQueue();
         $queue->enqueue($node);
         // Nodes that may still be queued: a listing larger than what is left refuses the folder at once, before any of
-        // its entries is queued or has its lock read. OCP has no count of a folder's entries, so that one listing is
-        // the only read beyond the budget.
+        // its entries is queued or has its lock read. The listing itself is read whole before that comparison:
+        // Folder::getDirectoryListing() takes no limit in Nextcloud 32 to 35, and Folder::search(), which does, queries
+        // the file cache rather than the listing (unscanned entries, mounts), so it cannot stand in as a faithful count.
+        // A single very wide folder therefore costs its whole listing, though never a lock lookup per entry.
         $budget = $this->treeLimit - 1;
         try {
             while (!$queue->isEmpty()) {

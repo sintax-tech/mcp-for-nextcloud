@@ -332,6 +332,18 @@ final class LockAwareWriteTest extends TestCase {
         ], $locks->planNotice($this->tree->node('/alice/files/Notes'), 'alice', '/Notes'));
     }
 
+    /** The user's own lock on a file they cannot see says nothing in the folder's plan: no warning, no metadata. */
+    public function testTheOwnLockOfAHiddenFileInsideAFolderSaysNothing(): void {
+        $this->manager->put(new FakeLock($this->id, ILock::TYPE_USER, 'alice', self::CREATED));
+        $guard = $this->createMock(\OCA\Mcp\Service\VisibilityGuard::class);
+        $guard->method('isVisible')->willReturnCallback(fn (Node $node): bool => $node->getPath() !== '/alice/files' . self::PATH);
+        $locks = $this->locks(visibility: $guard);
+        $folder = $this->tree->node('/alice/files/Notes');
+        $this->assertSame([], $locks->planNotice($folder, 'alice', '/Notes'));
+        $locks->assertWritable($folder, 'alice', '/Notes');
+        $this->assertSame([], $this->locks()->planNotice($folder, 'alice', '/Notes'), 'a visible one is not the folder\'s lock either');
+    }
+
     public function testThePlanOfALinkWithoutSessionWarnsAboutTheOwnLock(): void {
         $this->manager->put(new FakeLock($this->id, ILock::TYPE_USER, 'alice', self::CREATED));
         $notice = $this->locks()->planNotice($this->note, 'alice', self::PATH, false);

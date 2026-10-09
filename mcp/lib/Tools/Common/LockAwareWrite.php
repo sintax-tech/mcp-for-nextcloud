@@ -232,7 +232,11 @@ class LockAwareWrite {
                         $hidden = $current !== $node && $this->visibility !== null && !$this->visibility->isVisible($current);
                         return ['state' => 'blocked', 'described' => $described, 'lock' => $lock, 'node' => $current, 'hidden' => $hidden, 'root' => $node];
                     }
-                    $own ??= $described;
+                    // The user's own manual lock lets the write through. Only the node's own one is reported: one inside a
+                    // folder is not the folder's, and on a file the user cannot see it would tell what is hidden.
+                    if ($current === $node) {
+                        $own ??= $described;
+                    }
                 }
                 if ($current instanceof Folder) {
                     $children = $current->getDirectoryListing();

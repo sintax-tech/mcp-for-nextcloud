@@ -211,9 +211,9 @@ A instalação normal é pela App Store do Nextcloud: *Apps* → buscar **MCP fo
 Substitua `<servidor>`, `<nextcloud>` (raiz da instalação), `<apps>` (diretório de apps gravável, por exemplo `custom_apps` ou `apps`, conforme `apps_paths` em `config/config.php`) e `<www>` (usuário do servidor web, por exemplo `www-data`).
 
 ```sh
-scp build/mcp-1.0.4.tar.gz <servidor>:/tmp/
+scp build/mcp-1.0.5.tar.gz <servidor>:/tmp/
 ssh <servidor>
-sudo tar -xzf /tmp/mcp-1.0.4.tar.gz -C <nextcloud>/<apps>/
+sudo tar -xzf /tmp/mcp-1.0.5.tar.gz -C <nextcloud>/<apps>/
 sudo chown -R <www>:<www> <nextcloud>/<apps>/mcp
 sudo -u <www> php <nextcloud>/occ app:enable mcp
 sudo -u <www> php <nextcloud>/occ app:list | grep -A1 mcp
@@ -236,6 +236,19 @@ Módulo `logs`, só leitura e só para TI: `logs_list` lista as entradas do `nex
 - **Análise:** totais por nível/app/usuário, top 20 assinaturas (aspas, caminhos, UUIDs, hashes e números viram `#`), top 10 caminhos de URL (sem query; caminho WebDAV dobrado no endpoint + conta), top 10 user agents e histograma por hora.
 - **Auditoria:** o `ToolRegistry` entrega toda chamada a um `RestrictedModule` com o resultado (`denied` por papel ou grant, `invalid`, `read_error`, `success`), e o módulo dispara `CriticalActionPerformedEvent`, gravado pelo admin_audit quando ativo: `MCP logs read by %s: tool=%s filters=%s` só para leitura feita e `MCP logs request %s for %s: tool=%s filters=%s` para as demais, nunca uma negação como leitura. Dos argumentos ficam só os filtros conhecidos, escalares e cortados. No log do app, negação é `warning` e o resto `info`. Se a própria auditoria falhar (dispatcher ou logger), o registry grava "MCP audit failed" sem argumentos: negada, inválida ou com erro mantém a resposta original; uma leitura bem-sucedida **não** entrega os dados e responde um erro genérico. Se o logger de contingência também falhar, a exceção é ignorada e o mesmo comportamento é preservado.
 - **API do admin:** `GET`/`PUT /apps/mcp/api/logs-access` (`{groups, previous, version}`, listas de strings e versão inteira não negativa), admin-only com CSRF; GET retorna grupos e versão do mesmo snapshot. Grupo novo inexistente dá 400 sem gravar. Uma migration nativa empacotada cria a tabela própria `mcp_logs_groups`; a primeira leitura importa e canonicaliza o antigo `logs_groups` do appconfig e remove a chave antiga, sem sobrescrever um estado já migrado. Se a limpeza falhar, a leitura mantém o estado da tabela e tenta remover a chave de novo nas próximas leituras. O `QBMapper` lê diretamente a tabela e grava com CAS (`UPDATE … SET groups=?, version=version+1 WHERE id=1 AND version=?`): zero linhas alteradas ou lock ocupado dá 409 com o estado atual. O lock exclusivo do `ILockingProvider` é uma camada extra: com `filelocking.enabled=false`, o provider vira Noop, mas o CAS continua protegendo contra revogação desfeita por saves concorrentes ou snapshots antigos do appconfig. Ids são texto: `"1"` e `"01"` são dois grupos.
+
+## Arquivo travado (1.0.5)
+
+Escritas de Notes e Files diante do `files_lock` (app até o Nextcloud 34, embutido no 35). Serviço comum: `Tools/Common/LockAwareWrite` (`ILockManager::isLockProviderAvailable` + `getLocks`), sem importar classes do files_lock.
+
+- **Quem bloqueia:** trava manual de outra pessoa (`TYPE_USER`), trava de app (`TYPE_APP`, Text ou Office) e trava de cliente WebDAV (`TYPE_TOKEN`). APP e TOKEN recusam até para o próprio dono. A trava manual do próprio usuário deixa escrever e é mantida, como no app Files; na rota do checkout por link, que não tem sessão do usuário, ela também recusa, como o files_lock faz ali. Sem provider, nada muda.
+- **Onde:** antes da confirmação de compartilhamento e do backup, e de novo logo antes de cada escrita (`LockAwareWrite::run`): `putContent`, move, rename e delete de nota, cada item de lote e de undo, restauração de versão, upload do checkout, conteúdo de arquivo novo e cópia de backup. A recusa do storage (`ManuallyLockedException`) também é capturada e explicada (`capture`, usado na cópia, que só lê a origem).
+- **Na dúvida, recusa:** consulta de trava que falha recusa; pasta que se move é checada com tudo o que o usuário alcança dentro dela, até 5.000 itens (`LockAwareWrite::TREE_LIMIT`), e uma listagem maior que o orçamento restante recusa sem ler a trava dos itens. Arquivo oculto pelo `VisibilityGuard` não é nomeado e o `lock` do plano traz só `blocking: true`.
+- **Plano (`confirm` ausente):** não recusa; acrescenta `lock` e um aviso `file_locked` em `warnings`. Em `files_move_batch` o item travado vai para `denied`, e o lote é recusado inteiro.
+- **Restauração de versão:** com provider, lê a versão por `IVersionManager::read()` e grava pelo arquivo, sem o `rollback()` do core, cujo `handleAppLocks` repete a escrita no escopo do Text/Office. A garantia sobre o conteúdo substituído é o backup em `/MCP backups`.
+- **Checkout:** trava → 423. Antes de gastar o link, o link continua valendo; depois, a resposta cita o backup e pede novo `files_checkout`.
+- **Mensagem:** app ou pessoa (nome de exibição; nunca UID, app id nem token), desde quando, até quando e o que fazer, em en/pt_BR/es. Recusa sem correlação segura pelo token fica com responsável não identificado. Log só em `debug`, sem caminho nem token.
+- **Limite:** TOKEN só é recusada pela checagem do MCP, que não é atômica com a escrita, e o `getLocks()` do files_lock responde do cache da requisição, inclusive negativo: uma trava TOKEN criada depois da primeira consulta do arquivo na mesma requisição não é vista. Travas USER e APP são aplicadas pelo próprio storage do files_lock. O files_lock não oferece aquisição atômica de trava (consulta e inserção separadas, `file_id` sem índice único), por isso o app não toma trava própria.
 
 ## Configurar
 

@@ -31,6 +31,8 @@ if (PHP_SAPI !== 'cli' || !in_array($argv[1] ?? '', ['seed', 'read'], true) || !
     exit(1);
 }
 [, $mode, $output] = $argv;
+require_once __DIR__ . '/../Support/ProbeCompletion.php';
+$probeCompletion = new \OCA\Mcp\Tests\Integration\Support\ProbeCompletion();
 require_once '/var/www/html/lib/base.php';
 require_once __DIR__ . '/../Compat/SnapshotProbe.php';
 
@@ -62,13 +64,15 @@ $db = Server::get(\OCP\IDBConnection::class);
 $store = new \OCA\Mcp\OAuth\OAuthStore($db);
 // The baseline's constructor: (IConfig, OAuthStore, ?IUserConfig). Built by hand so the branch's container never
 // resolves it.
-$policy = new \OCA\Mcp\Service\GrantPolicy($config, $store, $userConfig);
+$policyClass = getenv('MCP_IT_MODE') === 'upgrade-local'
+    ? 'OCA\\Mcp\\Access\\Grants\\GrantPolicy' : 'OCA\\Mcp\\Service\\GrantPolicy';
+$policy = new $policyClass($config, $store, $userConfig);
 $source = (string)(new ReflectionClass($policy))->getFileName();
 if ($mode === 'read' && !str_starts_with($source, $lib)) {
     fwrite(STDERR, "GrantPolicy came from $source, not from the baseline at $lib\n");
     exit(1);
 }
-$catalog = \OCA\Mcp\Service\GrantPolicy::CATALOG;
+$catalog = $policyClass::CATALOG;
 $uids = SnapshotProbe::uids();
 $result = ['source' => $source, 'catalog' => $catalog];
 
@@ -109,7 +113,7 @@ if ($mode === 'read') {
     foreach ($mcpClasses() as $name) {
         $file = (string)(new ReflectionClass($name))->getFileName();
         if (in_array($name, $boot, true)) {
-            if (preg_match('/^OCA\\\\Mcp\\\\(Service|OAuth|Db)\\\\/', $name) === 1) {
+            if (preg_match('/^OCA\\\\Mcp\\\\(Service|Access|OAuth|Db)\\\\/', $name) === 1) {
                 fwrite(STDERR, "$name was loaded from $file by the boot, before the baseline loader\n");
                 exit(1);
             }
@@ -127,3 +131,5 @@ if ($mode === 'read') {
 }
 file_put_contents($output, json_encode($result, JSON_THROW_ON_ERROR));
 echo "Legacy policy snapshot ($mode) of ", count($uids), ' users from ', $source, PHP_EOL;
+
+$probeCompletion->complete();

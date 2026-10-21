@@ -1,0 +1,19 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+namespace OCA\Mcp\Modules\Files\Reorganization;
+
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+
+/**
+ * A move that cannot happen because of where it wants to land: something is already there, the folder would
+ * land inside itself, or the destination is on another storage.
+ *
+ * It is a ToolFailure so a single move answers the same way it always did, and a subclass so a batch can tell
+ * "fix the destination" from "you may not do this" and put the item in the right list of the plan.
+ */
+final class MoveConflict extends ToolFailure {}

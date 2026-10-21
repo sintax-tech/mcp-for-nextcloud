@@ -1,0 +1,294 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+namespace OCA\Mcp\Tests\Unit\Modules\Files\Presentation;
+
+use OCA\Mcp\Modules\Files\Checkout\CheckoutMessages;
+use OCA\Mcp\Modules\Files\Editing\EditingMessages;
+use OCA\Mcp\Modules\Files\Editing\FileBackup;
+use OCA\Mcp\Modules\Files\Reading\OcrSupport;
+use OCA\Mcp\Modules\Files\Reading\TextExtractor;
+use OCA\Mcp\Modules\Files\Versions\VersionMessages;
+use OCA\Mcp\Modules\Files\Versions\VersionReader;
+use OCA\Mcp\Platform\FileAccess\BackupLocation;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Tests\Support\Files\FilesToolsTestCase;
+use OCA\Mcp\Tests\Support\Files\Stubs\FakeVersion;
+use OCA\Mcp\Tests\Support\Files\Stubs\FakeVersionManager;
+use OCA\Mcp\Tests\Unit\InMemoryConfig;
+use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Support\Identity\FakeUsers;
+use OCA\Mcp\Platform\FileAccess\Sharing\NodeAccessInfo;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
+use PHPUnit\Framework\Attributes\DataProvider;
+use Psr\Container\ContainerInterface;
+use Psr\Log\LoggerInterface;
+
+/**
+ * Covers the content of every Files plan and the guarantee that a plan writes nothing: no operation on
+ * the tree, no backup prepared, no checkout token minted, no batch recorded or marked undone.
+ */
+final class FilesPlanTest extends FilesToolsTestCase {
+    /** @var array<string, mixed> */
+    private array $nodesBefore;
+    /** @var array<int, mixed> */
+    private array $batchesBefore;
+    private FakeVersionManager $manager;
+
+    protected function setUp(): void {
+        parent::setUp();
+        require_once __DIR__ . '/../../../../Support/Files/Stubs/versions_api.php';
+        $this->tree->addFile('/alice/files/Documentos/plano.md', "um\ndois\n", 'text/markdown');
+        $this->tree->addFolder('/alice/files/Arquivo');
+
+        // The same module, with a backup that must never be prepared and versions to restore from.
+        $backup = $this->createMock(FileBackup::class);
+        $backup->expects(self::never())->method('prepare');
+        $manager = $this->manager = FakeVersionManager::with([new FakeVersion(1759100000, 1759100000, 4, 'text/markdown', 'ata.md')]);
+        $container = $this->createMock(ContainerInterface::class);
+        $container->method('get')->willReturnCallback(fn (string $id) => $id === 'OCA\Files_Versions\Versions\IVersionManager' ? $manager : null);
+        $access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
+        $versions = new VersionReader($this->apps, $this->users, new TextExtractor($this->temp), $access, fn () => ($container)->get(VersionReader::MANAGER), new OcrSupport($this->apps));
+        $this->module = $this->rebuilt(['backup' => $backup, 'versions' => $versions]);
+    }
+
+    private function snapshot(): void {
+        $this->nodesBefore = $this->tree->nodes;
+        $this->batchesBefore = $this->batches->rows;
+    }
+
+    private function assertNothingWritten(): void {
+        $this->assertSame([], $this->tree->ops);
+        $this->assertSame($this->nodesBefore, $this->tree->nodes);
+        $this->assertEquals($this->batchesBefore, $this->batches->rows);
+        $this->assertSame([], $this->issued, 'no checkout link may be minted by a plan');
+    }
+
+    public function testMkdirPlanListsTheLevelsItWouldCreate(): void {
+        $this->snapshot();
+        $plan = $this->plan('files_mkdir', ['path' => '/Arquivo/2026/Q3']);
+
+        $this->assertSame('/Arquivo/2026/Q3', $plan['path']);
+        $this->assertSame(['/Arquivo/2026', '/Arquivo/2026/Q3'], $plan['created']);
+        $this->assertSame('/Arquivo', $plan['createdIn']);
+        $this->assertSame([], $plan['shared']);
+        $this->assertTrue($plan['recoverable']);
+        $this->assertNothingWritten();
+    }
+
+    public function testCopyPlanShowsOriginDestinationAndSize(): void {
+        $this->snapshot();
+        $plan = $this->plan('files_copy', ['from' => '/Documentos/ata.md', 'to' => '/Arquivo/ata.md']);
+
+        $this->assertSame(['/Documentos/ata.md', '/Arquivo/ata.md'], [$plan['from'], $plan['to']]);
+        $this->assertSame(1, $plan['nodes']);
+        $this->assertSame(strlen("# Ata\nolá"), $plan['bytes']);
+        $this->assertSame([], $plan['shared']);
+        $this->assertTrue($plan['recoverable']);
+        $this->assertNothingWritten();
+    }
+
+    public function testMovePlanShowsOriginAndDestination(): void {
+        $this->snapshot();
+        $plan = $this->plan('files_move', ['from' => '/Documentos/ata.md', 'to' => '/Arquivo/ata.md']);
+
+        $this->assertSame(['/Documentos/ata.md', '/Arquivo/ata.md'], [$plan['from'], $plan['to']]);
+        $this->assertFalse($plan['isDir']);
+        $this->assertSame([], $plan['shared']);
+        $this->assertTrue($plan['recoverable']);
+        $this->assertNothingWritten();
+    }
+
+    public function testMoveBatchPlanListsEveryMoveInOrder(): void {
+        $this->snapshot();
+        $moves = [
+            ['from' => '/Documentos/ata.md', 'to' => '/Arquivo/ata.md'],
+            ['from' => '/Documentos/plano.md', 'to' => '/Arquivo/plano.md'],
+        ];
+        $plan = $this->plan('files_move_batch', ['moves' => $moves]);
+
+        $this->assertSame($moves, $plan['order']);
+        $this->assertFalse($plan['requiresSharedConfirmation']);
+        $this->assertStringContainsString('files_undo_batch', $plan['undo']);
+        $this->assertNothingWritten();
+    }
+
+    public function testUndoBatchPlanShowsWhatGoesBackWithoutMarkingTheBatch(): void {
+        $id = $this->json('files_move_batch', [
+            'moves' => [['from' => '/Documentos/ata.md', 'to' => '/Arquivo/ata.md']],
+            'confirm' => true,
+        ])['batch_id'];
+        $this->tree->ops = [];
+        $this->snapshot();
+
+        $plan = $this->plan('files_undo_batch', ['batch_id' => $id]);
+
+        $this->assertSame($id, $plan['batch_id']);
+        $this->assertSame(1, $plan['count']);
+        $this->assertSame([['to' => '/Arquivo/ata.md', 'from' => '/Documentos/ata.md']], $plan['undo']);
+        $this->assertSame([], $plan['conflicts']);
+        $this->assertTrue($plan['ok']);
+        $this->assertTrue($plan['recoverable']);
+        $this->assertNothingWritten();
+    }
+
+    public function testEditPlanShowsTheDiffAndTheBackupItWouldTake(): void {
+        $this->snapshot();
+        $plan = $this->plan('files_edit', ['path' => '/Documentos/plano.md', 'content' => "um\ntrês\n"]);
+
+        $this->assertSame('/Documentos/plano.md', $plan['path']);
+        $this->assertStringContainsString('-dois', $plan['diff']);
+        $this->assertStringContainsString('+três', $plan['diff']);
+        $this->assertSame(['before' => 8, 'after' => 9], $plan['size']);
+        $this->assertSame('/' . BackupLocation::FOLDER, $plan['backup']);
+        $this->assertSame([], $plan['shared']);
+        $this->assertFalse($plan['requiresSharedConfirmation']);
+        $this->assertTrue($plan['recoverable']);
+        $this->assertNothingWritten();
+    }
+
+    public function testReplacePlanShowsTheSingleOccurrenceAndTheDiff(): void {
+        $this->snapshot();
+        $plan = $this->plan('files_replace', ['path' => '/Documentos/plano.md', 'old' => 'dois', 'new' => 'quatro']);
+
+        $this->assertSame(['occurrences' => 1, 'replaced' => 1], $plan['snippet']);
+        $this->assertStringContainsString('+quatro', $plan['diff']);
+        $this->assertSame(['before' => 8, 'after' => 10], $plan['size']);
+        $this->assertSame('/' . BackupLocation::FOLDER, $plan['backup']);
+        $this->assertTrue($plan['recoverable']);
+        $this->assertNothingWritten();
+    }
+
+    public function testCheckoutPlanPromisesLinksWithoutMintingThem(): void {
+        $this->snapshot();
+        $plan = $this->plan('files_checkout', ['path' => '/Documentos/ata.md']);
+
+        $this->assertSame('/Documentos/ata.md', $plan['path']);
+        $this->assertTrue($plan['linksAfterConfirmation']);
+        $this->assertArrayNotHasKey('download', $plan);
+        $this->assertArrayNotHasKey('upload', $plan);
+        $this->assertSame('/' . BackupLocation::FOLDER, $plan['backup']);
+        $this->assertTrue($plan['recoverable']);
+        $this->assertNothingWritten();
+        $this->assertSame([], $this->store->rows, "no checkout token may be stored by a plan");
+        $this->assertSame([], $this->store->ops);
+    }
+
+    /**
+     * @return array<string, array{string, string}> binary files the checkout plan has to accept
+     */
+    public static function binaryProvider(): array {
+        return [
+            'docx' => ['/Documentos/contrato.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+            'xls' => ['/Documentos/planilha.xls', 'application/vnd.ms-excel'],
+            'pdf' => ['/Documentos/relatorio.pdf', 'application/pdf'],
+            'png' => ['/Documentos/foto.png', 'image/png'],
+        ];
+    }
+
+    /** A binary file is planned like a text one: same promise of links, same MIME, nothing minted. */
+    #[DataProvider('binaryProvider')]
+    public function testCheckoutPlanAcceptsABinaryFile(string $path, string $mime): void {
+        $this->tree->addFile('/alice/files' . $path, "PK\x03\x04\x00\xFF", $mime);
+        $this->snapshot();
+        $plan = $this->plan('files_checkout', ['path' => $path]);
+
+        $this->assertSame($path, $plan['path']);
+        $this->assertSame($mime, $plan['mime']);
+        $this->assertTrue($plan['linksAfterConfirmation']);
+        $this->assertNothingWritten();
+        $this->assertSame([], $this->store->rows);
+    }
+
+    /** The plan, the tool description and the guide say any file type goes through the checkout and text has a shorter way. */
+    public function testCheckoutWordingCoversAnyFileTypeAndPointsTextToEdit(): void {
+        $this->tree->addFile('/alice/files/Documentos/contrato.docx', 'PK', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        $plan = $this->plan('files_checkout', ['path' => '/Documentos/contrato.docx']);
+        $guide = implode("\n", $this->module->guideNotes());
+        foreach ([$plan['message'], CheckoutMessages::checkoutTool(), $guide] as $text) {
+            $this->assertStringContainsString('any file', $text);
+            $this->assertStringContainsString('files_edit', $text);
+            $this->assertStringContainsString('files_replace', $text);
+        }
+        $this->assertStringContainsString('scanned PDF', $guide);
+    }
+
+    /** The checkout plan still refuses the backup folder, binary or not. */
+    public function testCheckoutPlanRefusesTheBackupFolder(): void {
+        $this->tree->addFile('/alice/files/MCP backups/contrato.docx.20260921-141320.bak', 'bin', 'application/octet-stream');
+        $this->snapshot();
+        try {
+            $this->plan('files_checkout', ['path' => '/MCP backups/contrato.docx.20260921-141320.bak']);
+            $this->fail('a checkout of the backup folder must not be planned');
+        } catch (ToolFailure $e) {
+            $this->assertSame(EditingMessages::backupPath(), $e->getMessage());
+        }
+        $this->assertNothingWritten();
+    }
+
+    /** The plan refuses a checkout without versioning the same way the mint does, instead of crashing. */
+    public function testCheckoutPlanWithoutVersioningIsRefusedLikeTheMint(): void {
+        $this->enabled = [];
+        $this->snapshot();
+
+        try {
+            $this->plan('files_checkout', ['path' => '/Documentos/ata.md']);
+            $this->fail('a checkout without files_versions must not be planned');
+        } catch (ToolFailure $e) {
+            $this->assertSame(VersionMessages::versionsOff(), $e->getMessage());
+        }
+        $this->assertNothingWritten();
+    }
+
+    public function testVersionRestorePlanShowsTheVersionAndTheCurrentFile(): void {
+        $this->snapshot();
+        $plan = $this->plan('files_version_restore', ['path' => '/Documentos/ata.md', 'version' => '1759100000']);
+
+        $this->assertSame('/Documentos/ata.md', $plan['path']);
+        $this->assertSame('1759100000', $plan['version']['revision']);
+        $this->assertSame(['list'], $this->manager->ops, 'a plan reads the versions and never rolls back');
+        $this->assertArrayHasKey('etag', $plan['current']);
+        $this->assertSame('/' . BackupLocation::FOLDER, $plan['backup']);
+        $this->assertTrue($plan['recoverable']);
+        $this->assertNothingWritten();
+    }
+
+    /** @return array<string, array{array<string, mixed>}> */
+    public static function unconfirmedProvider(): array {
+        return ['absent' => [[]], 'false' => [['confirm' => false]]];
+    }
+
+    #[DataProvider('unconfirmedProvider')]
+    public function testRegistryAnswersWithThePlanUnlessConfirmed(array $confirm): void {
+        $this->snapshot();
+        $result = $this->registry()->call('files_move', ['from' => '/Documentos/ata.md', 'to' => '/Arquivo/ata.md'] + $confirm, 'alice');
+
+        $out = $result['structuredContent'];
+        $this->assertTrue($out['requiresConfirmation']);
+        $this->assertSame('files_move', $out['action']);
+        $this->assertNothingWritten();
+    }
+
+    public function testRegistryRunsTheWriteOnceConfirmed(): void {
+        $result = $this->registry()->call('files_move', ['from' => '/Documentos/ata.md', 'to' => '/Arquivo/ata.md', 'confirm' => true], 'alice');
+
+        $out = json_decode($result['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR);
+        $this->assertArrayNotHasKey('requiresConfirmation', $out);
+        $this->assertSame(['move /alice/files/Documentos/ata.md /alice/files/Arquivo/ata.md'], $this->tree->ops);
+    }
+
+    private function registry(): ToolRegistry {
+        $policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
+        foreach (GrantPolicy::CATALOG['files'] as $operation) {
+            $policy->setGrant('alice', 'files', $operation, true);
+        }
+
+        $availability = new \OCA\Mcp\Mcp\Tools\Discovery\ToolAvailability($policy, $this->apps, $this->users);
+        return new ToolRegistry([$this->module], $availability, new \OCA\Mcp\Mcp\Tools\Execution\ToolExecutor($availability, $this->createMock(LoggerInterface::class)));
+    }
+}

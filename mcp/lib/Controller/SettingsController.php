@@ -8,10 +8,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\Controller;
 
 use InvalidArgumentException;
-use OCA\Mcp\Checkout\CheckoutTokenStore;
-use OCA\Mcp\Tools\Files\BatchStore;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutTokenStore;
+use OCA\Mcp\Modules\Files\Reorganization\BatchStore;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Settings\PersonalSection;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;

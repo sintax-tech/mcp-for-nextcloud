@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Connections;
 
 use OCA\Mcp\Controller\ConnectionsController;
-use OCA\Mcp\Service\ConnectionList;
+use OCA\Mcp\OAuth\Connections\ConnectionList;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
 

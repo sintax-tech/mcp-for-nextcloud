@@ -9,7 +9,7 @@ namespace OCA\Mcp\Db;
 
 use InvalidArgumentException;
 use LogicException;
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Access\Policy\DecimalCounter;
 use OCP\DB\Exception;
 use OCP\IDBConnection;
 use UnexpectedValueException;
@@ -66,7 +66,7 @@ class ResourceScopeMapper {
      * How many resources each restricted module of each user keeps, for the matrix: no ids and no names. One
      * statement, so a page never pairs a mode with items of another commit.
      *
-     * @param list<string> $uids Nextcloud user ids, at most PolicyWriter::MAX_UIDS
+     * @param list<string> $uids Nextcloud user ids, at most \OCA\Mcp\Access\Policy\PolicyLimits::MAX_UIDS
      * @return array<string, array<string, int>> count by module by uid; an unrestricted module is absent
      * @throws InvalidArgumentException for an invalid user id
      * @throws UnexpectedValueException for a user identity collision or an invalid stored row

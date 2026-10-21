@@ -7,9 +7,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\BackgroundJob;
 
 use OCA\Mcp\BackgroundJob\ReconcileJob;
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\GroupLifecycle;
-use OCA\Mcp\Service\Policy\ScopeCleanup;
+use OCA\Mcp\OAuth\Revocation\CauseProcessor;
+use OCA\Mcp\Access\Grants\Groups\GroupLifecycle;
+use OCA\Mcp\Access\ResourceScope\ScopeCleanup;
 use OCP\AppFramework\Utility\ITimeFactory;
 use PHPUnit\Framework\TestCase;
 

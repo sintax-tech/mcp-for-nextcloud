@@ -1,0 +1,149 @@
+{
+    "raw": [
+        {
+            "name": "users_search",
+            "description": "Searches the accounts of this Nextcloud by name, account ID or e-mail and returns their account IDs (uid), display names and, when available, e-mail; every row carries a type, \"user\" for an account. Use it whenever you are not sure of someone's account ID. Groups are not searched by default: to also match groups, pass include_groups: true, and the group rows come back with the type \"group\" and the group ID, which is what a share takes as group:<id>.",
+            "module": "people",
+            "operation": "read",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 100,
+                        "description": "Name, account ID or e-mail to look for (2 to 100 characters)."
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 25,
+                        "default": 10,
+                        "description": "Maximum number of accounts returned (default 10, at most 25)."
+                    },
+                    "include_groups": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Also match groups, for sharing with a group: they come back with the type \"group\" and the group ID (default false)."
+                    }
+                },
+                "required": [
+                    "query"
+                ],
+                "additionalProperties": false
+            }
+        }
+    ],
+    "published": [
+        {
+            "name": "users_search",
+            "title": "Search people",
+            "description": "Searches the accounts of this Nextcloud by name, account ID or e-mail and returns their account IDs (uid), display names and, when available, e-mail; every row carries a type, \"user\" for an account. Use it whenever you are not sure of someone's account ID. Groups are not searched by default: to also match groups, pass include_groups: true, and the group rows come back with the type \"group\" and the group ID, which is what a share takes as group:<id>.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 100,
+                        "description": "Name, account ID or e-mail to look for (2 to 100 characters)."
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 25,
+                        "default": 10,
+                        "description": "Maximum number of accounts returned (default 10, at most 25)."
+                    },
+                    "include_groups": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Also match groups, for sharing with a group: they come back with the type \"group\" and the group ID (default false)."
+                    }
+                },
+                "required": [
+                    "query"
+                ],
+                "additionalProperties": false
+            },
+            "annotations": {
+                "title": "Search people",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+            },
+            "module": "people",
+            "operation": "read"
+        }
+    ],
+    "guide": {
+        "content": [
+            {
+                "type": "text",
+                "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# People (`people`)\n\n1 tools available to you in this module.\n\nBehaviour notes\n\n- Before acting on a person (inviting, mentioning, messaging), when the user did not give the account ID, call users_search and confirm with the user when more than one account matches. Never invent an ID.\n- users_search follows the sharing settings of the administrator: it may return nobody for a partial term.\n- To share something with a whole group, call users_search with include_groups: true and take the ID of the row whose type is \"group\": a share takes it as group:<id>. Groups are not searched without that argument, and the same administrator restrictions of accounts apply to them.\n\n\n## Search people — `users_search`\n\nReads only. Searches the accounts of this Nextcloud by name, account ID or e-mail and returns their account IDs (uid), display names and, when available, e-mail; every row carries a type, \"user\" for an account. Use it whenever you are not sure of someone's account ID. Groups are not searched by default: to also match groups, pass include_groups: true, and the group rows come back with the type \"group\" and the group ID, which is what a share takes as group:<id>.\n\nParameters\n- `query` (string, required, length 2..100) — Name, account ID or e-mail to look for (2 to 100 characters).\n- `limit` (integer, optional, default 10, 1..25) — Maximum number of accounts returned (default 10, at most 25).\n- `include_groups` (boolean, optional, default false) — Also match groups, for sharing with a group: they come back with the type \"group\" and the group ID (default false)."
+            }
+        ],
+        "structuredContent": {
+            "language_note": "This guide is in English: relay it to the user in their own language.",
+            "module": "people",
+            "title": "People",
+            "notes": [
+                "Before acting on a person (inviting, mentioning, messaging), when the user did not give the account ID, call users_search and confirm with the user when more than one account matches. Never invent an ID.",
+                "users_search follows the sharing settings of the administrator: it may return nobody for a partial term.",
+                "To share something with a whole group, call users_search with include_groups: true and take the ID of the row whose type is \"group\": a share takes it as group:<id>. Groups are not searched without that argument, and the same administrator restrictions of accounts apply to them."
+            ],
+            "tools": [
+                {
+                    "name": "users_search",
+                    "title": "Search people",
+                    "description": "Searches the accounts of this Nextcloud by name, account ID or e-mail and returns their account IDs (uid), display names and, when available, e-mail; every row carries a type, \"user\" for an account. Use it whenever you are not sure of someone's account ID. Groups are not searched by default: to also match groups, pass include_groups: true, and the group rows come back with the type \"group\" and the group ID, which is what a share takes as group:<id>.",
+                    "read_only": true,
+                    "destructive": false,
+                    "confirmation": [],
+                    "parameters": [
+                        {
+                            "name": "query",
+                            "type": "string",
+                            "required": true,
+                            "description": "Name, account ID or e-mail to look for (2 to 100 characters).",
+                            "constraints": [
+                                "length 2..100"
+                            ]
+                        },
+                        {
+                            "name": "limit",
+                            "type": "integer",
+                            "required": false,
+                            "description": "Maximum number of accounts returned (default 10, at most 25).",
+                            "constraints": [
+                                "default 10",
+                                "1..25"
+                            ]
+                        },
+                        {
+                            "name": "include_groups",
+                            "type": "boolean",
+                            "required": false,
+                            "description": "Also match groups, for sharing with a group: they come back with the type \"group\" and the group ID (default false).",
+                            "constraints": [
+                                "default false"
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "moduleOrder": [
+        "FilesModule",
+        "NotesModule",
+        "CalendarModule",
+        "ContactsModule",
+        "TasksModule",
+        "DeckModule",
+        "TalkModule",
+        "PeopleModule",
+        "LogsModule"
+    ]
+}

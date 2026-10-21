@@ -11,18 +11,19 @@ use OCA\Mcp\Db\GroupGrantsMapper;
 use OCA\Mcp\Db\GroupLifeMapper;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\OAuth\CredentialGeneration;
+use OCA\Mcp\OAuth\Revocation\CredentialGeneration;
 use OCA\Mcp\OAuth\OAuthException;
 use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\OAuth\TokenHasher;
-use OCA\Mcp\Service\Policy\GroupGrantsService;
-use OCA\Mcp\Service\Policy\GroupLifecycle;
-use OCA\Mcp\Service\Policy\GroupSourceUntrusted;
-use OCA\Mcp\Service\Policy\PolicyConflict;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyResolver;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Grants\Groups\GroupGrantsService;
+use OCA\Mcp\Access\Grants\Groups\GroupLifecycle;
+use OCA\Mcp\Access\Grants\Groups\GroupSourceUntrusted;
+use OCA\Mcp\Access\Policy\Transactions\PolicyConflict;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\Resolution\PolicyResolver;
+use OCA\Mcp\Access\Policy\DecimalCounter;
+use OCA\Mcp\Tests\Integration\Support\NativePolicyServices;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCP\Config\IUserConfig;
 use OCP\Group\Backend\INamedBackend;
@@ -127,7 +128,7 @@ final class GroupGrantsTest extends OAuthAccountTestCase {
     }
 
     private function saveFrom(array $preview, ?\Closure $admit = null): array {
-        return Server::get(PolicyWriter::class)->setGroupGrants($preview['revision'], self::ACTOR, $preview['groupId'],
+        return Server::get(\OCA\Mcp\Access\Grants\Groups\GroupGrantCommands::class)->setGroupGrants($preview['revision'], self::ACTOR, $preview['groupId'],
             $preview['grants'], $preview['previewId'], $admit ?? $this->admit());
     }
 
@@ -180,7 +181,7 @@ final class GroupGrantsTest extends OAuthAccountTestCase {
 
         $result = $this->saveFrom($preview);
 
-        $this->assertSame(PolicyWriter::next($preview['revision']), $result['revision']);
+        $this->assertSame(DecimalCounter::increment($preview['revision']), $result['revision']);
         $this->assertSame($result['revision'], $this->state()['revision']);
         $life = $this->life($gid);
         $this->assertSame(['active', $result['revision']], [$life['state'], $life['policyRev']], 'policy_rev = post-commit revision');
@@ -423,13 +424,13 @@ final class GroupGrantsTest extends OAuthAccountTestCase {
                 return parent::replace($gid, $expectedGen, $state, $gen, $policyRev);
             }
         };
-        $writer = new PolicyWriter($this->official(), Server::get(PolicyStateMapper::class), Server::get(\OCA\Mcp\Db\PolicyEventsMapper::class),
+        $writer = new NativePolicyServices($this->official(), Server::get(PolicyStateMapper::class), Server::get(\OCA\Mcp\Db\PolicyEventsMapper::class),
             Server::get(IConfig::class), Server::get(IUserConfig::class), Server::get(\OCP\IAppConfig::class), Server::get(IUserManager::class),
             Server::get(\OCP\AppFramework\Utility\ITimeFactory::class), Server::get(AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class),
-            Server::get(\OCA\Mcp\Service\Policy\PolicyEventProcessor::class), Server::get(GroupGrantsMapper::class), $life, Server::get(OAuthStore::class));
+            Server::get(\OCA\Mcp\Access\Policy\Events\PolicyEventProcessor::class), Server::get(GroupGrantsMapper::class), $life, Server::get(OAuthStore::class));
         $hooks = [];
         try {
-            $writer->setGroupGrants($preview['revision'], self::ACTOR, $gid, $preview['grants'], $preview['previewId'], $this->admit($hooks, $attempts));
+            $writer->commands->groups->setGroupGrants($preview['revision'], self::ACTOR, $gid, $preview['grants'], $preview['previewId'], $this->admit($hooks, $attempts));
             $this->fail('A save overwrote a pending deletion');
         } catch (PolicyConflict) {
         }

@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Admin;
 
 use OCA\Mcp\Controller\GrantsController;
 use OCA\Mcp\Db\PolicyEventsMapper;
-use OCA\Mcp\Service\Policy\PolicyEventPayload;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\Events\PolicyEventPayload;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;
 use OCP\IUser;
@@ -48,16 +48,16 @@ final class GrantsRevisionTest extends TestCase {
         $session = $this->createMock(IUserSession::class);
         $session->method('getUser')->willReturn($user);
         return new GrantsController('mcp', $request, $this->fx->matrix(), $this->fx->policy, $this->fx->userManager(),
-            $this->fx->config->mock($this), $this->fx->logsAccess(), $this->fx->writer(), $this->fx->state(), $session,
-            $this->createMock(\OCA\Mcp\Service\Policy\GroupGrantsService::class), $this->fx->clients());
+            $this->fx->config->mock($this), $this->fx->logsAccess(), $this->fx->services()->grants, $this->fx->services()->service, $this->fx->services()->undo, $this->fx->state(), $session,
+            $this->createMock(\OCA\Mcp\Access\Grants\Groups\GroupGrantsService::class), $this->fx->oauth, $this->fx->oauthClients());
     }
 
     /** Review F1 of B2: a re-read for the response that fails after the commit answers uncertain, with the receipt. */
     public function testAReReadThatFailsAfterTheCommitAnswersUncertainWithTheRevisionAndReceipt(): void {
-        $failing = $this->createMock(\OCA\Mcp\Service\GrantMatrix::class);
-        $failing->method('rows')->willThrowException(new \OCA\Mcp\Service\Policy\PolicyUnavailable('Resource scopes unavailable'));
+        $failing = $this->createMock(\OCA\Mcp\Access\Grants\GrantMatrix::class);
+        $failing->method('rows')->willThrowException(new \OCA\Mcp\Access\Policy\PolicyUnavailable('Resource scopes unavailable'));
         $failing->method('groups')->willThrowException(new \RuntimeException('Groups unavailable'));
-        $policy = $this->createMock(\OCA\Mcp\Service\GrantPolicy::class);
+        $policy = $this->createMock(\OCA\Mcp\Access\Grants\GrantPolicy::class);
         $policy->method('globalEnabled')->willThrowException(new \RuntimeException('Config unavailable'));
         $build = function (array $body) use ($failing, $policy): GrantsController {
             $body['expectedRevision'] = $this->revision();
@@ -68,8 +68,8 @@ final class GrantsRevisionTest extends TestCase {
             $session = $this->createMock(IUserSession::class);
             $session->method('getUser')->willReturn($user);
             return new GrantsController('mcp', $request, $failing, $policy, $this->fx->userManager(),
-                $this->fx->config->mock($this), $this->fx->logsAccess(), $this->fx->writer(), $this->fx->state(), $session,
-                $this->createMock(\OCA\Mcp\Service\Policy\GroupGrantsService::class), $this->fx->clients());
+                $this->fx->config->mock($this), $this->fx->logsAccess(), $this->fx->services()->grants, $this->fx->services()->service, $this->fx->services()->undo, $this->fx->state(), $session,
+                $this->createMock(\OCA\Mcp\Access\Grants\Groups\GroupGrantsService::class), $this->fx->oauth, $this->fx->oauthClients());
         };
 
         $revision = $this->revision();
@@ -325,7 +325,7 @@ final class GrantsRevisionTest extends TestCase {
         }
         self::assertStatus(400, $this->controller(['receiptId' => 7])->undo());
         self::assertStatus(428, $this->controller(['receiptId' => $saved['receiptId'], 'expectedRevision' => null])->undo());
-        $this->fx->config->now += PolicyWriter::RECEIPT_TTL;
+        $this->fx->config->now += \OCA\Mcp\Access\Policy\PolicyLimits::RECEIPT_TTL;
         $this->assertSame([410, ['error' => 'Gone']], [$this->undo($saved['receiptId'], $saved['revision'])->getStatus(),
             $this->undo($saved['receiptId'], $saved['revision'])->getData()]);
         // Ownership is checked first: another administrator cannot learn that the receipt exists, expired or not.
@@ -403,8 +403,10 @@ final class GrantsRevisionTest extends TestCase {
 
     public function testStorageFailuresAre503AndSayWhetherTheOutcomeIsUncertain(): void {
         $state = $this->fx->state();
-        $writer = $this->createMock(PolicyWriter::class);
-        $writer->method('applyCells')->willThrowException(new \OCA\Mcp\Service\Policy\PolicyUnavailable('lost', true));
+        $transaction = $this->createMock(\OCA\Mcp\Access\Policy\Transactions\PolicyTransaction::class);
+        $transaction->method('runAdmin')->willThrowException(new \OCA\Mcp\Access\Policy\PolicyUnavailable('lost', true));
+        $writer = new \OCA\Mcp\Access\Grants\Commands\GrantCommands($transaction, $this->fx->services()->mutations,
+            new \OCA\Mcp\Access\Grants\Commands\GrantInheritance(), new \OCA\Mcp\Access\Policy\PolicyUsers($this->fx->userManager()));
         $request = $this->createMock(IRequest::class);
         $request->method('getParam')->willReturnCallback(fn (string $key, $default = null) => ['eligible' => true, 'expectedRevision' => '0'][$key] ?? $default);
         $session = $this->createMock(IUserSession::class);
@@ -412,8 +414,8 @@ final class GrantsRevisionTest extends TestCase {
         $admin->method('getUID')->willReturn('root');
         $session->method('getUser')->willReturn($admin);
         $controller = new GrantsController('mcp', $request, $this->fx->matrix(), $this->fx->policy, $this->fx->userManager(),
-            $this->fx->config->mock($this), $this->fx->logsAccess(), $writer, $state, $session,
-            $this->createMock(\OCA\Mcp\Service\Policy\GroupGrantsService::class), $this->fx->clients());
+            $this->fx->config->mock($this), $this->fx->logsAccess(), $writer, $this->fx->services()->service, $this->fx->services()->undo, $state, $session,
+            $this->createMock(\OCA\Mcp\Access\Grants\Groups\GroupGrantsService::class), $this->fx->oauth, $this->fx->oauthClients());
         $response = $controller->update('ana');
         $this->assertSame([503, ['error' => 'Unavailable', 'uncertain' => true]], [$response->getStatus(), $response->getData()]);
     }

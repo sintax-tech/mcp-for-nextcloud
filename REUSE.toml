@@ -30,10 +30,62 @@ path = [
   "mcp/tests/fixtures/nextcloud-log/sample.jsonl",
   "mcp/tests/fixtures/sample.docx",
   "mcp/tests/fixtures/sample.pdf",
-  "screenshots/admin.png",
-  "screenshots/plan.png",
+  "docs/assets/admin.png",
+  "docs/assets/plan.png",
   "mcp/tests/fixtures/nextcloud-api/*.php"
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# Migration captures derived from app output; change only documented, approved contract/version fields.
+[[annotations]]
+path = [
+  "mcp/tests/Support/Dav/Compatibility/definitions.json",
+  "mcp/tests/Support/Dav/Compatibility/plans.json",
+  "mcp/tests/Support/Logs/Compatibility/audit.json",
+  "mcp/tests/Support/Logs/Compatibility/definitions.json",
+  "mcp/tests/Support/Logs/Compatibility/results.json",
+  "mcp/tests/Support/Mcp/Compatibility/protocol.json",
+  "mcp/tests/Support/Mcp/Compatibility/publication.json",
+  "mcp/tests/Support/Mcp/Compatibility/results.json",
+  "mcp/tests/Support/Notes/Compatibility/definitions.json",
+  "mcp/tests/Support/Notes/Compatibility/plans.json",
+  "mcp/tests/Support/Notes/Compatibility/results.json",
+  "mcp/tests/Support/People/Compatibility/definitions.json",
+  "mcp/tests/Support/People/Compatibility/results.json",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = [
+  "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>",
+  "2026 MCP for Nextcloud contributors"
+]
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# Frontend development manifests cannot carry SPDX comments.
+[[annotations]]
+path = ["mcp/package.json", "mcp/package-lock.json", "mcp/.node-version", "mcp/.npmrc"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 MCP for Nextcloud contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# Canonical documentation distribution manifest.
+[[annotations]]
+path = ["docs/documentation.json"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 MCP for Nextcloud contributors"
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# Native matrix immutable image/baseline input.
+[[annotations]]
+path = ["mcp/tests/Integration/ci/matrix.json"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = ["2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>", "2026 MCP for Nextcloud contributors"]
+SPDX-License-Identifier = "AGPL-3.0-or-later"
+
+# Local German additions retain the original catalog attribution above.
+[[annotations]]
+path = ["mcp/l10n/de.js", "mcp/l10n/de.json"]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 MCP for Nextcloud contributors"
 SPDX-License-Identifier = "AGPL-3.0-or-later"

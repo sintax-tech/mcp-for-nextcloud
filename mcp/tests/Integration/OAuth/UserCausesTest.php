@@ -14,13 +14,15 @@ use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\RecheckMapper;
 use OCA\Mcp\Listener\UserCauseListener;
-use OCA\Mcp\OAuth\CredentialGeneration;
+use OCA\Mcp\OAuth\Revocation\CredentialGeneration;
 use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\OAuth\TokenService;
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\OAuth\Revocation\CauseProcessor;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
+use OCA\Mcp\Access\Policy\Transactions\PolicyAttempt;
+use OCA\Mcp\Access\Policy\DecimalCounter;
 use OCA\Mcp\Tests\Integration\Support\EventProbe;
 use OCA\Mcp\Tests\Integration\Support\PostgresQueryLog;
 use OCP\Config\IUserConfig;
@@ -81,7 +83,8 @@ final class UserCausesTest extends OAuthAccountTestCase {
         if ($eligible) {
             $db = $this->official();
             $life = new GroupLifeMapper($db);
-            Server::get(PolicyWriter::class)->runInternal([], fn () => null, function ($snapshot, array $state) use ($db, $life, $gid): bool {
+            Server::get(PolicyTransaction::class)->runInternal([], fn () => null, function ($snapshot, PolicyAttempt $attempt) use ($db, $life, $gid): bool {
+            $state = $attempt->state();
                 $qb = $db->getQueryBuilder();
                 $qb->insert('mcp_group_grants')
                     ->setValue('group_key', $qb->createNamedParameter(IdentityKey::group($gid)))
@@ -161,7 +164,7 @@ final class UserCausesTest extends OAuthAccountTestCase {
         $this->assertNull(Server::get(IUserManager::class)->get($this->uid));
         $this->assertSame(['issue_seq' => $issued, 'revoked_below' => $issued], $this->generations());
         $this->assertSame([], $this->causes());
-        $this->assertSame(PolicyWriter::next($revision), $state->state()['revision'], 'one cut, one policy write');
+        $this->assertSame(DecimalCounter::increment($revision), $state->state()['revision'], 'one cut, one policy write');
         $this->assertSame([], $this->stamps($this->openIndependentConnection(), 'mcp_oauth_tokens'));
         $this->assertNull($this->bearer($tokens));
     }
@@ -206,7 +209,7 @@ final class UserCausesTest extends OAuthAccountTestCase {
 
         $this->user = Server::get(IUserManager::class)->createUser($this->uid, bin2hex(random_bytes(24))) ?: null;
         $this->assertNotNull($this->user);
-        Server::get(PolicyWriter::class)->setEligible($this->uid, true);
+        Server::get(\OCA\Mcp\Access\Grants\Commands\GrantCommands::class)->setEligible($this->uid, true);
         $fresh = $this->exchange($this->consent());
         $code = $this->consent();
         $this->assertSame([], $this->causes(), 'the consent consumed the pending cause');
@@ -231,9 +234,9 @@ final class UserCausesTest extends OAuthAccountTestCase {
         $this->assertSame([], $this->causes(), 'the Before stored nothing');
         $this->user = Server::get(IUserManager::class)->createUser($this->uid, bin2hex(random_bytes(24))) ?: null;
         $this->assertNotNull($this->user);
-        $writer = Server::get(PolicyWriter::class);
-        $writer->setEligible($this->uid, true);
-        $writer->setConnected($this->uid, true);
+        $writer = Server::get(PolicyTransaction::class);
+        Server::get(\OCA\Mcp\Access\Grants\Commands\GrantCommands::class)->setEligible($this->uid, true);
+        Server::get(\OCA\Mcp\Access\Grants\Commands\GrantCommands::class)->setConnected($this->uid, true);
         $this->assertNull($this->bearer($old));
         $this->assertSame($this->uid, $this->bearer($this->exchange($this->consent())));
     }

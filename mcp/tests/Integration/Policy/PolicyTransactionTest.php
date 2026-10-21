@@ -13,15 +13,15 @@ use OCA\Mcp\Db\PolicyStateSeeder;
 use OCA\Mcp\Migration\PolicyStateSeedStep;
 use OCA\Mcp\Migration\Version001100Date20261015000000;
 use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\PolicyConflict;
-use OCA\Mcp\Service\Policy\PolicyOutbox;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Policy\Transactions\PolicyConflict;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
+use OCA\Mcp\Access\Policy\Transactions\PolicyAttempt;
+use OCA\Mcp\Tests\Integration\Support\NativePolicyServices;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Config\IUserConfig;
-use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IAppConfig;
 use OCP\IConfig;
 use OCP\IDBConnection;
@@ -126,12 +126,15 @@ final class PolicyTransactionTest extends IntegrationTestCase {
                 ($this->after)('outbox');
             }
         };
-        $writer = new PolicyWriter($db, $mapper, $events, $config, $users, $apps, Server::get(IUserManager::class), Server::get(\OCP\AppFramework\Utility\ITimeFactory::class), Server::get(\OCA\Mcp\Db\AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class), Server::get(\OCA\Mcp\Service\Policy\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class), Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(\OCA\Mcp\OAuth\OAuthStore::class));
+        $writer = new NativePolicyServices($db, $mapper, $events, $config, $users, $apps, Server::get(IUserManager::class), Server::get(\OCP\AppFramework\Utility\ITimeFactory::class), Server::get(\OCA\Mcp\Db\AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class), Server::get(\OCA\Mcp\Access\Policy\Events\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class), Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(\OCA\Mcp\OAuth\OAuthStore::class));
         try {
-            $result = $writer->runAdmin($before['revision'], [Fixtures::ALICE], function () use ($db): void {
+            $result = $writer->commands->transaction->runAdmin($before['revision'], [Fixtures::ALICE], function () use ($db): void {
                 $this->assertFalse($db->inTransaction());
                 $this->assertNotNull(Server::get(IUserManager::class)->get(Fixtures::ALICE));
-            }, function ($snapshot, $current, $commandId, PolicyOutbox $outbox) use ($config, $db, $after, &$eventId): bool {
+            }, function ($snapshot, PolicyAttempt $attempt) use ($config, $db, $after, &$eventId): bool {
+                $current = $attempt->state();
+                $commandId = $attempt->commandId();
+                $outbox = $attempt->outbox();
                 $eventId = $outbox->add(PolicyEventsMapper::KIND_AUDIT, ['test' => 'policy-transaction']);
                 $this->eventIds[] = $eventId;
                 $config->setUserValue(Fixtures::ALICE, 'mcp', self::SET_KEY, '1');
@@ -184,7 +187,7 @@ final class PolicyTransactionTest extends IntegrationTestCase {
 
     public function testTwoWritersRejectStaleRevisionAndRepeatedSeedPreservesIt(): void {
         $state = Server::get(PolicyStateMapper::class);
-        $writer = Server::get(PolicyWriter::class);
+        $writer = Server::get(PolicyTransaction::class);
         $revision = $state->state()['revision'];
         $writer->runAdmin($revision, [], fn () => null, fn () => true);
         $after = $state->state();
@@ -211,7 +214,7 @@ final class PolicyTransactionTest extends IntegrationTestCase {
         $users = Server::get(IUserConfig::class);
         $apps = Server::get(IAppConfig::class);
         $state = Server::get(PolicyStateMapper::class);
-        $writer = Server::get(PolicyWriter::class);
+        $writer = Server::get(PolicyTransaction::class);
         $policy = Server::get(GrantPolicy::class);
         $second = $this->openIndependentConnection();
         $otherUsers = clone $users;
@@ -243,8 +246,8 @@ final class PolicyTransactionTest extends IntegrationTestCase {
         $config->setUserValue(Fixtures::ALICE, 'mcp', self::SET_KEY, '0');
         $step('0 -> 1', fn () => $policy->setGrant(Fixtures::ALICE, 'notes', 'edit', true), true, '1', null);
         $step('1 -> 1', fn () => $policy->setGrant(Fixtures::ALICE, 'notes', 'edit', true), false, '1', null);
-        $step('reset present', fn () => $writer->resetOverride(Fixtures::ALICE, 'notes', 'edit'), true, null, null);
-        $step('reset absent', fn () => $writer->resetOverride(Fixtures::ALICE, 'notes', 'edit'), false, null, null);
+        $step('reset present', fn () => Server::get(\OCA\Mcp\Access\Grants\Commands\GrantCommands::class)->resetOverride(Fixtures::ALICE, 'notes', 'edit'), true, null, null);
+        $step('reset absent', fn () => Server::get(\OCA\Mcp\Access\Grants\Commands\GrantCommands::class)->resetOverride(Fixtures::ALICE, 'notes', 'edit'), false, null, null);
         $step('service absent -> 1', fn () => $policy->setGlobalEnabled(true), true, null, '1');
         $step('service 1 -> 1', fn () => $policy->setGlobalEnabled(true), false, null, '1');
 
@@ -258,9 +261,10 @@ final class PolicyTransactionTest extends IntegrationTestCase {
                 throw new RuntimeException('Injected inside change()');
             }
         };
-        $failing = new GrantPolicy($config, $users, new PolicyWriter($db, $mapper, Server::get(PolicyEventsMapper::class), $config, $users, $apps,
-            Server::get(IUserManager::class), Server::get(\OCP\AppFramework\Utility\ITimeFactory::class), Server::get(\OCA\Mcp\Db\AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class), Server::get(\OCA\Mcp\Service\Policy\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class), Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(\OCA\Mcp\OAuth\OAuthStore::class)),
-            Server::get(\OCA\Mcp\Service\Policy\PolicyResolver::class));
+        $services = new NativePolicyServices($db, $mapper, Server::get(PolicyEventsMapper::class), $config, $users, $apps,
+            Server::get(IUserManager::class), Server::get(\OCP\AppFramework\Utility\ITimeFactory::class), Server::get(\OCA\Mcp\Db\AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class), Server::get(\OCA\Mcp\Access\Policy\Events\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class), Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(\OCA\Mcp\OAuth\OAuthStore::class));
+        $failing = new GrantPolicy($config, $users, $services->commands->grants, $services->commands->service,
+            Server::get(\OCA\Mcp\Access\Policy\Resolution\PolicyResolver::class), $services->commands->transaction);
         try {
             $failing->setGrant(Fixtures::ALICE, 'notes', 'edit', false);
             $this->fail('Injected failure swallowed');
@@ -278,7 +282,7 @@ final class PolicyTransactionTest extends IntegrationTestCase {
     /** The seed on a live row takes the unique-violation path on every real database, from either session. */
     public function testSeedOverALiveRowIsANoOpFromAnySession(): void {
         $state = Server::get(PolicyStateMapper::class);
-        Server::get(PolicyWriter::class)->runInternal([], fn () => null, fn () => true);
+        Server::get(PolicyTransaction::class)->runInternal([], fn () => null, fn () => true);
         $after = $state->state();
         (new PolicyStateSeeder($this->official()))->seed();
         (new PolicyStateSeeder($this->openIndependentConnection()))->seed();

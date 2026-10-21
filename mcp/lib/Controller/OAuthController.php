@@ -9,14 +9,13 @@ namespace OCA\Mcp\Controller;
 
 use OCA\Mcp\OAuth\AuthorizationRequest;
 use OCA\Mcp\OAuth\AuthorizationValidator;
-use OCA\Mcp\OAuth\CustomClient;
 use OCA\Mcp\OAuth\NativeClient;
 use OCA\Mcp\OAuth\OAuthException;
 use OCA\Mcp\OAuth\RedirectUriMatcher;
 use OCA\Mcp\OAuth\ResourceUrl;
 use OCA\Mcp\OAuth\TokenService;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\BruteForceProtection;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
@@ -61,6 +60,8 @@ class OAuthController extends Controller {
     public function authorize(): TemplateResponse|RedirectResponse {
         try {
             $authRequest = $this->validator->validate($this->request->getParams(), $this->urls->base());
+        } catch (PolicyUnavailable) {
+            return $this->page(['unavailable' => true]);
         } catch (OAuthException $e) {
             if ($e->redirectable) {
                 return new RedirectResponse($this->redirectableError($e));
@@ -84,8 +85,8 @@ class OAuthController extends Controller {
             'pending' => $pendingId,
             'client' => $authRequest->client->name,
             'clientHost' => $authRequest->client->host(),
+            'customClient' => \OCA\Mcp\OAuth\CustomClient::owns($authRequest->client->clientId),
             'nativeClient' => $authRequest->client->clientId === NativeClient::CLIENT_ID,
-            'customClient' => CustomClient::owns($authRequest->client->clientId),
             'redirectHost' => (string)parse_url($authRequest->redirectUri, PHP_URL_HOST),
             'loopback' => RedirectUriMatcher::isLoopback($authRequest->redirectUri),
             'account' => $user->getDisplayName(),
@@ -115,6 +116,8 @@ class OAuthController extends Controller {
         try {
             // Before any answer, deny included: a pending page older than a withdrawal never returns to its redirect URI.
             $this->validator->revalidate($authRequest);
+        } catch (PolicyUnavailable) {
+            return $this->page(['unavailable' => true]);
         } catch (OAuthException) {
             return $this->page(['error' => 'The authorization request expired. Start the connection again.']);
         }
@@ -177,9 +180,14 @@ class OAuthController extends Controller {
 
     /** @param array<string,mixed> $params */
     private function page(array $params): TemplateResponse {
-        return new TemplateResponse($this->appName, 'consent', $params + [
+        $response = new TemplateResponse($this->appName, 'consent', $params + [
             'error' => null, 'blocked' => false, 'unavailable' => false, 'pending' => null,
         ], TemplateResponse::RENDER_AS_GUEST);
+        if ($params['unavailable'] ?? false) {
+            $response->setStatus(503);
+            $response->addHeader('Retry-After', '1');
+        }
+        return $response;
     }
 
     /**

@@ -9,8 +9,7 @@ namespace OCA\Mcp\Tests\Unit;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tools\Notes\NotesMessages;
-use OCA\Mcp\Tools\ToolPresentation;
+use OCA\Mcp\Mcp\Tools\Discovery\ToolPresentation;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -88,22 +87,12 @@ final class L10nLanguagesTest extends TestCase {
         $this->assertSame($portuguese, $spanish, 'es.json and pt_BR.json must list the same keys');
     }
 
-    /**
-     * German, contributed for 1.0.8, carries no key Portuguese lacks, the same placeholders in every text, and two
-     * plural forms. The strings added in 1.1.0 are not translated yet: German falls back to their English source.
-     */
     public function testGermanHasTheKeysAndPlaceholdersOfPortuguese(): void {
         $portuguese = $this->translations('pt_BR');
         $german = $this->translations('de');
         $this->assertSame([], array_values(array_diff(array_keys($german), array_keys($portuguese))),
             'de.json must not list a key that pt_BR.json does not have');
-        $untranslated = array_values(array_filter(array_diff(array_keys($portuguese), array_keys($german)),
-            static fn ($key): bool => !str_starts_with((string)$key, '_')));
-        if ($untranslated !== []) {
-            $german10n = new JsonL10n('de');
-            $this->assertSame($untranslated[0], $german10n->t($untranslated[0]), 'de falls back to the English source');
-        }
-
+        $this->assertEqualsCanonicalizing(array_keys($portuguese), array_keys($german), 'Every runtime catalog has the same source keys');
         $placeholders = static function (string $text): array {
             preg_match_all('/%(?:\\d+\\$)?[sdn]|\{[^}]*\}/', $text, $found);
             sort($found[0]);
@@ -129,7 +118,7 @@ final class L10nLanguagesTest extends TestCase {
     public function testWithoutTranslatorTheEnglishSourceComesOut(): void {
         Translator::reset();
         self::assertSame('Search files', ToolPresentation::title('files_search'));
-        self::assertSame('Note exceeds the limit of 10 bytes.', NotesMessages::noteTooLarge(10));
+        self::assertSame('Note exceeds the limit of 10 bytes.', \OCA\Mcp\Modules\Notes\Content\ContentMessages::noteTooLarge(10));
         Translator::use(new JsonL10n('pt_BR'));
         self::assertSame('Buscar arquivos', ToolPresentation::title('files_search'));
         Translator::reset();
@@ -140,7 +129,7 @@ final class L10nLanguagesTest extends TestCase {
     public function testALanguageWithoutAFileFallsBackToEnglish(): void {
         Translator::use(new JsonL10n('fr'));
         self::assertSame('Search files', ToolPresentation::title('files_search'));
-        self::assertSame('Note exceeds the limit of 10 bytes.', NotesMessages::noteTooLarge(10));
-        self::assertSame('A note with this title already exists in this category.', NotesMessages::titleExistsInCategory());
+        self::assertSame('Note exceeds the limit of 10 bytes.', \OCA\Mcp\Modules\Notes\Content\ContentMessages::noteTooLarge(10));
+        self::assertSame('A note with this title already exists in this category.', \OCA\Mcp\Modules\Notes\Storage\NamingMessages::titleExistsInCategory());
     }
 }

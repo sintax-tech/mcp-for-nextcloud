@@ -20,7 +20,7 @@ use OCA\Mcp\OAuth\ResourceUrl;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\OAuth\TokenOwnerGate;
 use OCA\Mcp\OAuth\TokenService;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCP\AppFramework\Http\RedirectResponse;
 use OCP\AppFramework\Http\TemplateResponse;
@@ -78,7 +78,8 @@ final class ManagedClientWithdrawalTest extends TestCase {
         $policy = InMemoryConfig::policy($this->config, $this->store);
         $policy->setGlobalEnabled(true);
         $policy->setEligible('alice', true);
-        $writer = InMemoryConfig::writer($this->config, $this->store);
+        $services = InMemoryConfig::services($this->config, $this->store);
+        $writer = $services->transaction;
         $system = $this->createMock(IConfig::class);
         $system->method('getSystemValueString')->willReturn('instance-secret');
         $hasher = new TokenHasher($system);
@@ -97,7 +98,7 @@ final class ManagedClientWithdrawalTest extends TestCase {
                 $run();
             }
         };
-        $gate = new class($users, $policy, $writer, $this->createMock(IUserConfig::class), $this->createMock(IAppConfig::class),
+        $gate = new class($users, $policy, $services->credentials, $this->createMock(IUserConfig::class), $this->createMock(IAppConfig::class),
             new NullLogger(), InMemoryConfig::noCauses($this), $hook) extends TokenOwnerGate {
             public function __construct($users, $policy, $writer, $userConfig, $appConfig, $logger, $causes, private \Closure $hook) {
                 parent::__construct($users, $policy, $writer, $userConfig, $appConfig, $logger, $causes);
@@ -110,8 +111,8 @@ final class ManagedClientWithdrawalTest extends TestCase {
             }
         };
         $this->clients = new OAuthClientsService($writer, $this->config, $this->table->mapper, $this->store);
-        $this->tokens = new TokenService($this->store, $hasher, $time, $gate, $writer,
-            InMemoryConfig::authUsers($this->config), InMemoryConfig::processor($this->config), $this->table->mapper);
+        $this->tokens = new TokenService($this->store, $hasher, $time, $gate, $services->credentials,
+            InMemoryConfig::authUsers($this->config), InMemoryConfig::processor($this->config), $this->table->mapper, $services->transaction, $services->holds);
         $this->authenticator = new AccessTokenAuthenticator($this->store, $hasher, $time, $gate,
             InMemoryConfig::authUsers($this->config), InMemoryConfig::state($this->config), $this->table->mapper);
         $this->controller = $this->controller($users, $alice, $policy);

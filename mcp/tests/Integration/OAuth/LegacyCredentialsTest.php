@@ -10,7 +10,7 @@ use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\OAuthException;
 use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\OAuth\TokenService;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\Config\IUserConfig;
@@ -28,7 +28,7 @@ final class LegacyCredentialsTest extends IntegrationTestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        if (getenv('MCP_IT_MODE') !== 'upgrade') {
+        if (!in_array(getenv('MCP_IT_MODE'), ['upgrade', 'upgrade-local'], true)) {
             $this->markTestSkipped('Only an upgrade cell has credentials issued by the baseline');
         }
         $path = (string)getenv('MCP_IT_LEGACY');
@@ -38,7 +38,7 @@ final class LegacyCredentialsTest extends IntegrationTestCase {
 
     protected function tearDown(): void {
         if ($this->legacy !== null) {
-            Server::get(OAuthStore::class)->deleteUpToGeneration(Fixtures::LEGACY, \OCA\Mcp\Service\Policy\DecimalCounter::MAX);
+            Server::get(OAuthStore::class)->deleteUpToGeneration(Fixtures::LEGACY, \OCA\Mcp\Access\Policy\DecimalCounter::MAX);
             $config = Server::get(IConfig::class);
             foreach ([GrantPolicy::ELIGIBLE_KEY, GrantPolicy::CONNECTED_KEY] as $key) {
                 $config->deleteUserValue(Fixtures::LEGACY, 'mcp', $key);

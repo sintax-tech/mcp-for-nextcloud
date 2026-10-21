@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Command;
 use OCA\Mcp\Command\CalendarSelftest;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\L10n\UserL10n;
-use OCA\Mcp\Service\Calendar\CalendarSelftestService;
+use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestRunner as CalendarSelftestService;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCP\IUser;
 use OCP\IUserManager;

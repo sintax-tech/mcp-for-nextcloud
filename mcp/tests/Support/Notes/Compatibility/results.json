@@ -1,0 +1,79 @@
+{
+    "notes_list": {
+        "content": [
+            {
+                "type": "text",
+                "text": "[{\"id\":103,\"title\":\"Before\",\"category\":\"Work\",\"modified\":1700000000,\"etag\":\"e103\",\"access\":{\"scope\":\"personal\",\"owner\":\"alice\",\"ownerDisplayName\":\"Alice\",\"permissions\":{\"read\":true,\"update\":true,\"create\":true,\"delete\":true,\"share\":true}}}]"
+            }
+        ]
+    },
+    "notes_search": {
+        "content": [
+            {
+                "type": "text",
+                "text": "[{\"id\":103,\"title\":\"Before\",\"category\":\"Work\",\"modified\":1700000000,\"etag\":\"e103\",\"snippet\":\"# Original\",\"access\":{\"scope\":\"personal\",\"owner\":\"alice\",\"ownerDisplayName\":\"Alice\",\"permissions\":{\"read\":true,\"update\":true,\"create\":true,\"delete\":true,\"share\":true}}}]"
+            }
+        ]
+    },
+    "notes_read": {
+        "content": [
+            {
+                "type": "text",
+                "text": "{\"id\":103,\"title\":\"Before\",\"category\":\"Work\",\"modified\":1700000000,\"etag\":\"e103\",\"content\":\"# Original\",\"access\":{\"scope\":\"personal\",\"owner\":\"alice\",\"ownerDisplayName\":\"Alice\",\"permissions\":{\"read\":true,\"update\":true,\"create\":true,\"delete\":true,\"share\":true}}}"
+            }
+        ]
+    },
+    "notes_create": {
+        "content": [
+            {
+                "type": "text",
+                "text": "{\"id\":105,\"title\":\"Created\",\"category\":\"Target\",\"modified\":1700000000,\"etag\":\"e105\"}"
+            }
+        ]
+    },
+    "notes_edit": {
+        "content": [
+            {
+                "type": "text",
+                "text": "{\"id\":103,\"title\":\"After\",\"category\":\"Work\",\"modified\":1700000000,\"etag\":\"e103+\",\"access\":{\"scope\":\"personal\",\"owner\":\"alice\",\"ownerDisplayName\":\"Alice\",\"permissions\":{\"read\":true,\"update\":true,\"create\":true,\"delete\":true,\"share\":true}}}"
+            }
+        ]
+    },
+    "notes_move": {
+        "content": [
+            {
+                "type": "text",
+                "text": "{\"id\":103,\"title\":\"Before\",\"category\":\"Target\",\"modified\":1700000000,\"etag\":\"e103\",\"access\":{\"scope\":\"personal\",\"owner\":\"alice\",\"ownerDisplayName\":\"Alice\",\"permissions\":{\"read\":true,\"update\":true,\"create\":true,\"delete\":true,\"share\":true}}}"
+            }
+        ]
+    },
+    "notes_delete": {
+        "content": [
+            {
+                "type": "text",
+                "text": "{\"id\":103,\"deleted\":true,\"trash\":true}"
+            }
+        ]
+    },
+    "missing": {
+        "type": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+        "message": "Resource not found in Nextcloud."
+    },
+    "too_large": {
+        "type": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+        "message": "Note exceeds the limit of 1048576 bytes."
+    },
+    "partial_edit": {
+        "message": "No access to this resource in Nextcloud. The new content was saved; only the title was not changed.",
+        "content": "# Changed"
+    },
+    "resource": {
+        "contents": [
+            {
+                "uri": "nc://notes/103",
+                "mimeType": "text/markdown",
+                "text": "# Original"
+            }
+        ]
+    }
+}

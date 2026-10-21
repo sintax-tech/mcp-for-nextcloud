@@ -7,8 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Db;
 
+use OCA\Mcp\Access\Policy\Events\PolicyEventPayload;
+
 use InvalidArgumentException;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\IDBConnection;
 use UnexpectedValueException;
 
@@ -151,7 +153,7 @@ final class GroupGrantsMapper {
      * @throws \OCP\DB\Exception when a statement fails
      */
     public function replaceGroup(string $gid, array $grants): void {
-        if (\OCA\Mcp\Service\Policy\PolicyEventPayload::groupGrants($grants) !== $grants) {
+        if (\OCA\Mcp\Access\Policy\Events\PolicyEventPayload::groupGrants($grants) !== $grants) {
             throw new InvalidArgumentException('Group grants must be canonical');
         }
         $this->deleteGroup($gid);

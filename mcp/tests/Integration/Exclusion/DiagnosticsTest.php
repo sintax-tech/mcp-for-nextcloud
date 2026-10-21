@@ -49,7 +49,7 @@ final class DiagnosticsTest extends ExclusionTestCase {
         $steps = [
             'get' => fn () => $this->userFolder(self::ALICE)->get($relative),
             'isReadable' => fn () => $this->userFolder(self::ALICE)->get($relative)->isReadable(),
-            'describe' => fn () => \OCP\Server::get(\OCA\Mcp\Tools\Common\NodeAccessInfo::class)->describe($this->userFolder(self::ALICE)->get($relative), self::ALICE),
+            'describe' => fn () => \OCP\Server::get(\OCA\Mcp\Platform\FileAccess\Nodes\NodeAccessInfo::class)->describe($this->userFolder(self::ALICE)->get($relative), self::ALICE),
             'getContent' => fn () => $this->userFolder(self::ALICE)->get($relative)->getContent(),
             'guard' => fn () => $this->newGuard()->isVisible($this->userFolder(self::ALICE)->get($relative)),
         ];

@@ -8,18 +8,24 @@ declare(strict_types=1);
 namespace OCA\Mcp\OAuth;
 
 use OCA\Mcp\Db\AuthUsersMapper;
-use OCA\Mcp\Service\Policy\PolicyEventProcessor;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\Events\PolicyEventProcessor;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCA\Mcp\Db\OAuthClientsMapper;
+use OCA\Mcp\OAuth\Revocation\CredentialCommands;
+use OCA\Mcp\OAuth\Revocation\CredentialGeneration;
+use OCA\Mcp\OAuth\Revocation\OwnerNotUsable;
+use OCA\Mcp\Access\Grants\Groups\LifecycleHolds;
+use OCA\Mcp\Access\Policy\Transactions\PolicyAttempt;
 use Throwable;
+use Closure;
 
 /**
  * Issues authorization codes and token grants and runs the token endpoint grants (authorization_code with PKCE,
  * refresh_token with rotation). Codes and refresh tokens are single use; only their hashes are stored.
  *
- * Every unit that writes OAuth state is one PolicyWriter command (contracts §2.1.1, §3.1): the owner is checked in the
+ * Every unit that writes OAuth state is one credential transaction (contracts §2.1.1, §3.1): the owner is checked in the
  * external phase; under the global mutex the user's generations and causes are compared with what was read before,
  * and consumption and issuance commit together. Consent, exchange and refresh first consume the owner's pending
  * recheck causes in that same transaction, with the cut each demands (contracts §3.3.4), so nothing they issue can be
@@ -37,10 +43,12 @@ class TokenService {
         private TokenHasher $hasher,
         private ITimeFactory $time,
         private TokenOwnerGate $gate,
-        private PolicyWriter $writer,
+        private CredentialCommands $credentials,
         private AuthUsersMapper $authUsers,
         private PolicyEventProcessor $events,
         private OAuthClientsMapper $clients,
+        private PolicyTransaction $transaction,
+        private LifecycleHolds $holds,
     ) {}
 
     /**
@@ -59,10 +67,9 @@ class TokenService {
      */
     public function consent(AuthorizationRequest $request, string $uid): ?string {
         $code = $this->hasher->generate('code');
-        $allowed = $this->writer->consent($uid, fn (): ?array => $this->gate->admission($uid, false),
+        $allowed = $this->credentials->consent($uid, fn (): ?array => $this->gate->admission($uid, false),
             function (string $generation, string $epoch) use ($request, $uid, $code): void {
-            // The last word on the client, read from the app's table under the mutex: a withdrawal commits under the
-            // same mutex, so it either precedes this check or deletes this code afterwards.
+            // Re-read client admission under the mutex shared with administrative withdrawal.
             if (!$this->clientAdmitted($request->client->clientId, $request->client->generation, $request->redirectUri)) {
                 throw new OAuthException('invalid_client', 'Unknown or not allowed client');
             }
@@ -196,7 +203,7 @@ class TokenService {
      * @throws PolicyUnavailable when the policy storage fails
      */
     public function revokeUser(string $uid): void {
-        $this->writer->revokeCredentials($uid);
+        $this->credentials->revokeCredentials($uid);
     }
 
     /**
@@ -208,7 +215,7 @@ class TokenService {
      * @throws PolicyUnavailable when the policy storage fails
      */
     public function revokeGrant(int $id, ?string $uid): bool {
-        return (bool)$this->writer->underMutex(fn (): bool => $this->store->deleteGrant($id, $uid));
+        return (bool)$this->transaction->underMutex(fn (): bool => $this->store->deleteGrant($id, $uid));
     }
 
     /**
@@ -217,7 +224,7 @@ class TokenService {
      * @throws PolicyUnavailable when the policy storage fails
      */
     public function revokeClient(string $clientId): void {
-        $this->writer->underMutex(fn () => $this->store->deleteForClient($clientId));
+        $this->transaction->underMutex(fn () => $this->store->deleteForClient($clientId));
     }
 
     /** Preflight of a token request: a bounded batch of pending cleanups and audit deliveries. Never throws. */
@@ -237,12 +244,12 @@ class TokenService {
      */
     private function asOwner(string $uid, string $observed, \Closure $local): void {
         try {
-            $this->writer->runCredential($uid, function () use ($uid): array {
+            $this->credentials->runCredential($uid, function () use ($uid): array {
                 return $this->gate->admission($uid, true) ?? throw new OwnerNotUsable();
-            }, function (array $lifecycles, array $state, array $generations) use ($local): bool {
+            }, function (array $lifecycles, array $state, array $generations, PolicyAttempt $attempt) use ($local): bool {
                 // The groups that admitted the owner must still grant (F3 of the review of ticket 07), and their gens are
                 // renewed so a concurrent deletion's Before sees this issuance (F1 of the second reading).
-                $this->writer->holdLifecycles($lifecycles);
+                $this->holds->hold($attempt, $lifecycles);
                 $local($state, $generations);
                 return false;
             }, $this->gate->causes());
@@ -269,7 +276,7 @@ class TokenService {
         }
         $uid = (string)$spent['user_id'];
         try {
-            $this->writer->runCredential($uid, fn () => null, function ($snapshot, array $state, array $generations) use ($hash, $clientId, $uid): bool {
+            $this->credentials->runCredential($uid, fn () => null, function ($snapshot, array $state, array $generations) use ($hash, $clientId, $uid): bool {
                 $spent = $this->store->findSpent($hash);
                 if ($spent !== null && $spent['client_id'] === $clientId && (int)$spent['expires_at'] >= $this->time->getTime()
                     && CredentialGeneration::live($spent, $generations, $state['auth_epoch'])) {
@@ -298,16 +305,7 @@ class TokenService {
         }
     }
 
-    /**
-     * The admission of a client, read under the mutex from the app's own table (never through the AppConfig caches,
-     * whose loader may publish a snapshot older than a withdrawal): the native client must be on, a self-hosted one
-     * stored and enabled, with the redirect URI and generation of the request when given. A CIMD client has nothing
-     * to withdraw. A stored row that does not validate refuses.
-     *
-     * @param string|null $generation generation the consent page was made in; null for a code or a grant
-     * @param string|null $redirectUri redirect URI of the consent or of the code; null for a grant
-     * @return bool false when the administrator withdrew the client
-     */
+    /** Re-read managed-client admission under the same mutex as withdrawal. */
     private function clientAdmitted(string $clientId, ?string $generation, ?string $redirectUri): bool {
         if ($clientId === NativeClient::CLIENT_ID) {
             $current = ClientResolver::nativeGeneration($this->clients);

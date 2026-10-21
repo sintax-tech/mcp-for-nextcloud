@@ -1,0 +1,10 @@
+# SPDX-FileCopyrightText: 2026 MCP for Nextcloud contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+parameters:
+    phpVersion: 80200
+    reportUnmatchedIgnoredErrors: true
+    parallel:
+        maximumNumberOfProcesses: 2
+    scanDirectories:
+        - ../vendor/nextcloud/ocp
+        - symbols

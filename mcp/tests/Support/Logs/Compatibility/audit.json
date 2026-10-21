@@ -1,0 +1,104 @@
+{
+    "events": [
+        [
+            "MCP logs read by %s: tool=%s filters=%s",
+            {
+                "user": "root",
+                "tool": "logs_list",
+                "filters": "{\"offset\":0,\"limit\":2}"
+            }
+        ],
+        [
+            "MCP logs read by %s: tool=%s filters=%s",
+            {
+                "user": "root",
+                "tool": "logs_analyze",
+                "filters": "{\"app\":\"absent\",\"offset\":0}"
+            }
+        ],
+        [
+            "MCP logs request %s for %s: tool=%s filters=%s",
+            {
+                "outcome": "denied",
+                "user": "root",
+                "tool": "logs_list",
+                "filters": "{\"contains\":\"[hidden]\"}"
+            }
+        ],
+        [
+            "MCP logs request %s for %s: tool=%s filters=%s",
+            {
+                "outcome": "invalid",
+                "user": "root",
+                "tool": "logs_list",
+                "filters": "{\"limit\":\"2\"}"
+            }
+        ],
+        [
+            "MCP logs request %s for %s: tool=%s filters=%s",
+            {
+                "outcome": "read_error",
+                "user": "root",
+                "tool": "logs_analyze",
+                "filters": "{\"offset\":0}"
+            }
+        ]
+    ],
+    "records": [
+        [
+            "MCP logs read",
+            {
+                "app": "mcp",
+                "outcome": "success",
+                "user": "root",
+                "tool": "logs_list",
+                "filters": "{\"offset\":0,\"limit\":2}"
+            },
+            "info"
+        ],
+        [
+            "MCP logs read",
+            {
+                "app": "mcp",
+                "outcome": "success",
+                "user": "root",
+                "tool": "logs_analyze",
+                "filters": "{\"app\":\"absent\",\"offset\":0}"
+            },
+            "info"
+        ],
+        [
+            "MCP logs request denied",
+            {
+                "app": "mcp",
+                "outcome": "denied",
+                "user": "root",
+                "tool": "logs_list",
+                "filters": "{\"contains\":\"[hidden]\"}"
+            },
+            "warning"
+        ],
+        [
+            "MCP logs request invalid",
+            {
+                "app": "mcp",
+                "outcome": "invalid",
+                "user": "root",
+                "tool": "logs_list",
+                "filters": "{\"limit\":\"2\"}"
+            },
+            "info"
+        ],
+        [
+            "MCP logs request read_error",
+            {
+                "app": "mcp",
+                "outcome": "read_error",
+                "user": "root",
+                "tool": "logs_analyze",
+                "filters": "{\"offset\":0}"
+            },
+            "info"
+        ]
+    ]
+}

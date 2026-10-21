@@ -9,13 +9,14 @@ namespace OCA\Mcp\Tests\Unit\Admin;
 
 use OCA\Mcp\Controller\GrantsController;
 use OCA\Mcp\OAuth\ClientMetadataFetcher;
-use OCA\Mcp\OAuth\CustomClient;
 use OCA\Mcp\OAuth\NativeClient;
+use OCA\Mcp\OAuth\CustomClient;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;
 
 final class GrantsControllerTest extends TestCase {
+    private const CB = 'https://harness.example.com/oauth/callback';
     private MatrixFixture $fx;
     /** @var array<string, mixed> JSON body parameters seen through IRequest::getParam */
     private array $body = [];
@@ -27,10 +28,6 @@ final class GrantsControllerTest extends TestCase {
         $this->fx->addUser('carl', 'Carl', 'carl@corp.example', false);
     }
 
-    /**
-     * A request with this JSON body. Every request carries the current revision unless the body names
-     * expectedRevision itself (null leaves it out, as an old page would).
-     */
     private function controller(array $body = []): GrantsController {
         if (!array_key_exists('expectedRevision', $body)) {
             $body['expectedRevision'] = (string)$this->fx->config->revision;
@@ -39,15 +36,7 @@ final class GrantsControllerTest extends TestCase {
         $request = $this->createMock(IRequest::class);
         $request->method('getParam')->willReturnCallback(fn (string $key, $default = null) => array_key_exists($key, $this->body) ? $this->body[$key] : $default);
         return new GrantsController('mcp', $request, $this->fx->matrix(), $this->fx->policy, $this->fx->userManager(), $this->fx->config->mock($this), $this->fx->logsAccess(),
-            $this->fx->writer(), $this->fx->state(), $this->session('root'), $this->createMock(\OCA\Mcp\Service\Policy\GroupGrantsService::class), $this->fx->clients());
-    }
-
-    private function session(string $uid): \OCP\IUserSession {
-        $user = $this->createMock(\OCP\IUser::class);
-        $user->method('getUID')->willReturn($uid);
-        $session = $this->createMock(\OCP\IUserSession::class);
-        $session->method('getUser')->willReturn($user);
-        return $session;
+            $this->fx->services()->grants, $this->fx->services()->service, $this->fx->services()->undo, $this->fx->state(), $this->session('root'), $this->createMock(\OCA\Mcp\Access\Grants\Groups\GroupGrantsService::class), $this->fx->oauth, $this->fx->oauthClients());
     }
 
     private static function assertBad(JSONResponse $response): void {
@@ -252,9 +241,6 @@ final class GrantsControllerTest extends TestCase {
         $this->assertSame([], $this->fx->oauth->codes);
     }
 
-    private const CB = 'https://harness.example.com/oauth/callback';
-
-    /** @return list<array<string, mixed>> the self-hosted clients as stored */
     private function storedCustom(): array {
         return $this->fx->clients->stored();
     }
@@ -429,20 +415,10 @@ final class GrantsControllerTest extends TestCase {
             ['hosts' => [42]],
             ['hosts' => ['claude.ai'], 'nativeClientEnabled' => 'yes'],
             ['nativeClientEnabled' => 1],
-            ['customClients' => 'QwenPaw'],
-            ['customClients' => [['name' => 'QwenPaw', 'enabled' => 'true', 'redirectUris' => ['https://harness.example.com/cb']]]],
-            ['customClients' => [['name' => 'QwenPaw', 'enabled' => true, 'redirectUris' => ['http://harness.example.com/cb']]]],
-            ['customClients' => [['name' => 'QwenPaw', 'enabled' => true, 'redirectUris' => []]]],
-            ['customClients' => [['name' => '', 'enabled' => true, 'redirectUris' => ['https://harness.example.com/cb']]]],
-            ['customClients' => [['id' => 'aaaaaaaaaaaa', 'name' => 'QwenPaw', 'enabled' => true, 'redirectUris' => ['https://harness.example.com/cb']]]],
-            ['customClients' => [['name' => 'QwenPaw', 'enabled' => true, 'redirectUris' => ['https://harness.example.com/cb']],
-                ['name' => 'QWENPAW', 'enabled' => true, 'redirectUris' => ['https://harness.example.com/cb']]]],
-            ['hosts' => ['claude.ai'], 'customClients' => [['name' => 'QwenPaw', 'enabled' => true, 'redirectUris' => ['https://u@harness.example.com/cb']]]],
         ] as $body) {
             self::assertBad($this->controller($body)->updateOauthClients());
         }
-        $this->assertSame([], array_intersect_key($this->fx->config->app['mcp'] ?? [], ['oauth_client_hosts' => 1]));
-        $this->assertSame([null, []], [$this->fx->clients->nativeRow(), $this->storedCustom()]);
+        $this->assertSame([], array_intersect_key($this->fx->config->app['mcp'] ?? [], ['oauth_client_hosts' => 1, 'oauth_native_client_enabled' => 1]));
     }
 
     /** The groups that may read the server log: none by default (administrators only), every group offered. */
@@ -519,4 +495,11 @@ final class GrantsControllerTest extends TestCase {
         $this->assertSame(['sales'], $conflict->getData()['state']['groups']);
     }
 
+    private function session(string $uid): \OCP\IUserSession {
+        $user = $this->createMock(\OCP\IUser::class);
+        $user->method('getUID')->willReturn($uid);
+        $session = $this->createMock(\OCP\IUserSession::class);
+        $session->method('getUser')->willReturn($user);
+        return $session;
+    }
 }

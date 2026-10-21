@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Admin;
 
-use OCA\Mcp\Service\GrantMatrix;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantMatrix;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCP\IAppConfig;
 use OCP\App\IAppManager;
@@ -28,14 +28,11 @@ final class MatrixFixture {
     public \OCA\Mcp\Tests\Unit\InMemoryAppConfig $appConfig;
     public \OCA\Mcp\Tests\Unit\InMemoryLocks $locks;
     public \OCA\Mcp\Tests\Unit\SqliteDatabase $logsDb;
-    /** Resource scope tables the matrix reads its {mode, count} cells from. */
-    public \OCA\Mcp\Tests\Unit\SqliteDatabase $scopeDb;
     public GrantPolicy $policy;
+    public \OCA\Mcp\Tests\Unit\OAuth\ClientsTable $clients;
     /** The IConfig mock the policy, its writer and the logs gate share. */
     public \OCP\IConfig $policyConfig;
     public \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore $oauth;
-    /** The authoritative table of the administrator's OAuth clients. */
-    public \OCA\Mcp\Tests\Unit\OAuth\ClientsTable $clients;
     /** @var array<string, array{name:string, email:string, enabled:bool}> */
     public array $users = [];
     /** @var array<string, list<string>> members by group id */
@@ -49,13 +46,12 @@ final class MatrixFixture {
     public array $appVersions = [];
 
     public function __construct(private TestCase $test) {
+        $this->clients = new \OCA\Mcp\Tests\Unit\OAuth\ClientsTable($test);
         $this->config = new InMemoryConfig();
         $this->appConfig = new \OCA\Mcp\Tests\Unit\InMemoryAppConfig();
         $this->locks = new \OCA\Mcp\Tests\Unit\InMemoryLocks();
         $this->logsDb = new \OCA\Mcp\Tests\Unit\SqliteDatabase($test, [new \OCA\Mcp\Migration\Version001002Date20261008000000()]);
-        $this->scopeDb = new \OCA\Mcp\Tests\Unit\SqliteDatabase($test, [new \OCA\Mcp\Migration\Version001100Date20261015020000()]);
         $this->oauth = new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore();
-        $this->clients = new \OCA\Mcp\Tests\Unit\OAuth\ClientsTable($test);
         $this->config->userExists = fn (string $uid): bool => isset($this->users[$uid]);
         $this->policyConfig = $this->config->mock($test);
         $this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->policyConfig, $this->oauth);
@@ -69,30 +65,28 @@ final class MatrixFixture {
     }
 
     public function matrix(): GrantMatrix {
-        return new GrantMatrix($this->policy, $this->userManager(), $this->groupManager(), $this->appManager(), $this->logsAccess(),
-            new \OCA\Mcp\Db\ResourceScopeMapper($this->scopeDb->connection()));
+        return new GrantMatrix($this->policy, $this->userManager(), $this->groupManager(), $this->appManager(), $this->logsAccess(), (new \ReflectionMethod($this->test, 'createMock'))->invoke($this->test, \OCA\Mcp\Db\ResourceScopeMapper::class));
     }
 
     /** The role gate of the logs module over the same config and groups; members of 'admin' are the administrators. */
-    public function logsAccess(): \OCA\Mcp\Service\LogsAccess {
+    public function logsAccess(): \OCA\Mcp\Access\Logs\LogsAccess {
         $config = $this->config->mock($this->test);
         $groups = $this->groupManager();
         $mapper = new \OCA\Mcp\Db\LogsGroupsMapper($this->logsDb->connection(), $this->appConfig->worker($this->test));
         $remote = $this->mock(\OCP\Security\Ip\IRemoteAddress::class);
         $remote->method('allowsAdminActions')->willReturn(true);
-        $roles = new \OCA\Mcp\Service\Policy\LogsRoleReader($config, $mapper, $groups, $remote, $this->mock(\OCP\IUserSession::class));
-        return new \OCA\Mcp\Service\LogsAccess($config, $groups, $mapper, $this->locks, $this->writer(), $roles,
-            new \OCA\Mcp\Service\Policy\MembershipReader($groups), $this->userManager());
+        $roles = new \OCA\Mcp\Access\Policy\Resolution\LogsRoleReader($config, $mapper, $groups, $remote, $this->mock(\OCP\IUserSession::class));
+        return new \OCA\Mcp\Access\Logs\LogsAccess($config, $groups, $mapper, $this->locks, $this->services()->transaction, $roles,
+            new \OCA\Mcp\Access\Grants\Groups\MembershipReader($groups), $this->userManager());
     }
 
-    /** @return \OCA\Mcp\Service\Policy\PolicyWriter the writer behind the policy, shared by every worker of the fixture */
-    public function writer(): \OCA\Mcp\Service\Policy\PolicyWriter {
-        return InMemoryConfig::writer($this->policyConfig, $this->oauth);
+    /** @return \OCA\Mcp\Access\Policy\Transactions\PolicyTransaction the writer behind the policy, shared by every worker of the fixture */
+    public function oauthClients(): \OCA\Mcp\OAuth\OAuthClientsService {
+        return new \OCA\Mcp\OAuth\OAuthClientsService($this->services()->transaction, $this->policyConfig, $this->clients->mapper, $this->oauth);
     }
 
-    /** @return \OCA\Mcp\OAuth\OAuthClientsService the administrator's OAuth client settings over the writer and the OAuth store of the fixture */
-    public function clients(): \OCA\Mcp\OAuth\OAuthClientsService {
-        return new \OCA\Mcp\OAuth\OAuthClientsService($this->writer(), $this->config->mock($this->test), $this->clients->mapper, $this->oauth);
+    public function services(): \OCA\Mcp\Tests\Support\Access\Policy\PolicyServices {
+        return InMemoryConfig::services($this->policyConfig, $this->oauth);
     }
 
     /** @return \OCA\Mcp\Db\PolicyStateMapper the revision the writer reads */

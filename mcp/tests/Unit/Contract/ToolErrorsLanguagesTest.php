@@ -8,50 +8,49 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarDav;
-use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarStore;
-use OCA\Mcp\Tools\Calendar\AttendeeResolver;
-use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
-use OCA\Mcp\Tools\Calendar\CalendarModule;
-use OCA\Mcp\Tools\Calendar\Classification;
-use OCA\Mcp\Tools\Calendar\DateInput;
-use OCA\Mcp\Tools\Calendar\EventBuilder;
-use OCA\Mcp\Tools\Calendar\EventExpander;
-use OCA\Mcp\Tools\Calendar\EventMapper;
-use OCA\Mcp\Tools\Calendar\EventRelocator;
-use OCA\Mcp\Tools\Calendar\EventRepository;
-use OCA\Mcp\Tools\Calendar\Handler\CreateEvent;
-use OCA\Mcp\Tools\Calendar\Handler\DeleteEvent;
-use OCA\Mcp\Tools\Calendar\Handler\ListCalendars;
-use OCA\Mcp\Tools\Calendar\Handler\ListEvents;
-use OCA\Mcp\Tools\Calendar\Handler\MoveEvent;
-use OCA\Mcp\Tools\Calendar\Handler\TransferEvent;
-use OCA\Mcp\Tools\Calendar\Handler\UpdateEvent;
-use OCA\Mcp\Tools\Calendar\Scheduling;
-use OCA\Mcp\Tools\Calendar\SharedGuard;
-use OCA\Mcp\Tools\Calendar\TrashPolicy;
-use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
-use OCA\Mcp\Tools\Deck\DeckToolModule;
-use OCA\Mcp\Tools\Notes\NotesModule;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
-use OCA\Mcp\Tools\Notes\NotesRepository;
-use OCA\Mcp\Tools\Talk\ActorNames;
-use OCA\Mcp\Tools\Talk\ConversationReader;
-use OCA\Mcp\Tools\Talk\ConversationResolver;
-use OCA\Mcp\Tools\Talk\ConversationWriter;
-use OCA\Mcp\Tools\Talk\FileSharer;
-use OCA\Mcp\Tools\Talk\GroupCreator;
-use OCA\Mcp\Tools\Talk\ReferenceLinker;
-use OCA\Mcp\Tools\Talk\TalkModule;
-use OCA\Mcp\Tools\Talk\WritePreview;
-use OCA\Mcp\Tools\Talk\TalkServices;
-use OCA\Mcp\Tools\Talk\UserConversationResolver;
-use OCA\Mcp\Tools\ToolModule;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Tests\Support\Dav\FakeCalendarDav;
+use OCA\Mcp\Tests\Support\Dav\FakeCalendarStore;
+use OCA\Mcp\Modules\Calendar\Scheduling\AttendeeResolver;
+use OCA\Mcp\Platform\Dav\CalDav\CollectionAccess as CalendarAccess;
+use OCA\Mcp\Modules\Calendar\CalendarModule;
+use OCA\Mcp\Modules\Calendar\Events\Classification;
+use OCA\Mcp\Modules\Calendar\Events\EventDates as DateInput;
+use OCA\Mcp\Modules\Calendar\Events\EventBuilder;
+use OCA\Mcp\Modules\Calendar\Events\EventExpander;
+use OCA\Mcp\Modules\Calendar\Events\EventMapper;
+use OCA\Mcp\Modules\Calendar\Relocation\EventRelocator;
+use OCA\Mcp\Modules\Calendar\Events\EventRepository;
+use OCA\Mcp\Modules\Calendar\Creation\EventCreator as CreateEvent;
+use OCA\Mcp\Modules\Calendar\Deletion\EventDeleter as DeleteEvent;
+use OCA\Mcp\Modules\Calendar\Reading\CalendarReader as ListCalendars;
+use OCA\Mcp\Modules\Calendar\Reading\EventReader as ListEvents;
+use OCA\Mcp\Modules\Calendar\Relocation\EventMover as MoveEvent;
+use OCA\Mcp\Modules\Calendar\Relocation\EventTransfer as TransferEvent;
+use OCA\Mcp\Modules\Calendar\Editing\EventEditor as UpdateEvent;
+use OCA\Mcp\Modules\Calendar\Scheduling\Scheduling;
+use OCA\Mcp\Mcp\Confirmation\SharedCollectionNotice as SharedGuard;
+use OCA\Mcp\Platform\Dav\CalDav\TrashPolicy;
+
+use OCA\Mcp\Modules\Deck\DeckModule;
+use OCA\Mcp\Modules\Notes\NotesModule;
+use OCA\Mcp\Platform\FileAccess\Sharing\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\Sharing\SharedWriteGuard;
+use OCA\Mcp\Modules\Notes\Storage\NotesFolders;
+use OCA\Mcp\Modules\Talk\Presentation\ActorNames;
+use OCA\Mcp\Modules\Talk\Reading\ConversationReader;
+use OCA\Mcp\Modules\Talk\Access\ConversationResolver;
+use OCA\Mcp\Modules\Talk\Messaging\MessageSender;
+use OCA\Mcp\Modules\Talk\Attachments\FileSharer;
+use OCA\Mcp\Modules\Talk\Groups\GroupCreation;
+use OCA\Mcp\Modules\Talk\References\ReferenceLinker;
+use OCA\Mcp\Modules\Talk\TalkModule;
+use OCA\Mcp\Modules\Talk\Messaging\ReplyPlan;
+use OCA\Mcp\Modules\Talk\DirectMessaging\OneToOneConversation;
+use OCA\Mcp\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -71,6 +70,8 @@ use Psr\Log\LoggerInterface;
  * trigger it, and it has to reach the result in the language of the account in all three languages.
  */
 final class ToolErrorsLanguagesTest extends TestCase {
+use \OCA\Mcp\Tests\Support\Deck\DeckToolFixtures;
+
     /** `deck_read_card` against a card the Deck refuses: one message for "not found" and "no permission". */
     private const DECK = [
         'en' => 'Card, list or board not found, or no permission.',
@@ -113,17 +114,9 @@ final class ToolErrorsLanguagesTest extends TestCase {
     public function testADeckFailureReachesTheClientInTheLanguageOfTheAccount(): void {
         foreach (self::DECK as $language => $expected) {
             Translator::use(new JsonL10n($language));
-            $gateway = $this->createMock(DeckGatewayInterface::class);
-            $gateway->method('findCard')->willThrowException(new DoesNotExistException('card 7 is gone'));
-            $module = new DeckToolModule(
-                $this->createMock(ContainerInterface::class),
-                $this->appManager(),
-                $this->createMock(LoggerInterface::class),
-                $this->createMock(\OCP\IURLGenerator::class),
-                $this->createMock(\OCP\AppFramework\Utility\ITimeFactory::class),
-                $this->userManager(),
-            );
-            (new \ReflectionProperty(DeckToolModule::class, 'gateway'))->setValue($module, $gateway);
+            $capabilities = $this->deckDoubles();
+            $capabilities->cards->method('findCard')->willThrowException(new DoesNotExistException('card 7 is gone'));
+            $module = $this->deckModuleFixture($capabilities, $this->appManager(), users: $this->userManager());
 
             $this->assertSame($expected, $this->call($module, 'deck_read_card', ['cardId' => 7]), $language);
         }
@@ -171,7 +164,8 @@ final class ToolErrorsLanguagesTest extends TestCase {
                 $policy->setGrant('alice', $grantedModule, $operation, true);
             }
         }
-        $registry = new ToolRegistry([$module], $policy, $this->appManager(), $this->userManager(), $this->createMock(LoggerInterface::class));
+        $availability = new \OCA\Mcp\Mcp\Tools\Discovery\ToolAvailability($policy, $this->appManager(), $this->userManager());
+        $registry = new ToolRegistry([$module], $availability, new \OCA\Mcp\Mcp\Tools\Execution\ToolExecutor($availability, $this->createMock(LoggerInterface::class)));
         $result = $registry->call($name, $arguments, 'alice');
         $this->assertArrayHasKey('isError', $result, $name . ' must be refused as an error result');
         return (string)$result['content'][0]['text'];
@@ -195,8 +189,8 @@ final class ToolErrorsLanguagesTest extends TestCase {
     private function notesModule(): NotesModule {
         $root = $this->createMock(IRootFolder::class);
         $root->method('getUserFolder')->willReturn($this->createMock(Folder::class));
-        $repository = new NotesRepository($root, $this->createMock(IConfig::class));
-        return new NotesModule($repository, $this->appManager(), $this->userManager(), $this->createMock(SharedWriteGuard::class), $this->createMock(NodeAccessInfo::class));
+        $repository = new \OCA\Mcp\Modules\Notes\Storage\NotesFolders($root, $this->createMock(IConfig::class));
+        return \OCA\Mcp\Tests\Support\Notes\NotesTestFactory::module($this, [\OCA\Mcp\Modules\Notes\Storage\NotesFolders::class => $repository, \OCA\Mcp\Modules\Notes\Storage\NoteLookup::class => new \OCA\Mcp\Modules\Notes\Storage\NoteLookup(null), \OCA\Mcp\Modules\Notes\Storage\NoteMetadata::class => new \OCA\Mcp\Modules\Notes\Storage\NoteMetadata(null), \OCA\Mcp\Modules\Notes\Storage\NoteNames::class => new \OCA\Mcp\Modules\Notes\Storage\NoteNames(), \OCA\Mcp\Modules\Notes\Content\NoteContent::class => new \OCA\Mcp\Modules\Notes\Content\NoteContent(), \OCP\App\IAppManager::class => $this->appManager(), \OCP\IUserManager::class => $this->userManager(), \OCA\Mcp\Platform\FileAccess\Sharing\SharedWriteGuard::class => $this->createMock(SharedWriteGuard::class), \OCA\Mcp\Platform\FileAccess\Sharing\NodeAccessInfo::class => $this->createMock(NodeAccessInfo::class), \OCA\Mcp\Access\Visibility\VisibilityGuard::class => null, \OCA\Mcp\Platform\FileAccess\Locks\LockAwareWrite::class => null]);
     }
 
     /**
@@ -204,27 +198,34 @@ final class ToolErrorsLanguagesTest extends TestCase {
      * the resolver itself instead of being written into a mock.
      */
     private function talkModule(): TalkModule {
-        $services = $this->createMock(TalkServices::class);
-        $services->method('manager')->willThrowException(new \RuntimeException('spreed is unreachable'));
-        $resolver = new ConversationResolver($services);
-        $reader = new ConversationReader($services, $resolver, $this->createMock(ActorNames::class), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
-        return new TalkModule(
-            $services,
-            $reader,
-            $resolver,
-            $this->createMock(ConversationWriter::class),
-            $this->createMock(FileSharer::class),
-            $this->createMock(WritePreview::class),
-            $this->createMock(UserConversationResolver::class),
-            $this->createMock(GroupCreator::class),
-            $this->createMock(ReferenceLinker::class),
-            $this->createMock(LoggerInterface::class),
+        $services = \OCA\Mcp\Tests\Support\Talk\TalkNativeFixtures::create(fn (string $class) => $this->createMock($class));
+        $services->manager->method('forUser')->willThrowException(new \RuntimeException('spreed is unreachable'));
+        $resolver = new ConversationResolver($services->manager->forUser(...), $services->participantService->forUser(...), $services->roomService->forUser(...), $services->conversationConstants->forUser(...));
+        $reader = new ConversationReader($services->manager->forUser(...), $services->participantService->forUser(...), $services->chatManager->forUser(...), $resolver, $this->createMock(ActorNames::class), \OCA\Mcp\Tests\Support\Platform\FileAccess\References\OutputReferenceFilters::inactive($this));
+        return \OCA\Mcp\Tests\Support\Talk\TalkModuleFixtures::create([
+            \OCA\Mcp\Modules\Talk\Reading\ConversationReader::class => $reader,
+            \OCA\Mcp\Modules\Talk\Access\ConversationResolver::class => $resolver,
+            \OCA\Mcp\Modules\Talk\Messaging\MessageSender::class => $this->createMock(MessageSender::class),
+            \OCA\Mcp\Modules\Talk\Attachments\FileSharer::class => $this->createMock(FileSharer::class),
+            \OCA\Mcp\Modules\Talk\Messaging\ReplyPlan::class => $this->createMock(ReplyPlan::class),
+            \OCA\Mcp\Modules\Talk\DirectMessaging\OneToOneConversation::class => $this->createMock(OneToOneConversation::class),
+            \OCA\Mcp\Modules\Talk\Groups\GroupCreation::class => $this->createMock(GroupCreation::class),
+            \OCA\Mcp\Modules\Talk\References\ReferenceLinker::class => $this->createMock(ReferenceLinker::class),
+            \OCA\Mcp\Modules\Talk\DirectMessaging\ContactResolver::class => $this->createMock(\OCA\Mcp\Modules\Talk\DirectMessaging\ContactResolver::class),
+            \OCA\Mcp\Modules\Talk\DirectMessaging\DirectMessagePlan::class => $this->createMock(\OCA\Mcp\Modules\Talk\DirectMessaging\DirectMessagePlan::class),
+            \OCA\Mcp\Modules\Talk\Groups\GroupPlan::class => $this->createMock(\OCA\Mcp\Modules\Talk\Groups\GroupPlan::class),
+            \OCA\Mcp\Modules\Talk\Attachments\AttachmentPublisher::class => $this->createMock(\OCA\Mcp\Modules\Talk\Attachments\AttachmentPublisher::class),
+            \OCA\Mcp\Modules\Talk\Attachments\AttachPlan::class => $this->createMock(\OCA\Mcp\Modules\Talk\Attachments\AttachPlan::class),
+            \OCA\Mcp\Modules\Talk\Attachments\QuotePlan::class => $this->createMock(\OCA\Mcp\Modules\Talk\Attachments\QuotePlan::class),
+            \OCA\Mcp\Modules\Talk\Messaging\BatchSender::class => $this->createMock(\OCA\Mcp\Modules\Talk\Messaging\BatchSender::class),
+            \OCA\Mcp\Modules\Talk\Messaging\BatchPlan::class => $this->createMock(\OCA\Mcp\Modules\Talk\Messaging\BatchPlan::class),
+        ], $this->createMock(LoggerInterface::class)
         );
     }
 
     private function calendarModule(): CalendarModule {
         $store = new FakeCalendarStore();
-        $access = ScopeStub::access($store);
+        $access = \OCA\Mcp\Tests\Support\Dav\ScopeStub::access($store);
         $classification = new Classification();
         $repository = new EventRepository($store, $classification);
         $dates = new DateInput();
@@ -236,7 +237,7 @@ final class ToolErrorsLanguagesTest extends TestCase {
         $appConfig->method('getValueString')->willReturn('');
         $config = $this->createMock(IConfig::class);
         $listCalendars = new ListCalendars($access);
-        $listEvents = new ListEvents($access, $store, $repository, $classification, new EventExpander(), $mapper, $dates, $time, $logger);
+        $listEvents = new ListEvents($access, $store, $store, $repository, $classification, new EventExpander(), $mapper, $dates, $time, $logger);
         $users = $this->userManager();
         $guard = new SharedGuard($users);
         $dav = new FakeCalendarDav($store);
@@ -249,23 +250,14 @@ final class ToolErrorsLanguagesTest extends TestCase {
         $moveEvent = new MoveEvent($access, $relocator, $guard);
         $deleteEvent = new DeleteEvent($access, $guard, $dav, $store, $repository, new TrashPolicy($config), $scheduling);
         $transferEvent = new TransferEvent($relocator);
-        return new CalendarModule(
-            $listCalendars,
-            $listEvents,
-            $createEvent,
-            $updateEvent,
-            $moveEvent,
-            $deleteEvent,
-            $transferEvent,
-            new \OCA\Mcp\Tools\Calendar\CalendarDraftApproval($scheduling, $builder, $guard, new \OCA\Mcp\Tools\Calendar\Scheduling\PlanWarnings(
-                new \OCA\Mcp\Tools\Calendar\Scheduling\CollisionCheck($store, $repository, $classification, new EventExpander(), $logger),
-                new \OCA\Mcp\Tools\Calendar\Scheduling\AvailabilityCheck($this->createMock(\OCP\Calendar\IManager::class), $users, $logger),
-                new \OCA\Mcp\Tools\Calendar\Scheduling\SharedCalendarFinder($access, $store, $users, $this->createMock(\OCP\IGroupManager::class)),
+        return \OCA\Mcp\Tests\Support\Calendar\CalendarModuleFactory::create($listCalendars, $listEvents, $createEvent, $updateEvent, $moveEvent, $deleteEvent, $transferEvent, new \OCA\Mcp\Modules\Calendar\Execution\EventApproval($scheduling, $builder, $guard, new \OCA\Mcp\Modules\Calendar\Scheduling\PlanWarnings(
+                new \OCA\Mcp\Modules\Calendar\Scheduling\CollisionCheck($store, $store, $repository, $classification, new EventExpander(), $logger),
+                new \OCA\Mcp\Modules\Calendar\Scheduling\AvailabilityCheck($this->createMock(\OCP\Calendar\IManager::class), $users, $logger),
+                new \OCA\Mcp\Modules\Calendar\Scheduling\SharedCalendarFinder($access, $store, $users, $this->createMock(\OCP\IGroupManager::class)),
                 $attendees,
                 $builder,
                 $users,
                 $logger,
-            )),
-        );
+            )), \OCA\Mcp\Tests\Support\Platform\FileAccess\References\OutputReferenceFilters::inactive($this));
     }
 }

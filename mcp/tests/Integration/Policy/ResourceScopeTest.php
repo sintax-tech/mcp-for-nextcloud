@@ -8,8 +8,9 @@ namespace OCA\Mcp\Tests\Integration\Policy;
 
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Policy\DecimalCounter;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\DecimalCounter;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
+use OCA\Mcp\Access\Policy\Transactions\PolicyAttempt;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\Server;
 use RuntimeException;
@@ -55,13 +56,14 @@ final class ResourceScopeTest extends IntegrationTestCase {
     }
 
     public function testScopesCommitOrRollBackWithTheWriterAndKeepExactIds(): void {
-        $writer = Server::get(PolicyWriter::class);
+        $writer = Server::get(PolicyTransaction::class);
         $scopes = Server::get(ResourceScopeMapper::class);
         $other = new ResourceScopeMapper($this->openIndependentConnection());
         $saved = '';
 
         $command = function (bool $fail) use ($scopes, &$saved): \Closure {
-            return function ($snapshot, array $current) use ($fail, $scopes, &$saved): bool {
+            return function ($snapshot, PolicyAttempt $attempt) use ($fail, $scopes, &$saved): bool {
+            $current = $attempt->state();
                 $saved = $current['revision'];
                 $scopes->replace($this->uid, 'files', ['42', DecimalCounter::MAX], $saved);
                 $scopes->replace($this->uid, 'calendar', [], $saved);
@@ -101,7 +103,7 @@ final class ResourceScopeTest extends IntegrationTestCase {
     }
 
     public function testTheRevisionColumnHoldsTheLargestCounter(): void {
-        $writer = Server::get(PolicyWriter::class);
+        $writer = Server::get(PolicyTransaction::class);
         $scopes = Server::get(ResourceScopeMapper::class);
         $writer->runInternal([], fn () => null, function () use ($scopes): bool {
             $scopes->replace($this->uid, 'files', ['1'], DecimalCounter::MAX);

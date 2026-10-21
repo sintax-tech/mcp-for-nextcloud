@@ -27,25 +27,29 @@ class ClientResolver {
      *         stored row that does not validate)
      */
     public function resolve(string $clientId): ClientMetadata {
-        if ($clientId === NativeClient::CLIENT_ID) {
-            $generation = self::nativeGeneration($this->clients);
-            if ($generation === null) {
-                throw new OAuthException('invalid_client', 'Unknown or not allowed client');
+        try {
+            if ($clientId === NativeClient::CLIENT_ID) {
+                $generation = self::nativeGeneration($this->clients);
+                if ($generation === null) {
+                    throw new OAuthException('invalid_client', 'Unknown or not allowed client');
+                }
+                return NativeClient::metadata($generation);
             }
-            return NativeClient::metadata($generation);
+            if (CustomClient::owns($clientId)) {
+                try {
+                    $client = CustomClient::find($this->clients, $clientId);
+                } catch (\UnexpectedValueException) {
+                    $client = null;
+                }
+                if ($client === null || !$client['enabled'] || $client['redirectUris'] === []) {
+                    throw new OAuthException('invalid_client', 'Unknown or not allowed client');
+                }
+                return CustomClient::metadata($client);
+            }
+            return $this->fetcher->fetch($clientId);
+        } catch (\OCP\DB\Exception $e) {
+            throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('Cannot read OAuth client admission', previous: $e);
         }
-        if (CustomClient::owns($clientId)) {
-            try {
-                $client = CustomClient::find($this->clients, $clientId);
-            } catch (\UnexpectedValueException) {
-                $client = null;
-            }
-            if ($client === null || !$client['enabled'] || $client['redirectUris'] === []) {
-                throw new OAuthException('invalid_client', 'Unknown or not allowed client');
-            }
-            return CustomClient::metadata($client);
-        }
-        return $this->fetcher->fetch($clientId);
     }
 
     /**

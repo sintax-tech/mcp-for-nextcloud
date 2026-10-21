@@ -9,7 +9,7 @@ namespace OCA\Mcp\Db;
 
 use InvalidArgumentException;
 use LogicException;
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Access\Policy\DecimalCounter;
 use OCP\IDBConnection;
 use UnexpectedValueException;
 
@@ -236,7 +236,7 @@ class GroupLifeMapper {
      * (and its other snapshots) cannot see this transition. Every command whose decision relied on a group's lifecycle
      * must compare the gen it read in its external phase again under the mutex: the group save and confirm of ticket 08
      * (and its H0/H1 holders rule), and every issuance a group admitted: consent, exchange and refresh find the groups
-     * that admitted the user still active and renew their gens (PolicyWriter::holdLifecycles()), as does a reset that
+     * that admitted the user still active and renew their gens (\OCA\Mcp\Access\Grants\Groups\LifecycleHolds::hold()), as does a reset that
      * leaves a user eligible through a group. That renewal is what orders them with this transition: a Before that read
      * the gen before such a commit loses its expected gen here and judges the holders again (F1 of the second reading
      * of 1.1.0). A page built on expectedRevision (the matrix) may still show such a group as active.

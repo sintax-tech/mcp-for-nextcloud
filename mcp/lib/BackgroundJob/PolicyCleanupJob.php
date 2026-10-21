@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\BackgroundJob;
 
-use OCA\Mcp\Service\Policy\PolicyEventProcessor;
+use OCA\Mcp\Access\Policy\Events\PolicyEventProcessor;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 

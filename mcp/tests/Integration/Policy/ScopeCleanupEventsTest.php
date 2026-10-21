@@ -9,9 +9,11 @@ namespace OCA\Mcp\Tests\Integration\Policy;
 
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\Policy\ScopeCleanup;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
+use OCA\Mcp\Access\Policy\Transactions\PolicyAttempt;
+use OCA\Mcp\Access\Policy\DecimalCounter;
+use OCA\Mcp\Access\ResourceScope\ScopeCleanup;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\Credential;
 use OCA\Mcp\Tests\Integration\Support\Http;
@@ -71,9 +73,10 @@ final class ScopeCleanupEventsTest extends IntegrationTestCase {
     /** Saves (or, with null, clears) one scope exactly as the writer's setResourceScope() stores it. */
     private function replace(string $uid, string $module, ?array $items): string {
         $revision = '';
-        Server::get(PolicyWriter::class)->runInternal([], static fn () => null,
-            function ($snapshot, array $current) use ($uid, $module, $items, &$revision): bool {
-                $revision = PolicyWriter::next($current['revision']);
+        Server::get(PolicyTransaction::class)->runInternal([], static fn () => null,
+            function ($snapshot, PolicyAttempt $attempt) use ($uid, $module, $items, &$revision): bool {
+            $current = $attempt->state();
+                $revision = DecimalCounter::increment($current['revision']);
                 Server::get(ResourceScopeMapper::class)->replace($uid, $module, $items, $revision);
                 return true;
             });

@@ -1,0 +1,916 @@
+{
+    "plans": {
+        "calendar_create_event": {
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "summary": "Draft",
+                "start": "2026-10-02",
+                "end": "2026-10-03",
+                "allDay": true
+            },
+            "plan": {
+                "requiresConfirmation": true,
+                "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                "action": "calendar_create_event",
+                "calendar": {
+                    "id": 1,
+                    "uri": "personal",
+                    "name": "Pessoal",
+                    "ownerId": "alice",
+                    "ownerPrincipal": "principals/users/alice",
+                    "writable": true,
+                    "path": "/remote.php/dav/calendars/alice/personal/"
+                },
+                "destination": null,
+                "uid": null,
+                "etag": null,
+                "before": null,
+                "after": {
+                    "summary": "Draft",
+                    "location": "",
+                    "description": "",
+                    "start": "2026-10-02",
+                    "end": "2026-10-03",
+                    "allDay": true,
+                    "timeZone": null,
+                    "attendees": [],
+                    "organizer": null,
+                    "recurring": false
+                },
+                "participants": {
+                    "current": [],
+                    "proposed": [],
+                    "added": [],
+                    "removed": [],
+                    "names": []
+                },
+                "recoverable": false,
+                "consequence": null,
+                "scheduling": {
+                    "requested": false,
+                    "imipEnabled": true,
+                    "participantsNotified": false,
+                    "message": "No invitations or cancellations will be scheduled in this change.",
+                    "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                },
+                "timezone": "America/Sao_Paulo",
+                "shared": [],
+                "warnings": [],
+                "sharedCalendars": [],
+                "suggestedCalendar": null
+            },
+            "rendered": "Create event in *Pessoal*: **Draft**\n- When: Fri, Oct 2, 2026\n- Invitations: No invitations or cancellations will be scheduled in this change."
+        },
+        "calendar_update_event": {
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "event",
+                "summary": "After"
+            },
+            "plan": {
+                "requiresConfirmation": true,
+                "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                "action": "calendar_update_event",
+                "calendar": {
+                    "id": 1,
+                    "uri": "personal",
+                    "name": "Pessoal",
+                    "ownerId": "alice",
+                    "ownerPrincipal": "principals/users/alice",
+                    "writable": true,
+                    "path": "/remote.php/dav/calendars/alice/personal/"
+                },
+                "destination": null,
+                "uid": "event",
+                "etag": "\"52778bf9eca691f0e779002957875540\"",
+                "before": {
+                    "summary": "Before",
+                    "location": "",
+                    "description": "",
+                    "start": "2026-10-01T12:00:00+00:00",
+                    "end": "2026-10-01T13:00:00+00:00",
+                    "allDay": false,
+                    "timeZone": null,
+                    "attendees": [],
+                    "organizer": null,
+                    "recurring": false
+                },
+                "after": {
+                    "summary": "After",
+                    "location": "",
+                    "description": "",
+                    "start": "2026-10-01T12:00:00+00:00",
+                    "end": "2026-10-01T13:00:00+00:00",
+                    "allDay": false,
+                    "timeZone": null,
+                    "attendees": [],
+                    "organizer": null,
+                    "recurring": false
+                },
+                "participants": {
+                    "current": [],
+                    "proposed": [],
+                    "added": [],
+                    "removed": [],
+                    "names": []
+                },
+                "recoverable": false,
+                "consequence": null,
+                "scheduling": {
+                    "requested": false,
+                    "imipEnabled": true,
+                    "participantsNotified": false,
+                    "message": "No invitations or cancellations will be scheduled in this change.",
+                    "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                },
+                "timezone": "America/Sao_Paulo",
+                "shared": [],
+                "warnings": [],
+                "sharedCalendars": [],
+                "suggestedCalendar": null
+            },
+            "rendered": "Update event in *Pessoal*: **After**\n- Title: Before → After\n- Invitations: No invitations or cancellations will be scheduled in this change."
+        },
+        "calendar_delete_event": {
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "event"
+            },
+            "plan": {
+                "requiresConfirmation": true,
+                "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                "action": "calendar_delete_event",
+                "calendar": {
+                    "id": 1,
+                    "uri": "personal",
+                    "name": "Pessoal",
+                    "ownerId": "alice",
+                    "ownerPrincipal": "principals/users/alice",
+                    "writable": true,
+                    "path": "/remote.php/dav/calendars/alice/personal/"
+                },
+                "destination": null,
+                "uid": "event",
+                "etag": "\"52778bf9eca691f0e779002957875540\"",
+                "before": {
+                    "summary": "Before",
+                    "location": "",
+                    "description": "",
+                    "start": "2026-10-01T12:00:00+00:00",
+                    "end": "2026-10-01T13:00:00+00:00",
+                    "allDay": false,
+                    "timeZone": null,
+                    "attendees": [],
+                    "organizer": null,
+                    "recurring": false
+                },
+                "after": null,
+                "participants": {
+                    "current": [],
+                    "proposed": [],
+                    "added": [],
+                    "removed": [],
+                    "names": []
+                },
+                "recoverable": true,
+                "consequence": "After approval, the event will go to the recoverable Calendar trash bin.",
+                "scheduling": {
+                    "requested": false,
+                    "imipEnabled": true,
+                    "participantsNotified": false,
+                    "message": "No invitations or cancellations will be scheduled in this change.",
+                    "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                },
+                "timezone": "America/Sao_Paulo",
+                "shared": []
+            },
+            "rendered": "Delete event in *Pessoal*: **Before**\n- When: Thu, Oct 1, 2026, 9:00 AM–10:00 AM\n- Consequence: After approval, the event will go to the recoverable Calendar trash bin.\n- Invitations: No invitations or cancellations will be scheduled in this change."
+        },
+        "calendar_move_event": {
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "event",
+                "targetCalendar": "/remote.php/dav/calendars/alice/work/"
+            },
+            "plan": {
+                "requiresConfirmation": true,
+                "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                "action": "calendar_move_event",
+                "calendar": {
+                    "id": 1,
+                    "uri": "personal",
+                    "name": "Pessoal",
+                    "ownerId": "alice",
+                    "ownerPrincipal": "principals/users/alice",
+                    "writable": true,
+                    "path": "/remote.php/dav/calendars/alice/personal/"
+                },
+                "destination": {
+                    "id": 2,
+                    "uri": "work",
+                    "name": "Trabalho",
+                    "ownerId": "alice",
+                    "ownerPrincipal": "principals/users/alice",
+                    "writable": true,
+                    "path": "/remote.php/dav/calendars/alice/work/"
+                },
+                "uid": "event",
+                "etag": "\"52778bf9eca691f0e779002957875540\"",
+                "before": {
+                    "summary": "Before",
+                    "location": "",
+                    "description": "",
+                    "start": "2026-10-01T12:00:00+00:00",
+                    "end": "2026-10-01T13:00:00+00:00",
+                    "allDay": false,
+                    "timeZone": null,
+                    "attendees": [],
+                    "organizer": null,
+                    "recurring": false
+                },
+                "after": {
+                    "summary": "Before",
+                    "location": "",
+                    "description": "",
+                    "start": "2026-10-01T12:00:00+00:00",
+                    "end": "2026-10-01T13:00:00+00:00",
+                    "allDay": false,
+                    "timeZone": null,
+                    "attendees": [],
+                    "organizer": null,
+                    "recurring": false
+                },
+                "participants": {
+                    "current": [],
+                    "proposed": [],
+                    "added": [],
+                    "removed": [],
+                    "names": []
+                },
+                "recoverable": false,
+                "consequence": null,
+                "scheduling": {
+                    "requested": false,
+                    "imipEnabled": true,
+                    "participantsNotified": false,
+                    "message": "Event attendees are not notified, just like when moving in the Calendar app.",
+                    "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                },
+                "timezone": "America/Sao_Paulo",
+                "shared": [],
+                "warnings": [],
+                "sharedCalendars": [],
+                "suggestedCalendar": null
+            },
+            "rendered": "Move event from *Pessoal* to *Trabalho*: **Before**\n- When: Thu, Oct 1, 2026, 9:00 AM–10:00 AM\n- Invitations: Event attendees are not notified, just like when moving in the Calendar app."
+        },
+        "calendar_transfer_event": {
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "event",
+                "targetCalendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "confirm_shared": true
+            },
+            "plan": {
+                "requiresConfirmation": true,
+                "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                "action": "calendar_transfer_event",
+                "calendar": {
+                    "id": 1,
+                    "uri": "personal",
+                    "name": "Pessoal",
+                    "ownerId": "alice",
+                    "ownerPrincipal": "principals/users/alice",
+                    "writable": true,
+                    "path": "/remote.php/dav/calendars/alice/personal/"
+                },
+                "destination": {
+                    "id": 3,
+                    "uri": "team_shared_by_bob",
+                    "name": "Equipe (bob)",
+                    "ownerId": "bob",
+                    "ownerPrincipal": "principals/users/bob",
+                    "writable": true,
+                    "path": "/remote.php/dav/calendars/alice/team_shared_by_bob/"
+                },
+                "uid": "event",
+                "etag": "\"52778bf9eca691f0e779002957875540\"",
+                "before": {
+                    "summary": "Before",
+                    "location": "",
+                    "description": "",
+                    "start": "2026-10-01T12:00:00+00:00",
+                    "end": "2026-10-01T13:00:00+00:00",
+                    "allDay": false,
+                    "timeZone": null,
+                    "attendees": [],
+                    "organizer": null,
+                    "recurring": false
+                },
+                "after": {
+                    "summary": "Before",
+                    "location": "",
+                    "description": "",
+                    "start": "2026-10-01T12:00:00+00:00",
+                    "end": "2026-10-01T13:00:00+00:00",
+                    "allDay": false,
+                    "timeZone": null,
+                    "attendees": [],
+                    "organizer": null,
+                    "recurring": false
+                },
+                "participants": {
+                    "current": [],
+                    "proposed": [],
+                    "added": [],
+                    "removed": [],
+                    "names": []
+                },
+                "recoverable": false,
+                "consequence": null,
+                "scheduling": {
+                    "requested": false,
+                    "imipEnabled": true,
+                    "participantsNotified": false,
+                    "message": "Event attendees are not notified, just like when moving in the Calendar app.",
+                    "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                },
+                "timezone": "America/Sao_Paulo",
+                "shared": [
+                    {
+                        "requiresConfirmation": true,
+                        "scope": "shared",
+                        "owner": "bob",
+                        "ownerDisplayName": "Roberto Almeida",
+                        "resource": "Equipe (bob)",
+                        "message": "The calendar 'Equipe (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                    }
+                ],
+                "warnings": [],
+                "sharedCalendars": [],
+                "suggestedCalendar": null
+            },
+            "rendered": "Transfer event from *Pessoal* to *Equipe (bob)*: **Before**\n- When: Thu, Oct 1, 2026, 9:00 AM–10:00 AM\n- Invitations: Event attendees are not notified, just like when moving in the Calendar app.\n- Shared calendar *Equipe (bob)* of Roberto Almeida."
+        },
+        "contacts_create_contact": {
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "name": "Draft"
+            },
+            "plan": {
+                "requiresConfirmation": true,
+                "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                "action": "contacts_create_contact",
+                "addressbook": {
+                    "id": 1,
+                    "uri": "personal",
+                    "name": "Personal",
+                    "ownerId": "alice",
+                    "ownerPrincipal": "principals/users/alice",
+                    "writable": true,
+                    "path": "/remote.php/dav/addressbooks/users/alice/personal/"
+                },
+                "etag": null,
+                "before": null,
+                "after": {
+                    "uid": "<generated-contact-uid>",
+                    "name": "Draft",
+                    "organization": "",
+                    "title": "",
+                    "note": "",
+                    "url": "",
+                    "emails": [],
+                    "phones": [],
+                    "properties": [
+                        {
+                            "name": "VERSION",
+                            "group": null,
+                            "value": "3.0",
+                            "serialized": "VERSION:3.0\r\n"
+                        },
+                        {
+                            "name": "PRODID",
+                            "group": null,
+                            "value": "-//Sabre//Sabre VObject 4.5.6//EN",
+                            "serialized": "PRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\n"
+                        },
+                        {
+                            "name": "UID",
+                            "group": null,
+                            "value": "<generated-contact-uid>",
+                            "serialized": "UID:<generated-contact-uid>\r\n"
+                        },
+                        {
+                            "name": "FN",
+                            "group": null,
+                            "value": "Draft",
+                            "serialized": "FN:Draft\r\n"
+                        }
+                    ],
+                    "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:<generated-contact-uid>\r\nFN:Draft\r\nEND:VCARD\r\n"
+                },
+                "shared": [],
+                "recoverable": false,
+                "consequence": "Contacts have no native trash or edit history; review the changes carefully."
+            },
+            "rendered": "Creating the contact **Draft** in the address book *Personal*."
+        },
+        "contacts_edit_contact": {
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "name": "After"
+            },
+            "plan": {
+                "requiresConfirmation": true,
+                "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                "action": "contacts_edit_contact",
+                "addressbook": {
+                    "id": 1,
+                    "uri": "personal",
+                    "name": "Personal",
+                    "ownerId": "alice",
+                    "ownerPrincipal": "principals/users/alice",
+                    "writable": true,
+                    "path": "/remote.php/dav/addressbooks/users/alice/personal/"
+                },
+                "etag": "\"v1\"",
+                "before": {
+                    "uid": "c1",
+                    "name": "Old Name",
+                    "organization": "",
+                    "title": "",
+                    "note": "Original",
+                    "url": "",
+                    "emails": [
+                        "home@example.invalid"
+                    ],
+                    "phones": [
+                        "123"
+                    ],
+                    "properties": [
+                        {
+                            "name": "VERSION",
+                            "group": null,
+                            "value": "3.0",
+                            "serialized": "VERSION:3.0\r\n"
+                        },
+                        {
+                            "name": "UID",
+                            "group": null,
+                            "value": "c1",
+                            "serialized": "UID:c1\r\n"
+                        },
+                        {
+                            "name": "FN",
+                            "group": null,
+                            "value": "Old Name",
+                            "serialized": "FN:Old Name\r\n"
+                        },
+                        {
+                            "name": "N",
+                            "group": null,
+                            "value": "Name;Old;;;",
+                            "serialized": "N:Name;Old;;;\r\n"
+                        },
+                        {
+                            "name": "EMAIL",
+                            "group": null,
+                            "value": "home@example.invalid",
+                            "serialized": "EMAIL;TYPE=HOME:home@example.invalid\r\n"
+                        },
+                        {
+                            "name": "TEL",
+                            "group": "ITEM1",
+                            "value": "123",
+                            "serialized": "ITEM1.TEL;TYPE=CELL:123\r\n"
+                        },
+                        {
+                            "name": "X-ABLABEL",
+                            "group": "ITEM1",
+                            "value": "Mobile",
+                            "serialized": "ITEM1.X-ABLABEL:Mobile\r\n"
+                        },
+                        {
+                            "name": "X-CUSTOM",
+                            "group": null,
+                            "value": "untouched",
+                            "serialized": "X-CUSTOM;X-PARAM=keep:untouched\r\n"
+                        },
+                        {
+                            "name": "NOTE",
+                            "group": null,
+                            "value": "Original",
+                            "serialized": "NOTE:Original\r\n"
+                        }
+                    ],
+                    "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Old Name\r\nN:Name;Old;;;\r\nEMAIL;TYPE=HOME:home@example.invalid\r\nitem1.TEL;TYPE=CELL:123\r\nitem1.X-ABLABEL:Mobile\r\nX-CUSTOM;X-PARAM=keep:untouched\r\nNOTE:Original\r\nEND:VCARD\r\n"
+                },
+                "after": {
+                    "uid": "c1",
+                    "name": "After",
+                    "organization": "",
+                    "title": "",
+                    "note": "Original",
+                    "url": "",
+                    "emails": [
+                        "home@example.invalid"
+                    ],
+                    "phones": [
+                        "123"
+                    ],
+                    "properties": [
+                        {
+                            "name": "VERSION",
+                            "group": null,
+                            "value": "3.0",
+                            "serialized": "VERSION:3.0\r\n"
+                        },
+                        {
+                            "name": "UID",
+                            "group": null,
+                            "value": "c1",
+                            "serialized": "UID:c1\r\n"
+                        },
+                        {
+                            "name": "FN",
+                            "group": null,
+                            "value": "After",
+                            "serialized": "FN:After\r\n"
+                        },
+                        {
+                            "name": "N",
+                            "group": null,
+                            "value": "Name;Old;;;",
+                            "serialized": "N:Name;Old;;;\r\n"
+                        },
+                        {
+                            "name": "EMAIL",
+                            "group": null,
+                            "value": "home@example.invalid",
+                            "serialized": "EMAIL;TYPE=HOME:home@example.invalid\r\n"
+                        },
+                        {
+                            "name": "TEL",
+                            "group": "ITEM1",
+                            "value": "123",
+                            "serialized": "ITEM1.TEL;TYPE=CELL:123\r\n"
+                        },
+                        {
+                            "name": "X-ABLABEL",
+                            "group": "ITEM1",
+                            "value": "Mobile",
+                            "serialized": "ITEM1.X-ABLABEL:Mobile\r\n"
+                        },
+                        {
+                            "name": "X-CUSTOM",
+                            "group": null,
+                            "value": "untouched",
+                            "serialized": "X-CUSTOM;X-PARAM=keep:untouched\r\n"
+                        },
+                        {
+                            "name": "NOTE",
+                            "group": null,
+                            "value": "Original",
+                            "serialized": "NOTE:Original\r\n"
+                        }
+                    ],
+                    "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:After\r\nN:Name;Old;;;\r\nEMAIL;TYPE=HOME:home@example.invalid\r\nITEM1.TEL;TYPE=CELL:123\r\nITEM1.X-ABLABEL:Mobile\r\nX-CUSTOM;X-PARAM=keep:untouched\r\nNOTE:Original\r\nEND:VCARD\r\n"
+                },
+                "shared": [],
+                "recoverable": false,
+                "consequence": "Contacts have no native trash or edit history; review the changes carefully."
+            },
+            "rendered": "Editing the contact **Old Name** in the address book *Personal*.\n- Name: Old Name → After"
+        },
+        "contacts_delete_contact": {
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf"
+            },
+            "plan": {
+                "requiresConfirmation": true,
+                "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                "action": "contacts_delete_contact",
+                "addressbook": {
+                    "id": 1,
+                    "uri": "personal",
+                    "name": "Personal",
+                    "ownerId": "alice",
+                    "ownerPrincipal": "principals/users/alice",
+                    "writable": true,
+                    "path": "/remote.php/dav/addressbooks/users/alice/personal/"
+                },
+                "etag": "\"v1\"",
+                "before": {
+                    "uid": "c1",
+                    "name": "Old Name",
+                    "organization": "",
+                    "title": "",
+                    "note": "Original",
+                    "url": "",
+                    "emails": [
+                        "home@example.invalid"
+                    ],
+                    "phones": [
+                        "123"
+                    ],
+                    "properties": [
+                        {
+                            "name": "VERSION",
+                            "group": null,
+                            "value": "3.0",
+                            "serialized": "VERSION:3.0\r\n"
+                        },
+                        {
+                            "name": "UID",
+                            "group": null,
+                            "value": "c1",
+                            "serialized": "UID:c1\r\n"
+                        },
+                        {
+                            "name": "FN",
+                            "group": null,
+                            "value": "Old Name",
+                            "serialized": "FN:Old Name\r\n"
+                        },
+                        {
+                            "name": "N",
+                            "group": null,
+                            "value": "Name;Old;;;",
+                            "serialized": "N:Name;Old;;;\r\n"
+                        },
+                        {
+                            "name": "EMAIL",
+                            "group": null,
+                            "value": "home@example.invalid",
+                            "serialized": "EMAIL;TYPE=HOME:home@example.invalid\r\n"
+                        },
+                        {
+                            "name": "TEL",
+                            "group": "ITEM1",
+                            "value": "123",
+                            "serialized": "ITEM1.TEL;TYPE=CELL:123\r\n"
+                        },
+                        {
+                            "name": "X-ABLABEL",
+                            "group": "ITEM1",
+                            "value": "Mobile",
+                            "serialized": "ITEM1.X-ABLABEL:Mobile\r\n"
+                        },
+                        {
+                            "name": "X-CUSTOM",
+                            "group": null,
+                            "value": "untouched",
+                            "serialized": "X-CUSTOM;X-PARAM=keep:untouched\r\n"
+                        },
+                        {
+                            "name": "NOTE",
+                            "group": null,
+                            "value": "Original",
+                            "serialized": "NOTE:Original\r\n"
+                        }
+                    ],
+                    "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Old Name\r\nN:Name;Old;;;\r\nEMAIL;TYPE=HOME:home@example.invalid\r\nitem1.TEL;TYPE=CELL:123\r\nitem1.X-ABLABEL:Mobile\r\nX-CUSTOM;X-PARAM=keep:untouched\r\nNOTE:Original\r\nEND:VCARD\r\n"
+                },
+                "after": null,
+                "shared": [],
+                "recoverable": false,
+                "consequence": "PERMANENT DELETION: Nextcloud has no contact trash bin.",
+                "permanent": true,
+                "warning": "PERMANENT DELETION: Nextcloud has no contact trash bin.",
+                "backup": {
+                    "required": true,
+                    "directory": "",
+                    "format": "vcf",
+                    "message": "A verified vCard copy will be saved before deletion. If the backup fails, nothing will be deleted."
+                }
+            },
+            "rendered": "Deleting the contact **Old Name** from the address book *Personal*.\nPERMANENT DELETION: Nextcloud has no contact trash bin.\nA verified vCard copy will be saved before deletion. If the backup fails, nothing will be deleted."
+        },
+        "tasks_create_task": {
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Draft"
+            },
+            "plan": {
+                "requiresConfirmation": true,
+                "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                "action": "tasks_create_task",
+                "calendar": {
+                    "id": 1,
+                    "uri": "tasks",
+                    "name": "Tasks",
+                    "ownerId": "alice",
+                    "ownerPrincipal": "principals/users/alice",
+                    "writable": true,
+                    "path": "/remote.php/dav/calendars/alice/tasks/"
+                },
+                "etag": null,
+                "before": null,
+                "after": {
+                    "summary": "Draft",
+                    "description": "",
+                    "status": "NEEDS-ACTION",
+                    "percentComplete": 0,
+                    "priority": 0,
+                    "start": null,
+                    "due": null,
+                    "completed": null,
+                    "categories": [],
+                    "recurring": false
+                },
+                "shared": [],
+                "recoverable": false,
+                "consequence": null,
+                "timezone": null
+            },
+            "rendered": "Creating the task **Draft** in the calendar *Tasks*.\n- Priority: without priority\n- Progress: 0%"
+        },
+        "tasks_edit_task": {
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "uid": "t1",
+                "summary": "After"
+            },
+            "plan": {
+                "requiresConfirmation": true,
+                "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                "action": "tasks_edit_task",
+                "calendar": {
+                    "id": 1,
+                    "uri": "tasks",
+                    "name": "Tasks",
+                    "ownerId": "alice",
+                    "ownerPrincipal": "principals/users/alice",
+                    "writable": true,
+                    "path": "/remote.php/dav/calendars/alice/tasks/"
+                },
+                "etag": "\"v1\"",
+                "before": {
+                    "uid": "t1",
+                    "summary": "Work",
+                    "description": "",
+                    "status": "NEEDS-ACTION",
+                    "percentComplete": 0,
+                    "priority": 0,
+                    "start": null,
+                    "due": null,
+                    "completed": null,
+                    "categories": [],
+                    "recurring": false,
+                    "icalendar": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:t1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Work\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                },
+                "after": {
+                    "uid": "t1",
+                    "summary": "After",
+                    "description": "",
+                    "status": "NEEDS-ACTION",
+                    "percentComplete": 0,
+                    "priority": 0,
+                    "start": null,
+                    "due": null,
+                    "completed": null,
+                    "categories": [],
+                    "recurring": false,
+                    "icalendar": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:t1\r\nSUMMARY:After\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nDTSTAMP:20261001T120000Z\r\nLAST-MODIFIED:20261001T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                },
+                "shared": [],
+                "recoverable": false,
+                "consequence": null,
+                "timezone": null
+            },
+            "rendered": "Editing the task **Work** in the calendar *Tasks*.\n- Title: Work → After"
+        },
+        "tasks_complete_task": {
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "uid": "t1"
+            },
+            "plan": {
+                "requiresConfirmation": true,
+                "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                "action": "tasks_complete_task",
+                "calendar": {
+                    "id": 1,
+                    "uri": "tasks",
+                    "name": "Tasks",
+                    "ownerId": "alice",
+                    "ownerPrincipal": "principals/users/alice",
+                    "writable": true,
+                    "path": "/remote.php/dav/calendars/alice/tasks/"
+                },
+                "etag": "\"v1\"",
+                "before": {
+                    "uid": "t1",
+                    "summary": "Work",
+                    "description": "",
+                    "status": "NEEDS-ACTION",
+                    "percentComplete": 0,
+                    "priority": 0,
+                    "start": null,
+                    "due": null,
+                    "completed": null,
+                    "categories": [],
+                    "recurring": false,
+                    "icalendar": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:t1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Work\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                },
+                "after": {
+                    "uid": "t1",
+                    "summary": "Work",
+                    "description": "",
+                    "status": "COMPLETED",
+                    "percentComplete": 100,
+                    "priority": 0,
+                    "start": null,
+                    "due": null,
+                    "completed": "2026-10-01T12:00:00+00:00",
+                    "categories": [],
+                    "recurring": false,
+                    "icalendar": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:t1\r\nSUMMARY:Work\r\nX-CUSTOM:keep\r\nSTATUS:COMPLETED\r\nPERCENT-COMPLETE:100\r\nCOMPLETED:20261001T120000Z\r\nDTSTAMP:20261001T120000Z\r\nLAST-MODIFIED:20261001T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                },
+                "shared": [],
+                "recoverable": false,
+                "consequence": null,
+                "timezone": null
+            },
+            "rendered": "Marking the task **Work** as completed in the calendar *Tasks*.\n- Progress: 100%\n- Completed at: Oct 1, 2026, 12:00 PM"
+        },
+        "tasks_delete_task": {
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "uid": "t1"
+            },
+            "plan": {
+                "requiresConfirmation": true,
+                "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                "action": "tasks_delete_task",
+                "calendar": {
+                    "id": 1,
+                    "uri": "tasks",
+                    "name": "Tasks",
+                    "ownerId": "alice",
+                    "ownerPrincipal": "principals/users/alice",
+                    "writable": true,
+                    "path": "/remote.php/dav/calendars/alice/tasks/"
+                },
+                "etag": "\"v1\"",
+                "before": {
+                    "uid": "t1",
+                    "summary": "Work",
+                    "description": "",
+                    "status": "NEEDS-ACTION",
+                    "percentComplete": 0,
+                    "priority": 0,
+                    "start": null,
+                    "due": null,
+                    "completed": null,
+                    "categories": [],
+                    "recurring": false,
+                    "icalendar": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:t1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Work\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                },
+                "after": null,
+                "shared": [],
+                "recoverable": true,
+                "consequence": "The task will be moved to the calendar trash.",
+                "timezone": null
+            },
+            "rendered": "Moving the task **Work** to the trash of the calendar *Tasks*.\nThe task stays in the calendar trash, where you can bring it back."
+        }
+    },
+    "results": {
+        "calendar_list_calendars": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "[\n    {\n        \"name\": \"Pessoal\",\n        \"path\": \"/remote.php/dav/calendars/alice/personal/\",\n        \"owner\": \"alice\",\n        \"writable\": true\n    },\n    {\n        \"name\": \"Trabalho\",\n        \"path\": \"/remote.php/dav/calendars/alice/work/\",\n        \"owner\": \"alice\",\n        \"writable\": true\n    },\n    {\n        \"name\": \"Equipe (bob)\",\n        \"path\": \"/remote.php/dav/calendars/alice/team_shared_by_bob/\",\n        \"owner\": \"bob\",\n        \"writable\": true\n    },\n    {\n        \"name\": \"private_shared_by_bob\",\n        \"path\": \"/remote.php/dav/calendars/alice/private_shared_by_bob/\",\n        \"owner\": \"bob\",\n        \"writable\": false\n    },\n    {\n        \"name\": \"contact_birthdays\",\n        \"path\": \"/remote.php/dav/calendars/alice/contact_birthdays/\",\n        \"owner\": \"alice\",\n        \"writable\": false\n    }\n]"
+                }
+            ]
+        },
+        "calendar_not_found": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Calendar or event not found."
+                }
+            ],
+            "isError": true
+        },
+        "contacts_read_contact": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "{\n    \"uid\": \"c1\",\n    \"name\": \"Old Name\",\n    \"organization\": \"\",\n    \"title\": \"\",\n    \"note\": \"Original\",\n    \"url\": \"\",\n    \"emails\": [\n        \"home@example.invalid\"\n    ],\n    \"phones\": [\n        \"123\"\n    ],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"c1\",\n            \"serialized\": \"UID:c1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Old Name\",\n            \"serialized\": \"FN:Old Name\\r\\n\"\n        },\n        {\n            \"name\": \"N\",\n            \"group\": null,\n            \"value\": \"Name;Old;;;\",\n            \"serialized\": \"N:Name;Old;;;\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"home@example.invalid\",\n            \"serialized\": \"EMAIL;TYPE=HOME:home@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"TEL\",\n            \"group\": \"ITEM1\",\n            \"value\": \"123\",\n            \"serialized\": \"ITEM1.TEL;TYPE=CELL:123\\r\\n\"\n        },\n        {\n            \"name\": \"X-ABLABEL\",\n            \"group\": \"ITEM1\",\n            \"value\": \"Mobile\",\n            \"serialized\": \"ITEM1.X-ABLABEL:Mobile\\r\\n\"\n        },\n        {\n            \"name\": \"X-CUSTOM\",\n            \"group\": null,\n            \"value\": \"untouched\",\n            \"serialized\": \"X-CUSTOM;X-PARAM=keep:untouched\\r\\n\"\n        },\n        {\n            \"name\": \"NOTE\",\n            \"group\": null,\n            \"value\": \"Original\",\n            \"serialized\": \"NOTE:Original\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:c1\\r\\nFN:Old Name\\r\\nN:Name;Old;;;\\r\\nEMAIL;TYPE=HOME:home@example.invalid\\r\\nITEM1.TEL;TYPE=CELL:123\\r\\nITEM1.X-ABLABEL:Mobile\\r\\nX-CUSTOM;X-PARAM=keep:untouched\\r\\nNOTE:Original\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"c1.vcf\",\n    \"etag\": \"\\\"v1\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n}"
+                }
+            ]
+        },
+        "tasks_read_task": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "{\n    \"uid\": \"t1\",\n    \"summary\": \"Work\",\n    \"description\": \"\",\n    \"status\": \"NEEDS-ACTION\",\n    \"percentComplete\": 0,\n    \"priority\": 0,\n    \"start\": null,\n    \"due\": null,\n    \"completed\": null,\n    \"categories\": [],\n    \"recurring\": false,\n    \"icalendar\": \"BEGIN:VCALENDAR\\r\\nVERSION:2.0\\r\\nPRODID:-//test//EN\\r\\nBEGIN:VTODO\\r\\nUID:t1\\r\\nDTSTAMP:20261001T100000Z\\r\\nSUMMARY:Work\\r\\nSTATUS:NEEDS-ACTION\\r\\nX-CUSTOM:keep\\r\\nEND:VTODO\\r\\nEND:VCALENDAR\\r\\n\",\n    \"etag\": \"\\\"v1\\\"\",\n    \"calendar\": \"/remote.php/dav/calendars/alice/tasks/\"\n}"
+                }
+            ]
+        }
+    }
+}

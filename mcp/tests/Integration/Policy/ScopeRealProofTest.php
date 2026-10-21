@@ -10,12 +10,11 @@ namespace OCA\Mcp\Tests\Integration\Policy;
 use OCA\Mcp\Db\AuthUsersMapper;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Policy\ScopeItemsInaccessible;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\ResourceScope\ScopeItemsInaccessible;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Support\Credential;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\FileAccessMessages;
 use OCA\Mcp\Tests\Integration\Exclusion\ExclusionTestCase;
 use OCA\Mcp\Tests\Integration\Support\Http;
 use OCP\Files\Folder;
@@ -47,7 +46,7 @@ final class ScopeRealProofTest extends ExclusionTestCase {
 
     /** @param list<Folder>|null $folders */
     private function scope(string $uid, ?array $folders): void {
-        Server::get(PolicyWriter::class)->setResourceScope(Server::get(PolicyStateMapper::class)->state()['revision'], 'admin',
+        Server::get(\OCA\Mcp\Access\ResourceScope\ResourceScopeWriter::class)->setResourceScope(Server::get(PolicyStateMapper::class)->state()['revision'], 'admin',
             $uid, 'files', $folders === null ? null : array_map(static fn (Folder $folder): string => (string)$folder->getId(), $folders));
     }
 
@@ -123,7 +122,7 @@ final class ScopeRealProofTest extends ExclusionTestCase {
                 $this->assertReadable($client, $this->path('home', $allowed), $content, 'same credential, current scope');
                 $refused = $client->tool('files_read', ['path' => $this->path('home', $denied)]);
                 $this->assertRefusedAsMissing($client, $refused, 'same credential outside current scope');
-                $this->assertStringStartsWith(CommonMessages::notFound(), $refused->text(), 'D6 generic refusal');
+                $this->assertStringStartsWith(FileAccessMessages::notFound(), $refused->text(), 'D6 generic refusal');
                 $this->assertSame(200, $client->listStatus(), 'the existing login remains valid');
             }
             $this->assertSame($generations, Server::get(AuthUsersMapper::class)->generations(self::ALICE));

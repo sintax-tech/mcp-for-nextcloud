@@ -11,10 +11,10 @@ use OCA\Mcp\Db\PolicyEventsMapper;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
 use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\Service\GrantMatrix;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\Scope\NativeResourceEnumerator;
-use OCA\Mcp\Service\Scope\ScopeActivation;
+use OCA\Mcp\Access\Grants\GrantMatrix;
+use OCA\Mcp\Tests\Integration\Support\NativePolicyServices;
+use OCA\Mcp\Access\ResourceScope\NativeResourceEnumerator;
+use OCA\Mcp\Access\ResourceScope\ScopeActivation;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -43,9 +43,9 @@ final class ResourceScopeWriterTest extends IntegrationTestCase {
     }
 
     public function testTheContainerWiresTheScopeAndOpensEveryModule(): void {
-        $writer = Server::get(PolicyWriter::class);
-        foreach (['scopes' => ResourceScopeMapper::class, 'resources' => NativeResourceEnumerator::class, 'activation' => ScopeActivation::class] as $property => $class) {
-            $this->assertInstanceOf($class, (new \ReflectionProperty(PolicyWriter::class, $property))->getValue($writer), $property);
+        $writer = Server::get(\OCA\Mcp\Access\ResourceScope\ResourceScopeWriter::class);
+        foreach (['mutations' => \OCA\Mcp\Access\ResourceScope\ScopeMutations::class, 'resources' => NativeResourceEnumerator::class, 'activation' => ScopeActivation::class] as $property => $class) {
+            $this->assertInstanceOf($class, (new \ReflectionProperty($writer, $property))->getValue($writer), $property);
         }
         $this->assertInstanceOf(ResourceScopeMapper::class, (new \ReflectionProperty(GrantMatrix::class, 'scopes'))->getValue(Server::get(GrantMatrix::class)));
         $this->assertSame(['files' => true, 'calendar' => true, 'tasks' => true], Server::get(ScopeActivation::class)->modules());
@@ -67,22 +67,22 @@ final class ResourceScopeWriterTest extends IntegrationTestCase {
         $resources->method('inaccessible')->willReturn([]);
         $db = $this->official();
         $state = Server::get(PolicyStateMapper::class);
-        $writer = new PolicyWriter($db, $state, Server::get(PolicyEventsMapper::class), Server::get(IConfig::class), Server::get(IUserConfig::class),
+        $writer = new NativePolicyServices($db, $state, Server::get(PolicyEventsMapper::class), Server::get(IConfig::class), Server::get(IUserConfig::class),
             Server::get(IAppConfig::class), Server::get(IUserManager::class), Server::get(ITimeFactory::class),
             Server::get(\OCA\Mcp\Db\AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class),
-            Server::get(\OCA\Mcp\Service\Policy\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class),
+            Server::get(\OCA\Mcp\Access\Policy\Events\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class),
             Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(OAuthStore::class), Server::get(ResourceScopeMapper::class), $resources, new ScopeActivation(['files' => true, 'calendar' => true, 'tasks' => true]));
         $before = $state->state();
         $other = new ResourceScopeMapper($this->openIndependentConnection());
 
-        $saved = $writer->setResourceScope($before['revision'], 'admin', Fixtures::ALICE, 'calendar', ['7', '3', '7']);
+        $saved = $writer->scope->setResourceScope($before['revision'], 'admin', Fixtures::ALICE, 'calendar', ['7', '3', '7']);
 
         $this->assertNotSame($before['revision'], $saved['revision']);
         $this->assertSame(['policyRev' => $saved['revision'], 'items' => ['3', '7']], $other->forModule(Fixtures::ALICE, 'calendar'));
         $this->assertSame([Fixtures::ALICE => ['calendar' => 2]], $other->counts([Fixtures::ALICE]));
         $this->assertSame($before['auth_epoch'], $state->state()['auth_epoch'], 'a scope moves no epoch');
 
-        $writer->restoreReceipt((string)$saved['receiptId'], $saved['revision'], 'admin');
+        $writer->commands->undo->restoreReceipt((string)$saved['receiptId'], $saved['revision'], 'admin');
         $this->assertNull($other->forModule(Fixtures::ALICE, 'calendar'));
         $this->assertSame([Fixtures::ALICE => []], $other->counts([Fixtures::ALICE]));
     }

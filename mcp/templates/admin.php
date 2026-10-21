@@ -8,27 +8,13 @@
  * `role="tabpanel"` holding the core `.section` blocks of its area — overview (status), access and
  * permissions (the users × permissions matrix), clients and connections (OAuth clients and active
  * connections), data protection (exclusion tags) and advanced (server log, log privacy, OCR).
- * The resource scope panel is js/admin-scope.js.
- * js/admin-tabs.js provides the tab behavior and the URL hash mapping; js/admin-picker.js is the
- * readable-search multi-select of the log groups and the exclusion tags; the matrix, OAuth clients,
- * tags and log groups are filled by js/admin-grants.js, the connections by js/connections.js. Without
+ * The generated js/admin.js composes bounded administration modules and shared connections. Without
  * JavaScript every panel stays visible, the tab bar stays hidden and the log privacy detail stays open.
  *
  * @var array{endpoint:string, serviceEnabled:bool, ocrActive:bool, ocrUrl:string, version:string, eligibleUsers:int|null, connectedUsers:int|null, activeConnections:int, unsupportedApps:list<array{name:string, installed:string, required:string}>, logsAvailable:bool, logType:string} $_
  * @var \OCP\IL10N $l
  */
-\OCP\Util::addScript('mcp', 'admin-picker');
-\OCP\Util::addScript('mcp', 'admin-levels');
-\OCP\Util::addScript('mcp', 'admin-grants');
-\OCP\Util::addScript('mcp', 'admin-level-popover');
-\OCP\Util::addScript('mcp', 'admin-exceptions');
-\OCP\Util::addScript('mcp', 'admin-row-actions');
-\OCP\Util::addScript('mcp', 'admin-overrides');
-\OCP\Util::addScript('mcp', 'admin-groups');
-\OCP\Util::addScript('mcp', 'admin-scope');
-\OCP\Util::addScript('mcp', 'admin-inspector');
-\OCP\Util::addScript('mcp', 'connections');
-\OCP\Util::addScript('mcp', 'admin-tabs');
+\OCP\Util::addScript('mcp', 'admin');
 \OCP\Util::addStyle('mcp', 'admin');
 ?>
 <div id="mcp-admin" class="mcp-settings" data-service-enabled="<?php p($_['serviceEnabled'] ? '1' : '0'); ?>">

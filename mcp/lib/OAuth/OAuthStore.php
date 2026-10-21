@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\OAuth;
 
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Access\Policy\DecimalCounter;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 
@@ -374,4 +374,5 @@ class OAuthStore {
         $result->closeCursor();
         return is_array($row) ? $row : null;
     }
+
 }

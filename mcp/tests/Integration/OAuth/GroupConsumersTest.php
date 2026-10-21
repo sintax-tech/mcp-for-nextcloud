@@ -10,10 +10,11 @@ use OCA\Mcp\Db\AuthUsersMapper;
 use OCA\Mcp\Db\GroupLifeMapper;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\Service\GrantMatrix;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Grants\GrantMatrix;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
+use OCA\Mcp\Access\Policy\Transactions\PolicyAttempt;
 use OCP\Group\Backend\INamedBackend;
 use OCP\GroupInterface;
 use OCP\IConfig;
@@ -63,7 +64,8 @@ final class GroupConsumersTest extends OAuthAccountTestCase {
         $db = $this->official();
         $life = new GroupLifeMapper($db);
         $gen = bin2hex(random_bytes(16));
-        Server::get(PolicyWriter::class)->runInternal([], fn () => null, function ($snapshot, $current) use ($db, $life, $grants, $state, $gen): bool {
+        Server::get(PolicyTransaction::class)->runInternal([], fn () => null, function ($snapshot, PolicyAttempt $attempt) use ($db, $life, $grants, $state, $gen): bool {
+            $current = $attempt->state();
             $qb = $db->getQueryBuilder();
             $qb->delete('mcp_group_grants')->where($qb->expr()->eq('group_key', $qb->createNamedParameter(IdentityKey::group($this->gid))))->executeStatement();
             foreach ($grants as $module => $operations) {

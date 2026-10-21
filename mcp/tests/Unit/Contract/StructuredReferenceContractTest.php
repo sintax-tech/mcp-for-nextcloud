@@ -8,26 +8,24 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract;
 
 use DateTimeImmutable;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters;
-use OCA\Mcp\Tests\Unit\Tools\FakeTree;
-use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
-use OCA\Mcp\Tools\Calendar\CalendarDav;
-use OCA\Mcp\Tools\Calendar\CalendarStore;
-use OCA\Mcp\Tools\Calendar\DavResult;
-use OCA\Mcp\Tools\Calendar\SharedGuard;
-use OCA\Mcp\Tools\Calendar\TrashPolicy;
-use OCA\Mcp\Tools\Common\FileReferenceScope;
-use OCA\Mcp\Tools\Common\OutputReferenceFilter;
-use OCA\Mcp\Tools\Talk\ActorNames;
-use OCA\Mcp\Tools\Talk\Conversation;
-use OCA\Mcp\Tools\Talk\ConversationReader;
-use OCA\Mcp\Tools\Talk\ConversationResolver;
-use OCA\Mcp\Tools\Talk\TalkServices;
-use OCA\Mcp\Tools\Tasks\TaskData;
-use OCA\Mcp\Tools\Tasks\TaskStore;
-use OCA\Mcp\Tools\Tasks\TasksModule;
+use OCA\Mcp\Tests\Support\Platform\FileAccess\References\OutputReferenceFilters;
+use OCA\Mcp\Tests\Support\Platform\FileAccess\FakeTree;
+use OCA\Mcp\Tests\Support\Dav\ScopeStub;
+use OCA\Mcp\Platform\Dav\CalDav\CalDavWriter as CalendarDav;
+use OCA\Mcp\Platform\Dav\CalDav\ObjectStore as CalendarStore;
+use OCA\Mcp\Platform\Dav\Transport\DavResult;
+use OCA\Mcp\Mcp\Confirmation\SharedCollectionNotice as SharedGuard;
+use OCA\Mcp\Platform\Dav\CalDav\TrashPolicy;
+use OCA\Mcp\Platform\FileAccess\References\FileReferenceScope;
+use OCA\Mcp\Platform\FileAccess\References\OutputReferenceFilter;
+use OCA\Mcp\Modules\Talk\Presentation\ActorNames;
+use OCA\Mcp\Modules\Talk\Access\Conversation;
+use OCA\Mcp\Modules\Talk\Reading\ConversationReader;
+use OCA\Mcp\Modules\Talk\Access\ConversationResolver;
+use OCA\Mcp\Modules\Tasks\Reading\TaskQuery as TaskStore;
+use OCA\Mcp\Modules\Tasks\TasksModule;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Comments\IComment;
 use OCP\Files\Node;
@@ -37,8 +35,8 @@ use OCP\Share\IManager as IShareManager;
 use OCP\Share\IShare;
 use OCP\SystemTag\ISystemTagObjectMapper;
 use PHPUnit\Framework\Attributes\DataProvider;
-use OCA\Mcp\Service\Scope\FilesReferenceScope;
-use OCA\Mcp\Tests\Unit\Service\Scope\FilesScopes;
+use OCA\Mcp\Access\ResourceScope\FilesReferenceScope;
+use OCA\Mcp\Tests\Support\Access\ResourceScope\FilesScopes;
 use PHPUnit\Framework\TestCase;
 use Sabre\VObject\Reader;
 
@@ -140,10 +138,8 @@ final class StructuredReferenceContractTest extends TestCase {
         $resolver->method('resolveForReading')->willReturn(new Conversation($room, new \stdClass()));
         $chat = $this->createMock(StructuredReferenceChat::class);
         $chat->method('getHistory')->willReturn($history);
-        $services = $this->createMock(TalkServices::class);
-        $services->method('chatManager')->willReturn($chat);
         $users = $this->createMock(IUserManager::class);
-        return (new ConversationReader($services, $resolver, new ActorNames($users), $this->filter()))->readMessages('alice', 'room1', 50);
+        return (new ConversationReader(static fn () => throw new \LogicException('Unused manager'), static fn () => throw new \LogicException('Unused participants'), static fn () => $chat, $resolver, new ActorNames($users), $this->filter()))->readMessages('alice', 'room1', 50);
     }
 
     public function testV9ReadMessagesWithholdsTheIdOfAnExcludedFileAndKeepsTheText(): void {
@@ -217,7 +213,7 @@ final class StructuredReferenceContractTest extends TestCase {
     }
 
     private function module(): TasksModule {
-        $store = $this->createMock(CalendarStore::class);
+        $store = $this->createMockForIntersectionOfInterfaces([CalendarStore::class, \OCA\Mcp\Platform\Dav\CalDav\CollectionStore::class]);
         $store->method('calendarsForPrincipal')->willReturn([[
             'id' => 1, 'uri' => 'tasks', 'displayName' => 'Tasks', 'ownerPrincipal' => 'principals/users/alice',
             'readOnly' => false, 'components' => ['VTODO'], 'deleted' => false,
@@ -237,12 +233,11 @@ final class StructuredReferenceContractTest extends TestCase {
         $config->method('getAppValue')->willReturn('');
         $time = $this->createMock(ITimeFactory::class);
         $time->method('now')->willReturn(new DateTimeImmutable('2026-10-01T12:00:00Z'));
-        return new TasksModule(
+        return \OCA\Mcp\Tests\Support\Tasks\TasksModuleFactory::create(
             ScopeStub::access($store),
             $store,
             $tasks,
             $this->dav,
-            new TaskData(),
             new SharedGuard($this->createMock(IUserManager::class)),
             new TrashPolicy($config),
             $time,
@@ -375,7 +370,7 @@ final class StructuredReferenceContractTest extends TestCase {
                 try {
                     $run();
                     self::fail("task tool $i answered for $uid");
-                } catch (\OCA\Mcp\Service\Policy\PolicyUnavailable) {
+                } catch (\OCA\Mcp\Access\Policy\PolicyUnavailable) {
                     $this->addToAssertionCount(1);
                 }
             }

@@ -1,0 +1,590 @@
+{
+    "en": {
+        "notes_create": {
+            "arguments": {
+                "title": "Created",
+                "content": "# New",
+                "category": "Target"
+            },
+            "plan": {
+                "action": "notes_create",
+                "note": {
+                    "title": "Created",
+                    "fileName": "Created.md",
+                    "category": "Target",
+                    "categoryCreated": false,
+                    "content": "# New",
+                    "bytes": 5
+                },
+                "shared": [],
+                "recoverable": true,
+                "message": "Nothing was changed. After your approval a note is created with the title and content below."
+            },
+            "rendered": "Create note in *Target*: **Created**\n- Content: \\# New"
+        },
+        "notes_edit": {
+            "arguments": {
+                "id": 103,
+                "content": "# Changed",
+                "title": "After"
+            },
+            "plan": {
+                "action": "notes_edit",
+                "note": {
+                    "id": 103,
+                    "before": {
+                        "id": 103,
+                        "title": "Before",
+                        "category": "Work",
+                        "modified": 1700000000,
+                        "etag": "e103",
+                        "content": "# Original",
+                        "bytes": 10
+                    },
+                    "after": {
+                        "id": 103,
+                        "title": "After",
+                        "category": "Work",
+                        "modified": 1700000000,
+                        "etag": "e103",
+                        "content": "# Changed",
+                        "bytes": 9
+                    }
+                },
+                "changed": [
+                    "title",
+                    "content"
+                ],
+                "access": {
+                    "scope": "personal",
+                    "owner": "alice",
+                    "ownerDisplayName": "Alice",
+                    "permissions": {
+                        "read": true,
+                        "update": true,
+                        "create": true,
+                        "delete": true,
+                        "share": true
+                    }
+                },
+                "shared": [],
+                "recoverable": true,
+                "message": "Nothing was changed. After your approval the note keeps the fields below."
+            },
+            "rendered": "Edit note in *Work*: **Before**\n- Title: Before → After\n- Content: \\# Original → \\# Changed"
+        },
+        "notes_move": {
+            "arguments": {
+                "id": 103,
+                "category": "Target"
+            },
+            "plan": {
+                "action": "notes_move",
+                "note": {
+                    "id": 103,
+                    "title": "Before",
+                    "category": "Work",
+                    "modified": 1700000000,
+                    "etag": "e103",
+                    "content": "# Original",
+                    "bytes": 10
+                },
+                "from": "Work",
+                "to": "Target",
+                "categoryCreated": false,
+                "titleTaken": false,
+                "access": {
+                    "scope": "personal",
+                    "owner": "alice",
+                    "ownerDisplayName": "Alice",
+                    "permissions": {
+                        "read": true,
+                        "update": true,
+                        "create": true,
+                        "delete": true,
+                        "share": true
+                    }
+                },
+                "shared": [],
+                "recoverable": true,
+                "message": "Nothing was changed. After your approval the note moves to the category below."
+            },
+            "rendered": "Move note: **Before**\n- Category: *Work* → *Target*"
+        },
+        "notes_delete": {
+            "arguments": {
+                "id": 103
+            },
+            "plan": {
+                "action": "notes_delete",
+                "note": {
+                    "id": 103,
+                    "title": "Before",
+                    "category": "Work",
+                    "modified": 1700000000,
+                    "etag": "e103",
+                    "content": "# Original",
+                    "bytes": 10
+                },
+                "access": {
+                    "scope": "personal",
+                    "owner": "alice",
+                    "ownerDisplayName": "Alice",
+                    "permissions": {
+                        "read": true,
+                        "update": true,
+                        "create": true,
+                        "delete": true,
+                        "share": true
+                    }
+                },
+                "shared": [],
+                "trash": true,
+                "recoverable": true,
+                "consequence": "The note can be restored from the Nextcloud trash bin, where it stays until it is emptied.",
+                "message": "Nothing was changed. After your approval the note goes to the Nextcloud trash bin."
+            },
+            "rendered": "Delete note in *Work*: **Before**\n- The note can be restored from the Nextcloud trash bin, where it stays until it is emptied."
+        },
+        "new_category": {
+            "arguments": {
+                "title": "Created",
+                "category": "New/Sub"
+            },
+            "plan": {
+                "action": "notes_create",
+                "note": {
+                    "title": "Created",
+                    "category": "New/Sub",
+                    "categoryCreated": true
+                },
+                "shared": [],
+                "recoverable": true,
+                "message": "Nothing was changed. After your approval a note is created with the title and content below."
+            },
+            "rendered": "Create note in *New/Sub*: **Created**\n- The category will be created."
+        },
+        "shared_edit": {
+            "arguments": {
+                "id": 103,
+                "content": "Shared change"
+            },
+            "plan": {
+                "action": "notes_edit",
+                "note": {
+                    "id": 103,
+                    "before": {
+                        "id": 103,
+                        "title": "Before",
+                        "category": "Work",
+                        "modified": 1700000000,
+                        "etag": "e103",
+                        "content": "# Original",
+                        "bytes": 10
+                    },
+                    "after": {
+                        "id": 103,
+                        "title": "Before",
+                        "category": "Work",
+                        "modified": 1700000000,
+                        "etag": "e103",
+                        "content": "Shared change",
+                        "bytes": 13
+                    }
+                },
+                "changed": [
+                    "content"
+                ],
+                "access": {
+                    "scope": "shared",
+                    "owner": "pedro",
+                    "ownerDisplayName": "Paulo Exemplo",
+                    "permissions": {
+                        "read": true,
+                        "update": true,
+                        "create": true,
+                        "delete": true,
+                        "share": true
+                    },
+                    "sharedBy": "Paulo Exemplo"
+                },
+                "shared": [
+                    {
+                        "scope": "shared",
+                        "owner": "pedro",
+                        "ownerDisplayName": "Paulo Exemplo",
+                        "permissions": {
+                            "read": true,
+                            "update": true,
+                            "create": true,
+                            "delete": true,
+                            "share": true
+                        },
+                        "sharedBy": "Paulo Exemplo"
+                    }
+                ],
+                "recoverable": true,
+                "message": "Nothing was changed. After your approval the note keeps the fields below."
+            },
+            "rendered": "Edit note in *Work*: **Before**\n- Content: \\# Original → Shared change\n- Note shared by Paulo Exemplo"
+        },
+        "locked_edit": {
+            "arguments": {
+                "id": 103,
+                "content": "Locked change"
+            },
+            "plan": {
+                "action": "notes_edit",
+                "note": {
+                    "id": 103,
+                    "before": {
+                        "id": 103,
+                        "title": "Before",
+                        "category": "Work",
+                        "modified": 1700000000,
+                        "etag": "e103",
+                        "content": "# Original",
+                        "bytes": 10
+                    },
+                    "after": {
+                        "id": 103,
+                        "title": "Before",
+                        "category": "Work",
+                        "modified": 1700000000,
+                        "etag": "e103",
+                        "content": "Locked change",
+                        "bytes": 13
+                    }
+                },
+                "changed": [
+                    "content"
+                ],
+                "access": {
+                    "scope": "personal",
+                    "owner": "alice",
+                    "ownerDisplayName": "Alice",
+                    "permissions": {
+                        "read": true,
+                        "update": true,
+                        "create": true,
+                        "delete": true,
+                        "share": true
+                    }
+                },
+                "shared": [],
+                "recoverable": true,
+                "message": "Nothing was changed. After your approval the note keeps the fields below.",
+                "lock": {
+                    "type": "app",
+                    "owner_display_name": "Text",
+                    "own": false,
+                    "blocking": true,
+                    "created_at": "2025-10-08T11:05:00Z",
+                    "expires_at": null,
+                    "expiry_status": "none"
+                },
+                "warnings": [
+                    {
+                        "type": "file_locked",
+                        "message": "The file “/Notes/Work/Before.md” is locked by Text, usually because it is open there. Locked since 2025-10-08 11:05 (UTC). The lock has no end time. While the lock lasts the change is refused, even after confirmation. Close the file in that app (for a note, also in Notes) and try again. Nextcloud does not say who has it open."
+                    }
+                ]
+            },
+            "rendered": "Edit note in *Work*: **Before**\n- Content: \\# Original → Locked change"
+        }
+    },
+    "pt_BR": {
+        "notes_create": {
+            "arguments": {
+                "title": "Created",
+                "content": "# New",
+                "category": "Target"
+            },
+            "plan": {
+                "action": "notes_create",
+                "note": {
+                    "title": "Created",
+                    "fileName": "Created.md",
+                    "category": "Target",
+                    "categoryCreated": false,
+                    "content": "# New",
+                    "bytes": 5
+                },
+                "shared": [],
+                "recoverable": true,
+                "message": "Nada foi alterado. Após sua aprovação, uma nota é criada com o título e o conteúdo abaixo."
+            },
+            "rendered": "Criar nota em *Target*: **Created**\n- Conteúdo: \\# New"
+        },
+        "notes_edit": {
+            "arguments": {
+                "id": 103,
+                "content": "# Changed",
+                "title": "After"
+            },
+            "plan": {
+                "action": "notes_edit",
+                "note": {
+                    "id": 103,
+                    "before": {
+                        "id": 103,
+                        "title": "Before",
+                        "category": "Work",
+                        "modified": 1700000000,
+                        "etag": "e103",
+                        "content": "# Original",
+                        "bytes": 10
+                    },
+                    "after": {
+                        "id": 103,
+                        "title": "After",
+                        "category": "Work",
+                        "modified": 1700000000,
+                        "etag": "e103",
+                        "content": "# Changed",
+                        "bytes": 9
+                    }
+                },
+                "changed": [
+                    "title",
+                    "content"
+                ],
+                "access": {
+                    "scope": "personal",
+                    "owner": "alice",
+                    "ownerDisplayName": "Alice",
+                    "permissions": {
+                        "read": true,
+                        "update": true,
+                        "create": true,
+                        "delete": true,
+                        "share": true
+                    }
+                },
+                "shared": [],
+                "recoverable": true,
+                "message": "Nada foi alterado. Após sua aprovação, a nota passa a ter os campos abaixo."
+            },
+            "rendered": "Editar nota em *Work*: **Before**\n- Título: Before → After\n- Conteúdo: \\# Original → \\# Changed"
+        },
+        "notes_move": {
+            "arguments": {
+                "id": 103,
+                "category": "Target"
+            },
+            "plan": {
+                "action": "notes_move",
+                "note": {
+                    "id": 103,
+                    "title": "Before",
+                    "category": "Work",
+                    "modified": 1700000000,
+                    "etag": "e103",
+                    "content": "# Original",
+                    "bytes": 10
+                },
+                "from": "Work",
+                "to": "Target",
+                "categoryCreated": false,
+                "titleTaken": false,
+                "access": {
+                    "scope": "personal",
+                    "owner": "alice",
+                    "ownerDisplayName": "Alice",
+                    "permissions": {
+                        "read": true,
+                        "update": true,
+                        "create": true,
+                        "delete": true,
+                        "share": true
+                    }
+                },
+                "shared": [],
+                "recoverable": true,
+                "message": "Nada foi alterado. Após sua aprovação, a nota vai para a categoria abaixo."
+            },
+            "rendered": "Mover nota: **Before**\n- Categoria: *Work* → *Target*"
+        },
+        "notes_delete": {
+            "arguments": {
+                "id": 103
+            },
+            "plan": {
+                "action": "notes_delete",
+                "note": {
+                    "id": 103,
+                    "title": "Before",
+                    "category": "Work",
+                    "modified": 1700000000,
+                    "etag": "e103",
+                    "content": "# Original",
+                    "bytes": 10
+                },
+                "access": {
+                    "scope": "personal",
+                    "owner": "alice",
+                    "ownerDisplayName": "Alice",
+                    "permissions": {
+                        "read": true,
+                        "update": true,
+                        "create": true,
+                        "delete": true,
+                        "share": true
+                    }
+                },
+                "shared": [],
+                "trash": true,
+                "recoverable": true,
+                "consequence": "A nota pode ser restaurada da lixeira do Nextcloud, onde fica até a lixeira ser esvaziada.",
+                "message": "Nada foi alterado. Após sua aprovação, a nota vai para a lixeira do Nextcloud."
+            },
+            "rendered": "Excluir nota em *Work*: **Before**\n- A nota pode ser restaurada da lixeira do Nextcloud, onde fica até a lixeira ser esvaziada."
+        },
+        "new_category": {
+            "arguments": {
+                "title": "Created",
+                "category": "New/Sub"
+            },
+            "plan": {
+                "action": "notes_create",
+                "note": {
+                    "title": "Created",
+                    "category": "New/Sub",
+                    "categoryCreated": true
+                },
+                "shared": [],
+                "recoverable": true,
+                "message": "Nada foi alterado. Após sua aprovação, uma nota é criada com o título e o conteúdo abaixo."
+            },
+            "rendered": "Criar nota em *New/Sub*: **Created**\n- A categoria será criada."
+        },
+        "shared_edit": {
+            "arguments": {
+                "id": 103,
+                "content": "Shared change"
+            },
+            "plan": {
+                "action": "notes_edit",
+                "note": {
+                    "id": 103,
+                    "before": {
+                        "id": 103,
+                        "title": "Before",
+                        "category": "Work",
+                        "modified": 1700000000,
+                        "etag": "e103",
+                        "content": "# Original",
+                        "bytes": 10
+                    },
+                    "after": {
+                        "id": 103,
+                        "title": "Before",
+                        "category": "Work",
+                        "modified": 1700000000,
+                        "etag": "e103",
+                        "content": "Shared change",
+                        "bytes": 13
+                    }
+                },
+                "changed": [
+                    "content"
+                ],
+                "access": {
+                    "scope": "shared",
+                    "owner": "pedro",
+                    "ownerDisplayName": "Paulo Exemplo",
+                    "permissions": {
+                        "read": true,
+                        "update": true,
+                        "create": true,
+                        "delete": true,
+                        "share": true
+                    },
+                    "sharedBy": "Paulo Exemplo"
+                },
+                "shared": [
+                    {
+                        "scope": "shared",
+                        "owner": "pedro",
+                        "ownerDisplayName": "Paulo Exemplo",
+                        "permissions": {
+                            "read": true,
+                            "update": true,
+                            "create": true,
+                            "delete": true,
+                            "share": true
+                        },
+                        "sharedBy": "Paulo Exemplo"
+                    }
+                ],
+                "recoverable": true,
+                "message": "Nada foi alterado. Após sua aprovação, a nota passa a ter os campos abaixo."
+            },
+            "rendered": "Editar nota em *Work*: **Before**\n- Conteúdo: \\# Original → Shared change\n- Nota compartilhada por Paulo Exemplo"
+        },
+        "locked_edit": {
+            "arguments": {
+                "id": 103,
+                "content": "Locked change"
+            },
+            "plan": {
+                "action": "notes_edit",
+                "note": {
+                    "id": 103,
+                    "before": {
+                        "id": 103,
+                        "title": "Before",
+                        "category": "Work",
+                        "modified": 1700000000,
+                        "etag": "e103",
+                        "content": "# Original",
+                        "bytes": 10
+                    },
+                    "after": {
+                        "id": 103,
+                        "title": "Before",
+                        "category": "Work",
+                        "modified": 1700000000,
+                        "etag": "e103",
+                        "content": "Locked change",
+                        "bytes": 13
+                    }
+                },
+                "changed": [
+                    "content"
+                ],
+                "access": {
+                    "scope": "personal",
+                    "owner": "alice",
+                    "ownerDisplayName": "Alice",
+                    "permissions": {
+                        "read": true,
+                        "update": true,
+                        "create": true,
+                        "delete": true,
+                        "share": true
+                    }
+                },
+                "shared": [],
+                "recoverable": true,
+                "message": "Nada foi alterado. Após sua aprovação, a nota passa a ter os campos abaixo.",
+                "lock": {
+                    "type": "app",
+                    "owner_display_name": "Text",
+                    "own": false,
+                    "blocking": true,
+                    "created_at": "2025-10-08T11:05:00Z",
+                    "expires_at": null,
+                    "expiry_status": "none"
+                },
+                "warnings": [
+                    {
+                        "type": "file_locked",
+                        "message": "O arquivo “/Notes/Work/Before.md” está travado pelo Text, normalmente porque está aberto nele. Travado desde 2025-10-08 11:05 (UTC). A trava não tem prazo para terminar. Enquanto a trava durar, a alteração será recusada, mesmo após a confirmação. Feche o arquivo nesse aplicativo (no caso de uma nota, também no Notes) e tente novamente. O Nextcloud não informa quem está com ele aberto."
+                    }
+                ]
+            },
+            "rendered": "Editar nota em *Work*: **Before**\n- Conteúdo: \\# Original → Locked change"
+        }
+    }
+}

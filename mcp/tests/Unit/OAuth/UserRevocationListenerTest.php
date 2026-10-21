@@ -7,8 +7,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\OAuth;
 
 use OCA\Mcp\OAuth\UserRevocationListener;
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\OAuth\Revocation\CauseProcessor;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCP\IDBConnection;
 use OCP\IUser;
@@ -24,7 +24,7 @@ final class UserRevocationListenerTest extends TestCase {
         $store = new InMemoryOAuthStore();
         $causes = $this->createMock(CauseProcessor::class);
         $causes->expects($this->once())->method('flush');
-        $listener = new UserRevocationListener(InMemoryConfig::writer($data->mock($this), $store), $this->createMock(IDBConnection::class), new NullLogger(), $causes);
+        $listener = new UserRevocationListener(InMemoryConfig::services($data->mock($this), $store)->credentials, $this->createMock(IDBConnection::class), new NullLogger(), $causes);
         $user = $this->createMock(IUser::class);
         $user->method('getUID')->willReturn('alice');
         $store->insertToken(['user_id' => 'alice', 'auth_gen' => '1'], 0);
@@ -46,7 +46,7 @@ final class UserRevocationListenerTest extends TestCase {
         $data = new InMemoryConfig();
         $data->generations['alice'] = ['issue_seq' => '3', 'revoked_below' => '0'];
         $store = new InMemoryOAuthStore();
-        $listener = new UserRevocationListener(InMemoryConfig::writer($data->mock($this), $store), $this->createMock(IDBConnection::class), new NullLogger(),
+        $listener = new UserRevocationListener(InMemoryConfig::services($data->mock($this), $store)->credentials, $this->createMock(IDBConnection::class), new NullLogger(),
             $this->createMock(CauseProcessor::class));
         $user = $this->createMock(IUser::class);
         $user->method('getUID')->willReturn('alice');
@@ -64,11 +64,17 @@ final class UserRevocationListenerTest extends TestCase {
     public function testInsideACallersTransactionOrOnAFailureNothingIsThrown(): void {
         $user = $this->createMock(IUser::class);
         $user->method('getUID')->willReturn('alice');
-        $writer = $this->createMock(PolicyWriter::class);
+        $transaction = $this->createMock(PolicyTransaction::class);
+        $config = (new InMemoryConfig())->mock($this);
+        $services = InMemoryConfig::services($config);
+        $writer = new \OCA\Mcp\OAuth\Revocation\CredentialCommands($transaction, InMemoryConfig::authUsers($config),
+            $this->createMock(\OCA\Mcp\Db\RecheckMapper::class), $config,
+            new \OCA\Mcp\Access\Policy\PolicyUsers($this->createMock(\OCP\IUserManager::class)), $services->mutations,
+            new \OCA\Mcp\OAuth\Revocation\CredentialCuts(InMemoryConfig::authUsers($config), InMemoryConfig::state($config), $this->createMock(\OCA\Mcp\Db\RecheckMapper::class)), $services->holds);
         $logger = $this->createMock(LoggerInterface::class);
         $inTransaction = $this->createMock(IDBConnection::class);
         $inTransaction->method('inTransaction')->willReturn(true);
-        $writer->expects($this->once())->method('revokeCredentials')->willThrowException(new \RuntimeException('storage down'));
+        $transaction->expects($this->once())->method('runInternal')->willThrowException(new \RuntimeException('storage down'));
         $logger->expects($this->once())->method('info');
         $logger->expects($this->once())->method('warning');
 

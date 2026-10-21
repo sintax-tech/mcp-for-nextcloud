@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Policy;
 
 use OCA\Mcp\Db\GroupGrantsMapper;
-use OCA\Mcp\Service\Policy\PolicyResolver;
+use OCA\Mcp\Access\Policy\Resolution\PolicyResolver;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\Http;

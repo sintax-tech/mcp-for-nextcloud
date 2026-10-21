@@ -8,32 +8,12 @@ namespace OCA\Mcp\Tests\Integration\Last;
 
 use OCA\Mcp\Tests\Integration\OAuth\OAuthAccountTestCase;
 
-use OCA\Mcp\BackgroundJob\PolicyCleanupJob;
-use OCA\Mcp\Db\AuthUsersMapper;
-use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\OAuth\AccessTokenAuthenticator;
-use OCA\Mcp\OAuth\AuthorizationRequest;
-use OCA\Mcp\OAuth\ClientMetadata;
-use OCA\Mcp\OAuth\OAuthException;
 use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\OAuth\TokenHasher;
-use OCA\Mcp\OAuth\TokenOwnerGate;
-use OCA\Mcp\OAuth\TokenService;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\DecimalCounter;
-use OCA\Mcp\Service\Policy\PolicyEventProcessor;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Tests\Integration\IntegrationTestCase;
-use OCP\AppFramework\Utility\ITimeFactory;
-use OCP\BackgroundJob\IJobList;
-use OCP\Config\IUserConfig;
-use OCP\IConfig;
-use OCP\IDBConnection;
-use OCP\IUser;
-use OCP\IUserManager;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Policy\DecimalCounter;
 use OCP\Server;
-use RuntimeException;
 
 /**
  * The global auth epoch on the real server, in every cell. It runs in the last suite of phpunit.xml because its

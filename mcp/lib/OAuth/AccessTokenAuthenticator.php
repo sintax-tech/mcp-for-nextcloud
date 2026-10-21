@@ -9,16 +9,16 @@ namespace OCA\Mcp\OAuth;
 
 use OCA\Mcp\Db\AuthUsersMapper;
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCA\Mcp\Db\OAuthClientsMapper;
+use OCA\Mcp\OAuth\Revocation\CredentialGeneration;
 use OCP\IUser;
 use Throwable;
 
 /**
  * Resolves an `Authorization: Bearer` access token issued by this app into its user: the hash must exist, the token
- * must not be expired, a token of the native client or of a self-hosted client needs that client enabled (and stored,
- * for a self-hosted one), read from the app's table on every request, its audience must be this MCP server,
+ * must not be expired, a token of a managed client needs that client present and enabled in the authoritative table, its audience must be this MCP server,
  * its (epoch, generation) must still be valid (CredentialGeneration) and the owner must pass the TokenOwnerGate.
  * Validation takes no lock and writes nothing, except the consumption of the owner's pending recheck causes and the
  * cut of an owner observed unusable.
@@ -57,8 +57,7 @@ class AccessTokenAuthenticator {
                 return null;
             }
             $clientId = (string)$row['client_id'];
-            // The client's row is read from the app's table on every request, never from the AppConfig caches. The
-            // check sits before the owner gate, which keeps the issue_seq read below for its cut.
+            // Read the authoritative client row before the owner gate and its observed generation cut.
             if (($clientId === NativeClient::CLIENT_ID || CustomClient::owns($clientId)) && ClientResolver::builtInDisabled($this->clients, $clientId)) {
                 return null;
             }

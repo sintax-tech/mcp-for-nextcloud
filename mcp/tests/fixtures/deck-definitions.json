@@ -1,0 +1,493 @@
+{
+    "definitions": [
+        {
+            "name": "deck_list_boards",
+            "description": "Lists the Deck boards shared with you, excluding archived ones.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+            },
+            "module": "deck",
+            "operation": "read",
+            "app": "deck"
+        },
+        {
+            "name": "deck_list_stacks",
+            "description": "Lists the lists (stacks) of a Deck board, with the number of cards in each.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "boardId": {
+                        "type": "integer",
+                        "description": "Id of the Deck board."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "boardId"
+                ]
+            },
+            "module": "deck",
+            "operation": "read",
+            "app": "deck"
+        },
+        {
+            "name": "deck_list_cards",
+            "description": "Lists the active cards of a Deck list (stack), paginated.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "stackId": {
+                        "type": "integer",
+                        "description": "Id of the Deck list (stack)."
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of cards to return.",
+                        "minimum": 1,
+                        "maximum": 200,
+                        "default": 50
+                    },
+                    "offset": {
+                        "type": "integer",
+                        "description": "Number of cards to skip, for pagination.",
+                        "minimum": 0
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "stackId"
+                ]
+            },
+            "module": "deck",
+            "operation": "read",
+            "app": "deck"
+        },
+        {
+            "name": "deck_read_card",
+            "description": "Reads a Deck card with its description, dates and counters.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "cardId": {
+                        "type": "integer",
+                        "description": "Id of the Deck card."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "cardId"
+                ]
+            },
+            "module": "deck",
+            "operation": "read",
+            "app": "deck"
+        },
+        {
+            "name": "deck_create_card",
+            "description": "Creates a Deck card at the end of a list (stack), owned by you. Optional assignees are account IDs with access to the board; use users_search to resolve IDs. If assignment fails after creation, the created card is returned with a warning. If the resource belongs to somebody else, the agent MUST ask the user before sending confirm_shared: true.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "stackId": {
+                        "type": "integer",
+                        "description": "Id of the Deck list (stack)."
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "Card title.",
+                        "minLength": 1,
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Card description, in plain text.",
+                        "minLength": 0,
+                        "default": ""
+                    },
+                    "duedate": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Due date in YYYY-MM-DD format, or null to remove it."
+                    },
+                    "assignees": {
+                        "type": "array",
+                        "maxItems": 100,
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 255
+                        },
+                        "description": "Optional list of account IDs to assign (maximum 100). Each account must exist and have access to the board. Omit or send an empty list to create without explicit assignments."
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Set to true only after the user has confirmed the change on somebody else's board."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "stackId",
+                    "title"
+                ]
+            },
+            "module": "deck",
+            "operation": "create",
+            "app": "deck"
+        },
+        {
+            "name": "deck_edit_card",
+            "description": "Edits the title, description, due date and assignees of a Deck card. Use assign and unassign (lists of account IDs; use users_search to resolve IDs) to change who is responsible for it. Use lastModified to avoid overwriting a concurrent edit. If an assignment fails midway, the result lists what was assigned, unassigned and failed; nothing is undone. If the resource belongs to somebody else, the agent MUST ask the user before sending confirm_shared: true.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "cardId": {
+                        "type": "integer",
+                        "description": "Id of the Deck card."
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "Card title.",
+                        "minLength": 1,
+                        "maxLength": 255
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Card description, in plain text.",
+                        "minLength": 0
+                    },
+                    "duedate": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "description": "Due date in YYYY-MM-DD format, or null to remove it."
+                    },
+                    "assign": {
+                        "type": "array",
+                        "maxItems": 100,
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 255
+                        },
+                        "description": "Optional list of account IDs to assign to the card (maximum 100). Each account must exist and have access to the board. An account already assigned is ignored with a warning. Cannot share an account with unassign."
+                    },
+                    "unassign": {
+                        "type": "array",
+                        "maxItems": 100,
+                        "items": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 255
+                        },
+                        "description": "Optional list of account IDs to remove from the card (maximum 100). An account that is not assigned today is ignored with a warning. Cannot share an account with assign."
+                    },
+                    "lastModified": {
+                        "type": "integer",
+                        "description": "lastModified of the card at the time it was read; if it has changed, the edit is refused.",
+                        "minimum": 0
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Set to true only after the user has confirmed the change on somebody else's board."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "cardId"
+                ]
+            },
+            "module": "deck",
+            "operation": "edit",
+            "app": "deck"
+        },
+        {
+            "name": "deck_move_card",
+            "description": "Moves a Deck card to another list (stack), including one on another board. Without order, the card goes to the end. If the resource belongs to somebody else, the agent MUST ask the user before sending confirm_shared: true.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "cardId": {
+                        "type": "integer",
+                        "description": "Id of the Deck card."
+                    },
+                    "stackId": {
+                        "type": "integer",
+                        "description": "Id of the Deck list (stack)."
+                    },
+                    "order": {
+                        "type": "integer",
+                        "description": "Position of the card in the list, from 0 to 99999.",
+                        "minimum": 0,
+                        "maximum": 99999
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Set to true only after the user has confirmed the change on somebody else's board."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "cardId",
+                    "stackId"
+                ]
+            },
+            "module": "deck",
+            "operation": "move",
+            "app": "deck"
+        },
+        {
+            "name": "deck_delete_card",
+            "description": "Deletes a Deck card the same way the web interface does: the deletion can be undone in Deck. If the resource belongs to somebody else, the agent MUST ask the user before sending confirm_shared: true.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "cardId": {
+                        "type": "integer",
+                        "description": "Id of the Deck card."
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Set to true only after the user has confirmed the change on somebody else's board."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "cardId"
+                ]
+            },
+            "module": "deck",
+            "operation": "delete",
+            "app": "deck"
+        },
+        {
+            "name": "deck_followup_cards",
+            "description": "Lists the cards of the boards you can manage (owner or manage permission), grouped by assignee, with a direct link to each card. By default it returns only overdue cards; the scan covers at most 100 visible boards.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "overdue",
+                            "open",
+                            "done",
+                            "all"
+                        ],
+                        "default": "overdue",
+                        "description": "Status filter: overdue (due before today), open, done or all. Default: overdue."
+                    },
+                    "assignee": {
+                        "type": "string",
+                        "description": "UID of the assignee (if you are not sure of someone's ID, call users_search first); returns only the cards assigned to that person.",
+                        "minLength": 1,
+                        "maxLength": 64
+                    },
+                    "boardId": {
+                        "type": "integer",
+                        "description": "Id of the Deck board."
+                    },
+                    "dueBefore": {
+                        "type": "string",
+                        "description": "Returns only cards due on or before this date, in YYYY-MM-DD format."
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "description": "Maximum number of cards to return.",
+                        "minimum": 1,
+                        "maximum": 500,
+                        "default": 100
+                    }
+                },
+                "additionalProperties": false
+            },
+            "module": "deck",
+            "operation": "read",
+            "app": "deck"
+        },
+        {
+            "name": "deck_create_board",
+            "description": "Creates a Deck board owned by you, with its lists (stacks) and first cards, in one call and one confirmation: use it to set up a project from scratch instead of creating the pieces one by one. At most 20 lists and 100 cards in total; the cards go to the end of each list, in the order given. The new board is open only to you, so assignees can only be your own account (share the board in Deck first to assign others). If a step fails midway, the result lists what was created and what failed; nothing is undone, so read it before retrying.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "description": "Board title, 1 to 100 characters.",
+                        "minLength": 1,
+                        "maxLength": 100
+                    },
+                    "color": {
+                        "type": "string",
+                        "description": "Board colour as six hexadecimal digits, with or without a leading #, for example 0082c9. Default: the Nextcloud blue.",
+                        "minLength": 6,
+                        "maxLength": 7
+                    },
+                    "stacks": {
+                        "type": "array",
+                        "maxItems": 20,
+                        "description": "Lists to create on the new board, in order (maximum 20). Each one may carry its first cards (maximum 100 cards in total, in all lists).",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "title": {
+                                    "type": "string",
+                                    "description": "List title, 1 to 100 characters.",
+                                    "minLength": 1,
+                                    "maxLength": 100
+                                },
+                                "cards": {
+                                    "type": "array",
+                                    "maxItems": 100,
+                                    "description": "Cards to create at the end of this list, in order.",
+                                    "items": {
+                                        "type": "object",
+                                        "properties": {
+                                            "title": {
+                                                "type": "string",
+                                                "description": "Card title.",
+                                                "minLength": 1,
+                                                "maxLength": 255
+                                            },
+                                            "description": {
+                                                "type": "string",
+                                                "description": "Card description, in plain text.",
+                                                "minLength": 0
+                                            },
+                                            "duedate": {
+                                                "type": [
+                                                    "string",
+                                                    "null"
+                                                ],
+                                                "description": "Due date in YYYY-MM-DD format, or null to remove it."
+                                            },
+                                            "assignees": {
+                                                "type": "array",
+                                                "maxItems": 100,
+                                                "items": {
+                                                    "type": "string",
+                                                    "minLength": 1,
+                                                    "maxLength": 255
+                                                },
+                                                "description": "Optional list of account IDs to assign (maximum 100). Each account must exist and have access to the board. Omit or send an empty list to create without explicit assignments."
+                                            }
+                                        },
+                                        "additionalProperties": false,
+                                        "required": [
+                                            "title"
+                                        ]
+                                    }
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "title"
+                            ]
+                        }
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "title"
+                ]
+            },
+            "module": "deck",
+            "operation": "create",
+            "app": "deck"
+        },
+        {
+            "name": "deck_create_stack",
+            "description": "Creates a list (stack) on a Deck board you manage, at the end or at the given position. To build a whole board with its lists and cards, use deck_create_board. If the resource belongs to somebody else, the agent MUST ask the user before sending confirm_shared: true.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "boardId": {
+                        "type": "integer",
+                        "description": "Id of the Deck board."
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "List title, 1 to 100 characters.",
+                        "minLength": 1,
+                        "maxLength": 100
+                    },
+                    "order": {
+                        "type": "integer",
+                        "description": "Position among the lists of the board, from 0 to 99999. Without it the list goes after the last one.",
+                        "minimum": 0,
+                        "maximum": 99999
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Set to true only after the user has confirmed the change on somebody else's board."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "boardId",
+                    "title"
+                ]
+            },
+            "module": "deck",
+            "operation": "create",
+            "app": "deck"
+        },
+        {
+            "name": "deck_delete_stack",
+            "description": "Deletes a Deck list (stack), only if it holds no cards, active or archived: move or delete the cards first. Deck moves the list to the trash of the board, where it can be recovered. A card created by someone else right after the second count the tool takes before finishing may go to the trash with the list; it is recoverable there. If the resource belongs to somebody else, the agent MUST ask the user before sending confirm_shared: true.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "stackId": {
+                        "type": "integer",
+                        "description": "Id of the Deck list (stack)."
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Set to true only after the user has confirmed the change on somebody else's board."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "stackId"
+                ]
+            },
+            "module": "deck",
+            "operation": "delete",
+            "app": "deck"
+        },
+        {
+            "name": "deck_delete_board",
+            "description": "Deletes a Deck board you own, only if none of its lists holds a card, active or archived. Its empty lists go with it. Deck moves the board to its trash, where it can be recovered. A card created by someone else right after the second count the tool takes before finishing may go to the trash with the board; it is recoverable there.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "boardId": {
+                        "type": "integer",
+                        "description": "Id of the Deck board."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "boardId"
+                ]
+            },
+            "module": "deck",
+            "operation": "delete",
+            "app": "deck"
+        }
+    ],
+    "guide": [
+        "A card is addressed by three ids: deck_list_boards gives the board, deck_list_stacks the lists of a board, and deck_list_cards the cards of a list. Read them in that order before writing anything.",
+        "deck_read_card returns the card with its comments; deck_followup_cards lists the cards that are due or overdue, per board.",
+        "A board owned by somebody else is refused on a write until the user has been asked and the call repeats with confirm_shared: true. The refusal is a normal result that says what is missing, not an error.",
+        "The caller owns a created card. Explicit assignments are checked before creation and shown in the plan. Assignment changes during creation can produce a created card with warnings; read it before retrying in Deck. deck_edit_card changes assignees with assign and unassign (lists of account IDs, at most 100 each); an account cannot be in both, accounts are checked before anything is written, and a failure midway leaves the result listing assigned, unassigned and failed.",
+        "To set up a project from scratch use one deck_create_board call: it creates the board, its lists and their first cards after a single confirmation (at most 20 lists and 100 cards). The board is open only to its owner, so share it in Deck before assigning anybody else. deck_create_stack adds a list to an existing board. deck_delete_stack and deck_delete_board work only on something empty: they refuse, saying how many cards are left, while any card (active or archived) remains, and what they delete goes to the Deck trash. A card created by somebody else right after the second count they take before finishing may go to the trash with the list or board; it is recoverable there.",
+        "duedate is a plain day (Y-m-d) and is read in the timezone of the account; a card description is capped at 100000 characters and a title at 255.",
+        "deck_move_card can reorder a card within its current list or move it to another list, including one on another board. Set stackId to the destination list; without order, the card goes to the end."
+    ]
+}

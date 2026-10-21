@@ -104,3 +104,30 @@ Unicode notice described above applies to those tables as well.
 Its original SPDX header is retained. Generated `tests/fixtures/nextcloud-api/*.php`
 record public API signatures from Nextcloud, Deck and Talk; they are test metadata,
 not runtime libraries, and are covered by `REUSE.toml`.
+
+## PHPStan (development only)
+
+PHPStan 2.3.1 (`phpstan/phpstan`, MIT) is used only for development analysis and is
+not included in the app archive. See `vendor/phpstan/phpstan/LICENSE` in a source
+checkout after installing development dependencies and the exact lock entry.
+
+Analysis-only Nextcloud/Deck declarations preserve each upstream AGPL-3.0-only or
+AGPL-3.0-or-later identifier and attribution. They are excluded from the archive;
+the source repository retains both license texts under its root LICENSES directory. Source revisions and file digests
+are recorded in `phpstan/README.md` in the source checkout.
+
+## Documentation development tools
+
+The npm lock records exact direct and transitive development dependencies. These
+tools and their dependency license files remain in `node_modules` and are not
+included in the production package.
+
+| Package | Version | License | Copyright / project | Purpose |
+| --- | --- | --- | --- | --- |
+| mdast-util-from-markdown | 2.1.0 | MIT | Titus Wormer and contributors | Markdown syntax tree |
+| mdast-util-gfm | 3.1.0 | MIT | Titus Wormer and contributors | GitHub Markdown nodes |
+| micromark-extension-gfm | 3.0.0 | MIT | Titus Wormer and contributors | GitHub Markdown tokenizer |
+| github-slugger | 2.0.0 | ISC | 2015 Dan Flettre | GitHub heading fragments |
+| parse5 | 8.0.1 | MIT | Ivan Nikulin and contributors | HTML link/anchor parsing |
+| markdownlint | 0.42.0 | MIT | David Anson | Structural Markdown lint |
+| katex (transitive override) | 0.18.2 | MIT | Khan Academy and contributors | Patched math dependency of the development linter |

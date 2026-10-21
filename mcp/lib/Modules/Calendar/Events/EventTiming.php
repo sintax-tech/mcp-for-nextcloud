@@ -1,0 +1,36 @@
+<?php
+
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare (strict_types=1);
+namespace OCA\Mcp\Modules\Calendar\Events;
+
+use OCA\Mcp\Modules\Calendar\Execution\CalendarArgumentException;
+use DateTimeImmutable;
+use DateTimeZone;
+/**
+ * Validated start, end, all-day flag and optional time zone of an event.
+ */
+final class EventTiming
+{
+    /**
+     * @param DateTimeImmutable $start instant in UTC, or the civil day at UTC midnight when all-day
+     * @param DateTimeImmutable $end exclusive end, same convention as start
+     * @param bool $allDay whether dates are civil days
+     * @param DateTimeZone|null $timeZone zone to write DTSTART/DTEND in; null writes UTC (ignored when all-day)
+     * @throws CalendarArgumentException when end is not after start
+     */
+    public function __construct(
+        public readonly DateTimeImmutable $start,
+        public readonly DateTimeImmutable $end,
+        public readonly bool $allDay,
+        public readonly ?DateTimeZone $timeZone,
+    )
+    {
+        if ($end <= $start) {
+            throw new CalendarArgumentException(\OCA\Mcp\Modules\Calendar\Events\EventMessages::rangeEndBeforeStart());
+        }
+    }
+}

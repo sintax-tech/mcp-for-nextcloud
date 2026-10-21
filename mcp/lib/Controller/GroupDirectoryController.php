@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Controller;
 
-use OCA\Mcp\Service\GroupDirectory;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Grants\Groups\GroupDirectory;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IGroupManager;

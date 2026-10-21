@@ -8,8 +8,8 @@ namespace OCA\Mcp\Command;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\L10n\UserL10n;
-use OCA\Mcp\Service\Calendar\CalendarSelftestMessages as Messages;
-use OCA\Mcp\Service\Calendar\CalendarSelftestService;
+use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestMessages as Messages;
+use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestRunner as CalendarSelftestService;
 use OCP\IUserManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;

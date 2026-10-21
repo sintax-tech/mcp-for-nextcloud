@@ -11,11 +11,11 @@ use OCA\Mcp\Db\GroupGrantsMapper;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyEventsMapper;
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\Service\Policy\DecimalCounter;
-use OCA\Mcp\Service\Policy\PolicyConflict;
-use OCA\Mcp\Service\Policy\PolicyEventPayload;
-use OCA\Mcp\Service\Policy\PolicyOutbox;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\DecimalCounter;
+use OCA\Mcp\Access\Policy\Transactions\PolicyConflict;
+use OCA\Mcp\Access\Policy\Events\PolicyEventPayload;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
+use OCA\Mcp\Access\Policy\Transactions\PolicyAttempt;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Config\IUserConfig;
@@ -74,7 +74,7 @@ final class RealDeadlockTest extends IntegrationTestCase {
                     (new GroupGrantsMapper($db))->deleteGroup($gid);
                     $this->fail('The policy writer must be the deadlock victim');
                 } catch (\OCP\DB\Exception $e) {
-                    // Capture the real core/DBAL/driver chain, then rethrow the SAME exception to PolicyWriter.
+                    // Capture the real core/DBAL/driver chain, then rethrow the SAME exception to PolicyTransaction.
                     $chain = [];
                     for ($error = $e; $error !== null; $error = $error->getPrevious()) {
                         $chain[] = ['class' => $error::class, 'code' => $error->getCode(),
@@ -102,7 +102,7 @@ final class RealDeadlockTest extends IntegrationTestCase {
                 }
             };
             // Keep all official shared services/connections; only add an observation hook after outbox insertion.
-            $writer = clone Server::get(PolicyWriter::class);
+            $writer = clone Server::get(PolicyTransaction::class);
             (new \ReflectionProperty($writer, 'events'))->setValue($writer, $mapper);
             try {
                 $result = $writer->runAdmin($before['revision'], [$uid], function ($observed, $command) use (&$commands, &$attempts, $observer, $before, $generations, $uid, $key, &$events): void {
@@ -114,7 +114,10 @@ final class RealDeadlockTest extends IntegrationTestCase {
                         $this->assertSame($generations, (new AuthUsersMapper($observer))->generations($uid));
                         $this->assertSame([], Server::get(IUserConfig::class)->getValuesByUsers('mcp', $key, null, [$uid]));
                     }
-                }, function ($snapshot, $current, $command, PolicyOutbox $outbox) use (&$attempts, &$events, $config, $uid, $key, $auth, $state): bool {
+                }, function ($snapshot, PolicyAttempt $attempt) use (&$attempts, &$events, $config, $uid, $key, $auth, $state): bool {
+                $current = $attempt->state();
+                $command = $attempt->commandId();
+                $outbox = $attempt->outbox();
                     ++$attempts;
                     $config->setUserValue($uid, 'mcp', $key, '1');
                     $issued = $auth->issue($uid);

@@ -10,22 +10,25 @@ namespace OCA\Mcp\Controller;
 use InvalidArgumentException;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\OAuth\ClientMetadataFetcher;
-use OCA\Mcp\OAuth\CustomClient;
 use OCA\Mcp\OAuth\NativeClient;
-use OCA\Mcp\OAuth\OAuthClientsService;
-use OCA\Mcp\Service\GrantMatrix;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\LogsAccess;
-use OCA\Mcp\Service\LogsGroupsConflict;
-use OCA\Mcp\Service\Policy\GroupGrantsService;
-use OCA\Mcp\Service\Policy\GroupSourceUntrusted;
-use OCA\Mcp\Service\Policy\MissingRevision;
-use OCA\Mcp\Service\Policy\PolicyConflict;
-use OCA\Mcp\Service\Policy\PolicyEventPayload;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\Policy\ReceiptExpired;
-use OCA\Mcp\Service\Policy\ReceiptNotFound;
+use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\CustomClient;
+use OCA\Mcp\Access\Grants\GrantMatrix;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Logs\LogsAccess;
+use OCA\Mcp\Access\Logs\LogsGroupsConflict;
+use OCA\Mcp\Access\Grants\Groups\GroupGrantsService;
+use OCA\Mcp\Access\Grants\Groups\GroupSourceUntrusted;
+use OCA\Mcp\Access\Policy\Transactions\MissingRevision;
+use OCA\Mcp\Access\Policy\Transactions\PolicyConflict;
+use OCA\Mcp\Access\Policy\Events\PolicyEventPayload;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Grants\Commands\GrantCommands;
+use OCA\Mcp\Access\Grants\Commands\ServiceCommands;
+use OCA\Mcp\Access\Policy\Receipts\ReceiptUndo;
+use OCA\Mcp\Access\Policy\PolicyLimits;
+use OCA\Mcp\Access\Policy\Receipts\ReceiptExpired;
+use OCA\Mcp\Access\Policy\Receipts\ReceiptNotFound;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -41,7 +44,7 @@ use OCP\IUserSession;
  * Invalid input answers 400 {"error":"Invalid request"} without saying which part was wrong.
  *
  * Every policy write carries expectedRevision, the global policy revision (a decimal string) the page was built
- * from, and goes through the PolicyWriter (contracts §2.3):
+ * from, and goes through an atomic policy command (contracts §2.3):
  * - without it: 428 {"error":"PreconditionRequired"}, nothing written;
  * - stale: 409 {"error":"Conflict", "revision", "state"}, nothing written; revision and state are read after the
  *   rollback, so the page can show what is saved now;
@@ -64,11 +67,14 @@ class GrantsController extends Controller {
         private IUserManager $userManager,
         private IConfig $config,
         private LogsAccess $logs,
-        private PolicyWriter $writer,
+        private GrantCommands $commands,
+        private ServiceCommands $service,
+        private ReceiptUndo $undo,
         private PolicyStateMapper $state,
         private IUserSession $session,
         private GroupGrantsService $groups,
-        private OAuthClientsService $clients,
+        private OAuthStore $oauth,
+        private \OCA\Mcp\OAuth\OAuthClientsService $clients,
     ) {
         parent::__construct($appName, $request);
     }
@@ -111,7 +117,7 @@ class GrantsController extends Controller {
             } else {
                 throw new InvalidArgumentException('Invalid request');
             }
-            $result = $this->writer->applyCells($expected, $this->actor(), PolicyEventPayload::ACTION_UPDATE,
+            $result = $this->commands->applyCells($expected, $this->actor(), PolicyEventPayload::ACTION_UPDATE,
                 [['uid' => $uid, 'key' => $key, 'value' => $value ? '1' : '0']]);
             return self::afterCommit(['revision' => $result['revision'], 'receiptId' => $result['receiptId']], fn (): array => $this->matrix->rows([$user])[0]);
         }, fn (): array => $this->usersState([$uid]));
@@ -139,7 +145,7 @@ class GrantsController extends Controller {
             $key = (string)PolicyEventPayload::userKey($module, $operation);
             $uids = array_values(array_unique(array_map(fn ($uid) => $this->user(is_string($uid) ? $uid : '')->getUID(), $uids)));
             $expected = $this->expectedRevision();
-            $result = $this->writer->applyCells($expected, $this->actor(), PolicyEventPayload::ACTION_BULK,
+            $result = $this->commands->applyCells($expected, $this->actor(), PolicyEventPayload::ACTION_BULK,
                 array_map(static fn (string $uid): array => ['uid' => $uid, 'key' => $key, 'value' => $granted ? '1' : '0'], $uids));
             return ['updated' => count($uids), 'revision' => $result['revision'], 'receiptId' => $result['receiptId']];
         }, fn (): array => $this->usersState(is_array($uids) ? $uids : []));
@@ -147,7 +153,7 @@ class GrantsController extends Controller {
 
     /**
      * Body {expectedRevision, commands: list<{uid, module: string|null, operation, state}>}: several users and
-     * operations in one transaction (at most PolicyWriter::MAX_UIDS users and MAX_CELLS distinct cells). state is
+     * operations in one transaction (at most PolicyLimits::MAX_UIDS users and MAX_CELLS distinct cells). state is
      * "allow", "deny" or "inherit" (removes the override); operation "eligible" with module null targets eligibility.
      * A boolean "granted" is refused here, so a cell never mixes the two forms, and every command names all four
      * keys: module is null for eligibility, never left out.
@@ -158,7 +164,7 @@ class GrantsController extends Controller {
         $commands = $this->request->getParam('commands');
         return $this->guard(function () use ($commands): array {
             // Counted before duplicates are dropped too: a body is never larger than the limit it may write.
-            if (!is_array($commands) || $commands === [] || !array_is_list($commands) || count($commands) > PolicyWriter::MAX_CELLS) {
+            if (!is_array($commands) || $commands === [] || !array_is_list($commands) || count($commands) > PolicyLimits::MAX_CELLS) {
                 throw new InvalidArgumentException('Invalid request');
             }
             $cells = [];
@@ -178,7 +184,7 @@ class GrantsController extends Controller {
                 $cells[] = ['uid' => $command['uid'], 'key' => $key, 'value' => self::STATES[$command['state']]];
             }
             $expected = $this->expectedRevision();
-            $result = $this->writer->applyCells($expected, $this->actor(), PolicyEventPayload::ACTION_COMMANDS, $cells, $this->inheritance());
+            $result = $this->commands->applyCells($expected, $this->actor(), PolicyEventPayload::ACTION_COMMANDS, $cells, $this->inheritance());
             return ['revision' => $result['revision'], 'changed' => $result['changed'], 'receiptId' => $result['receiptId']];
         }, fn (): array => $this->usersState(is_array($commands) ? array_map(static fn ($c) => is_array($c) ? ($c['uid'] ?? '') : '', $commands) : []));
     }
@@ -199,12 +205,12 @@ class GrantsController extends Controller {
             }
             $expected = $this->expectedRevision();
             try {
-                return $this->writer->restoreReceipt($receiptId, $expected, $this->actor(), $this->inheritance());
+                return $this->undo->restoreReceipt($receiptId, $expected, $this->actor(), $this->inheritance());
             } catch (ReceiptNotFound) {
                 return new JSONResponse(['error' => 'NotFound'], Http::STATUS_NOT_FOUND);
             } catch (ReceiptExpired) {
                 return new JSONResponse(['error' => 'Gone'], Http::STATUS_GONE);
-            } catch (\OCA\Mcp\Service\Policy\ScopeInactive) {
+            } catch (\OCA\Mcp\Access\ResourceScope\ScopeInactive) {
                 // A resource scope receipt while its module's activation barrier is closed: nothing is restored.
                 return new JSONResponse(['error' => 'ScopeInactive'], Http::STATUS_UNPROCESSABLE_ENTITY);
             }
@@ -219,7 +225,7 @@ class GrantsController extends Controller {
     public function service(): JSONResponse {
         return $this->guard(function (): array|JSONResponse {
             $enabled = self::bool($this->request->getParam('enabled'));
-            $result = $this->writer->adminSetGlobalEnabled($this->expectedRevision(), $this->actor(), $enabled);
+            $result = $this->service->adminSetGlobalEnabled($this->expectedRevision(), $this->actor(), $enabled);
             return self::afterCommit(['revision' => $result['revision']], fn (): array => ['enabled' => $this->policy->globalEnabled()]);
         }, fn (): array => ['enabled' => $this->policy->globalEnabled()]);
     }
@@ -241,7 +247,7 @@ class GrantsController extends Controller {
     /**
      * Body {expectedRevision, gid, grants: {module: list<operation>}}: the preview of a group's whole policy, with
      * "_system": ["eligible"] for eligibility. Nothing changes; the answer's previewId is what the save presents, for
-     * PolicyWriter::PREVIEW_TTL seconds. The set is saved for the live group, future members included.
+     * PolicyLimits::PREVIEW_TTL seconds. The set is saved for the live group, future members included.
      *
      * @return JSONResponse {previewId, revision, groupId, grants, current, state, members, trusted, withdraws, revokes}:
      *     members is the member count enumerated now, withdraws whether eligibility is taken away and revokes how many
@@ -512,7 +518,7 @@ class GrantsController extends Controller {
         if (!is_string($expected)) {
             throw new InvalidArgumentException('Invalid request');
         }
-        return \OCA\Mcp\Service\Policy\DecimalCounter::validate($expected);
+        return \OCA\Mcp\Access\Policy\DecimalCounter::validate($expected);
     }
 
     /**
@@ -540,7 +546,7 @@ class GrantsController extends Controller {
      * @return array{users: list<array<string, mixed>>}|null null when the receipt cannot be read for the caller
      */
     private function receiptState(string $receiptId): ?array {
-        $uids = $this->writer->receiptUsers($receiptId, $this->actor());
+        $uids = $this->undo->receiptUsers($receiptId, $this->actor());
         return $uids === null ? null : $this->usersState($uids);
     }
 
@@ -555,7 +561,7 @@ class GrantsController extends Controller {
             if ($user !== null) {
                 $users[] = $user;
             }
-            if (count($users) >= PolicyWriter::MAX_UIDS) {
+            if (count($users) >= PolicyLimits::MAX_UIDS) {
                 break;
             }
         }

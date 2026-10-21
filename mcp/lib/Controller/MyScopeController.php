@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Controller;
 
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Scope\NativeResourceEnumerator;
+use OCA\Mcp\Access\ResourceScope\NativeResourceEnumerator;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;

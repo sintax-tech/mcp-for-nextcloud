@@ -2,6 +2,21 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased
+
+### Changed
+
+- Organize Files, Deck, Talk, Calendar, Contacts, Tasks, Notes, People and Logs by capability, with explicit shared MCP, access, OAuth and platform owners. Public tool names, routes and native integration contracts are preserved; internal PHP namespaces change. See the [architecture guide](docs/en/development/architecture-specification.md).
+- Split administration and personal JavaScript into responsibility-focused source modules and two generated production bundles, with lifecycle and revision-aware recovery tests.
+- Unify contributor commands through Composer, including PHP syntax and static analysis, browser tests, native integration cells and production package verification. See [testing](docs/en/development/testing.md).
+- Maintain canonical English documentation with offline operational guides, translation provenance and Spanish, Catalan, Brazilian Portuguese and European Portuguese drafts. Human language review remains pending.
+
+### Security
+
+- Apply Guests hidden-storage checks to structured file references as well as Files operations, including Talk attachment publication and task attachment output. This closes a direct-path lookup gap identified while integrating upstream 1.1.2.
+
+The release version for this architectural contribution is not assigned. Source builds require the locked frontend toolchain; installed packages do not require Node.js. See [setup](docs/en/development/setup.md) and [packaging](docs/en/development/packaging.md).
+
 ## 1.1.2
 
 Security release for servers with the **Guests** app. No database change; updating from 1.1.1 needs no step and changes nothing for accounts that are not guests.

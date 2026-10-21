@@ -6,32 +6,21 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\OAuth;
 
-use OCA\Mcp\BackgroundJob\PolicyCleanupJob;
-use OCA\Mcp\Db\AuthUsersMapper;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\AuthorizationRequest;
 use OCA\Mcp\OAuth\ClientMetadata;
-use OCA\Mcp\OAuth\OAuthException;
 use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\OAuth\TokenHasher;
-use OCA\Mcp\OAuth\TokenOwnerGate;
 use OCA\Mcp\OAuth\TokenService;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\DecimalCounter;
-use OCA\Mcp\Service\Policy\PolicyEventProcessor;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Policy\DecimalCounter;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
-use OCP\AppFramework\Utility\ITimeFactory;
-use OCP\BackgroundJob\IJobList;
-use OCP\Config\IUserConfig;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IUser;
 use OCP\IUserManager;
 use OCP\Server;
-use RuntimeException;
 
 /**
  * An account of its own for each OAuth test on the real server, created and deleted here, with the service on and the

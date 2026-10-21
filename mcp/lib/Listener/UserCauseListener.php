@@ -13,10 +13,10 @@ use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\RecheckMapper;
 use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\GroupSourceClassifier;
-use OCA\Mcp\Service\Policy\PolicyResolver;
-use OCA\Mcp\Service\Policy\ScopeCleanup;
+use OCA\Mcp\OAuth\Revocation\CauseProcessor;
+use OCA\Mcp\Access\Grants\Groups\GroupSourceClassifier;
+use OCA\Mcp\Access\Policy\Resolution\PolicyResolver;
+use OCA\Mcp\Access\ResourceScope\ScopeCleanup;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
@@ -83,8 +83,8 @@ class UserCauseListener implements IEventListener {
         private IDBConnection $db,
         private ITimeFactory $time,
         private LoggerInterface $logger,
-        private ?PolicyStateMapper $state = null,
-        private ?ScopeCleanup $scopeCleanup = null,
+        private PolicyStateMapper $state,
+        private ScopeCleanup $scopeCleanup,
     ) {}
 
     public function handle(Event $event): void {
@@ -198,7 +198,7 @@ class UserCauseListener implements IEventListener {
      * and never an error: without it the scope of this deletion is kept, and only the job's diagnostic counts it.
      */
     private function captureRevision(): ?string {
-        if ($this->state === null || $this->scopeCleanup === null || $this->db->inTransaction()) {
+        if ($this->db->inTransaction()) {
             return null;
         }
         try {
@@ -214,7 +214,7 @@ class UserCauseListener implements IEventListener {
      * nothing.
      */
     private function removeScopes(string $uid, ?string $revision): void {
-        if ($revision === null || $this->scopeCleanup === null || $this->db->inTransaction()) {
+        if ($revision === null || $this->db->inTransaction()) {
             return;
         }
         try {

@@ -21,14 +21,25 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Set up PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           extensions: mbstring, intl, gd, zip, sqlite3
           coverage: none
+          tools: composer:v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: mcp/.node-version
+          cache: npm
+          cache-dependency-path: mcp/package-lock.json
+      - name: Install locked frontend dependencies
+        run: npm ci
+        working-directory: mcp
       - name: Build the package (fails when check_package.php refuses it)
-        run: sh scripts/package.sh
+        run: composer package
         working-directory: mcp
   reuse:
     name: REUSE compliance
@@ -36,5 +47,7 @@ jobs:
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: Check the REUSE compliance
         uses: fsfe/reuse-action@v5

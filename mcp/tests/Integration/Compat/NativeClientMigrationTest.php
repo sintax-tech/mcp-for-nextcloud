@@ -22,7 +22,7 @@ use OCP\Server;
 final class NativeClientMigrationTest extends IntegrationTestCase {
     protected function setUp(): void {
         parent::setUp();
-        if (getenv('MCP_IT_MODE') !== 'upgrade') {
+        if (!in_array(getenv('MCP_IT_MODE'), ['upgrade', 'upgrade-local'], true)) {
             $this->markTestSkipped('Only an upgrade cell has the switch the baseline wrote');
         }
     }

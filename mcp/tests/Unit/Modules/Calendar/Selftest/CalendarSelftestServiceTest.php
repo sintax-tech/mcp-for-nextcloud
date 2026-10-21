@@ -1,0 +1,171 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+namespace OCA\Mcp\Tests\Unit\Modules\Calendar\Selftest;
+
+use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestRunner as CalendarSelftestService;
+use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestReader;
+use OCA\Mcp\Tests\Support\Calendar\CalendarTestCase;
+use OCA\Mcp\Platform\Dav\Collections\Collection as Calendar;
+use OCA\Mcp\Platform\Dav\CalDav\CollectionAccess as CalendarAccess;
+use OCA\Mcp\Platform\Dav\CalDav\TrashPolicy;
+use OCP\App\IAppManager;
+use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\IConfig;
+use OCP\IUser;
+use OCP\IUserManager;
+use OCP\IUserSession;
+
+final class CalendarSelftestServiceTest extends CalendarTestCase {
+    private array $steps = [];
+    private array $inbox = [];
+    private ?IUser $active = null;
+
+    public function testSuccessfulRunReportsAndCleansUpWithoutChangingExposure(): void {
+        self::assertTrue($this->service()->run('alice', [], $this->report(...)));
+        self::assertCount(7, $this->module->definitions());
+        self::assertSame('OK', $this->steps['result']['status']);
+        self::assertSame('OK', $this->steps['cleanup']['status']);
+        self::assertNull($this->active);
+        foreach ($this->store->calendars[self::ALICE] as $calendar) {
+            if (str_starts_with($calendar['uri'], 'mcp-selftest-')) {
+                self::assertTrue($calendar['deleted']);
+            }
+        }
+        self::assertFalse($this->store->calendars[self::ALICE][0]['deleted']);
+    }
+
+    public function testFailedSuppressionStillCleansUp(): void {
+        $service = $this->service();
+        $this->dav->failureFor['update'] = new \RuntimeException('private ICS secret');
+        self::assertFalse($service->run('alice', [], $this->report(...)));
+        self::assertSame('OK', $this->steps['cleanup']['status']);
+        self::assertStringNotContainsString('private ICS secret', json_encode($this->steps));
+        self::assertNull($this->active);
+    }
+
+    public function testCleanupFailureFailsTheDiagnostic(): void {
+        $service = $this->service();
+        $this->dav->failureFor['deleteCalendar'] = new \RuntimeException('cleanup failed');
+        self::assertFalse($service->run('alice', [], $this->report(...)));
+        self::assertSame('FAIL', $this->steps['cleanup']['status']);
+        self::assertNull($this->active);
+    }
+
+    public function testDisabledTrashFailsBeforeWriting(): void {
+        $this->retention = '0';
+        self::assertFalse($this->service()->run('alice', [], $this->report(...)));
+        $this->assertNoWrites();
+    }
+
+    public function testSharedTransferIsOptionalAndOnlyTouchesCreatedUid(): void {
+        self::assertTrue($this->service()->run('alice', ['shared-calendar' => self::TEAM], $this->report(...)));
+        self::assertFalse($this->store->calendars[self::ALICE][2]['deleted']);
+    }
+
+    public function testCommandRejectsMissingUidAndPrintsEvidence(): void {
+        $tester = new \Symfony\Component\Console\Tester\CommandTester(new \OCA\Mcp\Command\CalendarSelftest($this->service()));
+        self::assertSame(2, $tester->execute([]));
+        $this->assertNoWrites();
+        self::assertSame(0, $tester->execute(['uid' => 'alice']));
+        self::assertStringContainsString('OK stale-dav: HTTP 412', $tester->getDisplay());
+        self::assertStringContainsString('OK cleanup', $tester->getDisplay());
+    }
+
+    public function testPartialCalendarCreationStillCleansTheCreatedCollection(): void {
+        $service = $this->service();
+        $this->dav->afterMkcalendar = function (): void { throw new \RuntimeException('post-mutation failure'); };
+        self::assertFalse($service->run('alice', [], $this->report(...)));
+        foreach ($this->store->calendars[self::ALICE] as $row) {
+            if (str_starts_with($row['uri'], 'mcp-selftest-')) { self::assertTrue($row['deleted']); }
+        }
+    }
+
+    public function testInvitationProofAndCleanupTouchOnlyTheGeneratedUid(): void {
+        $service = $this->service();
+        $this->store->addCalendar(self::BOB, 20, 'bob-personal', self::BOB);
+        $unrelated = self::ics("UID:unrelated\nDTSTART:20261001T120000Z\nDTEND:20261001T130000Z");
+        $this->store->addObject(20, 'unrelated.ics', $unrelated);
+        $this->inbox['bob'][] = ['uri' => 'unrelated-itip.ics', 'data' => $unrelated, 'etag' => '"other"'];
+        $this->dav->schedule = function (string $ics, string $method): string {
+            $cal = \Sabre\VObject\Reader::read($ics);
+            $uid = (string)$cal->VEVENT->UID;
+            if ($method === 'PUT') {
+                $cal->VEVENT->ATTENDEE['SCHEDULE-STATUS'] = '1.2;Message delivered locally';
+                $this->store->addObject(20, $uid . '.ics', $cal->serialize());
+                $cal->METHOD = 'REQUEST';
+            } else { $cal->METHOD = 'CANCEL'; }
+            $this->inbox['bob'][] = ['uri' => $uid . '-' . $method . '.ics', 'data' => $cal->serialize(), 'etag' => '"test"'];
+            unset($cal->METHOD);
+            return $cal->serialize();
+        };
+        $this->dav->deleteInbox = function (string $userId, string $uri): void {
+            $this->inbox[$userId] = array_values(array_filter($this->inbox[$userId], static fn ($row) => $row['uri'] !== $uri));
+        };
+        self::assertTrue($service->run('alice', ['attendee-uid' => 'bob'], $this->report(...)));
+        self::assertSame('OK', $this->steps['invitations']['status']);
+        self::assertSame(['unrelated-itip.ics'], array_column($this->inbox['bob'], 'uri'));
+        self::assertFalse($this->store->objects[20]['unrelated.ics']['deleted']);
+        self::assertNull($this->active);
+    }
+
+    public function testUnprovedInternalDeliveryFailsTheDiagnostic(): void {
+        self::assertFalse($this->service()->run('alice', ['attendee-uid' => 'bob'], $this->report(...)));
+        self::assertSame('FAIL', $this->steps['invitations']['status']);
+        self::assertSame('OK', $this->steps['cleanup']['status']);
+    }
+
+    public function testAclProbeRestoresSessionAndAcceptsOnlyForbiddenOrMissing(): void {
+        self::assertTrue($this->service()->run('alice', ['acl-probe-user' => 'bob'], $this->report(...)));
+        self::assertSame('OK', $this->steps['acl']['status']);
+        self::assertNull($this->active);
+    }
+
+    private function report(array $step): void {
+        $this->steps[$step['step']] = $step;
+    }
+
+    private function service(): CalendarSelftestService {
+        $this->dav->selftestMode = true;
+        $time = $this->createMock(ITimeFactory::class);
+        $time->method('now')->willReturn(new \DateTimeImmutable(self::NOW));
+        $users = $this->createMock(IUserManager::class);
+        $users->method('get')->willReturnCallback(function (string $uid): ?IUser {
+            if (!isset($this->emails[$uid])) { return null; }
+            $u = $this->createMock(IUser::class);
+            $u->method('getUID')->willReturn($uid);
+            $u->method('isEnabled')->willReturn(true);
+            $u->method('getEMailAddress')->willReturn($this->emails[$uid]);
+            return $u;
+        });
+        $session = $this->createMock(IUserSession::class);
+        $session->method('getUser')->willReturnCallback(fn () => $this->active);
+        $session->method('setVolatileActiveUser')->willReturnCallback(function (?IUser $u): void { $this->active = $u; });
+        $apps = $this->createMock(IAppManager::class);
+        $apps->method('isEnabledForUser')->willReturn(true);
+        $config = $this->createMock(IConfig::class);
+        $config->method('getAppValue')->willReturnCallback(fn () => $this->retention);
+        $reader = $this->createMock(CalendarSelftestReader::class);
+        $reader->method('calendarState')->willReturnCallback(function (Calendar $cal): array {
+            $deleted = false;
+            foreach ($this->store->calendars[self::ALICE] as $row) {
+                if ($row['id'] === $cal->id) { $deleted = $row['deleted']; }
+            }
+            return ['syncToken' => (string)count($this->dav->calls), 'deleted' => $deleted];
+        });
+        $reader->method('schedulingObjects')->willReturnCallback(fn (string $uid): array => $this->inbox[$uid] ?? []);
+        $access = new CalendarAccess($this->store);
+        $fixtures = new \OCA\Mcp\Modules\Calendar\Selftest\SelftestFixtures(
+            $this->writeHandlers['calendar_create_event'], $this->writeHandlers['calendar_delete_event'],
+            $access, $this->store, $time, $users, $apps, $reader);
+        $cleanup = new \OCA\Mcp\Modules\Calendar\Selftest\SelftestCleanup(
+            $fixtures, $this->dav, $this->dav, $access, $this->store, $reader, $session);
+        return new CalendarSelftestService($this->dav, $this->dav, $this->dav,
+            $this->writeHandlers['calendar_update_event'], $this->writeHandlers['calendar_move_event'],
+            $this->writeHandlers['calendar_transfer_event'], $access, $this->store, $time, $session,
+            new TrashPolicy($config), $fixtures, $cleanup);
+    }
+}

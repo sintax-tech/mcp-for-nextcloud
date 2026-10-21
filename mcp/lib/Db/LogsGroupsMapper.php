@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Db;
 
-use OCA\Mcp\Service\LogsGroupsConflict;
+use OCA\Mcp\Access\Logs\LogsGroupsConflict;
 use OCP\AppFramework\Db\Entity;
 use OCP\AppFramework\Db\QBMapper;
 use OCP\DB\Exception;

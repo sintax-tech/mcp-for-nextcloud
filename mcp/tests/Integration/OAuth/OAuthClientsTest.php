@@ -19,11 +19,11 @@ use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\OAuth\TokenOwnerGate;
 use OCA\Mcp\OAuth\TokenService;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\PolicyConflict;
-use OCA\Mcp\Service\Policy\PolicyEventProcessor;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\OAuth\Revocation\CauseProcessor;
+use OCA\Mcp\Access\Policy\Transactions\PolicyConflict;
+use OCA\Mcp\Access\Policy\Events\PolicyEventProcessor;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Config\IUserConfig;
 use OCP\IAppConfig;
@@ -37,7 +37,7 @@ use RuntimeException;
 
 /**
  * PR #8 on the real server (review findings F2, F3 and the storage question): the administrator's OAuth client
- * settings are saved through the production OAuthClientsService, one PolicyWriter command with the page's revision.
+ * settings are saved through the production OAuthClientsService, one policy command with the page's revision.
  * A second real database session observes what is committed; a deletion that fails inside the command rolls the whole
  * change back; and a unit that read the old settings in its external phase is refused after the withdrawal commits.
  */
@@ -178,7 +178,7 @@ final class OAuthClientsTest extends OAuthAccountTestCase {
                 throw new RuntimeException('Injected after the delete');
             }
         };
-        $service = new OAuthClientsService(Server::get(PolicyWriter::class), Server::get(IConfig::class), Server::get(OAuthClientsMapper::class), $failing);
+        $service = new OAuthClientsService(Server::get(PolicyTransaction::class), Server::get(IConfig::class), Server::get(OAuthClientsMapper::class), $failing);
         foreach (['uri' => ['redirectUris' => [self::URI_Y]], 'off' => ['enabled' => false], 'delete' => null] as $changes) {
             $list = [];
             foreach ($this->listed() as $listed) {
@@ -229,7 +229,7 @@ final class OAuthClientsTest extends OAuthAccountTestCase {
                 $this->edit($client['id'], ['redirectUris' => [self::URI_Y]]);
             }
         };
-        $gate = new class(Server::get(IUserManager::class), Server::get(GrantPolicy::class), Server::get(PolicyWriter::class),
+        $gate = new class(Server::get(IUserManager::class), Server::get(GrantPolicy::class), Server::get(\OCA\Mcp\OAuth\Revocation\CredentialCommands::class),
             Server::get(IUserConfig::class), Server::get(IAppConfig::class), Server::get(LoggerInterface::class),
             Server::get(CauseProcessor::class), $hook) extends TokenOwnerGate {
             public function __construct($users, $policy, $writer, $userConfig, $appConfig, $logger, $causes, private \Closure $hook) {
@@ -242,8 +242,7 @@ final class OAuthClientsTest extends OAuthAccountTestCase {
                 return $admitted;
             }
         };
-        $service = new TokenService(Server::get(OAuthStore::class), Server::get(TokenHasher::class), Server::get(ITimeFactory::class), $gate,
-            Server::get(PolicyWriter::class), Server::get(AuthUsersMapper::class), Server::get(PolicyEventProcessor::class), Server::get(OAuthClientsMapper::class));
+        $service = new TokenService(Server::get(OAuthStore::class), Server::get(TokenHasher::class), Server::get(ITimeFactory::class), $gate, Server::get(\OCA\Mcp\OAuth\Revocation\CredentialCommands::class), Server::get(AuthUsersMapper::class), Server::get(PolicyEventProcessor::class), Server::get(OAuthClientsMapper::class), Server::get(\OCA\Mcp\Access\Policy\Transactions\PolicyTransaction::class), Server::get(\OCA\Mcp\Access\Grants\Groups\LifecycleHolds::class));
 
         $armed = true;
         try {

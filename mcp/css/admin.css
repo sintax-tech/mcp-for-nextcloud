@@ -14,7 +14,7 @@
 	max-width: 900px;
 }
 
-/* Tab navigation (js/admin-tabs.js): the bar appears only once the script marks the page ready, so
+/* Tab navigation (src/admin/tabs.js): the bar appears only once the script marks the page ready, so
    without JavaScript every panel stays visible and the page keeps its old single-column layout. */
 #mcp-admin .mcp-tab-bar {
 	display: none;
@@ -85,7 +85,7 @@
 	display: none;
 }
 
-/* Searchable multi-select picker (js/admin-picker.js): chips of the selected options on top, a
+/* Searchable multi-select picker (src/admin/picker.js): chips of the selected options on top, a
    search field that filters the existing options and a collapsed listbox. Theme variables only. */
 #mcp-admin .mcp-picker {
 	inline-size: 100%;
@@ -884,7 +884,7 @@
 .mcp-custom-redirects { width: 100%; max-width: 640px; font-family: var(--font-face-monospace, monospace); }
 
 /*
- * Levels view (js/admin-levels.js): one cell per module with the level as a word and its origin as an icon, so no state
+ * Levels view (src/admin/access/levels.js): one cell per module with the level as a word and its origin as an icon, so no state
  * depends on colour. The view switch is a segmented control whose pressed button is the selection.
  */
 #mcp-admin .mcp-legend[hidden],

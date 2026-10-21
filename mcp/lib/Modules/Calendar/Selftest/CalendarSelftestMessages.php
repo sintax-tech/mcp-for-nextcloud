@@ -1,0 +1,137 @@
+<?php
+
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare (strict_types=1);
+namespace OCA\Mcp\Modules\Calendar\Selftest;
+
+use OCA\Mcp\L10n\Translator;
+/** Messages of the Calendar selftest command and runner. */
+final class CalendarSelftestMessages
+{
+    public const ASSERTION_PREFIX = 'Unconfirmed effect:';
+    public const DESCRIPTION = 'Optional diagnostic: exercises Calendar writes through real DAV and reports. It changes nothing about what the app exposes.';
+    public const UID = 'Internal UID of the test organizer (enabled account with email and Calendar).';
+    public const ATTENDEE = 'Another internal UID: proves iTIP on calendar and CalDAV inbox; may generate email according to dav/sendInvitations.';
+    public const SHARED = 'Writable shared calendar path from another owner; proves transfer and deletes only the test event.';
+    public const ACL = 'Another UID without access to test calendars; proves write refusal.';
+    public const INVALID_USER = 'The account must exist, be enabled, have an email, and have the Calendar app enabled.';
+    public const INVALID_ATTENDEE = 'The attendee and the ACL probe user must be enabled internal accounts, distinct from the organizer.';
+    public const TRASH_REQUIRED = 'Calendar retention is set to 0. The test was refused before creating objects because cleanup would be permanent.';
+    public const FAILED = 'Diagnostic failed; see the failed step above. Calendar tools are not affected.';
+    public const PASSED = 'Diagnostic passed and cleanup confirmed.';
+    public const EVENT = 'MCP Calendar selftest';
+    public const EVENT_EDITED = 'MCP Calendar selftest edited';
+    public const OPTIONAL = 'Option not provided; capability not verified.';
+    public const SUMMARY = 'Confirm Activity, CalDAV clients, and email delivery manually; the report does not confirm email delivery.';
+    /** @return string translated preflight failure for an ineligible organizer account */
+    public static function invalidUser(): string
+    {
+        return Translator::t('The account must exist, be enabled, have an email, and have the Calendar app enabled.');
+    }
+    /** @return string translated preflight failure for an ineligible attendee or ACL probe */
+    public static function invalidAttendee(): string
+    {
+        return Translator::t('The attendee and the ACL probe user must be enabled internal accounts, distinct from the organizer.');
+    }
+    /** @return string translated refusal when cleanup could permanently delete test data */
+    public static function trashRequired(): string
+    {
+        return Translator::t('Calendar retention is set to 0. The test was refused before creating objects because cleanup would be permanent.');
+    }
+    /** @return string translated summary for a failed diagnostic run */
+    public static function failed(): string
+    {
+        return Translator::t('Diagnostic failed; see the failed step above. Calendar tools are not affected.');
+    }
+    /** @return string translated summary for a successful diagnostic and cleanup */
+    public static function passed(): string
+    {
+        return Translator::t('Diagnostic passed and cleanup confirmed.');
+    }
+    /** @return string translated status for an optional check that was not requested */
+    public static function optional(): string
+    {
+        return Translator::t('Option not provided; capability not verified.');
+    }
+    /** @return string translated reminder of checks that require manual verification */
+    public static function summary(): string
+    {
+        return Translator::t('Confirm Activity, CalDAV clients, and email delivery manually; the report does not confirm email delivery.');
+    }
+    /**
+     * @param string $step diagnostic stage identifier
+     * @param mixed ...$values generated identifiers and safe status values interpolated into the stage message
+     * @return string safe stage evidence assembled from generated identifiers only
+     */
+    public static function detail(string $step, mixed ...$values): string
+    {
+        $format = match ($step) {
+            'calendars' => 'HTTP 201; %s %s',
+            'create' => 'HTTP 201; UID %s; sync-token %s',
+            'suppression-create' => 'HTTP %s; ATTENDEE @example.invalid without SCHEDULE-STATUS',
+            'suppression-update' => 'HTTP 204; SEQUENCE increased; ATTENDEE without SCHEDULE-STATUS',
+            'stale-tool' => 'Conflict before dispatch; data and ETag intact',
+            'stale-dav' => 'HTTP 412; If-Match refused; data and ETag intact',
+            'move' => 'HTTP 201; UID at destination; sync-token of both calendars increased',
+            'overwrite' => 'HTTP 412; Overwrite F; two objects intact',
+            'delete' => 'HTTP 204; deleted=true; UID out of read scope',
+            'invitations' => 'HTTP 204; SCHEDULE-STATUS 1.2; copy and iTIP REQUEST confirmed',
+            'transfer' => 'HTTP 201/204; UID transferred and deleted in shared calendar',
+            'acl' => 'HTTP 403/404; nothing written',
+            'cleanup' => 'HTTP 204; resources of this run removed; session restored',
+            'cleanup-empty' => 'No resources created; session restored',
+        };
+        return sprintf($format, ...$values);
+    }
+    /**
+     * @param string $check internal assertion key emitted by the diagnostic runner
+     * @return string translated human-readable label, or the original key when it is unknown
+     */
+    public static function checkLabel(string $check): string
+    {
+        return match ($check) {
+            'shared-owner' => Translator::t('shared calendar of another owner'),
+            'fresh-uri' => Translator::t('new URI'),
+            'mkcalendar-status' => Translator::t('MKCALENDAR 201'),
+            'created-owner' => Translator::t('owner of created calendar'),
+            'created-etag-sync' => Translator::t('ETag and sync-token after create'),
+            'edited-summary-sequence' => Translator::t('SUMMARY and SEQUENCE after update'),
+            'tool-conflict-unchanged' => Translator::t('object intact after tool conflict'),
+            'dav-conflict-unchanged' => Translator::t('object intact after If-Match'),
+            'move-presence-sync' => Translator::t('source absent, target present and sync-token in both calendars'),
+            'overwrite-unchanged' => Translator::t('source and target intact after Overwrite F'),
+            'deleted-object' => Translator::t('object in trash and out of read scope'),
+            'internal-status' => Translator::t('SCHEDULE-STATUS 1.2 on internal attendee'),
+            'internal-copy' => Translator::t('copy in attendee calendar'),
+            'internal-inbox' => Translator::t('iTIP REQUEST in CalDAV inbox'),
+            'acl-unchanged' => Translator::t('ACL refused without writing'),
+            'reserved-uri' => Translator::t('URI reserved in this run'),
+            'cleanup-identity' => Translator::t('calendar identity before cleanup'),
+            'trashed-calendar' => Translator::t('calendar in trash after DELETE'),
+            'live-object' => Translator::t('live object by UID'),
+            'live-sync' => Translator::t('live sync-token'),
+            'attendee-preserved' => Translator::t('ATTENDEE preserved'),
+            'suppressed' => Translator::t('scheduling suppression'),
+            'refusal-status' => Translator::t('HTTP status of refusal'),
+            'refusal' => Translator::t('refused operation'),
+            'participant-cleanup' => Translator::t('participant cleanup'),
+            default => $check,
+        };
+    }
+    /** @return string human-readable assertion that failed, without backend event content */
+    public static function assertion(string $check): string
+    {
+        return Translator::t('Unconfirmed effect: %s.', [self::checkLabel($check)]);
+    }
+    /**
+     * @param array{status:string, step:string, detail:string} $step stage result from the selftest runner
+     * @return string one report line; details are generated identifiers or safe errors only
+     */
+    public static function line(array $step): string
+    {
+        return $step['status'] . ' ' . $step['step'] . ': ' . $step['detail'];
+    }
+}

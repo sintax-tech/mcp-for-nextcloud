@@ -36,9 +36,12 @@ attachments/
 # ---- Logs ----
 *.log
 logs/
-# O módulo de logs do app é código: no macOS (ignorecase) Logs/ casaria com logs/.
-!mcp/lib/Tools/Logs/
-!mcp/tests/Unit/Tools/Logs/
+# Logs source and fixtures must stay visible with case-insensitive ignore matching.
+!mcp/lib/Modules/Logs/
+!mcp/lib/Access/Logs/
+!mcp/tests/Unit/Modules/Logs/
+!mcp/tests/Unit/Access/Logs/
+!mcp/tests/Support/Logs/
 
 # ---- OS / editores ----
 .DS_Store
@@ -49,6 +52,10 @@ Thumbs.db
 
 # ---- Artefatos internos / de trabalho / assistentes de IA (NAO versionar) ----
 docs/
+# Keep project documentation at the repository root versionable.
+!/docs/
+# Authored documentation validators are source code, not assistant state.
+!/mcp/scripts/docs/
 .claude/
 .superpowers/
 .remember/
@@ -58,5 +65,7 @@ docs/
 CLAUDE.md
 AGENTS.md
 
-# ---- Integration runs on a Mac (run-local.sh) ----
-mcp/tests/Integration/.local-runs/
+# Authored administration log settings and generated frontend entries.
+!/mcp/src/admin/logs/
+/mcp/js/admin.js
+/mcp/js/personal.js

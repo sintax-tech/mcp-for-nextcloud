@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\BackgroundJob;
 
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\GroupLifecycle;
-use OCA\Mcp\Service\Policy\ScopeCleanup;
+use OCA\Mcp\OAuth\Revocation\CauseProcessor;
+use OCA\Mcp\Access\Grants\Groups\GroupLifecycle;
+use OCA\Mcp\Access\ResourceScope\ScopeCleanup;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 
@@ -30,7 +30,7 @@ use OCP\BackgroundJob\TimedJob;
 class ReconcileJob extends TimedJob {
     public const INTERVAL = 900;
 
-    public function __construct(ITimeFactory $time, private CauseProcessor $causes, private GroupLifecycle $groups, private ?ScopeCleanup $scopes = null) {
+    public function __construct(ITimeFactory $time, private CauseProcessor $causes, private GroupLifecycle $groups, private ScopeCleanup $scopes) {
         parent::__construct($time);
         $this->setInterval(self::INTERVAL);
         $this->setTimeSensitivity(self::TIME_SENSITIVE);
@@ -41,6 +41,6 @@ class ReconcileJob extends TimedJob {
         $this->causes->flush();
         $this->groups->reconcile();
         $this->causes->reconcile();
-        $this->scopes?->reconcile();
+        $this->scopes->reconcile();
     }
 }

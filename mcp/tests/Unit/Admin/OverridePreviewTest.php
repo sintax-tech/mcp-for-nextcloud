@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Admin;
 
 use OCA\Mcp\Controller\OverridePreviewController;
 use OCA\Mcp\Db\GroupLifeMapper;
-use OCA\Mcp\Service\OverridePreview;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Grants\OverridePreview;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Tests\Unit\ArrayGroupBackend;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCP\IGroupManager;

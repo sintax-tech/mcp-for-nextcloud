@@ -19,7 +19,7 @@ namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi;
 final class NextcloudApiUsage {
     /**
      * Releases each fixture of tests/fixtures/nextcloud-api is generated from: the oldest release of every declared
-     * Nextcloud major, with the oldest Deck and Talk MCP supports on it ({@see \OCA\Mcp\Service\Compat\AppEnablement}).
+     * Nextcloud major, with the oldest Deck and Talk MCP supports on it ({@see \OCA\Mcp\Access\AppAvailability\AppEnablement}).
      */
     public const SOURCES = [
         '31' => ['server' => '31.0.0', 'deck' => '1.15.0', 'spreed' => '21.1.4'],
@@ -31,7 +31,7 @@ final class NextcloudApiUsage {
 
     /**
      * Classes lib/ names that the fixtures do not carry, by app: the Guests app is not part of the trees the fixtures are
-     * generated from. {@see \OCA\Mcp\Service\GuestRestrictions} resolves these services by name and refuses the
+     * generated from. {@see \OCA\Mcp\Access\Guests\GuestRestrictions} resolves these services by name and refuses the
      * request when one is missing or fails, and Integration/Guests/GuestRestrictionsTest calls them on the release the
      * harness pins (guests v4.10.1).
      */
@@ -42,14 +42,13 @@ final class NextcloudApiUsage {
     /**
      * Classes the fixtures carry although lib/ never names them: objects the app only receives (a Talk participant,
      * a metadata set, the log writer ILogFactory::get() returns) and the Nextcloud plugin whose listener
-     * {@see \OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher} detaches.
+     * {@see \OCA\Mcp\Platform\Dav\CalDav\EmbeddedCalDavDispatcher} detaches.
      */
     public const EXTRA_CLASSES = [
         'OCA\\Talk\\Participant',
         'OCP\\FilesMetadata\\Model\\IFilesMetadata',
         'OCA\\DAV\\CalDAV\\Schedule\\Plugin',
         'OCP\\Log\\IWriter',
-        'OCP\\Group\\Backend\\IIsAdminBackend',
     ];
 
     /**
@@ -59,9 +58,7 @@ final class NextcloudApiUsage {
      * @var array<string, list<string>>
      */
     public const POSITIONAL = [
-        // Fresh native administration follows the manager's public optional backend contract.
-        'OCP\\Group\\Backend\\IIsAdminBackend::isAdmin' => ['uid'],
-        // Talk, held untyped by OCA\Mcp\Tools\Talk.
+        // Talk, held untyped by OCA\Mcp\Modules\Talk.
         'OCA\\Talk\\Manager::getRoomForUserByToken' => ['token', 'userId'],
         'OCA\\Talk\\Manager::getRoomsForUser' => ['userId'],
         'OCA\\Talk\\Service\\ParticipantService::getParticipant' => ['room', 'userId', 'sessionId'],
@@ -85,7 +82,7 @@ final class NextcloudApiUsage {
         'OCA\\Talk\\Model\\Attendee::getParticipantType' => [],
         'OCA\\Talk\\Model\\Attendee::getUnreadMessages' => [],
         'OCA\\Talk\\Model\\Attendee::isArchived' => [],
-        // Deck, resolved by class name in OCA\Mcp\Tools\Deck\DeckServiceGateway.
+        // Deck, resolved by class name in the capability providers in AppInfo\Application.
         'OCA\\Deck\\Service\\AssignmentService::assignUser' => ['cardId', 'userId'],
         'OCA\\Deck\\Service\\AssignmentService::unassignUser' => ['cardId', 'userId'],
         'OCA\\Deck\\Service\\BoardService::create' => ['title', 'userId', 'color'],
@@ -212,8 +209,8 @@ final class NextcloudApiUsage {
             'color' => 'null (Deck 1.18+): a new card has no colour',
         ],
         'OCA\\Deck\\Service\\CardService::update' => [
-            'startdate' => 'not left to its default: DeckServiceGateway::fieldsAfterDone() sends the current value back (Deck 1.18+ clears it otherwise)',
-            'color' => 'not left to its default: DeckServiceGateway::fieldsAfterDone() sends the current value back, typed per release',
+            'startdate' => 'not left to its default: CardUpdateArguments::fieldsAfterDone() sends the current value back (Deck 1.18+ clears it otherwise)',
+            'color' => 'not left to its default: CardUpdateArguments::fieldsAfterDone() sends the current value back, typed per release',
         ],
         'OCA\\Deck\\Service\\PermissionService::checkPermission' => [
             'allowDeletedBoard' => 'false (Deck 1.17+): a deleted board refuses, as the module wants',
@@ -254,7 +251,7 @@ final class NextcloudApiUsage {
      */
     public const REVIEWED_TYPE_CHANGES = [
         'OCA\\Deck\\Service\\CardService::update' => [
-            'color' => '?string in Deck 1.18, ?OptionalNullableValue in 1.19: DeckServiceGateway::fieldsAfterDone() reads the type and wraps the colour when asked',
+            'color' => '?string in Deck 1.18, ?OptionalNullableValue in 1.19: CardUpdateArguments::fieldsAfterDone() reads the type and wraps the colour when asked',
         ],
     ];
 
@@ -278,36 +275,36 @@ final class NextcloudApiUsage {
         'OCA\\DAV\\CalDAV\\EmbeddedCalDavServer' => [
             'missing' => ['31'],
             'fallback' => 'OCA\\DAV\\CalDAV\\InvitationResponse\\InvitationResponseServer',
-            'by' => \OCA\Mcp\Tools\Calendar\EmbeddedCalDavServerFactory::class,
+            'by' => \OCA\Mcp\Platform\Dav\CalDav\EmbeddedCalDavServerFactory::class,
         ],
         'OCP\\App\\IAppManager::isEnabledForAnyone' => [
             'missing' => ['31'],
             'fallback' => 'OCP\\App\\IAppManager::isInstalled',
-            'by' => \OCA\Mcp\Service\Compat\AppEnablement::class,
+            'by' => \OCA\Mcp\Access\AppAvailability\AppEnablement::class,
         ],
         'OCA\\Deck\\Db\\CardMapper::findAllForStacks' => [
             'missing' => ['31', '32'],
             'fallback' => 'OCA\\Deck\\Db\\CardMapper::findAll',
-            'by' => \OCA\Mcp\Tools\Deck\DeckServiceGateway::class,
+            'by' => \OCA\Mcp\Modules\Deck\Followup\FollowupQuery::class,
         ],
         // Deck 1.18 (Nextcloud 34) gave cards a start date and a colour, and CardService::update() clears both when they
         // are left out. Up to 1.17 the update ends at `done`, so there is nothing to send back.
         'OCA\\Deck\\Db\\Card::getStartdate' => [
             'missing' => ['31', '32', '33'],
             'fallback' => 'OCA\\Deck\\Service\\CardService::update',
-            'by' => \OCA\Mcp\Tools\Deck\DeckServiceGateway::class,
+            'by' => \OCA\Mcp\Modules\Deck\Cards\CardUpdateArguments::class,
         ],
         'OCA\\Deck\\Db\\Card::getColor' => [
             'missing' => ['31', '32', '33'],
             'fallback' => 'OCA\\Deck\\Service\\CardService::update',
-            'by' => \OCA\Mcp\Tools\Deck\DeckServiceGateway::class,
-            'elsewhere' => ['Tools/Deck/CardFormatter.php' => 'OCA\\Deck\\Db\\Board::getColor'],
+            'by' => \OCA\Mcp\Modules\Deck\Cards\CardUpdateArguments::class,
+            'elsewhere' => ['Modules/Deck/Presentation/DeckFormatter.php' => 'OCA\\Deck\\Db\\Board::getColor'],
         ],
         // Up to Talk 23 Room::getLobbyState() opens a lobby whose timer has passed by itself.
         'OCA\\Talk\\Service\\RoomService::validateLobbyTimer' => [
             'missing' => ['31', '32', '33'],
             'fallback' => 'OCA\\Talk\\Room::getLobbyState',
-            'by' => \OCA\Mcp\Tools\Talk\ConversationResolver::class,
+            'by' => \OCA\Mcp\Modules\Talk\Access\ConversationResolver::class,
         ],
     ];
 
@@ -317,20 +314,20 @@ final class NextcloudApiUsage {
      * @var array<string, string> "Class::method" => the call it really is
      */
     public const NAME_CLASHES = [
-        'OCP\\Files\\Node::getLastActivity' => 'OCA\\Talk\\Room::getLastActivity, in Tools/Talk/ConversationReader',
-        'OCP\\Files\\File::getLastActivity' => 'OCA\\Talk\\Room::getLastActivity, in Tools/Talk/ConversationReader',
-        'OCP\\Files\\Folder::getLastActivity' => 'OCA\\Talk\\Room::getLastActivity, in Tools/Talk/ConversationReader',
-        'OCP\\Files\\FileInfo::getLastActivity' => 'OCA\\Talk\\Room::getLastActivity, in Tools/Talk/ConversationReader',
-        'OCP\\Files\\IRootFolder::getLastActivity' => 'OCA\\Talk\\Room::getLastActivity, in Tools/Talk/ConversationReader',
+        'OCP\\Files\\Node::getLastActivity' => 'OCA\\Talk\\Room::getLastActivity, in Modules/Talk/Reading/ConversationReader',
+        'OCP\\Files\\File::getLastActivity' => 'OCA\\Talk\\Room::getLastActivity, in Modules/Talk/Reading/ConversationReader',
+        'OCP\\Files\\Folder::getLastActivity' => 'OCA\\Talk\\Room::getLastActivity, in Modules/Talk/Reading/ConversationReader',
+        'OCP\\Files\\FileInfo::getLastActivity' => 'OCA\\Talk\\Room::getLastActivity, in Modules/Talk/Reading/ConversationReader',
+        'OCP\\Files\\IRootFolder::getLastActivity' => 'OCA\\Talk\\Room::getLastActivity, in Modules/Talk/Reading/ConversationReader',
         'OCP\\Share\\IShare::getParent' => 'OCP\\Files\\Node::getParent, in Tools/Notes and Service/VisibilityGuard',
         'OCA\\DAV\\CalDAV\\CalDavBackend::unshare' => 'FilesPlanRenderer::unshare(), the app\'s own static method',
-        'OCA\\DAV\\CardDAV\\PhotoCache::setLogger' => 'Sabre\\DAV\\Server::setLogger, in Tools/Contacts/EmbeddedCardDavServer',
-        'OCA\\Talk\\Chat\\ChatManager::setLogger' => 'Sabre\\DAV\\Server::setLogger, in Tools/Contacts/EmbeddedCardDavServer',
-        'OCA\\Talk\\Service\\RoomService::setLogger' => 'Sabre\\DAV\\Server::setLogger, in Tools/Contacts/EmbeddedCardDavServer',
-        'OCA\\Deck\\Db\\Acl::getToken' => 'OCP\\Share\\IShare::getToken and OCA\\Talk\\Room::getToken, in Tools/Files/Sharing and Tools/Talk',
-        'OCA\\Deck\\Db\\Acl::getCreatedAt' => 'OCA\\Deck\\Db\\Card::getCreatedAt, in Tools/Deck/DeckServiceGateway',
-        'OCP\\Files\\IRootFolder::removeListener' => 'Sabre\\DAV\\Server::removeListener, in Tools/Calendar/EmbeddedDavDispatcher',
-        'OCP\\DB\\QueryBuilder\\IQueryBuilder::execute' => 'the app\'s own tools, in Tools/Calendar/CalendarModule and Service/Calendar/CalendarSelftestService',
-        'OCP\\BackgroundJob\\TimedJob::execute' => 'the app\'s own tools, in Tools/Calendar/CalendarModule and Service/Calendar/CalendarSelftestService',
+        'OCA\\DAV\\CardDAV\\PhotoCache::setLogger' => 'Sabre\\DAV\\Server::setLogger, in Platform/Dav/CardDav/EmbeddedCardDavServer',
+        'OCA\\Talk\\Chat\\ChatManager::setLogger' => 'Sabre\\DAV\\Server::setLogger, in Platform/Dav/CardDav/EmbeddedCardDavServer',
+        'OCA\\Talk\\Service\\RoomService::setLogger' => 'Sabre\\DAV\\Server::setLogger, in Platform/Dav/CardDav/EmbeddedCardDavServer',
+        'OCA\\Deck\\Db\\Acl::getToken' => 'OCP\\Share\\IShare::getToken and OCA\\Talk\\Room::getToken, in Modules/Files/Sharing and Modules/Talk',
+        'OCA\\Deck\\Db\\Acl::getCreatedAt' => 'OCA\\Deck\\Db\\Card::getCreatedAt, in Modules/Deck/Cards/CardStateReader',
+        'OCP\\Files\\IRootFolder::removeListener' => 'Sabre\\DAV\\Server::removeListener, in Platform/Dav/CalDav/EmbeddedCalDavDispatcher',
+        'OCP\\BackgroundJob\\TimedJob::execute' => 'calls target app tool capabilities; jobs implement run() and never call execute()',
+        'OCP\\DB\\QueryBuilder\\IQueryBuilder::execute' => 'the app\'s own tools, in Modules/Calendar/CalendarModule and Modules/Calendar/Selftest/CalendarSelftestRunner',
     ];
 }

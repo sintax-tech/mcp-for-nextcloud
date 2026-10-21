@@ -1,0 +1,242 @@
+{
+    "en": {
+        "read": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Synthetic result"
+                }
+            ],
+            "structuredContent": {
+                "arguments": {
+                    "n": 5
+                }
+            }
+        },
+        "preview": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "**Edit file**\n\n- Arguments:\n  - N: 5\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*"
+                }
+            ],
+            "structuredContent": {
+                "requiresConfirmation": true,
+                "tool": "files_edit",
+                "title": "Edit file",
+                "action": "files_edit",
+                "arguments": {
+                    "n": 5
+                },
+                "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true."
+            }
+        },
+        "write": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Synthetic result"
+                }
+            ],
+            "structuredContent": {
+                "arguments": {
+                    "n": 5,
+                    "confirm": true
+                }
+            }
+        },
+        "changed": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "**Edit file**\n\nNothing was changed. Confirm to execute.\n\n*Synthetic changed state*"
+                }
+            ],
+            "structuredContent": {
+                "requiresConfirmation": true,
+                "tool": "files_edit",
+                "title": "Edit file",
+                "action": "update",
+                "message": "Synthetic changed state"
+            }
+        },
+        "refusal": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Synthetic refusal"
+                }
+            ],
+            "isError": true
+        },
+        "unexpected": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Unexpected error while accessing Nextcloud."
+                }
+            ],
+            "isError": true
+        }
+    },
+    "pt_BR": {
+        "read": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Synthetic result"
+                }
+            ],
+            "structuredContent": {
+                "arguments": {
+                    "n": 5
+                }
+            }
+        },
+        "preview": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "**Editar arquivo**\n\n- Argumentos:\n  - N: 5\n\nNada foi alterado. Confirme para executar.\n\n*Mostre este plano ao usuário, pergunte se ele quer mesmo fazer e só então repita a mesma chamada com confirm: true.*"
+                }
+            ],
+            "structuredContent": {
+                "requiresConfirmation": true,
+                "tool": "files_edit",
+                "title": "Editar arquivo",
+                "action": "files_edit",
+                "arguments": {
+                    "n": 5
+                },
+                "message": "Nada foi alterado. Mostre este plano ao usuário, pergunte se ele quer mesmo fazer e só então repita a mesma chamada com confirm: true."
+            }
+        },
+        "write": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Synthetic result"
+                }
+            ],
+            "structuredContent": {
+                "arguments": {
+                    "n": 5,
+                    "confirm": true
+                }
+            }
+        },
+        "changed": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "**Editar arquivo**\n\nNada foi alterado. Confirme para executar.\n\n*Synthetic changed state*"
+                }
+            ],
+            "structuredContent": {
+                "requiresConfirmation": true,
+                "tool": "files_edit",
+                "title": "Editar arquivo",
+                "action": "update",
+                "message": "Synthetic changed state"
+            }
+        },
+        "refusal": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Synthetic refusal"
+                }
+            ],
+            "isError": true
+        },
+        "unexpected": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Erro inesperado ao acessar o Nextcloud."
+                }
+            ],
+            "isError": true
+        }
+    },
+    "es": {
+        "read": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Synthetic result"
+                }
+            ],
+            "structuredContent": {
+                "arguments": {
+                    "n": 5
+                }
+            }
+        },
+        "preview": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "**Editar archivo**\n\n- Argumentos:\n  - N: 5\n\nNo se cambió nada. Confirme para ejecutar.\n\n*Muestra este plan al usuario, pregunta si realmente quiere hacerlo y solo entonces repite la misma llamada con confirm: true.*"
+                }
+            ],
+            "structuredContent": {
+                "requiresConfirmation": true,
+                "tool": "files_edit",
+                "title": "Editar archivo",
+                "action": "files_edit",
+                "arguments": {
+                    "n": 5
+                },
+                "message": "No se cambió nada. Muestra este plan al usuario, pregunta si realmente quiere hacerlo y solo entonces repite la misma llamada con confirm: true."
+            }
+        },
+        "write": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Synthetic result"
+                }
+            ],
+            "structuredContent": {
+                "arguments": {
+                    "n": 5,
+                    "confirm": true
+                }
+            }
+        },
+        "changed": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "**Editar archivo**\n\nNo se cambió nada. Confirme para ejecutar.\n\n*Synthetic changed state*"
+                }
+            ],
+            "structuredContent": {
+                "requiresConfirmation": true,
+                "tool": "files_edit",
+                "title": "Editar archivo",
+                "action": "update",
+                "message": "Synthetic changed state"
+            }
+        },
+        "refusal": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Synthetic refusal"
+                }
+            ],
+            "isError": true
+        },
+        "unexpected": {
+            "content": [
+                {
+                    "type": "text",
+                    "text": "Error inesperado al acceder a Nextcloud."
+                }
+            ],
+            "isError": true
+        }
+    }
+}

@@ -95,7 +95,7 @@ final class LegacyCredentialsUpgradeTest extends TestCase {
         // The record spent under 1.0.8 is still a valid lineage (epoch 0, generation 1 against (1, 0)), so its replay
         // still revokes only that client and owner.
         $spent = $store->findSpent(str_repeat('r1', 32));
-        $this->assertTrue(\OCA\Mcp\OAuth\CredentialGeneration::live($spent, ['issue_seq' => '1', 'revoked_below' => '0'], '0'));
+        $this->assertTrue(\OCA\Mcp\OAuth\Revocation\CredentialGeneration::live($spent, ['issue_seq' => '1', 'revoked_below' => '0'], '0'));
         $store->deleteForOwnerAndClient((string)$spent['user_id'], (string)$spent['client_id']);
         $this->assertSame(['bob'], array_column($database->rows('mcp_oauth_tokens'), 'user_id'));
     }

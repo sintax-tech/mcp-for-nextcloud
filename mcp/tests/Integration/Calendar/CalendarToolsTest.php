@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Calendar;
 
-use OCA\Mcp\Service\Compat\AppEnablement;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\AppAvailability\AppEnablement;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
@@ -30,7 +30,7 @@ use OCP\User\Events\UserFirstTimeLoggedInEvent;
 final class CalendarToolsTest extends IntegrationTestCase {
     public function testTheCalendarsOfTheCallerAreListedOverTheMcpEndpoint(): void {
         if (!AppEnablement::forAnyone(Server::get(IAppManager::class), 'calendar')) {
-            $this->markTestSkipped('The Calendar app is not enabled in this cell; see provision.log in its artifact');
+            $this->fail('Required Calendar app was not provisioned; see provision.log');
         }
 
         // The endpoint answers 403 to a user the policy does not let connect yet: the same state the exclusion proof

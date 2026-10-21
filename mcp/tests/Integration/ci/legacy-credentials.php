@@ -24,6 +24,8 @@ if (PHP_SAPI !== 'cli' || !isset($argv[1])) {
     fwrite(STDERR, "Usage: php legacy-credentials.php <output.json>\n");
     exit(1);
 }
+require_once __DIR__ . '/../Support/ProbeCompletion.php';
+$probeCompletion = new \OCA\Mcp\Tests\Integration\Support\ProbeCompletion();
 require_once '/var/www/html/lib/base.php';
 Server::get(\OCP\App\IAppManager::class)->loadApp('mcp');
 
@@ -74,3 +76,5 @@ foreach (['mcp_oauth_codes', 'mcp_oauth_tokens', 'mcp_oauth_spent'] as $table) {
 file_put_contents($argv[1], json_encode(['uid' => $uid, 'client' => $client, 'redirect' => $redirect, 'resource' => $resource,
     'code' => $code, 'verifier' => $verifier, 'tokens' => $tokens, 'spent' => $spent, 'rows' => $rows], JSON_THROW_ON_ERROR));
 echo 'Issued legacy credentials: ', implode(', ', array_map(static fn ($t, $r): string => "$t=" . count($r), array_keys($rows), $rows)), PHP_EOL;
+
+$probeCompletion->complete();

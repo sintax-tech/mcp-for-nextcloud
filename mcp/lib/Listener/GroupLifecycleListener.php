@@ -14,11 +14,11 @@ use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\RecheckMapper;
 use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\DecimalCounter;
-use OCA\Mcp\Service\Policy\GroupLifecycle;
-use OCA\Mcp\Service\Policy\GroupSourceClassifier;
-use OCA\Mcp\Service\Policy\PolicyResolver;
+use OCA\Mcp\OAuth\Revocation\CauseProcessor;
+use OCA\Mcp\Access\Policy\DecimalCounter;
+use OCA\Mcp\Access\Grants\Groups\GroupLifecycle;
+use OCA\Mcp\Access\Grants\Groups\GroupSourceClassifier;
+use OCA\Mcp\Access\Policy\Resolution\PolicyResolver;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
@@ -43,7 +43,7 @@ use Throwable;
  *   credential holders who are in G and would not be eligible without it (a new random gen per cause), then
  *   pending_delete with a new gen (markPendingDelete(), conditioned on the gen of the first step). The first step is
  *   conditioned on the gen just read; losing it means the lifecycle moved in between (a group save that relied on G,
- *   or an issuance or reset G admitted, each of which renews G's gen in its commit: PolicyWriter::holdLifecycles()),
+ *   or an issuance or reset G admitted, each of which renews G's gen in its commit: LifecycleHolds::hold()),
  *   and the Before reads again and retries, at most MARK_ROUNDS rounds in all.
  *
  *   Suspend first, then capture (F1 of the second reading of 1.1.0, 15/10/2026; ticket 07 recorded the opposite

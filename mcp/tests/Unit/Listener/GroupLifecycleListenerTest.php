@@ -14,14 +14,18 @@ use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\RecheckMapper;
 use OCA\Mcp\Listener\GroupLifecycleListener;
 use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\GroupLifecycle;
-use OCA\Mcp\Service\Policy\GroupSourceClassifier;
-use OCA\Mcp\Service\Policy\PolicyOperationContext;
-use OCA\Mcp\Service\Policy\PolicyResolver;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\OAuth\Revocation\CauseProcessor;
+use OCA\Mcp\Access\Grants\Groups\GroupLifecycle;
+use OCA\Mcp\Access\Grants\Groups\GroupSourceClassifier;
+use OCA\Mcp\Access\Policy\Resolution\PolicyOperationContext;
+use OCA\Mcp\Access\Policy\Resolution\PolicyResolver;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
+use OCA\Mcp\Access\Policy\Transactions\PolicyAttempt;
+use OCA\Mcp\Access\Policy\DecimalCounter;
+use OCA\Mcp\Access\Policy\PolicyLimits;
+use OCA\Mcp\Tests\Support\Access\Policy\PolicyServices;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
-use OCA\Mcp\Tests\Unit\Service\Policy\GroupLifecycleDatabase;
+use OCA\Mcp\Tests\Support\Access\Policy\GroupLifecycleDatabase;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Group\Events\BeforeGroupCreatedEvent;
 use OCP\Group\Events\BeforeGroupDeletedEvent;
@@ -106,8 +110,7 @@ final class GroupLifecycleListenerTest extends TestCase {
             $eligible = ($this->eligibility)($uid, $removed);
             $raw = ['eligible' => $eligible === null ? ['present' => false] : ['present' => true, 'value' => $eligible ? '1' : '0']];
             $candidates = $eligible === null ? [['groupId' => 'x', 'grants' => ['_system' => ['eligible']], 'trusted' => false, 'state' => 'active']] : [];
-            return new PolicyOperationContext('0', $this->createMock(PolicyWriter::class), $raw, $candidates, true, true, [], true, true,
-                \OCA\Mcp\Service\Scope\ScopeGuard::read($this->createMock(\OCA\Mcp\Db\ResourceScopeMapper::class), null));
+            return new PolicyOperationContext('0', $this->createMock(PolicyTransaction::class), $raw, $candidates, true, true, [], true, true, \OCA\Mcp\Access\ResourceScope\ScopeGuard::read($this->createMock(\OCA\Mcp\Db\ResourceScopeMapper::class), null));
         });
         $time = $this->createMock(ITimeFactory::class);
         $time->method('getTime')->willReturn(1_760_000_000);
@@ -167,12 +170,12 @@ final class GroupLifecycleListenerTest extends TestCase {
         $this->handle($listener, new GroupDeletedEvent($this->group()));
         $this->assertNull($this->life->get('staff'));
         $this->assertSame([], $this->rows('staff'));
-        $this->assertSame(PolicyWriter::next($revision), $this->revision());
+        $this->assertSame(DecimalCounter::increment($revision), $this->revision());
         $this->assertSame([['alice', IdentityKey::group('staff'), $gen]], $this->afters);
         $this->assertSame([GroupDeletedEvent::class], $this->flushes);
         // A duplicate After finds nothing captured any more: it suspends nothing that is gone and purges nothing.
         $this->handle($listener, new GroupDeletedEvent($this->group()));
-        $this->assertSame(PolicyWriter::next($revision), $this->revision());
+        $this->assertSame(DecimalCounter::increment($revision), $this->revision());
     }
 
     /** T6: without holders (or with a group granting ordinary operations only) pending_delete is still written. */
@@ -255,9 +258,9 @@ final class GroupLifecycleListenerTest extends TestCase {
     /** An issuance G admitted, as TokenService::asOwner() runs it: the admission outside the mutex, the hold and the credential under it. */
     private function issueAdmittedBy(string $gid, string $uid): bool {
         $issued = false;
-        $this->writer->runCredential($uid, fn (): array => [['groupId' => $gid, 'gen' => $this->life->get($gid)['gen']]],
-            function (?array $lifecycles) use ($uid, &$issued): bool {
-                $this->writer->holdLifecycles($lifecycles ?? []);
+        $this->writer->credentials->runCredential($uid, fn (): array => [['groupId' => $gid, 'gen' => $this->life->get($gid)['gen']]],
+            function (?array $lifecycles, array $state, array $generations, PolicyAttempt $attempt) use ($uid, &$issued): bool {
+                $this->writer->holds->hold($attempt, $lifecycles ?? []);
                 $this->store->insertToken(['user_id' => $uid, 'auth_gen' => (new AuthUsersMapper($this->db))->issue($uid)], 0);
                 $issued = true;
                 return false;

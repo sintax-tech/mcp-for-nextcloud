@@ -6,6 +6,16 @@
 declare(strict_types=1);
 
 return ['routes' => [
+    ['name' => 'override_preview#index', 'url' => '/api/grants/commands/preview', 'verb' => 'POST'],
+    ['name' => 'group_directory#index', 'url' => '/api/group-directory', 'verb' => 'GET'],
+    ['name' => 'group_directory#detail', 'url' => '/api/group-directory/detail', 'verb' => 'GET'],
+    ['name' => 'inspector#access', 'url' => '/api/inspector/access', 'verb' => 'GET'],
+    ['name' => 'inspector#path', 'url' => '/api/inspector/path', 'verb' => 'GET'],
+    ['name' => 'inspector#calendar', 'url' => '/api/inspector/calendar', 'verb' => 'GET'],
+    ['name' => 'scope#show', 'url' => '/api/scope/{uid}/{module}', 'verb' => 'GET'],
+    ['name' => 'scope#candidates', 'url' => '/api/scope/{uid}/{module}/candidates', 'verb' => 'GET'],
+    ['name' => 'scope#update', 'url' => '/api/scope/{uid}/{module}', 'verb' => 'PUT'],
+    ['name' => 'my_scope#index', 'url' => '/api/my/scope', 'verb' => 'GET'],
     ['name' => 'mcp#post', 'url' => '/', 'verb' => 'POST'],
     ['name' => 'mcp#get', 'url' => '/', 'verb' => 'GET'],
     ['name' => 'mcp#delete', 'url' => '/', 'verb' => 'DELETE'],
@@ -17,30 +27,16 @@ return ['routes' => [
     ['name' => 'settings#personal', 'url' => '/settings/personal', 'verb' => 'POST'],
     ['name' => 'grants#index', 'url' => '/api/grants', 'verb' => 'GET'],
     // POST keeps "bulk" from colliding with a user whose uid is "bulk" on PUT /api/grants/{uid}.
-    ['name' => 'grants#bulk', 'url' => '/api/grants/bulk', 'verb' => 'POST'],
-    // Same reasoning: POST never collides with the per-user PUT route.
     ['name' => 'grants#commands', 'url' => '/api/grants/commands', 'verb' => 'POST'],
-    // Read only: what the same commands would leave, for the preview of a reset.
-    ['name' => 'override_preview#index', 'url' => '/api/grants/commands/preview', 'verb' => 'POST'],
     ['name' => 'grants#undo', 'url' => '/api/grants/undo', 'verb' => 'POST'],
-    ['name' => 'grants#update', 'url' => '/api/grants/{uid}', 'verb' => 'PUT'],
-    ['name' => 'grants#service', 'url' => '/api/service', 'verb' => 'PUT'],
-    // Group ids are opaque and may hold any byte but NUL, so they travel in the query or the body, never in the path.
-    ['name' => 'group_directory#index', 'url' => '/api/group-directory', 'verb' => 'GET'],
-    ['name' => 'group_directory#detail', 'url' => '/api/group-directory/detail', 'verb' => 'GET'],
     ['name' => 'grants#group', 'url' => '/api/group-grants', 'verb' => 'GET'],
     ['name' => 'grants#previewGroup', 'url' => '/api/group-grants/preview', 'verb' => 'POST'],
     ['name' => 'grants#saveGroup', 'url' => '/api/group-grants', 'verb' => 'PUT'],
+    ['name' => 'grants#bulk', 'url' => '/api/grants/bulk', 'verb' => 'POST'],
+    ['name' => 'grants#update', 'url' => '/api/grants/{uid}', 'verb' => 'PUT'],
+    ['name' => 'grants#service', 'url' => '/api/service', 'verb' => 'PUT'],
     ['name' => 'grants#oauthClients', 'url' => '/api/oauth-clients', 'verb' => 'GET'],
     ['name' => 'grants#updateOauthClients', 'url' => '/api/oauth-clients', 'verb' => 'PUT'],
-    // The module is the last segment, so a uid never collides with "candidates".
-    ['name' => 'scope#show', 'url' => '/api/scope/{uid}/{module}', 'verb' => 'GET'],
-    ['name' => 'scope#candidates', 'url' => '/api/scope/{uid}/{module}/candidates', 'verb' => 'GET'],
-    ['name' => 'scope#update', 'url' => '/api/scope/{uid}/{module}', 'verb' => 'PUT'],
-    // The user, the path and the calendar travel in the query: a uid or a path may hold any byte but NUL.
-    ['name' => 'inspector#access', 'url' => '/api/inspector/access', 'verb' => 'GET'],
-    ['name' => 'inspector#path', 'url' => '/api/inspector/path', 'verb' => 'GET'],
-    ['name' => 'inspector#calendar', 'url' => '/api/inspector/calendar', 'verb' => 'GET'],
     ['name' => 'grants#logsAccess', 'url' => '/api/logs-access', 'verb' => 'GET'],
     ['name' => 'grants#updateLogsAccess', 'url' => '/api/logs-access', 'verb' => 'PUT'],
     ['name' => 'logs_privacy#show', 'url' => '/api/logs-privacy', 'verb' => 'GET'],
@@ -50,7 +46,6 @@ return ['routes' => [
     ['name' => 'connections#revokeUser', 'url' => '/api/connections/users/{uid}', 'verb' => 'DELETE'],
     ['name' => 'connections#destroy', 'url' => '/api/connections/{id}', 'verb' => 'DELETE', 'requirements' => ['id' => '\d+']],
     ['name' => 'my_connections#index', 'url' => '/api/my/connections', 'verb' => 'GET'],
-    ['name' => 'my_scope#index', 'url' => '/api/my/scope', 'verb' => 'GET'],
     ['name' => 'my_connections#destroy', 'url' => '/api/my/connections/{id}', 'verb' => 'DELETE', 'requirements' => ['id' => '\d+']],
     ['name' => 'checkout_limit#show', 'url' => '/api/checkout-limit', 'verb' => 'GET'],
     ['name' => 'checkout_limit#update', 'url' => '/api/checkout-limit', 'verb' => 'PUT'],

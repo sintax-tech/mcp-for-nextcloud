@@ -30,6 +30,7 @@ jobs:
           php-version: ${{ matrix.php-version }}
           extensions: mbstring, intl, gd, zip, sqlite3
           coverage: none
+          tools: composer:v2
       - name: Cache Composer packages
         uses: actions/cache@v4
         with:
@@ -41,6 +42,38 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --no-progress
         working-directory: mcp
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: mcp/.node-version
+          cache: npm
+          cache-dependency-path: mcp/package-lock.json
+      - name: Install locked frontend dependencies
+        run: npm ci
+        working-directory: mcp
       - name: Run the test suite
-        run: php -d memory_limit=1G -d post_max_size=1G -d upload_max_filesize=1G vendor/bin/phpunit
+        run: composer test
+        working-directory: mcp
+
+  javascript:
+    name: JavaScript (Chromium, Firefox, WebKit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: mcp/.node-version
+          cache: npm
+          cache-dependency-path: mcp/package-lock.json
+      - name: Install locked frontend dependencies
+        run: npm ci
+        working-directory: mcp
+      - name: Install required browsers
+        run: node node_modules/playwright/cli.js install --with-deps chromium firefox webkit
+        working-directory: mcp
+      - name: Run the complete JavaScript suite
+        run: composer test:js
         working-directory: mcp

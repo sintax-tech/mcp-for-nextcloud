@@ -9,9 +9,9 @@ namespace OCA\Mcp\Tests\Unit;
 
 use OCA\Mcp\Controller\McpController;
 use OCA\Mcp\Controller\SettingsController;
-use OCA\Mcp\Checkout\CheckoutTokenStore;
-use OCA\Mcp\Tools\Files\BatchStore;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutTokenStore;
+use OCA\Mcp\Modules\Files\Reorganization\BatchStore;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;
@@ -164,7 +164,7 @@ final class SettingsControllerTest extends TestCase {
     /** A policy storage failure is a 503 that revokes and assumes nothing, never a 500. */
     public function testAPolicyStorageFailureIsA503AndTouchesNothingElse(): void {
         $policy = $this->createMock(GrantPolicy::class);
-        $policy->method('setConnected')->willThrowException(new \OCA\Mcp\Service\Policy\PolicyUnavailable());
+        $policy->method('setConnected')->willThrowException(new \OCA\Mcp\Access\Policy\PolicyUnavailable());
         $user = $this->createMock(IUser::class);
         $user->method('getUID')->willReturn('alice');
         $user->method('isEnabled')->willReturn(true);

@@ -9,12 +9,13 @@ namespace OCA\Mcp\Tests\Integration\Policy;
 use OC\Group\Database;
 use OCA\Mcp\Db\GroupLifeMapper;
 use OCA\Mcp\Db\IdentityKey;
-use OCA\Mcp\Service\LogsAccess;
-use OCA\Mcp\Service\Policy\GroupSourceClassifier;
-use OCA\Mcp\Service\Policy\LogsRoleReader;
-use OCA\Mcp\Service\Policy\MembershipReader;
-use OCA\Mcp\Service\Policy\PolicyResolver;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Logs\LogsAccess;
+use OCA\Mcp\Access\Grants\Groups\GroupSourceClassifier;
+use OCA\Mcp\Access\Policy\Resolution\LogsRoleReader;
+use OCA\Mcp\Access\Grants\Groups\MembershipReader;
+use OCA\Mcp\Access\Policy\Resolution\PolicyResolver;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
+use OCA\Mcp\Access\Policy\Transactions\PolicyAttempt;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\Group\Backend\INamedBackend;
@@ -53,7 +54,8 @@ final class GroupResolutionTest extends IntegrationTestCase {
     private function grantEligibility(): GroupLifeMapper {
         $db = $this->official();
         $life = new GroupLifeMapper($db);
-        Server::get(PolicyWriter::class)->runInternal([], fn () => null, function ($snapshot, $state) use ($db, $life): bool {
+        Server::get(PolicyTransaction::class)->runInternal([], fn () => null, function ($snapshot, PolicyAttempt $attempt) use ($db, $life): bool {
+            $state = $attempt->state();
             $qb = $db->getQueryBuilder();
             $qb->insert('mcp_group_grants')
                 ->setValue('group_key', $qb->createNamedParameter(IdentityKey::group($this->gid)))

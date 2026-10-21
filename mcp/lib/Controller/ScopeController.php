@@ -10,16 +10,16 @@ namespace OCA\Mcp\Controller;
 use InvalidArgumentException;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Policy\DecimalCounter;
-use OCA\Mcp\Service\Policy\MissingRevision;
-use OCA\Mcp\Service\Policy\PolicyConflict;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\Policy\ScopeInactive;
-use OCA\Mcp\Service\Policy\ScopeItemsInaccessible;
-use OCA\Mcp\Service\Policy\ScopeTooLarge;
-use OCA\Mcp\Service\Scope\NativeResourceEnumerator;
-use OCA\Mcp\Service\Scope\ScopeActivation;
+use OCA\Mcp\Access\Policy\DecimalCounter;
+use OCA\Mcp\Access\Policy\Transactions\MissingRevision;
+use OCA\Mcp\Access\Policy\Transactions\PolicyConflict;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\ResourceScope\ResourceScopeWriter;
+use OCA\Mcp\Access\ResourceScope\ScopeInactive;
+use OCA\Mcp\Access\ResourceScope\ScopeItemsInaccessible;
+use OCA\Mcp\Access\ResourceScope\ScopeTooLarge;
+use OCA\Mcp\Access\ResourceScope\NativeResourceEnumerator;
+use OCA\Mcp\Access\ResourceScope\ScopeActivation;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -55,7 +55,7 @@ class ScopeController extends Controller {
         IRequest $request,
         private ResourceScopeMapper $scopes,
         private NativeResourceEnumerator $resources,
-        private PolicyWriter $writer,
+        private ResourceScopeWriter $writer,
         private PolicyStateMapper $state,
         private ScopeActivation $activation,
         private IUserManager $userManager,

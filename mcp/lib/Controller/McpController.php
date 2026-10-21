@@ -7,16 +7,16 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Controller;
 
+use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Http\McpResponse;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\L10n\UserL10n;
 use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\ResourceUrl;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\GuestRestrictions;
-use OCA\Mcp\Service\McpProtocol;
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Mcp\Protocol\McpProtocol;
+use OCA\Mcp\OAuth\Revocation\CauseProcessor;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoAdminRequired;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;

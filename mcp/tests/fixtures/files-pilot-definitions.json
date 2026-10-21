@@ -1,0 +1,82 @@
+{
+    "names": [
+        "files_list",
+        "files_search",
+        "files_tree",
+        "files_mkdir",
+        "files_copy",
+        "files_move",
+        "files_move_batch",
+        "files_undo_batch",
+        "files_read",
+        "files_edit",
+        "files_replace",
+        "files_checkout",
+        "files_versions_list",
+        "files_version_read",
+        "files_version_restore",
+        "files_image_view",
+        "files_images_view",
+        "files_image_search",
+        "files_list_shares",
+        "files_share",
+        "files_unshare",
+        "files_upload",
+        "files_create"
+    ],
+    "definitions": [
+        {
+            "name": "files_read",
+            "module": "files",
+            "operation": "read",
+            "description": "Read the text of a file from Nextcloud (plain text/markdown directly; PDF/DOCX/ODT via text extraction).",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "path"
+                ]
+            }
+        },
+        {
+            "name": "files_edit",
+            "module": "files",
+            "operation": "edit",
+            "description": "Replace the content of an existing text file and return the diff. Before writing, requires active versioning and creates a copy in \"/MCP backups\". If the file is outside your personal folder, only write after asking the user and retrying the call with confirm_shared. Never creates, moves, or deletes files.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "Complete new content (UTF-8)"
+                    },
+                    "etag": {
+                        "type": "string",
+                        "description": "Previously read ETag; if it differs, nothing is written"
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "path",
+                    "content"
+                ]
+            }
+        }
+    ]
+}

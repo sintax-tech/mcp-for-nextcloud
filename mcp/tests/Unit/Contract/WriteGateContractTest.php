@@ -7,17 +7,18 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract;
 
+use OCA\Mcp\Mcp\Confirmation\ConfirmationMessages;
+
 use OCA\Mcp\AppInfo\Application;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\ArgumentValidator;
-use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\PreviewsWrites;
-use OCA\Mcp\Tools\ToolModule;
-use OCA\Mcp\Tools\ToolPresentation;
-use OCA\Mcp\Tools\ToolRegistry;
-use OCA\Mcp\Tools\ToolResult;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
+use OCA\Mcp\Mcp\Confirmation\PreviewsWrites;
+use OCA\Mcp\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Tools\Discovery\ToolPresentation;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCP\App\IAppManager;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -27,6 +28,67 @@ use Psr\Log\LoggerInterface;
 final class WriteGateContractTest extends TestCase {
     /** Builds a concrete app class with real app collaborators and mocks for everything else. */
     private function build(string $class): object {
+        if ($class === \OCA\Mcp\Modules\Logs\LogsModule::class) {
+            return new \OCA\Mcp\Modules\Logs\LogsModule([
+                'logs_list' => fn () => $this->build(\OCA\Mcp\Modules\Logs\Tools\ListLogs::class),
+                'logs_analyze' => fn () => $this->build(\OCA\Mcp\Modules\Logs\Tools\AnalyzeLogs::class),
+            ], fn () => $this->build(\OCA\Mcp\Access\Logs\LogsAccess::class), fn () => $this->build(\OCA\Mcp\Modules\Logs\Audit\LogAudit::class));
+        }
+        if ($class === \OCA\Mcp\Modules\People\PeopleModule::class) {
+            return new \OCA\Mcp\Modules\People\PeopleModule([
+                'users_search' => fn () => $this->build(\OCA\Mcp\Modules\People\Tools\SearchUsers::class),
+            ]);
+        }
+        if ($class === \OCA\Mcp\Modules\Notes\NotesModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Notes\NotesToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Notes\NotesModule($factories);
+        }
+        if ($class === \OCA\Mcp\Modules\Files\FilesModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Files\FilesToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Files\FilesModule($factories, (\OCA\Mcp\Tests\Support\Files\FilesGuards::unrestricted($this))->assertScopeReadable(...));
+        }
+        if ($class === \OCA\Mcp\Modules\Deck\DeckModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Deck\DeckToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Deck\DeckModule($factories, $this->createMock(\OCA\Mcp\Modules\Deck\Access\DeckAvailability::class));
+        }
+        if ($class === \OCA\Mcp\Modules\Talk\TalkModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Talk\TalkToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Talk\TalkModule($factories, $this->build(\OCA\Mcp\Modules\Talk\Execution\ResultBoundary::class), $this->build(\OCA\Mcp\Modules\Talk\Execution\PreviewBoundary::class));
+        }
+        if ($class === \OCA\Mcp\Modules\Contacts\ContactsModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Contacts\ContactsToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Contacts\ContactsModule($factories);
+        }
+        if ($class === \OCA\Mcp\Modules\Tasks\TasksModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Tasks\TasksToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Tasks\TasksModule($factories, (\OCA\Mcp\Tests\Support\Platform\FileAccess\References\OutputReferenceFilters::inactive($this))->assertAvailable(...));
+        }
+        if ($class === \OCA\Mcp\Modules\Calendar\CalendarModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Calendar\CalendarToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Calendar\CalendarModule($factories, (\OCA\Mcp\Tests\Support\Platform\FileAccess\References\OutputReferenceFilters::inactive($this))->assertAvailable(...));
+        }
+        if ($class === \Closure::class) { return static fn () => null; }
         if ($class === \OCA\Mcp\Db\LogsGroupsMapper::class) {
             $db = new \OCA\Mcp\Tests\Unit\SqliteDatabase($this, [new \OCA\Mcp\Migration\Version001002Date20261008000000()]);
             return new \OCA\Mcp\Db\LogsGroupsMapper($db->connection(), (new \OCA\Mcp\Tests\Unit\InMemoryAppConfig())->worker($this));
@@ -41,7 +103,7 @@ final class WriteGateContractTest extends TestCase {
                 continue;
             }
             $reflection = new \ReflectionClass($name);
-            $args[] = str_starts_with($name, 'OCA\\Mcp\\') && $reflection->isInstantiable() ? $this->build($name) : $this->createMock($name);
+            $args[] = $name === \Closure::class ? static fn () => null : (str_starts_with($name, 'OCA\\Mcp\\') && $reflection->isInstantiable() ? $this->build($name) : $this->createMock($name));
         }
         return new $class(...$args);
     }
@@ -59,7 +121,8 @@ final class WriteGateContractTest extends TestCase {
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturn($this->createMock(IUser::class));
 
-        return new ToolRegistry($modules, $policy, $apps, $users, $this->createMock(LoggerInterface::class));
+        $availability = new \OCA\Mcp\Mcp\Tools\Discovery\ToolAvailability($policy, $apps, $users);
+        return new ToolRegistry($modules, $availability, new \OCA\Mcp\Mcp\Tools\Execution\ToolExecutor($availability, $this->createMock(LoggerInterface::class)));
     }
 
     /**
@@ -125,7 +188,7 @@ final class WriteGateContractTest extends TestCase {
                 $this->assertArrayHasKey(WriteGate::CONFIRM, $properties, "$name must have 'confirm' in properties");
                 $confirm = $properties[WriteGate::CONFIRM];
                 $this->assertSame('boolean', $confirm['type'], "$name: confirm must be boolean");
-                $this->assertSame(CommonMessages::confirmParameter(), $confirm['description'], "$name: confirm must have standard message");
+                $this->assertSame(ConfirmationMessages::confirmParameter(), $confirm['description'], "$name: confirm must have standard message");
                 $this->assertArrayNotHasKey('const', $confirm, "$name: confirm must not have const");
                 $this->assertNotContains(WriteGate::CONFIRM, $listedTool['inputSchema']['required'] ?? [], "$name: confirm must never be required");
 
@@ -287,7 +350,7 @@ final class WriteGateContractTest extends TestCase {
         $this->assertTrue($body['requiresConfirmation']);
         $this->assertSame('fake_write_tool', $body['tool']);
         $this->assertSame('test-item', $body['arguments']['item']);
-        $this->assertSame(CommonMessages::planNothingChanged(), $body['message']);
+        $this->assertSame(ConfirmationMessages::planNothingChanged(), $body['message']);
 
         // 3. Call with confirm: false: should NOT execute
         $resultFalse = $registry->call('fake_write_tool', ['item' => 'test-item', 'confirm' => false], 'alice');

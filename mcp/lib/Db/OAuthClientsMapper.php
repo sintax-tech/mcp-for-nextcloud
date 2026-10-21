@@ -9,7 +9,7 @@ namespace OCA\Mcp\Db;
 
 use OCA\Mcp\OAuth\CustomClient;
 use OCA\Mcp\OAuth\NativeClient;
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Access\Policy\DecimalCounter;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 use UnexpectedValueException;
@@ -21,7 +21,7 @@ use UnexpectedValueException;
  * withdrawal another worker committed: under the policy mutex (consent, exchange, refresh) the read sees the last
  * committed state, and the Bearer check reads the row of its client on every request.
  *
- * Rows are written only by OAuthClientsService inside PolicyWriter::runAdmin, in the transaction that deletes the
+ * Rows are written only by OAuthClientsService inside PolicyTransaction::runAdmin, in the transaction that deletes the
  * credentials a withdrawal covers, and by the upgrade migration that imports the 1.0.8 switch. gen is a canonical
  * BIGINT that starts at 1 and advances on every withdrawal of the client; a row that does not validate (unknown id or
  * kind, a gen that is not a canonical positive counter, unreadable URIs) fails the read, so a caller refuses instead

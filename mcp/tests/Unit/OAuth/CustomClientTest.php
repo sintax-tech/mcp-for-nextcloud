@@ -13,7 +13,7 @@ use OCA\Mcp\OAuth\CustomClient;
 use OCA\Mcp\OAuth\NativeClient;
 use OCA\Mcp\OAuth\OAuthException;
 use OCA\Mcp\OAuth\RedirectUriMatcher;
-use OCA\Mcp\Service\ConnectionList;
+use OCA\Mcp\OAuth\Connections\ConnectionList;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -97,7 +97,7 @@ final class CustomClientTest extends TestCase {
         $this->assertSame('9223372036854775807', CustomClient::stamped($next, [self::client(self::A, 'QwenPaw') + ['gen' => '9223372036854775806']], [$id])[0]['gen']);
         $this->assertSame('9223372036854775807', CustomClient::stamped($next, [self::client(self::A, 'QwenPaw') + ['gen' => '9223372036854775807']], [])[0]['gen'],
             'a client that is not withdrawn keeps its generation');
-        $this->expectException(\OCA\Mcp\Service\Policy\PolicyUnavailable::class);
+        $this->expectException(\OCA\Mcp\Access\Policy\PolicyUnavailable::class);
         CustomClient::stamped($next, [self::client(self::A, 'QwenPaw') + ['gen' => '9223372036854775807']], [$id]);
     }
 

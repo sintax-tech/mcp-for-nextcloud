@@ -9,7 +9,7 @@ namespace OCA\Mcp\Db;
 
 use InvalidArgumentException;
 use LogicException;
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Access\Policy\DecimalCounter;
 use OCP\DB\Exception;
 use OCP\IDBConnection;
 use UnexpectedValueException;

@@ -1,0 +1,782 @@
+{
+    "raw": [
+        {
+            "name": "notes_list",
+            "description": "Lists the notes (Notes app) of the user.",
+            "module": "notes",
+            "operation": "read",
+            "app": "notes",
+            "inputSchema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+            }
+        },
+        {
+            "name": "notes_search",
+            "description": "Searches notes by title and content (Markdown).",
+            "module": "notes",
+            "operation": "read",
+            "app": "notes",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Search term to find in note title or content."
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 20,
+                        "description": "Maximum number of notes to return (1-100, default 20)."
+                    },
+                    "category": {
+                        "type": "string",
+                        "default": "",
+                        "description": "Optional category (subfolder) to limit search to; empty for all notes."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "query"
+                ]
+            }
+        },
+        {
+            "name": "notes_read",
+            "description": "Reads the content of a note by id.",
+            "module": "notes",
+            "operation": "read",
+            "app": "notes",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Id of the note."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id"
+                ]
+            }
+        },
+        {
+            "name": "notes_create",
+            "description": "Creates a note; never overwrites an existing one.",
+            "module": "notes",
+            "operation": "create",
+            "app": "notes",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "description": "Title (file name)."
+                    },
+                    "content": {
+                        "type": "string",
+                        "default": "",
+                        "description": "Content in Markdown."
+                    },
+                    "category": {
+                        "type": "string",
+                        "default": "",
+                        "description": "Category (subfolder); empty for the root."
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "title"
+                ]
+            }
+        },
+        {
+            "name": "notes_edit",
+            "description": "Changes the content and/or the title of a note.",
+            "module": "notes",
+            "operation": "edit",
+            "app": "notes",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Id of the note."
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "New complete content."
+                    },
+                    "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "description": "New title."
+                    },
+                    "etag": {
+                        "type": "string",
+                        "description": "ETag read before; when it differs, nothing is changed."
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id"
+                ]
+            }
+        },
+        {
+            "name": "notes_move",
+            "description": "Moves a note to another category.",
+            "module": "notes",
+            "operation": "move",
+            "app": "notes",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Id of the note."
+                    },
+                    "category": {
+                        "type": "string",
+                        "description": "Destination category; empty for the root."
+                    },
+                    "etag": {
+                        "type": "string",
+                        "description": "ETag read before; when it differs, nothing is changed."
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "category"
+                ]
+            }
+        },
+        {
+            "name": "notes_delete",
+            "description": "Deletes a note to the Nextcloud trash bin, where it can be restored.",
+            "module": "notes",
+            "operation": "delete",
+            "app": "notes",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Id of the note."
+                    },
+                    "etag": {
+                        "type": "string",
+                        "description": "ETag read before; when it differs, nothing is changed."
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id"
+                ]
+            }
+        }
+    ],
+    "published": [
+        {
+            "name": "notes_list",
+            "title": "List notes",
+            "description": "Lists the notes (Notes app) of the user.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {},
+                "additionalProperties": false
+            },
+            "annotations": {
+                "title": "List notes",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+            },
+            "module": "notes",
+            "operation": "read",
+            "app": "notes"
+        },
+        {
+            "name": "notes_search",
+            "title": "Search notes",
+            "description": "Searches notes by title and content (Markdown).",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Search term to find in note title or content."
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 20,
+                        "description": "Maximum number of notes to return (1-100, default 20)."
+                    },
+                    "category": {
+                        "type": "string",
+                        "default": "",
+                        "description": "Optional category (subfolder) to limit search to; empty for all notes."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "query"
+                ]
+            },
+            "annotations": {
+                "title": "Search notes",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+            },
+            "module": "notes",
+            "operation": "read",
+            "app": "notes"
+        },
+        {
+            "name": "notes_read",
+            "title": "Read note",
+            "description": "Reads the content of a note by id.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Id of the note."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id"
+                ]
+            },
+            "annotations": {
+                "title": "Read note",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+            },
+            "module": "notes",
+            "operation": "read",
+            "app": "notes"
+        },
+        {
+            "name": "notes_create",
+            "title": "Create note",
+            "description": "Creates a note; never overwrites an existing one.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "description": "Title (file name)."
+                    },
+                    "content": {
+                        "type": "string",
+                        "default": "",
+                        "description": "Content in Markdown."
+                    },
+                    "category": {
+                        "type": "string",
+                        "default": "",
+                        "description": "Category (subfolder); empty for the root."
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    },
+                    "confirm": {
+                        "type": "boolean",
+                        "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "title"
+                ]
+            },
+            "annotations": {
+                "title": "Create note",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+            },
+            "module": "notes",
+            "operation": "create",
+            "app": "notes"
+        },
+        {
+            "name": "notes_edit",
+            "title": "Edit note",
+            "description": "Changes the content and/or the title of a note.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Id of the note."
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "New complete content."
+                    },
+                    "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 200,
+                        "description": "New title."
+                    },
+                    "etag": {
+                        "type": "string",
+                        "description": "ETag read before; when it differs, nothing is changed."
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    },
+                    "confirm": {
+                        "type": "boolean",
+                        "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id"
+                ]
+            },
+            "annotations": {
+                "title": "Edit note",
+                "readOnlyHint": false,
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": false
+            },
+            "module": "notes",
+            "operation": "edit",
+            "app": "notes"
+        },
+        {
+            "name": "notes_move",
+            "title": "Move note",
+            "description": "Moves a note to another category.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Id of the note."
+                    },
+                    "category": {
+                        "type": "string",
+                        "description": "Destination category; empty for the root."
+                    },
+                    "etag": {
+                        "type": "string",
+                        "description": "ETag read before; when it differs, nothing is changed."
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    },
+                    "confirm": {
+                        "type": "boolean",
+                        "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id",
+                    "category"
+                ]
+            },
+            "annotations": {
+                "title": "Move note",
+                "readOnlyHint": false,
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": false
+            },
+            "module": "notes",
+            "operation": "move",
+            "app": "notes"
+        },
+        {
+            "name": "notes_delete",
+            "title": "Delete note",
+            "description": "Deletes a note to the Nextcloud trash bin, where it can be restored.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Id of the note."
+                    },
+                    "etag": {
+                        "type": "string",
+                        "description": "ETag read before; when it differs, nothing is changed."
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    },
+                    "confirm": {
+                        "type": "boolean",
+                        "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "id"
+                ]
+            },
+            "annotations": {
+                "title": "Delete note",
+                "readOnlyHint": false,
+                "destructiveHint": true,
+                "idempotentHint": false,
+                "openWorldHint": false
+            },
+            "module": "notes",
+            "operation": "delete",
+            "app": "notes"
+        }
+    ],
+    "guide": {
+        "content": [
+            {
+                "type": "text",
+                "text": "This guide is in English: relay it to the user in their own language.\n\nWrite confirmation plans arrive as readable text in the user’s language, with the complete plan in structuredContent. Show that text to the user exactly as received.\n\n# Notes (`notes`)\n\n7 tools available to you in this module.\n\nBehaviour notes\n\n- A note is addressed by the `id` notes_list or notes_search returns, not by its title; the title is the file name and the category is the subfolder it sits in.\n- Use notes_search to find notes by keyword in title or Markdown content.\n- notes_create never overwrites: when the title is taken in that category it picks a free name, and the response says which name it used.\n- notes_delete only deletes where the Nextcloud trash bin takes the note back; anywhere else it refuses instead of removing it for good.\n- Notes are capped at 1048576 bytes read or written, and a title at 200 characters.\n- Pass `etag` to make a change fail instead of overwriting somebody else's version of the same note.\n- Some notes or categories may be hidden by administrator policy and will appear as if they do not exist.\n\n\n## List notes — `notes_list`\n\nReads only. Lists the notes (Notes app) of the user.\n\n## Search notes — `notes_search`\n\nReads only. Searches notes by title and content (Markdown).\n\nParameters\n- `query` (string, required, length from 1) — Search term to find in note title or content.\n- `limit` (integer, optional, default 20, 1..100) — Maximum number of notes to return (1-100, default 20).\n- `category` (string, optional, default ) — Optional category (subfolder) to limit search to; empty for all notes.\n\n## Read note — `notes_read`\n\nReads only. Reads the content of a note by id.\n\nParameters\n- `id` (integer, required, from 1) — Id of the note.\n\n## Create note — `notes_create`\n\nWrites: it changes something in this Nextcloud. Creates a note; never overwrites an existing one.\n\nParameters\n- `title` (string, required, length 1..200) — Title (file name).\n- `content` (string, optional, default ) — Content in Markdown.\n- `category` (string, optional, default ) — Category (subfolder); empty for the root.\n- `confirm_shared` (boolean, optional) — Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user.\n- `confirm` (boolean, optional) — Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan.\n\nNeeds `confirm` (boolean, must be true) before it writes.\nNeeds `confirm_shared` (boolean) before it writes.\n\n## Edit note — `notes_edit`\n\nWrites: it changes something in this Nextcloud. Changes the content and/or the title of a note.\nFlagged as destructive: the client is expected to ask the user before it runs.\n\nParameters\n- `id` (integer, required, from 1) — Id of the note.\n- `content` (string, optional) — New complete content.\n- `title` (string, optional, length 1..200) — New title.\n- `etag` (string, optional) — ETag read before; when it differs, nothing is changed.\n- `confirm_shared` (boolean, optional) — Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user.\n- `confirm` (boolean, optional) — Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan.\n\nNeeds `confirm` (boolean, must be true) before it writes.\nNeeds `confirm_shared` (boolean) before it writes.\n\n## Move note — `notes_move`\n\nWrites: it changes something in this Nextcloud. Moves a note to another category.\nFlagged as destructive: the client is expected to ask the user before it runs.\n\nParameters\n- `id` (integer, required, from 1) — Id of the note.\n- `category` (string, required) — Destination category; empty for the root.\n- `etag` (string, optional) — ETag read before; when it differs, nothing is changed.\n- `confirm_shared` (boolean, optional) — Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user.\n- `confirm` (boolean, optional) — Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan.\n\nNeeds `confirm` (boolean, must be true) before it writes.\nNeeds `confirm_shared` (boolean) before it writes.\n\n## Delete note — `notes_delete`\n\nWrites: it changes something in this Nextcloud. Deletes a note to the Nextcloud trash bin, where it can be restored.\nFlagged as destructive: the client is expected to ask the user before it runs.\n\nParameters\n- `id` (integer, required, from 1) — Id of the note.\n- `etag` (string, optional) — ETag read before; when it differs, nothing is changed.\n- `confirm_shared` (boolean, optional) — Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user.\n- `confirm` (boolean, optional) — Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan.\n\nNeeds `confirm` (boolean, must be true) before it writes.\nNeeds `confirm_shared` (boolean) before it writes."
+            }
+        ],
+        "structuredContent": {
+            "language_note": "This guide is in English: relay it to the user in their own language.",
+            "module": "notes",
+            "title": "Notes",
+            "notes": [
+                "A note is addressed by the `id` notes_list or notes_search returns, not by its title; the title is the file name and the category is the subfolder it sits in.",
+                "Use notes_search to find notes by keyword in title or Markdown content.",
+                "notes_create never overwrites: when the title is taken in that category it picks a free name, and the response says which name it used.",
+                "notes_delete only deletes where the Nextcloud trash bin takes the note back; anywhere else it refuses instead of removing it for good.",
+                "Notes are capped at 1048576 bytes read or written, and a title at 200 characters.",
+                "Pass `etag` to make a change fail instead of overwriting somebody else's version of the same note.",
+                "Some notes or categories may be hidden by administrator policy and will appear as if they do not exist."
+            ],
+            "tools": [
+                {
+                    "name": "notes_list",
+                    "title": "List notes",
+                    "description": "Lists the notes (Notes app) of the user.",
+                    "read_only": true,
+                    "destructive": false,
+                    "confirmation": [],
+                    "parameters": []
+                },
+                {
+                    "name": "notes_search",
+                    "title": "Search notes",
+                    "description": "Searches notes by title and content (Markdown).",
+                    "read_only": true,
+                    "destructive": false,
+                    "confirmation": [],
+                    "parameters": [
+                        {
+                            "name": "query",
+                            "type": "string",
+                            "required": true,
+                            "description": "Search term to find in note title or content.",
+                            "constraints": [
+                                "length from 1"
+                            ]
+                        },
+                        {
+                            "name": "limit",
+                            "type": "integer",
+                            "required": false,
+                            "description": "Maximum number of notes to return (1-100, default 20).",
+                            "constraints": [
+                                "default 20",
+                                "1..100"
+                            ]
+                        },
+                        {
+                            "name": "category",
+                            "type": "string",
+                            "required": false,
+                            "description": "Optional category (subfolder) to limit search to; empty for all notes.",
+                            "constraints": [
+                                "default "
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "notes_read",
+                    "title": "Read note",
+                    "description": "Reads the content of a note by id.",
+                    "read_only": true,
+                    "destructive": false,
+                    "confirmation": [],
+                    "parameters": [
+                        {
+                            "name": "id",
+                            "type": "integer",
+                            "required": true,
+                            "description": "Id of the note.",
+                            "constraints": [
+                                "from 1"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "notes_create",
+                    "title": "Create note",
+                    "description": "Creates a note; never overwrites an existing one.",
+                    "read_only": false,
+                    "destructive": false,
+                    "confirmation": [
+                        "confirm",
+                        "confirm_shared"
+                    ],
+                    "parameters": [
+                        {
+                            "name": "title",
+                            "type": "string",
+                            "required": true,
+                            "description": "Title (file name).",
+                            "constraints": [
+                                "length 1..200"
+                            ]
+                        },
+                        {
+                            "name": "content",
+                            "type": "string",
+                            "required": false,
+                            "description": "Content in Markdown.",
+                            "constraints": [
+                                "default "
+                            ]
+                        },
+                        {
+                            "name": "category",
+                            "type": "string",
+                            "required": false,
+                            "description": "Category (subfolder); empty for the root.",
+                            "constraints": [
+                                "default "
+                            ]
+                        },
+                        {
+                            "name": "confirm_shared",
+                            "type": "boolean",
+                            "required": false,
+                            "description": "Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user.",
+                            "constraints": []
+                        },
+                        {
+                            "name": "confirm",
+                            "type": "boolean",
+                            "required": false,
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan.",
+                            "constraints": []
+                        }
+                    ]
+                },
+                {
+                    "name": "notes_edit",
+                    "title": "Edit note",
+                    "description": "Changes the content and/or the title of a note.",
+                    "read_only": false,
+                    "destructive": true,
+                    "confirmation": [
+                        "confirm",
+                        "confirm_shared"
+                    ],
+                    "parameters": [
+                        {
+                            "name": "id",
+                            "type": "integer",
+                            "required": true,
+                            "description": "Id of the note.",
+                            "constraints": [
+                                "from 1"
+                            ]
+                        },
+                        {
+                            "name": "content",
+                            "type": "string",
+                            "required": false,
+                            "description": "New complete content.",
+                            "constraints": []
+                        },
+                        {
+                            "name": "title",
+                            "type": "string",
+                            "required": false,
+                            "description": "New title.",
+                            "constraints": [
+                                "length 1..200"
+                            ]
+                        },
+                        {
+                            "name": "etag",
+                            "type": "string",
+                            "required": false,
+                            "description": "ETag read before; when it differs, nothing is changed.",
+                            "constraints": []
+                        },
+                        {
+                            "name": "confirm_shared",
+                            "type": "boolean",
+                            "required": false,
+                            "description": "Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user.",
+                            "constraints": []
+                        },
+                        {
+                            "name": "confirm",
+                            "type": "boolean",
+                            "required": false,
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan.",
+                            "constraints": []
+                        }
+                    ]
+                },
+                {
+                    "name": "notes_move",
+                    "title": "Move note",
+                    "description": "Moves a note to another category.",
+                    "read_only": false,
+                    "destructive": true,
+                    "confirmation": [
+                        "confirm",
+                        "confirm_shared"
+                    ],
+                    "parameters": [
+                        {
+                            "name": "id",
+                            "type": "integer",
+                            "required": true,
+                            "description": "Id of the note.",
+                            "constraints": [
+                                "from 1"
+                            ]
+                        },
+                        {
+                            "name": "category",
+                            "type": "string",
+                            "required": true,
+                            "description": "Destination category; empty for the root.",
+                            "constraints": []
+                        },
+                        {
+                            "name": "etag",
+                            "type": "string",
+                            "required": false,
+                            "description": "ETag read before; when it differs, nothing is changed.",
+                            "constraints": []
+                        },
+                        {
+                            "name": "confirm_shared",
+                            "type": "boolean",
+                            "required": false,
+                            "description": "Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user.",
+                            "constraints": []
+                        },
+                        {
+                            "name": "confirm",
+                            "type": "boolean",
+                            "required": false,
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan.",
+                            "constraints": []
+                        }
+                    ]
+                },
+                {
+                    "name": "notes_delete",
+                    "title": "Delete note",
+                    "description": "Deletes a note to the Nextcloud trash bin, where it can be restored.",
+                    "read_only": false,
+                    "destructive": true,
+                    "confirmation": [
+                        "confirm",
+                        "confirm_shared"
+                    ],
+                    "parameters": [
+                        {
+                            "name": "id",
+                            "type": "integer",
+                            "required": true,
+                            "description": "Id of the note.",
+                            "constraints": [
+                                "from 1"
+                            ]
+                        },
+                        {
+                            "name": "etag",
+                            "type": "string",
+                            "required": false,
+                            "description": "ETag read before; when it differs, nothing is changed.",
+                            "constraints": []
+                        },
+                        {
+                            "name": "confirm_shared",
+                            "type": "boolean",
+                            "required": false,
+                            "description": "Required only when the note is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user.",
+                            "constraints": []
+                        },
+                        {
+                            "name": "confirm",
+                            "type": "boolean",
+                            "required": false,
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan.",
+                            "constraints": []
+                        }
+                    ]
+                }
+            ]
+        }
+    }
+}

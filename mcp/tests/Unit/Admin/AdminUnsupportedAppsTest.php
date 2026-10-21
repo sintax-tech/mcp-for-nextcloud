@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Admin;
 
-use OCA\Mcp\Service\ConnectionList;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\OAuth\Connections\ConnectionList;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Settings\AdminSettings;
-use OCA\Mcp\Tools\Files\OcrSupport;
+use OCA\Mcp\Modules\Files\Reading\OcrSupport;
 use OCP\App\IAppManager;
 use OCP\IURLGenerator;
 use PHPUnit\Framework\TestCase;
@@ -35,7 +35,7 @@ final class AdminUnsupportedAppsTest extends TestCase {
         $urls = $this->createMock(IURLGenerator::class);
         $urls->method('linkToRouteAbsolute')->willReturn('https://cloud.test/mcp');
         $connections = $this->createMock(ConnectionList::class);
-        return (new AdminSettings($this->createMock(GrantPolicy::class), $urls, new OcrSupport($apps), $apps, $connections, $this->createMock(\OCA\Mcp\Service\LogsAccess::class)))->getForm()->getParams();
+        return (new AdminSettings($this->createMock(GrantPolicy::class), $urls, new OcrSupport($apps), $apps, $connections, $this->createMock(\OCA\Mcp\Access\Logs\LogsAccess::class)))->getForm()->getParams();
     }
 
     public function testAnOldTalkIsListedWithItsProductNameAndBothVersions(): void {
@@ -50,7 +50,7 @@ final class AdminUnsupportedAppsTest extends TestCase {
     }
 
     public function testEveryAppWithAMinimumHasAProductName(): void {
-        foreach (array_keys(\OCA\Mcp\Service\Compat\AppEnablement::MINIMUM_VERSIONS) as $app) {
+        foreach (array_keys(\OCA\Mcp\Access\AppAvailability\AppEnablement::MINIMUM_VERSIONS) as $app) {
             $this->assertArrayHasKey($app, AdminSettings::APP_NAMES, $app . ' needs the name the admin knows it by');
         }
     }

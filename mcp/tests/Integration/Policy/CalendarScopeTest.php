@@ -10,16 +10,15 @@ use OCA\DAV\CalDAV\CalDavBackend;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\Http;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
-use OCA\Mcp\Tools\Calendar\CalendarAccess;
-use OCA\Mcp\Tools\Calendar\CalendarModule;
-use OCA\Mcp\Tools\Tasks\TasksModule;
+use OCA\Mcp\Platform\Dav\CalDav\CollectionAccess as CalendarAccess;
+use OCA\Mcp\Modules\Calendar\CalendarModule;
+use OCA\Mcp\Modules\Tasks\TasksModule;
 use OCP\Config\IUserConfig;
 use OCP\IAppConfig;
 use OCP\IConfig;
@@ -33,7 +32,7 @@ use Throwable;
  * B6 on the real server (S7, S15): calendars, task lists, a share and its rename, withdrawal and re-grant all live in
  * the DAV app of the container; the scope is saved by the container's writer, now open for calendar and tasks, which
  * checks every item against the native calendars of alice. Task tools are called over HTTP through the MCP endpoint;
- * the calendar tools need the Calendar app, which the harness does not install, so they run through the container's
+ * the calendar tools need the Calendar app, which the harness provisions, so they run through the container's
  * CalendarModule inside one policy operation, as the endpoint runs them.
  */
 final class CalendarScopeTest extends IntegrationTestCase {
@@ -120,7 +119,7 @@ final class CalendarScopeTest extends IntegrationTestCase {
 
     /** @param list<int>|null $ids */
     private function scope(string $module, ?array $ids): void {
-        Server::get(PolicyWriter::class)->setResourceScope(Server::get(PolicyStateMapper::class)->state()['revision'], 'admin',
+        Server::get(\OCA\Mcp\Access\ResourceScope\ResourceScopeWriter::class)->setResourceScope(Server::get(PolicyStateMapper::class)->state()['revision'], 'admin',
             Fixtures::ALICE, $module, $ids === null ? null : array_map('strval', $ids));
     }
 

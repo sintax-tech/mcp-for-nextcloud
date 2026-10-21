@@ -9,24 +9,23 @@ namespace OCA\Mcp\Tests\Unit\Contract;
 
 use DateTime;
 use DateTimeImmutable;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters;
-use OCA\Mcp\Tests\Unit\Tools\FakeTree;
-use OCA\Mcp\Tools\Common\OutputReferenceFilter;
-use OCA\Mcp\Tools\Talk\ActorNames;
-use OCA\Mcp\Tools\Talk\AttachmentAccess;
-use OCA\Mcp\Tools\Talk\AttachmentMessage;
-use OCA\Mcp\Tools\Talk\Conversation;
-use OCA\Mcp\Tools\Talk\ConversationAccessException;
-use OCA\Mcp\Tools\Talk\ConversationReader;
-use OCA\Mcp\Tools\Talk\ConversationResolver;
-use OCA\Mcp\Tools\Talk\ConversationWriter;
-use OCA\Mcp\Tools\Talk\FileAccessException;
-use OCA\Mcp\Tools\Talk\FileSharer;
-use OCA\Mcp\Tools\Talk\TalkServices;
-use OCA\Mcp\Tools\Talk\UserFileResolver;
-use OCA\Mcp\Tools\Talk\WritePreview;
+use OCA\Mcp\Tests\Support\Platform\FileAccess\References\OutputReferenceFilters;
+use OCA\Mcp\Tests\Support\Platform\FileAccess\FakeTree;
+use OCA\Mcp\Platform\FileAccess\References\OutputReferenceFilter;
+use OCA\Mcp\Modules\Talk\Presentation\ActorNames;
+use OCA\Mcp\Modules\Talk\Attachments\AttachmentAccess;
+use OCA\Mcp\Modules\Talk\Attachments\AttachmentMessage;
+use OCA\Mcp\Modules\Talk\Access\Conversation;
+use OCA\Mcp\Modules\Talk\Access\ConversationAccessException;
+use OCA\Mcp\Modules\Talk\Reading\ConversationReader;
+use OCA\Mcp\Modules\Talk\Access\ConversationResolver;
+use OCA\Mcp\Modules\Talk\Attachments\AttachmentPublisher as ConversationWriter;
+use OCA\Mcp\Modules\Talk\Attachments\FileAccessException;
+use OCA\Mcp\Modules\Talk\Attachments\FileSharer;
+use OCA\Mcp\Modules\Talk\Attachments\UserFileResolver;
+use OCA\Mcp\Modules\Talk\Attachments\QuotePlan as WritePreview;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Comments\IComment;
 use OCP\IUserManager;
@@ -57,7 +56,7 @@ final class TalkAttachmentParityContractTest extends TestCase {
     /** @var list<string> messages the chat manager was asked to publish */
     private array $published = [];
     /** The Files scope step; null is a user without a Files scope. */
-    private ?\OCA\Mcp\Tools\Common\FileReferenceScope $scope = null;
+    private ?\OCA\Mcp\Platform\FileAccess\References\FileReferenceScope $scope = null;
 
     /**
      * @return array<string, array{list<string>}> paths at which the participant's tree holds the shared file
@@ -122,7 +121,7 @@ final class TalkAttachmentParityContractTest extends TestCase {
         return new Conversation(new TalkParityRoomStub('room1'), new TalkParityParticipantStub());
     }
 
-    private function talkServices(array $history = []): TalkServices {
+    private function chat(array $history = []): object {
         $chat = $this->createMock(TalkParityChat::class);
         $chat->method('getHistory')->willReturn($history);
         $chat->method('addSystemMessage')->willReturnCallback(function ($room, $participant, $actorType, $actorId, string $message): IComment {
@@ -131,10 +130,7 @@ final class TalkAttachmentParityContractTest extends TestCase {
             $comment->method('getId')->willReturn('77');
             return $comment;
         });
-        $services = $this->createMock(TalkServices::class);
-        $services->method('chatManager')->willReturn($chat);
-        $services->method('conversationConstants')->willReturn(['actorUsers' => 'users']);
-        return $services;
+        return $chat;
     }
 
     private function access(IShareManager $shares): AttachmentAccess {
@@ -144,16 +140,11 @@ final class TalkAttachmentParityContractTest extends TestCase {
     private function writer(IShareManager $shares): ConversationWriter {
         $time = $this->createMock(ITimeFactory::class);
         $time->method('getDateTime')->willReturn(new DateTime('2026-10-15 12:00:00'));
-        return new ConversationWriter($this->talkServices(), $time, new AttachmentMessage(), $this->access($shares));
+        return new ConversationWriter(fn () => $this->chat(), static fn () => ['actorUsers' => 'users'], $time, new AttachmentMessage(), $this->access($shares));
     }
 
     private function preview(IShareManager $shares): WritePreview {
-        return new WritePreview(
-            $this->writer($shares),
-            $this->createMock(FileSharer::class),
-            $this->access($shares),
-            new ActorNames($this->createMock(IUserManager::class)),
-        );
+        return new WritePreview($this->access($shares));
     }
 
     private function readAttachmentId(IShareManager $shares, int $share): ?int {
@@ -167,7 +158,7 @@ final class TalkAttachmentParityContractTest extends TestCase {
         $comment->method('getCreationDateTime')->willReturn(new DateTimeImmutable('@1700000000'));
         $resolver = $this->createMock(ConversationResolver::class);
         $resolver->method('resolveForReading')->willReturn($this->conversation());
-        $reader = new ConversationReader($this->talkServices([$comment]), $resolver, new ActorNames($this->createMock(IUserManager::class)), $this->filter($shares));
+        $reader = new ConversationReader(static fn () => throw new \LogicException('Unused manager'), static fn () => throw new \LogicException('Unused participants'), fn () => $this->chat([$comment]), $resolver, new ActorNames($this->createMock(IUserManager::class)), $this->filter($shares));
         return $reader->readMessages('alice', 'room1', 10)[0]['attachmentId'];
     }
 
@@ -262,7 +253,7 @@ final class TalkAttachmentParityContractTest extends TestCase {
     public function testAFileOnlyOutsideTheFilesScopeAnswersAsAMissingAttachment(): void {
         $this->given(['/alice/files/Docs/plan.pdf']);
         $selected = [(string)$this->caller->nodes['/alice/files/Secret']['id']];
-        $this->scope = new \OCA\Mcp\Service\Scope\FilesReferenceScope(\OCA\Mcp\Tests\Unit\Service\Scope\FilesScopes::over(
+        $this->scope = new \OCA\Mcp\Access\ResourceScope\FilesReferenceScope(\OCA\Mcp\Tests\Support\Access\ResourceScope\FilesScopes::over(
             $this, $this->guard, $this->caller->filesystemRoot(), static fn (): array => $selected));
         $shares = $this->shares();
 
@@ -284,7 +275,7 @@ final class TalkAttachmentParityContractTest extends TestCase {
         self::assertSame([], $this->published, 'nothing is published');
 
         $selected = [(string)$this->caller->nodes['/alice/files/Docs']['id']];
-        $this->scope = new \OCA\Mcp\Service\Scope\FilesReferenceScope(\OCA\Mcp\Tests\Unit\Service\Scope\FilesScopes::over(
+        $this->scope = new \OCA\Mcp\Access\ResourceScope\FilesReferenceScope(\OCA\Mcp\Tests\Support\Access\ResourceScope\FilesScopes::over(
             $this, $this->guard, $this->caller->filesystemRoot(), static fn (): array => $selected));
         self::assertSame(self::SHARE, $this->readAttachmentId($shares, self::SHARE), 'inside the scope it reads as before');
     }
@@ -295,26 +286,30 @@ final class TalkAttachmentParityContractTest extends TestCase {
     }
 
     /** The Talk module over the real attach, quote, preview and read paths, the conversation resolved as writable. */
-    private function module(IShareManager $shares): \OCA\Mcp\Tools\Talk\TalkModule {
+    private function module(IShareManager $shares): \OCA\Mcp\Modules\Talk\TalkModule {
         $resolver = $this->createMock(ConversationResolver::class);
         $resolver->method('resolveForWriting')->willReturn($this->conversation());
         $resolver->method('resolveForReading')->willReturn($this->conversation());
         $files = new UserFileResolver($this->caller->filesystemRoot(), $this->guard, $this->filter($shares));
-        $sharer = new FileSharer($shares, $files, $this->writer($shares));
-        $preview = new WritePreview($this->writer($shares), $sharer, $this->access($shares), new ActorNames($this->createMock(IUserManager::class)));
-        return new \OCA\Mcp\Tools\Talk\TalkModule($this->talkServices(), new ConversationReader($this->talkServices(), $resolver,
-            new ActorNames($this->createMock(IUserManager::class)), $this->filter($shares)), $resolver, $this->writer($shares), $sharer, $preview,
-            $this->createMock(\OCA\Mcp\Tools\Talk\UserConversationResolver::class), $this->createMock(\OCA\Mcp\Tools\Talk\GroupCreator::class),
-            $this->createMock(\OCA\Mcp\Tools\Talk\ReferenceLinker::class), $this->createMock(\Psr\Log\LoggerInterface::class));
+        $sharer = new FileSharer($shares, $files, $this->createMock(\OCA\Mcp\Modules\Talk\Messaging\MessageSender::class));
+        return \OCA\Mcp\Tests\Support\Talk\TalkModuleFixtures::create([
+            ConversationResolver::class => $resolver,
+            ConversationWriter::class => $this->writer($shares),
+            AttachmentAccess::class => $this->access($shares),
+            FileSharer::class => $sharer,
+            ConversationReader::class => new ConversationReader(static fn () => throw new \LogicException('Unused manager'),
+                static fn () => throw new \LogicException('Unused participants'), fn () => $this->chat(), $resolver,
+                new ActorNames($this->createMock(IUserManager::class)), $this->filter($shares)),
+        ], $this->createMock(\Psr\Log\LoggerInterface::class));
     }
 
     /** @return string what the client gets: the endpoint's 503, or the tool's own answer */
     private static function answer(callable $run): string {
         try {
             return json_encode($run());
-        } catch (\OCA\Mcp\Service\Policy\PolicyUnavailable) {
+        } catch (\OCA\Mcp\Access\Policy\PolicyUnavailable) {
             return '503';
-        } catch (\OCA\Mcp\Tools\ToolFailure $e) {
+        } catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
             return 'refused: ' . $e->getMessage();
         }
     }
@@ -334,7 +329,7 @@ final class TalkAttachmentParityContractTest extends TestCase {
         }
         $readable = true;
         $selected = [(string)$this->caller->addFolder('/alice/files/Projects')];
-        $this->scope = new \OCA\Mcp\Service\Scope\FilesReferenceScope(\OCA\Mcp\Tests\Unit\Service\Scope\FilesScopes::over(
+        $this->scope = new \OCA\Mcp\Access\ResourceScope\FilesReferenceScope(\OCA\Mcp\Tests\Support\Access\ResourceScope\FilesScopes::over(
             $this, $this->guard, $this->caller->filesystemRoot(), static function () use (&$readable, $selected): array|false {
                 return $readable ? $selected : false;
             }));

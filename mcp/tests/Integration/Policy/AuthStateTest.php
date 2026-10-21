@@ -11,7 +11,8 @@ use OCA\Mcp\Db\GroupLifeMapper;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\RecheckMapper;
 use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
+use OCA\Mcp\Access\Policy\DecimalCounter;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\Server;
 use RuntimeException;
@@ -39,7 +40,7 @@ final class AuthStateTest extends IntegrationTestCase {
         }
         $qb = $db->getQueryBuilder();
         $qb->delete('mcp_group_life')->where($qb->expr()->eq('group_key', $qb->createNamedParameter(IdentityKey::group($this->gid))))->executeStatement();
-        Server::get(OAuthStore::class)->deleteUpToGeneration($this->uid, \OCA\Mcp\Service\Policy\DecimalCounter::MAX);
+        Server::get(OAuthStore::class)->deleteUpToGeneration($this->uid, \OCA\Mcp\Access\Policy\DecimalCounter::MAX);
         parent::tearDown();
     }
 
@@ -72,7 +73,7 @@ final class AuthStateTest extends IntegrationTestCase {
     }
 
     public function testGenerationsCausesAndLifecycleCommitOrRollBackWithTheWriter(): void {
-        $writer = Server::get(PolicyWriter::class);
+        $writer = Server::get(PolicyTransaction::class);
         $users = Server::get(AuthUsersMapper::class);
         $recheck = Server::get(RecheckMapper::class);
         $life = Server::get(GroupLifeMapper::class);

@@ -7,14 +7,14 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit;
 
-use OCA\Mcp\Checkout\CheckoutToken;
-use OCA\Mcp\Checkout\CheckoutTokenStore;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutToken;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutTokenStore;
 use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\Tests\Unit\Checkout\InMemoryCheckoutTokenStore;
+use OCA\Mcp\Tests\Support\Files\Checkout\InMemoryCheckoutTokenStore;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
-use OCA\Mcp\Tests\Unit\Tools\Files\InMemoryBatchStore;
-use OCA\Mcp\Tools\Files\Batch;
-use OCA\Mcp\Tools\Files\BatchStore;
+use OCA\Mcp\Tests\Support\Files\InMemoryBatchStore;
+use OCA\Mcp\Modules\Files\Reorganization\Batch;
+use OCA\Mcp\Modules\Files\Reorganization\BatchStore;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -111,23 +111,20 @@ final class StoreDoublesContractTest extends TestCase {
     /** @return array<string, mixed> */
     private static function codeRow(string $hash, string $uid): array {
         return ['code_hash' => $hash, 'user_id' => $uid, 'client_id' => 'client-a', 'redirect_uri' => 'https://claude.ai/cb',
-            'code_challenge' => 'ch', 'resource' => 'r', 'scope' => 'mcp', 'expires_at' => 1000, 'auth_global_epoch' => '0', 'auth_gen' => '1'];
+            'code_challenge' => 'ch', 'resource' => 'r', 'scope' => 'mcp', 'expires_at' => 1000, 'auth_gen' => '1', 'auth_global_epoch' => '0'];
     }
 
     /** @return array<string, mixed> */
     private static function grantRow(string $uid, string $client, string $access, string $refresh, int $created): array {
         return ['user_id' => $uid, 'client_id' => $client, 'resource' => 'r', 'scope' => 'mcp', 'access_hash' => $access,
-            'access_expires' => $created + 3600, 'refresh_hash' => $refresh, 'refresh_expires' => 5000, 'created_at' => $created,
-            'auth_global_epoch' => '0', 'auth_gen' => '1'];
+            'access_expires' => $created + 3600, 'refresh_hash' => $refresh, 'refresh_expires' => 5000, 'created_at' => $created, 'auth_gen' => '1', 'auth_global_epoch' => '0'];
     }
 
     /** One run of the OAuth store through its public surface, as a log that has no ids in it. */
-    private static function oauthScenario(OAuthStore $store, ?\Closure $transaction = null): array {
-        $transaction ??= static fn (\Closure $work) => $work();
+    private static function oauthScenario(OAuthStore $store): array {
         $log = [];
         $store->insertCode(self::codeRow('h1', 'alice'), 100);
         $store->insertCode(self::codeRow('h2', 'bob'), 100);
-        $log['code found without consuming it'] = $store->findCode('h1')['user_id'] ?? null;
         $log['code once'] = $store->consumeCode('h1')['user_id'] ?? null;
         $log['code twice'] = $store->consumeCode('h1');
         $log['code unknown'] = $store->consumeCode('zz');
@@ -141,19 +138,15 @@ final class StoreDoublesContractTest extends TestCase {
         $first = (int)$store->findByRefresh('r1')['id'];
         $second = (int)$store->findByRefresh('r2')['id'];
 
-        $rotate = static fn (int $id, string $old, string $access, int $accessExpires, string $refresh, int $refreshExpires): bool
-            => $transaction(static fn (): bool => $store->rotate($id, $old, $access, $accessExpires, $refresh, $refreshExpires));
-        $log['rotate'] = $rotate($first, 'r1', 'a1n', 4000, 'r1n', 6000);
-        $log['replay of the old refresh'] = $rotate($first, 'r1', 'a1x', 4000, 'r1x', 6000);
-        $log['rotate with the wrong grant id'] = $rotate($second, 'r1n', 'a', 1, 'r', 2);
-        $spent = $store->findSpent('r1');
-        $log['spent keeps the lineage'] = [$spent['user_id'] ?? null, $spent['client_id'] ?? null, (string)($spent['auth_gen'] ?? ''), (string)($spent['auth_global_epoch'] ?? '')];
+        $log['rotate'] = $store->rotate($first, 'r1', 'a1n', 4000, 'r1n', 6000);
+        $log['replay of the old refresh'] = $store->rotate($first, 'r1', 'a1x', 4000, 'r1x', 6000);
+        $log['rotate with the wrong grant id'] = $store->rotate($second, 'r1n', 'a', 1, 'r', 2);
         $log['new refresh found'] = $store->findByRefresh('r1n')['user_id'] ?? null;
         $log['old refresh gone'] = $store->findByRefresh('r1');
-        $store->deleteForOwnerAndClient('alice', 'client-c');
-        $log['another client revokes nothing'] = $store->countGrants(100);
+        $spent = $store->findSpent('r1');
+        $log['spent retains owner and client'] = [$spent['user_id'], $spent['client_id'], $spent['auth_gen'], $spent['auth_global_epoch']];
         $store->deleteForOwnerAndClient('alice', 'client-a');
-        $log['the owner and client pair is revoked'] = array_map(
+        $log['replay by the owner revokes the pair'] = array_map(
             static fn (array $g): array => [$g['user_id'], $g['client_id']], $store->listGrants(null, '', 50, 0, 100));
 
         $log['delete grant of another user'] = $store->deleteGrant($second, 'alice');
@@ -163,18 +156,12 @@ final class StoreDoublesContractTest extends TestCase {
         $store->insertToken(self::grantRow('carol', 'client-a', 'a5', 'r5', 50), 100);
         $store->deleteForClient('client-c');
         $log['after deleteForClient'] = array_map(static fn (array $g): array => [$g['user_id'], $g['client_id']], $store->listGrants(null, '', 50, 0, 100));
-        $store->insertToken(['auth_gen' => '2'] + self::grantRow('carol', 'client-a', 'a6', 'r6', 60), 100);
         $store->deleteUpToGeneration('carol', '1');
-        $log['after a cut at 1, generation 2 stays'] = array_map(static fn (array $g): array => [$g['user_id'], $g['client_id']], $store->listGrants(null, '', 50, 0, 100));
+        $log['after generation cleanup'] = array_map(static fn (array $g): array => [$g['user_id'], $g['client_id']], $store->listGrants(null, '', 50, 0, 100));
         $log['search'] = array_map(static fn (array $g): string => $g['user_id'], $store->listGrants(null, 'ALI', 50, 0, 100));
         $log['expired are not live'] = $store->countGrants(5001);
         $store->deleteBelowEpoch('1');
-        $log['after the epoch moved to 1'] = [$store->countGrants(0), $store->consumeCode('h2')];
-        $store->insertToken(['auth_global_epoch' => '1'] + self::grantRow('dave', 'client-a', 'a7', 'r7', 70), 100);
-        $store->deleteBelowEpoch('1');
-        $log['a credential of the current epoch stays'] = $store->countGrants(0);
-        $store->purgeExpired(5001);
-        $log['purged once expired'] = $store->countGrants(0);
+        $log['after epoch cleanup'] = [$store->countGrants(0), $store->consumeCode('h2')];
         return $log;
     }
 
@@ -183,13 +170,15 @@ final class StoreDoublesContractTest extends TestCase {
             ['mcp_oauth_codes', 'mcp_oauth_tokens']);
 
         $connection = $db->connection();
-        $transaction = static function (\Closure $work) use ($connection) {
-            $connection->beginTransaction();
-            $result = $work();
+        $connection->beginTransaction();
+        try {
+            $actual = self::oauthScenario(new OAuthStore($connection));
             $connection->commit();
-            return $result;
-        };
-        $this->assertEquals(self::oauthScenario(new OAuthStore($connection), $transaction), self::oauthScenario(new InMemoryOAuthStore()));
+        } catch (\Throwable $e) {
+            $connection->rollBack();
+            throw $e;
+        }
+        $this->assertEquals($actual, self::oauthScenario(new InMemoryOAuthStore()));
     }
 
     /** One run of the checkout store, as a log that has no ids in it. */

@@ -13,7 +13,7 @@ use OCA\Mcp\OAuth\ClientResolver;
 use OCA\Mcp\OAuth\OAuthException;
 use OCA\Mcp\OAuth\ResourceUrl;
 use OCA\Mcp\OAuth\TokenService;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\RedirectResponse;
 use OCP\AppFramework\Http\TemplateResponse;
@@ -33,6 +33,7 @@ final class OAuthControllerFlowTest extends TestCase {
     /** @var array<string,mixed> */
     private array $stored = [];
     private bool $serviceOn = true;
+    private bool $clientsAvailable = true;
     private ?bool $eligible = true;
     private MockObject&GrantPolicy $policy;
     private MockObject&TokenService $tokens;
@@ -56,10 +57,10 @@ final class OAuthControllerFlowTest extends TestCase {
             $this->stored = [];
         });
         $resolver = $this->createMock(ClientResolver::class);
-        $resolver->method('resolve')->willReturn(new ClientMetadata('https://claude.ai/c', 'Claude', ['https://claude.ai/cb']));
+        $resolver->method('resolve')->willReturnCallback(fn () => $this->clientsAvailable ? new ClientMetadata('https://claude.ai/c', 'Claude', ['https://claude.ai/cb']) : throw new \OCA\Mcp\Access\Policy\PolicyUnavailable());
         $this->policy = $this->createMock(GrantPolicy::class);
         $this->policy->method('globalEnabled')->willReturnCallback(fn () => $this->serviceOn);
-        $this->policy->method('eligible')->willReturnCallback(fn () => $this->eligible ?? throw new \OCA\Mcp\Service\Policy\PolicyUnavailable());
+        $this->policy->method('eligible')->willReturnCallback(fn () => $this->eligible ?? throw new \OCA\Mcp\Access\Policy\PolicyUnavailable());
         $this->tokens = $this->createMock(TokenService::class);
         $urls = $this->createMock(ResourceUrl::class);
         $urls->method('base')->willReturn(self::ISSUER . '/apps/mcp/');
@@ -69,10 +70,21 @@ final class OAuthControllerFlowTest extends TestCase {
         return new OAuthController('mcp', $request, $users, $session, $generator, new AuthorizationValidator($resolver), $this->tokens, $this->policy, $urls);
     }
 
+    public function testUnavailableClientAuthorityNeverOffersConsent(): void {
+        $controller = $this->controller();
+        $this->clientsAvailable = false;
+        $this->params = ['client_id' => 'nextcloud-mcp'];
+        $response = $controller->authorize();
+        $this->assertInstanceOf(TemplateResponse::class, $response);
+        $this->assertSame(503, $response->getStatus());
+        $this->assertTrue($response->getParams()['unavailable']);
+        $this->assertNull($response->getParams()['pending']);
+        $this->assertSame([], $this->stored);
+    }
+
     /** @return array<string,string> the headers, read without the server container OCP needs for getHeaders() */
     private function headers(JSONResponse $response): array {
         $property = new \ReflectionProperty(\OCP\AppFramework\Http\Response::class, 'headers');
-        $property->setAccessible(true);
         return $property->getValue($response);
     }
 
@@ -102,7 +114,7 @@ final class OAuthControllerFlowTest extends TestCase {
     public function testAPolicyStorageFailureIssuesNoCodeAndTellsTheClientToRetry(): void {
         $controller = $this->controller();
         $pending = $this->authorize($controller);
-        $this->tokens->method('consent')->willThrowException(new \OCA\Mcp\Service\Policy\PolicyUnavailable());
+        $this->tokens->method('consent')->willThrowException(new \OCA\Mcp\Access\Policy\PolicyUnavailable());
 
         $response = $controller->consent($pending, 'allow');
 
@@ -128,7 +140,7 @@ final class OAuthControllerFlowTest extends TestCase {
     public function testATokenRequestDuringAStorageFailureIsRetriable(): void {
         $controller = $this->controller();
         $this->params = ['grant_type' => 'refresh_token'];
-        $this->tokens->method('refresh')->willThrowException(new \OCA\Mcp\Service\Policy\PolicyUnavailable());
+        $this->tokens->method('refresh')->willThrowException(new \OCA\Mcp\Access\Policy\PolicyUnavailable());
         $this->tokens->expects($this->once())->method('housekeeping');
 
         $response = $controller->token();

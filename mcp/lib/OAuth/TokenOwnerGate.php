@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\OAuth;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use Closure;
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\OAuth\Revocation\CauseProcessor;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\OAuth\Revocation\CredentialCommands;
 use OCP\Config\IUserConfig;
 use OCP\IAppConfig;
 use OCP\IUser;
@@ -33,7 +33,7 @@ class TokenOwnerGate {
     public function __construct(
         private IUserManager $userManager,
         private GrantPolicy $policy,
-        private PolicyWriter $writer,
+        private CredentialCommands $credentials,
         private IUserConfig $userConfig,
         private IAppConfig $appConfig,
         private LoggerInterface $logger,
@@ -79,7 +79,7 @@ class TokenOwnerGate {
     /**
      * The check of an issuance (consent, exchange, refresh), in the external phase of its writer command: the account
      * exists and is enabled, and GrantPolicy::admission() admits the user. The groups that admitted the user come
-     * back with their lifecycle gens, for PolicyWriter::holdLifecycles() under the mutex.
+     * back with their lifecycle gens, for LifecycleHolds::hold() under the mutex.
      *
      * @param string $uid the user a credential is issued to
      * @param bool $connection also require the personal connection (exchange, refresh); a consent sets it itself
@@ -120,7 +120,7 @@ class TokenOwnerGate {
      */
     public function revokeObserved(string $uid, string $observed): void {
         try {
-            $this->writer->revokeObserved($uid, $observed);
+            $this->credentials->revokeObserved($uid, $observed);
         } catch (Throwable $e) {
             $this->logger->warning('Cannot record the revocation of an unusable credential owner', ['app' => 'mcp', 'exception' => $e]);
         }

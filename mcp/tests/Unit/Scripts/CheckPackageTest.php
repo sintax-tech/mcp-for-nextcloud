@@ -48,6 +48,33 @@ final class CheckPackageTest extends TestCase {
         $this->assertSame([], $this->check($this->clean()));
     }
 
+    /** @return iterable<string, array{string}> */
+    public static function developmentEntries(): iterable {
+        foreach (['phpstan/symbols/Host.php', 'phpstan.neon', 'tests/ProbeTest.php',
+            'scripts/lint.php', '.cache/phpstan/cache.php', '.phpunit.cache/results',
+            'vendor/phpstan/phpstan/phpstan.phar', 'node_modules/esbuild/bin/esbuild', 'src/entries/admin.js',
+            'package.json', 'package-lock.json', '.node-version', '.npmrc', 'playwright.config.js',
+            'js/admin.js.map', 'js/admin-grants.js', 'js/admin-picker.js', 'js/admin-tabs.js', 'js/connections.js'] as $path) {
+            yield $path => ['mcp/' . $path];
+        }
+    }
+
+    #[DataProvider('developmentEntries')]
+    public function testDevelopmentFilesAreRejectedOutsideAndInsideVendor(string $path): void {
+        $problems = $this->check([...$this->clean(), self::file($path)]);
+        self::assertNotEmpty($problems, "Development file accepted: $path");
+        self::assertStringContainsString($path, implode('\n', $problems));
+    }
+
+    public function testBothFinalBundlesMustBeRegularFiles(): void {
+        foreach (['admin', 'personal'] as $name) {
+            $path = "mcp/js/$name.js";
+            $entries = array_values(array_filter($this->clean(), static fn (string $entry): bool => rtrim(substr($entry, 0, 100), "\0") !== $path));
+            self::assertContains("missing production script: $path", $this->check($entries));
+            self::assertContains("missing production script: $path", $this->check([...$entries, self::dir($path)]));
+        }
+    }
+
     /** Each license and attribution notice is mandatory, including original vendor licenses. */
     public function testMissingLegalFilesAreRejected(): void {
         foreach (PackageCheck::REQUIRED_LEGAL_FILES as $required) {
@@ -276,6 +303,17 @@ final class CheckPackageTest extends TestCase {
         }
     }
 
+    public function testUnsafeExtractionEntriesAreRejectedBeforeExtraction(): void {
+        foreach (['mcp/../outside', '/mcp/absolute', 'mcp//ambiguous', 'mcp/./ambiguous', 'mcp/back\\slash'] as $name) {
+            self::assertStringContainsString('unsafe archive path', implode("\n", $this->check([...$this->clean(), self::file($name)])), $name);
+        }
+        foreach (['1', '2', '3', '4', '6'] as $type) {
+            self::assertStringContainsString('unsafe archive type', implode("\n", $this->check([...$this->clean(), self::header('mcp/link', $type, 0)])), $type);
+        }
+        self::assertStringContainsString('duplicate archive destination', implode("\n", $this->check([...$this->clean(), self::file('mcp/js/admin.js')])));
+        self::assertStringContainsString('archive parent is a file', implode("\n", $this->check([...$this->clean(), self::file('mcp/block'), self::file('mcp/block/child')])));
+    }
+
     /** @return list<string> the raw tar blocks of a production-shaped package */
     private function clean(): array {
         return [
@@ -284,6 +322,7 @@ final class CheckPackageTest extends TestCase {
             self::file('mcp/appinfo/info.xml', '<info/>'),
             ...array_map(static fn (string $path): string => self::file($path, 'License or notice'), PackageCheck::REQUIRED_LEGAL_FILES),
             self::file('mcp/js/admin.js', 'x'),
+            self::file('mcp/js/personal.js', 'x'),
             self::file('mcp/css/admin.css', 'x'),
             self::dir('mcp/vendor'),
             self::file('mcp/vendor/autoload.php'),

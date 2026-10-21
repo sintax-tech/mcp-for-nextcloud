@@ -1,0 +1,61 @@
+{
+    "users": {
+        "content": [
+            {
+                "type": "text",
+                "text": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"0\",\n        \"displayName\": \"First\",\n        \"email\": \"zero@example.test\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"beta\",\n        \"displayName\": \"beta\",\n        \"email\": \"tab\\t@example.test\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"bad\",\n        \"displayName\": \"bad�\"\n    }\n]"
+            }
+        ]
+    },
+    "mixed": {
+        "content": [
+            {
+                "type": "text",
+                "text": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"0\",\n        \"displayName\": \"First\",\n        \"email\": \"zero@example.test\"\n    },\n    {\n        \"type\": \"group\",\n        \"id\": \"0\",\n        \"displayName\": \"\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"beta\",\n        \"displayName\": \"beta\",\n        \"email\": \"tab\\t@example.test\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"bad\",\n        \"displayName\": \"bad�\"\n    },\n    {\n        \"type\": \"group\",\n        \"id\": \"team\",\n        \"displayName\": \"team\"\n    }\n]"
+            }
+        ]
+    },
+    "capped": {
+        "content": [
+            {
+                "type": "text",
+                "text": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"0\",\n        \"displayName\": \"First\",\n        \"email\": \"zero@example.test\"\n    },\n    {\n        \"type\": \"group\",\n        \"id\": \"0\",\n        \"displayName\": \"\"\n    }\n]"
+            }
+        ]
+    },
+    "empty": {
+        "content": [
+            {
+                "type": "text",
+                "text": "[]"
+            }
+        ]
+    },
+    "failure_en": {
+        "content": [
+            {
+                "type": "text",
+                "text": "The search for people failed; try again."
+            }
+        ],
+        "isError": true
+    },
+    "failure_pt_BR": {
+        "content": [
+            {
+                "type": "text",
+                "text": "A busca de pessoas falhou; tente de novo."
+            }
+        ],
+        "isError": true
+    },
+    "failure_es": {
+        "content": [
+            {
+                "type": "text",
+                "text": "La búsqueda de personas falló; inténtelo de nuevo."
+            }
+        ],
+        "isError": true
+    }
+}

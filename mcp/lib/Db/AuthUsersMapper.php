@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Db;
 
 use LogicException;
-use OCA\Mcp\Service\Policy\DecimalCounter;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\DecimalCounter;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
 use UnexpectedValueException;

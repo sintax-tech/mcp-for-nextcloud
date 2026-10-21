@@ -11,10 +11,9 @@ use OCA\DAV\CalDAV\CalDavBackend;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\AccessInspector;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Inspection\AccessInspector;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Integration\Support\Http;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
@@ -140,7 +139,7 @@ final class InspectorTest extends ExclusionTestCase {
         // The harness installs the Calendar app, so the app gate passes; the calendar module asks for events and a
         // task-only calendar gives alice no native access to them.
         $this->assertSame(['reason' => AccessInspector::NO_NATIVE_ACCESS, 'gate' => 'native_acl'], $this->inspector()->calendar(self::ALICE, 'calendar', (string)$id, 'read'));
-        Server::get(PolicyWriter::class)->setResourceScope(Server::get(PolicyStateMapper::class)->state()['revision'], 'admin', self::ALICE, 'tasks', []);
+        Server::get(\OCA\Mcp\Access\ResourceScope\ResourceScopeWriter::class)->setResourceScope(Server::get(PolicyStateMapper::class)->state()['revision'], 'admin', self::ALICE, 'tasks', []);
         $this->assertSame(['reason' => AccessInspector::OUT_OF_SCOPE, 'gate' => 'resource_scope'], $this->inspector()->calendar(self::ALICE, 'tasks', (string)$id, 'read'));
     }
 

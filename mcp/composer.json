@@ -16,13 +16,121 @@
         "sabre/http": "5.1.12",
         "sabre/uri": "2.3.4",
         "sabre/xml": "2.2.11",
-        "symfony/console": "v6.4.41"
+        "symfony/console": "v6.4.41",
+        "phpstan/phpstan": "^2.1"
     },
     "autoload": {
-        "psr-4": { "OCA\\Mcp\\": "lib/" }
+        "psr-4": {
+            "OCA\\Mcp\\": "lib/"
+        }
     },
     "autoload-dev": {
-        "psr-4": { "OCA\\Mcp\\Tests\\": "tests/" }
+        "psr-4": {
+            "OCA\\Mcp\\Tests\\": "tests/"
+        }
     },
-    "config": { "optimize-autoloader": true, "platform": { "php": "8.2" } }
+    "config": {
+        "optimize-autoloader": true,
+        "platform": {
+            "php": "8.2"
+        }
+    },
+    "scripts": {
+        "test": [
+            "Composer\\Config::disableProcessTimeout",
+            "@assets:build @no_additional_args",
+            "@php -d memory_limit=1G -d post_max_size=1G -d upload_max_filesize=1G vendor/bin/phpunit --fail-on-empty-test-suite"
+        ],
+        "test:architecture": "@test tests/Architecture",
+        "test:api": "@test tests/Unit/Contract/NextcloudApi",
+        "lint": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php scripts/lint.php"
+        ],
+        "package": [
+            "Composer\\Config::disableProcessTimeout",
+            "sh scripts/package.sh @no_additional_args"
+        ],
+        "analyse:lib": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php vendor/bin/phpstan analyse --memory-limit=1G --no-progress --configuration=phpstan.neon @no_additional_args"
+        ],
+        "analyse:core": [
+            "Composer\\Config::disableProcessTimeout",
+            "@php vendor/bin/phpstan analyse --memory-limit=1G --no-progress --configuration=phpstan/core.neon @no_additional_args"
+        ],
+        "analyse": [
+            "@analyse:lib @no_additional_args",
+            "@analyse:core @no_additional_args"
+        ],
+        "check": [
+            "@composer validate --no-check-publish @no_additional_args",
+            "@docs:check @no_additional_args",
+            "@docs:translations @no_additional_args",
+            "@test:docs @no_additional_args",
+            "@test:clients:unit @no_additional_args",
+            "@lint @no_additional_args",
+            "@analyse @no_additional_args",
+            "@test @no_additional_args",
+            "@test:js @no_additional_args",
+            "@package @no_additional_args"
+        ],
+        "test:js": [
+            "Composer\\Config::disableProcessTimeout",
+            "@assets:build @no_additional_args",
+            "npm test @no_additional_args"
+        ],
+        "assets:build": [
+            "Composer\\Config::disableProcessTimeout",
+            "npm run build @no_additional_args"
+        ],
+        "docs:check": [
+            "Composer\\Config::disableProcessTimeout",
+            "node scripts/docs/cli.mjs check @no_additional_args"
+        ],
+        "docs:translations": [
+            "Composer\\Config::disableProcessTimeout",
+            "node scripts/docs/cli.mjs translations @no_additional_args"
+        ],
+        "test:docs": [
+            "Composer\\Config::disableProcessTimeout",
+            "node scripts/docs/cli.mjs test @no_additional_args"
+        ],
+        "test:integration": [
+            "Composer\\Config::disableProcessTimeout",
+            "sh tests/Integration/ci/run-local.sh"
+        ],
+        "test:clients": [
+            "Composer\\Config::disableProcessTimeout",
+            "node tests/ClientAcceptance/run.mjs"
+        ],
+        "test:clients:unit": [
+            "Composer\\Config::disableProcessTimeout",
+            "node --test tests/ClientAcceptance/*.test.mjs @no_additional_args"
+        ],
+        "test:clients:storage": [
+            "Composer\\Config::disableProcessTimeout",
+            "node tests/ClientAcceptance/storage-run.mjs"
+        ]
+    },
+    "scripts-descriptions": {
+        "test": "Run all tests, or pass PHPUnit arguments after --.",
+        "test:architecture": "Run architecture checks; accepts PHPUnit arguments.",
+        "test:api": "Run native API contracts and scanner tests; accepts PHPUnit arguments.",
+        "lint": "Check PHP syntax without executing source; accepts focused paths.",
+        "package": "Build and validate the production archive; extra arguments are ignored.",
+        "analyse:lib": "Analyze all production classes at level 0; extra arguments are ignored.",
+        "analyse:core": "Analyze the defined core at level 5; extra arguments are ignored.",
+        "analyse": "Run both fixed static analysis scopes; extra arguments are ignored.",
+        "check": "Validate, lint, analyze, run PHP and JavaScript tests, and package; extra arguments are ignored.",
+        "test:js": "Build assets and run the complete JavaScript suite; extra arguments are ignored.",
+        "assets:build": "Build both production JavaScript entries; extra arguments are ignored.",
+        "docs:check": "Validate all repository documentation, links and provenance; fixed scope.",
+        "docs:translations": "Report translation freshness; missing/stale are advisory, invalid provenance fails.",
+        "test:docs": "Run all documentation tooling tests; fail on empty discovery.",
+        "test:integration": "Run one pinned disposable native cell: -- [--plan] NC DB MODE; starts containers only without --plan.",
+        "test:clients": "Run private TLS/Inspector acceptance against an explicitly selected retained fixture; requires three absolute paths. No public exposure.",
+        "test:clients:unit": "Check the client acceptance runner safety boundaries without containers.",
+        "test:clients:storage": "Check pinned Inspector encrypted storage across issuers in isolated processes; requires its absolute installation path. No containers or network."
+    }
 }

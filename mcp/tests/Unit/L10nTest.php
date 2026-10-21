@@ -7,22 +7,21 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use PHPUnit\Framework\TestCase;
 
 /**
  * Keeps l10n/pt_BR.json in sync with the translatable strings of the app.
  *
- * Every file of templates/ and js/ is scanned for literal translation calls: $l->t('…')
+ * Every file of templates/, recursive src/ and generated js/ is scanned for literal translation calls: $l->t('…')
  * and $l->n('…', '…') in PHP templates, t('mcp', '…') and n('mcp', '…', '…') in JS.
  * The extracted set must equal the key set of l10n/pt_BR.json in both directions, so a
  * string added later (the admin matrix, for instance) fails until it is translated and a
  * key left behind fails until it is removed. l10n/pt_BR.js must carry the same keys,
  * because that is the file the browser actually loads.
  *
- * A call whose first argument is not a literal cannot be resolved from the source. While
- * one exists, the module and operation names of GrantPolicy::CATALOG (the dynamic values
- * of the admin grant table) are treated as used and therefore must be translated too.
+ * Module and operation IDs in GrantPolicy::CATALOG remain reserved translation keys.
+ * Check them explicitly rather than relying on a comment resembling a dynamic call.
  */
 final class L10nTest extends TestCase {
     /** App root: this file lives in tests/Unit, two levels below it. */
@@ -61,14 +60,14 @@ final class L10nTest extends TestCase {
         $this->assertSame(count($decoded['translations']), count($matches[0]), 'pt_BR.json must not repeat a key');
     }
 
-    /** Strings referenced by templates/ and js/ and keys of pt_BR.json must be the same set. */
+    /** Strings referenced by templates/, recursive src/ and generated js/ and keys of pt_BR.json must be the same set. */
     public function testCodeAndJsonKeysMatch(): void {
         $expected = $this->codeKeys();
         $actual = array_keys($this->translations()['translations']);
         $untranslated = array_values(array_diff($expected, $actual));
         $unused = array_values(array_diff($actual, $expected));
-        $this->assertSame([], $untranslated, 'strings used in templates/ or js/ without a pt_BR translation');
-        $this->assertSame([], $unused, 'pt_BR keys that templates/ and js/ no longer use');
+        $this->assertSame([], $untranslated, 'strings used in templates/, src/ or js/ without a pt_BR translation');
+        $this->assertSame([], $unused, 'pt_BR keys that templates/, recursive src/ and generated js/ no longer use');
     }
 
     /** The JS translation file is what OC.L10N loads, so it must mirror the JSON. */
@@ -122,29 +121,25 @@ final class L10nTest extends TestCase {
     }
 
     /**
-     * Collects the translation keys referenced by templates/ and js/.
+     * Collects the translation keys referenced by templates/, recursive src/ and generated js/.
      *
-     * @return list<string> literal source strings, plus the catalog names when a dynamic call exists
+     * @return list<string> literal source strings and the reserved catalog IDs
      */
     private function codeKeys(): array {
         $keys = [];
-        $dynamic = false;
-        foreach (['templates', 'js'] as $dir) {
-            foreach (glob($this->path($dir . '/*')) ?: [] as $file) {
+        foreach (['templates', 'src', 'js'] as $dir) {
+            foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->path($dir), \FilesystemIterator::SKIP_DOTS)) as $entry) {
+                $file = $entry->getPathname();
                 if (!is_file($file) || !in_array(pathinfo($file, PATHINFO_EXTENSION), ['php', 'js'], true)) {
                     continue;
                 }
                 $source = (string)file_get_contents($file);
-                $dynamic = $dynamic || $this->hasDynamicCall($source, $file);
                 foreach ($this->literalKeys($source, $file) as $key) {
                     $keys[] = $key;
                 }
             }
         }
-        if ($dynamic) {
-            $keys = array_merge($keys, $this->catalogKeys());
-        }
-        return array_values(array_unique(array_merge($keys, $this->libraryKeys())));
+        return array_values(array_unique(array_merge($keys, $this->libraryKeys(), $this->catalogKeys())));
     }
 
     /**
@@ -227,14 +222,6 @@ final class L10nTest extends TestCase {
             }
         }
         return $keys;
-    }
-
-    /** @return bool true when a translation call does not start with a quoted literal */
-    private function hasDynamicCall(string $source, string $file): bool {
-        $pattern = str_ends_with($file, '.php')
-            ? '/\$l->[tn]\s*\((?!\s*[\'"])/s'
-            : '/(?<![A-Za-z0-9_$.])[tn]\s*\(\s*([\'"])mcp\1\s*,(?!\s*[\'"])/s';
-        return (bool)preg_match($pattern, $source);
     }
 
     /**

@@ -8,12 +8,12 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Admin;
 
 use OCA\Mcp\Controller\GrantsController;
-use OCA\Mcp\Service\Policy\GroupGrantsService;
-use OCA\Mcp\Service\Policy\GroupSourceUntrusted;
-use OCA\Mcp\Service\Policy\PolicyConflict;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\ReceiptExpired;
-use OCA\Mcp\Service\Policy\ReceiptNotFound;
+use OCA\Mcp\Access\Grants\Groups\GroupGrantsService;
+use OCA\Mcp\Access\Grants\Groups\GroupSourceUntrusted;
+use OCA\Mcp\Access\Policy\Transactions\PolicyConflict;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\Receipts\ReceiptExpired;
+use OCA\Mcp\Access\Policy\Receipts\ReceiptNotFound;
 use OCP\IRequest;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -44,8 +44,8 @@ final class GroupGrantsControllerTest extends TestCase {
         $session = $this->createMock(\OCP\IUserSession::class);
         $session->method('getUser')->willReturn($user);
         return new GrantsController('mcp', $request, $this->fx->matrix(), $this->fx->policy, $this->fx->userManager(),
-            $this->fx->config->mock($this), $this->fx->logsAccess(), $this->fx->writer(), $this->fx->state(),
-            $session, $this->groups, $this->fx->clients());
+            $this->fx->config->mock($this), $this->fx->logsAccess(), $this->fx->services()->grants, $this->fx->services()->service, $this->fx->services()->undo, $this->fx->state(),
+            $session, $this->groups, $this->fx->oauth, $this->fx->oauthClients());
     }
 
     private function revision(): string {

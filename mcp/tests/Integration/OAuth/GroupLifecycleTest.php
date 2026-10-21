@@ -13,13 +13,15 @@ use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\RecheckMapper;
 use OCA\Mcp\Listener\GroupLifecycleListener;
-use OCA\Mcp\OAuth\CredentialGeneration;
+use OCA\Mcp\OAuth\Revocation\CredentialGeneration;
 use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\OAuth\TokenHasher;
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\GroupLifecycle;
-use OCA\Mcp\Service\Policy\PolicyResolver;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\OAuth\Revocation\CauseProcessor;
+use OCA\Mcp\Access\Grants\Groups\GroupLifecycle;
+use OCA\Mcp\Access\Policy\Resolution\PolicyResolver;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
+use OCA\Mcp\Access\Policy\Transactions\PolicyAttempt;
+use OCA\Mcp\Access\Policy\DecimalCounter;
 use OCA\Mcp\Tests\Integration\Support\EventProbe;
 use OCA\Mcp\Tests\Integration\Support\PostgresQueryLog;
 use OCP\Config\IUserConfig;
@@ -102,7 +104,8 @@ final class GroupLifecycleTest extends OAuthAccountTestCase {
     private function save(string $gid): string {
         $db = $this->official();
         $gen = bin2hex(random_bytes(16));
-        Server::get(PolicyWriter::class)->runInternal([], fn () => null, function ($snapshot, array $current) use ($db, $gid, $gen): bool {
+        Server::get(PolicyTransaction::class)->runInternal([], fn () => null, function ($snapshot, PolicyAttempt $attempt) use ($db, $gid, $gen): bool {
+            $current = $attempt->state();
             $qb = $db->getQueryBuilder();
             $qb->delete('mcp_group_grants')->where($qb->expr()->eq('group_key', $qb->createNamedParameter(IdentityKey::group($gid))))->executeStatement();
             $qb = $db->getQueryBuilder();
@@ -111,7 +114,7 @@ final class GroupLifecycleTest extends OAuthAccountTestCase {
                 ->setValue('group_id', $qb->createNamedParameter($gid))
                 ->setValue('module', $qb->createNamedParameter('_system'))
                 ->setValue('operation', $qb->createNamedParameter('eligible'))->executeStatement();
-            (new GroupLifeMapper($db))->put($gid, GroupLifeMapper::ACTIVE, $gen, PolicyWriter::next($current['revision']));
+            (new GroupLifeMapper($db))->put($gid, GroupLifeMapper::ACTIVE, $gen, DecimalCounter::increment($current['revision']));
             return true;
         });
         return $gen;
@@ -187,7 +190,7 @@ final class GroupLifecycleTest extends OAuthAccountTestCase {
         $this->assertSame($generations['issue_seq'], $generations['revoked_below']);
         $this->assertSame([], $this->causes());
         $this->assertFalse($this->live($tokens));
-        $this->assertSame(PolicyWriter::next(PolicyWriter::next($before['revision'])), $this->state()['revision'], 'purge and cut, one revision each');
+        $this->assertSame(DecimalCounter::increment(DecimalCounter::increment($before['revision'])), $this->state()['revision'], 'purge and cut, one revision each');
     }
 
     /** T6 (other source): a holder still eligible individually gets no cause and keeps its credential. */

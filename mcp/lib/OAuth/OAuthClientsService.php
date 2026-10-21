@@ -8,16 +8,16 @@ declare(strict_types=1);
 namespace OCA\Mcp\OAuth;
 
 use OCA\Mcp\Db\OAuthClientsMapper;
-use OCA\Mcp\Service\Policy\PolicyOutbox;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyConflict;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\Transactions\PolicyAttempt;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\Transactions\PolicyConflict;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
 use OCP\IConfig;
 
 /**
  * The administrator's OAuth client settings (allowed CIMD hosts, the native client, the self-hosted clients) as one
  * policy command (contracts §2.1.1, §2.3, §3.1): the page's expected revision is compared and the revision advanced by
- * the PolicyWriter, and everything below runs under the same global mutex that issuance (consent, exchange, refresh)
+ * the PolicyTransaction, and everything below runs under the same global mutex that issuance (consent, exchange, refresh)
  * takes, in one transaction:
  * - the stored clients are read there from the app's own table (OAuthClientsMapper, the only source of admission;
  *   never the AppConfig caches) and the request is validated against them (known ids, withdrawals), so a save made
@@ -31,7 +31,7 @@ use OCP\IConfig;
  */
 class OAuthClientsService {
     public function __construct(
-        private PolicyWriter $writer,
+        private PolicyTransaction $writer,
         private IConfig $config,
         private OAuthClientsMapper $clients,
         private OAuthStore $oauth,
@@ -49,7 +49,7 @@ class OAuthClientsService {
      */
     public function update(string $expectedRevision, ?array $hosts, ?bool $native, mixed $custom): bool {
         $result = $this->writer->runAdmin($expectedRevision, [], static fn (): null => null,
-            function ($snapshot, array $current, string $commandId, PolicyOutbox $outbox) use ($hosts, $native, $custom): bool {
+            function ($snapshot, PolicyAttempt $attempt) use ($hosts, $native, $custom): bool {
                 // Everything is validated, against the list read here, before anything is written.
                 $before = $custom === null ? [] : $this->read(fn (): array => CustomClient::clients($this->clients));
                 $next = $custom === null ? null : CustomClient::validate($custom, $before);
@@ -126,7 +126,7 @@ class OAuthClientsService {
         if (!$native) {
             // A consent page of the native client opened before this is never admitted again (its generation is older).
             try {
-                $gen = \OCA\Mcp\Service\Policy\DecimalCounter::increment($gen);
+                $gen = \OCA\Mcp\Access\Policy\DecimalCounter::increment($gen);
             } catch (\InvalidArgumentException $e) {
                 throw new PolicyUnavailable('OAuth client generation exhausted', previous: $e);
             }

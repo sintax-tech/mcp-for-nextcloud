@@ -7,12 +7,11 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Settings;
 
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Compat\AppEnablement;
-use OCA\Mcp\Service\ConnectionList;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\LogsAccess;
-use OCA\Mcp\Tools\Files\OcrSupport;
+use OCA\Mcp\Access\AppAvailability\AppEnablement;
+use OCA\Mcp\OAuth\Connections\ConnectionList;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Logs\LogsAccess;
+use OCA\Mcp\Modules\Files\Reading\OcrSupport;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IURLGenerator;
@@ -21,8 +20,8 @@ use OCP\Settings\ISettings;
 /**
  * Admin page in the app's own "MCP for Cloud" section, in blocks: status (endpoint, service switch, version,
  * user summary), OAuth clients, hidden files & tags, OCR, the users × permissions matrix, the groups that may read
- * the server log and the active connections. The matrix, OAuth clients, tags and log groups are loaded and saved by
- * js/admin-grants.js; the connections by js/connections.js.
+ * the server log and the active connections. The generated admin entry composes feature owners through
+ * src/admin/bootstrap.js, including the shared src/settings/connections.js.
  */
 class AdminSettings implements ISettings {
     /** Product name of each optional app with a minimum version, as the administrator knows it in the app list. */
@@ -39,22 +38,15 @@ class AdminSettings implements ISettings {
 
     /** @return TemplateResponse the rendered settings section */
     public function getForm(): TemplateResponse {
-        try {
-            // Eligible by an individual Allow or by a group that may grant it; connected needs both.
-            $eligible = count($this->policy->flaggedUsers(GrantPolicy::ELIGIBLE_KEY));
-            $connected = count($this->policy->connectedUsers());
-        } catch (PolicyUnavailable) {
-            // No total is better than a wrong one: the cards show a dash, never a fictitious zero.
-            $eligible = $connected = null;
-        }
+        $eligible = $this->policy->flaggedUsers(GrantPolicy::ELIGIBLE_KEY);
         return new TemplateResponse('mcp', 'admin', [
             'endpoint' => $this->urlGenerator->linkToRouteAbsolute('mcp.mcp.post'),
             'serviceEnabled' => $this->policy->globalEnabled(),
             'ocrActive' => $this->ocr->isActive(),
             'ocrUrl' => OcrSupport::APP_URL,
             'version' => $this->appManager->getAppVersion('mcp'),
-            'eligibleUsers' => $eligible,
-            'connectedUsers' => $connected,
+            'eligibleUsers' => count($eligible),
+            'connectedUsers' => count($this->policy->connectedUsers()),
             'activeConnections' => $this->connections->count(),
             'unsupportedApps' => $this->unsupportedApps(),
             'logsAvailable' => $this->logs->available(),

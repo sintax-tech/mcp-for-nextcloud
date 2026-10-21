@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Controller;
 
-use OCA\Mcp\Tools\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;

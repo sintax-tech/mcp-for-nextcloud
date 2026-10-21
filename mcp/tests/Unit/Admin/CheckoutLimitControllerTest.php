@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Admin;
 
-use OCA\Mcp\Checkout\CheckoutTokenStore;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutTokenStore;
 use OCA\Mcp\Controller\CheckoutLimitController;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\Files\CheckoutService;
+use OCA\Mcp\Modules\Files\Checkout\CheckoutService;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IRequest;

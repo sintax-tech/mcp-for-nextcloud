@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: 2026 MCP for Nextcloud contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+includes:
+    - common.neon
+parameters:
+    level: 5
+    paths:
+        - ../lib/Mcp/Tools/Tool.php
+        - ../lib/Mcp/Tools/WriteTool.php
+        - ../lib/Mcp/Tools/ToolModule.php
+        - ../lib/Mcp/Tools/RestrictedModule.php
+        - ../lib/Mcp/Tools/ToolContext.php
+        - ../lib/Mcp/Tools/ToolDefinition.php
+        - ../lib/Mcp/Tools/DavCollectionSchema.php
+        - ../lib/Mcp/Tools/Validation
+        - ../lib/Mcp/Tools/Results
+        - ../lib/Platform/Logging
+        - ../lib/Platform/Time
+        - ../lib/Access/Policy/DecimalCounter.php
+        - ../lib/Access/Policy/PolicyLimits.php
+        - ../lib/Access/Policy/Events/PolicyEventPayload.php
+        - ../lib/Access/Policy/Resolution/GrantResolution.php
+        - ../lib/Access/Policy/Resolution/EligibilityResolution.php
+        - ../lib/Access/Policy/Resolution/EffectiveResult.php
+        - ../lib/Access/ResourceScope/ScopeResolution.php
+        - ../lib/Access/ResourceScope/ScopeActivation.php
+        - ../lib/OAuth/Revocation/CredentialGeneration.php
+    tmpDir: ../.cache/phpstan/core

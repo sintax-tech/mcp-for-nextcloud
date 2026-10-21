@@ -10,9 +10,9 @@ namespace OCA\Mcp\Tests\Unit\Admin;
 use OCA\Mcp\Controller\GroupDirectoryController;
 use OCA\Mcp\Db\GroupGrantsMapper;
 use OCA\Mcp\Db\GroupLifeMapper;
-use OCA\Mcp\Service\GroupDirectory;
-use OCA\Mcp\Service\Policy\GroupSourceClassifier;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Grants\Groups\GroupDirectory;
+use OCA\Mcp\Access\Grants\Groups\GroupSourceClassifier;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Tests\Unit\ArrayGroupBackend;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
@@ -43,7 +43,7 @@ final class GroupDirectoryTest extends TestCase {
         $this->data->groupBackends = [new ArrayGroupBackend(fn () => $this->native, 'Database', function (string $gid) { ++$this->sourceReads; if ($gid === $this->failingGid) throw new \RuntimeException('Backend down'); }),
             new ArrayGroupBackend(fn () => $this->ldap, 'LDAP', function (string $gid) { ++$this->sourceReads; if ($gid === $this->failingGid) throw new \RuntimeException('Backend down'); })];
         $this->config = $this->data->mock($this);
-        $writer = InMemoryConfig::writer($this->config, new InMemoryOAuthStore());
+        $writer = InMemoryConfig::services($this->config, new InMemoryOAuthStore());
         $resolver = InMemoryConfig::resolver($this->config);
         $db = InMemoryConfig::groupDatabase($this->config)->connection();
         $grants = new GroupGrantsMapper($db);
@@ -184,7 +184,7 @@ final class GroupDirectoryTest extends TestCase {
         $this->assertSame(['overrides' => 1000, 'different' => 0], $counts['permissions']['_system']['eligible']);
         // Two reads for the group header, then two group/lifecycle SELECTs per block of 200. No scope SQL/member.
         $this->assertSame(12, $database->queryCount);
-        $this->assertSame(5 * (array_sum(array_map('count', \OCA\Mcp\Service\GrantPolicy::CATALOG)) + 2), $this->data->batchCalls);
+        $this->assertSame(5 * (array_sum(array_map('count', \OCA\Mcp\Access\Grants\GrantPolicy::CATALOG)) + 2), $this->data->batchCalls);
         fwrite(STDERR, sprintf("T17 group 1000: %d app SELECTs, %d official config batch calls, %.3f ms (SQLite memory + directory/config doubles; state reads mocked)\n",
             $database->queryCount, $this->data->batchCalls, $ms));
     }

@@ -4,9 +4,9 @@
 #
 # Disposable Nextcloud instance for the integration suite (.github/workflows/integration.yml).
 # It starts containers, so it refuses to run anywhere but a GitHub Actions runner or an explicit local run
-# (MCP_IT_LOCAL=1, which only run-local.sh sets: it brings the container engine up and always takes it down again).
+# (MCP_IT_LOCAL=1, set by run-local.sh, which only cleans up its own labeled resources).
 #
-# Usage: harness.sh <packages|tools|start-db|start-nextcloud|install-app|fixtures|provision|report|test|collect>
+# Usage: harness.sh <packages|tools|start-db|start-nextcloud|install-app|fixtures|provision|report|test|recovery|collect>
 # Cell, from the workflow matrix:
 #   MCP_IT_NC          Nextcloud major (32..35)
 #   MCP_IT_NC_IMAGE    official Nextcloud Apache image, pinned as tag@digest
@@ -36,13 +36,19 @@ TOOLS_DIR="$WORK/tools"
 PG_LOG_DIR="$WORK/pglog"
 ARTIFACTS="$WORK/artifacts"
 # Names of this run's network and containers; run-local.sh gives each run its own so that two runs on one engine never touch each other.
-NET=${MCP_IT_NET:-mcp-it}
-NC=${MCP_IT_NC_NAME:-mcp-it-nextcloud}
-DB=${MCP_IT_DB_NAME:-mcp-it-db}
-# Throwaway credentials of a throwaway instance; nothing here is a secret.
-DB_PASSWORD=mcp-it-db-password
-DB_ROOT_PASSWORD=mcp-it-db-root-password
-ADMIN_PASSWORD=mcp-it-admin-password
+NET=${MCP_IT_NET:?}
+NC=${MCP_IT_NC_NAME:?}
+DB=${MCP_IT_DB_NAME:?}
+: "${MCP_IT_RUN_ID:?}" "${MCP_IT_NC_IMAGE:?}"
+# Random disposable credentials remain outside the artifact directory and are redacted before output.
+mkdir -p "$WORK"
+if [ ! -f "$WORK/credentials" ]; then
+    (umask 077; for key in DB_PASSWORD DB_ROOT_PASSWORD ADMIN_PASSWORD; do
+        printf '%s=%s\n' "$key" "$(openssl rand -hex 24)"
+    done > "$WORK/credentials")
+fi
+# shellcheck source=/dev/null
+. "$WORK/credentials"
 # Real mounts of the exclusion proof (issue #4, A4): the groupfolder and the three local external storages the
 # tests rely on (tests/Integration/Exclusion/ExclusionTestCase.php). Both external aliases point at the same directory; the
 # narrow one at a subdirectory of it.
@@ -52,6 +58,12 @@ PHPUNIT_VERSION=10.5.65
 PHPUNIT_SHA256=ce85745a2ec7d8e536621ebed69dfa36a8d504daf73be6750e93bb8c5b088835
 
 mkdir -p "$WORK" "$TOOLS_DIR" "$ARTIFACTS"
+chmod 0755 "$TOOLS_DIR"
+cp "$RUNNER_TEMP/plan.json" "$ARTIFACTS/plan.json"
+git -C "$REPO_ROOT" rev-parse HEAD > "$ARTIFACTS/source-commit.txt"
+if [ -n "${MCP_IT_PHPUNIT_ARGS:-}" ]; then
+    printf 'Filtered diagnostic run only: %s\n' "$MCP_IT_PHPUNIT_ARGS" > "$ARTIFACTS/diagnostic.txt"
+fi
 
 occ() {
     docker exec -u www-data "$NC" php /var/www/html/occ "$@"
@@ -78,17 +90,27 @@ info_version() {
 
 # Builds the branch package, and the baseline package for the upgrade mode, each with its own official script.
 cmd_packages() {
+    (cd "$REPO_ROOT/mcp" && npm ci --ignore-scripts)
     build_package "$REPO_ROOT/mcp" "$WORK/mcp-branch.tar.gz"
-    if [ "$MCP_IT_MODE" = upgrade ] || [ "$MCP_IT_MODE" = baseline ]; then
-        git -C "$REPO_ROOT" worktree add --detach "$WORK/baseline" "$MCP_IT_BASELINE"
+    if [ -n "$MCP_IT_BASELINE" ]; then
+        # Clone, never a linked worktree: the server's shared worktree registry is not modified.
+        git clone --no-hardlinks --no-checkout "$REPO_ROOT" "$WORK/baseline"
+        if ! git -C "$WORK/baseline" cat-file -e "$MCP_IT_BASELINE^{commit}"; then
+            git -C "$WORK/baseline" fetch https://github.com/sintax-tech/mcp-for-nextcloud.git "$MCP_IT_BASELINE"
+        fi
+        git -C "$WORK/baseline" checkout --detach "$MCP_IT_BASELINE"
+        if [ "$MCP_IT_MODE" = upgrade-local ]; then
+            (cd "$WORK/baseline/mcp" && npm ci --ignore-scripts)
+        fi
         build_package "$WORK/baseline/mcp" "$WORK/mcp-baseline.tar.gz"
     fi
+    sha256sum "$WORK"/mcp-*.tar.gz > "$ARTIFACTS/packages.sha256"
 }
 
 # build_package <app dir> <destination>: the script's last output line is the archive path. Its output goes through
 # a file, not a pipe, so a failing package.sh fails the step.
 build_package() {
-    (cd "$1" && sh scripts/package.sh) > "$WORK/package.out"
+    (cd "$1" && if [ "$1" = "$REPO_ROOT/mcp" ] || [ "$MCP_IT_MODE" = upgrade-local ]; then composer package; else sh scripts/package.sh; fi) > "$WORK/package.out"
     cat "$WORK/package.out"
     archive=$(tail -n 1 "$WORK/package.out")
     cp "$1/$archive" "$2"
@@ -98,13 +120,16 @@ build_package() {
 cmd_tools() {
     curl -fsSL -o "$TOOLS_DIR/phpunit.phar" "https://phar.phpunit.de/phpunit-$PHPUNIT_VERSION.phar"
     echo "$PHPUNIT_SHA256  $TOOLS_DIR/phpunit.phar" | sha256_check
+    chmod 0644 "$TOOLS_DIR/phpunit.phar"
 }
 
 cmd_start_db() {
-    docker network create "$NET" >/dev/null
+    subnet=$(php "$REPO_ROOT/mcp/tests/Integration/ci/network.php")
+    printf '%s\n' "$subnet" > "$ARTIFACTS/subnet.txt"
+    docker network create --subnet "$subnet" --label "mcp.integration.run=$MCP_IT_RUN_ID" "$NET" >/dev/null
     case "$MCP_IT_DB" in
         mariadb)
-            docker run -d --name "$DB" --network "$NET" \
+            docker run -d --label "mcp.integration.run=$MCP_IT_RUN_ID" --name "$DB" --network "$NET" \
                 -e MARIADB_ROOT_PASSWORD="$DB_ROOT_PASSWORD" -e MARIADB_DATABASE=nextcloud \
                 -e MARIADB_USER=nextcloud -e MARIADB_PASSWORD="$DB_PASSWORD" \
                 "$MCP_IT_DB_IMAGE" --transaction-isolation=READ-COMMITTED --log-bin=binlog --binlog-format=ROW >/dev/null
@@ -116,7 +141,7 @@ cmd_start_db() {
             # pid in each line, so a test can attribute statements to the caller's session (contracts §3.3.6, F5).
             mkdir -p "$PG_LOG_DIR"
             chmod 0777 "$PG_LOG_DIR"
-            docker run -d --name "$DB" --network "$NET" \
+            docker run -d --label "mcp.integration.run=$MCP_IT_RUN_ID" --name "$DB" --network "$NET" \
                 -e POSTGRES_DB=nextcloud -e POSTGRES_USER=nextcloud -e POSTGRES_PASSWORD="$DB_PASSWORD" \
                 -v "$PG_LOG_DIR:/var/log/mcp-it-pg" \
                 "$MCP_IT_DB_IMAGE" \
@@ -142,6 +167,14 @@ nextcloud_ready() {
 
 # The official image installs Nextcloud itself from these variables (docker-entrypoint.sh) and then starts Apache.
 cmd_start_nextcloud() {
+    # Copy only native test inputs; make that immutable snapshot readable by the container user.
+    mkdir -p "$WORK/test-source/mcp/tests/Support/Access/Policy"
+    cp -R "$REPO_ROOT/mcp/tests/Integration" "$WORK/test-source/mcp/tests/Integration"
+    cp "$REPO_ROOT/mcp/tests/Support/Access/Policy/PolicyServices.php" "$WORK/test-source/mcp/tests/Support/Access/Policy/"
+    find "$WORK/test-source" -type d -exec chmod 0755 {} +
+    find "$WORK/test-source" -type f -exec chmod 0644 {} +
+    tar -C "$WORK/test-source" -cf "$WORK/native-test-source.tar" .
+    sha256sum "$WORK/native-test-source.tar" > "$ARTIFACTS/test-source.sha256"
     set -- -e NEXTCLOUD_ADMIN_USER=admin -e NEXTCLOUD_ADMIN_PASSWORD="$ADMIN_PASSWORD"
     case "$MCP_IT_DB" in
         mariadb)
@@ -156,8 +189,8 @@ cmd_start_nextcloud() {
             set -- "$@" -e SQLITE_DATABASE=nextcloud
             ;;
     esac
-    docker run -d --name "$NC" --network "$NET" "$@" \
-        -v "$REPO_ROOT:/mcp-it-src:ro" -v "$TOOLS_DIR:/mcp-it-tools:ro" \
+    docker run -d --label "mcp.integration.run=$MCP_IT_RUN_ID" --name "$NC" --network "$NET" "$@" \
+        -v "$WORK/test-source:/mcp-it-src:ro" -v "$TOOLS_DIR:/mcp-it-tools:ro" \
         "$MCP_IT_NC_IMAGE" >/dev/null
     if ! wait_for "Nextcloud $MCP_IT_NC" 600 nextcloud_ready; then
         docker logs "$NC" >&2 || true
@@ -177,49 +210,59 @@ assert_installed_version() {
 
 # Installs through the server's own installer (app:enable runs the app's migrations); upgrade goes through occ upgrade.
 cmd_install_app() {
-    if [ "$MCP_IT_MODE" = upgrade ] || [ "$MCP_IT_MODE" = baseline ]; then
+    if [ -n "$MCP_IT_BASELINE" ]; then
         mkdir -p "$WORK/baseline-pkg"
         tar -xzf "$WORK/mcp-baseline.tar.gz" -C "$WORK/baseline-pkg"
         baseline_version=$(info_version "$WORK/baseline-pkg/mcp/appinfo/info.xml")
         docker cp "$WORK/mcp-baseline.tar.gz" "$NC:/tmp/mcp-baseline.tar.gz"
+        docker exec "$NC" chmod 0644 /tmp/mcp-baseline.tar.gz
         docker exec -u www-data "$NC" tar -xzf /tmp/mcp-baseline.tar.gz -C /var/www/html/custom_apps
         occ app:enable mcp
         assert_installed_version "$baseline_version"
-        occ migrations:status mcp || true
-        # Credentials issued by the baseline itself, checked after the upgrade (validation T12).
-        docker exec -u www-data "$NC" php /mcp-it-src/mcp/tests/Integration/ci/legacy-credentials.php /tmp/mcp-it-legacy.json
-        # Preferences the baseline writes through its own setters, and its answers for them (validation T12/T13).
-        docker exec -u www-data "$NC" php /mcp-it-src/mcp/tests/Integration/ci/legacy-policy.php seed /tmp/mcp-it-snapshot.json
+        if [ "$MCP_IT_MODE" != replace-upstream ] && [ "$MCP_IT_MODE" != upgrade-upstream ] && [ "$MCP_IT_MODE" != upgrade-upstream-111 ]; then
+            docker exec -u www-data "$NC" php /mcp-it-src/mcp/tests/Integration/ci/legacy-credentials.php /tmp/mcp-it-legacy.json
+            docker exec -u www-data -e MCP_IT_MODE="$MCP_IT_MODE" "$NC" php /mcp-it-src/mcp/tests/Integration/ci/legacy-policy.php seed /tmp/mcp-it-snapshot.json
+        else
+            docker exec -u www-data "$NC" php /mcp-it-src/mcp/tests/Integration/ci/replacement.php seed
+        fi
     fi
-    if [ "$MCP_IT_MODE" = baseline ]; then
-        # Diagnostic mode (local runs): the released baseline stays installed and is never upgraded.
-        echo "$baseline_version" > "$WORK/expected-version"
-        return 0
-    fi
-
     mkdir -p "$WORK/branch-pkg"
     tar -xzf "$WORK/mcp-branch.tar.gz" -C "$WORK/branch-pkg"
     expected=$(info_version "$WORK/branch-pkg/mcp/appinfo/info.xml")
-    if [ "$MCP_IT_MODE" = upgrade ]; then
-        # While the branch still carries the baseline version, the server would see nothing to upgrade and skip the
-        # pending migrations. This runner-only copy gets a higher version; the package itself is never changed.
-        if ! php -r 'exit(version_compare($argv[1], $argv[2], ">") ? 0 : 1);' "$expected" "$baseline_version"; then
-            expected="$baseline_version.1"
-            sed "s:<version>.*</version>:<version>$expected</version>:" "$WORK/branch-pkg/mcp/appinfo/info.xml" > "$WORK/info.xml.next"
-            mv "$WORK/info.xml.next" "$WORK/branch-pkg/mcp/appinfo/info.xml"
-            echo "Runner-only version bump of the branch copy to $expected so that occ upgrade runs its migrations"
+    if [ -n "${MCP_IT_QUALIFICATION_VERSION:-}" ]; then
+        [ "$MCP_IT_QUALIFICATION_VERSION" = 1.1.0 ] || { echo 'Only explicit 1.1.0 harness qualification is supported' >&2; exit 1; }
+        printf 'HARNESS QUALIFICATION ONLY: candidate copy %s -> %s; NOT final-artifact evidence\n' "$expected" "$MCP_IT_QUALIFICATION_VERSION" | tee "$ARTIFACTS/qualification.txt"
+        expected=$MCP_IT_QUALIFICATION_VERSION
+        sed "s:<version>.*</version>:<version>$expected</version>:" "$WORK/branch-pkg/mcp/appinfo/info.xml" > "$WORK/info.xml.next"
+        mv "$WORK/info.xml.next" "$WORK/branch-pkg/mcp/appinfo/info.xml"
+    fi
+    if [ -n "$MCP_IT_BASELINE" ]; then
+        if [ "$MCP_IT_MODE" = replace-upstream ]; then
+            [ "$expected" = "$baseline_version" ] || { echo 'Replacement requires identical declared versions' >&2; exit 1; }
+        else
+            # shellcheck disable=SC2016
+            php -r 'exit(version_compare($argv[1], $argv[2], ">") ? 0 : 1);' "$expected" "$baseline_version" || {
+                echo 'Upgrade needs a newer candidate version; explicit MCP_IT_QUALIFICATION_VERSION=1.1.0 is diagnostic only' >&2; exit 1;
+            }
         fi
+        occ maintenance:mode --on
         docker cp "$WORK/branch-pkg/mcp" "$NC:/tmp/mcp-next"
-        docker exec "$NC" sh -c 'mv /var/www/html/custom_apps/mcp /tmp/mcp-previous \
-            && mv /tmp/mcp-next /var/www/html/custom_apps/mcp && chown -R www-data:www-data /var/www/html/custom_apps/mcp'
-        occ upgrade
+        docker exec "$NC" sh -c 'mv /var/www/html/custom_apps/mcp /tmp/mcp-previous && mv /tmp/mcp-next /var/www/html/custom_apps/mcp && chown -R www-data:www-data /var/www/html/custom_apps/mcp'
+        if [ "$MCP_IT_MODE" != replace-upstream ]; then occ upgrade; fi
+        # A new Apache process removes old opcache/APCu without faking an upgrade.
+        docker restart "$NC" >/dev/null
+        wait_for 'Nextcloud after replacement' 180 nextcloud_ready
+        occ maintenance:mode --off
+        if [ "$MCP_IT_MODE" = replace-upstream ] || [ "$MCP_IT_MODE" = upgrade-upstream ] || [ "$MCP_IT_MODE" = upgrade-upstream-111 ]; then
+            docker exec -u www-data "$NC" php /mcp-it-src/mcp/tests/Integration/ci/replacement.php verify
+        fi
     else
-        docker cp "$WORK/mcp-branch.tar.gz" "$NC:/tmp/mcp-branch.tar.gz"
-        docker exec -u www-data "$NC" tar -xzf /tmp/mcp-branch.tar.gz -C /var/www/html/custom_apps
+        docker cp "$WORK/branch-pkg/mcp" "$NC:/tmp/mcp-new"
+        docker exec "$NC" sh -c 'mv /tmp/mcp-new /var/www/html/custom_apps/mcp && chown -R www-data:www-data /var/www/html/custom_apps/mcp'
         occ app:enable mcp
     fi
     assert_installed_version "$expected"
-    occ migrations:status mcp || true
+    docker exec -u www-data "$NC" php /mcp-it-src/mcp/tests/Integration/ci/schema.php > "$ARTIFACTS/migrations.json"
     echo "$expected" > "$WORK/expected-version"
 }
 
@@ -235,7 +278,7 @@ cmd_fixtures() {
     for uid in mcp-it-alice mcp-it-bob mcp-it-legacy; do
         docker exec -u www-data -e OC_PASS="$password" "$NC" php /var/www/html/occ user:add --password-from-env "$uid"
     done
-    if [ "$MCP_IT_MODE" = upgrade ]; then
+    if [ "$MCP_IT_MODE" = upgrade ] || [ "$MCP_IT_MODE" = upgrade-local ]; then
         # Owners of the snapshot the baseline wrote before the upgrade (Compat/SnapshotProbe::uids).
         for i in 0 1 2 3 4 5 6 7 8; do
             docker exec -u www-data -e OC_PASS="$password" "$NC" php /var/www/html/occ user:add --password-from-env "mcp-it-snap-$i"
@@ -265,6 +308,7 @@ unpack_release_app() {
     archive="$TOOLS_DIR/$app.tar.gz"
     curl -fsSL -o "$archive" "https://github.com/nextcloud-releases/$repo/releases/download/$tag/$app-$tag.tar.gz"
     echo "$sha  $archive" | sha256_check
+    chmod 0644 "$archive"
     docker exec -u www-data "$NC" tar -xzf "/mcp-it-tools/$app.tar.gz" -C /var/www/html/custom_apps
 }
 
@@ -374,6 +418,7 @@ cmd_provision() {
     done
     occ app:list --enabled >> "$log" 2>&1 || true
     cat "$log"
+    [ ! -s "$WORK/provision-failures" ] || { echo "Required app provisioning failed" >&2; return 1; }
 }
 
 db_version() {
@@ -434,7 +479,31 @@ cmd_test() {
     # MCP_IT_PHPUNIT_ARGS (local diagnostics only), e.g. "--filter SomeTest", is passed to PHPUnit as is.
     # shellcheck disable=SC2086
     docker exec -u www-data "$@" "$NC" php -d memory_limit=1G /mcp-it-tools/phpunit.phar \
-        -c /mcp-it-src/mcp/tests/Integration/phpunit.xml --log-junit /tmp/mcp-it-junit.xml ${MCP_IT_PHPUNIT_ARGS:-}
+        -c /mcp-it-src/mcp/tests/Integration/phpunit.xml --fail-on-empty-test-suite --log-junit /tmp/mcp-it-junit.xml ${MCP_IT_PHPUNIT_ARGS:-}
+}
+
+# One full coordinated restore rehearsal, isolated from the policy tests and never against a real installation.
+cmd_recovery() {
+    if [ "$MCP_IT_NC:$MCP_IT_DB:$MCP_IT_MODE" != 35:sqlite:fresh ]; then
+        echo 'Coordinated recovery is covered by the NC35/SQLite/fresh cell.'
+        return
+    fi
+    docker exec -u www-data "$NC" php /mcp-it-src/mcp/tests/Integration/ci/recovery.php seed
+    occ maintenance:mode --on
+    docker exec -u www-data "$NC" php /mcp-it-src/mcp/tests/Integration/ci/sqlite-copy.php backup
+    docker exec -u www-data "$NC" tar -cf /tmp/mcp-it-recovery-app.tar -C /var/www/html/custom_apps mcp
+    docker exec -u www-data "$NC" sh -c 'sha256sum /var/www/html/custom_apps/mcp/js/admin.js > /tmp/mcp-it-recovery-assets.sha256'
+    docker exec -u www-data "$NC" php /mcp-it-src/mcp/tests/Integration/ci/recovery.php cut
+    # All files in this owned throwaway container, including the credential-bearing backup, die with the run.
+    docker exec -u www-data "$NC" mv /var/www/html/custom_apps/mcp /tmp/mcp-it-recovery-displaced
+    docker exec -u www-data "$NC" tar -xf /tmp/mcp-it-recovery-app.tar -C /var/www/html/custom_apps
+    docker exec -u www-data "$NC" php /mcp-it-src/mcp/tests/Integration/ci/sqlite-copy.php restore
+    docker restart "$NC" >/dev/null
+    wait_for 'Nextcloud after coordinated recovery' 180 nextcloud_ready
+    docker exec -u www-data "$NC" sha256sum -c /tmp/mcp-it-recovery-assets.sha256
+    docker exec -u www-data "$NC" php /mcp-it-src/mcp/tests/Integration/ci/recovery.php close
+    occ maintenance:mode --off
+    docker exec -u www-data "$NC" php /mcp-it-src/mcp/tests/Integration/ci/recovery.php verify
 }
 
 # Best effort: gathers logs for the uploaded artifact even when an earlier step failed.
@@ -444,9 +513,12 @@ cmd_collect() {
     docker cp "$NC:/var/www/html/data/nextcloud.log" "$ARTIFACTS/nextcloud.log" 2>/dev/null || true
     docker cp "$NC:/tmp/mcp-it-junit.xml" "$ARTIFACTS/junit.xml" 2>/dev/null || true
     docker cp "$NC:/tmp/mcp-it-observations.txt" "$ARTIFACTS/observations.txt" 2>/dev/null || true
-    if [ -f "$PG_LOG_DIR/postgresql.log" ]; then
-        cp "$PG_LOG_DIR/postgresql.log" "$ARTIFACTS/postgresql.log"
-    fi
+    # Full SQL values stay private locally; query-order assertions and observations are in JUnit.
+    for log in "$ARTIFACTS"/*; do
+        [ -f "$log" ] || continue
+        php "$REPO_ROOT/mcp/tests/Integration/ci/redact.php" "$WORK/credentials" "$log" > "$log.redacted"
+        mv "$log.redacted" "$log"
+    done
 }
 
 case "${1:-}" in
@@ -459,9 +531,10 @@ case "${1:-}" in
     provision) cmd_provision ;;
     report) cmd_report ;;
     test) cmd_test ;;
+    recovery) cmd_recovery ;;
     collect) cmd_collect ;;
     *)
-        echo "Usage: $0 <packages|tools|start-db|start-nextcloud|install-app|fixtures|provision|report|test|collect>" >&2
+        echo "Usage: $0 <packages|tools|start-db|start-nextcloud|install-app|fixtures|provision|report|test|recovery|collect>" >&2
         exit 1
         ;;
 esac

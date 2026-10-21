@@ -178,17 +178,18 @@ final class ScopeSchemaTest extends TestCase {
         }
         sort($readers);
         $this->assertSame([
+            'Access/Grants/GrantMatrix.php',
+            'Access/Policy/Events/PolicyEventPayload.php',
+            'Access/Policy/Resolution/PolicyResolver.php',
+            'Access/ResourceScope/NativeResourceEnumerator.php',
+            'Access/ResourceScope/ResourceScopeWriter.php',
+            'Access/ResourceScope/ScopeCleanup.php',
+            'Access/ResourceScope/ScopeGuard.php',
+            'Access/ResourceScope/ScopeMutations.php',
             'Controller/MyScopeController.php',
             'Controller/ScopeController.php',
             'Db/ResourceScopeMapper.php',
             'Migration/Version001100Date20261015020000.php',
-            'Service/GrantMatrix.php',
-            'Service/Policy/PolicyEventPayload.php',
-            'Service/Policy/PolicyResolver.php',
-            'Service/Policy/PolicyWriter.php',
-            'Service/Policy/ScopeCleanup.php',
-            'Service/Scope/NativeResourceEnumerator.php',
-            'Service/Scope/ScopeGuard.php',
         ], $readers);
         $tables = array_values(array_filter($readers, static fn (string $file): bool
             => str_contains((string)file_get_contents($root . '/' . $file), 'mcp_scope_')));

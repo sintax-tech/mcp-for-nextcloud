@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Db;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\ResourceScopeMapper;
 use OCA\Mcp\Migration\Version001100Date20261015020000;
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Access\Policy\DecimalCounter;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
 use OCP\IDBConnection;
 use PHPUnit\Framework\Attributes\DataProvider;

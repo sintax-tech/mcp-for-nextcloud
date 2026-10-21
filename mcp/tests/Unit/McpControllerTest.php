@@ -7,14 +7,16 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit;
 
+use OCA\Mcp\Tests\Unit\Mcp\Protocol\McpProtocolTest;
+
 use OCA\Mcp\Controller\McpController;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\L10n\UserL10n;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\ResourceUrl;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\McpProtocol;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use OCA\Mcp\Tests\Unit\ArrayGroupBackend;
 use OCP\IRequest;
 use OCP\IURLGenerator;
@@ -36,8 +38,8 @@ final class McpControllerTest extends TestCase {
     private array $headers = [];
     /** @var AccessTokenAuthenticator&\PHPUnit\Framework\MockObject\MockObject */
     private AccessTokenAuthenticator $authenticator;
-    /** @var \OCA\Mcp\Service\Policy\CauseProcessor&\PHPUnit\Framework\MockObject\MockObject */
-    private \OCA\Mcp\Service\Policy\CauseProcessor $causes;
+    /** @var \OCA\Mcp\OAuth\Revocation\CauseProcessor&\PHPUnit\Framework\MockObject\MockObject */
+    private \OCA\Mcp\OAuth\Revocation\CauseProcessor $causes;
     private ?IUser $volatileUser = null;
     /** @var string|null `user_id` of the simulated ISession, the value the DI container hands out as `userId` */
     private ?string $sessionUid = null;
@@ -65,11 +67,11 @@ final class McpControllerTest extends TestCase {
         }
         $this->login('alice');
         $this->authenticator = $this->createMock(AccessTokenAuthenticator::class);
-        $this->causes = $this->createMock(\OCA\Mcp\Service\Policy\CauseProcessor::class);
+        $this->causes = $this->createMock(\OCA\Mcp\OAuth\Revocation\CauseProcessor::class);
         $this->headers = [
             'Content-Type' => 'application/json',
             'Accept' => 'application/json, text/event-stream',
-            'MCP-Protocol-Version' => McpProtocol::VERSION,
+            'MCP-Protocol-Version' => \OCA\Mcp\Mcp\Protocol\ProtocolMetadata::VERSION,
         ];
     }
 
@@ -109,9 +111,9 @@ final class McpControllerTest extends TestCase {
         return $controller;
     }
 
-    /** @return \OCA\Mcp\Service\GuestRestrictions a double recording whom it was applied to and under which session uid */
-    private function guests(): \OCA\Mcp\Service\GuestRestrictions {
-        $guests = $this->createMock(\OCA\Mcp\Service\GuestRestrictions::class);
+    /** @return \OCA\Mcp\Access\Guests\GuestRestrictions a double recording whom it was applied to and under which session uid */
+    private function guests(): \OCA\Mcp\Access\Guests\GuestRestrictions {
+        $guests = $this->createMock(\OCA\Mcp\Access\Guests\GuestRestrictions::class);
         $guests->method('apply')->willReturnCallback(function (IUser $user): bool {
             $this->guestCalls[] = $user->getUID() . '@' . ($this->sessionUid ?? 'none');
             return $this->guestAllowed;
@@ -273,7 +275,7 @@ final class McpControllerTest extends TestCase {
     public function testAnUnreadableCredentialStateIsATemporaryFailure(): void {
         $this->login(null);
         $this->headers['Authorization'] = 'Bearer ncmcp_at_valid';
-        $this->authenticator->method('authenticate')->willThrowException(new \OCA\Mcp\Service\Policy\PolicyUnavailable());
+        $this->authenticator->method('authenticate')->willThrowException(new \OCA\Mcp\Access\Policy\PolicyUnavailable());
         $response = $this->controller('{}')->post();
         $this->assertSame(503, $response->getStatus());
         $this->assertSame('1', self::headers($response)['Retry-After']);
@@ -284,7 +286,7 @@ final class McpControllerTest extends TestCase {
     public function testBasicProcessesTheUsersCausesAndAnUnreadableOneIsATemporaryFailure(): void {
         $this->headers['Authorization'] = 'Basic Zm9vOmJhcg==';
         $this->causes->expects($this->exactly(2))->method('preflight')->with('alice')->willReturnOnConsecutiveCalls(
-            null, $this->throwException(new \OCA\Mcp\Service\Policy\PolicyUnavailable()));
+            null, $this->throwException(new \OCA\Mcp\Access\Policy\PolicyUnavailable()));
         $this->assertSame(405, $this->controller()->get()->getStatus());
         $response = $this->controller('{}')->post();
         $this->assertSame(503, $response->getStatus());
@@ -425,7 +427,7 @@ final class McpControllerTest extends TestCase {
      * @param \Closure(): void|null $inside runs inside the tool, where a module may read a grant again
      */
     private function groupProtocol(?\Closure $inside = null): McpProtocol {
-        $module = new class($inside) implements \OCA\Mcp\Tools\ToolModule {
+        $module = new class($inside) implements \OCA\Mcp\Mcp\Tools\ToolModule {
             public function __construct(private ?\Closure $inside) {}
             public function definitions(): array {
                 $schema = ['type' => 'object', 'additionalProperties' => false, 'properties' => new \stdClass()];
@@ -436,12 +438,16 @@ final class McpControllerTest extends TestCase {
                 if ($this->inside !== null) {
                     ($this->inside)();
                 }
-                return \OCA\Mcp\Tools\ToolResult::json(['ok' => true]);
+                return \OCA\Mcp\Mcp\Tools\Results\ToolResult::json(['ok' => true]);
             }
         };
-        return new McpProtocol(new \OCA\Mcp\Tools\ToolRegistry([$module], $this->policy,
-            $this->createMock(\OCP\App\IAppManager::class), $this->createMock(\OCP\IUserManager::class), $this->createMock(\Psr\Log\LoggerInterface::class)),
-            new \OCA\Mcp\Service\PromptCatalog(), $this->policy, $this->createMock(\Psr\Log\LoggerInterface::class));
+        $logger = $this->createMock(\Psr\Log\LoggerInterface::class);
+        $availability = new \OCA\Mcp\Mcp\Tools\Discovery\ToolAvailability($this->policy,
+            $this->createMock(\OCP\App\IAppManager::class), $this->createMock(\OCP\IUserManager::class));
+        $registry = new \OCA\Mcp\Mcp\Tools\ToolRegistry([$module], $availability, new \OCA\Mcp\Mcp\Tools\Execution\ToolExecutor($availability, $logger));
+        return new McpProtocol(new \OCA\Mcp\Mcp\Protocol\ToolRequests($registry),
+            new \OCA\Mcp\Mcp\Protocol\PromptRequests(new \OCA\Mcp\Mcp\Prompts\PromptCatalog(), $this->policy),
+            new \OCA\Mcp\Mcp\Protocol\ResourceRequests(null), $logger);
     }
 
     /** Alice eligible only through the Database group "team"; "staff" holds her too, without a policy. */
@@ -491,7 +497,7 @@ final class McpControllerTest extends TestCase {
     public function testAPolicyUnavailableInsideAToolAnswers503(): void {
         $this->groupEligibleAlice();
         $protocol = $this->groupProtocol(function (): void {
-            throw new \OCA\Mcp\Service\Policy\PolicyUnavailable('Policy resolution is unknown');
+            throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('Policy resolution is unknown');
         });
         $this->assertSame(503, $this->call($protocol, 'notes_probe')[0]);
     }

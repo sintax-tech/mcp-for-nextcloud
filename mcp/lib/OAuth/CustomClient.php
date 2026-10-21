@@ -9,8 +9,8 @@ namespace OCA\Mcp\OAuth;
 
 use InvalidArgumentException;
 use OCA\Mcp\Db\OAuthClientsMapper;
-use OCA\Mcp\Service\Policy\DecimalCounter;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\DecimalCounter;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 
 /**
  * Self-hosted clients: public clients the administrator adds one by one for harnesses that take a manually

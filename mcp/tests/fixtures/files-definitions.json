@@ -1,0 +1,3058 @@
+{
+    "definitions": [
+        {
+            "name": "files_list",
+            "module": "files",
+            "operation": "read",
+            "description": "List files and folders from a user Nextcloud directory.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "default": "/",
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        {
+            "name": "files_search",
+            "module": "files",
+            "operation": "read",
+            "description": "Search files by name or content in the user folder on Nextcloud.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Search query to find in file names or content."
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 25,
+                        "description": "Maximum number of results to return (1-100, default 25)."
+                    },
+                    "mode": {
+                        "type": "string",
+                        "enum": [
+                            "auto",
+                            "name"
+                        ],
+                        "default": "auto",
+                        "description": "Search mode: \"auto\" uses full-text content search when available, falling back to name search; \"name\" searches only file names."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "query"
+                ]
+            }
+        },
+        {
+            "name": "files_tree",
+            "module": "files",
+            "operation": "read",
+            "description": "List the file tree of a folder, with the owner of each item and capacity limits. Use to plan a reorganization without one call per folder. Enforces depth and entry limits, and warns when truncated.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "default": "/",
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    },
+                    "depth": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 5,
+                        "default": 5
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 2000,
+                        "default": 2000
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        {
+            "name": "files_mkdir",
+            "module": "files",
+            "operation": "create",
+            "description": "Create a folder, including intermediate levels when missing. Refuses if destination already exists and never deletes existing contents. If destination is outside your personal folder, ask the user first and retry with confirm_shared.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "path"
+                ]
+            }
+        },
+        {
+            "name": "files_copy",
+            "module": "files",
+            "operation": "create",
+            "description": "Copy a file or folder to another path, creating a new node with a new id. Never overwrites the destination. The copy is an independent node: does not preserve source id, versions, or shares. Capped at 2000 items and 1073741824 bytes, measured before copying. If source or destination is outside your personal folder, ask the user first and retry with confirm_shared.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "from": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    },
+                    "to": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Destination path, e.g. /Archived/plan.md"
+                    },
+                    "etag": {
+                        "type": "string",
+                        "description": "Previously read ETag; if it differs, nothing is written"
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "from",
+                    "to"
+                ]
+            }
+        },
+        {
+            "name": "files_move",
+            "module": "files",
+            "operation": "move",
+            "description": "Move or rename a file or folder within the same file area, without overwriting the destination. Reports id before and after, as well as version and share counts when corresponding apps are enabled. Does not move across different storages: there Nextcloud treats it as a copy and the id changes. If source or destination is outside your personal folder, ask the user first and retry with confirm_shared.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "from": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    },
+                    "to": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Destination path, e.g. /2026/plan.md"
+                    },
+                    "etag": {
+                        "type": "string",
+                        "description": "Previously read ETag; if it differs, nothing is written"
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "from",
+                    "to"
+                ]
+            }
+        },
+        {
+            "name": "files_move_batch",
+            "module": "files",
+            "operation": "move",
+            "description": "Move several files and create folders, in the given order. Without confirm: true writes nothing and returns the full plan: what would succeed, what conflicts, what Nextcloud denies, what belongs to someone else, and which folders would be created. With confirm: true it executes in order, creates the folders beforehand and returns a batch_id to undo with files_undo_batch. An item failing midway halts the batch: items already moved remain recorded and can be undone, and unattempted items are returned as not_attempted.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "moves": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 200,
+                        "description": "Moves in the order they will be executed.",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "from": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                                },
+                                "to": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "description": "Destination path."
+                                }
+                            },
+                            "required": [
+                                "from",
+                                "to"
+                            ]
+                        }
+                    },
+                    "mkdirs": {
+                        "type": "array",
+                        "maxItems": 200,
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "description": "Folders to create before moves."
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "moves"
+                ]
+            }
+        },
+        {
+            "name": "files_undo_batch",
+            "module": "files",
+            "operation": "move",
+            "description": "Undo a files_move_batch, returning each node to its source path in reverse order. Before making any changes checks the whole batch: if any item is no longer what the batch placed at destination, if the source path is already occupied, or if permissions changed, nothing is undone and the response identifies the blocking item. Removes only empty folders that the batch itself created; a folder with content is preserved and listed in kept_dirs.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "batch_id": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "The batch_id returned by files_move_batch."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "batch_id"
+                ]
+            }
+        },
+        {
+            "name": "files_read",
+            "module": "files",
+            "operation": "read",
+            "description": "Read the text of a file from Nextcloud (plain text/markdown directly; PDF/DOCX/ODT via text extraction).",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "path"
+                ]
+            }
+        },
+        {
+            "name": "files_edit",
+            "module": "files",
+            "operation": "edit",
+            "description": "Replace the content of an existing text file and return the diff. Before writing, requires active versioning and creates a copy in \"/MCP backups\". If the file is outside your personal folder, only write after asking the user and retrying the call with confirm_shared. Never creates, moves, or deletes files.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "Complete new content (UTF-8)"
+                    },
+                    "etag": {
+                        "type": "string",
+                        "description": "Previously read ETag; if it differs, nothing is written"
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "path",
+                    "content"
+                ]
+            }
+        },
+        {
+            "name": "files_replace",
+            "module": "files",
+            "operation": "edit",
+            "description": "Replace a unique snippet of an existing text file and return the diff. The specified snippet must appear exactly once. Before writing, requires active versioning and creates a copy in \"/MCP backups\". If the file is outside your personal folder, only write after asking the user and retrying the call with confirm_shared.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    },
+                    "old": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Snippet to replace; must appear exactly once in the file"
+                    },
+                    "new": {
+                        "type": "string",
+                        "description": "Replacement text for the specified snippet"
+                    },
+                    "etag": {
+                        "type": "string",
+                        "description": "Previously read ETag; if it differs, nothing is written"
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "path",
+                    "old",
+                    "new"
+                ]
+            }
+        },
+        {
+            "name": "files_checkout",
+            "module": "files",
+            "operation": "edit",
+            "description": "Provide temporary download and upload links to edit any file type (document, spreadsheet, PDF, image) with local tools (curl) without passing content through the model, up to the upload limit. Upload raw bytes with curl -T /tmp/file -X PUT -H \"Content-Type: application/octet-stream\" \"$UPLOAD_URL\". A text file can also be edited directly with files_edit or files_replace. Links are valid for 5 to 15 minutes, single-use, and bound to you, the file, and current ETag: if the file changes before upload, nothing is written. Upload creates the same backup as files_edit. If the file is outside your personal folder, only issue links after asking the user and retrying with confirm_shared.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    },
+                    "etag": {
+                        "type": "string",
+                        "description": "Previously read ETag; if it differs, nothing is written"
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "path"
+                ]
+            }
+        },
+        {
+            "name": "files_versions_list",
+            "module": "files",
+            "operation": "read",
+            "app": "files_versions",
+            "description": "List versions of a file from the Versions app, from newest to oldest.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 50,
+                        "default": 50
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "path"
+                ]
+            }
+        },
+        {
+            "name": "files_version_read",
+            "module": "files",
+            "operation": "read",
+            "app": "files_versions",
+            "description": "Read the text of a previous file version, with the same limit and text extraction as files_read.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    },
+                    "version": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Version identifier, as returned by files_versions_list"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "path",
+                    "version"
+                ]
+            }
+        },
+        {
+            "name": "files_version_restore",
+            "module": "files",
+            "operation": "restore",
+            "app": "files_versions",
+            "description": "Restore a previous file version, first creating a copy of current content in \"/MCP backups\". If the file is outside your personal folder, restore only after asking the user and retrying with confirm_shared.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    },
+                    "version": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Version identifier, as returned by files_versions_list"
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "path",
+                    "version"
+                ]
+            }
+        },
+        {
+            "name": "files_image_view",
+            "module": "files",
+            "operation": "read",
+            "description": "Fetch a reduced preview of an image file as inline image bytes, so the model can actually see it. Reads only; honors the user folder and permissions. Supports JPG, PNG, HEIC, WebP, GIF, TIFF and the first page of a PDF when the Nextcloud server has a preview provider for the format. The returned image is JPEG/PNG/WebP under a server-wide byte limit: if the preview is still too big the max dimension is reduced until it fits.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    },
+                    "max_size": {
+                        "type": "integer",
+                        "minimum": 256,
+                        "maximum": 2048,
+                        "default": 1568,
+                        "description": "Maximum width or height of the returned preview, in pixels (256-2048, default 1568)"
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "path"
+                ]
+            }
+        },
+        {
+            "name": "files_images_view",
+            "module": "files",
+            "operation": "read",
+            "description": "Fetch several image previews in a single call. Pass either paths (up to 6 items) or folder (plus an optional limit) to pick the most recently modified images under that folder. The total image bytes stay under a server-wide budget; images that do not fit are reported as skipped with the reason, so the agent knows what was left out.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "paths": {
+                        "type": "array",
+                        "minItems": 1,
+                        "maxItems": 6,
+                        "items": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "description": "Image paths, 1 to 6, e.g. [\"/Photos/a.jpg\", \"/Photos/b.png\"]"
+                    },
+                    "folder": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Folder to look in, e.g. /Photos; omit to search the whole user folder"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 6,
+                        "default": 6
+                    },
+                    "max_size": {
+                        "type": "integer",
+                        "minimum": 256,
+                        "maximum": 2048,
+                        "default": 1568,
+                        "description": "Maximum width or height of the returned preview, in pixels (256-2048, default 1568)"
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        {
+            "name": "files_image_search",
+            "module": "files",
+            "operation": "read",
+            "description": "Search image files in the user folder, optionally filtered by name query, folder, modification date range or system tag name (the tag names created by the Recognize app count too). Results are listed newest first and only contain the file metadata; use files_image_view to fetch bytes.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "description": "Optional name substring, e.g. \"beach\""
+                    },
+                    "folder": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Folder to look in, e.g. /Photos; omit to search the whole user folder"
+                    },
+                    "modified_after": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "ISO 8601 date or datetime, only images modified at or after this moment are returned"
+                    },
+                    "modified_before": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "ISO 8601 date or datetime, only images modified at or before this moment are returned"
+                    },
+                    "tag": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "System tag name (case-sensitive), including automatic tags created by the Recognize app"
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 25
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        {
+            "name": "files_list_shares",
+            "module": "files",
+            "operation": "read",
+            "description": "List the shares you created: with a path, the shares of that file or folder (which must be yours); without one, every share you created, 50 per page with offset. Each item has shareId, type (user, group, link or room), with (id and display name), permission (view, edit or custom), reshare, expires, hasPassword, url (links only; null for a folder link while files are excluded from MCP access), removable and path. Passwords are never returned. A room share is a Talk attachment: it is listed with removable: false and is removed in Talk.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "File or folder of yours whose shares to list, e.g. /Documents/report.pdf. Omit to list every share you created."
+                    },
+                    "offset": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 1000,
+                        "default": 0,
+                        "description": "Shares to skip when listing without path; use the nextOffset of the previous page."
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        {
+            "name": "files_share",
+            "module": "files",
+            "operation": "share",
+            "grantAnyOf": [
+                "share",
+                "link"
+            ],
+            "destructiveHint": true,
+            "description": "Share a file or folder of yours with a person or a group, or change how it is already shared with them. Find the account or group id with users_search first (include_groups: true for groups); never guess it. Sharing again with the same recipient changes that share instead of creating another one. permission is view (open and download) or edit (change; on a folder also add and delete inside it); a share never lets the recipient share it on. expires is the last day (YYYY-MM-DD, in the user's timezone, tomorrow or later); omit it to keep the current one, or for a new share to get the administrator's default. Without confirm: true it returns the plan and changes nothing. Nextcloud notifies the recipient. Needs the \"share\" permission. with: \"link\" creates or changes the public link of the file (one per file, view only, anyone with it can open it) and needs the \"link\" permission; its password is generated by the server when you pass password: true or the administrator requires one, and is returned once in the confirmed result only.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                    },
+                    "with": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Recipient: user:<uid> for a person, group:<gid> for a group, or link for a public link."
+                    },
+                    "permission": {
+                        "type": "string",
+                        "enum": [
+                            "view",
+                            "edit"
+                        ],
+                        "default": "view",
+                        "description": "view to open and download; edit to change too (on a folder: add, change and delete inside it)."
+                    },
+                    "expires": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Last day of access, YYYY-MM-DD in the user's timezone, tomorrow or later."
+                    },
+                    "note": {
+                        "type": "string",
+                        "maxLength": 500,
+                        "description": "Note shown to the recipient with the share; an empty string removes the current note."
+                    },
+                    "password": {
+                        "type": "boolean",
+                        "description": "Public link only: true makes the server generate a new password, which replaces the current one and is shown once in the result. Never choose a password yourself."
+                    },
+                    "plan_state": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "path",
+                    "with"
+                ]
+            }
+        },
+        {
+            "name": "files_unshare",
+            "module": "files",
+            "operation": "share",
+            "grantAnyOf": [
+                "share",
+                "link"
+            ],
+            "destructiveHint": true,
+            "description": "Stop sharing a file or folder of yours: removes one share you created, so that person, group or public link loses access. Name the share with the shareId from files_list_shares, or with path plus with (user:<uid>, group:<gid> or link). Nothing is deleted: the file or folder and its content stay as they are. Only your own shares of your own files can be removed; a Talk attachment is removed in Talk. Without confirm: true it returns the plan and changes nothing. Needs the \"share\" permission; removing a public link needs \"link\".",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "shareId": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "The shareId of the share to remove, exactly as files_list_shares returns it (for example ocinternal:123). Use it alone, or use path with with instead."
+                    },
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "File or folder of yours, e.g. /Documents/report.pdf. Use it together with with."
+                    },
+                    "with": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Whose share to remove from path: user:<uid>, group:<gid> or link. Use it together with path."
+                    },
+                    "plan_state": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                    }
+                },
+                "additionalProperties": false
+            }
+        },
+        {
+            "name": "files_upload",
+            "module": "files",
+            "operation": "create",
+            "description": "Create a NEW file of any type (docx, xlsx, pdf, image, zip) that you generated locally, without passing its content through the model. Without confirm: true it returns the plan; with confirm: true it returns uploadUrl, a single-use link valid for 15 minutes and bound to you and this path. Send the bytes with curl -sS -T /tmp/file -X PUT -H \"Content-Type: application/octet-stream\" \"$UPLOAD_URL\"; the answer carries path, size, etag and fileId. Never overwrites a file with content: an existing name is refused, so use files_checkout to replace an existing file. For a small text file use files_create. The folder must exist (files_mkdir creates it); outside your personal folder ask the user and retry with confirm_shared.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Full path of the new file, including its name, e.g. /Reports/Report.docx"
+                    },
+                    "size": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "description": "Size of the local file in bytes, optional: a size over the upload limit is refused before any link is issued"
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "path"
+                ]
+            }
+        },
+        {
+            "name": "files_create",
+            "module": "files",
+            "operation": "create",
+            "description": "Create a NEW small text file with its content inline: .md, .txt, .csv, .json, .html, .xml, .yaml, .yml, up to 1 MB of UTF-8. Never overwrites a file with content: an existing name is refused (use files_edit or files_checkout to change it). For any other type or a larger file use files_upload. The folder must exist (files_mkdir creates it); outside your personal folder ask the user and retry with confirm_shared.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "minLength": 1,
+                        "description": "Full path of the new file, including its name, e.g. /Reports/Report.docx"
+                    },
+                    "content": {
+                        "type": "string",
+                        "description": "Complete text of the new file, up to 1 MB of UTF-8"
+                    },
+                    "confirm_shared": {
+                        "type": "boolean",
+                        "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "path",
+                    "content"
+                ]
+            }
+        }
+    ],
+    "published": {
+        "all": [
+            {
+                "name": "files_list",
+                "title": "List files",
+                "description": "List files and folders from a user Nextcloud directory.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "default": "/",
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "List files",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_search",
+                "title": "Search files",
+                "description": "Search files by name or content in the user folder on Nextcloud.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Search query to find in file names or content."
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": 25,
+                            "description": "Maximum number of results to return (1-100, default 25)."
+                        },
+                        "mode": {
+                            "type": "string",
+                            "enum": [
+                                "auto",
+                                "name"
+                            ],
+                            "default": "auto",
+                            "description": "Search mode: \"auto\" uses full-text content search when available, falling back to name search; \"name\" searches only file names."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "query"
+                    ]
+                },
+                "annotations": {
+                    "title": "Search files",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_tree",
+                "title": "View folder tree",
+                "description": "List the file tree of a folder, with the owner of each item and capacity limits. Use to plan a reorganization without one call per folder. Enforces depth and entry limits, and warns when truncated.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "default": "/",
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "depth": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 5,
+                            "default": 5
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2000,
+                            "default": 2000
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "View folder tree",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_mkdir",
+                "title": "Create folder",
+                "description": "Create a folder, including intermediate levels when missing. Refuses if destination already exists and never deletes existing contents. If destination is outside your personal folder, ask the user first and retry with confirm_shared.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                },
+                "annotations": {
+                    "title": "Create folder",
+                    "readOnlyHint": false,
+                    "destructiveHint": false,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_copy",
+                "title": "Copy file",
+                "description": "Copy a file or folder to another path, creating a new node with a new id. Never overwrites the destination. The copy is an independent node: does not preserve source id, versions, or shares. Capped at 2000 items and 1073741824 bytes, measured before copying. If source or destination is outside your personal folder, ask the user first and retry with confirm_shared.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "from": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "to": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Destination path, e.g. /Archived/plan.md"
+                        },
+                        "etag": {
+                            "type": "string",
+                            "description": "Previously read ETag; if it differs, nothing is written"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "from",
+                        "to"
+                    ]
+                },
+                "annotations": {
+                    "title": "Copy file",
+                    "readOnlyHint": false,
+                    "destructiveHint": false,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_move",
+                "title": "Move file",
+                "description": "Move or rename a file or folder within the same file area, without overwriting the destination. Reports id before and after, as well as version and share counts when corresponding apps are enabled. Does not move across different storages: there Nextcloud treats it as a copy and the id changes. If source or destination is outside your personal folder, ask the user first and retry with confirm_shared.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "from": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "to": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Destination path, e.g. /2026/plan.md"
+                        },
+                        "etag": {
+                            "type": "string",
+                            "description": "Previously read ETag; if it differs, nothing is written"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "from",
+                        "to"
+                    ]
+                },
+                "annotations": {
+                    "title": "Move file",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_move_batch",
+                "title": "Move files in bulk",
+                "description": "Move several files and create folders, in the given order. Without confirm: true writes nothing and returns the full plan: what would succeed, what conflicts, what Nextcloud denies, what belongs to someone else, and which folders would be created. With confirm: true it executes in order, creates the folders beforehand and returns a batch_id to undo with files_undo_batch. An item failing midway halts the batch: items already moved remain recorded and can be undone, and unattempted items are returned as not_attempted.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "moves": {
+                            "type": "array",
+                            "minItems": 1,
+                            "maxItems": 200,
+                            "description": "Moves in the order they will be executed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "from": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                                    },
+                                    "to": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Destination path."
+                                    }
+                                },
+                                "required": [
+                                    "from",
+                                    "to"
+                                ]
+                            }
+                        },
+                        "mkdirs": {
+                            "type": "array",
+                            "maxItems": 200,
+                            "items": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "description": "Folders to create before moves."
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "moves"
+                    ]
+                },
+                "annotations": {
+                    "title": "Move files in bulk",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_undo_batch",
+                "title": "Undo bulk operation",
+                "description": "Undo a files_move_batch, returning each node to its source path in reverse order. Before making any changes checks the whole batch: if any item is no longer what the batch placed at destination, if the source path is already occupied, or if permissions changed, nothing is undone and the response identifies the blocking item. Removes only empty folders that the batch itself created; a folder with content is preserved and listed in kept_dirs.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "batch_id": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "The batch_id returned by files_move_batch."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "batch_id"
+                    ]
+                },
+                "annotations": {
+                    "title": "Undo bulk operation",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_read",
+                "title": "Read file",
+                "description": "Read the text of a file from Nextcloud (plain text/markdown directly; PDF/DOCX/ODT via text extraction).",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                },
+                "annotations": {
+                    "title": "Read file",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_edit",
+                "title": "Edit file",
+                "description": "Replace the content of an existing text file and return the diff. Before writing, requires active versioning and creates a copy in \"/MCP backups\". If the file is outside your personal folder, only write after asking the user and retrying the call with confirm_shared. Never creates, moves, or deletes files.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "content": {
+                            "type": "string",
+                            "description": "Complete new content (UTF-8)"
+                        },
+                        "etag": {
+                            "type": "string",
+                            "description": "Previously read ETag; if it differs, nothing is written"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path",
+                        "content"
+                    ]
+                },
+                "annotations": {
+                    "title": "Edit file",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_replace",
+                "title": "Replace part of a file",
+                "description": "Replace a unique snippet of an existing text file and return the diff. The specified snippet must appear exactly once. Before writing, requires active versioning and creates a copy in \"/MCP backups\". If the file is outside your personal folder, only write after asking the user and retrying the call with confirm_shared.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "old": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Snippet to replace; must appear exactly once in the file"
+                        },
+                        "new": {
+                            "type": "string",
+                            "description": "Replacement text for the specified snippet"
+                        },
+                        "etag": {
+                            "type": "string",
+                            "description": "Previously read ETag; if it differs, nothing is written"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path",
+                        "old",
+                        "new"
+                    ]
+                },
+                "annotations": {
+                    "title": "Replace part of a file",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_checkout",
+                "title": "Download file for local editing",
+                "description": "Provide temporary download and upload links to edit any file type (document, spreadsheet, PDF, image) with local tools (curl) without passing content through the model, up to the upload limit. Upload raw bytes with curl -T /tmp/file -X PUT -H \"Content-Type: application/octet-stream\" \"$UPLOAD_URL\". A text file can also be edited directly with files_edit or files_replace. Links are valid for 5 to 15 minutes, single-use, and bound to you, the file, and current ETag: if the file changes before upload, nothing is written. Upload creates the same backup as files_edit. If the file is outside your personal folder, only issue links after asking the user and retrying with confirm_shared.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "etag": {
+                            "type": "string",
+                            "description": "Previously read ETag; if it differs, nothing is written"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                },
+                "annotations": {
+                    "title": "Download file for local editing",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_versions_list",
+                "title": "List file versions",
+                "description": "List versions of a file from the Versions app, from newest to oldest.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 50,
+                            "default": 50
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                },
+                "annotations": {
+                    "title": "List file versions",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_version_read",
+                "title": "Read file version",
+                "description": "Read the text of a previous file version, with the same limit and text extraction as files_read.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "version": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Version identifier, as returned by files_versions_list"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path",
+                        "version"
+                    ]
+                },
+                "annotations": {
+                    "title": "Read file version",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_version_restore",
+                "title": "Restore file version",
+                "description": "Restore a previous file version, first creating a copy of current content in \"/MCP backups\". If the file is outside your personal folder, restore only after asking the user and retrying with confirm_shared.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "version": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Version identifier, as returned by files_versions_list"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path",
+                        "version"
+                    ]
+                },
+                "annotations": {
+                    "title": "Restore file version",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_image_view",
+                "title": "View image",
+                "description": "Fetch a reduced preview of an image file as inline image bytes, so the model can actually see it. Reads only; honors the user folder and permissions. Supports JPG, PNG, HEIC, WebP, GIF, TIFF and the first page of a PDF when the Nextcloud server has a preview provider for the format. The returned image is JPEG/PNG/WebP under a server-wide byte limit: if the preview is still too big the max dimension is reduced until it fits.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "max_size": {
+                            "type": "integer",
+                            "minimum": 256,
+                            "maximum": 2048,
+                            "default": 1568,
+                            "description": "Maximum width or height of the returned preview, in pixels (256-2048, default 1568)"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                },
+                "annotations": {
+                    "title": "View image",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_images_view",
+                "title": "View several images",
+                "description": "Fetch several image previews in a single call. Pass either paths (up to 6 items) or folder (plus an optional limit) to pick the most recently modified images under that folder. The total image bytes stay under a server-wide budget; images that do not fit are reported as skipped with the reason, so the agent knows what was left out.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "paths": {
+                            "type": "array",
+                            "minItems": 1,
+                            "maxItems": 6,
+                            "items": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "description": "Image paths, 1 to 6, e.g. [\"/Photos/a.jpg\", \"/Photos/b.png\"]"
+                        },
+                        "folder": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Folder to look in, e.g. /Photos; omit to search the whole user folder"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 6,
+                            "default": 6
+                        },
+                        "max_size": {
+                            "type": "integer",
+                            "minimum": 256,
+                            "maximum": 2048,
+                            "default": 1568,
+                            "description": "Maximum width or height of the returned preview, in pixels (256-2048, default 1568)"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "View several images",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_image_search",
+                "title": "Search images",
+                "description": "Search image files in the user folder, optionally filtered by name query, folder, modification date range or system tag name (the tag names created by the Recognize app count too). Results are listed newest first and only contain the file metadata; use files_image_view to fetch bytes.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Optional name substring, e.g. \"beach\""
+                        },
+                        "folder": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Folder to look in, e.g. /Photos; omit to search the whole user folder"
+                        },
+                        "modified_after": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "ISO 8601 date or datetime, only images modified at or after this moment are returned"
+                        },
+                        "modified_before": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "ISO 8601 date or datetime, only images modified at or before this moment are returned"
+                        },
+                        "tag": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "System tag name (case-sensitive), including automatic tags created by the Recognize app"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": 25
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "Search images",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_list_shares",
+                "title": "List shares",
+                "description": "List the shares you created: with a path, the shares of that file or folder (which must be yours); without one, every share you created, 50 per page with offset. Each item has shareId, type (user, group, link or room), with (id and display name), permission (view, edit or custom), reshare, expires, hasPassword, url (links only; null for a folder link while files are excluded from MCP access), removable and path. Passwords are never returned. A room share is a Talk attachment: it is listed with removable: false and is removed in Talk.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "File or folder of yours whose shares to list, e.g. /Documents/report.pdf. Omit to list every share you created."
+                        },
+                        "offset": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1000,
+                            "default": 0,
+                            "description": "Shares to skip when listing without path; use the nextOffset of the previous page."
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "List shares",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_share",
+                "title": "Share file or folder",
+                "description": "Share a file or folder of yours with a person or a group, or change how it is already shared with them. Find the account or group id with users_search first (include_groups: true for groups); never guess it. Sharing again with the same recipient changes that share instead of creating another one. permission is view (open and download) or edit (change; on a folder also add and delete inside it); a share never lets the recipient share it on. expires is the last day (YYYY-MM-DD, in the user's timezone, tomorrow or later); omit it to keep the current one, or for a new share to get the administrator's default. Without confirm: true it returns the plan and changes nothing. Nextcloud notifies the recipient. Needs the \"share\" permission. with: \"link\" creates or changes the public link of the file (one per file, view only, anyone with it can open it) and needs the \"link\" permission; its password is generated by the server when you pass password: true or the administrator requires one, and is returned once in the confirmed result only.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "with": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Recipient: user:<uid> for a person, group:<gid> for a group, or link for a public link."
+                        },
+                        "permission": {
+                            "type": "string",
+                            "enum": [
+                                "view",
+                                "edit"
+                            ],
+                            "default": "view",
+                            "description": "view to open and download; edit to change too (on a folder: add, change and delete inside it)."
+                        },
+                        "expires": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Last day of access, YYYY-MM-DD in the user's timezone, tomorrow or later."
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 500,
+                            "description": "Note shown to the recipient with the share; an empty string removes the current note."
+                        },
+                        "password": {
+                            "type": "boolean",
+                            "description": "Public link only: true makes the server generate a new password, which replaces the current one and is shown once in the result. Never choose a password yourself."
+                        },
+                        "plan_state": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128,
+                            "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path",
+                        "with"
+                    ]
+                },
+                "annotations": {
+                    "title": "Share file or folder",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_unshare",
+                "title": "Stop sharing file or folder",
+                "description": "Stop sharing a file or folder of yours: removes one share you created, so that person, group or public link loses access. Name the share with the shareId from files_list_shares, or with path plus with (user:<uid>, group:<gid> or link). Nothing is deleted: the file or folder and its content stay as they are. Only your own shares of your own files can be removed; a Talk attachment is removed in Talk. Without confirm: true it returns the plan and changes nothing. Needs the \"share\" permission; removing a public link needs \"link\".",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "shareId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128,
+                            "description": "The shareId of the share to remove, exactly as files_list_shares returns it (for example ocinternal:123). Use it alone, or use path with with instead."
+                        },
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "File or folder of yours, e.g. /Documents/report.pdf. Use it together with with."
+                        },
+                        "with": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Whose share to remove from path: user:<uid>, group:<gid> or link. Use it together with path."
+                        },
+                        "plan_state": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128,
+                            "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "Stop sharing file or folder",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_upload",
+                "title": "Upload new file",
+                "description": "Create a NEW file of any type (docx, xlsx, pdf, image, zip) that you generated locally, without passing its content through the model. Without confirm: true it returns the plan; with confirm: true it returns uploadUrl, a single-use link valid for 15 minutes and bound to you and this path. Send the bytes with curl -sS -T /tmp/file -X PUT -H \"Content-Type: application/octet-stream\" \"$UPLOAD_URL\"; the answer carries path, size, etag and fileId. Never overwrites a file with content: an existing name is refused, so use files_checkout to replace an existing file. For a small text file use files_create. The folder must exist (files_mkdir creates it); outside your personal folder ask the user and retry with confirm_shared.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Full path of the new file, including its name, e.g. /Reports/Report.docx"
+                        },
+                        "size": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Size of the local file in bytes, optional: a size over the upload limit is refused before any link is issued"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                },
+                "annotations": {
+                    "title": "Upload new file",
+                    "readOnlyHint": false,
+                    "destructiveHint": false,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_create",
+                "title": "Create text file",
+                "description": "Create a NEW small text file with its content inline: .md, .txt, .csv, .json, .html, .xml, .yaml, .yml, up to 1 MB of UTF-8. Never overwrites a file with content: an existing name is refused (use files_edit or files_checkout to change it). For any other type or a larger file use files_upload. The folder must exist (files_mkdir creates it); outside your personal folder ask the user and retry with confirm_shared.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Full path of the new file, including its name, e.g. /Reports/Report.docx"
+                        },
+                        "content": {
+                            "type": "string",
+                            "description": "Complete text of the new file, up to 1 MB of UTF-8"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path",
+                        "content"
+                    ]
+                },
+                "annotations": {
+                    "title": "Create text file",
+                    "readOnlyHint": false,
+                    "destructiveHint": false,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            }
+        ],
+        "read": [
+            {
+                "name": "files_list",
+                "title": "List files",
+                "description": "List files and folders from a user Nextcloud directory.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "default": "/",
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "List files",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_search",
+                "title": "Search files",
+                "description": "Search files by name or content in the user folder on Nextcloud.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Search query to find in file names or content."
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": 25,
+                            "description": "Maximum number of results to return (1-100, default 25)."
+                        },
+                        "mode": {
+                            "type": "string",
+                            "enum": [
+                                "auto",
+                                "name"
+                            ],
+                            "default": "auto",
+                            "description": "Search mode: \"auto\" uses full-text content search when available, falling back to name search; \"name\" searches only file names."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "query"
+                    ]
+                },
+                "annotations": {
+                    "title": "Search files",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_tree",
+                "title": "View folder tree",
+                "description": "List the file tree of a folder, with the owner of each item and capacity limits. Use to plan a reorganization without one call per folder. Enforces depth and entry limits, and warns when truncated.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "default": "/",
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "depth": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 5,
+                            "default": 5
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2000,
+                            "default": 2000
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "View folder tree",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_read",
+                "title": "Read file",
+                "description": "Read the text of a file from Nextcloud (plain text/markdown directly; PDF/DOCX/ODT via text extraction).",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                },
+                "annotations": {
+                    "title": "Read file",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_versions_list",
+                "title": "List file versions",
+                "description": "List versions of a file from the Versions app, from newest to oldest.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 50,
+                            "default": 50
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                },
+                "annotations": {
+                    "title": "List file versions",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_version_read",
+                "title": "Read file version",
+                "description": "Read the text of a previous file version, with the same limit and text extraction as files_read.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "version": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Version identifier, as returned by files_versions_list"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path",
+                        "version"
+                    ]
+                },
+                "annotations": {
+                    "title": "Read file version",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_image_view",
+                "title": "View image",
+                "description": "Fetch a reduced preview of an image file as inline image bytes, so the model can actually see it. Reads only; honors the user folder and permissions. Supports JPG, PNG, HEIC, WebP, GIF, TIFF and the first page of a PDF when the Nextcloud server has a preview provider for the format. The returned image is JPEG/PNG/WebP under a server-wide byte limit: if the preview is still too big the max dimension is reduced until it fits.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "max_size": {
+                            "type": "integer",
+                            "minimum": 256,
+                            "maximum": 2048,
+                            "default": 1568,
+                            "description": "Maximum width or height of the returned preview, in pixels (256-2048, default 1568)"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                },
+                "annotations": {
+                    "title": "View image",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_images_view",
+                "title": "View several images",
+                "description": "Fetch several image previews in a single call. Pass either paths (up to 6 items) or folder (plus an optional limit) to pick the most recently modified images under that folder. The total image bytes stay under a server-wide budget; images that do not fit are reported as skipped with the reason, so the agent knows what was left out.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "paths": {
+                            "type": "array",
+                            "minItems": 1,
+                            "maxItems": 6,
+                            "items": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "description": "Image paths, 1 to 6, e.g. [\"/Photos/a.jpg\", \"/Photos/b.png\"]"
+                        },
+                        "folder": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Folder to look in, e.g. /Photos; omit to search the whole user folder"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 6,
+                            "default": 6
+                        },
+                        "max_size": {
+                            "type": "integer",
+                            "minimum": 256,
+                            "maximum": 2048,
+                            "default": 1568,
+                            "description": "Maximum width or height of the returned preview, in pixels (256-2048, default 1568)"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "View several images",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_image_search",
+                "title": "Search images",
+                "description": "Search image files in the user folder, optionally filtered by name query, folder, modification date range or system tag name (the tag names created by the Recognize app count too). Results are listed newest first and only contain the file metadata; use files_image_view to fetch bytes.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Optional name substring, e.g. \"beach\""
+                        },
+                        "folder": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Folder to look in, e.g. /Photos; omit to search the whole user folder"
+                        },
+                        "modified_after": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "ISO 8601 date or datetime, only images modified at or after this moment are returned"
+                        },
+                        "modified_before": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "ISO 8601 date or datetime, only images modified at or before this moment are returned"
+                        },
+                        "tag": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "System tag name (case-sensitive), including automatic tags created by the Recognize app"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": 25
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "Search images",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_list_shares",
+                "title": "List shares",
+                "description": "List the shares you created: with a path, the shares of that file or folder (which must be yours); without one, every share you created, 50 per page with offset. Each item has shareId, type (user, group, link or room), with (id and display name), permission (view, edit or custom), reshare, expires, hasPassword, url (links only; null for a folder link while files are excluded from MCP access), removable and path. Passwords are never returned. A room share is a Talk attachment: it is listed with removable: false and is removed in Talk.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "File or folder of yours whose shares to list, e.g. /Documents/report.pdf. Omit to list every share you created."
+                        },
+                        "offset": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1000,
+                            "default": 0,
+                            "description": "Shares to skip when listing without path; use the nextOffset of the previous page."
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "List shares",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            }
+        ],
+        "share": [
+            {
+                "name": "files_share",
+                "title": "Share file or folder",
+                "description": "Share a file or folder of yours with a person or a group, or change how it is already shared with them. Find the account or group id with users_search first (include_groups: true for groups); never guess it. Sharing again with the same recipient changes that share instead of creating another one. permission is view (open and download) or edit (change; on a folder also add and delete inside it); a share never lets the recipient share it on. expires is the last day (YYYY-MM-DD, in the user's timezone, tomorrow or later); omit it to keep the current one, or for a new share to get the administrator's default. Without confirm: true it returns the plan and changes nothing. Nextcloud notifies the recipient. Needs the \"share\" permission. with: \"link\" creates or changes the public link of the file (one per file, view only, anyone with it can open it) and needs the \"link\" permission; its password is generated by the server when you pass password: true or the administrator requires one, and is returned once in the confirmed result only.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "with": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Recipient: user:<uid> for a person, group:<gid> for a group, or link for a public link."
+                        },
+                        "permission": {
+                            "type": "string",
+                            "enum": [
+                                "view",
+                                "edit"
+                            ],
+                            "default": "view",
+                            "description": "view to open and download; edit to change too (on a folder: add, change and delete inside it)."
+                        },
+                        "expires": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Last day of access, YYYY-MM-DD in the user's timezone, tomorrow or later."
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 500,
+                            "description": "Note shown to the recipient with the share; an empty string removes the current note."
+                        },
+                        "password": {
+                            "type": "boolean",
+                            "description": "Public link only: true makes the server generate a new password, which replaces the current one and is shown once in the result. Never choose a password yourself."
+                        },
+                        "plan_state": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128,
+                            "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path",
+                        "with"
+                    ]
+                },
+                "annotations": {
+                    "title": "Share file or folder",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_unshare",
+                "title": "Stop sharing file or folder",
+                "description": "Stop sharing a file or folder of yours: removes one share you created, so that person, group or public link loses access. Name the share with the shareId from files_list_shares, or with path plus with (user:<uid>, group:<gid> or link). Nothing is deleted: the file or folder and its content stay as they are. Only your own shares of your own files can be removed; a Talk attachment is removed in Talk. Without confirm: true it returns the plan and changes nothing. Needs the \"share\" permission; removing a public link needs \"link\".",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "shareId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128,
+                            "description": "The shareId of the share to remove, exactly as files_list_shares returns it (for example ocinternal:123). Use it alone, or use path with with instead."
+                        },
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "File or folder of yours, e.g. /Documents/report.pdf. Use it together with with."
+                        },
+                        "with": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Whose share to remove from path: user:<uid>, group:<gid> or link. Use it together with path."
+                        },
+                        "plan_state": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128,
+                            "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "Stop sharing file or folder",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            }
+        ],
+        "link": [
+            {
+                "name": "files_share",
+                "title": "Share file or folder",
+                "description": "Share a file or folder of yours with a person or a group, or change how it is already shared with them. Find the account or group id with users_search first (include_groups: true for groups); never guess it. Sharing again with the same recipient changes that share instead of creating another one. permission is view (open and download) or edit (change; on a folder also add and delete inside it); a share never lets the recipient share it on. expires is the last day (YYYY-MM-DD, in the user's timezone, tomorrow or later); omit it to keep the current one, or for a new share to get the administrator's default. Without confirm: true it returns the plan and changes nothing. Nextcloud notifies the recipient. Needs the \"share\" permission. with: \"link\" creates or changes the public link of the file (one per file, view only, anyone with it can open it) and needs the \"link\" permission; its password is generated by the server when you pass password: true or the administrator requires one, and is returned once in the confirmed result only.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "with": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Recipient: user:<uid> for a person, group:<gid> for a group, or link for a public link."
+                        },
+                        "permission": {
+                            "type": "string",
+                            "enum": [
+                                "view",
+                                "edit"
+                            ],
+                            "default": "view",
+                            "description": "view to open and download; edit to change too (on a folder: add, change and delete inside it)."
+                        },
+                        "expires": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Last day of access, YYYY-MM-DD in the user's timezone, tomorrow or later."
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 500,
+                            "description": "Note shown to the recipient with the share; an empty string removes the current note."
+                        },
+                        "password": {
+                            "type": "boolean",
+                            "description": "Public link only: true makes the server generate a new password, which replaces the current one and is shown once in the result. Never choose a password yourself."
+                        },
+                        "plan_state": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128,
+                            "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path",
+                        "with"
+                    ]
+                },
+                "annotations": {
+                    "title": "Share file or folder",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_unshare",
+                "title": "Stop sharing file or folder",
+                "description": "Stop sharing a file or folder of yours: removes one share you created, so that person, group or public link loses access. Name the share with the shareId from files_list_shares, or with path plus with (user:<uid>, group:<gid> or link). Nothing is deleted: the file or folder and its content stay as they are. Only your own shares of your own files can be removed; a Talk attachment is removed in Talk. Without confirm: true it returns the plan and changes nothing. Needs the \"share\" permission; removing a public link needs \"link\".",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "shareId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128,
+                            "description": "The shareId of the share to remove, exactly as files_list_shares returns it (for example ocinternal:123). Use it alone, or use path with with instead."
+                        },
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "File or folder of yours, e.g. /Documents/report.pdf. Use it together with with."
+                        },
+                        "with": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Whose share to remove from path: user:<uid>, group:<gid> or link. Use it together with path."
+                        },
+                        "plan_state": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128,
+                            "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "Stop sharing file or folder",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            }
+        ],
+        "none": [],
+        "noApps": [
+            {
+                "name": "files_list",
+                "title": "List files",
+                "description": "List files and folders from a user Nextcloud directory.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "default": "/",
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "List files",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_search",
+                "title": "Search files",
+                "description": "Search files by name or content in the user folder on Nextcloud.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Search query to find in file names or content."
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": 25,
+                            "description": "Maximum number of results to return (1-100, default 25)."
+                        },
+                        "mode": {
+                            "type": "string",
+                            "enum": [
+                                "auto",
+                                "name"
+                            ],
+                            "default": "auto",
+                            "description": "Search mode: \"auto\" uses full-text content search when available, falling back to name search; \"name\" searches only file names."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "query"
+                    ]
+                },
+                "annotations": {
+                    "title": "Search files",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_tree",
+                "title": "View folder tree",
+                "description": "List the file tree of a folder, with the owner of each item and capacity limits. Use to plan a reorganization without one call per folder. Enforces depth and entry limits, and warns when truncated.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "default": "/",
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "depth": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 5,
+                            "default": 5
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 2000,
+                            "default": 2000
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "View folder tree",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_mkdir",
+                "title": "Create folder",
+                "description": "Create a folder, including intermediate levels when missing. Refuses if destination already exists and never deletes existing contents. If destination is outside your personal folder, ask the user first and retry with confirm_shared.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                },
+                "annotations": {
+                    "title": "Create folder",
+                    "readOnlyHint": false,
+                    "destructiveHint": false,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_copy",
+                "title": "Copy file",
+                "description": "Copy a file or folder to another path, creating a new node with a new id. Never overwrites the destination. The copy is an independent node: does not preserve source id, versions, or shares. Capped at 2000 items and 1073741824 bytes, measured before copying. If source or destination is outside your personal folder, ask the user first and retry with confirm_shared.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "from": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "to": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Destination path, e.g. /Archived/plan.md"
+                        },
+                        "etag": {
+                            "type": "string",
+                            "description": "Previously read ETag; if it differs, nothing is written"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "from",
+                        "to"
+                    ]
+                },
+                "annotations": {
+                    "title": "Copy file",
+                    "readOnlyHint": false,
+                    "destructiveHint": false,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_move",
+                "title": "Move file",
+                "description": "Move or rename a file or folder within the same file area, without overwriting the destination. Reports id before and after, as well as version and share counts when corresponding apps are enabled. Does not move across different storages: there Nextcloud treats it as a copy and the id changes. If source or destination is outside your personal folder, ask the user first and retry with confirm_shared.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "from": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "to": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Destination path, e.g. /2026/plan.md"
+                        },
+                        "etag": {
+                            "type": "string",
+                            "description": "Previously read ETag; if it differs, nothing is written"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "from",
+                        "to"
+                    ]
+                },
+                "annotations": {
+                    "title": "Move file",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_move_batch",
+                "title": "Move files in bulk",
+                "description": "Move several files and create folders, in the given order. Without confirm: true writes nothing and returns the full plan: what would succeed, what conflicts, what Nextcloud denies, what belongs to someone else, and which folders would be created. With confirm: true it executes in order, creates the folders beforehand and returns a batch_id to undo with files_undo_batch. An item failing midway halts the batch: items already moved remain recorded and can be undone, and unattempted items are returned as not_attempted.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "moves": {
+                            "type": "array",
+                            "minItems": 1,
+                            "maxItems": 200,
+                            "description": "Moves in the order they will be executed.",
+                            "items": {
+                                "type": "object",
+                                "properties": {
+                                    "from": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                                    },
+                                    "to": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "description": "Destination path."
+                                    }
+                                },
+                                "required": [
+                                    "from",
+                                    "to"
+                                ]
+                            }
+                        },
+                        "mkdirs": {
+                            "type": "array",
+                            "maxItems": 200,
+                            "items": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "description": "Folders to create before moves."
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "moves"
+                    ]
+                },
+                "annotations": {
+                    "title": "Move files in bulk",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_undo_batch",
+                "title": "Undo bulk operation",
+                "description": "Undo a files_move_batch, returning each node to its source path in reverse order. Before making any changes checks the whole batch: if any item is no longer what the batch placed at destination, if the source path is already occupied, or if permissions changed, nothing is undone and the response identifies the blocking item. Removes only empty folders that the batch itself created; a folder with content is preserved and listed in kept_dirs.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "batch_id": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "description": "The batch_id returned by files_move_batch."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "batch_id"
+                    ]
+                },
+                "annotations": {
+                    "title": "Undo bulk operation",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_read",
+                "title": "Read file",
+                "description": "Read the text of a file from Nextcloud (plain text/markdown directly; PDF/DOCX/ODT via text extraction).",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                },
+                "annotations": {
+                    "title": "Read file",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_edit",
+                "title": "Edit file",
+                "description": "Replace the content of an existing text file and return the diff. Before writing, requires active versioning and creates a copy in \"/MCP backups\". If the file is outside your personal folder, only write after asking the user and retrying the call with confirm_shared. Never creates, moves, or deletes files.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "content": {
+                            "type": "string",
+                            "description": "Complete new content (UTF-8)"
+                        },
+                        "etag": {
+                            "type": "string",
+                            "description": "Previously read ETag; if it differs, nothing is written"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path",
+                        "content"
+                    ]
+                },
+                "annotations": {
+                    "title": "Edit file",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_replace",
+                "title": "Replace part of a file",
+                "description": "Replace a unique snippet of an existing text file and return the diff. The specified snippet must appear exactly once. Before writing, requires active versioning and creates a copy in \"/MCP backups\". If the file is outside your personal folder, only write after asking the user and retrying the call with confirm_shared.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "old": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Snippet to replace; must appear exactly once in the file"
+                        },
+                        "new": {
+                            "type": "string",
+                            "description": "Replacement text for the specified snippet"
+                        },
+                        "etag": {
+                            "type": "string",
+                            "description": "Previously read ETag; if it differs, nothing is written"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path",
+                        "old",
+                        "new"
+                    ]
+                },
+                "annotations": {
+                    "title": "Replace part of a file",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_checkout",
+                "title": "Download file for local editing",
+                "description": "Provide temporary download and upload links to edit any file type (document, spreadsheet, PDF, image) with local tools (curl) without passing content through the model, up to the upload limit. Upload raw bytes with curl -T /tmp/file -X PUT -H \"Content-Type: application/octet-stream\" \"$UPLOAD_URL\". A text file can also be edited directly with files_edit or files_replace. Links are valid for 5 to 15 minutes, single-use, and bound to you, the file, and current ETag: if the file changes before upload, nothing is written. Upload creates the same backup as files_edit. If the file is outside your personal folder, only issue links after asking the user and retrying with confirm_shared.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "etag": {
+                            "type": "string",
+                            "description": "Previously read ETag; if it differs, nothing is written"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                },
+                "annotations": {
+                    "title": "Download file for local editing",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_image_view",
+                "title": "View image",
+                "description": "Fetch a reduced preview of an image file as inline image bytes, so the model can actually see it. Reads only; honors the user folder and permissions. Supports JPG, PNG, HEIC, WebP, GIF, TIFF and the first page of a PDF when the Nextcloud server has a preview provider for the format. The returned image is JPEG/PNG/WebP under a server-wide byte limit: if the preview is still too big the max dimension is reduced until it fits.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "max_size": {
+                            "type": "integer",
+                            "minimum": 256,
+                            "maximum": 2048,
+                            "default": 1568,
+                            "description": "Maximum width or height of the returned preview, in pixels (256-2048, default 1568)"
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                },
+                "annotations": {
+                    "title": "View image",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_images_view",
+                "title": "View several images",
+                "description": "Fetch several image previews in a single call. Pass either paths (up to 6 items) or folder (plus an optional limit) to pick the most recently modified images under that folder. The total image bytes stay under a server-wide budget; images that do not fit are reported as skipped with the reason, so the agent knows what was left out.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "paths": {
+                            "type": "array",
+                            "minItems": 1,
+                            "maxItems": 6,
+                            "items": {
+                                "type": "string",
+                                "minLength": 1
+                            },
+                            "description": "Image paths, 1 to 6, e.g. [\"/Photos/a.jpg\", \"/Photos/b.png\"]"
+                        },
+                        "folder": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Folder to look in, e.g. /Photos; omit to search the whole user folder"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 6,
+                            "default": 6
+                        },
+                        "max_size": {
+                            "type": "integer",
+                            "minimum": 256,
+                            "maximum": 2048,
+                            "default": 1568,
+                            "description": "Maximum width or height of the returned preview, in pixels (256-2048, default 1568)"
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "View several images",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_image_search",
+                "title": "Search images",
+                "description": "Search image files in the user folder, optionally filtered by name query, folder, modification date range or system tag name (the tag names created by the Recognize app count too). Results are listed newest first and only contain the file metadata; use files_image_view to fetch bytes.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "query": {
+                            "type": "string",
+                            "description": "Optional name substring, e.g. \"beach\""
+                        },
+                        "folder": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Folder to look in, e.g. /Photos; omit to search the whole user folder"
+                        },
+                        "modified_after": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "ISO 8601 date or datetime, only images modified at or after this moment are returned"
+                        },
+                        "modified_before": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "ISO 8601 date or datetime, only images modified at or before this moment are returned"
+                        },
+                        "tag": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "System tag name (case-sensitive), including automatic tags created by the Recognize app"
+                        },
+                        "limit": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 100,
+                            "default": 25
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "Search images",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_list_shares",
+                "title": "List shares",
+                "description": "List the shares you created: with a path, the shares of that file or folder (which must be yours); without one, every share you created, 50 per page with offset. Each item has shareId, type (user, group, link or room), with (id and display name), permission (view, edit or custom), reshare, expires, hasPassword, url (links only; null for a folder link while files are excluded from MCP access), removable and path. Passwords are never returned. A room share is a Talk attachment: it is listed with removable: false and is removed in Talk.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "File or folder of yours whose shares to list, e.g. /Documents/report.pdf. Omit to list every share you created."
+                        },
+                        "offset": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 1000,
+                            "default": 0,
+                            "description": "Shares to skip when listing without path; use the nextOffset of the previous page."
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "List shares",
+                    "readOnlyHint": true,
+                    "destructiveHint": false,
+                    "idempotentHint": true,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_share",
+                "title": "Share file or folder",
+                "description": "Share a file or folder of yours with a person or a group, or change how it is already shared with them. Find the account or group id with users_search first (include_groups: true for groups); never guess it. Sharing again with the same recipient changes that share instead of creating another one. permission is view (open and download) or edit (change; on a folder also add and delete inside it); a share never lets the recipient share it on. expires is the last day (YYYY-MM-DD, in the user's timezone, tomorrow or later); omit it to keep the current one, or for a new share to get the administrator's default. Without confirm: true it returns the plan and changes nothing. Nextcloud notifies the recipient. Needs the \"share\" permission. with: \"link\" creates or changes the public link of the file (one per file, view only, anyone with it can open it) and needs the \"link\" permission; its password is generated by the server when you pass password: true or the administrator requires one, and is returned once in the confirmed result only.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Path of the file or folder, e.g. /Documents/report.pdf"
+                        },
+                        "with": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Recipient: user:<uid> for a person, group:<gid> for a group, or link for a public link."
+                        },
+                        "permission": {
+                            "type": "string",
+                            "enum": [
+                                "view",
+                                "edit"
+                            ],
+                            "default": "view",
+                            "description": "view to open and download; edit to change too (on a folder: add, change and delete inside it)."
+                        },
+                        "expires": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Last day of access, YYYY-MM-DD in the user's timezone, tomorrow or later."
+                        },
+                        "note": {
+                            "type": "string",
+                            "maxLength": 500,
+                            "description": "Note shown to the recipient with the share; an empty string removes the current note."
+                        },
+                        "password": {
+                            "type": "boolean",
+                            "description": "Public link only: true makes the server generate a new password, which replaces the current one and is shown once in the result. Never choose a password yourself."
+                        },
+                        "plan_state": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128,
+                            "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path",
+                        "with"
+                    ]
+                },
+                "annotations": {
+                    "title": "Share file or folder",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_unshare",
+                "title": "Stop sharing file or folder",
+                "description": "Stop sharing a file or folder of yours: removes one share you created, so that person, group or public link loses access. Name the share with the shareId from files_list_shares, or with path plus with (user:<uid>, group:<gid> or link). Nothing is deleted: the file or folder and its content stay as they are. Only your own shares of your own files can be removed; a Talk attachment is removed in Talk. Without confirm: true it returns the plan and changes nothing. Needs the \"share\" permission; removing a public link needs \"link\".",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "shareId": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128,
+                            "description": "The shareId of the share to remove, exactly as files_list_shares returns it (for example ocinternal:123). Use it alone, or use path with with instead."
+                        },
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "File or folder of yours, e.g. /Documents/report.pdf. Use it together with with."
+                        },
+                        "with": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Whose share to remove from path: user:<uid>, group:<gid> or link. Use it together with path."
+                        },
+                        "plan_state": {
+                            "type": "string",
+                            "minLength": 1,
+                            "maxLength": 128,
+                            "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "annotations": {
+                    "title": "Stop sharing file or folder",
+                    "readOnlyHint": false,
+                    "destructiveHint": true,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_upload",
+                "title": "Upload new file",
+                "description": "Create a NEW file of any type (docx, xlsx, pdf, image, zip) that you generated locally, without passing its content through the model. Without confirm: true it returns the plan; with confirm: true it returns uploadUrl, a single-use link valid for 15 minutes and bound to you and this path. Send the bytes with curl -sS -T /tmp/file -X PUT -H \"Content-Type: application/octet-stream\" \"$UPLOAD_URL\"; the answer carries path, size, etag and fileId. Never overwrites a file with content: an existing name is refused, so use files_checkout to replace an existing file. For a small text file use files_create. The folder must exist (files_mkdir creates it); outside your personal folder ask the user and retry with confirm_shared.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Full path of the new file, including its name, e.g. /Reports/Report.docx"
+                        },
+                        "size": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "description": "Size of the local file in bytes, optional: a size over the upload limit is refused before any link is issued"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path"
+                    ]
+                },
+                "annotations": {
+                    "title": "Upload new file",
+                    "readOnlyHint": false,
+                    "destructiveHint": false,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            },
+            {
+                "name": "files_create",
+                "title": "Create text file",
+                "description": "Create a NEW small text file with its content inline: .md, .txt, .csv, .json, .html, .xml, .yaml, .yml, up to 1 MB of UTF-8. Never overwrites a file with content: an existing name is refused (use files_edit or files_checkout to change it). For any other type or a larger file use files_upload. The folder must exist (files_mkdir creates it); outside your personal folder ask the user and retry with confirm_shared.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "path": {
+                            "type": "string",
+                            "minLength": 1,
+                            "description": "Full path of the new file, including its name, e.g. /Reports/Report.docx"
+                        },
+                        "content": {
+                            "type": "string",
+                            "description": "Complete text of the new file, up to 1 MB of UTF-8"
+                        },
+                        "confirm_shared": {
+                            "type": "boolean",
+                            "description": "Required only when the file is outside your personal folder (shared, team folder, or external storage). Send only after confirming with the user."
+                        },
+                        "confirm": {
+                            "type": "boolean",
+                            "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "required": [
+                        "path",
+                        "content"
+                    ]
+                },
+                "annotations": {
+                    "title": "Create text file",
+                    "readOnlyHint": false,
+                    "destructiveHint": false,
+                    "idempotentHint": false,
+                    "openWorldHint": false
+                }
+            }
+        ]
+    }
+}

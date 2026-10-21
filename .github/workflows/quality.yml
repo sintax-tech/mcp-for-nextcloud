@@ -1,0 +1,62 @@
+# SPDX-FileCopyrightText: 2026 MCP for Nextcloud contributors
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: Quality
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    name: Syntax and static analysis (PHP 8.2)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+      - name: Set up PHP and Composer (2.8 or newer)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, intl, gd, zip, sqlite3
+          coverage: none
+          tools: composer:v2
+      - name: Install locked development dependencies
+        run: composer install --no-interaction --no-progress
+        working-directory: mcp
+      - name: Validate the manifest and lock
+        run: composer validate --no-check-publish
+        working-directory: mcp
+      - name: Check PHP syntax
+        run: composer lint
+        working-directory: mcp
+      - name: Run both static analysis scopes
+        run: composer analyse
+        working-directory: mcp
+
+  documentation:
+    name: Documentation and translation provenance
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer:v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: mcp/.node-version
+          cache: npm
+          cache-dependency-path: mcp/package-lock.json
+      - run: npm ci
+        working-directory: mcp
+      - run: composer docs:check
+        working-directory: mcp
+      - run: composer docs:translations
+        working-directory: mcp
+      - run: composer test:docs
+        working-directory: mcp

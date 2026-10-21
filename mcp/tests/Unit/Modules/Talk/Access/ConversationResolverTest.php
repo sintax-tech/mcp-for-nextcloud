@@ -1,0 +1,585 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+namespace OCA\Mcp\Tests\Unit\Modules\Talk\Access;
+
+use InvalidArgumentException;
+use OCA\Mcp\Modules\Talk\Access\Conversation;
+use OCA\Mcp\Modules\Talk\Access\ConversationAccessException;
+use OCA\Mcp\Modules\Talk\Access\ConversationResolver;
+use OCA\Mcp\Tests\Support\Talk\TalkNativeFixtures;
+use OCA\Mcp\Modules\Talk\Execution\TalkUnavailableException;
+use PHPUnit\Framework\MockObject\MockObject;
+use PHPUnit\Framework\TestCase;
+use RuntimeException;
+
+class ConversationResolverTest extends TestCase
+{
+    private TalkNativeFixtures $talkServices;
+    private ConversationResolver $resolver;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->talkServices = TalkNativeFixtures::create(fn(string $class) => $this->createMock($class));
+        $this->resolver = new ConversationResolver(
+            $this->talkServices->manager->forUser(...),
+            $this->talkServices->participantService->forUser(...),
+            $this->talkServices->roomService->forUser(...),
+            $this->talkServices->conversationConstants->forUser(...),
+        );
+    }
+
+    public function testMalformedTokenIsAnArgumentErrorBeforeAnyTalkCall(): void
+    {
+        $this->talkServices->manager->expects($this->never())->method('forUser');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(\OCA\Mcp\Modules\Talk\Access\ConversationMessages::invalidToken());
+        $this->resolver->resolveForReading('alice', 'ABC');
+    }
+
+    public function testTokenWithUnsupportedCharactersIsAnArgumentError(): void
+    {
+        $this->talkServices->manager->expects($this->never())->method('forUser');
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->resolver->resolveForReading('alice', 'token_com_underscore');
+    }
+
+    public function testReadingResolvesRoomAndParticipant(): void
+    {
+        [$room, $participant] = $this->givenRoomAndParticipant();
+
+        $conversation = $this->resolver->resolveForReading('alice', 'abcd');
+
+        $this->assertInstanceOf(Conversation::class, $conversation);
+        $this->assertSame($room, $conversation->room);
+        $this->assertSame($participant, $conversation->participant);
+    }
+
+    public function testReadingNeverMarksAnythingAsRead(): void
+    {
+        $room = $this->createMock(ResolverRoomGateway::class);
+        $room->expects($this->never())->method('setReadOnly');
+        $room->expects($this->never())->method('setLobbyState');
+        $participant = $this->createMock(ResolverParticipantGateway::class);
+        $participant->expects($this->never())->method('markAsRead');
+        $this->givenServicesReturning($room, $participant);
+        $this->givenConstants();
+
+        $this->resolver->resolveForReading('alice', 'abcd');
+    }
+
+    public function testMissingConversationAndMissingMembershipAnswerTheSameWay(): void
+    {
+        $notThere = $this->givenFailingBackend()->captureForTest('abcd');
+
+        [$room, $participant] = $this->givenRoomAndParticipant();
+        $services = TalkNativeFixtures::create(fn(string $class) => $this->createMock($class));
+        $services->manager->method('forUser')->willReturn($this->givenManager($room));
+        $services->participantService->method('forUser')->willReturn($this->givenParticipantServiceThatThrows());
+        $notAMember = (new FailingConversationResolver(
+            $services->manager->forUser(...),
+            $services->participantService->forUser(...),
+            $services->roomService->forUser(...),
+            $services->conversationConstants->forUser(...),
+        ))->captureForTest('abcd');
+
+        // The caller must not be able to tell "no such conversation" from "you are not in it".
+        $this->assertSame(\OCA\Mcp\Modules\Talk\Access\ConversationMessages::conversationNotFound(), $notThere);
+        $this->assertSame($notThere, $notAMember);
+    }
+
+    public function testWritingRefusesAReadOnlyConversation(): void
+    {
+        // An ordinary room (type 1) with every other condition satisfied, so the read-only flag is the only reason to refuse.
+        $this->givenRoom(readOnly: 1, type: 1, federated: false, lobby: 0, permissions: 128);
+
+        $this->expectException(ConversationAccessException::class);
+        $this->expectExceptionMessage(\OCA\Mcp\Modules\Talk\Access\ConversationMessages::conversationNotWritable());
+        $this->resolver->resolveForWriting('alice', 'abcd');
+    }
+
+    public function testWritingRefusesAChangelog(): void
+    {
+        $this->givenRoom(readOnly: 0, type: 7, federated: false, lobby: 0, permissions: 128);
+
+        $this->expectException(ConversationAccessException::class);
+        $this->expectExceptionMessage(\OCA\Mcp\Modules\Talk\Access\ConversationMessages::conversationNotWritable());
+        $this->resolver->resolveForWriting('alice', 'abcd');
+    }
+
+    public function testWritingRefusesAFederatedConversation(): void
+    {
+        $this->givenRoom(readOnly: 0, type: 1, federated: true, lobby: 0, permissions: 128);
+
+        $this->expectException(ConversationAccessException::class);
+        $this->expectExceptionMessage(\OCA\Mcp\Modules\Talk\Access\ConversationMessages::conversationNotWritable());
+        $this->resolver->resolveForWriting('alice', 'abcd');
+    }
+
+    public function testWritingRefusesAParticipantWithoutChatPermission(): void
+    {
+        $this->givenRoom(readOnly: 0, type: 1, federated: false, lobby: 0, permissions: 0);
+
+        $this->expectException(ConversationAccessException::class);
+        $this->expectExceptionMessage(\OCA\Mcp\Modules\Talk\Access\ConversationMessages::conversationNotWritable());
+        $this->resolver->resolveForWriting('alice', 'abcd');
+    }
+
+    /**
+     * The chat permission is one bit among others, and Talk hands out custom permission sets: a participant
+     * holding any combination without that bit cannot write, whatever else they hold.
+     *
+     * @return array<string, array{int}>
+     */
+    public static function permissionsWithoutTheChatBitProvider(): array
+    {
+        return [
+            'custom flag only' => [1],
+            'lobby bypass only' => [8],
+            'every other bit' => [127],
+            'two other bits' => [1 | 8 | 64],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('permissionsWithoutTheChatBitProvider')]
+    public function testWritingRefusesAnyPermissionSetWithoutTheChatBit(int $permissions): void
+    {
+        $this->givenRoom(readOnly: 0, type: 1, federated: false, lobby: 0, permissions: $permissions);
+
+        $this->expectException(ConversationAccessException::class);
+        $this->expectExceptionMessage(\OCA\Mcp\Modules\Talk\Access\ConversationMessages::conversationNotWritable());
+        $this->resolver->resolveForWriting('alice', 'abcd');
+    }
+
+    /** @return array<string, array{int}> */
+    public static function permissionsWithTheChatBitProvider(): array
+    {
+        return [
+            'chat bit alone' => [128],
+            'chat and another' => [128 | 1],
+            'all bits' => [255],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('permissionsWithTheChatBitProvider')]
+    public function testWritingAllowsAnyPermissionSetWithTheChatBit(int $permissions): void
+    {
+        $this->givenRoom(readOnly: 0, type: 1, federated: false, lobby: 0, permissions: $permissions);
+
+        $this->assertSame('abcd', $this->resolver->resolveForWriting('alice', 'abcd')->room->getToken());
+    }
+
+    public function testAnActiveLobbyNeedsTheBypassBitSpecificallyNotJustAnyOtherBit(): void
+    {
+        $this->givenRoom(readOnly: 0, type: 1, federated: false, lobby: 2, permissions: 255 & ~8);
+
+        $this->expectException(ConversationAccessException::class);
+        $this->resolver->resolveForWriting('alice', 'abcd');
+    }
+
+    public function testWritingRefusesAnActiveLobbyWithoutTheBypassPermission(): void
+    {
+        $this->givenRoom(readOnly: 0, type: 1, federated: false, lobby: 2, permissions: 128);
+
+        $this->expectException(ConversationAccessException::class);
+        $this->expectExceptionMessage(\OCA\Mcp\Modules\Talk\Access\ConversationMessages::conversationNotWritable());
+        $this->resolver->resolveForWriting('alice', 'abcd');
+    }
+
+    public function testWritingAllowsAnActiveLobbyWithTheBypassPermission(): void
+    {
+        $this->givenRoom(readOnly: 0, type: 1, federated: false, lobby: 2, permissions: 128 | 8);
+
+        $conversation = $this->resolver->resolveForWriting('alice', 'abcd');
+
+        $this->assertSame('abcd', $conversation->room->getToken());
+    }
+
+    public function testWritingAllowsAnOpenRoomWithChatPermission(): void
+    {
+        $this->givenRoom(readOnly: 0, type: 1, federated: false, lobby: 0, permissions: 128);
+
+        $this->assertInstanceOf(Conversation::class, $this->resolver->resolveForWriting('alice', 'abcd'));
+    }
+
+    /**
+     * Talk 24 (Nextcloud 34) no longer lets Room::getLobbyState() open a lobby whose timer has passed: its own
+     * controllers call RoomService::validateLobbyTimer() first. Without that call a webinar past its start time would
+     * stay closed to the module.
+     */
+    public function testWritingOpensALobbyWhoseTimerHasPassedOnTalk24(): void
+    {
+        $room = $this->givenLobbyRoom(lobby: 2);
+        $roomService = new class {
+            /** @var list<object> */
+            public array $validated = [];
+
+            public function validateLobbyTimer(object $room): void
+            {
+                $this->validated[] = $room;
+                $room->setLobbyState(0);
+            }
+        };
+        $this->talkServices->roomService->method('forUser')->willReturn($roomService);
+
+        $conversation = $this->resolver->resolveForWriting('alice', 'abcd');
+
+        $this->assertSame($room, $conversation->room);
+        $this->assertSame([$room], $roomService->validated);
+    }
+
+    public function testWritingKeepsRefusingALobbyWhoseTimerHasNotPassedOnTalk24(): void
+    {
+        $this->givenLobbyRoom(lobby: 2);
+        $this->talkServices->roomService->method('forUser')->willReturn(
+            new class {
+                public function validateLobbyTimer(object $room): void {}
+            },
+        );
+
+        $this->expectException(ConversationAccessException::class);
+        $this->expectExceptionMessage(\OCA\Mcp\Modules\Talk\Access\ConversationMessages::conversationNotWritable());
+        $this->resolver->resolveForWriting('alice', 'abcd');
+    }
+
+    /** Before Talk 24 getLobbyState() expires the timer itself, and RoomService has no validateLobbyTimer(). */
+    public function testWritingReliesOnGetLobbyStateWhereRoomServiceCannotValidateTheTimer(): void
+    {
+        $this->givenLobbyRoom(lobby: 2);
+        $this->talkServices->roomService->method('forUser')->willReturn(new class {});
+
+        $this->expectException(ConversationAccessException::class);
+        $this->expectExceptionMessage(\OCA\Mcp\Modules\Talk\Access\ConversationMessages::conversationNotWritable());
+        $this->resolver->resolveForWriting('alice', 'abcd');
+    }
+
+    /** A failing timer check leaves the lobby as Talk reports it: closed, never opened by accident. */
+    public function testAFailingLobbyTimerCheckKeepsTheLobbyClosed(): void
+    {
+        $this->givenLobbyRoom(lobby: 2);
+        $this->talkServices->roomService->method('forUser')->willReturn(
+            new class {
+                public function validateLobbyTimer(object $room): void
+                {
+                    throw new RuntimeException('database gone');
+                }
+            },
+        );
+
+        $this->expectException(ConversationAccessException::class);
+        $this->expectExceptionMessage(\OCA\Mcp\Modules\Talk\Access\ConversationMessages::conversationNotWritable());
+        $this->resolver->resolveForWriting('alice', 'abcd');
+    }
+
+    /** No lobby, nothing to expire: the room service is not even resolved. */
+    public function testWritingWithoutLobbyNeverTouchesTheLobbyTimer(): void
+    {
+        $this->givenLobbyRoom(lobby: 0);
+        $this->talkServices->roomService->expects($this->never())->method('forUser');
+
+        $this->assertSame('abcd', $this->resolver->resolveForWriting('alice', 'abcd')->room->getToken());
+    }
+
+    /**
+     * Talk serves the history (`ChatController::receiveMessages`) only under `#[RequireModeratorOrNoLobby]`: with the
+     * lobby on, a participant without the bypass cannot read it in Talk, so not through the module either.
+     */
+    public function testReadingRefusesAnActiveLobbyWithoutTheBypassPermission(): void
+    {
+        $this->givenLobbyRoom(lobby: 2);
+
+        $this->expectException(ConversationAccessException::class);
+        $this->expectExceptionMessage(\OCA\Mcp\Modules\Talk\Access\ConversationMessages::conversationNotFound());
+        $this->resolver->resolveForReading('alice', 'abcd');
+    }
+
+    /** Moderators hold every permission bit in Talk, the bypass included; anyone holding it reads behind the lobby. */
+    public function testReadingAllowsAnActiveLobbyWithTheBypassPermission(): void
+    {
+        $this->givenLobbyRoom(lobby: 2, permissions: 128 | 8);
+
+        $this->assertSame('abcd', $this->resolver->resolveForReading('alice', 'abcd')->room->getToken());
+    }
+
+    public function testReadingOpensALobbyWhoseTimerHasPassedOnTalk24(): void
+    {
+        $room = $this->givenLobbyRoom(lobby: 2);
+        $this->talkServices->roomService->method('forUser')->willReturn(
+            new class {
+                public function validateLobbyTimer(object $room): void
+                {
+                    $room->setLobbyState(0);
+                }
+            },
+        );
+
+        $this->assertSame($room, $this->resolver->resolveForReading('alice', 'abcd')->room);
+    }
+
+    public function testReadingWithAFailingLobbyTimerCheckKeepsTheLobbyClosed(): void
+    {
+        $this->givenLobbyRoom(lobby: 2);
+        $this->talkServices->roomService->method('forUser')->willReturn(
+            new class {
+                public function validateLobbyTimer(object $room): void
+                {
+                    throw new RuntimeException('database gone');
+                }
+            },
+        );
+
+        $this->expectException(ConversationAccessException::class);
+        $this->expectExceptionMessage(\OCA\Mcp\Modules\Talk\Access\ConversationMessages::conversationNotFound());
+        $this->resolver->resolveForReading('alice', 'abcd');
+    }
+
+    /** The listing asks the same question for every room it shows, with the room and participant it already holds. */
+    public function testTheLobbyRuleAnswersForAConversationAlreadyResolved(): void
+    {
+        $room = $this->givenLobbyRoom(lobby: 2);
+        $participant = $this->createMock(ResolverParticipantGateway::class);
+        $participant->method('getPermissions')->willReturn(128);
+        $bypass = $this->createMock(ResolverParticipantGateway::class);
+        $bypass->method('getPermissions')->willReturn(128 | 8);
+
+        $this->assertTrue($this->resolver->keepsOutOfLobby('alice', new Conversation($room, $participant)));
+        $this->assertFalse($this->resolver->keepsOutOfLobby('alice', new Conversation($room, $bypass)));
+    }
+
+    public function testUnavailableTalkStaysUnavailableThroughTheResolver(): void
+    {
+        $this->talkServices->manager->method('forUser')->willThrowException(new TalkUnavailableException());
+
+        $this->expectException(TalkUnavailableException::class);
+        $this->resolver->resolveForReading('alice', 'abcd');
+    }
+
+    /**
+     * @return array{ResolverRoomGateway&MockObject, ResolverParticipantGateway&MockObject}
+     */
+    private function givenRoomAndParticipant(): array
+    {
+        $room = $this->createMock(ResolverRoomGateway::class);
+        $room->method('getToken')->willReturn('abcd');
+        $participant = $this->createMock(ResolverParticipantGateway::class);
+        $participant->method('getPermissions')->willReturn(128);
+        $this->givenServicesReturning($room, $participant);
+        $this->givenConstants();
+
+        return [$room, $participant];
+    }
+
+    /** The Talk constants the checks read, as the other helpers of this test give them. */
+    private function givenConstants(): void
+    {
+        $this->talkServices->conversationConstants->method('forUser')->willReturn([
+            'chatPermission' => 128,
+            'lobbyIgnorePermission' => 8,
+            'readOnly' => 1,
+            'changelogType' => 7,
+            'lobbyNone' => 0,
+        ]);
+    }
+
+    private function givenServicesReturning(object $room, object $participant): void
+    {
+        $this->talkServices->manager->method('forUser')->willReturn($this->givenManager($room));
+        $this->talkServices->participantService
+            ->method('forUser')
+            ->willReturn($this->givenParticipantService($participant));
+    }
+
+    /**
+     * @param int $readOnly Value the room reports as read-only
+     * @param int $type Room type, where 7 is changelog
+     * @param bool $federated Whether the conversation is federated
+     * @param int $lobby Lobby state, where 0 means none
+     * @param int $permissions Participant permission bits
+     */
+    private function givenRoom(int $readOnly, int $type, bool $federated, int $lobby, int $permissions): void
+    {
+        $room = $this->createMock(ResolverRoomGateway::class);
+        $room->method('getToken')->willReturn('abcd');
+        $room->method('getReadOnly')->willReturn($readOnly);
+        $room->method('getType')->willReturn($type);
+        $room->method('isFederatedConversation')->willReturn($federated);
+        $room->method('getLobbyState')->willReturn($lobby);
+        $participant = $this->createMock(ResolverParticipantGateway::class);
+        $participant->method('getPermissions')->willReturn($permissions);
+        $this->givenServicesReturning($room, $participant);
+
+        $this->talkServices->conversationConstants->method('forUser')->willReturn([
+            'chatPermission' => 128,
+            'lobbyIgnorePermission' => 8,
+            'readOnly' => 1,
+            'changelogType' => 7,
+            'lobbyNone' => 0,
+        ]);
+    }
+
+    /**
+     * An ordinary writable room whose lobby state can change, as Talk 24's RoomService::validateLobbyTimer() changes
+     * it, with a participant holding the chat permission but not the lobby bypass.
+     *
+     * @param int $lobby Initial lobby state, where 0 means none
+     * @param int $permissions Participant permission bits, the chat permission without the lobby bypass by default
+     */
+    private function givenLobbyRoom(int $lobby, int $permissions = 128): ResolverRoomGateway
+    {
+        $room = new class ($lobby) implements ResolverRoomGateway {
+            public function __construct(private int $lobby) {}
+
+            public function getToken(): string
+            {
+                return 'abcd';
+            }
+
+            public function getType(): int
+            {
+                return 2;
+            }
+
+            public function getReadOnly(): int
+            {
+                return 0;
+            }
+
+            public function getLobbyState(): int
+            {
+                return $this->lobby;
+            }
+
+            public function isFederatedConversation(): bool
+            {
+                return false;
+            }
+
+            public function setReadOnly(int $readOnly): void {}
+
+            public function setLobbyState(int $state): void
+            {
+                $this->lobby = $state;
+            }
+        };
+        $participant = $this->createMock(ResolverParticipantGateway::class);
+        $participant->method('getPermissions')->willReturn($permissions);
+        $this->givenServicesReturning($room, $participant);
+        $this->talkServices->conversationConstants->method('forUser')->willReturn([
+            'chatPermission' => 128,
+            'lobbyIgnorePermission' => 8,
+            'readOnly' => 1,
+            'changelogType' => 7,
+            'lobbyNone' => 0,
+        ]);
+
+        return $room;
+    }
+
+    private function givenManager(object $room): object
+    {
+        return new class ($room) {
+            public function __construct(private object $room) {}
+
+            public function getRoomForUserByToken(string $token, ?string $userId, ?string $sessionId = null): object
+            {
+                return $this->room;
+            }
+        };
+    }
+
+    private function givenParticipantService(object $participant): object
+    {
+        return new class ($participant) {
+            public function __construct(private object $participant) {}
+
+            public function getParticipant(object $room, string $userId, bool $lazy = false): object
+            {
+                return $this->participant;
+            }
+        };
+    }
+
+    private function givenParticipantServiceThatThrows(): object
+    {
+        return new class {
+            public function getParticipant(object $room, string $userId, bool $lazy = false): object
+            {
+                throw new RuntimeException('Participant not found');
+            }
+        };
+    }
+
+    private function givenFailingBackend(): FailingConversationResolver
+    {
+        $services = TalkNativeFixtures::create(fn(string $class) => $this->createMock($class));
+        $services->manager->method('forUser')->willReturn(
+            new class {
+                public function getRoomForUserByToken(string $token, ?string $userId, ?string $sessionId = null): object
+                {
+                    throw new RuntimeException('Room not found');
+                }
+            },
+        );
+        $services->participantService->method('forUser')->willReturn($this->givenParticipantServiceThatThrows());
+
+        return new FailingConversationResolver(
+            $services->manager->forUser(...),
+            $services->participantService->forUser(...),
+            $services->roomService->forUser(...),
+            $services->conversationConstants->forUser(...),
+        );
+    }
+}
+
+/**
+ * The room surface the resolver touches, plus the mutating calls that reading must never make.
+ */
+interface ResolverRoomGateway
+{
+    public function getToken(): string;
+
+    public function getType(): int;
+
+    public function getReadOnly(): int;
+
+    public function getLobbyState(): int;
+
+    public function isFederatedConversation(): bool;
+
+    public function setReadOnly(int $readOnly): void;
+
+    public function setLobbyState(int $state): void;
+}
+
+/** The participant surface the resolver touches, plus the read-marking call that reading must never make. */
+interface ResolverParticipantGateway
+{
+    public function getPermissions(): int;
+
+    public function markAsRead(): void;
+}
+
+/** Exposes the failure message so the test can compare what two different refusals say. */
+class FailingConversationResolver extends ConversationResolver
+{
+    /**
+     * @param string $token Conversation token
+     * @return string The message the caller would receive
+     */
+    public function captureForTest(string $token): string
+    {
+        try {
+            $this->resolveForReading('alice', $token);
+            throw new RuntimeException('Expected a conversation access failure.');
+        } catch (ConversationAccessException $e) {
+            return $e->getMessage();
+        }
+    }
+}

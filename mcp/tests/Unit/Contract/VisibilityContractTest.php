@@ -7,31 +7,29 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract;
 
+use OCA\Mcp\Platform\FileAccess\FileAccessMessages;
+
 use OCA\Mcp\AppInfo\Application;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\Tools\FakeTree;
-use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
-use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
-use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\Files\FilesModule;
-use OCA\Mcp\Tools\Files\Reorganization;
-use OCA\Mcp\Tools\Notes\NotesModule;
-use OCA\Mcp\Tools\Notes\NotesRepository;
-use OCA\Mcp\Tools\Talk\AttachmentAccess;
-use OCA\Mcp\Tools\Talk\Conversation;
-use OCA\Mcp\Tools\Talk\ConversationAccessException;
-use OCA\Mcp\Tools\Talk\FileAccessException;
-use OCA\Mcp\Tools\Talk\Messages as TalkMessages;
-use OCA\Mcp\Tools\Talk\TalkModule;
-use OCA\Mcp\Tools\Talk\UserFileResolver;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolModule;
-use OCA\Mcp\Tools\ToolRegistry;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Tests\Support\Platform\FileAccess\FakeTree;
+use OCA\Mcp\Tests\Support\Identity\FakeUsers;
+use OCA\Mcp\Platform\FileAccess\Sharing\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\Sharing\SharedWriteGuard;
+use OCA\Mcp\Modules\Files\FilesModule;
+use OCA\Mcp\Modules\Notes\NotesModule;
+use OCA\Mcp\Modules\Notes\Storage\NotesFolders;
+use OCA\Mcp\Modules\Talk\Attachments\AttachmentAccess;
+use OCA\Mcp\Modules\Talk\Access\Conversation;
+use OCA\Mcp\Modules\Talk\Access\ConversationAccessException;
+use OCA\Mcp\Modules\Talk\Attachments\FileAccessException;
+use OCA\Mcp\Modules\Talk\TalkModule;
+use OCA\Mcp\Modules\Talk\Attachments\UserFileResolver;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\App\IAppManager;
 use OCP\Files\File;
 use OCP\Files\Folder;
@@ -125,10 +123,71 @@ final class VisibilityContractTest extends TestCase {
         $this->tagManager->method('getTagsByIds')->willReturn([self::HIDDEN_TAG => $hiddenTag]);
 
         $this->config->app['mcp'][VisibilityGuard::CONFIG_KEY] = json_encode([self::HIDDEN_TAG]);
-        $this->guard = new \OCA\Mcp\Service\Scope\FilesAccessGuard($this->config->mock($this), $this->tagMapper, $this->tree->filesystemRoot(), $this->tagManager);
+        $this->guard = \OCA\Mcp\Tests\Support\Files\FilesGuards::unrestricted($this, $this->config->mock($this), $this->tagMapper, $this->tree->filesystemRoot(), $this->tagManager);
     }
 
     private function build(string $class): object {
+        if ($class === \OCA\Mcp\Modules\Logs\LogsModule::class) {
+            return new \OCA\Mcp\Modules\Logs\LogsModule([
+                'logs_list' => fn () => $this->build(\OCA\Mcp\Modules\Logs\Tools\ListLogs::class),
+                'logs_analyze' => fn () => $this->build(\OCA\Mcp\Modules\Logs\Tools\AnalyzeLogs::class),
+            ], fn () => $this->build(\OCA\Mcp\Access\Logs\LogsAccess::class), fn () => $this->build(\OCA\Mcp\Modules\Logs\Audit\LogAudit::class));
+        }
+        if ($class === \OCA\Mcp\Modules\People\PeopleModule::class) {
+            return new \OCA\Mcp\Modules\People\PeopleModule([
+                'users_search' => fn () => $this->build(\OCA\Mcp\Modules\People\Tools\SearchUsers::class),
+            ]);
+        }
+        if ($class === NotesModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Notes\NotesToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new NotesModule($factories);
+        }
+        if ($class === \OCA\Mcp\Modules\Files\FilesModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Files\FilesToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Files\FilesModule($factories, (\OCA\Mcp\Tests\Support\Files\FilesGuards::unrestricted($this))->assertScopeReadable(...));
+        }
+        if ($class === \OCA\Mcp\Modules\Deck\DeckModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Deck\DeckToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Deck\DeckModule($factories, $this->createMock(\OCA\Mcp\Modules\Deck\Access\DeckAvailability::class));
+        }
+        if ($class === TalkModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Talk\TalkToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new TalkModule($factories, $this->build(\OCA\Mcp\Modules\Talk\Execution\ResultBoundary::class), $this->build(\OCA\Mcp\Modules\Talk\Execution\PreviewBoundary::class));
+        }
+        if ($class === \OCA\Mcp\Modules\Contacts\ContactsModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Contacts\ContactsToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Contacts\ContactsModule($factories);
+        }
+        if ($class === \OCA\Mcp\Modules\Tasks\TasksModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Tasks\TasksToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Tasks\TasksModule($factories, (\OCA\Mcp\Tests\Support\Platform\FileAccess\References\OutputReferenceFilters::inactive($this))->assertAvailable(...));
+        }
+        if ($class === \OCA\Mcp\Modules\Calendar\CalendarModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Calendar\CalendarToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Calendar\CalendarModule($factories, (\OCA\Mcp\Tests\Support\Platform\FileAccess\References\OutputReferenceFilters::inactive($this))->assertAvailable(...));
+        }
+        if ($class === \Closure::class) { return static fn () => null; }
         $constructor = (new \ReflectionClass($class))->getConstructor();
         $args = [];
         foreach ($constructor?->getParameters() ?? [] as $parameter) {
@@ -138,7 +197,7 @@ final class VisibilityContractTest extends TestCase {
                 $args[] = $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : ($name === 'string' ? 'mcp' : null);
                 continue;
             }
-            if ($name === VisibilityGuard::class || $name === \OCA\Mcp\Service\Scope\FilesAccessGuard::class) {
+            if ($name === VisibilityGuard::class || $name === \OCA\Mcp\Access\ResourceScope\FilesAccessGuard::class) {
                 $args[] = $this->guard;
                 continue;
             }
@@ -185,7 +244,6 @@ final class VisibilityContractTest extends TestCase {
                 continue;
             }
             if ($name === GrantPolicy::class) {
-                // The policy every tool reads, also from inside a module (a share type): alice holds every grant.
                 $args[] = $this->policy();
                 continue;
             }
@@ -196,7 +254,7 @@ final class VisibilityContractTest extends TestCase {
                 continue;
             }
             $reflection = new \ReflectionClass($name);
-            $args[] = str_starts_with($name, 'OCA\\Mcp\\') && $reflection->isInstantiable() ? $this->build($name) : $this->createMock($name);
+            $args[] = $name === \Closure::class ? static fn () => null : (str_starts_with($name, 'OCA\\Mcp\\') && $reflection->isInstantiable() ? $this->build($name) : $this->createMock($name));
         }
         return new $class(...$args);
     }
@@ -221,7 +279,6 @@ final class VisibilityContractTest extends TestCase {
         return $share;
     }
 
-    /** @return GrantPolicy one policy for the registry and the modules, with every grant allowed to alice */
     private function policy(): GrantPolicy {
         if ($this->policy !== null) {
             return $this->policy;
@@ -244,7 +301,8 @@ final class VisibilityContractTest extends TestCase {
         $user->method('getUID')->willReturn('alice');
         $users->method('get')->willReturn($user);
 
-        return new ToolRegistry($modules, $policy, $apps, $users, $this->createMock(LoggerInterface::class));
+        $availability = new \OCA\Mcp\Mcp\Tools\Discovery\ToolAvailability($policy, $apps, $users);
+        return new ToolRegistry($modules, $availability, new \OCA\Mcp\Mcp\Tools\Execution\ToolExecutor($availability, $this->createMock(LoggerInterface::class)));
     }
 
     /**
@@ -339,7 +397,7 @@ final class VisibilityContractTest extends TestCase {
         foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
             $res = $registry->call('files_read', ['path' => $p], 'alice');
             $this->assertTrue($res['isError'] ?? false);
-            $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+            $this->assertStringContainsString(FileAccessMessages::notFound(), $res['content'][0]['text']);
             $assertNoLeak($res['content'][0]['text']);
         }
 
@@ -348,7 +406,7 @@ final class VisibilityContractTest extends TestCase {
             foreach ([[], ['confirm' => true]] as $confirm) {
                 $res = $registry->call('files_edit', ['path' => $p, 'content' => 'new', 'confirm_shared' => true] + $confirm, 'alice');
                 $this->assertTrue($res['isError'] ?? false);
-                $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+                $this->assertStringContainsString(FileAccessMessages::notFound(), $res['content'][0]['text']);
                 $assertNoLeak($res['content'][0]['text']);
             }
         }
@@ -358,7 +416,7 @@ final class VisibilityContractTest extends TestCase {
             foreach ([[], ['confirm' => true]] as $confirm) {
                 $res = $registry->call('files_replace', ['path' => $p, 'old' => 'foo', 'new' => 'bar', 'confirm_shared' => true] + $confirm, 'alice');
                 $this->assertTrue($res['isError'] ?? false);
-                $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+                $this->assertStringContainsString(FileAccessMessages::notFound(), $res['content'][0]['text']);
                 $assertNoLeak($res['content'][0]['text']);
             }
         }
@@ -368,7 +426,7 @@ final class VisibilityContractTest extends TestCase {
             foreach ([[], ['confirm' => true]] as $confirm) {
                 $res = $registry->call('files_checkout', ['path' => $p, 'confirm_shared' => true] + $confirm, 'alice');
                 $this->assertTrue($res['isError'] ?? false);
-                $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+                $this->assertStringContainsString(FileAccessMessages::notFound(), $res['content'][0]['text']);
                 $assertNoLeak($res['content'][0]['text']);
             }
         }
@@ -377,7 +435,7 @@ final class VisibilityContractTest extends TestCase {
         foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
             $res = $registry->call('files_versions_list', ['path' => $p], 'alice');
             $this->assertTrue($res['isError'] ?? false);
-            $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+            $this->assertStringContainsString(FileAccessMessages::notFound(), $res['content'][0]['text']);
             $assertNoLeak($res['content'][0]['text']);
         }
 
@@ -385,7 +443,7 @@ final class VisibilityContractTest extends TestCase {
         foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
             $res = $registry->call('files_version_read', ['path' => $p, 'version' => '1'], 'alice');
             $this->assertTrue($res['isError'] ?? false);
-            $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+            $this->assertStringContainsString(FileAccessMessages::notFound(), $res['content'][0]['text']);
             $assertNoLeak($res['content'][0]['text']);
         }
 
@@ -394,7 +452,7 @@ final class VisibilityContractTest extends TestCase {
             foreach ([[], ['confirm' => true]] as $confirm) {
                 $res = $registry->call('files_version_restore', ['path' => $p, 'version' => '1', 'confirm_shared' => true] + $confirm, 'alice');
                 $this->assertTrue($res['isError'] ?? false);
-                $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+                $this->assertStringContainsString(FileAccessMessages::notFound(), $res['content'][0]['text']);
                 $assertNoLeak($res['content'][0]['text']);
             }
         }
@@ -403,7 +461,7 @@ final class VisibilityContractTest extends TestCase {
         foreach (['/secret_direct.jpg', '/SecretFolder/secret_ancestral.jpg'] as $p) {
             $res = $registry->call('files_image_view', ['path' => $p], 'alice');
             $this->assertTrue($res['isError'] ?? false);
-            $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+            $this->assertStringContainsString(FileAccessMessages::notFound(), $res['content'][0]['text']);
             $assertNoLeak($res['content'][0]['text']);
         }
 
@@ -414,7 +472,7 @@ final class VisibilityContractTest extends TestCase {
         $summary = json_decode($last['text'], true);
         $this->assertSame(0, $summary['returned']);
         foreach ($summary['skipped'] as $s) {
-            $this->assertSame(CommonMessages::notFound(), $s['reason']);
+            $this->assertSame(FileAccessMessages::notFound(), $s['reason']);
         }
 
         // 9b. files_images_view {folder}: the visible image comes back, the hidden ones never, not even as skipped
@@ -447,14 +505,14 @@ final class VisibilityContractTest extends TestCase {
         // A hidden folder answers like a missing one: an empty list would say it is there.
         $res = $registry->call('files_image_search', ['folder' => '/SecretFolder'], 'alice');
         $this->assertTrue($res['isError'] ?? false);
-        $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+        $this->assertSame(FileAccessMessages::notFound(), $res['content'][0]['text']);
 
         // 11. files_list
         $res = $registry->call('files_list', ['path' => '/'], 'alice');
         $assertNoLeak($res['content'][0]['text']);
         $res = $registry->call('files_list', ['path' => '/SecretFolder'], 'alice');
         $this->assertTrue($res['isError'] ?? false);
-        $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+        $this->assertStringContainsString(FileAccessMessages::notFound(), $res['content'][0]['text']);
         $assertNoLeak($res['content'][0]['text']);
 
         // 12. files_search
@@ -468,17 +526,17 @@ final class VisibilityContractTest extends TestCase {
         $assertNoLeak($res['content'][0]['text']);
         $res = $registry->call('files_tree', ['path' => '/SecretFolder'], 'alice');
         $this->assertTrue($res['isError'] ?? false);
-        $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+        $this->assertStringContainsString(FileAccessMessages::notFound(), $res['content'][0]['text']);
         $assertNoLeak($res['content'][0]['text']);
 
         // 14. files_mkdir (collision and inside hidden folder)
         foreach ([[], ['confirm' => true]] as $confirm) {
             $res = $registry->call('files_mkdir', ['path' => '/secret_direct.txt', 'confirm_shared' => true] + $confirm, 'alice');
             $this->assertTrue($res['isError'] ?? false);
-            $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+            $this->assertSame(FileAccessMessages::notFound(), $res['content'][0]['text']);
             $res = $registry->call('files_mkdir', ['path' => '/SecretFolder/newdir', 'confirm_shared' => true] + $confirm, 'alice');
             $this->assertTrue($res['isError'] ?? false);
-            $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+            $this->assertSame(FileAccessMessages::notFound(), $res['content'][0]['text']);
             $assertNoLeak($res['content'][0]['text']);
         }
 
@@ -487,12 +545,12 @@ final class VisibilityContractTest extends TestCase {
         foreach (['files_upload' => [], 'files_create' => ['content' => 'x']] as $tool => $extra) {
             $res = $registry->call($tool, ['path' => '/secret_direct.txt', 'confirm' => true, 'confirm_shared' => true] + $extra, 'alice');
             $this->assertTrue($res['isError'] ?? false, $tool);
-            $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text'], $tool);
+            $this->assertSame(FileAccessMessages::notFound(), $res['content'][0]['text'], $tool);
             foreach ([true, false] as $confirm) {
                 $res = $registry->call($tool, ['path' => '/SecretFolder/novo.txt', 'confirm' => $confirm, 'confirm_shared' => true] + $extra, 'alice');
                 $this->assertTrue($res['isError'] ?? false, $tool);
-                $this->assertStringStartsWith(CommonMessages::notFound(), $res['content'][0]['text'], $tool);
-                $this->assertSame(FilesMessages::createFolderMissing(), $res['content'][0]['text'], $tool);
+                $this->assertStringStartsWith(FileAccessMessages::notFound(), $res['content'][0]['text'], $tool);
+                $this->assertSame(\OCA\Mcp\Modules\Files\Creation\CreationMessages::createFolderMissing(), $res['content'][0]['text'], $tool);
                 $assertNoLeak($res['content'][0]['text']);
             }
         }
@@ -504,15 +562,15 @@ final class VisibilityContractTest extends TestCase {
             foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
                 $res = $registry->call('files_copy', ['from' => $p, 'to' => '/dest.txt', 'confirm_shared' => true] + $confirm, 'alice');
                 $this->assertTrue($res['isError'] ?? false);
-                $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+                $this->assertSame(FileAccessMessages::notFound(), $res['content'][0]['text']);
                 $assertNoLeak($res['content'][0]['text']);
             }
             $res = $registry->call('files_copy', ['from' => '/visible.txt', 'to' => '/SecretFolder/dest.txt', 'confirm_shared' => true] + $confirm, 'alice');
             $this->assertTrue($res['isError'] ?? false);
-            $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+            $this->assertSame(FileAccessMessages::notFound(), $res['content'][0]['text']);
             $res = $registry->call('files_copy', ['from' => '/visible.txt', 'to' => '/secret_direct.txt', 'confirm_shared' => true] + $confirm, 'alice');
             $this->assertTrue($res['isError'] ?? false);
-            $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+            $this->assertSame(FileAccessMessages::notFound(), $res['content'][0]['text']);
         }
 
         // 16. files_move (source hidden, destination hidden, destination collision)
@@ -520,15 +578,15 @@ final class VisibilityContractTest extends TestCase {
             foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
                 $res = $registry->call('files_move', ['from' => $p, 'to' => '/dest_move.txt', 'confirm_shared' => true] + $confirm, 'alice');
                 $this->assertTrue($res['isError'] ?? false);
-                $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+                $this->assertSame(FileAccessMessages::notFound(), $res['content'][0]['text']);
                 $assertNoLeak($res['content'][0]['text']);
             }
             $res = $registry->call('files_move', ['from' => '/visible.txt', 'to' => '/SecretFolder/dest_move.txt', 'confirm_shared' => true] + $confirm, 'alice');
             $this->assertTrue($res['isError'] ?? false);
-            $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+            $this->assertSame(FileAccessMessages::notFound(), $res['content'][0]['text']);
             $res = $registry->call('files_move', ['from' => '/visible.txt', 'to' => '/secret_direct.txt', 'confirm_shared' => true] + $confirm, 'alice');
             $this->assertTrue($res['isError'] ?? false);
-            $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+            $this->assertSame(FileAccessMessages::notFound(), $res['content'][0]['text']);
         }
 
         // 17. files_move_batch
@@ -549,7 +607,7 @@ final class VisibilityContractTest extends TestCase {
         $harmless = ['moves' => [['from' => '/visible.txt', 'to' => '/moved.txt']], 'mkdirs' => ['/SecretFolder/newdir'], 'confirm_shared' => true];
         $plan = $filesModule->preview('files_move_batch', $harmless, 'alice');
         $this->assertFalse($plan['ok']);
-        $this->assertSame(CommonMessages::notFound(), $plan['mkdirs'][0]['reason']);
+        $this->assertSame(FileAccessMessages::notFound(), $plan['mkdirs'][0]['reason']);
         $res = $registry->call('files_move_batch', $harmless + ['confirm' => true], 'alice');
         $this->assertTrue($res['isError'] ?? false);
         $assertNoLeak($res['content'][0]['text']);
@@ -565,7 +623,7 @@ final class VisibilityContractTest extends TestCase {
         foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
             $res = $registry->call('files_list_shares', ['path' => $p], 'alice');
             $this->assertTrue($res['isError'] ?? false);
-            $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+            $this->assertSame(FileAccessMessages::notFound(), $res['content'][0]['text']);
             $assertNoLeak($res['content'][0]['text']);
         }
         foreach ([$directFileId, $ancestralFileId, $this->tree->addFile('/alice/files/shared_visible.txt', 'v')] as $nodeId) {
@@ -588,7 +646,7 @@ final class VisibilityContractTest extends TestCase {
             foreach ([[], ['confirm' => true]] as $confirm) {
                 $res = $registry->call('files_share', ['path' => $p, 'with' => 'user:alice-colleague'] + $confirm, 'alice');
                 $this->assertTrue($res['isError'] ?? false);
-                $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+                $this->assertSame(FileAccessMessages::notFound(), $res['content'][0]['text']);
                 $assertNoLeak($res['content'][0]['text']);
             }
         }
@@ -601,7 +659,7 @@ final class VisibilityContractTest extends TestCase {
             foreach ([[], ['confirm' => true]] as $confirm) {
                 $res = $registry->call('files_unshare', ['shareId' => 'ocinternal:s' . $nodeId] + $confirm, 'alice');
                 $this->assertTrue($res['isError'] ?? false);
-                $this->assertSame(CommonMessages::notFound(), $res['content'][0]['text']);
+                $this->assertSame(FileAccessMessages::notFound(), $res['content'][0]['text']);
                 $assertNoLeak($res['content'][0]['text']);
             }
         }
@@ -626,19 +684,19 @@ final class VisibilityContractTest extends TestCase {
         foreach ([$directNoteId, $ancestralNoteId] as $id) {
             $res = $registry->call('notes_read', ['id' => $id], 'alice');
             $this->assertTrue($res['isError'] ?? false);
-            $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+            $this->assertStringContainsString(FileAccessMessages::notFound(), $res['content'][0]['text']);
             $assertNoLeak($res['content'][0]['text']);
         }
 
         // 21. notes_create with hidden category: plan or run refuses with notFound, no leakage
         $resPlan = $registry->call('notes_create', ['title' => 'NewNote', 'category' => 'SecretFolder', 'content' => 'hello'], 'alice');
         $this->assertTrue($resPlan['isError'] ?? false);
-        $this->assertSame(CommonMessages::notFound(), $resPlan['content'][0]['text']);
+        $this->assertSame(FileAccessMessages::notFound(), $resPlan['content'][0]['text']);
         $assertNoLeak($resPlan['content'][0]['text']);
 
         $resRun = $registry->call('notes_create', ['title' => 'NewNote', 'category' => 'SecretFolder', 'content' => 'hello', 'confirm' => true], 'alice');
         $this->assertTrue($resRun['isError'] ?? false);
-        $this->assertSame(CommonMessages::notFound(), $resRun['content'][0]['text']);
+        $this->assertSame(FileAccessMessages::notFound(), $resRun['content'][0]['text']);
         $assertNoLeak($resRun['content'][0]['text']);
 
         // 22. notes_edit
@@ -646,7 +704,7 @@ final class VisibilityContractTest extends TestCase {
             foreach ([[], ['confirm' => true]] as $confirm) {
                 $res = $registry->call('notes_edit', ['id' => $id, 'content' => 'updated'] + $confirm, 'alice');
                 $this->assertTrue($res['isError'] ?? false);
-                $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+                $this->assertStringContainsString(FileAccessMessages::notFound(), $res['content'][0]['text']);
                 $assertNoLeak($res['content'][0]['text']);
             }
         }
@@ -656,7 +714,7 @@ final class VisibilityContractTest extends TestCase {
             foreach ([[], ['confirm' => true]] as $confirm) {
                 $res = $registry->call('notes_move', ['id' => $id, 'category' => 'General'] + $confirm, 'alice');
                 $this->assertTrue($res['isError'] ?? false);
-                $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+                $this->assertStringContainsString(FileAccessMessages::notFound(), $res['content'][0]['text']);
                 $assertNoLeak($res['content'][0]['text']);
             }
         }
@@ -666,7 +724,7 @@ final class VisibilityContractTest extends TestCase {
             foreach ([[], ['confirm' => true]] as $confirm) {
                 $res = $registry->call('notes_delete', ['id' => $id] + $confirm, 'alice');
                 $this->assertTrue($res['isError'] ?? false);
-                $this->assertStringContainsString(CommonMessages::notFound(), $res['content'][0]['text']);
+                $this->assertStringContainsString(FileAccessMessages::notFound(), $res['content'][0]['text']);
                 $assertNoLeak($res['content'][0]['text']);
             }
         }
@@ -677,13 +735,13 @@ final class VisibilityContractTest extends TestCase {
         // 25. talk_attach_file
         $rootFolder = $this->createMock(IRootFolder::class);
         $rootFolder->method('getUserFolder')->willReturnCallback(fn () => $this->tree->rootFolder());
-        $resolver = new UserFileResolver($rootFolder, $this->guard, \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+        $resolver = new UserFileResolver($rootFolder, $this->guard, \OCA\Mcp\Tests\Support\Platform\FileAccess\References\OutputReferenceFilters::inactive($this));
         foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
             try {
                 $resolver->resolveShareableFile('alice', $p);
                 $this->fail("talk_attach_file did not hide $p");
             } catch (FileAccessException $e) {
-                $this->assertSame(TalkMessages::fileNotFound(), $e->getMessage());
+                $this->assertSame(\OCA\Mcp\Modules\Talk\Attachments\AttachmentMessages::fileNotFound(), $e->getMessage());
                 $assertNoLeak($e->getMessage());
             }
         }
@@ -703,13 +761,13 @@ final class VisibilityContractTest extends TestCase {
 
             $conv = new Conversation(new ContractTalkRoomStub('token123'), new ContractTalkParticipantStub());
 
-            $attachmentAccess = new AttachmentAccess($shareManager, $this->guard, \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+            $attachmentAccess = new AttachmentAccess($shareManager, $this->guard, \OCA\Mcp\Tests\Support\Platform\FileAccess\References\OutputReferenceFilters::inactive($this));
 
             try {
                 $attachmentAccess->requireRoomShareOf($conv, 'alice', 1);
                 $this->fail("talk_quote_file did not hide attachment");
             } catch (ConversationAccessException $e) {
-                $this->assertSame(TalkMessages::attachmentNotFound(), $e->getMessage());
+                $this->assertSame(\OCA\Mcp\Modules\Talk\Attachments\AttachmentMessages::attachmentNotFound(), $e->getMessage());
                 $assertNoLeak($e->getMessage());
             }
         }
@@ -731,12 +789,12 @@ final class VisibilityContractTest extends TestCase {
         /** @var FilesModule $filesModule */
         $filesModule = $this->build(FilesModule::class);
 
-        // Preview files_mkdir: collision on hidden folder -> notFound
+        // Preview files_mkdir: collision on hidden folder -> forbidden
         try {
             $filesModule->preview('files_mkdir', ['path' => '/SecretFolder'], 'alice');
             $this->fail('plan files_mkdir collision did not fail');
         } catch (ToolFailure $e) {
-            $this->assertSame(CommonMessages::notFound(), $e->getMessage());
+            $this->assertSame(FileAccessMessages::notFound(), $e->getMessage());
         }
 
         // Preview files_mkdir: inside hidden folder -> notFound
@@ -744,7 +802,7 @@ final class VisibilityContractTest extends TestCase {
             $filesModule->preview('files_mkdir', ['path' => '/SecretFolder/newdir'], 'alice');
             $this->fail('plan files_mkdir inside hidden folder did not fail');
         } catch (ToolFailure $e) {
-            $this->assertSame(CommonMessages::notFound(), $e->getMessage());
+            $this->assertSame(FileAccessMessages::notFound(), $e->getMessage());
         }
 
         // Preview files_move: destination inside hidden folder -> notFound
@@ -752,15 +810,15 @@ final class VisibilityContractTest extends TestCase {
             $filesModule->preview('files_move', ['from' => '/visible.txt', 'to' => '/SecretFolder/dest.txt'], 'alice');
             $this->fail('plan files_move into hidden folder did not fail');
         } catch (ToolFailure $e) {
-            $this->assertSame(CommonMessages::notFound(), $e->getMessage());
+            $this->assertSame(FileAccessMessages::notFound(), $e->getMessage());
         }
 
-        // Preview files_move: destination collides with hidden file -> notFound
+        // Preview files_move: destination collides with hidden file -> forbidden
         try {
             $filesModule->preview('files_move', ['from' => '/visible.txt', 'to' => '/secret_file.txt'], 'alice');
             $this->fail('plan files_move collision with hidden file did not fail');
         } catch (ToolFailure $e) {
-            $this->assertSame(CommonMessages::notFound(), $e->getMessage());
+            $this->assertSame(FileAccessMessages::notFound(), $e->getMessage());
         }
 
         // Preview files_move_batch: hidden item listed in denied with generic reason
@@ -774,11 +832,12 @@ final class VisibilityContractTest extends TestCase {
 
         $this->assertCount(2, $batchPlan['denied']);
         foreach ($batchPlan['denied'] as $d) {
-            $this->assertSame(CommonMessages::notFound(), $d['reason']);
+            $this->assertSame(FileAccessMessages::notFound(), $d['reason']);
         }
-        // Excluded mkdir destinations use the generic refusal and never promise creation.
+        // mkdirs of a hidden folder answers like files_mkdir does for it: taken, without saying by what. It used to
+        // say willCreate, a folder the run would never make.
         $this->assertSame(['path' => '/SecretFolder', 'exists' => false, 'willCreate' => false,
-            'reason' => CommonMessages::notFound()], $batchPlan['mkdirs'][0]);
+            'reason' => FileAccessMessages::notFound()], $batchPlan['mkdirs'][0]);
         $this->assertFalse($batchPlan['ok']);
 
         // Notes preview
@@ -794,7 +853,7 @@ final class VisibilityContractTest extends TestCase {
             $notesModule->preview('notes_edit', ['id' => $hiddenNoteId, 'content' => 'new'], 'alice');
             $this->fail('plan notes_edit on hidden note did not fail');
         } catch (ToolFailure $e) {
-            $this->assertSame(CommonMessages::notFound(), $e->getMessage());
+            $this->assertSame(FileAccessMessages::notFound(), $e->getMessage());
         }
 
         // Preview notes_move on hidden note -> notFound
@@ -802,7 +861,7 @@ final class VisibilityContractTest extends TestCase {
             $notesModule->preview('notes_move', ['id' => $hiddenNoteId, 'category' => 'General'], 'alice');
             $this->fail('plan notes_move on hidden note did not fail');
         } catch (ToolFailure $e) {
-            $this->assertSame(CommonMessages::notFound(), $e->getMessage());
+            $this->assertSame(FileAccessMessages::notFound(), $e->getMessage());
         }
 
         // Preview notes_delete on hidden note -> notFound
@@ -810,7 +869,7 @@ final class VisibilityContractTest extends TestCase {
             $notesModule->preview('notes_delete', ['id' => $hiddenNoteId], 'alice');
             $this->fail('plan notes_delete on hidden note did not fail');
         } catch (ToolFailure $e) {
-            $this->assertSame(CommonMessages::notFound(), $e->getMessage());
+            $this->assertSame(FileAccessMessages::notFound(), $e->getMessage());
         }
     }
 
@@ -821,16 +880,17 @@ final class VisibilityContractTest extends TestCase {
         $hiddenFileId = $this->tree->addFile('/alice/files/existing_secret.txt', 'secret');
         $this->tagAssignments[(string)$hiddenFileId] = [self::HIDDEN_TAG];
 
-        $reorg = $this->build(Reorganization::class);
+        $creator = $this->build(\OCA\Mcp\Modules\Files\Reorganization\FolderCreator::class);
+        $reorg = $this->build(\OCA\Mcp\Modules\Files\Reorganization\CopyMove::class);
         $root = $this->tree->rootFolder();
 
         // 1. mkdir collision with hidden node
         try {
-            $reorg->mkdir($root, 'alice', '/existing_secret.txt', true);
+            $creator->mkdir($root, 'alice', '/existing_secret.txt', true);
             $this->fail('mkdir on hidden node did not fail');
         } catch (ToolFailure $e) {
-            // Must match CommonMessages::notFound() exactly, no extra hint
-            $this->assertSame(CommonMessages::notFound(), $e->getMessage());
+            // Must match FileAccessMessages::notFound() exactly, no extra hint
+            $this->assertSame(FileAccessMessages::notFound(), $e->getMessage());
         }
 
         // 2. copy collision with hidden node
@@ -839,7 +899,7 @@ final class VisibilityContractTest extends TestCase {
             $reorg->copy($root, 'alice', '/normal.txt', '/existing_secret.txt', null, true);
             $this->fail('copy on hidden node did not fail');
         } catch (ToolFailure $e) {
-            $this->assertSame(CommonMessages::notFound(), $e->getMessage());
+            $this->assertSame(FileAccessMessages::notFound(), $e->getMessage());
         }
 
         // 3. move collision with hidden node
@@ -847,10 +907,9 @@ final class VisibilityContractTest extends TestCase {
             $reorg->move($root, 'alice', '/normal.txt', '/existing_secret.txt', null, true);
             $this->fail('move on hidden node did not fail');
         } catch (ToolFailure $e) {
-            $this->assertSame(CommonMessages::notFound(), $e->getMessage());
+            $this->assertSame(FileAccessMessages::notFound(), $e->getMessage());
         }
     }
-    /** V7/V12: hidden collisions and failed collision resolution refuse before effects. */
     public function testV7HiddenDestinationAndResolutionFailureUseGenericRefusal(): void {
         $this->tree->addFile('/alice/files/source.txt', 'source');
         $id = $this->tree->addFile('/alice/files/private.txt', 'private');
@@ -871,7 +930,7 @@ final class VisibilityContractTest extends TestCase {
             ] as [$tool, $args]) {
                 foreach ([false, true] as $confirm) {
                     $out = $registry->call($tool, $args + ['confirm' => $confirm], 'alice');
-                    $this->assertSame(\OCA\Mcp\Tools\ToolResult::error(CommonMessages::notFound()), $out, $tool);
+                    $this->assertSame(ToolResult::error(FileAccessMessages::notFound()), $out, $tool);
                 }
             }
         }
@@ -879,13 +938,12 @@ final class VisibilityContractTest extends TestCase {
         foreach (['files_create' => ['content' => 'new'], 'files_upload' => []] as $tool => $extra) {
             foreach ([false, true] as $confirm) {
                 $out = $registry->call($tool, ['path' => '/private.txt', 'confirm' => $confirm] + $extra, 'alice');
-                $this->assertSame(\OCA\Mcp\Tools\ToolResult::error(CommonMessages::notFound()), $out, $tool);
+                $this->assertSame(ToolResult::error(FileAccessMessages::notFound()), $out, $tool);
             }
         }
         $this->assertSame([], $this->tree->ops);
     }
 
-    /** V1/V12: identical input, first excluded, then absent; compare the complete wire result. */
     public function testV1ExcludedAndMissingToolsAreByteIdentical(): void {
         $id = $this->tree->addFile('/alice/files/private.jpg', 'private', 'image/jpeg');
         $this->tagAssignments[(string)$id] = [self::HIDDEN_TAG];
@@ -937,7 +995,6 @@ final class VisibilityContractTest extends TestCase {
         $this->assertSame([], $this->tree->ops);
     }
 
-    /** V2/V3/V14 contract only: each operation uses the current tree and tag state. */
     public function testV14RepeatedOperationsReflectTagAndMoveChanges(): void {
         $folder = $this->tree->addFolder('/alice/files/private');
         $this->tagAssignments[(string)$folder] = [self::HIDDEN_TAG];

@@ -1,114 +1,64 @@
 # SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+# SPDX-FileCopyrightText: 2026 MCP for Nextcloud contributors
 # SPDX-License-Identifier: AGPL-3.0-or-later
-#
-# Verification-only CI: installs the app into a disposable official Nextcloud container next to a disposable
-# database, through the server's own installer (fresh) or upgrade (from the released baseline), and runs the
-# integration suite in mcp/tests/Integration with two real database sessions and real core events. Groupfolders, local
-# external storage, Talk and Notes are provisioned in the same container for the exclusion proof (issue #4, A4).
-# Images, actions and the PHPUnit PHAR are pinned by digest, commit or checksum. It never publishes, releases or uploads anything but test logs.
-
-name: Integration
-
-# Twelve jobs per run: pushes run only on main and, temporarily, on the 1.1.0 feature branches (feat/1-1-0-*) while
-# the harness and the 1.1.0 slices are proven; drop that pattern once 1.1.0 is merged. Other branches run through a
-# pull request or by hand.
+name: Native integration
 on:
   push:
-    branches:
-      - main
-      - 'feat/1-1-0-*'
+    branches: [main]
   pull_request:
   workflow_dispatch:
-
 permissions:
   contents: read
-
-# One group per branch, whether the run comes from a push or from a pull request of that branch, so the two events
-# never run the matrix twice for the same work.
 concurrency:
   group: integration-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
-
 jobs:
-  integration:
-    name: NC ${{ matrix.cell.nc }} · ${{ matrix.cell.db }} · ${{ matrix.mode }}
+  matrix:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        mode: [fresh, upgrade]
-        cell:
-          - nc: '32'
-            db: mariadb
-            nc_image: nextcloud:32.0.15-apache@sha256:ea5ecac73dfe90f7bf80e4867edfcf3f0fcbf4e5d83ea75cf433f7ef545ed412
-            db_image: mariadb:10.11.19@sha256:7db29378d4fdab73f8123bbc2b48905c90d1a4b00cf848b028f1e81e623257f2
-          - nc: '33'
-            db: mariadb
-            nc_image: nextcloud:33.0.9-apache@sha256:8f46dc79e9abf4f1e330ca9a7d9d9b8a8811ecc28f18018c1951281e522499e8
-            db_image: mariadb:10.11.19@sha256:7db29378d4fdab73f8123bbc2b48905c90d1a4b00cf848b028f1e81e623257f2
-          - nc: '34'
-            db: mariadb
-            nc_image: nextcloud:34.0.4-apache@sha256:0e5688ba0988b9112cf03f9c6bab53eccb466d278435f6596f16c1f25acacf74
-            db_image: mariadb:10.11.19@sha256:7db29378d4fdab73f8123bbc2b48905c90d1a4b00cf848b028f1e81e623257f2
-          - nc: '35'
-            db: mariadb
-            nc_image: nextcloud:35.0.1-apache@sha256:8f2f0e93aca5e9457019933936dea1f313052e72c696b4aecb31580a208b859f
-            db_image: mariadb:10.11.19@sha256:7db29378d4fdab73f8123bbc2b48905c90d1a4b00cf848b028f1e81e623257f2
-          - nc: '35'
-            db: pgsql
-            nc_image: nextcloud:35.0.1-apache@sha256:8f2f0e93aca5e9457019933936dea1f313052e72c696b4aecb31580a208b859f
-            db_image: postgres:16.15@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d
-          - nc: '35'
-            db: sqlite
-            nc_image: nextcloud:35.0.1-apache@sha256:8f2f0e93aca5e9457019933936dea1f313052e72c696b4aecb31580a208b859f
-            db_image: ''
-    env:
-      MCP_IT_NC: ${{ matrix.cell.nc }}
-      MCP_IT_NC_IMAGE: ${{ matrix.cell.nc_image }}
-      MCP_IT_DB: ${{ matrix.cell.db }}
-      MCP_IT_DB_IMAGE: ${{ matrix.cell.db_image }}
-      MCP_IT_MODE: ${{ matrix.mode }}
-      MCP_IT_BASELINE: v1.0.8
-      HARNESS: mcp/tests/Integration/ci/harness.sh
+    outputs:
+      cells: ${{ steps.cells.outputs.matrix }}
     steps:
-      - name: Check out the repository with its tags
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           fetch-depth: 0
           persist-credentials: false
-      - name: Set up PHP for packaging
-        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # v2 (2.40.0)
+      - id: cells
+        run: echo "matrix=$(php mcp/tests/Integration/ci/matrix.php --matrix)" >> "$GITHUB_OUTPUT"
+  integration:
+    needs: matrix
+    name: NC ${{ matrix.nc }} / ${{ matrix.db }} / ${{ matrix.mode }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.matrix.outputs.cells) }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962
         with:
           php-version: '8.2'
           extensions: mbstring, intl, gd, zip, sqlite3
           coverage: none
-      - name: Build the packages with the official script
-        run: sh "$HARNESS" packages
-      - name: Fetch the pinned PHPUnit PHAR
-        run: sh "$HARNESS" tools
-      - name: Start the database
-        run: sh "$HARNESS" start-db
-      - name: Start and install Nextcloud
-        run: sh "$HARNESS" start-nextcloud
-      - name: Install or upgrade the app through the server
-        run: sh "$HARNESS" install-app
-      - name: Create fixture users and groups
-        run: sh "$HARNESS" fixtures
-      - name: Provision groupfolders, local external storage, Talk and Notes
-        run: sh "$HARNESS" provision
-      - name: Record the runtime
-        run: sh "$HARNESS" report
-      - name: Run the integration suite
-        run: sh "$HARNESS" test
-      - name: Collect logs
-        if: always()
-        run: sh "$HARNESS" collect
-      - name: Upload logs
-        if: always()
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+          tools: composer:v2
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
         with:
-          name: integration-nc${{ matrix.cell.nc }}-${{ matrix.cell.db }}-${{ matrix.mode }}
-          path: ${{ runner.temp }}/mcp-it/artifacts
-          if-no-files-found: ignore
+          node-version-file: mcp/.node-version
+      - name: Install locked npm version
+        run: npm install --global npm@11.19.0
+      - name: Run the pinned disposable cell
+        env:
+          CELL_NC: ${{ matrix.nc }}
+          CELL_DB: ${{ matrix.db }}
+          CELL_MODE: ${{ matrix.mode }}
+        run: composer --working-dir=mcp test:integration -- "$CELL_NC" "$CELL_DB" "$CELL_MODE"
+      - name: Upload sanitized evidence only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-nc${{ matrix.nc }}-${{ matrix.db }}-${{ matrix.mode }}
+          path: mcp/build/integration/*/mcp-it/artifacts/
+          if-no-files-found: error
           retention-days: 14

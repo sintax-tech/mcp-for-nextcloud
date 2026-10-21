@@ -16,7 +16,7 @@ use OCA\Mcp\OAuth\OAuthException;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\OAuth\TokenOwnerGate;
 use OCA\Mcp\OAuth\TokenService;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Config\IUserConfig;
@@ -62,12 +62,12 @@ final class TokenFlowTest extends TestCase {
         $alice->method('isEnabled')->willReturnCallback(fn (): bool => $this->aliceEnabled);
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturnCallback(fn (string $uid) => $uid === 'alice' && $this->aliceExists ? $alice : null);
-        $writer = InMemoryConfig::writer($appConfigMock, $this->store);
-        $gate = new TokenOwnerGate($users, $this->policy, $writer, $this->createMock(IUserConfig::class),
+        $services = InMemoryConfig::services($appConfigMock, $this->store);
+        $gate = new TokenOwnerGate($users, $this->policy, $services->credentials, $this->createMock(IUserConfig::class),
             $this->createMock(IAppConfig::class), new NullLogger(), InMemoryConfig::noCauses($this));
         $this->clients = new ClientsTable($this);
-        $this->service = new TokenService($this->store, $hasher, $time, $gate, $writer,
-            InMemoryConfig::authUsers($appConfigMock), InMemoryConfig::processor($appConfigMock), $this->clients->mapper);
+        $this->service = new TokenService($this->store, $hasher, $time, $gate, $services->credentials,
+            InMemoryConfig::authUsers($appConfigMock), InMemoryConfig::processor($appConfigMock), $this->clients->mapper, $services->transaction, $services->holds);
         $this->authenticator = new AccessTokenAuthenticator($this->store, $hasher, $time, $gate,
             InMemoryConfig::authUsers($appConfigMock), InMemoryConfig::state($appConfigMock), $this->clients->mapper);
     }
@@ -287,6 +287,19 @@ final class TokenFlowTest extends TestCase {
         $this->assertNull($this->authenticator->authenticate('Bearer ' . $third['access_token'], self::RESOURCE));
         $this->assertNull($this->authenticator->authenticate('Bearer ' . $otherGrant['access_token'], self::RESOURCE));
         $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $third['refresh_token'], 'client_id' => self::CLIENT]));
+    }
+
+    public function testAReplayAfterTheHistoryExpiredRevokesNothing(): void {
+        $first = $this->exchange($this->code());
+        $current = $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]);
+        foreach ($this->store->spent as &$row) {
+            $row['expires_at'] = $this->now - 1;
+        }
+        unset($row);
+        $before = $this->store->tokens;
+        $this->assertGrantFails(fn () => $this->service->refresh(['refresh_token' => $first['refresh_token'], 'client_id' => self::CLIENT]));
+        $this->assertSame($before, $this->store->tokens);
+        $this->assertNotNull($this->authenticator->authenticate('Bearer ' . $current['access_token'], self::RESOURCE));
     }
 
     public function testLosingRefreshRotationRaceRevokesTheWinningGrant(): void {

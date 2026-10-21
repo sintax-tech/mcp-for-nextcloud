@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\OAuth;
 
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\OAuth\Revocation\CauseProcessor;
+use OCA\Mcp\OAuth\Revocation\CredentialCommands;
 use OCP\EventDispatcher\Event;
 use OCP\EventDispatcher\IEventListener;
 use OCP\IDBConnection;
@@ -24,7 +24,7 @@ use Throwable;
  * (UserCauseListener), so a late deletion event never cuts the consent of a recreated account.
  */
 class UserRevocationListener implements IEventListener {
-    public function __construct(private PolicyWriter $writer, private IDBConnection $db, private LoggerInterface $logger,
+    public function __construct(private CredentialCommands $credentials, private IDBConnection $db, private LoggerInterface $logger,
         private CauseProcessor $causes) {}
 
     public function handle(Event $event): void {
@@ -38,7 +38,7 @@ class UserRevocationListener implements IEventListener {
                 return;
             }
             $this->causes->flush();
-            $this->writer->revokeCredentials($event->getUser()->getUID());
+            $this->credentials->revokeCredentials($event->getUser()->getUID());
         } catch (Throwable $e) {
             $this->logger->warning('Cannot revoke the OAuth credentials of a disabled account', ['app' => 'mcp', 'exception' => $e]);
         }

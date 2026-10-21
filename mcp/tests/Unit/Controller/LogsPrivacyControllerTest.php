@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Controller;
 
 use OCA\Mcp\Controller\LogsPrivacyController;
-use OCA\Mcp\Service\LogFileNames;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Logs\LogFileNames;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryAppConfig;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCP\AppFramework\Http;

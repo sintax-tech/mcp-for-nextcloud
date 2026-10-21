@@ -21,6 +21,7 @@ use RuntimeException;
  * - any top-level entry other than `mcp`;
  * - a `mcp/vendor/` entry outside {@see self::ALLOWED_VENDOR}: a dev dependency such as sabre/* or
  *   symfony/console must never ship in the production package;
+ * - development tooling, tests, source scripts or caches outside vendor/;
  * - a missing license or attribution file from REQUIRED_LEGAL_FILES;
  * - a script or style referenced with `Util::addScript/addStyle('mcp', X)` in the .php files of the sources
  *   (`templates lib` by default) that is not packaged as `mcp/js/X.js` or `mcp/css/X.css`.
@@ -45,6 +46,11 @@ final class PackageCheck {
      * else means a dev dependency leaked into the package. A trailing slash marks a directory.
      */
     public const ALLOWED_VENDOR = ['smalot/', 'symfony/polyfill-mbstring/', 'composer/', 'autoload.php'];
+
+    /** Development-only paths, matched on a complete path segment. */
+    private const DEVELOPMENT_PATHS = ['mcp/phpstan', 'mcp/phpstan.neon', 'mcp/tests', 'mcp/scripts', 'mcp/.cache', 'mcp/.phpunit.cache',
+        'mcp/src', 'mcp/node_modules', 'mcp/package.json', 'mcp/package-lock.json',
+        'mcp/.node-version', 'mcp/.npmrc', 'mcp/playwright.config.js', 'mcp/build'];
 
     /** License and attribution documents required in every production archive. */
     public const REQUIRED_LEGAL_FILES = [
@@ -102,6 +108,30 @@ final class PackageCheck {
         $names = [];
         $entries = [];
         foreach ($members as $member) {
+            $name = rtrim($member['name'], '/');
+            foreach (self::DEVELOPMENT_PATHS as $developmentPath) {
+                if ($name === $developmentPath || str_starts_with($name, $developmentPath . '/')) {
+                    $found[] = "forbidden development entry: $name";
+                }
+            }
+            if (str_ends_with($name, '.map')) {
+                $found[] = "forbidden source map: $name";
+            }
+            if (in_array($name, ['mcp/js/admin-grants.js', 'mcp/js/admin-picker.js', 'mcp/js/admin-tabs.js', 'mcp/js/connections.js'], true)) {
+                $found[] = "retired production script: $name";
+            }
+            $segments = explode('/', $name);
+            if ($name === '' || str_starts_with($name, '/') || str_contains($name, '\\')
+                || preg_match('/[\x00-\x1f\x7f]/', $name) === 1
+                || array_intersect($segments, ['', '.', '..']) !== []) {
+                $found[] = "unsafe archive path: $name";
+            }
+            if (!in_array($member['type'], ["\0", '0', '5'], true)) {
+                $found[] = "unsafe archive type: $name";
+            }
+            if (array_key_exists($name, $names)) {
+                $found[] = "duplicate archive destination: $name";
+            }
             $names[rtrim($member['name'], '/')] = !$member['dir'];
             $entries[] = [$member['name'], $member['dir']];
             $parts = explode('/', rtrim($member['name'], '/'));
@@ -113,10 +143,24 @@ final class PackageCheck {
                 $found[] = "pax header on: {$member['name']}";
             }
         }
+        foreach (array_keys($names) as $entry) {
+            $parent = dirname($entry);
+            while ($parent !== '.' && $parent !== '/') {
+                if ($names[$parent] ?? false) {
+                    $found[] = "archive parent is a file: $parent";
+                }
+                $parent = dirname($parent);
+            }
+        }
         $tops = array_values(array_unique(array_map(static fn (array $m): string => explode('/', $m['name'])[0], $members)));
         sort($tops, SORT_STRING);
         if ($tops !== ['mcp']) {
             $found[] = 'top-level entries must be only mcp/, found: [' . implode(', ', array_map(static fn (string $top): string => "'$top'", $tops)) . ']';
+        }
+        foreach (['mcp/js/admin.js', 'mcp/js/personal.js'] as $required) {
+            if (!($names[$required] ?? false)) {
+                $found[] = "missing production script: $required";
+            }
         }
         foreach (self::REQUIRED_LEGAL_FILES as $required) {
             if (!($names[$required] ?? false)) {
@@ -181,7 +225,7 @@ final class PackageCheck {
      * data; for a gzip archive the rest of the stream is then read through, so a truncated or corrupt one fails.
      *
      * @param string $archive path of the archive
-     * @return list<array{name: string, dir: bool, pax: bool}> the entries, in archive order
+     * @return list<array{name: string, dir: bool, pax: bool, type: string}> the entries, in archive order
      * @throws RuntimeException when the file cannot be opened, is a truncated or corrupt gzip stream, ends inside
      *                          an entry or right after an extension header (pax, GNU long name or long link), has
      *                          a bad header checksum or numeric field, or a GNU long name over
@@ -252,7 +296,7 @@ final class PackageCheck {
                 if ($dir) {
                     $name = rtrim($name, '/');
                 }
-                $members[] = ['name' => $name, 'dir' => $dir, 'pax' => $pax || $globalPax];
+                $members[] = ['name' => $name, 'dir' => $dir, 'pax' => $pax || $globalPax, 'type' => $type];
                 $longName = null;
                 $paxPath = null;
                 $pax = false;

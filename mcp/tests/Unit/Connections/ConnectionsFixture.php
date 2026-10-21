@@ -10,8 +10,8 @@ namespace OCA\Mcp\Tests\Unit\Connections;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\OAuth\TokenOwnerGate;
 use OCA\Mcp\OAuth\TokenService;
-use OCA\Mcp\Service\ConnectionList;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\OAuth\Connections\ConnectionList;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -23,16 +23,13 @@ use PHPUnit\Framework\TestCase;
 /** Stored OAuth grants of a fake instance (alice, bob, carol) and the ConnectionList over them. */
 final class ConnectionsFixture {
     public InMemoryOAuthStore $store;
+    public \OCA\Mcp\Tests\Unit\OAuth\ClientsTable $clients;
     public int $now = 1_000_000;
     /** @var array<string, string> display names by uid */
     public array $names = ['alice' => 'Alice Lima', 'bob' => 'Bob'];
-    public InMemoryConfig $config;
-    /** The administrator's OAuth clients, whose names the lists show. */
-    public \OCA\Mcp\Tests\Unit\OAuth\ClientsTable $clients;
 
     public function __construct(private TestCase $test) {
         $this->store = new InMemoryOAuthStore();
-        $this->config = new InMemoryConfig();
         $this->clients = new \OCA\Mcp\Tests\Unit\OAuth\ClientsTable($test);
     }
 
@@ -61,16 +58,16 @@ final class ConnectionsFixture {
             $user->method('getDisplayName')->willReturn($this->names[$uid]);
             return $user;
         });
-        $config = $this->config->mock($this->test);
+        $config = (new InMemoryConfig())->mock($this->test);
         $system = $this->mock(IConfig::class);
         $system->method('getSystemValueString')->willReturn('instance-secret');
-$writer = InMemoryConfig::writer($config, $this->store);
-        $gate = new TokenOwnerGate($users, InMemoryConfig::policy($config, $this->store), $writer,
-            $this->mock(\OCP\Config\IUserConfig::class), $this->mock(\OCP\IAppConfig::class), new \Psr\Log\NullLogger(),
-            $this->mock(\OCA\Mcp\Service\Policy\CauseProcessor::class));
-        $tokens = new TokenService($this->store, new TokenHasher($system), $time, $gate, $writer,
-            InMemoryConfig::authUsers($config), InMemoryConfig::processor($config), $this->clients->mapper);
-        return new ConnectionList($this->store, $tokens, $users, $time, $this->clients->mapper);
+        $services = InMemoryConfig::services($config, $this->store);
+        $gate = new TokenOwnerGate($users, InMemoryConfig::policy($config, $this->store), $services->credentials,
+            $this->mock(\OCP\Config\IUserConfig::class), $this->mock(\OCP\IAppConfig::class), new \Psr\Log\NullLogger(), InMemoryConfig::noCauses($this->test));
+        $clients = $this->clients;
+        $tokens = new TokenService($this->store, new TokenHasher($system), $time, $gate, $services->credentials,
+            InMemoryConfig::authUsers($config), InMemoryConfig::processor($config), $clients->mapper, $services->transaction, $services->holds);
+        return new ConnectionList($this->store, $tokens, $users, $time, $clients->mapper);
     }
 
     private function mock(string $class): object {

@@ -1,0 +1,62 @@
+<?php
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+declare(strict_types=1);
+
+namespace OCA\Mcp\Modules\Files\Tools;
+
+use OCA\Mcp\Mcp\Tools\ToolContext;
+use OCA\Mcp\Mcp\Tools\ToolDefinition;
+use OCA\Mcp\Mcp\Tools\WriteTool;
+use OCA\Mcp\Modules\Files\Creation\CreationMessages;
+use OCA\Mcp\Modules\Files\Creation\FileCreation;
+use OCA\Mcp\Modules\Files\Editing\EditingMessages;
+use OCA\Mcp\Platform\FileAccess\Nodes\NodeAccess;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
+use OCP\Files\IRootFolder;
+
+final class CreateFile implements WriteTool {
+    public function __construct(
+        private IRootFolder $rootFolder,
+        private FileCreation $creation,
+    ) {}
+
+    public static function definition(): ToolDefinition {
+        $confirmShared = ['type' => 'boolean', 'description' => EditingMessages::confirmShared()];
+        return new ToolDefinition(
+            name: 'files_create',
+            module: 'files',
+            operation: 'create',
+            description: CreationMessages::createTool(),
+            inputSchema: self::schema([
+                    'path' => ['type' => 'string', 'minLength' => 1, 'description' => CreationMessages::newFilePath()],
+                    'content' => ['type' => 'string', 'description' => CreationMessages::createContent()],
+                    'confirm_shared' => $confirmShared,
+                ], ['path', 'content']),
+        );
+    }
+
+    public function execute(array $arguments, ToolContext $context): array {
+        $userId = $context->userId;
+        $root = $this->rootFolder->getUserFolder($userId);
+        return NodeAccess::run(fn (): array => ToolResult::json($this->creation->create($root, $userId, $arguments['path'], $arguments['content'], (bool)($arguments['confirm_shared'] ?? false))));
+    }
+
+    public function preview(array $arguments, ToolContext $context): array {
+        $userId = $context->userId;
+        $root = $this->rootFolder->getUserFolder($userId);
+        return NodeAccess::run(fn (): array => $this->creation->planCreate($root, $userId, $arguments['path'], $arguments['content']));
+    }
+
+    /**
+     * @param array<string, array<string, mixed>> $properties
+     * @param list<string> $required
+     * @return array<string, mixed>
+     */
+    private static function schema(array $properties, array $required = []): array {
+        $schema = ['type' => 'object', 'properties' => $properties, 'additionalProperties' => false];
+        return $required === [] ? $schema : $schema + ['required' => $required];
+    }
+}

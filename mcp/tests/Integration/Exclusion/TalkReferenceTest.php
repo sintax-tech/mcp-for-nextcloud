@@ -153,15 +153,15 @@ final class TalkReferenceTest extends ExclusionTestCase {
      */
     public function testTheContainerWiresTheFilesScopeIntoEveryFileReferenceGate(): void {
         $property = static fn (object $object, string $name): mixed => (new \ReflectionProperty($object, $name))->getValue($object);
-        foreach ([\OCA\Mcp\Tools\Talk\UserFileResolver::class, \OCA\Mcp\Tools\Talk\AttachmentAccess::class] as $class) {
+        foreach ([\OCA\Mcp\Modules\Talk\Attachments\UserFileResolver::class, \OCA\Mcp\Modules\Talk\Attachments\AttachmentAccess::class] as $class) {
             $filter = $property(Server::get($class), 'references');
-            $this->assertInstanceOf(\OCA\Mcp\Tools\Common\OutputReferenceFilter::class, $filter, $class);
-            $this->assertInstanceOf(\OCA\Mcp\Service\Scope\FilesReferenceScope::class, $property($filter, 'scope'), $class);
+            $this->assertInstanceOf(\OCA\Mcp\Platform\FileAccess\References\OutputReferenceFilter::class, $filter, $class);
+            $this->assertInstanceOf(\OCA\Mcp\Access\ResourceScope\FilesReferenceScope::class, $property($filter, 'scope'), $class);
         }
-        $this->assertInstanceOf(\OCA\Mcp\Service\Scope\FilesScope::class,
-            $property($property(Server::get(\OCA\Mcp\Service\ResourceRegistry::class), 'filesGuard'), 'scope'), 'nc://files');
-        $this->assertInstanceOf(\OCA\Mcp\Service\Scope\FilesScope::class,
-            $property($property(Server::get(\OCA\Mcp\Tools\Files\FilesModule::class), 'visibilityGuard'), 'scope'), 'files tools');
+        $this->assertInstanceOf(\OCA\Mcp\Access\ResourceScope\FilesScope::class,
+            $property($property($property(Server::get(\OCA\Mcp\Mcp\Resources\ResourceRegistry::class), 'fileReader'), 'visibilityGuard'), 'scope'), 'nc://files');
+        $this->assertInstanceOf(\OCA\Mcp\Access\ResourceScope\FilesScope::class,
+            $property($property($property(($property(Server::get(\OCA\Mcp\Modules\Files\FilesModule::class), 'factories')['files_read'])(), 'reader'), 'visibilityGuard'), 'scope'), 'files tools');
     }
 
     /**
@@ -181,7 +181,7 @@ final class TalkReferenceTest extends ExclusionTestCase {
                 $qb->delete($table)->where($qb->expr()->eq('user_key', $qb->createNamedParameter(\OCA\Mcp\Db\IdentityKey::user(self::ALICE))))->executeStatement();
             }
         });
-        Server::get(\OCA\Mcp\Service\Policy\PolicyWriter::class)->setResourceScope(
+        Server::get(\OCA\Mcp\Access\ResourceScope\ResourceScopeWriter::class)->setResourceScope(
             Server::get(\OCA\Mcp\Db\PolicyStateMapper::class)->state()['revision'], 'admin', self::ALICE, 'files',
             [(string)$this->node(self::ALICE, $this->path('home', 'scoped'))->getId()]);
         $before = count($this->messages($alice, $token));

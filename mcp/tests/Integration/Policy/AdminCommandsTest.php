@@ -8,7 +8,8 @@ namespace OCA\Mcp\Tests\Integration\Policy;
 
 use OCA\Mcp\Db\PolicyEventsMapper;
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
+use OCA\Mcp\Tests\Integration\Support\NativePolicyServices;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -100,11 +101,11 @@ final class AdminCommandsTest extends IntegrationTestCase {
                 throw new RuntimeException('Injected in the last cell');
             }
         };
-        $writer = new PolicyWriter($db, $state, Server::get(PolicyEventsMapper::class), $config, Server::get(IUserConfig::class),
+        $writer = new NativePolicyServices($db, $state, Server::get(PolicyEventsMapper::class), $config, Server::get(IUserConfig::class),
             Server::get(IAppConfig::class), Server::get(IUserManager::class), Server::get(ITimeFactory::class), $authUsers,
-            Server::get(\OCA\Mcp\Db\RecheckMapper::class), Server::get(\OCA\Mcp\Service\Policy\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class), Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(\OCA\Mcp\OAuth\OAuthStore::class));
+            Server::get(\OCA\Mcp\Db\RecheckMapper::class), Server::get(\OCA\Mcp\Access\Policy\Events\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class), Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(\OCA\Mcp\OAuth\OAuthStore::class));
         try {
-            $writer->applyCells($revision['revision'], 'admin', 'grants.commands', [
+            $writer->commands->grants->applyCells($revision['revision'], 'admin', 'grants.commands', [
                 ['uid' => Fixtures::ALICE, 'key' => 'grant_notes_edit', 'value' => '1'],
                 ['uid' => Fixtures::ALICE, 'key' => 'grant_deck_move', 'value' => '0'],
                 ['uid' => Fixtures::BOB, 'key' => 'grant_notes_edit', 'value' => '1'],
@@ -130,11 +131,11 @@ final class AdminCommandsTest extends IntegrationTestCase {
         $config->setUserValue(Fixtures::BOB, 'mcp', 'grant_notes_edit', '0');
         Server::get(IUserConfig::class)->clearCache(Fixtures::BOB, false);
         $other = $this->otherSession();
-        $writer = Server::get(PolicyWriter::class);
+        $writer = Server::get(PolicyTransaction::class);
         $state = Server::get(PolicyStateMapper::class);
         $from = $state->state()['revision'];
 
-        $saved = $writer->applyCells($from, 'admin', 'grants.bulk', [
+        $saved = Server::get(\OCA\Mcp\Access\Grants\Commands\GrantCommands::class)->applyCells($from, 'admin', 'grants.bulk', [
             ['uid' => Fixtures::ALICE, 'key' => 'grant_notes_edit', 'value' => '1'],
             ['uid' => Fixtures::BOB, 'key' => 'grant_notes_edit', 'value' => '1'],
         ]);
@@ -143,16 +144,16 @@ final class AdminCommandsTest extends IntegrationTestCase {
         $receipt = Server::get(PolicyEventsMapper::class)->find((string)$saved['receiptId']);
         $this->assertSame([null, '0'], array_column($receipt['payload']['changes'], 'before'));
 
-        $undone = $writer->restoreReceipt((string)$saved['receiptId'], $saved['revision'], 'admin');
+        $undone = Server::get(\OCA\Mcp\Access\Policy\Receipts\ReceiptUndo::class)->restoreReceipt((string)$saved['receiptId'], $saved['revision'], 'admin');
         $this->assertSame(2, $undone['changed']);
         $this->assertSame([Fixtures::BOB => '0'], $this->seenBy($other)['grant_notes_edit'], 'alice absent again, bob back to 0');
         $this->assertSame($undone['revision'], (new PolicyStateMapper($this->openIndependentConnection()))->state()['revision']);
         $this->assertNotSame($saved['revision'], $undone['revision']);
         // Applying the same receipt again finds a newer revision and touches nothing.
         try {
-            $writer->restoreReceipt((string)$saved['receiptId'], $saved['revision'], 'admin');
+            Server::get(\OCA\Mcp\Access\Policy\Receipts\ReceiptUndo::class)->restoreReceipt((string)$saved['receiptId'], $saved['revision'], 'admin');
             $this->fail('A receipt was undone twice');
-        } catch (\OCA\Mcp\Service\Policy\PolicyConflict) {
+        } catch (\OCA\Mcp\Access\Policy\Transactions\PolicyConflict) {
         }
         $this->assertSame([Fixtures::BOB => '0'], $this->seenBy($other)['grant_notes_edit']);
     }

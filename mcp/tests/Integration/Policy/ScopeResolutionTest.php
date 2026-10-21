@@ -9,10 +9,11 @@ namespace OCA\Mcp\Tests\Integration\Policy;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Policy\PolicyResolver;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\Policy\Resolution\ScopeResolution;
+use OCA\Mcp\Access\Policy\Resolution\PolicyResolver;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
+use OCA\Mcp\Access\Policy\Transactions\PolicyAttempt;
+use OCA\Mcp\Access\ResourceScope\ScopeResolution;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\Server;
@@ -35,7 +36,8 @@ final class ScopeResolutionTest extends IntegrationTestCase {
     /** @param list<string>|null $items */
     private function save(string $module, ?array $items): void {
         $scopes = Server::get(ResourceScopeMapper::class);
-        Server::get(PolicyWriter::class)->runInternal([], fn () => null, function ($snapshot, array $current) use ($scopes, $module, $items): bool {
+        Server::get(PolicyTransaction::class)->runInternal([], fn () => null, function ($snapshot, PolicyAttempt $attempt) use ($scopes, $module, $items): bool {
+            $current = $attempt->state();
             $scopes->replace(Fixtures::ALICE, $module, $items, $current['revision']);
             return true;
         });

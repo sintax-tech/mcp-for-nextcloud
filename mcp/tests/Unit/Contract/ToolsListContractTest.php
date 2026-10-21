@@ -9,14 +9,14 @@ namespace OCA\Mcp\Tests\Unit\Contract;
 
 use OCA\Mcp\AppInfo\Application;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\LogsAccess;
-use OCA\Mcp\Service\McpProtocol;
-use OCA\Mcp\Service\PromptCatalog;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Logs\LogsAccess;
+use OCA\Mcp\Mcp\Protocol\McpProtocol;
+use OCA\Mcp\Mcp\Prompts\PromptCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tools\ToolPresentation;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\Discovery\ToolPresentation;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\IL10N;
 use OCP\IUser;
@@ -33,6 +33,69 @@ final class ToolsListContractTest extends TestCase {
 
     /** Builds a concrete app class with real app collaborators and mocks for everything else. */
     private function build(string $class): object {
+        if ($class === \OCA\Mcp\Modules\Logs\LogsModule::class) {
+            $access = $this->createMock(\OCA\Mcp\Access\Logs\LogsAccess::class);
+            $access->method('permits')->willReturn(true);
+            return new \OCA\Mcp\Modules\Logs\LogsModule([
+                'logs_list' => fn () => $this->build(\OCA\Mcp\Modules\Logs\Tools\ListLogs::class),
+                'logs_analyze' => fn () => $this->build(\OCA\Mcp\Modules\Logs\Tools\AnalyzeLogs::class),
+            ], static fn () => $access, fn () => $this->build(\OCA\Mcp\Modules\Logs\Audit\LogAudit::class));
+        }
+        if ($class === \OCA\Mcp\Modules\People\PeopleModule::class) {
+            return new \OCA\Mcp\Modules\People\PeopleModule([
+                'users_search' => fn () => $this->build(\OCA\Mcp\Modules\People\Tools\SearchUsers::class),
+            ]);
+        }
+        if ($class === \OCA\Mcp\Modules\Notes\NotesModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Notes\NotesToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Notes\NotesModule($factories);
+        }
+        if ($class === \OCA\Mcp\Modules\Files\FilesModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Files\FilesToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Files\FilesModule($factories, (\OCA\Mcp\Tests\Support\Files\FilesGuards::unrestricted($this))->assertScopeReadable(...));
+        }
+        if ($class === \OCA\Mcp\Modules\Deck\DeckModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Deck\DeckToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Deck\DeckModule($factories, $this->createMock(\OCA\Mcp\Modules\Deck\Access\DeckAvailability::class));
+        }
+        if ($class === \OCA\Mcp\Modules\Talk\TalkModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Talk\TalkToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Talk\TalkModule($factories, $this->build(\OCA\Mcp\Modules\Talk\Execution\ResultBoundary::class), $this->build(\OCA\Mcp\Modules\Talk\Execution\PreviewBoundary::class));
+        }
+        if ($class === \OCA\Mcp\Modules\Contacts\ContactsModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Contacts\ContactsToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Contacts\ContactsModule($factories);
+        }
+        if ($class === \OCA\Mcp\Modules\Tasks\TasksModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Tasks\TasksToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Tasks\TasksModule($factories, (\OCA\Mcp\Tests\Support\Platform\FileAccess\References\OutputReferenceFilters::inactive($this))->assertAvailable(...));
+        }
+        if ($class === \OCA\Mcp\Modules\Calendar\CalendarModule::class) {
+            $factories = [];
+            foreach (\OCA\Mcp\Modules\Calendar\CalendarToolCatalog::classes() as $tool) {
+                $factories[$tool::definition()->name] = fn () => $this->build($tool);
+            }
+            return new \OCA\Mcp\Modules\Calendar\CalendarModule($factories, (\OCA\Mcp\Tests\Support\Platform\FileAccess\References\OutputReferenceFilters::inactive($this))->assertAvailable(...));
+        }
+        if ($class === \Closure::class) { return static fn () => null; }
         $constructor = (new \ReflectionClass($class))->getConstructor();
         $args = [];
         foreach ($constructor?->getParameters() ?? [] as $parameter) {
@@ -50,14 +113,14 @@ final class ToolsListContractTest extends TestCase {
                 $args[] = $access;
                 continue;
             }
-            $args[] = str_starts_with($name, 'OCA\\Mcp\\') && $reflection->isInstantiable() ? $this->build($name) : $this->createMock($name);
+            $args[] = $name === \Closure::class ? static fn () => null : (str_starts_with($name, 'OCA\\Mcp\\') && $reflection->isInstantiable() ? $this->build($name) : $this->createMock($name));
         }
         return new $class(...$args);
     }
 
     /** @return string tools/list response body exactly as the endpoint encodes it */
     private function toolsListJson(bool $optionalAppsEnabled = true): string {
-        return $this->handle('{"jsonrpc":"2.0","id":1,"method":"tools/list"}', McpProtocol::VERSION, '{}', $optionalAppsEnabled);
+        return $this->handle('{"jsonrpc":"2.0","id":1,"method":"tools/list"}', \OCA\Mcp\Mcp\Protocol\ProtocolMetadata::VERSION, '{}', $optionalAppsEnabled);
     }
 
     /** @return string initialize result body of the legacy era */
@@ -70,7 +133,7 @@ final class ToolsListContractTest extends TestCase {
     /** @return string server/discover result body of the modern era */
     private function discoverJson(): string {
         return $this->handle('{"jsonrpc":"2.0","id":"discover-1","method":"server/discover","params":{"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28"}}}',
-            McpProtocol::MODERN_VERSION, '{"method":"server/discover","name":""}');
+            \OCA\Mcp\Mcp\Protocol\ProtocolMetadata::MODERN_VERSION, '{"method":"server/discover","name":""}');
     }
 
     /**
@@ -92,8 +155,10 @@ final class ToolsListContractTest extends TestCase {
         $users = $this->createMock(IUserManager::class);
         $users->method('get')->willReturn($this->createMock(IUser::class));
         $modules = array_map(fn (string $class) => $this->build($class), Application::MODULES);
-        $protocol = new McpProtocol(new ToolRegistry($modules, $policy, $apps, $users, $this->createMock(LoggerInterface::class)),
-            new PromptCatalog(), $policy, $this->createMock(LoggerInterface::class));
+        $availability = new \OCA\Mcp\Mcp\Tools\Discovery\ToolAvailability($policy, $apps, $users);
+        $protocol = new McpProtocol(new \OCA\Mcp\Mcp\Protocol\ToolRequests(new ToolRegistry($modules, $availability, new \OCA\Mcp\Mcp\Tools\Execution\ToolExecutor($availability, $this->createMock(LoggerInterface::class)))),
+            new \OCA\Mcp\Mcp\Protocol\PromptRequests(new PromptCatalog(), $policy),
+            new \OCA\Mcp\Mcp\Protocol\ResourceRequests(null), $this->createMock(LoggerInterface::class));
         $out = $protocol->handle($request, $version, 'alice', json_decode($headers, true));
         return json_encode($out['body'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     }
@@ -224,7 +289,7 @@ final class ToolsListContractTest extends TestCase {
             $this->assertFalse($annotations->idempotentHint, "$name: repeating the call sends a second message");
             // The confirmation is the boolean the registry publishes on every write: nothing is stored between
             // the plan and the send, so there is no id, no token and no fingerprint for the client to carry back.
-            $this->assertSame(['type' => 'boolean', 'description' => \OCA\Mcp\Tools\Common\CommonMessages::confirmParameter()], json_decode(json_encode($tools[$name]->inputSchema->properties->confirm), true), $name);
+            $this->assertSame(['type' => 'boolean', 'description' => \OCA\Mcp\Mcp\Confirmation\ConfirmationMessages::confirmParameter()], json_decode(json_encode($tools[$name]->inputSchema->properties->confirm), true), $name);
             $this->assertObjectNotHasProperty('approval_id', $tools[$name]->inputSchema->properties, $name);
             $this->assertFalse(
                 in_array('approval_id', $tools[$name]->inputSchema->required ?? [], true),
@@ -243,7 +308,7 @@ final class ToolsListContractTest extends TestCase {
     public function testTheGroupToolNeedsItsOwnGrantAndStaysOutOfTheListWithoutIt(): void {
         $onlyTalkWrites = static fn (string $module, string $operation): bool => $module === 'talk' && $operation !== 'create';
         $listed = array_column(
-            json_decode($this->handle('{"jsonrpc":"2.0","id":1,"method":"tools/list"}', McpProtocol::VERSION, '{}', true, $onlyTalkWrites), false, 512, JSON_THROW_ON_ERROR)->result->tools,
+            json_decode($this->handle('{"jsonrpc":"2.0","id":1,"method":"tools/list"}', \OCA\Mcp\Mcp\Protocol\ProtocolMetadata::VERSION, '{}', true, $onlyTalkWrites), false, 512, JSON_THROW_ON_ERROR)->result->tools,
             'name',
         );
         $this->assertContains('talk_message_user', $listed);
@@ -251,7 +316,7 @@ final class ToolsListContractTest extends TestCase {
 
         $call = json_decode($this->handle(
             json_encode(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/call', 'params' => ['name' => 'talk_create_group', 'arguments' => ['name' => 'Projeto X']]]),
-            McpProtocol::VERSION,
+            \OCA\Mcp\Mcp\Protocol\ProtocolMetadata::VERSION,
             '{}',
             true,
             $onlyTalkWrites,
@@ -297,7 +362,7 @@ final class ToolsListContractTest extends TestCase {
         $request = json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/list', 'params' => new \stdClass()], JSON_THROW_ON_ERROR);
 
         $granted = $list($this->toolsListJson());
-        $denied = $list($this->handle($request, McpProtocol::VERSION, '{}', true, static fn (string $module, string $operation): bool => $module !== 'calendar' || $operation === 'read'));
+        $denied = $list($this->handle($request, \OCA\Mcp\Mcp\Protocol\ProtocolMetadata::VERSION, '{}', true, static fn (string $module, string $operation): bool => $module !== 'calendar' || $operation === 'read'));
 
         foreach ($writes as $name) {
             $this->assertContains($name, $granted, $name . ' must be listed when granted');
@@ -314,9 +379,10 @@ final class ToolsListContractTest extends TestCase {
 
     public function testInitializeEncodesCapabilitiesAsObjects(): void {
         $policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
-        $protocol = new McpProtocol(new ToolRegistry([], $policy, $this->createMock(IAppManager::class),
-            $this->createMock(IUserManager::class), $this->createMock(LoggerInterface::class)),
-            new PromptCatalog(), $policy, $this->createMock(LoggerInterface::class));
+        $availability = new \OCA\Mcp\Mcp\Tools\Discovery\ToolAvailability($policy, $this->createMock(IAppManager::class), $this->createMock(IUserManager::class));
+        $protocol = new McpProtocol(new \OCA\Mcp\Mcp\Protocol\ToolRequests(new ToolRegistry([], $availability, new \OCA\Mcp\Mcp\Tools\Execution\ToolExecutor($availability, $this->createMock(LoggerInterface::class)))),
+            new \OCA\Mcp\Mcp\Protocol\PromptRequests(new PromptCatalog(), $policy),
+            new \OCA\Mcp\Mcp\Protocol\ResourceRequests(null), $this->createMock(LoggerInterface::class));
         $out = $protocol->handle(json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'initialize', 'params' => [
             'protocolVersion' => '2025-11-25', 'capabilities' => new \stdClass(), 'clientInfo' => ['name' => 'Claude-User', 'version' => '1.0'],
         ]]), '', 'alice');

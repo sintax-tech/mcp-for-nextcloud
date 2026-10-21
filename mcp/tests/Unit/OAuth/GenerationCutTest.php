@@ -26,10 +26,11 @@ use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\OAuth\TokenOwnerGate;
 use OCA\Mcp\OAuth\TokenService;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\PolicyEventProcessor;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Policy\Events\PolicyEventProcessor;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\Transactions\PolicyTransaction;
+use OCA\Mcp\Tests\Support\Access\Policy\PolicyServices;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -60,7 +61,8 @@ final class GenerationCutTest extends TestCase {
     private OAuthStore $store;
     private AuthUsersMapper $authUsers;
     private PolicyStateMapper $state;
-    private PolicyWriter $writer;
+    private PolicyServices $services;
+    private PolicyTransaction $transaction;
     private GrantPolicy $policy;
     private TokenService $service;
     private AccessTokenAuthenticator $authenticator;
@@ -116,18 +118,19 @@ final class GenerationCutTest extends TestCase {
             }
         };
         $processor = new PolicyEventProcessor($events, $cleanup, new NullLogger(), $time);
-        $this->writer = new PolicyWriter($this->db, $this->state, $events, $config, $userConfig, $apps, $users, $time,
-            $this->authUsers, new RecheckMapper($this->db), $processor,
-            new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\OAuthStore($this->db));
-        $this->policy = new GrantPolicy($config, $userConfig, $this->writer,
-            InMemoryConfig::resolverOver($this, $this->state, $this->writer, $config, $userConfig, $apps, $users, $this->db,
+        $this->transaction = new PolicyTransaction($this->db, $this->state, $events, $userConfig, $apps, $processor);
+        $this->services = new PolicyServices($this->transaction, $config, $apps, $users, $time, $this->state, $events,
+            $this->authUsers, new RecheckMapper($this->db), new \OCA\Mcp\Db\GroupGrantsMapper($this->db),
+            new \OCA\Mcp\Db\GroupLifeMapper($this->db), $this->store, new \OCA\Mcp\Db\ResourceScopeMapper($this->db));
+        $this->policy = new GrantPolicy($config, $userConfig, $this->services->grants, $this->services->service,
+            InMemoryConfig::resolverOver($this, $this->state, $this->transaction, $config, $userConfig, $apps, $users, $this->db,
                 fn (): array => [new \OCA\Mcp\Tests\Unit\ArrayGroupBackend(fn (): array => $this->groups, 'Database', function (): void {
                     [$hook, $this->onGroupExists] = [$this->onGroupExists, null];
                     $hook !== null && $hook();
-                })]));
-        $gate = new TokenOwnerGate($users, $this->policy, $this->writer, $userConfig, $apps, new NullLogger(), InMemoryConfig::noCauses($this));
+                })]), $this->transaction);
+        $gate = new TokenOwnerGate($users, $this->policy, $this->services->credentials, $userConfig, $apps, new NullLogger(), InMemoryConfig::noCauses($this));
         $hasher = $this->hasher;
-        $this->service = new TokenService($this->store, $hasher, $time, $gate, $this->writer, $this->authUsers, $processor, (new ClientsTable($this))->mapper);
+        $this->service = new TokenService($this->store, $hasher, $time, $gate, $this->services->credentials, $this->authUsers, $processor, (new ClientsTable($this))->mapper, $this->transaction, $this->services->holds);
         $this->authenticator = new AccessTokenAuthenticator($this->store, $hasher, $time, $gate, $this->authUsers, $this->state, (new ClientsTable($this))->mapper);
         $this->policy->setGlobalEnabled(true);
         $this->policy->setEligible('alice', true);
@@ -395,7 +398,7 @@ final class GenerationCutTest extends TestCase {
             'code_challenge' => 'x', 'resource' => 'r', 'scope' => 'mcp', 'expires_at' => $this->now - 1]);
         unset($grant);
 
-        $this->now += PolicyWriter::RECEIPT_TTL + 120;
+        $this->now += \OCA\Mcp\Access\Policy\PolicyLimits::RECEIPT_TTL + 120;
         $job = new \OCA\Mcp\BackgroundJob\PolicyCleanupJob($this->timeAt(), $this->processor());
         $this->assertSame([86400, false], [$job->getInterval(), $job->isTimeSensitive()]);
         (new \ReflectionMethod($job, 'run'))->invoke($job, null);

@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Controller;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\HiddenTagsUnavailableException;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\HiddenTagsUnavailableException;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -84,7 +84,7 @@ class TagsController extends Controller {
      * Saves the configured hidden system tag IDs.
      * Body: {tagIds: list<string|int>}
      *
-     * @return JSONResponse {selected: list<string>}, 400, or 503 {error: 'tags_unavailable'} when the configuration or system tags
+     * @return JSONResponse {selected: list<string>}, 400, or 503 {error: 'tags_unavailable'} when the system tags
      *                      cannot be checked and the previous configuration was kept
      */
     public function update(): JSONResponse {

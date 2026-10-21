@@ -9,8 +9,7 @@ namespace OCA\Mcp\Tests\Integration\Policy;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\Http;
@@ -105,7 +104,7 @@ final class FilesScopeTest extends IntegrationTestCase {
 
     /** @param list<Folder>|null $folders */
     private function scope(?array $folders): void {
-        Server::get(PolicyWriter::class)->setResourceScope(Server::get(PolicyStateMapper::class)->state()['revision'], 'admin',
+        Server::get(\OCA\Mcp\Access\ResourceScope\ResourceScopeWriter::class)->setResourceScope(Server::get(PolicyStateMapper::class)->state()['revision'], 'admin',
             Fixtures::ALICE, 'files', $folders === null ? null : array_map(static fn (Folder $f): string => (string)$f->getId(), $folders));
     }
 

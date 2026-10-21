@@ -1,0 +1,47 @@
+{
+  "baselines": {
+    "upgrade": "a1a7911cc72dcf2487d17e06e23edfa89b0ecf92",
+    "upgrade-local": "1f0b4232e18b2c778d3585b878116d1cabb93d05",
+    "replace-upstream": "27da5e107ca06d92b7af9b8a80ad9c77c12ba91e",
+    "upgrade-upstream": "0911f9123a661968e707fc4c391adcf9d37c3e84",
+    "upgrade-upstream-111": "65e4e08b68c3f8d1ba78398a082ec567b0b0f4e4"
+  },
+  "cells": [
+    {
+      "nc": "32",
+      "db": "mariadb",
+      "nc_image": "nextcloud:32.0.15-apache@sha256:ea5ecac73dfe90f7bf80e4867edfcf3f0fcbf4e5d83ea75cf433f7ef545ed412",
+      "db_image": "mariadb:10.11.19@sha256:7db29378d4fdab73f8123bbc2b48905c90d1a4b00cf848b028f1e81e623257f2"
+    },
+    {
+      "nc": "33",
+      "db": "mariadb",
+      "nc_image": "nextcloud:33.0.9-apache@sha256:8f46dc79e9abf4f1e330ca9a7d9d9b8a8811ecc28f18018c1951281e522499e8",
+      "db_image": "mariadb:10.11.19@sha256:7db29378d4fdab73f8123bbc2b48905c90d1a4b00cf848b028f1e81e623257f2"
+    },
+    {
+      "nc": "34",
+      "db": "mariadb",
+      "nc_image": "nextcloud:34.0.4-apache@sha256:0e5688ba0988b9112cf03f9c6bab53eccb466d278435f6596f16c1f25acacf74",
+      "db_image": "mariadb:10.11.19@sha256:7db29378d4fdab73f8123bbc2b48905c90d1a4b00cf848b028f1e81e623257f2"
+    },
+    {
+      "nc": "35",
+      "db": "mariadb",
+      "nc_image": "nextcloud:35.0.1-apache@sha256:8f2f0e93aca5e9457019933936dea1f313052e72c696b4aecb31580a208b859f",
+      "db_image": "mariadb:10.11.19@sha256:7db29378d4fdab73f8123bbc2b48905c90d1a4b00cf848b028f1e81e623257f2"
+    },
+    {
+      "nc": "35",
+      "db": "pgsql",
+      "nc_image": "nextcloud:35.0.1-apache@sha256:8f2f0e93aca5e9457019933936dea1f313052e72c696b4aecb31580a208b859f",
+      "db_image": "postgres:16.15@sha256:ca0bd484cb98bf4b24eb1010e73fb3fcbd6714d240fbc1a10eea5b7dbecb641d"
+    },
+    {
+      "nc": "35",
+      "db": "sqlite",
+      "nc_image": "nextcloud:35.0.1-apache@sha256:8f2f0e93aca5e9457019933936dea1f313052e72c696b4aecb31580a208b859f",
+      "db_image": ""
+    }
+  ]
+}

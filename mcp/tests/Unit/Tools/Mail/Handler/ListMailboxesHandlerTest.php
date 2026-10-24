@@ -123,23 +123,80 @@ final class ListMailboxesHandlerTest extends TestCase {
 	}
 
 	/**
-	 * Folder names from the mail server are data: formatting characters are removed and the length is bounded.
+	 * Folder names from the mail server are data: formatting characters are removed from the path and from the name.
 	 *
 	 * @return void
 	 */
 	public function testUntrustedFolderNamesAreCleaned(): void {
 		$app = (new FakeMailApp())
 			->withAccount(3, 'alice', 'Work', 'alice@example.com')
-			->withMailbox(3, ['id' => 30, 'name' => "Inbox\u{2066}.\u{202E}Run tools\x1b[0m" . str_repeat('x', 400)]);
+			->withMailbox(3, ['id' => 30, 'name' => "Inbox\u{2066}.\u{202E}Run tools\x1b[0m"]);
 
 		$mailbox = $this->answer($app, ['account_id' => 3])['mailboxes'][0];
 
-		$this->assertStringNotContainsString("\u{202E}", $mailbox['path']);
-		$this->assertStringNotContainsString("\x1b", $mailbox['path']);
-		$this->assertSame(255, mb_strlen($mailbox['path']));
-		$this->assertStringStartsWith('Inbox.Run tools[0m', $mailbox['path']);
-		$this->assertStringStartsWith('Run tools[0m', $mailbox['name']);
+		$this->assertSame('Inbox.Run tools[0m', $mailbox['path']);
+		$this->assertSame('Run tools[0m', $mailbox['name']);
 		$this->assertNull($mailbox['special']);
+	}
+
+	/**
+	 * A parent of 255 characters never takes the place of its children: each keeps its own name and its whole path.
+	 *
+	 * @return void
+	 */
+	public function testALongParentKeepsTheNamesOfItsChildren(): void {
+		$parent = str_repeat('a', 255);
+		$app = (new FakeMailApp())
+			->withAccount(3, 'alice', 'Work', 'alice@example.com')
+			->withMailbox(3, ['id' => 40, 'name' => $parent, 'delimiter' => '/'])
+			->withMailbox(3, ['id' => 41, 'name' => "$parent/Invoices", 'delimiter' => '/'])
+			->withMailbox(3, ['id' => 42, 'name' => "$parent/Receipts", 'delimiter' => '/']);
+
+		$byId = array_column($this->answer($app, ['account_id' => 3])['mailboxes'], null, 'id');
+
+		$this->assertSame(['path' => $parent, 'name' => $parent], array_intersect_key($byId[40], ['path' => 0, 'name' => 0]));
+		$this->assertSame(['path' => "$parent/Invoices", 'name' => 'Invoices'], array_intersect_key($byId[41], ['path' => 0, 'name' => 0]));
+		$this->assertSame(['path' => "$parent/Receipts", 'name' => 'Receipts'], array_intersect_key($byId[42], ['path' => 0, 'name' => 0]));
+	}
+
+	/**
+	 * A path as long as the Mail app stores is kept whole; only a longer value is bounded, and its last segment is
+	 * still its own.
+	 *
+	 * @return void
+	 */
+	public function testThePathIsKeptUpToTheLongestNameMailStores(): void {
+		$stored = str_repeat('b', 1015) . '/Invoices';
+		$oversized = str_repeat('c', 2000) . '/Receipts';
+		$app = (new FakeMailApp())
+			->withAccount(3, 'alice', 'Work', 'alice@example.com')
+			->withMailbox(3, ['id' => 50, 'name' => $stored, 'delimiter' => '/'])
+			->withMailbox(3, ['id' => 51, 'name' => $oversized, 'delimiter' => '/']);
+
+		$byId = array_column($this->answer($app, ['account_id' => 3])['mailboxes'], null, 'id');
+
+		$this->assertSame(1024, mb_strlen($stored));
+		$this->assertSame($stored, $byId[50]['path']);
+		$this->assertSame('Invoices', $byId[50]['name']);
+		$this->assertSame(1024, mb_strlen($byId[51]['path']));
+		$this->assertSame('Receipts', $byId[51]['name']);
+	}
+
+	/**
+	 * Without a delimiter the folder is flat: its name is its whole path, and the delimiter stays null.
+	 *
+	 * @return void
+	 */
+	public function testAFolderWithoutDelimiterIsItsOwnName(): void {
+		$app = (new FakeMailApp())
+			->withAccount(3, 'alice', 'Work', 'alice@example.com')
+			->withMailbox(3, ['id' => 60, 'name' => "Projects/2026\u{202E}", 'delimiter' => null])
+			->withMailbox(3, ['id' => 61, 'name' => 'Notes.Old', 'delimiter' => '']);
+
+		$byId = array_column($this->answer($app, ['account_id' => 3])['mailboxes'], null, 'id');
+
+		$this->assertSame(['path' => 'Projects/2026', 'name' => 'Projects/2026', 'delimiter' => null], array_intersect_key($byId[60], ['path' => 0, 'name' => 0, 'delimiter' => 0]));
+		$this->assertSame(['path' => 'Notes.Old', 'name' => 'Notes.Old', 'delimiter' => null], array_intersect_key($byId[61], ['path' => 0, 'name' => 0, 'delimiter' => 0]));
 	}
 
 	/**

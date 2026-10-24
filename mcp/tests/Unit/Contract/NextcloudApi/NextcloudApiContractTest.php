@@ -114,7 +114,7 @@ final class NextcloudApiContractTest extends TestCase {
         }
         $oldest = NextcloudApiUsage::SOURCES[self::checkedMajors()[0]];
         foreach (AppEnablement::MINIMUM_VERSIONS as $app => $minimum) {
-            $this->assertSame($minimum, $oldest[$app] ?? self::fixture(self::checkedMajors()[0])['mailSources'][$app]['version'] ?? null, "the $app minimum must be the release the oldest fixture checks");
+            $this->assertSame($minimum, OldestCoveredRelease::of($oldest, self::fixture(self::checkedMajors()[0]), $app), "the $app minimum must be the release the oldest fixture checks");
         }
     }
 

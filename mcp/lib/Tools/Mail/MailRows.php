@@ -14,8 +14,12 @@ namespace OCA\Mcp\Tools\Mail;
  * keeps them as values, never as text the server speaks in.
  */
 final class MailRows {
-	/** Longest name kept, in characters; Mail stores folder names in a 255-character column. */
-	public const MAX_NAME = 255;
+	/**
+	 * Longest text kept, in characters: the largest folder name the Mail app stores, since its migration
+	 * Version5006Date20250927130132 (in 5.9.0 and 5.12.5) widened `mail_mailboxes.name` to 1024. A stored path is
+	 * therefore never cut; the bound only stops an oversized value from elsewhere.
+	 */
+	public const MAX_TEXT = 1024;
 
 	/** Special-use attributes of RFC 6154 the tools report, by the lowercase attribute without its backslash. */
 	private const SPECIAL_USES = ['sent' => 'sent', 'drafts' => 'drafts', 'trash' => 'trash', 'junk' => 'junk', 'archive' => 'archive', 'all' => 'all', 'flagged' => 'flagged'];
@@ -45,14 +49,16 @@ final class MailRows {
 	 * @return array{id:int, path:string, name:string, delimiter:string|null, special:string|null, unread:int|null, total:int|null, selectable:bool|null} the row the tool answers with
 	 */
 	public function mailbox(array $mailbox): array {
-		$path = self::text($mailbox['name']);
-		$delimiter = $mailbox['delimiter'] === null || $mailbox['delimiter'] === '' ? null : self::text($mailbox['delimiter']);
-		$segments = $delimiter === null || $delimiter === '' ? [$path] : explode($delimiter, $path);
+		// The last segment is taken from the raw path with the raw delimiter, before anything is cleaned or bounded,
+		// so a long parent can never take the place of the folder's own name.
+		$raw = $mailbox['delimiter'];
+		$segments = $raw === null || $raw === '' ? [$mailbox['name']] : explode($raw, $mailbox['name']);
+		$delimiter = $raw === null || $raw === '' ? null : self::text($raw);
 		return [
 			'id' => $mailbox['id'],
-			'path' => $path,
-			'name' => (string)end($segments),
-			'delimiter' => $delimiter,
+			'path' => self::text($mailbox['name']),
+			'name' => self::text((string)end($segments)),
+			'delimiter' => $delimiter === '' ? null : $delimiter,
 			'special' => self::special($mailbox['name'], $mailbox['specialUse']),
 			'unread' => $mailbox['unread'],
 			'total' => $mailbox['total'],
@@ -103,6 +109,6 @@ final class MailRows {
 	public static function text(string $value): string {
 		$value = mb_scrub($value, 'UTF-8');
 		$value = (string)preg_replace('/[\p{Cc}\x{200E}\x{200F}\x{202A}-\x{202E}\x{2066}-\x{2069}]/u', '', $value);
-		return mb_substr($value, 0, self::MAX_NAME);
+		return mb_substr($value, 0, self::MAX_TEXT);
 	}
 }

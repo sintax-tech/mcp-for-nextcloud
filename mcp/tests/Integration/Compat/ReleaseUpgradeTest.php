@@ -19,7 +19,7 @@ final class ReleaseUpgradeTest extends IntegrationTestCase {
 	public function testUpgradePreservesConfigurationGrantsCredentialAndLegacyBackup(): void {
 		$before = UpgradeBaseline::forVersion('1.2.0');
 		self::assertSame('1.2.0', $before['baseline']);
-		self::assertSame('1.2.1-rc.2', Server::get(IAppConfig::class)->getValueString('mcp', 'installed_version'));
+		self::assertSame('1.2.1', Server::get(IAppConfig::class)->getValueString('mcp', 'installed_version'));
 		self::assertSame($before['snapshot'], ReleaseUpgradeProbe::snapshot());
 		self::assertGreaterThan(0, $before['snapshot']['rows']['preferences']['count']);
 		self::assertSame(1, $before['snapshot']['rows']['mcp_oauth_tokens']['count']);

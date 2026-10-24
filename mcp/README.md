@@ -9,9 +9,9 @@ Version for **Nextcloud 32 to 35** (`info.xml` declares 32–35; the API contrac
 
 The exact URL of the instance appears on the administration and personal pages.
 
-## What's new in 1.2.1-rc.2
+## What's new in 1.2.1
 
-Local release candidate for testing, updating 1.2.0 directly; not a published release. See [the changelog](../CHANGELOG.md#121-rc2).
+See [the changelog](../CHANGELOG.md#121) for the full changes.
 
 - **Backup settings ([#17](https://github.com/sintax-tech/mcp-for-nextcloud/issues/17)):** in *Data protection*, choose one folder name directly in each acting user's personal root (default `MCP backups`; `.mcp-backups` is allowed). The folder appears with the first copy. Changing the name never moves or deletes content; all previously configured names, including the legacy default, remain protected against MCP writes and keep the backup-mirror visibility rules.
 - **Files copies:** on by default. An administrator can suspend MCP pre-write copies only while native `files_versions` is enabled. Availability is checked again for the acting user; unavailable versioning makes copies mandatory and existing operations still refuse when their Versions prerequisite is missing. This does not guarantee a native version for every file/backend. Contact deletion always requires a verified copy in the configured folder, even with Files copies suspended. Earlier backups are preserved.

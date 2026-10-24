@@ -19,9 +19,9 @@ Deixe o Claude e outros clientes MCP trabalharem com seus arquivos, notas, calen
 
 ---
 
-## Novidades da 1.2.1-rc.2
+## Novidades da 1.2.1
 
-Candidata local para testes, atualizando a 1.2.0 diretamente; não é uma versão publicada. Veja [o changelog](CHANGELOG.md#121-rc2).
+Veja [o changelog](CHANGELOG.md#121) com as mudanças completas.
 
 - **Configuração de backups ([#17](https://github.com/sintax-tech/mcp-for-nextcloud/issues/17)):** em *Proteção de dados*, escolha um nome de pasta diretamente na raiz pessoal de cada usuário que executa a ação (padrão `MCP backups`; `.mcp-backups` é permitido). A pasta aparece na primeira cópia. Trocar o nome nunca move nem apaga conteúdo; todos os nomes anteriores, inclusive o padrão legado, continuam protegidos contra escrita MCP e mantêm as regras de visibilidade dos espelhos de backup.
 - **Cópias de Arquivos:** ligadas por padrão. Um administrador pode suspender as cópias prévias MCP somente com `files_versions` nativo ativo. A disponibilidade é conferida novamente para quem executa a ação; sem versionamento as cópias são obrigatórias e as operações existentes continuam recusadas quando falta seu pré-requisito Versions. Isso não garante uma versão nativa para todo arquivo/backend. Excluir contato sempre exige cópia verificada na pasta configurada, mesmo com cópias de Arquivos suspensas. Backups anteriores são preservados.

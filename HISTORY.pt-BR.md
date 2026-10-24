@@ -1,6 +1,16 @@
 # Histórico
 
-[English](HISTORY.md) · Português (Brasil)
+[English](HISTORY.md) · Português (Brasil) · [Deutsch](HISTORY.de.md) · [Español](HISTORY.es.md)
+
+## Novidades da 1.2
+
+Veja [o changelog](CHANGELOG.md#120) com as mudanças completas e o aviso sobre prazos antigos do Deck.
+
+- **Deck:** etiquetas, dependências nativas entre cards no Nextcloud 34/35 e arquivos visíveis vinculados aos cards: vincular um arquivo existente ou desvinculá-lo sem apagar o original. Os planos explicam o acesso de leitura para membros atuais e futuros do quadro e os limites das mudanças posteriores de política de compartilhamento. O prazo agora aceita hora; `dueAt` a devolve com o deslocamento do seu fuso. Etiquetas e arquivos do card funcionam no Nextcloud 32–35.
+- **Política opcional de tipos de arquivo:** desligada por padrão. Um administrador pode liberar extensões em *Proteção de dados*. Vale para as gravações por MCP, inclusive uploads, restauração de versões, cópias/movimentos, lotes, desfazer e Notes; os backups internos obrigatórios continuam disponíveis. A regra examina nomes, não conteúdo, e não elimina prompt injection. A cópia de pasta com a política ativa usa uma lista conferida e informa qualquer cópia parcial.
+- **Edições menores:** acrescente texto a uma nota ou substitua um trecho único com `notes_edit`; `files_replace` confere o tamanho informado antes de ler e recusa ocorrências sobrepostas como ambíguas. A mensagem de ambiguidade não revela a contagem; `old` tem limite de 64 KiB.
+- **Conexões e filtros de tarefas:** corrigida a navegação de retorno após o consentimento OAuth no fluxo relatado do Mistral. Categorias continuam filtros literais; uma lista filtrada vazia explica como retirar o filtro ou incluir tarefas concluídas.
+- **Confira prazos antigos do Deck:** prazos só com data gravados pelo MCP antes desta correção para contas a oeste de UTC podem aparecer um dia antes. Cards existentes não são regravados automaticamente; confira o dia pretendido e corrija os afetados explicitamente.
 
 ## Novidades da 1.1
 

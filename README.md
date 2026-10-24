@@ -29,19 +29,9 @@ See [the changelog](CHANGELOG.md#121) for the full changes.
 - **Subtasks ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)):** tasks return their `parent`; create and edit set it within the same calendar or clear it with `null`, and `tasks_list_tasks` lists the direct subtasks of one parent. Loops and nesting deeper than 64 levels are refused; confirmed MCP parent writes run one at a time and need the server's file locking. Contributed by @mturgeonferland.
 - **Visibility:** a nested ordinary folder named `MCP backups` is no longer mistaken for the user's root backup folder. Scope, exclusion tags and fail-closed checks still apply.
 
-Backup paths shown below use the default name; a configured name replaces that root component. Existing 1.2.0 features follow below.
+Backup paths shown below use the default name; a configured name replaces that root component.
 
-## What's new in 1.2
-
-See [the changelog](CHANGELOG.md#120) for the full changes and the warning about older Deck deadlines.
-
-- **Deck:** labels, native card dependencies on Nextcloud 34/35, and visible files attached to cards: link an existing file or unlink it without deleting it. Plans explain read-only access for current and future board members and the limits of later sharing-policy changes. Due dates now accept a time; `dueAt` returns it with your time-zone offset. Labels and card files work on Nextcloud 32–35.
-- **Optional file type policy:** off by default. An administrator can enable allowed extensions in *Data protection*. It applies to MCP writes, including uploads, restores, copies/moves, batches, undo and Notes; mandatory internal backups remain available. It checks names, not content, and does not eliminate prompt injection. Folder copies with the policy active use a checked list and report any partial copy.
-- **Smaller edits:** append to a note or replace one unique passage with `notes_edit`; `files_replace` checks the reported size before reading and refuses overlapping matches as ambiguous. Neither ambiguity message reveals a match count; `old` is limited to 64 KiB.
-- **Connections and task filters:** the OAuth consent callback navigation is fixed for the reported Mistral flow. Task categories remain literal filters; an empty filtered list explains how to remove the filter or include completed tasks.
-- **Check older Deck deadlines:** date-only deadlines written by MCP before this fix for accounts west of UTC can appear one day early. Existing cards are not rewritten automatically; check the intended day and correct affected cards explicitly.
-
-Earlier changes are kept in [History](HISTORY.md).
+Earlier changes, including 1.2, are kept in [History](HISTORY.md).
 
 ## Why
 
@@ -67,6 +57,7 @@ Earlier releases: see [HISTORY.md](HISTORY.md).
 | **Deck** | boards, stacks, cards, labels on Nextcloud 32–35, visible file associations (the share id is distinct from the file id), and a **follow-up** of the boards you manage: cards grouped by assignee, with due date and due time, overdue flag (in your own time zone) and a link to the card. Dependencies are listed only on Nextcloud 34 and 35. An association or relation you cannot see is omitted, with no count | create, edit, move and delete cards, assign or unassign board members, edit labels, and link or unlink one existing visible file without deleting it; native dependencies only on Nextcloud 34 and 35; create a board with its lists and first cards, or a list in a board you manage; delete a board or a list only when it is empty, straight to the Deck trash |
 | **Server log** | for administrators and the groups they choose: list the entries of `nextcloud.log` with filters, and summarize them (totals, frequent signatures, URLs, user agents, entries per hour). Off by default for everyone; IPs masked, output marked as untrusted, every read audited. While exclusion tags are configured, the admin option "Hide the text of log messages" (on by default) hides the text of messages and exceptions, the user agent and the URL detail, and refuses the `contains` filter; turned off, the logs come back in full for diagnosis | — (read only) |
 | **Talk** | conversations and messages (never marks anything as read) | reply (optionally quoting a message or linking a Deck card or calendar event you can see), direct message to a user, batch of messages, share or quote a file, create a group conversation (separate grant, off by default). **Nothing is sent before the user approves: a call without `confirm: true` returns only the plan (recipient, final text, attachments, what would be created or shared) and runs nothing; with `confirm: true` it checks the permissions again and sends. No approval id, token or record is kept on the server.** |
+| **Mail** (optional) | the caller's own Mail accounts (id, name and address; no server settings or credentials; accounts delegated by other people are not listed) and the folders of each account, with their role and the unread/total counts as the Mail app last cached them. Needs the separate `mail.read` grant and Mail 5.0.0 or later enabled for the user. It does not synchronize IMAP, list or read messages, or mark anything as read; when an account's folder cache is empty, it asks you to open the account in Mail once | — (read only) |
 
 Plus:
 
@@ -363,7 +354,7 @@ AGPL-3.0-or-later, with the additional section 7(b) attribution term in [NOTICE]
 
 The package includes Smalot PdfParser, Symfony Polyfill Mbstring and the Composer autoloader. See versions, licenses, copyright and development dependencies in [THIRD-PARTY-NOTICES.md](mcp/THIRD-PARTY-NOTICES.md).
 
-**Contributors.** Thanks to @NightDragon1 (#5) for the root visibility check and to @matt-ek (#4) for the report behind the hidden-tags audit and (#10) for the German translation, to @Zegorax (#8) for the OAuth clients registered by the administrator, and to @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) for subtasks in the Tasks tools.
+**Contributors.** Thanks to @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) for the root visibility check and to @matt-ek ([#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4)) for the report behind the hidden-tags audit and ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) for the German translation, to @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) for the OAuth clients registered by the administrator, and to @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) for subtasks in the Tasks tools.
 
 ## About Sintax
 

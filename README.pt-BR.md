@@ -29,19 +29,9 @@ Veja [o changelog](CHANGELOG.md#121) com as mudanças completas.
 - **Subtarefas ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)):** tarefas devolvem a `parent`; criar e editar definem a tarefa principal na mesma agenda ou a removem com `null`, e `tasks_list_tasks` lista as subtarefas diretas de uma tarefa. Ciclos e aninhamento com mais de 64 níveis são recusados; escritas confirmadas do MCP que definem a tarefa principal rodam uma de cada vez e exigem o bloqueio de arquivos do servidor. Contribuição de @mturgeonferland.
 - **Visibilidade:** uma pasta comum aninhada chamada `MCP backups` deixa de ser confundida com a pasta de backup na raiz pessoal. Escopo, etiquetas de exclusão e recusa em caso de falha continuam valendo.
 
-Os caminhos de backup abaixo usam o nome padrão; o nome configurado substitui esse componente da raiz. Os recursos da 1.2.0 seguem abaixo.
+Os caminhos de backup abaixo usam o nome padrão; o nome configurado substitui esse componente da raiz.
 
-## Novidades da 1.2
-
-Veja [o changelog](CHANGELOG.md#120) com as mudanças completas e o aviso sobre prazos antigos do Deck.
-
-- **Deck:** etiquetas, dependências nativas entre cards no Nextcloud 34/35 e arquivos visíveis vinculados aos cards: vincular um arquivo existente ou desvinculá-lo sem apagar o original. Os planos explicam o acesso de leitura para membros atuais e futuros do quadro e os limites das mudanças posteriores de política de compartilhamento. O prazo agora aceita hora; `dueAt` a devolve com o deslocamento do seu fuso. Etiquetas e arquivos do card funcionam no Nextcloud 32–35.
-- **Política opcional de tipos de arquivo:** desligada por padrão. Um administrador pode liberar extensões em *Proteção de dados*. Vale para as gravações por MCP, inclusive uploads, restauração de versões, cópias/movimentos, lotes, desfazer e Notes; os backups internos obrigatórios continuam disponíveis. A regra examina nomes, não conteúdo, e não elimina prompt injection. A cópia de pasta com a política ativa usa uma lista conferida e informa qualquer cópia parcial.
-- **Edições menores:** acrescente texto a uma nota ou substitua um trecho único com `notes_edit`; `files_replace` confere o tamanho informado antes de ler e recusa ocorrências sobrepostas como ambíguas. A mensagem de ambiguidade não revela a contagem; `old` tem limite de 64 KiB.
-- **Conexões e filtros de tarefas:** corrigida a navegação de retorno após o consentimento OAuth no fluxo relatado do Mistral. Categorias continuam filtros literais; uma lista filtrada vazia explica como retirar o filtro ou incluir tarefas concluídas.
-- **Confira prazos antigos do Deck:** prazos só com data gravados pelo MCP antes desta correção para contas a oeste de UTC podem aparecer um dia antes. Cards existentes não são regravados automaticamente; confira o dia pretendido e corrija os afetados explicitamente.
-
-As mudanças anteriores estão no [Histórico](HISTORY.pt-BR.md).
+As mudanças anteriores, incluindo a 1.2, estão no [Histórico](HISTORY.pt-BR.md).
 
 ## Por quê
 
@@ -67,6 +57,7 @@ Versões anteriores: veja [HISTORY.pt-BR.md](HISTORY.pt-BR.md).
 | **Deck** | quadros, listas, cards, etiquetas no Nextcloud 32–35, vínculos de arquivo visíveis (o id do compartilhamento é distinto do id do arquivo) e **acompanhamento** dos quadros que você gerencia: cards por responsável, com data e hora de vencimento, indicação de atraso (no seu fuso) e link do card. Dependências só no Nextcloud 34 e 35. Associação ou relação que você não pode ver é omitida, sem contagem | criar, editar, mover e excluir cards, atribuir ou remover responsáveis, editar etiquetas, e vincular ou desvincular um arquivo visível existente sem apagá-lo; dependências nativas só no Nextcloud 34 e 35; criar um quadro com suas listas e primeiros cards, ou uma lista em um quadro que você gerencia; excluir um quadro ou uma lista somente quando estiver vazio, direto para a lixeira do Deck |
 | **Log do servidor** | para administradores e os grupos que eles escolherem: listar as entradas do `nextcloud.log` com filtros e resumi-las (totais, assinaturas frequentes, URLs, user agents, entradas por hora). Desligado por padrão para todos; IPs mascarados, saída marcada como não confiável, toda leitura auditada. Com etiquetas de exclusão configuradas, a opção de admin "Esconder o texto das mensagens do log" (ligada por padrão) esconde o texto das mensagens e das exceções, o user agent e o detalhe da URL e recusa o filtro `contains`; desligada, o log volta completo para diagnóstico | — (somente leitura) |
 | **Talk** | conversas e mensagens (nunca marca como lido) | responder (podendo citar uma mensagem ou incluir o link de um card do Deck ou evento que você pode ver), mensagem direta para um usuário, lote de mensagens, compartilhar ou citar arquivo, criar conversa em grupo (permissão própria, desligada por padrão). **Nada é enviado antes de o usuário aprovar: chamada sem `confirm: true` devolve só o plano (destinatário, texto final, anexos, o que será criado ou compartilhado) e não executa nada; com `confirm: true` revalida as permissões e envia. Não há approval_id, token nem registro no servidor.** |
+| **Mail** (opcional) | as contas do próprio usuário no Mail (id, nome e endereço; sem configurações do servidor nem credenciais; contas delegadas por outras pessoas não são listadas) e as pastas de cada conta, com o papel e os contadores de não lidas/total como o app Mail os guardou em cache por último. Exige a permissão separada `mail.read` e o Mail 5.0.0 ou mais novo habilitado para o usuário. Não sincroniza o IMAP, não lista nem lê mensagens e não marca nada como lido; se o cache de pastas de uma conta estiver vazio, pede para abrir a conta no Mail uma vez | — (somente leitura) |
 
 E também:
 
@@ -363,7 +354,7 @@ AGPL-3.0-or-later, com o termo adicional de atribuição da seção 7(b) no [NOT
 
 O pacote inclui Smalot PdfParser, Symfony Polyfill Mbstring e o autoloader do Composer. Consulte versões, licenças, autoria e dependências de desenvolvimento em [THIRD-PARTY-NOTICES.md](mcp/THIRD-PARTY-NOTICES.md).
 
-**Contribuidores.** Agradecimento a @NightDragon1 (#5) pela checagem de visibilidade da raiz e a @matt-ek (#4) pelo relato que motivou a auditoria da ocultação por tags e (#10) pela tradução para o alemão, a @Zegorax (#8) pelos clientes OAuth cadastrados pelo administrador, e a @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) pelas subtarefas nas ferramentas de Tarefas.
+**Contribuidores.** Agradecimento a @NightDragon1 ([#5](https://github.com/sintax-tech/mcp-for-nextcloud/pull/5)) pela checagem de visibilidade da raiz e a @matt-ek ([#4](https://github.com/sintax-tech/mcp-for-nextcloud/issues/4)) pelo relato que motivou a auditoria da ocultação por tags e ([#10](https://github.com/sintax-tech/mcp-for-nextcloud/issues/10)) pela tradução para o alemão, a @Zegorax ([#8](https://github.com/sintax-tech/mcp-for-nextcloud/pull/8)) pelos clientes OAuth cadastrados pelo administrador, e a @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) pelas subtarefas nas ferramentas de Tarefas.
 
 ## Sobre a Sintax
 

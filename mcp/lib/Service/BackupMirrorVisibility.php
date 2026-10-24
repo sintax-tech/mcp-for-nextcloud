@@ -47,7 +47,7 @@ final class BackupMirrorVisibility {
 				}
 				if ($hidden) {
 					if ($original !== null && ($original['reason'] ?? VisibilityGuard::EXPLAINED_NOT_EVALUATED) === VisibilityGuard::EXPLAINED_NOT_EVALUATED) {
-						($this->unavailable)();
+						$explanation['reason'] ??= VisibilityGuard::EXPLAINED_NOT_EVALUATED;
 					}
 					return true;
 				}

@@ -63,6 +63,9 @@ class VisibilityGuard {
     /** @var array<string, array{node: Node, mount: string}|null> share root by ancestor id and mounted path */
     private array $shareRootCache = [];
 
+    /** @var BackupFolderMatcher|null request-local backup location metadata */
+    private ?BackupFolderMatcher $backupFolderMatcher = null;
+
     /**
      * @var array{reason?: string, folder?: Node}|null while explain() runs, the first reason the one decision of
      *      checkVisibility() refused for; null otherwise, so the tools' checks record nothing
@@ -717,6 +720,7 @@ class VisibilityGuard {
         $this->tagClean = [];
         $this->ownerCache = [];
         $this->shareRootCache = [];
+        $this->backupFolderMatcher?->clearCache();
     }
 
     /** Clears the in-memory caches. */
@@ -727,6 +731,7 @@ class VisibilityGuard {
         $this->tagClean = [];
         $this->ownerCache = [];
         $this->shareRootCache = [];
+        $this->backupFolderMatcher?->clearCache();
     }
 
     /**
@@ -737,6 +742,6 @@ class VisibilityGuard {
      * @return bool true when the node is a backup mirror of a hidden original
      */
     private function isHiddenBackup(Node $node, array $chain): bool {
-        return (new BackupMirrorVisibility($this, new BackupFolderMatcher($this->rootFolder), $this->warnVisibilityFailure(...)))->isHidden($node, $this->explanation);
+        return (new BackupMirrorVisibility($this, $this->backupFolderMatcher ??= new BackupFolderMatcher($this->rootFolder), $this->warnVisibilityFailure(...)))->isHidden($node, $this->explanation);
     }
 }

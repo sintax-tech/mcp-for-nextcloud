@@ -11,9 +11,22 @@ use OCA\Mcp\Tools\Files\FileBackup;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\Node;
+use OCP\Files\Storage\ISharedStorage;
 
 /** Locates backup mirrors only under the personal root that receives pre-write copies. */
 final class BackupFolderMatcher {
+	/** @var array<string, list<array{Folder, list<string>}>> verified candidate locations for this request */
+	private array $candidates = [];
+
+	/**
+	 * Drops candidate metadata after filesystem, tag or configuration changes.
+	 *
+	 * @return void
+	 */
+	public function clearCache(): void {
+		$this->candidates = [];
+	}
+
 	/**
 	 * @param IRootFolder|null $rootFolder filesystem root for resolving owner aliases and mount boundaries
 	 * @param string $folderName direct child name reserved for backups
@@ -23,7 +36,7 @@ final class BackupFolderMatcher {
 
 	/**
 	 * Resolves named backup candidates in the owner's tree when encountered through another user's share.
-	 * External storages without a local owner use their mounted personal root instead.
+	 * Other storages use their mounted personal root; their owner metadata need not identify a local user.
 	 *
 	 * @param Node $node node to classify
 	 * @param callable(Node): Node $parentOf mount-aware parent resolver
@@ -62,40 +75,62 @@ final class BackupFolderMatcher {
 			$parent = $parentOf($current);
 			if ($current instanceof Folder && $current->getName() === $this->folderName
 				&& $parent instanceof Folder && preg_match('~^/([^/]+)/files(?:/|$)~', $current->getPath(), $homePath)) {
-				$owner = $current->getOwner();
-				if (($owner === null || $owner->getUID() === $homePath[1]) && $parent->getPath() === '/' . $homePath[1] . '/files') {
-					if ($this->rootFolder !== null) {
-						$home = $this->rootFolder->getUserFolder($homePath[1]);
-						if ($home->getPath() !== $parent->getPath() || (int)$home->getId() !== (int)$parent->getId()) {
-							throw new \RuntimeException('Backup root unavailable');
-						}
-						$parent = $home;
-					}
-					return [[$parent, $segments]];
-				} elseif ($owner !== null && $owner->getUID() !== $homePath[1] && $this->rootFolder !== null && $owner->getUID() !== '') {
-					// A received folder can occupy the recipient's root while originating at any depth.
-					$home = $this->rootFolder->getUserFolder($owner->getUID());
-					$origins = $home->getById($id);
-					if ($origins === []) {
-						throw new \RuntimeException('Backup origin unavailable');
-					}
-					$matches = [];
-					foreach ($origins as $origin) {
-						if (!$origin instanceof Node || (int)$origin->getId() !== $id || $origin->getPath() === $current->getPath()) {
-							throw new \RuntimeException('Invalid backup origin');
-						}
-						foreach ($this->inTree($origin, $parentOf, $resolving) as [$root, $below]) {
-							$matches[] = [$root, [...$below, ...$segments]];
-						}
-					}
-					return $matches;
-				} elseif ($owner !== null && $owner->getUID() !== $homePath[1]) {
-					throw new \RuntimeException('Backup owner unavailable');
+				$key = $id . ':' . $current->getPath();
+				$matches = $this->candidates[$key] ??= $this->candidate($current, $parent, $homePath[1], $parentOf, $resolving);
+				if ($matches !== []) {
+					return array_map(static fn (array $match): array => [$match[0], [...$match[1], ...$segments]], $matches);
 				}
 			}
 			array_unshift($segments, $current->getName());
 			$current = $parent;
 		}
 		return [];
+	}
+
+	/**
+	 * Resolves a named candidate once, using local-share identity through the storage wrapper contract.
+	 *
+	 * @param Folder $candidate named folder being classified
+	 * @param Folder $parent verified mounted parent
+	 * @param string $mountedUser uid from the mounted path
+	 * @param callable(Node): Node $parentOf mount-aware parent resolver
+	 * @param array<string, true> $resolving owner aliases already being resolved
+	 * @return list<array{Folder, list<string>}> canonical backup locations, excluding descendant suffixes
+	 * @throws \Throwable when local share identity, origins or the personal root cannot be verified
+	 */
+	private function candidate(Folder $candidate, Folder $parent, string $mountedUser, callable $parentOf, array $resolving): array {
+		if ($candidate->getStorage()->instanceOfStorage(ISharedStorage::class)) {
+			$owner = $candidate->getOwner();
+			if ($owner === null || $owner->getUID() === '' || $this->rootFolder === null) {
+				throw new \RuntimeException('Backup owner unavailable');
+			}
+			if ($owner->getUID() !== $mountedUser) {
+				$home = $this->rootFolder->getUserFolder($owner->getUID());
+				$id = (int)$candidate->getId();
+				$origins = $home->getById($id);
+				if ($origins === []) {
+					throw new \RuntimeException('Backup origin unavailable');
+				}
+				$matches = [];
+				foreach ($origins as $origin) {
+					if (!$origin instanceof Node || (int)$origin->getId() !== $id || $origin->getPath() === $candidate->getPath()) {
+						throw new \RuntimeException('Invalid backup origin');
+					}
+					array_push($matches, ...$this->inTree($origin, $parentOf, $resolving));
+				}
+				return $matches;
+			}
+		}
+		if ($parent->getPath() !== '/' . $mountedUser . '/files') {
+			return [];
+		}
+		if ($this->rootFolder !== null) {
+			$home = $this->rootFolder->getUserFolder($mountedUser);
+			if ($home->getPath() !== $parent->getPath() || (int)$home->getId() !== (int)$parent->getId()) {
+				throw new \RuntimeException('Backup root unavailable');
+			}
+			$parent = $home;
+		}
+		return [[$parent, []]];
 	}
 }

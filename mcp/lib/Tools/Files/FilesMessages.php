@@ -123,29 +123,17 @@ final class FilesMessages {
 
     /** @return string description of files_edit */
     public static function editTool(): string {
-        return 'Replace the content of an existing text file and return the diff. Before writing, requires '
-            . 'active versioning and creates a copy in "/MCP backups". If the file is outside your personal '
-            . 'folder, only write after asking the user and retrying the call with confirm_shared. '
-            . 'Never creates, moves, or deletes files.';
+        return BackupMessages::editTool();
     }
 
     /** @return string description of files_replace */
     public static function replaceTool(): string {
-        return 'Replace a unique snippet of an existing text file and return the diff. The specified snippet '
-            . 'must appear exactly once. Before writing, requires active versioning and creates a copy '
-            . 'in "/MCP backups". If the file is outside your personal folder, only write after '
-            . 'asking the user and retrying the call with confirm_shared.';
+        return BackupMessages::replaceTool();
     }
 
     /** @return string description of files_checkout */
     public static function checkoutTool(): string {
-        return 'Provide temporary download and upload links to edit any file type (document, spreadsheet, PDF, '
-            . 'image) with local tools (curl) without passing content through the model, up to the upload limit. '
-            . 'Upload raw bytes with curl -T /tmp/file -X PUT -H "Content-Type: application/octet-stream" "$UPLOAD_URL". '
-            . 'A text file can also be edited directly with files_edit or files_replace. Links are valid for 5 to 15 minutes, single-use, '
-            . 'and bound to you, the file, and current ETag: if the file changes before upload, nothing is '
-            . 'written. Upload creates the same backup as files_edit. If the file is outside your personal '
-            . 'folder, only issue links after asking the user and retrying with confirm_shared.';
+        return BackupMessages::checkoutTool();
     }
 
     /** @return string description of files_versions_list */
@@ -161,9 +149,7 @@ final class FilesMessages {
 
     /** @return string description of files_version_restore */
     public static function versionRestoreTool(): string {
-        return 'Restore a previous file version, first creating a copy of current content in '
-            . '"/MCP backups". If the file is outside your personal folder, '
-            . 'restore only after asking the user and retrying with confirm_shared.';
+        return BackupMessages::versionRestoreTool();
     }
 
     /** @return string description of files_image_view */
@@ -294,14 +280,14 @@ final class FilesMessages {
      * @return string the plan of files_edit
      */
     public static function planEdit(): string {
-        return Translator::t('Nothing was changed. After your approval the file is replaced by the content below and a copy of the current content is kept in the backup folder.');
+        return BackupMessages::planEdit();
     }
 
     /**
      * @return string the plan of files_replace
      */
     public static function planReplace(): string {
-        return Translator::t('Nothing was changed. After your approval the snippet below is replaced and a copy of the current content is kept in the backup folder.');
+        return BackupMessages::planReplace();
     }
 
     /**
@@ -315,21 +301,21 @@ final class FilesMessages {
      * @return string the plan of files_version_restore
      */
     public static function planRestore(): string {
-        return Translator::t('Nothing was changed. After your approval a copy of the current content is kept in the backup folder and the content of the version below is written back to the file; Nextcloud versioning applies as to any edit, according to its policy.');
+        return BackupMessages::planRestore();
     }
 
     /**
      * @return string what the backup taken by a write gives back
      */
     public static function planBackupConsequence(): string {
-        return Translator::t('The previous content stays available in the backup folder. Nextcloud may also keep versions of the file, according to its versioning policy.');
+        return BackupMessages::planBackupConsequence();
     }
 
     /**
      * @return string what the links of a checkout mean
      */
     public static function planCheckoutConsequence(): string {
-        return Translator::t('The upload replaces the whole file, takes the same backup as an edit and is refused if the file changed since the checkout.');
+        return BackupMessages::planCheckoutConsequence();
     }
 
     /** @return string description of the max_size parameter of files_image_view */
@@ -421,7 +407,7 @@ final class FilesMessages {
 
     /** @return string an edit inside the backup folder */
     public static function backupPath(): string {
-        return Translator::t('Files in \'/%s\' cannot be edited via MCP.', [self::BACKUP_FOLDER]);
+        return BackupMessages::backupPath();
     }
 
     /**
@@ -437,7 +423,7 @@ final class FilesMessages {
      * @return string a failed write, naming where the original still is
      */
     public static function writeFailed(string $backup): string {
-        return Translator::t('Failed to write file; original preserved in %s.', [$backup]);
+        return BackupMessages::writeFailed($backup);
     }
 
     /**
@@ -445,7 +431,7 @@ final class FilesMessages {
      * @return string closing sentence of a lock refusal that came after the backup
      */
     public static function originalKept(string $backup): string {
-        return Translator::t('The original is kept in %s.', [$backup]);
+        return BackupMessages::originalKept($backup);
     }
 
     /** @return string versioning is off for the user */

@@ -35,10 +35,12 @@ use OCP\Files\NotFoundException;
  */
 final class RestoreVersionHandler {
 	/**
+	 * @param \OCA\Mcp\Tools\Files\BackupPlan|null $backupPlan effective plan fields
 	 * @param NodeAccessInfo $access Access description of the file on the plan.
 	 * @param SharedWriteGuard $shared Confirmation of a write outside the personal scope.
 	 * @param ContentTypeGate $types Current-name policy, one snapshot per boundary.
 	 * @param LockAwareWrite|null $locks Refuses a locked file before any backup. Null where files_lock is not wired.
+	 * @param \OCA\Mcp\Service\BackupLocation|null $backupLocation configured protected roots
 	 * @param FilesAccessGuard|null $visibilityGuard Scope and exclusion tags of the resolved file.
 	 */
 	public function __construct(
@@ -47,6 +49,8 @@ final class RestoreVersionHandler {
 		private ContentTypeGate $types,
 		private ?LockAwareWrite $locks = null,
 		private ?FilesAccessGuard $visibilityGuard = null,
+		private ?\OCA\Mcp\Service\BackupLocation $backupLocation = null,
+		private ?\OCA\Mcp\Tools\Files\BackupPlan $backupPlan = null,
 	) {
 	}
 
@@ -69,7 +73,7 @@ final class RestoreVersionHandler {
 	 */
 	public function plan(Folder $root, string $userId, string $path, string $version, VersionTools $versions, ?UserTimezone $timezone): array {
 		$path = PathGuard::normalize($path);
-		if (FileBackup::isBackupPath($path)) {
+		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
 			throw new ToolFailure(FilesMessages::backupPath());
 		}
 		$file = $this->file($root, $path);
@@ -77,20 +81,20 @@ final class RestoreVersionHandler {
 		$described = $versions->describe($file, $version, $userId);
 		$this->types->assertCurrentName($file);
 		$shared = $this->shared->guard($file, $userId, $path, false);
-		return [
+		return ($this->backupPlan ?? new \OCA\Mcp\Tools\Files\BackupPlan())->decorate([
 			'action' => 'files_version_restore',
 			'path' => $path,
 			'version' => $described,
 			'timezone' => $timezone?->forUser($userId)->getName(),
 			'current' => ['etag' => (string)$file->getEtag(), 'size' => (int)$file->getSize()],
-			'backup' => '/' . FilesModule::BACKUP_FOLDER,
+			'backup' => '/' . \OCA\Mcp\Service\BackupLocation::LEGACY,
 			'access' => $this->access->describe($file, $userId),
 			'shared' => $shared === null ? [] : [$shared],
 			'requiresSharedConfirmation' => $shared !== null,
 			'recoverable' => true,
 			'consequence' => FilesMessages::planBackupConsequence(),
 			'message' => FilesMessages::planRestore(),
-		] + ($this->locks?->planNotice($file, $userId, $path) ?? []);
+		] + ($this->locks?->planNotice($file, $userId, $path) ?? []), $userId);
 	}
 
 	/**
@@ -110,7 +114,7 @@ final class RestoreVersionHandler {
 	 */
 	public function execute(Folder $root, string $userId, string $path, string $version, bool $confirmed, VersionTools $versions): array {
 		$path = PathGuard::normalize($path);
-		if (FileBackup::isBackupPath($path)) {
+		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
 			throw new ToolFailure(FilesMessages::backupPath());
 		}
 		$file = $this->file($root, $path);

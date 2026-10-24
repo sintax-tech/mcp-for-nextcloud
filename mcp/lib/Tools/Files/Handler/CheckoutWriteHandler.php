@@ -132,6 +132,7 @@ final class CheckoutWriteHandler {
 			$copy = $this->backup->prepare($root, $file, $row->path, $row->userId, $row->etag, $asUser);
 			$this->visibilityGuard?->assertVisible($file);
 			FileWriteBoundary::check($this->fileTypes, $file->getName());
+			\OCA\Mcp\Tools\Files\BackupWriteBoundary::afterCopy($this->backup, $row->path, $copy);
 			$write = static fn () => $file->putContent((string)file_get_contents($body));
 			// Checked again right before the write: the backup took time, and files_lock does not refuse every lock.
 			NodeAccess::mutate(fn () => $this->locks === null ? $write() : $this->locks->run($write, $file, $row->userId, $row->path, $asUser), $this->visibilityGuard);

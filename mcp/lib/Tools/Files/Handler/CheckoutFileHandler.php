@@ -30,16 +30,20 @@ use OCP\Files\File;
 /** Owns files_checkout planning and link emission for the resolved current node. */
 final class CheckoutFileHandler {
 	/**
+	 * @param \OCA\Mcp\Tools\Files\BackupPlan|null $backupPlan effective plan fields
 	 * @param CheckoutService $checkout Link service.
 	 * @param NodeAccessInfo $accessInfo Existing access description.
 	 * @param SharedWriteGuard $guard Existing shared-write confirmation.
+	 * @param \OCA\Mcp\Service\BackupLocation|null $backupLocation configured protected roots
 	 * @param FilesAccessGuard|null $visibilityGuard Existing scope and exclusion checks.
 	 * @param LockAwareWrite|null $locks Existing lock service.
 	 * @param FileTypeGuard|null $fileTypes Current file policy.
 	 */
 	public function __construct(private CheckoutService $checkout, private NodeAccessInfo $accessInfo,
 		private SharedWriteGuard $guard, private ?FilesAccessGuard $visibilityGuard,
-		private ?LockAwareWrite $locks, private ?FileTypeGuard $fileTypes) {
+		private ?LockAwareWrite $locks, private ?FileTypeGuard $fileTypes,
+		private ?\OCA\Mcp\Service\BackupLocation $backupLocation = null,
+		private ?\OCA\Mcp\Tools\Files\BackupPlan $backupPlan = null) {
 	}
 
 	/**
@@ -56,7 +60,7 @@ final class CheckoutFileHandler {
 	 */
 	public function plan(Folder $root, string $userId, string $path, ?string $etag): array {
 		$path = PathGuard::normalize($path);
-		if (FileBackup::isBackupPath($path)) {
+		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
 			throw new ToolFailure(FilesMessages::backupPath());
 		}
 		$file = $this->file($root, $path);
@@ -65,7 +69,7 @@ final class CheckoutFileHandler {
 		$shared = $this->guard->guard($file, $userId, $path, false);
 		// The same refusal the mint gives, so the plan cannot promise links the upload would not honour.
 		$this->checkout->assertAvailable($userId);
-		return [
+		return ($this->backupPlan ?? new \OCA\Mcp\Tools\Files\BackupPlan())->decorate([
 			'action' => 'files_checkout',
 			'path' => $path,
 			'etag' => (string)$file->getEtag(),
@@ -74,7 +78,7 @@ final class CheckoutFileHandler {
 			'downloadTtlSeconds' => CheckoutService::DOWNLOAD_TTL,
 			'uploadTtlSeconds' => CheckoutService::UPLOAD_TTL,
 			'uploadMaxBytes' => $this->checkout->maxBytes(),
-			'backup' => '/' . FileBackup::FOLDER,
+			'backup' => '/' . \OCA\Mcp\Service\BackupLocation::LEGACY,
 			'access' => $this->accessInfo->describe($file, $userId),
 			'shared' => $shared === null ? [] : [$shared],
 			'requiresSharedConfirmation' => $shared !== null,
@@ -82,7 +86,7 @@ final class CheckoutFileHandler {
 			'linksAfterConfirmation' => true,
 			'consequence' => FilesMessages::planCheckoutConsequence(),
 			'message' => FilesMessages::planCheckout(),
-		] + ($this->locks?->planNotice($file, $userId, $path, false) ?? []);
+		] + ($this->locks?->planNotice($file, $userId, $path, false) ?? []), $userId);
 	}
 
 	/**
@@ -100,7 +104,7 @@ final class CheckoutFileHandler {
 	 */
 	public function execute(Folder $root, string $userId, string $path, ?string $etag, bool $confirmed): array {
 		$path = PathGuard::normalize($path);
-		if (FileBackup::isBackupPath($path)) {
+		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
 			throw new ToolFailure(FilesMessages::backupPath());
 		}
 		$file = $this->file($root, $path);

@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Service;
 
-use OCA\Mcp\Tools\Files\FileBackup;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\Node;
@@ -18,6 +17,9 @@ final class BackupFolderMatcher {
 	/** @var array<string, list<array{Folder, list<string>}>> verified candidate locations for this request */
 	private array $candidates = [];
 
+	/** @var list<string> reserved names from the latest boundary read */
+	private array $reservedNames = [];
+
 	/**
 	 * Drops candidate metadata after filesystem, tag or configuration changes.
 	 *
@@ -25,13 +27,15 @@ final class BackupFolderMatcher {
 	 */
 	public function clearCache(): void {
 		$this->candidates = [];
+		$this->location?->invalidate();
 	}
 
 	/**
 	 * @param IRootFolder|null $rootFolder filesystem root for resolving owner aliases and mount boundaries
+	 * @param BackupLocation|null $location historical and current configured names
 	 * @param string $folderName direct child name reserved for backups
 	 */
-	public function __construct(private ?IRootFolder $rootFolder = null, private string $folderName = FileBackup::FOLDER) {
+	public function __construct(private ?IRootFolder $rootFolder = null, private string $folderName = BackupLocation::LEGACY, private ?BackupLocation $location = null) {
 	}
 
 	/**
@@ -44,6 +48,11 @@ final class BackupFolderMatcher {
 	 * @throws \Throwable when ancestry or a local share origin cannot be resolved safely
 	 */
 	public function matches(Node $node, callable $parentOf): array {
+		$names = $this->location?->snapshot()['reserved'] ?? [$this->folderName];
+		if ($names !== $this->reservedNames) {
+			$this->candidates = [];
+			$this->reservedNames = $names;
+		}
 		return array_values(array_filter($this->inTree($node, $parentOf), static fn (array $match): bool => $match[1] !== []));
 	}
 
@@ -73,7 +82,7 @@ final class BackupFolderMatcher {
 			}
 			$seen[$id] = true;
 			$parent = $parentOf($current);
-			if ($current instanceof Folder && $current->getName() === $this->folderName
+			if ($current instanceof Folder && BackupFolderName::reserved($current->getName(), $this->reservedNames)
 				&& $parent instanceof Folder && preg_match('~^/([^/]+)/files(?:/|$)~', $current->getPath(), $homePath)) {
 				$key = $id . ':' . $current->getPath();
 				$matches = $this->candidates[$key] ??= $this->candidate($current, $parent, $homePath[1], $parentOf, $resolving);

@@ -79,6 +79,7 @@ class VisibilityGuard {
         private ?ISystemTagManager $tagManager = null,
         private ?LoggerInterface $logger = null,
         ?\OCP\EventDispatcher\IEventDispatcher $events = null,
+        private ?BackupLocation $backupLocation = null,
     ) {
         // Invalidate this very instance after OCP mutations outside the MCP tools,
         // too. Run after ordinary privacy hooks; tools also clear in finally.
@@ -721,6 +722,7 @@ class VisibilityGuard {
         $this->ownerCache = [];
         $this->shareRootCache = [];
         $this->backupFolderMatcher?->clearCache();
+        $this->backupLocation?->invalidate();
     }
 
     /** Clears the in-memory caches. */
@@ -732,6 +734,7 @@ class VisibilityGuard {
         $this->ownerCache = [];
         $this->shareRootCache = [];
         $this->backupFolderMatcher?->clearCache();
+        $this->backupLocation?->invalidate();
     }
 
     /**
@@ -742,6 +745,6 @@ class VisibilityGuard {
      * @return bool true when the node is a backup mirror of a hidden original
      */
     private function isHiddenBackup(Node $node, array $chain): bool {
-        return (new BackupMirrorVisibility($this, $this->backupFolderMatcher ??= new BackupFolderMatcher($this->rootFolder), $this->warnVisibilityFailure(...)))->isHidden($node, $this->explanation);
+        return (new BackupMirrorVisibility($this, $this->backupFolderMatcher ??= new BackupFolderMatcher($this->rootFolder, location: $this->backupLocation), $this->warnVisibilityFailure(...)))->isHidden($node, $this->explanation);
     }
 }

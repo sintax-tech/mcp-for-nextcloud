@@ -38,6 +38,7 @@ class ContactBackup {
         private ITimeFactory $time,
         private IConfig $config,
         private ILockingProvider $locks,
+        private ?\OCA\Mcp\Service\BackupLocation $backupLocation = null,
     ) {}
 
     /**
@@ -47,7 +48,7 @@ class ContactBackup {
      * @return string
      */
     public function directory(string $bookName): string {
-        return '/' . FileBackup::FOLDER . '/Contacts/' . $this->segment($bookName);
+        return ContactBackupDirectory::path($this->backupLocation, $this->segment($bookName));
     }
 
     /**

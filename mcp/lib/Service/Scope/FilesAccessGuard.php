@@ -40,8 +40,9 @@ class FilesAccessGuard extends VisibilityGuard {
         ?IEventDispatcher $events = null,
         private ?FilesScope $scope = null,
         private ?GuestRestrictions $guests = null,
+        ?\OCA\Mcp\Service\BackupLocation $backupLocation = null,
     ) {
-        parent::__construct($config, $tagMapper, $rootFolder, $tagManager, $logger, $events);
+        parent::__construct($config, $tagMapper, $rootFolder, $tagManager, $logger, $events, $backupLocation);
     }
 
     /**

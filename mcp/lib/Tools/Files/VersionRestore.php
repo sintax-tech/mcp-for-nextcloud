@@ -96,6 +96,7 @@ final class VersionRestore {
 		$this->visibilityGuard?->assertVisible($file);
 		$manager = $this->manager();
 		try {
+			BackupWriteBoundary::afterCopy($backup, $path, $copy);
 			if ($this->locks !== null && $this->locks->providerAvailable()) {
 				$this->writeVersion($manager, $version, $file, $path, $viewerUid, $copy);
 			} else {

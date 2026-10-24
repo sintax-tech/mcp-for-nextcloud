@@ -22,12 +22,14 @@ final class ContentWritePlan {
 	/**
 	 * @param SharedWriteGuard $shared Confirmation of a write outside the personal scope. Called with confirmed false.
 	 * @param NodeAccessInfo $access Who owns the file and which permissions the viewer has.
+	 * @param BackupPlan|null $backupPlan configured copy policy and plan wording
 	 * @param LockAwareWrite|null $locks Lock notice for the plan. Null where files_lock is not wired.
 	 */
 	public function __construct(
 		private SharedWriteGuard $shared,
 		private NodeAccessInfo $access,
 		private ?LockAwareWrite $locks = null,
+		private ?BackupPlan $backupPlan = null,
 	) {
 	}
 
@@ -44,15 +46,15 @@ final class ContentWritePlan {
 	 */
 	public function describe(File $file, string $userId, string $path, array $plan, bool $asUser = true): array {
 		$shared = $this->shared->guard($file, $userId, $path, false);
-		return $plan + [
+		return ($this->backupPlan ?? new BackupPlan())->decorate($plan + [
 			'path' => $path,
 			'etag' => (string)$file->getEtag(),
-			'backup' => '/' . FilesModule::BACKUP_FOLDER,
+			'backup' => '/' . \OCA\Mcp\Service\BackupLocation::LEGACY,
 			'access' => $this->access->describe($file, $userId),
 			'shared' => $shared === null ? [] : [$shared],
 			'requiresSharedConfirmation' => $shared !== null,
 			'recoverable' => true,
 			'consequence' => FilesMessages::planBackupConsequence(),
-		] + ($this->locks?->planNotice($file, $userId, $path, $asUser) ?? []);
+		] + ($this->locks?->planNotice($file, $userId, $path, $asUser) ?? []), $userId);
 	}
 }

@@ -197,7 +197,7 @@ abstract class FilesToolsTestCase extends TestCase {
             $this->visibilityGuard,
             ...$this->sharing($urls),
             creation: new FileCreation($access, new SharedWriteGuard($access), $checkout, $this->filenames,
-                $this->visibilityGuard ?? new \OCA\Mcp\Service\Scope\FilesAccessGuard($config, $this->tagMapper, $this->visibilityRoot()), $this->creationLogger, $locks, fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this)),
+                $this->visibilityGuard ?? new \OCA\Mcp\Service\Scope\FilesAccessGuard($config, $this->tagMapper, $this->visibilityRoot()), $this->creationLogger, $locks, fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this), backupLocation: new \OCA\Mcp\Service\BackupLocation($this->createMock(\OCA\Mcp\Service\BackupSettingsDocument::class))),
             locks: $locks,
             fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this),
             editFile: new EditFileHandler($extractor, $guard, $plans, $commit, $gate, $locks, $this->visibilityGuard),

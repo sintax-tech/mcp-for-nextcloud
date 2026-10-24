@@ -45,7 +45,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Tools/Files/FilesPlanRenderer.php#render:copy:1' => 'render: static plan text, no Files mutation',
 			'Tools/Files/FilesPlanRenderer.php#render:move:1' => 'render: static plan text, no Files mutation',
 			'Tools/Files/ImageTools.php#originalDimensions:fopen:1' => 'read: original image bytes',
-			'Tools/Files/FileBackup.php#copy:fopen:1' => 'read: original bytes for internal recovery',
+			'Tools/Files/FileBackupCopy.php#copy:fopen:1' => 'read: original bytes for internal recovery',
 			'Tools/Files/VersionRestore.php#writeVersion:fopen:1' => 'temporary: php temp stream buffer, not a Files node',
 			'Tools/Files/TextExtractor.php#read:fopen:1' => 'read: bounded file content, read-only mode',
 			'Tools/Files/TextExtractor.php#zipXml:file_put_contents:1' => 'temporary: ITempManager local zip, not a Files node',
@@ -74,9 +74,10 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Tools/Notes/NoteContentSink.php#whole:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testWholeEditRefusesADeniedTitleBeforeWritingContent',
 			'Tools/Notes/NoteContentSink.php#partial:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testPartialWriterRefusesBeforePutContent',
 			'Tools/Notes/NotesModule.php#call:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testMoveDelegationIsGuarded',
+			'Tools/Files/FileBackup.php#copy:copy:1' => 'D3: delegates to the verified internal recovery copier; never reads file type policy',
 			'Tools/Files/FileBackup.php#prepare:copy:1' => 'D3: internal verified backup delegation; never reads policy',
-			'Tools/Files/FileBackup.php#copy:newfile:1' => 'D3: mandatory internal backup creation; never reads policy',
-			'Tools/Files/FileBackup.php#copy:putcontent:1' => 'D3: mandatory internal backup bytes; never reads policy',
+			'Tools/Files/FileBackupCopy.php#copy:newfile:1' => 'D3: mandatory internal backup creation; never reads policy',
+			'Tools/Files/FileBackupCopy.php#copy:putcontent:1' => 'D3: mandatory internal backup bytes; never reads policy',
 			'Tools/Contacts/ContactBackup.php#save:newfile:1' => 'D3: mandatory internal vCard backup; never reads policy',
 			'Tools/Calendar/EventRelocator.php#prepare:move:1' => 'DAV: not Files, official CalDAV move',
 			'Service/Policy/PolicyWriter.php#failure:rollback:1' => 'database: not Files, application transaction rollback',
@@ -93,7 +94,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 	}
 
 	/**
-	 * Keep 42 real calls, including the merged NT-1 writer, and 18 explicit literals visible.
+	 * Keep 43 real calls, including the merged NT-1 writer, and 18 explicit literals visible.
 	 *
 	 * @return void
 	 */
@@ -101,7 +102,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 		$calls = FileWriteSinkInventory::calls(FileWriteSinkInventory::sources(__DIR__ . '/../../../lib'));
 		$literals = array_values(array_filter($calls, static fn (string $call): bool => str_contains($call, ':literal-')));
 		self::assertCount(18, $literals);
-		self::assertCount(42, array_diff($calls, $literals));
+		self::assertCount(43, array_diff($calls, $literals));
 		foreach ($calls as $call) {
 			self::assertDoesNotMatchRegularExpression('/:(?:literal-)?(?:writestream|fputs):/', $call);
 		}
@@ -128,7 +129,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 				self::assertStringContainsString(':literal-', $key, 'A label classification cannot waive a detected call.');
 			}
 			if (str_starts_with($classification, 'D3:')) {
-				self::assertMatchesRegularExpression('~\ATools/(Files/FileBackup|Contacts/ContactBackup)\.php#~', $key);
+				self::assertMatchesRegularExpression('~\ATools/(Files/FileBackup(?:Copy)?|Contacts/ContactBackup)\.php#~', $key);
 			}
 		}
 	}

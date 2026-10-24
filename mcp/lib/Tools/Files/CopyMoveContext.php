@@ -26,6 +26,7 @@ final class CopyMoveContext {
 	 * @param FilesAccessGuard|null $visibilityGuard Visibility boundary.
 	 * @param LockAwareWrite|null $locks Official lock-aware writes.
 	 * @param FileTypeGuard|null $fileTypes Injected policy guard; core resolves it when omitted.
+	 * @param \OCA\Mcp\Service\BackupLocation|null $backupLocation live protected root names
 	 * @return void
 	 */
 	public function __construct(
@@ -35,6 +36,7 @@ final class CopyMoveContext {
 		public readonly ?FilesAccessGuard $visibilityGuard,
 		public readonly ?LockAwareWrite $locks,
 		private ?FileTypeGuard $fileTypes,
+		private ?\OCA\Mcp\Service\BackupLocation $backupLocation = null,
 	) {
 	}
 
@@ -69,8 +71,8 @@ final class CopyMoveContext {
 	 * @return string the same path
 	 * @throws ToolFailure when the path is /MCP backups or inside it
 	 */
-	public static function notBackup(string $path): string {
-		return Reorganization::notBackup($path);
+	public function notBackup(string $path): string {
+		return BackupWriteBoundary::checked($path, $this->backupLocation);
 	}
 
 	/**

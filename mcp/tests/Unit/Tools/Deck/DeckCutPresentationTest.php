@@ -195,7 +195,7 @@ final class DeckCutPresentationTest extends TestCase {
 		self::assertStringContainsString('só quando o vínculo é criado', $portuguese);
 		self::assertStringContainsString('não revoga o vínculo depois', $portuguese);
 		$info = (string)file_get_contents($repo . '/mcp/appinfo/info.xml');
-		self::assertStringContainsString('<version>1.2.1-rc.1</version>', $info);
+		self::assertStringContainsString('<version>1.2.1-rc.2</version>', $info);
 		self::assertStringContainsString('never deletes', $info);
 		self::assertStringContainsString('nunca apaga', $info);
 		self::assertStringContainsString('nunca borra', $info);

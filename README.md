@@ -19,13 +19,14 @@ English · [Português (Brasil)](README.pt-BR.md) · [Deutsch](README.de.md) · 
 
 ---
 
-## What's new in 1.2.1-rc.1
+## What's new in 1.2.1-rc.2
 
-Local release candidate for testing; not a published release. See [the changelog](CHANGELOG.md#121-rc1).
+Local release candidate for testing, updating 1.2.0 directly; not a published release. See [the changelog](CHANGELOG.md#121-rc2).
 
 - **Backup settings ([#17](https://github.com/sintax-tech/mcp-for-nextcloud/issues/17)):** in *Data protection*, choose one folder name directly in each acting user's personal root (default `MCP backups`; `.mcp-backups` is allowed). The folder appears with the first copy. Changing the name never moves or deletes content; all previously configured names, including the legacy default, remain protected against MCP writes and keep the backup-mirror visibility rules.
 - **Files copies:** on by default. An administrator can suspend MCP pre-write copies only while native `files_versions` is enabled. Availability is checked again for the acting user; unavailable versioning makes copies mandatory and existing operations still refuse when their Versions prerequisite is missing. This does not guarantee a native version for every file/backend. Contact deletion always requires a verified copy in the configured folder, even with Files copies suspended. Earlier backups are preserved.
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** `mail_list_accounts` and `mail_list_mailboxes` list only the caller's accounts and cached folders/counters. Mail is optional and requires the `mail.read` grant. These calls do not synchronize IMAP, read messages or change mail state. Open the account in Mail once if its folder cache is empty; an old cache can return old information. The opt-in integration cell uses disposable Dovecot and Mail, not a production mail server.
+- **Subtasks ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)):** tasks return their `parent`; create and edit set it within the same calendar or clear it with `null`, and `tasks_list_tasks` lists the direct subtasks of one parent. Loops and nesting deeper than 64 levels are refused; confirmed MCP parent writes run one at a time and need the server's file locking. Contributed by @mturgeonferland.
 - **Visibility:** a nested ordinary folder named `MCP backups` is no longer mistaken for the user's root backup folder. Scope, exclusion tags and fail-closed checks still apply.
 
 Backup paths shown below use the default name; a configured name replaces that root component. Existing 1.2.0 features follow below.

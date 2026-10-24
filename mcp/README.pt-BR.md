@@ -9,13 +9,14 @@ Versão para **Nextcloud 32 a 35** (o `info.xml` declara 32–35; o contrato de 
 
 A URL exata da instância aparece nas páginas de administração e pessoal.
 
-## Novidades da 1.2.1-rc.1
+## Novidades da 1.2.1-rc.2
 
-Candidata local para testes; não é uma versão publicada. Veja [o changelog](../CHANGELOG.md#121-rc1).
+Candidata local para testes, atualizando a 1.2.0 diretamente; não é uma versão publicada. Veja [o changelog](../CHANGELOG.md#121-rc2).
 
 - **Configuração de backups ([#17](https://github.com/sintax-tech/mcp-for-nextcloud/issues/17)):** em *Proteção de dados*, escolha um nome de pasta diretamente na raiz pessoal de cada usuário que executa a ação (padrão `MCP backups`; `.mcp-backups` é permitido). A pasta aparece na primeira cópia. Trocar o nome nunca move nem apaga conteúdo; todos os nomes anteriores, inclusive o padrão legado, continuam protegidos contra escrita MCP e mantêm as regras de visibilidade dos espelhos de backup.
 - **Cópias de Arquivos:** ligadas por padrão. Um administrador pode suspender as cópias prévias MCP somente com `files_versions` nativo ativo. A disponibilidade é conferida novamente para quem executa a ação; sem versionamento as cópias são obrigatórias e as operações existentes continuam recusadas quando falta seu pré-requisito Versions. Isso não garante uma versão nativa para todo arquivo/backend. Excluir contato sempre exige cópia verificada na pasta configurada, mesmo com cópias de Arquivos suspensas. Backups anteriores são preservados.
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** `mail_list_accounts` e `mail_list_mailboxes` listam somente contas do próprio usuário e pastas/contadores em cache. Mail é opcional e exige o grant `mail.read`. Essas chamadas não sincronizam IMAP, não leem mensagens nem alteram o estado do correio. Abra a conta uma vez no Mail se o cache de pastas estiver vazio; um cache antigo pode devolver informação antiga. A célula de integração opt-in usa Dovecot e Mail descartáveis, não um servidor de produção.
+- **Subtarefas ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)):** tarefas devolvem a `parent`; criar e editar definem a tarefa principal na mesma agenda ou a removem com `null`, e `tasks_list_tasks` lista as subtarefas diretas de uma tarefa. Ciclos e aninhamento com mais de 64 níveis são recusados; escritas confirmadas do MCP que definem a tarefa principal rodam uma de cada vez e exigem o bloqueio de arquivos do servidor. Contribuição de @mturgeonferland.
 - **Visibilidade:** uma pasta comum aninhada chamada `MCP backups` deixa de ser confundida com a pasta de backup na raiz pessoal. Escopo, etiquetas de exclusão e recusa em caso de falha continuam valendo.
 
 Os caminhos de backup abaixo usam o nome padrão; o nome configurado substitui esse componente da raiz. Os recursos da 1.2.0 seguem abaixo.

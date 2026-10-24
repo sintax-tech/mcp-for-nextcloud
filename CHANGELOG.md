@@ -2,6 +2,20 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 1.2.1-rc.1
+
+Local candidate for review and installation testing; not published to the App Store or GitHub Releases.
+
+### Added
+
+- **Backup configuration ([#17](https://github.com/sintax-tech/mcp-for-nextcloud/issues/17)):** administrators choose one folder name in each acting user's personal root under *Data protection*, including dot-prefixed names. The default remains `MCP backups`; a folder is created only with its first copy. Renaming the setting preserves existing data and reserves every historical name against MCP writes.
+- **Optional Files pre-write copies ([#17](https://github.com/sintax-tech/mcp-for-nextcloud/issues/17)):** on by default; suspension requires native `files_versions`. Every operation rechecks the acting user's availability and requires copies on failure. Existing Versions prerequisites still refuse operations without that app; this setting does not grant new writes or guarantee native versions for every file/backend. Contact deletion still requires a verified copy, using the configured folder. Existing backups are never removed.
+- **Mail account and folder lists ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** `mail_list_accounts` and `mail_list_mailboxes`, with their own read grant, expose only the caller's accounts and Mail's cached folder names/counters. No message reading, IMAP synchronization or mutation. Empty caches require opening the account in Mail; cached data may be stale. Mail is optional; the opt-in integration cell uses disposable Mail and Dovecot.
+
+### Fixed
+
+- **Backup mirror visibility:** reserve the backup folder only directly under the owner's personal root, preserving fail-closed handling of shared/external storage. Ordinary nested folders named `MCP backups` no longer inherit backup-mirror hiding. Reserved names and paths compare using the core's NFC identity; hidden originals continue hiding their backup mirrors.
+
 ## 1.2.0
 
 ### Added

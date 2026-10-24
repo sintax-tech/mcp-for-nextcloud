@@ -1422,6 +1422,13 @@
     "Notes needs md/txt in the list. Mandatory internal backups are exempt; Notes, existing files, administrators, version restore and undo follow the current policy." : "Notes necesita md/txt en la lista. Las copias de seguridad internas obligatorias están exentas; Notes, archivos existentes, administradores, restauración de versiones y deshacer siguen la política actual.",
     "With the policy active, moving or copying a folder checks every file even when names stay the same, up to 2,000 nodes. This costs more work for large folders and can refuse a move containing a blocked jpg or pdf." : "Con la política activa, mover o copiar una carpeta comprueba cada archivo aunque no cambien los nombres, hasta 2.000 nodos. Esto supone más trabajo en carpetas grandes y puede rechazar mover una carpeta con un jpg o pdf bloqueado.",
     "With a file type policy active, copying a folder checks every file inside it first and refuses the whole copy if any file is not allowed. The copy is then made file by file from that checked list: files another client adds or renames while the copy runs are not copied, and a failure partway leaves a partial copy that is reported and never removed. Moving a folder also checks every file inside it first, but the move itself is a single Nextcloud operation: a file another client adds to the folder in the short time between that check and the move is moved with it." : "Con una política de tipos activa, copiar una carpeta comprueba primero todos sus archivos y rechaza la copia completa si alguno no está permitido. Después se copia archivo por archivo a partir de esa lista: los archivos que otro cliente añada o renombre durante la copia no se copian; un fallo deja una copia parcial que se informa y nunca se elimina. Mover una carpeta también comprueba primero todos sus archivos, pero el movimiento es una sola operación de Nextcloud: un archivo que otro cliente añada entre la comprobación y el movimiento se mueve con ella.",
-    "The operation would exceed %s items; nothing was changed." : "La operación superaría los %s elementos; no se ha cambiado nada."
+    "The operation would exceed %s items; nothing was changed." : "La operación superaría los %s elementos; no se ha cambiado nada.",
+    "List mail accounts" : "Listar cuentas de correo",
+    "List mail folders" : "Listar carpetas de correo",
+    "Mail" : "Correo",
+    "The Mail app is not available for this account." : "La aplicación Correo no está disponible para esta cuenta.",
+    "Mail account not found." : "Cuenta de correo no encontrada.",
+    "The Mail app has not synchronized the folders of this account yet; open the account in Mail once and try again." : "La aplicación Correo todavía no ha sincronizado las carpetas de esta cuenta; abra la cuenta en Correo una vez e inténtelo de nuevo.",
+    "mail" : "correo"
 },"pluralForm" :"nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

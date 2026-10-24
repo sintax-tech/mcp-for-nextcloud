@@ -66,6 +66,8 @@ final class ToolPresentationTest extends TestCase {
         'talk_create_group' => ['Create group in Talk', 'Criar grupo no Talk'],
         'logs_list' => ['Read server log', 'Ler log do servidor'],
         'logs_analyze' => ['Analyze server log', 'Analisar log do servidor'],
+        'mail_list_accounts' => ['List mail accounts', 'Listar contas de e-mail'],
+        'mail_list_mailboxes' => ['List mail folders', 'Listar pastas de e-mail'],
     ];
 
     protected function tearDown(): void {

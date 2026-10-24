@@ -167,6 +167,6 @@ final class GrantPolicyTest extends TestCase {
 
     public function testUnknownModuleIsRejected(): void {
         $this->expectException(InvalidArgumentException::class);
-        $this->policy->granted('alice', 'mail', 'read');
+        $this->policy->granted('alice', 'polls', 'read');
     }
 }

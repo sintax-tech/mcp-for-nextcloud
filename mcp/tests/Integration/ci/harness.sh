@@ -48,6 +48,8 @@ ADMIN_PASSWORD=mcp-it-admin-password
 # narrow one at a subdirectory of it.
 GF_NAME=mcp-it-gf
 EXT_ROOT=/mcp-it-ext
+# The Mail part of a cell (MCP_IT_WITH_MAIL=1): IMAP server, Mail app and accounts.
+MAIL_CELL="$REPO_ROOT/mcp/tests/Integration/ci/mail-cell.sh"
 PHPUNIT_VERSION=10.5.65
 PHPUNIT_SHA256=ce85745a2ec7d8e536621ebed69dfa36a8d504daf73be6750e93bb8c5b088835
 
@@ -405,6 +407,7 @@ cmd_provision() {
     : > "$WORK/provision-failures"
     parts="groupfolders files_external talk notes calendar contacts guests"
     [ "${MCP_IT_WITH_DECK:-1}" != 1 ] || parts="$parts deck"
+    [ "${MCP_IT_WITH_MAIL:-0}" != 1 ] || parts="$parts mail"
     for part in $parts; do
         echo "=== provisioning $part" | tee -a "$log"
         case "$part" in
@@ -415,6 +418,7 @@ cmd_provision() {
             calendar) step="install_release_app calendar calendar $CAL_TAG $CAL_SHA" ;;
             contacts) step="install_release_app contacts contacts $CONTACTS_TAG $CONTACTS_SHA" ;;
             deck) step=provision_deck ;;
+            mail) step="sh $MAIL_CELL provision" ;;
             # Unpacked only: Guests/GuestRestrictionsTest enables it for its own scenarios, since it adds a user and a
             # group backend every other test would see.
             guests) step="unpack_release_app guests guests $GUESTS_TAG $GUESTS_SHA" ;;
@@ -506,6 +510,8 @@ cmd_test() {
     if [ "$MCP_IT_DB" = pgsql ]; then
         set -- "$@" -e MCP_IT_PG_LOG=/mcp-it-pglog/postgresql.log
     fi
+    # shellcheck disable=SC2046
+    [ "${MCP_IT_WITH_MAIL:-0}" != 1 ] || set -- "$@" $(sh "$MAIL_CELL" test-env)
     # MCP_IT_PHPUNIT_ARGS (local diagnostics only), e.g. "--filter SomeTest", is passed to PHPUnit as is.
     # shellcheck disable=SC2086
     docker exec -u www-data "$@" "$NC" php -d memory_limit=1G /mcp-it-tools/phpunit.phar \
@@ -523,6 +529,7 @@ cmd_collect() {
     if [ -f "$PG_LOG_DIR/postgresql.log" ]; then
         cp "$PG_LOG_DIR/postgresql.log" "$ARTIFACTS/postgresql.log"
     fi
+    [ "${MCP_IT_WITH_MAIL:-0}" != 1 ] || sh "$MAIL_CELL" collect || true
 }
 
 case "${1:-}" in

@@ -24,9 +24,10 @@ final class AppEnablement {
     /**
      * Oldest release of each optional app MCP calls into, per app id. Talk 21.1.4 is the first Nextcloud 31 release
      * whose `ChatManager::addSystemMessage()` takes the participant as its second argument; Deck 1.15.0 is the first
-     * release for Nextcloud 31. tests/Unit/Contract checks the APIs used against these releases.
+     * release for Nextcloud 31. Mail 5.0.0 is the first release for Nextcloud 32, the oldest Nextcloud MCP supports.
+     * tests/Unit/Contract checks the APIs used against these releases.
      */
-    public const MINIMUM_VERSIONS = ['deck' => '1.15.0', 'spreed' => '21.1.4'];
+    public const MINIMUM_VERSIONS = ['deck' => '1.15.0', 'spreed' => '21.1.4', 'mail' => '5.0.0'];
 
     /**
      * @param object $apps the server's IAppManager, of whichever supported Nextcloud is running

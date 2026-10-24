@@ -158,6 +158,9 @@ final class ToolPresentation {
             // Logs
             'logs_list' => Translator::t('Read server log'),
             'logs_analyze' => Translator::t('Analyze server log'),
+            // Mail
+            'mail_list_accounts' => Translator::t('List mail accounts'),
+            'mail_list_mailboxes' => Translator::t('List mail folders'),
             default => self::humanized($name),
         };
     }
@@ -187,7 +190,7 @@ final class ToolPresentation {
     /**
      * Title of a grant module, in the language of the current user, for the guide and for the admin matrix.
      *
-     * @param string $module grant module a tool declares (files, notes, calendar, contacts, tasks, deck, talk, people, logs)
+     * @param string $module grant module a tool declares (files, notes, calendar, contacts, tasks, deck, talk, people, logs, mail)
      */
     public static function moduleTitle(string $module): string {
         return match ($module) {
@@ -200,6 +203,7 @@ final class ToolPresentation {
             'talk' => Translator::t('Talk'),
             'people' => Translator::t('People'),
             'logs' => Translator::t('Server log'),
+            'mail' => Translator::t('Mail'),
             default => ucfirst($module),
         };
     }

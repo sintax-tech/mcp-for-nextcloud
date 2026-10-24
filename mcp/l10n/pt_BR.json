@@ -1422,6 +1422,13 @@
     "Notes needs md/txt in the list. Mandatory internal backups are exempt; Notes, existing files, administrators, version restore and undo follow the current policy." : "O Notes precisa de md/txt na lista. Backups internos obrigatórios são isentos; Notes, arquivos preexistentes, administradores, restauração de versão e desfazer seguem a política atual.",
     "With the policy active, moving or copying a folder checks every file even when names stay the same, up to 2,000 nodes. This costs more work for large folders and can refuse a move containing a blocked jpg or pdf." : "Com a política ativa, mover ou copiar uma pasta verifica todos os arquivos mesmo sem mudar nomes, até 2.000 nós. Isso custa mais trabalho em pastas grandes e pode recusar mover uma pasta que contenha jpg ou pdf bloqueado.",
     "With a file type policy active, copying a folder checks every file inside it first and refuses the whole copy if any file is not allowed. The copy is then made file by file from that checked list: files another client adds or renames while the copy runs are not copied, and a failure partway leaves a partial copy that is reported and never removed. Moving a folder also checks every file inside it first, but the move itself is a single Nextcloud operation: a file another client adds to the folder in the short time between that check and the move is moved with it." : "Com a política de tipos ativa, copiar uma pasta confere antes todos os arquivos dela e recusa a cópia inteira se algum não for permitido. A cópia é feita arquivo por arquivo a partir dessa lista conferida: arquivos que outro cliente adicionar ou renomear durante a cópia não são copiados, e uma falha no meio deixa uma cópia parcial, informada e nunca apagada. Mover uma pasta também confere antes todos os arquivos dela, mas o move em si é uma única operação do Nextcloud: um arquivo que outro cliente adicionar à pasta no curto intervalo entre a conferência e o move vai junto.",
-    "The operation would exceed %s items; nothing was changed." : "A operação passaria de %s itens; nada foi alterado."
+    "The operation would exceed %s items; nothing was changed." : "A operação passaria de %s itens; nada foi alterado.",
+    "List mail accounts" : "Listar contas de e-mail",
+    "List mail folders" : "Listar pastas de e-mail",
+    "Mail" : "E-mail",
+    "The Mail app is not available for this account." : "O app E-mail não está disponível para esta conta.",
+    "Mail account not found." : "Conta de e-mail não encontrada.",
+    "The Mail app has not synchronized the folders of this account yet; open the account in Mail once and try again." : "O app E-mail ainda não sincronizou as pastas desta conta; abra a conta no E-mail uma vez e tente de novo.",
+    "mail" : "e-mail"
 },"pluralForm" :"nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

@@ -51,6 +51,9 @@ final class NextcloudApiUsage {
         'OCA\\DAV\\CalDAV\\Schedule\\Plugin',
         'OCP\\Log\\IWriter',
         'OCP\\Group\\Backend\\IIsAdminBackend',
+        // The Mail account and folder OCA\Mcp\Tools\Mail\MailGateway receives from AccountService and MailboxMapper.
+        'OCA\\Mail\\Account',
+        'OCA\\Mail\\Db\\Mailbox',
     ];
 
     /**
@@ -135,6 +138,14 @@ final class NextcloudApiUsage {
         'OCA\\Deck\\Db\\CardMapper::findBoardId' => ['id'],
         'OCA\\Deck\\Db\\BoardMapper::findAllByOwner' => ['userId'],
         'OCA\\Deck\\Db\\AssignmentMapper::findIn' => ['cardIds'],
+        // Mail, resolved by class name in OCA\Mcp\Tools\Mail\MailServices and held untyped by MailGateway.
+        'OCA\\Mail\\Service\\AccountService::findByUserId' => ['currentUserId'],
+        'OCA\\Mail\\Service\\AccountService::find' => ['userId', 'id'],
+        'OCA\\Mail\\Db\\MailboxMapper::findAll' => ['account'],
+        'OCA\\Mail\\Account::getId' => [],
+        'OCA\\Mail\\Account::getName' => [],
+        'OCA\\Mail\\Account::getEmail' => [],
+        'OCA\\Mail\\Account::getUserId' => [],
         // DAV, built or resolved by class name.
         'OCA\\DAV\\CalDAV\\Auth\\CustomPrincipalPlugin::setCurrentPrincipal' => ['currentPrincipal'],
         'OCA\\DAV\\AppInfo\\PluginManager::__construct' => ['container', 'appManager'],

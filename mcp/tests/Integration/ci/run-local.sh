@@ -18,6 +18,8 @@
 #        run-local.sh --shutdown   (the only safe way to stop the engine by hand; see above)
 #   baseline        diagnostics: the released baseline stays installed, never upgraded (use with MCP_IT_PHPUNIT_ARGS)
 #   --prune-images  also removes the images this run pulled (default: kept, they are only files on disk)
+#   MCP_IT_WITH_MAIL=1 (environment) also runs the Mail part of the cell (mail-cell.sh): a throwaway IMAP server and
+#                   the Mail app; without it the IMAP image is never pulled
 #
 # Logs and artifacts (run.log, resources.log, mcp-it/artifacts/: junit.xml, nextcloud.log, observations.txt,
 # provision.log) go to mcp/tests/Integration/.local-runs/<cell>-<timestamp>-<pid>/ (git-ignored). Image digests, the
@@ -93,6 +95,8 @@ NET_NAME="mcp-it-$RUN_ID"
 NC_NAME="mcp-it-nextcloud-$RUN_ID"
 DB_NAME="mcp-it-db-$RUN_ID"
 export MCP_IT_NET="$NET_NAME" MCP_IT_NC_NAME="$NC_NAME" MCP_IT_DB_NAME="$DB_NAME"
+# The IMAP server of a Mail cell (MCP_IT_WITH_MAIL=1, see mail-cell.sh); never started otherwise.
+export MCP_IT_IMAP_NAME="mcp-it-imap-$RUN_ID"
 export MCP_IT_LOCAL=1
 export RUNNER_TEMP="$LOCAL_DIR"
 export MCP_IT_NC="$CELL_NC" MCP_IT_NC_IMAGE="$NC_IMAGE" MCP_IT_DB="$CELL_DB" MCP_IT_DB_IMAGE="$DB_IMAGE"
@@ -121,6 +125,8 @@ cleanup() {
     [ -n "$SAMPLER_PID" ] && kill "$SAMPLER_PID" 2>/dev/null
     if docker info >/dev/null 2>&1; then
         log "removing the test containers, network and volumes"
+        # The IMAP server goes first: it sits on the run's network, which cannot be removed while it is attached.
+        if [ "${MCP_IT_WITH_MAIL:-0}" = 1 ] && ! PRUNE_IMAGES=$PRUNE_IMAGES sh "$HERE/mail-cell.sh" cleanup > "$LOCAL_DIR/cleanup-mail.txt"; then status=1; fi
         # Inspect only this run's anonymous volumes, before rm -v loses their names.
         volumes=$(docker inspect --format '{{range .Mounts}}{{if eq .Type "volume"}}{{.Name}}{{"\n"}}{{end}}{{end}}' \
             "$NC_NAME" "$DB_NAME" 2>/dev/null || true)

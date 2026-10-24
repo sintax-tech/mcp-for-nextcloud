@@ -1448,6 +1448,13 @@ OC.L10N.register(
     "Nothing was changed. After confirmation the file is replaced by the content below. No MCP pre-write copy is created while native versioning is enabled for this user." : "Nichts wurde geändert. Nach der Bestätigung wird die Datei durch den folgenden Inhalt ersetzt. Solange die native Versionierung für diesen Benutzer aktiviert ist, wird keine MCP-Kopie vor dem Schreiben erstellt.",
     "Nothing was changed. After confirmation the snippet below is replaced. No MCP pre-write copy is created while native versioning is enabled for this user." : "Nichts wurde geändert. Nach der Bestätigung wird der folgende Ausschnitt ersetzt. Solange die native Versionierung für diesen Benutzer aktiviert ist, wird keine MCP-Kopie vor dem Schreiben erstellt.",
     "Nothing was changed. After confirmation the requested operation follows the administrator backup setting: no MCP pre-write copy is created while native versioning is enabled for this user." : "Es wurde nichts geändert. Nach der Bestätigung folgt der Schreibvorgang der Sicherungseinstellung des Administrators: Solange die native Versionierung für diesen Benutzer aktiviert ist, wird keine MCP-Kopie vor dem Schreiben erstellt.",
-    "MCP pre-write copies are suspended. Nextcloud versioning follows its own policy and may not retain a version for every file or backend." : "MCP-Kopien vor dem Schreiben sind ausgesetzt. Die Nextcloud-Versionierung folgt ihrer eigenen Richtlinie und speichert möglicherweise nicht für jede Datei oder jedes Backend eine Version."
+    "MCP pre-write copies are suspended. Nextcloud versioning follows its own policy and may not retain a version for every file or backend." : "MCP-Kopien vor dem Schreiben sind ausgesetzt. Die Nextcloud-Versionierung folgt ihrer eigenen Richtlinie und speichert möglicherweise nicht für jede Datei oder jedes Backend eine Version.",
+    "List mail accounts" : "E-Mail-Konten auflisten",
+    "List mail folders" : "E-Mail-Ordner auflisten",
+    "Mail" : "E-Mail",
+    "The Mail app is not available for this account." : "Die App E-Mail ist für dieses Konto nicht verfügbar.",
+    "Mail account not found." : "E-Mail-Konto nicht gefunden.",
+    "The Mail app has not synchronized the folders of this account yet; open the account in Mail once and try again." : "Die App E-Mail hat die Ordner dieses Kontos noch nicht synchronisiert. Öffne das Konto einmal in E-Mail und versuche es erneut.",
+    "mail" : "E-Mail"
 },
 "nplurals=2; plural=(n != 1);");

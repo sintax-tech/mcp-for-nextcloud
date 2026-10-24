@@ -1448,6 +1448,13 @@ OC.L10N.register(
     "Nothing was changed. After confirmation the file is replaced by the content below. No MCP pre-write copy is created while native versioning is enabled for this user." : "Nada foi alterado. Após a confirmação, o arquivo será substituído pelo conteúdo abaixo. Nenhuma cópia prévia do MCP é criada enquanto o versionamento nativo estiver ativo para este usuário.",
     "Nothing was changed. After confirmation the snippet below is replaced. No MCP pre-write copy is created while native versioning is enabled for this user." : "Nada foi alterado. Após a confirmação, o trecho abaixo será substituído. Nenhuma cópia prévia do MCP é criada enquanto o versionamento nativo estiver ativo para este usuário.",
     "Nothing was changed. After confirmation the requested operation follows the administrator backup setting: no MCP pre-write copy is created while native versioning is enabled for this user." : "Nada foi alterado. Após a confirmação, a escrita solicitada segue a configuração de backup do administrador: nenhuma cópia prévia do MCP é criada enquanto o versionamento nativo estiver ativo para este usuário.",
-    "MCP pre-write copies are suspended. Nextcloud versioning follows its own policy and may not retain a version for every file or backend." : "As cópias prévias do MCP estão suspensas. O versionamento do Nextcloud segue sua própria política e pode não guardar uma versão de cada arquivo ou backend."
+    "MCP pre-write copies are suspended. Nextcloud versioning follows its own policy and may not retain a version for every file or backend." : "As cópias prévias do MCP estão suspensas. O versionamento do Nextcloud segue sua própria política e pode não guardar uma versão de cada arquivo ou backend.",
+    "List mail accounts" : "Listar contas de e-mail",
+    "List mail folders" : "Listar pastas de e-mail",
+    "Mail" : "E-mail",
+    "The Mail app is not available for this account." : "O app E-mail não está disponível para esta conta.",
+    "Mail account not found." : "Conta de e-mail não encontrada.",
+    "The Mail app has not synchronized the folders of this account yet; open the account in Mail once and try again." : "O app E-mail ainda não sincronizou as pastas desta conta; abra a conta no E-mail uma vez e tente de novo.",
+    "mail" : "e-mail"
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

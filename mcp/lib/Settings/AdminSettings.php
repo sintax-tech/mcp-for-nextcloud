@@ -26,7 +26,7 @@ use OCP\Settings\ISettings;
  */
 class AdminSettings implements ISettings {
     /** Product name of each optional app with a minimum version, as the administrator knows it in the app list. */
-    public const APP_NAMES = ['deck' => 'Deck', 'spreed' => 'Talk'];
+    public const APP_NAMES = ['deck' => 'Deck', 'spreed' => 'Talk', 'mail' => 'Mail'];
 
     public function __construct(
         private GrantPolicy $policy,

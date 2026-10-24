@@ -81,7 +81,7 @@ Plus:
 
 ## Contacts and tasks
 
-Contacts use core CardDAV and only your own and shared address books. Editing changes supplied fields and preserves unknown properties, parameters, groups and the vCard version. The Contacts app must be enabled for the user. Tasks use VTODO in calendars supporting that component and work without the optional Tasks app or Calendar UI app. Task categories (the `CATEGORIES` property) are free text, as in the Tasks app: `categories` is returned when reading and listing, and on create and edit a list replaces all the categories, `[]` clears them and omitting it keeps them; `tasks_list_tasks` can filter by one `category`, ignoring case. Subtasks link to their parent as in the Tasks app (`RELATED-TO`): `parent` is returned when reading and listing, on create and edit a parent UID makes the task its subtask, `null` makes it top-level and omitting it keeps it; the parent must be a visible task of the same calendar and loops are refused; `tasks_list_tasks` can list the direct subtasks of one `parent`.
+Contacts use core CardDAV and only your own and shared address books. Editing changes supplied fields and preserves unknown properties, parameters, groups and the vCard version. The Contacts app must be enabled for the user. Tasks use VTODO in calendars supporting that component and work without the optional Tasks app or Calendar UI app. Task categories (the `CATEGORIES` property) are free text, as in the Tasks app: `categories` is returned when reading and listing, and on create and edit a list replaces all the categories, `[]` clears them and omitting it keeps them; `tasks_list_tasks` can filter by one `category`, ignoring case. Subtasks link to their parent as in the Tasks app (`RELATED-TO`): `parent` is returned when reading and listing, on create and edit a parent UID makes the task its subtask, `null` makes it top-level and omitting it keeps it; the parent must be a visible task of the same calendar, and loops and nesting deeper than 64 levels are refused; `tasks_list_tasks` can list the direct subtasks of one `parent`.
 
 Both modules have separate `read`, `create`, `edit` and `delete` grants; every write starts disabled. Calls without `confirm: true` return the actual before/after plan and create neither backups nor DAV writes. Shared collections require `confirm_shared: true`. An ETag is optional; when provided it must match, and confirmed edits/deletions always use the current ETag as `If-Match`.
 
@@ -362,7 +362,7 @@ AGPL-3.0-or-later, with the additional section 7(b) attribution term in [NOTICE]
 
 The package includes Smalot PdfParser, Symfony Polyfill Mbstring and the Composer autoloader. See versions, licenses, copyright and development dependencies in [THIRD-PARTY-NOTICES.md](mcp/THIRD-PARTY-NOTICES.md).
 
-**Contributors.** Thanks to @NightDragon1 (#5) for the root visibility check and to @matt-ek (#4) for the report behind the hidden-tags audit and (#10) for the German translation, and to @Zegorax (#8) for the OAuth clients registered by the administrator.
+**Contributors.** Thanks to @NightDragon1 (#5) for the root visibility check and to @matt-ek (#4) for the report behind the hidden-tags audit and (#10) for the German translation, to @Zegorax (#8) for the OAuth clients registered by the administrator, and to @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)) for subtasks in the Tasks tools.
 
 ## About Sintax
 

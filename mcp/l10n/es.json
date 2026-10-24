@@ -1457,6 +1457,10 @@
     "The Mail app is not available for this account." : "La aplicación Correo no está disponible para esta cuenta.",
     "Mail account not found." : "Cuenta de correo no encontrada.",
     "The Mail app has not synchronized the folders of this account yet; open the account in Mail once and try again." : "La aplicación Correo todavía no ha sincronizado las carpetas de esta cuenta; abra la cuenta en Correo una vez e inténtelo de nuevo.",
-    "mail" : "correo"
+    "mail" : "correo",
+    "The tasks above the requested parent form a loop or cannot be read, so the nesting cannot be checked. Fix that hierarchy first, for example by making one of those tasks top-level." : "Las tareas por encima de la tarea principal solicitada forman un ciclo o no se pueden leer, así que no se puede comprobar el anidamiento. Corrija primero esa jerarquía, por ejemplo dejando una de esas tareas en el nivel superior.",
+    "Another change to the subtasks of this calendar is in progress; nothing was changed. Try again." : "Hay otro cambio en curso en las subtareas de este calendario; no se modificó nada. Inténtelo de nuevo.",
+    "The task was saved, but its parent chain now loops back to it, probably because another client changed a related task at the same time. Make one of the tasks in that chain top-level (parent null) to fix it." : "La tarea se guardó, pero su cadena de tareas principales ahora vuelve a ella misma, probablemente porque otro cliente cambió una tarea relacionada al mismo tiempo. Deje una de las tareas de esa cadena en el nivel superior (parent null) para corregirlo.",
+    "Setting the parent of a task needs the file locking of the server, which is disabled here; nothing was changed. An administrator can enable it. Making a task top-level still works." : "Definir la tarea principal de una tarea requiere el bloqueo de archivos del servidor, que está desactivado aquí; no se modificó nada. Un administrador puede activarlo. Dejar una tarea en el nivel superior sigue funcionando."
 },"pluralForm" :"nplurals=3; plural=n == 1 ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;"
 }

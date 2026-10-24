@@ -1459,6 +1459,10 @@ OC.L10N.register(
     "The Mail app is not available for this account." : "Die App E-Mail ist für dieses Konto nicht verfügbar.",
     "Mail account not found." : "E-Mail-Konto nicht gefunden.",
     "The Mail app has not synchronized the folders of this account yet; open the account in Mail once and try again." : "Die App E-Mail hat die Ordner dieses Kontos noch nicht synchronisiert. Öffne das Konto einmal in E-Mail und versuche es erneut.",
-    "mail" : "E-Mail"
+    "mail" : "E-Mail",
+    "The tasks above the requested parent form a loop or cannot be read, so the nesting cannot be checked. Fix that hierarchy first, for example by making one of those tasks top-level." : "Die Aufgaben oberhalb der gewünschten übergeordneten Aufgabe bilden eine Schleife oder können nicht gelesen werden, daher lässt sich die Verschachtelung nicht prüfen. Korrigiere zuerst diese Hierarchie, zum Beispiel indem du eine dieser Aufgaben zur obersten Ebene machst.",
+    "Another change to the subtasks of this calendar is in progress; nothing was changed. Try again." : "Eine andere Änderung an den Unteraufgaben dieses Kalenders läuft gerade; es wurde nichts geändert. Versuche es erneut.",
+    "The task was saved, but its parent chain now loops back to it, probably because another client changed a related task at the same time. Make one of the tasks in that chain top-level (parent null) to fix it." : "Die Aufgabe wurde gespeichert, aber ihre Kette übergeordneter Aufgaben führt jetzt zu ihr selbst zurück, vermutlich weil ein anderer Client gleichzeitig eine verwandte Aufgabe geändert hat. Mache eine der Aufgaben dieser Kette zur obersten Ebene (parent null), um das zu beheben.",
+    "Setting the parent of a task needs the file locking of the server, which is disabled here; nothing was changed. An administrator can enable it. Making a task top-level still works." : "Das Festlegen der übergeordneten Aufgabe erfordert die Dateisperre des Servers, die hier deaktiviert ist; es wurde nichts geändert. Eine Administration kann sie aktivieren. Eine Aufgabe zur obersten Ebene zu machen, funktioniert weiterhin."
 },
 "nplurals=2; plural=(n != 1);");

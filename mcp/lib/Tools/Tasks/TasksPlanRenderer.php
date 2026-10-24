@@ -40,8 +40,8 @@ final class TasksPlanRenderer {
      */
     private const FIELDS = ['summary', 'description', 'start', 'due', 'priority', 'percentComplete', 'categories', 'parent'];
 
-    /** @var array<string, string> titles of the parent tasks the plan being rendered names, by UID */
-    private array $parents = [];
+    /** How the parents of the plan being rendered read, and whether they change. */
+    private ?ParentPlanText $parents = null;
 
     /**
      * @param string $tool write tool of this module
@@ -54,11 +54,7 @@ final class TasksPlanRenderer {
             return null;
         }
         $zone = $this->zone($plan);
-        $this->parents = array_filter(
-            is_array($plan['parents'] ?? null) ? $plan['parents'] : [],
-            fn ($title, $uid) => is_string($uid) && $this->text($title) !== '',
-            ARRAY_FILTER_USE_BOTH
-        );
+        $this->parents = new ParentPlanText($plan['parents'] ?? null);
         $body = match ($tool) {
             'tasks_create_task' => $this->create($calendar, $plan, $zone),
             'tasks_edit_task' => $this->edit($calendar, $plan, $zone),
@@ -199,9 +195,12 @@ final class TasksPlanRenderer {
             $from = $this->value($before[$field] ?? null, $field, $zone);
             $to = $this->value($after[$field] ?? null, $field, $zone);
             // Categories are compared as lists: two different lists may read alike once joined.
-            $same = $field === 'categories'
-                ? $this->names($before[$field] ?? null) === $this->names($after[$field] ?? null)
-                : $from === $to;
+            $same = match ($field) {
+                'categories' => $this->names($before[$field] ?? null) === $this->names($after[$field] ?? null),
+                // Parents are compared by UID: two parents can read alike in the plan.
+                'parent' => ParentPlanText::same($before[$field] ?? null, $after[$field] ?? null),
+                default => $from === $to,
+            };
             if ($same) {
                 continue;
             }
@@ -280,7 +279,7 @@ final class TasksPlanRenderer {
             return $this->categories($value);
         }
         if ($field === 'parent') {
-            return $this->parent($value);
+            return ($this->parents ?? new ParentPlanText(null))->value($value);
         }
         $text = $this->text($value);
 
@@ -328,22 +327,6 @@ final class TasksPlanRenderer {
         $names = array_map(PlanText::quoted(...), $this->names($value));
 
         return $names === [] ? null : implode(', ', $names);
-    }
-
-    /**
-     * The parent task by its title when the plan carries it, otherwise by its quoted UID.
-     *
-     * @param mixed $value raw plan value of the parent field
-     * @return string|null the parent a person recognizes, or null for a top-level task
-     */
-    private function parent(mixed $value): ?string {
-        $uid = $this->text($value);
-        if ($uid === '') {
-            return null;
-        }
-        $title = $this->text($this->parents[$uid] ?? '');
-
-        return $title === '' ? PlanText::quoted($uid) : $this->strong($title);
     }
 
     /**

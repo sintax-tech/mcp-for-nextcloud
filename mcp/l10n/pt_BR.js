@@ -1459,6 +1459,10 @@ OC.L10N.register(
     "The Mail app is not available for this account." : "O app E-mail não está disponível para esta conta.",
     "Mail account not found." : "Conta de e-mail não encontrada.",
     "The Mail app has not synchronized the folders of this account yet; open the account in Mail once and try again." : "O app E-mail ainda não sincronizou as pastas desta conta; abra a conta no E-mail uma vez e tente de novo.",
-    "mail" : "e-mail"
+    "mail" : "e-mail",
+    "The tasks above the requested parent form a loop or cannot be read, so the nesting cannot be checked. Fix that hierarchy first, for example by making one of those tasks top-level." : "As tarefas acima da tarefa principal pedida formam um ciclo ou não podem ser lidas, então não dá para conferir o aninhamento. Corrija essa hierarquia antes, por exemplo deixando uma dessas tarefas no nível principal.",
+    "Another change to the subtasks of this calendar is in progress; nothing was changed. Try again." : "Outra alteração nas subtarefas desta agenda está em andamento; nada foi alterado. Tente de novo.",
+    "The task was saved, but its parent chain now loops back to it, probably because another client changed a related task at the same time. Make one of the tasks in that chain top-level (parent null) to fix it." : "A tarefa foi salva, mas a cadeia de tarefas principais dela agora volta para ela mesma, provavelmente porque outro cliente alterou uma tarefa relacionada ao mesmo tempo. Deixe uma das tarefas dessa cadeia no nível principal (parent null) para corrigir.",
+    "Setting the parent of a task needs the file locking of the server, which is disabled here; nothing was changed. An administrator can enable it. Making a task top-level still works." : "Definir a tarefa principal de uma tarefa exige o bloqueio de arquivos do servidor, que está desativado aqui; nada foi alterado. Um administrador pode ativá-lo. Deixar uma tarefa no nível principal continua funcionando."
 },
 "nplurals=3; plural=(n == 0 || n == 1) ? 0 : n != 0 && n % 1000000 == 0 ? 1 : 2;");

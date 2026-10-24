@@ -8,30 +8,29 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Tasks;
 
 use InvalidArgumentException;
-use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Service\UserTimezone;
-use OCA\Mcp\Tools\Calendar\Calendar;
 use OCA\Mcp\Tools\Calendar\ScopedCalendarAccess;
 use OCA\Mcp\Tools\Calendar\CalendarDav;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
-use OCA\Mcp\Tools\Calendar\TrashedObject;
 use OCA\Mcp\Tools\Calendar\TrashPolicy;
-use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Common\OutputReferenceFilter;
 use OCA\Mcp\Tools\Dav\CollectionSchema as Schema;
 use OCA\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Tools\RendersPlans;
+use OCA\Mcp\Tools\Tasks\Handler\CreateTaskHandler;
+use OCA\Mcp\Tools\Tasks\Handler\EditTaskHandler;
 use OCA\Mcp\Tools\Tasks\Handler\ListTasksHandler;
+use OCA\Mcp\Tools\Tasks\Handler\ParentTaskWrite;
+use OCA\Mcp\Tools\Tasks\Handler\ReadTaskHandler;
 use OCA\Mcp\Tools\ToolFailure;
 use OCA\Mcp\Tools\ToolGuideNotes;
 use OCA\Mcp\Tools\ToolModule;
 use OCA\Mcp\Tools\ToolResult;
-use OCA\Mcp\Tools\WriteGate;
 use OCP\AppFramework\Utility\ITimeFactory;
+use OCP\Lock\ILockingProvider;
 use RuntimeException;
-use Sabre\VObject\Component\VCalendar;
 
 /** VTODO tools independent of the optional Tasks UI app. */
 final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, RendersPlans {
@@ -48,6 +47,8 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
      * @param ITimeFactory $time clock for timestamps
      * @param OutputReferenceFilter $references output rule for ATTACH references to Files nodes
      * @param UserTimezone|null $zones timezone of the account, so a plan shows the dates the user reads
+     * @param ILockingProvider|null $locks serializes confirmed MCP writes that set a parent (TaskHierarchyLock); without
+     *     a provider that excludes, those writes are refused
      * @return void
      */
     public function __construct(
@@ -61,6 +62,7 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
         private ITimeFactory $time,
         private OutputReferenceFilter $references,
         private ?UserTimezone $zones = null,
+        private ?ILockingProvider $locks = null,
     ) {}
 
     /**
@@ -202,8 +204,13 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
             'Subtasks link to their parent by UID (RELATED-TO), as in the Tasks app, and every task returns '
                 . 'its parent UID or null. On create and edit, parent sets it, null makes the task top-level and '
                 . 'omitting it preserves it; the parent must be a visible task of the same calendar and cannot be '
-                . 'the task or one of its subtasks. tasks_list_tasks with parent lists the direct subtasks. '
-                . 'Deleting or completing a parent does not change its subtasks.',
+                . 'the task or one of its subtasks, and no task may end up deeper than 64 levels, the moved subtasks '
+                . 'included. tasks_list_tasks with parent lists the direct subtasks. Deleting or completing a parent '
+                . 'does not change its subtasks. The hierarchy is checked on the state read when the plan is built and '
+                . 'again at confirmation; confirmed MCP writes that set a parent in one calendar run one at a time (they '
+                . 'are refused when the file locking of the server is disabled), but '
+                . 'other clients can still change related tasks at the same moment, and an answer with a warning says '
+                . 'that the parent chain then loops.',
             'Private and confidential tasks in shared calendars are hidden. Writable shares '
                 . 'require confirm_shared=true after showing the owner notice.',
             'Every write starts with a before/after plan. Wait for explicit approval before '
@@ -228,7 +235,11 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
         // Task output can carry ATTACH references to Files nodes: an unreadable Files scope is the same 503 before
         // any task is looked up, whether it exists or not.
         $this->references->assertAvailable($userId);
-        return $this->prepare($name, $arguments, $userId)['plan'];
+        return match ($name) {
+            CreateTaskHandler::TOOL => (new CreateTaskHandler($this->parentWrite()))->preview($arguments, $userId),
+            EditTaskHandler::TOOL => (new EditTaskHandler($this->parentWrite()))->preview($arguments, $userId),
+            default => $this->flow()->prepare($name, $arguments, $userId)['plan'],
+        };
     }
 
     /**
@@ -263,249 +274,33 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
                 array_map(static fn ($calendar) => (array) $calendar, $this->access->visible($userId, 'VTODO'))
             );
         }
-        if ($name === 'tasks_list_tasks') {
-            return (new ListTasksHandler($this->access, $this->store, $this->tasks, $this->data, new TaskRowReader($this->data)))->handle($arguments, $userId);
-        }
-        if ($name === 'tasks_read_task') {
-            $calendar = $this->access->resolve($userId, $arguments['calendar'], 'VTODO');
-            $row = $this->row($calendar->id, $arguments['uid']);
-            $parsed = $this->readable($row, $calendar->ownedByOther($userId));
-            return ToolResult::json(
-                $this->output($userId, $parsed) + ['etag' => $row['etag'], 'calendar' => $calendar->path]
-            );
-        }
-        $prepared = $this->prepare($name, $arguments, $userId);
-        if (!WriteGate::confirmed($arguments)) {
-            return ToolResult::json($prepared['plan']);
-        }
-        if ($prepared['plan']['shared'] !== [] && ($arguments['confirm_shared'] ?? false) !== true) {
-            throw new ToolFailure(
-                Translator::t('Confirm the change to the shared collection with confirm_shared=true.')
-            );
-        }
-        $calendar = $prepared['calendar'];
-        $row = $prepared['row'];
-        $after = $prepared['after'];
-        if ($after === null) {
-            // Check again immediately before dispatch; no permanent deletion is allowed for tasks.
-            if (!$this->trash->recoverable()) {
-                throw new ToolFailure(
-                    Translator::t('Calendar trash is disabled; the task cannot be deleted safely.')
-                );
-            }
-            $this->dav->delete($userId, $calendar->uri, $row['uri'], $row['etag'], false);
-            if (!TrashedObject::exists($this->store, $calendar->id, $row['uri'])) {
-                throw new RuntimeException('Task trash verification failed');
-            }
-            return ToolResult::json(
-                [
-                    'uid' => $arguments['uid'],
-                    'calendar' => $calendar->path,
-                    'deleted' => true,
-                    'recoverable' => true,
-                ]
-            );
-        }
-        $uri = $row['uri'] ?? (string) $this->data->master($after)->UID . '.ics';
-        if ($row === null) {
-            $this->dav->put($userId, $calendar->uri, $uri, $after->serialize(), false);
-        } else {
-            $this->dav->update($userId, $calendar->uri, $uri, $row['etag'], $after->serialize(), false);
-        }
-        $written = $this->store->object($calendar->id, $uri) ?? throw new RuntimeException('Task read back failed');
-        return ToolResult::json(
-            $this->output($userId, $this->data->parse($written['data'])) + ['etag' => $written['etag'], 'calendar' => $calendar->path]
-        );
+        return match ($name) {
+            'tasks_list_tasks' => (new ListTasksHandler($this->access, $this->store, $this->tasks, $this->data, new TaskRowReader($this->data)))->handle($arguments, $userId),
+            ReadTaskHandler::TOOL => (new ReadTaskHandler($this->access, $this->objects()))->handle($arguments, $userId),
+            CreateTaskHandler::TOOL => (new CreateTaskHandler($this->parentWrite()))->handle($arguments, $userId),
+            EditTaskHandler::TOOL => (new EditTaskHandler($this->parentWrite()))->handle($arguments, $userId),
+            default => $this->flow()->run($name, $arguments, $userId),
+        };
     }
 
-    /**
-     * Prepares the task plan, rechecking visibility, supported writes, ETag and retention.
-     *
-     * @param string $name write tool name
-     * @param array<string, mixed> $arguments validated tool arguments
-     * @param string $userId authenticated UID
-     * @return array{calendar:Calendar, row:?array, after:?VCalendar, plan:array<string, mixed>}
-     * @throws ToolFailure when access, task complexity, ETag or retention checks fail
-     * @throws InvalidArgumentException when the tool or task fields are invalid
-     */
-    private function prepare(string $name, array $arguments, string $userId): array {
-        if (!in_array(
-            $name,
-            [
-                'tasks_create_task',
-                'tasks_edit_task',
-                'tasks_complete_task',
-                'tasks_delete_task',
-            ],
-            true
-        )) {
-            throw new InvalidArgumentException('Unknown tool');
-        }
-        if ($name === 'tasks_edit_task' && array_intersect(
-            array_keys($arguments),
-            ['summary', 'description', 'priority', 'start', 'due', 'percentComplete', 'categories', 'parent']
-        ) === []) {
-            throw new InvalidArgumentException(Translator::t('Provide at least one field to change.'));
-        }
-        $calendar = $this->access->resolveWritable($userId, $arguments['calendar'], 'VTODO');
-        $deleting = $name === 'tasks_delete_task';
-        if ($deleting && !$this->trash->recoverable()) {
-            throw new ToolFailure(
-                Translator::t('Calendar trash is disabled; the task cannot be deleted safely.')
-            );
-        }
-        $row = null;
-        $before = null;
-        $now = $this->time->now();
-        if ($name === 'tasks_create_task') {
-            $after = $this->data->create($arguments, $now);
-        } else {
-            $row = $this->row($calendar->id, $arguments['uid']);
-            $old = $this->readable($row, $calendar->ownedByOther($userId));
-            $before = $this->output($userId, $old);
-            $this->data->assertSimple($old);
-            if (isset($arguments['etag']) && trim($arguments['etag'], '"') !== trim($row['etag'], '"')) {
-                throw new ToolFailure(CommonMessages::conflict());
-            }
-            $after = $deleting ? null : $this->data->patch($old, $arguments, $now, $name === 'tasks_complete_task');
-        }
-        if (($arguments['parent'] ?? null) !== null && $after !== null) {
-            $this->assertParent($calendar, $userId, $arguments['parent'], (string) $this->data->master($after)->UID);
-        }
-        $notice = $this->guard->confirm($calendar, $userId, []);
-        $shared = $notice === null ? [] : [json_decode($notice['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR)];
-        $plan = [
-            'requiresConfirmation' => true,
-            'message' => Translator::t('Nothing was changed. Show this plan and ask for explicit confirmation.'),
-            'action' => $name,
-            'calendar' => (array) $calendar,
-            'etag' => $row['etag'] ?? null,
-            'before' => $before,
-            // A new task has no uid the person could use yet: the confirmed call generates a random one and returns it.
-            // The iCalendar blob carries that provisional uid too, so a creation plan leaves the blob out.
-            // $after stays the object written to DAV; only its shown copy loses a refused ATTACH, as $before does.
-            'after' => $after === null ? null : array_diff_key($this->output($userId, $after), $name === 'tasks_create_task' ? ['uid' => 1, 'icalendar' => 1] : []),
-            'shared' => $shared,
-            'recoverable' => $deleting,
-            'consequence' => $deleting ? Translator::t('The task will be moved to the calendar trash.') : null,
-            // Titles of the parent tasks the plan names, so the person reads a task and not a UID.
-            'parents' => $this->parentTitles($calendar, $userId, [$before['parent'] ?? null, $after === null ? null : $this->data->parent($this->data->master($after))]),
-            // The timezone travels with the plan, so whoever renders it later reads the dates of the
-            // account that asked, without this module having to remember who that was.
-            'timezone' => $this->zones?->forUser($userId)->getName(),
-        ];
-        return compact('calendar', 'row', 'after', 'plan');
+    /** @return TaskObjects lookup, classification and output of task objects */
+    private function objects(): TaskObjects {
+        return new TaskObjects($this->store, $this->data, $this->references);
     }
 
-    /**
-     * Refuses a parent that is missing, hidden, in another calendar, or would make the hierarchy a loop.
-     *
-     * The parent itself must be readable by the caller. Its own ancestors are only followed by UID, never
-     * shown, so a protected ancestor in a shared calendar still stops a loop without revealing anything.
-     *
-     * @param Calendar $calendar authorized writable calendar of the task
-     * @param string $userId authenticated user UID
-     * @param string $parent UID of the requested parent
-     * @param string $uid UID of the task being written
-     * @return void
-     * @throws ToolFailure when the parent cannot be used
-     */
-    private function assertParent(Calendar $calendar, string $userId, string $parent, string $uid): void {
-        $row = $this->store->objectByUid($calendar->id, $parent, 'VTODO');
-        try {
-            $current = $row === null ? null : (new TaskRowReader($this->data))->readable($row, $calendar->ownedByOther($userId));
-        } catch (ToolFailure) {
-            $current = null;
-        }
-        if ($current === null) {
-            throw new ToolFailure(
-                Translator::t('The parent task was not found in this calendar. A subtask must be in the same calendar as its parent.')
-            );
-        }
-        for ($depth = 0; $depth < TaskData::MAX_DEPTH; $depth++) {
-            $next = $this->data->parent($this->data->master($current));
-            if ($next === null) {
-                return;
-            }
-            if ($next === $uid) {
-                throw new ToolFailure(
-                    Translator::t('A task cannot be its own parent or a subtask of one of its own subtasks.')
-                );
-            }
-            $row = $this->store->objectByUid($calendar->id, $next, 'VTODO');
-            if ($row === null || $row['deleted']) {
-                return;
-            }
-            try {
-                $current = $this->data->parse($row['data']);
-            } catch (ToolFailure) {
-                return;
-            }
-        }
-        throw new ToolFailure(
-            Translator::t('Subtasks can be nested at most %s levels deep.', [TaskData::MAX_DEPTH])
-        );
+    /** @return TaskWriteFlow plan and native write of the task writes */
+    private function flow(): TaskWriteFlow {
+        return new TaskWriteFlow($this->access, $this->store, $this->dav, $this->data, $this->objects(), $this->guard, $this->trash, $this->time, $this->zones);
     }
 
-    /**
-     * Titles of the parent tasks a plan names, leaving out those the caller may not read.
-     *
-     * @param Calendar $calendar authorized calendar of the task
-     * @param string $userId authenticated user UID
-     * @param list<string|null> $uids parent UIDs before and after the write
-     * @return array<string, string> title by parent UID
-     */
-    private function parentTitles(Calendar $calendar, string $userId, array $uids): array {
-        $titles = [];
-        foreach (array_unique(array_filter($uids, static fn ($uid) => $uid !== null)) as $uid) {
-            $row = $this->store->objectByUid($calendar->id, $uid, 'VTODO');
-            if ($row === null) {
-                continue;
-            }
-            try {
-                $parsed = (new TaskRowReader($this->data))->readable($row, $calendar->ownedByOther($userId));
-                $titles[$uid] = (string) $this->data->master($parsed)->SUMMARY;
-            } catch (ToolFailure) {
-                continue;
-            }
-        }
-        return $titles;
-    }
-
-    /**
-     * The task fields as a tool shows them: the serialized calendar is the output copy, without the ATTACH whose
-     * file the user may not reach, never the object a write sends to DAV.
-     *
-     * @param string $userId authenticated user UID
-     * @param VCalendar $calendar task calendar as read from or prepared for DAV, left unchanged
-     * @return array<string, mixed>
-     * @throws ToolFailure when task dates or identity cannot be read safely
-     */
-    private function output(string $userId, VCalendar $calendar): array {
-        return $this->data->item($this->references->outputCalendar($userId, $calendar));
-    }
-
-    /**
-     * Reads a task object by UID within the already-authorized calendar.
-     *
-     * @param int $id authorized calendar ID
-     * @param string $uid task UID
-     * @return array<string, mixed>
-     * @throws ToolFailure when no task object has that UID
-     */
-    private function row(int $id, string $uid): array {
-        return $this->store->objectByUid($id, $uid, 'VTODO') ?? throw new ToolFailure(CommonMessages::notFound());
-    }
-
-    /**
-     * Parses a live task and checks classification before exposing any fields.
-     *
-     * @param array<string, mixed> $row object returned by CalendarStore
-     * @param bool $shared whether the calendar belongs to another user
-     * @return VCalendar
-     * @throws ToolFailure when the object is trashed, malformed or protected in a share
-     */
-    private function readable(array $row, bool $shared): VCalendar {
-        return (new TaskRowReader($this->data))->readable($row, $shared);
+    /** @return ParentTaskWrite create and edit with the parent check, lock and warning */
+    private function parentWrite(): ParentTaskWrite {
+        return new ParentTaskWrite($this->flow(), new TaskParentStep(
+            new TaskHierarchy($this->store, $this->tasks, $this->data),
+            new ParentTitles($this->store, $this->data),
+            new TaskRelations(),
+            $this->data,
+            $this->locks === null ? null : new TaskHierarchyLock($this->locks),
+        ));
     }
 }

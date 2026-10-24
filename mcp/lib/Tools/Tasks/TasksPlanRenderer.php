@@ -38,7 +38,10 @@ final class TasksPlanRenderer {
      *
      * @var list<string>
      */
-    private const FIELDS = ['summary', 'description', 'start', 'due', 'priority', 'percentComplete', 'categories'];
+    private const FIELDS = ['summary', 'description', 'start', 'due', 'priority', 'percentComplete', 'categories', 'parent'];
+
+    /** How the parents of the plan being rendered read, and whether they change. */
+    private ?ParentPlanText $parents = null;
 
     /**
      * @param string $tool write tool of this module
@@ -51,6 +54,7 @@ final class TasksPlanRenderer {
             return null;
         }
         $zone = $this->zone($plan);
+        $this->parents = new ParentPlanText($plan['parents'] ?? null);
         $body = match ($tool) {
             'tasks_create_task' => $this->create($calendar, $plan, $zone),
             'tasks_edit_task' => $this->edit($calendar, $plan, $zone),
@@ -191,9 +195,12 @@ final class TasksPlanRenderer {
             $from = $this->value($before[$field] ?? null, $field, $zone);
             $to = $this->value($after[$field] ?? null, $field, $zone);
             // Categories are compared as lists: two different lists may read alike once joined.
-            $same = $field === 'categories'
-                ? $this->names($before[$field] ?? null) === $this->names($after[$field] ?? null)
-                : $from === $to;
+            $same = match ($field) {
+                'categories' => $this->names($before[$field] ?? null) === $this->names($after[$field] ?? null),
+                // Parents are compared by UID: two parents can read alike in the plan.
+                'parent' => ParentPlanText::same($before[$field] ?? null, $after[$field] ?? null),
+                default => $from === $to,
+            };
             if ($same) {
                 continue;
             }
@@ -270,6 +277,9 @@ final class TasksPlanRenderer {
         }
         if ($field === 'categories') {
             return $this->categories($value);
+        }
+        if ($field === 'parent') {
+            return ($this->parents ?? new ParentPlanText(null))->value($value);
         }
         $text = $this->text($value);
 
@@ -374,6 +384,7 @@ final class TasksPlanRenderer {
             'percentComplete' => Translator::t('Progress'),
             'completed' => Translator::t('Completed at'),
             'categories' => Translator::t('Categories'),
+            'parent' => Translator::t('Parent task'),
             default => Translator::t('Title'),
         };
     }

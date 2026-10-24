@@ -31,7 +31,7 @@ final class AppEnablementTest extends TestCase {
 
     /** Talk 21.1.4 is the first Nextcloud 31 release whose ChatManager::addSystemMessage() takes the participant. */
     public function testTheMinimumVersionsAreTheOldestReleasesTheContractCovers(): void {
-        $this->assertSame(['deck' => '1.15.0', 'spreed' => '21.1.4'], AppEnablement::MINIMUM_VERSIONS);
+        $this->assertSame(['deck' => '1.15.0', 'spreed' => '21.1.4', 'mail' => '5.0.0'], AppEnablement::MINIMUM_VERSIONS);
     }
 
     public function testAnOptionalAppOlderThanTheMinimumIsOffForTheUserAndForAnyone(): void {

@@ -32,6 +32,8 @@ if (PHP_SAPI !== 'cli' || !in_array($argv[1] ?? '', ['seed', 'read'], true) || !
 }
 [, $mode, $output] = $argv;
 require_once '/var/www/html/lib/base.php';
+require_once __DIR__ . '/../Compat/ReleaseUpgradeProbe.php';
+\OCA\Mcp\Tests\Integration\Compat\ReleaseUpgradeProbe::checkpoint('policy', $argv[2]);
 require_once __DIR__ . '/../Compat/SnapshotProbe.php';
 
 if ($mode === 'seed') {

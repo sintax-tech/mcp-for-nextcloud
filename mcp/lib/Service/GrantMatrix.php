@@ -35,7 +35,7 @@ class GrantMatrix {
      * Nextcloud app that provides each module of GrantPolicy::CATALOG; '' for a module of the core. The logs column
      * follows {@see LogsAccess} instead: offered while the log is a file, and open only to the users of its role.
      */
-    public const MODULE_APPS = ['files' => 'files', 'notes' => 'notes', 'deck' => 'deck', 'calendar' => 'calendar', 'talk' => 'spreed', 'contacts' => 'contacts', 'tasks' => 'dav', 'people' => '', 'logs' => ''];
+    public const MODULE_APPS = ['files' => 'files', 'notes' => 'notes', 'deck' => 'deck', 'calendar' => 'calendar', 'talk' => 'spreed', 'contacts' => 'contacts', 'tasks' => 'dav', 'people' => '', 'logs' => '', 'mail' => 'mail'];
     /** Module whose column follows the role gate of {@see LogsAccess}. */
     private const LOGS = 'logs';
 

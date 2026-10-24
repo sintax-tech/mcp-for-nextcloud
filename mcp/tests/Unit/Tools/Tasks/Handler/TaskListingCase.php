@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Tasks\Handler;
 
 use DateTimeImmutable;
+use OCA\Mcp\Tests\Unit\InMemoryLocks;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
 use OCA\Mcp\Tools\Calendar\CalendarDav;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
@@ -19,6 +20,7 @@ use OCA\Mcp\Tools\Tasks\TaskStore;
 use OCA\Mcp\Tools\Tasks\TasksModule;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;
+use OCP\Lock\ILockingProvider;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
 
@@ -43,6 +45,12 @@ abstract class TaskListingCase extends TestCase {
 
 	/** Module under test, rebuilt for each test. */
 	protected TasksModule $module;
+
+	/** Locks the module takes; a test that exercises the hierarchy lock reads what was acquired. */
+	protected InMemoryLocks $locks;
+
+	/** @var \Closure(?ILockingProvider): TasksModule builds the module of this calendar with a locking provider */
+	private \Closure $wire;
 
 	/**
 	 * Plants one open task and wires the module to a calendar owned by {@see $owner}.
@@ -80,7 +88,7 @@ abstract class TaskListingCase extends TestCase {
 		$config->method('getAppValue')->willReturn('');
 		$time = $this->createMock(ITimeFactory::class);
 		$time->method('now')->willReturn(new DateTimeImmutable('2026-10-01T12:00:00Z'));
-		$this->module = new TasksModule(
+		$this->wire = fn (?ILockingProvider $locks): TasksModule => new TasksModule(
 			ScopeStub::access($store),
 			$store,
 			$uris,
@@ -89,8 +97,21 @@ abstract class TaskListingCase extends TestCase {
 			new SharedGuard($this->createMock(IUserManager::class)),
 			new TrashPolicy($config),
 			$time,
-			\OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this)
+			\OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this),
+			null,
+			$locks
 		);
+		$this->module = $this->withLocks($this->locks = new InMemoryLocks());
+	}
+
+	/**
+	 * The module of this calendar with another locking provider, or none.
+	 *
+	 * @param ILockingProvider|null $locks provider the module takes
+	 * @return TasksModule the module, sharing the store, the DAV double and the planted tasks
+	 */
+	protected function withLocks(?ILockingProvider $locks): TasksModule {
+		return ($this->wire)($locks);
 	}
 
 	/**

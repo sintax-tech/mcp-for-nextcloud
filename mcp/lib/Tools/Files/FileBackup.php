@@ -24,12 +24,12 @@ use OCP\Lock\ManuallyLockedException;
 
 /**
  * Guards a file edit: versioning must be on, the file writable, unchanged (etag) and not locked against the write
- * by files_lock, and a verified copy of the original must exist in the user's backup folder before the caller may
- * write. The lock is checked before the copy, so a refused write leaves no useless backup behind.
+ * by files_lock. A verified original copy is required unless the administrator suspended Files copies while
+ * native versioning is active for this actor. Locks are checked before any copy.
  */
 class FileBackup {
-    /** Folder in the user's root that receives a copy of every file before files_edit writes it. */
-    public const FOLDER = 'MCP backups';
+    /** Legacy default name, retained as a compatibility alias; live destinations come from BackupLocation. */
+    public const FOLDER = \OCA\Mcp\Service\BackupLocation::LEGACY;
 
     public function __construct(
         private IAppManager $appManager,
@@ -38,14 +38,25 @@ class FileBackup {
         private IConfig $config,
         private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
         private ?LockAwareWrite $locks = null,
+        private ?\OCA\Mcp\Service\BackupLocation $backupLocation = null,
+        private ?\OCA\Mcp\Service\BackupCopies $backupCopies = null,
     ) {}
 
     /**
      * @param string $path normalized user-relative path
+     * @param \OCA\Mcp\Service\BackupLocation|null $location injected live backup settings
      * @return bool whether the path is the backup folder or inside it
      */
-    public static function isBackupPath(string $path): bool {
-        return $path === '/' . self::FOLDER || str_starts_with($path, '/' . self::FOLDER . '/');
+    public static function isBackupPath(string $path, ?\OCA\Mcp\Service\BackupLocation $location = null): bool {
+        return \OCA\Mcp\Service\BackupLocation::contains($path, $location);
+    }
+
+    /**
+     * @param string $path normalized actor-relative path
+     * @return void
+     */
+    public function assertWritablePath(string $path): void {
+        BackupWriteBoundary::check($path, $this->backupLocation);
     }
 
     /**
@@ -57,21 +68,12 @@ class FileBackup {
      * @param string $userId authenticated user
      * @param string|null $etag ETag the caller read before, null to skip the check
      * @param bool $asUser whether the write runs as $userId; false on the checkout route without user session
-     * @return string user-relative path of the verified backup copy
+     * @return string user-relative verified copy path, or empty string for an authorized suspension
      * @throws ToolFailure when versioning is off, the file is not writable, the etag differs, a lock refuses the
      *         write ({@see \OCA\Mcp\Tools\Common\LockWriteFailure}) or the copy fails
      */
     public function prepare(Folder $root, File $file, string $path, string $userId, ?string $etag, bool $asUser = true): string {
-        $user = $this->userManager->get($userId);
-        if ($user === null || !$this->appManager->isEnabledForUser('files_versions', $user)) {
-            throw new ToolFailure(FilesMessages::versioningOff());
-        }
-        if (!$file->isUpdateable()) {
-            throw new ToolFailure(CommonMessages::forbidden());
-        }
-        NodeAccess::checkEtag($file, $etag);
-        $this->locks?->assertWritable($file, $userId, $path, $asUser);
-        return $this->copy($root, $file, $path, $userId, $asUser);
+        return (new FileBackupPreparation($this->appManager, $this->userManager, $this->locks, $this->backupCopies, $this->backupLocation))->prepare($file, $path, $userId, $etag, $asUser, fn () => $this->copy($root, $file, $path, $userId, $asUser));
     }
 
     /**
@@ -85,48 +87,7 @@ class FileBackup {
      * @throws ToolFailure when the copy cannot be created or its size differs, a {@see LockWriteFailure} when it is locked
      */
     private function copy(Folder $root, File $file, string $path, string $userId, bool $asUser = true): string {
-        // The node the copy was working on when it failed, so a lock refusal names the backup and not the original.
-        $target = $root;
-        try {
-            $folder = NodeAccess::mutate(fn () => NodeAccess::ensureFolder($root, self::FOLDER . dirname($path)), $this->visibilityGuard);
-            $target = $folder;
-            $base = $file->getName() . '.' . $this->stamp($userId);
-            $name = $base . '.bak';
-            for ($i = 2; $folder->nodeExists($name); $i++) {
-                $name = $base . '-' . $i . '.bak';
-            }
-            // Establish privacy while the new backup contains no sensitive bytes.
-            $copy = NodeAccess::mutate(fn () => $folder->newFile($name), $this->visibilityGuard);
-            $target = $copy;
-            $this->visibilityGuard?->copyHiddenTags($file, $copy);
-            $stream = $file->fopen('rb');
-            if (!is_resource($stream)) {
-                throw new \RuntimeException('Backup source stream unavailable');
-            }
-            try {
-                // The new copy is checked right before the original goes into it: a WebDAV client may have locked it.
-                $put = static fn () => $copy->putContent($stream);
-                NodeAccess::mutate(fn () => $this->locks === null ? $put() : $this->locks->run($put, $copy, $userId, null, $asUser), $this->visibilityGuard);
-            } finally {
-                if (is_resource($stream)) {
-                    fclose($stream);
-                }
-            }
-            $valid = $copy->getSize() === $file->getSize();
-        } catch (LockWriteFailure $e) {
-            throw $e->withNote(FilesMessages::backupFailed());
-        } catch (ManuallyLockedException $e) {
-            // A backup folder locked by files_lock is a lock, and stays one: the checkout answers it with 423.
-            $failure = $this->locks?->failure($e, $target, $userId) ?? NodeAccess::lockFailure($e);
-            throw ($failure instanceof LockWriteFailure ? $failure : new LockWriteFailure(LockMessages::lockedWithoutDetails()))
-                ->withNote(FilesMessages::backupFailed());
-        } catch (\Throwable) {
-            $valid = false;
-        }
-        if (!$valid) {
-            throw new ToolFailure(FilesMessages::backupFailed());
-        }
-        return $root->getRelativePath($copy->getPath()) ?? '';
+        return (new FileBackupCopy($this->visibilityGuard, $this->locks, $this->backupLocation))->copy($root, $file, $path, $this->stamp($userId), $asUser, $userId);
     }
 
     /**

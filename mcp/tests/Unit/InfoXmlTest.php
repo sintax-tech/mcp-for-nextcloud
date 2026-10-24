@@ -66,20 +66,11 @@ final class InfoXmlTest extends TestCase {
     }
 
     /**
-     * The store shows the summary and the description in English, Brazilian Portuguese and Spanish.
+     * The store shows the summary and the description in English, Brazilian Portuguese, Spanish and German.
      * The name is not translated: it is a single <name> without lang (see the test below).
      */
     public function testSummaryAndDescriptionComeInEveryLanguageOfTheApp(): void {
-        foreach (['summary', 'description'] as $element) {
-            $texts = $this->localized($element);
-            $this->assertSame(['en', 'pt-br', 'es'], array_keys($texts), $element);
-            foreach ($texts as $lang => $text) {
-                $this->assertNotSame('', $text, "$element ($lang)");
-                $this->assertStringNotContainsStringIgnoringCase('test release', $text, "$element ($lang)");
-                $this->assertStringNotContainsStringIgnoringCase('versão de teste', $text, "$element ($lang)");
-                $this->assertStringNotContainsStringIgnoringCase('dal' . 'comad', $text, "$element ($lang): no customer's data in the store listing");
-            }
-        }
+        StoreLocaleContract::languages(['summary' => $this->localized('summary'), 'description' => $this->localized('description')]);
     }
 
     /**
@@ -95,17 +86,7 @@ final class InfoXmlTest extends TestCase {
 
     /** The description says what the app does, how it keeps the user in control and which clients connect to it. */
     public function testTheDescriptionListsTheModulesTheSafeguardsAndTheClients(): void {
-        $expected = [
-            'en' => ['Files', 'Notes', 'Calendar', 'Contacts', 'Tasks', 'Deck', 'Talk', 'Claude', 'ChatGPT', 'Gemini CLI', 'OAuth', 'never deletes'],
-            'pt-br' => ['Arquivos', 'Notas', 'Calendário', 'Contatos', 'Tarefas', 'Deck', 'Talk', 'Claude', 'ChatGPT', 'Gemini CLI', 'OAuth', 'nunca apaga'],
-            'es' => ['Archivos', 'Notas', 'Calendario', 'Contactos', 'Tareas', 'Deck', 'Talk', 'Claude', 'ChatGPT', 'Gemini CLI', 'OAuth', 'nunca borra'],
-        ];
-        foreach ($this->localized('description') as $lang => $text) {
-            foreach ($expected[$lang] as $needle) {
-                $this->assertStringContainsString($needle, $text, "description ($lang)");
-            }
-            $this->assertStringContainsString('Nextcloud 32–35', $text, "description ($lang) names the supported Nextcloud versions");
-        }
+        StoreLocaleContract::descriptions($this->localized('description'));
     }
 
     public function testStoreMetadataPointsAtThePublicRepository(): void {

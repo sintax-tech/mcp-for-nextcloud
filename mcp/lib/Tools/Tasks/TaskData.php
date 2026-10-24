@@ -158,6 +158,7 @@ class TaskData {
                 $task->add('CATEGORIES', $categories);
             }
         }
+        (new TaskRelations())->apply($task, $arguments);
         foreach ([
             'summary' => 'SUMMARY',
             'description' => 'DESCRIPTION',
@@ -284,6 +285,7 @@ class TaskData {
             'due' => $date($task->DUE),
             'completed' => $date($task->COMPLETED),
             'categories' => $this->categories($task),
+            'parent' => (new TaskRelations())->parent($task),
             'recurring' => isset($task->RRULE) || isset($task->RDATE) || count($calendar->select('VTODO')) > 1,
             'icalendar' => $calendar->serialize(),
         ];

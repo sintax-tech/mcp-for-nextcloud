@@ -43,6 +43,7 @@ final class ReplaceFileHandler {
 	 * @param ContentCommit $commit Backup and write. Receives the module's backup at execution time.
 	 * @param ContentTypeGate $types Current-name policy, one snapshot per boundary.
 	 * @param LockAwareWrite|null $locks Refuses a locked file before any backup. Null where files_lock is not wired.
+	 * @param \OCA\Mcp\Service\BackupLocation|null $backupLocation configured protected roots
 	 * @param FilesAccessGuard|null $visibilityGuard Scope and exclusion tags of the resolved file.
 	 */
 	public function __construct(
@@ -53,6 +54,7 @@ final class ReplaceFileHandler {
 		private ContentTypeGate $types,
 		private ?LockAwareWrite $locks = null,
 		private ?FilesAccessGuard $visibilityGuard = null,
+		private ?\OCA\Mcp\Service\BackupLocation $backupLocation = null,
 	) {
 	}
 
@@ -139,7 +141,7 @@ final class ReplaceFileHandler {
 	 * @throws ToolFailure When the path is the backup folder or does not hold editable text.
 	 */
 	private function assertEditable(Folder $root, string $path): void {
-		if (FileBackup::isBackupPath($path)) {
+		if (FileBackup::isBackupPath($path, $this->backupLocation)) {
 			throw new ToolFailure(FilesMessages::backupPath());
 		}
 		if (!TextExtractor::isText($this->file($root, $path))) {

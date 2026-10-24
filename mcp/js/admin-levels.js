@@ -27,6 +27,7 @@
 		talk: [['read'], ['reply', 'attach', 'quote'], ['create']],
 		people: [['read']],
 		logs: [['read']],
+		mail: [['read']],
 	}
 
 	/** Names of the tiers by how many a module has. */

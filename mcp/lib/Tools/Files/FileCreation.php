@@ -54,6 +54,7 @@ final class FileCreation {
         private LoggerInterface $logger,
         private LockAwareWrite $locks,
         private \OCA\Mcp\Tools\Common\FileTypeGuard $fileTypes,
+        private \OCA\Mcp\Service\BackupLocation $backupLocation,
     ) {}
 
     /**
@@ -194,7 +195,7 @@ final class FileCreation {
         if ($path === '/') {
             throw self::invalidName();
         }
-        if (FileBackup::isBackupPath($path)) {
+        if (FileBackup::isBackupPath($path, $this->backupLocation)) {
             throw new ToolFailure(FilesMessages::backupPath());
         }
         $cut = (int)strrpos($path, '/');

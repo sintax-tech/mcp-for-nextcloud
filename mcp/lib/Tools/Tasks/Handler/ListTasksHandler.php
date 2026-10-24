@@ -22,7 +22,7 @@ use OCA\Mcp\Tools\ToolResult;
  * Backs `tasks_list_tasks`.
  *
  * Scans the live tasks of one visible calendar in small chunks, hides what the share protects, applies
- * the completed and category filters before the offset is counted, and cuts one page. A category filter
+ * the completed, category and parent filters before the offset is counted, and cuts one page. A category filter
  * without a single match carries a note so the empty page is not read as an empty calendar.
  */
 final class ListTasksHandler {
@@ -59,7 +59,7 @@ final class ListTasksHandler {
 	/**
 	 * Lists one page of tasks of a visible task calendar.
 	 *
-	 * @param array<string, mixed> $arguments validated tool arguments: calendar, include_completed, category, limit, offset
+	 * @param array<string, mixed> $arguments validated tool arguments: calendar, include_completed, category, parent, limit, offset
 	 * @param string $userId authenticated user UID
 	 * @return array{content:list<array{type:string, text:string}>, isError?:bool} MCP result
 	 * @throws CalendarException when the calendar path is foreign, malformed, not visible or outside the scope
@@ -72,6 +72,8 @@ final class ListTasksHandler {
 		$limit = $arguments['limit'] ?? self::DEFAULT_LIMIT;
 		$offset = $arguments['offset'] ?? 0;
 		$matched = 0;
+		// Counted apart, so a parent filter that empties the page is not reported as a category miss.
+		$categoryMatched = 0;
 		// Fetch objects in small chunks, retaining the CalDAV query's live-object scope.
 		foreach (array_chunk($this->tasks->uris($calendar->id), self::CHUNK) as $uris) {
 			foreach ($this->store->objects($calendar->id, $uris) as $row) {
@@ -86,6 +88,10 @@ final class ListTasksHandler {
 				}
 				// Filter before counting the offset, so pages are taken from the matching tasks only.
 				if (isset($arguments['category']) && !$this->data->hasCategory($item, $arguments['category'])) {
+					continue;
+				}
+				$categoryMatched++;
+				if (isset($arguments['parent']) && $item['parent'] !== $arguments['parent']) {
 					continue;
 				}
 				if ($matched++ < $offset) {
@@ -105,7 +111,7 @@ final class ListTasksHandler {
 			'nextOffset' => $more ? $offset + count($items) : null,
 		];
 		// A filter without a single match reads exactly like an empty calendar; the note tells them apart.
-		if (isset($arguments['category']) && $matched === 0) {
+		if (isset($arguments['category']) && $categoryMatched === 0) {
 			$page['note'] = $this->note->forMiss($arguments['category'], ($arguments['include_completed'] ?? false) === true);
 		}
 		return ToolResult::json($page);

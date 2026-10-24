@@ -97,7 +97,7 @@ final class GrantsControllerTest extends TestCase {
             ['ana', ['eligible' => 'yes']],
             ['ana', ['eligible' => true, 'module' => 'files', 'operation' => 'read', 'granted' => true]],
             ['ana', ['module' => 'files', 'operation' => 'delete', 'granted' => true]],
-            ['ana', ['module' => 'mail', 'operation' => 'read', 'granted' => true]],
+            ['ana', ['module' => 'polls', 'operation' => 'read', 'granted' => true]],
             ['ana', ['module' => 'files', 'operation' => 'read', 'granted' => 1]],
             ['ana', ['module' => 'files', 'operation' => 'read']],
         ] as [$uid, $body]) {

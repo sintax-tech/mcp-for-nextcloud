@@ -2,6 +2,19 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 1.2.1
+
+### Added
+
+- **Backup configuration ([#17](https://github.com/sintax-tech/mcp-for-nextcloud/issues/17)):** administrators choose one folder name in each acting user's personal root under *Data protection*, including dot-prefixed names. The default remains `MCP backups`; a folder is created only with its first copy. Renaming the setting preserves existing data and reserves every historical name against MCP writes.
+- **Optional Files pre-write copies ([#17](https://github.com/sintax-tech/mcp-for-nextcloud/issues/17)):** on by default; suspension requires native `files_versions`. Every operation rechecks the acting user's availability and requires copies on failure. Existing Versions prerequisites still refuse operations without that app; this setting does not grant new writes or guarantee native versions for every file/backend. Contact deletion still requires a verified copy, using the configured folder. Existing backups are never removed.
+- **Mail account and folder lists ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** `mail_list_accounts` and `mail_list_mailboxes`, with their own read grant, expose only the caller's accounts and Mail's cached folder names/counters. No message reading, IMAP synchronization or mutation. Empty caches require opening the account in Mail; cached data may be stale. Mail is optional; the opt-in integration cell uses disposable Mail and Dovecot.
+- **Subtasks in the Tasks tools ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)):** tasks return their `parent` UID or null (`RELATED-TO`, as in the Tasks app; no RELTYPE means PARENT). `tasks_create_task` and `tasks_edit_task` accept `parent`: a UID replaces only the parent link and keeps other relations and properties, `null` makes the task top-level, omitting it preserves it. `tasks_list_tasks` can list the direct subtasks of one `parent`, filtered before `offset`/`limit`. The parent must be a readable task of the same calendar; loops are refused, and no task may end up deeper than 64 levels, the subtasks a reparenting moves included. The plan names the parent by title and UID. The hierarchy is checked on the state read for the plan and again at confirmation; confirmed MCP writes that set a parent in one calendar run one at a time through the server's file locking and are refused when `filelocking.enabled` is off, while concurrent changes by other CalDAV clients are not coordinated and a loop found after the write is reported as a warning. Completing or deleting a parent does not cascade. Thanks to @mturgeonferland ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)).
+
+### Fixed
+
+- **Backup mirror visibility:** reserve the backup folder only directly under the owner's personal root, preserving fail-closed handling of shared/external storage. Ordinary nested folders named `MCP backups` no longer inherit backup-mirror hiding. Reserved names and paths compare using the core's NFC identity; hidden originals continue hiding their backup mirrors.
+
 ## 1.2.0
 
 ### Added

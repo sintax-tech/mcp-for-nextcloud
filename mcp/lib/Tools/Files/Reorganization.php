@@ -42,6 +42,7 @@ final class Reorganization {
         private ?\OCA\Mcp\Service\Scope\FilesAccessGuard $visibilityGuard = null,
         private ?LockAwareWrite $locks = null,
         private ?\OCA\Mcp\Tools\Common\FileTypeGuard $fileTypes = null,
+        private ?\OCA\Mcp\Service\BackupLocation $backupLocation = null,
     ) {}
 
     /**
@@ -124,7 +125,7 @@ final class Reorganization {
         if ($path === '/') {
             throw new ToolFailure(FilesMessages::destinationExists());
         }
-        if (FileBackup::isBackupPath($path)) {
+        if (FileBackup::isBackupPath($path, $this->backupLocation)) {
             throw new ToolFailure(FilesMessages::backupPath());
         }
         $relPath = ltrim($path, '/');
@@ -267,7 +268,7 @@ final class Reorganization {
      * @return CopyMoveContext The context over this operation's native checks and policy.
      */
     public function copyMoveContext(): CopyMoveContext {
-        return new CopyMoveContext($this, $this->access, $this->report, $this->visibilityGuard, $this->locks, $this->fileTypes);
+        return new CopyMoveContext($this, $this->access, $this->report, $this->visibilityGuard, $this->locks, $this->fileTypes, $this->backupLocation);
     }
 
     /**
@@ -314,7 +315,7 @@ final class Reorganization {
     public function inspect(Folder $root, string $from, string $to, ?string $etag = null, array $mkdirs = []): Inspection {
         $source = $this->writable($root, $from);
         NodeAccess::checkEtag($source, $etag);
-        $to = self::notBackup(PathGuard::normalize($to, 'to'));
+        $to = self::notBackup(PathGuard::normalize($to, 'to'), $this->backupLocation);
         // A folder landing inside itself is refused before the destination check, so the user hears the real
         // reason instead of "something is already there" for a subfolder of the folder they are moving.
         $this->assertNotIntoItself($root, $source, $to);
@@ -398,7 +399,7 @@ final class Reorganization {
         if ($path === '/') {
             throw new ToolFailure(FilesMessages::destinationExists());
         }
-        if (FileBackup::isBackupPath($path)) {
+        if (FileBackup::isBackupPath($path, $this->backupLocation)) {
             throw new ToolFailure(FilesMessages::backupPath());
         }
         $rel = ltrim($path, '/');
@@ -762,7 +763,7 @@ final class Reorganization {
      *   sits under a hidden node, or the folder that would receive it cannot take a new entry
      */
     public function checkFolder(Folder $root, string $path): void {
-        $relative = ltrim(self::notBackup(PathGuard::normalize($path)), '/');
+        $relative = ltrim(self::notBackup(PathGuard::normalize($path), $this->backupLocation), '/');
         $parent = $root;
         $walk = [];
         foreach (PathGuard::segments($relative) as $segment) {
@@ -904,7 +905,7 @@ final class Reorganization {
     public function writable(Folder $root, string $path): Node {
         // run() turns a missing node into a ToolFailure here, so a batch plan can put the item in its
         // denied list instead of the whole call failing.
-        $path = self::notBackup(PathGuard::normalize($path));
+        $path = self::notBackup(PathGuard::normalize($path), $this->backupLocation);
         $node = NodeAccess::run(fn () => NodeAccess::get($root, $path, $this->visibilityGuard));
         if (!$node->isUpdateable()) {
             throw new ToolFailure(CommonMessages::forbidden());
@@ -920,11 +921,8 @@ final class Reorganization {
      * @return string the same path
      * @throws ToolFailure when the path is /MCP backups or inside it
      */
-    public static function notBackup(string $path): string {
-        if (FileBackup::isBackupPath($path)) {
-            throw new ToolFailure(FilesMessages::backupPath());
-        }
-        return $path;
+    public static function notBackup(string $path, ?\OCA\Mcp\Service\BackupLocation $location = null): string {
+        return BackupWriteBoundary::checked($path, $location);
     }
 
     /**

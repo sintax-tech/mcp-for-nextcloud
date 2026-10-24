@@ -198,7 +198,7 @@ final class VisibilityContractTest extends TestCase {
             $reflection = new \ReflectionClass($name);
             $args[] = str_starts_with($name, 'OCA\\Mcp\\') && $reflection->isInstantiable() ? $this->build($name) : $this->createMock($name);
         }
-        return new $class(...$args);
+        return \OCA\Mcp\Tests\Unit\Service\BackupDocumentFixture::construct($this, $class, $args, $this->config);
     }
 
     /**

@@ -61,21 +61,7 @@ final class AdminAssetsTest extends TestCase {
     }
 
     public function testReferencedScriptsAndStylesExist(): void {
-        $app = dirname(__DIR__, 3);
-        $template = (string)file_get_contents($app . '/templates/admin.php');
-        preg_match_all("/Util::add(Script|Style)\\(\\s*'mcp'\\s*,\\s*'([^']+)'/", $template, $matches, PREG_SET_ORDER);
-        $this->assertCount(14, $matches);
-        // The levels mapping is read by the matrix, so it loads before it; the level popover uses the matrix, so after it.
-        $this->assertLessThan(strpos($template, "addScript('mcp', 'admin-grants')"), strpos($template, "addScript('mcp', 'admin-levels')"));
-        $this->assertGreaterThan(strpos($template, "addScript('mcp', 'admin-grants')"), strpos($template, "addScript('mcp', 'admin-level-popover')"));
-        $this->assertGreaterThan(strpos($template, "addScript('mcp', 'admin-grants')"), strpos($template, "addScript('mcp', 'admin-exceptions')"));
-        $this->assertGreaterThan(strpos($template, "addScript('mcp', 'admin-grants')"), strpos($template, "addScript('mcp', 'admin-row-actions')"));
-        foreach ($matches as [, $kind, $name]) {
-            $file = $kind === 'Script' ? "$app/js/$name.js" : "$app/css/$name.css";
-            $this->assertFileExists($file);
-        }
-        $this->assertFileDoesNotExist($app . '/js/admin-user-picker.js');
-        $this->assertFileDoesNotExist($app . '/lib/Controller/UsersController.php');
+        AdminAssetContract::verify();
     }
 
     /**

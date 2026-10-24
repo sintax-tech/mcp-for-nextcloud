@@ -1,0 +1,72 @@
+{
+  "31": {
+    "mail": {
+      "version": "5.0.0",
+      "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.0.0/mail-v5.0.0.tar.gz",
+      "sha256": "015d2fac3538cde83b0104292648f998741ab7109ad9130e379b58e10fce8f23"
+    },
+    "server": {
+      "version": "31.0.0",
+      "files": {
+        "lib/public/AppFramework/Db/Entity.php": "6526d3fedc72805a7d7691d0df3685136a2d4dafe8e2588f7fbd366a0d805bf8",
+        "lib/public/AppFramework/Db/QBMapper.php": "1828e00689ddbf4625e27d97f0db0c9c27f7e60f4a84ef896ca07ca05002dc68"
+      }
+    }
+  },
+  "32": {
+    "mail": {
+      "version": "5.0.0",
+      "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.0.0/mail-v5.0.0.tar.gz",
+      "sha256": "015d2fac3538cde83b0104292648f998741ab7109ad9130e379b58e10fce8f23"
+    },
+    "server": {
+      "version": "32.0.0",
+      "files": {
+        "lib/public/AppFramework/Db/Entity.php": "60bcf4e2a2d2439eab922ecd9a200e7f4b27228436896a1ded74e104a6288347",
+        "lib/public/AppFramework/Db/QBMapper.php": "40b58fc30a42a8442e5f44c3478195ec6f8ce36ed6af3ac387f4c1ddf2dd25e0"
+      }
+    }
+  },
+  "33": {
+    "mail": {
+      "version": "5.5.0",
+      "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.5.0/mail-v5.5.0.tar.gz",
+      "sha256": "975b1204e9f94cac744c259c8adc901cb7e09bc860eb97154d9bc88d69ef0a7e"
+    },
+    "server": {
+      "version": "33.0.0",
+      "files": {
+        "lib/public/AppFramework/Db/Entity.php": "cbab8ff845340e44685457d8cdc48563767c3cd10fe283cb3001295e40177477",
+        "lib/public/AppFramework/Db/QBMapper.php": "f1b5cd4ab2bc3ae24c2dad1d1c6c75034bb366b44f3f33919bddcb90dee4610e"
+      }
+    }
+  },
+  "34": {
+    "mail": {
+      "version": "5.7.0",
+      "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.7.0/mail-v5.7.0.tar.gz",
+      "sha256": "2b504f4624877b740c6fcaa212ac9b5e25470395ab13174af8e4c3cb2add67e1"
+    },
+    "server": {
+      "version": "34.0.0",
+      "files": {
+        "lib/public/AppFramework/Db/Entity.php": "cc8e4cf296405efe844ef21d1c7743eea3f8fcd166d5bc35bda6f73532aebe44",
+        "lib/public/AppFramework/Db/QBMapper.php": "f1b5cd4ab2bc3ae24c2dad1d1c6c75034bb366b44f3f33919bddcb90dee4610e"
+      }
+    }
+  },
+  "35": {
+    "mail": {
+      "version": "5.9.0",
+      "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.9.0/mail-v5.9.0.tar.gz",
+      "sha256": "4987bc0440b8bfd8af97688654290e447cb9ca7f70378a369aba89606ab3551c"
+    },
+    "server": {
+      "version": "35.0.0",
+      "files": {
+        "lib/public/AppFramework/Db/Entity.php": "658aef736eef71a230672c57941f89530229bfa1f449082506ba82a56110c735",
+        "lib/public/AppFramework/Db/QBMapper.php": "4f3e2bdf5cc1bd36a54ca8e89e78ea2648412e63b4bcfa93eeb7f97536d4058e"
+      }
+    }
+  }
+}

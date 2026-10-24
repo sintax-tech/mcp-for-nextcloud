@@ -62,6 +62,7 @@ final class ContentCommit {
 		try {
 			// After the copy and immediately before the write. A refusal here keeps the backup.
 			$this->types->assertCurrentName($file);
+			$backup->assertWritablePath($path);
 			// Checked again right before the write: the backup took time, and files_lock does not refuse every lock.
 			NodeAccess::mutate(fn () => $this->locks === null ? $file->putContent($content) : $this->locks->run(fn () => $file->putContent($content), $file, $userId, $path), $this->visibilityGuard);
 		} catch (LockWriteFailure $e) {

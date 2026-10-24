@@ -25,6 +25,8 @@ if (PHP_SAPI !== 'cli' || !isset($argv[1])) {
     exit(1);
 }
 require_once '/var/www/html/lib/base.php';
+require_once __DIR__ . '/../Compat/ReleaseUpgradeProbe.php';
+\OCA\Mcp\Tests\Integration\Compat\ReleaseUpgradeProbe::checkpoint('credentials', $argv[1]);
 Server::get(\OCP\App\IAppManager::class)->loadApp('mcp');
 
 $uid = 'mcp-it-legacy';

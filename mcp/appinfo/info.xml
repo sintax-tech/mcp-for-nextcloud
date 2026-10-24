@@ -5,7 +5,10 @@
     <summary>MCP server for your Nextcloud: connect Claude, ChatGPT and other AI clients, with per-user and per-group permissions</summary>
     <summary lang="pt-br">Servidor MCP para o seu Nextcloud: conecte o Claude, o ChatGPT e outros clientes de IA, com permissões por usuário e por grupo</summary>
     <summary lang="es">Servidor MCP para su Nextcloud: conecte Claude, ChatGPT y otros clientes de IA, con permisos por usuario y por grupo</summary>
+    <summary lang="de">MCP-Server für Nextcloud: KI-Clients mit Berechtigungen pro Benutzer und Gruppe verbinden</summary>
     <description><![CDATA[
+New in 1.2.1: tasks gain subtasks: read, list and set a parent in the same calendar, with loops and nesting beyond 64 levels refused. In Data protection, configure one personal-root backup folder name (default MCP backups); previous names and content remain preserved and protected. Files pre-write copies are on by default and can be suspended only with native Versions available for the acting user; existing Versions prerequisites still apply and native versions are not guaranteed for every file/backend. Contact deletion always requires a verified backup. Optional Mail lists only the caller's accounts and cached folders/counters: no message reading, IMAP synchronization or changes; open Mail once for an empty cache.
+
 **MCP for Cloud** is a native app that turns your Nextcloud into a Model Context Protocol (MCP) server. AI assistants work with your files, notes, calendars, contacts, tasks, Deck boards and Talk conversations through one URL on your own server: no extra service, no Docker, no copy of your data elsewhere.
 
 ## What the assistant can do
@@ -30,7 +33,7 @@
 - **Optional file type policy.** Off by default, enabled by the administrator in *Data protection*. It checks final names/extensions for MCP writes, including Notes, uploads, restores, copy/move, batches and undo; mandatory internal backups are exempt. It does not inspect content or eliminate prompt injection. With the policy active, folder copies use a validated list and report partial results; later additions are not copied.
 - **Plan and confirmation.** A tool that changes something first returns a plan of exactly what it will do; nothing is written until the user approves it.
 - **Excluded from MCP access.** Files and folders carrying the system tags the administrator picks, and everything inside those folders, are invisible to the tools of this connector (the server log tools only while "Hide the text of log messages" is on). While at least one tag is configured, sharing, public links, copying or moving a folder to another directory are refused in MCP so that nothing hidden inside can be exposed indirectly — do those in the Nextcloud web interface; individual files and renaming a folder where it already is keep working. File references inside Talk attachments and task attachments are also left out when they point to an excluded file.
-- **The app never deletes a file.** There is no tool for it, and every edit keeps a backup; Nextcloud versioning applies as usual.
+- **The app never deletes a file.** There is no tool for it, and edits keep a backup by default, subject to the administrator’s Files copy setting; Nextcloud versioning applies as usual.
 - **Nextcloud permissions always apply.** The app never widens what a user can already do. A restriction by resource and an exclusion by system tag only narrow what a user reaches: they never add access. A guest of the Guests app keeps the restrictions of Guests on every request, with an app password, OAuth or a checkout link: only the apps allowed to guests, no hidden external storage, and sharing only within the guest's groups when other accounts are hidden.
 
 ## Clients
@@ -42,6 +45,8 @@ Claude (claude.ai and Claude Desktop), ChatGPT and Gemini CLI sign in with OAuth
 Nextcloud 32–35 and PHP 8.2 or later. Deck and Talk are optional: their tools appear only when the app is enabled in a supported version.
     ]]></description>
     <description lang="pt-br"><![CDATA[
+Novidades da 1.2.1: tarefas ganham subtarefas: ler, listar e definir a tarefa principal na mesma agenda, recusando ciclos e aninhamento acima de 64 níveis. Em Proteção de dados, configure um nome de pasta de backup na raiz pessoal (padrão MCP backups); nomes anteriores e conteúdo continuam preservados e protegidos. Cópias prévias de Arquivos vêm ligadas e só podem ser suspensas com Versions nativo disponível para quem age; os pré-requisitos existentes continuam valendo e não há garantia de versão nativa para todo arquivo/backend. Excluir contato sempre exige backup verificado. Mail opcional lista só contas próprias e pastas/contadores em cache: sem ler mensagens, sincronizar IMAP ou alterar dados; abra Mail uma vez se o cache estiver vazio.
+
 **MCP for Cloud** é um app nativo que transforma o seu Nextcloud em um servidor Model Context Protocol (MCP). Os assistentes de IA trabalham com os seus arquivos, notas, calendários, contatos, tarefas, quadros do Deck e conversas do Talk por um único endereço no seu próprio servidor: sem serviço extra, sem Docker, sem cópia dos seus dados em outro lugar.
 
 ## O que o assistente pode fazer
@@ -66,7 +71,7 @@ Nextcloud 32–35 and PHP 8.2 or later. Deck and Talk are optional: their tools 
 - **Política opcional de tipos de arquivo.** Desligada por padrão, ativada pelo administrador em *Proteção de dados*. Confere nomes/extensões finais nas gravações MCP, inclusive Notes, uploads, restauração de versões, cópia/movimento, lotes e desfazer; backups internos obrigatórios são isentos. Não examina conteúdo nem elimina prompt injection. Com a política ativa, a cópia de pasta usa uma lista validada e informa resultados parciais; arquivos acrescentados depois não são copiados.
 - **Plano e confirmação.** Uma ferramenta que altera algo primeiro devolve o plano exato do que vai fazer; nada é gravado antes de o usuário aprovar.
 - **Excluídos do acesso MCP.** Arquivos e pastas com as etiquetas do sistema escolhidas pelo administrador, e tudo dentro dessas pastas, ficam invisíveis às ferramentas deste conector (as ferramentas do log do servidor, apenas com "Esconder o texto das mensagens do log" ligada). Enquanto houver ao menos uma etiqueta configurada, compartilhar, criar link público, copiar ou mover uma pasta para outro diretório é recusado no MCP, para que nada escondido dentro dela possa ser exposto indiretamente — faça essas operações pela interface web do Nextcloud; arquivos avulsos e renomear uma pasta dentro do mesmo diretório continuam funcionando. Referências de arquivo em anexos do Talk e em anexos de tarefas também ficam de fora quando apontam para um arquivo excluído.
-- **O app nunca apaga arquivo.** Não existe ferramenta que exclua um arquivo, e toda edição guarda um backup; o versionamento do Nextcloud funciona como de costume.
+- **O app nunca apaga arquivo.** Não existe ferramenta que exclua um arquivo, e as edições guardam backup por padrão, conforme a configuração administrativa de cópias de Arquivos; o versionamento do Nextcloud funciona como de costume.
 - **As permissões do Nextcloud sempre valem.** O app nunca amplia o que o usuário já pode fazer. A restrição por recurso e a exclusão por etiqueta do sistema só reduzem o que o usuário alcança: nunca acrescentam acesso. Um convidado do app Guests mantém as restrições do Guests em todo pedido, por senha de app, OAuth ou link de checkout: só os apps liberados aos convidados, nada do armazenamento externo oculto e compartilhamento só com os próprios grupos quando as outras contas estão ocultas.
 
 ## Clientes
@@ -78,6 +83,8 @@ O Claude (claude.ai e Claude Desktop), o ChatGPT e o Gemini CLI entram com OAuth
 Nextcloud 32–35 e PHP 8.2 ou superior. O Deck e o Talk são opcionais: as ferramentas deles só aparecem com o app ativo numa versão suportada.
     ]]></description>
     <description lang="es"><![CDATA[
+Novedades de 1.2.1: las tareas ganan subtareas: leer, listar y definir la tarea principal en el mismo calendario, rechazando ciclos y anidamientos de más de 64 niveles. En Protección de datos, configure un nombre de carpeta de copias en la raíz personal (predeterminado MCP backups); nombres anteriores y contenido se conservan y protegen. Las copias previas de Archivos vienen activadas y solo pueden suspenderse con Versions nativo disponible para quien actúa; siguen vigentes los requisitos existentes y no se garantiza una versión nativa para cada archivo/backend. Eliminar contactos siempre exige copia verificada. Mail opcional lista solo cuentas propias y carpetas/contadores en caché: sin leer mensajes, sincronizar IMAP ni cambiar datos; abra Mail una vez si la caché está vacía.
+
 **MCP for Cloud** es una aplicación nativa que convierte su Nextcloud en un servidor Model Context Protocol (MCP). Los asistentes de IA trabajan con sus archivos, notas, calendarios, contactos, tareas, tableros de Deck y conversaciones de Talk a través de una sola dirección en su propio servidor: sin servicio adicional, sin Docker, sin copia de sus datos en otro lugar.
 
 ## Lo que el asistente puede hacer
@@ -102,7 +109,7 @@ Nextcloud 32–35 e PHP 8.2 ou superior. O Deck e o Talk são opcionais: as ferr
 - **Política opcional de tipos de archivo.** Desactivada por defecto; la administración la activa en *Protección de datos*. Comprueba nombres/extensiones finales en las escrituras MCP, incluidas Notes, cargas, restauración de versiones, copia/movimiento, lotes y deshacer; las copias internas obligatorias están exentas. No examina contenido ni elimina la inyección de instrucciones. Con la política activa, las copias de carpetas usan una lista validada e informan de resultados parciales; los archivos añadidos después no se copian.
 - **Plan y confirmación.** Una herramienta que cambia algo devuelve primero el plan exacto de lo que hará; nada se escribe hasta que el usuario lo aprueba.
 - **Excluidos del acceso MCP.** Los archivos y carpetas con las etiquetas del sistema que elija el administrador, y todo lo que esté dentro de esas carpetas, son invisibles para las herramientas de este conector (las herramientas del registro del servidor, solo con "Ocultar el texto de los mensajes del registro" activada). Mientras haya al menos una etiqueta configurada, compartir, crear un enlace público, copiar o mover una carpeta a otro directorio se rechaza en MCP, para que nada oculto dentro pueda exponerse indirectamente: haga esas operaciones en la interfaz web de Nextcloud; los archivos individuales y renombrar una carpeta dentro del mismo directorio siguen funcionando. Las referencias de archivo en adjuntos de Talk y en adjuntos de tareas también se omiten cuando apuntan a un archivo excluido.
-- **La aplicación nunca borra archivos.** No hay ninguna herramienta que elimine un archivo, y cada edición guarda una copia de seguridad; el control de versiones de Nextcloud funciona como siempre.
+- **La aplicación nunca borra archivos.** No hay ninguna herramienta que elimine un archivo, y las ediciones guardan copia por defecto, según la configuración administrativa de copias de Archivos; el control de versiones de Nextcloud funciona como siempre.
 - **Los permisos de Nextcloud siempre se aplican.** La aplicación nunca amplía lo que el usuario ya puede hacer. La restricción por recurso y la exclusión por etiqueta del sistema solo reducen lo que el usuario alcanza: nunca añaden acceso. Un invitado de la aplicación Guests conserva las restricciones de Guests en cada solicitud, con contraseña de aplicación, OAuth o enlace de checkout: solo las aplicaciones permitidas a los invitados, nada del almacenamiento externo oculto y compartir solo con sus propios grupos cuando las demás cuentas están ocultas.
 
 ## Clientes
@@ -113,7 +120,14 @@ Claude (claude.ai y Claude Desktop), ChatGPT y Gemini CLI inician sesión con OA
 
 Nextcloud 32–35 y PHP 8.2 o superior. Deck y Talk son opcionales: sus herramientas solo aparecen con la aplicación activa en una versión compatible.
     ]]></description>
-    <version>1.2.0</version>
+    <description lang="de"><![CDATA[
+MCP for Cloud verbindet Claude, ChatGPT, Gemini CLI und andere KI-Clients über OAuth mit Dateien, Notes, Kalendern, Kontakten, Aufgaben, Deck und Talk unter den Berechtigungen der handelnden Person.
+
+Neu in 1.2.1: Aufgaben erhalten Unteraufgaben: übergeordnete Aufgabe im selben Kalender lesen, auflisten und festlegen; Schleifen und Verschachtelungen tiefer als 64 Ebenen werden abgelehnt. Unter Datenschutz einen Sicherungsordner direkt in der persönlichen Wurzel konfigurieren (Standard MCP backups, auch .mcp-backups möglich). Frühere Namen und Inhalte bleiben erhalten und gegen MCP-Schreibzugriffe geschützt. Dateikopien vor dem Schreiben sind standardmäßig an und können nur bei verfügbarem nativem Versions für die handelnde Person ausgesetzt werden. Bestehende Versions-Voraussetzungen bleiben gültig; native Versionen sind nicht für jede Datei/jedes Backend garantiert. Kontakte löschen benötigt immer eine geprüfte Sicherung. Optionale Mail-Werkzeuge listen nur eigene Konten und zwischengespeicherte Ordner/Zähler, ohne Nachrichten zu lesen, IMAP zu synchronisieren oder Daten zu ändern. Bei leerem Cache das Konto einmal in Mail öffnen.
+
+Nextcloud 32–35, PHP 8.2+. Mail, Deck und Talk sind optional. Der Administrator verwaltet Berechtigungen, Ausschluss-Tags und Ressourcenbereiche. Schreibvorgänge benötigen die jeweiligen Grants und Bestätigungen; Dateien werden vom MCP nicht gelöscht.
+    ]]></description>
+    <version>1.2.1</version>
     <licence>AGPL-3.0-or-later</licence>
     <author mail="jhonatan@sintax.tech">Jhonatan Jaworski</author>
     <namespace>Mcp</namespace>

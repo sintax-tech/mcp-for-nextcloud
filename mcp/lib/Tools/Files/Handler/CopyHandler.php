@@ -46,7 +46,7 @@ final class CopyHandler {
 		$source = $this->context->writable($root, $from);
 		FolderExposureGate::assertExposure($source, $this->context->visibilityGuard);
 		NodeAccess::checkEtag($source, $etag);
-		$to = CopyMoveContext::notBackup(PathGuard::normalize($to, 'to'));
+		$to = $this->context->notBackup(PathGuard::normalize($to, 'to'));
 		$this->context->assertFree($root, $to);
 		$destination = $this->context->destination($root, $to);
 		$manifest = (new FileTypePreflight($this->context))->inspect($source, $to, $this->context->policy()->snapshot(), true);
@@ -97,7 +97,7 @@ final class CopyHandler {
 		$source = $this->context->writable($root, $from);
 		FolderExposureGate::assertExposure($source, $this->context->visibilityGuard);
 		NodeAccess::checkEtag($source, $etag);
-		$to = CopyMoveContext::notBackup(PathGuard::normalize($to, 'to'));
+		$to = $this->context->notBackup(PathGuard::normalize($to, 'to'));
 		$this->context->assertFree($root, $to);
 		$destination = $this->context->destination($root, $to);
 		$manifest = (new FileTypePreflight($this->context))->inspect($source, $to, $this->context->policy()->snapshot(), true);

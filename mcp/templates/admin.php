@@ -30,6 +30,7 @@
 \OCP\Util::addScript('mcp', 'connections');
 \OCP\Util::addScript('mcp', 'admin-tabs');
 \OCP\Util::addScript('mcp', 'admin-file-write-policy');
+\OCP\Util::addScript('mcp', 'admin-backups');
 \OCP\Util::addStyle('mcp', 'admin');
 ?>
 <div id="mcp-admin" class="mcp-settings" data-service-enabled="<?php p($_['serviceEnabled'] ? '1' : '0'); ?>">
@@ -325,6 +326,7 @@
     </div>
 
     <div role="tabpanel" id="mcp-panel-protection" aria-labelledby="mcp-tab-protection" class="mcp-tab-panel" tabindex="0">
+    <?php include __DIR__ . '/admin-backups.php'; ?>
     <?php include __DIR__ . '/admin-file-write-policy.php'; ?>
     <div class="section mcp-block" id="mcp-block-tags">
         <h2><?php p($l->t('Excluded from MCP access')); ?></h2>

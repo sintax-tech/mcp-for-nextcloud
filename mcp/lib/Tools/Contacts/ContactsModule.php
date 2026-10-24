@@ -167,7 +167,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
                 . 'with confirm=true, and acknowledge another owner with confirm_shared=true. The '
                 . 'optional etag prevents overwriting a newer edit.',
             'Contact deletion is PERMANENT in Nextcloud: there is no contact trash. After '
-                . 'confirmation, a verified full .vcf copy is saved in /MCP backups/Contacts before '
+                . ContactBackupText::destination()
                 . 'native CardDAV DELETE. Backup failure prevents deletion; the result gives the backup '
                 . 'path. Import the .vcf through Contacts to recover it.',
             'These tools are hidden when the Contacts app is disabled. Writing grants start disabled.',
@@ -185,6 +185,9 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
      * @throws InvalidArgumentException when the tool or supplied fields are invalid
      */
     public function preview(string $name, array $arguments, string $userId): array {
+        if ($name === 'contacts_delete_contact') {
+            return $this->deleteHandler()->preview($arguments, $userId);
+        }
         return $this->prepare($name, $arguments, $userId)['plan'];
     }
 
@@ -213,6 +216,9 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
      * @throws RuntimeException when the native write or its read-back verification fails
      */
     public function call(string $name, array $arguments, string $userId): array {
+        if ($name === 'contacts_delete_contact') {
+            return $this->deleteHandler()->handle($arguments, $userId);
+        }
         if ($name === 'contacts_list_addressbooks') {
             $books = array_map(static fn ($book) => (array) $book, $this->access->visible($userId));
             $catalog = $this->system->bookName($userId);
@@ -261,37 +267,6 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
         $book = $prepared['book'];
         $card = $prepared['card'];
         $row = $prepared['row'];
-        if ($name === 'contacts_delete_contact') {
-            $backupPath = $this->backup->save(
-                $userId,
-                $book->name,
-                $prepared['plan']['before']['name'] ?: $prepared['plan']['before']['uid'],
-                $row['data']
-            );
-            // Check ACL/ownership and ETag again after the backup; If-Match covers changes after this check.
-            $currentBook = $this->access->resolve($userId, $arguments['addressbook'], true);
-            if ($currentBook->id !== $book->id || $currentBook->ownerPrincipal !== $book->ownerPrincipal) {
-                throw new ToolFailure(CommonMessages::conflict());
-            }
-            $latest = $this->row($book->id, $row['uri']);
-            if ($latest['etag'] !== $row['etag']) {
-                throw new ToolFailure(CommonMessages::conflict());
-            }
-            $this->dav->delete($userId, $book->uri, $row['uri'], $row['etag']);
-            return ToolResult::json(
-                [
-                    'uri' => $row['uri'],
-                    'addressbook' => $book->path,
-                    'deleted' => true,
-                    'permanent' => true,
-                    'recoverable' => false,
-                    'backupPath' => $backupPath,
-                    'message' => Translator::t(
-                        'The contact was permanently deleted. Import the saved vCard through Contacts to recover it.'
-                    ),
-                ]
-            );
-        }
         $result = $row === null
             ? $this->dav->put($userId, $book->uri, $prepared['uri'], $card->serialize())
             : $this->dav->update($userId, $book->uri, $row['uri'], $row['etag'], $card->serialize());
@@ -492,6 +467,13 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
             ];
         }
         return compact('book', 'row', 'card', 'uri', 'plan');
+    }
+
+    /** @return Handler\DeleteContactHandler focused deletion handler using the existing shared preparation and row reader */
+    private function deleteHandler(): Handler\DeleteContactHandler {
+        return new Handler\DeleteContactHandler($this->access, $this->dav, $this->backup,
+            fn (array $arguments, string $userId): array => $this->prepare('contacts_delete_contact', $arguments, $userId),
+            fn (int $bookId, string $uri): array => $this->row($bookId, $uri));
     }
 
     /**

@@ -54,6 +54,8 @@ class GrantPolicy implements ScopeReader {
         'talk' => ['read', 'reply', 'attach', 'quote', 'create'],
         // Reading the server log; read only, and the one read that starts denied (see DENIED_READS).
         'logs' => ['read'],
+        // Nextcloud Mail, read only: accounts and cached folders. There is no write operation to grant.
+        'mail' => ['read'],
     ];
 
     /**

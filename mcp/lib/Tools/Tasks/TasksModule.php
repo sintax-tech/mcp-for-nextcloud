@@ -101,6 +101,13 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
                 'description' => 'Free-text task categories, as in the Tasks app: 1-255 characters each after trimming spaces. '
                     . 'The list replaces all existing categories; [] clears them; omit to preserve them.',
             ],
+            'parent' => [
+                'type' => ['string', 'null'],
+                'minLength' => 1,
+                'maxLength' => 255,
+                'description' => 'UID of the parent task, making this task its subtask as in the Tasks app. '
+                    . 'The parent must be in the same calendar; null makes the task top-level; omit to preserve it.',
+            ],
         ];
         $definitions = [
             [
@@ -112,7 +119,8 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
             ],
             [
                 'tasks_list_tasks',
-                'List tasks, including undated tasks, in one visible task calendar, optionally only those with a category.',
+                'List tasks, including undated tasks, in one visible task calendar, optionally only those with a category '
+                    . 'or only the subtasks of one task.',
                 'read',
                 [
                     'calendar' => $calendar,
@@ -126,6 +134,11 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
                             . 'Omit the field to apply no category filter; the value is not a pattern.',
                         1,
                         TaskData::MAX_CATEGORY_LENGTH
+                    ),
+                    'parent' => Schema::text(
+                        'Only list the direct subtasks of the task with this UID. Omit the field to list every task.',
+                        1,
+                        255
                     ),
                     'limit' => Schema::limit(),
                     'offset' => Schema::offset(),
@@ -186,6 +199,11 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
             'Task categories are free text, as in the Tasks app. On create and edit, a categories list '
                 . 'replaces all existing categories, [] clears them and omitting the field preserves them. '
                 . 'tasks_list_tasks can filter by one category, ignoring case.',
+            'Subtasks link to their parent by UID (RELATED-TO), as in the Tasks app, and every task returns '
+                . 'its parent UID or null. On create and edit, parent sets it, null makes the task top-level and '
+                . 'omitting it preserves it; the parent must be a visible task of the same calendar and cannot be '
+                . 'the task or one of its subtasks. tasks_list_tasks with parent lists the direct subtasks. '
+                . 'Deleting or completing a parent does not change its subtasks.',
             'Private and confidential tasks in shared calendars are hidden. Writable shares '
                 . 'require confirm_shared=true after showing the owner notice.',
             'Every write starts with a before/after plan. Wait for explicit approval before '
@@ -325,7 +343,7 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
         }
         if ($name === 'tasks_edit_task' && array_intersect(
             array_keys($arguments),
-            ['summary', 'description', 'priority', 'start', 'due', 'percentComplete', 'categories']
+            ['summary', 'description', 'priority', 'start', 'due', 'percentComplete', 'categories', 'parent']
         ) === []) {
             throw new InvalidArgumentException(Translator::t('Provide at least one field to change.'));
         }
@@ -351,6 +369,9 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
             }
             $after = $deleting ? null : $this->data->patch($old, $arguments, $now, $name === 'tasks_complete_task');
         }
+        if (($arguments['parent'] ?? null) !== null && $after !== null) {
+            $this->assertParent($calendar, $userId, $arguments['parent'], (string) $this->data->master($after)->UID);
+        }
         $notice = $this->guard->confirm($calendar, $userId, []);
         $shared = $notice === null ? [] : [json_decode($notice['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR)];
         $plan = [
@@ -367,11 +388,88 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
             'shared' => $shared,
             'recoverable' => $deleting,
             'consequence' => $deleting ? Translator::t('The task will be moved to the calendar trash.') : null,
+            // Titles of the parent tasks the plan names, so the person reads a task and not a UID.
+            'parents' => $this->parentTitles($calendar, $userId, [$before['parent'] ?? null, $after === null ? null : $this->data->parent($this->data->master($after))]),
             // The timezone travels with the plan, so whoever renders it later reads the dates of the
             // account that asked, without this module having to remember who that was.
             'timezone' => $this->zones?->forUser($userId)->getName(),
         ];
         return compact('calendar', 'row', 'after', 'plan');
+    }
+
+    /**
+     * Refuses a parent that is missing, hidden, in another calendar, or would make the hierarchy a loop.
+     *
+     * The parent itself must be readable by the caller. Its own ancestors are only followed by UID, never
+     * shown, so a protected ancestor in a shared calendar still stops a loop without revealing anything.
+     *
+     * @param Calendar $calendar authorized writable calendar of the task
+     * @param string $userId authenticated user UID
+     * @param string $parent UID of the requested parent
+     * @param string $uid UID of the task being written
+     * @return void
+     * @throws ToolFailure when the parent cannot be used
+     */
+    private function assertParent(Calendar $calendar, string $userId, string $parent, string $uid): void {
+        $row = $this->store->objectByUid($calendar->id, $parent, 'VTODO');
+        try {
+            $current = $row === null ? null : (new TaskRowReader($this->data))->readable($row, $calendar->ownedByOther($userId));
+        } catch (ToolFailure) {
+            $current = null;
+        }
+        if ($current === null) {
+            throw new ToolFailure(
+                Translator::t('The parent task was not found in this calendar. A subtask must be in the same calendar as its parent.')
+            );
+        }
+        for ($depth = 0; $depth < TaskData::MAX_DEPTH; $depth++) {
+            $next = $this->data->parent($this->data->master($current));
+            if ($next === null) {
+                return;
+            }
+            if ($next === $uid) {
+                throw new ToolFailure(
+                    Translator::t('A task cannot be its own parent or a subtask of one of its own subtasks.')
+                );
+            }
+            $row = $this->store->objectByUid($calendar->id, $next, 'VTODO');
+            if ($row === null || $row['deleted']) {
+                return;
+            }
+            try {
+                $current = $this->data->parse($row['data']);
+            } catch (ToolFailure) {
+                return;
+            }
+        }
+        throw new ToolFailure(
+            Translator::t('Subtasks can be nested at most %s levels deep.', [TaskData::MAX_DEPTH])
+        );
+    }
+
+    /**
+     * Titles of the parent tasks a plan names, leaving out those the caller may not read.
+     *
+     * @param Calendar $calendar authorized calendar of the task
+     * @param string $userId authenticated user UID
+     * @param list<string|null> $uids parent UIDs before and after the write
+     * @return array<string, string> title by parent UID
+     */
+    private function parentTitles(Calendar $calendar, string $userId, array $uids): array {
+        $titles = [];
+        foreach (array_unique(array_filter($uids, static fn ($uid) => $uid !== null)) as $uid) {
+            $row = $this->store->objectByUid($calendar->id, $uid, 'VTODO');
+            if ($row === null) {
+                continue;
+            }
+            try {
+                $parsed = (new TaskRowReader($this->data))->readable($row, $calendar->ownedByOther($userId));
+                $titles[$uid] = (string) $this->data->master($parsed)->SUMMARY;
+            } catch (ToolFailure) {
+                continue;
+            }
+        }
+        return $titles;
     }
 
     /**

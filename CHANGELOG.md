@@ -2,6 +2,12 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## Unreleased
+
+### Added
+
+- **Subtasks:** tasks return their `parent` UID (`RELATED-TO`, as in the Tasks app); `tasks_create_task` and `tasks_edit_task` accept `parent` to make a task a subtask of another task in the same calendar or, with `null`, top-level again, preserving other relations; `tasks_list_tasks` can list the direct subtasks of one `parent`. A missing, hidden or other-calendar parent, a loop and a hierarchy deeper than 64 levels are refused before any write. The plan names the parent by title.
+
 ## 1.2.1-rc.1
 
 Local candidate for review and installation testing; not published to the App Store or GitHub Releases.

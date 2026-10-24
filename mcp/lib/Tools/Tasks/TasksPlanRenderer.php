@@ -38,7 +38,10 @@ final class TasksPlanRenderer {
      *
      * @var list<string>
      */
-    private const FIELDS = ['summary', 'description', 'start', 'due', 'priority', 'percentComplete', 'categories'];
+    private const FIELDS = ['summary', 'description', 'start', 'due', 'priority', 'percentComplete', 'categories', 'parent'];
+
+    /** @var array<string, string> titles of the parent tasks the plan being rendered names, by UID */
+    private array $parents = [];
 
     /**
      * @param string $tool write tool of this module
@@ -51,6 +54,11 @@ final class TasksPlanRenderer {
             return null;
         }
         $zone = $this->zone($plan);
+        $this->parents = array_filter(
+            is_array($plan['parents'] ?? null) ? $plan['parents'] : [],
+            fn ($title, $uid) => is_string($uid) && $this->text($title) !== '',
+            ARRAY_FILTER_USE_BOTH
+        );
         $body = match ($tool) {
             'tasks_create_task' => $this->create($calendar, $plan, $zone),
             'tasks_edit_task' => $this->edit($calendar, $plan, $zone),
@@ -271,6 +279,9 @@ final class TasksPlanRenderer {
         if ($field === 'categories') {
             return $this->categories($value);
         }
+        if ($field === 'parent') {
+            return $this->parent($value);
+        }
         $text = $this->text($value);
 
         return $text === '' ? null : PlanText::inline($text, self::EXCERPT);
@@ -317,6 +328,22 @@ final class TasksPlanRenderer {
         $names = array_map(PlanText::quoted(...), $this->names($value));
 
         return $names === [] ? null : implode(', ', $names);
+    }
+
+    /**
+     * The parent task by its title when the plan carries it, otherwise by its quoted UID.
+     *
+     * @param mixed $value raw plan value of the parent field
+     * @return string|null the parent a person recognizes, or null for a top-level task
+     */
+    private function parent(mixed $value): ?string {
+        $uid = $this->text($value);
+        if ($uid === '') {
+            return null;
+        }
+        $title = $this->text($this->parents[$uid] ?? '');
+
+        return $title === '' ? PlanText::quoted($uid) : $this->strong($title);
     }
 
     /**
@@ -374,6 +401,7 @@ final class TasksPlanRenderer {
             'percentComplete' => Translator::t('Progress'),
             'completed' => Translator::t('Completed at'),
             'categories' => Translator::t('Categories'),
+            'parent' => Translator::t('Parent task'),
             default => Translator::t('Title'),
         };
     }

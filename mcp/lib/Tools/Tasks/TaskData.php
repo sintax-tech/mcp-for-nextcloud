@@ -17,6 +17,7 @@ use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\ToolFailure;
 use Sabre\VObject\Component\VCalendar;
 use Sabre\VObject\Component\VTodo;
+use Sabre\VObject\Property;
 use Sabre\VObject\Reader;
 use Throwable;
 
@@ -27,6 +28,9 @@ class TaskData {
 
     /** Longest category, in characters after trimming. */
     public const MAX_CATEGORY_LENGTH = 255;
+
+    /** Most parent links followed when checking that a new parent does not make the hierarchy a loop. */
+    public const MAX_DEPTH = 64;
 
     /**
      * Reads a calendar containing tasks and rejects mixed event/task objects.
@@ -158,6 +162,23 @@ class TaskData {
                 $task->add('CATEGORIES', $categories);
             }
         }
+        if (array_key_exists('parent', $arguments)) {
+            $parent = $arguments['parent'];
+            if ($parent !== null && $parent === (string) $task->UID) {
+                throw new InvalidArgumentException(
+                    Translator::t('A task cannot be its own parent or a subtask of one of its own subtasks.')
+                );
+            }
+            // Only the parent link is replaced: sibling, child or custom relations of the task are kept.
+            foreach ($task->select('RELATED-TO') as $relation) {
+                if ($this->isParentRelation($relation)) {
+                    $task->remove($relation);
+                }
+            }
+            if ($parent !== null) {
+                $task->add('RELATED-TO', $parent, ['RELTYPE' => 'PARENT']);
+            }
+        }
         foreach ([
             'summary' => 'SUMMARY',
             'description' => 'DESCRIPTION',
@@ -284,9 +305,28 @@ class TaskData {
             'due' => $date($task->DUE),
             'completed' => $date($task->COMPLETED),
             'categories' => $this->categories($task),
+            'parent' => $this->parent($task),
             'recurring' => isset($task->RRULE) || isset($task->RDATE) || count($calendar->select('VTODO')) > 1,
             'icalendar' => $calendar->serialize(),
         ];
+    }
+
+    /**
+     * Reads the UID of the parent task, as the Tasks app links a subtask to it.
+     *
+     * RELATED-TO without RELTYPE is a parent link too: PARENT is the default relation type of RFC 5545.
+     *
+     * @param VTodo $task task master
+     * @return string|null UID of the parent task, or null for a top-level task
+     */
+    public function parent(VTodo $task): ?string {
+        foreach ($task->select('RELATED-TO') as $relation) {
+            $uid = trim((string) $relation);
+            if ($uid !== '' && $this->isParentRelation($relation)) {
+                return $uid;
+            }
+        }
+        return null;
     }
 
     /**
@@ -369,6 +409,16 @@ class TaskData {
             $categories[] = $category;
         }
         return $categories;
+    }
+
+    /**
+     * Tells whether a RELATED-TO line links the task to its parent.
+     *
+     * @param Property $relation RELATED-TO line of the task
+     * @return bool
+     */
+    private function isParentRelation(Property $relation): bool {
+        return !isset($relation['RELTYPE']) || strtoupper((string) $relation['RELTYPE']) === 'PARENT';
     }
 
     /**

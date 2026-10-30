@@ -12,6 +12,8 @@ use OCA\Mcp\Tests\Unit\Tools\Calendar\CalendarApprovalTest;
 use OCA\Mcp\Tests\Unit\Tools\Contacts\ContactsPlanRendererTest;
 use OCA\Mcp\Tests\Unit\Tools\Deck\DeckPlanRendererTest;
 use OCA\Mcp\Tests\Unit\Tools\Files\FilesPlanRendererTest;
+use OCA\Mcp\Tests\Unit\Tools\Mail\Plans\MailPlanRendererTest;
+use OCA\Mcp\Tests\Unit\Tools\Tables\Write\TablesPlanRendererTest;
 use OCA\Mcp\Tests\Unit\Tools\Talk\TalkPlanRendererTest;
 use OCA\Mcp\Tests\Unit\Tools\Tasks\TasksPlanRendererTest;
 use OCA\Mcp\Tools\PreviewsWrites;
@@ -28,11 +30,12 @@ use PHPUnit\Framework\TestCase;
  */
 final class WritePlanContractTest extends TestCase {
     /** Registered modules that publish no write tool. */
-    private const READ_ONLY = [\OCA\Mcp\Tools\People\PeopleModule::class, \OCA\Mcp\Tools\Logs\LogsModule::class, \OCA\Mcp\Tools\Mail\MailModule::class];
+    private const READ_ONLY = [\OCA\Mcp\Tools\People\PeopleModule::class, \OCA\Mcp\Tools\Logs\LogsModule::class];
 
     /** @return array<class-string, class-string> test class of each writing module, which runs the contract with that module's fakes */
     private static function contractTests(): array {
         return [
+            \OCA\Mcp\Tools\Polls\PollsModule::class => \OCA\Mcp\Tests\Unit\Tools\Polls\PollsCreatePlanRendererTest::class,
             \OCA\Mcp\Tools\Files\FilesModule::class => FilesPlanRendererTest::class,
             \OCA\Mcp\Tools\Notes\NotesModule::class => NotesPlanRendererTest::class,
             \OCA\Mcp\Tools\Deck\DeckToolModule::class => DeckPlanRendererTest::class,
@@ -40,6 +43,9 @@ final class WritePlanContractTest extends TestCase {
             \OCA\Mcp\Tools\Contacts\ContactsModule::class => ContactsPlanRendererTest::class,
             \OCA\Mcp\Tools\Tasks\TasksModule::class => TasksPlanRendererTest::class,
             \OCA\Mcp\Tools\Calendar\CalendarModule::class => CalendarApprovalTest::class,
+            \OCA\Mcp\Tools\Mail\MailModule::class => MailPlanRendererTest::class,
+            \OCA\Mcp\Tools\Tables\TablesModule::class => TablesPlanRendererTest::class,
+            \OCA\Mcp\Tools\Forms\FormsModule::class => \OCA\Mcp\Tests\Unit\Tools\Forms\Creation\CreatePlanRendererTest::class,
         ];
     }
 

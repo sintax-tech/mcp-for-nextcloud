@@ -36,6 +36,7 @@ final class FilesPlanRenderer {
     public static function render(string $tool, array $plan): ?string {
         try {
             $lines = match ($tool) {
+                'files_delete' => Deletion\DeletePlanText::lines($plan),
                 'files_edit', 'files_replace' => self::content($tool, $plan),
                 'files_checkout' => self::checkout($plan),
                 'files_copy' => self::copy($plan),

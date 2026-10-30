@@ -243,7 +243,7 @@ final class PolicyWriterTest extends TestCase {
 
     public function testUnknownUserAndInvalidCatalogFailBeforeAnyTransactionWrite(): void {
         $writer = $this->writer();
-        foreach ([fn () => $writer->setEligible('missing', true), fn () => $writer->setGrant('alice', 'files', 'delete', true)] as $command) {
+        foreach ([fn () => $writer->setEligible('missing', true), fn () => $writer->setGrant('alice', 'files', 'destroy', true)] as $command) {
             try {
                 $command();
                 $this->fail('Invalid input accepted');

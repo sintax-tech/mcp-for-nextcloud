@@ -20,6 +20,8 @@
 #   --prune-images  also removes the images this run pulled (default: kept, they are only files on disk)
 #   MCP_IT_WITH_MAIL=1 (environment) also runs the Mail part of the cell (mail-cell.sh): a throwaway IMAP server and
 #                   the Mail app; without it the IMAP image is never pulled
+#   MCP_IT_WITH_TABLES=1 (environment) also runs the Tables part of the cell (tables/cell.sh): the Tables app, four
+#                   more users and the scene the Tables tests read
 #
 # Logs and artifacts (run.log, resources.log, mcp-it/artifacts/: junit.xml, nextcloud.log, observations.txt,
 # provision.log) go to mcp/tests/Integration/.local-runs/<cell>-<timestamp>-<pid>/ (git-ignored). Image digests, the

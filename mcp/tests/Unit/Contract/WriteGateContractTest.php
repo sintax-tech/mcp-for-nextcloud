@@ -96,7 +96,7 @@ final class WriteGateContractTest extends TestCase {
         return match ($type) {
             'integer', 'number' => $rule['minimum'] ?? 1,
             'boolean' => false,
-            'array' => ($rule['minItems'] ?? 0) > 0 && isset($rule['items']) ? [$this->dummyValue((array)$rule['items'])] : [],
+            'array' => WriteGateSamples::arrayValue($rule, fn (array $item): mixed => $this->dummyValue($item)),
             'object' => $this->dummyArguments($rule),
             default => substr(str_pad('dummy', max(5, (int)($rule['minLength'] ?? 0)), 'x'), 0, (int)($rule['maxLength'] ?? PHP_INT_MAX)),
         };

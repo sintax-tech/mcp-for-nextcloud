@@ -9,11 +9,13 @@ declare(strict_types=1);
  * One fixture user of the Mail integration test, in its own CLI request (see MailActor). Actions:
  * - accounts: the Mail accounts of the user, read natively through the Mail AccountService (fixture lookup);
  * - observe: the Mail tools listed for the user and the answers of mail_list_accounts and of mail_list_mailboxes for
- *   the own account, another user's account and an account that does not exist, through the real ToolRegistry.
+ *   the own account, another user's account and an account that does not exist, through the real ToolRegistry;
+ * - tools, calls, pages: the message tools actions of MailMessageActions.
  */
 
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Mail\MailActor;
+use OCA\Mcp\Tests\Integration\Mail\MailMessageActions;
 use OCA\Mcp\Tools\Mail\MailModule;
 use OCA\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
@@ -70,6 +72,11 @@ switch ($action) {
 			'foreign' => callTool($registry, $policy, $uid, 'mail_list_mailboxes', ['account_id' => $in['foreign']]),
 			'missing' => callTool($registry, $policy, $uid, 'mail_list_mailboxes', ['account_id' => $in['missing']]),
 		];
+		break;
+	case 'tools':
+	case 'calls':
+	case 'pages':
+		$out = MailMessageActions::run($action, $uid, $apps, $in);
 		break;
 	default:
 		throw new RuntimeException('Unknown Mail actor action ' . $action);

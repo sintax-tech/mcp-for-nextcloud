@@ -282,7 +282,7 @@ final class FilesPlanRendererTest extends FilesToolsTestCase {
         // The removal of a share names the recipient and the file, the two texts other people can write.
         $this->sharePolicy->setGrant('alice', 'files', 'link', true);
         $plans['files_unshare'] = $this->plan('files_unshare', ['path' => '/Documentos/ata.md', 'with' => 'user:bruno']);
-        $this->assertEveryWriteToolHasAReadablePlan($this->module, $plans);
+        $this->assertEveryWriteToolHasAReadablePlan($this->module, \OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeletePlanContract::include($this, $this->tree, $plans));
     }
 
     public function testNamesWithMarkdownStayLiteralInsteadOfBreakingTheBold(): void {

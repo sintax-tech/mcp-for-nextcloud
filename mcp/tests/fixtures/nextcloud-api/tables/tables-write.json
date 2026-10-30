@@ -1,0 +1,252 @@
+{
+    "sha256": {
+        "1.0.0": "d03bf0e4147985f556fdb999e2c0fa45ac0bdb98c7bfd6e56bfabb6db8754604",
+        "1.0.10": "6a8e8294b8467c9c36a724d5d6f6d62b9b97b285b8de291712812958dfa1b727",
+        "2.0.0": "75003cd8abde806c5ab56432dd2aba009b3f84c9a40ab3429eb0bd1486665dc9",
+        "2.2.2": "c2806c1c40b58efdfd1b1f2e2d6f37a19fb0ee34bcf9ee7f26cecb170233ac4f",
+        "2.3.2": "29953270010587fc8c0a95cfaba7b167adafb93d2f1a0a5a89e42f2d2be1cf28"
+    },
+    "versions": {
+        "1.0.0": {
+            "checkParse": {
+                "positiveOnly": true,
+                "givesTrueOrFalse": true,
+                "acceptsNull": true
+            },
+            "starsParseCastsToInt": true,
+            "progressParseCastsToInt": true,
+            "singleParse": "integer",
+            "multiParse": {
+                "nullIsEmpty": true,
+                "sorts": true
+            },
+            "usergroupParseNullIsEmpty": true,
+            "usergroupValidatesTeamsForTheCaller": false,
+            "numberParseNullIsEmpty": true,
+            "linkParse": {
+                "titlePatternBeforeJson": true,
+                "keepsCompleteJson": true,
+                "checksProviders": true
+            },
+            "relationReadsTargetFirst": null,
+            "create": {
+                "validatesBeforeEnhancing": true,
+                "eventsAfterInsert": true
+            },
+            "enhancer": {
+                "operators": true,
+                "skipsVisible": true,
+                "firstMatchWins": true
+            },
+            "updateSet": {
+                "readsAndUpdates": true,
+                "eventAfterUpdate": true
+            },
+            "insertWithoutTransaction": true,
+            "updateWithoutTransaction": true,
+            "numberLimits": {
+                "applied": false,
+                "everySubtype": null
+            },
+            "mappers": {
+                "numberFloats": true,
+                "numberNullStaysEmpty": false,
+                "singleKeepsRaw": true
+            }
+        },
+        "1.0.10": {
+            "checkParse": {
+                "positiveOnly": true,
+                "givesTrueOrFalse": true,
+                "acceptsNull": true
+            },
+            "starsParseCastsToInt": true,
+            "progressParseCastsToInt": true,
+            "singleParse": "string",
+            "multiParse": {
+                "nullIsEmpty": true,
+                "sorts": true
+            },
+            "usergroupParseNullIsEmpty": true,
+            "usergroupValidatesTeamsForTheCaller": true,
+            "numberParseNullIsEmpty": true,
+            "linkParse": {
+                "titlePatternBeforeJson": true,
+                "keepsCompleteJson": true,
+                "checksProviders": true
+            },
+            "relationReadsTargetFirst": null,
+            "create": {
+                "validatesBeforeEnhancing": true,
+                "eventsAfterInsert": true
+            },
+            "enhancer": {
+                "operators": true,
+                "skipsVisible": true,
+                "firstMatchWins": true
+            },
+            "updateSet": {
+                "readsAndUpdates": true,
+                "eventAfterUpdate": true
+            },
+            "insertWithoutTransaction": true,
+            "updateWithoutTransaction": true,
+            "numberLimits": {
+                "applied": true,
+                "everySubtype": true
+            },
+            "mappers": {
+                "numberFloats": true,
+                "numberNullStaysEmpty": false,
+                "singleKeepsRaw": true
+            }
+        },
+        "2.0.0": {
+            "checkParse": {
+                "positiveOnly": true,
+                "givesTrueOrFalse": true,
+                "acceptsNull": true
+            },
+            "starsParseCastsToInt": true,
+            "progressParseCastsToInt": true,
+            "singleParse": "integer",
+            "multiParse": {
+                "nullIsEmpty": true,
+                "sorts": true
+            },
+            "usergroupParseNullIsEmpty": true,
+            "usergroupValidatesTeamsForTheCaller": false,
+            "numberParseNullIsEmpty": true,
+            "linkParse": {
+                "titlePatternBeforeJson": true,
+                "keepsCompleteJson": true,
+                "checksProviders": true
+            },
+            "relationReadsTargetFirst": null,
+            "create": {
+                "validatesBeforeEnhancing": true,
+                "eventsAfterInsert": true
+            },
+            "enhancer": {
+                "operators": true,
+                "skipsVisible": true,
+                "firstMatchWins": true
+            },
+            "updateSet": {
+                "readsAndUpdates": true,
+                "eventAfterUpdate": true
+            },
+            "insertWithoutTransaction": true,
+            "updateWithoutTransaction": true,
+            "numberLimits": {
+                "applied": false,
+                "everySubtype": null
+            },
+            "mappers": {
+                "numberFloats": true,
+                "numberNullStaysEmpty": false,
+                "singleKeepsRaw": true
+            }
+        },
+        "2.2.2": {
+            "checkParse": {
+                "positiveOnly": true,
+                "givesTrueOrFalse": true,
+                "acceptsNull": true
+            },
+            "starsParseCastsToInt": true,
+            "progressParseCastsToInt": true,
+            "singleParse": "string",
+            "multiParse": {
+                "nullIsEmpty": true,
+                "sorts": true
+            },
+            "usergroupParseNullIsEmpty": true,
+            "usergroupValidatesTeamsForTheCaller": true,
+            "numberParseNullIsEmpty": true,
+            "linkParse": {
+                "titlePatternBeforeJson": true,
+                "keepsCompleteJson": true,
+                "checksProviders": true
+            },
+            "relationReadsTargetFirst": {
+                "parse": true,
+                "validateSkipsNull": true
+            },
+            "create": {
+                "validatesBeforeEnhancing": true,
+                "eventsAfterInsert": true
+            },
+            "enhancer": {
+                "operators": true,
+                "skipsVisible": true,
+                "firstMatchWins": true
+            },
+            "updateSet": {
+                "readsAndUpdates": true,
+                "eventAfterUpdate": true
+            },
+            "insertWithoutTransaction": true,
+            "updateWithoutTransaction": true,
+            "numberLimits": {
+                "applied": true,
+                "everySubtype": true
+            },
+            "mappers": {
+                "numberFloats": true,
+                "numberNullStaysEmpty": false,
+                "singleKeepsRaw": true
+            }
+        },
+        "2.3.2": {
+            "checkParse": {
+                "positiveOnly": true,
+                "givesTrueOrFalse": true,
+                "acceptsNull": true
+            },
+            "starsParseCastsToInt": true,
+            "progressParseCastsToInt": true,
+            "singleParse": "string",
+            "multiParse": {
+                "nullIsEmpty": true,
+                "sorts": true
+            },
+            "usergroupParseNullIsEmpty": true,
+            "usergroupValidatesTeamsForTheCaller": true,
+            "numberParseNullIsEmpty": true,
+            "linkParse": {
+                "titlePatternBeforeJson": true,
+                "keepsCompleteJson": true,
+                "checksProviders": true
+            },
+            "relationReadsTargetFirst": {
+                "parse": true,
+                "validateSkipsNull": true
+            },
+            "create": {
+                "validatesBeforeEnhancing": true,
+                "eventsAfterInsert": true
+            },
+            "enhancer": {
+                "operators": true,
+                "skipsVisible": true,
+                "firstMatchWins": true
+            },
+            "updateSet": {
+                "readsAndUpdates": true,
+                "eventAfterUpdate": true
+            },
+            "insertWithoutTransaction": true,
+            "updateWithoutTransaction": true,
+            "numberLimits": {
+                "applied": true,
+                "everySubtype": true
+            },
+            "mappers": {
+                "numberFloats": true,
+                "numberNullStaysEmpty": true,
+                "singleKeepsRaw": true
+            }
+        }
+    }
+}

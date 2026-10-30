@@ -90,12 +90,12 @@ final class GrantPolicyTest extends TestCase {
         $this->assertTrue($state['bob']['grants']['files']['read']);
     }
 
-    public function testCatalogMatchesContractAndFilesHasNoDelete(): void {
-        $this->assertSame(['read', 'edit', 'create', 'move', 'restore', 'share', 'link'], GrantPolicy::CATALOG['files']);
+    public function testCatalogMatchesContractAndUnknownOperationsAreRefused(): void {
+        $this->assertSame(['read', 'edit', 'create', 'move', 'restore', 'share', 'link', 'delete'], GrantPolicy::CATALOG['files']);
         $this->assertSame(['read', 'create', 'edit', 'move', 'delete', 'transfer'], GrantPolicy::CATALOG['calendar']);
         $this->assertSame(['read', 'reply', 'attach', 'quote', 'create'], GrantPolicy::CATALOG['talk']);
         $this->expectException(InvalidArgumentException::class);
-        $this->policy->setGrant('alice', 'files', 'delete', true);
+        $this->policy->setGrant('alice', 'files', 'destroy', true);
     }
 
     public function testGrantsAreIndependentPerUserAndOperation(): void {
@@ -153,7 +153,7 @@ final class GrantPolicyTest extends TestCase {
         $this->assertTrue($state['alice']['eligible']);
         $this->assertFalse($state['alice']['grants']['files']['read']);
         $this->assertTrue($state['bob']['grants']['notes']['delete']);
-        $this->assertSame(['read' => true, 'edit' => false, 'create' => false, 'move' => false, 'restore' => false, 'share' => false, 'link' => false], $state['carol']['grants']['files']);
+        $this->assertSame(['read' => true, 'edit' => false, 'create' => false, 'move' => false, 'restore' => false, 'share' => false, 'link' => false, 'delete' => false], $state['carol']['grants']['files']);
         foreach (['alice', 'bob', 'carol'] as $uid) {
             foreach (GrantPolicy::CATALOG as $module => $operations) {
                 foreach ($operations as $operation) {
@@ -167,6 +167,6 @@ final class GrantPolicyTest extends TestCase {
 
     public function testUnknownModuleIsRejected(): void {
         $this->expectException(InvalidArgumentException::class);
-        $this->policy->granted('alice', 'polls', 'read');
+        $this->policy->granted('alice', 'unknown-module', 'read');
     }
 }

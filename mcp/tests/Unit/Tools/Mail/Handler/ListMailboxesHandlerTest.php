@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Mail\Handler;
 
 use OCA\Mcp\Tests\Unit\Tools\Mail\FakeMailApp;
+use OCA\Mcp\Tests\Unit\Tools\Mail\FakeMailLinks;
 use OCA\Mcp\Tools\Mail\Handler\ListMailboxesHandler;
 use OCA\Mcp\Tools\Mail\MailGateway;
 use OCA\Mcp\Tools\Mail\MailUnavailableException;
@@ -48,10 +49,10 @@ final class ListMailboxesHandlerTest extends TestCase {
 
 		$this->assertSame(['id' => 3, 'name' => 'Work', 'email' => 'alice@example.com'], $answer['account']);
 		$this->assertSame([
-			['id' => 10, 'path' => 'INBOX', 'name' => 'INBOX', 'delimiter' => '.', 'special' => 'inbox', 'unread' => 2, 'total' => 3, 'selectable' => true],
-			['id' => 13, 'path' => 'Projects', 'name' => 'Projects', 'delimiter' => '.', 'special' => 'archive', 'unread' => null, 'total' => null, 'selectable' => false],
-			['id' => 12, 'path' => 'Projects.2026', 'name' => '2026', 'delimiter' => '.', 'special' => null, 'unread' => 0, 'total' => 2, 'selectable' => true],
-			['id' => 11, 'path' => 'Sent', 'name' => 'Sent', 'delimiter' => '.', 'special' => 'sent', 'unread' => 0, 'total' => 5, 'selectable' => true],
+			['id' => 10, 'path' => 'INBOX', 'name' => 'INBOX', 'delimiter' => '.', 'special' => 'inbox', 'unread' => 2, 'total' => 3, 'selectable' => true, 'url' => FakeMailLinks::BASE . '/box/10'],
+			['id' => 13, 'path' => 'Projects', 'name' => 'Projects', 'delimiter' => '.', 'special' => 'archive', 'unread' => null, 'total' => null, 'selectable' => false, 'url' => FakeMailLinks::BASE . '/box/13'],
+			['id' => 12, 'path' => 'Projects.2026', 'name' => '2026', 'delimiter' => '.', 'special' => null, 'unread' => 0, 'total' => 2, 'selectable' => true, 'url' => FakeMailLinks::BASE . '/box/12'],
+			['id' => 11, 'path' => 'Sent', 'name' => 'Sent', 'delimiter' => '.', 'special' => 'sent', 'unread' => 0, 'total' => 5, 'selectable' => true, 'url' => FakeMailLinks::BASE . '/box/11'],
 		], $answer['mailboxes']);
 		$this->assertSame(4, $answer['mailboxCount']);
 		$this->assertFalse($answer['hasMore']);
@@ -221,7 +222,7 @@ final class ListMailboxesHandlerTest extends TestCase {
 	 * @return array<string, mixed> the answer
 	 */
 	private function answer(FakeMailApp $app, array $arguments, string $userId = 'alice'): array {
-		$result = (new ListMailboxesHandler(new MailGateway($app)))->handle($arguments, $userId);
+		$result = (new ListMailboxesHandler(new MailGateway($app), FakeMailLinks::create($this)))->handle($arguments, $userId);
 		return json_decode($result['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR);
 	}
 }

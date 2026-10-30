@@ -244,6 +244,6 @@ final class GrantPolicyGroupsTest extends TestCase {
         $this->alice(['eligible' => '1', 'connected' => '1', 'grant_files_link' => '0', 'grant_files_share' => '0'], '1');
         $this->assertFalse($this->policy->grantedAny('alice', 'files', ['share', 'link']));
         $this->expectException(\InvalidArgumentException::class);
-        $this->policy->grantedAny('alice', 'files', ['share', 'delete']);
+        $this->policy->grantedAny('alice', 'files', ['share', 'destroy']);
     }
 }

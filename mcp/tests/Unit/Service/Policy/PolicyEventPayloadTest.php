@@ -63,7 +63,7 @@ final class PolicyEventPayloadTest extends TestCase {
             'no changes' => ['receipt', ['changes' => []] + $receipt],
             'app key in a receipt' => ['receipt', ['changes' => [['uid' => null, 'key' => 'service_enabled', 'before' => null, 'after' => '1']]] + $receipt],
             'unchanged cell' => ['receipt', ['changes' => [self::change(['before' => '1'])]] + $receipt],
-            'unknown key' => ['receipt', ['changes' => [self::change(['key' => 'grant_files_delete'])]] + $receipt],
+            'unknown key' => ['receipt', ['changes' => [self::change(['key' => 'grant_files_destroy'])]] + $receipt],
             'non-string value' => ['receipt', ['changes' => [self::change(['after' => true])]] + $receipt],
             'NUL in uid' => ['receipt', ['changes' => [self::change(['uid' => "a\0b"])]] + $receipt],
             'undo without undoOf' => ['audit', ['action' => 'grants.undo'] + $audit],
@@ -99,7 +99,7 @@ final class PolicyEventPayloadTest extends TestCase {
         $this->assertSame('grant_logs_read', PolicyEventPayload::userKey('logs', 'read'));
         $this->assertNull(PolicyEventPayload::userKey('notes', 'eligible'));
         $this->assertNull(PolicyEventPayload::userKey(null, 'read'));
-        $this->assertNull(PolicyEventPayload::userKey('files', 'delete'));
+        $this->assertNull(PolicyEventPayload::userKey('files', 'destroy'));
         $this->assertFalse(PolicyEventPayload::validUserKey('connected'), 'connected is the user\'s own switch, not an admin cell');
     }
 }

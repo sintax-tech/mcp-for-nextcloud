@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
-/** Localized store metadata contract, including the German release-candidate description. */
+/** Localized store metadata contract, including the German release description. */
 final class StoreLocaleContract {
 	/**
 	 * @param array<string, array<string, string>> $elements summary/description indexed by language
@@ -22,7 +22,6 @@ final class StoreLocaleContract {
 				TestCase::assertNotSame('', $text, "$element ($lang)");
 				TestCase::assertStringNotContainsStringIgnoringCase('test release', $text);
 				TestCase::assertStringNotContainsStringIgnoringCase('versão de teste', $text);
-				TestCase::assertStringNotContainsStringIgnoringCase('dal' . 'comad', $text);
 			}
 		}
 	}
@@ -32,14 +31,18 @@ final class StoreLocaleContract {
 	 * @return void assert modules, clients, safeguards and declared server support in each description
 	 */
 	public static function descriptions(array $texts): void {
+		FinalStoreLocaleContract::descriptions($texts);
 		$expected = [
-			'en' => ['Files', 'Notes', 'Calendar', 'Contacts', 'Tasks', 'Deck', 'Talk', 'never deletes'],
-			'pt-br' => ['Arquivos', 'Notas', 'Calendário', 'Contatos', 'Tarefas', 'Deck', 'Talk', 'nunca apaga'],
-			'es' => ['Archivos', 'Notas', 'Calendario', 'Contactos', 'Tareas', 'Deck', 'Talk', 'nunca borra'],
-			'de' => ['Dateien', 'Notes', 'Kalender', 'Kontakten', 'Aufgaben', 'Deck', 'Talk', 'nicht gelöscht'],
+			'en' => ['Files', 'Notes', 'Calendar', 'Contacts', 'Tasks', 'Deck', 'Talk'],
+			'pt-br' => ['Arquivos', 'Notas', 'Calendário', 'Contatos', 'Tarefas', 'Deck', 'Talk'],
+			'es' => ['Archivos', 'Notas', 'Calendario', 'Contactos', 'Tareas', 'Deck', 'Talk'],
+			'de' => ['Dateien', 'Notes', 'Kalender', 'Kontakten', 'Aufgaben', 'Deck', 'Talk'],
 		];
 		foreach ($texts as $lang => $text) {
-			foreach ([...$expected[$lang], 'Claude', 'ChatGPT', 'Gemini CLI', 'OAuth', 'Nextcloud 32–35'] as $needle) {
+			foreach (['The app never deletes a file', 'O app nunca apaga arquivo', 'La aplicación nunca borra archivos', 'Dateien werden vom MCP nicht gelöscht'] as $obsolete) {
+				TestCase::assertStringNotContainsString($obsolete, $text, "description ($lang)");
+			}
+			foreach ([...$expected[$lang], 'Claude', 'ChatGPT', 'Gemini CLI', 'OAuth', 'Nextcloud 32–35', '1.2.2', 'Mail', 'Tables', 'Forms', 'Polls', 'files.delete', 'forms.results', 'polls.results', 'plan_state', 'confirm_shared', 'Mail 5.0.0+', '5.10.11+', 'Tables 1.0.0+', 'Forms 5.3.0+', 'Polls 8.6.3+'] as $needle) {
 				TestCase::assertStringContainsString($needle, $text, "description ($lang)");
 			}
 		}

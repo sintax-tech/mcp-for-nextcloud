@@ -35,13 +35,13 @@ use OCP\IConfig;
  * operation, discards it. The snapshot is held per operation and released in finally, never kept between operations.
  */
 class GrantPolicy implements ScopeReader {
-    /** Operations an admin can grant per module; Files deliberately has no delete. */
+    /** Operations an admin can grant per module; every write, including opt-in Files delete, starts denied. */
     public const CATALOG = [
         // 'restore' rolls a file back to a stored version and 'create' adds a folder, a copy or a new file;
         // like every operation but read, both start denied. 'share' shares an own file with a person or a
         // group and 'link' creates a public link; they are separate so an admin can allow one without the
         // other, and removing a share asks for the operation of its type. Listing shares stays a 'read'.
-        'files' => ['read', 'edit', 'create', 'move', 'restore', 'share', 'link'],
+        'files' => ['read', 'edit', 'create', 'move', 'restore', 'share', 'link', 'delete'],
         'notes' => ['read', 'create', 'edit', 'move', 'delete'],
         'deck' => ['read', 'create', 'edit', 'move', 'delete'],
         'contacts' => ['read', 'create', 'edit', 'delete'],
@@ -54,8 +54,16 @@ class GrantPolicy implements ScopeReader {
         'talk' => ['read', 'reply', 'attach', 'quote', 'create'],
         // Reading the server log; read only, and the one read that starts denied (see DENIED_READS).
         'logs' => ['read'],
-        // Nextcloud Mail, read only: accounts and cached folders. There is no write operation to grant.
-        'mail' => ['read'],
+        // Nextcloud Mail: 'read' lists accounts and cached folders; 'messages' lists, searches and reads the messages
+        // themselves; 'attachments' reads the text of one attachment; 'flags' marks a message read/unread and
+        // flagged, 'move' moves it to another folder of its account, 'draft' saves a new draft, never sent, and 'send'
+        // sends a new message, four writes. All but 'read' start denied, as every operation but 'read' does.
+        'mail' => ['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'],
+        // Nextcloud Tables: 'read' lists the tables, views, columns and rows the user can open; 'create' adds one row and
+        // 'edit' changes cells of one row, through the Tables app, two writes that start denied like every write.
+        'tables' => ['read', 'create', 'edit'],
+        'forms' => ['read', 'results', 'create', 'edit'],
+        'polls' => ['read', 'results', 'links', 'create'],
     ];
 
     /**

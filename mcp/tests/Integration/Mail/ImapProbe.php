@@ -72,6 +72,17 @@ final class ImapProbe {
 	}
 
 	/**
+	 * Deletes a folder.
+	 *
+	 * @param string $name folder name, ASCII
+	 * @return void
+	 * @throws RuntimeException when the server refuses
+	 */
+	public function delete(string $name): void {
+		$this->command('DELETE ' . self::quote($name));
+	}
+
+	/**
 	 * The state of every folder, read without changing anything: attributes, message count, UID validity, next UID,
 	 * highest modification sequence and the flags of every message by UID.
 	 *
@@ -97,6 +108,48 @@ final class ImapProbe {
 			$state[$name] = ['attributes' => $attributes] + (in_array('\\Noselect', $attributes, true) ? [] : $this->examine($name));
 		}
 		return $state;
+	}
+
+	/**
+	 * The Message-ID of every message of one folder by UID, read without changing anything (EXAMINE, BODY.PEEK).
+	 *
+	 * @param string $name folder name
+	 * @return array<int, string> Message-ID by UID, sorted
+	 * @throws RuntimeException when the server refuses
+	 */
+	public function messageIds(string $name): array {
+		$ids = [];
+		$uid = null;
+		$this->command('EXAMINE ' . self::quote($name));
+		foreach ($this->command('UID FETCH 1:* (UID BODY.PEEK[HEADER.FIELDS (MESSAGE-ID)])') as $line) {
+			if (preg_match('/^\* \d+ FETCH .*UID (\d+)/', $line, $match) === 1) {
+				$uid = (int)$match[1];
+			} elseif ($uid !== null && preg_match('/^Message-ID:\s*(\S+)/i', $line, $match) === 1) {
+				$ids[$uid] = $match[1];
+			}
+		}
+		$this->command('CLOSE');
+		ksort($ids);
+		return $ids;
+	}
+
+	/**
+	 * One message of a folder as the server stores it, read without changing anything (EXAMINE, BODY.PEEK).
+	 *
+	 * @param string $name folder name
+	 * @param int $uid UID of the message
+	 * @return string the raw message, lines joined with CRLF; empty when there is no such message
+	 * @throws RuntimeException when the server refuses
+	 */
+	public function raw(string $name, int $uid): string {
+		$this->command('EXAMINE ' . self::quote($name));
+		$lines = $this->command('UID FETCH ' . $uid . ' (BODY.PEEK[])');
+		$this->command('CLOSE');
+		if ($lines === [] || preg_match('/\{\d+\}$/', $lines[0]) !== 1) {
+			return '';
+		}
+		// The literal follows the FETCH line; the last line closes the FETCH response.
+		return implode("\r\n", array_slice($lines, 1, -1));
 	}
 
 	/**

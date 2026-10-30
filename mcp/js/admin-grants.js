@@ -63,13 +63,17 @@
 			talk: t('mcp', 'Talk'),
 			people: t('mcp', 'People'),
 			logs: t('mcp', 'Server log'),
+			mail: t('mcp', 'Mail'),
+			tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls'),
 		}
 	}
 
 	/** @return {Object<string, string>} operation labels */
 	function operationLabels() {
 		return {
+			...window.McpAdminPollsGrants?.operationLabels(),
 			read: t('mcp', 'read'),
+			results: t('mcp', 'results'),
 			edit: t('mcp', 'edit'),
 			create: t('mcp', 'create'),
 			move: t('mcp', 'move'),
@@ -81,6 +85,11 @@
 			quote: t('mcp', 'quote'),
 			share: t('mcp', 'share'),
 			link: t('mcp', 'link'),
+			messages: t('mcp', 'messages'),
+			attachments: t('mcp', 'attachments'),
+			flags: t('mcp', 'flags'),
+			draft: t('mcp', 'draft'),
+			send: t('mcp', 'send'),
 		}
 	}
 
@@ -104,8 +113,11 @@
 		if (module === 'calendar' && operation === 'transfer') {
 			return t('mcp', 'Move an event to another person’s calendar')
 		}
+		const mailHint = window.McpAdminPollsGrants?.operationHint(module, operation) || (window.McpAdminMailGrants ? window.McpAdminMailGrants.operationHint(module, operation) : null)
+		if (mailHint) return mailHint
 		const hints = {
 			read: t('mcp', 'List, search and read'),
+			results: t('mcp', 'Reserved for reading responses allowed by native Forms permissions; starts off'),
 			edit: t('mcp', 'Change existing items'),
 			create: t('mcp', 'Create new items'),
 			move: t('mcp', 'Move or rename items'),
@@ -881,6 +893,10 @@
 				box.checked = true
 				return
 			}
+			if (value && module !== null && window.McpAdminMailGrants && !window.McpAdminMailGrants.confirmWrites([{ module, operation: body.operation }])) {
+				box.checked = false
+				return
+			}
 			const payload = Object.fromEntries(Object.entries(body).map(([key, v]) => [key, v === null ? value : v]))
 			const hadFocus = document.activeElement === box
 			// The focus comes back to this checkbox only when the admin did not move it during the save.
@@ -924,10 +940,20 @@
 	/** @return {Object<string, string>} names of the access levels of js/admin-levels.js */
 	function levelLabels() {
 		return {
+			...window.McpAdminPollsGrants?.levelLabels(),
 			none: t('mcp', 'None'),
 			read: t('mcp', 'Read'),
 			edit: t('mcp', 'Edit'),
 			full: t('mcp', 'Full'),
+			forms_write: t('mcp', 'Read and write forms'),
+			forms_write_results: t('mcp', 'Read and write forms and read responses'),
+			folders: t('mcp', 'Accounts and folders'),
+			messages: t('mcp', 'Messages'),
+			attachments: t('mcp', 'Messages and attachments'),
+			flags: t('mcp', 'Messages, attachments and flags'),
+			move: t('mcp', 'Messages, attachments, flags and moving'),
+			draft: t('mcp', 'Messages, attachments, flags, moving and drafts'),
+			send: t('mcp', 'Messages, attachments, flags, moving, drafts and sending'),
 			custom: t('mcp', 'Custom'),
 		}
 	}
@@ -1316,6 +1342,8 @@
 		if (module === null && level !== 'read') {
 			lines.push(t('mcp', 'They are signed out of their MCP clients, and undoing this does not sign them back in.'))
 		}
+		const mailWarning = module !== null && window.McpAdminMailGrants ? window.McpAdminMailGrants.writeWarning(plan.changes.filter((change) => change.granted).map((change) => ({ module, operation: change.operation }))) : null
+		if (mailWarning) lines.push(mailWarning)
 		if (!window.confirm([question, ...lines].join('\n'))) {
 			return
 		}

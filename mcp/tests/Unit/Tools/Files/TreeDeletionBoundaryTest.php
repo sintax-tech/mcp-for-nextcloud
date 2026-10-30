@@ -15,22 +15,6 @@ final class TreeDeletionBoundaryTest extends TestCase {
 	 * @return void
 	 */
 	public function testNoNewHandlerMayDeleteAFileOrUndoAnUnrecordedFolder(): void {
-		$base = __DIR__ . '/../../../../lib/Tools/Files';
-		$found = [];
-		foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($base, \FilesystemIterator::SKIP_DOTS)) as $file) {
-			if ($file->getExtension() !== 'php') {
-				continue;
-			}
-			$source = (string)file_get_contents($file->getPathname());
-			if (!str_contains($source, '->delete()')) {
-				continue;
-			}
-			$found[] = $file->getBasename();
-			self::assertSame('UndoBatchHandler.php', $file->getBasename());
-			self::assertSame(1, substr_count($source, '->delete()'));
-			self::assertStringContainsString('$this->context->reorganization->byDepth($batch->dirs)', $source);
-			self::assertStringContainsString('!$folder instanceof Folder || !$folder->isDeletable() || $folder->getDirectoryListing() !== []', $source);
-		}
-		self::assertSame(['UndoBatchHandler.php'], $found);
+		\OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteSourceBoundary::verify(__DIR__ . '/../../../../lib/Tools/Files');
 	}
 }

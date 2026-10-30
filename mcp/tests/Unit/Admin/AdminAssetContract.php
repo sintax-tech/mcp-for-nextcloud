@@ -11,7 +11,8 @@ final class AdminAssetContract extends Assert {
 		$app = dirname(__DIR__, 3);
 		$template = (string)file_get_contents($app . '/templates/admin.php');
 		preg_match_all("/Util::add(Script|Style)\\(\\s*'mcp'\\s*,\\s*'([^']+)'/", $template, $matches, PREG_SET_ORDER);
-		self::assertCount(15, $matches);
+		// admin-level-names and admin-mail-grants: their order is checked by tests/Frontend/admin-mail-levels.test.cjs.
+		self::assertCount(18, $matches);
 		// The levels mapping is read by the matrix, so it loads before it; the level popover uses the matrix, so after it.
 		self::assertLessThan(strpos($template, "addScript('mcp', 'admin-grants')"), strpos($template, "addScript('mcp', 'admin-levels')"));
 		self::assertGreaterThan(strpos($template, "addScript('mcp', 'admin-grants')"), strpos($template, "addScript('mcp', 'admin-level-popover')"));

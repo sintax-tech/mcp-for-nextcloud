@@ -203,7 +203,7 @@ final class GroupGrantsMapperTest extends TestCase {
     /** @return array<string, array{string,string}> */
     public static function invalidStoredPermissions(): array {
         return [
-            'unknown module' => ['unknown', 'read'], 'unknown operation' => ['files', 'delete'],
+            'unknown module' => ['unknown', 'read'], 'unknown operation' => ['files', 'destroy'],
             'group deny' => ['_system', 'deny'], 'wrong system operation' => ['_system', 'read'],
             'eligibility on ordinary module' => ['files', 'eligible'], 'empty operation' => ['files', ''],
             'case changed' => ['Files', 'read'],

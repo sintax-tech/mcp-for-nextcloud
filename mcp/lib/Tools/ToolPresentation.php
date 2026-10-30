@@ -75,6 +75,7 @@ final class ToolPresentation {
             'files_tree' => Translator::t('View folder tree'),
             'files_mkdir' => Translator::t('Create folder'),
             'files_copy' => Translator::t('Copy file'),
+            'files_delete' => Translator::t('Delete file or folder'),
             'files_move' => Translator::t('Move file'),
             'files_move_batch' => Translator::t('Move files in bulk'),
             'files_undo_batch' => Translator::t('Undo bulk operation'),
@@ -161,6 +162,37 @@ final class ToolPresentation {
             // Mail
             'mail_list_accounts' => Translator::t('List mail accounts'),
             'mail_list_mailboxes' => Translator::t('List mail folders'),
+            'mail_list_messages' => Translator::t('List mail messages'),
+            'mail_search_messages' => Translator::t('Search mail messages'),
+            'mail_read_message' => Translator::t('Read a mail message'),
+            'mail_read_thread' => Translator::t('Read a mail conversation'),
+            'mail_read_attachment' => Translator::t('Read a mail attachment'),
+            'mail_set_flags' => Translator::t('Mark a mail message read or flagged'),
+            'mail_move_message' => Translator::t('Move a mail message to another folder'),
+            'mail_create_draft' => Translator::t('Create a mail draft'),
+            'mail_send_message' => Translator::t('Send a mail message'),
+            // Forms
+            'forms_list_forms' => Translator::t('List forms'),
+            'forms_read_form' => Translator::t('Read form'),
+            'forms_list_submissions' => Translator::t('List form submissions'),
+            'forms_read_submission' => Translator::t('Read form submission'),
+            'forms_create_form' => Translator::t('Create a form'),
+            'forms_update_question' => Translator::t('Edit a form question'),
+            'forms_update_option' => Translator::t('Edit a form option'),
+            // Polls
+            'polls_list_polls' => Translator::t('List polls'),
+            'polls_read_poll' => Translator::t('Read poll'),
+            'polls_list_votes' => Translator::t('Read poll votes'),
+            'polls_read_results' => Translator::t('Read poll results'),
+            'polls_list_links' => Translator::t('Read existing poll links'),
+            'polls_create_poll' => Translator::t('Create a private poll'),
+            // Tables
+            'tables_list_tables' => Translator::t('List tables'),
+            'tables_list_views' => Translator::t('List table views'),
+            'tables_list_columns' => Translator::t('List table columns'),
+            'tables_list_rows' => Translator::t('List table rows'),
+            'tables_create_row' => Translator::t('Create table row'),
+            'tables_update_row' => Translator::t('Update table row'),
             default => self::humanized($name),
         };
     }
@@ -190,7 +222,7 @@ final class ToolPresentation {
     /**
      * Title of a grant module, in the language of the current user, for the guide and for the admin matrix.
      *
-     * @param string $module grant module a tool declares (files, notes, calendar, contacts, tasks, deck, talk, people, logs, mail)
+     * @param string $module grant module a tool declares (files, notes, calendar, contacts, tasks, deck, talk, people, logs, mail, tables)
      */
     public static function moduleTitle(string $module): string {
         return match ($module) {
@@ -204,6 +236,9 @@ final class ToolPresentation {
             'people' => Translator::t('People'),
             'logs' => Translator::t('Server log'),
             'mail' => Translator::t('Mail'),
+            'tables' => Translator::t('Tables'),
+            'forms' => Translator::t('Forms'),
+            'polls' => Translator::t('Polls'),
             default => ucfirst($module),
         };
     }

@@ -14,6 +14,7 @@ use OCA\Mcp\OAuth\NativeClient;
 use OCA\Mcp\OAuth\OAuthException;
 use OCA\Mcp\OAuth\RedirectUriMatcher;
 use OCA\Mcp\OAuth\ResourceUrl;
+use OCA\Mcp\OAuth\TokenClientId;
 use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\Policy\PolicyUnavailable;
@@ -145,7 +146,7 @@ class OAuthController extends Controller {
     #[NoCSRFRequired]
     #[BruteForceProtection(action: 'mcp_oauth_token')]
     public function token(): JSONResponse {
-        $params = $this->request->getParams();
+        $params = TokenClientId::resolve($this->request->getParams(), $this->request);
         try {
             $body = match ($params['grant_type'] ?? '') {
                 'authorization_code' => $this->tokens->exchangeCode($params),

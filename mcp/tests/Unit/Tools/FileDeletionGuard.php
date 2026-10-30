@@ -38,6 +38,7 @@ final class FileDeletionGuard {
 	 * @throws \PHPUnit\Framework\AssertionFailedError When any source violates the deletion rule.
 	 */
 	public static function assertNoNodeDeletion(array $files, string $undoOwner): void {
+		$files = ApprovedDeleteSink::remaining($files);
 		$owner = realpath($undoOwner);
 		foreach ($files as $file) {
 			$source = (string)file_get_contents($file);

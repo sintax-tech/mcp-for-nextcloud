@@ -18,7 +18,10 @@
  * @var \OCP\IL10N $l
  */
 \OCP\Util::addScript('mcp', 'admin-picker');
+\OCP\Util::addScript('mcp', 'admin-level-names');
+\OCP\Util::addScript('mcp', 'admin-polls-grants');
 \OCP\Util::addScript('mcp', 'admin-levels');
+\OCP\Util::addScript('mcp', 'admin-mail-grants');
 \OCP\Util::addScript('mcp', 'admin-grants');
 \OCP\Util::addScript('mcp', 'admin-level-popover');
 \OCP\Util::addScript('mcp', 'admin-exceptions');
@@ -98,6 +101,7 @@
     </div>
 
     <div role="tabpanel" id="mcp-panel-access" aria-labelledby="mcp-tab-access" class="mcp-tab-panel" tabindex="0">
+    <?php require __DIR__ . '/files-delete-warning.php'; ?>
     <div class="section mcp-block" id="mcp-group-editor">
         <h2><?php p($l->t('Group grants')); ?></h2>
         <details class="mcp-group-rules">

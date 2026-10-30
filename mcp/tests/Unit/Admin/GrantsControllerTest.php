@@ -96,8 +96,8 @@ final class GrantsControllerTest extends TestCase {
             ['ana', []],
             ['ana', ['eligible' => 'yes']],
             ['ana', ['eligible' => true, 'module' => 'files', 'operation' => 'read', 'granted' => true]],
-            ['ana', ['module' => 'files', 'operation' => 'delete', 'granted' => true]],
-            ['ana', ['module' => 'polls', 'operation' => 'read', 'granted' => true]],
+            ['ana', ['module' => 'files', 'operation' => 'destroy', 'granted' => true]],
+            ['ana', ['module' => 'unknown-module', 'operation' => 'read', 'granted' => true]],
             ['ana', ['module' => 'files', 'operation' => 'read', 'granted' => 1]],
             ['ana', ['module' => 'files', 'operation' => 'read']],
         ] as [$uid, $body]) {
@@ -121,7 +121,7 @@ final class GrantsControllerTest extends TestCase {
             ['uids' => array_fill(0, 51, 'ana'), 'module' => 'notes', 'operation' => 'edit', 'granted' => true],
             ['uids' => 'ana', 'module' => 'notes', 'operation' => 'edit', 'granted' => true],
             ['uids' => ['ana'], 'module' => 'notes', 'operation' => 'eligible', 'granted' => true],
-            ['uids' => ['ana'], 'module' => 'files', 'operation' => 'delete', 'granted' => true],
+            ['uids' => ['ana'], 'module' => 'files', 'operation' => 'destroy', 'granted' => true],
             ['uids' => ['ana'], 'module' => 'notes', 'operation' => 'edit', 'granted' => 'true'],
         ] as $body) {
             self::assertBad($this->controller($body)->bulk());

@@ -103,6 +103,8 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
         private ?RestoreVersionHandler $restoreVersion = null,
         private ?\OCA\Mcp\Service\BackupLocation $backupLocation = null,
         private ?BackupPlan $backupPlan = null,
+        private ?Handler\DeleteFileHandler $deleteFile = null,
+        private ?Access\ActorRoot $actorRoot = null,
     ) {}
 
     /** @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app?:string}> */
@@ -284,6 +286,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
                     'content' => ['type' => 'string', 'description' => FilesMessages::createContent()],
                     'confirm_shared' => $confirmShared,
                 ], ['path', 'content'])],
+            Deletion\DeleteDefinition::get(),
         ];
     }
 
@@ -307,9 +310,10 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
     public function call(string $name, array $arguments, string $userId): array {
         // A Files scope that cannot be read answers 503 before anything runs, never a narrower or a full view.
         $this->visibilityGuard?->assertScopeReadable();
-        $root = $this->rootFolder->getUserFolder($userId);
+        $root = $this->actorRoot?->get($userId) ?? $this->rootFolder->getUserFolder($userId);
         $confirmed = (bool)($arguments['confirm_shared'] ?? false);
         return NodeAccess::run(fn (): array => match ($name) {
+            'files_delete' => $this->deleteFile->handle($root, $userId, $arguments),
             'files_list' => ToolResult::json($this->list($root, $userId, $arguments['path'])),
             'files_tree' => ToolResult::json($this->reorganization->tree($root, $userId, $arguments['path'], $arguments['depth'], $arguments['limit'])),
             'files_mkdir' => ToolResult::json($this->reorganization->mkdir($root, $userId, $arguments['path'], $confirmed)),
@@ -411,15 +415,22 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
     /**
      * {@inheritDoc}
      *
-     * Every plan runs the same checks the write runs and reads the same state, so what the user is shown is
-     * what the confirmed call would do — including the refusals, which arrive as errors before anything is
-     * asked. Nothing here writes: no backup, no folder, no checkout token.
+     * Plans apply their existing admission checks to a lazy native view, not necessarily the view of call().
+     * Only a native NotFound that reaches PreviewRoot before NodeAccess mapping permits full actor setup
+     * and one plan repetition. FileCreation::folder maps its miss internally to ToolFailure; planners using
+     * nodeExists may instead see false. Neither result triggers that fallback, nor does a policy/ACL refusal.
+     * With warm setup and an unmounted received share, a preview can therefore refuse the path or predict
+     * different parents/shared impact than call(). The confirmed call performs full setup and reapplies its
+     * checks, including confirm_shared. These divergences are source-derived limits, not runtime reproductions.
+     * The plan itself creates no backup, folder or checkout token. Native lazy root setup can still normalize
+     * received mount targets and their configured share folder, particularly with cold setup state or after
+     * a genuinely missing path reaches the fallback. No universal absence of platform effects is promised.
      */
     public function preview(string $name, array $arguments, string $userId): array {
         $this->visibilityGuard?->assertScopeReadable();
-        $root = $this->rootFolder->getUserFolder($userId);
         $etag = $arguments['etag'] ?? null;
-        return NodeAccess::run(fn (): array => match ($name) {
+        return NodeAccess::run(fn (): array => (new Access\PreviewRoot($this->rootFolder, $this->actorRoot))->run($userId, fn (Folder $root): array => match ($name) {
+            'files_delete' => $this->deleteFile->plan($root, $userId, $arguments),
             'files_mkdir' => $this->reorganization->planMkdir($root, $userId, $arguments['path']),
             'files_copy' => $this->reorganization->planCopy($root, $userId, $arguments['from'], $arguments['to'], $etag),
             'files_move' => $this->reorganization->planMove($root, $userId, $arguments['from'], $arguments['to'], $etag),
@@ -434,7 +445,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
             'files_upload' => (new Handler\UploadFileHandler($this->creation()))->plan($root, $userId, $arguments['path'], $arguments['size'] ?? null),
             'files_create' => (new Handler\CreateFileHandler($this->creation()))->plan($root, $userId, $arguments['path'], $arguments['content']),
             default => throw new \InvalidArgumentException('Unknown tool'),
-        });
+        }));
     }
 
     /**

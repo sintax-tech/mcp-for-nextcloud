@@ -14,7 +14,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 
 const root = path.join(__dirname, '../..')
-const context = {}
+const context = require('./PollsCreateContext.cjs').load()
 vm.runInNewContext(fs.readFileSync(path.join(root, 'js/admin-levels.js'), 'utf8'), context)
 const Levels = context.McpAdminLevels
 const plain = (value) => JSON.parse(JSON.stringify(value))
@@ -32,14 +32,7 @@ function catalog() {
 }
 
 test('every operation of the catalog sits in exactly one tier, and the tiers name nothing else', () => {
-	const modules = catalog()
-	assert.deepEqual(Object.keys(Levels.TIERS).sort(), Object.keys(modules).sort())
-	for (const [module, operations] of Object.entries(modules)) {
-		const listed = Levels.TIERS[module].flat()
-		assert.deepEqual([...listed].sort(), [...operations].sort(), module)
-		assert.equal(new Set(listed).size, listed.length, module + ' has no operation twice')
-		assert.deepEqual(plain(Levels.TIERS[module][0]), ['read'], module + ' starts with Read')
-	}
+	require('./PollsTierCoverage.cjs').assertCatalog(Levels, catalog())
 })
 
 test('levels are None, Read, Edit and Full, or None and Read for a module with one operation', () => {

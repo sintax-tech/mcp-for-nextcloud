@@ -80,14 +80,14 @@ final class PeopleModuleTest extends TestCase {
     public function testSearchesUsersOnlyWithoutLookupAndMergesExactFirst(): void {
         $captured = null;
         $module = $this->module([
-            'exact' => ['users' => [$this->user('pedro', 'Paulo Exemplo', 'pedro@x.com')]],
-            'users' => [$this->user('pedrosa', 'Ana Pedrosa'), $this->user('pedro', 'Paulo Exemplo', 'pedro@x.com')],
+            'exact' => ['users' => [$this->user('pedro', 'Paulo Exemplo', 'pedro@example.invalid')]],
+            'users' => [$this->user('pedrosa', 'Ana Pedrosa'), $this->user('pedro', 'Paulo Exemplo', 'pedro@example.invalid')],
         ], $captured);
         $rows = $this->lookup($module, ['query' => 'pedro']);
         self::assertSame([IShare::TYPE_USER], $captured[1]);
         self::assertFalse($captured[2]);
         self::assertSame([
-            ['type' => 'user', 'uid' => 'pedro', 'displayName' => 'Paulo Exemplo', 'email' => 'pedro@x.com'],
+            ['type' => 'user', 'uid' => 'pedro', 'displayName' => 'Paulo Exemplo', 'email' => 'pedro@example.invalid'],
             ['type' => 'user', 'uid' => 'pedrosa', 'displayName' => 'Ana Pedrosa'],
         ], $rows);
     }

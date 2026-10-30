@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
  * a class, method, constant or parameter that an older covered release lacks: the call would only fail on that
  * server. The truth per release is a fixture of tests/fixtures/nextcloud-api, generated from the release sources by
  * generate.php there; {@see LibScanner} reads what lib/ uses and {@see NextcloudApiUsage} adds what a scanner cannot
- * see. An API a release lacks is accepted only in {@see NextcloudApiUsage::VERSION_GATED}, with its fallback.
+ * see. An API a release lacks is accepted only in {@see NextcloudApiUsage::VERSION_GATED}, with its fallback or the focused {@see VersionedOmissionContract}.
  */
 final class NextcloudApiContractTest extends TestCase {
     private const FIXTURES = __DIR__ . '/../../../fixtures/nextcloud-api';
@@ -492,6 +492,7 @@ final class NextcloudApiContractTest extends TestCase {
     /** A gap is accepted only where its fallback exists, and the class that handles the gap names that fallback. */
     public function testEveryVersionGatedApiHasItsFallbackWhereItIsMissing(): void {
         foreach (NextcloudApiUsage::VERSION_GATED as $api => $gate) {
+            if (VersionedOmissionContract::handled($api, $gate, self::checkedMajors(), self::surface(...), self::serves(...))) { continue; }
             [$class, $member] = explode('::', $api) + [1 => null];
             foreach (self::checkedMajors() as $major) {
                 $present = $member === null ? self::surface($major, $class) !== null : self::serves(self::surface($major, $class), $member);

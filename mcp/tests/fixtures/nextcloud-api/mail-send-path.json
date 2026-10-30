@@ -1,0 +1,261 @@
+{
+    "5.0.0": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.0.0/mail-v5.0.0.tar.gz",
+        "sha256": "015d2fac3538cde83b0104292648f998741ab7109ad9130e379b58e10fce8f23",
+        "chain": [
+            "sentMailboxHandler",
+            "antiAbuseHandler",
+            "sendHandler",
+            "copySentMessageHandler",
+            "flagRepliedMessageHandler"
+        ],
+        "unclearGuard": true,
+        "retriableCodes": [
+            "INSUFFICIENT_STORAGE",
+            "OVERQUOTA",
+            "LOGIN_REQUIREAUTHENTICATION"
+        ],
+        "statuses": {
+            "STATUS_RAW": 0,
+            "STATUS_NO_SENT_MAILBOX": 1,
+            "STATUS_SMIME_SIGN_NO_CERT_ID": 2,
+            "STATUS_SMIME_SIGN_CERT": 3,
+            "STATUS_SMIME_SIGN_FAIL": 4,
+            "STATUS_SMIME_ENCRYPT_NO_CERT_ID": 5,
+            "STATUS_SMIME_ENCRYPT_CERT": 6,
+            "STATUS_SMIME_ENCRYT_FAIL": 7,
+            "STATUS_TOO_MANY_RECIPIENTS": 8,
+            "STATUS_RATELIMIT": 9,
+            "STATUS_SMPT_SEND_FAIL": 10,
+            "STATUS_IMAP_SENT_MAILBOX_FAIL": 11,
+            "STATUS_PROCESSED": 12,
+            "STATUS_ERROR": 13
+        },
+        "typeOutgoing": 0,
+        "findDueNeedsSendAt": true,
+        "bccEnvelope": "_bcc",
+        "rcptRefusalBeforeData": true
+    },
+    "5.5.0": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.5.0/mail-v5.5.0.tar.gz",
+        "sha256": "975b1204e9f94cac744c259c8adc901cb7e09bc860eb97154d9bc88d69ef0a7e",
+        "chain": [
+            "sentMailboxHandler",
+            "antiAbuseHandler",
+            "sendHandler",
+            "copySentMessageHandler",
+            "flagRepliedMessageHandler"
+        ],
+        "unclearGuard": true,
+        "retriableCodes": [
+            "INSUFFICIENT_STORAGE",
+            "OVERQUOTA",
+            "LOGIN_REQUIREAUTHENTICATION"
+        ],
+        "statuses": {
+            "STATUS_RAW": 0,
+            "STATUS_NO_SENT_MAILBOX": 1,
+            "STATUS_SMIME_SIGN_NO_CERT_ID": 2,
+            "STATUS_SMIME_SIGN_CERT": 3,
+            "STATUS_SMIME_SIGN_FAIL": 4,
+            "STATUS_SMIME_ENCRYPT_NO_CERT_ID": 5,
+            "STATUS_SMIME_ENCRYPT_CERT": 6,
+            "STATUS_SMIME_ENCRYT_FAIL": 7,
+            "STATUS_TOO_MANY_RECIPIENTS": 8,
+            "STATUS_RATELIMIT": 9,
+            "STATUS_SMPT_SEND_FAIL": 10,
+            "STATUS_IMAP_SENT_MAILBOX_FAIL": 11,
+            "STATUS_PROCESSED": 12,
+            "STATUS_ERROR": 13
+        },
+        "typeOutgoing": 0,
+        "findDueNeedsSendAt": true,
+        "bccEnvelope": "_bcc",
+        "rcptRefusalBeforeData": true
+    },
+    "5.7.0": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.7.0/mail-v5.7.0.tar.gz",
+        "sha256": "2b504f4624877b740c6fcaa212ac9b5e25470395ab13174af8e4c3cb2add67e1",
+        "chain": [
+            "sentMailboxHandler",
+            "antiAbuseHandler",
+            "sendHandler",
+            "copySentMessageHandler",
+            "flagRepliedMessageHandler"
+        ],
+        "unclearGuard": true,
+        "retriableCodes": [
+            "INSUFFICIENT_STORAGE",
+            "OVERQUOTA",
+            "LOGIN_REQUIREAUTHENTICATION"
+        ],
+        "statuses": {
+            "STATUS_RAW": 0,
+            "STATUS_NO_SENT_MAILBOX": 1,
+            "STATUS_SMIME_SIGN_NO_CERT_ID": 2,
+            "STATUS_SMIME_SIGN_CERT": 3,
+            "STATUS_SMIME_SIGN_FAIL": 4,
+            "STATUS_SMIME_ENCRYPT_NO_CERT_ID": 5,
+            "STATUS_SMIME_ENCRYPT_CERT": 6,
+            "STATUS_SMIME_ENCRYT_FAIL": 7,
+            "STATUS_TOO_MANY_RECIPIENTS": 8,
+            "STATUS_RATELIMIT": 9,
+            "STATUS_SMPT_SEND_FAIL": 10,
+            "STATUS_IMAP_SENT_MAILBOX_FAIL": 11,
+            "STATUS_PROCESSED": 12,
+            "STATUS_ERROR": 13
+        },
+        "typeOutgoing": 0,
+        "findDueNeedsSendAt": true,
+        "bccEnvelope": "_bcc",
+        "rcptRefusalBeforeData": true
+    },
+    "5.9.0": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.9.0/mail-v5.9.0.tar.gz",
+        "sha256": "4987bc0440b8bfd8af97688654290e447cb9ca7f70378a369aba89606ab3551c",
+        "chain": [
+            "sentMailboxHandler",
+            "antiAbuseHandler",
+            "sendHandler",
+            "copySentMessageHandler",
+            "flagRepliedMessageHandler"
+        ],
+        "unclearGuard": true,
+        "retriableCodes": [
+            "INSUFFICIENT_STORAGE",
+            "OVERQUOTA",
+            "LOGIN_REQUIREAUTHENTICATION"
+        ],
+        "statuses": {
+            "STATUS_RAW": 0,
+            "STATUS_NO_SENT_MAILBOX": 1,
+            "STATUS_SMIME_SIGN_NO_CERT_ID": 2,
+            "STATUS_SMIME_SIGN_CERT": 3,
+            "STATUS_SMIME_SIGN_FAIL": 4,
+            "STATUS_SMIME_ENCRYPT_NO_CERT_ID": 5,
+            "STATUS_SMIME_ENCRYPT_CERT": 6,
+            "STATUS_SMIME_ENCRYT_FAIL": 7,
+            "STATUS_TOO_MANY_RECIPIENTS": 8,
+            "STATUS_RATELIMIT": 9,
+            "STATUS_SMPT_SEND_FAIL": 10,
+            "STATUS_IMAP_SENT_MAILBOX_FAIL": 11,
+            "STATUS_PROCESSED": 12,
+            "STATUS_ERROR": 13
+        },
+        "typeOutgoing": 0,
+        "findDueNeedsSendAt": true,
+        "bccEnvelope": "_bcc",
+        "rcptRefusalBeforeData": true
+    },
+    "5.10.11": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.10.11/mail-v5.10.11.tar.gz",
+        "sha256": "23a053bd4b477fa0c55a07acb230f13c05e0d4993f72b4843b929d6e491cb0b8",
+        "chain": [
+            "sentMailboxHandler",
+            "antiAbuseHandler",
+            "sendHandler",
+            "copySentMessageHandler",
+            "flagRepliedMessageHandler"
+        ],
+        "unclearGuard": true,
+        "retriableCodes": [
+            "INSUFFICIENT_STORAGE",
+            "OVERQUOTA",
+            "LOGIN_REQUIREAUTHENTICATION"
+        ],
+        "statuses": {
+            "STATUS_RAW": 0,
+            "STATUS_NO_SENT_MAILBOX": 1,
+            "STATUS_SMIME_SIGN_NO_CERT_ID": 2,
+            "STATUS_SMIME_SIGN_CERT": 3,
+            "STATUS_SMIME_SIGN_FAIL": 4,
+            "STATUS_SMIME_ENCRYPT_NO_CERT_ID": 5,
+            "STATUS_SMIME_ENCRYPT_CERT": 6,
+            "STATUS_SMIME_ENCRYT_FAIL": 7,
+            "STATUS_TOO_MANY_RECIPIENTS": 8,
+            "STATUS_RATELIMIT": 9,
+            "STATUS_SMPT_SEND_FAIL": 10,
+            "STATUS_IMAP_SENT_MAILBOX_FAIL": 11,
+            "STATUS_PROCESSED": 12,
+            "STATUS_ERROR": 13
+        },
+        "typeOutgoing": 0,
+        "findDueNeedsSendAt": true,
+        "bccEnvelope": "removeHeader",
+        "rcptRefusalBeforeData": true
+    },
+    "5.11.0": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.11.0/mail-v5.11.0.tar.gz",
+        "sha256": "b023d43775b96db450f247e1bc5fdee9173637e264a5cfa09072c66a42ab3cc4",
+        "chain": [
+            "sentMailboxHandler",
+            "antiAbuseHandler",
+            "sendHandler",
+            "copySentMessageHandler",
+            "flagRepliedMessageHandler"
+        ],
+        "unclearGuard": true,
+        "retriableCodes": [
+            "INSUFFICIENT_STORAGE",
+            "OVERQUOTA",
+            "LOGIN_REQUIREAUTHENTICATION"
+        ],
+        "statuses": {
+            "STATUS_RAW": 0,
+            "STATUS_NO_SENT_MAILBOX": 1,
+            "STATUS_SMIME_SIGN_NO_CERT_ID": 2,
+            "STATUS_SMIME_SIGN_CERT": 3,
+            "STATUS_SMIME_SIGN_FAIL": 4,
+            "STATUS_SMIME_ENCRYPT_NO_CERT_ID": 5,
+            "STATUS_SMIME_ENCRYPT_CERT": 6,
+            "STATUS_SMIME_ENCRYT_FAIL": 7,
+            "STATUS_TOO_MANY_RECIPIENTS": 8,
+            "STATUS_RATELIMIT": 9,
+            "STATUS_SMPT_SEND_FAIL": 10,
+            "STATUS_IMAP_SENT_MAILBOX_FAIL": 11,
+            "STATUS_PROCESSED": 12,
+            "STATUS_ERROR": 13
+        },
+        "typeOutgoing": 0,
+        "findDueNeedsSendAt": true,
+        "bccEnvelope": "removeHeader",
+        "rcptRefusalBeforeData": true
+    },
+    "5.12.5": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.12.5/mail-v5.12.5.tar.gz",
+        "sha256": "c52dab18a4de1710854038d95810f9ae4eb76a8656d89800e7dceb5aff0034e0",
+        "chain": [
+            "sentMailboxHandler",
+            "antiAbuseHandler",
+            "sendHandler",
+            "copySentMessageHandler",
+            "flagRepliedMessageHandler"
+        ],
+        "unclearGuard": true,
+        "retriableCodes": [
+            "INSUFFICIENT_STORAGE",
+            "OVERQUOTA",
+            "LOGIN_REQUIREAUTHENTICATION"
+        ],
+        "statuses": {
+            "STATUS_RAW": 0,
+            "STATUS_NO_SENT_MAILBOX": 1,
+            "STATUS_SMIME_SIGN_NO_CERT_ID": 2,
+            "STATUS_SMIME_SIGN_CERT": 3,
+            "STATUS_SMIME_SIGN_FAIL": 4,
+            "STATUS_SMIME_ENCRYPT_NO_CERT_ID": 5,
+            "STATUS_SMIME_ENCRYPT_CERT": 6,
+            "STATUS_SMIME_ENCRYT_FAIL": 7,
+            "STATUS_TOO_MANY_RECIPIENTS": 8,
+            "STATUS_RATELIMIT": 9,
+            "STATUS_SMPT_SEND_FAIL": 10,
+            "STATUS_IMAP_SENT_MAILBOX_FAIL": 11,
+            "STATUS_PROCESSED": 12,
+            "STATUS_ERROR": 13
+        },
+        "typeOutgoing": 0,
+        "findDueNeedsSendAt": true,
+        "bccEnvelope": "removeHeader",
+        "rcptRefusalBeforeData": true
+    }
+}

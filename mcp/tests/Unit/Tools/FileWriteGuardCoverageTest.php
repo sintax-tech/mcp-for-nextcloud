@@ -23,6 +23,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Service/GrantPolicy.php#<global>:literal-move:2' => 'label: notes operation catalog entry',
 			'Service/GrantPolicy.php#<global>:literal-move:3' => 'label: deck operation catalog entry',
 			'Service/GrantPolicy.php#<global>:literal-move:4' => 'label: calendar operation catalog entry',
+			'Service/GrantPolicy.php#<global>:literal-move:5' => 'label: mail operation catalog entry',
 			'Service/Calendar/CalendarSelftestService.php#run:literal-move:1' => 'label: self-test operation grant name',
 			'Service/Calendar/CalendarSelftestService.php#run:literal-move:2' => 'label: self-test stage identifier',
 			'Service/Calendar/CalendarSelftestService.php#run:literal-move:3' => 'label: self-test report detail key',
@@ -36,6 +37,8 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Tools/Logs/LogRedactor.php#<global>:literal-move:1' => 'label: allowed HTTP verb for redacted log rendering',
 			'Tools/Deck/DeckToolModule.php#definitions:literal-move:1' => 'label: move-card operation metadata',
 			'Tools/Calendar/Handler/MoveEvent.php#definition:literal-move:1' => 'label: calendar_move_event operation metadata',
+			'Tools/Mail/Move/MailMoveTools.php#<global>:literal-move:1' => 'label: mail_move_message operation metadata',
+			'Tools/Mail/Move/MailMoveCapability.php#assertMoveTouchesOnlyTheMessage:literal-move:1' => 'label: IMAP capability name queried, no write',
 			'Tools/Calendar/EmbeddedDavDispatcher.php#move:literal-move:1' => 'label: DAV HTTP verb; actual dispatcher is classified separately',
 
 			'Controller/CheckoutController.php#send:fopen:1' => 'read: existing file download stream',
@@ -49,6 +52,9 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Tools/Files/VersionRestore.php#writeVersion:fopen:1' => 'temporary: php temp stream buffer, not a Files node',
 			'Tools/Files/TextExtractor.php#read:fopen:1' => 'read: bounded file content, read-only mode',
 			'Tools/Files/TextExtractor.php#zipXml:file_put_contents:1' => 'temporary: ITempManager local zip, not a Files node',
+			'Tools/Mail/MailAttachmentDocument.php#text:file_put_contents:1' => 'temporary: ITempManager local zip of a mail attachment, not a Files node',
+			'Tools/Mail/Move/MailMoveStore.php#move:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Mail\\MailMoveToolsTest::testAnotherGenerationNeverMovesAMessage',
+			'Tools/Mail/Handler/MoveMessageHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Mail\\MailMoveToolsTest::testAConfirmedCallMovesOnTheCheckedSelection',
 			'Tools/Calendar/Handler/UpdateEvent.php#prepare:touch:1' => 'DAV: update an in-memory event timestamp, not Files touch',
 			'Service/FileWritePolicy.php#recoverStringType:rollback:1' => 'database: rollback owned configuration repair, not Files',
 
@@ -94,15 +100,16 @@ final class FileWriteGuardCoverageTest extends TestCase {
 	}
 
 	/**
-	 * Keep 43 real calls, including the merged NT-1 writer, and 18 explicit literals visible.
+	 * Keep 44 real calls, including the merged NT-1 writer and the attachment reader's temporary zip, and 18 explicit
+	 * literals visible.
 	 *
 	 * @return void
 	 */
 	public function testLiteralLabelsKeepTheOriginalCallInventory(): void {
 		$calls = FileWriteSinkInventory::calls(FileWriteSinkInventory::sources(__DIR__ . '/../../../lib'));
 		$literals = array_values(array_filter($calls, static fn (string $call): bool => str_contains($call, ':literal-')));
-		self::assertCount(18, $literals);
-		self::assertCount(43, array_diff($calls, $literals));
+		self::assertCount(21, $literals);
+		self::assertCount(46, array_diff($calls, $literals));
 		foreach ($calls as $call) {
 			self::assertDoesNotMatchRegularExpression('/:(?:literal-)?(?:writestream|fputs):/', $call);
 		}

@@ -38,7 +38,9 @@ path = [
   "mcp/tests/fixtures/sample.pdf",
   "screenshots/admin.png",
   "screenshots/plan.png",
-  "mcp/tests/fixtures/nextcloud-api/*.php"
+  "mcp/tests/fixtures/nextcloud-api/*.php",
+  "mcp/tests/fixtures/nextcloud-api/*.json",
+  "mcp/tests/fixtures/nextcloud-api/tables/*.json"
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>"

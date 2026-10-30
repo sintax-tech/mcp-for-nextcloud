@@ -4,6 +4,19 @@
 
 Dieser Verlauf beginnt mit 1.2, der ersten Version mit deutschem README. Ältere Versionen (1.1 und 1.0) sind im [englischen](HISTORY.md) und im [portugiesischen Verlauf](HISTORY.pt-BR.md) beschrieben.
 
+## Neu in 1.2.1
+
+Im [Changelog](CHANGELOG.md#121) findest du alle Änderungen.
+
+- **Sicherungseinstellungen ([#17](https://github.com/sintax-tech/mcp-for-nextcloud/issues/17)):** unter *Datenschutz* einen Ordnernamen direkt im persönlichen Stammverzeichnis der handelnden Person wählen (Standard `MCP backups`; `.mcp-backups` ist erlaubt). Der Ordner entsteht mit der ersten Kopie. Ein neuer Name verschiebt oder löscht keine Inhalte; alle früheren Namen einschließlich des bisherigen Standards bleiben gegen MCP-Schreibzugriffe geschützt und behalten die Sichtbarkeitsregeln für Sicherungskopien.
+- **Dateikopien:** standardmäßig eingeschaltet. Die Administration kann MCP-Kopien vor dem Schreiben nur bei aktivem nativem `files_versions` aussetzen. Die Verfügbarkeit wird für die handelnde Person erneut geprüft; ohne Versionierung sind Kopien Pflicht und bestehende Vorgänge bleiben ohne ihre Versions-Voraussetzung gesperrt. Eine native Version für jede Datei/jedes Backend ist nicht garantiert. Kontakte löschen erfordert immer eine geprüfte Kopie im konfigurierten Ordner, auch bei ausgesetzten Dateikopien. Frühere Sicherungen bleiben erhalten.
+- **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** `mail_list_accounts` und `mail_list_mailboxes` listen nur eigene Konten und zwischengespeicherte Ordner/Zähler. Mail ist optional und benötigt `mail.read`. Diese Aufrufe synchronisieren kein IMAP, lesen keine Nachrichten und ändern keinen E-Mail-Zustand. Bei leerem Ordnercache das Konto einmal in Mail öffnen; ein alter Cache kann alte Angaben liefern. Die optionale Integrationszelle verwendet wegwerfbare Dovecot- und Mail-Instanzen, keinen Produktionsserver.
+- **Unteraufgaben ([#18](https://github.com/sintax-tech/mcp-for-nextcloud/pull/18)):** Aufgaben liefern ihre `parent`; Anlegen und Bearbeiten legen sie im selben Kalender fest oder entfernen sie mit `null`, und `tasks_list_tasks` listet die direkten Unteraufgaben einer Aufgabe. Schleifen und Verschachtelungen tiefer als 64 Ebenen werden abgelehnt; bestätigte MCP-Schreibvorgänge mit übergeordneter Aufgabe laufen nacheinander und benötigen die Dateisperre des Servers. Beitrag von @mturgeonferland.
+- **Sichtbarkeit:** ein gewöhnlicher untergeordneter Ordner namens `MCP backups` wird nicht mehr mit dem Sicherungsordner im persönlichen Stammverzeichnis verwechselt. Bereich, Ausschluss-Tags und Verweigerung bei Fehlern gelten weiter.
+
+
+
+
 ## Neu in 1.2
 
 Im [Changelog](CHANGELOG.md#120) findest du alle Änderungen und den Hinweis zu älteren Deck-Fälligkeiten.

@@ -63,6 +63,7 @@ final class VisibilityContractTest extends TestCase {
         'files_move_batch' => 'move_batch',
         'files_undo_batch' => 'undo_batch',
         'files_read' => 'read',
+        'files_delete' => 'delete',
         'files_edit' => 'edit',
         'files_replace' => 'replace',
         'files_checkout' => 'checkout',
@@ -136,6 +137,10 @@ final class VisibilityContractTest extends TestCase {
             $name = $type instanceof \ReflectionNamedType ? $type->getName() : null;
             if ($name === null || $type->isBuiltin()) {
                 $args[] = $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : ($name === 'string' ? 'mcp' : null);
+                continue;
+            }
+            if ($name === \OCA\Mcp\Tools\Files\Access\ActorRoot::class) {
+                $args[] = FilesActorRootFixture::create($this, $this->tree->rootFolder());
                 continue;
             }
             if ($name === VisibilityGuard::class || $name === \OCA\Mcp\Service\Scope\FilesAccessGuard::class) {
@@ -334,6 +339,8 @@ final class VisibilityContractTest extends TestCase {
                 );
             }
         };
+
+        \OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteVisibilityContract::verify($registry);
 
         // 1. files_read
         foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {

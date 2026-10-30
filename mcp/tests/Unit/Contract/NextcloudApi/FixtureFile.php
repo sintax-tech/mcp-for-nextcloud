@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi;
 
 /**
  * Writes one fixture of tests/fixtures/nextcloud-api in the layout generate.php uses: the comment header, the source
- * pins, then one class per line as a short-array PHP literal. Used by generate-mail.php, which adds the surfaces of
- * the Mail app to a fixture without regenerating the rest.
+ * pins, then one class per line as a short-array PHP literal. Used by generate-mail.php and tables/generate-tables.php,
+ * which add the surfaces of the Mail and Tables apps to a fixture without regenerating the rest.
  */
 final class FixtureFile {
 	/**
@@ -18,7 +18,7 @@ final class FixtureFile {
 	 *
 	 * @param string $path destination file
 	 * @param string $header comment lines that precede `return [`, each ending in a newline
-	 * @param array{sources:array<string, mixed>, recipientSources:array<string, mixed>, mailSources?:array<string, mixed>, classes:array<string, array<string, mixed>|null>} $fixture the fixture
+	 * @param array{sources:array<string, mixed>, recipientSources:array<string, mixed>, mailSources?:array<string, mixed>, tablesSources?:array<string, mixed>, classes:array<string, array<string, mixed>|null>} $fixture the fixture
 	 * @return void
 	 */
 	public static function write(string $path, string $header, array $fixture): void {
@@ -31,6 +31,11 @@ final class FixtureFile {
 		if (isset($fixture['mailSources'])) {
 			$pins .= "    'mailSources' => " . self::literal($fixture['mailSources']) . ",\n";
 		}
+		if (isset($fixture['tablesSources'])) {
+			$pins .= "    'tablesSources' => " . self::literal($fixture['tablesSources']) . ",\n";
+		}
+		$pins .= Forms\FormsSourcePins::line($fixture);
+		$pins .= Polls\PollsFixturePins::header($fixture);
 		file_put_contents($path, $header . "return [\n" . $pins . "    'classes' => [\n" . implode("\n", $lines) . "\n    ],\n];\n");
 	}
 

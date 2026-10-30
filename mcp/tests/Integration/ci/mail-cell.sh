@@ -91,6 +91,12 @@ start_imap() {
 	docker exec "$IMAP" doveadm flags add -u alice '\Seen' mailbox INBOX uid 1
 	docker exec "$IMAP" doveadm flags add -u alice '\Flagged' mailbox INBOX uid 2
 	docker exec "$IMAP" doveadm flags add -u alice '\Seen' mailbox Sent uid 1
+	IMAP="$IMAP" sh "$HERE/mail/seed-messages.sh" seed
+	IMAP="$IMAP" sh "$HERE/mail/seed-attachments.sh"
+	IMAP="$IMAP" sh "$HERE/mail/seed-flags.sh"
+	IMAP="$IMAP" sh "$HERE/mail/seed-move.sh"
+	IMAP="$IMAP" sh "$HERE/mail/seed-drafts.sh"
+	IMAP="$IMAP" sh "$HERE/mail/seed-send.sh"
 	echo "IMAP server $IMAP_IMAGE -> $(docker image inspect --format '{{.Os}}/{{.Architecture}} {{.Size}} bytes' "$IMAP_IMAGE")"
 }
 
@@ -116,6 +122,8 @@ create_account() {
 		''|*[!0-9]*) echo "mail:account:create-imap gave no account id: '$created'" >&2; return 1 ;;
 	esac
 	occ mail:account:sync "$id" >&2
+	docker exec -u www-data "$NC" php /mcp-it-src/mcp/tests/Integration/ci/mail/enable-background-sync.php "$id" >&2
+	occ mail:account:sync "$id" >&2
 	echo "$id"
 }
 
@@ -127,6 +135,8 @@ cmd_provision() {
 	occ config:system:set allow_local_remote_servers --value=true --type=boolean
 	alice=$(create_account mcp-it-alice alice)
 	bob=$(create_account mcp-it-bob bob)
+	IMAP="$IMAP" sh "$HERE/mail/seed-messages.sh" regenerate
+	NC="$NC" sh "$HERE/mail/smtp-sink.sh" start "$alice"
 	echo "Mail accounts: mcp-it-alice=$alice mcp-it-bob=$bob"
 }
 
@@ -136,10 +146,13 @@ cmd_test_env() {
 		-e "MCP_IT_IMAP_PASSWORD=$IMAP_PASSWORD" -e "MCP_IT_MAIL_VERSION=${MAIL_TAG#v}"
 }
 
-# cmd_collect: the IMAP server log, which lists every login and every flag change (mail_log), into the artifacts.
+# cmd_collect: the IMAP server log, which lists every login and every flag change (mail_log), into the artifacts, and
+# alice's home with the rawlogs of her sessions (mail/mcp-it.conf).
 cmd_collect() {
 	mkdir -p "$ARTIFACTS"
 	docker logs "$IMAP" > "$ARTIFACTS/imap-container.log" 2>&1 || true
+	docker cp "$IMAP:/srv/vmail/alice" "$ARTIFACTS/imap-home-alice" 2>/dev/null || true
+	NC="$NC" sh "$HERE/mail/smtp-sink.sh" collect "$ARTIFACTS"
 }
 
 # cmd_cleanup: removes the container with its anonymous volume and proves that nothing of it is left.

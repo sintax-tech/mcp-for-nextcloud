@@ -54,6 +54,31 @@ final class NextcloudApiUsage {
         // The Mail account and folder OCA\Mcp\Tools\Mail\MailGateway receives from AccountService and MailboxMapper.
         'OCA\\Mail\\Account',
         'OCA\\Mail\\Db\\Mailbox',
+        // The cached message, its address lists and the message with its body that the message tools receive.
+        'OCA\\Mail\\Db\\Message',
+        'OCA\\Mail\\AddressList',
+        'OCA\\Mail\\Address',
+        'OCA\\Mail\\Model\\IMAPMessage',
+        // The attachment OCA\Mcp\Tools\Mail\MailAttachmentReader receives from the IMAP message mapper.
+        'OCA\\Mail\\Attachment',
+        // The flag event OCA\Mcp\Tools\Mail\Flag\MailFlagEvent dispatches after a flag change, as the Mail app does.
+        'OCA\\Mail\\Events\\MessageFlaggedEvent',
+        // The settings of an account (its Trash, Junk folder and Trash retention) OCA\Mcp\Tools\Mail\Move\MailMoveDestination
+        // reads, and the delete event OCA\Mcp\Tools\Mail\Handler\MoveMessageHandler dispatches after a move, as the Mail
+        // app's own move does.
+        'OCA\\Mail\\Db\\MailAccount',
+        'OCA\\Mail\\Events\\MessageDeletedEvent',
+        // The Mail app's own draft save and the message it takes, which OCA\Mcp\Tools\Mail\Draft\MailDraftStore uses through
+        // OCA\Mcp\Tools\Mail\MailServices.
+        'OCA\\Mail\\Service\\MailTransmission',
+        'OCA\\Mail\\Model\\NewMessageData',
+        // The Mail app's Outbox and its messages, which OCA\Mcp\Tools\Mail\Send\MailSendOutbox sends through, as the Mail
+        // app's own OutboxController does.
+        'OCA\\Mail\\Service\\OutboxService',
+        'OCA\\Mail\\Db\\LocalMessage',
+        // The Nextcloud Tables app, kept with the Tables module's contract.
+        ...Tables\TablesApiUsage::EXTRA_CLASSES,
+        ...Forms\FormsApiUsage::EXTRA_CLASSES,
     ];
 
     /**
@@ -146,6 +171,84 @@ final class NextcloudApiUsage {
         'OCA\\Mail\\Account::getName' => [],
         'OCA\\Mail\\Account::getEmail' => [],
         'OCA\\Mail\\Account::getUserId' => [],
+        // Mail messages, resolved by class name in OCA\Mcp\Tools\Mail\MailServices and held untyped by the message tools.
+        'OCA\\Mail\\Db\\MessageMapper::findIdsByQuery' => ['mailbox', 'query', 'sortOrder', 'limit', 'uids'],
+        'OCA\\Mail\\Db\\MessageMapper::findByIds' => ['userId', 'ids', 'sortOrder'],
+        'OCA\\Mail\\Service\\MailManager::getMessage' => ['uid', 'id'],
+        'OCA\\Mail\\Service\\MailManager::getMailbox' => ['uid', 'id'],
+        'OCA\\Mail\\Service\\MailManager::getThread' => ['account', 'threadRootId'],
+        'OCA\\Mail\\Service\\MailManager::getImapMessage' => ['client', 'account', 'mailbox', 'uid', 'loadBody'],
+        'OCA\\Mail\\IMAP\\IMAPClientFactory::getClient' => ['account'],
+        'OCA\\Mail\\IMAP\\Search\\Provider::findMatches' => ['account', 'mailbox', 'searchQuery'],
+        'OCA\\Mail\\Service\\Search\\SearchQuery::addFrom' => ['from'],
+        'OCA\\Mail\\Service\\Search\\SearchQuery::addTo' => ['to'],
+        'OCA\\Mail\\Service\\Search\\SearchQuery::addCc' => ['cc'],
+        'OCA\\Mail\\Service\\Search\\SearchQuery::addSubject' => ['subject'],
+        'OCA\\Mail\\Service\\Search\\SearchQuery::addBody' => ['body'],
+        'OCA\\Mail\\Service\\Search\\SearchQuery::setStart' => ['start'],
+        'OCA\\Mail\\Service\\Search\\SearchQuery::setEnd' => ['end'],
+        'OCA\\Mail\\Service\\Search\\SearchQuery::setCursor' => ['cursor'],
+        'OCA\\Mail\\Service\\Search\\SearchQuery::setHasAttachments' => ['hasAttachments'],
+        'OCA\\Mail\\Service\\Search\\SearchQuery::addFlag' => ['flag'],
+        'OCA\\Mail\\Service\\Search\\Flag::is' => ['flag'],
+        'OCA\\Mail\\Service\\Search\\Flag::not' => ['flag'],
+        'OCA\\Mail\\Db\\Mailbox::getAccountId' => [],
+        'OCA\\Mail\\Db\\Mailbox::isCached' => [],
+        'OCA\\Mail\\Db\\Mailbox::hasLocks' => ['now'],
+        'OCA\\Mail\\Db\\Mailbox::getSyncNewToken' => [],
+        'OCA\\Mail\\Db\\Mailbox::getSyncChangedToken' => [],
+        'OCA\\Mail\\Db\\Mailbox::getSyncVanishedToken' => [],
+        'OCA\\Mail\\Db\\Message::getSentAt' => [],
+        'OCA\\Mail\\Db\\Message::getMailboxId' => [],
+        'OCA\\Mail\\Db\\Message::getUid' => [],
+        'OCA\\Mail\\Db\\Message::getThreadRootId' => [],
+        'OCA\\Mail\\Db\\Message::getFrom' => [],
+        'OCA\\Mail\\Db\\Message::getBcc' => [],
+        'OCA\\Mail\\AddressList::iterate' => [],
+        'OCA\\Mail\\Model\\IMAPMessage::getPlainBody' => [],
+        'OCA\\Mail\\Model\\IMAPMessage::getHtmlBody' => ['id'],
+        'OCA\\Mail\\Model\\IMAPMessage::getReplyTo' => [],
+        // One attachment, read by OCA\Mcp\Tools\Mail\MailAttachmentReader on the client it already checked.
+        'OCA\\Mail\\IMAP\\MessageMapper::getAttachment' => ['client', 'mailbox', 'messageUid', 'attachmentId', 'userId'],
+        'OCA\\Mail\\Attachment::getContent' => [],
+        // One flag change, by OCA\Mcp\Tools\Mail\Flag\MailFlagStore on the client it already checked, then the Mail app's
+        // own event (the shape of the pinned releases; Mail 5.11.0 on takes the message: mail-flag-event.json).
+        'OCA\\Mail\\IMAP\\MessageMapper::addFlag' => ['client', 'mailbox', 'uids', 'flag'],
+        'OCA\\Mail\\IMAP\\MessageMapper::removeFlag' => ['client', 'mailbox', 'uids', 'flag'],
+        'OCA\\Mail\\Events\\MessageFlaggedEvent::__construct' => ['account', 'mailbox', 'uid', 'flag', 'set'],
+        // One move, by OCA\Mcp\Tools\Mail\Move\MailMoveStore on the client it already checked, then the Mail app's own
+        // event for the source UID (the same shape in every pinned release).
+        'OCA\\Mail\\IMAP\\MessageMapper::move' => ['client', 'sourceFolderId', 'messageId', 'destFolderId'],
+        'OCA\\Mail\\Events\\MessageDeletedEvent::__construct' => ['account', 'mailbox', 'messageId'],
+        'OCA\\Mail\\Account::getMailAccount' => [],
+        // The account settings OCA\Mcp\Tools\Mail\Move\MailMoveDestination reads (Entity fields served by magic getters).
+        'OCA\\Mail\\Db\\MailAccount::getTrashMailboxId' => [],
+        'OCA\\Mail\\Db\\MailAccount::getJunkMailboxId' => [],
+        'OCA\\Mail\\Db\\MailAccount::getTrashRetentionDays' => [],
+        // One new draft, saved by the Mail app (OCA\Mcp\Tools\Mail\Draft\MailDraftStore): the Drafts folder of the account,
+        // the message built as the Mail app builds a request (plain text, no attachment) and the save without a previous
+        // draft, which appends to Drafts with Horde's null transport and never reaches SMTP or the Outbox.
+        'OCA\\Mail\\Db\\MailAccount::getDraftsMailboxId' => [],
+        'OCA\\Mail\\AddressList::parse' => ['str'],
+        'OCA\\Mail\\Model\\NewMessageData::__construct' => ['account', 'to', 'cc', 'bcc', 'subject', 'body', 'attachments', 'isHtml'],
+        'OCA\\Mail\\Service\\MailTransmission::saveDraft' => ['message', 'previousDraft'],
+        // One message sent the way the Mail app's interface sends it (OCA\Mcp\Tools\Mail\Send\MailSendOutbox): the Sent folder
+        // its send chain needs, the sender, an outgoing local message (Entity fields set by magic setters, no send time),
+        // saved with its recipients and no attachment, then sent through the chain, whose status and built message say
+        // what happened (mail-send-path.json records the chain and the statuses from the pinned sources).
+        'OCA\\Mail\\Db\\MailAccount::getSentMailboxId' => [],
+        'OCA\\Mail\\Account::getEMailAddress' => [],
+        'OCA\\Mail\\Db\\LocalMessage::setType' => [],
+        'OCA\\Mail\\Db\\LocalMessage::setAccountId' => [],
+        'OCA\\Mail\\Db\\LocalMessage::setSubject' => [],
+        'OCA\\Mail\\Db\\LocalMessage::setBodyPlain' => [],
+        'OCA\\Mail\\Db\\LocalMessage::setBodyHtml' => [],
+        'OCA\\Mail\\Db\\LocalMessage::setHtml' => [],
+        'OCA\\Mail\\Db\\LocalMessage::setSendAt' => [],
+        'OCA\\Mail\\Db\\LocalMessage::getStatus' => [],
+        'OCA\\Mail\\Db\\LocalMessage::getRaw' => [],
+        'OCA\\Mail\\Service\\OutboxService::saveMessage' => ['account', 'message', 'to', 'cc', 'bcc', 'attachments'],
+        'OCA\\Mail\\Service\\OutboxService::sendMessage' => ['message', 'account'],
         // DAV, built or resolved by class name.
         'OCA\\DAV\\CalDAV\\Auth\\CustomPrincipalPlugin::setCurrentPrincipal' => ['currentPrincipal'],
         'OCA\\DAV\\AppInfo\\PluginManager::__construct' => ['container', 'appManager'],
@@ -165,6 +268,11 @@ final class NextcloudApiUsage {
         'OCP\\FilesMetadata\\Model\\IFilesMetadata::hasKey' => ['needle'],
         'OCP\\FilesMetadata\\Model\\IFilesMetadata::getArray' => ['key'],
         'OCP\\FilesMetadata\\Model\\IFilesMetadata::getString' => ['key'],
+        // The Nextcloud Tables app, kept with the Tables module's contract.
+        ...Tables\TablesApiUsage::POSITIONAL,
+        ...Forms\FormsCreationCoreApiUsage::POSITIONAL,
+        ...Forms\FormsApiUsage::POSITIONAL,
+        ...Polls\PollsApiUsage::POSITIONAL,
     ];
 
     /**
@@ -286,6 +394,21 @@ final class NextcloudApiUsage {
             'limit' => 'null: every board the user owns',
             'offset' => 'null: from the first one',
         ],
+        'OCA\\Mail\\Db\\MessageMapper::findByIds' => [
+            'orderBy' => '"sent_at" (Mail 5.7 on): the order of the folder query; the pager sorts again by date and id',
+        ],
+        'OCA\\Mail\\IMAP\\IMAPClientFactory::getClient' => [
+            'useCache' => 'true: the Mail app\'s own client with its own cache, as its controllers use it',
+        ],
+        'OCA\\Mail\\Model\\NewMessageData::__construct' => [
+            'isMdnRequested' => 'false: a draft asks for no read receipt; the Mail app\'s draft save ignores it anyway',
+            'smimeCertificateId' => 'null: no S/MIME certificate; the draft save builds a plain message',
+            'smimeSign' => 'false: the draft is not signed',
+            'smimeEncrypt' => 'false: the draft is not encrypted',
+        ],
+        // The Nextcloud Tables app, kept with the Tables module's contract.
+        ...Tables\TablesApiUsage::REVIEWED_TRAILING,
+        ...Forms\FormsApiUsage::REVIEWED_TRAILING,
     ];
 
     /**
@@ -301,6 +424,52 @@ final class NextcloudApiUsage {
         ],
     ];
 
+    /**
+     * Horde IMAP and MIME classes the Mail message tools call, from the vendor tree of the Mail app, with the methods
+     * (and the parameters passed, in order), constants and documented magic properties used. They are not Nextcloud's
+     * nor the Mail app's own classes, so the main fixtures do not carry them: generate-mail-horde.php writes their
+     * surface from the same pinned Mail releases into mail-horde-surfaces.json, and MailHordeSurfaceContractTest
+     * checks this list against it per major. Only {@see \OCA\Mcp\Tools\Mail\MailBodyPreflight},
+     * {@see \OCA\Mcp\Tools\Mail\MailBodyReader}, {@see \OCA\Mcp\Tools\Mail\MailAttachmentPreflight} and
+     * {@see \OCA\Mcp\Tools\Mail\MailAttachmentReader}, {@see \OCA\Mcp\Tools\Mail\Flag\MailFlagStore} and
+     * {@see \OCA\Mcp\Tools\Mail\Move\MailMoveStore} use them: the STATUS and the metadata FETCH before a body or an
+     * attachment is read, a flag is stored or a message is moved, the read-write selection of a flag change or a move, the
+     * capabilities {@see \OCA\Mcp\Tools\Mail\Move\MailMoveCapability} checks before a move (MOVE or UIDPLUS), and the
+     * message structure (Horde_Mime_Part) the attachment preflight walks.
+     * The same fixture records the format of the sync tokens the Mail app stores per folder (written by
+     * Horde_Imap_Client_Base::getSyncToken(), `V` for the UIDVALIDITY), which {@see \OCA\Mcp\Tools\Mail\MailCacheGeneration} reads.
+     *
+     * @var array<string, array{methods?:array<string, list<string>>, trailing?:array<string, string>, constants?:list<string>, properties?:list<string>}>
+     */
+    public const HORDE = [
+        'Horde_Imap_Client' => ['constants' => ['STATUS_UIDVALIDITY', 'OPEN_READWRITE']],
+        'Horde_Imap_Client_Socket' => [
+            'methods' => ['status' => ['mailbox', 'flags'], 'fetch' => ['mailbox', 'query', 'options'], 'logout' => [], 'openMailbox' => ['mailbox', 'mode']],
+            // The capabilities of the connection, which OCA\Mcp\Tools\Mail\Move\MailMoveCapability reads before a move.
+            'properties' => ['capability'],
+            'trailing' => ['opts' => 'status(): no option; the UIDVALIDITY is asked for alone'],
+        ],
+        'Horde_Imap_Client_Data_Capability' => [
+            'methods' => ['query' => ['capability']],
+            'trailing' => ['parameter' => 'query(): null, only whether the server has MOVE or UIDPLUS at all'],
+        ],
+        'Horde_Imap_Client_Fetch_Query' => ['methods' => ['envelope' => [], 'size' => [], 'structure' => [], 'flags' => []]],
+        'Horde_Imap_Client_Ids' => [
+            'methods' => ['__construct' => ['ids']],
+            'trailing' => ['sequence' => 'false: the ids are UIDs, as the cache stores them, never sequence numbers'],
+        ],
+        'Horde_Imap_Client_Fetch_Results' => ['methods' => ['first' => []]],
+        'Horde_Imap_Client_Data_Fetch' => ['methods' => ['getSize' => [], 'getEnvelope' => [], 'getStructure' => [], 'getFlags' => []]],
+        'Horde_Imap_Client_Data_Envelope' => ['properties' => ['message_id']],
+        'Horde_Mime_Part' => [
+            'methods' => ['getType' => [], 'getPrimaryType' => [], 'getName' => [], 'getCharset' => [], 'isAttachment' => [], 'getPart' => ['id']],
+            'trailing' => [
+                'charset' => 'getType(): false, the bare MIME type without its charset parameter',
+                'default' => 'getName(): false, no default name; a part without one has none',
+            ],
+        ],
+    ];
+
     /** Constants the app reads by name from classes it holds untyped. */
     public const CONSTANTS = [
         'OCA\\Circles\\Model\\Member' => ['LEVEL_MEMBER', 'TYPE_USER', 'TYPE_GROUP', 'TYPE_CIRCLE'],
@@ -308,17 +477,31 @@ final class NextcloudApiUsage {
         'OCA\\Talk\\Room' => ['READ_ONLY', 'TYPE_CHANGELOG', 'TYPE_GROUP'],
         'OCA\\Talk\\Webinary' => ['LOBBY_NONE'],
         'OCA\\DAV\\CalDAV\\CalDavBackend' => ['CALENDAR_TYPE_CALENDAR'],
+        'OCA\\Mail\\Service\\Search\\Flag' => ['SEEN', 'FLAGGED', 'DELETED'],
+        // The Nextcloud Tables app, kept with the Tables module's contract.
+        ...Tables\TablesApiUsage::CONSTANTS,
+        ...Forms\FormsApiUsage::CONSTANTS,
+        ...Polls\PollsApiUsage::CONSTANTS,
     ];
 
     /**
      * APIs a declared release does not have, the majors that lack them, the fallback those majors use instead and the
-     * class that chooses. The test checks all three, so a gap can neither appear nor close unnoticed.
+     * class that chooses. Explicit omittedField declarations use VersionedOmissionContract instead of a fabricated fallback.
      *
      * A method name the scanner also sees on another object lists those files in `elsewhere`, with the call it really is.
      *
-     * @var array<string, array{missing: list<string>, fallback: string, by: string, elsewhere?: array<string, string>}>
+     * @var array<string, array{missing: list<string>, fallback?: string, by: string, omittedField?: string, pins?: array<string,string>, elsewhere?: array<string, string>}>
      */
     public const VERSION_GATED = [
+        ...Polls\PollsContentApiUsage::VERSION_GATED,
+        ...Polls\PollsCreateApiUsage::VERSION_GATED,
+        // Mail 5.5 made the folder query group by thread by default; 5.0.0 (Nextcloud 31 and 32 pins) has neither the
+        // grouping nor the switch, so its plain MessageMapper::findIdsByQuery() already lists every message.
+        'OCA\\Mail\\Service\\Search\\SearchQuery::setThreaded' => [
+            'missing' => ['31', '32'],
+            'fallback' => 'OCA\\Mail\\Db\\MessageMapper::findIdsByQuery',
+            'by' => \OCA\Mcp\Tools\Mail\MailSearchCriteria::class,
+        ],
         'OCA\\DAV\\CalDAV\\EmbeddedCalDavServer' => [
             'missing' => ['31'],
             'fallback' => 'OCA\\DAV\\CalDAV\\InvitationResponse\\InvitationResponseServer',
@@ -383,6 +566,9 @@ final class NextcloudApiUsage {
             'fallback' => 'OCA\\Talk\\Room::getLobbyState',
             'by' => \OCA\Mcp\Tools\Talk\ConversationResolver::class,
         ],
+        // The Nextcloud Tables app, kept with the Tables module's contract.
+        ...Tables\TablesApiUsage::VERSION_GATED,
+        ...Forms\FormsCreationCoreApiUsage::VERSION_GATED,
     ];
 
     /**
@@ -407,5 +593,11 @@ final class NextcloudApiUsage {
         'OCP\\Files\\IRootFolder::removeListener' => 'Sabre\\DAV\\Server::removeListener, in Tools/Calendar/EmbeddedDavDispatcher',
         'OCP\\DB\\QueryBuilder\\IQueryBuilder::execute' => 'the app\'s own tools, in Tools/Calendar/CalendarModule and Service/Calendar/CalendarSelftestService',
         'OCP\\BackgroundJob\\TimedJob::execute' => 'the app\'s own tools, in Tools/Calendar/CalendarModule and Service/Calendar/CalendarSelftestService',
+        'OCA\\Deck\\Db\\StackMapper::findByIds' => 'OCA\\Mail\\Db\\MessageMapper::findByIds, in Tools/Mail/MailMessageGateway',
+        'OCA\\Talk\\Service\\RoomService::setHasAttachments' => 'OCA\\Mail\\Service\\Search\\SearchQuery::setHasAttachments, in Tools/Mail/MailSearchCriteria',
+        // The Nextcloud Tables app, kept with the Tables module's contract.
+        ...Tables\TablesApiUsage::NAME_CLASHES,
+        ...Forms\FormsCreationCoreApiUsage::NAME_CLASHES,
+        ...Polls\PollsApiUsage::NAME_CLASHES,
     ];
 }

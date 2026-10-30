@@ -63,6 +63,7 @@ async function app(handler) {
 		},
 	}
 	// The page loads js/admin-levels.js before the inspector, which names each module's level with it.
+	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-level-names.js'), 'utf8'), { window })
 	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-levels.js'), 'utf8'), { window })
 	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-inspector.js'), 'utf8'), context)
 	const submit = async (id) => { await ids[id].listeners.submit({ preventDefault() {} }); await tick() }
@@ -375,4 +376,18 @@ test('S12: the open drawer sits right under the Nextcloud header, even when the 
 	ui.window.McpInspectorUi.open('alice', new Element('button'))
 	await tick()
 	assert.equal(style.top, '')
+})
+
+test('Forms presets render their explicit names in the inspector consumer', async () => {
+	for (const [results, label] of [[false, 'Read and write forms'], [true, 'Read and write forms and read responses']]) {
+		const operations = ['read', 'results', 'create', 'edit'].map((operation) => {
+			const allowed = operation !== 'results' || results
+			return row('forms', operation, allowed, allowed ? null : 'grant', 'default')
+		})
+		const ui = await inspected(operations)
+		const module = ui.ids['mcp-inspector-access'].all('li').find((item) => item.className === 'mcp-inspector-module')
+		assert.ok(module, 'the Forms summary is rendered')
+		assert.ok(module.textContent.includes(label))
+		assert.ok(!module.textContent.includes('forms_write'), 'no internal level identifier reaches the user')
+	}
 })

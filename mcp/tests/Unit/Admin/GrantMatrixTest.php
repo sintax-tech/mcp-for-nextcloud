@@ -105,7 +105,7 @@ final class GrantMatrixTest extends TestCase {
     public function testCatalogAppsAndService(): void {
         $page = $this->fx->matrix()->page('', '', 1);
         $this->assertSame(['files' => GrantPolicy::CATALOG['files'], 'notes' => GrantPolicy::CATALOG['notes'], 'calendar' => GrantPolicy::CATALOG['calendar'], 'people' => GrantPolicy::CATALOG['people'], 'logs' => ['read']], $page['catalog']);
-        $this->assertSame(['files' => true, 'notes' => true, 'deck' => false, 'calendar' => true, 'talk' => false, 'contacts' => false, 'tasks' => false, 'people' => true, 'logs' => true, 'mail' => false], $page['appsEnabled']);
+        $this->assertSame(\OCA\Mcp\Tests\Unit\Tools\Forms\FormsCatalogExpectation::apps(['files' => true, 'notes' => true, 'deck' => false, 'calendar' => true, 'talk' => false, 'contacts' => false, 'tasks' => false, 'people' => true, 'logs' => true, 'mail' => false, 'tables' => false]) + ['polls' => false], $page['appsEnabled']);
         $this->assertFalse($page['serviceEnabled']);
     }
 
@@ -115,7 +115,7 @@ final class GrantMatrixTest extends TestCase {
      */
     public function testTheNewFilesRestoreColumnArrivesWithTheCatalog(): void {
         $page = $this->fx->matrix()->page('', '', 1);
-        $this->assertSame(['read', 'edit', 'create', 'move', 'restore', 'share', 'link'], $page['catalog']['files']);
+        $this->assertSame(['read', 'edit', 'create', 'move', 'restore', 'share', 'link', 'delete'], $page['catalog']['files']);
         $this->assertNotSame([], $page['users']);
         foreach ($page['users'] as $user) {
             foreach (['restore', 'create', 'move', 'share', 'link'] as $operation) {
@@ -153,7 +153,7 @@ final class GrantMatrixTest extends TestCase {
 
         // People and logs come with the core, so they stay whatever optional app is missing.
         $this->assertSame(['files' => GrantPolicy::CATALOG['files'], 'people' => GrantPolicy::CATALOG['people'], 'logs' => GrantPolicy::CATALOG['logs']], $page['catalog']);
-        $this->assertSame(['files' => true, 'notes' => false, 'deck' => false, 'calendar' => false, 'talk' => false, 'contacts' => false, 'tasks' => false, 'people' => true, 'logs' => true, 'mail' => false], $page['appsEnabled']);
+        $this->assertSame(\OCA\Mcp\Tests\Unit\Tools\Forms\FormsCatalogExpectation::apps(['files' => true, 'notes' => false, 'deck' => false, 'calendar' => false, 'talk' => false, 'contacts' => false, 'tasks' => false, 'people' => true, 'logs' => true, 'mail' => false, 'tables' => false]) + ['polls' => false], $page['appsEnabled']);
         $this->assertTrue($page['users'][0]['grants']['notes']['edit']);
     }
 

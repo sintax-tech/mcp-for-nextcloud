@@ -18,7 +18,7 @@
 
 	/** Cumulative tiers per module: [Read, Edit, Full]. Modules with one operation have only Read. */
 	const TIERS = {
-		files: [['read'], ['edit', 'create', 'move', 'restore'], ['share', 'link']],
+		files: [['read'], ['edit', 'create', 'move', 'restore'], ['share', 'link', 'delete']],
 		notes: [['read'], ['create', 'edit', 'move'], ['delete']],
 		deck: [['read'], ['create', 'edit', 'move'], ['delete']],
 		calendar: [['read'], ['create', 'edit', 'move'], ['delete', 'transfer']],
@@ -27,7 +27,9 @@
 		talk: [['read'], ['reply', 'attach', 'quote'], ['create']],
 		people: [['read']],
 		logs: [['read']],
-		mail: [['read']],
+		mail: [['read'], ['messages'], ['attachments'], ['flags'], ['move'], ['draft'], ['send']],
+		tables: [['read'], ['create', 'edit']],
+		forms: [['read'], ['create', 'edit'], ['results']],
 	}
 
 	/** Names of the tiers by how many a module has. */
@@ -42,6 +44,7 @@
 	 * @return {Array<{level: string, operations: string[]}>} one entry per tier, cumulative in this order
 	 */
 	function tiers(module, operations) {
+		if (module === 'polls') return root.McpAdminPollsGrants?.tiers(operations) || []
 		const known = TIERS[module] || [operations.filter((operation) => operation === 'read'), operations.filter((operation) => operation !== 'read')]
 		const listed = known.map((tier) => tier.filter((operation) => operations.includes(operation)))
 		const rest = operations.filter((operation) => !listed.some((tier) => tier.includes(operation)))
@@ -50,7 +53,8 @@
 			listed[listed.length - 1] = listed[listed.length - 1].concat(rest)
 		}
 		const kept = listed.filter((tier) => tier.length > 0)
-		const names = TIER_NAMES[kept.length] || kept.map((_, index) => 'tier' + index)
+		const own = root.McpAdminLevelNames ? root.McpAdminLevelNames.forModule(module, kept.length) : null
+		const names = own || TIER_NAMES[kept.length] || kept.map((_, index) => 'tier' + index)
 		return kept.map((tier, index) => ({ level: names[index], operations: tier }))
 	}
 
@@ -70,6 +74,7 @@
 	 * @return {string[]} the operations that level allows, in catalog order
 	 */
 	function operationsFor(module, operations, level) {
+		if (module === 'polls') return root.McpAdminPollsGrants?.operationsFor(operations, level) || []
 		const all = tiers(module, operations)
 		const upTo = all.findIndex((tier) => tier.level === level)
 		if (level !== 'none' && upTo < 0) {

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi;
 
 /**
  * The release of an optional app the oldest fixture was generated from: Deck and Talk come with the server tree
- * (NextcloudApiUsage::SOURCES), Mail is pinned apart (the fixture's `mailSources`).
+ * (NextcloudApiUsage::SOURCES), Mail and Tables are pinned apart (the fixture's `mailSources` and `tablesSources`).
  */
 final class OldestCoveredRelease {
 	/**
@@ -17,10 +17,10 @@ final class OldestCoveredRelease {
 	 *
 	 * @param array<string, string> $sources row of NextcloudApiUsage::SOURCES of the oldest covered major
 	 * @param array<string, mixed> $fixture that major's fixture
-	 * @param string $app app id, such as "deck" or "mail"
+	 * @param string $app app id, such as "deck", "mail" or "tables"
 	 * @return string|null the release, or null when the fixture covers no release of the app
 	 */
 	public static function of(array $sources, array $fixture, string $app): ?string {
-		return $sources[$app] ?? $fixture['mailSources'][$app]['version'] ?? null;
+		return $sources[$app] ?? $fixture['mailSources'][$app]['version'] ?? $fixture['tablesSources'][$app]['version'] ?? Forms\FormsSourcePins::version($fixture, $app) ?? Polls\PollsFixturePins::version($fixture, $app);
 	}
 }

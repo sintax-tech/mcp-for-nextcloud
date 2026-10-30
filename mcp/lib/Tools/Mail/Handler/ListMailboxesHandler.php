@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Mail\Handler;
 
+use OCA\Mcp\Tools\Mail\Link\MailLinks;
 use OCA\Mcp\Tools\Mail\MailGateway;
 use OCA\Mcp\Tools\Mail\MailMessages;
 use OCA\Mcp\Tools\Mail\MailRows;
@@ -32,14 +33,16 @@ final class ListMailboxesHandler {
 	public const MAX_LIMIT = 500;
 
 	/**
-	 * Receives the Mail boundary and the row shaper.
+	 * Receives the Mail boundary, the Mail app links and the row shaper.
 	 *
 	 * @param MailGateway $gateway read-only access to the accounts and the folder cache of the Mail app
+	 * @param MailLinks $links direct links into the Mail app
 	 * @param MailRows $rows cleans the untrusted names and orders the folders
 	 * @return void
 	 */
 	public function __construct(
 		private MailGateway $gateway,
+		private MailLinks $links,
 		private MailRows $rows = new MailRows(),
 	) {
 	}
@@ -61,7 +64,7 @@ final class ListMailboxesHandler {
 		$limit = (int)($arguments['limit'] ?? self::DEFAULT_LIMIT);
 		$offset = (int)($arguments['offset'] ?? 0);
 		$all = $this->rows->sorted(array_map($this->rows->mailbox(...), $this->gateway->mailboxes($userId, $account)));
-		$page = array_slice($all, $offset, $limit);
+		$page = array_map(fn (array $row): array => $row + ['url' => $this->links->mailbox($row['id'])], array_slice($all, $offset, $limit));
 		$more = $offset + count($page) < count($all);
 		$answer = [
 			'account' => $this->rows->account($this->gateway->accountRow($account)),

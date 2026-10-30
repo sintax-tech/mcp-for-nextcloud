@@ -1,0 +1,110 @@
+{
+    "5.0.0": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.0.0/mail-v5.0.0.tar.gz",
+        "sha256": "015d2fac3538cde83b0104292648f998741ab7109ad9130e379b58e10fce8f23",
+        "routes": {
+            "page#mailbox": {
+                "url": "/box/{id}",
+                "verb": "GET"
+            },
+            "page#thread": {
+                "url": "/box/{mailboxId}/thread/{id}",
+                "verb": "GET"
+            },
+            "messages#getThread": {
+                "url": "/api/messages/{id}/thread",
+                "verb": "GET"
+            }
+        }
+    },
+    "5.5.0": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.5.0/mail-v5.5.0.tar.gz",
+        "sha256": "975b1204e9f94cac744c259c8adc901cb7e09bc860eb97154d9bc88d69ef0a7e",
+        "routes": {
+            "page#mailbox": {
+                "url": "/box/{id}",
+                "verb": "GET"
+            },
+            "page#thread": {
+                "url": "/box/{mailboxId}/thread/{id}",
+                "verb": "GET"
+            },
+            "messages#getThread": {
+                "url": "/api/messages/{id}/thread",
+                "verb": "GET"
+            }
+        }
+    },
+    "5.7.0": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.7.0/mail-v5.7.0.tar.gz",
+        "sha256": "2b504f4624877b740c6fcaa212ac9b5e25470395ab13174af8e4c3cb2add67e1",
+        "routes": {
+            "page#mailbox": {
+                "url": "/box/{id}",
+                "verb": "GET"
+            },
+            "page#thread": {
+                "url": "/box/{mailboxId}/thread/{id}",
+                "verb": "GET"
+            },
+            "messages#getThread": {
+                "url": "/api/messages/{id}/thread",
+                "verb": "GET"
+            }
+        }
+    },
+    "5.9.0": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.9.0/mail-v5.9.0.tar.gz",
+        "sha256": "4987bc0440b8bfd8af97688654290e447cb9ca7f70378a369aba89606ab3551c",
+        "routes": {
+            "page#mailbox": {
+                "url": "/box/{id}",
+                "verb": "GET"
+            },
+            "page#thread": {
+                "url": "/box/{mailboxId}/thread/{id}",
+                "verb": "GET"
+            },
+            "messages#getThread": {
+                "url": "/api/messages/{id}/thread",
+                "verb": "GET"
+            }
+        }
+    },
+    "5.10.11": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.10.11/mail-v5.10.11.tar.gz",
+        "sha256": "23a053bd4b477fa0c55a07acb230f13c05e0d4993f72b4843b929d6e491cb0b8",
+        "routes": {
+            "page#mailbox": {
+                "url": "/box/{id}",
+                "verb": "GET"
+            },
+            "page#thread": {
+                "url": "/box/{mailboxId}/thread/{id}",
+                "verb": "GET"
+            },
+            "messages#getThread": {
+                "url": "/api/messages/{id}/thread",
+                "verb": "GET"
+            }
+        }
+    },
+    "5.12.5": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.12.5/mail-v5.12.5.tar.gz",
+        "sha256": "c52dab18a4de1710854038d95810f9ae4eb76a8656d89800e7dceb5aff0034e0",
+        "routes": {
+            "page#mailbox": {
+                "url": "/box/{id}",
+                "verb": "GET"
+            },
+            "page#thread": {
+                "url": "/box/{mailboxId}/thread/{id}",
+                "verb": "GET"
+            },
+            "messages#getThread": {
+                "url": "/api/messages/{id}/thread",
+                "verb": "GET"
+            }
+        }
+    }
+}

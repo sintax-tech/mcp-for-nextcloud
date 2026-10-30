@@ -85,7 +85,7 @@ final class MailRows {
 	 * @param string $specialUse JSON list of attributes, as the Mail app stores them
 	 * @return string|null inbox, sent, drafts, trash, junk, archive, all, flagged, or null for an ordinary folder
 	 */
-	private static function special(string $name, string $specialUse): ?string {
+	public static function special(string $name, string $specialUse): ?string {
 		if (strtolower($name) === 'inbox') {
 			return self::INBOX;
 		}

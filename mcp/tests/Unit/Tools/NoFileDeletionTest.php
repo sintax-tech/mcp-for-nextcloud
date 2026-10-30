@@ -11,7 +11,7 @@ use OCA\Mcp\Controller\CheckoutController;
 use PHPUnit\Framework\TestCase;
 
 /**
- * The rule the user set: the MCP deletes no file, by any route. The only removal it may ever do is of an
+ * The historical no-deletion rule remains outside the explicit FD-1 handler. The only removal it may ever do is of an
  * EMPTY FOLDER it created itself, inside files_undo_batch.
  *
  * Two ways to break that are checked here: a handler calling Node::delete() on something the user owns,
@@ -36,7 +36,7 @@ final class NoFileDeletionTest extends TestCase {
     }
 
     /**
-     * A Files handler must never call Node::delete(). The single allowance is a call inside the batch undo,
+     * Other Files handlers must never call Node::delete(). The historical allowance is inside the batch undo,
      * and it has to sit there and nowhere else: a removal anywhere else in the module fails the test.
      */
     public function testNoFilesHandlerDeletesANode(): void {

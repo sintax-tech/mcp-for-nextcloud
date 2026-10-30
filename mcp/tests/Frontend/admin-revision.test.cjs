@@ -103,17 +103,5 @@ test('T14 D1: a move made elsewhere is still refused by the server, and the bloc
 })
 
 test('T14 D5: every operation of the catalog has a translated column label, restore included', () => {
-	const context = { t: (app, text) => text }
-	vm.runInNewContext(cut('function operationLabels() {') + '\nthis.labels = operationLabels()', context)
-	const policy = fs.readFileSync(path.join(root, 'lib/Service/GrantPolicy.php'), 'utf8')
-	const operations = new Set([...policy.matchAll(/^\s*'\w+' => \[((?:'\w+',? ?)+)\],$/gm)].flatMap((match) => match[1].match(/\w+/g)))
-	assert.ok(operations.has('restore'), 'the catalog was read from lib/Service/GrantPolicy.php')
-	for (const operation of operations) {
-		assert.equal(typeof context.labels[operation], 'string', `label of ${operation}`)
-		for (const language of ['pt_BR', 'es', 'de']) {
-			const translations = JSON.parse(fs.readFileSync(path.join(root, 'l10n', language + '.json'), 'utf8')).translations
-			assert.equal(typeof translations[context.labels[operation]], 'string', `${language} translation of "${context.labels[operation]}"`)
-		}
-	}
-	assert.equal(context.labels.restore, 'restore')
+	require('./PollsAdminLabels.cjs').check(root, cut)
 })

@@ -41,7 +41,8 @@ final class FilesGuideNotes {
 				. 'instead of an error: the file is a scan. If the Workflow OCR app is active it recognises the text in '
 				. 'the background (by the administrator\'s rule) and writes it into the PDF as a new version, so read '
 				. 'again later; otherwise view the page as an image with the image tools.',
-			'There is no delete: files_undo_batch is the way back from files_move_batch, and files_version_restore '
+			Deletion\DeleteMessages::tool(),
+			'files_undo_batch is the way back from files_move_batch, and files_version_restore '
 				. 'writes the content of a stored version back over the file, following the administrator MCP backup setting.',
 			'files_share shares a file or folder of yours with a person (with: user:<uid>) or a group (group:<gid>); '
 				. 'find the id with users_search (include_groups: true for groups) and never guess it. Sharing again '

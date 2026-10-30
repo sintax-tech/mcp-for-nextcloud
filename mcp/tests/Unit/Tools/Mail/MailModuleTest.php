@@ -11,7 +11,6 @@ use InvalidArgumentException;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
-use OCA\Mcp\Tools\Mail\MailGateway;
 use OCA\Mcp\Tools\Mail\MailModule;
 use OCA\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Tools\ToolRegistry;
@@ -23,41 +22,51 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 
 /**
- * The Mail module publishes two read tools and nothing else, the grant catalog offers only reading Mail, and the
- * registry hides both tools while Mail is off for the user or older than MCP supports.
+ * The Mail module publishes its two read tools of accounts and folders first (the message, attachment and flag tools
+ * that follow are covered by their registry tests), the grant catalog offers reading Mail and one write, flags, and
+ * the registry hides both tools while Mail is off for the user or older than MCP supports.
  */
 final class MailModuleTest extends TestCase {
 	/** The tools of the module, in tools/list order. */
 	private const TOOLS = ['mail_list_accounts', 'mail_list_mailboxes'];
 
 	/**
-	 * Both tools read, carry the Mail app id and never ask for confirm.
+	 * Every tool carries the Mail app id and a closed schema; all but the flag, move, draft and send tools read and never ask for confirm.
 	 *
 	 * @return void
 	 */
 	public function testTheModulePublishesTwoReadToolsOfTheMailApp(): void {
-		$definitions = (new MailModule(new MailGateway(new FakeMailApp())))->definitions();
+		$definitions = $this->module()->definitions();
 
-		$this->assertSame(self::TOOLS, array_column($definitions, 'name'));
+		$this->assertSame(self::TOOLS, array_slice(array_column($definitions, 'name'), 0, 2));
 		foreach ($definitions as $definition) {
 			$this->assertSame('mail', $definition['module']);
-			$this->assertSame('read', $definition['operation']);
 			$this->assertSame('mail', $definition['app']);
+			$this->assertFalse($definition['inputSchema']['additionalProperties']);
+			$write = ['mail_set_flags' => 'flags', 'mail_move_message' => 'move', 'mail_create_draft' => 'draft', 'mail_send_message' => 'send'][$definition['name']] ?? null;
+			if ($write !== null) {
+				$this->assertSame($write, $definition['operation']);
+				$this->assertTrue(WriteGate::isWrite($definition));
+				continue;
+			}
+			$this->assertSame('read', $definition['operation']);
 			$this->assertFalse(WriteGate::isWrite($definition), $definition['name']);
 			$this->assertArrayNotHasKey('confirm', (array)$definition['inputSchema']['properties']);
-			$this->assertFalse($definition['inputSchema']['additionalProperties']);
 		}
 		$this->assertSame(['account_id'], $definitions[1]['inputSchema']['required']);
-		$this->assertFalse(is_subclass_of(MailModule::class, PreviewsWrites::class));
+		$this->assertTrue(is_subclass_of(MailModule::class, PreviewsWrites::class), 'the flag, move, draft and send tools have plans of their own');
 	}
 
 	/**
-	 * The grant catalog has only the read of Mail, granted by default like the other reads.
+	 * The grant catalog for Mail: `read`, granted by default like the other reads, `messages` (see
+	 * MailMessageToolsRegistryTest), `attachments` (see MailAttachmentToolsRegistryTest) and the writes `flags` (see
+	 * MailFlagToolsRegistryTest), `move` (see MailMoveToolsRegistryTest), `draft` (see MailDraftToolsRegistryTest) and `send` (see
+	 * MailSendToolsRegistryTest).
 	 *
 	 * @return void
 	 */
-	public function testTheCatalogOffersOnlyReadingMail(): void {
-		$this->assertSame(['read'], GrantPolicy::CATALOG['mail']);
+	public function testTheCatalogOffersReadingMailAndItsWrites(): void {
+		$this->assertSame(['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'], GrantPolicy::CATALOG['mail']);
 		$this->assertNotContains('mail', GrantPolicy::DENIED_READS);
 		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
 		$this->assertTrue($policy->granted('alice', 'mail', 'read'));
@@ -70,7 +79,7 @@ final class MailModuleTest extends TestCase {
 	 */
 	public function testAnUnknownToolIsRejected(): void {
 		$this->expectException(InvalidArgumentException::class);
-		(new MailModule(new MailGateway(new FakeMailApp())))->call('mail_send', [], 'alice');
+		$this->module()->call('mail_send', [], 'alice');
 	}
 
 	/**
@@ -94,6 +103,15 @@ final class MailModuleTest extends TestCase {
 
 		$this->expectException(InvalidArgumentException::class);
 		$this->registry(false, '5.12.5')->call('mail_list_accounts', [], 'alice');
+	}
+
+	/**
+	 * The Mail module over an empty app in memory.
+	 *
+	 * @return MailModule the module
+	 */
+	private function module(): MailModule {
+		return MailMessageToolsRegistryTest::module($this, new FakeMailMessageApp());
 	}
 
 	/**
@@ -121,6 +139,6 @@ final class MailModuleTest extends TestCase {
 		$apps->method('getAppVersion')->willReturn($version);
 		$users = $this->createMock(IUserManager::class);
 		$users->method('get')->willReturn($this->createMock(IUser::class));
-		return new ToolRegistry([new MailModule(new MailGateway(new FakeMailApp()))], $policy, $apps, $users, $this->createMock(LoggerInterface::class));
+		return new ToolRegistry([$this->module()], $policy, $apps, $users, $this->createMock(LoggerInterface::class));
 	}
 }

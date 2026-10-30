@@ -237,7 +237,7 @@ final class GrantsRevisionTest extends TestCase {
             'mixed forms across cells' => [[self::command('ana', 'notes', 'edit', 'allow'), ['uid' => 'bob', 'module' => 'notes', 'operation' => 'edit', 'granted' => false]]],
             'unknown state' => [[self::command('ana', 'notes', 'edit', 'yes')]],
             'boolean state' => [[['uid' => 'ana', 'module' => 'notes', 'operation' => 'edit', 'state' => true]]],
-            'unknown operation' => [[self::command('ana', 'files', 'delete', 'allow')]],
+            'unknown operation' => [[self::command('ana', 'files', 'destroy', 'allow')]],
             'eligible with a module' => [[self::command('ana', 'notes', 'eligible', 'allow')]],
             'grant without module' => [[self::command('ana', null, 'edit', 'allow')]],
             'module key left out' => [[['uid' => 'ana', 'operation' => 'eligible', 'state' => 'allow']]],

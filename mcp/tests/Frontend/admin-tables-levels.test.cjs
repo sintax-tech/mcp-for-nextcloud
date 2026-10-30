@@ -1,0 +1,58 @@
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/**
+ * Tests of the Tables column of the admin page: GrantPolicy::CATALOG offers Tables reading, creating and editing rows,
+ * js/admin-levels.js gives it the three levels None, Read and Full (creating and editing together), and every place that
+ * names a module names Tables.
+ */
+const { test } = require('node:test')
+const assert = require('node:assert/strict')
+const vm = require('node:vm')
+const fs = require('node:fs')
+const path = require('node:path')
+
+const root = path.join(__dirname, '../..')
+const plain = (value) => JSON.parse(JSON.stringify(value))
+
+/**
+ * The level scripts in one context, in the order the template loads them.
+ *
+ * @return {object} the levels
+ */
+function levels() {
+	const context = { t: (app, text) => text }
+	for (const file of ['admin-level-names.js', 'admin-levels.js']) {
+		vm.runInNewContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), context)
+	}
+	return context.McpAdminLevels
+}
+
+/** @return {string[]} GrantPolicy::CATALOG['tables'], read from the PHP source */
+function tablesOperations() {
+	const policy = fs.readFileSync(path.join(root, 'lib/Service/GrantPolicy.php'), 'utf8')
+	const line = policy.match(/'tables' => \[([^\]]*)\]/)
+	assert.ok(line, 'the Tables entry of GrantPolicy::CATALOG')
+	return [...line[1].matchAll(/'(\w+)'/g)].map((match) => match[1])
+}
+
+test('Tables levels are None, Read and Full', () => {
+	const Levels = levels()
+	const operations = tablesOperations()
+	assert.deepEqual(operations, ['read', 'create', 'edit'])
+	assert.deepEqual(plain(Levels.levels('tables', operations)), ['none', 'read', 'full'])
+	assert.deepEqual(plain(Levels.operationsFor('tables', operations, 'read')), ['read'])
+	assert.deepEqual(plain(Levels.operationsFor('tables', operations, 'full')), ['read', 'create', 'edit'])
+	assert.equal(Levels.levelOf('tables', operations, { read: true, create: false, edit: false }), 'read')
+	assert.equal(Levels.levelOf('tables', operations, { read: true, create: true, edit: true }), 'full')
+	assert.equal(Levels.levelOf('tables', operations, { read: false, create: false, edit: false }), 'none')
+	assert.equal(Levels.levelOf('tables', operations, { read: false, create: true, edit: false }), 'custom', 'creating without reading is shown operation by operation')
+})
+
+test('every module label map names Tables', () => {
+	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-inspector.js']) {
+		const source = fs.readFileSync(path.join(root, 'js', file), 'utf8')
+		assert.match(source, /tables: t\('mcp', 'Tables'\)/, file)
+	}
+})

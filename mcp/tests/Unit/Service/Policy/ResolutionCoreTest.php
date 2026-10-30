@@ -467,7 +467,7 @@ final class ResolutionCoreTest extends TestCase {
         $context = $this->resolver->begin('alice');
         try {
             $this->expectException(\InvalidArgumentException::class);
-            $context->granted('files', 'delete');
+            $context->granted('files', 'destroy');
         } finally { $context->close(); }
     }
 

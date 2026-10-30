@@ -87,11 +87,11 @@ trait AssertsReadablePlans {
             // The forged footer may only appear inside the escaped value: on one line, or in every line of a block quote.
             foreach (explode("\n", $body) as $line) {
                 if (str_contains($line, 'Confirm to execute')) {
-                    self::assertTrue(str_contains($line, $escaped) || str_starts_with($line, '>'), $where . ': forged footer line "' . $line . '"');
+                    self::assertTrue(PlanPayloadMatch::contains($line, $payload) || str_starts_with($line, '>'), $where . ': forged footer line "' . $line . '"');
                 }
             }
             if (str_contains($body, 'alert')) {
-                self::assertTrue(str_contains($body, $escaped) || str_contains($body, $quoted), $where . ': shown, but not escaped');
+                self::assertTrue(PlanPayloadMatch::contains($body, $payload), $where . ': shown, but not escaped');
                 $shown++;
             }
         }

@@ -30,7 +30,7 @@ class FakeMailApp extends MailServices {
 	public bool $enabled = true;
 
 	/** @var list<array{id:int, name:string, email:string, owner:string}> stored accounts */
-	private array $accounts = [];
+	protected array $accounts = [];
 
 	/** @var array<int, list<array<string, mixed>>> cached folders, by account id */
 	private array $mailboxes = [];
@@ -45,6 +45,14 @@ class FakeMailApp extends MailServices {
 		parent::__construct($stub(IAppManager::class), $stub(ContainerInterface::class), $stub(IUserManager::class));
 		$this->journal = new \ArrayObject();
 	}
+
+	/**
+	 * Settings of each account as the Mail app stores them, by account id: trash, junk, drafts, sent (folder ids),
+	 * retention (days) and address (the sending address, default: the account's e-mail).
+	 *
+	 * @var array<int, array{trash?:int|null, junk?:int|null, drafts?:int|null, sent?:int|null, retention?:int|null, address?:string}>
+	 */
+	public array $accountSettings = [];
 
 	/**
 	 * Stores an account.
@@ -146,11 +154,20 @@ class FakeMailApp extends MailServices {
 	 * @return object the double
 	 */
 	private function account(array $row): object {
+		$settings = $this->accountSettings[$row['id']] ?? [];
 		return new RecordingDouble('Account', [
 			'getId' => static fn (): int => $row['id'],
 			'getName' => static fn (): string => $row['name'],
 			'getEmail' => static fn (): string => $row['email'],
+			'getEMailAddress' => static fn (): string => $settings['address'] ?? $row['email'],
 			'getUserId' => static fn (): string => $row['owner'],
+			'getMailAccount' => fn (): object => new RecordingDouble('MailAccount', [
+				'getTrashMailboxId' => static fn (): ?int => $settings['trash'] ?? null,
+				'getJunkMailboxId' => static fn (): ?int => $settings['junk'] ?? null,
+				'getTrashRetentionDays' => static fn (): ?int => $settings['retention'] ?? null,
+				'getDraftsMailboxId' => static fn (): ?int => $settings['drafts'] ?? null,
+				'getSentMailboxId' => static fn (): ?int => $settings['sent'] ?? null,
+			], $this->journal),
 		], $this->journal);
 	}
 

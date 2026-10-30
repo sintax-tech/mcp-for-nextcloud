@@ -169,7 +169,7 @@ final class McpProtocolTest extends TestCase {
      * message. Anything outside the argument-name charset has to come back as the generic answer.
      */
     public function testServerStateNeverRidesOutInsideAnErrorMessage(): void {
-        foreach (['/etc/passwd', '/home/pedro/Documentos/ata.md', 'a b', 'a;b', 'a\\b', "a'; DROP TABLE users;--", '<script>'] as $vazamento) {
+        foreach (['/etc/passwd', '/home/alice/Documents/minutes.md', 'a b', 'a;b', 'a\\b', "a'; DROP TABLE users;--", '<script>'] as $vazamento) {
             $out = $this->call(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'tools/call',
                 'params' => ['name' => 'mcp_status', 'arguments' => ['a' => 1]]]);
             // The registry only ever builds a message from declared keys, so the charset is exercised directly.

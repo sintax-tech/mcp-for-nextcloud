@@ -172,7 +172,7 @@
 		if (module === null) {
 			return level === 'read' ? t('mcp', 'Yes') : t('mcp', 'No')
 		}
-		return { none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }[level] || level
+		return { ...window.McpAdminPollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }[level] || level
 	}
 
 	/** @return {string} the level these values are, for any module, "Can connect" included */
@@ -365,6 +365,10 @@
 		if (losesEligibility(user, commands, open.module === null ? open.inherited : null)
 			&& !window.confirm(t('mcp', 'Turn off “Can connect” for {user}?', { user: user.displayName }, undefined, { escape: false }) + '\n'
 				+ t('mcp', 'This signs the person out of every MCP client, and undoing it does not sign them back in.'))) {
+			render()
+			return
+		}
+		if (window.McpAdminMailGrants && !window.McpAdminMailGrants.confirmWrites(commands.filter((command) => command.state === 'allow'))) {
 			render()
 			return
 		}

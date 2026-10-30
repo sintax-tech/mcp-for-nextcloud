@@ -1,0 +1,38 @@
+{
+    "5.10.11": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.10.11/mail-v5.10.11.tar.gz",
+        "sha256": "23a053bd4b477fa0c55a07acb230f13c05e0d4993f72b4843b929d6e491cb0b8",
+        "constructor": [
+            "Account $account",
+            "Mailbox $mailbox",
+            "int $uid",
+            "string $flag",
+            "bool $set"
+        ],
+        "flagMessageThirdArgument": "$uid"
+    },
+    "5.11.0": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.11.0/mail-v5.11.0.tar.gz",
+        "sha256": "b023d43775b96db450f247e1bc5fdee9173637e264a5cfa09072c66a42ab3cc4",
+        "constructor": [
+            "Account $account",
+            "Mailbox $mailbox",
+            "Message $message",
+            "string $flag",
+            "bool $set"
+        ],
+        "flagMessageThirdArgument": "$message"
+    },
+    "5.12.5": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.12.5/mail-v5.12.5.tar.gz",
+        "sha256": "c52dab18a4de1710854038d95810f9ae4eb76a8656d89800e7dceb5aff0034e0",
+        "constructor": [
+            "Account $account",
+            "Mailbox $mailbox",
+            "Message $message",
+            "string $flag",
+            "bool $set"
+        ],
+        "flagMessageThirdArgument": "$message"
+    }
+}

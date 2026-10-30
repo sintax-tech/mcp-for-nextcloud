@@ -1,0 +1,14 @@
+{
+    "5.10.10": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.10.10/mail-v5.10.10.tar.gz",
+        "sha256": "b39010960b37cd8405fe26551e1e8af7ebae15affcba0aa93980be86c56aa878",
+        "bodyPartPeek": false,
+        "mimeHeaderPeek": false
+    },
+    "5.10.11": {
+        "url": "https://github.com/nextcloud-releases/mail/releases/download/v5.10.11/mail-v5.10.11.tar.gz",
+        "sha256": "23a053bd4b477fa0c55a07acb230f13c05e0d4993f72b4843b929d6e491cb0b8",
+        "bodyPartPeek": true,
+        "mimeHeaderPeek": true
+    }
+}

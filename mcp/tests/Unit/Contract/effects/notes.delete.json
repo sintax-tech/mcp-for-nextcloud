@@ -1,0 +1,424 @@
+{
+    "tool": "notes_delete",
+    "grant": "notes.delete",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "id": 102,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete note**\n\nDelete note: **Ata**\n- The note can be restored from the Nextcloud trash bin, where it stays until it is emptied.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the note goes to the Nextcloud trash bin.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "notes_delete",
+                            "title": "Delete note",
+                            "action": "notes_delete",
+                            "note": {
+                                "id": 102,
+                                "title": "Ata",
+                                "category": "",
+                                "modified": 1759200102,
+                                "etag": "<etag#1>",
+                                "content": "decisões\n",
+                                "bytes": 10
+                            },
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "trash": true,
+                            "recoverable": true,
+                            "consequence": "The note can be restored from the Nextcloud trash bin, where it stays until it is emptied.",
+                            "message": "Nothing was changed. After your approval the note goes to the Nextcloud trash bin."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n",
+                    "/alice/files/Notes/Pauta.md": "itens\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "id": 102,
+                "etag": "<etag#1>",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n",
+                    "/alice/files/Notes/Pauta.md": "itens\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "id": 102,
+                "etag": "<etag#1>",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete note**\n\nDelete note: **Ata**\n- The note can be restored from the Nextcloud trash bin, where it stays until it is emptied.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the note goes to the Nextcloud trash bin.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "notes_delete",
+                            "title": "Delete note",
+                            "action": "notes_delete",
+                            "note": {
+                                "id": 102,
+                                "title": "Ata",
+                                "category": "",
+                                "modified": 1759200102,
+                                "etag": "<etag#1>",
+                                "content": "decisões\n",
+                                "bytes": 10
+                            },
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "trash": true,
+                            "recoverable": true,
+                            "consequence": "The note can be restored from the Nextcloud trash bin, where it stays until it is emptied.",
+                            "message": "Nothing was changed. After your approval the note goes to the Nextcloud trash bin."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n",
+                    "/alice/files/Notes/Pauta.md": "itens\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "notes_create, notes_move and notes_delete keep no plan fingerprint (no PlanState, no PlanChanged): the confirmed call is checked again from its arguments. A note that changed since the plan is refused by the ETag the call carries (a conflict, without a new plan), asserted outside the golden."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "id": 102,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete note**\n\nDelete note: **Ata**\n- The note can be restored from the Nextcloud trash bin, where it stays until it is emptied.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the note goes to the Nextcloud trash bin.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "notes_delete",
+                            "title": "Delete note",
+                            "action": "notes_delete",
+                            "note": {
+                                "id": 102,
+                                "title": "Ata",
+                                "category": "",
+                                "modified": 1759200102,
+                                "etag": "<etag#1>",
+                                "content": "decisões\n",
+                                "bytes": 10
+                            },
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "trash": true,
+                            "recoverable": true,
+                            "consequence": "The note can be restored from the Nextcloud trash bin, where it stays until it is emptied.",
+                            "message": "Nothing was changed. After your approval the note goes to the Nextcloud trash bin."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n",
+                    "/alice/files/Notes/Pauta.md": "itens\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "id": 102,
+                "etag": "<etag#1>",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"id\": 102,\n    \"deleted\": true,\n    \"trash\": true\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Pauta.md": "itens\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": [
+                    "delete /alice/files/Notes/Ata.md"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "id": 103,
+                "etag": "<etag#2>",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Pauta.md": "itens\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": [
+                    "delete /alice/files/Notes/Ata.md"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "id": 103,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Pauta.md": "itens\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": [
+                    "delete /alice/files/Notes/Ata.md"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "id": 103,
+                "etag": "<etag#2>",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Pauta.md": "itens\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": [
+                    "delete /alice/files/Notes/Ata.md"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "id": 103,
+                "etag": "<etag#2>",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Pauta.md": "itens\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": [
+                    "delete /alice/files/Notes/Ata.md"
+                ]
+            }
+        }
+    ]
+}

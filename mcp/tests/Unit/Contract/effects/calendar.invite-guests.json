@@ -1,0 +1,642 @@
+{
+    "tool": "calendar_update_event",
+    "grant": "calendar.edit",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "revisao",
+                "attendees": [
+                    "bob",
+                    "carla"
+                ],
+                "send_invitations": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit event**\n\nUpdate event in *Pessoal*: **Revisão do contrato**\n- Participants: Roberto Almeida → Roberto Almeida, Carla Dias\n- Invitations: After approval, Nextcloud may schedule invitations, updates or CANCEL for removed attendees. Sending and delivery are not guaranteed.\n\n### Warnings\n\n- Could not check the availability of Carla Dias.\n- The calendar Pessoal is not shared with Roberto Almeida, Carla Dias.\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_update_event",
+                            "title": "Edit event",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_update_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": null,
+                            "uid": "revisao",
+                            "etag": "<etag#1>",
+                            "before": {
+                                "summary": "Revisão do contrato",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [
+                                    "mailto:bob@example.invalid"
+                                ],
+                                "organizer": "mailto:alice@example.invalid",
+                                "recurring": false
+                            },
+                            "after": {
+                                "summary": "Revisão do contrato",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [
+                                    "mailto:bob@example.invalid",
+                                    "mailto:carla@example.invalid"
+                                ],
+                                "organizer": "mailto:alice@example.invalid",
+                                "recurring": false
+                            },
+                            "participants": {
+                                "current": [
+                                    "mailto:bob@example.invalid"
+                                ],
+                                "proposed": [
+                                    "mailto:bob@example.invalid",
+                                    "mailto:carla@example.invalid"
+                                ],
+                                "added": [
+                                    "mailto:carla@example.invalid"
+                                ],
+                                "removed": [],
+                                "names": {
+                                    "bob@example.invalid": "Roberto Almeida",
+                                    "carla@example.invalid": "Carla Dias"
+                                }
+                            },
+                            "recoverable": false,
+                            "consequence": null,
+                            "scheduling": {
+                                "requested": true,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "After approval, Nextcloud may schedule invitations, updates or CANCEL for removed attendees. Sending and delivery are not guaranteed.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": [],
+                            "warnings": [
+                                {
+                                    "type": "unverifiable",
+                                    "message": "Could not check the availability of Carla Dias."
+                                },
+                                {
+                                    "type": "calendarNotShared",
+                                    "message": "The calendar Pessoal is not shared with Roberto Almeida, Carla Dias."
+                                }
+                            ],
+                            "sharedCalendars": [],
+                            "suggestedCalendar": null
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "revisao.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:revisao\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Revisão do contrato\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "revisao",
+                "attendees": [
+                    "bob",
+                    "carla"
+                ],
+                "send_invitations": true,
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "revisao.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:revisao\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Revisão do contrato\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "revisao",
+                "attendees": [
+                    "bob",
+                    "carla"
+                ],
+                "send_invitations": true,
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit event**\n\nUpdate event in *Pessoal*: **Revisão do contrato**\n- Participants: Roberto Almeida → Roberto Almeida, Carla Dias\n- Invitations: After approval, Nextcloud may schedule invitations, updates or CANCEL for removed attendees. Sending and delivery are not guaranteed.\n\n### Warnings\n\n- Could not check the availability of Carla Dias.\n- The calendar Pessoal is not shared with Roberto Almeida, Carla Dias.\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_update_event",
+                            "title": "Edit event",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_update_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": null,
+                            "uid": "revisao",
+                            "etag": "<etag#1>",
+                            "before": {
+                                "summary": "Revisão do contrato",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [
+                                    "mailto:bob@example.invalid"
+                                ],
+                                "organizer": "mailto:alice@example.invalid",
+                                "recurring": false
+                            },
+                            "after": {
+                                "summary": "Revisão do contrato",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [
+                                    "mailto:bob@example.invalid",
+                                    "mailto:carla@example.invalid"
+                                ],
+                                "organizer": "mailto:alice@example.invalid",
+                                "recurring": false
+                            },
+                            "participants": {
+                                "current": [
+                                    "mailto:bob@example.invalid"
+                                ],
+                                "proposed": [
+                                    "mailto:bob@example.invalid",
+                                    "mailto:carla@example.invalid"
+                                ],
+                                "added": [
+                                    "mailto:carla@example.invalid"
+                                ],
+                                "removed": [],
+                                "names": {
+                                    "bob@example.invalid": "Roberto Almeida",
+                                    "carla@example.invalid": "Carla Dias"
+                                }
+                            },
+                            "recoverable": false,
+                            "consequence": null,
+                            "scheduling": {
+                                "requested": true,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "After approval, Nextcloud may schedule invitations, updates or CANCEL for removed attendees. Sending and delivery are not guaranteed.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": [],
+                            "warnings": [
+                                {
+                                    "type": "unverifiable",
+                                    "message": "Could not check the availability of Carla Dias."
+                                },
+                                {
+                                    "type": "calendarNotShared",
+                                    "message": "The calendar Pessoal is not shared with Roberto Almeida, Carla Dias."
+                                }
+                            ],
+                            "sharedCalendars": [],
+                            "suggestedCalendar": null
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "revisao.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:revisao\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Revisão do contrato\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "The Calendar module keeps no plan fingerprint (no PlanState/PlanChanged). The plan returns the ETag of the event and the confirmed call carries it: when the event changed in between, the ETag no longer matches and the call is refused as a conflict (If-Match), without a new plan."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "revisao",
+                "attendees": [
+                    "bob",
+                    "carla"
+                ],
+                "send_invitations": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit event**\n\nUpdate event in *Pessoal*: **Revisão do contrato**\n- Participants: Roberto Almeida → Roberto Almeida, Carla Dias\n- Invitations: After approval, Nextcloud may schedule invitations, updates or CANCEL for removed attendees. Sending and delivery are not guaranteed.\n\n### Warnings\n\n- Could not check the availability of Carla Dias.\n- The calendar Pessoal is not shared with Roberto Almeida, Carla Dias.\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_update_event",
+                            "title": "Edit event",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_update_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": null,
+                            "uid": "revisao",
+                            "etag": "<etag#1>",
+                            "before": {
+                                "summary": "Revisão do contrato",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [
+                                    "mailto:bob@example.invalid"
+                                ],
+                                "organizer": "mailto:alice@example.invalid",
+                                "recurring": false
+                            },
+                            "after": {
+                                "summary": "Revisão do contrato",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [
+                                    "mailto:bob@example.invalid",
+                                    "mailto:carla@example.invalid"
+                                ],
+                                "organizer": "mailto:alice@example.invalid",
+                                "recurring": false
+                            },
+                            "participants": {
+                                "current": [
+                                    "mailto:bob@example.invalid"
+                                ],
+                                "proposed": [
+                                    "mailto:bob@example.invalid",
+                                    "mailto:carla@example.invalid"
+                                ],
+                                "added": [
+                                    "mailto:carla@example.invalid"
+                                ],
+                                "removed": [],
+                                "names": {
+                                    "bob@example.invalid": "Roberto Almeida",
+                                    "carla@example.invalid": "Carla Dias"
+                                }
+                            },
+                            "recoverable": false,
+                            "consequence": null,
+                            "scheduling": {
+                                "requested": true,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "After approval, Nextcloud may schedule invitations, updates or CANCEL for removed attendees. Sending and delivery are not guaranteed.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": [],
+                            "warnings": [
+                                {
+                                    "type": "unverifiable",
+                                    "message": "Could not check the availability of Carla Dias."
+                                },
+                                {
+                                    "type": "calendarNotShared",
+                                    "message": "The calendar Pessoal is not shared with Roberto Almeida, Carla Dias."
+                                }
+                            ],
+                            "sharedCalendars": [],
+                            "suggestedCalendar": null
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "revisao.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:revisao\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Revisão do contrato\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "revisao",
+                "attendees": [
+                    "bob",
+                    "carla"
+                ],
+                "send_invitations": true,
+                "confirm": true,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"uid\": \"revisao\",\n    \"summary\": \"Revisão do contrato\",\n    \"start\": \"2026-10-01T12:00:00.000Z\",\n    \"end\": \"2026-10-01T13:00:00.000Z\",\n    \"location\": \"\",\n    \"allDay\": false,\n    \"calendar\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"etag\": \"\\\"2031fd12675358b148dac236084a0f5c\\\"\",\n    \"scheduling\": {\n        \"requested\": true,\n        \"imipEnabled\": true,\n        \"message\": \"invitation delivered to Nextcloud scheduling\",\n        \"participants\": [\n            {\n                \"email\": \"mailto:bob@example.invalid\",\n                \"scheduleStatus\": \"1.2\",\n                \"meaning\": \"delivered to the internal attendee calendar\"\n            },\n            {\n                \"email\": \"mailto:carla@example.invalid\",\n                \"scheduleStatus\": \"1.2\",\n                \"meaning\": \"delivered to the internal attendee calendar\"\n            }\n        ]\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "revisao.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:revisao\r\nSUMMARY:Revisão do contrato\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT\r\n =NEEDS-ACTION;RSVP=TRUE;SCHEDULE-STATUS=1.2:mailto:bob@example.invalid\r\nATTENDEE;CN=Carla Dias;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEED\r\n S-ACTION;RSVP=TRUE;SCHEDULE-STATUS=1.2:mailto:carla@example.invalid\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [
+                    {
+                        "operation": "update",
+                        "calendar": "personal",
+                        "object": "revisao.ics",
+                        "etag": "<etag#1>",
+                        "ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:revisao\r\nSUMMARY:Revisão do contrato\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT\r\n =NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nATTENDEE;CN=Carla Dias;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEED\r\n S-ACTION;RSVP=TRUE:mailto:carla@example.invalid\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "scheduling": true
+                    }
+                ],
+                "scheduled": [
+                    "PUT revisao: mailto:bob@example.invalid, mailto:carla@example.invalid"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "revisao",
+                "attendees": [
+                    "bob",
+                    "carla"
+                ],
+                "send_invitations": true,
+                "confirm": true,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "revisao.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:revisao\r\nSUMMARY:Revisão do contrato\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT\r\n =NEEDS-ACTION;RSVP=TRUE;SCHEDULE-STATUS=1.2:mailto:bob@example.invalid\r\nATTENDEE;CN=Carla Dias;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEED\r\n S-ACTION;RSVP=TRUE;SCHEDULE-STATUS=1.2:mailto:carla@example.invalid\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [
+                    {
+                        "operation": "update",
+                        "calendar": "personal",
+                        "object": "revisao.ics",
+                        "etag": "<etag#1>",
+                        "ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:revisao\r\nSUMMARY:Revisão do contrato\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT\r\n =NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nATTENDEE;CN=Carla Dias;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEED\r\n S-ACTION;RSVP=TRUE:mailto:carla@example.invalid\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "scheduling": true
+                    }
+                ],
+                "scheduled": [
+                    "PUT revisao: mailto:bob@example.invalid, mailto:carla@example.invalid"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "revisao",
+                "attendees": [
+                    "bob",
+                    "carla"
+                ],
+                "send_invitations": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "revisao.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:revisao\r\nSUMMARY:Revisão do contrato\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT\r\n =NEEDS-ACTION;RSVP=TRUE;SCHEDULE-STATUS=1.2:mailto:bob@example.invalid\r\nATTENDEE;CN=Carla Dias;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEED\r\n S-ACTION;RSVP=TRUE;SCHEDULE-STATUS=1.2:mailto:carla@example.invalid\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [
+                    {
+                        "operation": "update",
+                        "calendar": "personal",
+                        "object": "revisao.ics",
+                        "etag": "<etag#1>",
+                        "ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:revisao\r\nSUMMARY:Revisão do contrato\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT\r\n =NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nATTENDEE;CN=Carla Dias;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEED\r\n S-ACTION;RSVP=TRUE:mailto:carla@example.invalid\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "scheduling": true
+                    }
+                ],
+                "scheduled": [
+                    "PUT revisao: mailto:bob@example.invalid, mailto:carla@example.invalid"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "revisao",
+                "attendees": [
+                    "bob",
+                    "carla"
+                ],
+                "send_invitations": true,
+                "confirm": true,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "revisao.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:revisao\r\nSUMMARY:Revisão do contrato\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT\r\n =NEEDS-ACTION;RSVP=TRUE;SCHEDULE-STATUS=1.2:mailto:bob@example.invalid\r\nATTENDEE;CN=Carla Dias;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEED\r\n S-ACTION;RSVP=TRUE;SCHEDULE-STATUS=1.2:mailto:carla@example.invalid\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [
+                    {
+                        "operation": "update",
+                        "calendar": "personal",
+                        "object": "revisao.ics",
+                        "etag": "<etag#1>",
+                        "ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:revisao\r\nSUMMARY:Revisão do contrato\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT\r\n =NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nATTENDEE;CN=Carla Dias;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEED\r\n S-ACTION;RSVP=TRUE:mailto:carla@example.invalid\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "scheduling": true
+                    }
+                ],
+                "scheduled": [
+                    "PUT revisao: mailto:bob@example.invalid, mailto:carla@example.invalid"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Calendar objects are not Files nodes: no system tag or excluded folder can hide a calendar or an event from MCP (VisibilityGuard and FilesAccessGuard do not apply). What narrows the reachable calendars is the administrator resource scope and the native ACL, which are scope and permission refusals, not visibility."
+        }
+    ]
+}

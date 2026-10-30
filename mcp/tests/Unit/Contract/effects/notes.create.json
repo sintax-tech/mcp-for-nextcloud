@@ -1,0 +1,398 @@
+{
+    "tool": "notes_create",
+    "grant": "notes.create",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "title": "Plano",
+                "content": "metas do trimestre\n",
+                "category": "Atas"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create note**\n\nCreate note in *Atas*: **Plano**\n- Content: metas do trimestre\n\nNothing was changed. Confirm to execute.\n\n*After your approval a note is created with the title and content below.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "notes_create",
+                            "title": "Create note",
+                            "action": "notes_create",
+                            "note": {
+                                "title": "Plano",
+                                "fileName": "Plano.md",
+                                "category": "Atas",
+                                "categoryCreated": false,
+                                "content": "metas do trimestre\n",
+                                "bytes": 19
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval a note is created with the title and content below."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n",
+                    "/alice/files/Notes/Pauta.md": "itens\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "title": "Plano",
+                "content": "metas do trimestre\n",
+                "category": "Atas",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n",
+                    "/alice/files/Notes/Pauta.md": "itens\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "title": "Plano",
+                "content": "metas do trimestre\n",
+                "category": "Atas",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create note**\n\nCreate note in *Atas*: **Plano**\n- Content: metas do trimestre\n\nNothing was changed. Confirm to execute.\n\n*After your approval a note is created with the title and content below.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "notes_create",
+                            "title": "Create note",
+                            "action": "notes_create",
+                            "note": {
+                                "title": "Plano",
+                                "fileName": "Plano.md",
+                                "category": "Atas",
+                                "categoryCreated": false,
+                                "content": "metas do trimestre\n",
+                                "bytes": 19
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval a note is created with the title and content below."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n",
+                    "/alice/files/Notes/Pauta.md": "itens\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "A creation has no existing note to change between the plan and the confirmation, and notes_create, notes_move and notes_delete keep no plan fingerprint (no PlanState, no PlanChanged): the confirmed call is checked again from its arguments. A note that changed since the plan is refused by the ETag the call carries (a conflict, without a new plan), asserted outside the golden."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "title": "Plano",
+                "content": "metas do trimestre\n",
+                "category": "Atas"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create note**\n\nCreate note in *Atas*: **Plano**\n- Content: metas do trimestre\n\nNothing was changed. Confirm to execute.\n\n*After your approval a note is created with the title and content below.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "notes_create",
+                            "title": "Create note",
+                            "action": "notes_create",
+                            "note": {
+                                "title": "Plano",
+                                "fileName": "Plano.md",
+                                "category": "Atas",
+                                "categoryCreated": false,
+                                "content": "metas do trimestre\n",
+                                "bytes": 19
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval a note is created with the title and content below."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n",
+                    "/alice/files/Notes/Pauta.md": "itens\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "title": "Plano",
+                "content": "metas do trimestre\n",
+                "category": "Atas",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"id\": 105,\n    \"title\": \"Plano\",\n    \"category\": \"Atas\",\n    \"modified\": 1759200105,\n    \"etag\": \"e105\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n",
+                    "/alice/files/Notes/Pauta.md": "itens\n",
+                    "/alice/files/Notes/Atas/Plano.md": "metas do trimestre\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": [
+                    "create /alice/files/Notes/Atas/Plano.md"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "title": "Plano",
+                "content": "metas do trimestre\n",
+                "category": "Atas",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n",
+                    "/alice/files/Notes/Pauta.md": "itens\n",
+                    "/alice/files/Notes/Atas/Plano.md": "metas do trimestre\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": [
+                    "create /alice/files/Notes/Atas/Plano.md"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "title": "Plano",
+                "content": "metas do trimestre\n",
+                "category": "Atas"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n",
+                    "/alice/files/Notes/Pauta.md": "itens\n",
+                    "/alice/files/Notes/Atas/Plano.md": "metas do trimestre\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": [
+                    "create /alice/files/Notes/Atas/Plano.md"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "title": "Plano",
+                "content": "metas do trimestre\n",
+                "category": "Atas",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n",
+                    "/alice/files/Notes/Pauta.md": "itens\n",
+                    "/alice/files/Notes/Atas/Plano.md": "metas do trimestre\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": [
+                    "create /alice/files/Notes/Atas/Plano.md"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "title": "Plano",
+                "content": "metas do trimestre\n",
+                "category": "Atas",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n",
+                    "/alice/files/Notes/Pauta.md": "itens\n",
+                    "/alice/files/Notes/Atas/Plano.md": "metas do trimestre\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": [
+                    "create /alice/files/Notes/Atas/Plano.md"
+                ]
+            }
+        }
+    ]
+}

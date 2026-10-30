@@ -1,0 +1,544 @@
+{
+    "tool": "calendar_delete_event",
+    "grant": "calendar.delete",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "cancelada-1",
+                "send_invitations": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete event**\n\n- Calendar:\n  - Id: 1\n  - Uri: personal\n  - Name: Pessoal\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/personal/\n- Uid: cancelada-1\n- Before:\n  - Summary: Visita cancelada-1\n  - Location: \n  - Description: \n  - Start: 2026-10-01T12:00:00+00:00\n  - End: 2026-10-01T13:00:00+00:00\n  - All day: no\n  - Attendees: mailto:bob@example.invalid\n  - Organizer: mailto:alice@example.invalid\n  - Recurring: no\n- Participants:\n  - Current: mailto:bob@example.invalid\n  - Removed: mailto:bob@example.invalid\n  - Names:\n    - Bob@example.invalid: Roberto Almeida\n- Recoverable: yes\n- Consequence: After approval, the event will go to the recoverable Calendar trash bin.\n- Scheduling:\n  - Requested: yes\n  - Imip enabled: yes\n  - Participants notified: no\n  - Message: After approval, the event will go to the trash bin and Nextcloud may schedule CANCEL to attendees. Sending and delivery are not guaranteed.\n  - Proof scope: Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved.\n- Timezone: America/Sao\\_Paulo\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_delete_event",
+                            "title": "Delete event",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_delete_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": null,
+                            "uid": "cancelada-1",
+                            "etag": "<etag#1>",
+                            "before": {
+                                "summary": "Visita cancelada-1",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [
+                                    "mailto:bob@example.invalid"
+                                ],
+                                "organizer": "mailto:alice@example.invalid",
+                                "recurring": false
+                            },
+                            "after": null,
+                            "participants": {
+                                "current": [
+                                    "mailto:bob@example.invalid"
+                                ],
+                                "proposed": [],
+                                "added": [],
+                                "removed": [
+                                    "mailto:bob@example.invalid"
+                                ],
+                                "names": {
+                                    "bob@example.invalid": "Roberto Almeida"
+                                }
+                            },
+                            "recoverable": true,
+                            "consequence": "After approval, the event will go to the recoverable Calendar trash bin.",
+                            "scheduling": {
+                                "requested": true,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "After approval, the event will go to the trash bin and Nextcloud may schedule CANCEL to attendees. Sending and delivery are not guaranteed.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": []
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "cancelada-1.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-1\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-1\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "cancelada-2.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-2\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-2\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "cancelada-3.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-3\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-3\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "cancelada-1",
+                "send_invitations": true,
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "cancelada-1.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-1\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-1\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "cancelada-2.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-2\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-2\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "cancelada-3.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-3\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-3\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "cancelada-1",
+                "send_invitations": true,
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete event**\n\n- Calendar:\n  - Id: 1\n  - Uri: personal\n  - Name: Pessoal\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/personal/\n- Uid: cancelada-1\n- Before:\n  - Summary: Visita cancelada-1\n  - Location: \n  - Description: \n  - Start: 2026-10-01T12:00:00+00:00\n  - End: 2026-10-01T13:00:00+00:00\n  - All day: no\n  - Attendees: mailto:bob@example.invalid\n  - Organizer: mailto:alice@example.invalid\n  - Recurring: no\n- Participants:\n  - Current: mailto:bob@example.invalid\n  - Removed: mailto:bob@example.invalid\n  - Names:\n    - Bob@example.invalid: Roberto Almeida\n- Recoverable: yes\n- Consequence: After approval, the event will go to the recoverable Calendar trash bin.\n- Scheduling:\n  - Requested: yes\n  - Imip enabled: yes\n  - Participants notified: no\n  - Message: After approval, the event will go to the trash bin and Nextcloud may schedule CANCEL to attendees. Sending and delivery are not guaranteed.\n  - Proof scope: Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved.\n- Timezone: America/Sao\\_Paulo\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_delete_event",
+                            "title": "Delete event",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_delete_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": null,
+                            "uid": "cancelada-1",
+                            "etag": "<etag#1>",
+                            "before": {
+                                "summary": "Visita cancelada-1",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [
+                                    "mailto:bob@example.invalid"
+                                ],
+                                "organizer": "mailto:alice@example.invalid",
+                                "recurring": false
+                            },
+                            "after": null,
+                            "participants": {
+                                "current": [
+                                    "mailto:bob@example.invalid"
+                                ],
+                                "proposed": [],
+                                "added": [],
+                                "removed": [
+                                    "mailto:bob@example.invalid"
+                                ],
+                                "names": {
+                                    "bob@example.invalid": "Roberto Almeida"
+                                }
+                            },
+                            "recoverable": true,
+                            "consequence": "After approval, the event will go to the recoverable Calendar trash bin.",
+                            "scheduling": {
+                                "requested": true,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "After approval, the event will go to the trash bin and Nextcloud may schedule CANCEL to attendees. Sending and delivery are not guaranteed.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": []
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "cancelada-1.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-1\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-1\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "cancelada-2.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-2\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-2\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "cancelada-3.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-3\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-3\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "The Calendar module keeps no plan fingerprint (no PlanState/PlanChanged). The plan returns the ETag of the event and the confirmed call carries it: when the event changed in between, the ETag no longer matches and the call is refused as a conflict (If-Match), without a new plan."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "cancelada-1",
+                "send_invitations": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete event**\n\n- Calendar:\n  - Id: 1\n  - Uri: personal\n  - Name: Pessoal\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/personal/\n- Uid: cancelada-1\n- Before:\n  - Summary: Visita cancelada-1\n  - Location: \n  - Description: \n  - Start: 2026-10-01T12:00:00+00:00\n  - End: 2026-10-01T13:00:00+00:00\n  - All day: no\n  - Attendees: mailto:bob@example.invalid\n  - Organizer: mailto:alice@example.invalid\n  - Recurring: no\n- Participants:\n  - Current: mailto:bob@example.invalid\n  - Removed: mailto:bob@example.invalid\n  - Names:\n    - Bob@example.invalid: Roberto Almeida\n- Recoverable: yes\n- Consequence: After approval, the event will go to the recoverable Calendar trash bin.\n- Scheduling:\n  - Requested: yes\n  - Imip enabled: yes\n  - Participants notified: no\n  - Message: After approval, the event will go to the trash bin and Nextcloud may schedule CANCEL to attendees. Sending and delivery are not guaranteed.\n  - Proof scope: Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved.\n- Timezone: America/Sao\\_Paulo\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_delete_event",
+                            "title": "Delete event",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_delete_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": null,
+                            "uid": "cancelada-1",
+                            "etag": "<etag#1>",
+                            "before": {
+                                "summary": "Visita cancelada-1",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [
+                                    "mailto:bob@example.invalid"
+                                ],
+                                "organizer": "mailto:alice@example.invalid",
+                                "recurring": false
+                            },
+                            "after": null,
+                            "participants": {
+                                "current": [
+                                    "mailto:bob@example.invalid"
+                                ],
+                                "proposed": [],
+                                "added": [],
+                                "removed": [
+                                    "mailto:bob@example.invalid"
+                                ],
+                                "names": {
+                                    "bob@example.invalid": "Roberto Almeida"
+                                }
+                            },
+                            "recoverable": true,
+                            "consequence": "After approval, the event will go to the recoverable Calendar trash bin.",
+                            "scheduling": {
+                                "requested": true,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "After approval, the event will go to the trash bin and Nextcloud may schedule CANCEL to attendees. Sending and delivery are not guaranteed.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": []
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "cancelada-1.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-1\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-1\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "cancelada-2.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-2\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-2\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "cancelada-3.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-3\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-3\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "cancelada-1",
+                "send_invitations": true,
+                "confirm": true,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"uid\": \"cancelada-1\",\n    \"calendar\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"deleted\": true,\n    \"recoverable\": true,\n    \"scheduling\": {\n        \"requested\": true,\n        \"imipEnabled\": true,\n        \"message\": \"invitation delivered to Nextcloud scheduling\"\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "cancelada-2.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-2\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-2\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "cancelada-3.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-3\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-3\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": {
+                    "1": {
+                        "cancelada-1-deleted.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-1\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-1\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    }
+                },
+                "dav": [
+                    {
+                        "operation": "delete",
+                        "calendar": "personal",
+                        "object": "cancelada-1.ics",
+                        "etag": "<etag#1>",
+                        "scheduling": true
+                    }
+                ],
+                "scheduled": [
+                    "DELETE cancelada-1: mailto:bob@example.invalid"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "cancelada-2",
+                "send_invitations": true,
+                "confirm": true,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "cancelada-2.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-2\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-2\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "cancelada-3.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-3\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-3\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": {
+                    "1": {
+                        "cancelada-1-deleted.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-1\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-1\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    }
+                },
+                "dav": [
+                    {
+                        "operation": "delete",
+                        "calendar": "personal",
+                        "object": "cancelada-1.ics",
+                        "etag": "<etag#1>",
+                        "scheduling": true
+                    }
+                ],
+                "scheduled": [
+                    "DELETE cancelada-1: mailto:bob@example.invalid"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "cancelada-2",
+                "send_invitations": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "cancelada-2.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-2\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-2\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "cancelada-3.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-3\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-3\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": {
+                    "1": {
+                        "cancelada-1-deleted.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-1\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-1\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    }
+                },
+                "dav": [
+                    {
+                        "operation": "delete",
+                        "calendar": "personal",
+                        "object": "cancelada-1.ics",
+                        "etag": "<etag#1>",
+                        "scheduling": true
+                    }
+                ],
+                "scheduled": [
+                    "DELETE cancelada-1: mailto:bob@example.invalid"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "cancelada-2",
+                "send_invitations": true,
+                "confirm": true,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "cancelada-2.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-2\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-2\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "cancelada-3.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-3\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-3\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": {
+                    "1": {
+                        "cancelada-1-deleted.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:cancelada-1\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Visita cancelada-1\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nORGANIZER;CN=Alice Silva:mailto:alice@example.invalid\r\nATTENDEE;CN=Roberto Almeida;CUTYPE=INDIVIDUAL;ROLE=REQ-PARTICIPANT;PARTSTAT=NEEDS-ACTION;RSVP=TRUE:mailto:bob@example.invalid\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    }
+                },
+                "dav": [
+                    {
+                        "operation": "delete",
+                        "calendar": "personal",
+                        "object": "cancelada-1.ics",
+                        "etag": "<etag#1>",
+                        "scheduling": true
+                    }
+                ],
+                "scheduled": [
+                    "DELETE cancelada-1: mailto:bob@example.invalid"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Calendar objects are not Files nodes: no system tag or excluded folder can hide a calendar or an event from MCP (VisibilityGuard and FilesAccessGuard do not apply). What narrows the reachable calendars is the administrator resource scope and the native ACL, which are scope and permission refusals, not visibility."
+        }
+    ]
+}

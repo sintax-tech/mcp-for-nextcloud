@@ -1,0 +1,68 @@
+{
+    "flow": "oauth.consent-authoritative",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 2,
+                    "authEpoch": 0,
+                    "generations": []
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "shared policy admits, disabled account refused under mutex",
+            "request": {
+                "pending": "<pending#1>",
+                "decision": "allow"
+            },
+            "response": {
+                "status": 200,
+                "template": "consent",
+                "params": {
+                    "blocked": true,
+                    "client": "Synthetic",
+                    "error": null,
+                    "pending": null,
+                    "unavailable": false
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 2,
+                    "authEpoch": 0,
+                    "generations": []
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        }
+    ]
+}

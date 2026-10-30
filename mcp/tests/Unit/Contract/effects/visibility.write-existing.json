@@ -1,0 +1,36 @@
+{
+    "steps": [
+        {
+            "step": "visible-control",
+            "request": "/Docs/open.txt",
+            "response": {
+                "allowed": true
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Docs": "dir #101",
+                    "/alice/files/Docs/Private": "dir #102",
+                    "/alice/files/Docs/open.txt": "#103 original"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "hidden-refusal",
+            "request": "/Docs/open.txt",
+            "response": {
+                "allowed": false
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Docs": "dir #101",
+                    "/alice/files/Docs/Private": "dir #102",
+                    "/alice/files/Docs/open.txt": "#103 original"
+                },
+                "ops": []
+            }
+        }
+    ]
+}

@@ -66,7 +66,9 @@ final class FlowRunner {
 		$before = ($flow->state)();
 		$fresh = $this->step('preview-before-confirm', $flow, $flow->arguments(), $before);
 		$confirmed = $flow->confirmed($fresh['body']);
-		$this->step('confirmed', $flow, $confirmed, null);
+		$executed = $this->step('confirmed', $flow, $confirmed, null);
+		$this->test->assertFalse(isset($executed['body']->error) || ($executed['body']->result->isError ?? false),
+			$flow->tool . ': confirmed call failed: ' . json_encode($executed));
 		$after = ($flow->state)();
 		$this->test->assertNotEquals($before, $after, $flow->tool . ': the confirmed call had no observable effect');
 		// Each refusal is asked with a confirmation that would succeed right now, so only the refusal itself stops it.

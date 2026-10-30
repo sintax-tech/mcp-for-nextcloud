@@ -74,6 +74,8 @@ final class OAuthEffectsRig {
 	public readonly ConnectionList $connections;
 	public readonly InMemoryCheckoutTokenStore $checkout;
 	public readonly InMemoryBatchStore $batches;
+	/** @var array<string, bool> account state, independently of MCP eligibility */
+	public array $enabled = [];
 	private ClientsTable $clients;
 	private IUserManager $users;
 	/** @var array<string, mixed> the PHP session of the signed-in user */
@@ -274,7 +276,7 @@ final class OAuthEffectsRig {
 		$user = $this->mock(IUser::class);
 		$user->method('getUID')->willReturn($uid);
 		$user->method('getDisplayName')->willReturn(ucfirst($uid));
-		$user->method('isEnabled')->willReturn(true);
+		$user->method('isEnabled')->willReturnCallback(fn (): bool => $this->enabled[$uid] ?? true);
 		return $user;
 	}
 

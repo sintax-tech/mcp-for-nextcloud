@@ -45,9 +45,10 @@ final class NotesWritesWiring {
 	 * @param FakeTree $tree the files of alice, persistent across requests
 	 * @param EffectsGate $gate the endpoint, whose configuration holds the hidden tag and the notes path
 	 * @param \Closure(): list<int> $hidden node ids that carry the hidden tag at this moment
+	 * @param FakeLockManager|null $locks the provider whose locks persist across requests
 	 * @return NotesModule the module of one request
 	 */
-	public static function module(TestCase $test, FakeTree $tree, EffectsGate $gate, \Closure $hidden): NotesModule {
+	public static function module(TestCase $test, FakeTree $tree, EffectsGate $gate, \Closure $hidden, ?FakeLockManager $locks = null): NotesModule {
 		$tags = self::mock($test, ISystemTagObjectMapper::class);
 		$tags->method('getTagIdsForObjects')->willReturnCallback(static fn (array $ids): array => array_combine(
 			array_map('strval', $ids),
@@ -62,7 +63,7 @@ final class NotesWritesWiring {
 		$users->method('get')->willReturn(self::mock($test, IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($test, FakeUsers::DEFAULTS), $tree->shareManager());
 		return new NotesModule(new NotesRepository($root, $gate->config(), $guard), $apps, $users,
-			new SharedWriteGuard($access), $access, $guard, (new FakeLockManager())->service($test),
+			new SharedWriteGuard($access), $access, $guard, ($locks ?? new FakeLockManager())->service($test),
 			new PlanState($gate->config()), FileTypePolicyFixture::off($test));
 	}
 

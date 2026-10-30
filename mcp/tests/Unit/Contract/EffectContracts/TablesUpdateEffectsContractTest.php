@@ -78,6 +78,26 @@ final class TablesUpdateEffectsContractTest extends TestCase {
 		$this->assertTheConfirmedWriteIsThePlan();
 	}
 
+	/** @return void a shared table asks for its additional confirmation and keeps every row until then */
+	public function testSharedUpdateNeedsConfirmShared(): void {
+		$this->app->withTable(WriteScene::TABLE, 'carol')->grant('alice', 'table', WriteScene::TABLE, 'read', 'update');
+		$t = new EffectTranscript($this, 'tables.update-shared');
+		$args = ['table_id' => WriteScene::TABLE, 'row_id' => self::ROW, 'cells' => self::CELLS];
+		$plan = $this->gate->call('tables_update_row', $args)['body'];
+		$args += ['confirm' => true, 'plan_state' => $plan->result->structuredContent->plan_state];
+		$before = $this->state();
+		$out = $this->gate->call('tables_update_row', $args);
+		$t->record('shared-unconfirmed', $args, $out, $this->state());
+		$this->assertEquals($before, $this->state());
+		$this->assertTrue(json_decode($out['body']->result->content[0]->text ?? 'null', true)['requiresConfirmation'] ?? false, json_encode($out));
+		$args['confirm_shared'] = true;
+		$out = $this->gate->call('tables_update_row', $args);
+		$t->record('shared-confirmed', $args, $out, $this->state());
+		$this->assertFalse($out['body']->result->isError ?? false, json_encode($out));
+		$this->assertNotEquals($before, $this->state());
+		$t->assertGolden();
+	}
+
 	/**
 	 * The key effect facts, outside the golden: the one confirmed update sent every planned cell to RowService, and the
 	 * stored row holds exactly the planned values, the cells it was not asked to touch kept.

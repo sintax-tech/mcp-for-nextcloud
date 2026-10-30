@@ -57,6 +57,18 @@ final class InventoryCheckTest extends TestCase {
 		$this->assertTrue($check->check($this->report(['New\\A::one' => ''])), implode("\n", $check->problems));
 	}
 
+	/** @return void only exact permitted environment skips can skip; they must still exist and may also pass */
+	public function testEnvironmentSkipPermissionIsClosed(): void {
+		$check = new InventoryCheck(['A::one', 'A::two'], ['A::two'], [], [], ['A::one']);
+		foreach (['', 'skipped'] as $outcome) {
+			$this->assertTrue($check->check($this->report(['A::one' => $outcome, 'A::two' => 'failure'])));
+		}
+		foreach ([['A::two' => 'failure'], ['A::one' => 'incomplete', 'A::two' => 'failure'],
+			['A::one' => 'error', 'A::two' => 'failure'], ['A::one' => '', 'A::two' => 'failure', 'B::other' => 'skipped']] as $cases) {
+			$this->assertFalse($check->check($this->report($cases)), 'Permission must not hide missing tests, incomplete tests, errors or other skips');
+		}
+	}
+
 	/** @return InventoryCheck a baseline of three tests, A::two failing */
 	private function check(): InventoryCheck {
 		return new InventoryCheck(['A::one', 'A::two', 'B::three'], ['A::two'], []);
@@ -66,7 +78,7 @@ final class InventoryCheckTest extends TestCase {
 	public function testEveryBaselineFileMustBeReadable(): void {
 		$dir = sys_get_temp_dir() . '/mcp-inventory-' . bin2hex(random_bytes(8));
 		mkdir($dir);
-		$names = ['tests-inventory.txt', 'environment-failures.txt', 'skipped.txt'];
+		$names = ['tests-inventory.txt', 'environment-failures.txt', 'skipped.txt', 'environment-skips.tsv'];
 		try {
 			foreach ($names as $absent) {
 				foreach ($names as $name) {
@@ -86,6 +98,15 @@ final class InventoryCheckTest extends TestCase {
 					if ($directory) {
 						rmdir($dir . '/' . $absent);
 					}
+				}
+			}
+			foreach (['A::one', "\twritten reason without an identity"] as $invalid) {
+				file_put_contents($dir . '/environment-skips.tsv', $invalid);
+				try {
+					InventoryCheck::fromBaseline($dir);
+					$this->fail('An environment skip must have an exact identity and reason');
+				} catch (\RuntimeException $error) {
+					$this->assertStringContainsString('exact identity and written reason', $error->getMessage());
 				}
 			}
 		} finally {

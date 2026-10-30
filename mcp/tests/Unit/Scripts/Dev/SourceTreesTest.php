@@ -50,15 +50,45 @@ final class SourceTreesTest extends TestCase {
 
 	/** A revision is read from Git, relative to the app folder, without the working tree's later edits. */
 	public function testARevisionIsReadFromGit(): void {
-		exec('command -v git', $output, $status);
-		if ($status !== 0) {
-			$this->markTestSkipped('git is not installed');
-		}
-		$git = 'git -C ' . escapeshellarg($this->dir) . ' -c user.name=t -c user.email=t@example.invalid ';
-		exec($git . 'init -q && ' . $git . 'add -A && ' . $git . 'commit -qm base', $output, $status);
-		$this->assertSame(0, $status);
-		file_put_contents($this->dir . '/mcp/lib/Sub/A.php', "<?php\nclass Changed {}\n");
-		$files = SourceTrees::fromGit($this->dir, 'HEAD', 'mcp');
-		$this->assertSame(['lib/Sub/A.php' => "<?php\nclass A {}\n", 'tests/ATest.php' => "<?php\n"], $files);
+		IsolatedGitEnvironment::run(function (): void {
+			exec('command -v git', $output, $status);
+			if ($status !== 0) {
+				$this->markTestSkipped('git is not installed');
+			}
+			$git = 'git -C ' . escapeshellarg($this->dir) . ' -c commit.gpgsign=false -c user.name=t -c user.email=t@example.invalid ';
+			exec($git . 'init -q --template= && ' . $git . 'add -A && ' . $git . 'commit -qm base', $output, $status);
+			$this->assertSame(0, $status);
+			file_put_contents($this->dir . '/mcp/lib/Sub/A.php', "<?php\nclass Changed {}\n");
+			$files = SourceTrees::fromGit($this->dir, 'HEAD', 'mcp');
+			$this->assertSame(['lib/Sub/A.php' => "<?php\nclass A {}\n", 'tests/ATest.php' => "<?php\n"], $files);
+		});
 	}
+	/** Host Git routing/config is ignored for the test and restored for the caller afterwards. */
+	public function testInheritedGitSettingsAreIsolatedAndRestored(): void {
+		$previous = getenv('GIT_DIR');
+		$previousConfig = getenv('GIT_CONFIG_GLOBAL');
+		$config = $this->dir . '/host.gitconfig';
+		file_put_contents($config, "[commit]\n gpgsign = true\n[core]\n hooksPath = /missing/hooks\n");
+		putenv('GIT_DIR=' . $this->dir . '/not-the-test-repository');
+		putenv('GIT_CONFIG_GLOBAL=' . $config);
+		try {
+			try {
+				IsolatedGitEnvironment::run(function (): void {
+					$this->assertFalse(getenv('GIT_DIR'));
+					$this->assertSame('/dev/null', getenv('GIT_CONFIG_GLOBAL'));
+					$this->assertSame('1', getenv('GIT_CONFIG_NOSYSTEM'));
+					throw new \RuntimeException('test failure');
+				});
+				$this->fail('The test exception must propagate');
+			} catch (\RuntimeException $error) {
+				$this->assertSame('test failure', $error->getMessage());
+			}
+			$this->assertSame($this->dir . '/not-the-test-repository', getenv('GIT_DIR'));
+			$this->assertSame($config, getenv('GIT_CONFIG_GLOBAL'));
+		} finally {
+			putenv($previous === false ? 'GIT_DIR' : 'GIT_DIR=' . $previous);
+			putenv($previousConfig === false ? 'GIT_CONFIG_GLOBAL' : 'GIT_CONFIG_GLOBAL=' . $previousConfig);
+		}
+	}
+
 }

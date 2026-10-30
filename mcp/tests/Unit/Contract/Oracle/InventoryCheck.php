@@ -10,7 +10,8 @@ namespace OCA\Mcp\Tests\Unit\Contract\Oracle;
 /**
  * Compares a PHPUnit JUnit report with the RE-01 baseline: every baseline identity (`Class::method`, data set
  * included) must have RUN — a test reported as skipped or incomplete did not run —, the skipped/incomplete tests must
- * be exactly those of the baseline, and the failing tests exactly its environment failures.
+ * be those of the baseline or explicitly permitted by environment-skips.tsv. Failing tests must remain exactly
+ * the baseline environment failures; permitted skips may also pass, but cannot vanish or be incomplete.
  *
  * An optional FQCN map (old => new, from RE-01b) renames baseline classes before the comparison.
  */
@@ -26,8 +27,9 @@ final class InventoryCheck {
 	 * @param list<string> $failures baseline failing identities
 	 * @param list<string> $skips baseline skipped/incomplete identities
 	 * @param array<string, string> $map old FQCN => new FQCN
+	 * @param list<string> $environmentSkips exact identities permitted to skip for a documented environment reason
 	 */
-	public function __construct(private array $inventory, private array $failures, private array $skips, private array $map = []) {
+	public function __construct(private array $inventory, private array $failures, private array $skips, private array $map = [], private array $environmentSkips = []) {
 	}
 
 	/**
@@ -48,7 +50,14 @@ final class InventoryCheck {
 			return array_values(array_filter(explode("\n", $content), static fn (string $line): bool => $line !== ''));
 		};
 		$first = static fn (array $rows): array => array_map(static fn (string $row): string => explode("\t", $row)[0], $rows);
-		return new self($lines('tests-inventory.txt'), $first($lines('environment-failures.txt')), $first($lines('skipped.txt')), $map);
+		$environment = $lines('environment-skips.tsv');
+		foreach ($environment as $row) {
+			[$id, $reason] = explode("\t", $row, 2) + [1 => ''];
+			if (!str_contains($id, '::') || trim($reason) === '') {
+				throw new \RuntimeException('An environment-skips.tsv entry needs an exact identity and written reason');
+			}
+		}
+		return new self($lines('tests-inventory.txt'), $first($lines('environment-failures.txt')), $first($lines('skipped.txt')), $map, $first($environment));
 	}
 
 	/**
@@ -68,10 +77,14 @@ final class InventoryCheck {
 		$ran = [];
 		$failing = [];
 		$skipped = [];
+		$incomplete = [];
 		foreach ($cases as $case) {
 			$id = (string)$case['class'] . '::' . (string)$case['name'];
 			if (isset($case->skipped) || isset($case->incomplete)) {
 				$skipped[$id] = true;
+				if (isset($case->incomplete)) {
+					$incomplete[$id] = true;
+				}
 				continue;
 			}
 			$ran[$id] = true;
@@ -81,8 +94,11 @@ final class InventoryCheck {
 		}
 		[$this->ran, $this->failing, $this->skipped] = [count($ran), count($failing), count($skipped)];
 		$expectedSkips = $this->renamed($this->skips);
-		$this->report('missing from the run', array_diff($this->renamed($this->inventory), array_keys($ran), $expectedSkips));
-		$this->report('skipped but not in the baseline', array_diff(array_keys($skipped), $expectedSkips));
+		$environmentSkips = $this->renamed($this->environmentSkips);
+		$this->report('missing from the run', array_diff($this->renamed($this->inventory), array_keys($ran), $expectedSkips, array_intersect(array_keys($skipped), $environmentSkips)));
+		$this->report('skipped but not in the baseline', array_diff(array_keys($skipped), $expectedSkips, $environmentSkips));
+		$this->report('environment test missing', array_diff($environmentSkips, array_keys($ran), array_keys($skipped)));
+		$this->report('incomplete environment test', array_intersect(array_keys($incomplete), $environmentSkips));
 		$this->report('baseline skip that ran or vanished', array_diff($expectedSkips, array_keys($skipped)));
 		$this->report('failing but not in the baseline', array_diff(array_keys($failing), $this->renamed($this->failures)));
 		$this->report('baseline failure no longer failing', array_diff($this->renamed($this->failures), array_keys($failing)));

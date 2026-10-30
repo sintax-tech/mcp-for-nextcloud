@@ -63,14 +63,18 @@ final class ImportScope {
 		$prefix = '';
 		$name = '';
 		$alias = null;
+		$itemKind = $kind;
 		for (; $tokens[$i][1] !== ';'; $i++) {
 			$text = $tokens[$i][1];
 			if ($text === '{') {
 				$prefix = rtrim($name, '\\') . '\\';
 				$name = '';
 			} elseif ($text === ',' || $text === '}') {
-				$this->record($kind, $prefix . $name, $alias);
-				[$name, $alias] = ['', null];
+				$this->record($itemKind, $prefix . $name, $alias);
+				[$name, $alias, $itemKind] = ['', null, $kind];
+			} elseif ($name === '' && in_array($tokens[$i][0], [T_FUNCTION, T_CONST], true)) {
+				// A mixed group (`use A\{function f, const C}`) gives each item its own kind.
+				$itemKind = strtolower($text);
 			} elseif ($tokens[$i][0] === T_AS) {
 				$alias = $tokens[++$i][1];
 			} elseif ($tokens[$i][0] === T_NS_SEPARATOR) {
@@ -79,7 +83,7 @@ final class ImportScope {
 				$name .= $text;
 			}
 		}
-		$this->record($kind, $prefix . $name, $alias);
+		$this->record($itemKind, $prefix . $name, $alias);
 		return $i;
 	}
 
@@ -105,25 +109,43 @@ final class ImportScope {
 	}
 
 	/**
-	 * Resolves a name used as a function: imported functions resolve to their import, others stay as written
-	 * (PHP falls back to the global function at run time).
+	 * Resolves a name used as a function: a qualified name through the namespace aliases, an imported one to its
+	 * import, one the current namespace declares in the tree to that function; others stay as written (PHP falls
+	 * back to the global function at run time).
 	 *
 	 * @param string $name the name as written
-	 * @return string the import target, or the name unchanged
+	 * @param SourceTreeIndex $index functions declared in the tree
+	 * @return string the resolved name
 	 */
-	public function resolveFunction(string $name): string {
-		return $this->functions[strtolower($name)] ?? $name;
+	public function resolveFunction(string $name, SourceTreeIndex $index): string {
+		if (str_contains($name, '\\')) {
+			return $this->resolveClass($name);
+		}
+		$local = $this->qualify($name);
+		return $this->functions[strtolower($name)] ?? ($index->declaresFunction($local) ? $local : $name);
 	}
 
 	/**
-	 * Resolves an unqualified name used as a constant: imported constants resolve to their import, others stay as
-	 * written (PHP falls back to the global constant at run time).
+	 * Resolves an unqualified name used as a constant: an imported one to its import, one the current namespace
+	 * declares in the tree to that constant; others stay as written (PHP falls back to the global constant).
 	 *
 	 * @param string $name the name as written
-	 * @return string the import target, or the name unchanged
+	 * @param SourceTreeIndex $index constants declared in the tree
+	 * @return string the resolved name
 	 */
-	public function resolveConstant(string $name): string {
-		return $this->constants[$name] ?? $name;
+	public function resolveConstant(string $name, SourceTreeIndex $index): string {
+		$local = $this->qualify($name);
+		return $this->constants[$name] ?? ($index->declaresConstant($local) ? $local : $name);
+	}
+
+	/**
+	 * Tells whether a name is a constant import of this file.
+	 *
+	 * @param string $name the name as written
+	 * @return bool true when a `use const` statement gave it
+	 */
+	public function hasConstant(string $name): bool {
+		return isset($this->constants[$name]);
 	}
 
 	/**
@@ -142,7 +164,7 @@ final class ImportScope {
 	 * @param string $name relative name
 	 * @return string fully qualified name
 	 */
-	private function qualify(string $name): string {
+	public function qualify(string $name): string {
 		return $this->namespace === '' ? $name : $this->namespace . '\\' . $name;
 	}
 

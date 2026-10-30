@@ -50,16 +50,16 @@ final class TokenNormalizerTest extends TestCase {
 			PHP;
 		$this->assertSame(['App\A'], $this->classes($code, ['App\A', 'App\Guard']));
 		$stream = $this->stream($code, ['App\A', 'App\Guard']);
-		$this->assertContains('T:strlen', $stream);
-		$this->assertContains('T:PHP_EOL', $stream);
-		$this->assertContains('T:int', $stream);
+		$this->assertContains('F:strlen', $stream);
+		$this->assertContains('K:PHP_EOL', $stream);
+		$this->assertContains('K:int', $stream);
 		$this->assertContains('T:Guard', $stream);
 	}
 
 	/** An unqualified name the namespace does not declare stays literal, so a missing import is visible. */
 	public function testAnUndeclaredUnqualifiedNameStaysLiteral(): void {
 		$stream = $this->stream("<?php\nnamespace App;\nnew Missing();\n", []);
-		$this->assertContains('T:Missing', $stream);
+		$this->assertContains('K:Missing', $stream);
 	}
 
 	/** A trait used inside a class is a class reference; a closure's `use` is not an import. */
@@ -110,10 +110,46 @@ final class TokenNormalizerTest extends TestCase {
 	public function testImportedConstantsResolveToTheirImport(): void {
 		$code = "<?php\nnamespace App;\nuse const Lib\\FLAG;\nuse const Lib\\{LIMIT as MAX};\necho FLAG + MAX + PHP_EOL;\n";
 		$stream = $this->stream($code, []);
-		$this->assertContains('T:Lib\FLAG', $stream);
-		$this->assertContains('T:Lib\LIMIT', $stream);
-		$this->assertContains('T:PHP_EOL', $stream);
+		$this->assertContains('K:Lib\FLAG', $stream);
+		$this->assertContains('K:Lib\LIMIT', $stream);
+		$this->assertContains('K:PHP_EOL', $stream);
 		$this->assertNotSame($stream, $this->stream(str_replace('use const Lib\\FLAG;', 'use const Other\\FLAG;', $code), []));
+	}
+
+	/** Imports and declarations of functions and constants that the reviewer found unresolved (review R2). */
+	public function testFunctionAndConstantNamesAreResolved(): void {
+		$pairs = [
+			'mixed group import' => ["<?php\nnamespace X;\nuse A\\{function f};\nf();\n", "<?php\nnamespace X;\nuse A\\{function g as f};\nf();\n"],
+			'constant and class with one alias' => ["<?php\nnamespace X;\nuse A\\FLAG;\nuse const B\\FLAG;\necho FLAG;\n", "<?php\nnamespace X;\nuse A\\FLAG;\nuse const C\\FLAG;\necho FLAG;\n"],
+			'namespace alias in a call' => ["<?php\nnamespace X;\nuse A\\Ns;\nNs\\f();\n", "<?php\nnamespace X;\nuse B\\Ns;\nNs\\f();\n"],
+			'free function namespace' => ["<?php\nnamespace A;\nfunction f() {}\n", "<?php\nnamespace B;\nfunction f() {}\n"],
+			'namespace constant' => ["<?php\nnamespace A;\nconst LIMIT = 1;\n", "<?php\nnamespace B;\nconst LIMIT = 1;\n"],
+		];
+		foreach ($pairs as $case => [$before, $after]) {
+			$this->assertNotSame($this->stream($before, []), $this->stream($after, []), $case);
+		}
+		$this->assertContains('F:A\f', $this->stream("<?php\nnamespace X;\nuse A\\{function f, const C};\nf(C);\n", []));
+		$this->assertContains('K:A\C', $this->stream("<?php\nnamespace X;\nuse A\\{function f, const C};\nf(C);\n", []));
+	}
+
+	/** A call to a function the namespace declares in the tree resolves to it, so moving the caller alone fails. */
+	public function testCallsToNamespacedFunctionsResolve(): void {
+		$index = new SourceTreeIndex(['f.php' => "<?php\nnamespace A;\nfunction helper() {}\nconst LIMIT = 2;\nclass K { const LIMIT = 1; public function helper() {} }\n"]);
+		$stream = array_column((new TokenNormalizer($index))->normalize("<?php\nnamespace A;\necho helper() + LIMIT + strlen('x');\n")->stream, 0);
+		$this->assertContains('F:A\helper', $stream);
+		$this->assertContains('K:A\LIMIT', $stream);
+		$this->assertContains('F:strlen', $stream);
+		$this->assertTrue($index->declaresFunction('a\HELPER'));
+		$this->assertFalse($index->declaresFunction('A\K\helper'));
+	}
+
+	/** `__DIR__`/`__FILE__` expressions fold to the path they yield for the file's own location. */
+	public function testDirectoryExpressionsFoldToPaths(): void {
+		$code = "<?php\n\$a = [__DIR__, __FILE__, dirname(__DIR__, 2) . '/lib/X.php', dirname(__FILE__), __DIR__ . '/../y'];\n";
+		$normalizer = new TokenNormalizer(new SourceTreeIndex([]));
+		$paths = array_values(array_filter(array_column($normalizer->normalize($code, [], 'tests/Unit/ATest.php')->stream, 0), static fn (string $t): bool => str_starts_with($t, 'P:')));
+		$this->assertSame(['P:tests/Unit', 'P:tests/Unit/ATest.php', 'P:lib/X.php', 'P:tests/Unit', 'P:tests/y'], $paths);
+		$this->assertContains('T:__DIR__', array_column($normalizer->normalize($code)->stream, 0));
 	}
 
 	/** Whitespace and comments are left out. */

@@ -35,7 +35,7 @@ final class DevelopmentEntriesTest extends TestCase {
 	public function testProductionEntriesPass(): void {
 		$this->assertSame([], DevelopmentEntries::problems([
 			['mcp', true],
-			['mcp/lib/Tools/ToolRegistry.php', false],
+			['mcp/lib/Example/Production.php', false],
 			['mcp/scriptsx/a.php', false],
 			['mcp/testsuite.txt', false],
 			['mcp/vendor/smalot/pdfparser/tests/x.php', false],

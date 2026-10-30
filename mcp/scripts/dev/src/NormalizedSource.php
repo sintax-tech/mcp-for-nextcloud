@@ -15,10 +15,16 @@ final class NormalizedSource {
 	 * @param list<array{0:string,1:int}> $stream normalized tokens with the line each one came from
 	 * @param list<array{0:string,1:int}> $references fully qualified class names referred to (resolved names,
 	 *                                                unresolved same-namespace candidates and FQCN strings), with lines
+	 * @param list<array{0:string,1:int}> $strings values of constant strings and folded `__DIR__` paths, with lines
+	 * @param list<array{0:int,1:string}> $located line and description of each construct whose value depends on the
+	 *                                             file's folder or namespace and cannot be folded (relative include,
+	 *                                             `__NAMESPACE__`)
 	 */
 	public function __construct(
 		public readonly array $stream,
 		public readonly array $references,
+		public readonly array $strings = [],
+		public readonly array $located = [],
 	) {
 	}
 

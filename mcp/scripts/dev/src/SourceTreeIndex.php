@@ -8,9 +8,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\Scripts\Dev;
 
 /**
- * Every class, interface, trait and enum declared by the PHP files of one tree, by file.
+ * Every class, interface, trait and enum declared by the PHP files of one tree, by file, and every function and
+ * constant declared at namespace level.
  *
- * Lookups are case-insensitive, as class names are in PHP.
+ * Class and function lookups are case-insensitive, constant lookups case-sensitive, as in PHP.
  */
 final class SourceTreeIndex {
 	/** @var array<string,list<string>> path => fully qualified names declared there, in source order */
@@ -18,6 +19,12 @@ final class SourceTreeIndex {
 
 	/** @var array<string,true> lower-case fully qualified name => true */
 	private array $declared = [];
+
+	/** @var array<string,true> lower-case fully qualified function name => true */
+	private array $functions = [];
+
+	/** @var array<string,true> fully qualified constant name => true */
+	private array $constants = [];
 
 	/**
 	 * @param array<string,string> $files path => content; only `.php` files are read
@@ -31,6 +38,13 @@ final class SourceTreeIndex {
 			foreach ($this->byFile[$path] as $class) {
 				$this->declared[strtolower($class)] = true;
 			}
+			[$functions, $constants] = self::namespaceLevel($content);
+			foreach ($functions as $function) {
+				$this->functions[strtolower($function)] = true;
+			}
+			foreach ($constants as $constant) {
+				$this->constants[$constant] = true;
+			}
 		}
 	}
 
@@ -42,6 +56,26 @@ final class SourceTreeIndex {
 	 */
 	public function declares(string $class): bool {
 		return isset($this->declared[strtolower($class)]);
+	}
+
+	/**
+	 * Tells whether the tree declares a namespace-level function with this name.
+	 *
+	 * @param string $function fully qualified name
+	 * @return bool true when some file declares it
+	 */
+	public function declaresFunction(string $function): bool {
+		return isset($this->functions[strtolower($function)]);
+	}
+
+	/**
+	 * Tells whether the tree declares a namespace-level constant (`const` outside a class) with this name.
+	 *
+	 * @param string $constant fully qualified name
+	 * @return bool true when some file declares it
+	 */
+	public function declaresConstant(string $constant): bool {
+		return isset($this->constants[$constant]);
 	}
 
 	/**
@@ -82,6 +116,53 @@ final class SourceTreeIndex {
 			}
 			if (is_array($next) && $next[0] === T_STRING) {
 				$found[] = ($namespace === '' ? '' : $namespace . '\\') . $next[1];
+			}
+		}
+		return $found;
+	}
+
+	/**
+	 * Scans PHP source for functions and constants declared outside any class body.
+	 *
+	 * @param string $code PHP source
+	 * @return array{0:list<string>,1:list<string>} fully qualified function names and constant names
+	 */
+	private static function namespaceLevel(string $code): array {
+		$tokens = array_values(array_filter(token_get_all($code), static fn ($t): bool => !is_array($t) || !in_array($t[0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true)));
+		$namespace = '';
+		$found = [[], []];
+		$classes = [];
+		$depth = 0;
+		$pendingClass = false;
+		$importing = false;
+		foreach ($tokens as $i => $token) {
+			$id = is_array($token) ? $token[0] : null;
+			$text = is_array($token) ? $token[1] : $token;
+			$next = $tokens[$i + 1] ?? null;
+			if ($id === T_USE && $classes === [] && $next !== '(') {
+				$importing = true;
+			} elseif ($text === ';') {
+				$importing = false;
+			}
+			if ($id === T_NAMESPACE) {
+				$namespace = is_array($next) && in_array($next[0], [T_STRING, T_NAME_QUALIFIED], true) ? $next[1] . '\\' : '';
+			} elseif (in_array($id, [T_CLASS, T_INTERFACE, T_TRAIT, T_ENUM], true) && !(is_array($tokens[$i - 1] ?? null) && $tokens[$i - 1][0] === T_DOUBLE_COLON)) {
+				$pendingClass = true;
+			} elseif ($text === '{' || $id === T_CURLY_OPEN || $id === T_DOLLAR_OPEN_CURLY_BRACES) {
+				$depth++;
+				if ($pendingClass) {
+					$classes[] = $depth;
+					$pendingClass = false;
+				}
+			} elseif ($text === '}') {
+				if (end($classes) === $depth) {
+					array_pop($classes);
+				}
+				$depth--;
+			} elseif (in_array($id, [T_FUNCTION, T_CONST], true) && $classes === [] && is_array($next) && $next[0] === T_STRING
+				&& !$importing) {
+				// Outside an import (`use function f;`, `use A\{const C}`): a declaration at namespace level.
+				$found[$id === T_FUNCTION ? 0 : 1][] = $namespace . $next[1];
 			}
 		}
 		return $found;

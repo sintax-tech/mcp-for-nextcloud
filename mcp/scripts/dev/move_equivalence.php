@@ -23,6 +23,9 @@ use OCA\Mcp\Scripts\Dev\SourceTrees;
 
 require __DIR__ . '/bootstrap.php';
 
+// Both trees and the token streams of the large API fixtures do not fit in PHP's default 128 MB.
+ini_set('memory_limit', '1G');
+
 $rest = 0;
 $options = getopt('', ['ticket:', 'app:'], $rest);
 $revisions = array_slice($argv, $rest);

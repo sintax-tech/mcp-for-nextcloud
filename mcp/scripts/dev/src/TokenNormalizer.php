@@ -19,7 +19,11 @@ namespace OCA\Mcp\Scripts\Dev;
  * compared by that value ({@see PhpStringLiteral}), so `'OCA\\Mcp\\X'` and `'OCA\Mcp\X'` are the same string; any
  * other string, interpolated text and heredoc content is compared byte for byte. Inside an attribute (`#[...]`)
  * the attribute names are classes even when arguments follow. Constants imported with `use const` resolve to
- * their import.
+ * their import; a name imported both as class and as constant is compared as both. Functions and constants
+ * declared at namespace level, and calls to them, are qualified with the namespace, so moving a file with a free
+ * function fails (functions are not in the map). With the file's path, `__DIR__`/`__FILE__` expressions fold to
+ * the path they yield ({@see PathExpressions}); a relative `include`/`require` and `__NAMESPACE__` are reported as
+ * location-dependent, for the comparator to refuse when the move changes the folder or the namespace.
  *
  * Deliberately not compared: whitespace between tokens, comments and PHPDoc (a type named only in `@param` or
  * `@var` does not run; a stale one there is left to human review) and the order of imports.
@@ -34,8 +38,11 @@ final class TokenNormalizer {
 	/** Tokens left out of the stream. */
 	private const SKIPPED = [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT];
 
-	/** Tokens after which a name is a member, function or constant name, never a class. */
-	private const MEMBER_PREFIXES = [T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_DOUBLE_COLON, T_FUNCTION, T_CONST, T_GOTO];
+	/** Tokens after which a name is a member or label name, never a class. */
+	private const MEMBER_PREFIXES = [T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_DOUBLE_COLON, T_GOTO];
+
+	/** Include and require keywords. */
+	private const INCLUDES = [T_INCLUDE, T_INCLUDE_ONCE, T_REQUIRE, T_REQUIRE_ONCE];
 
 	/** Tokens that hold a (possibly qualified) name. */
 	private const NAMES = [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED, T_NAME_RELATIVE];
@@ -54,13 +61,16 @@ final class TokenNormalizer {
 	 *
 	 * @param string $code PHP source
 	 * @param array<string,string> $renames old FQCN => new FQCN, applied to every resolved class name and FQCN string
-	 * @return NormalizedSource the stream and every class name the source refers to
+	 * @param string|null $path path of the file in the tree, relative to the app folder; null leaves `__DIR__` literal
+	 * @return NormalizedSource the stream, the class names, strings and location-dependent constructs of the source
 	 */
-	public function normalize(string $code, array $renames = []): NormalizedSource {
+	public function normalize(string $code, array $renames = [], ?string $path = null): NormalizedSource {
 		$tokens = $this->significant($code);
 		$scope = new ImportScope();
 		$stream = [];
 		$references = [];
+		$strings = [];
+		$located = [];
 		$contexts = [];
 		$pendingClass = false;
 		$attribute = null;
@@ -85,19 +95,37 @@ final class TokenNormalizer {
 				array_pop($contexts);
 			}
 			$attribute = self::attributeState($attribute, $id, $text);
+			$folded = $path === null ? null : PathExpressions::fold($tokens, $i, $path);
+			if ($folded !== null) {
+				$stream[] = ['P:' . $folded[0], $line];
+				$strings[] = [$folded[0], $line];
+				$i = $folded[1];
+				continue;
+			}
+			if ($id === T_NS_C) {
+				$located[] = [$line, '__NAMESPACE__'];
+			}
+			if (in_array($id, self::INCLUDES, true)) {
+				$target = $tokens[$i + 1][0] === null && $tokens[$i + 1][1] === '(' ? $tokens[$i + 2] : $tokens[$i + 1];
+				$value = $target[0] === T_CONSTANT_ENCAPSED_STRING ? PhpStringLiteral::value($target[1]) : '/';
+				if (!str_starts_with($value, '/') && !str_contains($value, '://')) {
+					$located[] = [$line, "relative {$text} '$value'"];
+				}
+			}
 			if (in_array($id, self::NAMES, true)) {
 				$attributeName = $attribute === [1, 0] && in_array($tokens[$i - 1][1], ['#[', ','], true);
-				$stream[] = [$this->name($tokens, $i, $scope, $renames, $references, $attributeName), $line];
+				$stream[] = [$this->name($tokens, $i, $scope, $renames, $references, $attributeName, end($contexts) !== 'class'), $line];
 				continue;
 			}
 			if ($id === T_CONSTANT_ENCAPSED_STRING) {
+				$strings[] = [PhpStringLiteral::value($text), $line];
 				$stream[] = [$this->string($text, $renames, $references, $line), $line];
 				continue;
 			}
 			// Only the open and close tags carry layout whitespace; every other token is content and stays intact.
 			$stream[] = ['T:' . (in_array($id, [T_OPEN_TAG, T_CLOSE_TAG], true) ? trim($text) : $text), $line];
 		}
-		return new NormalizedSource($stream, $references);
+		return new NormalizedSource($stream, $references, $strings, $located);
 	}
 
 	/**
@@ -131,12 +159,17 @@ final class TokenNormalizer {
 	 * @param array<string,string> $renames old FQCN => new FQCN
 	 * @param list<array{0:string,1:int}> $references collects every class name referred to, with its line
 	 * @param bool $attributeName whether the name is the class of an attribute (`#[Name(...)]`)
-	 * @return string `C:<fqcn>` for a class reference, `T:<text>` otherwise
+	 * @param bool $outsideClass whether the name is outside a class body (a function or constant there is namespaced)
+	 * @return string `C:` class, `F:` function, `K:` constant, `T:` anything else
 	 */
-	private function name(array $tokens, int $i, ImportScope $scope, array $renames, array &$references, bool $attributeName): string {
+	private function name(array $tokens, int $i, ImportScope $scope, array $renames, array &$references, bool $attributeName, bool $outsideClass): string {
 		[$id, $text, $line] = $tokens[$i];
 		$previous = $tokens[$i - 1] ?? [null, '', 0];
 		$next = $tokens[$i + 1][1] ?? '';
+		if (in_array($previous[0], [T_FUNCTION, T_CONST], true)) {
+			// A declaration: namespaced outside a class, a member name inside one.
+			return $outsideClass ? ($previous[0] === T_FUNCTION ? 'F:' : 'K:') . $scope->qualify($text) : 'T:' . $text;
+		}
 		if (in_array($previous[0], self::MEMBER_PREFIXES, true) || in_array(strtolower($text), self::RESERVED, true)) {
 			return 'T:' . $text;
 		}
@@ -144,13 +177,18 @@ final class TokenNormalizer {
 			return 'T:' . $text;
 		}
 		if ($next === '(' && $previous[0] !== T_NEW && !$attributeName) {
-			return 'T:' . $scope->resolveFunction($text);
+			return 'F:' . $scope->resolveFunction($text, $this->index);
 		}
 		$class = $scope->resolveClass($text);
+		if ($id === T_STRING && !$attributeName && $scope->hasConstant($text) && $scope->isImported($text)) {
+			// Imported both as class and as constant: compare both, so redirecting either one fails.
+			$references[] = [$class, $line];
+			return 'K:' . ($renames[$class] ?? $class) . '|' . $scope->resolveConstant($text, $this->index);
+		}
 		if ($id === T_STRING && !$attributeName && !$scope->isImported($text) && !$this->index->declares($class)) {
 			// Kept for the stale-reference check: a same-namespace name whose class moved away resolves to nothing.
 			$references[] = [$class, $line];
-			return 'T:' . $scope->resolveConstant($text);
+			return 'K:' . $scope->resolveConstant($text, $this->index);
 		}
 		$references[] = [$class, $line];
 		return 'C:' . ($renames[$class] ?? $class);

@@ -19,12 +19,14 @@ final class NormalizedSource {
 	 * @param list<array{0:int,1:string}> $located line and description of each construct whose value depends on the
 	 *                                             file's folder or namespace and cannot be folded (relative include,
 	 *                                             `__NAMESPACE__`)
+	 * @param list<array{0:int,1:string}> $namespaces line/namespace of every __NAMESPACE__ use, even in unchanged files
 	 */
 	public function __construct(
 		public readonly array $stream,
 		public readonly array $references,
 		public readonly array $strings = [],
 		public readonly array $located = [],
+		public readonly array $namespaces = [],
 	) {
 	}
 

@@ -8,13 +8,13 @@ declare(strict_types=1);
 namespace OCA\Mcp\Scripts\Dev;
 
 /**
- * Proves that a move commit changes nothing but the class names the FQCN map allows.
+ * Proves that a move commit changes only mapped class names and actual paired file paths in test readers.
  *
  * Every changed PHP file is compared: each moved file with its destination (paired by the map, or by file name for
  * classes outside the map such as tests) and each caller with its own new version. Both sides go through
  * {@see TokenNormalizer}, the old one with the renames of the range applied; the streams must be identical. Then
  * every PHP file of the new tree is searched for references still naming an old class. A deleted file without a
- * destination, a new file, a non-PHP change outside the allowed paths and a move the map does not plan all fail.
+ * destination, a new file, a non-PHP change outside paired test-path edits and a move the map does not plan all fail.
  */
 final class MoveEquivalence {
 	/** Non-PHP files a move commit may change: the map itself and the size inventory indexed by it. */
@@ -56,21 +56,18 @@ final class MoveEquivalence {
 		$deleted = array_keys(array_diff_key($this->before, $this->after));
 		$added = array_keys(array_diff_key($this->after, $this->before));
 		$modified = array_keys(array_filter(array_intersect_key($this->before, $this->after), fn (string $content, string $path): bool => $content !== $this->after[$path], ARRAY_FILTER_USE_BOTH));
-		foreach ([...$deleted, ...$added, ...$modified] as $path) {
-			if (!str_ends_with($path, '.php') && !in_array($path, self::ALLOWED_DATA, true)) {
-				$this->problems[] = "$path: non-PHP file changed; a move commit only moves PHP and updates the map";
-			}
-		}
 		$php = static fn (array $paths): array => array_values(array_filter($paths, static fn (string $p): bool => str_ends_with($p, '.php')));
 		$this->pair($php($deleted), $php($added));
 		$this->collectRenames();
+		$this->problems = [...$this->problems, ...PathRewrites::nonPhp($this->before, $this->after, $this->pairs)];
+		$targets = array_combine(array_values($this->pairs), array_values($this->pairs));
 		$normalizeBefore = new TokenNormalizer($this->beforeIndex);
 		$normalizeAfter = new TokenNormalizer($this->afterIndex);
 		$compared = $this->pairs + array_combine($php($modified), $php($modified));
 		$normalized = [];
 		foreach ($compared as $old => $new) {
-			$normalized[$new] = $normalizeAfter->normalize($this->after[$new], [], $new);
-			$source = $normalizeBefore->normalize($this->before[$old], $this->renames, $old);
+			$normalized[$new] = $normalizeAfter->normalize($this->after[$new], [], $new, $targets);
+			$source = $normalizeBefore->normalize($this->before[$old], $this->renames, $old, $this->pairs);
 			$difference = $source->firstDifference($normalized[$new]);
 			if ($difference !== null) {
 				[$oldLine, $oldToken, $newLine, $newToken] = $difference;
@@ -193,11 +190,22 @@ final class MoveEquivalence {
 	 */
 	private function staleReferences(TokenNormalizer $normalizer, array $normalized): void {
 		$renamed = array_change_key_case($this->renames);
+		$retiredNamespaces = [];
+		foreach (array_keys($this->renames) as $class) {
+			if (!$this->afterIndex->declares($class)) {
+				$retiredNamespaces[strtolower(substr($class, 0, (int)strrpos($class, '\\')))] = true;
+			}
+		}
 		foreach ($this->after as $path => $content) {
 			if (!str_ends_with($path, '.php')) {
 				continue;
 			}
 			$source = $normalized[$path] ?? $normalizer->normalize($content, [], $path);
+			foreach ($source->namespaces as [$line, $namespace]) {
+				if (isset($retiredNamespaces[strtolower($namespace)])) {
+					$this->problems[] = "$path:$line: __NAMESPACE__ in $namespace lost a class in this range; composed class reference not proved";
+				}
+			}
 			foreach ($source->strings as [$value, $line]) {
 				foreach (array_keys($this->pairs) as $moved) {
 					if (PathSafety::names($value, $moved)) {

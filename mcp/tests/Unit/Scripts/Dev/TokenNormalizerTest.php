@@ -79,7 +79,7 @@ final class TokenNormalizerTest extends TestCase {
 		$this->assertContains('C:New\Guard', $stream);
 		$this->assertContains('S=New\Guard', $stream);
 		$this->assertContains('S=\New\Guard', $stream);
-		$this->assertContains("S:'Old\\\\Guard::x'", $stream);
+		$this->assertContains('S=New\\Guard::x', $stream);
 		$this->assertContains("S:'plain'", $stream);
 	}
 

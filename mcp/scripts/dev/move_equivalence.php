@@ -15,6 +15,9 @@ declare(strict_types=1);
  *
  * Not compared, by design: whitespace between tokens, comments and PHPDoc, and the order of imports. A class
  * named only in PHPDoc (`@param`, `@var`) does not run; a stale one there is left to the human review of the move.
+ * Dynamic class-name concatenation/interpolation and paths passed through heredocs or constants are not resolved.
+ * These require runtime tests and human review; literal FQCN::identifier callables are checked.
+ * Non-PHP tests may only replace whole path tokens using the actual file pairs; all other bytes must match.
  */
 
 use OCA\Mcp\Scripts\Dev\FqcnMap;

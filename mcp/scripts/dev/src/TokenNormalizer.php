@@ -27,9 +27,12 @@ namespace OCA\Mcp\Scripts\Dev;
  *
  * Deliberately not compared: whitespace between tokens, comments and PHPDoc (a type named only in `@param` or
  * `@var` does not run; a stale one there is left to human review) and the order of imports.
+ * Dynamic class composition/interpolation and paths passed through heredocs or constants are not evaluated;
+ * those require runtime tests and human review. Pure FQCN::identifier strings are resolved as class references.
  *
  * Renames are applied while normalizing, so the stream of the old file with the map's renames applied must equal
- * the stream of the new file with none.
+ * the stream of the new file with none. Whole literal paths are normalized through actual file pairs; all other
+ * literal content remains exact.
  */
 final class TokenNormalizer {
 	/** Names that are never class references, whatever the namespace declares. */
@@ -59,15 +62,17 @@ final class TokenNormalizer {
 	 * @param string $code PHP source
 	 * @param array<string,string> $renames old FQCN => new FQCN, applied to every resolved class name and FQCN string
 	 * @param string|null $path path of the file in the tree, relative to the app folder; null leaves `__DIR__` literal
+	 * @param array<string,string> $paths actual path pairs, or identity destination pairs for the after side
 	 * @return NormalizedSource the stream, the class names, strings and location-dependent constructs of the source
 	 */
-	public function normalize(string $code, array $renames = [], ?string $path = null): NormalizedSource {
+	public function normalize(string $code, array $renames = [], ?string $path = null, array $paths = []): NormalizedSource {
 		$tokens = $this->significant($code);
 		$scope = new ImportScope();
 		$stream = [];
 		$references = [];
 		$strings = PathSafety::references($tokens);
 		$located = [];
+		$namespaces = [];
 		$contexts = [];
 		$pendingClass = false;
 		$attribute = null;
@@ -100,6 +105,10 @@ final class TokenNormalizer {
 			}
 			if ($id === T_NS_C) {
 				$located[] = [$line, '__NAMESPACE__'];
+				$namespaces[] = [$line, rtrim($scope->qualify(''), '\\')];
+			}
+			if (($reason = LocationSensitiveCalls::unproved($tokens, $i, $scope, $this->index)) !== null) {
+				$located[] = [$line, $reason];
 			}
 			if ($path !== null && ($reason = PathSafety::unproved($tokens, $i, $path, $scope, $this->index)) !== null) {
 				$located[] = [$line, $reason];
@@ -110,13 +119,19 @@ final class TokenNormalizer {
 				continue;
 			}
 			if ($id === T_CONSTANT_ENCAPSED_STRING) {
+				$rewritten = PathRewrites::literal($tokens, $i, $paths);
+				if ($rewritten !== null) {
+					$stream[] = ['R:' . $rewritten[0], $line];
+					$i = $rewritten[1];
+					continue;
+				}
 				$stream[] = [$this->string($text, $renames, $references, $line), $line];
 				continue;
 			}
 			// Only the open and close tags carry layout whitespace; every other token is content and stays intact.
 			$stream[] = ['T:' . (in_array($id, [T_OPEN_TAG, T_CLOSE_TAG], true) ? trim($text) : $text), $line];
 		}
-		return new NormalizedSource($stream, $references, $strings, $located);
+		return new NormalizedSource($stream, $references, $strings, $located, $namespaces);
 	}
 
 	/**
@@ -193,17 +208,22 @@ final class TokenNormalizer {
 	 * @param array<string,string> $renames old FQCN => new FQCN
 	 * @param list<array{0:string,1:int}> $references collects the FQCN the string names, if any
 	 * @param int $line line of the literal
-	 * @return string `S=<fqcn>` for a class name, `S:<literal>` otherwise
+	 * @return string `S=<fqcn>[::member]` for a class/callable name, `S:<literal>` otherwise
 	 */
 	private function string(string $text, array $renames, array &$references, int $line): string {
 		$value = PhpStringLiteral::value($text);
+		$parts = explode('::', $value);
+		$member = count($parts) === 2 && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/D', $parts[1]) === 1 ? '::' . $parts[1] : '';
+		if ($member !== '') {
+			$value = $parts[0];
+		}
 		if (preg_match(self::FQCN, $value) !== 1) {
 			return 'S:' . $text;
 		}
 		$lead = str_starts_with($value, '\\') ? '\\' : '';
 		$class = ltrim($value, '\\');
 		$references[] = [$class, $line];
-		return 'S=' . $lead . ($renames[$class] ?? $class);
+		return 'S=' . $lead . ($renames[$class] ?? $class) . $member;
 	}
 
 	/**

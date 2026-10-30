@@ -37,13 +37,13 @@ final class PathIdentity {
 	}
 
 	/**
-	 * Accepts only the two root prefixes demonstrated by the real readers.
+	 * Accepts app roots and the explicit repository-relative mcp/ prefix for full app paths.
 	 *
 	 * @param array{string,string,bool} $match a matched identity
-	 * @return bool true for empty prefix or exactly one slash
+	 * @return bool true for an app root, or mcp/ before a full app-relative path
 	 */
 	public static function proved(array $match): bool {
-		return in_array($match[0], ['', '/'], true);
+		return in_array($match[0], ['', '/'], true) || ($match[0] === 'mcp/' && !$match[2]);
 	}
 	/**
 	 * Recognizes basename-relative paths that cannot be associated with a proved app/lib root.

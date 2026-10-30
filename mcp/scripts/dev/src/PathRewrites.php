@@ -79,7 +79,7 @@ final class PathRewrites {
 	 * @return string expected text after path-only edits
 	 */
 	public static function text(string $text, array $pairs): string {
-		return preg_replace_callback('~[A-Za-z0-9_./-]+~', static fn (array $m): string => self::value($m[0], $pairs) ?? $m[0], $text);
+		return preg_replace_callback('~[A-Za-z0-9_./:#-]+~', static fn (array $m): string => self::value($m[0], $pairs) ?? $m[0], $text);
 	}
 
 	/**
@@ -106,7 +106,7 @@ final class PathRewrites {
 			if (!$test || !isset($after[$path]) || $pairs === []) {
 				continue;
 			}
-			preg_match_all('~[A-Za-z0-9_./-]+~', $after[$path], $matches, PREG_OFFSET_CAPTURE);
+			preg_match_all('~[A-Za-z0-9_./:#-]+~', $after[$path], $matches, PREG_OFFSET_CAPTURE);
 			foreach ($matches[0] as [$value, $offset]) {
 				foreach ($pairs + array_combine(array_values($pairs), array_values($pairs)) as $old => $new) {
 					$match = PathIdentity::match($value, $old);

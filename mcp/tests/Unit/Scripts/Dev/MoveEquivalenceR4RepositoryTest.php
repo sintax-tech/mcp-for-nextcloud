@@ -23,10 +23,14 @@ final class MoveEquivalenceR4RepositoryTest extends TestCase {
 	 */
 	#[DataProvider('classes')]
 	public function testRealPlannedMovePasses(string $short): void {
-		[$before, $after, $map, $old] = $this->move($short);
+		[$before, $after, $map, $old, $new] = $this->move($short);
 		$equivalence = new MoveEquivalence($before, $after, $map);
 		$this->assertSame([], $equivalence->check());
 		$this->assertArrayHasKey($old, $equivalence->pairs());
+		foreach (RepositoryMoveFixture::forgottenReaders($before, $after, $old, $new) as $reader => $forgotten) {
+			$this->assertNotSame($after[$reader], $forgotten[$reader], "$reader must be individually exercised");
+			$this->assertStringContainsString("$reader:", implode("\n", (new MoveEquivalence($before, $forgotten, $map))->check()));
+		}
 	}
 
 	/**

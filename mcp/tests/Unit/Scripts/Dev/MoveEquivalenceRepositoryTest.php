@@ -9,6 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Scripts\Dev;
 
 use OCA\Mcp\Scripts\Dev\FqcnMap;
 use OCA\Mcp\Scripts\Dev\MoveEquivalence;
+use OCA\Mcp\Scripts\Dev\PathRewrites;
 use OCA\Mcp\Scripts\Dev\SourceTrees;
 use PHPUnit\Framework\TestCase;
 
@@ -146,6 +147,10 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 		$moved = [];
 		foreach ($tree as $path => $content) {
 			$moved[$path] = str_replace([$fqcn($class, '\\'), $fqcn($class, '\\\\')], [$fqcn($target, '\\'), $fqcn($target, '\\\\')], $content);
+			$pairs = [self::lib($class) => self::lib($target), self::path('tests/Unit', $test) => self::path('tests/Unit', $targetTest)];
+			$moved[$path] = str_ends_with($path, '.php')
+				? RepositoryMoveFixture::pathsOnly($moved[$path], $pairs)
+				: PathRewrites::text($moved[$path], $pairs);
 		}
 		$namespace = static fn (array $segments): string => 'namespace ' . $fqcn(array_slice($segments, 0, -1), '\\') . ';';
 		$moved[self::lib($target)] = str_replace($namespace($class), $namespace($target), $moved[self::lib($class)]);
@@ -186,7 +191,7 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 	 * @return array<string,string> path => content
 	 */
 	private static function tree(): array {
-		return self::$tree ??= SourceTrees::fromDirectory(__DIR__ . '/../../../..', ['appinfo', 'lib', 'scripts', 'templates', 'tests']);
+		return self::$tree ??= SourceTrees::fromDirectory(__DIR__ . '/../../../..', ['appinfo', 'lib', 'scripts', 'templates', 'tests', 'js']);
 	}
 
 	/**

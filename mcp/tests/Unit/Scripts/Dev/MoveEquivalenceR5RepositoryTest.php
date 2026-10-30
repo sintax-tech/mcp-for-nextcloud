@@ -25,18 +25,12 @@ final class MoveEquivalenceR5RepositoryTest extends TestCase {
 	public function testEveryReaderIsCovered(string $relative, array $readers): void {
 		[$before, $after, $map, $old, $new] = RepositoryMoveFixture::move($relative);
 		$this->assertSame([], (new MoveEquivalence($before, $after, $map))->check());
-		$found = [];
-		foreach ($before as $path => $content) {
-			if ((str_starts_with($path, 'tests/') || str_starts_with($path, 'js/')) && !str_contains($path, '/Scripts/') && str_contains($content, basename($old))) {
-				$found[] = $path;
-			}
-		}
-		$this->assertEqualsCanonicalizing($readers, $found, 'Every filename reader must have an individual forgotten-reader probe');
+		$found = RepositoryMoveFixture::readers($before, $old);
 		foreach ($readers as $reader) {
-			$this->assertContains($reader, $found);
-			$this->assertNotSame($before[$reader], $after[$reader], "$reader was not updated");
-			$forgotten = $after;
-			$forgotten[$reader] = RepositoryMoveFixture::pathsOnly($after[$reader], [$new => $old]);
+			$this->assertContains($reader, $found, 'Previously covered readers must remain covered');
+		}
+		foreach (RepositoryMoveFixture::forgottenReaders($before, $after, $old, $new) as $reader => $forgotten) {
+			$this->assertNotSame($after[$reader], $forgotten[$reader], "$reader must be individually exercised");
 			$problems = implode("\n", (new MoveEquivalence($before, $forgotten, $map))->check());
 			$this->assertStringContainsString("$reader:", $problems);
 			$this->assertStringContainsString('still refers to the file', $problems);

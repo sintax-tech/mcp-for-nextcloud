@@ -29,11 +29,13 @@ final class RepositoryPathTest extends TestCase {
 
 	/** Coincidental fixture prefixes and lib-relative aliases cannot acquire a repository-root proof. */
 	public function testOtherPrefixesAndEmbeddedTextStayUnproved(): void {
-		foreach (['fixtures/mcp/lib/', 'mcp/', 'other:mcp/lib/'] as $prefix) {
+		foreach (['fixtures/mcp/lib/', 'mcp/', 'other:mcp/lib/', 'other!mcp/lib/'] as $prefix) {
 			$old = $prefix . 'A/Probe.php';
 			$this->assertSame($old, PathRewrites::text($old, ['lib/A/Probe.php' => 'lib/B/Probe.php']));
 		}
 		$this->assertNotSame([], $this->check('fixtures/mcp/lib/A/Probe.php', 'fixtures/mcp/lib/B/Probe.php'));
+		$this->assertNotSame([], $this->check('file:///lib/A/Probe.php', 'file:///lib/A/Probe.php'));
+		$this->assertNotSame([], $this->check('other:mcp/lib/A/Probe.php', 'other:mcp/lib/A/Probe.php'));
 	}
 
 	/**

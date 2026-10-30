@@ -18,6 +18,9 @@ declare(strict_types=1);
  * Dynamic class-name concatenation/interpolation and paths passed through heredocs or constants are not resolved.
  * These require runtime tests and human review; literal FQCN::identifier callables are checked.
  * Location calls by dynamic name (call_user_func, $f(), array callables) are not traced and require runtime tests.
+ * Path identities after a colon (e.g. 'reader: lib/…'), file:// URLs and backslash separators are not resolved.
+ * The root of a variable is not traced: rewriting a paired suffix after an unrelated root can be accepted.
+ * These cases require runtime tests and human review; no filesystem/data-flow equivalence is implied.
  * Non-PHP tests may only replace whole path tokens using the actual file pairs; all other bytes must match.
  */
 

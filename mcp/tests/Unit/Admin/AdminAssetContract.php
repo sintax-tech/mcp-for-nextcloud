@@ -11,20 +11,33 @@ final class AdminAssetContract extends Assert {
 		$app = dirname(__DIR__, 3);
 		$template = (string)file_get_contents($app . '/templates/admin.php');
 		preg_match_all("/Util::add(Script|Style)\\(\\s*'mcp'\\s*,\\s*'([^']+)'/", $template, $matches, PREG_SET_ORDER);
-		// admin-mail-grants: its order is checked by tests/Frontend/admin-mail-levels.test.cjs.
-		self::assertCount(17, $matches);
-		// Issue #21: a hosting layer never answered js/admin-level-names.js, and the page waited for it until it timed out.
-		// Its tier names live in js/admin-levels.js, the script that reads them; the separate file must not come back.
-		self::assertStringNotContainsString("'admin-level-names'", $template);
-		self::assertFileDoesNotExist($app . '/js/admin-level-names.js');
+		// Polls presets and Mail warnings live in admin-levels.js, which still loads before the matrix.
+		// Their old order is checked by tests/Frontend/admin-mail-levels.test.cjs and the Polls frontend tests.
+		self::assertCount(14, $matches);
+		// Issue #21: a hosting layer never answered a small deferred script, and the page waited until it timed out.
+		// These helpers now live in a script the page already loads. The separate files must not come back.
+		foreach (['admin-level-names', 'admin-polls-grants', 'admin-mail-grants', 'admin-backups'] as $removed) {
+			self::assertStringNotContainsString("'$removed'", $template);
+			self::assertFileDoesNotExist($app . "/js/$removed.js");
+		}
+		$personal = (string)file_get_contents($app . '/templates/personal.php');
+		self::assertStringNotContainsString("'personal-scope'", $personal);
+		self::assertFileDoesNotExist($app . '/js/personal-scope.js');
+		self::assertStringContainsString("addScript('mcp', 'connections')", $personal);
+		preg_match_all("/Util::add(Script|Style)\\(\\s*'mcp'\\s*,\\s*'([^']+)'/", $personal, $personalMatches, PREG_SET_ORDER);
+		self::assertCount(2, $personalMatches);
 		// The levels mapping is read by the matrix, so it loads before it; the level popover uses the matrix, so after it.
 		self::assertLessThan(strpos($template, "addScript('mcp', 'admin-grants')"), strpos($template, "addScript('mcp', 'admin-levels')"));
 		self::assertGreaterThan(strpos($template, "addScript('mcp', 'admin-grants')"), strpos($template, "addScript('mcp', 'admin-level-popover')"));
 		self::assertGreaterThan(strpos($template, "addScript('mcp', 'admin-grants')"), strpos($template, "addScript('mcp', 'admin-exceptions')"));
 		self::assertGreaterThan(strpos($template, "addScript('mcp', 'admin-grants')"), strpos($template, "addScript('mcp', 'admin-row-actions')"));
-		foreach ($matches as [, $kind, $name]) {
+		foreach (array_merge($matches, $personalMatches) as [, $kind, $name]) {
 			$file = $kind === 'Script' ? "$app/js/$name.js" : "$app/css/$name.css";
 			self::assertFileExists($file);
+			// A script under 5 KB, loaded on its own with defer, is the shape that stuck the admin page in #21.
+			if ($kind === 'Script') {
+				self::assertGreaterThanOrEqual(5000, filesize($file), $name);
+			}
 		}
 		self::assertFileDoesNotExist($app . '/js/admin-user-picker.js');
 		self::assertFileDoesNotExist($app . '/lib/Controller/UsersController.php');

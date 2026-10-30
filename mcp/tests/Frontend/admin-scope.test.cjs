@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Behavioral tests of js/admin-scope.js and js/personal-scope.js (issue #4, B7: S13 display, S14), with Node's test runner and a minimal DOM. */
+/** Behavioral tests of js/admin-scope.js and the personal scope block of js/connections.js (issue #4, B7: S13 display, S14), with Node's test runner and a minimal DOM. */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const vm = require('node:vm')
@@ -256,7 +256,7 @@ async function personal(handler) {
 		t: (_, text, params = {}) => text.replace(/\{(\w+)\}/g, (match, key) => params[key] ?? match),
 		fetch: async (url) => { const [status, data] = handler(url); return { ok: status < 400, status, json: async () => data } },
 	}
-	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/personal-scope.js'), 'utf8'), context)
+	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/connections.js'), 'utf8'), context)
 	await tick()
 	return ids
 }

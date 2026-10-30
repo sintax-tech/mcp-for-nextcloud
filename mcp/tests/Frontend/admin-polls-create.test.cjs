@@ -27,9 +27,10 @@ test('Polls creation is an explicit independent preset, protected reads do not a
 	assert.equal(levels.levelOf('polls', ops, { read: true, create: false, results: true, links: true }), 'polls_read_results_links')
 	assert.equal(levels.levelOf('polls', ops, { read: true, create: true, results: false, links: false }), 'polls_read_create')
 })
-test('the actual admin loads independent presets before levels and all four consumers use the helper', () => {
+test('the actual admin loads the presets with the levels, before the grants, and all four consumers use the helper', () => {
 	const template = fs.readFileSync(path.join(__dirname, '../../templates/admin.php'), 'utf8')
-	assert.ok(template.indexOf("'admin-polls-grants'") < template.indexOf("'admin-levels'"))
+	assert.equal(template.indexOf("'admin-polls-grants'"), -1)
+	assert.ok(template.indexOf("'admin-levels'") < template.indexOf("'admin-grants'"))
 	for (const name of ['admin-grants.js','admin-groups.js','admin-inspector.js','admin-level-popover.js']) {
 		const source = fs.readFileSync(path.join(__dirname, '../../js', name), 'utf8')
 		assert.match(source, /McpAdminPollsGrants/)
@@ -49,19 +50,16 @@ test('real inspector DOM retains create as an independent custom combination wit
 	assert.deepEqual(ids['mcp-inspector-calendar-operation'].all('option').map(o => o.textContent), ['read', 'results', 'Read existing links (credentials)', 'create'])
 })
 
-test('missing Polls helper offers no preset and cannot grant an accumulated fallback', () => {
+test('Polls presets come from admin-levels alone, and an unknown level grants nothing', () => {
 	const root = { t: (_, text) => text }
-	for (const name of ['admin-levels.js']) {
-		vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js', name), 'utf8'), root)
-	}
+	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-levels.js'), 'utf8'), root)
 	const levels = root.McpAdminLevels
 	const operations = ['read', 'results', 'links', 'create']
-	assert.deepEqual([...levels.levels('polls', operations)], ['none'])
-	assert.deepEqual([...levels.tiers('polls', operations)], [])
-	for (const level of ['none', 'full', 'tier3', 'polls_read_create', 'polls_read_results_links']) {
-		assert.deepEqual([...levels.operationsFor('polls', operations, level)], [])
-	}
-	assert.equal(levels.levelOf('polls', operations, Object.fromEntries(operations.map(op => [op, true]))), 'custom')
+	assert.ok(root.McpAdminPollsGrants)
+	assert.deepEqual([...levels.levels('polls', operations)], ['none', 'polls_read', 'polls_read_create', 'polls_read_results', 'polls_read_results_links'])
+	assert.deepEqual([...levels.operationsFor('polls', operations, 'none')], [])
+	assert.throws(() => levels.operationsFor('polls', operations, 'full'), /Unknown level/)
+	assert.equal(levels.levelOf('polls', operations, Object.fromEntries(operations.map(op => [op, false]))), 'none')
 	assert.equal(root.McpAdminLevels.tierNames('polls', 3), null)
 	assert.equal(root.McpAdminLevels.tierNames('polls', 4), null)
 })

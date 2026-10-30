@@ -11,7 +11,9 @@ declare(strict_types=1);
  * Usage, run inside the Git work tree:
  * - `php scripts/dev/test_inventory.php [--rev=<rev>] snapshot` prints the `Class::method` identities as JSON;
  * - `php scripts/dev/test_inventory.php [--rev=<rev>] compare <baseline.json>` fails when a baseline identity has
- *   no counterpart, mapped through scripts/dev/fqcn-map.json of the same tree;
+ *   no counterpart under its own name or the name scripts/dev/fqcn-map.json of the same tree gives it (a test
+ *   that moves without a class of lib/ to follow needs an entry in the map's `tests` list; a class elsewhere with
+ *   the same short name is reported, never accepted);
  * - `php scripts/dev/test_inventory.php failures <baseline-junit.xml> <current-junit.xml>` fails when the set of
  *   failing tests differs (the known environment failures must stay exactly the same).
  * Without `--rev` the app folder on disk is read. Exit code 0 on success, 1 on a difference, 2 on bad usage.
@@ -51,7 +53,7 @@ try {
 		}
 		$current = TestInventory::scan($files);
 		$problems = array_map(static fn (string $id): string => "missing test: $id", $comparison->missing($baseline, $current));
-		printf("%d baseline tests, %d now; matched exact %d, by map %d, by short name %d\n", count($baseline), count($current), ...array_values($comparison->rules));
+		printf("%d baseline tests, %d now; matched exact %d, by map %d\n", count($baseline), count($current), ...array_values($comparison->rules));
 	} else {
 		$difference = $comparison->failures(JunitReport::fromXml((string)file_get_contents($arguments[1])), JunitReport::fromXml((string)file_get_contents($arguments[2])));
 		$problems = [...array_map(static fn (string $id): string => "baseline failure no longer failing: $id", $difference['gone']), ...array_map(static fn (string $id): string => "new failure: $id", $difference['new'])];

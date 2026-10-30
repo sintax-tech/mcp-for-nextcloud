@@ -14,8 +14,8 @@ namespace OCA\Mcp\Scripts\Dev;
  * reports (the failure set must be the same, once the classes are mapped).
  */
 final class TestInventoryComparison {
-	/** @var array<string,int> how many baseline identities each rule matched (`exact`, `map`, `short-name`) */
-	public array $rules = ['exact' => 0, 'map' => 0, 'short-name' => 0];
+	/** @var array<string,int> how many baseline identities each rule matched (`exact`, `map`) */
+	public array $rules = ['exact' => 0, 'map' => 0];
 
 	/**
 	 * @param FqcnMap $map the map of the current tree
@@ -41,7 +41,12 @@ final class TestInventoryComparison {
 				$this->rules[$found[1]]++;
 				continue;
 			}
-			$missing[] = $found === null ? $identity : "$identity (looked for {$found[0]}::$method)";
+			$lookAlike = $found === null ? $mapper->shortNameMatch($class) : null;
+			$missing[] = match (true) {
+				$found !== null => "$identity (looked for {$found[0]}::$method)",
+				$lookAlike !== null => "$identity (only $lookAlike has the same short name; list the move under \"tests\" in the FQCN map)",
+				default => $identity,
+			};
 		}
 		return $missing;
 	}

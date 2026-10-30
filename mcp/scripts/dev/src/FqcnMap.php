@@ -17,6 +17,10 @@ use RuntimeException;
  * for `stays`), optional `via` (intermediate names of a move in several hops) and optional `companions` (other
  * classes declared in the same file, which follow its namespace). A class may move from any name of its chain
  * `fqcn, via..., target` to a later one.
+ *
+ * The optional `tests` list holds `{fqcn, target}` moves of test classes that mirror no class of `lib/` (a test at
+ * the root of `tests/Unit/`, a shared test case), so the test inventory follows them through the map instead of
+ * guessing by short name.
  */
 final class FqcnMap {
 	/** Target of a file that keeps its name. */
@@ -32,12 +36,19 @@ final class FqcnMap {
 	 * @param list<array{path:string,fqcn:string,target:string,owner:string,ticket:?string,via?:list<string>,companions?:list<string>}> $entries
 	 * @param string $prefix PSR-4 namespace prefix, with trailing backslash
 	 * @param string $root PSR-4 folder of the prefix, with trailing slash
+	 * @param list<array{fqcn:string,target:string}> $tests planned moves of test classes outside the lib mirror
 	 */
 	public function __construct(
 		public readonly array $entries,
 		public readonly string $prefix,
 		public readonly string $root,
+		public readonly array $tests = [],
 	) {
+		foreach ($tests as $test) {
+			foreach ([$test['fqcn'], $test['target']] as $step) {
+				$this->chains[strtolower($step)] = [$test['fqcn'], $test['target']];
+			}
+		}
 		foreach ($entries as $entry) {
 			foreach ($this->chainsOf($entry) as $chain) {
 				foreach ($chain as $step) {
@@ -69,7 +80,13 @@ final class FqcnMap {
 				throw new RuntimeException("fqcn map: entry $n has no ticket (use null for stays)");
 			}
 		}
-		return new self($data['entries'], (string)array_key_first($data['psr4']), (string)reset($data['psr4']));
+		$tests = $data['tests'] ?? [];
+		foreach (is_array($tests) ? $tests : [null] as $n => $test) {
+			if (!is_string($test['fqcn'] ?? null) || !is_string($test['target'] ?? null)) {
+				throw new RuntimeException("fqcn map: tests entry $n needs fqcn and target");
+			}
+		}
+		return new self($data['entries'], (string)array_key_first($data['psr4']), (string)reset($data['psr4']), $tests);
 	}
 
 	/**

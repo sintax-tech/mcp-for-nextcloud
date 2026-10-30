@@ -10,10 +10,10 @@ namespace OCA\Mcp\Scripts\Dev;
 /**
  * Finds where a test class of the baseline lives now.
  *
- * In order: the same name; the name derived from the FQCN map (the test of `OCA\Mcp\X\Foo` is
- * `OCA\Mcp\Tests\Unit\X\FooTest`, so it follows every later name of `Foo` in the map, and a test named after a
- * class that the map holds only once follows that class); and, last, a test class whose short name is unique in
- * both inventories. The rule that matched is reported, so a reviewer sees which identities were not exact.
+ * In order: the same name; a move listed in the map's `tests`; the name derived from the FQCN map (the test of
+ * `OCA\Mcp\X\Foo` is `OCA\Mcp\Tests\Unit\X\FooTest`, so it follows every later name of `Foo` in the map, and a
+ * test named after a class that the map holds only once follows that class). A class with the same short name
+ * somewhere else is never taken as the same test: {@see shortNameMatch()} only names it, for the report.
  */
 final class TestIdentityMapper {
 	/** Namespace of the unit tests, mirroring `lib/` under the app prefix. */
@@ -40,10 +40,10 @@ final class TestIdentityMapper {
 	}
 
 	/**
-	 * Current name of a baseline test class.
+	 * Current name of a baseline test class, proved by its name or by the map.
 	 *
 	 * @param string $class baseline fully qualified name
-	 * @return array{0:string,1:string}|null current name and the rule that found it (`exact`, `map`, `short-name`)
+	 * @return array{0:string,1:string}|null current name and the rule that found it (`exact` or `map`)
 	 */
 	public function current(string $class): ?array {
 		$now = array_flip($this->currentClasses);
@@ -55,10 +55,20 @@ final class TestIdentityMapper {
 				return [$candidate, 'map'];
 			}
 		}
+		return null;
+	}
+
+	/**
+	 * A current class with the same short name, unique in both inventories: a hint for the report, never a match.
+	 *
+	 * @param string $class baseline fully qualified name
+	 * @return string|null the look-alike class, or null
+	 */
+	public function shortNameMatch(string $class): ?string {
 		$short = self::short($class);
 		$before = array_values(array_filter($this->baselineClasses, static fn (string $c): bool => self::short($c) === $short));
 		$after = array_values(array_filter($this->currentClasses, static fn (string $c): bool => self::short($c) === $short));
-		return count($before) === 1 && count($after) === 1 ? [$after[0], 'short-name'] : null;
+		return count($before) === 1 && count($after) === 1 ? $after[0] : null;
 	}
 
 	/**
@@ -68,16 +78,22 @@ final class TestIdentityMapper {
 	 * @return list<string> candidate current names
 	 */
 	private function candidates(string $class): array {
+		$listed = [];
+		foreach ($this->map->tests as $test) {
+			if (strtolower($test['fqcn']) === strtolower($class)) {
+				$listed[] = $test['target'];
+			}
+		}
 		$tests = $this->map->prefix . self::TESTS;
 		if (!str_starts_with($class, $tests) || !str_ends_with($class, 'Test')) {
-			return [];
+			return $listed;
 		}
 		$subject = $this->map->prefix . substr($class, strlen($tests), -4);
 		$chains = $this->map->knows($subject) ? array_filter($this->byShortName[strtolower(self::short($subject))] ?? [], static fn (array $chain): bool => in_array($subject, $chain, true)) : [];
 		if ($chains === [] && count($this->byShortName[strtolower(self::short($subject))] ?? []) === 1) {
 			$chains = $this->byShortName[strtolower(self::short($subject))];
 		}
-		$found = [];
+		$found = $listed;
 		foreach ($chains as $chain) {
 			foreach ($chain as $step) {
 				$found[] = $tests . substr($step, strlen($this->map->prefix)) . 'Test';

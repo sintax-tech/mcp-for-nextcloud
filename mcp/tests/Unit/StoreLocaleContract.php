@@ -42,7 +42,7 @@ final class StoreLocaleContract {
 			foreach (['The app never deletes a file', 'O app nunca apaga arquivo', 'La aplicación nunca borra archivos', 'Dateien werden vom MCP nicht gelöscht'] as $obsolete) {
 				TestCase::assertStringNotContainsString($obsolete, $text, "description ($lang)");
 			}
-			foreach ([...$expected[$lang], 'Claude', 'ChatGPT', 'Gemini CLI', 'OAuth', 'Nextcloud 32–35', '1.2.2', 'Mail', 'Tables', 'Forms', 'Polls', 'files.delete', 'forms.results', 'polls.results', 'plan_state', 'confirm_shared', 'Mail 5.0.0+', '5.10.11+', 'Tables 1.0.0+', 'Forms 5.3.0+', 'Polls 8.6.3+'] as $needle) {
+			foreach ([...$expected[$lang], 'Claude', 'ChatGPT', 'Gemini CLI', 'OAuth', 'Nextcloud 32–35', '1.2.3', 'Mail', 'Tables', 'Forms', 'Polls', 'files.delete', 'forms.results', 'polls.results', 'plan_state', 'confirm_shared', 'Mail 5.0.0+', '5.10.11+', 'Tables 1.0.0+', 'Forms 5.3.0+', 'Polls 8.6.3+'] as $needle) {
 				TestCase::assertStringContainsString($needle, $text, "description ($lang)");
 			}
 		}

@@ -7,9 +7,9 @@
     <summary lang="es">Servidor MCP para su Nextcloud: conecte Claude, ChatGPT y otros clientes de IA, con permisos por usuario y por grupo</summary>
     <summary lang="de">MCP-Server für Nextcloud: KI-Clients mit Berechtigungen pro Benutzer und Gruppe verbinden</summary>
     <description><![CDATA[
-## Version 1.2.2
+## Version 1.2.3
 
-Version 1.2.2 brings the integrated capabilities below. Earlier changes are preserved in the release history.
+Version 1.2.3 fixes the Administration page, which could stay blank for minutes on some managed hosts ([#21](https://github.com/sintax-tech/mcp-for-nextcloud/issues/21)); permissions and access levels are unchanged. It carries the capabilities of 1.2.2 below. Earlier changes are preserved in the release history.
 
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** opt-in message search/reading, attachment text and native links; separate default-denied grants for flags, same-account moves, new plain-text drafts and sending. Reading does not mark messages read. Accounts/folders remain available through `mail.read`; message and attachment access need their own grants.
 - **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** discover tables/views/columns, read authorized rows and create or edit one row. View filters and native ACLs apply; schema and view writes are later work.
@@ -58,9 +58,9 @@ Claude (claude.ai and Claude Desktop), ChatGPT and Gemini CLI sign in with OAuth
 Nextcloud 32–35 and PHP 8.2 or later. Mail 5.0.0+ (attachment text 5.10.11+), Tables 1.0.0+, Forms 5.3.0+ and Polls 8.6.3+ are optional. Deck and Talk are optional: their tools appear only when the app is enabled in a supported version.
     ]]></description>
     <description lang="pt-br"><![CDATA[
-## Versão 1.2.2
+## Versão 1.2.3
 
-A versão 1.2.2 reúne as funcionalidades integradas abaixo. Mudanças anteriores estão preservadas no histórico.
+A versão 1.2.3 corrige a página de administração, que podia ficar em branco por minutos em algumas hospedagens gerenciadas ([#21](https://github.com/sintax-tech/mcp-for-nextcloud/issues/21)); permissões e níveis de acesso não mudam. Ela traz as funcionalidades da 1.2.2 abaixo. Mudanças anteriores estão preservadas no histórico.
 
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** busca/leitura de mensagens, texto de anexos e links nativos por permissões opcionais; grants separados e negados por padrão para sinalizações, mover na mesma conta, novos rascunhos em texto simples e envio. Ler não marca mensagens como lidas. Contas/pastas continuam em `mail.read`; mensagens e anexos exigem grants próprios.
 - **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** descobrir tabelas/views/colunas, ler linhas autorizadas e criar ou editar uma linha. Filtros de view e ACLs nativas continuam; escrita de schema e views fica para depois.
@@ -109,9 +109,9 @@ O Claude (claude.ai e Claude Desktop), o ChatGPT e o Gemini CLI entram com OAuth
 Nextcloud 32–35 e PHP 8.2 ou superior. Mail 5.0.0+ (texto de anexos 5.10.11+), Tables 1.0.0+, Forms 5.3.0+ e Polls 8.6.3+ são opcionais. O Deck e o Talk são opcionais: as ferramentas deles só aparecem com o app ativo numa versão suportada.
     ]]></description>
     <description lang="es"><![CDATA[
-## Versión 1.2.2
+## Versión 1.2.3
 
-La versión 1.2.2 reúne las funciones integradas siguientes. Los cambios anteriores se conservan en el historial.
+La versión 1.2.3 corrige la página de administración, que podía quedar en blanco durante minutos en algunos alojamientos gestionados ([#21](https://github.com/sintax-tech/mcp-for-nextcloud/issues/21)); los permisos y los niveles de acceso no cambian. Incluye las funciones de la 1.2.2 siguientes. Los cambios anteriores se conservan en el historial.
 
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** búsqueda/lectura opcional de mensajes, texto de adjuntos y enlaces nativos; permisos separados y denegados por defecto para indicadores, mover en la misma cuenta, borradores nuevos de texto y envío. Leer no marca mensajes como leídos. Cuentas/carpetas siguen bajo `mail.read`; mensajes y adjuntos requieren permisos propios.
 - **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** descubrir tablas/vistas/columnas, leer filas autorizadas y crear o editar una fila. Se mantienen filtros de vista y ACL nativas; escribir esquemas y vistas queda para después.
@@ -160,9 +160,9 @@ Claude (claude.ai y Claude Desktop), ChatGPT y Gemini CLI inician sesión con OA
 Nextcloud 32–35 y PHP 8.2 o superior. Mail 5.0.0+ (texto de adjuntos 5.10.11+), Tables 1.0.0+, Forms 5.3.0+ y Polls 8.6.3+ son opcionales. Deck y Talk son opcionales: sus herramientas solo aparecen con la aplicación activa en una versión compatible.
     ]]></description>
     <description lang="de"><![CDATA[
-## Version 1.2.2
+## Version 1.2.3
 
-Version 1.2.2 umfasst die folgenden integrierten Funktionen. Frühere Änderungen bleiben im Verlauf erhalten.
+Version 1.2.3 behebt die Administrationsseite, die bei einigen verwalteten Hostings minutenlang leer bleiben konnte ([#21](https://github.com/sintax-tech/mcp-for-nextcloud/issues/21)); Berechtigungen und Zugriffsstufen bleiben unverändert. Sie enthält die folgenden Funktionen von 1.2.2. Frühere Änderungen bleiben im Verlauf erhalten.
 
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Nachrichten suchen/lesen, Anhangtext und native Links mit optionalen Berechtigungen; getrennte, standardmäßig verweigerte Grants für Flags, Verschieben im selben Konto, neue Textentwürfe und Versand. Lesen markiert Nachrichten nicht als gelesen. Konten/Ordner bleiben unter `mail.read`; Nachrichten und Anhänge brauchen eigene Grants.
 - **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Tabellen/Ansichten/Spalten entdecken, berechtigte Zeilen lesen und eine Zeile erstellen oder bearbeiten. Ansichtsfilter und native ACLs gelten; Schema- und Ansichtsschreibzugriffe folgen später.
@@ -181,7 +181,7 @@ MCP for Cloud verbindet Claude, ChatGPT, Gemini CLI und andere KI-Clients über 
 
 Nextcloud 32–35, PHP 8.2+. Mail 5.0.0+ (Anhangtext 5.10.11+), Tables 1.0.0+, Forms 5.3.0+ und Polls 8.6.3+; Notes, Mail, Tables, Forms, Polls, Deck und Talk sind optional. Der Administrator verwaltet Berechtigungen, Ausschluss-Tags und Ressourcenbereiche. Bestehende Dateikopien und Versions-Voraussetzungen bleiben gültig; Kontaktlöschung braucht eine geprüfte Sicherung.
     ]]></description>
-    <version>1.2.2</version>
+    <version>1.2.3</version>
     <licence>AGPL-3.0-or-later</licence>
     <author mail="jhonatan@sintax.tech">Jhonatan Jaworski</author>
     <namespace>Mcp</namespace>

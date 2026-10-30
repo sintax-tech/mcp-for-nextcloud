@@ -9,10 +9,11 @@ Version for **Nextcloud 32 to 35** (`info.xml` declares 32–35; the API contrac
 
 The exact URL of the instance appears on the administration and personal pages.
 
-## What's new in 1.2.2
+## What's new in 1.2.3 and 1.2.2
 
-See [the changelog](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/CHANGELOG.md#122--2026-10-29) for the full changes.
+See [the changelog](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/CHANGELOG.md#123--2026-10-30) for the full changes.
 
+- **1.2.3: fix for the blank Administration page ([#21](https://github.com/sintax-tech/mcp-for-nextcloud/issues/21)).** On some managed hosts the Administration → MCP for Cloud page could stay blank for minutes because one of its scripts received no answer. That script is now part of another one the page already loaded; permissions and access levels are unchanged. No database change.
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Search and read messages and attachment text, open native links, and send, draft, flag or move messages with separate opt-in permissions.
 - **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Read tables and authorized rows; create or edit one row while respecting native permissions and view filters.
 - **Forms ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Read forms and permitted responses, create private forms with initial questions/options, and edit one existing question or option. Broader structure changes remain outside this release.

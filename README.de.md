@@ -19,10 +19,11 @@ Claude und andere MCP-Clients arbeiten mit deinen Dateien, Notizen, Kalendern, K
 
 ---
 
-## Neu in 1.2.2
+## Neu in 1.2.3 und 1.2.2
 
-Alle Änderungen stehen im [Changelog](CHANGELOG.md#122--2026-10-29).
+Alle Änderungen stehen im [Changelog](CHANGELOG.md#123--2026-10-30).
 
+- **1.2.3: Korrektur der leeren Administrationsseite ([#21](https://github.com/sintax-tech/mcp-for-nextcloud/issues/21)).** Bei einigen verwalteten Hostings konnte die Seite Administration → MCP for Cloud minutenlang leer bleiben, weil eines ihrer Skripte keine Antwort erhielt. Dieses Skript ist jetzt Teil eines anderen, das die Seite ohnehin lädt; Berechtigungen und Zugriffsstufen bleiben unverändert. Keine Datenbankänderung.
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Nachrichten und Anhangtext suchen und lesen, native Links öffnen sowie Nachrichten mit getrennten optionalen Berechtigungen senden, als Entwurf speichern, markieren oder verschieben.
 - **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Tabellen und berechtigte Zeilen lesen; eine Zeile unter Beachtung nativer Rechte und Ansichtsfilter erstellen oder bearbeiten.
 - **Forms ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Formulare und erlaubte Antworten lesen, private Formulare mit ersten Fragen/Optionen erstellen und eine bestehende Frage oder Option bearbeiten. Weitergehende Strukturänderungen sind nicht enthalten.

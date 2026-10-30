@@ -19,8 +19,8 @@ final class FinalStoreLocaleContract {
 	 */
 	public static function descriptions(array $texts): void {
 		foreach ($texts as $locale => $text) {
-			TestCase::assertStringContainsString('1.2.2', $text, $locale);
-			TestCase::assertStringNotContainsString('1.2.2-rc.', $text, $locale);
+			TestCase::assertStringContainsString('1.2.3', $text, $locale);
+			TestCase::assertStringNotContainsString('1.2.3-rc.', $text, $locale);
 			foreach (['release candidate', 'Candidata local', 'Release-Kandidat'] as $obsolete) {
 				TestCase::assertStringNotContainsStringIgnoringCase($obsolete, $text, $locale);
 			}

@@ -19,10 +19,11 @@ Deixe o Claude e outros clientes MCP trabalharem com seus arquivos, notas, calen
 
 ---
 
-## Novidades da 1.2.2
+## Novidades da 1.2.3 e da 1.2.2
 
-Veja [o changelog](CHANGELOG.md#122--2026-10-29) com as mudanças completas.
+Veja [o changelog](CHANGELOG.md#123--2026-10-30) com as mudanças completas.
 
+- **1.2.3: correção da página de administração em branco ([#21](https://github.com/sintax-tech/mcp-for-nextcloud/issues/21)).** Em algumas hospedagens gerenciadas, a página Administração → MCP for Cloud podia ficar em branco por minutos porque um dos seus scripts não recebia resposta. Esse script agora faz parte de outro que a página já carregava; permissões e níveis de acesso não mudam. Sem alteração de banco de dados.
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Busque e leia mensagens e texto de anexos, abra links nativos e envie, salve rascunhos, sinalize ou mova mensagens com permissões opcionais separadas.
 - **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Leia tabelas e linhas autorizadas; crie ou edite uma linha respeitando permissões nativas e filtros das views.
 - **Forms ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Leia formulários e respostas permitidas, crie formulários privados com perguntas/opções iniciais e edite uma pergunta ou opção existente. Alterações mais amplas de estrutura ficam fora desta versão.

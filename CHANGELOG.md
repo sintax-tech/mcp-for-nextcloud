@@ -2,6 +2,14 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 1.2.3 — 2026-10-30
+
+Fix release for the Administration page. No database change; updating from 1.2.2 needs no step and changes no permission.
+
+### Fixed
+
+- **Administration → MCP for Cloud could stay blank for minutes ([#21](https://github.com/sintax-tech/mcp-for-nextcloud/issues/21)):** on some managed hosts the request for one of the page's scripts, `admin-level-names.js`, received no answer. Nextcloud shows the page only after its deferred scripts have loaded, so the page appeared when that request finally timed out. The names of the Mail and Forms access levels now live in `admin-levels.js`, which the page already loaded, and the separate script no longer exists; the levels and their names are unchanged and the page requests one script fewer. We could not reproduce the missing answer outside that host and do not know what held the request there.
+
 ## 1.2.2 — 2026-10-29
 
 ### Added

@@ -1,0 +1,419 @@
+{
+    "flow": "grants.service",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 6,
+                "authEpoch": 0,
+                "events": [],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "a non-boolean is invalid",
+            "request": {
+                "route": "grants#service",
+                "user": "root",
+                "body": {
+                    "enabled": "false",
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 6,
+                "authEpoch": 0,
+                "events": [],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "a stale revision: 409",
+            "request": {
+                "route": "grants#service",
+                "user": "root",
+                "body": {
+                    "enabled": false,
+                    "expectedRevision": "0"
+                }
+            },
+            "response": {
+                "status": 409,
+                "json": {
+                    "error": "Conflict",
+                    "revision": "6",
+                    "state": {
+                        "enabled": true
+                    }
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 6,
+                "authEpoch": 0,
+                "events": [],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "policy unavailable: 503, nothing changes",
+            "request": {
+                "route": "grants#service",
+                "user": "root",
+                "body": {
+                    "enabled": false,
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 503,
+                "json": {
+                    "error": "Unavailable",
+                    "uncertain": false
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 6,
+                "authEpoch": 0,
+                "events": [],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "switch the service off",
+            "request": {
+                "route": "grants#service",
+                "user": "root",
+                "body": {
+                    "enabled": false,
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "enabled": false,
+                    "revision": "7"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "0"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 7,
+                "authEpoch": 1,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "cleanup",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "scope": "global",
+                            "uid": null,
+                            "cut": null,
+                            "epoch": "1"
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "service",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": null,
+                            "undoOf": null,
+                            "changes": [
+                                {
+                                    "uid": null,
+                                    "key": "service_enabled",
+                                    "before": "1",
+                                    "after": "0"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": false,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": false,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "switch it on again",
+            "request": {
+                "route": "grants#service",
+                "user": "root",
+                "body": {
+                    "enabled": true,
+                    "expectedRevision": "7"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "enabled": true,
+                    "revision": "8"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 8,
+                "authEpoch": 1,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "cleanup",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "scope": "global",
+                            "uid": null,
+                            "cut": null,
+                            "epoch": "1"
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "service",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": null,
+                            "undoOf": null,
+                            "changes": [
+                                {
+                                    "uid": null,
+                                    "key": "service_enabled",
+                                    "before": "1",
+                                    "after": "0"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#2>-1",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "service",
+                            "fromRevision": "7",
+                            "revision": "8",
+                            "receiptId": null,
+                            "undoOf": null,
+                            "changes": [
+                                {
+                                    "uid": null,
+                                    "key": "service_enabled",
+                                    "before": "0",
+                                    "after": "1"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

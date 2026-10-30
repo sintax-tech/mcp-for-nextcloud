@@ -1,0 +1,477 @@
+{
+    "flow": "oauth.consent-refused",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 2,
+                    "authEpoch": 0,
+                    "generations": []
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "a user who is not eligible gets the blocked page",
+            "request": {
+                "route": "o_auth#authorize",
+                "user": "bob",
+                "params": {
+                    "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "redirect_uri": "https://callback.example.test/cb",
+                    "response_type": "code",
+                    "code_challenge_method": "S256",
+                    "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                    "state": "st-1",
+                    "scope": "mcp"
+                }
+            },
+            "response": {
+                "status": 200,
+                "template": "consent",
+                "params": {
+                    "blocked": true,
+                    "client": "Synthetic",
+                    "error": null,
+                    "pending": null,
+                    "unavailable": false
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 2,
+                    "authEpoch": 0,
+                    "generations": []
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "consent page",
+            "request": {
+                "route": "o_auth#authorize",
+                "user": "alice",
+                "params": {
+                    "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "redirect_uri": "https://callback.example.test/cb",
+                    "response_type": "code",
+                    "code_challenge_method": "S256",
+                    "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                    "state": "st-1",
+                    "scope": "mcp"
+                }
+            },
+            "response": {
+                "status": 200,
+                "template": "consent",
+                "params": {
+                    "account": "Alice",
+                    "action": "/route/mcp.o_auth.consent",
+                    "blocked": false,
+                    "client": "Synthetic",
+                    "clientHost": "Synthetic",
+                    "customClient": true,
+                    "error": null,
+                    "loopback": false,
+                    "nativeClient": false,
+                    "pending": "<pending#1>",
+                    "redirectHost": "callback.example.test",
+                    "unavailable": false
+                }
+            },
+            "state": {
+                "session": {
+                    "mcp_oauth_pending": [
+                        [
+                            "<pending#1>",
+                            {
+                                "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                                "client_name": "Synthetic",
+                                "redirect_uris": [
+                                    "https://callback.example.test/cb"
+                                ],
+                                "client_generation": "1",
+                                "redirect_uri": "https://callback.example.test/cb",
+                                "state": "st-1",
+                                "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                                "resource": "https://cloud.example.org/apps/mcp/",
+                                "scope": "mcp"
+                            }
+                        ]
+                    ]
+                },
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 2,
+                    "authEpoch": 0,
+                    "generations": []
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "deny returns access_denied to the client",
+            "request": {
+                "route": "o_auth#consent",
+                "user": "alice",
+                "params": {
+                    "pending": "<pending#1>",
+                    "decision": "deny"
+                }
+            },
+            "response": {
+                "status": 200,
+                "template": "oauth-redirect",
+                "params": {
+                    "target": {
+                        "url": "https://callback.example.test/cb",
+                        "query": {
+                            "error": "access_denied",
+                            "iss": "https://cloud.example.org",
+                            "state": "st-1"
+                        }
+                    }
+                },
+                "headers": {
+                    "Cache-Control": "no-store",
+                    "Pragma": "no-cache",
+                    "Referrer-Policy": "no-referrer"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 2,
+                    "authEpoch": 0,
+                    "generations": []
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "consent page",
+            "request": {
+                "route": "o_auth#authorize",
+                "user": "alice",
+                "params": {
+                    "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "redirect_uri": "https://callback.example.test/cb",
+                    "response_type": "code",
+                    "code_challenge_method": "S256",
+                    "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                    "state": "st-1",
+                    "scope": "mcp"
+                }
+            },
+            "response": {
+                "status": 200,
+                "template": "consent",
+                "params": {
+                    "account": "Alice",
+                    "action": "/route/mcp.o_auth.consent",
+                    "blocked": false,
+                    "client": "Synthetic",
+                    "clientHost": "Synthetic",
+                    "customClient": true,
+                    "error": null,
+                    "loopback": false,
+                    "nativeClient": false,
+                    "pending": "<pending#2>",
+                    "redirectHost": "callback.example.test",
+                    "unavailable": false
+                }
+            },
+            "state": {
+                "session": {
+                    "mcp_oauth_pending": [
+                        [
+                            "<pending#2>",
+                            {
+                                "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                                "client_name": "Synthetic",
+                                "redirect_uris": [
+                                    "https://callback.example.test/cb"
+                                ],
+                                "client_generation": "1",
+                                "redirect_uri": "https://callback.example.test/cb",
+                                "state": "st-1",
+                                "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                                "resource": "https://cloud.example.org/apps/mcp/",
+                                "scope": "mcp"
+                            }
+                        ]
+                    ]
+                },
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 2,
+                    "authEpoch": 0,
+                    "generations": []
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "eligibility withdrawn after the page was shown (by the administrator): blocked",
+            "request": {
+                "route": "o_auth#consent",
+                "user": "alice",
+                "params": {
+                    "pending": "<pending#2>",
+                    "decision": "allow"
+                }
+            },
+            "response": {
+                "status": 200,
+                "template": "consent",
+                "params": {
+                    "blocked": true,
+                    "client": "Synthetic",
+                    "error": null,
+                    "pending": null,
+                    "unavailable": false
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "0"
+                    }
+                },
+                "policy": {
+                    "revision": 3,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "revoked_below": "1",
+                            "issue_seq": "1"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "eligibility given back; an unknown pending request is an error page",
+            "request": {
+                "route": "o_auth#consent",
+                "user": "alice",
+                "params": {
+                    "pending": "guess",
+                    "decision": "allow"
+                }
+            },
+            "response": {
+                "status": 200,
+                "template": "consent",
+                "params": {
+                    "blocked": false,
+                    "error": "The authorization request expired. Start the connection again.",
+                    "pending": null,
+                    "unavailable": false
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 4,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "revoked_below": "1",
+                            "issue_seq": "1"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "policy unavailable: the page says so and keeps nothing",
+            "request": {
+                "route": "o_auth#authorize",
+                "user": "alice",
+                "params": {
+                    "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "redirect_uri": "https://callback.example.test/cb",
+                    "response_type": "code",
+                    "code_challenge_method": "S256",
+                    "code_challenge": "E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM",
+                    "state": "st-1",
+                    "scope": "mcp"
+                }
+            },
+            "response": {
+                "status": 200,
+                "template": "consent",
+                "params": {
+                    "blocked": false,
+                    "error": null,
+                    "pending": null,
+                    "unavailable": true
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 4,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "revoked_below": "1",
+                            "issue_seq": "1"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "an invented code is refused and throttled",
+            "request": {
+                "route": "o_auth#token",
+                "user": "",
+                "params": {
+                    "grant_type": "authorization_code",
+                    "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "code": "not-a-code",
+                    "code_verifier": "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk",
+                    "redirect_uri": "https://callback.example.test/cb"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "invalid_grant",
+                    "error_description": "Invalid authorization code"
+                },
+                "throttled": {
+                    "action": "mcp_oauth_token"
+                },
+                "headers": {
+                    "Cache-Control": "no-store",
+                    "Pragma": "no-cache"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 4,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "revoked_below": "1",
+                            "issue_seq": "1"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        }
+    ]
+}

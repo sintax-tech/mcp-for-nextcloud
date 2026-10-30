@@ -1,0 +1,85 @@
+{
+    "flow": "settings.hidden-tags",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "config": [],
+                "appConfig": []
+            }
+        },
+        {
+            "step": "not a list: 400",
+            "request": {
+                "route": "tags#update",
+                "user": "root",
+                "body": {
+                    "tagIds": {
+                        "a": 10
+                    }
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "config": [],
+                "appConfig": []
+            }
+        },
+        {
+            "step": "a non-numeric id: 400",
+            "request": {
+                "route": "tags#update",
+                "user": "root",
+                "body": {
+                    "tagIds": [
+                        "x"
+                    ]
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid tag ID: x"
+                }
+            },
+            "state": {
+                "config": [],
+                "appConfig": []
+            }
+        },
+        {
+            "step": "existing tags stored, the unknown one dropped",
+            "request": {
+                "route": "tags#update",
+                "user": "root",
+                "body": {
+                    "tagIds": [
+                        10,
+                        "11",
+                        99
+                    ]
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "selected": [
+                        "10",
+                        "11"
+                    ]
+                }
+            },
+            "state": {
+                "config": {
+                    "hidden_system_tags": "[\"10\",\"11\"]"
+                },
+                "appConfig": []
+            }
+        }
+    ]
+}

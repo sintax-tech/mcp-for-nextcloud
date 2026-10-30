@@ -1,0 +1,256 @@
+{
+    "flow": "settings.backup",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "appconfig": [],
+                "revision": "0",
+                "events": []
+            }
+        },
+        {
+            "step": "without expectedRevision: 428",
+            "request": {
+                "route": "backup_settings#update",
+                "user": "root",
+                "body": {
+                    "folder": "Cópias MCP",
+                    "copies": true
+                }
+            },
+            "response": {
+                "status": 428,
+                "json": {
+                    "error": "PreconditionRequired"
+                }
+            },
+            "state": {
+                "appconfig": [],
+                "revision": "0",
+                "events": []
+            }
+        },
+        {
+            "step": "copies not a boolean: 400",
+            "request": {
+                "route": "backup_settings#update",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "0",
+                    "folder": "Cópias MCP",
+                    "copies": "false"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "appconfig": [],
+                "revision": "0",
+                "events": []
+            }
+        },
+        {
+            "step": "a folder with a slash: 400",
+            "request": {
+                "route": "backup_settings#update",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "0",
+                    "folder": "a/b",
+                    "copies": true
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid backup settings"
+                }
+            },
+            "state": {
+                "appconfig": [],
+                "revision": "0",
+                "events": []
+            }
+        },
+        {
+            "step": "a name the core refuses: 400",
+            "request": {
+                "route": "backup_settings#update",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "0",
+                    "folder": "core-rejects-this",
+                    "copies": true
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid backup settings"
+                }
+            },
+            "state": {
+                "appconfig": [],
+                "revision": "0",
+                "events": []
+            }
+        },
+        {
+            "step": "a non-canonical revision: 400",
+            "request": {
+                "route": "backup_settings#update",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "00",
+                    "folder": "Cópias MCP",
+                    "copies": true
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid backup settings"
+                }
+            },
+            "state": {
+                "appconfig": [],
+                "revision": "0",
+                "events": []
+            }
+        },
+        {
+            "step": "writer unusable: 503",
+            "request": {
+                "route": "backup_settings#update",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "0",
+                    "folder": "Cópias MCP",
+                    "copies": true
+                }
+            },
+            "response": {
+                "status": 503,
+                "json": {
+                    "error": "Unavailable",
+                    "uncertain": false
+                }
+            },
+            "state": {
+                "appconfig": [],
+                "revision": "0",
+                "events": []
+            }
+        },
+        {
+            "step": "folder Cópias MCP, copies on",
+            "request": {
+                "route": "backup_settings#update",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "0",
+                    "folder": "Cópias MCP",
+                    "copies": true
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "version": 1,
+                    "folder": "Cópias MCP",
+                    "reserved": [
+                        "MCP backups",
+                        "Cópias MCP"
+                    ],
+                    "copies": true,
+                    "revision": "1",
+                    "versionsAvailable": true,
+                    "versionsForActor": true,
+                    "effectiveCopies": true
+                }
+            },
+            "state": {
+                "appconfig": [
+                    {
+                        "configkey": "backup_settings",
+                        "configvalue": "{\"version\":1,\"folder\":\"C\\u00f3pias MCP\",\"reserved\":[\"MCP backups\",\"C\\u00f3pias MCP\"],\"copies\":true}"
+                    }
+                ],
+                "revision": "1",
+                "events": []
+            }
+        },
+        {
+            "step": "folder Arquivo, copies off: the old name stays reserved",
+            "request": {
+                "route": "backup_settings#update",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "1",
+                    "folder": "Arquivo",
+                    "copies": false
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "version": 1,
+                    "folder": "Arquivo",
+                    "reserved": [
+                        "MCP backups",
+                        "Cópias MCP",
+                        "Arquivo"
+                    ],
+                    "copies": false,
+                    "revision": "2",
+                    "versionsAvailable": true,
+                    "versionsForActor": true,
+                    "effectiveCopies": false
+                }
+            },
+            "state": {
+                "appconfig": [
+                    {
+                        "configkey": "backup_settings",
+                        "configvalue": "{\"version\":1,\"folder\":\"Arquivo\",\"reserved\":[\"MCP backups\",\"C\\u00f3pias MCP\",\"Arquivo\"],\"copies\":false}"
+                    }
+                ],
+                "revision": "2",
+                "events": []
+            }
+        },
+        {
+            "step": "stale page: 409",
+            "request": {
+                "route": "backup_settings#update",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "1",
+                    "folder": "Outra",
+                    "copies": true
+                }
+            },
+            "response": {
+                "status": 409,
+                "json": {
+                    "error": "Conflict"
+                }
+            },
+            "state": {
+                "appconfig": [
+                    {
+                        "configkey": "backup_settings",
+                        "configvalue": "{\"version\":1,\"folder\":\"Arquivo\",\"reserved\":[\"MCP backups\",\"C\\u00f3pias MCP\",\"Arquivo\"],\"copies\":false}"
+                    }
+                ],
+                "revision": "2",
+                "events": []
+            }
+        }
+    ]
+}

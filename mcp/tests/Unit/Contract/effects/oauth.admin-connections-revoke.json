@@ -1,0 +1,679 @@
+{
+    "flow": "oauth.admin-connections-revoke",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 5,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "3",
+                            "revoked_below": "0"
+                        },
+                        "bob": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#1>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#2>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    },
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#3>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#4>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "3",
+                        "id": 4
+                    },
+                    {
+                        "user_id": "bob",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#5>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#6>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 6
+                    }
+                ],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "the list shows every user",
+            "request": {
+                "route": "connections#index",
+                "user": "admin",
+                "params": []
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "connections": [
+                        {
+                            "id": 6,
+                            "uid": "bob",
+                            "displayName": "Bob",
+                            "client": {
+                                "kind": "custom",
+                                "host": "",
+                                "id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                                "name": "Synthetic"
+                            },
+                            "createdAt": "<created_at#1>",
+                            "expiresAt": 1802592000
+                        },
+                        {
+                            "id": 4,
+                            "uid": "alice",
+                            "displayName": "Alice",
+                            "client": {
+                                "kind": "custom",
+                                "host": "",
+                                "id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                                "name": "Synthetic"
+                            },
+                            "createdAt": "<created_at#1>",
+                            "expiresAt": 1802592000
+                        },
+                        {
+                            "id": 2,
+                            "uid": "alice",
+                            "displayName": "Alice",
+                            "client": {
+                                "kind": "custom",
+                                "host": "",
+                                "id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                                "name": "Synthetic"
+                            },
+                            "createdAt": "<created_at#1>",
+                            "expiresAt": 1802592000
+                        }
+                    ],
+                    "page": 1,
+                    "pageSize": 50,
+                    "hasMore": false
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 5,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "3",
+                            "revoked_below": "0"
+                        },
+                        "bob": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#1>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#2>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    },
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#3>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#4>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "3",
+                        "id": 4
+                    },
+                    {
+                        "user_id": "bob",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#5>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#6>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 6
+                    }
+                ],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "revoking bob's connection",
+            "request": {
+                "route": "connections#destroy",
+                "user": "admin",
+                "params": {
+                    "id": 6
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "revoked": true,
+                    "counts": {
+                        "connections": 2
+                    }
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 5,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "3",
+                            "revoked_below": "0"
+                        },
+                        "bob": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#1>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#2>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    },
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#3>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#4>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "3",
+                        "id": 4
+                    }
+                ],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "an unknown connection is not found",
+            "request": {
+                "route": "connections#destroy",
+                "user": "admin",
+                "params": {
+                    "id": 999
+                }
+            },
+            "response": {
+                "status": 404,
+                "json": {
+                    "error": "Not found"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 5,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "3",
+                            "revoked_below": "0"
+                        },
+                        "bob": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#1>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#2>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    },
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#3>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#4>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "3",
+                        "id": 4
+                    }
+                ],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "an empty user id is invalid",
+            "request": {
+                "route": "connections#revokeUser",
+                "user": "admin",
+                "params": {
+                    "uid": ""
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 5,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "3",
+                            "revoked_below": "0"
+                        },
+                        "bob": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#1>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#2>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    },
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#3>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#4>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "3",
+                        "id": 4
+                    }
+                ],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "an oversized user id is invalid",
+            "request": {
+                "route": "connections#revokeUser",
+                "user": "admin",
+                "params": {
+                    "uid": "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 5,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "3",
+                            "revoked_below": "0"
+                        },
+                        "bob": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#1>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#2>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    },
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#3>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#4>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "3",
+                        "id": 4
+                    }
+                ],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "policy unavailable: 503 and nothing revoked",
+            "request": {
+                "route": "connections#revokeUser",
+                "user": "admin",
+                "params": {
+                    "uid": "alice"
+                }
+            },
+            "response": {
+                "status": 503,
+                "json": {
+                    "error": "Unavailable",
+                    "uncertain": false
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 5,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "3",
+                            "revoked_below": "0"
+                        },
+                        "bob": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#1>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#2>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    },
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#3>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#4>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "3",
+                        "id": 4
+                    }
+                ],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "revoking every connection of alice",
+            "request": {
+                "route": "connections#revokeUser",
+                "user": "admin",
+                "params": {
+                    "uid": "alice"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "revoked": true,
+                    "counts": {
+                        "connections": 0
+                    }
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 6,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "revoked_below": "3",
+                            "issue_seq": "3"
+                        },
+                        "bob": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        }
+    ]
+}

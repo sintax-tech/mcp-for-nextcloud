@@ -1,0 +1,445 @@
+{
+    "flow": "grants.group-policy",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "rows": [],
+                "life": [],
+                "revision": "0",
+                "ana inherits eligibility": false
+            }
+        },
+        {
+            "step": "preview without expectedRevision: 428",
+            "request": {
+                "route": "grants#previewGroup",
+                "user": "root",
+                "body": {
+                    "gid": "staff",
+                    "grants": {
+                        "_system": [
+                            "eligible"
+                        ],
+                        "notes": [
+                            "edit"
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "status": 428,
+                "json": {
+                    "error": "PreconditionRequired"
+                }
+            },
+            "state": {
+                "rows": [],
+                "life": [],
+                "revision": "0",
+                "ana inherits eligibility": false
+            }
+        },
+        {
+            "step": "preview with a non-string group: 400",
+            "request": {
+                "route": "grants#previewGroup",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "0",
+                    "gid": 42
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "rows": [],
+                "life": [],
+                "revision": "0",
+                "ana inherits eligibility": false
+            }
+        },
+        {
+            "step": "a group that cannot grant: 422",
+            "request": {
+                "route": "grants#previewGroup",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "0",
+                    "gid": "staff",
+                    "grants": {
+                        "_system": [
+                            "eligible"
+                        ],
+                        "notes": [
+                            "edit"
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "status": 422,
+                "json": {
+                    "error": "group_source_untrusted"
+                }
+            },
+            "state": {
+                "rows": [],
+                "life": [],
+                "revision": "0",
+                "ana inherits eligibility": false
+            }
+        },
+        {
+            "step": "preview: nothing is written",
+            "request": {
+                "route": "grants#previewGroup",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "0",
+                    "gid": "staff",
+                    "grants": {
+                        "_system": [
+                            "eligible"
+                        ],
+                        "notes": [
+                            "edit"
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "previewId": "<random-id#1>",
+                    "revision": "0",
+                    "groupId": "staff",
+                    "grants": {
+                        "_system": [
+                            "eligible"
+                        ],
+                        "notes": [
+                            "edit"
+                        ]
+                    },
+                    "current": [],
+                    "state": null,
+                    "members": 2,
+                    "trusted": true,
+                    "withdraws": false,
+                    "revokes": 0
+                }
+            },
+            "state": {
+                "rows": [],
+                "life": [],
+                "revision": "0",
+                "ana inherits eligibility": false
+            }
+        },
+        {
+            "step": "save of an unknown preview: 404",
+            "request": {
+                "route": "grants#saveGroup",
+                "user": "root",
+                "body": {
+                    "previewId": "<random-id#2>",
+                    "expectedRevision": "0",
+                    "gid": "staff",
+                    "grants": {
+                        "_system": [
+                            "eligible"
+                        ],
+                        "notes": [
+                            "edit"
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "status": 404,
+                "json": {
+                    "error": "NotFound"
+                }
+            },
+            "state": {
+                "rows": [],
+                "life": [],
+                "revision": "0",
+                "ana inherits eligibility": false
+            }
+        },
+        {
+            "step": "save without previewId: 400",
+            "request": {
+                "route": "grants#saveGroup",
+                "user": "root",
+                "body": {
+                    "previewId": null,
+                    "expectedRevision": "0",
+                    "gid": "staff",
+                    "grants": {
+                        "_system": [
+                            "eligible"
+                        ],
+                        "notes": [
+                            "edit"
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "rows": [],
+                "life": [],
+                "revision": "0",
+                "ana inherits eligibility": false
+            }
+        },
+        {
+            "step": "save with an outdated revision: 409, nothing written",
+            "request": {
+                "route": "grants#saveGroup",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "999",
+                    "previewId": "<random-id#1>",
+                    "gid": "staff",
+                    "grants": {
+                        "_system": [
+                            "eligible"
+                        ],
+                        "notes": [
+                            "edit"
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "status": 409,
+                "json": {
+                    "error": "Conflict",
+                    "revision": "0",
+                    "state": {
+                        "group": {
+                            "groupId": "staff",
+                            "trusted": true,
+                            "state": null,
+                            "grants": []
+                        },
+                        "preview": {
+                            "previewId": "<random-id#3>",
+                            "revision": "0",
+                            "groupId": "staff",
+                            "grants": {
+                                "_system": [
+                                    "eligible"
+                                ],
+                                "notes": [
+                                    "edit"
+                                ]
+                            },
+                            "current": [],
+                            "state": null,
+                            "members": 2,
+                            "trusted": true,
+                            "withdraws": false,
+                            "revokes": 0
+                        }
+                    }
+                }
+            },
+            "state": {
+                "rows": [],
+                "life": [],
+                "revision": "0",
+                "ana inherits eligibility": false
+            }
+        },
+        {
+            "step": "writer unusable: 503, nothing written",
+            "request": {
+                "route": "grants#saveGroup",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "0",
+                    "previewId": "<random-id#1>",
+                    "gid": "staff",
+                    "grants": {
+                        "_system": [
+                            "eligible"
+                        ],
+                        "notes": [
+                            "edit"
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "status": 503,
+                "json": {
+                    "error": "Unavailable",
+                    "uncertain": false
+                }
+            },
+            "state": {
+                "rows": [],
+                "life": [],
+                "revision": "0",
+                "ana inherits eligibility": false
+            }
+        },
+        {
+            "step": "save: the group holds the previewed set",
+            "request": {
+                "route": "grants#saveGroup",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "0",
+                    "previewId": "<random-id#1>",
+                    "gid": "staff",
+                    "grants": {
+                        "_system": [
+                            "eligible"
+                        ],
+                        "notes": [
+                            "edit"
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "revision": "1",
+                    "changed": true,
+                    "state": "active",
+                    "revoked": 0
+                }
+            },
+            "state": {
+                "rows": {
+                    "staff": [
+                        [
+                            "_system",
+                            "eligible"
+                        ],
+                        [
+                            "notes",
+                            "edit"
+                        ]
+                    ]
+                },
+                "life": [
+                    {
+                        "groupId": "staff",
+                        "state": "active",
+                        "gen": "<random-id#5>"
+                    }
+                ],
+                "revision": "1",
+                "ana inherits eligibility": true
+            }
+        },
+        {
+            "step": "the same preview again: refused, nothing written",
+            "request": {
+                "route": "grants#saveGroup",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "1",
+                    "previewId": "<random-id#1>",
+                    "gid": "staff",
+                    "grants": {
+                        "_system": [
+                            "eligible"
+                        ],
+                        "notes": [
+                            "edit"
+                        ]
+                    }
+                }
+            },
+            "response": {
+                "status": 409,
+                "json": {
+                    "error": "Conflict",
+                    "revision": "1",
+                    "state": {
+                        "group": {
+                            "groupId": "staff",
+                            "trusted": true,
+                            "state": "active",
+                            "grants": {
+                                "_system": [
+                                    "eligible"
+                                ],
+                                "notes": [
+                                    "edit"
+                                ]
+                            }
+                        },
+                        "preview": {
+                            "previewId": "<random-id#4>",
+                            "revision": "1",
+                            "groupId": "staff",
+                            "grants": {
+                                "_system": [
+                                    "eligible"
+                                ],
+                                "notes": [
+                                    "edit"
+                                ]
+                            },
+                            "current": {
+                                "_system": [
+                                    "eligible"
+                                ],
+                                "notes": [
+                                    "edit"
+                                ]
+                            },
+                            "state": "active",
+                            "members": 2,
+                            "trusted": true,
+                            "withdraws": false,
+                            "revokes": 0
+                        }
+                    }
+                }
+            },
+            "state": {
+                "rows": {
+                    "staff": [
+                        [
+                            "_system",
+                            "eligible"
+                        ],
+                        [
+                            "notes",
+                            "edit"
+                        ]
+                    ]
+                },
+                "life": [
+                    {
+                        "groupId": "staff",
+                        "state": "active",
+                        "gen": "<random-id#5>"
+                    }
+                ],
+                "revision": "1",
+                "ana inherits eligibility": true
+            }
+        }
+    ]
+}

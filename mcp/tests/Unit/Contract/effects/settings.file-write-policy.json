@@ -1,0 +1,148 @@
+{
+    "flow": "settings.file-write-policy",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "config": [],
+                "appConfig": []
+            }
+        },
+        {
+            "step": "an unknown mode is refused: 400",
+            "request": {
+                "route": "file_write_policy#update",
+                "user": "root",
+                "body": {
+                    "mode": "denylist",
+                    "extensions": [
+                        "md"
+                    ],
+                    "allowExtensionless": false
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "invalid_policy",
+                    "field": "mode"
+                }
+            },
+            "state": {
+                "config": [],
+                "appConfig": []
+            }
+        },
+        {
+            "step": "a non-boolean extensionless flag: 400",
+            "request": {
+                "route": "file_write_policy#update",
+                "user": "root",
+                "body": {
+                    "mode": "allowlist",
+                    "extensions": [
+                        "md"
+                    ],
+                    "allowExtensionless": "true"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "invalid_policy",
+                    "field": "allowExtensionless"
+                }
+            },
+            "state": {
+                "config": [],
+                "appConfig": []
+            }
+        },
+        {
+            "step": "a wildcard extension: 400",
+            "request": {
+                "route": "file_write_policy#update",
+                "user": "root",
+                "body": {
+                    "mode": "allowlist",
+                    "extensions": [
+                        "*"
+                    ],
+                    "allowExtensionless": false
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "invalid_policy",
+                    "field": "extensions"
+                }
+            },
+            "state": {
+                "config": [],
+                "appConfig": []
+            }
+        },
+        {
+            "step": "allowlist saved in canonical form",
+            "request": {
+                "route": "file_write_policy#update",
+                "user": "root",
+                "body": {
+                    "mode": "allowlist",
+                    "extensions": ".TXT,md\n",
+                    "allowExtensionless": true
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "version": 1,
+                    "mode": "allowlist",
+                    "extensions": [
+                        "md",
+                        "txt"
+                    ],
+                    "allowExtensionless": true
+                }
+            },
+            "state": {
+                "config": [],
+                "appConfig": {
+                    "mcp": {
+                        "file_write_policy": "{\"version\":1,\"mode\":\"allowlist\",\"extensions\":[\"md\",\"txt\"],\"allowExtensionless\":true}"
+                    }
+                }
+            }
+        },
+        {
+            "step": "off",
+            "request": {
+                "route": "file_write_policy#update",
+                "user": "root",
+                "body": {
+                    "mode": "off",
+                    "extensions": [],
+                    "allowExtensionless": false
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "version": 1,
+                    "mode": "off",
+                    "extensions": [],
+                    "allowExtensionless": false
+                }
+            },
+            "state": {
+                "config": [],
+                "appConfig": {
+                    "mcp": {
+                        "file_write_policy": "{\"version\":1,\"mode\":\"off\",\"extensions\":[],\"allowExtensionless\":false}"
+                    }
+                }
+            }
+        }
+    ]
+}

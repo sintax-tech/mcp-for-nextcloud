@@ -1,6 +1,8 @@
 OC.L10N.register(
     "mcp",
     {
+    "Tag not found in Nextcloud." : "Tag in Nextcloud nicht gefunden.",
+    "Failed to search images in Nextcloud." : "Die Suche nach Bildern in Nextcloud ist fehlgeschlagen.",
     "The specified snippet appears more than once in the file; provide a longer, unique snippet." : "Der angegebene Textausschnitt kommt mehrmals in der Datei vor. Gib einen längeren, eindeutigen Ausschnitt an.",
     "Use only one of content, append or old/new." : "Verwende nur eines von content, append oder old/new.",
     "append and old/new need the etag returned by notes_read or by the plan." : "append und old/new brauchen den ETag, den notes_read oder der Plan liefert.",

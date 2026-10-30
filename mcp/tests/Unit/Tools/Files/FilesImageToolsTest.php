@@ -131,11 +131,11 @@ final class FilesImageToolsTest extends FilesToolsTestCase {
         self::assertSame('image/jpeg', $out[0]['mime']);
     }
 
-    public function testImageSearchByUnknownTagReturnsEmpty(): void {
+    public function testImageSearchByUnknownTagFails(): void {
         $this->tree->addFile('/alice/files/Photos/a.jpg', 'A', 'image/jpeg');
         $this->tagManager->method('getAllTags')->willReturn([]);
 
-        self::assertSame([], $this->json('files_image_search', ['tag' => 'nothing']));
+        FilesImageSearchTest::assertTagNotFound(fn () => $this->tool('files_image_search', ['tag' => 'nothing']));
     }
 
     public function testImageSearchByKnownTagIntersectsResults(): void {
@@ -265,8 +265,7 @@ final class FilesImageToolsTest extends FilesToolsTestCase {
         $this->tagManager->method('getTagsByIds')->willReturn([$visibleTag, $invisibleTag]);
         $this->tagMapper->method('getTagIdsForObjects')->willReturn([(string)$id => ['10', '20']]);
 
-        $out = $this->json('files_image_search', ['tag' => 'invisible-tag']);
-        self::assertSame([], $out);
+        FilesImageSearchTest::assertTagNotFound(fn () => $this->tool('files_image_search', ['tag' => 'invisible-tag']));
 
         $out2 = $this->json('files_image_search', ['folder' => '/Photos']);
         self::assertCount(1, $out2);

@@ -10,6 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\CriticalFlow;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\FlowRunner;
+use OCA\Mcp\Tools\Deck\DeckMessages;
 use OCP\Share\IShare;
 use PHPUnit\Framework\TestCase;
 
@@ -47,6 +48,27 @@ final class DeckRemainingEffectsContractTest extends TestCase {
 	/** @return void native dependency insertion and PlanChanged before execution */
 	public function testAddingADependency(): void {
 		$this->dependency(true);
+	}
+
+	/** @return void a newly introduced reverse edge and a self-relation refuse before any native association write */
+	public function testDependencyCyclesKeepTheNativeRows(): void {
+		$tool = 'deck_add_card_dependency';
+		$args = ['cardId' => 8, 'targetId' => 7];
+		$plan = $this->gate->call($tool, $args);
+		$this->assertTrue($plan['body']->result->structuredContent->requiresConfirmation ?? false);
+		$t = new EffectTranscript($this, 'deck.dependency-cycle');
+		$t->record('acyclic-preview', $args, $plan, $this->state());
+		$this->wiring->deck->edges = [7 => [8]];
+		$before = $this->state();
+		foreach (['reverse-confirmed' => $args, 'self-confirmed' => ['cardId' => 7, 'targetId' => 7]] as $step => $request) {
+			$request += ['confirm' => true, 'plan_state' => $plan['body']->result->structuredContent->plan_state];
+			$out = $this->gate->call($tool, $request);
+			$t->record($step, $request, $out, $this->state());
+			$this->assertTrue($out['body']->result->isError ?? false, json_encode($out));
+			$this->assertSame(DeckMessages::dependencyCycle(), $out['body']->result->content[0]->text);
+			$this->assertSame($before, $this->state(), 'cycle refusal keeps all native rows and write records');
+		}
+		$t->assertGolden();
 	}
 
 	/** @return void native dependency deletion and PlanChanged before execution */

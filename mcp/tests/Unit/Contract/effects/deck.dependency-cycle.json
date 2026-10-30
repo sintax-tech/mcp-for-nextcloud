@@ -1,0 +1,449 @@
+{
+    "steps": [
+        {
+            "step": "acyclic-preview",
+            "request": {
+                "cardId": 8,
+                "targetId": 7
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Add Deck card dependency**\n\nDeck dependency: *Contrato* → *Proposta comercial*.\n\nBefore: absent\n\nAfter: present\n\nOnly the requested relation changes. Direction is from this card to the target. Self-relations and cycles through readable cards are refused. Relations to cards you cannot read are omitted, with no count and no id. Cycles through those cards cannot be detected. A concurrent change between the final check and the native write can still create a cycle.\n\nNothing was changed. Confirm to execute.\n\n*Only the requested relation changes. Direction is from this card to the target. Self-relations and cycles through readable cards are refused. Relations to cards you cannot read are omitted, with no count and no id. Cycles through those cards cannot be detected. A concurrent change between the final check and the native write can still create a cycle.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_add_card_dependency",
+                            "title": "Add Deck card dependency",
+                            "origin": {
+                                "id": 8,
+                                "boardId": 20,
+                                "title": "Contrato",
+                                "url": "https://cloud.example.com/apps/deck/"
+                            },
+                            "target": {
+                                "id": 7,
+                                "boardId": 20,
+                                "title": "Proposta comercial",
+                                "url": "https://cloud.example.com/apps/deck/"
+                            },
+                            "direction": "origin.dependentCards contains target",
+                            "action": "deck_add_card_dependency",
+                            "board": {
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "name": "Comercial",
+                                "shared": false
+                            },
+                            "before": false,
+                            "after": true,
+                            "shared": [],
+                            "message": "Only the requested relation changes. Direction is from this card to the target. Self-relations and cycles through readable cards are refused. Relations to cards you cannot read are omitted, with no count and no id. Cycles through those cards cannot be detected. A concurrent change between the final check and the native write can still create a cycle.",
+                            "recoverable": true,
+                            "plan_state": "<plan_state#1>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "boards": {
+                    "20": {
+                        "title": "Comercial",
+                        "owner": "alice",
+                        "deletedAt": 0
+                    },
+                    "30": {
+                        "title": "Diretoria",
+                        "owner": "pedro",
+                        "deletedAt": 0
+                    }
+                },
+                "stacks": {
+                    "2": {
+                        "boardId": 20,
+                        "title": "A fazer",
+                        "order": 0,
+                        "deletedAt": 0
+                    },
+                    "3": {
+                        "boardId": 20,
+                        "title": "Feito",
+                        "order": 1,
+                        "deletedAt": 0
+                    },
+                    "4": {
+                        "boardId": 20,
+                        "title": "Arquivo",
+                        "order": 2,
+                        "deletedAt": 0
+                    },
+                    "5": {
+                        "boardId": 20,
+                        "title": "Rascunhos",
+                        "order": 3,
+                        "deletedAt": 0
+                    },
+                    "6": {
+                        "boardId": 30,
+                        "title": "Pauta",
+                        "order": 0,
+                        "deletedAt": 0
+                    }
+                },
+                "cards": {
+                    "7": {
+                        "stackId": 2,
+                        "title": "Proposta comercial",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "8": {
+                        "stackId": 2,
+                        "title": "Contrato",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 1,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "9": {
+                        "stackId": 2,
+                        "title": "Reunião de kickoff",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 2,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "10": {
+                        "stackId": 3,
+                        "title": "Entregue",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "12": {
+                        "stackId": 6,
+                        "title": "Orçamento anual",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    }
+                },
+                "writes": [],
+                "edges": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "reverse-confirmed",
+            "request": {
+                "cardId": 8,
+                "targetId": 7,
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Self-relations and cycles detectable through readable cards are refused."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "boards": {
+                    "20": {
+                        "title": "Comercial",
+                        "owner": "alice",
+                        "deletedAt": 0
+                    },
+                    "30": {
+                        "title": "Diretoria",
+                        "owner": "pedro",
+                        "deletedAt": 0
+                    }
+                },
+                "stacks": {
+                    "2": {
+                        "boardId": 20,
+                        "title": "A fazer",
+                        "order": 0,
+                        "deletedAt": 0
+                    },
+                    "3": {
+                        "boardId": 20,
+                        "title": "Feito",
+                        "order": 1,
+                        "deletedAt": 0
+                    },
+                    "4": {
+                        "boardId": 20,
+                        "title": "Arquivo",
+                        "order": 2,
+                        "deletedAt": 0
+                    },
+                    "5": {
+                        "boardId": 20,
+                        "title": "Rascunhos",
+                        "order": 3,
+                        "deletedAt": 0
+                    },
+                    "6": {
+                        "boardId": 30,
+                        "title": "Pauta",
+                        "order": 0,
+                        "deletedAt": 0
+                    }
+                },
+                "cards": {
+                    "7": {
+                        "stackId": 2,
+                        "title": "Proposta comercial",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "8": {
+                        "stackId": 2,
+                        "title": "Contrato",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 1,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "9": {
+                        "stackId": 2,
+                        "title": "Reunião de kickoff",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 2,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "10": {
+                        "stackId": 3,
+                        "title": "Entregue",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "12": {
+                        "stackId": 6,
+                        "title": "Orçamento anual",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    }
+                },
+                "writes": [],
+                "edges": {
+                    "7": [
+                        8
+                    ]
+                },
+                "shares": []
+            }
+        },
+        {
+            "step": "self-confirmed",
+            "request": {
+                "cardId": 7,
+                "targetId": 7,
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Self-relations and cycles detectable through readable cards are refused."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "boards": {
+                    "20": {
+                        "title": "Comercial",
+                        "owner": "alice",
+                        "deletedAt": 0
+                    },
+                    "30": {
+                        "title": "Diretoria",
+                        "owner": "pedro",
+                        "deletedAt": 0
+                    }
+                },
+                "stacks": {
+                    "2": {
+                        "boardId": 20,
+                        "title": "A fazer",
+                        "order": 0,
+                        "deletedAt": 0
+                    },
+                    "3": {
+                        "boardId": 20,
+                        "title": "Feito",
+                        "order": 1,
+                        "deletedAt": 0
+                    },
+                    "4": {
+                        "boardId": 20,
+                        "title": "Arquivo",
+                        "order": 2,
+                        "deletedAt": 0
+                    },
+                    "5": {
+                        "boardId": 20,
+                        "title": "Rascunhos",
+                        "order": 3,
+                        "deletedAt": 0
+                    },
+                    "6": {
+                        "boardId": 30,
+                        "title": "Pauta",
+                        "order": 0,
+                        "deletedAt": 0
+                    }
+                },
+                "cards": {
+                    "7": {
+                        "stackId": 2,
+                        "title": "Proposta comercial",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "8": {
+                        "stackId": 2,
+                        "title": "Contrato",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 1,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "9": {
+                        "stackId": 2,
+                        "title": "Reunião de kickoff",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 2,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "10": {
+                        "stackId": 3,
+                        "title": "Entregue",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "12": {
+                        "stackId": 6,
+                        "title": "Orçamento anual",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    }
+                },
+                "writes": [],
+                "edges": {
+                    "7": [
+                        8
+                    ]
+                },
+                "shares": []
+            }
+        }
+    ]
+}

@@ -1,0 +1,108 @@
+{
+    "steps": [
+        {
+            "step": "own-locked-preview",
+            "request": {
+                "from": "/Docs/old.md",
+                "to": "/Docs/new.md"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move file**\n\nMove **/Docs/old.md** to **/Docs/new.md**.\n\n\n### Warnings\n\n- The file “/Docs/old.md” is locked by you. This change is allowed and keeps your lock.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the item below moves to the destination, keeping its id, its versions and its shares.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_move",
+                            "title": "Move file",
+                            "action": "files_move",
+                            "from": "/Docs/old.md",
+                            "to": "/Docs/new.md",
+                            "idBefore": 102,
+                            "isDir": false,
+                            "versions": null,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the item below moves to the destination, keeping its id, its versions and its shares.",
+                            "lock": {
+                                "type": "user",
+                                "owner_display_name": "Alice",
+                                "own": true,
+                                "blocking": false,
+                                "created_at": "<created_at#1>",
+                                "expires_at": null,
+                                "expiry_status": "none"
+                            },
+                            "warnings": [
+                                {
+                                    "type": "file_locked",
+                                    "message": "The file “/Docs/old.md” is locked by you. This change is allowed and keeps your lock."
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Docs": "dir #101",
+                    "/alice/files/Docs/old.md": "#102 old"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "own-locked-confirmed",
+            "request": {
+                "from": "/Docs/old.md",
+                "to": "/Docs/new.md",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"from\": \"/Docs/old.md\",\n    \"to\": \"/Docs/new.md\",\n    \"idBefore\": 102,\n    \"idAfter\": 102,\n    \"idPreserved\": true,\n    \"versionsBefore\": null,\n    \"versionsAfter\": null,\n    \"sharesBefore\": 0,\n    \"sharesAfter\": 0,\n    \"access\": {\n        \"scope\": \"personal\",\n        \"owner\": \"alice\",\n        \"ownerDisplayName\": \"Alice\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        }\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Docs": "dir #101",
+                    "/alice/files/Docs/new.md": "#102 old"
+                },
+                "ops": [
+                    "move /alice/files/Docs/old.md /alice/files/Docs/new.md"
+                ]
+            }
+        }
+    ]
+}

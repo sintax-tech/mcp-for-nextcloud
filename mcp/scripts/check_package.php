@@ -11,6 +11,8 @@ use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use RuntimeException;
 
+require_once __DIR__ . '/DevelopmentEntries.php';
+
 /**
  * Inspects an app archive before it ships: `php scripts/check_package.php <archive.tar.gz> [sources...]`.
  *
@@ -22,6 +24,7 @@ use RuntimeException;
  * - a `mcp/vendor/` entry outside {@see self::ALLOWED_VENDOR}: a dev dependency such as sabre/* or
  *   symfony/console must never ship in the production package;
  * - a missing license or attribution file from REQUIRED_LEGAL_FILES;
+ * - a development-only entry under `mcp/scripts/` or `mcp/tests/` ({@see DevelopmentEntries});
  * - a script or style referenced with `Util::addScript/addStyle('mcp', X)` in the .php files of the sources
  *   (`templates lib` by default) that is not packaged as `mcp/js/X.js` or `mcp/css/X.css`.
  *
@@ -124,6 +127,7 @@ final class PackageCheck {
             }
         }
         array_push($found, ...self::vendorProblems($entries));
+        array_push($found, ...DevelopmentEntries::problems($entries));
         foreach ($sources as $source) {
             foreach (self::phpFiles($source) as $path) {
                 preg_match_all(self::REFERENCE, (string)file_get_contents($path), $matches, PREG_SET_ORDER);

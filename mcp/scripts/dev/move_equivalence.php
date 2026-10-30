@@ -12,6 +12,9 @@ declare(strict_types=1);
  * Git work tree. Both revisions are read from Git (the working tree is not used); the map is the
  * scripts/dev/fqcn-map.json of the new revision. With `--ticket`, every map entry of that ticket must have moved.
  * Exit code 0 when the range is equivalent, 1 with the problems on stderr, 2 on bad usage.
+ *
+ * Not compared, by design: whitespace between tokens, comments and PHPDoc, and the order of imports. A class
+ * named only in PHPDoc (`@param`, `@var`) does not run; a stale one there is left to the human review of the move.
  */
 
 use OCA\Mcp\Scripts\Dev\FqcnMap;

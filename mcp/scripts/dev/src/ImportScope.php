@@ -10,8 +10,8 @@ namespace OCA\Mcp\Scripts\Dev;
 /**
  * Namespace and imports in force while a file is read, and PHP's name resolution rules over them.
  *
- * Class aliases are case-insensitive, as in PHP; function and constant imports are kept apart because they
- * resolve on their own tables. A new `namespace` statement clears the imports.
+ * Class and function aliases are case-insensitive and constant aliases case-sensitive, as in PHP; function and
+ * constant imports are kept apart because they resolve on their own tables. A new `namespace` statement clears the imports.
  */
 final class ImportScope {
 	/** Current namespace, without leading backslash; empty for the global namespace. */
@@ -23,6 +23,9 @@ final class ImportScope {
 	/** @var array<string,string> lower-case alias => fully qualified function */
 	private array $functions = [];
 
+	/** @var array<string,string> alias (case-sensitive, as constants are) => fully qualified constant */
+	private array $constants = [];
+
 	/**
 	 * Reads a `namespace` statement and switches to it.
 	 *
@@ -33,6 +36,7 @@ final class ImportScope {
 	public function readNamespace(array $tokens, int $i): int {
 		$this->classes = [];
 		$this->functions = [];
+		$this->constants = [];
 		$next = $tokens[$i + 1] ?? [null, '', 0];
 		if (in_array($next[0], [T_STRING, T_NAME_QUALIFIED], true)) {
 			$this->namespace = $next[1];
@@ -112,6 +116,17 @@ final class ImportScope {
 	}
 
 	/**
+	 * Resolves an unqualified name used as a constant: imported constants resolve to their import, others stay as
+	 * written (PHP falls back to the global constant at run time).
+	 *
+	 * @param string $name the name as written
+	 * @return string the import target, or the name unchanged
+	 */
+	public function resolveConstant(string $name): string {
+		return $this->constants[$name] ?? $name;
+	}
+
+	/**
 	 * Tells whether an unqualified name is a class import of this file.
 	 *
 	 * @param string $name the name as written
@@ -144,11 +159,13 @@ final class ImportScope {
 			return;
 		}
 		$segments = explode('\\', $name);
-		$key = strtolower($alias ?? end($segments));
+		$alias ??= end($segments);
 		if ($kind === 'class') {
-			$this->classes[$key] = $name;
+			$this->classes[strtolower($alias)] = $name;
 		} elseif ($kind === 'function') {
-			$this->functions[$key] = $name;
+			$this->functions[strtolower($alias)] = $name;
+		} else {
+			$this->constants[$alias] = $name;
 		}
 	}
 }

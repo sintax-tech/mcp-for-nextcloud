@@ -166,7 +166,7 @@ final class MoveEquivalence {
 				}
 				$inLib = $this->map->pathOf($class) !== null && str_starts_with($old, $this->map->root);
 				$sameShortName = substr($class, (int)strrpos($class, '\\')) === substr($to[$k], (int)strrpos($to[$k], '\\'));
-				if ($inLib ? !$this->map->allows($class, $to[$k]) : !$sameShortName) {
+				if ($inLib ? !$this->map->allows($class, $to[$k]) : !$sameShortName && !$this->map->allows($class, $to[$k])) {
 					$this->problems[] = "$new: $class became {$to[$k]}, which the FQCN map does not plan";
 				}
 				$this->renames[$class] = $to[$k];
@@ -175,7 +175,10 @@ final class MoveEquivalence {
 	}
 
 	/**
-	 * Reports every reference in the new tree that still names a class that no longer exists under that name.
+	 * Reports every reference in the new tree that still names a class retired in the range (declared in the old
+	 * tree, or renamed by it, and no longer declared in the new one), and every reference of a changed file to a
+	 * planned name that no file declares. Unchanged files may name planned destinations (fixtures, documentation
+	 * data) without being stale.
 	 *
 	 * @param TokenNormalizer $normalizer normalizer of the new tree
 	 * @param array<string,NormalizedSource> $normalized files already normalized, by path
@@ -188,9 +191,16 @@ final class MoveEquivalence {
 			}
 			$source = $normalized[$path] ?? $normalizer->normalize($content);
 			foreach ($source->references as [$class, $line]) {
-				$old = isset($renamed[strtolower($class)]) || $this->map->knows($class);
-				if ($old && !$this->afterIndex->declares($class)) {
+				// Only a name the old tree declared and the new one does not is stale; a planned destination that does
+				// not exist yet, or a name that never was a class of the app, is not.
+				if ($this->afterIndex->declares($class)) {
+					continue;
+				}
+				if (isset($renamed[strtolower($class)]) || $this->beforeIndex->declares($class)) {
 					$this->problems[] = "$path:$line: still refers to $class, which no longer exists under that name";
+				} elseif (isset($normalized[$path]) && $this->map->knows($class)) {
+					// A file this range changed now names a planned class that no file declares (its move was omitted).
+					$this->problems[] = "$path:$line: refers to $class, which no file declares";
 				}
 			}
 		}

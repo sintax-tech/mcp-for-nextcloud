@@ -16,7 +16,13 @@ namespace OCA\Mcp\Scripts\Dev;
  * attribute, a declaration. An unqualified name that is not imported counts as a class only when the current
  * namespace declares a class with that name in the same tree ({@see SourceTreeIndex}); otherwise it is a function,
  * a constant or a builtin type and stays literal. A string literal whose value is a fully qualified class name is
- * compared by that value, so `'OCA\\Mcp\\X'` and `'OCA\Mcp\X'` are the same string.
+ * compared by that value ({@see PhpStringLiteral}), so `'OCA\\Mcp\\X'` and `'OCA\Mcp\X'` are the same string; any
+ * other string, interpolated text and heredoc content is compared byte for byte. Inside an attribute (`#[...]`)
+ * the attribute names are classes even when arguments follow. Constants imported with `use const` resolve to
+ * their import.
+ *
+ * Deliberately not compared: whitespace between tokens, comments and PHPDoc (a type named only in `@param` or
+ * `@var` does not run; a stale one there is left to human review) and the order of imports.
  *
  * Renames are applied while normalizing, so the stream of the old file with the map's renames applied must equal
  * the stream of the new file with none.
@@ -57,6 +63,7 @@ final class TokenNormalizer {
 		$references = [];
 		$contexts = [];
 		$pendingClass = false;
+		$attribute = null;
 		$count = count($tokens);
 		for ($i = 0; $i < $count; $i++) {
 			[$id, $text, $line] = $tokens[$i];
@@ -77,15 +84,18 @@ final class TokenNormalizer {
 			} elseif ($text === '}') {
 				array_pop($contexts);
 			}
+			$attribute = self::attributeState($attribute, $id, $text);
 			if (in_array($id, self::NAMES, true)) {
-				$stream[] = [$this->name($tokens, $i, $scope, $renames, $references), $line];
+				$attributeName = $attribute === [1, 0] && in_array($tokens[$i - 1][1], ['#[', ','], true);
+				$stream[] = [$this->name($tokens, $i, $scope, $renames, $references, $attributeName), $line];
 				continue;
 			}
 			if ($id === T_CONSTANT_ENCAPSED_STRING) {
 				$stream[] = [$this->string($text, $renames, $references, $line), $line];
 				continue;
 			}
-			$stream[] = ['T:' . trim($text), $line];
+			// Only the open and close tags carry layout whitespace; every other token is content and stays intact.
+			$stream[] = ['T:' . (in_array($id, [T_OPEN_TAG, T_CLOSE_TAG], true) ? trim($text) : $text), $line];
 		}
 		return new NormalizedSource($stream, $references);
 	}
@@ -120,9 +130,10 @@ final class TokenNormalizer {
 	 * @param ImportScope $scope namespace and imports in force
 	 * @param array<string,string> $renames old FQCN => new FQCN
 	 * @param list<array{0:string,1:int}> $references collects every class name referred to, with its line
+	 * @param bool $attributeName whether the name is the class of an attribute (`#[Name(...)]`)
 	 * @return string `C:<fqcn>` for a class reference, `T:<text>` otherwise
 	 */
-	private function name(array $tokens, int $i, ImportScope $scope, array $renames, array &$references): string {
+	private function name(array $tokens, int $i, ImportScope $scope, array $renames, array &$references, bool $attributeName): string {
 		[$id, $text, $line] = $tokens[$i];
 		$previous = $tokens[$i - 1] ?? [null, '', 0];
 		$next = $tokens[$i + 1][1] ?? '';
@@ -132,38 +143,59 @@ final class TokenNormalizer {
 		if ($next === ':' && in_array($previous[1], ['(', ','], true)) {
 			return 'T:' . $text;
 		}
-		if ($next === '(' && $previous[0] !== T_NEW) {
+		if ($next === '(' && $previous[0] !== T_NEW && !$attributeName) {
 			return 'T:' . $scope->resolveFunction($text);
 		}
 		$class = $scope->resolveClass($text);
-		if ($id === T_STRING && !$scope->isImported($text) && !$this->index->declares($class)) {
+		if ($id === T_STRING && !$attributeName && !$scope->isImported($text) && !$this->index->declares($class)) {
 			// Kept for the stale-reference check: a same-namespace name whose class moved away resolves to nothing.
 			$references[] = [$class, $line];
-			return 'T:' . $text;
+			return 'T:' . $scope->resolveConstant($text);
 		}
 		$references[] = [$class, $line];
 		return 'C:' . ($renames[$class] ?? $class);
 	}
 
 	/**
-	 * Normalizes a constant string literal: by value, renamed when the value is a fully qualified class name.
+	 * Normalizes a constant string literal: a class name by its value (renamed when the map moves it), anything else
+	 * by its exact source text.
 	 *
 	 * @param string $text the literal with its quotes
 	 * @param array<string,string> $renames old FQCN => new FQCN
 	 * @param list<array{0:string,1:int}> $references collects the FQCN the string names, if any
 	 * @param int $line line of the literal
-	 * @return string `S:<value>`
+	 * @return string `S=<fqcn>` for a class name, `S:<literal>` otherwise
 	 */
 	private function string(string $text, array $renames, array &$references, int $line): string {
-		$quote = $text[0];
-		$body = substr($text, 1, -1);
-		$value = $quote === "'" ? strtr($body, ['\\\\' => '\\', "\\'" => "'"]) : stripcslashes($body);
+		$value = PhpStringLiteral::value($text);
 		if (preg_match(self::FQCN, $value) !== 1) {
-			return 'S:' . $value;
+			return 'S:' . $text;
 		}
 		$lead = str_starts_with($value, '\\') ? '\\' : '';
 		$class = ltrim($value, '\\');
 		$references[] = [$class, $line];
-		return 'S:' . $lead . ($renames[$class] ?? $class);
+		return 'S=' . $lead . ($renames[$class] ?? $class);
 	}
+
+	/**
+	 * Tracks whether the tokens are inside an attribute group and at which depth.
+	 *
+	 * @param array{0:int,1:int}|null $state bracket and parenthesis depth inside the current `#[...]`, null outside
+	 * @param int|null $id token id
+	 * @param string $text token text
+	 * @return array{0:int,1:int}|null the state after this token
+	 */
+	private static function attributeState(?array $state, ?int $id, string $text): ?array {
+		if ($id === T_ATTRIBUTE) {
+			return [1, 0];
+		}
+		if ($state === null) {
+			return null;
+		}
+		[$brackets, $parens] = $state;
+		$brackets += match ($text) { '[' => 1, ']' => -1, default => 0 };
+		$parens += match ($text) { '(' => 1, ')' => -1, default => 0 };
+		return $brackets === 0 ? null : [$brackets, $parens];
+	}
+
 }

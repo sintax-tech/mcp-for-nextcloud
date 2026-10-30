@@ -77,10 +77,43 @@ final class TokenNormalizerTest extends TestCase {
 		$index = new SourceTreeIndex([]);
 		$stream = array_column((new TokenNormalizer($index))->normalize($code, ['Old\Guard' => 'New\Guard'])->stream, 0);
 		$this->assertContains('C:New\Guard', $stream);
-		$this->assertContains('S:New\Guard', $stream);
-		$this->assertContains('S:\New\Guard', $stream);
-		$this->assertContains('S:Old\Guard::x', $stream);
-		$this->assertContains('S:plain', $stream);
+		$this->assertContains('S=New\Guard', $stream);
+		$this->assertContains('S=\New\Guard', $stream);
+		$this->assertContains("S:'Old\\\\Guard::x'", $stream);
+		$this->assertContains("S:'plain'", $stream);
+	}
+
+	/** Text inside strings, interpolations, heredocs and nowdocs is compared byte for byte (review A2). */
+	public function testStringContentKeepsItsWhitespace(): void {
+		$pairs = [
+			["<?php\necho \"hello \$x\";\n", "<?php\necho \" hello \$x\";\n"],
+			["<?php\necho \"\$x done\";\n", "<?php\necho \"\$x  done\";\n"],
+			["<?php\necho <<<EOT\nhello \$x\nEOT;\n", "<?php\necho <<<EOT\n hello \$x\nEOT;\n"],
+			["<?php\necho <<<'EOT'\nhello\nEOT;\n", "<?php\necho <<<'EOT'\nhello \nEOT;\n"],
+			["<?php\necho \"\\q\";\n", "<?php\necho \"q\";\n"],
+			["<?php\necho 'a';\n", "<?php\necho 'a ';\n"],
+		];
+		foreach ($pairs as [$before, $after]) {
+			$this->assertNotSame($this->stream($before, []), $this->stream($after, []), $after);
+		}
+	}
+
+	/** An attribute's name is a class even with arguments, in a group, qualified or aliased (review A3). */
+	public function testAttributeNamesResolveAsClassesWithArguments(): void {
+		$code = "<?php\nnamespace App;\nuse Lib\\Attr\\Guard;\nuse Lib\\Attr\\Other as Alias;\nfinal class A {\n\t#[Guard(action: 'x'), Alias, \\Lib\\Attr\\Full(Guard::class)]\n\tpublic function f(): void {}\n}\n";
+		$this->assertSame(['App\A', 'Lib\Attr\Guard', 'Lib\Attr\Other', 'Lib\Attr\Full', 'Lib\Attr\Guard'], $this->classes($code, ['App\A']));
+		$redirected = str_replace('use Lib\\Attr\\Guard;', 'use Lib\\Attr\\NoCheck as Guard;', $code);
+		$this->assertContains('C:Lib\Attr\NoCheck', $this->stream($redirected, ['App\A']));
+	}
+
+	/** A constant imported with `use const` resolves to its import, so redirecting it changes the stream. */
+	public function testImportedConstantsResolveToTheirImport(): void {
+		$code = "<?php\nnamespace App;\nuse const Lib\\FLAG;\nuse const Lib\\{LIMIT as MAX};\necho FLAG + MAX + PHP_EOL;\n";
+		$stream = $this->stream($code, []);
+		$this->assertContains('T:Lib\FLAG', $stream);
+		$this->assertContains('T:Lib\LIMIT', $stream);
+		$this->assertContains('T:PHP_EOL', $stream);
+		$this->assertNotSame($stream, $this->stream(str_replace('use const Lib\\FLAG;', 'use const Other\\FLAG;', $code), []));
 	}
 
 	/** Whitespace and comments are left out. */

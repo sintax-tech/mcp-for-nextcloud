@@ -3,9 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Tests of the Mail levels and tooltips of the admin page: js/admin-level-names.js gives Mail its own level names,
- * js/admin-levels.js uses them, and js/admin-mail-grants.js describes the seven Mail operations and warns before a Mail
- * write is granted. The levels are None, Accounts and folders, Messages, Messages and attachments, Messages,
+ * Tests of the Mail levels and tooltips of the admin page: js/admin-levels.js gives Mail its own level names, and
+ * js/admin-mail-grants.js describes the seven Mail operations and warns before a Mail write is granted. The levels are None, Accounts and folders, Messages, Messages and attachments, Messages,
  * attachments and flags, Messages, attachments, flags and moving, the same with drafts, and with sending, never Edit or Full: no level
  * that existed before names a newer operation, and an operation without the ones before it stays a custom choice.
  */
@@ -41,7 +40,7 @@ function mailOperations() {
 }
 
 test('Mail levels are None, Accounts and folders, Messages, Messages and attachments, with flags, with moving, with drafts and with sending', () => {
-	const Levels = load(['admin-level-names.js', 'admin-levels.js']).McpAdminLevels
+	const Levels = load(['admin-levels.js']).McpAdminLevels
 	const operations = mailOperations()
 	assert.deepEqual(operations, ['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'])
 	assert.deepEqual(plain(Levels.levels('mail', operations)), ['none', 'folders', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'])
@@ -68,7 +67,7 @@ test('Mail levels are None, Accounts and folders, Messages, Messages and attachm
 })
 
 test('a Mail policy stored before the attachments grant keeps its level without attachments', () => {
-	const Levels = load(['admin-level-names.js', 'admin-levels.js']).McpAdminLevels
+	const Levels = load(['admin-levels.js']).McpAdminLevels
 	// The attachments, flags, move, draft and send values of an old policy are the default, denied, so its level is unchanged.
 	assert.equal(Levels.levelOf('mail', mailOperations(), { read: true, messages: true, attachments: false, flags: false, move: false, draft: false, send: false }), 'messages')
 	assert.equal(Levels.levelOf('mail', mailOperations(), { read: true, messages: false, attachments: false, flags: false, move: false, draft: false, send: false }), 'folders')
@@ -78,12 +77,12 @@ test('a Mail policy stored before the attachments grant keeps its level without 
 	assert.equal(Levels.levelOf('mail', mailOperations(), { read: true, messages: true, attachments: true, flags: true, move: true, draft: true, send: false }), 'draft', 'a policy from before sending keeps its drafts level')
 })
 
-test('without the names script the general names apply, so the names come only from it', () => {
+test('the Mail names apply only to the Mail tier count, and other modules keep the general names', () => {
 	const Levels = load(['admin-levels.js']).McpAdminLevels
-	assert.deepEqual(plain(Levels.levels('mail', mailOperations())), ['none', 'tier0', 'tier1', 'tier2', 'tier3', 'tier4', 'tier5', 'tier6'])
-	const Names = load(['admin-level-names.js']).McpAdminLevelNames
-	assert.equal(Names.forModule('mail', 3), null, 'a count that does not match falls back')
-	assert.equal(Names.forModule('files', 3), null)
+	assert.deepEqual(plain(Levels.tierNames('mail', 7)), ['folders', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'])
+	assert.equal(Levels.tierNames('mail', 3), null, 'a count that does not match falls back')
+	assert.equal(Levels.tierNames('files', 3), null)
+	assert.deepEqual(plain(Levels.levels('files', ['read', 'edit', 'share'])), ['none', 'read', 'edit', 'full'])
 })
 
 test('the Mail tooltips describe the seven operations and nothing else', () => {
@@ -115,7 +114,7 @@ test('the Mail tooltips describe the seven operations and nothing else', () => {
 		assert.match(fs.readFileSync(path.join(root, 'js', file), 'utf8'), /attachments: t\('mcp', 'attachments'\), flags: t\('mcp', 'flags'\), draft: t\('mcp', 'draft'\), send: t\('mcp', 'send'\)/, file)
 	}
 	const template = fs.readFileSync(path.join(root, 'templates/admin.php'), 'utf8')
-	assert.ok(template.indexOf("'admin-level-names'") < template.indexOf("'admin-levels'"), 'level names load before the levels')
+	assert.equal(template.indexOf("'admin-level-names'"), -1, 'the level names live in js/admin-levels.js (issue #21)')
 	assert.ok(template.indexOf("'admin-mail-grants'") < template.indexOf("'admin-grants'"), 'Mail tooltips load before the grants')
 })
 

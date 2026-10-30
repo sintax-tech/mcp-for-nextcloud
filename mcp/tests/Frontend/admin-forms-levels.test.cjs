@@ -23,7 +23,7 @@ const plain = (value) => JSON.parse(JSON.stringify(value))
  */
 function levels() {
 	const context = { t: (app, text) => text }
-	for (const file of ['admin-level-names.js', 'admin-levels.js']) {
+	for (const file of ['admin-levels.js']) {
 		vm.runInNewContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), context)
 	}
 	return context.McpAdminLevels
@@ -69,7 +69,7 @@ function planner() {
 	const document = { getElementById: () => ({ addEventListener() {} }), addEventListener() {} }
 	const context = { document, t: (app, text) => text }
 	context.window = { McpAdminMatrix: { data: () => ({ catalog: { forms: formsOperations() } }) }, addEventListener() {} }
-	for (const file of ['admin-level-names.js', 'admin-levels.js', 'admin-level-popover.js']) {
+	for (const file of ['admin-levels.js', 'admin-level-popover.js']) {
 		vm.runInNewContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), context)
 	}
 	return { api: context.window.McpLevelPopover, user }

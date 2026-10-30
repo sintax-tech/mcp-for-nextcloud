@@ -50,7 +50,7 @@ class PollsProtectedAdmin {
 		ids['mcp-inspector-calendar-module'].value = 'polls'
 		const rows = ['read', 'results', 'links'].map((operation) => ({ module: 'polls', operation, allowed: true,
 			blockingGate: null, grant: { allowed: true, source: 'individual_allow', groupIds: [] }, scope: { mode: 'unrestricted', count: null } }))
-		const root = this.load(['admin-level-names.js', 'admin-levels.js', 'admin-polls-grants.js', 'admin-inspector.js'], {
+		const root = this.load(['admin-levels.js', 'admin-polls-grants.js', 'admin-inspector.js'], {
 			document: { getElementById: (id) => ids[id], createElement: (tag) => new PollsElement(tag) }, URLSearchParams,
 			getComputedStyle: () => ({ top: '44px' }), OC: { generateUrl: (url) => url, requestToken: 'test' },
 			fetch: async (url) => ({ ok: true, status: 200, json: async () => url.includes('/access')
@@ -64,7 +64,7 @@ class PollsProtectedAdmin {
 }
 
 test('Polls presets name every concession; isolated protected reads stay custom and legacy read stays read', () => {
-	const root = PollsProtectedAdmin.load(['admin-level-names.js', 'admin-levels.js', 'admin-polls-grants.js'])
+	const root = PollsProtectedAdmin.load(['admin-levels.js', 'admin-polls-grants.js'])
 	const levels = root.McpAdminLevels
 	const operations = ['read', 'results', 'links']
 	assert.deepEqual(Array.from(levels.levels('polls', operations)), ['none', 'polls_read', 'polls_read_results', 'polls_read_results_links'])

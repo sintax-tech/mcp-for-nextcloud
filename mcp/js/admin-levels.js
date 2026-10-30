@@ -36,6 +36,26 @@
 	const TIER_NAMES = { 1: ['read'], 2: ['read', 'full'], 3: ['read', 'edit', 'full'] }
 
 	/**
+	 * Names of the tiers of the modules whose tiers are not Read, Edit and Full, in tier order. Mail only reads at first:
+	 * its first tier lists accounts and folders, its second opens the messages, its third adds the text of attachments,
+	 * and the next ones add the Mail writes, so none of its levels is called Full. js/admin-grants.js translates them.
+	 */
+	const MODULE_TIER_NAMES = {
+		forms: ['read', 'forms_write', 'forms_write_results'],
+		mail: ['folders', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'],
+	}
+
+	/**
+	 * @param {string} module module id
+	 * @param {number} count number of tiers the module has
+	 * @return {string[]|null} the module's own tier names when their number matches, or null to use the general ones
+	 */
+	function tierNames(module, count) {
+		const own = MODULE_TIER_NAMES[module]
+		return own && own.length === count ? own : null
+	}
+
+	/**
 	 * The tiers of a module, restricted to the operations the catalog has, with any operation they do not name added to
 	 * the last tier.
 	 *
@@ -53,8 +73,7 @@
 			listed[listed.length - 1] = listed[listed.length - 1].concat(rest)
 		}
 		const kept = listed.filter((tier) => tier.length > 0)
-		const own = root.McpAdminLevelNames ? root.McpAdminLevelNames.forModule(module, kept.length) : null
-		const names = own || TIER_NAMES[kept.length] || kept.map((_, index) => 'tier' + index)
+		const names = tierNames(module, kept.length) || TIER_NAMES[kept.length] || kept.map((_, index) => 'tier' + index)
 		return kept.map((tier, index) => ({ level: names[index], operations: tier }))
 	}
 
@@ -125,5 +144,5 @@
 		return { source: 'default', groupIds: [] }
 	}
 
-	root.McpAdminLevels = { TIERS, tiers, levels, operationsFor, levelOf, originOf }
+	root.McpAdminLevels = { TIERS, MODULE_TIER_NAMES, tierNames, tiers, levels, operationsFor, levelOf, originOf }
 })(typeof window !== 'undefined' ? window : globalThis)

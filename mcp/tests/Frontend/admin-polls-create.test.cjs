@@ -51,7 +51,7 @@ test('real inspector DOM retains create as an independent custom combination wit
 
 test('missing Polls helper offers no preset and cannot grant an accumulated fallback', () => {
 	const root = { t: (_, text) => text }
-	for (const name of ['admin-level-names.js', 'admin-levels.js']) {
+	for (const name of ['admin-levels.js']) {
 		vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js', name), 'utf8'), root)
 	}
 	const levels = root.McpAdminLevels
@@ -62,8 +62,8 @@ test('missing Polls helper offers no preset and cannot grant an accumulated fall
 		assert.deepEqual([...levels.operationsFor('polls', operations, level)], [])
 	}
 	assert.equal(levels.levelOf('polls', operations, Object.fromEntries(operations.map(op => [op, true]))), 'custom')
-	assert.equal(root.McpAdminLevelNames.forModule('polls', 3), null)
-	assert.equal(root.McpAdminLevelNames.forModule('polls', 4), null)
+	assert.equal(root.McpAdminLevels.tierNames('polls', 3), null)
+	assert.equal(root.McpAdminLevels.tierNames('polls', 4), null)
 })
 
 test('partial creation message is translated consistently and differs from uncertain in all supported locales', () => {

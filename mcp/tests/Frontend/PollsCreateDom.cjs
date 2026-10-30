@@ -48,7 +48,7 @@ class PollsCreateDom {
 		ids['mcp-inspector-calendar-module'].value = 'polls'
 		const rows = ['read', 'results', 'links', 'create'].map((operation) => ({ module: 'polls', operation, allowed: true,
 			blockingGate: null, grant: { allowed: true, source: 'individual_allow', groupIds: [] }, scope: { mode: 'unrestricted', count: null } }))
-		const root = this.load(['admin-level-names.js', 'admin-polls-grants.js', 'admin-levels.js', 'admin-inspector.js'], {
+		const root = this.load(['admin-polls-grants.js', 'admin-levels.js', 'admin-inspector.js'], {
 			document: { getElementById: (id) => ids[id], createElement: (tag) => new PollsElement(tag) }, URLSearchParams,
 			getComputedStyle: () => ({ top: '44px' }), OC: { generateUrl: (url) => url, requestToken: 'test' },
 			fetch: async (url) => ({ ok: true, status: 200, json: async () => url.includes('/access')

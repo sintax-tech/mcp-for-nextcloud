@@ -11,8 +11,12 @@ final class AdminAssetContract extends Assert {
 		$app = dirname(__DIR__, 3);
 		$template = (string)file_get_contents($app . '/templates/admin.php');
 		preg_match_all("/Util::add(Script|Style)\\(\\s*'mcp'\\s*,\\s*'([^']+)'/", $template, $matches, PREG_SET_ORDER);
-		// admin-level-names and admin-mail-grants: their order is checked by tests/Frontend/admin-mail-levels.test.cjs.
-		self::assertCount(18, $matches);
+		// admin-mail-grants: its order is checked by tests/Frontend/admin-mail-levels.test.cjs.
+		self::assertCount(17, $matches);
+		// Issue #21: a hosting layer never answered js/admin-level-names.js, and the page waited for it until it timed out.
+		// Its tier names live in js/admin-levels.js, the script that reads them; the separate file must not come back.
+		self::assertStringNotContainsString("'admin-level-names'", $template);
+		self::assertFileDoesNotExist($app . '/js/admin-level-names.js');
 		// The levels mapping is read by the matrix, so it loads before it; the level popover uses the matrix, so after it.
 		self::assertLessThan(strpos($template, "addScript('mcp', 'admin-grants')"), strpos($template, "addScript('mcp', 'admin-levels')"));
 		self::assertGreaterThan(strpos($template, "addScript('mcp', 'admin-grants')"), strpos($template, "addScript('mcp', 'admin-level-popover')"));

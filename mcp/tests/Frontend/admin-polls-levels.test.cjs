@@ -13,7 +13,7 @@ class PollsAdminContract {
 	/** @return {object} the actual admin level implementation */
 	static levels() {
 		const context = require('./PollsCreateContext.cjs').load()
-		for (const file of ['admin-level-names.js', 'admin-levels.js']) {
+		for (const file of ['admin-levels.js']) {
 			vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js', file), 'utf8'), context)
 		}
 		return context.McpAdminLevels

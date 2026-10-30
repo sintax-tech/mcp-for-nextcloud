@@ -18,7 +18,6 @@
  * @var \OCP\IL10N $l
  */
 \OCP\Util::addScript('mcp', 'admin-picker');
-\OCP\Util::addScript('mcp', 'admin-level-names');
 \OCP\Util::addScript('mcp', 'admin-polls-grants');
 \OCP\Util::addScript('mcp', 'admin-levels');
 \OCP\Util::addScript('mcp', 'admin-mail-grants');

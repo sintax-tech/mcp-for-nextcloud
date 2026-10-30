@@ -63,7 +63,6 @@ async function app(handler) {
 		},
 	}
 	// The page loads js/admin-levels.js before the inspector, which names each module's level with it.
-	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-level-names.js'), 'utf8'), { window })
 	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-levels.js'), 'utf8'), { window })
 	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-inspector.js'), 'utf8'), context)
 	const submit = async (id) => { await ids[id].listeners.submit({ preventDefault() {} }); await tick() }

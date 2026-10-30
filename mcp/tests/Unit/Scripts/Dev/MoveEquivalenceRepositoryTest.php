@@ -37,6 +37,7 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 		$equivalence = new MoveEquivalence(self::tree(), $this->userTimezone(), self::map());
 		$this->assertSame([], $equivalence->check());
 		$this->assertCount(2, $equivalence->pairs());
+		$this->assertEveryReaderFailsWhenForgotten($this->userTimezone(), self::lib(['Service', 'UserTimezone']), self::lib(['Platform', 'Time', 'UserTimezone']));
 	}
 
 	/** One space added inside an interpolated message of ArgumentValidator fails (review A2). */
@@ -73,6 +74,7 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 	/** The same move passes once the test climbs one more level, `dirname(__DIR__, 4)`: the path is proved the same. */
 	public function testAMoveThatRebasesDirEquivalentlyPasses(): void {
 		$this->assertSame([], (new MoveEquivalence(self::tree(), $this->promptCatalog(true), self::map()))->check());
+		$this->assertEveryReaderFailsWhenForgotten($this->promptCatalog(true), self::lib(['Service', 'PromptCatalog']), self::lib(['Mcp', 'Prompts', 'PromptCatalog']));
 	}
 
 	/** The real bootstrap autoload must not accept an inaccessible, lexically cancelling path (R3-A7). */
@@ -96,6 +98,21 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 			$before[$path] .= "\n\$description = '" . $description . "';\n";
 			$after[$path] .= "\n\$description = '" . $description . "';\n";
 			$this->assertSame([], (new MoveEquivalence($before, $after, self::map()))->check(), $description);
+		}
+	}
+
+	/**
+	 * Keeps a negative proof for every current path reader, including future oracle additions.
+	 *
+	 * @param array<string,string> $after correctly moved tree
+	 * @param string $old old production path
+	 * @param string $new new production path
+	 * @return void
+	 */
+	private function assertEveryReaderFailsWhenForgotten(array $after, string $old, string $new): void {
+		foreach (RepositoryMoveFixture::forgottenReaders(self::tree(), $after, $old, $new) as $reader => $forgotten) {
+			$this->assertNotSame($after[$reader], $forgotten[$reader]);
+			$this->assertStringContainsString("$reader:", implode("\n", (new MoveEquivalence(self::tree(), $forgotten, self::map()))->check()));
 		}
 	}
 

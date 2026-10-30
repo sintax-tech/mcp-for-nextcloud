@@ -11,7 +11,7 @@
  * by operation. The tiers follow GrantPolicy::CATALOG; an operation the tiers do not name (a newer catalog) falls into
  * the last tier, so it is never hidden and never granted by a lower level.
  *
- * Pure functions, no DOM and no strings: js/admin-grants.js draws the cells and names the levels.
+ * The level functions are pure, with no DOM and no strings: js/admin-grants.js draws the cells and names the levels.
  * The Polls presets and the Mail write warnings are defined below, in this file, so the page does not
  * load them as their own scripts. The other admin scripts still read window.McpAdminPollsGrants and
  * window.McpAdminMailGrants. Both are installed before the level functions run.

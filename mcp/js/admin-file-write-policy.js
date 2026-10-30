@@ -228,8 +228,10 @@
 		scope.OC.generateUrl('/apps/mcp/api/file-write-policy'), () => scope.OC.requestToken, scope.MutationObserver)
 })(typeof window !== 'undefined' ? window : globalThis);
 
-/** Backup settings editor. It runs after the file-type policy, in this same file, so the page does not load it apart. */
-/** Revisioned administrator backup editor. Transport and display values never become HTML. */
+/**
+ * Revisioned administrator backup editor. It runs after the file-type policy, in this same file, so the page does not
+ * load it apart. Transport and display values never become HTML.
+ */
 (function (scope) {
 	'use strict'
 

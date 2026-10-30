@@ -50,6 +50,22 @@ test('real inspector DOM retains create as an independent custom combination wit
 	assert.deepEqual(ids['mcp-inspector-calendar-operation'].all('option').map(o => o.textContent), ['read', 'results', 'Read existing links (credentials)', 'create'])
 })
 
+test('missing Polls helper offers no preset and cannot grant an accumulated fallback', () => {
+	const root = { t: (_, text) => text }
+	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-levels.js'), 'utf8'), root)
+	delete root.McpAdminPollsGrants
+	const levels = root.McpAdminLevels
+	const operations = ['read', 'results', 'links', 'create']
+	assert.deepEqual([...levels.levels('polls', operations)], ['none'])
+	assert.deepEqual([...levels.tiers('polls', operations)], [])
+	for (const level of ['none', 'full', 'tier3', 'polls_read_create', 'polls_read_results_links']) {
+		assert.deepEqual([...levels.operationsFor('polls', operations, level)], [])
+	}
+	assert.equal(levels.levelOf('polls', operations, Object.fromEntries(operations.map(op => [op, true]))), 'custom')
+	assert.equal(root.McpAdminLevels.tierNames('polls', 3), null)
+	assert.equal(root.McpAdminLevels.tierNames('polls', 4), null)
+})
+
 test('Polls presets come from admin-levels alone, and an unknown level grants nothing', () => {
 	const root = { t: (_, text) => text }
 	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-levels.js'), 'utf8'), root)

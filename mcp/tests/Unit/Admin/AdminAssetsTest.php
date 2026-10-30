@@ -74,7 +74,9 @@ final class AdminAssetsTest extends TestCase {
         $script = (string)file_get_contents($app . '/js/admin-grants.js') . file_get_contents($app . '/js/connections.js') . file_get_contents($app . '/js/admin-tabs.js') . file_get_contents($app . '/js/admin-picker.js') . file_get_contents($app . '/js/admin-groups.js');
         preg_match_all("/getElementById\\('([^']+)'\\)/", $script, $used);
         $this->assertNotEmpty($used[1]);
-        foreach (array_unique($used[1]) as $id) {
+        // The personal resource scope lives in connections.js and looks up ids that exist only on the personal page.
+        $personalOnly = ['mcp-my-scope-status', 'mcp-my-scope-list'];
+        foreach (array_diff(array_unique($used[1]), $personalOnly) as $id) {
             $this->assertSame(1, substr_count($template, 'id="' . $id . '"'), "id $id must appear exactly once");
         }
         $this->assertSame(1, substr_count($template, "t('Excluded from MCP access')"));

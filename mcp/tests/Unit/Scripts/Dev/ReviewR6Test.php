@@ -32,7 +32,7 @@ final class ReviewR6Test extends TestCase {
 	/** @return iterable<string,array{string,string}> methods, short/long arrays and mixed nested delimiters */
 	public static function expectations(): iterable {
 		foreach (['assertSame', 'assertEquals'] as $assert) {
-			foreach (["['A/Probe.php']", "array('A/Probe.php')", "[array('A/Probe.php')]", "array(['A/Probe.php'])"] as $array) {
+			foreach (["['A/Probe.php']", "array('A/Probe.php')", "[array('A/Probe.php')]", "array(['A/Probe.php'])", "array(\"{\$label}\", 'A/Probe.php')"] as $array) {
 				yield "$assert $array" => [$assert, $array];
 			}
 		}

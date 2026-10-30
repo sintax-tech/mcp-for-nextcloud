@@ -36,7 +36,7 @@ final class PathExpectations {
 			$depth = 1;
 			for ($j = $i + ($long ? 4 : 3); isset($tokens[$j]) && $depth > 0; $j++) {
 				$part = $tokens[$j];
-				$depth += in_array($part, ['[', '(', '{'], true) ? 1 : (in_array($part, [']', ')', '}'], true) ? -1 : 0);
+				$depth += in_array($part, ['[', '('], true) ? 1 : (in_array($part, [']', ')'], true) ? -1 : 0);
 				if (!is_array($part) || $part[0] !== T_CONSTANT_ENCAPSED_STRING) {
 					continue;
 				}

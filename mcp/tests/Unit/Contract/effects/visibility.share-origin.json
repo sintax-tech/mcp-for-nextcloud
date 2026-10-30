@@ -1,0 +1,36 @@
+{
+    "steps": [
+        {
+            "step": "clean-origin-control",
+            "request": {
+                "alias": "/alice/files/received.txt"
+            },
+            "response": {
+                "visible": true
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/received.txt": "#101 private bytes"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "hidden-owner-ancestor",
+            "request": {
+                "alias": "/alice/files/received.txt"
+            },
+            "response": {
+                "visible": false
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/received.txt": "#101 private bytes"
+                },
+                "ops": []
+            }
+        }
+    ]
+}

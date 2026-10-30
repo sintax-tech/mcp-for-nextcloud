@@ -1,0 +1,559 @@
+{
+    "tool": "files_share",
+    "grant": "files.share",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Share file or folder**\n\nShare **/Documentos/ata.md** with **Bruno Lima**.\n\n- Access: can view and download\n- Valid until: no end date.\n- Nextcloud notifies **Bruno Lima**.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_share",
+                            "title": "Share file or folder",
+                            "action": "create",
+                            "path": "/Documentos/ata.md",
+                            "isDir": false,
+                            "with": {
+                                "type": "user",
+                                "id": "bruno",
+                                "displayName": "Bruno Lima"
+                            },
+                            "shareId": null,
+                            "before": null,
+                            "after": {
+                                "permission": "view",
+                                "reshare": false,
+                                "expires": null,
+                                "note": null
+                            },
+                            "expiresSource": "none",
+                            "notifies": true,
+                            "timezone": "UTC",
+                            "warnings": [],
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [],
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [],
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Share file or folder**\n\nShare **/Documentos/ata.md** with **Bruno Lima**.\n\n- Access: can view and download\n- Valid until: no end date.\n- Nextcloud notifies **Bruno Lima**.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_share",
+                            "title": "Share file or folder",
+                            "action": "create",
+                            "path": "/Documentos/ata.md",
+                            "isDir": false,
+                            "with": {
+                                "type": "user",
+                                "id": "bruno",
+                                "displayName": "Bruno Lima"
+                            },
+                            "shareId": null,
+                            "before": null,
+                            "after": {
+                                "permission": "view",
+                                "reshare": false,
+                                "expires": null,
+                                "note": null
+                            },
+                            "expiresSource": "none",
+                            "notifies": true,
+                            "timezone": "UTC",
+                            "warnings": [],
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [],
+                "writes": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Share file or folder**\n\nChange how **/Documentos/ata.md** is shared with **Bruno Lima**.\n\n- Access: can view and download\n- Passing it on: **Bruno Lima** can share it with other people today and will no longer be able to.\n- Valid until: no end date.\n\n### Warnings\n\n- The share changed since the plan; check it again.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_share",
+                            "title": "Share file or folder",
+                            "action": "update",
+                            "path": "/Documentos/ata.md",
+                            "isDir": false,
+                            "with": {
+                                "type": "user",
+                                "id": "bruno",
+                                "displayName": "Bruno Lima"
+                            },
+                            "shareId": "ocinternal:1",
+                            "before": {
+                                "permission": "view",
+                                "reshare": true,
+                                "expires": null,
+                                "note": ""
+                            },
+                            "after": {
+                                "permission": "view",
+                                "reshare": false,
+                                "expires": null,
+                                "note": ""
+                            },
+                            "expiresSource": "none",
+                            "notifies": false,
+                            "timezone": "UTC",
+                            "warnings": [
+                                {
+                                    "message": "The share changed since the plan; check it again."
+                                }
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 102,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 17,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Share file or folder**\n\nChange how **/Documentos/ata.md** is shared with **Bruno Lima**.\n\n- Access: can view and download\n- Passing it on: **Bruno Lima** can share it with other people today and will no longer be able to.\n- Valid until: no end date.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_share",
+                            "title": "Share file or folder",
+                            "action": "update",
+                            "path": "/Documentos/ata.md",
+                            "isDir": false,
+                            "with": {
+                                "type": "user",
+                                "id": "bruno",
+                                "displayName": "Bruno Lima"
+                            },
+                            "shareId": "ocinternal:1",
+                            "before": {
+                                "permission": "view",
+                                "reshare": true,
+                                "expires": null,
+                                "note": ""
+                            },
+                            "after": {
+                                "permission": "view",
+                                "reshare": false,
+                                "expires": null,
+                                "note": ""
+                            },
+                            "expiresSource": "none",
+                            "notifies": false,
+                            "timezone": "UTC",
+                            "warnings": [],
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 102,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 17,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"action\": \"update\",\n    \"changed\": true,\n    \"shareId\": \"ocinternal:1\",\n    \"type\": \"user\",\n    \"with\": {\n        \"id\": \"bruno\",\n        \"displayName\": \"Bruno Lima\"\n    },\n    \"permission\": \"view\",\n    \"reshare\": false,\n    \"expires\": null,\n    \"hasPassword\": false,\n    \"removable\": true,\n    \"path\": \"/Documentos/ata.md\"\n}"
+                            }
+                        ],
+                        "structuredContent": {
+                            "action": "update",
+                            "changed": true,
+                            "shareId": "ocinternal:1",
+                            "type": "user",
+                            "with": {
+                                "id": "bruno",
+                                "displayName": "Bruno Lima"
+                            },
+                            "permission": "view",
+                            "reshare": false,
+                            "expires": null,
+                            "hasPassword": false,
+                            "removable": true,
+                            "path": "/Documentos/ata.md"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 102,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": [
+                    "update 1"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 102,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": [
+                    "update 1"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Share file or folder**\n\n**/Documentos/ata.md** is already shared with **Bruno Lima** exactly like this: nothing to change.\n\n- Access: can view and download\n- Valid until: no end date.\n\nNothing was changed. Confirm to execute.\n\n*The share already is exactly like this, so a confirmed call changes nothing either.*\n\n*To confirm, repeat the call with plan_state `<plan_state#3>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_share",
+                            "title": "Share file or folder",
+                            "action": "none",
+                            "path": "/Documentos/ata.md",
+                            "isDir": false,
+                            "with": {
+                                "type": "user",
+                                "id": "bruno",
+                                "displayName": "Bruno Lima"
+                            },
+                            "shareId": "ocinternal:1",
+                            "before": {
+                                "permission": "view",
+                                "reshare": false,
+                                "expires": null,
+                                "note": ""
+                            },
+                            "after": {
+                                "permission": "view",
+                                "reshare": false,
+                                "expires": null,
+                                "note": ""
+                            },
+                            "expiresSource": "none",
+                            "notifies": false,
+                            "timezone": "UTC",
+                            "warnings": [],
+                            "message": "Nothing was changed. The share already is exactly like this, so a confirmed call changes nothing either.",
+                            "plan_state": "<plan_state#3>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 102,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": [
+                    "update 1"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"action\": \"none\",\n    \"changed\": false,\n    \"shareId\": \"ocinternal:1\",\n    \"type\": \"user\",\n    \"with\": {\n        \"id\": \"bruno\",\n        \"displayName\": \"Bruno Lima\"\n    },\n    \"permission\": \"view\",\n    \"reshare\": false,\n    \"expires\": null,\n    \"hasPassword\": false,\n    \"removable\": true,\n    \"path\": \"/Documentos/ata.md\"\n}"
+                            }
+                        ],
+                        "structuredContent": {
+                            "action": "none",
+                            "changed": false,
+                            "shareId": "ocinternal:1",
+                            "type": "user",
+                            "with": {
+                                "id": "bruno",
+                                "displayName": "Bruno Lima"
+                            },
+                            "permission": "view",
+                            "reshare": false,
+                            "expires": null,
+                            "hasPassword": false,
+                            "removable": true,
+                            "path": "/Documentos/ata.md"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 102,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": [
+                    "update 1"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 102,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": [
+                    "update 1"
+                ]
+            }
+        }
+    ]
+}

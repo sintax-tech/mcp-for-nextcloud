@@ -1,0 +1,749 @@
+{
+    "flow": "grants.bulk",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "revision": 6,
+                "authEpoch": 0,
+                "events": [],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "allow notes.create for ana and bob",
+            "request": {
+                "route": "grants#bulk",
+                "user": "root",
+                "body": {
+                    "uids": [
+                        "ana",
+                        "bob",
+                        "ana"
+                    ],
+                    "module": "notes",
+                    "operation": "create",
+                    "granted": true,
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "updated": 2,
+                    "revision": "7",
+                    "receiptId": "<command#1>-1"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1",
+                        "grant_notes_create": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_create": "1"
+                    }
+                },
+                "revision": 7,
+                "authEpoch": 0,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "receipt",
+                        "status": "pending",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.bulk",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_create",
+                                    "before": null,
+                                    "after": "1"
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_create",
+                                    "before": null,
+                                    "after": "1"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.bulk",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": "<command#1>-1",
+                            "undoOf": null,
+                            "changes": []
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_create",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_create"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "one unknown user refuses the whole page",
+            "request": {
+                "route": "grants#bulk",
+                "user": "root",
+                "body": {
+                    "uids": [
+                        "bob",
+                        "ghost"
+                    ],
+                    "module": "notes",
+                    "operation": "create",
+                    "granted": true,
+                    "expectedRevision": "7"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1",
+                        "grant_notes_create": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_create": "1"
+                    }
+                },
+                "revision": 7,
+                "authEpoch": 0,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "receipt",
+                        "status": "pending",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.bulk",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_create",
+                                    "before": null,
+                                    "after": "1"
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_create",
+                                    "before": null,
+                                    "after": "1"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.bulk",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": "<command#1>-1",
+                            "undoOf": null,
+                            "changes": []
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_create",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_create"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "an empty page is invalid",
+            "request": {
+                "route": "grants#bulk",
+                "user": "root",
+                "body": {
+                    "uids": [],
+                    "module": "notes",
+                    "operation": "create",
+                    "granted": true,
+                    "expectedRevision": "7"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1",
+                        "grant_notes_create": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_create": "1"
+                    }
+                },
+                "revision": 7,
+                "authEpoch": 0,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "receipt",
+                        "status": "pending",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.bulk",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_create",
+                                    "before": null,
+                                    "after": "1"
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_create",
+                                    "before": null,
+                                    "after": "1"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.bulk",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": "<command#1>-1",
+                            "undoOf": null,
+                            "changes": []
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_create",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_create"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "eligibility needs a null module",
+            "request": {
+                "route": "grants#bulk",
+                "user": "root",
+                "body": {
+                    "uids": [
+                        "bob"
+                    ],
+                    "module": "notes",
+                    "operation": "eligible",
+                    "granted": false,
+                    "expectedRevision": "7"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1",
+                        "grant_notes_create": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_create": "1"
+                    }
+                },
+                "revision": 7,
+                "authEpoch": 0,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "receipt",
+                        "status": "pending",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.bulk",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_create",
+                                    "before": null,
+                                    "after": "1"
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_create",
+                                    "before": null,
+                                    "after": "1"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.bulk",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": "<command#1>-1",
+                            "undoOf": null,
+                            "changes": []
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_create",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_create"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "policy unavailable: 503, nothing changes",
+            "request": {
+                "route": "grants#bulk",
+                "user": "root",
+                "body": {
+                    "uids": [
+                        "bob"
+                    ],
+                    "module": null,
+                    "operation": "eligible",
+                    "granted": false,
+                    "expectedRevision": "7"
+                }
+            },
+            "response": {
+                "status": 503,
+                "json": {
+                    "error": "Unavailable",
+                    "uncertain": false
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1",
+                        "grant_notes_create": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_create": "1"
+                    }
+                },
+                "revision": 7,
+                "authEpoch": 0,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "receipt",
+                        "status": "pending",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.bulk",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_create",
+                                    "before": null,
+                                    "after": "1"
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_create",
+                                    "before": null,
+                                    "after": "1"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.bulk",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": "<command#1>-1",
+                            "undoOf": null,
+                            "changes": []
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [
+                    "ana",
+                    "bob"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_create",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_create"
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "step": "bob loses eligibility",
+            "request": {
+                "route": "grants#bulk",
+                "user": "root",
+                "body": {
+                    "uids": [
+                        "bob"
+                    ],
+                    "module": null,
+                    "operation": "eligible",
+                    "granted": false,
+                    "expectedRevision": "7"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "updated": 1,
+                    "revision": "8",
+                    "receiptId": "<command#2>-2"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "ana": {
+                        "eligible": "1",
+                        "connected": "1",
+                        "grant_notes_edit": "1",
+                        "grant_notes_create": "1"
+                    },
+                    "bob": {
+                        "eligible": "0",
+                        "connected": "1",
+                        "grant_notes_create": "1"
+                    }
+                },
+                "revision": 8,
+                "authEpoch": 0,
+                "events": [
+                    {
+                        "id": "<command#1>-1",
+                        "kind": "receipt",
+                        "status": "pending",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.bulk",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "changes": [
+                                {
+                                    "uid": "ana",
+                                    "key": "grant_notes_create",
+                                    "before": null,
+                                    "after": "1"
+                                },
+                                {
+                                    "uid": "bob",
+                                    "key": "grant_notes_create",
+                                    "before": null,
+                                    "after": "1"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#1>-2",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.bulk",
+                            "fromRevision": "6",
+                            "revision": "7",
+                            "receiptId": "<command#1>-1",
+                            "undoOf": null,
+                            "changes": []
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#2>-1",
+                        "kind": "cleanup",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "scope": "user",
+                            "uid": "bob",
+                            "cut": "1",
+                            "epoch": null
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#2>-2",
+                        "kind": "receipt",
+                        "status": "pending",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.bulk",
+                            "fromRevision": "7",
+                            "revision": "8",
+                            "changes": [
+                                {
+                                    "uid": "bob",
+                                    "key": "eligible",
+                                    "before": "1",
+                                    "after": "0"
+                                }
+                            ]
+                        },
+                        "attempts": 0
+                    },
+                    {
+                        "id": "<command#2>-3",
+                        "kind": "audit",
+                        "status": "delivered",
+                        "payload": {
+                            "v": 1,
+                            "actor": "root",
+                            "action": "grants.bulk",
+                            "fromRevision": "7",
+                            "revision": "8",
+                            "receiptId": "<command#2>-2",
+                            "undoOf": null,
+                            "changes": []
+                        },
+                        "attempts": 0
+                    }
+                ],
+                "oauthGrants": [
+                    "ana"
+                ],
+                "endpoint": {
+                    "ana": {
+                        "canConnect": true,
+                        "tools": [
+                            "notes_list",
+                            "notes_create",
+                            "notes_edit"
+                        ]
+                    },
+                    "bob": {
+                        "canConnect": false,
+                        "tools": [
+                            "notes_list",
+                            "notes_create"
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

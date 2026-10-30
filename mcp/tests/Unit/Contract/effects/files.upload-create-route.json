@@ -1,0 +1,111 @@
+{
+    "steps": [
+        {
+            "step": "create-upload",
+            "request": {
+                "token": "<create-token#1>",
+                "body": "uploaded bytes"
+            },
+            "response": {
+                "status": 201,
+                "contentType": "application/json",
+                "body": "{\n    \"path\": \"/Docs/new.md\",\n    \"size\": 14,\n    \"etag\": \"e103+\",\n    \"fileId\": 103,\n    \"access\": {\n        \"scope\": \"personal\",\n        \"owner\": \"alice\",\n        \"ownerDisplayName\": \"Alice\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        }\n    }\n}"
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/new.md": "#103 uploaded bytes",
+                        "/alice/files/Docs/old.md": "#102 current bytes"
+                    },
+                    "ops": [
+                        "create /alice/files/Docs/new.md",
+                        "write /alice/files/Docs/new.md"
+                    ]
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 0,
+                        "id": 1,
+                        "kind": "create",
+                        "path": "/Docs/new.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 0,
+                        "id": 2,
+                        "kind": "create",
+                        "path": "/Docs/new.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ]
+            }
+        },
+        {
+            "step": "spent-create-link",
+            "request": {
+                "token": "<create-token#1>"
+            },
+            "response": {
+                "status": 410,
+                "contentType": "text/plain; charset=utf-8",
+                "body": "This upload link has expired or has already been used. Call files_upload again."
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Docs": "dir #101",
+                        "/alice/files/Docs/new.md": "#103 uploaded bytes",
+                        "/alice/files/Docs/old.md": "#102 current bytes"
+                    },
+                    "ops": [
+                        "create /alice/files/Docs/new.md",
+                        "write /alice/files/Docs/new.md"
+                    ]
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 0,
+                        "id": 1,
+                        "kind": "create",
+                        "path": "/Docs/new.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 0,
+                        "id": 2,
+                        "kind": "create",
+                        "path": "/Docs/new.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ]
+            }
+        }
+    ]
+}

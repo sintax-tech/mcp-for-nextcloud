@@ -1,0 +1,596 @@
+{
+    "flow": "settings.personal",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 5,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        },
+                        "bob": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#1>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#2>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    },
+                    {
+                        "user_id": "bob",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#3>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#4>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 4
+                    }
+                ],
+                "spent": [],
+                "checkout": [
+                    {
+                        "kind": "download",
+                        "user_id": "alice",
+                        "id": 1
+                    },
+                    {
+                        "kind": "download",
+                        "user_id": "bob",
+                        "id": 2
+                    }
+                ],
+                "batches": [
+                    {
+                        "user_id": "alice",
+                        "id": 1
+                    },
+                    {
+                        "user_id": "bob",
+                        "id": 2
+                    }
+                ]
+            }
+        },
+        {
+            "step": "a value other than 0 or 1 is invalid",
+            "request": {
+                "route": "settings#personal",
+                "user": "alice",
+                "params": {
+                    "enabled": "yes"
+                }
+            },
+            "response": {
+                "status": 400,
+                "body": "Invalid request"
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 5,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        },
+                        "bob": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#1>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#2>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    },
+                    {
+                        "user_id": "bob",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#3>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#4>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 4
+                    }
+                ],
+                "spent": [],
+                "checkout": [
+                    {
+                        "kind": "download",
+                        "user_id": "alice",
+                        "id": 1
+                    },
+                    {
+                        "kind": "download",
+                        "user_id": "bob",
+                        "id": 2
+                    }
+                ],
+                "batches": [
+                    {
+                        "user_id": "alice",
+                        "id": 1
+                    },
+                    {
+                        "user_id": "bob",
+                        "id": 2
+                    }
+                ]
+            }
+        },
+        {
+            "step": "nobody signed in is invalid",
+            "request": {
+                "route": "settings#personal",
+                "user": "",
+                "params": {
+                    "enabled": "0"
+                }
+            },
+            "response": {
+                "status": 400,
+                "body": "Invalid request"
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 5,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        },
+                        "bob": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#1>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#2>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    },
+                    {
+                        "user_id": "bob",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#3>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#4>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 4
+                    }
+                ],
+                "spent": [],
+                "checkout": [
+                    {
+                        "kind": "download",
+                        "user_id": "alice",
+                        "id": 1
+                    },
+                    {
+                        "kind": "download",
+                        "user_id": "bob",
+                        "id": 2
+                    }
+                ],
+                "batches": [
+                    {
+                        "user_id": "alice",
+                        "id": 1
+                    },
+                    {
+                        "user_id": "bob",
+                        "id": 2
+                    }
+                ]
+            }
+        },
+        {
+            "step": "policy unavailable: 503 and nothing changes",
+            "request": {
+                "route": "settings#personal",
+                "user": "alice",
+                "params": {
+                    "enabled": "0"
+                }
+            },
+            "response": {
+                "status": 503,
+                "body": "Temporarily unavailable"
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 5,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        },
+                        "bob": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#1>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#2>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    },
+                    {
+                        "user_id": "bob",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#3>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#4>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 4
+                    }
+                ],
+                "spent": [],
+                "checkout": [
+                    {
+                        "kind": "download",
+                        "user_id": "alice",
+                        "id": 1
+                    },
+                    {
+                        "kind": "download",
+                        "user_id": "bob",
+                        "id": 2
+                    }
+                ],
+                "batches": [
+                    {
+                        "user_id": "alice",
+                        "id": 1
+                    },
+                    {
+                        "user_id": "bob",
+                        "id": 2
+                    }
+                ]
+            }
+        },
+        {
+            "step": "alice switches off",
+            "request": {
+                "route": "settings#personal",
+                "user": "alice",
+                "params": {
+                    "enabled": "0"
+                }
+            },
+            "response": {
+                "status": 303,
+                "redirect": "/route/settings.PersonalSettings.index?section=mcp"
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "0"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 6,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "revoked_below": "2",
+                            "issue_seq": "2"
+                        },
+                        "bob": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "bob",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#3>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#4>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 4
+                    }
+                ],
+                "spent": [],
+                "checkout": [
+                    {
+                        "kind": "download",
+                        "user_id": "bob",
+                        "id": 2
+                    }
+                ],
+                "batches": [
+                    {
+                        "user_id": "bob",
+                        "id": 2
+                    }
+                ]
+            }
+        },
+        {
+            "step": "alice switches on again",
+            "request": {
+                "route": "settings#personal",
+                "user": "alice",
+                "params": {
+                    "enabled": "1"
+                }
+            },
+            "response": {
+                "status": 303,
+                "redirect": "/route/settings.PersonalSettings.index?section=mcp"
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 7,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "revoked_below": "2",
+                            "issue_seq": "2"
+                        },
+                        "bob": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "bob",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#3>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#4>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 4
+                    }
+                ],
+                "spent": [],
+                "checkout": [
+                    {
+                        "kind": "download",
+                        "user_id": "bob",
+                        "id": 2
+                    }
+                ],
+                "batches": [
+                    {
+                        "user_id": "bob",
+                        "id": 2
+                    }
+                ]
+            }
+        },
+        {
+            "step": "eligibility of bob withdrawn by the administrator; bob cannot switch on",
+            "request": {
+                "route": "settings#personal",
+                "user": "bob",
+                "params": {
+                    "enabled": "1"
+                }
+            },
+            "response": {
+                "status": 400,
+                "body": "Invalid request"
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    },
+                    "bob": {
+                        "eligible": "0",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 8,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "revoked_below": "2",
+                            "issue_seq": "2"
+                        },
+                        "bob": {
+                            "revoked_below": "2",
+                            "issue_seq": "2"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [
+                    {
+                        "kind": "download",
+                        "user_id": "bob",
+                        "id": 2
+                    }
+                ],
+                "batches": [
+                    {
+                        "user_id": "bob",
+                        "id": 2
+                    }
+                ]
+            }
+        }
+    ]
+}

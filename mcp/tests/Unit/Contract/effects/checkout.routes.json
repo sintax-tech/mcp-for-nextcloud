@@ -1,0 +1,911 @@
+{
+    "steps": [
+        {
+            "step": "route-table",
+            "request": "appinfo/routes.php",
+            "response": [
+                "GET /checkout/{token} => checkout#download",
+                "PUT /checkout/{token} => checkout#upload",
+                "POST /checkout/{token} => checkout#uploadPost"
+            ],
+            "state": null
+        },
+        {
+            "step": "download",
+            "request": {
+                "verb": "GET",
+                "token": "<checkout-token#1>",
+                "headers": [],
+                "body": ""
+            },
+            "response": {
+                "status": 200,
+                "contentType": "text/markdown",
+                "body": "# Ata\nolá"
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Documentos": "dir #101",
+                        "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 1,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 2,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ],
+                "storeOps": [
+                    "find",
+                    "consume"
+                ],
+                "tempFiles": 0
+            }
+        },
+        {
+            "step": "download-spent",
+            "request": {
+                "verb": "GET",
+                "token": "<checkout-token#1>",
+                "headers": [],
+                "body": ""
+            },
+            "response": {
+                "status": 410,
+                "contentType": "text/plain; charset=utf-8",
+                "body": "This edit link has expired or has already been used. Please checkout again."
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Documentos": "dir #101",
+                        "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 1,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 2,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ],
+                "storeOps": [
+                    "find",
+                    "consume"
+                ],
+                "tempFiles": 0
+            }
+        },
+        {
+            "step": "download-with-upload-link",
+            "request": {
+                "verb": "GET",
+                "token": "<checkout-token#2>",
+                "headers": [],
+                "body": ""
+            },
+            "response": {
+                "status": 404,
+                "contentType": "text/plain; charset=utf-8",
+                "body": "Invalid edit link."
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Documentos": "dir #101",
+                        "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 1,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 2,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ],
+                "storeOps": [
+                    "find"
+                ],
+                "tempFiles": 0
+            }
+        },
+        {
+            "step": "upload-with-download-link",
+            "request": {
+                "verb": "PUT",
+                "token": "<checkout-token#1>",
+                "headers": [],
+                "body": "novo"
+            },
+            "response": {
+                "status": 404,
+                "contentType": "text/plain; charset=utf-8",
+                "body": "Invalid edit link."
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Documentos": "dir #101",
+                        "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 1,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 2,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ],
+                "storeOps": [
+                    "find"
+                ],
+                "tempFiles": 0
+            }
+        },
+        {
+            "step": "upload-unknown-link",
+            "request": {
+                "verb": "PUT",
+                "token": "ncmcp_co_u_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                "headers": [],
+                "body": "novo"
+            },
+            "response": {
+                "status": 404,
+                "contentType": "text/plain; charset=utf-8",
+                "body": "Invalid edit link."
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Documentos": "dir #101",
+                        "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 1,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 2,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ],
+                "storeOps": [
+                    "find"
+                ],
+                "tempFiles": 0
+            }
+        },
+        {
+            "step": "upload-multipart",
+            "request": {
+                "verb": "PUT",
+                "token": "<checkout-token#2>",
+                "headers": {
+                    "Content-Type": "multipart/form-data; boundary=x"
+                },
+                "body": "novo"
+            },
+            "response": {
+                "status": 400,
+                "contentType": "text/plain; charset=utf-8",
+                "body": "Send file bytes as raw body (curl -T), not as multipart form."
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Documentos": "dir #101",
+                        "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 1,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 2,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ],
+                "storeOps": [],
+                "tempFiles": 0
+            }
+        },
+        {
+            "step": "upload-empty",
+            "request": {
+                "verb": "PUT",
+                "token": "<checkout-token#2>",
+                "headers": [],
+                "body": ""
+            },
+            "response": {
+                "status": 400,
+                "contentType": "text/plain; charset=utf-8",
+                "body": "The uploaded body is empty; nothing was written."
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Documentos": "dir #101",
+                        "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 1,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 2,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ],
+                "storeOps": [],
+                "tempFiles": 0
+            }
+        },
+        {
+            "step": "upload-too-large",
+            "request": {
+                "verb": "PUT",
+                "token": "<checkout-token#2>",
+                "headers": [],
+                "body": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+            },
+            "response": {
+                "status": 413,
+                "contentType": "text/plain; charset=utf-8",
+                "body": "Content exceeds the upload limit of 64 bytes."
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Documentos": "dir #101",
+                        "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 1,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 2,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ],
+                "storeOps": [],
+                "tempFiles": 0
+            }
+        },
+        {
+            "step": "upload-expired",
+            "request": {
+                "verb": "PUT",
+                "token": "<checkout-token#2>",
+                "headers": [],
+                "body": "novo"
+            },
+            "response": {
+                "status": 410,
+                "contentType": "text/plain; charset=utf-8",
+                "body": "This edit link has expired or has already been used. Please checkout again."
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Documentos": "dir #101",
+                        "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 1,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 2,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ],
+                "storeOps": [
+                    "find"
+                ],
+                "tempFiles": 0
+            }
+        },
+        {
+            "step": "upload-hidden",
+            "request": {
+                "verb": "PUT",
+                "token": "<checkout-token#2>",
+                "headers": [],
+                "body": "novo"
+            },
+            "response": {
+                "status": 404,
+                "contentType": "text/plain; charset=utf-8",
+                "body": "Resource not found in Nextcloud."
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Documentos": "dir #101",
+                        "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 1,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 2,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ],
+                "storeOps": [
+                    "find"
+                ],
+                "tempFiles": 1
+            }
+        },
+        {
+            "step": "upload-grant-revoked",
+            "request": {
+                "verb": "PUT",
+                "token": "<checkout-token#2>",
+                "headers": [],
+                "body": "novo"
+            },
+            "response": {
+                "status": 403,
+                "contentType": "text/plain; charset=utf-8",
+                "body": "MCP connection is disabled or access to this folder is no longer granted."
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Documentos": "dir #101",
+                        "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 1,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 2,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ],
+                "storeOps": [
+                    "find"
+                ],
+                "tempFiles": 1
+            }
+        },
+        {
+            "step": "upload-policy-unavailable",
+            "request": {
+                "verb": "PUT",
+                "token": "<checkout-token#2>",
+                "headers": [],
+                "body": "novo"
+            },
+            "response": {
+                "status": 503,
+                "contentType": "text/plain; charset=utf-8",
+                "body": "MCP access cannot be checked right now. Try the link again shortly."
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Documentos": "dir #101",
+                        "/alice/files/Documentos/ata.md": "#102 # Ata\nolá"
+                    },
+                    "ops": []
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 1,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 2,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    }
+                ],
+                "storeOps": [
+                    "find"
+                ],
+                "tempFiles": 1
+            }
+        },
+        {
+            "step": "upload",
+            "request": {
+                "verb": "PUT",
+                "token": "<checkout-token#2>",
+                "headers": [],
+                "body": "# Ata\nnova versão"
+            },
+            "response": {
+                "status": 200,
+                "contentType": "application/json",
+                "body": "{\n    \"path\": \"/Documentos/ata.md\",\n    \"size\": 18,\n    \"etag\": \"e102+\",\n    \"access\": {\n        \"scope\": \"personal\",\n        \"owner\": \"alice\",\n        \"ownerDisplayName\": \"Alice\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        }\n    },\n    \"backup\": \"/MCP backups/Documentos/ata.md.20260921-141320.bak\"\n}"
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Documentos": "dir #101",
+                        "/alice/files/Documentos/ata.md": "#102 # Ata\nnova versão",
+                        "/alice/files/MCP backups": "dir #103",
+                        "/alice/files/MCP backups/Documentos": "dir #104",
+                        "/alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak": "#105 # Ata\nolá"
+                    },
+                    "ops": [
+                        "mkdir /alice/files/MCP backups",
+                        "mkdir /alice/files/MCP backups/Documentos",
+                        "create /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                        "write /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                        "write /alice/files/Documentos/ata.md"
+                    ]
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 1,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 2,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    }
+                ],
+                "storeOps": [
+                    "find",
+                    "consume"
+                ],
+                "tempFiles": 1
+            }
+        },
+        {
+            "step": "upload-spent",
+            "request": {
+                "verb": "PUT",
+                "token": "<checkout-token#2>",
+                "headers": [],
+                "body": "de novo"
+            },
+            "response": {
+                "status": 410,
+                "contentType": "text/plain; charset=utf-8",
+                "body": "This edit link has expired or has already been used. Please checkout again."
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Documentos": "dir #101",
+                        "/alice/files/Documentos/ata.md": "#102 # Ata\nnova versão",
+                        "/alice/files/MCP backups": "dir #103",
+                        "/alice/files/MCP backups/Documentos": "dir #104",
+                        "/alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak": "#105 # Ata\nolá"
+                    },
+                    "ops": [
+                        "mkdir /alice/files/MCP backups",
+                        "mkdir /alice/files/MCP backups/Documentos",
+                        "create /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                        "write /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                        "write /alice/files/Documentos/ata.md"
+                    ]
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 1,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 2,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    }
+                ],
+                "storeOps": [
+                    "find"
+                ],
+                "tempFiles": 0
+            }
+        },
+        {
+            "step": "upload-post",
+            "request": {
+                "verb": "POST",
+                "token": "<checkout-token#4>",
+                "headers": [],
+                "body": "# Ata\nterceira"
+            },
+            "response": {
+                "status": 200,
+                "contentType": "application/json",
+                "body": "{\n    \"path\": \"/Documentos/ata.md\",\n    \"size\": 14,\n    \"etag\": \"e102++\",\n    \"access\": {\n        \"scope\": \"personal\",\n        \"owner\": \"alice\",\n        \"ownerDisplayName\": \"Alice\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        }\n    },\n    \"backup\": \"/MCP backups/Documentos/ata.md.20260921-141320-2.bak\"\n}"
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Documentos": "dir #101",
+                        "/alice/files/Documentos/ata.md": "#102 # Ata\nterceira",
+                        "/alice/files/MCP backups": "dir #103",
+                        "/alice/files/MCP backups/Documentos": "dir #104",
+                        "/alice/files/MCP backups/Documentos/ata.md.20260921-141320-2.bak": "#106 # Ata\nnova versão",
+                        "/alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak": "#105 # Ata\nolá"
+                    },
+                    "ops": [
+                        "mkdir /alice/files/MCP backups",
+                        "mkdir /alice/files/MCP backups/Documentos",
+                        "create /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                        "write /alice/files/MCP backups/Documentos/ata.md.20260921-141320.bak",
+                        "write /alice/files/Documentos/ata.md",
+                        "create /alice/files/MCP backups/Documentos/ata.md.20260921-141320-2.bak",
+                        "write /alice/files/MCP backups/Documentos/ata.md.20260921-141320-2.bak",
+                        "write /alice/files/Documentos/ata.md"
+                    ]
+                },
+                "tokens": [
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 1,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#1>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 2,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#2>",
+                        "expires_at": 1790000300,
+                        "file_id": 102,
+                        "id": 3,
+                        "kind": "download",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": null,
+                        "user_id": "alice"
+                    },
+                    {
+                        "created_at": "<created_at#1>",
+                        "etag": "<etag#2>",
+                        "expires_at": 1790000900,
+                        "file_id": 102,
+                        "id": 4,
+                        "kind": "upload",
+                        "path": "/Documentos/ata.md",
+                        "scope": "personal",
+                        "shared_confirmed": 0,
+                        "used_at": 1790000000,
+                        "user_id": "alice"
+                    }
+                ],
+                "storeOps": [
+                    "find",
+                    "consume"
+                ],
+                "tempFiles": 1
+            }
+        }
+    ]
+}

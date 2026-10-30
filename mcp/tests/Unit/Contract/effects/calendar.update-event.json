@@ -1,0 +1,478 @@
+{
+    "tool": "calendar_update_event",
+    "grant": "calendar.edit",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "event",
+                "summary": "Planejamento trimestral",
+                "location": "Sala 3"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit event**\n\nUpdate event in *Pessoal*: **Planejamento trimestral**\n- Title: Planejamento → Planejamento trimestral\n- Location: (none) → Sala 3\n- Invitations: No invitations or cancellations will be scheduled in this change.\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_update_event",
+                            "title": "Edit event",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_update_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": null,
+                            "uid": "event",
+                            "etag": "<etag#1>",
+                            "before": {
+                                "summary": "Planejamento",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "after": {
+                                "summary": "Planejamento trimestral",
+                                "location": "Sala 3",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "participants": {
+                                "current": [],
+                                "proposed": [],
+                                "added": [],
+                                "removed": [],
+                                "names": []
+                            },
+                            "recoverable": false,
+                            "consequence": null,
+                            "scheduling": {
+                                "requested": false,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "No invitations or cancellations will be scheduled in this change.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": [],
+                            "warnings": [],
+                            "sharedCalendars": [],
+                            "suggestedCalendar": null
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "event",
+                "summary": "Planejamento trimestral",
+                "location": "Sala 3",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "event",
+                "summary": "Planejamento trimestral",
+                "location": "Sala 3",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit event**\n\nUpdate event in *Pessoal*: **Planejamento trimestral**\n- Title: Planejamento → Planejamento trimestral\n- Location: (none) → Sala 3\n- Invitations: No invitations or cancellations will be scheduled in this change.\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_update_event",
+                            "title": "Edit event",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_update_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": null,
+                            "uid": "event",
+                            "etag": "<etag#1>",
+                            "before": {
+                                "summary": "Planejamento",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "after": {
+                                "summary": "Planejamento trimestral",
+                                "location": "Sala 3",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "participants": {
+                                "current": [],
+                                "proposed": [],
+                                "added": [],
+                                "removed": [],
+                                "names": []
+                            },
+                            "recoverable": false,
+                            "consequence": null,
+                            "scheduling": {
+                                "requested": false,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "No invitations or cancellations will be scheduled in this change.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": [],
+                            "warnings": [],
+                            "sharedCalendars": [],
+                            "suggestedCalendar": null
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "The Calendar module keeps no plan fingerprint (no PlanState/PlanChanged). The plan returns the ETag of the event and the confirmed call carries it: when the event changed in between, the ETag no longer matches and the call is refused as a conflict (If-Match), without a new plan."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "event",
+                "summary": "Planejamento trimestral",
+                "location": "Sala 3"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit event**\n\nUpdate event in *Pessoal*: **Planejamento trimestral**\n- Title: Planejamento → Planejamento trimestral\n- Location: (none) → Sala 3\n- Invitations: No invitations or cancellations will be scheduled in this change.\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_update_event",
+                            "title": "Edit event",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_update_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": null,
+                            "uid": "event",
+                            "etag": "<etag#1>",
+                            "before": {
+                                "summary": "Planejamento",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "after": {
+                                "summary": "Planejamento trimestral",
+                                "location": "Sala 3",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "participants": {
+                                "current": [],
+                                "proposed": [],
+                                "added": [],
+                                "removed": [],
+                                "names": []
+                            },
+                            "recoverable": false,
+                            "consequence": null,
+                            "scheduling": {
+                                "requested": false,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "No invitations or cancellations will be scheduled in this change.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": [],
+                            "warnings": [],
+                            "sharedCalendars": [],
+                            "suggestedCalendar": null
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "event",
+                "summary": "Planejamento trimestral",
+                "location": "Sala 3",
+                "confirm": true,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"uid\": \"event\",\n    \"summary\": \"Planejamento trimestral\",\n    \"start\": \"2026-10-01T12:00:00.000Z\",\n    \"end\": \"2026-10-01T13:00:00.000Z\",\n    \"location\": \"Sala 3\",\n    \"allDay\": false,\n    \"calendar\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"etag\": \"\\\"6dd2f0df92a2f8aa84e4b554a62e778f\\\"\",\n    \"scheduling\": {\n        \"requested\": false,\n        \"imipEnabled\": true,\n        \"message\": \"no invitations were scheduled\"\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSUMMARY:Planejamento trimestral\r\nLOCATION:Sala 3\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "update personal/event.ics"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "event",
+                "summary": "Planejamento trimestral",
+                "location": "Sala 3",
+                "confirm": true,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSUMMARY:Planejamento trimestral\r\nLOCATION:Sala 3\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "update personal/event.ics"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "event",
+                "summary": "Planejamento trimestral",
+                "location": "Sala 3"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSUMMARY:Planejamento trimestral\r\nLOCATION:Sala 3\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "update personal/event.ics"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "event",
+                "summary": "Planejamento trimestral",
+                "location": "Sala 3",
+                "confirm": true,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSUMMARY:Planejamento trimestral\r\nLOCATION:Sala 3\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "update personal/event.ics"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Calendar objects are not Files nodes: no system tag or excluded folder can hide a calendar or an event from MCP (VisibilityGuard and FilesAccessGuard do not apply). What narrows the reachable calendars is the administrator resource scope and the native ACL, which are scope and permission refusals, not visibility."
+        }
+    ]
+}

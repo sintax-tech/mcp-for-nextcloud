@@ -1,0 +1,585 @@
+{
+    "tool": "calendar_transfer_event",
+    "grant": "calendar.transfer",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "entrega",
+                "targetCalendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "confirm_shared": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Transfer event to another person's calendar**\n\n- Calendar:\n  - Id: 1\n  - Uri: personal\n  - Name: Pessoal\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/personal/\n- Destination:\n  - Id: 3\n  - Uri: team\\_shared\\_by\\_bob\n  - Name: Equipe (bob)\n  - Owner id: bob\n  - Owner principal: principals/users/bob\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/team\\_shared\\_by\\_bob/\n- Uid: entrega\n- Before:\n  - Summary: Entrega do relatório\n  - Location: \n  - Description: \n  - Start: 2026-10-01T12:00:00+00:00\n  - End: 2026-10-01T13:00:00+00:00\n  - All day: no\n  - Recurring: no\n- After:\n  - Summary: Entrega do relatório\n  - Location: \n  - Description: \n  - Start: 2026-10-01T12:00:00+00:00\n  - End: 2026-10-01T13:00:00+00:00\n  - All day: no\n  - Recurring: no\n- Recoverable: no\n- Scheduling:\n  - Requested: no\n  - Imip enabled: yes\n  - Participants notified: no\n  - Message: Event attendees are not notified, just like when moving in the Calendar app.\n  - Proof scope: Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved.\n- Timezone: America/Sao\\_Paulo\n- Shared:\n  - 1:\n    - Requires confirmation: yes\n    - Scope: shared\n    - Owner: bob\n    - Owner display name: Roberto Almeida\n    - Resource: Equipe (bob)\n    - Message: The calendar 'Equipe (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm\\_shared: true.\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_transfer_event",
+                            "title": "Transfer event to another person's calendar",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_transfer_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": {
+                                "id": 3,
+                                "uri": "team_shared_by_bob",
+                                "name": "Equipe (bob)",
+                                "ownerId": "bob",
+                                "ownerPrincipal": "principals/users/bob",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/team_shared_by_bob/"
+                            },
+                            "uid": "entrega",
+                            "etag": "<etag#1>",
+                            "before": {
+                                "summary": "Entrega do relatório",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "after": {
+                                "summary": "Entrega do relatório",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "participants": {
+                                "current": [],
+                                "proposed": [],
+                                "added": [],
+                                "removed": [],
+                                "names": []
+                            },
+                            "recoverable": false,
+                            "consequence": null,
+                            "scheduling": {
+                                "requested": false,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "Event attendees are not notified, just like when moving in the Calendar app.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": [
+                                {
+                                    "requiresConfirmation": true,
+                                    "scope": "shared",
+                                    "owner": "bob",
+                                    "ownerDisplayName": "Roberto Almeida",
+                                    "resource": "Equipe (bob)",
+                                    "message": "The calendar 'Equipe (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                                }
+                            ],
+                            "warnings": [],
+                            "sharedCalendars": [],
+                            "suggestedCalendar": null
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "entrega.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:entrega\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Entrega do relatório\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "entrega",
+                "targetCalendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "confirm_shared": true,
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "entrega.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:entrega\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Entrega do relatório\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "entrega",
+                "targetCalendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "confirm_shared": true,
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Transfer event to another person's calendar**\n\n- Calendar:\n  - Id: 1\n  - Uri: personal\n  - Name: Pessoal\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/personal/\n- Destination:\n  - Id: 3\n  - Uri: team\\_shared\\_by\\_bob\n  - Name: Equipe (bob)\n  - Owner id: bob\n  - Owner principal: principals/users/bob\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/team\\_shared\\_by\\_bob/\n- Uid: entrega\n- Before:\n  - Summary: Entrega do relatório\n  - Location: \n  - Description: \n  - Start: 2026-10-01T12:00:00+00:00\n  - End: 2026-10-01T13:00:00+00:00\n  - All day: no\n  - Recurring: no\n- After:\n  - Summary: Entrega do relatório\n  - Location: \n  - Description: \n  - Start: 2026-10-01T12:00:00+00:00\n  - End: 2026-10-01T13:00:00+00:00\n  - All day: no\n  - Recurring: no\n- Recoverable: no\n- Scheduling:\n  - Requested: no\n  - Imip enabled: yes\n  - Participants notified: no\n  - Message: Event attendees are not notified, just like when moving in the Calendar app.\n  - Proof scope: Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved.\n- Timezone: America/Sao\\_Paulo\n- Shared:\n  - 1:\n    - Requires confirmation: yes\n    - Scope: shared\n    - Owner: bob\n    - Owner display name: Roberto Almeida\n    - Resource: Equipe (bob)\n    - Message: The calendar 'Equipe (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm\\_shared: true.\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_transfer_event",
+                            "title": "Transfer event to another person's calendar",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_transfer_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": {
+                                "id": 3,
+                                "uri": "team_shared_by_bob",
+                                "name": "Equipe (bob)",
+                                "ownerId": "bob",
+                                "ownerPrincipal": "principals/users/bob",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/team_shared_by_bob/"
+                            },
+                            "uid": "entrega",
+                            "etag": "<etag#1>",
+                            "before": {
+                                "summary": "Entrega do relatório",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "after": {
+                                "summary": "Entrega do relatório",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "participants": {
+                                "current": [],
+                                "proposed": [],
+                                "added": [],
+                                "removed": [],
+                                "names": []
+                            },
+                            "recoverable": false,
+                            "consequence": null,
+                            "scheduling": {
+                                "requested": false,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "Event attendees are not notified, just like when moving in the Calendar app.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": [
+                                {
+                                    "requiresConfirmation": true,
+                                    "scope": "shared",
+                                    "owner": "bob",
+                                    "ownerDisplayName": "Roberto Almeida",
+                                    "resource": "Equipe (bob)",
+                                    "message": "The calendar 'Equipe (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                                }
+                            ],
+                            "warnings": [],
+                            "sharedCalendars": [],
+                            "suggestedCalendar": null
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "entrega.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:entrega\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Entrega do relatório\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "The Calendar module keeps no plan fingerprint (no PlanState/PlanChanged). The plan returns the ETag of the event and the confirmed call carries it: when the event changed in between, the ETag no longer matches and the call is refused as a conflict (If-Match), without a new plan."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "entrega",
+                "targetCalendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "confirm_shared": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Transfer event to another person's calendar**\n\n- Calendar:\n  - Id: 1\n  - Uri: personal\n  - Name: Pessoal\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/personal/\n- Destination:\n  - Id: 3\n  - Uri: team\\_shared\\_by\\_bob\n  - Name: Equipe (bob)\n  - Owner id: bob\n  - Owner principal: principals/users/bob\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/team\\_shared\\_by\\_bob/\n- Uid: entrega\n- Before:\n  - Summary: Entrega do relatório\n  - Location: \n  - Description: \n  - Start: 2026-10-01T12:00:00+00:00\n  - End: 2026-10-01T13:00:00+00:00\n  - All day: no\n  - Recurring: no\n- After:\n  - Summary: Entrega do relatório\n  - Location: \n  - Description: \n  - Start: 2026-10-01T12:00:00+00:00\n  - End: 2026-10-01T13:00:00+00:00\n  - All day: no\n  - Recurring: no\n- Recoverable: no\n- Scheduling:\n  - Requested: no\n  - Imip enabled: yes\n  - Participants notified: no\n  - Message: Event attendees are not notified, just like when moving in the Calendar app.\n  - Proof scope: Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved.\n- Timezone: America/Sao\\_Paulo\n- Shared:\n  - 1:\n    - Requires confirmation: yes\n    - Scope: shared\n    - Owner: bob\n    - Owner display name: Roberto Almeida\n    - Resource: Equipe (bob)\n    - Message: The calendar 'Equipe (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm\\_shared: true.\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_transfer_event",
+                            "title": "Transfer event to another person's calendar",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_transfer_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": {
+                                "id": 3,
+                                "uri": "team_shared_by_bob",
+                                "name": "Equipe (bob)",
+                                "ownerId": "bob",
+                                "ownerPrincipal": "principals/users/bob",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/team_shared_by_bob/"
+                            },
+                            "uid": "entrega",
+                            "etag": "<etag#1>",
+                            "before": {
+                                "summary": "Entrega do relatório",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "after": {
+                                "summary": "Entrega do relatório",
+                                "location": "",
+                                "description": "",
+                                "start": "2026-10-01T12:00:00+00:00",
+                                "end": "2026-10-01T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": null,
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "participants": {
+                                "current": [],
+                                "proposed": [],
+                                "added": [],
+                                "removed": [],
+                                "names": []
+                            },
+                            "recoverable": false,
+                            "consequence": null,
+                            "scheduling": {
+                                "requested": false,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "Event attendees are not notified, just like when moving in the Calendar app.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": [
+                                {
+                                    "requiresConfirmation": true,
+                                    "scope": "shared",
+                                    "owner": "bob",
+                                    "ownerDisplayName": "Roberto Almeida",
+                                    "resource": "Equipe (bob)",
+                                    "message": "The calendar 'Equipe (bob)' belongs to Roberto Almeida and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                                }
+                            ],
+                            "warnings": [],
+                            "sharedCalendars": [],
+                            "suggestedCalendar": null
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": {
+                        "entrega.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:entrega\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Entrega do relatório\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    },
+                    "2": [],
+                    "3": []
+                },
+                "trash": [],
+                "dav": [],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "entrega",
+                "targetCalendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "confirm_shared": true,
+                "confirm": true,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"uid\": \"entrega\",\n    \"etag\": \"\\\"6ce89d114482b086b1bc21f6193652e3\\\"\",\n    \"from\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"to\": \"/remote.php/dav/calendars/alice/team_shared_by_bob/\",\n    \"participantsNotified\": false,\n    \"note\": \"Event attendees are not notified, just like when moving in the Calendar app.\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [],
+                    "2": [],
+                    "3": {
+                        "entrega.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:entrega\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Entrega do relatório\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    }
+                },
+                "trash": [],
+                "dav": [
+                    {
+                        "operation": "move",
+                        "calendar": "personal",
+                        "object": "entrega.ics",
+                        "target": "team_shared_by_bob",
+                        "etag": "<etag#1>"
+                    }
+                ],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "entrega",
+                "targetCalendar": "/remote.php/dav/calendars/alice/personal/",
+                "confirm_shared": true,
+                "confirm": true,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [],
+                    "2": [],
+                    "3": {
+                        "entrega.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:entrega\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Entrega do relatório\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    }
+                },
+                "trash": [],
+                "dav": [
+                    {
+                        "operation": "move",
+                        "calendar": "personal",
+                        "object": "entrega.ics",
+                        "target": "team_shared_by_bob",
+                        "etag": "<etag#1>"
+                    }
+                ],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "entrega",
+                "targetCalendar": "/remote.php/dav/calendars/alice/personal/",
+                "confirm_shared": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [],
+                    "2": [],
+                    "3": {
+                        "entrega.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:entrega\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Entrega do relatório\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    }
+                },
+                "trash": [],
+                "dav": [
+                    {
+                        "operation": "move",
+                        "calendar": "personal",
+                        "object": "entrega.ics",
+                        "target": "team_shared_by_bob",
+                        "etag": "<etag#1>"
+                    }
+                ],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/team_shared_by_bob/",
+                "uid": "entrega",
+                "targetCalendar": "/remote.php/dav/calendars/alice/personal/",
+                "confirm_shared": true,
+                "confirm": true,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [],
+                    "2": [],
+                    "3": {
+                        "entrega.ics": "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:entrega\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Entrega do relatório\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    }
+                },
+                "trash": [],
+                "dav": [
+                    {
+                        "operation": "move",
+                        "calendar": "personal",
+                        "object": "entrega.ics",
+                        "target": "team_shared_by_bob",
+                        "etag": "<etag#1>"
+                    }
+                ],
+                "scheduled": []
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Calendar objects are not Files nodes: no system tag or excluded folder can hide a calendar or an event from MCP (VisibilityGuard and FilesAccessGuard do not apply). What narrows the reachable calendars is the administrator resource scope and the native ACL, which are scope and permission refusals, not visibility."
+        }
+    ]
+}

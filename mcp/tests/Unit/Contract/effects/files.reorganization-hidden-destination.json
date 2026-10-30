@@ -1,0 +1,209 @@
+{
+    "steps": [
+        {
+            "step": "files_move-plan",
+            "request": {
+                "from": "/Documentos/ata.md",
+                "to": "/Arquivo/ata.md"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "files_move-confirmed",
+            "request": {
+                "from": "/Documentos/ata.md",
+                "to": "/Arquivo/ata.md",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "files_copy-plan",
+            "request": {
+                "from": "/Documentos/ata.md",
+                "to": "/Arquivo/copia.md"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "files_copy-confirmed",
+            "request": {
+                "from": "/Documentos/ata.md",
+                "to": "/Arquivo/copia.md",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "files_mkdir-confirmed",
+            "request": {
+                "path": "/Arquivo/Sub",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "files_move_batch-confirmed",
+            "request": {
+                "moves": [
+                    {
+                        "from": "/Documentos/ata.md",
+                        "to": "/Arquivo/ata.md"
+                    }
+                ],
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "The plan has 0 conflict(s) and 1 item(s) without permission; call it again without confirm, fix the list and try again. Nothing was moved."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": []
+            }
+        }
+    ]
+}

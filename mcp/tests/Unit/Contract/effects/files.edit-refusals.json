@@ -1,0 +1,112 @@
+{
+    "steps": [
+        {
+            "step": "plan",
+            "request": {
+                "tool": "files_edit",
+                "arguments": {
+                    "path": "/Documentos/ata.md",
+                    "content": "# Ata\nversão 1\n",
+                    "etag": "<etag#1>"
+                }
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "The resource has changed since the last read (etag differs); nothing was written."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\noutra pessoa"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "request": {
+                "tool": "files_edit",
+                "arguments": {
+                    "path": "/Documentos/ata.md",
+                    "content": "# Ata\nversão 1\n",
+                    "etag": "<etag#1>",
+                    "confirm": true
+                }
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "The resource has changed since the last read (etag differs); nothing was written."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\noutra pessoa"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "replace-confirmed",
+            "request": {
+                "tool": "files_replace",
+                "arguments": {
+                    "path": "/Documentos/ata.md",
+                    "old": "outra",
+                    "new": "minha",
+                    "etag": "<etag#1>",
+                    "confirm": true
+                }
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "The resource has changed since the last read (etag differs); nothing was written."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\noutra pessoa"
+                },
+                "ops": []
+            }
+        }
+    ]
+}

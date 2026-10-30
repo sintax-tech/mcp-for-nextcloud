@@ -1,0 +1,911 @@
+{
+    "tool": "polls_create_poll",
+    "grant": "polls.create",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "type": "textPoll",
+                "title": "Almoço de sexta",
+                "options": [
+                    {
+                        "text": "Pizza"
+                    },
+                    {
+                        "text": "Sushi"
+                    }
+                ]
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create a private poll**\n\n- Almoço de sexta\n- textPoll\n- alice\n- #1 Pizza\n- #1 Pizza (0, 0s)\n- #2 Sushi\n- #2 Sushi (0, 0s)\n- access: private\n- votingVariant: simple\n- showResults: always\n- description: No description\n- allowMaybe: 1\n- allowComment: 1\n- hideBookedUp: 1\n- useNo: 1\n- allowProposals: disallow\n- proposalsExpire: 0\n- optionLimit: 0\n- expire: 0\n- anonymous: 0\n- voteLimit: 0\n- deleted: 0\n- adminAccess: 0\n- miscSettings: null\n- timezoneName: null\n- Each confirmation may create another poll. Native activity, logs and notifications follow server settings. Creation and options are not atomic; failures can leave a poll or options behind. No automatic retry or rollback. Check Polls before repeating. Output limits do not provide a transaction or an exactly-once guarantee.\n- Defaults are predicted from the pinned native persistence contract, not from the returned object. Public readback is checked before options; an observable mismatch stops with an uncertain result. Description NULL and empty string, and unset timezone values, can be indistinguishable through native getters.\n\nNothing was changed. Confirm to execute.\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "polls_create_poll",
+                            "title": "Create a private poll",
+                            "action": "polls_create_poll",
+                            "target": {
+                                "owner": "alice",
+                                "shared": false
+                            },
+                            "request": {
+                                "type": "textPoll",
+                                "title": "Almoço de sexta",
+                                "options": [
+                                    {
+                                        "text": "Pizza"
+                                    },
+                                    {
+                                        "text": "Sushi"
+                                    }
+                                ]
+                            },
+                            "options": [
+                                {
+                                    "text": "Pizza",
+                                    "timestamp": "<timestamp#1>",
+                                    "duration": 0
+                                },
+                                {
+                                    "text": "Sushi",
+                                    "timestamp": "<timestamp#1>",
+                                    "duration": 0
+                                }
+                            ],
+                            "persistence": {
+                                "mechanism": "polls-create-persistence-readback-v1",
+                                "persisted": {
+                                    "access": "private",
+                                    "votingVariant": "simple",
+                                    "showResults": "always",
+                                    "description": null,
+                                    "allowMaybe": 1,
+                                    "allowComment": 1,
+                                    "hideBookedUp": 1,
+                                    "useNo": 1,
+                                    "allowProposals": "disallow",
+                                    "proposalsExpire": 0,
+                                    "optionLimit": 0,
+                                    "expire": 0,
+                                    "anonymous": 0,
+                                    "voteLimit": 0,
+                                    "deleted": 0,
+                                    "adminAccess": 0,
+                                    "miscSettings": null,
+                                    "timezoneName": null
+                                },
+                                "observable": {
+                                    "access": "private",
+                                    "votingVariant": "simple",
+                                    "showResults": "always",
+                                    "description": "",
+                                    "allowMaybe": 1,
+                                    "allowComment": 1,
+                                    "hideBookedUp": 1,
+                                    "useNo": 1,
+                                    "allowProposals": "disallow",
+                                    "proposalsExpire": 0,
+                                    "optionLimit": 0,
+                                    "expire": 0,
+                                    "anonymous": 0,
+                                    "voteLimit": 0,
+                                    "deleted": 0,
+                                    "adminAccess": 0,
+                                    "miscSettings": null,
+                                    "timezoneName": null
+                                },
+                                "accessors": "public Entity::__call/getter; description ?? empty; timezone empty -> null; misc raw",
+                                "setter": "equal argument returns before updatedFields; QBMapper writes updatedFields only",
+                                "layout": "add(type,title,null,simple); Option.setPoll(0) first"
+                            },
+                            "version": "9.3.0",
+                            "serverTimezone": "UTC",
+                            "notes": [
+                                "Each confirmation may create another poll. Native activity, logs and notifications follow server settings. Creation and options are not atomic; failures can leave a poll or options behind. No automatic retry or rollback. Check Polls before repeating. Output limits do not provide a transaction or an exactly-once guarantee.",
+                                "Defaults are predicted from the pinned native persistence contract, not from the returned object. Public readback is checked before options; an observable mismatch stops with an uncertain result. Description NULL and empty string, and unset timezone values, can be indistinguishable through native getters."
+                            ],
+                            "changed": false,
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "polls": [],
+                "options": [],
+                "stages": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "type": "textPoll",
+                "title": "Almoço de sexta",
+                "options": [
+                    {
+                        "text": "Pizza"
+                    },
+                    {
+                        "text": "Sushi"
+                    }
+                ],
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "polls": [],
+                "options": [],
+                "stages": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "type": "textPoll",
+                "title": "Almoço de sexta",
+                "options": [
+                    {
+                        "text": "Pizza"
+                    },
+                    {
+                        "text": "Sushi"
+                    }
+                ],
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create a private poll**\n\n- Almoço de sexta\n- textPoll\n- alice\n- #1 Pizza\n- #1 Pizza (0, 0s)\n- #2 Sushi\n- #2 Sushi (0, 0s)\n- access: private\n- votingVariant: simple\n- showResults: always\n- description: No description\n- allowMaybe: 1\n- allowComment: 1\n- hideBookedUp: 1\n- useNo: 1\n- allowProposals: disallow\n- proposalsExpire: 0\n- optionLimit: 0\n- expire: 0\n- anonymous: 0\n- voteLimit: 0\n- deleted: 0\n- adminAccess: 0\n- miscSettings: null\n- timezoneName: null\n- Each confirmation may create another poll. Native activity, logs and notifications follow server settings. Creation and options are not atomic; failures can leave a poll or options behind. No automatic retry or rollback. Check Polls before repeating. Output limits do not provide a transaction or an exactly-once guarantee.\n- Defaults are predicted from the pinned native persistence contract, not from the returned object. Public readback is checked before options; an observable mismatch stops with an uncertain result. Description NULL and empty string, and unset timezone values, can be indistinguishable through native getters.\n\nNothing was changed. Confirm to execute.\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "polls_create_poll",
+                            "title": "Create a private poll",
+                            "action": "polls_create_poll",
+                            "target": {
+                                "owner": "alice",
+                                "shared": false
+                            },
+                            "request": {
+                                "type": "textPoll",
+                                "title": "Almoço de sexta",
+                                "options": [
+                                    {
+                                        "text": "Pizza"
+                                    },
+                                    {
+                                        "text": "Sushi"
+                                    }
+                                ]
+                            },
+                            "options": [
+                                {
+                                    "text": "Pizza",
+                                    "timestamp": "<timestamp#1>",
+                                    "duration": 0
+                                },
+                                {
+                                    "text": "Sushi",
+                                    "timestamp": "<timestamp#1>",
+                                    "duration": 0
+                                }
+                            ],
+                            "persistence": {
+                                "mechanism": "polls-create-persistence-readback-v1",
+                                "persisted": {
+                                    "access": "private",
+                                    "votingVariant": "simple",
+                                    "showResults": "always",
+                                    "description": null,
+                                    "allowMaybe": 1,
+                                    "allowComment": 1,
+                                    "hideBookedUp": 1,
+                                    "useNo": 1,
+                                    "allowProposals": "disallow",
+                                    "proposalsExpire": 0,
+                                    "optionLimit": 0,
+                                    "expire": 0,
+                                    "anonymous": 0,
+                                    "voteLimit": 0,
+                                    "deleted": 0,
+                                    "adminAccess": 0,
+                                    "miscSettings": null,
+                                    "timezoneName": null
+                                },
+                                "observable": {
+                                    "access": "private",
+                                    "votingVariant": "simple",
+                                    "showResults": "always",
+                                    "description": "",
+                                    "allowMaybe": 1,
+                                    "allowComment": 1,
+                                    "hideBookedUp": 1,
+                                    "useNo": 1,
+                                    "allowProposals": "disallow",
+                                    "proposalsExpire": 0,
+                                    "optionLimit": 0,
+                                    "expire": 0,
+                                    "anonymous": 0,
+                                    "voteLimit": 0,
+                                    "deleted": 0,
+                                    "adminAccess": 0,
+                                    "miscSettings": null,
+                                    "timezoneName": null
+                                },
+                                "accessors": "public Entity::__call/getter; description ?? empty; timezone empty -> null; misc raw",
+                                "setter": "equal argument returns before updatedFields; QBMapper writes updatedFields only",
+                                "layout": "add(type,title,null,simple); Option.setPoll(0) first"
+                            },
+                            "version": "9.3.0",
+                            "serverTimezone": "UTC",
+                            "notes": [
+                                "Each confirmation may create another poll. Native activity, logs and notifications follow server settings. Creation and options are not atomic; failures can leave a poll or options behind. No automatic retry or rollback. Check Polls before repeating. Output limits do not provide a transaction or an exactly-once guarantee.",
+                                "Defaults are predicted from the pinned native persistence contract, not from the returned object. Public readback is checked before options; an observable mismatch stops with an uncertain result. Description NULL and empty string, and unset timezone values, can be indistinguishable through native getters."
+                            ],
+                            "changed": false,
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "polls": [],
+                "options": [],
+                "stages": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "type": "textPoll",
+                "title": "Almoço de sexta",
+                "options": [
+                    {
+                        "text": "Pizza"
+                    },
+                    {
+                        "text": "Sushi"
+                    }
+                ],
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create a private poll**\n\n- Almoço de sexta\n- textPoll\n- alice\n- #1 Pizza\n- #1 Pizza (0, 0s)\n- #2 Sushi\n- #2 Sushi (0, 0s)\n- access: private\n- votingVariant: simple\n- showResults: always\n- description: No description\n- allowMaybe: 1\n- allowComment: 1\n- hideBookedUp: 1\n- useNo: 1\n- allowProposals: disallow\n- proposalsExpire: 0\n- optionLimit: 0\n- expire: 0\n- anonymous: 0\n- voteLimit: 0\n- deleted: 0\n- adminAccess: 0\n- miscSettings: null\n- timezoneName: null\n- Each confirmation may create another poll. Native activity, logs and notifications follow server settings. Creation and options are not atomic; failures can leave a poll or options behind. No automatic retry or rollback. Check Polls before repeating. Output limits do not provide a transaction or an exactly-once guarantee.\n- Defaults are predicted from the pinned native persistence contract, not from the returned object. Public readback is checked before options; an observable mismatch stops with an uncertain result. Description NULL and empty string, and unset timezone values, can be indistinguishable through native getters.\n\nNothing was changed. Confirm to execute.\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "polls_create_poll",
+                            "title": "Create a private poll",
+                            "action": "polls_create_poll",
+                            "target": {
+                                "owner": "alice",
+                                "shared": false
+                            },
+                            "request": {
+                                "type": "textPoll",
+                                "title": "Almoço de sexta",
+                                "options": [
+                                    {
+                                        "text": "Pizza"
+                                    },
+                                    {
+                                        "text": "Sushi"
+                                    }
+                                ]
+                            },
+                            "options": [
+                                {
+                                    "text": "Pizza",
+                                    "timestamp": "<timestamp#1>",
+                                    "duration": 0
+                                },
+                                {
+                                    "text": "Sushi",
+                                    "timestamp": "<timestamp#1>",
+                                    "duration": 0
+                                }
+                            ],
+                            "persistence": {
+                                "mechanism": "polls-create-persistence-readback-v1",
+                                "persisted": {
+                                    "access": "private",
+                                    "votingVariant": "simple",
+                                    "showResults": "always",
+                                    "description": null,
+                                    "allowMaybe": 1,
+                                    "allowComment": 1,
+                                    "hideBookedUp": 1,
+                                    "useNo": 1,
+                                    "allowProposals": "disallow",
+                                    "proposalsExpire": 0,
+                                    "optionLimit": 0,
+                                    "expire": 0,
+                                    "anonymous": 0,
+                                    "voteLimit": 0,
+                                    "deleted": 0,
+                                    "adminAccess": 0,
+                                    "miscSettings": null,
+                                    "timezoneName": null
+                                },
+                                "observable": {
+                                    "access": "private",
+                                    "votingVariant": "simple",
+                                    "showResults": "always",
+                                    "description": "",
+                                    "allowMaybe": 1,
+                                    "allowComment": 1,
+                                    "hideBookedUp": 1,
+                                    "useNo": 1,
+                                    "allowProposals": "disallow",
+                                    "proposalsExpire": 0,
+                                    "optionLimit": 0,
+                                    "expire": 0,
+                                    "anonymous": 0,
+                                    "voteLimit": 0,
+                                    "deleted": 0,
+                                    "adminAccess": 0,
+                                    "miscSettings": null,
+                                    "timezoneName": null
+                                },
+                                "accessors": "public Entity::__call/getter; description ?? empty; timezone empty -> null; misc raw",
+                                "setter": "equal argument returns before updatedFields; QBMapper writes updatedFields only",
+                                "layout": "add(type,title,null,simple); Option.setPoll(0) first"
+                            },
+                            "version": "9.3.1",
+                            "serverTimezone": "UTC",
+                            "notes": [
+                                "Each confirmation may create another poll. Native activity, logs and notifications follow server settings. Creation and options are not atomic; failures can leave a poll or options behind. No automatic retry or rollback. Check Polls before repeating. Output limits do not provide a transaction or an exactly-once guarantee.",
+                                "Defaults are predicted from the pinned native persistence contract, not from the returned object. Public readback is checked before options; an observable mismatch stops with an uncertain result. Description NULL and empty string, and unset timezone values, can be indistinguishable through native getters."
+                            ],
+                            "changed": true,
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "polls": [],
+                "options": [],
+                "stages": []
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "type": "textPoll",
+                "title": "Almoço de sexta",
+                "options": [
+                    {
+                        "text": "Pizza"
+                    },
+                    {
+                        "text": "Sushi"
+                    }
+                ]
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create a private poll**\n\n- Almoço de sexta\n- textPoll\n- alice\n- #1 Pizza\n- #1 Pizza (0, 0s)\n- #2 Sushi\n- #2 Sushi (0, 0s)\n- access: private\n- votingVariant: simple\n- showResults: always\n- description: No description\n- allowMaybe: 1\n- allowComment: 1\n- hideBookedUp: 1\n- useNo: 1\n- allowProposals: disallow\n- proposalsExpire: 0\n- optionLimit: 0\n- expire: 0\n- anonymous: 0\n- voteLimit: 0\n- deleted: 0\n- adminAccess: 0\n- miscSettings: null\n- timezoneName: null\n- Each confirmation may create another poll. Native activity, logs and notifications follow server settings. Creation and options are not atomic; failures can leave a poll or options behind. No automatic retry or rollback. Check Polls before repeating. Output limits do not provide a transaction or an exactly-once guarantee.\n- Defaults are predicted from the pinned native persistence contract, not from the returned object. Public readback is checked before options; an observable mismatch stops with an uncertain result. Description NULL and empty string, and unset timezone values, can be indistinguishable through native getters.\n\nNothing was changed. Confirm to execute.\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "polls_create_poll",
+                            "title": "Create a private poll",
+                            "action": "polls_create_poll",
+                            "target": {
+                                "owner": "alice",
+                                "shared": false
+                            },
+                            "request": {
+                                "type": "textPoll",
+                                "title": "Almoço de sexta",
+                                "options": [
+                                    {
+                                        "text": "Pizza"
+                                    },
+                                    {
+                                        "text": "Sushi"
+                                    }
+                                ]
+                            },
+                            "options": [
+                                {
+                                    "text": "Pizza",
+                                    "timestamp": "<timestamp#1>",
+                                    "duration": 0
+                                },
+                                {
+                                    "text": "Sushi",
+                                    "timestamp": "<timestamp#1>",
+                                    "duration": 0
+                                }
+                            ],
+                            "persistence": {
+                                "mechanism": "polls-create-persistence-readback-v1",
+                                "persisted": {
+                                    "access": "private",
+                                    "votingVariant": "simple",
+                                    "showResults": "always",
+                                    "description": null,
+                                    "allowMaybe": 1,
+                                    "allowComment": 1,
+                                    "hideBookedUp": 1,
+                                    "useNo": 1,
+                                    "allowProposals": "disallow",
+                                    "proposalsExpire": 0,
+                                    "optionLimit": 0,
+                                    "expire": 0,
+                                    "anonymous": 0,
+                                    "voteLimit": 0,
+                                    "deleted": 0,
+                                    "adminAccess": 0,
+                                    "miscSettings": null,
+                                    "timezoneName": null
+                                },
+                                "observable": {
+                                    "access": "private",
+                                    "votingVariant": "simple",
+                                    "showResults": "always",
+                                    "description": "",
+                                    "allowMaybe": 1,
+                                    "allowComment": 1,
+                                    "hideBookedUp": 1,
+                                    "useNo": 1,
+                                    "allowProposals": "disallow",
+                                    "proposalsExpire": 0,
+                                    "optionLimit": 0,
+                                    "expire": 0,
+                                    "anonymous": 0,
+                                    "voteLimit": 0,
+                                    "deleted": 0,
+                                    "adminAccess": 0,
+                                    "miscSettings": null,
+                                    "timezoneName": null
+                                },
+                                "accessors": "public Entity::__call/getter; description ?? empty; timezone empty -> null; misc raw",
+                                "setter": "equal argument returns before updatedFields; QBMapper writes updatedFields only",
+                                "layout": "add(type,title,null,simple); Option.setPoll(0) first"
+                            },
+                            "version": "9.3.1",
+                            "serverTimezone": "UTC",
+                            "notes": [
+                                "Each confirmation may create another poll. Native activity, logs and notifications follow server settings. Creation and options are not atomic; failures can leave a poll or options behind. No automatic retry or rollback. Check Polls before repeating. Output limits do not provide a transaction or an exactly-once guarantee.",
+                                "Defaults are predicted from the pinned native persistence contract, not from the returned object. Public readback is checked before options; an observable mismatch stops with an uncertain result. Description NULL and empty string, and unset timezone values, can be indistinguishable through native getters."
+                            ],
+                            "changed": false,
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "polls": [],
+                "options": [],
+                "stages": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "type": "textPoll",
+                "title": "Almoço de sexta",
+                "options": [
+                    {
+                        "text": "Pizza"
+                    },
+                    {
+                        "text": "Sushi"
+                    }
+                ],
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"status\": \"created\",\n    \"stage\": \"complete\",\n    \"untrustedPollsData\": true,\n    \"notes\": [\n        \"Each confirmation may create another poll. Native activity, logs and notifications follow server settings. Creation and options are not atomic; failures can leave a poll or options behind. No automatic retry or rollback. Check Polls before repeating. Output limits do not provide a transaction or an exactly-once guarantee.\",\n        \"Defaults are predicted from the pinned native persistence contract, not from the returned object. Public readback is checked before options; an observable mismatch stops with an uncertain result. Description NULL and empty string, and unset timezone values, can be indistinguishable through native getters.\"\n    ],\n    \"message\": \"\",\n    \"pollId\": 100,\n    \"url\": \"https://cloud.example/sub/apps/polls/vote/100\",\n    \"type\": \"textPoll\",\n    \"title\": \"Almoço de sexta\",\n    \"observedDefaults\": {\n        \"access\": \"private\",\n        \"votingVariant\": \"simple\",\n        \"showResults\": \"always\",\n        \"description\": \"\",\n        \"allowMaybe\": 1,\n        \"allowComment\": 1,\n        \"hideBookedUp\": 1,\n        \"useNo\": 1,\n        \"allowProposals\": \"disallow\",\n        \"proposalsExpire\": 0,\n        \"optionLimit\": 0,\n        \"expire\": 0,\n        \"anonymous\": 0,\n        \"voteLimit\": 0,\n        \"deleted\": 0,\n        \"adminAccess\": 0,\n        \"miscSettings\": null,\n        \"timezoneName\": null\n    },\n    \"options\": [\n        {\n            \"inputIndex\": 0,\n            \"id\": 101,\n            \"text\": \"Pizza\",\n            \"timestamp\": 0,\n            \"duration\": 0\n        },\n        {\n            \"inputIndex\": 1,\n            \"id\": 102,\n            \"text\": \"Sushi\",\n            \"timestamp\": 0,\n            \"duration\": 0\n        }\n    ],\n    \"requested\": 2,\n    \"completed\": 2,\n    \"remaining\": 0\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "polls": {
+                    "100": {
+                        "access": "private",
+                        "votingVariant": "simple",
+                        "showResults": "always",
+                        "description": null,
+                        "allowMaybe": 1,
+                        "allowComment": 1,
+                        "hideBookedUp": 1,
+                        "useNo": 1,
+                        "allowProposals": "disallow",
+                        "proposalsExpire": 0,
+                        "optionLimit": 0,
+                        "expire": 0,
+                        "anonymous": 0,
+                        "voteLimit": 0,
+                        "deleted": 0,
+                        "adminAccess": 0,
+                        "miscSettings": null,
+                        "timezoneName": null,
+                        "id": 100,
+                        "type": "textPoll",
+                        "title": "Almoço de sexta",
+                        "owner": "alice",
+                        "created": 100,
+                        "lastInteraction": 100,
+                        "members": [],
+                        "delegates": []
+                    }
+                },
+                "options": {
+                    "100": [
+                        {
+                            "id": 101,
+                            "pollId": 100,
+                            "text": "Pizza",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "order": 1
+                        },
+                        {
+                            "id": 102,
+                            "pollId": 100,
+                            "text": "Sushi",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "order": 2
+                        }
+                    ]
+                },
+                "stages": [
+                    "poll.insert",
+                    "poll.update",
+                    "poll.event",
+                    "option.insert",
+                    "option.event",
+                    "option.insert",
+                    "option.event"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "type": "textPoll",
+                "title": "Almoço de sexta",
+                "options": [
+                    {
+                        "text": "Pizza"
+                    },
+                    {
+                        "text": "Sushi"
+                    }
+                ],
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "polls": {
+                    "100": {
+                        "access": "private",
+                        "votingVariant": "simple",
+                        "showResults": "always",
+                        "description": null,
+                        "allowMaybe": 1,
+                        "allowComment": 1,
+                        "hideBookedUp": 1,
+                        "useNo": 1,
+                        "allowProposals": "disallow",
+                        "proposalsExpire": 0,
+                        "optionLimit": 0,
+                        "expire": 0,
+                        "anonymous": 0,
+                        "voteLimit": 0,
+                        "deleted": 0,
+                        "adminAccess": 0,
+                        "miscSettings": null,
+                        "timezoneName": null,
+                        "id": 100,
+                        "type": "textPoll",
+                        "title": "Almoço de sexta",
+                        "owner": "alice",
+                        "created": 100,
+                        "lastInteraction": 100,
+                        "members": [],
+                        "delegates": []
+                    }
+                },
+                "options": {
+                    "100": [
+                        {
+                            "id": 101,
+                            "pollId": 100,
+                            "text": "Pizza",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "order": 1
+                        },
+                        {
+                            "id": 102,
+                            "pollId": 100,
+                            "text": "Sushi",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "order": 2
+                        }
+                    ]
+                },
+                "stages": [
+                    "poll.insert",
+                    "poll.update",
+                    "poll.event",
+                    "option.insert",
+                    "option.event",
+                    "option.insert",
+                    "option.event"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "type": "textPoll",
+                "title": "Almoço de sexta",
+                "options": [
+                    {
+                        "text": "Pizza"
+                    },
+                    {
+                        "text": "Sushi"
+                    }
+                ]
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "polls": {
+                    "100": {
+                        "access": "private",
+                        "votingVariant": "simple",
+                        "showResults": "always",
+                        "description": null,
+                        "allowMaybe": 1,
+                        "allowComment": 1,
+                        "hideBookedUp": 1,
+                        "useNo": 1,
+                        "allowProposals": "disallow",
+                        "proposalsExpire": 0,
+                        "optionLimit": 0,
+                        "expire": 0,
+                        "anonymous": 0,
+                        "voteLimit": 0,
+                        "deleted": 0,
+                        "adminAccess": 0,
+                        "miscSettings": null,
+                        "timezoneName": null,
+                        "id": 100,
+                        "type": "textPoll",
+                        "title": "Almoço de sexta",
+                        "owner": "alice",
+                        "created": 100,
+                        "lastInteraction": 100,
+                        "members": [],
+                        "delegates": []
+                    }
+                },
+                "options": {
+                    "100": [
+                        {
+                            "id": 101,
+                            "pollId": 100,
+                            "text": "Pizza",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "order": 1
+                        },
+                        {
+                            "id": 102,
+                            "pollId": 100,
+                            "text": "Sushi",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "order": 2
+                        }
+                    ]
+                },
+                "stages": [
+                    "poll.insert",
+                    "poll.update",
+                    "poll.event",
+                    "option.insert",
+                    "option.event",
+                    "option.insert",
+                    "option.event"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "type": "textPoll",
+                "title": "Almoço de sexta",
+                "options": [
+                    {
+                        "text": "Pizza"
+                    },
+                    {
+                        "text": "Sushi"
+                    }
+                ],
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "polls": {
+                    "100": {
+                        "access": "private",
+                        "votingVariant": "simple",
+                        "showResults": "always",
+                        "description": null,
+                        "allowMaybe": 1,
+                        "allowComment": 1,
+                        "hideBookedUp": 1,
+                        "useNo": 1,
+                        "allowProposals": "disallow",
+                        "proposalsExpire": 0,
+                        "optionLimit": 0,
+                        "expire": 0,
+                        "anonymous": 0,
+                        "voteLimit": 0,
+                        "deleted": 0,
+                        "adminAccess": 0,
+                        "miscSettings": null,
+                        "timezoneName": null,
+                        "id": 100,
+                        "type": "textPoll",
+                        "title": "Almoço de sexta",
+                        "owner": "alice",
+                        "created": 100,
+                        "lastInteraction": 100,
+                        "members": [],
+                        "delegates": []
+                    }
+                },
+                "options": {
+                    "100": [
+                        {
+                            "id": 101,
+                            "pollId": 100,
+                            "text": "Pizza",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "order": 1
+                        },
+                        {
+                            "id": 102,
+                            "pollId": 100,
+                            "text": "Sushi",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "order": 2
+                        }
+                    ]
+                },
+                "stages": [
+                    "poll.insert",
+                    "poll.update",
+                    "poll.event",
+                    "option.insert",
+                    "option.event",
+                    "option.insert",
+                    "option.event"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Polls live in the Polls database, not in Files: no system tag or excluded folder can hide a poll from MCP"
+        }
+    ]
+}

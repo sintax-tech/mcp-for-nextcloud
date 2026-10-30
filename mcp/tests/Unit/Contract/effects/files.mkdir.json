@@ -1,0 +1,419 @@
+{
+    "tool": "files_mkdir",
+    "grant": "files.create",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "path": "/Projetos/2026-1"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create folder**\n\nCreate the folder **/Projetos/2026-1**.\n\n- Inside: **/Projetos**\n\nNothing was changed. Confirm to execute.\n\n*After your approval the folders below are created.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_mkdir",
+                            "title": "Create folder",
+                            "action": "files_mkdir",
+                            "path": "/Projetos/2026-1",
+                            "created": [
+                                "/Projetos/2026-1"
+                            ],
+                            "createdIn": "/Projetos",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the folders below are created."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "path": "/Projetos/2026-1",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "path": "/Projetos/2026-1",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create folder**\n\nCreate the folder **/Projetos/2026-1**.\n\n- Inside: **/Projetos**\n\nNothing was changed. Confirm to execute.\n\n*After your approval the folders below are created.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_mkdir",
+                            "title": "Create folder",
+                            "action": "files_mkdir",
+                            "path": "/Projetos/2026-1",
+                            "created": [
+                                "/Projetos/2026-1"
+                            ],
+                            "createdIn": "/Projetos",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the folders below are created."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "files_mkdir carries no plan_state: a name taken after the plan is reported by the confirmed call itself, never answered with a new plan"
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "path": "/Projetos/2026-1"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create folder**\n\nCreate the folder **/Projetos/2026-1**.\n\n- Inside: **/Projetos**\n\nNothing was changed. Confirm to execute.\n\n*After your approval the folders below are created.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_mkdir",
+                            "title": "Create folder",
+                            "action": "files_mkdir",
+                            "path": "/Projetos/2026-1",
+                            "created": [
+                                "/Projetos/2026-1"
+                            ],
+                            "createdIn": "/Projetos",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the folders below are created."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "path": "/Projetos/2026-1",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"path\": \"/Projetos/2026-1\",\n    \"created\": true,\n    \"created_paths\": [\n        \"/Projetos/2026-1\"\n    ]\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104",
+                    "/alice/files/Projetos/2026-1": "dir #105"
+                },
+                "ops": [
+                    "mkdir /alice/files/Projetos/2026-1"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "path": "/Projetos/2026-2",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104",
+                    "/alice/files/Projetos/2026-1": "dir #105"
+                },
+                "ops": [
+                    "mkdir /alice/files/Projetos/2026-1"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "path": "/Projetos/2026-2"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create folder**\n\nCreate the folder **/Projetos/2026-2**.\n\n- Inside: **/Projetos**\n\nNothing was changed. Confirm to execute.\n\n*After your approval the folders below are created.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_mkdir",
+                            "title": "Create folder",
+                            "action": "files_mkdir",
+                            "path": "/Projetos/2026-2",
+                            "created": [
+                                "/Projetos/2026-2"
+                            ],
+                            "createdIn": "/Projetos",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the folders below are created."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104",
+                    "/alice/files/Projetos/2026-1": "dir #105"
+                },
+                "ops": [
+                    "mkdir /alice/files/Projetos/2026-1"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "path": "/Projetos/2026-2",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"path\": \"/Projetos/2026-2\",\n    \"created\": true,\n    \"created_paths\": [\n        \"/Projetos/2026-2\"\n    ]\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104",
+                    "/alice/files/Projetos/2026-1": "dir #105",
+                    "/alice/files/Projetos/2026-2": "dir #106"
+                },
+                "ops": [
+                    "mkdir /alice/files/Projetos/2026-1",
+                    "mkdir /alice/files/Projetos/2026-2"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "path": "/Projetos/2026-3",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104",
+                    "/alice/files/Projetos/2026-1": "dir #105",
+                    "/alice/files/Projetos/2026-2": "dir #106"
+                },
+                "ops": [
+                    "mkdir /alice/files/Projetos/2026-1",
+                    "mkdir /alice/files/Projetos/2026-2"
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,701 @@
+{
+    "tool": "files_unshare",
+    "grant": "files.share",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Stop sharing file or folder**\n\n**Bruno Lima** will no longer have access to **/Documentos/ata.md**.\n\n- Nothing is deleted: the file stays exactly as it is.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_unshare",
+                            "title": "Stop sharing file or folder",
+                            "shareId": "ocinternal:1",
+                            "path": "/Documentos/ata.md",
+                            "isDir": false,
+                            "with": {
+                                "type": "user",
+                                "id": "bruno",
+                                "displayName": "Bruno Lima"
+                            },
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 102,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    },
+                    {
+                        "id": "2",
+                        "node": 103,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    },
+                    {
+                        "id": "3",
+                        "node": 104,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 102,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    },
+                    {
+                        "id": "2",
+                        "node": 103,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    },
+                    {
+                        "id": "3",
+                        "node": 104,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Stop sharing file or folder**\n\n**Bruno Lima** will no longer have access to **/Documentos/ata.md**.\n\n- Nothing is deleted: the file stays exactly as it is.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_unshare",
+                            "title": "Stop sharing file or folder",
+                            "shareId": "ocinternal:1",
+                            "path": "/Documentos/ata.md",
+                            "isDir": false,
+                            "with": {
+                                "type": "user",
+                                "id": "bruno",
+                                "displayName": "Bruno Lima"
+                            },
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 102,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    },
+                    {
+                        "id": "2",
+                        "node": 103,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    },
+                    {
+                        "id": "3",
+                        "node": 104,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Stop sharing file or folder**\n\n**Bruno Lima** will no longer have access to **/Documentos/ata.md**.\n\n- Nothing is deleted: the file stays exactly as it is.\n\n### Warnings\n\n- The share changed since the plan; check it again.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_unshare",
+                            "title": "Stop sharing file or folder",
+                            "shareId": "ocinternal:1",
+                            "path": "/Documentos/ata.md",
+                            "isDir": false,
+                            "with": {
+                                "type": "user",
+                                "id": "bruno",
+                                "displayName": "Bruno Lima"
+                            },
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#2>",
+                            "warnings": [
+                                {
+                                    "message": "The share changed since the plan; check it again."
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 102,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 3,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    },
+                    {
+                        "id": "2",
+                        "node": 103,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    },
+                    {
+                        "id": "3",
+                        "node": 104,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Stop sharing file or folder**\n\n**Bruno Lima** will no longer have access to **/Documentos/ata.md**.\n\n- Nothing is deleted: the file stays exactly as it is.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_unshare",
+                            "title": "Stop sharing file or folder",
+                            "shareId": "ocinternal:1",
+                            "path": "/Documentos/ata.md",
+                            "isDir": false,
+                            "with": {
+                                "type": "user",
+                                "id": "bruno",
+                                "displayName": "Bruno Lima"
+                            },
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 102,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 3,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    },
+                    {
+                        "id": "2",
+                        "node": 103,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    },
+                    {
+                        "id": "3",
+                        "node": 104,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"removed\": \"ocinternal:1\",\n    \"path\": \"/Documentos/ata.md\",\n    \"with\": {\n        \"type\": \"user\",\n        \"id\": \"bruno\",\n        \"displayName\": \"Bruno Lima\"\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "2",
+                        "node": 103,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    },
+                    {
+                        "id": "3",
+                        "node": 104,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": [
+                    [
+                        "delete",
+                        "1"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "path": "/Documentos/pauta.md",
+                "with": "user:bruno",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "2",
+                        "node": 103,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    },
+                    {
+                        "id": "3",
+                        "node": 104,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": [
+                    [
+                        "delete",
+                        "1"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "path": "/Documentos/pauta.md",
+                "with": "user:bruno"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Stop sharing file or folder**\n\n**Bruno Lima** will no longer have access to **/Documentos/pauta.md**.\n\n- Nothing is deleted: the file stays exactly as it is.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#3>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_unshare",
+                            "title": "Stop sharing file or folder",
+                            "shareId": "ocinternal:2",
+                            "path": "/Documentos/pauta.md",
+                            "isDir": false,
+                            "with": {
+                                "type": "user",
+                                "id": "bruno",
+                                "displayName": "Bruno Lima"
+                            },
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#3>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "2",
+                        "node": 103,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    },
+                    {
+                        "id": "3",
+                        "node": 104,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": [
+                    [
+                        "delete",
+                        "1"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "path": "/Documentos/pauta.md",
+                "with": "user:bruno",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"removed\": \"ocinternal:2\",\n    \"path\": \"/Documentos/pauta.md\",\n    \"with\": {\n        \"type\": \"user\",\n        \"id\": \"bruno\",\n        \"displayName\": \"Bruno Lima\"\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "3",
+                        "node": 104,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": [
+                    [
+                        "delete",
+                        "1"
+                    ],
+                    [
+                        "delete",
+                        "2"
+                    ]
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "path": "/Documentos/resumo.md",
+                "with": "user:bruno",
+                "confirm": true,
+                "plan_state": "<plan_state#4>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "3",
+                        "node": 104,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": null,
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": [
+                    [
+                        "delete",
+                        "1"
+                    ],
+                    [
+                        "delete",
+                        "2"
+                    ]
+                ]
+            }
+        }
+    ]
+}

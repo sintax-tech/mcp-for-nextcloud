@@ -1,0 +1,433 @@
+{
+    "tool": "tasks_create_task",
+    "grant": "tasks.create",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Levantar requisitos",
+                "parent": "projeto"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create task**\n\nCreating the task **Levantar requisitos** in the calendar *Tarefas*.\n- Priority: without priority\n- Progress: 0%\n- Parent task: **Projeto** (\"projeto\")\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "tasks_create_task",
+                            "title": "Create task",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "tasks_create_task",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "tasks",
+                                "name": "Tarefas",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/tasks/"
+                            },
+                            "etag": null,
+                            "before": null,
+                            "after": {
+                                "summary": "Levantar requisitos",
+                                "description": "",
+                                "status": "NEEDS-ACTION",
+                                "percentComplete": 0,
+                                "priority": 0,
+                                "start": null,
+                                "due": null,
+                                "completed": null,
+                                "categories": [],
+                                "parent": "projeto",
+                                "recurring": false
+                            },
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": null,
+                            "timezone": "America/Sao_Paulo",
+                            "parents": {
+                                "projeto": "Projeto"
+                            }
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Concluir\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [],
+                "trash": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Levantar requisitos",
+                "parent": "projeto",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Concluir\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [],
+                "trash": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Levantar requisitos",
+                "parent": "projeto",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create task**\n\nCreating the task **Levantar requisitos** in the calendar *Tarefas*.\n- Priority: without priority\n- Progress: 0%\n- Parent task: **Projeto** (\"projeto\")\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "tasks_create_task",
+                            "title": "Create task",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "tasks_create_task",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "tasks",
+                                "name": "Tarefas",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/tasks/"
+                            },
+                            "etag": null,
+                            "before": null,
+                            "after": {
+                                "summary": "Levantar requisitos",
+                                "description": "",
+                                "status": "NEEDS-ACTION",
+                                "percentComplete": 0,
+                                "priority": 0,
+                                "start": null,
+                                "due": null,
+                                "completed": null,
+                                "categories": [],
+                                "parent": "projeto",
+                                "recurring": false
+                            },
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": null,
+                            "timezone": "America/Sao_Paulo",
+                            "parents": {
+                                "projeto": "Projeto"
+                            }
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Concluir\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [],
+                "trash": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "A creation has no existing object to change between the plan and the confirmation, and the Tasks module keeps no plan fingerprint (no PlanState/PlanChanged): the confirmed call checks the parent again under the hierarchy lock, and a parent gone since the plan is refused (asserted outside the golden)."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Levantar requisitos",
+                "parent": "projeto"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create task**\n\nCreating the task **Levantar requisitos** in the calendar *Tarefas*.\n- Priority: without priority\n- Progress: 0%\n- Parent task: **Projeto** (\"projeto\")\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "tasks_create_task",
+                            "title": "Create task",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "tasks_create_task",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "tasks",
+                                "name": "Tarefas",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/tasks/"
+                            },
+                            "etag": null,
+                            "before": null,
+                            "after": {
+                                "summary": "Levantar requisitos",
+                                "description": "",
+                                "status": "NEEDS-ACTION",
+                                "percentComplete": 0,
+                                "priority": 0,
+                                "start": null,
+                                "due": null,
+                                "completed": null,
+                                "categories": [],
+                                "parent": "projeto",
+                                "recurring": false
+                            },
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": null,
+                            "timezone": "America/Sao_Paulo",
+                            "parents": {
+                                "projeto": "Projeto"
+                            }
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Concluir\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [],
+                "trash": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Levantar requisitos",
+                "parent": "projeto",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"uid\": \"<drawn-uid#1>\",\n    \"summary\": \"Levantar requisitos\",\n    \"description\": \"\",\n    \"status\": \"NEEDS-ACTION\",\n    \"percentComplete\": 0,\n    \"priority\": 0,\n    \"start\": null,\n    \"due\": null,\n    \"completed\": null,\n    \"categories\": [],\n    \"parent\": \"projeto\",\n    \"recurring\": false,\n    \"icalendar\": \"BEGIN:VCALENDAR\\r\\nVERSION:2.0\\r\\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\nCALSCALE:GREGORIAN\\r\\nBEGIN:VTODO\\r\\nUID:<drawn-uid#1>\\r\\nSUMMARY:Levantar requisitos\\r\\nSTATUS:NEEDS-ACTION\\r\\nRELATED-TO;RELTYPE=PARENT:projeto\\r\\nDTSTAMP:20260310T120000Z\\r\\nLAST-MODIFIED:20260310T120000Z\\r\\nSEQUENCE:1\\r\\nEND:VTODO\\r\\nEND:VCALENDAR\\r\\n\",\n    \"etag\": \"\\\"<etag-of-drawn-object#1>\\\"\",\n    \"calendar\": \"/remote.php/dav/calendars/alice/tasks/\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Concluir\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VTODO\r\nUID:<drawn-uid#1>\r\nSUMMARY:Levantar requisitos\r\nSTATUS:NEEDS-ACTION\r\nRELATED-TO;RELTYPE=PARENT:projeto\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "put tasks/<drawn-uid#1>.ics"
+                ],
+                "trash": []
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Levantar requisitos",
+                "parent": "projeto",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Concluir\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VTODO\r\nUID:<drawn-uid#1>\r\nSUMMARY:Levantar requisitos\r\nSTATUS:NEEDS-ACTION\r\nRELATED-TO;RELTYPE=PARENT:projeto\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "put tasks/<drawn-uid#1>.ics"
+                ],
+                "trash": []
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Levantar requisitos",
+                "parent": "projeto"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Concluir\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VTODO\r\nUID:<drawn-uid#1>\r\nSUMMARY:Levantar requisitos\r\nSTATUS:NEEDS-ACTION\r\nRELATED-TO;RELTYPE=PARENT:projeto\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "put tasks/<drawn-uid#1>.ics"
+                ],
+                "trash": []
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Levantar requisitos",
+                "parent": "projeto",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:editar\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Editar\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:concluir\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Concluir\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-1\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 1\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:apagar-2\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Apagar 2\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VTODO\r\nUID:projeto\r\nDTSTAMP:20261001T100000Z\r\nSUMMARY:Projeto\r\nSTATUS:NEEDS-ACTION\r\nX-CUSTOM:keep\r\nEND:VTODO\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VTODO\r\nUID:<drawn-uid#1>\r\nSUMMARY:Levantar requisitos\r\nSTATUS:NEEDS-ACTION\r\nRELATED-TO;RELTYPE=PARENT:projeto\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "put tasks/<drawn-uid#1>.ics"
+                ],
+                "trash": []
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Tasks are CalDAV objects, not Files nodes: no system tag or excluded folder can hide a task list or a task from MCP (VisibilityGuard and FilesAccessGuard do not apply). What narrows the reachable lists is the administrator resource scope and the native ACL, not visibility."
+        }
+    ]
+}

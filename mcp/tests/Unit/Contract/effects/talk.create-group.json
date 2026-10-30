@@ -1,0 +1,411 @@
+{
+    "tool": "talk_create_group",
+    "grant": "talk.create",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "name": "Team",
+                "participants": [
+                    "pedro"
+                ]
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create group in Talk**\n\nThe Talk group **Team** will be created with you as the owner.\n\nThese people will be invited:\n- **pedro**\n\nNothing was changed. Confirm to execute.\n\n*I will create the Talk group 'Team' with you as the owner and as guests pedro. Show this plan to the user and only repeat the same call with confirm: true after they explicitly say yes; if they ask for changes, edit the plan and call the tool again. Without that confirmation the server creates nothing.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_create_group",
+                            "title": "Create group in Talk",
+                            "action": "talk_create_group",
+                            "draft": {
+                                "name": "Team",
+                                "participants": [
+                                    {
+                                        "id": "pedro",
+                                        "displayName": "pedro"
+                                    }
+                                ]
+                            },
+                            "message": "I will create the Talk group 'Team' with you as the owner and as guests pedro. Show this plan to the user and only repeat the same call with confirm: true after they explicitly say yes; if they ask for changes, edit the plan and call the tool again. Without that confirmation the server creates nothing."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "name": "Team",
+                "participants": [
+                    "pedro"
+                ],
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "name": "Team",
+                "participants": [
+                    "pedro"
+                ],
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create group in Talk**\n\nThe Talk group **Team** will be created with you as the owner.\n\nThese people will be invited:\n- **pedro**\n\nNothing was changed. Confirm to execute.\n\n*I will create the Talk group 'Team' with you as the owner and as guests pedro. Show this plan to the user and only repeat the same call with confirm: true after they explicitly say yes; if they ask for changes, edit the plan and call the tool again. Without that confirmation the server creates nothing.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_create_group",
+                            "title": "Create group in Talk",
+                            "action": "talk_create_group",
+                            "draft": {
+                                "name": "Team",
+                                "participants": [
+                                    {
+                                        "id": "pedro",
+                                        "displayName": "pedro"
+                                    }
+                                ]
+                            },
+                            "message": "I will create the Talk group 'Team' with you as the owner and as guests pedro. Show this plan to the user and only repeat the same call with confirm: true after they explicitly say yes; if they ask for changes, edit the plan and call the tool again. Without that confirmation the server creates nothing."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "Talk does not sign a PlanState; it revalidates the conversation and arguments at execution."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "name": "Team",
+                "participants": [
+                    "pedro"
+                ]
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create group in Talk**\n\nThe Talk group **Team** will be created with you as the owner.\n\nThese people will be invited:\n- **pedro**\n\nNothing was changed. Confirm to execute.\n\n*I will create the Talk group 'Team' with you as the owner and as guests pedro. Show this plan to the user and only repeat the same call with confirm: true after they explicitly say yes; if they ask for changes, edit the plan and call the tool again. Without that confirmation the server creates nothing.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_create_group",
+                            "title": "Create group in Talk",
+                            "action": "talk_create_group",
+                            "draft": {
+                                "name": "Team",
+                                "participants": [
+                                    {
+                                        "id": "pedro",
+                                        "displayName": "pedro"
+                                    }
+                                ]
+                            },
+                            "message": "I will create the Talk group 'Team' with you as the owner and as guests pedro. Show this plan to the user and only repeat the same call with confirm: true after they explicitly say yes; if they ask for changes, edit the plan and call the tool again. Without that confirmation the server creates nothing."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "name": "Team",
+                "participants": [
+                    "pedro"
+                ],
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"conversation_token\": \"group000\",\n    \"name\": \"Team\",\n    \"participants\": [\n        {\n            \"id\": \"pedro\",\n            \"displayName\": \"pedro\"\n        }\n    ],\n    \"invitations_failed\": []\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234",
+                    "group000"
+                ],
+                "created": [
+                    {
+                        "kind": 2,
+                        "name": "Team",
+                        "owner": "alice",
+                        "token": "group000"
+                    }
+                ],
+                "invited": [
+                    {
+                        "room": "group000",
+                        "users": [
+                            {
+                                "actorType": "users",
+                                "actorId": "pedro",
+                                "displayName": "pedro"
+                            }
+                        ],
+                        "by": "alice"
+                    }
+                ],
+                "shares": []
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "name": "Team",
+                "participants": [
+                    "pedro"
+                ],
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234",
+                    "group000"
+                ],
+                "created": [
+                    {
+                        "kind": 2,
+                        "name": "Team",
+                        "owner": "alice",
+                        "token": "group000"
+                    }
+                ],
+                "invited": [
+                    {
+                        "room": "group000",
+                        "users": [
+                            {
+                                "actorType": "users",
+                                "actorId": "pedro",
+                                "displayName": "pedro"
+                            }
+                        ],
+                        "by": "alice"
+                    }
+                ],
+                "shares": []
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "name": "Team",
+                "participants": [
+                    "pedro"
+                ]
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234",
+                    "group000"
+                ],
+                "created": [
+                    {
+                        "kind": 2,
+                        "name": "Team",
+                        "owner": "alice",
+                        "token": "group000"
+                    }
+                ],
+                "invited": [
+                    {
+                        "room": "group000",
+                        "users": [
+                            {
+                                "actorType": "users",
+                                "actorId": "pedro",
+                                "displayName": "pedro"
+                            }
+                        ],
+                        "by": "alice"
+                    }
+                ],
+                "shares": []
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "name": "Team",
+                "participants": [
+                    "pedro"
+                ],
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234",
+                    "group000"
+                ],
+                "created": [
+                    {
+                        "kind": 2,
+                        "name": "Team",
+                        "owner": "alice",
+                        "token": "group000"
+                    }
+                ],
+                "invited": [
+                    {
+                        "room": "group000",
+                        "users": [
+                            {
+                                "actorType": "users",
+                                "actorId": "pedro",
+                                "displayName": "pedro"
+                            }
+                        ],
+                        "by": "alice"
+                    }
+                ],
+                "shares": []
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Room membership and account reachability apply; this operation has no Files node."
+        }
+    ]
+}

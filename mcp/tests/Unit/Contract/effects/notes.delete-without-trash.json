@@ -1,0 +1,77 @@
+{
+    "tool": "notes_delete",
+    "grant": "notes.delete",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "id": 105
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Deletion blocked: the trash bin (files_trashbin) is not active for this note, so it would not be recoverable."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n",
+                    "/alice/files/Notes/Pauta.md": "itens\n",
+                    "/alice/files/Notes/Externa.md": "fora\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "id": 105,
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Deletion blocked: the trash bin (files_trashbin) is not active for this note, so it would not be recoverable."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\n",
+                    "/alice/files/Notes/Pauta.md": "itens\n",
+                    "/alice/files/Notes/Externa.md": "fora\n"
+                },
+                "folders": [
+                    "/alice/files",
+                    "/alice/files/Notes",
+                    "/alice/files/Notes/Atas"
+                ],
+                "ops": []
+            }
+        }
+    ]
+}

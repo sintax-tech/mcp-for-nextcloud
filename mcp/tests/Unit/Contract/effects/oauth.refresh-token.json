@@ -1,0 +1,432 @@
+{
+    "flow": "oauth.refresh-token",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 3,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#1>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#2>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    }
+                ],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "without client_id: invalid_request",
+            "request": {
+                "route": "o_auth#token",
+                "user": "",
+                "params": {
+                    "grant_type": "refresh_token",
+                    "refresh_token": "<rt#2>"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "invalid_request",
+                    "error_description": "refresh_token and client_id are required"
+                },
+                "headers": {
+                    "Cache-Control": "no-store",
+                    "Pragma": "no-cache"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 3,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#1>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#2>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    }
+                ],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "another client: invalid_grant, throttled",
+            "request": {
+                "route": "o_auth#token",
+                "user": "",
+                "params": {
+                    "grant_type": "refresh_token",
+                    "refresh_token": "<rt#2>",
+                    "client_id": "nextcloud-mcp-custom-bbbbbbbbbbbb"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "invalid_grant",
+                    "error_description": "Invalid refresh token"
+                },
+                "throttled": {
+                    "action": "mcp_oauth_token"
+                },
+                "headers": {
+                    "Cache-Control": "no-store",
+                    "Pragma": "no-cache"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 3,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#1>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#2>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    }
+                ],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "policy unavailable: 503, retry later",
+            "request": {
+                "route": "o_auth#token",
+                "user": "",
+                "params": {
+                    "grant_type": "refresh_token",
+                    "refresh_token": "<rt#2>",
+                    "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa"
+                }
+            },
+            "response": {
+                "status": 503,
+                "json": {
+                    "error": "temporarily_unavailable",
+                    "error_description": "The authorization server is temporarily unavailable"
+                },
+                "headers": {
+                    "Cache-Control": "no-store",
+                    "Pragma": "no-cache",
+                    "Retry-After": "1"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 3,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#1>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#2>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    }
+                ],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "rotation issues a new pair",
+            "request": {
+                "route": "o_auth#token",
+                "user": "",
+                "params": {
+                    "grant_type": "refresh_token",
+                    "refresh_token": "<rt#2>",
+                    "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "access_token": "<at#3>",
+                    "token_type": "Bearer",
+                    "expires_in": 3600,
+                    "refresh_token": "<rt#4>",
+                    "scope": "mcp"
+                },
+                "headers": {
+                    "Cache-Control": "no-store",
+                    "Pragma": "no-cache"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 3,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [
+                    {
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "resource": "https://cloud.example.org/apps/mcp/",
+                        "scope": "mcp",
+                        "access_hash": "<hash of at#3>",
+                        "access_expires": 1800003600,
+                        "refresh_hash": "<hash of rt#4>",
+                        "refresh_expires": 1802592000,
+                        "created_at": "<created_at#1>",
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2",
+                        "id": 2
+                    }
+                ],
+                "spent": [
+                    {
+                        "refresh_hash": "<hash of rt#2>",
+                        "user_id": "alice",
+                        "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                        "grant_id": 2,
+                        "expires_at": 1802592000,
+                        "auth_global_epoch": "0",
+                        "auth_gen": "2"
+                    }
+                ],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "replaying the spent refresh token revokes the family",
+            "request": {
+                "route": "o_auth#token",
+                "user": "",
+                "params": {
+                    "grant_type": "refresh_token",
+                    "refresh_token": "<rt#2>",
+                    "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "invalid_grant",
+                    "error_description": "Invalid refresh token"
+                },
+                "throttled": {
+                    "action": "mcp_oauth_token"
+                },
+                "headers": {
+                    "Cache-Control": "no-store",
+                    "Pragma": "no-cache"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 3,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        },
+        {
+            "step": "the rotated refresh token is dead too",
+            "request": {
+                "route": "o_auth#token",
+                "user": "",
+                "params": {
+                    "grant_type": "refresh_token",
+                    "refresh_token": "<rt#4>",
+                    "client_id": "nextcloud-mcp-custom-aaaaaaaaaaaa"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "invalid_grant",
+                    "error_description": "Invalid refresh token"
+                },
+                "throttled": {
+                    "action": "mcp_oauth_token"
+                },
+                "headers": {
+                    "Cache-Control": "no-store",
+                    "Pragma": "no-cache"
+                }
+            },
+            "state": {
+                "session": [],
+                "app": {
+                    "service_enabled": "1"
+                },
+                "users": {
+                    "alice": {
+                        "eligible": "1",
+                        "connected": "1"
+                    }
+                },
+                "policy": {
+                    "revision": 3,
+                    "authEpoch": 0,
+                    "generations": {
+                        "alice": {
+                            "issue_seq": "2",
+                            "revoked_below": "0"
+                        }
+                    }
+                },
+                "codes": [],
+                "tokens": [],
+                "spent": [],
+                "checkout": [],
+                "batches": []
+            }
+        }
+    ]
+}

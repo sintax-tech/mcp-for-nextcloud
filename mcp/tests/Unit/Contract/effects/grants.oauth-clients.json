@@ -1,0 +1,783 @@
+{
+    "flow": "grants.oauth-clients",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "revision": 6,
+                "native": true,
+                "custom": [
+                    {
+                        "id": "aaaaaaaaaaaa",
+                        "name": "Lab",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://lab.example.test/cb",
+                            "https://lab.example.test/cb2"
+                        ],
+                        "gen": "1"
+                    },
+                    {
+                        "id": "bbbbbbbbbbbb",
+                        "name": "Ops",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://ops.example.test/cb"
+                        ],
+                        "gen": "1"
+                    }
+                ],
+                "grants": [
+                    "ana @ https://claude.ai/c",
+                    "bob @ https://claude.ai/c",
+                    "ana @ nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "bob @ nextcloud-mcp-custom-bbbbbbbbbbbb",
+                    "ana @ nextcloud-mcp-native"
+                ]
+            }
+        },
+        {
+            "step": "an empty body is invalid",
+            "request": {
+                "route": "grants#updateOauthClients",
+                "user": "root",
+                "body": {
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "revision": 6,
+                "native": true,
+                "custom": [
+                    {
+                        "id": "aaaaaaaaaaaa",
+                        "name": "Lab",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://lab.example.test/cb",
+                            "https://lab.example.test/cb2"
+                        ],
+                        "gen": "1"
+                    },
+                    {
+                        "id": "bbbbbbbbbbbb",
+                        "name": "Ops",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://ops.example.test/cb"
+                        ],
+                        "gen": "1"
+                    }
+                ],
+                "grants": [
+                    "ana @ https://claude.ai/c",
+                    "bob @ https://claude.ai/c",
+                    "ana @ nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "bob @ nextcloud-mcp-custom-bbbbbbbbbbbb",
+                    "ana @ nextcloud-mcp-native"
+                ]
+            }
+        },
+        {
+            "step": "an empty host list is invalid",
+            "request": {
+                "route": "grants#updateOauthClients",
+                "user": "root",
+                "body": {
+                    "hosts": [],
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "revision": 6,
+                "native": true,
+                "custom": [
+                    {
+                        "id": "aaaaaaaaaaaa",
+                        "name": "Lab",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://lab.example.test/cb",
+                            "https://lab.example.test/cb2"
+                        ],
+                        "gen": "1"
+                    },
+                    {
+                        "id": "bbbbbbbbbbbb",
+                        "name": "Ops",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://ops.example.test/cb"
+                        ],
+                        "gen": "1"
+                    }
+                ],
+                "grants": [
+                    "ana @ https://claude.ai/c",
+                    "bob @ https://claude.ai/c",
+                    "ana @ nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "bob @ nextcloud-mcp-custom-bbbbbbbbbbbb",
+                    "ana @ nextcloud-mcp-native"
+                ]
+            }
+        },
+        {
+            "step": "a host with a scheme is invalid",
+            "request": {
+                "route": "grants#updateOauthClients",
+                "user": "root",
+                "body": {
+                    "hosts": [
+                        "https://claude.ai"
+                    ],
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "revision": 6,
+                "native": true,
+                "custom": [
+                    {
+                        "id": "aaaaaaaaaaaa",
+                        "name": "Lab",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://lab.example.test/cb",
+                            "https://lab.example.test/cb2"
+                        ],
+                        "gen": "1"
+                    },
+                    {
+                        "id": "bbbbbbbbbbbb",
+                        "name": "Ops",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://ops.example.test/cb"
+                        ],
+                        "gen": "1"
+                    }
+                ],
+                "grants": [
+                    "ana @ https://claude.ai/c",
+                    "bob @ https://claude.ai/c",
+                    "ana @ nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "bob @ nextcloud-mcp-custom-bbbbbbbbbbbb",
+                    "ana @ nextcloud-mcp-native"
+                ]
+            }
+        },
+        {
+            "step": "without expectedRevision: 428",
+            "request": {
+                "route": "grants#updateOauthClients",
+                "user": "root",
+                "body": {
+                    "hosts": [
+                        "claude.ai"
+                    ]
+                }
+            },
+            "response": {
+                "status": 428,
+                "json": {
+                    "error": "PreconditionRequired"
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "revision": 6,
+                "native": true,
+                "custom": [
+                    {
+                        "id": "aaaaaaaaaaaa",
+                        "name": "Lab",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://lab.example.test/cb",
+                            "https://lab.example.test/cb2"
+                        ],
+                        "gen": "1"
+                    },
+                    {
+                        "id": "bbbbbbbbbbbb",
+                        "name": "Ops",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://ops.example.test/cb"
+                        ],
+                        "gen": "1"
+                    }
+                ],
+                "grants": [
+                    "ana @ https://claude.ai/c",
+                    "bob @ https://claude.ai/c",
+                    "ana @ nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "bob @ nextcloud-mcp-custom-bbbbbbbbbbbb",
+                    "ana @ nextcloud-mcp-native"
+                ]
+            }
+        },
+        {
+            "step": "a stale revision: 409",
+            "request": {
+                "route": "grants#updateOauthClients",
+                "user": "root",
+                "body": {
+                    "hosts": [
+                        "claude.ai"
+                    ],
+                    "expectedRevision": "1"
+                }
+            },
+            "response": {
+                "status": 409,
+                "json": {
+                    "error": "Conflict",
+                    "revision": "6",
+                    "state": {
+                        "hosts": [
+                            "claude.ai",
+                            "chatgpt.com"
+                        ],
+                        "hostsDefault": true,
+                        "nativeClientEnabled": true,
+                        "nativeClientId": "nextcloud-mcp-native",
+                        "nativeRedirectUris": [
+                            "http://localhost/oauth/callback",
+                            "http://127.0.0.1/oauth/callback",
+                            "http://[::1]/oauth/callback"
+                        ],
+                        "revision": "6",
+                        "customClients": [
+                            {
+                                "id": "aaaaaaaaaaaa",
+                                "clientId": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                                "name": "Lab",
+                                "enabled": true,
+                                "redirectUris": [
+                                    "https://lab.example.test/cb",
+                                    "https://lab.example.test/cb2"
+                                ]
+                            },
+                            {
+                                "id": "bbbbbbbbbbbb",
+                                "clientId": "nextcloud-mcp-custom-bbbbbbbbbbbb",
+                                "name": "Ops",
+                                "enabled": true,
+                                "redirectUris": [
+                                    "https://ops.example.test/cb"
+                                ]
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "revision": 6,
+                "native": true,
+                "custom": [
+                    {
+                        "id": "aaaaaaaaaaaa",
+                        "name": "Lab",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://lab.example.test/cb",
+                            "https://lab.example.test/cb2"
+                        ],
+                        "gen": "1"
+                    },
+                    {
+                        "id": "bbbbbbbbbbbb",
+                        "name": "Ops",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://ops.example.test/cb"
+                        ],
+                        "gen": "1"
+                    }
+                ],
+                "grants": [
+                    "ana @ https://claude.ai/c",
+                    "bob @ https://claude.ai/c",
+                    "ana @ nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "bob @ nextcloud-mcp-custom-bbbbbbbbbbbb",
+                    "ana @ nextcloud-mcp-native"
+                ]
+            }
+        },
+        {
+            "step": "policy unavailable: 503, nothing changes",
+            "request": {
+                "route": "grants#updateOauthClients",
+                "user": "root",
+                "body": {
+                    "customClients": [
+                        {
+                            "id": "aaaaaaaaaaaa",
+                            "name": "Lab",
+                            "enabled": true,
+                            "redirectUris": [
+                                "https://lab.example.test/cb",
+                                "https://lab.example.test/cb2"
+                            ]
+                        },
+                        {
+                            "id": "bbbbbbbbbbbb",
+                            "name": "Ops",
+                            "enabled": false,
+                            "redirectUris": [
+                                "https://ops.example.test/cb"
+                            ]
+                        }
+                    ],
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 503,
+                "json": {
+                    "error": "Unavailable",
+                    "uncertain": false
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "revision": 6,
+                "native": true,
+                "custom": [
+                    {
+                        "id": "aaaaaaaaaaaa",
+                        "name": "Lab",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://lab.example.test/cb",
+                            "https://lab.example.test/cb2"
+                        ],
+                        "gen": "1"
+                    },
+                    {
+                        "id": "bbbbbbbbbbbb",
+                        "name": "Ops",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://ops.example.test/cb"
+                        ],
+                        "gen": "1"
+                    }
+                ],
+                "grants": [
+                    "ana @ https://claude.ai/c",
+                    "bob @ https://claude.ai/c",
+                    "ana @ nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "bob @ nextcloud-mcp-custom-bbbbbbbbbbbb",
+                    "ana @ nextcloud-mcp-native"
+                ]
+            }
+        },
+        {
+            "step": "trusted hosts saved",
+            "request": {
+                "route": "grants#updateOauthClients",
+                "user": "root",
+                "body": {
+                    "hosts": [
+                        "Claude.ai ",
+                        "chatgpt.com"
+                    ],
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "hosts": [
+                        "claude.ai",
+                        "chatgpt.com"
+                    ],
+                    "hostsDefault": true,
+                    "nativeClientEnabled": true,
+                    "nativeClientId": "nextcloud-mcp-native",
+                    "nativeRedirectUris": [
+                        "http://localhost/oauth/callback",
+                        "http://127.0.0.1/oauth/callback",
+                        "http://[::1]/oauth/callback"
+                    ],
+                    "revision": "6",
+                    "customClients": [
+                        {
+                            "id": "aaaaaaaaaaaa",
+                            "clientId": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                            "name": "Lab",
+                            "enabled": true,
+                            "redirectUris": [
+                                "https://lab.example.test/cb",
+                                "https://lab.example.test/cb2"
+                            ]
+                        },
+                        {
+                            "id": "bbbbbbbbbbbb",
+                            "clientId": "nextcloud-mcp-custom-bbbbbbbbbbbb",
+                            "name": "Ops",
+                            "enabled": true,
+                            "redirectUris": [
+                                "https://ops.example.test/cb"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "revision": 6,
+                "native": true,
+                "custom": [
+                    {
+                        "id": "aaaaaaaaaaaa",
+                        "name": "Lab",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://lab.example.test/cb",
+                            "https://lab.example.test/cb2"
+                        ],
+                        "gen": "1"
+                    },
+                    {
+                        "id": "bbbbbbbbbbbb",
+                        "name": "Ops",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://ops.example.test/cb"
+                        ],
+                        "gen": "1"
+                    }
+                ],
+                "grants": [
+                    "ana @ https://claude.ai/c",
+                    "bob @ https://claude.ai/c",
+                    "ana @ nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "bob @ nextcloud-mcp-custom-bbbbbbbbbbbb",
+                    "ana @ nextcloud-mcp-native"
+                ]
+            }
+        },
+        {
+            "step": "Ops turned off: its grants are deleted",
+            "request": {
+                "route": "grants#updateOauthClients",
+                "user": "root",
+                "body": {
+                    "customClients": [
+                        {
+                            "id": "aaaaaaaaaaaa",
+                            "name": "Lab",
+                            "enabled": true,
+                            "redirectUris": [
+                                "https://lab.example.test/cb",
+                                "https://lab.example.test/cb2"
+                            ]
+                        },
+                        {
+                            "id": "bbbbbbbbbbbb",
+                            "name": "Ops",
+                            "enabled": false,
+                            "redirectUris": [
+                                "https://ops.example.test/cb"
+                            ]
+                        }
+                    ],
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "hosts": [
+                        "claude.ai",
+                        "chatgpt.com"
+                    ],
+                    "hostsDefault": true,
+                    "nativeClientEnabled": true,
+                    "nativeClientId": "nextcloud-mcp-native",
+                    "nativeRedirectUris": [
+                        "http://localhost/oauth/callback",
+                        "http://127.0.0.1/oauth/callback",
+                        "http://[::1]/oauth/callback"
+                    ],
+                    "revision": "7",
+                    "customClients": [
+                        {
+                            "id": "aaaaaaaaaaaa",
+                            "clientId": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                            "name": "Lab",
+                            "enabled": true,
+                            "redirectUris": [
+                                "https://lab.example.test/cb",
+                                "https://lab.example.test/cb2"
+                            ]
+                        },
+                        {
+                            "id": "bbbbbbbbbbbb",
+                            "clientId": "nextcloud-mcp-custom-bbbbbbbbbbbb",
+                            "name": "Ops",
+                            "enabled": false,
+                            "redirectUris": [
+                                "https://ops.example.test/cb"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "revision": 7,
+                "native": true,
+                "custom": [
+                    {
+                        "id": "aaaaaaaaaaaa",
+                        "name": "Lab",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://lab.example.test/cb",
+                            "https://lab.example.test/cb2"
+                        ],
+                        "gen": "1"
+                    },
+                    {
+                        "id": "bbbbbbbbbbbb",
+                        "name": "Ops",
+                        "enabled": false,
+                        "redirectUris": [
+                            "https://ops.example.test/cb"
+                        ],
+                        "gen": "2"
+                    }
+                ],
+                "grants": [
+                    "ana @ https://claude.ai/c",
+                    "bob @ https://claude.ai/c",
+                    "ana @ nextcloud-mcp-custom-aaaaaaaaaaaa",
+                    "ana @ nextcloud-mcp-native"
+                ]
+            }
+        },
+        {
+            "step": "a redirect URI of Lab removed: its grants are deleted",
+            "request": {
+                "route": "grants#updateOauthClients",
+                "user": "root",
+                "body": {
+                    "customClients": [
+                        {
+                            "id": "aaaaaaaaaaaa",
+                            "name": "Lab",
+                            "enabled": true,
+                            "redirectUris": [
+                                "https://lab.example.test/cb"
+                            ]
+                        },
+                        {
+                            "id": "bbbbbbbbbbbb",
+                            "name": "Ops",
+                            "enabled": false,
+                            "redirectUris": [
+                                "https://ops.example.test/cb"
+                            ]
+                        }
+                    ],
+                    "expectedRevision": "7"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "hosts": [
+                        "claude.ai",
+                        "chatgpt.com"
+                    ],
+                    "hostsDefault": true,
+                    "nativeClientEnabled": true,
+                    "nativeClientId": "nextcloud-mcp-native",
+                    "nativeRedirectUris": [
+                        "http://localhost/oauth/callback",
+                        "http://127.0.0.1/oauth/callback",
+                        "http://[::1]/oauth/callback"
+                    ],
+                    "revision": "8",
+                    "customClients": [
+                        {
+                            "id": "aaaaaaaaaaaa",
+                            "clientId": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                            "name": "Lab",
+                            "enabled": true,
+                            "redirectUris": [
+                                "https://lab.example.test/cb"
+                            ]
+                        },
+                        {
+                            "id": "bbbbbbbbbbbb",
+                            "clientId": "nextcloud-mcp-custom-bbbbbbbbbbbb",
+                            "name": "Ops",
+                            "enabled": false,
+                            "redirectUris": [
+                                "https://ops.example.test/cb"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "revision": 8,
+                "native": true,
+                "custom": [
+                    {
+                        "id": "aaaaaaaaaaaa",
+                        "name": "Lab",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://lab.example.test/cb"
+                        ],
+                        "gen": "2"
+                    },
+                    {
+                        "id": "bbbbbbbbbbbb",
+                        "name": "Ops",
+                        "enabled": false,
+                        "redirectUris": [
+                            "https://ops.example.test/cb"
+                        ],
+                        "gen": "3"
+                    }
+                ],
+                "grants": [
+                    "ana @ https://claude.ai/c",
+                    "bob @ https://claude.ai/c",
+                    "ana @ nextcloud-mcp-native"
+                ]
+            }
+        },
+        {
+            "step": "the native client turned off: its grants are deleted",
+            "request": {
+                "route": "grants#updateOauthClients",
+                "user": "root",
+                "body": {
+                    "nativeClientEnabled": false,
+                    "expectedRevision": "8"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "hosts": [
+                        "claude.ai",
+                        "chatgpt.com"
+                    ],
+                    "hostsDefault": true,
+                    "nativeClientEnabled": false,
+                    "nativeClientId": "nextcloud-mcp-native",
+                    "nativeRedirectUris": [
+                        "http://localhost/oauth/callback",
+                        "http://127.0.0.1/oauth/callback",
+                        "http://[::1]/oauth/callback"
+                    ],
+                    "revision": "9",
+                    "customClients": [
+                        {
+                            "id": "aaaaaaaaaaaa",
+                            "clientId": "nextcloud-mcp-custom-aaaaaaaaaaaa",
+                            "name": "Lab",
+                            "enabled": true,
+                            "redirectUris": [
+                                "https://lab.example.test/cb"
+                            ]
+                        },
+                        {
+                            "id": "bbbbbbbbbbbb",
+                            "clientId": "nextcloud-mcp-custom-bbbbbbbbbbbb",
+                            "name": "Ops",
+                            "enabled": false,
+                            "redirectUris": [
+                                "https://ops.example.test/cb"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "state": {
+                "app": {
+                    "service_enabled": "1"
+                },
+                "revision": 9,
+                "native": false,
+                "custom": [
+                    {
+                        "id": "aaaaaaaaaaaa",
+                        "name": "Lab",
+                        "enabled": true,
+                        "redirectUris": [
+                            "https://lab.example.test/cb"
+                        ],
+                        "gen": "2"
+                    },
+                    {
+                        "id": "bbbbbbbbbbbb",
+                        "name": "Ops",
+                        "enabled": false,
+                        "redirectUris": [
+                            "https://ops.example.test/cb"
+                        ],
+                        "gen": "3"
+                    }
+                ],
+                "grants": [
+                    "ana @ https://claude.ai/c",
+                    "bob @ https://claude.ai/c"
+                ]
+            }
+        }
+    ]
+}

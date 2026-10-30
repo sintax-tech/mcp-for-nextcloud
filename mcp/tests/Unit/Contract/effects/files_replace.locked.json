@@ -1,0 +1,120 @@
+{
+    "steps": [
+        {
+            "step": "locked-preview",
+            "request": {
+                "path": "/Docs/old.md",
+                "etag": "<etag#1>",
+                "old": "old",
+                "new": "new"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Replace part of a file**\n\nReplace a passage of **/Docs/old.md**.\n\n- Lines removed: 1; lines added: 1.\n- Before: «old»\n- After: «new»\n- Size: 3 B → 3 B\n- A copy of the current file is saved first in **/MCP backups**.\n\n### Warnings\n\n- The file “/Docs/old.md” is locked by Paulo Exemplo. Locked since 2025-10-08 11:05 (UTC). The lock has no end time. While the lock lasts the change is refused, even after confirmation. Ask that person to unlock it, or wait until the lock ends, and then try again.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the snippet below is replaced and a copy of the current content is kept in the backup folder.*\n\n*To confirm, repeat the call with etag `e102`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_replace",
+                            "title": "Replace part of a file",
+                            "action": "files_replace",
+                            "snippet": {
+                                "occurrences": 1,
+                                "replaced": 1
+                            },
+                            "size": {
+                                "before": 3,
+                                "after": 3
+                            },
+                            "diff": "--- antes\n+++ depois\n@@ -1,1 +1,1 @@\n-old\n\\ No newline at end of file\n+new\n\\ No newline at end of file\n",
+                            "message": "Nothing was changed. After your approval the snippet below is replaced and a copy of the current content is kept in the backup folder.",
+                            "path": "/Docs/old.md",
+                            "etag": "<etag#1>",
+                            "backup": "/MCP backups",
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "consequence": "The previous content stays available in the backup folder. Nextcloud may also keep versions of the file, according to its versioning policy.",
+                            "lock": {
+                                "type": "user",
+                                "owner_display_name": "Paulo Exemplo",
+                                "own": false,
+                                "blocking": true,
+                                "created_at": "<created_at#1>",
+                                "expires_at": null,
+                                "expiry_status": "none"
+                            },
+                            "warnings": [
+                                {
+                                    "type": "file_locked",
+                                    "message": "The file “/Docs/old.md” is locked by Paulo Exemplo. Locked since 2025-10-08 11:05 (UTC). The lock has no end time. While the lock lasts the change is refused, even after confirmation. Ask that person to unlock it, or wait until the lock ends, and then try again."
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Docs": "dir #101",
+                    "/alice/files/Docs/old.md": "#102 old"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "locked-confirmed",
+            "request": {
+                "path": "/Docs/old.md",
+                "etag": "<etag#1>",
+                "old": "old",
+                "new": "new",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "The file “/Docs/old.md” is locked by Paulo Exemplo. Locked since 2025-10-08 11:05 (UTC). The lock has no end time. Ask that person to unlock it, or wait until the lock ends, and then try again. Nothing was changed."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Docs": "dir #101",
+                    "/alice/files/Docs/old.md": "#102 old"
+                },
+                "ops": []
+            }
+        }
+    ]
+}

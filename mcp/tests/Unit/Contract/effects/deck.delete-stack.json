@@ -1,0 +1,1157 @@
+{
+    "tool": "deck_delete_stack",
+    "grant": "deck.delete",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "stackId": 4
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete Deck list**\n\nDelete list in *Comercial*: **Arquivo**\n- The list has no cards.\n- The list goes to the trash of the board and can be recovered there, in the Deck web interface.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the empty list below is deleted.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_delete_stack",
+                            "title": "Delete Deck list",
+                            "action": "deck_delete_stack",
+                            "stack": {
+                                "id": 4,
+                                "title": "Arquivo",
+                                "cards": 0
+                            },
+                            "board": {
+                                "board": "Comercial",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "shared": false
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "consequence": "The list goes to the trash of the board and can be recovered there, in the Deck web interface.",
+                            "message": "Nothing was changed. After your approval the empty list below is deleted.",
+                            "timezone": "America/Sao_Paulo"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "boards": {
+                    "20": {
+                        "title": "Comercial",
+                        "owner": "alice",
+                        "deletedAt": 0
+                    },
+                    "30": {
+                        "title": "Diretoria",
+                        "owner": "pedro",
+                        "deletedAt": 0
+                    }
+                },
+                "stacks": {
+                    "2": {
+                        "boardId": 20,
+                        "title": "A fazer",
+                        "order": 0,
+                        "deletedAt": 0
+                    },
+                    "3": {
+                        "boardId": 20,
+                        "title": "Feito",
+                        "order": 1,
+                        "deletedAt": 0
+                    },
+                    "4": {
+                        "boardId": 20,
+                        "title": "Arquivo",
+                        "order": 2,
+                        "deletedAt": 0
+                    },
+                    "5": {
+                        "boardId": 20,
+                        "title": "Rascunhos",
+                        "order": 3,
+                        "deletedAt": 0
+                    },
+                    "6": {
+                        "boardId": 30,
+                        "title": "Pauta",
+                        "order": 0,
+                        "deletedAt": 0
+                    }
+                },
+                "cards": {
+                    "7": {
+                        "stackId": 2,
+                        "title": "Proposta comercial",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "8": {
+                        "stackId": 2,
+                        "title": "Contrato",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 1,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "9": {
+                        "stackId": 2,
+                        "title": "Reunião de kickoff",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 2,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "10": {
+                        "stackId": 3,
+                        "title": "Entregue",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "12": {
+                        "stackId": 6,
+                        "title": "Orçamento anual",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    }
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "stackId": 4,
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "boards": {
+                    "20": {
+                        "title": "Comercial",
+                        "owner": "alice",
+                        "deletedAt": 0
+                    },
+                    "30": {
+                        "title": "Diretoria",
+                        "owner": "pedro",
+                        "deletedAt": 0
+                    }
+                },
+                "stacks": {
+                    "2": {
+                        "boardId": 20,
+                        "title": "A fazer",
+                        "order": 0,
+                        "deletedAt": 0
+                    },
+                    "3": {
+                        "boardId": 20,
+                        "title": "Feito",
+                        "order": 1,
+                        "deletedAt": 0
+                    },
+                    "4": {
+                        "boardId": 20,
+                        "title": "Arquivo",
+                        "order": 2,
+                        "deletedAt": 0
+                    },
+                    "5": {
+                        "boardId": 20,
+                        "title": "Rascunhos",
+                        "order": 3,
+                        "deletedAt": 0
+                    },
+                    "6": {
+                        "boardId": 30,
+                        "title": "Pauta",
+                        "order": 0,
+                        "deletedAt": 0
+                    }
+                },
+                "cards": {
+                    "7": {
+                        "stackId": 2,
+                        "title": "Proposta comercial",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "8": {
+                        "stackId": 2,
+                        "title": "Contrato",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 1,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "9": {
+                        "stackId": 2,
+                        "title": "Reunião de kickoff",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 2,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "10": {
+                        "stackId": 3,
+                        "title": "Entregue",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "12": {
+                        "stackId": 6,
+                        "title": "Orçamento anual",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    }
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "stackId": 4,
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete Deck list**\n\nDelete list in *Comercial*: **Arquivo**\n- The list has no cards.\n- The list goes to the trash of the board and can be recovered there, in the Deck web interface.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the empty list below is deleted.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_delete_stack",
+                            "title": "Delete Deck list",
+                            "action": "deck_delete_stack",
+                            "stack": {
+                                "id": 4,
+                                "title": "Arquivo",
+                                "cards": 0
+                            },
+                            "board": {
+                                "board": "Comercial",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "shared": false
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "consequence": "The list goes to the trash of the board and can be recovered there, in the Deck web interface.",
+                            "message": "Nothing was changed. After your approval the empty list below is deleted.",
+                            "timezone": "America/Sao_Paulo"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "boards": {
+                    "20": {
+                        "title": "Comercial",
+                        "owner": "alice",
+                        "deletedAt": 0
+                    },
+                    "30": {
+                        "title": "Diretoria",
+                        "owner": "pedro",
+                        "deletedAt": 0
+                    }
+                },
+                "stacks": {
+                    "2": {
+                        "boardId": 20,
+                        "title": "A fazer",
+                        "order": 0,
+                        "deletedAt": 0
+                    },
+                    "3": {
+                        "boardId": 20,
+                        "title": "Feito",
+                        "order": 1,
+                        "deletedAt": 0
+                    },
+                    "4": {
+                        "boardId": 20,
+                        "title": "Arquivo",
+                        "order": 2,
+                        "deletedAt": 0
+                    },
+                    "5": {
+                        "boardId": 20,
+                        "title": "Rascunhos",
+                        "order": 3,
+                        "deletedAt": 0
+                    },
+                    "6": {
+                        "boardId": 30,
+                        "title": "Pauta",
+                        "order": 0,
+                        "deletedAt": 0
+                    }
+                },
+                "cards": {
+                    "7": {
+                        "stackId": 2,
+                        "title": "Proposta comercial",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "8": {
+                        "stackId": 2,
+                        "title": "Contrato",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 1,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "9": {
+                        "stackId": 2,
+                        "title": "Reunião de kickoff",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 2,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "10": {
+                        "stackId": 3,
+                        "title": "Entregue",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "12": {
+                        "stackId": 6,
+                        "title": "Orçamento anual",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    }
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "This Deck write carries no plan_state: the confirmed call re-reads the board, its owner and the Deck ACL at execution (a board that became shared answers the confirm_shared payload) instead of comparing a plan fingerprint."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "stackId": 4
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Delete Deck list**\n\nDelete list in *Comercial*: **Arquivo**\n- The list has no cards.\n- The list goes to the trash of the board and can be recovered there, in the Deck web interface.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the empty list below is deleted.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_delete_stack",
+                            "title": "Delete Deck list",
+                            "action": "deck_delete_stack",
+                            "stack": {
+                                "id": 4,
+                                "title": "Arquivo",
+                                "cards": 0
+                            },
+                            "board": {
+                                "board": "Comercial",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "shared": false
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "consequence": "The list goes to the trash of the board and can be recovered there, in the Deck web interface.",
+                            "message": "Nothing was changed. After your approval the empty list below is deleted.",
+                            "timezone": "America/Sao_Paulo"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "boards": {
+                    "20": {
+                        "title": "Comercial",
+                        "owner": "alice",
+                        "deletedAt": 0
+                    },
+                    "30": {
+                        "title": "Diretoria",
+                        "owner": "pedro",
+                        "deletedAt": 0
+                    }
+                },
+                "stacks": {
+                    "2": {
+                        "boardId": 20,
+                        "title": "A fazer",
+                        "order": 0,
+                        "deletedAt": 0
+                    },
+                    "3": {
+                        "boardId": 20,
+                        "title": "Feito",
+                        "order": 1,
+                        "deletedAt": 0
+                    },
+                    "4": {
+                        "boardId": 20,
+                        "title": "Arquivo",
+                        "order": 2,
+                        "deletedAt": 0
+                    },
+                    "5": {
+                        "boardId": 20,
+                        "title": "Rascunhos",
+                        "order": 3,
+                        "deletedAt": 0
+                    },
+                    "6": {
+                        "boardId": 30,
+                        "title": "Pauta",
+                        "order": 0,
+                        "deletedAt": 0
+                    }
+                },
+                "cards": {
+                    "7": {
+                        "stackId": 2,
+                        "title": "Proposta comercial",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "8": {
+                        "stackId": 2,
+                        "title": "Contrato",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 1,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "9": {
+                        "stackId": 2,
+                        "title": "Reunião de kickoff",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 2,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "10": {
+                        "stackId": 3,
+                        "title": "Entregue",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "12": {
+                        "stackId": 6,
+                        "title": "Orçamento anual",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    }
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "stackId": 4,
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"id\": 4,\n    \"boardId\": 20,\n    \"title\": \"Arquivo\",\n    \"deleted\": true\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "boards": {
+                    "20": {
+                        "title": "Comercial",
+                        "owner": "alice",
+                        "deletedAt": 0
+                    },
+                    "30": {
+                        "title": "Diretoria",
+                        "owner": "pedro",
+                        "deletedAt": 0
+                    }
+                },
+                "stacks": {
+                    "2": {
+                        "boardId": 20,
+                        "title": "A fazer",
+                        "order": 0,
+                        "deletedAt": 0
+                    },
+                    "3": {
+                        "boardId": 20,
+                        "title": "Feito",
+                        "order": 1,
+                        "deletedAt": 0
+                    },
+                    "4": {
+                        "boardId": 20,
+                        "title": "Arquivo",
+                        "order": 2,
+                        "deletedAt": 1767323045
+                    },
+                    "5": {
+                        "boardId": 20,
+                        "title": "Rascunhos",
+                        "order": 3,
+                        "deletedAt": 0
+                    },
+                    "6": {
+                        "boardId": 30,
+                        "title": "Pauta",
+                        "order": 0,
+                        "deletedAt": 0
+                    }
+                },
+                "cards": {
+                    "7": {
+                        "stackId": 2,
+                        "title": "Proposta comercial",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "8": {
+                        "stackId": 2,
+                        "title": "Contrato",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 1,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "9": {
+                        "stackId": 2,
+                        "title": "Reunião de kickoff",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 2,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "10": {
+                        "stackId": 3,
+                        "title": "Entregue",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "12": {
+                        "stackId": 6,
+                        "title": "Orçamento anual",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    }
+                },
+                "writes": [
+                    {
+                        "call": "StackService::delete",
+                        "as": "alice",
+                        "args": [
+                            4
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "stackId": 5,
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "boards": {
+                    "20": {
+                        "title": "Comercial",
+                        "owner": "alice",
+                        "deletedAt": 0
+                    },
+                    "30": {
+                        "title": "Diretoria",
+                        "owner": "pedro",
+                        "deletedAt": 0
+                    }
+                },
+                "stacks": {
+                    "2": {
+                        "boardId": 20,
+                        "title": "A fazer",
+                        "order": 0,
+                        "deletedAt": 0
+                    },
+                    "3": {
+                        "boardId": 20,
+                        "title": "Feito",
+                        "order": 1,
+                        "deletedAt": 0
+                    },
+                    "4": {
+                        "boardId": 20,
+                        "title": "Arquivo",
+                        "order": 2,
+                        "deletedAt": 1767323045
+                    },
+                    "5": {
+                        "boardId": 20,
+                        "title": "Rascunhos",
+                        "order": 3,
+                        "deletedAt": 0
+                    },
+                    "6": {
+                        "boardId": 30,
+                        "title": "Pauta",
+                        "order": 0,
+                        "deletedAt": 0
+                    }
+                },
+                "cards": {
+                    "7": {
+                        "stackId": 2,
+                        "title": "Proposta comercial",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "8": {
+                        "stackId": 2,
+                        "title": "Contrato",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 1,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "9": {
+                        "stackId": 2,
+                        "title": "Reunião de kickoff",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 2,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "10": {
+                        "stackId": 3,
+                        "title": "Entregue",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "12": {
+                        "stackId": 6,
+                        "title": "Orçamento anual",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    }
+                },
+                "writes": [
+                    {
+                        "call": "StackService::delete",
+                        "as": "alice",
+                        "args": [
+                            4
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "stackId": 5
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "boards": {
+                    "20": {
+                        "title": "Comercial",
+                        "owner": "alice",
+                        "deletedAt": 0
+                    },
+                    "30": {
+                        "title": "Diretoria",
+                        "owner": "pedro",
+                        "deletedAt": 0
+                    }
+                },
+                "stacks": {
+                    "2": {
+                        "boardId": 20,
+                        "title": "A fazer",
+                        "order": 0,
+                        "deletedAt": 0
+                    },
+                    "3": {
+                        "boardId": 20,
+                        "title": "Feito",
+                        "order": 1,
+                        "deletedAt": 0
+                    },
+                    "4": {
+                        "boardId": 20,
+                        "title": "Arquivo",
+                        "order": 2,
+                        "deletedAt": 1767323045
+                    },
+                    "5": {
+                        "boardId": 20,
+                        "title": "Rascunhos",
+                        "order": 3,
+                        "deletedAt": 0
+                    },
+                    "6": {
+                        "boardId": 30,
+                        "title": "Pauta",
+                        "order": 0,
+                        "deletedAt": 0
+                    }
+                },
+                "cards": {
+                    "7": {
+                        "stackId": 2,
+                        "title": "Proposta comercial",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "8": {
+                        "stackId": 2,
+                        "title": "Contrato",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 1,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "9": {
+                        "stackId": 2,
+                        "title": "Reunião de kickoff",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 2,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "10": {
+                        "stackId": 3,
+                        "title": "Entregue",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "12": {
+                        "stackId": 6,
+                        "title": "Orçamento anual",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    }
+                },
+                "writes": [
+                    {
+                        "call": "StackService::delete",
+                        "as": "alice",
+                        "args": [
+                            4
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "stackId": 5,
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "boards": {
+                    "20": {
+                        "title": "Comercial",
+                        "owner": "alice",
+                        "deletedAt": 0
+                    },
+                    "30": {
+                        "title": "Diretoria",
+                        "owner": "pedro",
+                        "deletedAt": 0
+                    }
+                },
+                "stacks": {
+                    "2": {
+                        "boardId": 20,
+                        "title": "A fazer",
+                        "order": 0,
+                        "deletedAt": 0
+                    },
+                    "3": {
+                        "boardId": 20,
+                        "title": "Feito",
+                        "order": 1,
+                        "deletedAt": 0
+                    },
+                    "4": {
+                        "boardId": 20,
+                        "title": "Arquivo",
+                        "order": 2,
+                        "deletedAt": 1767323045
+                    },
+                    "5": {
+                        "boardId": 20,
+                        "title": "Rascunhos",
+                        "order": 3,
+                        "deletedAt": 0
+                    },
+                    "6": {
+                        "boardId": 30,
+                        "title": "Pauta",
+                        "order": 0,
+                        "deletedAt": 0
+                    }
+                },
+                "cards": {
+                    "7": {
+                        "stackId": 2,
+                        "title": "Proposta comercial",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "8": {
+                        "stackId": 2,
+                        "title": "Contrato",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 1,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "9": {
+                        "stackId": 2,
+                        "title": "Reunião de kickoff",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 2,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "10": {
+                        "stackId": 3,
+                        "title": "Entregue",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    },
+                    "12": {
+                        "stackId": 6,
+                        "title": "Orçamento anual",
+                        "description": "",
+                        "duedate": null,
+                        "owner": "alice",
+                        "order": 0,
+                        "archived": false,
+                        "deletedAt": 0,
+                        "createdAt": "<createdAt#1>",
+                        "lastModified": 1700000000
+                    }
+                },
+                "writes": [
+                    {
+                        "call": "StackService::delete",
+                        "as": "alice",
+                        "args": [
+                            4
+                        ]
+                    }
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "A Deck card or list has no exclusion of its own: the hidden system tag and the excluded folders apply to Files nodes, and this tool touches no file; access is the Deck ACL, which the native services check."
+        }
+    ]
+}

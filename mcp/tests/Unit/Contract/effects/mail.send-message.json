@@ -1,0 +1,605 @@
+{
+    "tool": "mail_send_message",
+    "grant": "mail.send",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada."
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Send a mail message**\n\n**This message may go to recipients outside your organization, and sending cannot be undone.**\n\nSend from alice@example.com\n- To: bob@example.com\n- Cc: carol@example.com\n- Bcc: auditoria@example.com\n- Subject: **Proposta revisada**\n\n> Olá Bob,\n> segue a proposta revisada.\n\n*“Sent” means the SMTP server of the account accepted the message; it does not mean it was delivered.*\n*Each confirmation sends the message again; confirming this plan twice sends it twice.*\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "mail_send_message",
+                            "title": "Send a mail message",
+                            "action": "mail_send_message",
+                            "target": {
+                                "accountId": 1,
+                                "sentMailboxId": 6,
+                                "from": "alice@example.com",
+                                "fromName": "Work",
+                                "sentPath": "Sent"
+                            },
+                            "mail": {
+                                "to": [
+                                    "bob@example.com"
+                                ],
+                                "cc": [
+                                    "carol@example.com"
+                                ],
+                                "bcc": [
+                                    "auditoria@example.com"
+                                ],
+                                "subject": "Proposta revisada",
+                                "body": "Olá Bob,\nsegue a proposta revisada."
+                            },
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "notes": [
+                                "This message may go to recipients outside your organization, and sending cannot be undone.",
+                                "“Sent” means the SMTP server of the account accepted the message; it does not mean it was delivered.",
+                                "Each confirmation sends the message again; confirming this plan twice sends it twice."
+                            ],
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "outbox": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "outbox": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Send a mail message**\n\n**This message may go to recipients outside your organization, and sending cannot be undone.**\n\nSend from alice@example.com\n- To: bob@example.com\n- Cc: carol@example.com\n- Bcc: auditoria@example.com\n- Subject: **Proposta revisada**\n\n> Olá Bob,\n> segue a proposta revisada.\n\n*“Sent” means the SMTP server of the account accepted the message; it does not mean it was delivered.*\n*Each confirmation sends the message again; confirming this plan twice sends it twice.*\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "mail_send_message",
+                            "title": "Send a mail message",
+                            "action": "mail_send_message",
+                            "target": {
+                                "accountId": 1,
+                                "sentMailboxId": 6,
+                                "from": "alice@example.com",
+                                "fromName": "Work",
+                                "sentPath": "Sent"
+                            },
+                            "mail": {
+                                "to": [
+                                    "bob@example.com"
+                                ],
+                                "cc": [
+                                    "carol@example.com"
+                                ],
+                                "bcc": [
+                                    "auditoria@example.com"
+                                ],
+                                "subject": "Proposta revisada",
+                                "body": "Olá Bob,\nsegue a proposta revisada."
+                            },
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "notes": [
+                                "This message may go to recipients outside your organization, and sending cannot be undone.",
+                                "“Sent” means the SMTP server of the account accepted the message; it does not mean it was delivered.",
+                                "Each confirmation sends the message again; confirming this plan twice sends it twice."
+                            ],
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "outbox": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Send a mail message**\n\n**This message may go to recipients outside your organization, and sending cannot be undone.**\n\nSend from alice@example.com\n- To: bob@example.com\n- Cc: carol@example.com\n- Bcc: auditoria@example.com\n- Subject: **Proposta revisada**\n\n> Olá Bob,\n> segue a proposta revisada.\n\n*“Sent” means the SMTP server of the account accepted the message; it does not mean it was delivered.*\n*Each confirmation sends the message again; confirming this plan twice sends it twice.*\n\n### Warnings\n\n- The account, its address, its Sent folder or the message is not what the user approved; nothing was sent. Show this new plan and ask again.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "mail_send_message",
+                            "title": "Send a mail message",
+                            "action": "mail_send_message",
+                            "target": {
+                                "accountId": 1,
+                                "sentMailboxId": 9,
+                                "from": "alice@example.com",
+                                "fromName": "Work",
+                                "sentPath": "Enviados"
+                            },
+                            "mail": {
+                                "to": [
+                                    "bob@example.com"
+                                ],
+                                "cc": [
+                                    "carol@example.com"
+                                ],
+                                "bcc": [
+                                    "auditoria@example.com"
+                                ],
+                                "subject": "Proposta revisada",
+                                "body": "Olá Bob,\nsegue a proposta revisada."
+                            },
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "notes": [
+                                "This message may go to recipients outside your organization, and sending cannot be undone.",
+                                "“Sent” means the SMTP server of the account accepted the message; it does not mean it was delivered.",
+                                "Each confirmation sends the message again; confirming this plan twice sends it twice."
+                            ],
+                            "plan_state": "<plan_state#2>",
+                            "warnings": [
+                                {
+                                    "message": "The account, its address, its Sent folder or the message is not what the user approved; nothing was sent. Show this new plan and ask again."
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "outbox": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada."
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Send a mail message**\n\n**This message may go to recipients outside your organization, and sending cannot be undone.**\n\nSend from alice@example.com\n- To: bob@example.com\n- Cc: carol@example.com\n- Bcc: auditoria@example.com\n- Subject: **Proposta revisada**\n\n> Olá Bob,\n> segue a proposta revisada.\n\n*“Sent” means the SMTP server of the account accepted the message; it does not mean it was delivered.*\n*Each confirmation sends the message again; confirming this plan twice sends it twice.*\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "mail_send_message",
+                            "title": "Send a mail message",
+                            "action": "mail_send_message",
+                            "target": {
+                                "accountId": 1,
+                                "sentMailboxId": 9,
+                                "from": "alice@example.com",
+                                "fromName": "Work",
+                                "sentPath": "Enviados"
+                            },
+                            "mail": {
+                                "to": [
+                                    "bob@example.com"
+                                ],
+                                "cc": [
+                                    "carol@example.com"
+                                ],
+                                "bcc": [
+                                    "auditoria@example.com"
+                                ],
+                                "subject": "Proposta revisada",
+                                "body": "Olá Bob,\nsegue a proposta revisada."
+                            },
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "notes": [
+                                "This message may go to recipients outside your organization, and sending cannot be undone.",
+                                "“Sent” means the SMTP server of the account accepted the message; it does not mean it was delivered.",
+                                "Each confirmation sends the message again; confirming this plan twice sends it twice."
+                            ],
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "outbox": [],
+                "calls": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"accountId\": 1,\n    \"outcome\": \"sent\",\n    \"sent\": true,\n    \"copiedToSent\": true,\n    \"message\": \"The SMTP server of the account accepted the message and the Mail app saved a copy in Sent. This does not mean it was delivered.\",\n    \"messageIdHeader\": \"<sent-700@example.com>\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "outbox": [
+                    {
+                        "id": 700,
+                        "type": 0,
+                        "accountId": 1,
+                        "subject": "Proposta revisada",
+                        "body": "Olá Bob,\nsegue a proposta revisada.",
+                        "sendAt": null,
+                        "to": [
+                            {
+                                "email": "bob@example.com",
+                                "label": "bob@example.com"
+                            }
+                        ],
+                        "cc": [
+                            {
+                                "email": "carol@example.com",
+                                "label": "carol@example.com"
+                            }
+                        ],
+                        "bcc": [
+                            {
+                                "email": "auditoria@example.com",
+                                "label": "auditoria@example.com"
+                            }
+                        ],
+                        "attachments": []
+                    }
+                ],
+                "calls": [
+                    "outbox:save",
+                    "outbox:send"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "outbox": [
+                    {
+                        "id": 700,
+                        "type": 0,
+                        "accountId": 1,
+                        "subject": "Proposta revisada",
+                        "body": "Olá Bob,\nsegue a proposta revisada.",
+                        "sendAt": null,
+                        "to": [
+                            {
+                                "email": "bob@example.com",
+                                "label": "bob@example.com"
+                            }
+                        ],
+                        "cc": [
+                            {
+                                "email": "carol@example.com",
+                                "label": "carol@example.com"
+                            }
+                        ],
+                        "bcc": [
+                            {
+                                "email": "auditoria@example.com",
+                                "label": "auditoria@example.com"
+                            }
+                        ],
+                        "attachments": []
+                    }
+                ],
+                "calls": [
+                    "outbox:save",
+                    "outbox:send"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada."
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "outbox": [
+                    {
+                        "id": 700,
+                        "type": 0,
+                        "accountId": 1,
+                        "subject": "Proposta revisada",
+                        "body": "Olá Bob,\nsegue a proposta revisada.",
+                        "sendAt": null,
+                        "to": [
+                            {
+                                "email": "bob@example.com",
+                                "label": "bob@example.com"
+                            }
+                        ],
+                        "cc": [
+                            {
+                                "email": "carol@example.com",
+                                "label": "carol@example.com"
+                            }
+                        ],
+                        "bcc": [
+                            {
+                                "email": "auditoria@example.com",
+                                "label": "auditoria@example.com"
+                            }
+                        ],
+                        "attachments": []
+                    }
+                ],
+                "calls": [
+                    "outbox:save",
+                    "outbox:send"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "account_id": 1,
+                "to": [
+                    "bob@example.com"
+                ],
+                "cc": [
+                    "carol@example.com"
+                ],
+                "bcc": [
+                    "auditoria@example.com"
+                ],
+                "subject": "Proposta revisada",
+                "body": "Olá Bob,\nsegue a proposta revisada.",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "outbox": [
+                    {
+                        "id": 700,
+                        "type": 0,
+                        "accountId": 1,
+                        "subject": "Proposta revisada",
+                        "body": "Olá Bob,\nsegue a proposta revisada.",
+                        "sendAt": null,
+                        "to": [
+                            {
+                                "email": "bob@example.com",
+                                "label": "bob@example.com"
+                            }
+                        ],
+                        "cc": [
+                            {
+                                "email": "carol@example.com",
+                                "label": "carol@example.com"
+                            }
+                        ],
+                        "bcc": [
+                            {
+                                "email": "auditoria@example.com",
+                                "label": "auditoria@example.com"
+                            }
+                        ],
+                        "attachments": []
+                    }
+                ],
+                "calls": [
+                    "outbox:save",
+                    "outbox:send"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Mail messages live in the Mail app, not in Files: no system tag or excluded folder can hide an account or its Sent folder from MCP"
+        }
+    ]
+}

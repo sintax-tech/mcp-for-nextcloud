@@ -1,0 +1,273 @@
+{
+    "tool": "files_create",
+    "guest": {
+        "apps": [
+            "files"
+        ],
+        "hidesExternalStorage": true
+    },
+    "steps": [
+        {
+            "step": "regular-plan",
+            "arguments": {
+                "path": "/Externo/primeiro.txt",
+                "content": "linha\n",
+                "confirm_shared": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create text file**\n\nCreate the text file **/Externo/primeiro.txt**.\n\n- Inside: **/Externo**\n- Size: 6 B\n- Nothing is overwritten: if a file with this name already exists, with content, nothing is written.\n- It is on external storage.\n- Because other people are affected, an extra confirmation of the shared content is needed.\n\nContent:\n> linha\n\nNothing was changed. Confirm to execute.\n\n*After your approval the new text file below is created.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_create",
+                            "title": "Create text file",
+                            "action": "files_create",
+                            "path": "/Externo/primeiro.txt",
+                            "name": "primeiro.txt",
+                            "folder": "/Externo",
+                            "size": 6,
+                            "preview": "linha\n",
+                            "previewTruncated": false,
+                            "access": {
+                                "scope": "external",
+                                "owner": "pedro",
+                                "ownerDisplayName": "Paulo Exemplo",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [
+                                {
+                                    "requiresConfirmation": true,
+                                    "scope": "external",
+                                    "owner": "pedro",
+                                    "ownerDisplayName": "Paulo Exemplo",
+                                    "resource": "/Externo/primeiro.txt",
+                                    "message": "This file is on an external storage. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                                }
+                            ],
+                            "requiresSharedConfirmation": true,
+                            "recoverable": true,
+                            "consequence": "Nothing is overwritten: if a file with this name already exists, with content, nothing is written.",
+                            "message": "Nothing was changed. After your approval the new text file below is created."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": [],
+                "ops": []
+            }
+        },
+        {
+            "step": "regular-confirmed",
+            "arguments": {
+                "path": "/Externo/primeiro.txt",
+                "content": "linha\n",
+                "confirm_shared": true,
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"path\": \"/Externo/primeiro.txt\",\n    \"size\": 6,\n    \"etag\": \"e103+\",\n    \"fileId\": 103,\n    \"access\": {\n        \"scope\": \"personal\",\n        \"owner\": \"alice\",\n        \"ownerDisplayName\": \"Alice\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        }\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "files": [
+                    "/alice/files/Externo/primeiro.txt"
+                ],
+                "ops": [
+                    "create /alice/files/Externo/primeiro.txt",
+                    "write /alice/files/Externo/primeiro.txt"
+                ]
+            }
+        },
+        {
+            "step": "guest-plan",
+            "arguments": {
+                "path": "/Externo/segundo.txt",
+                "content": "linha\n",
+                "confirm_shared": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud. If the destination folder does not exist yet, create it first with files_mkdir."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "files": [
+                    "/alice/files/Externo/primeiro.txt"
+                ],
+                "ops": [
+                    "create /alice/files/Externo/primeiro.txt",
+                    "write /alice/files/Externo/primeiro.txt"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "path": "/Externo/segundo.txt",
+                "content": "linha\n",
+                "confirm_shared": true,
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud. If the destination folder does not exist yet, create it first with files_mkdir."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "files": [
+                    "/alice/files/Externo/primeiro.txt"
+                ],
+                "ops": [
+                    "create /alice/files/Externo/primeiro.txt",
+                    "write /alice/files/Externo/primeiro.txt"
+                ]
+            }
+        },
+        {
+            "step": "guest-own-home-plan",
+            "arguments": {
+                "path": "/Documentos/proprio.txt",
+                "content": "linha\n",
+                "confirm_shared": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create text file**\n\nCreate the text file **/Documentos/proprio.txt**.\n\n- Inside: **/Documentos**\n- Size: 6 B\n- Nothing is overwritten: if a file with this name already exists, with content, nothing is written.\n\nContent:\n> linha\n\nNothing was changed. Confirm to execute.\n\n*After your approval the new text file below is created.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_create",
+                            "title": "Create text file",
+                            "action": "files_create",
+                            "path": "/Documentos/proprio.txt",
+                            "name": "proprio.txt",
+                            "folder": "/Documentos",
+                            "size": 6,
+                            "preview": "linha\n",
+                            "previewTruncated": false,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "consequence": "Nothing is overwritten: if a file with this name already exists, with content, nothing is written.",
+                            "message": "Nothing was changed. After your approval the new text file below is created."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": [
+                    "/alice/files/Externo/primeiro.txt"
+                ],
+                "ops": [
+                    "create /alice/files/Externo/primeiro.txt",
+                    "write /alice/files/Externo/primeiro.txt"
+                ]
+            }
+        },
+        {
+            "step": "guest-own-home-confirmed",
+            "arguments": {
+                "path": "/Documentos/proprio.txt",
+                "content": "linha\n",
+                "confirm_shared": true,
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"path\": \"/Documentos/proprio.txt\",\n    \"size\": 6,\n    \"etag\": \"e104+\",\n    \"fileId\": 104,\n    \"access\": {\n        \"scope\": \"personal\",\n        \"owner\": \"alice\",\n        \"ownerDisplayName\": \"Alice\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        }\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "files": [
+                    "/alice/files/Externo/primeiro.txt",
+                    "/alice/files/Documentos/proprio.txt"
+                ],
+                "ops": [
+                    "create /alice/files/Externo/primeiro.txt",
+                    "write /alice/files/Externo/primeiro.txt",
+                    "create /alice/files/Documentos/proprio.txt",
+                    "write /alice/files/Documentos/proprio.txt"
+                ]
+            }
+        }
+    ]
+}

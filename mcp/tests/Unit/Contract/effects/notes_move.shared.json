@@ -1,0 +1,73 @@
+{
+    "steps": [
+        {
+            "step": "shared-unconfirmed",
+            "request": {
+                "category": "Archive",
+                "id": 102,
+                "etag": "<etag#1>",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"requiresConfirmation\": true,\n    \"scope\": \"team\",\n    \"owner\": \"pedro\",\n    \"ownerDisplayName\": \"Paulo Exemplo\",\n    \"teamFolder\": \"Team\",\n    \"resource\": \"102\",\n    \"message\": \"This file is in the team folder 'Team' (Team Folder). Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true.\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Team": "dir #101",
+                    "/alice/files/Team/old.md": "#102 old"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "shared-confirmed",
+            "request": {
+                "category": "Archive",
+                "id": 102,
+                "etag": "<etag#1>",
+                "confirm": true,
+                "confirm_shared": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"id\": 102,\n    \"title\": \"old\",\n    \"category\": \"Archive\",\n    \"modified\": 1759200102,\n    \"etag\": \"e102\",\n    \"access\": {\n        \"scope\": \"team\",\n        \"owner\": \"pedro\",\n        \"ownerDisplayName\": \"Paulo Exemplo\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        },\n        \"teamFolder\": \"Team\"\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Team": "dir #101",
+                    "/alice/files/Team/Archive": "dir #103",
+                    "/alice/files/Team/Archive/old.md": "#102 old"
+                },
+                "ops": [
+                    "mkdir /alice/files/Team/Archive",
+                    "move /alice/files/Team/old.md /alice/files/Team/Archive/old.md"
+                ]
+            }
+        }
+    ]
+}

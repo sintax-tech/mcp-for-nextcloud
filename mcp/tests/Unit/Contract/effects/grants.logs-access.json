@@ -1,0 +1,270 @@
+{
+    "flow": "grants.logs-access",
+    "steps": [
+        {
+            "step": "initial",
+            "state": {
+                "logs": {
+                    "groups": [],
+                    "version": 0
+                },
+                "carla passes the gate": false,
+                "revision": "6"
+            }
+        },
+        {
+            "step": "groups not a list: 400",
+            "request": {
+                "route": "grants#updateLogsAccess",
+                "user": "root",
+                "body": {
+                    "groups": "sales",
+                    "previous": [],
+                    "version": 0,
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "logs": {
+                    "groups": [],
+                    "version": 0
+                },
+                "carla passes the gate": false,
+                "revision": "6"
+            }
+        },
+        {
+            "step": "negative version: 400",
+            "request": {
+                "route": "grants#updateLogsAccess",
+                "user": "root",
+                "body": {
+                    "groups": [
+                        "sales"
+                    ],
+                    "previous": [],
+                    "version": -1,
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 400,
+                "json": {
+                    "error": "Invalid request"
+                }
+            },
+            "state": {
+                "logs": {
+                    "groups": [],
+                    "version": 0
+                },
+                "carla passes the gate": false,
+                "revision": "6"
+            }
+        },
+        {
+            "step": "without expectedRevision: 428",
+            "request": {
+                "route": "grants#updateLogsAccess",
+                "user": "root",
+                "body": {
+                    "groups": [
+                        "sales"
+                    ],
+                    "previous": [],
+                    "version": 0
+                }
+            },
+            "response": {
+                "status": 428,
+                "json": {
+                    "error": "PreconditionRequired"
+                }
+            },
+            "state": {
+                "logs": {
+                    "groups": [],
+                    "version": 0
+                },
+                "carla passes the gate": false,
+                "revision": "6"
+            }
+        },
+        {
+            "step": "outdated list version: 409",
+            "request": {
+                "route": "grants#updateLogsAccess",
+                "user": "root",
+                "body": {
+                    "groups": [
+                        "sales"
+                    ],
+                    "previous": [],
+                    "version": 7,
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 409,
+                "json": {
+                    "error": "Conflict",
+                    "revision": "6",
+                    "state": {
+                        "groups": [],
+                        "version": 0,
+                        "revision": "6",
+                        "missing": [],
+                        "allGroups": [
+                            {
+                                "id": "sales",
+                                "displayName": "Sales"
+                            },
+                            {
+                                "id": "admin",
+                                "displayName": "Admin"
+                            }
+                        ],
+                        "available": true,
+                        "logType": "file"
+                    }
+                }
+            },
+            "state": {
+                "logs": {
+                    "groups": [],
+                    "version": 0
+                },
+                "carla passes the gate": false,
+                "revision": "6"
+            }
+        },
+        {
+            "step": "writer unusable: 503",
+            "request": {
+                "route": "grants#updateLogsAccess",
+                "user": "root",
+                "body": {
+                    "groups": [
+                        "sales"
+                    ],
+                    "previous": [],
+                    "version": 0,
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 503,
+                "json": {
+                    "error": "Unavailable",
+                    "uncertain": false
+                }
+            },
+            "state": {
+                "logs": {
+                    "groups": [],
+                    "version": 0
+                },
+                "carla passes the gate": false,
+                "revision": "6"
+            }
+        },
+        {
+            "step": "sales may read the log",
+            "request": {
+                "route": "grants#updateLogsAccess",
+                "user": "root",
+                "body": {
+                    "groups": [
+                        "sales"
+                    ],
+                    "previous": [],
+                    "version": 0,
+                    "expectedRevision": "6"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "groups": [
+                        "sales"
+                    ],
+                    "version": 1,
+                    "revision": "7",
+                    "missing": [],
+                    "allGroups": [
+                        {
+                            "id": "sales",
+                            "displayName": "Sales"
+                        },
+                        {
+                            "id": "admin",
+                            "displayName": "Admin"
+                        }
+                    ],
+                    "available": true,
+                    "logType": "file"
+                }
+            },
+            "state": {
+                "logs": {
+                    "groups": [
+                        "sales"
+                    ],
+                    "version": 1
+                },
+                "carla passes the gate": true,
+                "revision": "7"
+            }
+        },
+        {
+            "step": "emptied: administrators only",
+            "request": {
+                "route": "grants#updateLogsAccess",
+                "user": "root",
+                "body": {
+                    "groups": [],
+                    "previous": [
+                        "sales"
+                    ],
+                    "version": 1,
+                    "expectedRevision": "7"
+                }
+            },
+            "response": {
+                "status": 200,
+                "json": {
+                    "groups": [],
+                    "version": 2,
+                    "revision": "8",
+                    "missing": [],
+                    "allGroups": [
+                        {
+                            "id": "sales",
+                            "displayName": "Sales"
+                        },
+                        {
+                            "id": "admin",
+                            "displayName": "Admin"
+                        }
+                    ],
+                    "available": true,
+                    "logType": "file"
+                }
+            },
+            "state": {
+                "logs": {
+                    "groups": [],
+                    "version": 2
+                },
+                "carla passes the gate": false,
+                "revision": "8"
+            }
+        }
+    ]
+}

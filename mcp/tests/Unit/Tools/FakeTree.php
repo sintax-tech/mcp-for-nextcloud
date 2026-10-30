@@ -284,9 +284,10 @@ final class FakeTree {
             if ($this->beforeGet !== null) {
                 ($this->beforeGet)($path . '/' . ltrim($rel, '/'));
             }
-            return $this->node($path . '/' . ltrim($rel, '/'));
+            // Like Nextcloud, an empty relative path is the folder itself.
+            return $this->node(rtrim($path . '/' . ltrim($rel, '/'), '/'));
         });
-        $folder->method('nodeExists')->willReturnCallback(fn (string $rel) => isset($this->nodes[$path . '/' . ltrim($rel, '/')]));
+        $folder->method('nodeExists')->willReturnCallback(fn (string $rel) => isset($this->nodes[rtrim($path . '/' . ltrim($rel, '/'), '/')]));
         $folder->method('getDirectoryListing')->willReturnCallback(function () use ($path): array {
             $this->listings[] = $path;
             ($this->beforeListing)?->__invoke($path);

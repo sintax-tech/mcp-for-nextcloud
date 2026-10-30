@@ -52,26 +52,34 @@ final class NotesFolderResolver {
 	 * Order: the `notesPath` the Notes app stored in its settings JSON; the older standalone `notes`/`notesPath`
 	 * value; then the app's default folder as the app resolves it ({@see self::defaultPath()}).
 	 *
+	 * An empty `notesPath` in the JSON is a choice, not an absence: picking "/" in the Notes app stores '' and the app
+	 * then keeps the notes in the root of the user's files. It is returned as '', which the path guard turns into the
+	 * user's folder itself.
+	 *
 	 * @param string $userId Authenticated user.
-	 * @return string Path relative to the user's folder, not yet normalized.
+	 * @return string Path relative to the user's folder, not yet normalized; '' is the root of the user's files.
 	 */
 	public function path(string $userId): string {
-		$configured = $this->configuredPath($userId);
-		return $configured !== '' ? $configured : $this->defaultPath($userId);
+		return $this->configuredPath($userId) ?? $this->defaultPath($userId);
 	}
 
 	/**
-	 * The folder the user explicitly configured, or '' when none was stored.
+	 * The folder the user explicitly configured, or null when none was stored.
+	 *
+	 * The settings JSON wins whenever it holds a string `notesPath`, empty included. The standalone value predates it
+	 * and is read only when the JSON has none; there an empty value cannot be told from a missing one, so it counts as
+	 * absent.
 	 *
 	 * @param string $userId Authenticated user.
-	 * @return string Stored path, '' when absent or empty.
+	 * @return string|null Stored path ('' for the root of the user's files), null when nothing was configured.
 	 */
-	private function configuredPath(string $userId): string {
+	private function configuredPath(string $userId): ?string {
 		$settings = json_decode((string)$this->config->getUserValue($userId, self::NOTES_APP, 'settings', ''), true);
-		if (is_array($settings) && is_string($settings['notesPath'] ?? null) && trim($settings['notesPath']) !== '') {
+		if (is_array($settings) && is_string($settings['notesPath'] ?? null)) {
 			return $settings['notesPath'];
 		}
-		return trim((string)$this->config->getUserValue($userId, self::NOTES_APP, 'notesPath', ''));
+		$standalone = trim((string)$this->config->getUserValue($userId, self::NOTES_APP, 'notesPath', ''));
+		return $standalone !== '' ? $standalone : null;
 	}
 
 	/**

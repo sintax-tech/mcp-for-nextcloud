@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files\Handler;
 
+use OCA\Mcp\Service\Policy\PolicyUnavailable;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\PathGuard;
@@ -18,12 +19,13 @@ use OCA\Mcp\Tools\Files\SearchBinaryOperator;
 use OCA\Mcp\Tools\Files\SearchComparison;
 use OCA\Mcp\Tools\Files\SearchOrder;
 use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Tools\ToolRegistry;
 use OCP\Files\File;
 use OCP\Files\Folder;
-use OCP\Files\NotFoundException;
 use OCP\Files\Search\ISearchComparison;
 use OCP\Files\Search\ISearchOrder;
 use OCP\IDBConnection;
+use OCP\Lock\LockedException;
 use OCP\IUserManager;
 use OCP\SystemTag\ISystemTag;
 use OCP\SystemTag\ISystemTagManager;
@@ -33,14 +35,11 @@ use Psr\Log\LoggerInterface;
 
 /** Executes files_image_search while distinguishing unresolved filters from empty matches. */
 final class ImageSearchHandler {
-	/** Object type used by Nextcloud system tags for files. */
-	private const TAG_OBJECT_TYPE = 'files';
-
 	/**
 	 * @param ISystemTagManager $tagManager Reads user-visible tags.
 	 * @param ISystemTagObjectMapper $tagMapper Resolves tagged file IDs.
 	 * @param IUserManager $userManager Resolves the authenticated search user.
-	 * @param LoggerInterface $logger Reports truncated tag searches.
+	 * @param LoggerInterface $logger Reports truncated searches and sanitized backend failures.
 	 * @param IDBConnection $db Escapes filename filters.
 	 * @param \Closure(Folder, string, File): array<string, mixed> $entry Shared image metadata builder.
 	 * @param FilesAccessGuard|null $visibilityGuard Enforces MCP file visibility.
@@ -64,6 +63,8 @@ final class ImageSearchHandler {
 	 * @param array{query?:string, folder?:string, modified_after?:string, modified_before?:string, tag?:string, limit:int} $args Validated tool arguments.
 	 * @return list<array<string, mixed>>
 	 * @throws ToolFailure For an invalid folder, date, unresolved tag or backend failure.
+	 * @throws PolicyUnavailable When the visibility policy cannot be read.
+	 * @throws LockedException When Nextcloud reports a locked resource.
 	 */
 	public function execute(Folder $root, string $userId, array $args): array {
 		$limit = max(1, min(ImageTools::SEARCH_MAX_LIMIT, (int)$args['limit']));
@@ -84,9 +85,15 @@ final class ImageSearchHandler {
 				return $this->searchByTag($root, $scope, $userId, $tag, $query, $after, $before, $limit);
 			}
 			return $this->searchByQuery($root, $scope, $userId, $query, $after, $before, $limit);
-		} catch (ToolFailure $e) {
+		} catch (ToolFailure|PolicyUnavailable|LockedException $e) {
 			throw $e;
 		} catch (\Throwable $e) {
+			$this->logger->error('Image search failed', [
+				'app' => 'mcp',
+				'tool' => 'files_image_search',
+				'exception_class' => $e::class,
+				'exception_message' => ToolRegistry::loggable($e),
+			]);
 			throw new ToolFailure(ImageSearchMessages::failed(), 0, $e);
 		}
 	}
@@ -103,7 +110,8 @@ final class ImageSearchHandler {
 	 * @param int $limit Maximum returned entries.
 	 * @param string $tagName Exact visible tag name.
 	 * @return list<array<string, mixed>> Image metadata.
-	 * @throws ToolFailure When the filter cannot be resolved or the backend fails.
+	 * @throws ToolFailure When the filter cannot be resolved.
+	 * @throws \Throwable Backend, policy and lock failures handled by execute.
 	 */
 	private function searchByTag(
 		Folder $root,
@@ -121,7 +129,7 @@ final class ImageSearchHandler {
 		}
 
 		try {
-			$rawIds = $this->tagMapper->getObjectIdsForTags($tag->getId(), self::TAG_OBJECT_TYPE);
+			$rawIds = $this->tagMapper->getObjectIdsForTags($tag->getId(), ImageTools::TAG_OBJECT_TYPE);
 		} catch (TagNotFoundException $e) {
 			throw new ToolFailure(ImageSearchMessages::tagNotFound(), 0, $e);
 		}
@@ -144,7 +152,9 @@ final class ImageSearchHandler {
 		foreach ($rawIds as $id) {
 			try {
 				$nodes = $scope->getById((int)$id);
-			} catch (NotFoundException) {
+			} catch (PolicyUnavailable|LockedException $e) {
+				throw $e;
+			} catch (\Throwable) {
 				continue;
 			}
 			foreach ($nodes as $node) {
@@ -155,7 +165,7 @@ final class ImageSearchHandler {
 					continue;
 				}
 				$mime = (string)$node->getMimetype();
-				if (!str_starts_with(strtolower($mime), 'image/') && strtolower($mime) !== 'application/pdf') {
+				if (!ImageTools::looksLikeImage($mime)) {
 					continue;
 				}
 				if ($query !== '' && stripos($node->getName(), $query) === false) {
@@ -189,7 +199,8 @@ final class ImageSearchHandler {
 	 * @param int|null $before Upper mtime bound.
 	 * @param int $limit Maximum returned entries.
 	 * @return list<array<string, mixed>> Image metadata.
-	 * @throws ToolFailure When the filter cannot be resolved or the backend fails.
+	 * @throws ToolFailure When the filter cannot be resolved.
+	 * @throws \Throwable Backend, policy and lock failures handled by execute.
 	 */
 	private function searchByQuery(
 		Folder $root,
@@ -271,7 +282,7 @@ final class ImageSearchHandler {
 	 *
 	 * @param string $tagName Requested tag name.
 	 * @return ISystemTag|null Visible match, or null for both absent and invisible tags.
-	 * @throws \Throwable When querying the tag backend fails; execute translates it into ToolFailure.
+	 * @throws \Throwable When querying the tag backend fails; execute preserves policy/lock failures.
 	 */
 	private function findTag(string $tagName): ?ISystemTag {
 		foreach ($this->tagManager->getAllTags(true, $tagName) as $tag) {

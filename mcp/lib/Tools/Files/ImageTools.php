@@ -63,7 +63,7 @@ final class ImageTools {
     /** Service id of the Files Metadata manager; resolved lazily so the app loads without it. */
     private const METADATA_SERVICE = 'OCP\\FilesMetadata\\IFilesMetadataManager';
     /** Object type used by the Tags app for files. */
-    private const TAG_OBJECT_TYPE = 'files';
+    public const TAG_OBJECT_TYPE = 'files';
 
     public function __construct(
         private IPreview $preview,
@@ -429,7 +429,7 @@ final class ImageTools {
     }
 
     /** @return bool whether the mimetype belongs to the image/* family or is a PDF (previews only). */
-    private static function looksLikeImage(string $mime): bool {
+    public static function looksLikeImage(string $mime): bool {
         $mime = strtolower($mime);
         return str_starts_with($mime, 'image/') || $mime === 'application/pdf';
     }

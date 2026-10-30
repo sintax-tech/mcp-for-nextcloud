@@ -74,11 +74,12 @@ final class MoveEquivalence {
 			$difference = $source->firstDifference($normalized[$new]);
 			if ($difference !== null) {
 				[$oldLine, $oldToken, $newLine, $newToken] = $difference;
-				$this->problems[] = "$new: not equivalent to $old: line $oldLine `$oldToken` became line $newLine `$newToken`";
+				$reason = str_starts_with($oldToken, 'P:') || str_starts_with($newToken, 'P:') ? ' (path not proved)' : '';
+				$this->problems[] = "$new: not equivalent to $old: line $oldLine `$oldToken` became line $newLine `$newToken`$reason";
 			}
-			if ($old !== $new) {
-				foreach ($source->located as [$line, $construct]) {
-					$this->problems[] = "$new: line $line of $old uses $construct, whose value depends on the file's folder or namespace; the move changes them and the value cannot be proved the same";
+			if (dirname($old) !== dirname($new) || $this->beforeIndex->declaredIn($old) !== $this->afterIndex->declaredIn($new)) {
+				foreach (array_unique([...$source->located, ...$normalized[$new]->located], SORT_REGULAR) as [$line, $construct]) {
+					$this->problems[] = "$new: line $line of $old uses $construct, whose value depends on the file's folder or namespace; the move changes them and the value cannot be proved the same (path not proved)";
 				}
 			}
 		}
@@ -184,8 +185,8 @@ final class MoveEquivalence {
 	 * Reports every reference in the new tree that still names a class retired in the range (declared in the old
 	 * tree, or renamed by it, and no longer declared in the new one), and every reference of a changed file to a
 	 * planned name that no file declares. Unchanged files may name planned destinations (fixtures, documentation
-	 * data) without being stale. A string, or a folded `__DIR__` path, that contains the old path of a file moved in
-	 * the range is stale too (a test that reads `lib/Service/X.php` from disk).
+	 * data) without being stale. Whole paths in known filesystem path arguments are checked for retired files;
+	 * arbitrary strings are not treated as filesystem accesses (see PathSafety).
 	 *
 	 * @param TokenNormalizer $normalizer normalizer of the new tree
 	 * @param array<string,NormalizedSource> $normalized files already normalized, by path
@@ -199,7 +200,7 @@ final class MoveEquivalence {
 			$source = $normalized[$path] ?? $normalizer->normalize($content, [], $path);
 			foreach ($source->strings as [$value, $line]) {
 				foreach (array_keys($this->pairs) as $moved) {
-					if (str_contains($value, $moved)) {
+					if (PathSafety::names($value, $moved)) {
 						$this->problems[] = "$path:$line: still refers to the file $moved, moved to {$this->pairs[$moved]} in this range";
 					}
 				}

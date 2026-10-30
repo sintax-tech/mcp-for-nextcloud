@@ -148,7 +148,7 @@ final class TokenNormalizerTest extends TestCase {
 		$code = "<?php\n\$a = [__DIR__, __FILE__, dirname(__DIR__, 2) . '/lib/X.php', dirname(__FILE__), __DIR__ . '/../y'];\n";
 		$normalizer = new TokenNormalizer(new SourceTreeIndex([]));
 		$paths = array_values(array_filter(array_column($normalizer->normalize($code, [], 'tests/Unit/ATest.php')->stream, 0), static fn (string $t): bool => str_starts_with($t, 'P:')));
-		$this->assertSame(['P:tests/Unit', 'P:tests/Unit/ATest.php', 'P:lib/X.php', 'P:tests/Unit', 'P:tests/y'], $paths);
+		$this->assertSame(['P:tests/Unit|__DIR__', 'P:tests/Unit/ATest.php|__FILE__', 'P:.|dirname(__DIR__)', 'P:tests/Unit|dirname(__FILE__)', 'P:tests/Unit|__DIR__'], $paths);
 		$this->assertContains('T:__DIR__', array_column($normalizer->normalize($code)->stream, 0));
 	}
 

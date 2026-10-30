@@ -22,7 +22,7 @@ namespace OCA\Mcp\Scripts\Dev;
  * their import; a name imported both as class and as constant is compared as both. Functions and constants
  * declared at namespace level, and calls to them, are qualified with the namespace, so moving a file with a free
  * function fails (functions are not in the map). With the file's path, `__DIR__`/`__FILE__` expressions fold to
- * the path they yield ({@see PathExpressions}); a relative `include`/`require` and `__NAMESPACE__` are reported as
+ * the exact root they yield ({@see PathExpressions}), keeping all suffix tokens; unproved path consumers and `__NAMESPACE__` are reported as
  * location-dependent, for the comparator to refuse when the move changes the folder or the namespace.
  *
  * Deliberately not compared: whitespace between tokens, comments and PHPDoc (a type named only in `@param` or
@@ -40,9 +40,6 @@ final class TokenNormalizer {
 
 	/** Tokens after which a name is a member or label name, never a class. */
 	private const MEMBER_PREFIXES = [T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_DOUBLE_COLON, T_GOTO];
-
-	/** Include and require keywords. */
-	private const INCLUDES = [T_INCLUDE, T_INCLUDE_ONCE, T_REQUIRE, T_REQUIRE_ONCE];
 
 	/** Tokens that hold a (possibly qualified) name. */
 	private const NAMES = [T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED, T_NAME_RELATIVE];
@@ -69,7 +66,7 @@ final class TokenNormalizer {
 		$scope = new ImportScope();
 		$stream = [];
 		$references = [];
-		$strings = [];
+		$strings = PathSafety::references($tokens);
 		$located = [];
 		$contexts = [];
 		$pendingClass = false;
@@ -95,22 +92,17 @@ final class TokenNormalizer {
 				array_pop($contexts);
 			}
 			$attribute = self::attributeState($attribute, $id, $text);
-			$folded = $path === null ? null : PathExpressions::fold($tokens, $i, $path);
+			$folded = $path === null || ($attribute !== null && !in_array($id, [T_DIR, T_FILE], true)) ? null : PathExpressions::fold($tokens, $i, $path, $scope, $this->index);
 			if ($folded !== null) {
-				$stream[] = ['P:' . $folded[0], $line];
-				$strings[] = [$folded[0], $line];
+				$stream[] = ['P:' . $folded[0] . '|' . $folded[2], $line];
 				$i = $folded[1];
 				continue;
 			}
 			if ($id === T_NS_C) {
 				$located[] = [$line, '__NAMESPACE__'];
 			}
-			if (in_array($id, self::INCLUDES, true)) {
-				$target = $tokens[$i + 1][0] === null && $tokens[$i + 1][1] === '(' ? $tokens[$i + 2] : $tokens[$i + 1];
-				$value = $target[0] === T_CONSTANT_ENCAPSED_STRING ? PhpStringLiteral::value($target[1]) : '/';
-				if (!str_starts_with($value, '/') && !str_contains($value, '://')) {
-					$located[] = [$line, "relative {$text} '$value'"];
-				}
+			if ($path !== null && ($reason = PathSafety::unproved($tokens, $i, $path, $scope, $this->index)) !== null) {
+				$located[] = [$line, $reason];
 			}
 			if (in_array($id, self::NAMES, true)) {
 				$attributeName = $attribute === [1, 0] && in_array($tokens[$i - 1][1], ['#[', ','], true);
@@ -118,7 +110,6 @@ final class TokenNormalizer {
 				continue;
 			}
 			if ($id === T_CONSTANT_ENCAPSED_STRING) {
-				$strings[] = [PhpStringLiteral::value($text), $line];
 				$stream[] = [$this->string($text, $renames, $references, $line), $line];
 				continue;
 			}

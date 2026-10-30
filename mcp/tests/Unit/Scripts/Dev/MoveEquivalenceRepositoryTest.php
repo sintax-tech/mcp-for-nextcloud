@@ -65,12 +65,37 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 		$problems = (new MoveEquivalence(self::tree(), $this->promptCatalog(false), self::map()))->check();
 		$this->assertCount(1, $problems);
 		// The old expression reaches a file under the app folder; the same text in the deeper folder reaches tests/.
-		$this->assertMatchesRegularExpression('/^' . preg_quote("$test: not equivalent to ", '/') . '.*: line (\d+) `P:(\S+)` became line \1 `P:tests\/\2`$/', $problems[0]);
+		$this->assertStringStartsWith("$test: not equivalent to ", $problems[0]);
+		$this->assertStringContainsString('`P:.|dirname(__DIR__)` became line 163 `P:tests|dirname(__DIR__)`', $problems[0]);
 	}
 
 	/** The same move passes once the test climbs one more level, `dirname(__DIR__, 4)`: the path is proved the same. */
 	public function testAMoveThatRebasesDirEquivalentlyPasses(): void {
 		$this->assertSame([], (new MoveEquivalence(self::tree(), $this->promptCatalog(true), self::map()))->check());
+	}
+
+	/** The real bootstrap autoload must not accept an inaccessible, lexically cancelling path (R3-A7). */
+	public function testRealAutoloadWithMissingSegmentFails(): void {
+		$after = $this->userTimezone();
+		$path = self::lib(['AppInfo', 'Application']);
+		$after[$path] = str_replace("'/../../vendor/autoload.php'", "'/no-such-r3/../../../vendor/autoload.php'", $after[$path], $count);
+		$this->assertSame(1, $count);
+		$problems = (new MoveEquivalence(self::tree(), $after, self::map()))->check();
+		$this->assertCount(1, $problems);
+		$this->assertStringStartsWith("$path: not equivalent to $path:", $problems[0]);
+	}
+
+	/** The reviewer's unchanged historical description and backup filename both permit the real move (R3-A9). */
+	public function testHistoricalAndBackupDescriptionsPassRealMove(): void {
+		$path = self::lib(['AppInfo', 'Application']);
+		$old = self::lib(['Service', 'UserTimezone']);
+		foreach (["The former path was $old; this is historical text.", "$old.bak"] as $description) {
+			$before = self::tree();
+			$after = $this->userTimezone();
+			$before[$path] .= "\n\$description = '" . $description . "';\n";
+			$after[$path] .= "\n\$description = '" . $description . "';\n";
+			$this->assertSame([], (new MoveEquivalence($before, $after, self::map()))->check(), $description);
+		}
 	}
 
 	/**

@@ -135,13 +135,13 @@ final class MoveEquivalenceTest extends TestCase {
 		$before = $add(self::base(), 'src/Service/VisibilityGuard.php');
 		$after = $add($this->moved(), 'src/Access/Visibility/VisibilityGuard.php');
 		$problems = (new MoveEquivalence($before, $after, self::map()))->check();
-		$this->assertContains("src/Access/Visibility/VisibilityGuard.php: line 8 of src/Service/VisibilityGuard.php uses relative require_once 'helpers.php', whose value depends on the file's folder or namespace; the move changes them and the value cannot be proved the same", $problems);
-		$this->assertContains("src/Access/Visibility/VisibilityGuard.php: line 9 of src/Service/VisibilityGuard.php uses __NAMESPACE__, whose value depends on the file's folder or namespace; the move changes them and the value cannot be proved the same", $problems);
+		$this->assertContains("src/Access/Visibility/VisibilityGuard.php: line 8 of src/Service/VisibilityGuard.php uses relative require_once 'helpers.php', whose value depends on the file's folder or namespace; the move changes them and the value cannot be proved the same (path not proved)", $problems);
+		$this->assertContains("src/Access/Visibility/VisibilityGuard.php: line 9 of src/Service/VisibilityGuard.php uses __NAMESPACE__, whose value depends on the file's folder or namespace; the move changes them and the value cannot be proved the same (path not proved)", $problems);
 	}
 
 	/** A string that still holds the old path of a moved file is stale (a test reading the source from disk). */
 	public function testAStringWithTheOldPathOfAMovedFileFails(): void {
-		$after = $this->moved() + ['spec/Unit/SourceTest.php' => "<?php\nnamespace Acme\\Tests\\Unit;\nfinal class SourceTest {\n\tconst FILE = '/src/Service/VisibilityGuard.php';\n}\n"];
+		$after = $this->moved() + ['spec/Unit/SourceTest.php' => "<?php\nnamespace Acme\\Tests\\Unit;\nfinal class SourceTest {\n\tpublic function read() { return file_get_contents('/src/Service/VisibilityGuard.php'); }\n}\n"];
 		$before = self::base() + ['spec/Unit/SourceTest.php' => $after['spec/Unit/SourceTest.php']];
 		$this->assertSame(['spec/Unit/SourceTest.php:4: still refers to the file src/Service/VisibilityGuard.php, moved to src/Access/Visibility/VisibilityGuard.php in this range'], (new MoveEquivalence($before, $after, self::map()))->check());
 	}

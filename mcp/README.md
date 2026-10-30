@@ -9,9 +9,22 @@ Version for **Nextcloud 32 to 35** (`info.xml` declares 32–35; the API contrac
 
 The exact URL of the instance appears on the administration and personal pages.
 
-## Version 1.2.2
+## What's new in 1.2.2
 
-Version 1.2.2 brings the integrated capabilities below. Earlier changes are preserved in [History](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/HISTORY.md).
+See [the changelog](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/CHANGELOG.md#122--2026-10-29) for the full changes.
+
+- **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Search and read messages and attachment text, open native links, and send, draft, flag or move messages with separate opt-in permissions.
+- **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Read tables and authorized rows; create or edit one row while respecting native permissions and view filters.
+- **Forms ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Read forms and permitted responses, create private forms with initial questions/options, and edit one existing question or option. Broader structure changes remain outside this release.
+- **Polls ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Read polls, permitted results and existing links, and create private text/date polls. Managing existing options and settings remains future work.
+- **Files ([#20](https://github.com/sintax-tech/mcp-for-nextcloud/issues/20)):** Optional deletion of eligible local files and folders, with explicit confirmation. Permanent deletion remains possible; recovery is not guaranteed.
+- **OAuth ([#19](https://github.com/sintax-tech/mcp-for-nextcloud/issues/19)):** Additional public-client identification when the request omits its client ID; no dynamic registration or demonstrated Le Chat fix.
+
+Writes require explicit permissions and confirmation. Plans describe shared impact and relevant native effects; preview is not universally free of platform effects. See the details below for limits. Issue [#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1) remains partially covered.
+
+Earlier releases: see [History](https://github.com/sintax-tech/mcp-for-nextcloud/blob/main/HISTORY.md).
+
+## 1.2.2 scope and permissions
 
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** opt-in message search/reading, attachment text and native links; separate default-denied grants for flags, same-account moves, new plain-text drafts and sending. Reading does not mark messages read. Accounts/folders remain available through `mail.read`; message and attachment access need their own grants.
 - **Tables ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** discover tables/views/columns, read authorized rows and create or edit one row. View filters and native ACLs apply; schema and view writes are later work.
@@ -21,7 +34,6 @@ Version 1.2.2 brings the integrated capabilities below. Earlier changes are pres
 - **OAuth:** only when `client_id` is absent, strict Basic identification of a public client with an empty password can supply it. Existing body values, PKCE and native client validation remain authoritative. This adds neither dynamic client registration nor client-secret authentication and is not a demonstrated fix for Le Chat.
 
 **Plans and platform effects:** requested MCP writes require explicit confirmation and, where returned, the plan's `plan_state`. Files preview starts from the actor's lazy native tree; only a native NotFound reaching its adapter permits full setup and one plan retry. Policy/ACL/scope refusals never permit that retry. Native bootstrap can still normalize received share targets/folders in cold state or on a real miss. Internally mapped misses and `nodeExists=false` can make a preview refuse or predict parents/shared impact differently from the confirmed call, which rechecks permissions and `confirm_shared`. Preview is not universally free of platform effects and does not promise exact parity. Unknown grants fail closed. Issue [#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1) remains only partially covered.
-
 
 ## Optional file deletion (1.2.2)
 

@@ -46,6 +46,17 @@ final class RecordingShares {
 			$this->shares($type), fn (IShare $share): bool => $share->getSharedBy() === $uid
 				&& ($node === null || $share->getNodeId() === (int)$node->getId()))));
 		$manager->method('getSharedWith')->willReturn([]);
+		$manager->method('deleteShare')->willReturnCallback(function (IShare $share): void {
+			$this->created = array_values(array_filter($this->created, fn (int $key): bool => $this->doubles[$key] !== $share));
+		});
+		$manager->method('getShareById')->willReturnCallback(function (string $id): IShare {
+			foreach ($this->created as $key) {
+				if ($this->doubles[$key]->getId() === $id || str_ends_with($id, ':' . $this->doubles[$key]->getId())) {
+					return $this->doubles[$key];
+				}
+			}
+			throw new \RuntimeException('Unknown share');
+		});
 		$manager->method('shareApiEnabled')->willReturn(true);
 		$manager->method('allowGroupSharing')->willReturn(true);
 		return $manager;
@@ -83,6 +94,7 @@ final class RecordingShares {
 				return $share;
 			});
 		}
+		$share->method('getShareTime')->willReturn(new \DateTime('2026-01-02T03:04:05Z'));
 		$share->method('getId')->willReturnCallback(fn (): string => $this->records[$key]['id']);
 		$share->method('getFullId')->willReturnCallback(fn (): string => 'ocinternal:' . $this->records[$key]['id']);
 		$share->method('getShareType')->willReturnCallback(fn (): int => $this->records[$key]['type']);

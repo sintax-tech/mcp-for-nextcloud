@@ -47,6 +47,11 @@ final class NativeDeckMappers {
 			}
 
 			/** {@inheritDoc} */
+			public function findDependenciesForCards(array $cardIds): array {
+				return array_combine($cardIds, array_map(fn (int $id): array => $this->deck->edges[$id] ?? [], $cardIds));
+			}
+
+			/** {@inheritDoc} */
 			public function findBoardId(int $id): ?int {
 				return $this->deck->boardOfCard($id);
 			}

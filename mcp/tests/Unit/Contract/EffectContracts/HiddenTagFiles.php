@@ -49,7 +49,7 @@ final class HiddenTagFiles {
 
 	/** @return VisibilityGuard the plain exclusion guard of one request, as the container autowires it */
 	public function visibility(): VisibilityGuard {
-		return new VisibilityGuard($this->gate->config(), $this->tags(), $this->tree->filesystemRoot());
+		return new VisibilityGuard($this->gate->config(), $this->tags(), $this->filesystem());
 	}
 
 	/** @return FilesScope the resource scope of the gate policy (unrestricted: no scope is configured) */
@@ -59,7 +59,7 @@ final class HiddenTagFiles {
 
 	/** @return FilesAccessGuard the Files gate of one request: exclusion and resource scope */
 	public function access(): FilesAccessGuard {
-		return new FilesAccessGuard($this->gate->config(), $this->tags(), $this->tree->filesystemRoot(), null, null, null,
+		return new FilesAccessGuard($this->gate->config(), $this->tags(), $this->filesystem(), null, null, null,
 			$this->scope());
 	}
 
@@ -68,7 +68,9 @@ final class HiddenTagFiles {
 		return new FilesReferenceScope($this->scope());
 	}
 
-	/** @return ISystemTagObjectMapper the tag mapper answering the hidden tag for the ids in {@see self::$hidden} */
+	/**
+	 * @return ISystemTagObjectMapper the tag mapper answering the hidden tag for the ids in {@see self::$hidden}
+	 */
 	private function tags(): ISystemTagObjectMapper {
 		$tags = $this->mock(ISystemTagObjectMapper::class);
 		$tags->method('getTagIdsForObjects')->willReturnCallback(fn (array $ids): array => array_combine(
@@ -76,6 +78,13 @@ final class HiddenTagFiles {
 			array_map(fn ($id): array => in_array((int)$id, $this->hidden, true) ? [self::HIDDEN_TAG] : [], $ids),
 		));
 		return $tags;
+	}
+
+	/** @return IRootFolder canonical parent resolution across a mount boundary, as core's root supplies it */
+	private function filesystem(): IRootFolder {
+		$root = $this->tree->filesystemRoot();
+		$root->method('get')->willReturnCallback(fn (string $path) => $this->tree->node($path));
+		return $root;
 	}
 
 	/**

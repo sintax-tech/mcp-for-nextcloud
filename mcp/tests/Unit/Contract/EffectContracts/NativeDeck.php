@@ -54,6 +54,8 @@ final class NativeDeck {
 	public array $labels = [];
 	/** @var array<int, list<int>> label ids assigned to each card, by card id */
 	public array $cardLabels = [];
+	/** @var array<int, list<int>> native outgoing dependency ids */
+	public array $edges = [];
 	/** @var list<array{call:string, as:string|null, args:list<mixed>}> native writes, in order */
 	public array $writes = [];
 

@@ -192,6 +192,22 @@ final class TalkFakeChatManager {
 	}
 
 	/**
+	 * @param TalkFakeRoom $room target room
+	 * @param TalkFakeParticipant $participant sender
+	 * @param string $actorType actor kind
+	 * @param string $actorId sender uid
+	 * @param string $message native system envelope
+	 * @param \DateTime $creation native timestamp
+	 * @param bool $notify notification flag
+	 * @return TalkFakeComment persisted system message
+	 */
+	public function addSystemMessage(TalkFakeRoom $room, TalkFakeParticipant $participant, string $actorType, string $actorId,
+		string $message, \DateTime $creation, bool $notify): TalkFakeComment {
+		return $this->chat->store(['room' => $room->getToken(), 'actorType' => $actorType, 'actor' => $actorId,
+			'message' => $message, 'at' => $creation->format(\DATE_ATOM), 'replyTo' => null]);
+	}
+
+	/**
 	 * @param TalkFakeRoom $room room
 	 * @param TalkFakeParticipant $participant sender
 	 * @param string $actorType actor type

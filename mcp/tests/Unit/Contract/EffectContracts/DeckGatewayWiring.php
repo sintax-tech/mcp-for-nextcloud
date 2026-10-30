@@ -45,6 +45,8 @@ final class DeckGatewayWiring {
 	public const FILE = '/alice/files/Propostas/Orcamento.pdf';
 
 	public readonly NativeDeck $deck;
+	/** Whether this scene installs the native dependency capability. */
+	public bool $dependencies = false;
 	public readonly HiddenTagFiles $files;
 	public readonly RecordingShares $shares;
 	private IManager $shareManager;
@@ -67,6 +69,8 @@ final class DeckGatewayWiring {
 	public function module(): DeckToolModule {
 		$apps = $this->mock(IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(true);
+		$apps->method('getAppVersion')->willReturn($this->dependencies ? '1.19.0' : '');
+		$apps->method('isEnabledForAnyone')->willReturnCallback(static fn (string $app): bool => $app === 'deck');
 		$time = $this->mock(ITimeFactory::class);
 		$time->method('getTime')->willReturn(NativeDeck::NOW);
 		$time->method('getDateTime')->willReturnCallback(static fn (): \DateTime => new \DateTime('@' . NativeDeck::NOW));
@@ -75,7 +79,7 @@ final class DeckGatewayWiring {
 		$session = $this->mock(ISession::class);
 		$session->method('get')->willReturnCallback(static fn (string $key): ?string => $key === 'user_id' ? EffectsGate::USER : null);
 		return new DeckToolModule($this->container($apps, $session), $apps, $this->mock(LoggerInterface::class), $urls, $time,
-			$this->users, $this->gate->config(), $session);
+			$this->users, $this->gate->config(), $session, $this->dependencies ? new \OCA\Mcp\Tools\Deck\DeckCapabilities($apps, 35) : null);
 	}
 
 	/**
@@ -88,6 +92,7 @@ final class DeckGatewayWiring {
 		$userSession = $this->mock(IUserSession::class);
 		$userSession->method('getUser')->willReturnCallback(fn () => $this->users->get(EffectsGate::USER));
 		$provider = $this->mock(DeckShareProvider::class);
+		$provider->method('getShareById')->willReturnCallback(fn (string $id) => $this->shareManager->getShareById($id));
 		$provider->method('getSharesByPath')->willReturnCallback(fn (File $file): array => array_values(array_filter(
 			$this->shares->shares(IShare::TYPE_DECK), static fn (IShare $share): bool => $share->getNodeId() === $file->getId())));
 		// No ACL entry on the boards of alice: she, their owner, is their only member.
@@ -108,6 +113,20 @@ final class DeckGatewayWiring {
 			SharedWriteGuard::class => new SharedWriteGuard($access), ISession::class => $session,
 			DeckShareProvider::class => $provider, 'OCA\\Deck\\Db\\AclMapper' => $acls,
 		];
+		$services['OCA\Deck\Service\AttachmentService'] = new class($this->shareManager) extends \OCA\Deck\Service\AttachmentService {
+			/** @param IManager $shares native share ledger */
+			public function __construct(private IManager $shares) {
+			}
+			/** {@inheritDoc} */
+			public function delete(int $cardId, int $attachmentId, string $type = 'deck_file'): \OCA\Deck\Db\Attachment {
+				if ($type !== 'file') {
+					throw new \RuntimeException('Legacy deletion is forbidden');
+				}
+				$this->shares->deleteShare($this->shares->getShareById((string)$attachmentId));
+				return new \OCA\Deck\Db\Attachment();
+			}
+		};
+
 		$container = $this->mock(ContainerInterface::class);
 		$container->method('get')->willReturnCallback(static fn (string $id): object => $services[$id]
 			?? throw new \RuntimeException('Unexpected service ' . $id));

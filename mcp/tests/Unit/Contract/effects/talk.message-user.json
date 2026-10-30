@@ -1,0 +1,381 @@
+{
+    "tool": "talk_message_user",
+    "grant": "talk.reply",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "user": "pedro",
+                "message": "Hello"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Direct message in Talk**\n\nDirect message to **pedro**:\n\n> Hello\n\nThe direct conversation with **pedro** will be created if it does not exist yet.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user exactly as it will be sent in a direct conversation with 'pedro', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing and the direct conversation is not created.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_message_user",
+                            "title": "Direct message in Talk",
+                            "action": "talk_message_user",
+                            "target": {
+                                "id": "pedro",
+                                "displayName": "pedro"
+                            },
+                            "draft": {
+                                "message": "Hello"
+                            },
+                            "message": "Show this plan to the user exactly as it will be sent in a direct conversation with 'pedro', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing and the direct conversation is not created."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "user": "pedro",
+                "message": "Hello",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "user": "pedro",
+                "message": "Hello",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Direct message in Talk**\n\nDirect message to **pedro**:\n\n> Hello\n\nThe direct conversation with **pedro** will be created if it does not exist yet.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user exactly as it will be sent in a direct conversation with 'pedro', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing and the direct conversation is not created.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_message_user",
+                            "title": "Direct message in Talk",
+                            "action": "talk_message_user",
+                            "target": {
+                                "id": "pedro",
+                                "displayName": "pedro"
+                            },
+                            "draft": {
+                                "message": "Hello"
+                            },
+                            "message": "Show this plan to the user exactly as it will be sent in a direct conversation with 'pedro', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing and the direct conversation is not created."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "Talk does not sign a PlanState; it revalidates the conversation and arguments at execution."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "user": "pedro",
+                "message": "Hello"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Direct message in Talk**\n\nDirect message to **pedro**:\n\n> Hello\n\nThe direct conversation with **pedro** will be created if it does not exist yet.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user exactly as it will be sent in a direct conversation with 'pedro', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing and the direct conversation is not created.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_message_user",
+                            "title": "Direct message in Talk",
+                            "action": "talk_message_user",
+                            "target": {
+                                "id": "pedro",
+                                "displayName": "pedro"
+                            },
+                            "draft": {
+                                "message": "Hello"
+                            },
+                            "message": "Show this plan to the user exactly as it will be sent in a direct conversation with 'pedro', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing and the direct conversation is not created."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [],
+                "rooms": [
+                    "abcd1234"
+                ],
+                "created": [],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "user": "pedro",
+                "message": "Hello",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"conversation_token\": \"direct01\",\n    \"messageId\": 55,\n    \"user\": {\n        \"id\": \"pedro\",\n        \"displayName\": \"Paulo Exemplo\"\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "direct01",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "Hello",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ],
+                "rooms": [
+                    "abcd1234",
+                    "direct01"
+                ],
+                "created": [
+                    {
+                        "kind": "direct",
+                        "owner": "alice",
+                        "target": "pedro",
+                        "token": "direct01"
+                    }
+                ],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "user": "pedro",
+                "message": "Hello",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "direct01",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "Hello",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ],
+                "rooms": [
+                    "abcd1234",
+                    "direct01"
+                ],
+                "created": [
+                    {
+                        "kind": "direct",
+                        "owner": "alice",
+                        "target": "pedro",
+                        "token": "direct01"
+                    }
+                ],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "user": "pedro",
+                "message": "Hello"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "direct01",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "Hello",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ],
+                "rooms": [
+                    "abcd1234",
+                    "direct01"
+                ],
+                "created": [
+                    {
+                        "kind": "direct",
+                        "owner": "alice",
+                        "target": "pedro",
+                        "token": "direct01"
+                    }
+                ],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "user": "pedro",
+                "message": "Hello",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "direct01",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "Hello",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ],
+                "rooms": [
+                    "abcd1234",
+                    "direct01"
+                ],
+                "created": [
+                    {
+                        "kind": "direct",
+                        "owner": "alice",
+                        "target": "pedro",
+                        "token": "direct01"
+                    }
+                ],
+                "invited": [],
+                "shares": []
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Room membership and account reachability apply; this operation has no Files node."
+        }
+    ]
+}

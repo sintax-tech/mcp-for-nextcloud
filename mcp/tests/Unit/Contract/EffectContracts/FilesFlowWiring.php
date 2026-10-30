@@ -75,6 +75,10 @@ final class FilesFlowWiring {
 	public array $issued = [];
 	/** Temporary files the controller asked for, i.e. request bodies it copied to disk. */
 	public int $tempFiles = 0;
+	/** @var array<class-string, object> explicit native services of a specialized contract */
+	public array $services = [];
+	/** Lock provider shared across requests, so a contract can lock the actual target. */
+	public FakeLockManager $locks;
 	/** @var array<class-string, object> services of the request being built, shared like container singletons */
 	private array $request = [];
 
@@ -87,6 +91,7 @@ final class FilesFlowWiring {
 		$gate->data()->app['mcp'][VisibilityGuard::CONFIG_KEY] = json_encode([self::HIDDEN_TAG]);
 		$this->batches = new InMemoryBatchStore($this->mock(IDBConnection::class));
 		$this->tokens = new InMemoryCheckoutTokenStore();
+		$this->locks = new FakeLockManager();
 	}
 
 	/** @return FilesModule the module of one request, with fresh per-request services over the persistent fakes */
@@ -125,7 +130,7 @@ final class FilesFlowWiring {
 	 * @return object the instance of this request for that type
 	 */
 	private function resolve(string $class): object {
-		return $this->request[$class] ??= $this->known($class) ?? $this->build($class);
+		return $this->request[$class] ??= $this->services[$class] ?? $this->known($class) ?? $this->build($class);
 	}
 
 	/**
@@ -175,7 +180,7 @@ final class FilesFlowWiring {
 			ITempManager::class => $this->temp(),
 			IUserSession::class => $this->mock(IUserSession::class),
 			ITimeFactory::class => $this->time(),
-			LockAwareWrite::class => (new FakeLockManager())->service($this->test),
+			LockAwareWrite::class => $this->locks->service($this->test),
 			FileTypeGuard::class => FileTypePolicyFixture::off($this->test),
 			ContentTypeGate::class => AbsentFileTypePolicy::gate($this->test),
 			IFilenameValidator::class => new FakeFilenameValidator(),
@@ -184,7 +189,9 @@ final class FilesFlowWiring {
 		};
 	}
 
-	/** @return ISystemTagObjectMapper the tags of every node: the hidden tag on {@see self::$hidden} */
+	/**
+	 * @return ISystemTagObjectMapper the tags of every node: the hidden tag on {@see self::$hidden}
+	 */
 	private function tagMapper(): ISystemTagObjectMapper {
 		$tags = $this->mock(ISystemTagObjectMapper::class);
 		$tags->method('getTagIdsForObjects')->willReturnCallback(fn (array $ids): array => array_combine(
@@ -224,7 +231,9 @@ final class FilesFlowWiring {
 		return $apps;
 	}
 
-	/** @return IURLGenerator absolute route URLs that keep the token, recording it in {@see self::$issued} */
+	/**
+	 * @return IURLGenerator absolute route URLs that keep the token, recording it in {@see self::$issued}
+	 */
 	private function urls(): IURLGenerator {
 		$urls = $this->mock(IURLGenerator::class);
 		$urls->method('linkToRouteAbsolute')->willReturnCallback(function (string $route, array $args = []): string {
@@ -234,7 +243,9 @@ final class FilesFlowWiring {
 		return $urls;
 	}
 
-	/** @return ITempManager real temporary files, counted in {@see self::$tempFiles} */
+	/**
+	 * @return ITempManager real temporary files, counted in {@see self::$tempFiles}
+	 */
 	private function temp(): ITempManager {
 		$temp = $this->mock(ITempManager::class);
 		$temp->method('getTemporaryFile')->willReturnCallback(function (): string|false {
@@ -244,7 +255,9 @@ final class FilesFlowWiring {
 		return $temp;
 	}
 
-	/** @return ITimeFactory the clock at {@see self::$now} */
+	/**
+	 * @return ITimeFactory the clock at {@see self::$now}
+	 */
 	private function time(): ITimeFactory {
 		$time = $this->mock(ITimeFactory::class);
 		$time->method('getTime')->willReturnCallback(fn (): int => $this->now);

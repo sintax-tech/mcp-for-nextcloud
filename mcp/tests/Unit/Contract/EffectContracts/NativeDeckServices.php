@@ -60,6 +60,14 @@ final class NativeDeckServices {
 			}
 
 			/** {@inheritDoc} */
+			public function create(string $title, string $userId, string $color): Board {
+				$id = max(array_keys($this->deck->boards)) + 1;
+				$this->deck->record('BoardService::create', [$title, $userId, $color]);
+				$this->deck->boards[$id] = ['title' => $title, 'owner' => $userId, 'color' => $color, 'deletedAt' => 0];
+				return $this->deck->board($id);
+			}
+
+			/** {@inheritDoc} */
 			public function setUserId(string $userId): void {
 				$this->deck->bind($userId);
 			}
@@ -105,6 +113,15 @@ final class NativeDeckServices {
 			}
 
 			/** {@inheritDoc} */
+			public function create(string $title, int $boardId, int $order): Stack {
+				$this->deck->check(null, $boardId, Acl::PERMISSION_MANAGE);
+				$id = max(array_keys($this->deck->stacks)) + 1;
+				$this->deck->record('StackService::create', [$title, $boardId, $order]);
+				$this->deck->stacks[$id] = ['boardId' => $boardId, 'title' => $title, 'order' => $order, 'deletedAt' => 0];
+				return $this->deck->stack($id);
+			}
+
+			/** {@inheritDoc} */
 			public function findAll(int $boardId, int $since = -1): array {
 				$this->deck->check(null, $boardId, Acl::PERMISSION_READ);
 				return $this->deck->stacksOf($boardId, false, true);
@@ -138,6 +155,20 @@ final class NativeDeckServices {
 			}
 
 			/** {@inheritDoc} */
+			public function assignDependentCard(int $cardId, int $dependentCardId): Card {
+				$this->deck->record('CardService::assignDependentCard', [$cardId, $dependentCardId]);
+				$this->deck->edges[$cardId][] = $dependentCardId;
+				return $this->deck->card($cardId);
+			}
+
+			/** {@inheritDoc} */
+			public function removeDependentCard(int $cardId, int $dependentCardId): Card {
+				$this->deck->record('CardService::removeDependentCard', [$cardId, $dependentCardId]);
+				$this->deck->edges[$cardId] = array_values(array_diff($this->deck->edges[$cardId] ?? [], [$dependentCardId]));
+				return $this->deck->card($cardId);
+			}
+
+			/** {@inheritDoc} */
 			public function find(int $cardId): Card {
 				$this->deck->check('card', $cardId, Acl::PERMISSION_READ);
 				return $this->deck->card($cardId);
@@ -148,6 +179,17 @@ final class NativeDeckServices {
 				$this->deck->check('stack', $stackId, Acl::PERMISSION_EDIT);
 				$this->deck->record('CardService::create', [$title, $stackId, $type, $order, $owner, $description, $duedate]);
 				return $this->deck->insertCard($title, $stackId, $order, $owner, $description, $duedate);
+			}
+
+			/** {@inheritDoc} */
+			public function update(int $id, string $title, int $stackId, string $type, string $owner, string $description = '',
+				int $order = 0, ?string $duedate = null, ?int $deletedAt = null, ?bool $archived = null,
+				?\OCA\Deck\Model\OptionalNullableValue $done = null): Card {
+				$this->deck->check('card', $id, Acl::PERMISSION_EDIT);
+				$this->deck->record('CardService::update', [$id, $title, $stackId, $type, $owner, $description, $order, $duedate]);
+				$this->deck->cards[$id] = ['title' => $title, 'description' => $description, 'lastModified' => NativeDeck::NOW]
+					+ $this->deck->cards[$id];
+				return $this->deck->card($id);
 			}
 
 			/** {@inheritDoc} */

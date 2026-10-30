@@ -151,7 +151,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
         return NodeAccess::run(function () use ($name, $arguments, $userId): array {
             // A creation makes the notes folder itself, and only after the shared-write guard has looked at it.
             $root = $name === 'notes_create' ? null : $this->notes->folder($userId, false);
-            return ToolResult::json(match ($name) {
+            return NotesFolderNotice::attach($name, $root, ToolResult::json(match ($name) {
                 'notes_list' => $this->list($root, $userId),
                 'notes_search' => $this->search($root, $userId, $arguments['query'], (int)$arguments['limit'], (string)($arguments['category'] ?? '')),
                 'notes_read' => $this->read($root, $userId, $arguments['id']),
@@ -160,7 +160,7 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
                 'notes_move' => $this->move($root, $userId, $arguments),
                 'notes_delete' => $this->delete($root, $userId, $arguments),
                 default => throw new InvalidArgumentException('Unknown tool'),
-            });
+            }));
         });
     }
 

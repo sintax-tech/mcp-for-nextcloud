@@ -2,6 +2,17 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 1.3.0 — unreleased
+
+Fixes already merged on the 1.3.0 branch, after 1.2.3. Not released: `info.xml` stays at 1.2.3 until the 1.3.0 release.
+
+### Fixed
+
+- **Notes folder with a translated name ([#23](https://github.com/sintax-tech/mcp-for-nextcloud/issues/23)):** the Notes tools read the folder from a separate `notesPath` user value that the Notes app never writes, so the folder chosen in the app was ignored, and an account whose Notes folder has a translated name (for example `Notizen` in German) saw an empty list. The folder now comes from the `notesPath` field of the Notes app's `settings` JSON; an empty `notesPath` is the root of the user's files; without it, the app's default folder name is used and, when only the translated folder exists, its translation in the user's language. With no folder at all, `notes_list` and `notes_search` still return `[]` and add a second text block saying the folder was not found. Nothing is written, moved or migrated, and `notes_create` writes into the folder that is found instead of creating a second one.
+- **Image search no longer fails silently:** `files_image_search` returned an empty list when the tag did not exist or the search itself failed, which looked like "no image matches". An unknown or hidden tag now answers "Tag not found in Nextcloud." and a failed search "Failed to search images in Nextcloud." (logged without private text); a visible tag with no matching image still returns `[]`. A node that cannot be resolved is skipped and the others stay; policy and lock errors are passed on as before.
+- **Bounded wait before the OAuth consent page:** the download of a CIMD client's metadata document now has one total budget of 5 seconds for connection and reading together. When it runs out the existing error page says the client did not send its metadata document in time (translated), and that client is refused without a new download for 30 seconds. Allowlist, document validation, size limit and the one-hour cache of successful documents are unchanged. DNS resolution stays outside this budget.
+- **Fewer small admin and personal scripts (continuation of [#21](https://github.com/sintax-tech/mcp-for-nextcloud/issues/21)):** the four remaining scripts below 5 KB were merged into scripts their pages already loaded: `admin-polls-grants.js` and `admin-mail-grants.js` into `admin-levels.js`, `admin-backups.js` into `admin-file-write-policy.js` and `personal-scope.js` into `connections.js`. Behavior, grants and access levels are unchanged; the Administration page requests three scripts fewer and the personal page one fewer. Whether this removes the blank page on the host of #21 is not confirmed: we could not reproduce it.
+
 ## 1.2.3 — 2026-10-30
 
 Fix release for the Administration page. No database change; updating from 1.2.2 needs no step and changes no permission.

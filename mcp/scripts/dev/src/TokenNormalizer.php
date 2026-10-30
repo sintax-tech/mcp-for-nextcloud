@@ -28,11 +28,13 @@ namespace OCA\Mcp\Scripts\Dev;
  * Deliberately not compared: whitespace between tokens, comments and PHPDoc (a type named only in `@param` or
  * `@var` does not run; a stale one there is left to human review) and the order of imports.
  * Dynamic class composition/interpolation and paths passed through heredocs or constants are not evaluated;
- * those require runtime tests and human review. Pure FQCN::identifier strings are resolved as class references.
+ * those require runtime tests and human review. Calls by dynamic name (call_user_func, variable/array callables)
+ * are also outside the location-call analysis. Pure FQCN::identifier strings are resolved as class references.
  *
  * Renames are applied while normalizing, so the stream of the old file with the map's renames applied must equal
  * the stream of the new file with none. Whole literal paths are normalized through actual file pairs; all other
- * literal content remains exact.
+ * literal content remains exact. Literal references also include lib-relative paths and inventory identities;
+ * arbitrary prefixes and basename-relative compositions require explicit preparation before moving.
  */
 final class TokenNormalizer {
 	/** Names that are never class references, whatever the namespace declares. */
@@ -70,7 +72,7 @@ final class TokenNormalizer {
 		$scope = new ImportScope();
 		$stream = [];
 		$references = [];
-		$strings = PathSafety::references($tokens);
+		$strings = PathRewrites::references($tokens);
 		$located = [];
 		$namespaces = [];
 		$contexts = [];

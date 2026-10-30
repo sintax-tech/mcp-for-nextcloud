@@ -15,7 +15,7 @@ final class NormalizedSource {
 	 * @param list<array{0:string,1:int}> $stream normalized tokens with the line each one came from
 	 * @param list<array{0:string,1:int}> $references fully qualified class names referred to (resolved names,
 	 *                                                unresolved same-namespace candidates and FQCN strings), with lines
-	 * @param list<array{0:string,1:int}> $strings literal fragments in known filesystem path arguments, with lines
+	 * @param list<array{0:string,1:int}> $strings whole literal values, including lib-relative paths and inventory identities, with lines
 	 * @param list<array{0:int,1:string}> $located line and description of each construct whose value depends on the
 	 *                                             file's folder or namespace and cannot be folded (relative include,
 	 *                                             `__NAMESPACE__`)

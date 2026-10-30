@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Scripts\Dev;
 
-/** Applies only the actual file pairs, preserving path prefixes and rejecting backup/child names. */
+/** Applies only the actual file pairs, preserving inventory suffixes and refusing unproved prefixes or backup/child names. */
 final class PathRewrites {
 	/**
 	 * Renames a whole literal value if it names a paired file.
@@ -18,8 +18,9 @@ final class PathRewrites {
 	 */
 	public static function value(string $value, array $pairs): ?string {
 		foreach ($pairs as $old => $new) {
-			if (PathSafety::names($value, $old)) {
-				return substr($value, 0, strlen($value) - strlen($old)) . $new;
+			$match = PathIdentity::match($value, $old);
+			if ($match !== null && PathIdentity::proved($match)) {
+				return $match[0] . ($match[2] && str_starts_with($new, 'lib/') ? substr($new, 4) : $new) . $match[1];
 			}
 		}
 		return null;
@@ -45,6 +46,29 @@ final class PathRewrites {
 		}
 		$renamed = self::value($value, $pairs);
 		return $renamed === null ? null : [$renamed, $end];
+	}
+
+	/**
+	 * Collects whole literal values, including lib-relative expectations and inventory keys outside file calls.
+	 *
+	 * @param list<array{0:int|null,1:string,2:int}> $tokens significant PHP tokens
+	 * @return list<array{string,int}> concatenated values and their lines
+	 */
+	public static function references(array $tokens): array {
+		$found = [];
+		for ($i = 0; isset($tokens[$i]); $i++) {
+			if ($tokens[$i][0] !== T_CONSTANT_ENCAPSED_STRING) {
+				continue;
+			}
+			$value = PhpStringLiteral::value($tokens[$i][1]);
+			$line = $tokens[$i][2];
+			while (($tokens[$i + 1][1] ?? '') === '.' && ($tokens[$i + 2][0] ?? null) === T_CONSTANT_ENCAPSED_STRING) {
+				$value .= PhpStringLiteral::value($tokens[$i + 2][1]);
+				$i += 2;
+			}
+			$found[] = [$value, $line];
+		}
+		return $found;
 	}
 
 	/**
@@ -84,10 +108,15 @@ final class PathRewrites {
 			}
 			preg_match_all('~[A-Za-z0-9_./-]+~', $after[$path], $matches, PREG_OFFSET_CAPTURE);
 			foreach ($matches[0] as [$value, $offset]) {
-				foreach ($pairs as $old => $new) {
-					if (PathSafety::names($value, $old)) {
+				foreach ($pairs + array_combine(array_values($pairs), array_values($pairs)) as $old => $new) {
+					$match = PathIdentity::match($value, $old);
+					if ($match !== null) {
 						$line = substr_count(substr($after[$path], 0, $offset), "\n") + 1;
-						$problems[] = "$path:$line: still refers to the file $old, moved to $new in this range";
+						if (!PathIdentity::proved($match)) {
+							$problems[] = "$path:$line: path not proved: unrecognized prefix in $value";
+						} elseif (isset($pairs[$old])) {
+							$problems[] = "$path:$line: still refers to the file $old, moved to $new in this range";
+						}
 					}
 				}
 			}

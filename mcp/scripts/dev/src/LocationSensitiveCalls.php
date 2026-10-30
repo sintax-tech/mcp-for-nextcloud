@@ -31,8 +31,11 @@ final class LocationSensitiveCalls {
 		}
 		$text = $tokens[$i][1];
 		$previous = $tokens[$i - 1][0] ?? null;
-		if (strtolower($text) === 'getfilename' && in_array($previous, [T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR], true)) {
+		if (in_array(strtolower($text), ['getfilename', 'getfile'], true) && in_array($previous, [T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR], true)) {
 			return "$text location not proved";
+		}
+		if (in_array($previous, [T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR, T_DOUBLE_COLON, T_FUNCTION], true)) {
+			return null;
 		}
 		if ($previous === T_NEW) {
 			$name = strtolower($scope->resolveClass($text));

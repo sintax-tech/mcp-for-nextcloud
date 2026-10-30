@@ -92,13 +92,13 @@ final class PathSafety {
 	}
 
 	/**
-	 * Matches a whole path, optionally rooted by a prefix ending in a slash; `.bak` and child paths are distinct.
+	 * Matches whole app/lib-relative paths and optional inventory suffixes; prefix proof is checked separately.
 	 *
 	 * @param string $value path literal
 	 * @param string $old retired relative path
 	 * @return bool whether the literal names the old file
 	 */
 	public static function names(string $value, string $old): bool {
-		return $value === $old || str_ends_with($value, '/' . $old);
+		return PathIdentity::match($value, $old) !== null;
 	}
 }

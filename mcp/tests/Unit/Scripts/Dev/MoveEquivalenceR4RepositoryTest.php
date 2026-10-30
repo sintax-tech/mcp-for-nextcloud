@@ -9,8 +9,6 @@ namespace OCA\Mcp\Tests\Unit\Scripts\Dev;
 
 use OCA\Mcp\Scripts\Dev\FqcnMap;
 use OCA\Mcp\Scripts\Dev\MoveEquivalence;
-use OCA\Mcp\Scripts\Dev\SourceTreeIndex;
-use OCA\Mcp\Scripts\Dev\SourceTrees;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -18,9 +16,6 @@ require_once __DIR__ . '/../../../../scripts/dev/bootstrap.php';
 
 /** Exercises the five real RE-05 moves from R4; fixture names/paths are assembled to avoid stale test data. */
 final class MoveEquivalenceR4RepositoryTest extends TestCase {
-	/** @var array<string,string>|null original app tree, shared between provider cases */
-	private static ?array $tree = null;
-
 	/**
 	 * Real Service classes can move with exact class/path references updated, including non-PHP test readers.
 	 *
@@ -89,45 +84,6 @@ final class MoveEquivalenceR4RepositoryTest extends TestCase {
 	 * @return array{array<string,string>,array<string,string>,FqcnMap,string,string} old tree, new tree, map, old/new paths
 	 */
 	private function move(string $short): array {
-		$before = self::$tree ??= SourceTrees::fromDirectory(__DIR__ . '/../../../..', ['appinfo', 'lib', 'scripts', 'templates', 'tests']);
-		$map = FqcnMap::fromJson($before['scripts/dev/fqcn-map.json']);
-		$namespace = implode('\\', ['OCA', 'Mcp', 'Service']);
-		$oldClass = $namespace . '\\' . $short;
-		$entry = array_values(array_filter($map->entries, static fn (array $e): bool => $e['fqcn'] === $oldClass))[0];
-		$old = $entry['path'];
-		$newClass = $entry['target'];
-		$new = $map->pathOf($newClass);
-		if (!isset($before[$old])) {
-			$this->markTestSkipped("$short already moved; its ticket proves the real move");
-		}
-		$newNamespace = substr($newClass, 0, (int)strrpos($newClass, '\\'));
-		$imports = [];
-		foreach ($before as $path => $content) {
-			if (str_starts_with($path, 'lib/Service/') && str_ends_with($path, '.php')) {
-				foreach (SourceTreeIndex::declarations($content) as $class) {
-					if (substr($class, 0, (int)strrpos($class, '\\')) === $namespace && $class !== $oldClass) {
-						$imports[] = $class;
-					}
-				}
-			}
-		}
-		$after = [];
-		foreach ($before as $path => $content) {
-			if (!str_ends_with($path, '.php') && !str_starts_with($path, 'tests/')) {
-				$after[$path] = $content;
-				continue;
-			}
-			$changed = str_replace([$oldClass, str_replace('\\', '\\\\', $oldClass), $old], [$newClass, str_replace('\\', '\\\\', $newClass), $new], $content);
-			if (str_ends_with($path, '.php') && str_contains($changed, "namespace $namespace;")) {
-				if ($path === $old) {
-					$lines = implode('', array_map(static fn (string $class): string => "use $class;\n", $imports));
-					$changed = str_replace("namespace $namespace;", "namespace $newNamespace;\n$lines", $changed);
-				} elseif (!str_contains($changed, "use $newClass;")) {
-					$changed = str_replace("namespace $namespace;", "namespace $namespace;\nuse $newClass;", $changed);
-				}
-			}
-			$after[$path === $old ? $new : $path] = $changed;
-		}
-		return [$before, $after, $map, $old, $new];
+		return RepositoryMoveFixture::move('Service/' . $short . '.php');
 	}
 }

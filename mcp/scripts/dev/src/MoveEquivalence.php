@@ -182,8 +182,8 @@ final class MoveEquivalence {
 	 * Reports every reference in the new tree that still names a class retired in the range (declared in the old
 	 * tree, or renamed by it, and no longer declared in the new one), and every reference of a changed file to a
 	 * planned name that no file declares. Unchanged files may name planned destinations (fixtures, documentation
-	 * data) without being stale. Whole paths in known filesystem path arguments are checked for retired files;
-	 * arbitrary strings are not treated as filesystem accesses (see PathSafety).
+	 * data) without being stale. Exact app/lib-relative literal path identities, including #/: inventory keys,
+	 * are checked for retired files; unrecognized prefixes and composed basename references are not proved.
 	 *
 	 * @param TokenNormalizer $normalizer normalizer of the new tree
 	 * @param array<string,NormalizedSource> $normalized files already normalized, by path
@@ -201,6 +201,7 @@ final class MoveEquivalence {
 				continue;
 			}
 			$source = $normalized[$path] ?? $normalizer->normalize($content, [], $path);
+			$this->problems = [...$this->problems, ...PathExpectations::problems($path, $content, $this->pairs)];
 			foreach ($source->namespaces as [$line, $namespace]) {
 				if (isset($retiredNamespaces[strtolower($namespace)])) {
 					$this->problems[] = "$path:$line: __NAMESPACE__ in $namespace lost a class in this range; composed class reference not proved";
@@ -208,8 +209,19 @@ final class MoveEquivalence {
 			}
 			foreach ($source->strings as [$value, $line]) {
 				foreach (array_keys($this->pairs) as $moved) {
-					if (PathSafety::names($value, $moved)) {
-						$this->problems[] = "$path:$line: still refers to the file $moved, moved to {$this->pairs[$moved]} in this range";
+					if (PathIdentity::match($value, $moved) === null && PathIdentity::match($value, $this->pairs[$moved]) === null
+						&& (PathIdentity::unproved($value, $moved) || PathIdentity::unproved($value, $this->pairs[$moved]))) {
+						$this->problems[] = "$path:$line: path not proved: composed or basename-relative reference $value";
+					}
+					$match = PathIdentity::match($value, $moved);
+					if ($match !== null) {
+						$this->problems[] = PathIdentity::proved($match)
+							? "$path:$line: still refers to the file $moved, moved to {$this->pairs[$moved]} in this range"
+							: "$path:$line: path not proved: unrecognized prefix in $value";
+					}
+					$destination = PathIdentity::match($value, $this->pairs[$moved]);
+					if ($destination !== null && !PathIdentity::proved($destination)) {
+						$this->problems[] = "$path:$line: path not proved: unrecognized prefix in $value";
 					}
 				}
 			}

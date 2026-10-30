@@ -97,7 +97,7 @@ final class PathSafetyTest extends TestCase {
 	/** Historical prose and .bak refer to no retired file; an actual path argument does (R3-A9). */
 	public function testStalePathBoundariesAndConsumers(): void {
 		$old = 'src/A/Probe.php';
-		foreach (["\$description = 'The former path was $old; this is historical text.';", "\$description = '$old.bak';", "file_get_contents('$old.bak');", "file_get_contents('$old' . '.bak');", "\$description = '$old';"] as $body) {
+		foreach (["\$description = 'The former path was $old; this is historical text.';", "\$description = '$old.bak';", "file_get_contents('$old.bak');", "file_get_contents('$old' . '.bak');"] as $body) {
 			$this->assertSame([], $this->compare('echo 1;', 'echo 1;', "<?php $body"), $body);
 		}
 		foreach (["file_get_contents('$old');", "file_exists('/$old');", "require '$old';", "file_get_contents(dirname(__DIR__) . '/$old');"] as $body) {

@@ -41,6 +41,7 @@ final class DiscoveryHarness {
 	public const USER = 'alice';
 
 	private McpProtocol $protocol;
+	private GrantPolicy $policy;
 
 	/**
 	 * @param TestCase $test the running test, owner of the mocks
@@ -50,6 +51,7 @@ final class DiscoveryHarness {
 		$data = new InMemoryConfig();
 		$config = $data->mock($test);
 		$policy = InMemoryConfig::policy($config, new InMemoryOAuthStore());
+		$this->policy = $policy;
 		if ($scenario->unknownGrants !== []) {
 			$data->groupBackends = [new ArrayGroupBackend(static fn (): array => [DiscoveryScenario::PAUSED_GROUP => [self::USER]])];
 			InMemoryConfig::groupPolicy($config, DiscoveryScenario::PAUSED_GROUP, $scenario->unknownGrants, 'needs_confirm');
@@ -90,7 +92,9 @@ final class DiscoveryHarness {
 	public function request(string $method, ?array $params = null): array {
 		$message = ['jsonrpc' => '2.0', 'id' => 1, 'method' => $method] + ($params === null ? [] : ['params' => $params]);
 		$version = $method === 'initialize' ? '' : McpProtocol::VERSION;
-		$out = $this->protocol->handle(json_encode($message, JSON_THROW_ON_ERROR), $version, self::USER);
+		// One policy operation per request, as McpController opens it around the endpoint.
+		$out = $this->policy->within(self::USER, fn (): array => $this->protocol->handle(json_encode($message, JSON_THROW_ON_ERROR),
+			$version, self::USER));
 		$body = json_encode($out['body'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 		return ['status' => $out['status'], 'body' => json_decode($body, false, 512, JSON_THROW_ON_ERROR)];
 	}

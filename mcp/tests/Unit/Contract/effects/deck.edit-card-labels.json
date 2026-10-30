@@ -1,0 +1,515 @@
+{
+    "tool": "deck_edit_card_labels",
+    "grant": "deck.edit",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "cardId": 7,
+                "add": [
+                    2
+                ],
+                "remove": [
+                    1
+                ]
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change Deck card labels**\n\nChange labels on *Proposta comercial* in *Comercial*.\n\nBefore: Urgente (1)\n\nAfter: Revisão (2)\n\nOnly the requested label associations will change. All other labels will be preserved.\n\nNothing was changed. Confirm to execute.\n\n*Only the requested label associations will change. All other labels will be preserved.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_edit_card_labels",
+                            "title": "Change Deck card labels",
+                            "action": "deck_edit_card_labels",
+                            "card": {
+                                "id": 7,
+                                "title": "Proposta comercial",
+                                "stackId": 2,
+                                "boardId": 20
+                            },
+                            "board": {
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "name": "Comercial",
+                                "shared": false
+                            },
+                            "before": [
+                                {
+                                    "id": 1,
+                                    "boardId": 20,
+                                    "title": "Urgente",
+                                    "color": "ff0000"
+                                }
+                            ],
+                            "after": [
+                                {
+                                    "id": 2,
+                                    "boardId": 20,
+                                    "title": "Revisão",
+                                    "color": "0082c9"
+                                }
+                            ],
+                            "add": [
+                                2
+                            ],
+                            "remove": [
+                                1
+                            ],
+                            "unchanged": {
+                                "alreadyAssigned": [],
+                                "notAssigned": []
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Only the requested label associations will change. All other labels will be preserved.",
+                            "plan_state": "<plan_state#1>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "cardId": 7,
+                "add": [
+                    2
+                ],
+                "remove": [
+                    1
+                ],
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "cardId": 7,
+                "add": [
+                    2
+                ],
+                "remove": [
+                    1
+                ],
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change Deck card labels**\n\nChange labels on *Proposta comercial* in *Comercial*.\n\nBefore: Urgente (1)\n\nAfter: Revisão (2)\n\nOnly the requested label associations will change. All other labels will be preserved.\n\nNothing was changed. Confirm to execute.\n\n*Only the requested label associations will change. All other labels will be preserved.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_edit_card_labels",
+                            "title": "Change Deck card labels",
+                            "action": "deck_edit_card_labels",
+                            "card": {
+                                "id": 7,
+                                "title": "Proposta comercial",
+                                "stackId": 2,
+                                "boardId": 20
+                            },
+                            "board": {
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "name": "Comercial",
+                                "shared": false
+                            },
+                            "before": [
+                                {
+                                    "id": 1,
+                                    "boardId": 20,
+                                    "title": "Urgente",
+                                    "color": "ff0000"
+                                }
+                            ],
+                            "after": [
+                                {
+                                    "id": 2,
+                                    "boardId": 20,
+                                    "title": "Revisão",
+                                    "color": "0082c9"
+                                }
+                            ],
+                            "add": [
+                                2
+                            ],
+                            "remove": [
+                                1
+                            ],
+                            "unchanged": {
+                                "alreadyAssigned": [],
+                                "notAssigned": []
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Only the requested label associations will change. All other labels will be preserved.",
+                            "plan_state": "<plan_state#1>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "cardId": 7,
+                "add": [
+                    2
+                ],
+                "remove": [
+                    1
+                ],
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change Deck card labels**\n\nChange labels on *Proposta comercial* in *Comercial*.\n\nBefore: Urgente (1)\n\nAfter: Revisão jurídica (2)\n\nOnly the requested label associations will change. All other labels will be preserved.\n\n### Warnings\n\n- The card, board or labels changed. Review and approve the new plan before changing labels. This message does not prove that the whole request finished, and it is not a record of human approval.\n\nNothing was changed. Confirm to execute.\n\n*Only the requested label associations will change. All other labels will be preserved.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_edit_card_labels",
+                            "title": "Change Deck card labels",
+                            "action": "deck_edit_card_labels",
+                            "card": {
+                                "id": 7,
+                                "title": "Proposta comercial",
+                                "stackId": 2,
+                                "boardId": 20
+                            },
+                            "board": {
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "name": "Comercial",
+                                "shared": false
+                            },
+                            "before": [
+                                {
+                                    "id": 1,
+                                    "boardId": 20,
+                                    "title": "Urgente",
+                                    "color": "ff0000"
+                                }
+                            ],
+                            "after": [
+                                {
+                                    "id": 2,
+                                    "boardId": 20,
+                                    "title": "Revisão jurídica",
+                                    "color": "0082c9"
+                                }
+                            ],
+                            "add": [
+                                2
+                            ],
+                            "remove": [
+                                1
+                            ],
+                            "unchanged": {
+                                "alreadyAssigned": [],
+                                "notAssigned": []
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Only the requested label associations will change. All other labels will be preserved.",
+                            "plan_state": "<plan_state#2>",
+                            "warnings": [
+                                {
+                                    "message": "The card, board or labels changed. Review and approve the new plan before changing labels. This message does not prove that the whole request finished, and it is not a record of human approval."
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "cardId": 7,
+                "add": [
+                    2
+                ],
+                "remove": [
+                    1
+                ]
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Change Deck card labels**\n\nChange labels on *Proposta comercial* in *Comercial*.\n\nBefore: Urgente (1)\n\nAfter: Revisão jurídica (2)\n\nOnly the requested label associations will change. All other labels will be preserved.\n\nNothing was changed. Confirm to execute.\n\n*Only the requested label associations will change. All other labels will be preserved.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_edit_card_labels",
+                            "title": "Change Deck card labels",
+                            "action": "deck_edit_card_labels",
+                            "card": {
+                                "id": 7,
+                                "title": "Proposta comercial",
+                                "stackId": 2,
+                                "boardId": 20
+                            },
+                            "board": {
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "name": "Comercial",
+                                "shared": false
+                            },
+                            "before": [
+                                {
+                                    "id": 1,
+                                    "boardId": 20,
+                                    "title": "Urgente",
+                                    "color": "ff0000"
+                                }
+                            ],
+                            "after": [
+                                {
+                                    "id": 2,
+                                    "boardId": 20,
+                                    "title": "Revisão jurídica",
+                                    "color": "0082c9"
+                                }
+                            ],
+                            "add": [
+                                2
+                            ],
+                            "remove": [
+                                1
+                            ],
+                            "unchanged": {
+                                "alreadyAssigned": [],
+                                "notAssigned": []
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Only the requested label associations will change. All other labels will be preserved.",
+                            "plan_state": "<plan_state#2>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                },
+                "writes": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "cardId": 7,
+                "add": [
+                    2
+                ],
+                "remove": [
+                    1
+                ],
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"id\": 7,\n    \"stackId\": 2,\n    \"boardId\": 20,\n    \"title\": \"Proposta comercial\",\n    \"description\": \"\",\n    \"type\": \"plain\",\n    \"owner\": \"alice\",\n    \"order\": 0,\n    \"archived\": false,\n    \"done\": null,\n    \"duedate\": null,\n    \"dueAt\": null,\n    \"lastModified\": 1700000000,\n    \"assignedUsers\": [],\n    \"overdue\": false,\n    \"url\": \"https://cloud.example.com/apps/deck/\",\n    \"labels\": [\n        {\n            \"id\": 2,\n            \"boardId\": 20,\n            \"title\": \"Revisão jurídica\",\n            \"color\": \"0082c9\"\n        }\n    ],\n    \"confirmed\": true,\n    \"changed\": true,\n    \"added\": [\n        2\n    ],\n    \"removed\": [\n        1\n    ],\n    \"unchanged\": {\n        \"alreadyAssigned\": [],\n        \"notAssigned\": []\n    },\n    \"warnings\": [],\n    \"verification\": \"observed-state\",\n    \"applied\": {\n        \"add\": [\n            2\n        ],\n        \"remove\": [\n            1\n        ]\n    },\n    \"pending\": {\n        \"add\": [],\n        \"remove\": []\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "labels": {
+                    "7": [
+                        2
+                    ],
+                    "8": []
+                },
+                "writes": [
+                    "7 -1",
+                    "7 +2"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "cardId": 7,
+                "add": [
+                    2
+                ],
+                "remove": [
+                    1
+                ],
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "labels": {
+                    "7": [
+                        2
+                    ],
+                    "8": []
+                },
+                "writes": [
+                    "7 -1",
+                    "7 +2"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "cardId": 7,
+                "add": [
+                    2
+                ],
+                "remove": [
+                    1
+                ]
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "labels": {
+                    "7": [
+                        2
+                    ],
+                    "8": []
+                },
+                "writes": [
+                    "7 -1",
+                    "7 +2"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "A Deck card has no exclusion of its own: the hidden system tag applies to Files nodes, and deck_edit_card_labels touches no file; access to the card is the Deck ACL, read by the gateway."
+        }
+    ]
+}

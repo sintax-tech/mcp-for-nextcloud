@@ -1,0 +1,265 @@
+{
+    "tool": "talk_reply",
+    "grant": "talk.reply",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "message": "A ata da reunião está pronta."
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Reply in Talk**\n\nMessage to **Projeto Alfa**:\n\n> A ata da reunião está pronta.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user exactly as it will be sent to the conversation 'Projeto Alfa', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_reply",
+                            "title": "Reply in Talk",
+                            "action": "talk_reply",
+                            "conversation": {
+                                "token": "abcd1234",
+                                "displayName": "Projeto Alfa"
+                            },
+                            "draft": {
+                                "message": "A ata da reunião está pronta."
+                            },
+                            "message": "Show this plan to the user exactly as it will be sent to the conversation 'Projeto Alfa', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "message": "A ata da reunião está pronta.",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "message": "A ata da reunião está pronta.",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Reply in Talk**\n\nMessage to **Projeto Alfa**:\n\n> A ata da reunião está pronta.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user exactly as it will be sent to the conversation 'Projeto Alfa', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_reply",
+                            "title": "Reply in Talk",
+                            "action": "talk_reply",
+                            "conversation": {
+                                "token": "abcd1234",
+                                "displayName": "Projeto Alfa"
+                            },
+                            "draft": {
+                                "message": "A ata da reunião está pronta."
+                            },
+                            "message": "Show this plan to the user exactly as it will be sent to the conversation 'Projeto Alfa', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "talk_reply signs no plan: the confirmed call resolves the conversation and the text again and sends what it finds; a message has no version an ETag or plan_state could pin."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "message": "A ata da reunião está pronta."
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Reply in Talk**\n\nMessage to **Projeto Alfa**:\n\n> A ata da reunião está pronta.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user exactly as it will be sent to the conversation 'Projeto Alfa', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_reply",
+                            "title": "Reply in Talk",
+                            "action": "talk_reply",
+                            "conversation": {
+                                "token": "abcd1234",
+                                "displayName": "Projeto Alfa"
+                            },
+                            "draft": {
+                                "message": "A ata da reunião está pronta."
+                            },
+                            "message": "Show this plan to the user exactly as it will be sent to the conversation 'Projeto Alfa', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "message": "A ata da reunião está pronta.",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"conversation_token\": \"abcd1234\",\n    \"messageId\": 55\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "A ata da reunião está pronta.",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "message": "A ata da reunião está pronta.",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "A ata da reunião está pronta.",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "message": "A ata da reunião está pronta."
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "A ata da reunião está pronta.",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "A conversation and a text message carry no Files node: the hidden system tag has nothing to hide on talk_reply, and access to the room is Talk membership, checked on every call."
+        }
+    ]
+}

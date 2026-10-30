@@ -33,6 +33,8 @@ final class VolatileFields {
 		'created_at' => 'creation time generated now',
 		'createdAt' => 'creation time generated now',
 		'timestamp' => 'time of the call',
+		// Forms stamps the form with time() when the edit lands; the receipt checks it falls inside the write window.
+		'lastUpdated' => 'Forms write time, read back after the write',
 		// Ids the fakes generate (sequence or random) for an object created by the call.
 		'batch_id' => 'id of an undoable batch, random',
 		'batchId' => 'id of an undoable batch, random',

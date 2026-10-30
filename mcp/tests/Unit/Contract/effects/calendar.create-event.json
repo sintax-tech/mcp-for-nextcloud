@@ -1,0 +1,424 @@
+{
+    "tool": "calendar_create_event",
+    "grant": "calendar.create",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "summary": "Reunião de equipe",
+                "start": "2026-03-12T09:00:00-03:00",
+                "end": "2026-03-12T10:00:00-03:00",
+                "timeZone": "America/Sao_Paulo",
+                "location": "Sala 2"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create event**\n\n- Calendar:\n  - Id: 1\n  - Uri: personal\n  - Name: Pessoal\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/personal/\n- After:\n  - Summary: Reunião de equipe\n  - Location: Sala 2\n  - Description: \n  - Start: 2026-03-12T12:00:00+00:00\n  - End: 2026-03-12T13:00:00+00:00\n  - All day: no\n  - Time zone: America/Sao\\_Paulo\n  - Recurring: no\n- Recoverable: no\n- Scheduling:\n  - Requested: no\n  - Imip enabled: yes\n  - Participants notified: no\n  - Message: No invitations or cancellations will be scheduled in this change.\n  - Proof scope: Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved.\n- Timezone: America/Sao\\_Paulo\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_create_event",
+                            "title": "Create event",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_create_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": null,
+                            "uid": null,
+                            "etag": null,
+                            "before": null,
+                            "after": {
+                                "summary": "Reunião de equipe",
+                                "location": "Sala 2",
+                                "description": "",
+                                "start": "2026-03-12T12:00:00+00:00",
+                                "end": "2026-03-12T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": "America/Sao_Paulo",
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "participants": {
+                                "current": [],
+                                "proposed": [],
+                                "added": [],
+                                "removed": [],
+                                "names": []
+                            },
+                            "recoverable": false,
+                            "consequence": null,
+                            "scheduling": {
+                                "requested": false,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "No invitations or cancellations will be scheduled in this change.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": [],
+                            "warnings": [],
+                            "sharedCalendars": [],
+                            "suggestedCalendar": null
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "summary": "Reunião de equipe",
+                "start": "2026-03-12T09:00:00-03:00",
+                "end": "2026-03-12T10:00:00-03:00",
+                "timeZone": "America/Sao_Paulo",
+                "location": "Sala 2",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "summary": "Reunião de equipe",
+                "start": "2026-03-12T09:00:00-03:00",
+                "end": "2026-03-12T10:00:00-03:00",
+                "timeZone": "America/Sao_Paulo",
+                "location": "Sala 2",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create event**\n\n- Calendar:\n  - Id: 1\n  - Uri: personal\n  - Name: Pessoal\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/personal/\n- After:\n  - Summary: Reunião de equipe\n  - Location: Sala 2\n  - Description: \n  - Start: 2026-03-12T12:00:00+00:00\n  - End: 2026-03-12T13:00:00+00:00\n  - All day: no\n  - Time zone: America/Sao\\_Paulo\n  - Recurring: no\n- Recoverable: no\n- Scheduling:\n  - Requested: no\n  - Imip enabled: yes\n  - Participants notified: no\n  - Message: No invitations or cancellations will be scheduled in this change.\n  - Proof scope: Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved.\n- Timezone: America/Sao\\_Paulo\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_create_event",
+                            "title": "Create event",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_create_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": null,
+                            "uid": null,
+                            "etag": null,
+                            "before": null,
+                            "after": {
+                                "summary": "Reunião de equipe",
+                                "location": "Sala 2",
+                                "description": "",
+                                "start": "2026-03-12T12:00:00+00:00",
+                                "end": "2026-03-12T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": "America/Sao_Paulo",
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "participants": {
+                                "current": [],
+                                "proposed": [],
+                                "added": [],
+                                "removed": [],
+                                "names": []
+                            },
+                            "recoverable": false,
+                            "consequence": null,
+                            "scheduling": {
+                                "requested": false,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "No invitations or cancellations will be scheduled in this change.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": [],
+                            "warnings": [],
+                            "sharedCalendars": [],
+                            "suggestedCalendar": null
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "A creation has no existing object to change between the plan and the confirmation, and the Calendar module keeps no plan fingerprint (no PlanState/PlanChanged): the confirmed call is prepared again from the arguments and writes a new object with a new UID."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "summary": "Reunião de equipe",
+                "start": "2026-03-12T09:00:00-03:00",
+                "end": "2026-03-12T10:00:00-03:00",
+                "timeZone": "America/Sao_Paulo",
+                "location": "Sala 2"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create event**\n\n- Calendar:\n  - Id: 1\n  - Uri: personal\n  - Name: Pessoal\n  - Owner id: alice\n  - Owner principal: principals/users/alice\n  - Writable: yes\n  - Path: /remote.php/dav/calendars/alice/personal/\n- After:\n  - Summary: Reunião de equipe\n  - Location: Sala 2\n  - Description: \n  - Start: 2026-03-12T12:00:00+00:00\n  - End: 2026-03-12T13:00:00+00:00\n  - All day: no\n  - Time zone: America/Sao\\_Paulo\n  - Recurring: no\n- Recoverable: no\n- Scheduling:\n  - Requested: no\n  - Imip enabled: yes\n  - Participants notified: no\n  - Message: No invitations or cancellations will be scheduled in this change.\n  - Proof scope: Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved.\n- Timezone: America/Sao\\_Paulo\n\nNothing was changed. Confirm to execute.\n\n*Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "calendar_create_event",
+                            "title": "Create event",
+                            "message": "Show this draft to the user and await explicit approval. Only then repeat the same arguments with confirm: true (and the etag of this plan, if present).",
+                            "action": "calendar_create_event",
+                            "calendar": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Pessoal",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/calendars/alice/personal/"
+                            },
+                            "destination": null,
+                            "uid": null,
+                            "etag": null,
+                            "before": null,
+                            "after": {
+                                "summary": "Reunião de equipe",
+                                "location": "Sala 2",
+                                "description": "",
+                                "start": "2026-03-12T12:00:00+00:00",
+                                "end": "2026-03-12T13:00:00+00:00",
+                                "allDay": false,
+                                "timeZone": "America/Sao_Paulo",
+                                "attendees": [],
+                                "organizer": null,
+                                "recurring": false
+                            },
+                            "participants": {
+                                "current": [],
+                                "proposed": [],
+                                "added": [],
+                                "removed": [],
+                                "names": []
+                            },
+                            "recoverable": false,
+                            "consequence": null,
+                            "scheduling": {
+                                "requested": false,
+                                "imipEnabled": true,
+                                "participantsNotified": false,
+                                "message": "No invitations or cancellations will be scheduled in this change.",
+                                "proofScope": "Invitations are handed to the CalDAV scheduling of this server; receipt of external email is not proved."
+                            },
+                            "timezone": "America/Sao_Paulo",
+                            "shared": [],
+                            "warnings": [],
+                            "sharedCalendars": [],
+                            "suggestedCalendar": null
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "summary": "Reunião de equipe",
+                "start": "2026-03-12T09:00:00-03:00",
+                "end": "2026-03-12T10:00:00-03:00",
+                "timeZone": "America/Sao_Paulo",
+                "location": "Sala 2",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"uid\": \"effect-uid-1\",\n    \"summary\": \"Reunião de equipe\",\n    \"start\": \"2026-03-12T12:00:00.000Z\",\n    \"end\": \"2026-03-12T13:00:00.000Z\",\n    \"location\": \"Sala 2\",\n    \"allDay\": false,\n    \"timeZone\": \"America/Sao_Paulo\",\n    \"calendar\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"etag\": \"\\\"e2c4208ebe017149cee3c9870b9a52c8\\\"\",\n    \"scheduling\": {\n        \"requested\": false,\n        \"imipEnabled\": true,\n        \"message\": \"no invitations were scheduled\"\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:effect-uid-1\r\nDTSTAMP:20000101T000000Z\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "put personal/effect-uid-1.ics"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "summary": "Reunião de equipe",
+                "start": "2026-03-12T09:00:00-03:00",
+                "end": "2026-03-12T10:00:00-03:00",
+                "timeZone": "America/Sao_Paulo",
+                "location": "Sala 2",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:effect-uid-1\r\nDTSTAMP:20000101T000000Z\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "put personal/effect-uid-1.ics"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "summary": "Reunião de equipe",
+                "start": "2026-03-12T09:00:00-03:00",
+                "end": "2026-03-12T10:00:00-03:00",
+                "timeZone": "America/Sao_Paulo",
+                "location": "Sala 2"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:effect-uid-1\r\nDTSTAMP:20000101T000000Z\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "put personal/effect-uid-1.ics"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Calendar objects are not Files nodes: no system tag or excluded folder can hide a calendar or an event from MCP (VisibilityGuard and FilesAccessGuard do not apply). What narrows the reachable calendars is the administrator resource scope and the native ACL, which are scope and permission refusals, not visibility."
+        }
+    ]
+}

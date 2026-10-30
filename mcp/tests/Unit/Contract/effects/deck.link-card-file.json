@@ -1,0 +1,519 @@
+{
+    "tool": "deck_link_card_file",
+    "grant": "deck.edit",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "cardId": 7,
+                "fileId": 102
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Link file to Deck card**\n\nLink *Orcamento.pdf* to Deck card *Proposta comercial*.\n\nFile: /Propostas/Orcamento.pdf; owner: alice; size: 8 bytes.\n\nCurrent recipients: 1. Names shown: Alice.\n\nReshare: no.\n\nExisting shares created by you (ID, type, recipient, permissions): .\n\nOnly user, group and public-link shares you created are shown. Other shares are not enumerated.\n\nLinking grants read-only access (READ=1) to all current board members shown in this plan. Future board, group and team members can also read the file. Unlinking revokes this link for everyone; independent shares may keep access. A policy enabled after the link, and a later change of board, group or team membership, are not corrected and the link is not revoked automatically. The check is not atomic: access can still change between the last check and the native share. Hashes do not close that gap, and the server does not attest human consent.\n\nNothing was changed. Confirm to execute.\n\n*Linking grants read-only access (READ=1) to all current board members shown in this plan. Future board, group and team members can also read the file. Unlinking revokes this link for everyone; independent shares may keep access. A policy enabled after the link, and a later change of board, group or team membership, are not corrected and the link is not revoked automatically. The check is not atomic: access can still change between the last check and the native share. Hashes do not close that gap, and the server does not attest human consent.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_link_card_file",
+                            "title": "Link file to Deck card",
+                            "action": "deck_link_card_file",
+                            "card": {
+                                "id": 7,
+                                "boardId": 20,
+                                "stackId": 2,
+                                "title": "Proposta comercial"
+                            },
+                            "board": {
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "name": "Comercial",
+                                "shared": false
+                            },
+                            "file": {
+                                "fileId": 102,
+                                "name": "Orcamento.pdf",
+                                "path": "/Propostas/Orcamento.pdf",
+                                "size": 8,
+                                "etag": "<etag#1>",
+                                "owner": "alice"
+                            },
+                            "reshare": false,
+                            "existingShares": [],
+                            "existingSharesScope": "Only user, group and public-link shares you created are shown. Other shares are not enumerated.",
+                            "recipients": {
+                                "total": 1,
+                                "names": [
+                                    {
+                                        "uid": "alice",
+                                        "name": "Alice"
+                                    }
+                                ],
+                                "truncated": false,
+                                "hasGroupAcl": false,
+                                "hasCircleAcl": false
+                            },
+                            "permissions": 1,
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Linking grants read-only access (READ=1) to all current board members shown in this plan. Future board, group and team members can also read the file. Unlinking revokes this link for everyone; independent shares may keep access. A policy enabled after the link, and a later change of board, group or team membership, are not corrected and the link is not revoked automatically. The check is not atomic: access can still change between the last check and the native share. Hashes do not close that gap, and the server does not attest human consent.",
+                            "plan_state": "<plan_state#1>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [],
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                }
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "cardId": 7,
+                "fileId": 102,
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [],
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                }
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "cardId": 7,
+                "fileId": 102,
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Link file to Deck card**\n\nLink *Orcamento.pdf* to Deck card *Proposta comercial*.\n\nFile: /Propostas/Orcamento.pdf; owner: alice; size: 8 bytes.\n\nCurrent recipients: 1. Names shown: Alice.\n\nReshare: no.\n\nExisting shares created by you (ID, type, recipient, permissions): .\n\nOnly user, group and public-link shares you created are shown. Other shares are not enumerated.\n\nLinking grants read-only access (READ=1) to all current board members shown in this plan. Future board, group and team members can also read the file. Unlinking revokes this link for everyone; independent shares may keep access. A policy enabled after the link, and a later change of board, group or team membership, are not corrected and the link is not revoked automatically. The check is not atomic: access can still change between the last check and the native share. Hashes do not close that gap, and the server does not attest human consent.\n\nNothing was changed. Confirm to execute.\n\n*Linking grants read-only access (READ=1) to all current board members shown in this plan. Future board, group and team members can also read the file. Unlinking revokes this link for everyone; independent shares may keep access. A policy enabled after the link, and a later change of board, group or team membership, are not corrected and the link is not revoked automatically. The check is not atomic: access can still change between the last check and the native share. Hashes do not close that gap, and the server does not attest human consent.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_link_card_file",
+                            "title": "Link file to Deck card",
+                            "action": "deck_link_card_file",
+                            "card": {
+                                "id": 7,
+                                "boardId": 20,
+                                "stackId": 2,
+                                "title": "Proposta comercial"
+                            },
+                            "board": {
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "name": "Comercial",
+                                "shared": false
+                            },
+                            "file": {
+                                "fileId": 102,
+                                "name": "Orcamento.pdf",
+                                "path": "/Propostas/Orcamento.pdf",
+                                "size": 8,
+                                "etag": "<etag#1>",
+                                "owner": "alice"
+                            },
+                            "reshare": false,
+                            "existingShares": [],
+                            "existingSharesScope": "Only user, group and public-link shares you created are shown. Other shares are not enumerated.",
+                            "recipients": {
+                                "total": 1,
+                                "names": [
+                                    {
+                                        "uid": "alice",
+                                        "name": "Alice"
+                                    }
+                                ],
+                                "truncated": false,
+                                "hasGroupAcl": false,
+                                "hasCircleAcl": false
+                            },
+                            "permissions": 1,
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Linking grants read-only access (READ=1) to all current board members shown in this plan. Future board, group and team members can also read the file. Unlinking revokes this link for everyone; independent shares may keep access. A policy enabled after the link, and a later change of board, group or team membership, are not corrected and the link is not revoked automatically. The check is not atomic: access can still change between the last check and the native share. Hashes do not close that gap, and the server does not attest human consent.",
+                            "plan_state": "<plan_state#1>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [],
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                }
+            }
+        },
+        {
+            "step": "plan-changed",
+            "arguments": {
+                "cardId": 7,
+                "fileId": 102,
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Link file to Deck card**\n\nLink *Orcamento.pdf* to Deck card *Proposta comercial*.\n\nFile: /Propostas/Orcamento.pdf; owner: alice; size: 15 bytes.\n\nCurrent recipients: 1. Names shown: Alice.\n\nReshare: no.\n\nExisting shares created by you (ID, type, recipient, permissions): .\n\nOnly user, group and public-link shares you created are shown. Other shares are not enumerated.\n\nLinking grants read-only access (READ=1) to all current board members shown in this plan. Future board, group and team members can also read the file. Unlinking revokes this link for everyone; independent shares may keep access. A policy enabled after the link, and a later change of board, group or team membership, are not corrected and the link is not revoked automatically. The check is not atomic: access can still change between the last check and the native share. Hashes do not close that gap, and the server does not attest human consent.\n\nNothing was changed. Confirm to execute.\n\n*Linking grants read-only access (READ=1) to all current board members shown in this plan. Future board, group and team members can also read the file. Unlinking revokes this link for everyone; independent shares may keep access. A policy enabled after the link, and a later change of board, group or team membership, are not corrected and the link is not revoked automatically. The check is not atomic: access can still change between the last check and the native share. Hashes do not close that gap, and the server does not attest human consent.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_link_card_file",
+                            "title": "Link file to Deck card",
+                            "action": "deck_link_card_file",
+                            "card": {
+                                "id": 7,
+                                "boardId": 20,
+                                "stackId": 2,
+                                "title": "Proposta comercial"
+                            },
+                            "board": {
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "name": "Comercial",
+                                "shared": false
+                            },
+                            "file": {
+                                "fileId": 102,
+                                "name": "Orcamento.pdf",
+                                "path": "/Propostas/Orcamento.pdf",
+                                "size": 15,
+                                "etag": "<etag#2>",
+                                "owner": "alice"
+                            },
+                            "reshare": false,
+                            "existingShares": [],
+                            "existingSharesScope": "Only user, group and public-link shares you created are shown. Other shares are not enumerated.",
+                            "recipients": {
+                                "total": 1,
+                                "names": [
+                                    {
+                                        "uid": "alice",
+                                        "name": "Alice"
+                                    }
+                                ],
+                                "truncated": false,
+                                "hasGroupAcl": false,
+                                "hasCircleAcl": false
+                            },
+                            "permissions": 1,
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Linking grants read-only access (READ=1) to all current board members shown in this plan. Future board, group and team members can also read the file. Unlinking revokes this link for everyone; independent shares may keep access. A policy enabled after the link, and a later change of board, group or team membership, are not corrected and the link is not revoked automatically. The check is not atomic: access can still change between the last check and the native share. Hashes do not close that gap, and the server does not attest human consent.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [],
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                }
+            }
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "cardId": 7,
+                "fileId": 102
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Link file to Deck card**\n\nLink *Orcamento.pdf* to Deck card *Proposta comercial*.\n\nFile: /Propostas/Orcamento.pdf; owner: alice; size: 15 bytes.\n\nCurrent recipients: 1. Names shown: Alice.\n\nReshare: no.\n\nExisting shares created by you (ID, type, recipient, permissions): .\n\nOnly user, group and public-link shares you created are shown. Other shares are not enumerated.\n\nLinking grants read-only access (READ=1) to all current board members shown in this plan. Future board, group and team members can also read the file. Unlinking revokes this link for everyone; independent shares may keep access. A policy enabled after the link, and a later change of board, group or team membership, are not corrected and the link is not revoked automatically. The check is not atomic: access can still change between the last check and the native share. Hashes do not close that gap, and the server does not attest human consent.\n\nNothing was changed. Confirm to execute.\n\n*Linking grants read-only access (READ=1) to all current board members shown in this plan. Future board, group and team members can also read the file. Unlinking revokes this link for everyone; independent shares may keep access. A policy enabled after the link, and a later change of board, group or team membership, are not corrected and the link is not revoked automatically. The check is not atomic: access can still change between the last check and the native share. Hashes do not close that gap, and the server does not attest human consent.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "deck_link_card_file",
+                            "title": "Link file to Deck card",
+                            "action": "deck_link_card_file",
+                            "card": {
+                                "id": 7,
+                                "boardId": 20,
+                                "stackId": 2,
+                                "title": "Proposta comercial"
+                            },
+                            "board": {
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "name": "Comercial",
+                                "shared": false
+                            },
+                            "file": {
+                                "fileId": 102,
+                                "name": "Orcamento.pdf",
+                                "path": "/Propostas/Orcamento.pdf",
+                                "size": 15,
+                                "etag": "<etag#2>",
+                                "owner": "alice"
+                            },
+                            "reshare": false,
+                            "existingShares": [],
+                            "existingSharesScope": "Only user, group and public-link shares you created are shown. Other shares are not enumerated.",
+                            "recipients": {
+                                "total": 1,
+                                "names": [
+                                    {
+                                        "uid": "alice",
+                                        "name": "Alice"
+                                    }
+                                ],
+                                "truncated": false,
+                                "hasGroupAcl": false,
+                                "hasCircleAcl": false
+                            },
+                            "permissions": 1,
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Linking grants read-only access (READ=1) to all current board members shown in this plan. Future board, group and team members can also read the file. Unlinking revokes this link for everyone; independent shares may keep access. A policy enabled after the link, and a later change of board, group or team membership, are not corrected and the link is not revoked automatically. The check is not atomic: access can still change between the last check and the native share. Hashes do not close that gap, and the server does not attest human consent.",
+                            "plan_state": "<plan_state#2>",
+                            "timezone": "UTC"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [],
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                }
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "cardId": 7,
+                "fileId": 102,
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"confirmed\": true,\n    \"linked\": true,\n    \"changed\": true,\n    \"attachmentId\": 15,\n    \"file\": {\n        \"fileId\": 102,\n        \"name\": \"Orcamento.pdf\",\n        \"path\": \"/Propostas/Orcamento.pdf\",\n        \"size\": 15,\n        \"etag\": \"<etag#2>\",\n        \"owner\": \"alice\"\n    },\n    \"permissions\": 1,\n    \"verification\": \"returned-id-and-observed-state\"\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "node": 102,
+                        "id": "15",
+                        "type": 12,
+                        "with": "7",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ],
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                }
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "cardId": 8,
+                "fileId": 102,
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "node": 102,
+                        "id": "15",
+                        "type": 12,
+                        "with": "7",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ],
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                }
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "cardId": 8,
+                "fileId": 102
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "node": 102,
+                        "id": "15",
+                        "type": 12,
+                        "with": "7",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ],
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                }
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "cardId": 8,
+                "fileId": 102,
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Card, list or board not found, or no permission."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "node": 102,
+                        "id": "15",
+                        "type": 12,
+                        "with": "7",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ],
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                }
+            }
+        }
+    ]
+}

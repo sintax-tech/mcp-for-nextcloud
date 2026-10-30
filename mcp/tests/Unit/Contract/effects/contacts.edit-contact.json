@@ -1,0 +1,634 @@
+{
+    "tool": "contacts_edit_contact",
+    "grant": "contacts.edit",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "name": "Maria Souza Lima",
+                "organization": "Dalcomad"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit contact**\n\nEditing the contact **Maria Souza** in the address book *Contatos*.\n- Name: Maria Souza → Maria Souza Lima\n- Organization: empty → Dalcomad\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "contacts_edit_contact",
+                            "title": "Edit contact",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "contacts_edit_contact",
+                            "addressbook": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Contatos",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/addressbooks/users/alice/personal/"
+                            },
+                            "etag": "<etag#1>",
+                            "before": {
+                                "uid": "c1",
+                                "name": "Maria Souza",
+                                "organization": "",
+                                "title": "",
+                                "note": "",
+                                "url": "",
+                                "emails": [
+                                    "maria@example.invalid"
+                                ],
+                                "phones": [],
+                                "properties": [
+                                    {
+                                        "name": "VERSION",
+                                        "group": null,
+                                        "value": "3.0",
+                                        "serialized": "VERSION:3.0\r\n"
+                                    },
+                                    {
+                                        "name": "UID",
+                                        "group": null,
+                                        "value": "c1",
+                                        "serialized": "UID:c1\r\n"
+                                    },
+                                    {
+                                        "name": "FN",
+                                        "group": null,
+                                        "value": "Maria Souza",
+                                        "serialized": "FN:Maria Souza\r\n"
+                                    },
+                                    {
+                                        "name": "N",
+                                        "group": null,
+                                        "value": "Souza;Maria;;;",
+                                        "serialized": "N:Souza;Maria;;;\r\n"
+                                    },
+                                    {
+                                        "name": "EMAIL",
+                                        "group": null,
+                                        "value": "maria@example.invalid",
+                                        "serialized": "EMAIL;TYPE=WORK:maria@example.invalid\r\n"
+                                    },
+                                    {
+                                        "name": "X-CUSTOM",
+                                        "group": null,
+                                        "value": "intocado",
+                                        "serialized": "X-CUSTOM;X-PARAM=keep:intocado\r\n"
+                                    }
+                                ],
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                            },
+                            "after": {
+                                "uid": "c1",
+                                "name": "Maria Souza Lima",
+                                "organization": "Dalcomad",
+                                "title": "",
+                                "note": "",
+                                "url": "",
+                                "emails": [
+                                    "maria@example.invalid"
+                                ],
+                                "phones": [],
+                                "properties": [
+                                    {
+                                        "name": "VERSION",
+                                        "group": null,
+                                        "value": "3.0",
+                                        "serialized": "VERSION:3.0\r\n"
+                                    },
+                                    {
+                                        "name": "UID",
+                                        "group": null,
+                                        "value": "c1",
+                                        "serialized": "UID:c1\r\n"
+                                    },
+                                    {
+                                        "name": "FN",
+                                        "group": null,
+                                        "value": "Maria Souza Lima",
+                                        "serialized": "FN:Maria Souza Lima\r\n"
+                                    },
+                                    {
+                                        "name": "N",
+                                        "group": null,
+                                        "value": "Souza;Maria;;;",
+                                        "serialized": "N:Souza;Maria;;;\r\n"
+                                    },
+                                    {
+                                        "name": "EMAIL",
+                                        "group": null,
+                                        "value": "maria@example.invalid",
+                                        "serialized": "EMAIL;TYPE=WORK:maria@example.invalid\r\n"
+                                    },
+                                    {
+                                        "name": "X-CUSTOM",
+                                        "group": null,
+                                        "value": "intocado",
+                                        "serialized": "X-CUSTOM;X-PARAM=keep:intocado\r\n"
+                                    },
+                                    {
+                                        "name": "ORG",
+                                        "group": null,
+                                        "value": "Dalcomad",
+                                        "serialized": "ORG:Dalcomad\r\n"
+                                    }
+                                ],
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Dalcomad\r\nEND:VCARD\r\n"
+                            },
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": "Contacts have no native trash or edit history; review the changes carefully."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "name": "Maria Souza Lima",
+                "organization": "Dalcomad",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "name": "Maria Souza Lima",
+                "organization": "Dalcomad",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit contact**\n\nEditing the contact **Maria Souza** in the address book *Contatos*.\n- Name: Maria Souza → Maria Souza Lima\n- Organization: empty → Dalcomad\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "contacts_edit_contact",
+                            "title": "Edit contact",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "contacts_edit_contact",
+                            "addressbook": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Contatos",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/addressbooks/users/alice/personal/"
+                            },
+                            "etag": "<etag#1>",
+                            "before": {
+                                "uid": "c1",
+                                "name": "Maria Souza",
+                                "organization": "",
+                                "title": "",
+                                "note": "",
+                                "url": "",
+                                "emails": [
+                                    "maria@example.invalid"
+                                ],
+                                "phones": [],
+                                "properties": [
+                                    {
+                                        "name": "VERSION",
+                                        "group": null,
+                                        "value": "3.0",
+                                        "serialized": "VERSION:3.0\r\n"
+                                    },
+                                    {
+                                        "name": "UID",
+                                        "group": null,
+                                        "value": "c1",
+                                        "serialized": "UID:c1\r\n"
+                                    },
+                                    {
+                                        "name": "FN",
+                                        "group": null,
+                                        "value": "Maria Souza",
+                                        "serialized": "FN:Maria Souza\r\n"
+                                    },
+                                    {
+                                        "name": "N",
+                                        "group": null,
+                                        "value": "Souza;Maria;;;",
+                                        "serialized": "N:Souza;Maria;;;\r\n"
+                                    },
+                                    {
+                                        "name": "EMAIL",
+                                        "group": null,
+                                        "value": "maria@example.invalid",
+                                        "serialized": "EMAIL;TYPE=WORK:maria@example.invalid\r\n"
+                                    },
+                                    {
+                                        "name": "X-CUSTOM",
+                                        "group": null,
+                                        "value": "intocado",
+                                        "serialized": "X-CUSTOM;X-PARAM=keep:intocado\r\n"
+                                    }
+                                ],
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                            },
+                            "after": {
+                                "uid": "c1",
+                                "name": "Maria Souza Lima",
+                                "organization": "Dalcomad",
+                                "title": "",
+                                "note": "",
+                                "url": "",
+                                "emails": [
+                                    "maria@example.invalid"
+                                ],
+                                "phones": [],
+                                "properties": [
+                                    {
+                                        "name": "VERSION",
+                                        "group": null,
+                                        "value": "3.0",
+                                        "serialized": "VERSION:3.0\r\n"
+                                    },
+                                    {
+                                        "name": "UID",
+                                        "group": null,
+                                        "value": "c1",
+                                        "serialized": "UID:c1\r\n"
+                                    },
+                                    {
+                                        "name": "FN",
+                                        "group": null,
+                                        "value": "Maria Souza Lima",
+                                        "serialized": "FN:Maria Souza Lima\r\n"
+                                    },
+                                    {
+                                        "name": "N",
+                                        "group": null,
+                                        "value": "Souza;Maria;;;",
+                                        "serialized": "N:Souza;Maria;;;\r\n"
+                                    },
+                                    {
+                                        "name": "EMAIL",
+                                        "group": null,
+                                        "value": "maria@example.invalid",
+                                        "serialized": "EMAIL;TYPE=WORK:maria@example.invalid\r\n"
+                                    },
+                                    {
+                                        "name": "X-CUSTOM",
+                                        "group": null,
+                                        "value": "intocado",
+                                        "serialized": "X-CUSTOM;X-PARAM=keep:intocado\r\n"
+                                    },
+                                    {
+                                        "name": "ORG",
+                                        "group": null,
+                                        "value": "Dalcomad",
+                                        "serialized": "ORG:Dalcomad\r\n"
+                                    }
+                                ],
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Dalcomad\r\nEND:VCARD\r\n"
+                            },
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": "Contacts have no native trash or edit history; review the changes carefully."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "The Contacts module keeps no plan fingerprint (no PlanState/PlanChanged). The plan returns the ETag of the contact and the confirmed call carries it: when the card changed in between, the ETag no longer matches and the call is refused as a conflict, without a new plan."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "name": "Maria Souza Lima",
+                "organization": "Dalcomad"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Edit contact**\n\nEditing the contact **Maria Souza** in the address book *Contatos*.\n- Name: Maria Souza → Maria Souza Lima\n- Organization: empty → Dalcomad\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with etag `<etag#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "contacts_edit_contact",
+                            "title": "Edit contact",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "contacts_edit_contact",
+                            "addressbook": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Contatos",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/addressbooks/users/alice/personal/"
+                            },
+                            "etag": "<etag#1>",
+                            "before": {
+                                "uid": "c1",
+                                "name": "Maria Souza",
+                                "organization": "",
+                                "title": "",
+                                "note": "",
+                                "url": "",
+                                "emails": [
+                                    "maria@example.invalid"
+                                ],
+                                "phones": [],
+                                "properties": [
+                                    {
+                                        "name": "VERSION",
+                                        "group": null,
+                                        "value": "3.0",
+                                        "serialized": "VERSION:3.0\r\n"
+                                    },
+                                    {
+                                        "name": "UID",
+                                        "group": null,
+                                        "value": "c1",
+                                        "serialized": "UID:c1\r\n"
+                                    },
+                                    {
+                                        "name": "FN",
+                                        "group": null,
+                                        "value": "Maria Souza",
+                                        "serialized": "FN:Maria Souza\r\n"
+                                    },
+                                    {
+                                        "name": "N",
+                                        "group": null,
+                                        "value": "Souza;Maria;;;",
+                                        "serialized": "N:Souza;Maria;;;\r\n"
+                                    },
+                                    {
+                                        "name": "EMAIL",
+                                        "group": null,
+                                        "value": "maria@example.invalid",
+                                        "serialized": "EMAIL;TYPE=WORK:maria@example.invalid\r\n"
+                                    },
+                                    {
+                                        "name": "X-CUSTOM",
+                                        "group": null,
+                                        "value": "intocado",
+                                        "serialized": "X-CUSTOM;X-PARAM=keep:intocado\r\n"
+                                    }
+                                ],
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                            },
+                            "after": {
+                                "uid": "c1",
+                                "name": "Maria Souza Lima",
+                                "organization": "Dalcomad",
+                                "title": "",
+                                "note": "",
+                                "url": "",
+                                "emails": [
+                                    "maria@example.invalid"
+                                ],
+                                "phones": [],
+                                "properties": [
+                                    {
+                                        "name": "VERSION",
+                                        "group": null,
+                                        "value": "3.0",
+                                        "serialized": "VERSION:3.0\r\n"
+                                    },
+                                    {
+                                        "name": "UID",
+                                        "group": null,
+                                        "value": "c1",
+                                        "serialized": "UID:c1\r\n"
+                                    },
+                                    {
+                                        "name": "FN",
+                                        "group": null,
+                                        "value": "Maria Souza Lima",
+                                        "serialized": "FN:Maria Souza Lima\r\n"
+                                    },
+                                    {
+                                        "name": "N",
+                                        "group": null,
+                                        "value": "Souza;Maria;;;",
+                                        "serialized": "N:Souza;Maria;;;\r\n"
+                                    },
+                                    {
+                                        "name": "EMAIL",
+                                        "group": null,
+                                        "value": "maria@example.invalid",
+                                        "serialized": "EMAIL;TYPE=WORK:maria@example.invalid\r\n"
+                                    },
+                                    {
+                                        "name": "X-CUSTOM",
+                                        "group": null,
+                                        "value": "intocado",
+                                        "serialized": "X-CUSTOM;X-PARAM=keep:intocado\r\n"
+                                    },
+                                    {
+                                        "name": "ORG",
+                                        "group": null,
+                                        "value": "Dalcomad",
+                                        "serialized": "ORG:Dalcomad\r\n"
+                                    }
+                                ],
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Dalcomad\r\nEND:VCARD\r\n"
+                            },
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": "Contacts have no native trash or edit history; review the changes carefully."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "name": "Maria Souza Lima",
+                "organization": "Dalcomad",
+                "confirm": true,
+                "etag": "<etag#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"uid\": \"c1\",\n    \"name\": \"Maria Souza Lima\",\n    \"organization\": \"Dalcomad\",\n    \"title\": \"\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [\n        \"maria@example.invalid\"\n    ],\n    \"phones\": [],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"c1\",\n            \"serialized\": \"UID:c1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Maria Souza Lima\",\n            \"serialized\": \"FN:Maria Souza Lima\\r\\n\"\n        },\n        {\n            \"name\": \"N\",\n            \"group\": null,\n            \"value\": \"Souza;Maria;;;\",\n            \"serialized\": \"N:Souza;Maria;;;\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"maria@example.invalid\",\n            \"serialized\": \"EMAIL;TYPE=WORK:maria@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"X-CUSTOM\",\n            \"group\": null,\n            \"value\": \"intocado\",\n            \"serialized\": \"X-CUSTOM;X-PARAM=keep:intocado\\r\\n\"\n        },\n        {\n            \"name\": \"ORG\",\n            \"group\": null,\n            \"value\": \"Dalcomad\",\n            \"serialized\": \"ORG:Dalcomad\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:c1\\r\\nFN:Maria Souza Lima\\r\\nN:Souza;Maria;;;\\r\\nEMAIL;TYPE=WORK:maria@example.invalid\\r\\nX-CUSTOM;X-PARAM=keep:intocado\\r\\nORG:Dalcomad\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"c1.vcf\",\n    \"etag\": \"\\\"328f982c9d46a0b32a7c1bb4c9d02ad0\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"status\": 204\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Dalcomad\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": [
+                    "update personal/c1.vcf"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "name": "Maria Souza Lima",
+                "organization": "Dalcomad",
+                "confirm": true,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Dalcomad\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": [
+                    "update personal/c1.vcf"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "name": "Maria Souza Lima",
+                "organization": "Dalcomad"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Dalcomad\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": [
+                    "update personal/c1.vcf"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "skipped": "Contacts are CardDAV objects, not Files nodes: no system tag or excluded folder can hide an address book or a card from MCP (VisibilityGuard and FilesAccessGuard do not apply). The accounts catalog is read-only by design and foreign books are not found: permission refusals, not visibility."
+        }
+    ]
+}

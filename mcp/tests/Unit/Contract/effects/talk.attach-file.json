@@ -1,0 +1,365 @@
+{
+    "tool": "talk_attach_file",
+    "grant": "talk.attach",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "path": "Relatorios/Q3.pdf",
+                "message": "Segue o relatório do trimestre."
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Attach file in Talk**\n\nThe file **Q3.pdf** (11 bytes) will be shared in **Projeto Alfa**.\n\nCaption, sent as a message right after the file:\n\n> Segue o relatório do trimestre.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user exactly as it will be sent to the conversation 'Projeto Alfa', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_attach_file",
+                            "title": "Attach file in Talk",
+                            "action": "talk_attach_file",
+                            "conversation": {
+                                "token": "abcd1234",
+                                "displayName": "Projeto Alfa"
+                            },
+                            "draft": {
+                                "message": "Segue o relatório do trimestre.",
+                                "file": {
+                                    "path": "/alice/files/Relatorios/Q3.pdf",
+                                    "name": "Q3.pdf",
+                                    "size": 11
+                                }
+                            },
+                            "message": "Show this plan to the user exactly as it will be sent to the conversation 'Projeto Alfa', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [],
+                "messages": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "path": "Relatorios/Q3.pdf",
+                "message": "Segue o relatório do trimestre.",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [],
+                "messages": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "path": "Relatorios/Q3.pdf",
+                "message": "Segue o relatório do trimestre.",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Attach file in Talk**\n\nThe file **Q3.pdf** (11 bytes) will be shared in **Projeto Alfa**.\n\nCaption, sent as a message right after the file:\n\n> Segue o relatório do trimestre.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user exactly as it will be sent to the conversation 'Projeto Alfa', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_attach_file",
+                            "title": "Attach file in Talk",
+                            "action": "talk_attach_file",
+                            "conversation": {
+                                "token": "abcd1234",
+                                "displayName": "Projeto Alfa"
+                            },
+                            "draft": {
+                                "message": "Segue o relatório do trimestre.",
+                                "file": {
+                                    "path": "/alice/files/Relatorios/Q3.pdf",
+                                    "name": "Q3.pdf",
+                                    "size": 11
+                                }
+                            },
+                            "message": "Show this plan to the user exactly as it will be sent to the conversation 'Projeto Alfa', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [],
+                "messages": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "talk_attach_file signs no plan: the confirmed call resolves the path again and shares the file it finds there, and refuses one already shared in the conversation."
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "path": "Relatorios/Q3.pdf",
+                "message": "Segue o relatório do trimestre."
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Attach file in Talk**\n\nThe file **Q3.pdf** (11 bytes) will be shared in **Projeto Alfa**.\n\nCaption, sent as a message right after the file:\n\n> Segue o relatório do trimestre.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user exactly as it will be sent to the conversation 'Projeto Alfa', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "talk_attach_file",
+                            "title": "Attach file in Talk",
+                            "action": "talk_attach_file",
+                            "conversation": {
+                                "token": "abcd1234",
+                                "displayName": "Projeto Alfa"
+                            },
+                            "draft": {
+                                "message": "Segue o relatório do trimestre.",
+                                "file": {
+                                    "path": "/alice/files/Relatorios/Q3.pdf",
+                                    "name": "Q3.pdf",
+                                    "size": 11
+                                }
+                            },
+                            "message": "Show this plan to the user exactly as it will be sent to the conversation 'Projeto Alfa', ask whether they really want it and only repeat the same call with confirm: true after they explicitly say yes. If they ask for changes, adjust the text, call the tool again and show the new plan. Without that confirmation the server publishes nothing."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [],
+                "messages": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "path": "Relatorios/Q3.pdf",
+                "message": "Segue o relatório do trimestre.",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"conversation_token\": \"abcd1234\",\n    \"attachmentId\": 15,\n    \"file\": {\n        \"path\": \"/alice/files/Relatorios/Q3.pdf\",\n        \"name\": \"Q3.pdf\",\n        \"size\": 11\n    },\n    \"caption\": \"Segue o relatório do trimestre.\",\n    \"captionSent\": true,\n    \"messageId\": 55\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "node": 102,
+                        "id": "15",
+                        "type": 10,
+                        "with": "abcd1234",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ],
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "Segue o relatório do trimestre.",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "conversation_token": "efgh5678",
+                "path": "Relatorios/Q3.pdf",
+                "message": "Segue o relatório do trimestre.",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "node": 102,
+                        "id": "15",
+                        "type": 10,
+                        "with": "abcd1234",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ],
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "Segue o relatório do trimestre.",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "conversation_token": "efgh5678",
+                "path": "Relatorios/Q3.pdf",
+                "message": "Segue o relatório do trimestre."
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "node": 102,
+                        "id": "15",
+                        "type": 10,
+                        "with": "abcd1234",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ],
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "Segue o relatório do trimestre.",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "conversation_token": "efgh5678",
+                "path": "Relatorios/Q3.pdf",
+                "message": "Segue o relatório do trimestre.",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "file not found or not accessible"
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "node": 102,
+                        "id": "15",
+                        "type": 10,
+                        "with": "abcd1234",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ],
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "Segue o relatório do trimestre.",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ]
+            }
+        }
+    ]
+}

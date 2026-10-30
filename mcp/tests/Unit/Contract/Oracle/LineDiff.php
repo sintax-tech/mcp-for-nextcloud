@@ -8,7 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract\Oracle;
 
 /**
- * Line diff of two texts in the unified style (`-` expected, `+` actual, context around each change), so a failing
+ * Line diff of two texts in the unified style (`-` golden line number, `+` actual line number, context around each
+ * change, removals before additions), so a failing
  * golden says which lines moved instead of printing two walls of JSON.
  *
  * The common prefix and suffix are cut first; only the differing middle goes through the longest common subsequence,
@@ -53,21 +54,20 @@ final class LineDiff {
 			$lines[] = '  ' . ($i + 1) . ': ' . $old[$i];
 		}
 		$oldLine = $start;
+		$newLine = $start;
 		foreach ($ops as [$kind, $text]) {
 			if ($kind === '~') {
 				$oldLine += (int)$text;
+				$newLine += (int)$text;
 				$lines[] = '  … ' . $text . ' unchanged lines';
-				continue;
+			} elseif ($kind === '=') {
+				$lines[] = '  ' . ++$oldLine . ': ' . $text;
+				$newLine++;
+			} elseif ($kind === '-') {
+				$lines[] = '- ' . ++$oldLine . ': ' . $text;
+			} else {
+				$lines[] = '+ ' . ++$newLine . ': ' . $text;
 			}
-			if ($kind === '=') {
-				$oldLine++;
-				$lines[] = '  ' . $oldLine . ': ' . $text;
-				continue;
-			}
-			if ($kind === '-') {
-				$oldLine++;
-			}
-			$lines[] = $kind . ' ' . $oldLine . ': ' . $text;
 		}
 		for ($i = $endOld; $i < min(count($old), $endOld + self::CONTEXT); $i++) {
 			$lines[] = '  ' . ($i + 1) . ': ' . $old[$i];
@@ -108,7 +108,7 @@ final class LineDiff {
 			if ($i < $n && $j < $m && $old[$i] === $new[$j]) {
 				$ops[] = ['=', $old[$i++]];
 				$j++;
-			} elseif ($j < $m && ($i === $n || $table[$i][$j + 1] >= $table[$i + 1][$j])) {
+			} elseif ($j < $m && ($i === $n || $table[$i][$j + 1] > $table[$i + 1][$j])) {
 				$ops[] = ['+', $new[$j++]];
 			} else {
 				$ops[] = ['-', $old[$i++]];

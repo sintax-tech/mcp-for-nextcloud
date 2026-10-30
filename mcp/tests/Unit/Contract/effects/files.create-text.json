@@ -1,0 +1,344 @@
+{
+    "tool": "files_create",
+    "grant": "files.create",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "path": "/Documentos/novo.txt",
+                "content": "primeira linha\nsegunda linha\n"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create text file**\n\nCreate the text file **/Documentos/novo.txt**.\n\n- Inside: **/Documentos**\n- Size: 29 B\n- Nothing is overwritten: if a file with this name already exists, with content, nothing is written.\n\nContent:\n> primeira linha\n> segunda linha\n\nNothing was changed. Confirm to execute.\n\n*After your approval the new text file below is created.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_create",
+                            "title": "Create text file",
+                            "action": "files_create",
+                            "path": "/Documentos/novo.txt",
+                            "name": "novo.txt",
+                            "folder": "/Documentos",
+                            "size": 29,
+                            "preview": "primeira linha\nsegunda linha\n",
+                            "previewTruncated": false,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "consequence": "Nothing is overwritten: if a file with this name already exists, with content, nothing is written.",
+                            "message": "Nothing was changed. After your approval the new text file below is created."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Documentos/ata.md": "# Ata\nolá"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "path": "/Documentos/novo.txt",
+                "content": "primeira linha\nsegunda linha\n",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Documentos/ata.md": "# Ata\nolá"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "path": "/Documentos/novo.txt",
+                "content": "primeira linha\nsegunda linha\n",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create text file**\n\nCreate the text file **/Documentos/novo.txt**.\n\n- Inside: **/Documentos**\n- Size: 29 B\n- Nothing is overwritten: if a file with this name already exists, with content, nothing is written.\n\nContent:\n> primeira linha\n> segunda linha\n\nNothing was changed. Confirm to execute.\n\n*After your approval the new text file below is created.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_create",
+                            "title": "Create text file",
+                            "action": "files_create",
+                            "path": "/Documentos/novo.txt",
+                            "name": "novo.txt",
+                            "folder": "/Documentos",
+                            "size": 29,
+                            "preview": "primeira linha\nsegunda linha\n",
+                            "previewTruncated": false,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "consequence": "Nothing is overwritten: if a file with this name already exists, with content, nothing is written.",
+                            "message": "Nothing was changed. After your approval the new text file below is created."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Documentos/ata.md": "# Ata\nolá"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "files_create carries no plan_state: the plan only shows a name that is free, and a file that takes the name between plan and confirmation is refused as FileExists, never answered with a new plan"
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "path": "/Documentos/novo.txt",
+                "content": "primeira linha\nsegunda linha\n"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create text file**\n\nCreate the text file **/Documentos/novo.txt**.\n\n- Inside: **/Documentos**\n- Size: 29 B\n- Nothing is overwritten: if a file with this name already exists, with content, nothing is written.\n\nContent:\n> primeira linha\n> segunda linha\n\nNothing was changed. Confirm to execute.\n\n*After your approval the new text file below is created.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_create",
+                            "title": "Create text file",
+                            "action": "files_create",
+                            "path": "/Documentos/novo.txt",
+                            "name": "novo.txt",
+                            "folder": "/Documentos",
+                            "size": 29,
+                            "preview": "primeira linha\nsegunda linha\n",
+                            "previewTruncated": false,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "requiresSharedConfirmation": false,
+                            "recoverable": true,
+                            "consequence": "Nothing is overwritten: if a file with this name already exists, with content, nothing is written.",
+                            "message": "Nothing was changed. After your approval the new text file below is created."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Documentos/ata.md": "# Ata\nolá"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "path": "/Documentos/novo.txt",
+                "content": "primeira linha\nsegunda linha\n",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"path\": \"/Documentos/novo.txt\",\n    \"size\": 29,\n    \"etag\": \"e103+\",\n    \"fileId\": 103,\n    \"access\": {\n        \"scope\": \"personal\",\n        \"owner\": \"alice\",\n        \"ownerDisplayName\": \"Alice\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        }\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Documentos/ata.md": "# Ata\nolá",
+                    "/alice/files/Documentos/novo.txt": "primeira linha\nsegunda linha\n"
+                },
+                "ops": [
+                    "create /alice/files/Documentos/novo.txt",
+                    "write /alice/files/Documentos/novo.txt"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "path": "/Documentos/novo.txt",
+                "content": "primeira linha\nsegunda linha\n",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Documentos/ata.md": "# Ata\nolá",
+                    "/alice/files/Documentos/novo.txt": "primeira linha\nsegunda linha\n"
+                },
+                "ops": [
+                    "create /alice/files/Documentos/novo.txt",
+                    "write /alice/files/Documentos/novo.txt"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "path": "/Documentos/novo.txt",
+                "content": "primeira linha\nsegunda linha\n"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "A file with this name already exists; use files_checkout to replace it or choose another name."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Documentos/ata.md": "# Ata\nolá",
+                    "/alice/files/Documentos/novo.txt": "primeira linha\nsegunda linha\n"
+                },
+                "ops": [
+                    "create /alice/files/Documentos/novo.txt",
+                    "write /alice/files/Documentos/novo.txt"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "path": "/Documentos/novo.txt",
+                "content": "primeira linha\nsegunda linha\n",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud. If the destination folder does not exist yet, create it first with files_mkdir."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Documentos/ata.md": "# Ata\nolá",
+                    "/alice/files/Documentos/novo.txt": "primeira linha\nsegunda linha\n"
+                },
+                "ops": [
+                    "create /alice/files/Documentos/novo.txt",
+                    "write /alice/files/Documentos/novo.txt"
+                ]
+            }
+        }
+    ]
+}

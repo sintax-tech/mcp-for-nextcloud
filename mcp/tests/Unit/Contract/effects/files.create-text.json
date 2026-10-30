@@ -307,6 +307,40 @@
             }
         },
         {
+            "step": "guest-confirmed",
+            "arguments": {
+                "path": "/Documentos/novo.txt",
+                "content": "primeira linha\nsegunda linha\n",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "A file with this name already exists; use files_checkout to replace it or choose another name."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Documentos/ata.md": "# Ata\nolá",
+                    "/alice/files/Documentos/novo.txt": "primeira linha\nsegunda linha\n"
+                },
+                "ops": [
+                    "create /alice/files/Documentos/novo.txt",
+                    "write /alice/files/Documentos/novo.txt"
+                ]
+            }
+        },
+        {
             "step": "hidden",
             "arguments": {
                 "path": "/Documentos/novo.txt",

@@ -435,6 +435,42 @@
             }
         },
         {
+            "step": "guest-confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "uid": "event",
+                "summary": "Planejamento trimestral",
+                "location": "Sala 3",
+                "confirm": true,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSUMMARY:Planejamento trimestral\r\nLOCATION:Sala 3\r\nSEQUENCE:1\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "update personal/event.ics"
+                ]
+            }
+        },
+        {
             "step": "hidden",
             "skipped": "Calendar objects are not Files nodes: no system tag or excluded folder can hide a calendar or an event from MCP (VisibilityGuard and FilesAccessGuard do not apply). What narrows the reachable calendars is the administrator resource scope and the native ACL, which are scope and permission refusals, not visibility."
         }

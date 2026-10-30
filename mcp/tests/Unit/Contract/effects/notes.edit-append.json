@@ -430,6 +430,39 @@
             }
         },
         {
+            "step": "guest-confirmed",
+            "arguments": {
+                "id": 102,
+                "append": "próximos passos",
+                "etag": "<etag#2>",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "files": {
+                    "/alice/files/Notes/Ata.md": "decisões\nnova linha\npróximos passos\n"
+                },
+                "ops": [
+                    "write /alice/files/Notes/Ata.md"
+                ]
+            }
+        },
+        {
             "step": "hidden",
             "arguments": {
                 "id": 102,

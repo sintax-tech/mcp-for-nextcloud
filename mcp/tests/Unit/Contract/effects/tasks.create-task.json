@@ -259,7 +259,7 @@
                         "content": [
                             {
                                 "type": "text",
-                                "text": "{\n    \"uid\": \"effect-uid-1\",\n    \"summary\": \"Enviar relatório\",\n    \"description\": \"Fechamento de março\",\n    \"status\": \"NEEDS-ACTION\",\n    \"percentComplete\": 0,\n    \"priority\": 1,\n    \"start\": null,\n    \"due\": \"2026-03-20T21:00:00+00:00\",\n    \"completed\": null,\n    \"categories\": [],\n    \"parent\": null,\n    \"recurring\": false,\n    \"icalendar\": \"BEGIN:VCALENDAR\\r\\nVERSION:2.0\\r\\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\nCALSCALE:GREGORIAN\\r\\nBEGIN:VTODO\\r\\nUID:effect-uid-1\\r\\nSUMMARY:Enviar relatório\\r\\nSTATUS:NEEDS-ACTION\\r\\nDESCRIPTION:Fechamento de março\\r\\nPRIORITY:1\\r\\nDUE:20260320T210000Z\\r\\nDTSTAMP:20260310T120000Z\\r\\nLAST-MODIFIED:20260310T120000Z\\r\\nSEQUENCE:1\\r\\nEND:VTODO\\r\\nEND:VCALENDAR\\r\\n\",\n    \"etag\": \"\\\"a3fb0ff43c17cb04e6908bada3f02288\\\"\",\n    \"calendar\": \"/remote.php/dav/calendars/alice/tasks/\"\n}"
+                                "text": "{\n    \"uid\": \"<drawn-uid#1>\",\n    \"summary\": \"Enviar relatório\",\n    \"description\": \"Fechamento de março\",\n    \"status\": \"NEEDS-ACTION\",\n    \"percentComplete\": 0,\n    \"priority\": 1,\n    \"start\": null,\n    \"due\": \"2026-03-20T21:00:00+00:00\",\n    \"completed\": null,\n    \"categories\": [],\n    \"parent\": null,\n    \"recurring\": false,\n    \"icalendar\": \"BEGIN:VCALENDAR\\r\\nVERSION:2.0\\r\\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\nCALSCALE:GREGORIAN\\r\\nBEGIN:VTODO\\r\\nUID:<drawn-uid#1>\\r\\nSUMMARY:Enviar relatório\\r\\nSTATUS:NEEDS-ACTION\\r\\nDESCRIPTION:Fechamento de março\\r\\nPRIORITY:1\\r\\nDUE:20260320T210000Z\\r\\nDTSTAMP:20260310T120000Z\\r\\nLAST-MODIFIED:20260310T120000Z\\r\\nSEQUENCE:1\\r\\nEND:VTODO\\r\\nEND:VCALENDAR\\r\\n\",\n    \"etag\": \"\\\"<etag-of-drawn-object#1>\\\"\",\n    \"calendar\": \"/remote.php/dav/calendars/alice/tasks/\"\n}"
                             }
                         ]
                     }
@@ -268,11 +268,11 @@
             "state": {
                 "objects": {
                     "1": [
-                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VTODO\r\nUID:effect-uid-1\r\nSUMMARY:Enviar relatório\r\nSTATUS:NEEDS-ACTION\r\nDESCRIPTION:Fechamento de março\r\nPRIORITY:1\r\nDUE:20260320T210000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VTODO\r\nUID:<drawn-uid#1>\r\nSUMMARY:Enviar relatório\r\nSTATUS:NEEDS-ACTION\r\nDESCRIPTION:Fechamento de março\r\nPRIORITY:1\r\nDUE:20260320T210000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
                     ]
                 },
                 "dav": [
-                    "put tasks/effect-uid-1.ics"
+                    "put tasks/<drawn-uid#1>.ics"
                 ]
             }
         },
@@ -304,11 +304,11 @@
             "state": {
                 "objects": {
                     "1": [
-                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VTODO\r\nUID:effect-uid-1\r\nSUMMARY:Enviar relatório\r\nSTATUS:NEEDS-ACTION\r\nDESCRIPTION:Fechamento de março\r\nPRIORITY:1\r\nDUE:20260320T210000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VTODO\r\nUID:<drawn-uid#1>\r\nSUMMARY:Enviar relatório\r\nSTATUS:NEEDS-ACTION\r\nDESCRIPTION:Fechamento de março\r\nPRIORITY:1\r\nDUE:20260320T210000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
                     ]
                 },
                 "dav": [
-                    "put tasks/effect-uid-1.ics"
+                    "put tasks/<drawn-uid#1>.ics"
                 ]
             }
         },
@@ -339,11 +339,47 @@
             "state": {
                 "objects": {
                     "1": [
-                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VTODO\r\nUID:effect-uid-1\r\nSUMMARY:Enviar relatório\r\nSTATUS:NEEDS-ACTION\r\nDESCRIPTION:Fechamento de março\r\nPRIORITY:1\r\nDUE:20260320T210000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VTODO\r\nUID:<drawn-uid#1>\r\nSUMMARY:Enviar relatório\r\nSTATUS:NEEDS-ACTION\r\nDESCRIPTION:Fechamento de março\r\nPRIORITY:1\r\nDUE:20260320T210000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
                     ]
                 },
                 "dav": [
-                    "put tasks/effect-uid-1.ics"
+                    "put tasks/<drawn-uid#1>.ics"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/tasks/",
+                "summary": "Enviar relatório",
+                "description": "Fechamento de março",
+                "due": "2026-03-20T18:00:00-03:00",
+                "priority": 1,
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nCALSCALE:GREGORIAN\r\nBEGIN:VTODO\r\nUID:<drawn-uid#1>\r\nSUMMARY:Enviar relatório\r\nSTATUS:NEEDS-ACTION\r\nDESCRIPTION:Fechamento de março\r\nPRIORITY:1\r\nDUE:20260320T210000Z\r\nDTSTAMP:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:1\r\nEND:VTODO\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "put tasks/<drawn-uid#1>.ics"
                 ]
             }
         },

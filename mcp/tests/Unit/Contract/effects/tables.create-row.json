@@ -492,6 +492,57 @@
             }
         },
         {
+            "step": "guest-confirmed",
+            "arguments": {
+                "table_id": 1,
+                "cells": [
+                    {
+                        "column_id": 11,
+                        "value": "Gamma"
+                    },
+                    {
+                        "column_id": 12,
+                        "value": 25
+                    }
+                ],
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "rows": {
+                    "5": {
+                        "11": "Alpha",
+                        "12": 10.0,
+                        "14": "ok"
+                    },
+                    "6": {
+                        "11": "Beta",
+                        "14": "no"
+                    },
+                    "1002": {
+                        "11": "Gamma",
+                        "12": 25.0
+                    }
+                },
+                "creates": 1
+            }
+        },
+        {
             "step": "hidden",
             "skipped": "Tables rows live in the Tables database, not in Files: no system tag or excluded folder can hide a table from MCP"
         }

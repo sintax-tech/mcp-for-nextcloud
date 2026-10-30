@@ -508,6 +508,47 @@
             }
         },
         {
+            "step": "guest-confirmed",
+            "arguments": {
+                "cardId": 7,
+                "add": [
+                    2
+                ],
+                "remove": [
+                    1
+                ],
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "labels": {
+                    "7": [
+                        2
+                    ],
+                    "8": []
+                },
+                "writes": [
+                    "7 -1",
+                    "7 +2"
+                ]
+            }
+        },
+        {
             "step": "hidden",
             "skipped": "A Deck card has no exclusion of its own: the hidden system tag applies to Files nodes, and deck_edit_card_labels touches no file; access to the card is the Deck ACL, read by the gateway."
         }

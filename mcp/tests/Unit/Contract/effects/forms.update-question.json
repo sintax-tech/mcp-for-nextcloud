@@ -531,6 +531,53 @@
             }
         },
         {
+            "step": "guest-confirmed",
+            "arguments": {
+                "form_id": 1,
+                "question_id": 2,
+                "changes": {
+                    "text": "E-mail para contato"
+                },
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "question": {
+                    "id": 2,
+                    "formId": 1,
+                    "order": 1,
+                    "type": "short",
+                    "text": "E-mail para contato",
+                    "description": "Usado só para o recibo",
+                    "isRequired": false,
+                    "extraSettings": {
+                        "validationType": "email"
+                    }
+                },
+                "patches": [
+                    {
+                        "text": "E-mail para contato"
+                    }
+                ],
+                "lastUpdated": "<lastUpdated#2>"
+            }
+        },
+        {
             "step": "hidden",
             "skipped": "Forms live in the Forms database, not in Files: no system tag or excluded folder can hide a form from MCP"
         }

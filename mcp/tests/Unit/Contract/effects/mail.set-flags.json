@@ -395,6 +395,43 @@
             }
         },
         {
+            "step": "guest-confirmed",
+            "arguments": {
+                "message_id": 50,
+                "seen": true,
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "serverFlags": [
+                    "\\seen"
+                ],
+                "imap": [
+                    "imap:status",
+                    "imap:select",
+                    "imap:status(selected)",
+                    "imap:fetch:envelope,flags",
+                    "imap:store:+\\seen",
+                    "imap:logout"
+                ]
+            }
+        },
+        {
             "step": "hidden",
             "skipped": "Mail messages live in the Mail app, not in Files: no system tag or excluded folder can hide a message from MCP"
         }

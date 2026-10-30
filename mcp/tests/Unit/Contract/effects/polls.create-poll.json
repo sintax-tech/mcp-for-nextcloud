@@ -811,6 +811,99 @@
             }
         },
         {
+            "step": "guest-confirmed",
+            "arguments": {
+                "type": "textPoll",
+                "title": "Almoço de sexta",
+                "options": [
+                    {
+                        "text": "Pizza"
+                    },
+                    {
+                        "text": "Sushi"
+                    }
+                ],
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "polls": {
+                    "100": {
+                        "access": "private",
+                        "votingVariant": "simple",
+                        "showResults": "always",
+                        "description": null,
+                        "allowMaybe": 1,
+                        "allowComment": 1,
+                        "hideBookedUp": 1,
+                        "useNo": 1,
+                        "allowProposals": "disallow",
+                        "proposalsExpire": 0,
+                        "optionLimit": 0,
+                        "expire": 0,
+                        "anonymous": 0,
+                        "voteLimit": 0,
+                        "deleted": 0,
+                        "adminAccess": 0,
+                        "miscSettings": null,
+                        "timezoneName": null,
+                        "id": 100,
+                        "type": "textPoll",
+                        "title": "Almoço de sexta",
+                        "owner": "alice",
+                        "created": 100,
+                        "lastInteraction": 100,
+                        "members": [],
+                        "delegates": []
+                    }
+                },
+                "options": {
+                    "100": [
+                        {
+                            "id": 101,
+                            "pollId": 100,
+                            "text": "Pizza",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "order": 1
+                        },
+                        {
+                            "id": 102,
+                            "pollId": 100,
+                            "text": "Sushi",
+                            "timestamp": "<timestamp#1>",
+                            "duration": 0,
+                            "order": 2
+                        }
+                    ]
+                },
+                "stages": [
+                    "poll.insert",
+                    "poll.update",
+                    "poll.event",
+                    "option.insert",
+                    "option.event",
+                    "option.insert",
+                    "option.event"
+                ]
+            }
+        },
+        {
             "step": "hidden",
             "skipped": "Polls live in the Polls database, not in Files: no system tag or excluded folder can hide a poll from MCP"
         }

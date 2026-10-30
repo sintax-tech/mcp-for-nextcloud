@@ -455,6 +455,64 @@
             }
         },
         {
+            "step": "guest-confirmed",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "user:bruno",
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"action\": \"none\",\n    \"changed\": false,\n    \"shareId\": \"ocinternal:1\",\n    \"type\": \"user\",\n    \"with\": {\n        \"id\": \"bruno\",\n        \"displayName\": \"Bruno Lima\"\n    },\n    \"permission\": \"view\",\n    \"reshare\": false,\n    \"expires\": null,\n    \"hasPassword\": false,\n    \"removable\": true,\n    \"path\": \"/Documentos/ata.md\"\n}"
+                            }
+                        ],
+                        "structuredContent": {
+                            "action": "none",
+                            "changed": false,
+                            "shareId": "ocinternal:1",
+                            "type": "user",
+                            "with": {
+                                "id": "bruno",
+                                "displayName": "Bruno Lima"
+                            },
+                            "permission": "view",
+                            "reshare": false,
+                            "expires": null,
+                            "hasPassword": false,
+                            "removable": true,
+                            "path": "/Documentos/ata.md"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 102,
+                        "type": 0,
+                        "with": "bruno",
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": [
+                    "update 1"
+                ]
+            }
+        },
+        {
             "step": "hidden",
             "arguments": {
                 "path": "/Documentos/ata.md",

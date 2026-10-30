@@ -19,7 +19,9 @@ use PHPUnit\Framework\TestCase;
  * 4. `confirmed` — a fresh plan confirmed with confirm: true (and its plan_state) has the effect;
  * 5. `no-grant` — with the grant revoked a confirmation valid a moment before is refused as an unknown tool and
  *    writes nothing;
- * 6. `guest` — a guest whose Guests app list holds only Files (which Guests always allows) asks for the plan;
+ * 6. `guest` / `guest-confirmed` — a guest whose Guests app list holds only Files (which Guests always allows)
+ *    asks for the plan, then sends a confirmation valid a moment before: outside Files both are refused as an unknown
+ *    tool and write nothing; a Files tool stays available to the guest;
  * 7. `hidden` — with the target hidden from MCP a confirmation valid a moment before is refused and writes nothing.
  *
  * Besides the golden, the runner asserts the invariants directly, so a regenerated golden can never bless a write
@@ -73,12 +75,7 @@ final class FlowRunner {
 		$denied = $this->step('no-grant', $flow, $current, $after);
 		$this->test->assertSame('Unknown tool', $denied['body']->error->message ?? null, $flow->tool . ': no grant must read as no tool: ' . json_encode($denied['body']));
 		$this->gate->grant($flow->module, $flow->operation, true);
-		$this->gate->guest(self::GUEST_APPS);
-		$guest = $this->step('guest', $flow, $flow->arguments(), $after);
-		if ($flow->module !== 'files') {
-			$this->test->assertSame('Unknown tool', $guest['body']->error->message ?? null, $flow->tool . ': Guests must hide the app: ' . json_encode($guest['body']));
-		}
-		$this->gate->guest(null);
+		$after = $this->guest($flow, $after);
 		if ($flow->hide !== null) {
 			$current = $this->confirmable($flow);
 			($flow->hide)();
@@ -90,7 +87,34 @@ final class FlowRunner {
 			$this->skip('hidden', $flow->hideSkipped);
 		}
 		GoldenFile::assertMatches($this->test, self::DIR . $this->file . '.' . $flow->name . '.json',
-			VolatileFields::normalize(['tool' => $flow->tool, 'grant' => $flow->module . '.' . $flow->operation, 'steps' => $this->steps]));
+			VolatileFields::normalize(['tool' => $flow->tool, 'grant' => $flow->module . '.' . $flow->operation, 'steps' => $this->steps],
+				$flow->literals()));
+	}
+
+	/**
+	 * The two guest steps: the plan, then a confirmation that would succeed for a regular account.
+	 *
+	 * @param CriticalFlow $flow the flow
+	 * @param mixed $after the state before the guest steps
+	 * @return mixed the state after them (changed only by a Files tool, which Guests allows)
+	 */
+	private function guest(CriticalFlow $flow, mixed $after): mixed {
+		$allowed = $flow->module === 'files';
+		$current = $this->confirmable($flow);
+		$this->gate->guest(self::GUEST_APPS);
+		try {
+			$plan = $this->step('guest', $flow, $flow->arguments(), $after);
+			$write = $this->step('guest-confirmed', $flow, $current, $allowed ? null : $after);
+		} finally {
+			$this->gate->guest(null);
+		}
+		if (!$allowed) {
+			foreach (['guest' => $plan, 'guest-confirmed' => $write] as $name => $answer) {
+				$this->test->assertSame('Unknown tool', $answer['body']->error->message ?? null,
+					$flow->tool . ': ' . $name . ': Guests must hide the app: ' . json_encode($answer['body']));
+			}
+		}
+		return ($flow->state)();
 	}
 
 	/**

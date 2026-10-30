@@ -323,7 +323,7 @@
                         "content": [
                             {
                                 "type": "text",
-                                "text": "{\n    \"uid\": \"effect-uid-1\",\n    \"summary\": \"Reunião de equipe\",\n    \"start\": \"2026-03-12T12:00:00.000Z\",\n    \"end\": \"2026-03-12T13:00:00.000Z\",\n    \"location\": \"Sala 2\",\n    \"allDay\": false,\n    \"timeZone\": \"America/Sao_Paulo\",\n    \"calendar\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"etag\": \"\\\"e2c4208ebe017149cee3c9870b9a52c8\\\"\",\n    \"scheduling\": {\n        \"requested\": false,\n        \"imipEnabled\": true,\n        \"message\": \"no invitations were scheduled\"\n    }\n}"
+                                "text": "{\n    \"uid\": \"<drawn-uid#1>\",\n    \"summary\": \"Reunião de equipe\",\n    \"start\": \"2026-03-12T12:00:00.000Z\",\n    \"end\": \"2026-03-12T13:00:00.000Z\",\n    \"location\": \"Sala 2\",\n    \"allDay\": false,\n    \"timeZone\": \"America/Sao_Paulo\",\n    \"calendar\": \"/remote.php/dav/calendars/alice/personal/\",\n    \"etag\": \"\\\"<etag-of-drawn-object#1>\\\"\",\n    \"scheduling\": {\n        \"requested\": false,\n        \"imipEnabled\": true,\n        \"message\": \"no invitations were scheduled\"\n    }\n}"
                             }
                         ]
                     }
@@ -333,11 +333,11 @@
                 "objects": {
                     "1": [
                         "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
-                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:effect-uid-1\r\nDTSTAMP:20000101T000000Z\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:<real-clock DTSTAMP>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
                     ]
                 },
                 "dav": [
-                    "put personal/effect-uid-1.ics"
+                    "put personal/<drawn-uid#1>.ics"
                 ]
             }
         },
@@ -371,11 +371,11 @@
                 "objects": {
                     "1": [
                         "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
-                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:effect-uid-1\r\nDTSTAMP:20000101T000000Z\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:<real-clock DTSTAMP>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
                     ]
                 },
                 "dav": [
-                    "put personal/effect-uid-1.ics"
+                    "put personal/<drawn-uid#1>.ics"
                 ]
             }
         },
@@ -408,11 +408,49 @@
                 "objects": {
                     "1": [
                         "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
-                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:effect-uid-1\r\nDTSTAMP:20000101T000000Z\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:<real-clock DTSTAMP>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
                     ]
                 },
                 "dav": [
-                    "put personal/effect-uid-1.ics"
+                    "put personal/<drawn-uid#1>.ics"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "calendar": "/remote.php/dav/calendars/alice/personal/",
+                "summary": "Reunião de equipe",
+                "start": "2026-03-12T09:00:00-03:00",
+                "end": "2026-03-12T10:00:00-03:00",
+                "timeZone": "America/Sao_Paulo",
+                "location": "Sala 2",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "objects": {
+                    "1": [
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:<real-clock DTSTAMP>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                    ]
+                },
+                "dav": [
+                    "put personal/<drawn-uid#1>.ics"
                 ]
             }
         },

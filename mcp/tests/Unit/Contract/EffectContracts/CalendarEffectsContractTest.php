@@ -33,7 +33,8 @@ final class CalendarEffectsContractTest extends TestCase {
 		. 'not visibility.';
 
 	private FakeCalendarStore $store;
-	private StableUidDav $dav;
+	private RecordingCalendarDav $dav;
+	private DavRandomness $random;
 	private EffectsGate $gate;
 
 	/** @return void builds the calendars, the event of the update flow and the endpoint */
@@ -43,7 +44,9 @@ final class CalendarEffectsContractTest extends TestCase {
 		$this->store->addObject(1, self::EVENT, str_replace("\n", "\r\n", "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//test//EN\n"
 			. "BEGIN:VEVENT\nUID:event\nDTSTAMP:20260301T100000Z\nSUMMARY:Planejamento\nDTSTART:20261001T120000Z\n"
 			. "DTEND:20261001T130000Z\nSEQUENCE:0\nEND:VEVENT\nEND:VCALENDAR\n"));
-		$this->dav = new StableUidDav(new FakeCalendarDav($this->store));
+		$this->dav = new RecordingCalendarDav(new FakeCalendarDav($this->store));
+		$this->random = new DavRandomness($this->store, ['event'], ['20260301T100000Z', CalendarEffectsWiring::STAMP],
+			DavRandomness::UUID_V4);
 		$this->gate = new EffectsGate($this);
 		$this->gate->data()->user[EffectsGate::USER]['core']['timezone'] = 'America/Sao_Paulo';
 		$users = FakeUsers::manager($this, ['alice' => 'Alice']);
@@ -59,8 +62,14 @@ final class CalendarEffectsContractTest extends TestCase {
 			->withoutPlanChanged('A creation has no existing object to change between the plan and the confirmation, '
 				. 'and the Calendar module keeps no plan fingerprint (no PlanState/PlanChanged): the confirmed call is '
 				. 'prepared again from the arguments and writes a new object with a new UID.')
-			->withoutVisibility(self::NO_VISIBILITY);
+			->withoutVisibility(self::NO_VISIBILITY)
+			->normalizing(fn (): array => $this->random->literals());
 		(new FlowRunner($this, $this->gate, 'calendar'))->run($flow);
+		$body = $this->gate->call($flow->tool, $flow->confirmed($this->gate->call($flow->tool, $flow->arguments())['body']))['body'];
+		$this->assertFalse($body->result->isError ?? false, 'a second creation must succeed: ' . json_encode($body));
+		$this->assertCount(3, $this->store->objects[1], 'the fixture event and two created events');
+		// On the bytes the store holds, before the transcript replaced them: two UUIDs, stamps of now or of the clock.
+		$this->random->assertShapes($this);
 	}
 
 	/**
@@ -78,8 +87,10 @@ final class CalendarEffectsContractTest extends TestCase {
 			->withoutPlanChanged('The Calendar module keeps no plan fingerprint (no PlanState/PlanChanged). The plan '
 				. 'returns the ETag of the event and the confirmed call carries it: when the event changed in between, '
 				. 'the ETag no longer matches and the call is refused as a conflict (If-Match), without a new plan.')
-			->withoutVisibility(self::NO_VISIBILITY);
+			->withoutVisibility(self::NO_VISIBILITY)
+			->normalizing(fn (): array => $this->random->literals());
 		(new FlowRunner($this, $this->gate, 'calendar'))->run($flow);
+		$this->random->assertShapes($this);
 		$this->assertStaleEtagIsRefused($flow);
 	}
 

@@ -55,6 +55,8 @@ use Psr\Log\NullLogger;
 final class CalendarEffectsWiring {
 	/** The moment every request of the effect contracts happens at. */
 	public const NOW = '2026-03-10T12:00:00Z';
+	/** {@see self::NOW} as an iCalendar DTSTAMP. */
+	public const STAMP = '20260310T120000Z';
 
 	/** Static builder only. */
 	private function __construct() {
@@ -114,11 +116,11 @@ final class CalendarEffectsWiring {
 
 	/**
 	 * @param FakeCalendarStore $store the store of the contract
-	 * @param StableUidDav $dav the request log of the contract
+	 * @param RecordingCalendarDav $dav the request log of the contract
 	 * @return array{objects: array<int, list<string>>, dav: list<string>} live iCalendar text per calendar id, in
 	 *     storage order and without the random object names, and the dispatched requests
 	 */
-	public static function state(FakeCalendarStore $store, StableUidDav $dav): array {
+	public static function state(FakeCalendarStore $store, RecordingCalendarDav $dav): array {
 		$objects = [];
 		foreach ($store->objects as $calendarId => $rows) {
 			$objects[$calendarId] = array_values(array_map(static fn (array $row): string => $row['data'],

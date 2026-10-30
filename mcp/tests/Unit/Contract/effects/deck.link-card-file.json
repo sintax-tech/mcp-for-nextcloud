@@ -473,6 +473,48 @@
             }
         },
         {
+            "step": "guest-confirmed",
+            "arguments": {
+                "cardId": 8,
+                "fileId": 102,
+                "confirm": true,
+                "plan_state": "<plan_state#3>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "node": 102,
+                        "id": "15",
+                        "type": 12,
+                        "with": "7",
+                        "by": "alice",
+                        "permissions": 1
+                    }
+                ],
+                "labels": {
+                    "7": [
+                        1
+                    ],
+                    "8": []
+                }
+            }
+        },
+        {
             "step": "hidden",
             "arguments": {
                 "cardId": 8,

@@ -37,14 +37,16 @@ final class TasksEffectsContractTest extends TestCase {
 	private const TASKS = '/remote.php/dav/calendars/alice/tasks/';
 
 	private FakeCalendarStore $store;
-	private StableUidDav $dav;
+	private RecordingCalendarDav $dav;
+	private DavRandomness $random;
 	private EffectsGate $gate;
 
 	/** @return void builds the task list and the endpoint */
 	protected function setUp(): void {
 		$this->store = new FakeCalendarStore();
 		$this->store->addCalendar(self::ALICE, 1, 'tasks', self::ALICE, ['name' => 'Tarefas', 'components' => ['VTODO']]);
-		$this->dav = new StableUidDav(new FakeCalendarDav($this->store));
+		$this->dav = new RecordingCalendarDav(new FakeCalendarDav($this->store));
+		$this->random = new DavRandomness($this->store, [], [CalendarEffectsWiring::STAMP], DavRandomness::HEX_128);
 		$this->gate = new EffectsGate($this);
 		$this->gate->data()->user[EffectsGate::USER]['core']['timezone'] = 'America/Sao_Paulo';
 		$this->gate->serve(fn (): array => [$this->module()]);
@@ -74,7 +76,23 @@ final class TasksEffectsContractTest extends TestCase {
 				. 'prepared again from the arguments and writes a new task with a new UID. Edits rely on the ETag instead.')
 			->withoutVisibility('Tasks are CalDAV objects, not Files nodes: no system tag or excluded folder can hide a '
 				. 'task list or a task from MCP (VisibilityGuard and FilesAccessGuard do not apply). What narrows the '
-				. 'reachable lists is the administrator resource scope and the native ACL, not visibility.');
+				. 'reachable lists is the administrator resource scope and the native ACL, not visibility.')
+			->normalizing(fn (): array => $this->random->literals());
 		(new FlowRunner($this, $this->gate, 'tasks'))->run($flow);
+		$this->assertSecondCreationDrawsItsOwnUid($flow);
+	}
+
+	/**
+	 * A second confirmed creation is a second object with its own drawn UID; the shape of every drawn UID and stamp is
+	 * checked on the bytes the store holds, before the transcript replaced them.
+	 *
+	 * @param CriticalFlow $flow the creation flow, already run
+	 * @return void
+	 */
+	private function assertSecondCreationDrawsItsOwnUid(CriticalFlow $flow): void {
+		$body = $this->gate->call($flow->tool, $flow->confirmed($this->gate->call($flow->tool, $flow->arguments())['body']))['body'];
+		$this->assertFalse($body->result->isError ?? false, 'a second creation must succeed: ' . json_encode($body));
+		$this->assertCount(2, $this->store->objects[1], 'two creations are two objects');
+		$this->random->assertShapes($this);
 	}
 }

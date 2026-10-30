@@ -521,6 +521,72 @@
             }
         },
         {
+            "step": "guest-confirmed",
+            "arguments": {
+                "title": "Inscrição",
+                "description": "Evento de outubro",
+                "questions": [
+                    {
+                        "type": "short",
+                        "text": "Nome"
+                    }
+                ],
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "form": {
+                    "title": "Inscrição",
+                    "description": "Evento de outubro",
+                    "id": 71,
+                    "ownerId": "alice",
+                    "access": {
+                        "permitAllUsers": false,
+                        "showToAllUsers": false
+                    },
+                    "state": 0,
+                    "expires": 0,
+                    "isAnonymous": false,
+                    "submitMultiple": false,
+                    "allowEditSubmissions": false,
+                    "showExpiration": false
+                },
+                "questions": {
+                    "100": {
+                        "description": "",
+                        "isRequired": false,
+                        "extraSettings": [],
+                        "id": 100,
+                        "formId": 71,
+                        "type": "short",
+                        "text": "Nome",
+                        "order": 1
+                    }
+                },
+                "stages": [
+                    "form",
+                    "metadata",
+                    "question",
+                    "settings"
+                ]
+            }
+        },
+        {
             "step": "hidden",
             "skipped": "Forms live in the Forms database, not in Files: no system tag or excluded folder can hide a form from MCP"
         }

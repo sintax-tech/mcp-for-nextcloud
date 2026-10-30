@@ -627,6 +627,42 @@
             }
         },
         {
+            "step": "guest-confirmed",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "name": "Maria Souza Lima",
+                "organization": "Dalcomad",
+                "confirm": true,
+                "etag": "<etag#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": {
+                    "1": {
+                        "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nN:Souza;Maria;;;\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nORG:Dalcomad\r\nEND:VCARD\r\n"
+                    }
+                },
+                "dav": [
+                    "update personal/c1.vcf"
+                ]
+            }
+        },
+        {
             "step": "hidden",
             "skipped": "Contacts are CardDAV objects, not Files nodes: no system tag or excluded folder can hide an address book or a card from MCP (VisibilityGuard and FilesAccessGuard do not apply). The accounts catalog is read-only by design and foreign books are not found: permission refusals, not visibility."
         }

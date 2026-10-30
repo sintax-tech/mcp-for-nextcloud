@@ -258,6 +258,42 @@
             }
         },
         {
+            "step": "guest-confirmed",
+            "arguments": {
+                "conversation_token": "abcd1234",
+                "message": "A ata da reunião está pronta.",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "messages": [
+                    {
+                        "id": 55,
+                        "room": "abcd1234",
+                        "actorType": "users",
+                        "actor": "alice",
+                        "message": "A ata da reunião está pronta.",
+                        "at": "2026-01-02T03:04:05+00:00",
+                        "replyTo": null
+                    }
+                ]
+            }
+        },
+        {
             "step": "hidden",
             "skipped": "A conversation and a text message carry no Files node: the hidden system tag has nothing to hide on talk_reply, and access to the room is Talk membership, checked on every call."
         }

@@ -28,6 +28,8 @@ final class CriticalFlow {
 	public string $changeSkipped = '';
 	/** @var (Closure(mixed, array<string, mixed>): array<string, mixed>)|null */
 	public ?Closure $confirmArguments = null;
+	/** @var (Closure(): array<string, string>)|null */
+	private ?Closure $literals = null;
 
 	/**
 	 * @param string $name flow name, part of the golden file name
@@ -99,6 +101,24 @@ final class CriticalFlow {
 	public function confirmingWith(Closure $build): self {
 		$this->confirmArguments = $build;
 		return $this;
+	}
+
+	/**
+	 * Values of this flow that are random or wall-clock by nature (a UID the code draws, a stamp of the real clock),
+	 * read from what the fakes really stored at the end of the run. They are replaced in the transcript only, never
+	 * in what the code under test stored or read back; the test asserts their shape before normalization.
+	 *
+	 * @param Closure(): array<string, string> $literals original value => placeholder
+	 * @return self this flow
+	 */
+	public function normalizing(Closure $literals): self {
+		$this->literals = $literals;
+		return $this;
+	}
+
+	/** @return array<string, string> the literal replacements of this flow; none by default */
+	public function literals(): array {
+		return $this->literals === null ? [] : ($this->literals)();
 	}
 
 	/**

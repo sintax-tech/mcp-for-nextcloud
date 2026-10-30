@@ -36,8 +36,17 @@ final class InventoryCheck {
 	 * @return self the check over that baseline
 	 */
 	public static function fromBaseline(string $dir, array $map = []): self {
-		$lines = static fn (string $file): array => array_values(array_filter(explode("\n", (string)@file_get_contents($dir . '/' . $file)),
-			static fn (string $line): bool => $line !== ''));
+		$lines = static function (string $file) use ($dir): array {
+			$path = $dir . '/' . $file;
+			if (!is_file($path) || !is_readable($path)) {
+				throw new \RuntimeException('Baseline file is missing or unreadable: ' . $path);
+			}
+			$content = file_get_contents($path);
+			if ($content === false) {
+				throw new \RuntimeException('Cannot read baseline file: ' . $path);
+			}
+			return array_values(array_filter(explode("\n", $content), static fn (string $line): bool => $line !== ''));
+		};
 		$first = static fn (array $rows): array => array_map(static fn (string $row): string => explode("\t", $row)[0], $rows);
 		return new self($lines('tests-inventory.txt'), $first($lines('environment-failures.txt')), $first($lines('skipped.txt')), $map);
 	}

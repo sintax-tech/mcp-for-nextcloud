@@ -30,7 +30,12 @@ if (isset($argv[2])) {
 		$map[$old] = $new;
 	}
 }
-$check = InventoryCheck::fromBaseline(__DIR__, $map);
+try {
+	$check = InventoryCheck::fromBaseline(__DIR__, $map);
+} catch (\RuntimeException $error) {
+	fwrite(STDERR, $error->getMessage() . "\n");
+	exit(1);
+}
 $ok = $check->check((string)file_get_contents($argv[1]));
 printf("ran %d tests, %d failing, %d skipped (baseline %d tests, %d failing, %d skipped)\n", $check->ran, $check->failing,
 	$check->skipped, count(file(__DIR__ . '/tests-inventory.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: []),

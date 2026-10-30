@@ -62,6 +62,42 @@ final class InventoryCheckTest extends TestCase {
 		return new InventoryCheck(['A::one', 'A::two', 'B::three'], ['A::two'], []);
 	}
 
+	/** @return void missing or non-file baseline inputs can never silently become an empty inventory */
+	public function testEveryBaselineFileMustBeReadable(): void {
+		$dir = sys_get_temp_dir() . '/mcp-inventory-' . bin2hex(random_bytes(8));
+		mkdir($dir);
+		$names = ['tests-inventory.txt', 'environment-failures.txt', 'skipped.txt'];
+		try {
+			foreach ($names as $absent) {
+				foreach ($names as $name) {
+					file_put_contents($dir . '/' . $name, '');
+				}
+				unlink($dir . '/' . $absent);
+				foreach ([false, true] as $directory) {
+					if ($directory) {
+						mkdir($dir . '/' . $absent);
+					}
+					try {
+						InventoryCheck::fromBaseline($dir);
+						$this->fail('A missing/unreadable baseline must fail: ' . $absent);
+					} catch (\RuntimeException $error) {
+						$this->assertStringContainsString($absent, $error->getMessage());
+					}
+					if ($directory) {
+						rmdir($dir . '/' . $absent);
+					}
+				}
+			}
+		} finally {
+			foreach ($names as $name) {
+				if (is_file($dir . '/' . $name)) {
+					unlink($dir . '/' . $name);
+				}
+			}
+			rmdir($dir);
+		}
+	}
+
 	/**
 	 * @param array<string, string> $cases identity => '' (passed), 'failure', 'error', 'skipped' or 'incomplete'
 	 * @return string a JUnit report with those cases

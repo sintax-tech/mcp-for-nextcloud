@@ -11,21 +11,21 @@ use OCP\Http\Client\IClientService;
 use OCP\ICache;
 use OCP\ICacheFactory;
 use OCP\IConfig;
-use Throwable;
 
 /**
  * Resolves a URL-formatted client_id (OAuth Client ID Metadata Document) into ClientMetadata.
  * Only HTTPS client_ids whose host is in the app config allowlist `oauth_client_hosts` (comma separated, default
- * claude.ai,chatgpt.com) are fetched. IClientService refuses local/private addresses (SSRF); documents are size-limited and
- * cached for up to an hour.
+ * claude.ai,chatgpt.com) are fetched. IClientService refuses local/private addresses (SSRF); documents are size-limited,
+ * downloaded within one total time budget, cached for up to an hour, and a failed download is refused at once for a
+ * short time (ClientMetadataDownloader).
  */
 class ClientMetadataFetcher {
     public const HOSTS_KEY = 'oauth_client_hosts';
     public const DEFAULT_HOSTS = 'claude.ai,chatgpt.com';
-    private const MAX_BYTES = 65536;
     private const CACHE_TTL = 3600;
 
     private ICache $cache;
+    private ClientMetadataDownloader $downloader;
 
     public function __construct(
         private IClientService $clientService,
@@ -33,6 +33,7 @@ class ClientMetadataFetcher {
         ICacheFactory $cacheFactory,
     ) {
         $this->cache = $cacheFactory->createDistributed('mcp_oauth_cimd');
+        $this->downloader = new ClientMetadataDownloader($clientService, $this->cache);
     }
 
     /**
@@ -46,7 +47,7 @@ class ClientMetadataFetcher {
         }
         $key = hash('sha256', $clientId);
         $cached = $this->cache->get($key);
-        $document = is_string($cached) ? $cached : $this->download($clientId);
+        $document = is_string($cached) ? $cached : $this->downloader->download($clientId);
         $metadata = $this->parse($clientId, $document);
         if (!is_string($cached)) {
             $this->cache->set($key, $document, self::CACHE_TTL);
@@ -72,43 +73,6 @@ class ClientMetadataFetcher {
             $hosts = explode(',', self::DEFAULT_HOSTS);
         }
         return in_array(strtolower($parts['host'] ?? ''), $hosts, true);
-    }
-
-    /**
-     * Downloads an allowlisted client metadata document without following redirects.
-     *
-     * @param string $clientId validated HTTPS metadata document URL
-     * @return string metadata document body within the configured size limit
-     * @throws OAuthException when the document cannot be fetched or exceeds the size limit
-     */
-    private function download(string $clientId): string {
-        $stream = null;
-        try {
-            $response = $this->clientService->newClient()->get($clientId, [
-                'timeout' => 5,
-                'allow_redirects' => false,
-                // OCP IResponse returns a resource with stream enabled, avoiding eager buffering.
-                'stream' => true,
-                'headers' => ['Accept' => 'application/json'],
-            ]);
-            $stream = $response->getBody();
-            $length = $response->getHeader('Content-Length');
-            if ($response->getStatusCode() !== 200 || !is_resource($stream)
-                || ($length !== '' && (!ctype_digit($length) || (float)$length > self::MAX_BYTES))) {
-                throw new \RuntimeException('Invalid metadata response');
-            }
-            $body = stream_get_contents($stream, self::MAX_BYTES + 1);
-            if ($body === false || strlen($body) > self::MAX_BYTES) {
-                throw new \RuntimeException('Metadata exceeds size limit');
-            }
-        } catch (Throwable) {
-            throw new OAuthException('invalid_client', 'Client metadata document unavailable');
-        } finally {
-            if (is_resource($stream)) {
-                fclose($stream);
-            }
-        }
-        return $body;
     }
 
     /**

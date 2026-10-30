@@ -103,6 +103,10 @@ final class ClientMetadataDownloaderTest extends TestCase {
 		$this->fail('the download was accepted');
 	}
 
+	/**
+	 * A document that arrives in time is returned unchanged, with the budget passed as both the connection and the total
+	 * limit, redirects off, and no failure entry left behind.
+	 */
 	public function testTheBudgetBoundsTheConnectionAndTheWholeTransfer(): void {
 		$document = '{"client_id":"' . self::CLIENT . '"}';
 		$this->assertSame($document, $this->downloader(fn () => $this->response(self::memory($document)))->download(self::CLIENT));
@@ -115,6 +119,7 @@ final class ClientMetadataDownloaderTest extends TestCase {
 			'a successful download leaves no failure entry');
 	}
 
+	/** A connection that runs out the budget is refused as invalid_client, never redirectable, with the clear timeout message. */
 	public function testAConnectionThatTimesOutShowsTheTimeoutMessage(): void {
 		$downloader = $this->downloader(function (): IResponse {
 			$this->now += 5.01; // curl gave up at its total limit
@@ -128,6 +133,7 @@ final class ClientMetadataDownloaderTest extends TestCase {
 		$this->assertSame(ClientMetadataDownloader::TIMEOUT_MESSAGE, $e->getMessage());
 	}
 
+	/** A failure that comes back before the budget ends keeps the generic message instead of the timeout one. */
 	public function testAFailureBeforeTheBudgetEndsIsNotCalledATimeout(): void {
 		$downloader = $this->downloader(function (): IResponse {
 			$this->now += 0.2;
@@ -170,6 +176,7 @@ final class ClientMetadataDownloaderTest extends TestCase {
 		$this->assertFalse(is_resource($socket), 'the body stream is closed');
 	}
 
+	/** After a failure the same client_id is refused without a new request, while another client_id is still downloaded. */
 	public function testAFailureIsRefusedAtOnceForThatClientOnly(): void {
 		$downloader = $this->downloader(function (string $uri): IResponse {
 			if ($uri === self::CLIENT) {
@@ -188,6 +195,7 @@ final class ClientMetadataDownloaderTest extends TestCase {
 		$this->assertSame('{"client_id":"' . self::OTHER . '"}', $other);
 	}
 
+	/** The failure entry uses the client_id key, holds only the fixed message, and lives for the short FAILURE_TTL. */
 	public function testAFailureEntryExpiresQuicklyAndHoldsNoDocument(): void {
 		$cache = $this->createMock(ICache::class);
 		$cache->method('get')->willReturn(null);

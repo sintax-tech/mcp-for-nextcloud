@@ -17,7 +17,9 @@ use OCA\Mcp\Tools\Common\LockAwareWrite;
 use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Notes\Handler\CreateNoteHandler;
 use OCA\Mcp\Tools\Notes\Handler\EditNoteHandler;
+use OCA\Mcp\Tools\Notes\Handler\ListNotesHandler;
 use OCA\Mcp\Tools\Notes\Handler\MoveNoteHandler;
+use OCA\Mcp\Tools\Notes\Handler\SearchNotesHandler;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\PlanState;
 use OCA\Mcp\Tools\PreviewsWrites;
@@ -151,95 +153,17 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
         return NodeAccess::run(function () use ($name, $arguments, $userId): array {
             // A creation makes the notes folder itself, and only after the shared-write guard has looked at it.
             $root = $name === 'notes_create' ? null : $this->notes->folder($userId, false);
-            return ToolResult::json(match ($name) {
-                'notes_list' => $this->list($root, $userId),
-                'notes_search' => $this->search($root, $userId, $arguments['query'], (int)$arguments['limit'], (string)($arguments['category'] ?? '')),
-                'notes_read' => $this->read($root, $userId, $arguments['id']),
-                'notes_create' => $this->create($userId, $arguments),
-                'notes_edit' => $this->edit($root, $userId, $arguments),
-                'notes_move' => $this->move($root, $userId, $arguments),
-                'notes_delete' => $this->delete($root, $userId, $arguments),
+            return match ($name) {
+                'notes_list' => $this->lists()->handle($root, $userId),
+                'notes_search' => $this->searches()->handle($root, $userId, $arguments),
+                'notes_read' => ToolResult::json($this->read($root, $userId, $arguments['id'])),
+                'notes_create' => ToolResult::json($this->create($userId, $arguments)),
+                'notes_edit' => ToolResult::json($this->edit($root, $userId, $arguments)),
+                'notes_move' => ToolResult::json($this->move($root, $userId, $arguments)),
+                'notes_delete' => ToolResult::json($this->delete($root, $userId, $arguments)),
                 default => throw new InvalidArgumentException('Unknown tool'),
-            });
+            };
         });
-    }
-
-    /** @return list<array{id:int, title:string, category:string, modified:int, etag:string, access:array<string, mixed>}> */
-    private function list(?Folder $root, string $userId): array {
-        if ($root === null) {
-            return [];
-        }
-        $notes = array_map(fn (File $note) => $this->notes->info($note, $root) + ['access' => $this->accessInfo->describe($note, $userId)], $this->notes->all($root));
-        usort($notes, static fn (array $a, array $b) => $b['modified'] <=> $a['modified']);
-        return $notes;
-    }
-
-    /** @return list<array{id:int, title:string, category:string, modified:int, etag:string, snippet:string, access:array<string, mixed>}> */
-    private function search(?Folder $root, string $userId, string $query, int $limit, string $category): array {
-        if ($root === null || $query === '') {
-            return [];
-        }
-
-        $targetFolder = $this->existingCategory($root, $category);
-        if ($targetFolder === null) {
-            return [];
-        }
-
-        $allNotes = $this->notes->all($targetFolder);
-        usort($allNotes, static fn (File $a, File $b) => $b->getMTime() <=> $a->getMTime());
-        $visibleNotes = ($this->visibilityGuard?->filter($allNotes) ?? array_values($allNotes));
-
-        $results = [];
-        foreach ($visibleNotes as $note) {
-            if (!$note instanceof File || !NotesRepository::isNote($note) || !$note->isReadable()) {
-                continue;
-            }
-
-            $title = pathinfo($note->getName(), PATHINFO_FILENAME);
-            $titleMatch = mb_stripos($title, $query) !== false;
-
-            $contentMatch = false;
-            $contentPos = false;
-            $content = '';
-            if ($note->getSize() <= self::MAX_BYTES) {
-                $content = mb_scrub((string)$note->getContent(), 'UTF-8');
-                $contentPos = mb_stripos($content, $query);
-                $contentMatch = $contentPos !== false;
-            }
-
-            if (!$titleMatch && !$contentMatch) {
-                continue;
-            }
-
-            if ($contentMatch && $contentPos !== false) {
-                $start = max(0, $contentPos - 50);
-                $length = 120 + mb_strlen($query);
-                $snippet = mb_substr($content, $start, $length);
-                $snippet = trim((string)preg_replace('/\s+/', ' ', $snippet));
-                if ($start > 0) {
-                    $snippet = '...' . $snippet;
-                }
-                if ($start + $length < mb_strlen($content)) {
-                    $snippet .= '...';
-                }
-            } else {
-                $snippet = trim((string)preg_replace('/\s+/', ' ', mb_substr($content, 0, 100)));
-                if (mb_strlen($content) > 100) {
-                    $snippet .= '...';
-                }
-            }
-
-            $results[] = $this->notes->info($note, $root) + [
-                'snippet' => $snippet,
-                'access' => $this->accessInfo->describe($note, $userId),
-            ];
-
-            if (count($results) >= $limit) {
-                break;
-            }
-        }
-
-        return $results;
     }
 
     /**
@@ -281,6 +205,24 @@ class NotesModule implements ToolModule, PreviewsWrites, ToolGuideNotes, Renders
      */
     private function move(?Folder $root, string $userId, array $arguments): array {
         return $this->moves()->handle($root, $userId, $arguments);
+    }
+
+    /**
+     * Wires notes_list. The handler owns the operation.
+     *
+     * @return ListNotesHandler Handler for this module.
+     */
+    private function lists(): ListNotesHandler {
+        return new ListNotesHandler($this->notes, $this->accessInfo);
+    }
+
+    /**
+     * Wires notes_search. The handler owns the operation; the category lookup stays shared with the plans.
+     *
+     * @return SearchNotesHandler Handler for this module.
+     */
+    private function searches(): SearchNotesHandler {
+        return new SearchNotesHandler($this->notes, $this->accessInfo, $this->visibilityGuard, $this->existingCategory(...));
     }
 
     /**

@@ -29,6 +29,7 @@ use OCA\Mcp\Tools\Calendar\EmbeddedDavDispatcher;
 use OCA\Mcp\Tools\Calendar\Session;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
+use OCA\Mcp\Tools\Notes\NotesFolderResolver;
 use OCA\Mcp\Tools\Notes\NotesModule;
 use OCA\Mcp\Tools\Notes\NotesRepository;
 use OCA\Mcp\Tools\ToolRegistry;
@@ -140,7 +141,7 @@ class Application extends App implements IBootstrap {
             $c->get(IRootFolder::class),
             $c->get(VisibilityGuard::class),
             new TextExtractor($c->get(ITempManager::class)),
-            new NotesRepository($c->get(IRootFolder::class), $c->get(IConfig::class)),
+            new NotesRepository($c->get(IRootFolder::class), $c->get(IConfig::class), null, $c->get(NotesFolderResolver::class)),
             $c->get(ToolRegistry::class)->guide(),
             // nc://files answers to the Files gate, the resource scope included; nc://notes keeps the plain guard (D4).
             $c->get(\OCA\Mcp\Service\Scope\FilesAccessGuard::class),

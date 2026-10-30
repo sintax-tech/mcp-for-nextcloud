@@ -284,9 +284,9 @@ final class FakeTree {
             if ($this->beforeGet !== null) {
                 ($this->beforeGet)($path . '/' . ltrim($rel, '/'));
             }
-            return $this->node($path . '/' . ltrim($rel, '/'));
+            return $this->node(FakePath::below($path, $rel));
         });
-        $folder->method('nodeExists')->willReturnCallback(fn (string $rel) => isset($this->nodes[$path . '/' . ltrim($rel, '/')]));
+        $folder->method('nodeExists')->willReturnCallback(fn (string $rel) => isset($this->nodes[FakePath::below($path, $rel)]));
         $folder->method('getDirectoryListing')->willReturnCallback(function () use ($path): array {
             $this->listings[] = $path;
             ($this->beforeListing)?->__invoke($path);

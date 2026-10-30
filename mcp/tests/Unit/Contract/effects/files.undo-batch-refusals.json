@@ -1,0 +1,360 @@
+{
+    "steps": [
+        {
+            "step": "diverged-plan",
+            "request": {
+                "batch_id": "<batch_id#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Undo bulk operation**\n\nUndo a batch and put 2 items back where they were:\n\n- **/Saida/Lote3/b3.md** → **/Entrada/b3.md**\n- **/Saida/Lote3/a3.md** → **/Entrada/a3.md**\n\nThe undo is blocked because these items changed since the batch:\n- **/Saida/Lote3/b3.md** — Resource not found in Nextcloud.\n\nNothing was changed. Confirm to execute.\n\n*After your approval each item below goes back to where the batch took it from, and only the empty folders the batch created are removed.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_undo_batch",
+                            "title": "Undo bulk operation",
+                            "action": "files_undo_batch",
+                            "batch_id": "<batch_id#1>",
+                            "count": 2,
+                            "undo": [
+                                {
+                                    "to": "/Saida/Lote3/b3.md",
+                                    "from": "/Entrada/b3.md"
+                                },
+                                {
+                                    "to": "/Saida/Lote3/a3.md",
+                                    "from": "/Entrada/a3.md"
+                                }
+                            ],
+                            "removed_dirs": [],
+                            "kept_dirs": [
+                                "/Saida/Lote3"
+                            ],
+                            "conflicts": [
+                                {
+                                    "from": "/Entrada/b3.md",
+                                    "to": "/Saida/Lote3/b3.md",
+                                    "reason": "Resource not found in Nextcloud."
+                                }
+                            ],
+                            "ok": false,
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval each item below goes back to where the batch took it from, and only the empty folders the batch created are removed."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Entrada": "dir #101",
+                        "/alice/files/Entrada/a.md": "#102 conteúdo a",
+                        "/alice/files/Entrada/b.md": "#103 conteúdo b",
+                        "/alice/files/Saida": "dir #104",
+                        "/alice/files/Saida/Lote1": "dir #107",
+                        "/alice/files/Saida/Lote1/a1.md": "#105 conteúdo a1",
+                        "/alice/files/Saida/Lote1/b1.md": "#106 conteúdo b1",
+                        "/alice/files/Saida/Lote2": "dir #110",
+                        "/alice/files/Saida/Lote2/a2.md": "#108 conteúdo a2",
+                        "/alice/files/Saida/Lote2/b2.md": "#109 conteúdo b2",
+                        "/alice/files/Saida/Lote3": "dir #113",
+                        "/alice/files/Saida/Lote3/a3.md": "#111 conteúdo a3",
+                        "/alice/files/Saida/Lote3/outro.md": "#112 conteúdo b3"
+                    },
+                    "ops": []
+                },
+                "batches": [
+                    {
+                        "id": 1,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Entrada/a1.md",
+                                "to": "/Saida/Lote1/a1.md",
+                                "toId": 105
+                            },
+                            {
+                                "from": "/Entrada/b1.md",
+                                "to": "/Saida/Lote1/b1.md",
+                                "toId": 106
+                            }
+                        ],
+                        "dirs": [
+                            "/Saida/Lote1"
+                        ],
+                        "undone_at": null
+                    },
+                    {
+                        "id": 2,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Entrada/a2.md",
+                                "to": "/Saida/Lote2/a2.md",
+                                "toId": 108
+                            },
+                            {
+                                "from": "/Entrada/b2.md",
+                                "to": "/Saida/Lote2/b2.md",
+                                "toId": 109
+                            }
+                        ],
+                        "dirs": [
+                            "/Saida/Lote2"
+                        ],
+                        "undone_at": null
+                    },
+                    {
+                        "id": 3,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Entrada/a3.md",
+                                "to": "/Saida/Lote3/a3.md",
+                                "toId": 111
+                            },
+                            {
+                                "from": "/Entrada/b3.md",
+                                "to": "/Saida/Lote3/b3.md",
+                                "toId": 112
+                            }
+                        ],
+                        "dirs": [
+                            "/Saida/Lote3"
+                        ],
+                        "undone_at": null
+                    }
+                ]
+            }
+        },
+        {
+            "step": "diverged-confirmed",
+            "request": {
+                "batch_id": "<batch_id#1>",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"batch_id\": 3,\n    \"undone\": 0,\n    \"removed_dirs\": [],\n    \"kept_dirs\": [],\n    \"conflicts\": [\n        {\n            \"from\": \"/Entrada/b3.md\",\n            \"to\": \"/Saida/Lote3/b3.md\",\n            \"reason\": \"Resource not found in Nextcloud.\"\n        }\n    ]\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Entrada": "dir #101",
+                        "/alice/files/Entrada/a.md": "#102 conteúdo a",
+                        "/alice/files/Entrada/b.md": "#103 conteúdo b",
+                        "/alice/files/Saida": "dir #104",
+                        "/alice/files/Saida/Lote1": "dir #107",
+                        "/alice/files/Saida/Lote1/a1.md": "#105 conteúdo a1",
+                        "/alice/files/Saida/Lote1/b1.md": "#106 conteúdo b1",
+                        "/alice/files/Saida/Lote2": "dir #110",
+                        "/alice/files/Saida/Lote2/a2.md": "#108 conteúdo a2",
+                        "/alice/files/Saida/Lote2/b2.md": "#109 conteúdo b2",
+                        "/alice/files/Saida/Lote3": "dir #113",
+                        "/alice/files/Saida/Lote3/a3.md": "#111 conteúdo a3",
+                        "/alice/files/Saida/Lote3/outro.md": "#112 conteúdo b3"
+                    },
+                    "ops": []
+                },
+                "batches": [
+                    {
+                        "id": 1,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Entrada/a1.md",
+                                "to": "/Saida/Lote1/a1.md",
+                                "toId": 105
+                            },
+                            {
+                                "from": "/Entrada/b1.md",
+                                "to": "/Saida/Lote1/b1.md",
+                                "toId": 106
+                            }
+                        ],
+                        "dirs": [
+                            "/Saida/Lote1"
+                        ],
+                        "undone_at": null
+                    },
+                    {
+                        "id": 2,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Entrada/a2.md",
+                                "to": "/Saida/Lote2/a2.md",
+                                "toId": 108
+                            },
+                            {
+                                "from": "/Entrada/b2.md",
+                                "to": "/Saida/Lote2/b2.md",
+                                "toId": 109
+                            }
+                        ],
+                        "dirs": [
+                            "/Saida/Lote2"
+                        ],
+                        "undone_at": null
+                    },
+                    {
+                        "id": 3,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Entrada/a3.md",
+                                "to": "/Saida/Lote3/a3.md",
+                                "toId": 111
+                            },
+                            {
+                                "from": "/Entrada/b3.md",
+                                "to": "/Saida/Lote3/b3.md",
+                                "toId": 112
+                            }
+                        ],
+                        "dirs": [
+                            "/Saida/Lote3"
+                        ],
+                        "undone_at": null
+                    }
+                ]
+            }
+        },
+        {
+            "step": "unknown-confirmed",
+            "request": {
+                "batch_id": "<batch_id#2>",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Batch not found."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Entrada": "dir #101",
+                        "/alice/files/Entrada/a.md": "#102 conteúdo a",
+                        "/alice/files/Entrada/b.md": "#103 conteúdo b",
+                        "/alice/files/Saida": "dir #104",
+                        "/alice/files/Saida/Lote1": "dir #107",
+                        "/alice/files/Saida/Lote1/a1.md": "#105 conteúdo a1",
+                        "/alice/files/Saida/Lote1/b1.md": "#106 conteúdo b1",
+                        "/alice/files/Saida/Lote2": "dir #110",
+                        "/alice/files/Saida/Lote2/a2.md": "#108 conteúdo a2",
+                        "/alice/files/Saida/Lote2/b2.md": "#109 conteúdo b2",
+                        "/alice/files/Saida/Lote3": "dir #113",
+                        "/alice/files/Saida/Lote3/a3.md": "#111 conteúdo a3",
+                        "/alice/files/Saida/Lote3/outro.md": "#112 conteúdo b3"
+                    },
+                    "ops": []
+                },
+                "batches": [
+                    {
+                        "id": 1,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Entrada/a1.md",
+                                "to": "/Saida/Lote1/a1.md",
+                                "toId": 105
+                            },
+                            {
+                                "from": "/Entrada/b1.md",
+                                "to": "/Saida/Lote1/b1.md",
+                                "toId": 106
+                            }
+                        ],
+                        "dirs": [
+                            "/Saida/Lote1"
+                        ],
+                        "undone_at": null
+                    },
+                    {
+                        "id": 2,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Entrada/a2.md",
+                                "to": "/Saida/Lote2/a2.md",
+                                "toId": 108
+                            },
+                            {
+                                "from": "/Entrada/b2.md",
+                                "to": "/Saida/Lote2/b2.md",
+                                "toId": 109
+                            }
+                        ],
+                        "dirs": [
+                            "/Saida/Lote2"
+                        ],
+                        "undone_at": null
+                    },
+                    {
+                        "id": 3,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Entrada/a3.md",
+                                "to": "/Saida/Lote3/a3.md",
+                                "toId": 111
+                            },
+                            {
+                                "from": "/Entrada/b3.md",
+                                "to": "/Saida/Lote3/b3.md",
+                                "toId": 112
+                            }
+                        ],
+                        "dirs": [
+                            "/Saida/Lote3"
+                        ],
+                        "undone_at": null
+                    }
+                ]
+            }
+        }
+    ]
+}

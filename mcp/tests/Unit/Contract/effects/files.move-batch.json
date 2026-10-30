@@ -1,0 +1,799 @@
+{
+    "tool": "files_move_batch",
+    "grant": "files.move",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "moves": [
+                    {
+                        "from": "/Entrada/a.md",
+                        "to": "/Saida/Lote/a.md"
+                    },
+                    {
+                        "from": "/Entrada/b.md",
+                        "to": "/Saida/Lote/b.md"
+                    }
+                ],
+                "mkdirs": [
+                    "/Saida/Lote"
+                ]
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move files in bulk**\n\nMove 2 items:\n\n- **/Entrada/a.md** → **/Saida/Lote/a.md**\n- **/Entrada/b.md** → **/Saida/Lote/b.md**\n\nFolders that will be created first: **/Saida/Lote**\n\nYou can undo the whole batch afterwards.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the items below are moved in the order shown and the folders are created. The run returns a batch\\_id that undoes it.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_move_batch",
+                            "title": "Move files in bulk",
+                            "action": "files_move_batch",
+                            "order": [
+                                {
+                                    "from": "/Entrada/a.md",
+                                    "to": "/Saida/Lote/a.md"
+                                },
+                                {
+                                    "from": "/Entrada/b.md",
+                                    "to": "/Saida/Lote/b.md"
+                                }
+                            ],
+                            "undo": "files_undo_batch with the batch_id the run returns",
+                            "requiresSharedConfirmation": false,
+                            "message": "Nothing was changed. After your approval the items below are moved in the order shown and the folders are created. The run returns a batch_id that undoes it.",
+                            "ok": true,
+                            "moves": [
+                                {
+                                    "from": "/Entrada/a.md",
+                                    "to": "/Saida/Lote/a.md",
+                                    "ok": true
+                                },
+                                {
+                                    "from": "/Entrada/b.md",
+                                    "to": "/Saida/Lote/b.md",
+                                    "ok": true
+                                }
+                            ],
+                            "conflicts": [],
+                            "denied": [],
+                            "shared": [],
+                            "sharedDirs": [],
+                            "mkdirs": [
+                                {
+                                    "path": "/Saida/Lote",
+                                    "exists": false,
+                                    "willCreate": true
+                                }
+                            ],
+                            "summary": {
+                                "total": 2,
+                                "planned": 2,
+                                "conflicts": 0,
+                                "denied": 0,
+                                "shared": 0,
+                                "sharedDirs": 0,
+                                "mkdirs": 1
+                            }
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Entrada": "dir #101",
+                        "/alice/files/Entrada/a.md": "#102 conteúdo a",
+                        "/alice/files/Entrada/b.md": "#103 conteúdo b",
+                        "/alice/files/Saida": "dir #104"
+                    },
+                    "ops": []
+                },
+                "batches": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "moves": [
+                    {
+                        "from": "/Entrada/a.md",
+                        "to": "/Saida/Lote/a.md"
+                    },
+                    {
+                        "from": "/Entrada/b.md",
+                        "to": "/Saida/Lote/b.md"
+                    }
+                ],
+                "mkdirs": [
+                    "/Saida/Lote"
+                ],
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Entrada": "dir #101",
+                        "/alice/files/Entrada/a.md": "#102 conteúdo a",
+                        "/alice/files/Entrada/b.md": "#103 conteúdo b",
+                        "/alice/files/Saida": "dir #104"
+                    },
+                    "ops": []
+                },
+                "batches": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "moves": [
+                    {
+                        "from": "/Entrada/a.md",
+                        "to": "/Saida/Lote/a.md"
+                    },
+                    {
+                        "from": "/Entrada/b.md",
+                        "to": "/Saida/Lote/b.md"
+                    }
+                ],
+                "mkdirs": [
+                    "/Saida/Lote"
+                ],
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move files in bulk**\n\nMove 2 items:\n\n- **/Entrada/a.md** → **/Saida/Lote/a.md**\n- **/Entrada/b.md** → **/Saida/Lote/b.md**\n\nFolders that will be created first: **/Saida/Lote**\n\nYou can undo the whole batch afterwards.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the items below are moved in the order shown and the folders are created. The run returns a batch\\_id that undoes it.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_move_batch",
+                            "title": "Move files in bulk",
+                            "action": "files_move_batch",
+                            "order": [
+                                {
+                                    "from": "/Entrada/a.md",
+                                    "to": "/Saida/Lote/a.md"
+                                },
+                                {
+                                    "from": "/Entrada/b.md",
+                                    "to": "/Saida/Lote/b.md"
+                                }
+                            ],
+                            "undo": "files_undo_batch with the batch_id the run returns",
+                            "requiresSharedConfirmation": false,
+                            "message": "Nothing was changed. After your approval the items below are moved in the order shown and the folders are created. The run returns a batch_id that undoes it.",
+                            "ok": true,
+                            "moves": [
+                                {
+                                    "from": "/Entrada/a.md",
+                                    "to": "/Saida/Lote/a.md",
+                                    "ok": true
+                                },
+                                {
+                                    "from": "/Entrada/b.md",
+                                    "to": "/Saida/Lote/b.md",
+                                    "ok": true
+                                }
+                            ],
+                            "conflicts": [],
+                            "denied": [],
+                            "shared": [],
+                            "sharedDirs": [],
+                            "mkdirs": [
+                                {
+                                    "path": "/Saida/Lote",
+                                    "exists": false,
+                                    "willCreate": true
+                                }
+                            ],
+                            "summary": {
+                                "total": 2,
+                                "planned": 2,
+                                "conflicts": 0,
+                                "denied": 0,
+                                "shared": 0,
+                                "sharedDirs": 0,
+                                "mkdirs": 1
+                            }
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Entrada": "dir #101",
+                        "/alice/files/Entrada/a.md": "#102 conteúdo a",
+                        "/alice/files/Entrada/b.md": "#103 conteúdo b",
+                        "/alice/files/Saida": "dir #104"
+                    },
+                    "ops": []
+                },
+                "batches": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "files_move_batch carries no plan_state: the plan is rebuilt by the confirmed call and a batch whose rebuilt plan is not ok is refused whole, never answered with a new plan"
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "moves": [
+                    {
+                        "from": "/Entrada/a.md",
+                        "to": "/Saida/Lote/a.md"
+                    },
+                    {
+                        "from": "/Entrada/b.md",
+                        "to": "/Saida/Lote/b.md"
+                    }
+                ],
+                "mkdirs": [
+                    "/Saida/Lote"
+                ]
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move files in bulk**\n\nMove 2 items:\n\n- **/Entrada/a.md** → **/Saida/Lote/a.md**\n- **/Entrada/b.md** → **/Saida/Lote/b.md**\n\nFolders that will be created first: **/Saida/Lote**\n\nYou can undo the whole batch afterwards.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the items below are moved in the order shown and the folders are created. The run returns a batch\\_id that undoes it.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_move_batch",
+                            "title": "Move files in bulk",
+                            "action": "files_move_batch",
+                            "order": [
+                                {
+                                    "from": "/Entrada/a.md",
+                                    "to": "/Saida/Lote/a.md"
+                                },
+                                {
+                                    "from": "/Entrada/b.md",
+                                    "to": "/Saida/Lote/b.md"
+                                }
+                            ],
+                            "undo": "files_undo_batch with the batch_id the run returns",
+                            "requiresSharedConfirmation": false,
+                            "message": "Nothing was changed. After your approval the items below are moved in the order shown and the folders are created. The run returns a batch_id that undoes it.",
+                            "ok": true,
+                            "moves": [
+                                {
+                                    "from": "/Entrada/a.md",
+                                    "to": "/Saida/Lote/a.md",
+                                    "ok": true
+                                },
+                                {
+                                    "from": "/Entrada/b.md",
+                                    "to": "/Saida/Lote/b.md",
+                                    "ok": true
+                                }
+                            ],
+                            "conflicts": [],
+                            "denied": [],
+                            "shared": [],
+                            "sharedDirs": [],
+                            "mkdirs": [
+                                {
+                                    "path": "/Saida/Lote",
+                                    "exists": false,
+                                    "willCreate": true
+                                }
+                            ],
+                            "summary": {
+                                "total": 2,
+                                "planned": 2,
+                                "conflicts": 0,
+                                "denied": 0,
+                                "shared": 0,
+                                "sharedDirs": 0,
+                                "mkdirs": 1
+                            }
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Entrada": "dir #101",
+                        "/alice/files/Entrada/a.md": "#102 conteúdo a",
+                        "/alice/files/Entrada/b.md": "#103 conteúdo b",
+                        "/alice/files/Saida": "dir #104"
+                    },
+                    "ops": []
+                },
+                "batches": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "moves": [
+                    {
+                        "from": "/Entrada/a.md",
+                        "to": "/Saida/Lote/a.md"
+                    },
+                    {
+                        "from": "/Entrada/b.md",
+                        "to": "/Saida/Lote/b.md"
+                    }
+                ],
+                "mkdirs": [
+                    "/Saida/Lote"
+                ],
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"batch_id\": 1,\n    \"moved\": [\n        {\n            \"from\": \"/Entrada/a.md\",\n            \"to\": \"/Saida/Lote/a.md\",\n            \"toId\": 102\n        },\n        {\n            \"from\": \"/Entrada/b.md\",\n            \"to\": \"/Saida/Lote/b.md\",\n            \"toId\": 103\n        }\n    ],\n    \"created_dirs\": [\n        \"/Saida/Lote\"\n    ],\n    \"undos\": 2\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Entrada": "dir #101",
+                        "/alice/files/Saida": "dir #104",
+                        "/alice/files/Saida/Lote": "dir #105",
+                        "/alice/files/Saida/Lote/a.md": "#102 conteúdo a",
+                        "/alice/files/Saida/Lote/b.md": "#103 conteúdo b"
+                    },
+                    "ops": [
+                        "mkdir /alice/files/Saida/Lote",
+                        "move /alice/files/Entrada/a.md /alice/files/Saida/Lote/a.md",
+                        "move /alice/files/Entrada/b.md /alice/files/Saida/Lote/b.md"
+                    ]
+                },
+                "batches": [
+                    {
+                        "id": 1,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Entrada/a.md",
+                                "to": "/Saida/Lote/a.md",
+                                "toId": 102
+                            },
+                            {
+                                "from": "/Entrada/b.md",
+                                "to": "/Saida/Lote/b.md",
+                                "toId": 103
+                            }
+                        ],
+                        "dirs": [
+                            "/Saida/Lote"
+                        ],
+                        "undone_at": null
+                    }
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "moves": [
+                    {
+                        "from": "/Saida/Lote/a.md",
+                        "to": "/Entrada/a.md"
+                    },
+                    {
+                        "from": "/Saida/Lote/b.md",
+                        "to": "/Entrada/b.md"
+                    }
+                ],
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Entrada": "dir #101",
+                        "/alice/files/Saida": "dir #104",
+                        "/alice/files/Saida/Lote": "dir #105",
+                        "/alice/files/Saida/Lote/a.md": "#102 conteúdo a",
+                        "/alice/files/Saida/Lote/b.md": "#103 conteúdo b"
+                    },
+                    "ops": [
+                        "mkdir /alice/files/Saida/Lote",
+                        "move /alice/files/Entrada/a.md /alice/files/Saida/Lote/a.md",
+                        "move /alice/files/Entrada/b.md /alice/files/Saida/Lote/b.md"
+                    ]
+                },
+                "batches": [
+                    {
+                        "id": 1,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Entrada/a.md",
+                                "to": "/Saida/Lote/a.md",
+                                "toId": 102
+                            },
+                            {
+                                "from": "/Entrada/b.md",
+                                "to": "/Saida/Lote/b.md",
+                                "toId": 103
+                            }
+                        ],
+                        "dirs": [
+                            "/Saida/Lote"
+                        ],
+                        "undone_at": null
+                    }
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "moves": [
+                    {
+                        "from": "/Saida/Lote/a.md",
+                        "to": "/Entrada/a.md"
+                    },
+                    {
+                        "from": "/Saida/Lote/b.md",
+                        "to": "/Entrada/b.md"
+                    }
+                ]
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move files in bulk**\n\nMove 2 items:\n\n- **/Saida/Lote/a.md** → **/Entrada/a.md**\n- **/Saida/Lote/b.md** → **/Entrada/b.md**\n\nYou can undo the whole batch afterwards.\n\nNothing was changed. Confirm to execute.\n\n*After your approval the items below are moved in the order shown and the folders are created. The run returns a batch\\_id that undoes it.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_move_batch",
+                            "title": "Move files in bulk",
+                            "action": "files_move_batch",
+                            "order": [
+                                {
+                                    "from": "/Saida/Lote/a.md",
+                                    "to": "/Entrada/a.md"
+                                },
+                                {
+                                    "from": "/Saida/Lote/b.md",
+                                    "to": "/Entrada/b.md"
+                                }
+                            ],
+                            "undo": "files_undo_batch with the batch_id the run returns",
+                            "requiresSharedConfirmation": false,
+                            "message": "Nothing was changed. After your approval the items below are moved in the order shown and the folders are created. The run returns a batch_id that undoes it.",
+                            "ok": true,
+                            "moves": [
+                                {
+                                    "from": "/Saida/Lote/a.md",
+                                    "to": "/Entrada/a.md",
+                                    "ok": true
+                                },
+                                {
+                                    "from": "/Saida/Lote/b.md",
+                                    "to": "/Entrada/b.md",
+                                    "ok": true
+                                }
+                            ],
+                            "conflicts": [],
+                            "denied": [],
+                            "shared": [],
+                            "sharedDirs": [],
+                            "mkdirs": [],
+                            "summary": {
+                                "total": 2,
+                                "planned": 2,
+                                "conflicts": 0,
+                                "denied": 0,
+                                "shared": 0,
+                                "sharedDirs": 0,
+                                "mkdirs": 0
+                            }
+                        }
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Entrada": "dir #101",
+                        "/alice/files/Saida": "dir #104",
+                        "/alice/files/Saida/Lote": "dir #105",
+                        "/alice/files/Saida/Lote/a.md": "#102 conteúdo a",
+                        "/alice/files/Saida/Lote/b.md": "#103 conteúdo b"
+                    },
+                    "ops": [
+                        "mkdir /alice/files/Saida/Lote",
+                        "move /alice/files/Entrada/a.md /alice/files/Saida/Lote/a.md",
+                        "move /alice/files/Entrada/b.md /alice/files/Saida/Lote/b.md"
+                    ]
+                },
+                "batches": [
+                    {
+                        "id": 1,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Entrada/a.md",
+                                "to": "/Saida/Lote/a.md",
+                                "toId": 102
+                            },
+                            {
+                                "from": "/Entrada/b.md",
+                                "to": "/Saida/Lote/b.md",
+                                "toId": 103
+                            }
+                        ],
+                        "dirs": [
+                            "/Saida/Lote"
+                        ],
+                        "undone_at": null
+                    }
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "moves": [
+                    {
+                        "from": "/Saida/Lote/a.md",
+                        "to": "/Entrada/a.md"
+                    },
+                    {
+                        "from": "/Saida/Lote/b.md",
+                        "to": "/Entrada/b.md"
+                    }
+                ],
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"batch_id\": 2,\n    \"moved\": [\n        {\n            \"from\": \"/Saida/Lote/a.md\",\n            \"to\": \"/Entrada/a.md\",\n            \"toId\": 102\n        },\n        {\n            \"from\": \"/Saida/Lote/b.md\",\n            \"to\": \"/Entrada/b.md\",\n            \"toId\": 103\n        }\n    ],\n    \"created_dirs\": [],\n    \"undos\": 2\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Entrada": "dir #101",
+                        "/alice/files/Entrada/a.md": "#102 conteúdo a",
+                        "/alice/files/Entrada/b.md": "#103 conteúdo b",
+                        "/alice/files/Saida": "dir #104",
+                        "/alice/files/Saida/Lote": "dir #105"
+                    },
+                    "ops": [
+                        "mkdir /alice/files/Saida/Lote",
+                        "move /alice/files/Entrada/a.md /alice/files/Saida/Lote/a.md",
+                        "move /alice/files/Entrada/b.md /alice/files/Saida/Lote/b.md",
+                        "move /alice/files/Saida/Lote/a.md /alice/files/Entrada/a.md",
+                        "move /alice/files/Saida/Lote/b.md /alice/files/Entrada/b.md"
+                    ]
+                },
+                "batches": [
+                    {
+                        "id": 1,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Entrada/a.md",
+                                "to": "/Saida/Lote/a.md",
+                                "toId": 102
+                            },
+                            {
+                                "from": "/Entrada/b.md",
+                                "to": "/Saida/Lote/b.md",
+                                "toId": 103
+                            }
+                        ],
+                        "dirs": [
+                            "/Saida/Lote"
+                        ],
+                        "undone_at": null
+                    },
+                    {
+                        "id": 2,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Saida/Lote/a.md",
+                                "to": "/Entrada/a.md",
+                                "toId": 102
+                            },
+                            {
+                                "from": "/Saida/Lote/b.md",
+                                "to": "/Entrada/b.md",
+                                "toId": 103
+                            }
+                        ],
+                        "dirs": [],
+                        "undone_at": null
+                    }
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "moves": [
+                    {
+                        "from": "/Entrada/a.md",
+                        "to": "/Saida/Lote/a.md"
+                    },
+                    {
+                        "from": "/Entrada/b.md",
+                        "to": "/Saida/Lote/b.md"
+                    }
+                ],
+                "mkdirs": [],
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "The plan has 0 conflict(s) and 1 item(s) without permission; call it again without confirm, fix the list and try again. Nothing was moved."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "tree": {
+                    "nodes": {
+                        "/alice/files": "dir #100",
+                        "/alice/files/Entrada": "dir #101",
+                        "/alice/files/Entrada/a.md": "#102 conteúdo a",
+                        "/alice/files/Entrada/b.md": "#103 conteúdo b",
+                        "/alice/files/Saida": "dir #104",
+                        "/alice/files/Saida/Lote": "dir #105"
+                    },
+                    "ops": [
+                        "mkdir /alice/files/Saida/Lote",
+                        "move /alice/files/Entrada/a.md /alice/files/Saida/Lote/a.md",
+                        "move /alice/files/Entrada/b.md /alice/files/Saida/Lote/b.md",
+                        "move /alice/files/Saida/Lote/a.md /alice/files/Entrada/a.md",
+                        "move /alice/files/Saida/Lote/b.md /alice/files/Entrada/b.md"
+                    ]
+                },
+                "batches": [
+                    {
+                        "id": 1,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Entrada/a.md",
+                                "to": "/Saida/Lote/a.md",
+                                "toId": 102
+                            },
+                            {
+                                "from": "/Entrada/b.md",
+                                "to": "/Saida/Lote/b.md",
+                                "toId": 103
+                            }
+                        ],
+                        "dirs": [
+                            "/Saida/Lote"
+                        ],
+                        "undone_at": null
+                    },
+                    {
+                        "id": 2,
+                        "user_id": "alice",
+                        "created_at": "<created_at#1>",
+                        "moves": [
+                            {
+                                "from": "/Saida/Lote/a.md",
+                                "to": "/Entrada/a.md",
+                                "toId": 102
+                            },
+                            {
+                                "from": "/Saida/Lote/b.md",
+                                "to": "/Entrada/b.md",
+                                "toId": 103
+                            }
+                        ],
+                        "dirs": [],
+                        "undone_at": null
+                    }
+                ]
+            }
+        }
+    ]
+}

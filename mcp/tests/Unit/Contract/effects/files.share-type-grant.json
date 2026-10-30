@@ -1,0 +1,275 @@
+{
+    "tools": [
+        "files_share",
+        "files_unshare"
+    ],
+    "grantAnyOf": [
+        "share",
+        "link"
+    ],
+    "steps": [
+        {
+            "step": "link-plan-with-both-grants",
+            "tool": "files_share",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "link"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Share file or folder**\n\nCreate a public link to **/Documentos/ata.md**.\n\n- Access: can view and download\n- Valid until: no end date.\n- Password: none.\n\n### Warnings\n\n- Anyone who has the link can open this, without signing in.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_share",
+                            "title": "Share file or folder",
+                            "action": "create",
+                            "path": "/Documentos/ata.md",
+                            "isDir": false,
+                            "with": {
+                                "type": "link",
+                                "id": "",
+                                "displayName": "Public link"
+                            },
+                            "shareId": null,
+                            "before": null,
+                            "after": {
+                                "permission": "view",
+                                "reshare": false,
+                                "expires": null,
+                                "note": null
+                            },
+                            "expiresSource": "none",
+                            "notifies": false,
+                            "timezone": "UTC",
+                            "warnings": [
+                                {
+                                    "message": "Anyone who has the link can open this, without signing in."
+                                }
+                            ],
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#1>",
+                            "password": {
+                                "before": null,
+                                "after": "none",
+                                "required": false
+                            }
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 103,
+                        "type": 3,
+                        "with": null,
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": "tokantigo",
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "unshare-link-plan-with-both-grants",
+            "tool": "files_unshare",
+            "arguments": {
+                "path": "/Documentos/pauta.md",
+                "with": "link"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Stop sharing file or folder**\n\nThe link to **/Documentos/pauta.md** will stop working; anyone who has the link loses access.\n\n- Nothing is deleted: the file stays exactly as it is.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_unshare",
+                            "title": "Stop sharing file or folder",
+                            "shareId": "ocinternal:1",
+                            "path": "/Documentos/pauta.md",
+                            "isDir": false,
+                            "with": {
+                                "type": "link",
+                                "id": "",
+                                "displayName": "Public link"
+                            },
+                            "message": "Nothing was changed. Show this plan to the user, ask whether they want it done, and only then repeat the same call with confirm: true.",
+                            "plan_state": "<plan_state#2>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 103,
+                        "type": 3,
+                        "with": null,
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": "tokantigo",
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "link-plan-with-share-only",
+            "tool": "files_share",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "link"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Your administrator has not allowed the AI to manage this kind of share."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 103,
+                        "type": 3,
+                        "with": null,
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": "tokantigo",
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "link-confirmed-with-share-only",
+            "tool": "files_share",
+            "arguments": {
+                "path": "/Documentos/ata.md",
+                "with": "link",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Your administrator has not allowed the AI to manage this kind of share."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 103,
+                        "type": 3,
+                        "with": null,
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": "tokantigo",
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": []
+            }
+        },
+        {
+            "step": "unshare-link-confirmed-with-share-only",
+            "tool": "files_unshare",
+            "arguments": {
+                "path": "/Documentos/pauta.md",
+                "with": "link",
+                "confirm": true,
+                "plan_state": "<plan_state#2>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Your administrator has not allowed the AI to manage this kind of share."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "shares": [
+                    {
+                        "id": "1",
+                        "node": 103,
+                        "type": 3,
+                        "with": null,
+                        "by": "alice",
+                        "owner": "alice",
+                        "permissions": 1,
+                        "token": "tokantigo",
+                        "hasPassword": false,
+                        "expires": null,
+                        "note": ""
+                    }
+                ],
+                "writes": []
+            }
+        }
+    ]
+}

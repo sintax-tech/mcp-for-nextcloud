@@ -1,0 +1,421 @@
+{
+    "tool": "files_move",
+    "grant": "files.move",
+    "steps": [
+        {
+            "step": "preview",
+            "arguments": {
+                "from": "/Documentos/ata.md",
+                "to": "/Arquivo/ata.md"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move file**\n\nMove **/Documentos/ata.md** to **/Arquivo/ata.md**.\n\n\nNothing was changed. Confirm to execute.\n\n*After your approval the item below moves to the destination, keeping its id, its versions and its shares.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_move",
+                            "title": "Move file",
+                            "action": "files_move",
+                            "from": "/Documentos/ata.md",
+                            "to": "/Arquivo/ata.md",
+                            "idBefore": 102,
+                            "isDir": false,
+                            "versions": null,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the item below moves to the destination, keeping its id, its versions and its shares."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirm-not-boolean",
+            "arguments": {
+                "from": "/Documentos/ata.md",
+                "to": "/Arquivo/ata.md",
+                "confirm": "true"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "confirm: expected boolean",
+                        "data": {
+                            "field": "confirm",
+                            "rule": "expected boolean"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirm-false",
+            "arguments": {
+                "from": "/Documentos/ata.md",
+                "to": "/Arquivo/ata.md",
+                "confirm": false
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move file**\n\nMove **/Documentos/ata.md** to **/Arquivo/ata.md**.\n\n\nNothing was changed. Confirm to execute.\n\n*After your approval the item below moves to the destination, keeping its id, its versions and its shares.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_move",
+                            "title": "Move file",
+                            "action": "files_move",
+                            "from": "/Documentos/ata.md",
+                            "to": "/Arquivo/ata.md",
+                            "idBefore": 102,
+                            "isDir": false,
+                            "versions": null,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the item below moves to the destination, keeping its id, its versions and its shares."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "plan-changed",
+            "skipped": "files_move carries no plan_state: a source or destination that changed after the plan is refused on the ETag the caller sends or as a taken destination, never answered with a new plan"
+        },
+        {
+            "step": "preview-before-confirm",
+            "arguments": {
+                "from": "/Documentos/ata.md",
+                "to": "/Arquivo/ata.md"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move file**\n\nMove **/Documentos/ata.md** to **/Arquivo/ata.md**.\n\n\nNothing was changed. Confirm to execute.\n\n*After your approval the item below moves to the destination, keeping its id, its versions and its shares.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_move",
+                            "title": "Move file",
+                            "action": "files_move",
+                            "from": "/Documentos/ata.md",
+                            "to": "/Arquivo/ata.md",
+                            "idBefore": 102,
+                            "isDir": false,
+                            "versions": null,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the item below moves to the destination, keeping its id, its versions and its shares."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "arguments": {
+                "from": "/Documentos/ata.md",
+                "to": "/Arquivo/ata.md",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"from\": \"/Documentos/ata.md\",\n    \"to\": \"/Arquivo/ata.md\",\n    \"idBefore\": 102,\n    \"idAfter\": 102,\n    \"idPreserved\": true,\n    \"versionsBefore\": null,\n    \"versionsAfter\": null,\n    \"sharesBefore\": 0,\n    \"sharesAfter\": 0,\n    \"access\": {\n        \"scope\": \"personal\",\n        \"owner\": \"alice\",\n        \"ownerDisplayName\": \"Alice\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        }\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Arquivo/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": [
+                    "move /alice/files/Documentos/ata.md /alice/files/Arquivo/ata.md"
+                ]
+            }
+        },
+        {
+            "step": "no-grant",
+            "arguments": {
+                "from": "/Arquivo/ata.md",
+                "to": "/Documentos/ata.md",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "Unknown tool",
+                        "data": {
+                            "field": "name",
+                            "rule": "unknown tool; use one listed by tools/list"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Arquivo/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": [
+                    "move /alice/files/Documentos/ata.md /alice/files/Arquivo/ata.md"
+                ]
+            }
+        },
+        {
+            "step": "guest",
+            "arguments": {
+                "from": "/Arquivo/ata.md",
+                "to": "/Documentos/ata.md"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Move file**\n\nMove **/Arquivo/ata.md** to **/Documentos/ata.md**.\n\n\nNothing was changed. Confirm to execute.\n\n*After your approval the item below moves to the destination, keeping its id, its versions and its shares.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "files_move",
+                            "title": "Move file",
+                            "action": "files_move",
+                            "from": "/Arquivo/ata.md",
+                            "to": "/Documentos/ata.md",
+                            "idBefore": 102,
+                            "isDir": false,
+                            "versions": null,
+                            "access": {
+                                "scope": "personal",
+                                "owner": "alice",
+                                "ownerDisplayName": "Alice",
+                                "permissions": {
+                                    "read": true,
+                                    "update": true,
+                                    "create": true,
+                                    "delete": true,
+                                    "share": true
+                                }
+                            },
+                            "shared": [],
+                            "recoverable": true,
+                            "message": "Nothing was changed. After your approval the item below moves to the destination, keeping its id, its versions and its shares."
+                        }
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Arquivo/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": [
+                    "move /alice/files/Documentos/ata.md /alice/files/Arquivo/ata.md"
+                ]
+            }
+        },
+        {
+            "step": "guest-confirmed",
+            "arguments": {
+                "from": "/Arquivo/ata.md",
+                "to": "/Documentos/ata.md",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"from\": \"/Arquivo/ata.md\",\n    \"to\": \"/Documentos/ata.md\",\n    \"idBefore\": 102,\n    \"idAfter\": 102,\n    \"idPreserved\": true,\n    \"versionsBefore\": null,\n    \"versionsAfter\": null,\n    \"sharesBefore\": 0,\n    \"sharesAfter\": 0,\n    \"access\": {\n        \"scope\": \"personal\",\n        \"owner\": \"alice\",\n        \"ownerDisplayName\": \"Alice\",\n        \"permissions\": {\n            \"read\": true,\n            \"update\": true,\n            \"create\": true,\n            \"delete\": true,\n            \"share\": true\n        }\n    }\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": [
+                    "move /alice/files/Documentos/ata.md /alice/files/Arquivo/ata.md",
+                    "move /alice/files/Arquivo/ata.md /alice/files/Documentos/ata.md"
+                ]
+            }
+        },
+        {
+            "step": "hidden",
+            "arguments": {
+                "from": "/Documentos/ata.md",
+                "to": "/Arquivo/ata.md",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Resource not found in Nextcloud."
+                            }
+                        ],
+                        "isError": true
+                    }
+                }
+            },
+            "state": {
+                "nodes": {
+                    "/alice/files": "dir #100",
+                    "/alice/files/Arquivo": "dir #103",
+                    "/alice/files/Documentos": "dir #101",
+                    "/alice/files/Documentos/ata.md": "#102 # Ata\nolá",
+                    "/alice/files/Projetos": "dir #104"
+                },
+                "ops": [
+                    "move /alice/files/Documentos/ata.md /alice/files/Arquivo/ata.md",
+                    "move /alice/files/Arquivo/ata.md /alice/files/Documentos/ata.md"
+                ]
+            }
+        }
+    ]
+}

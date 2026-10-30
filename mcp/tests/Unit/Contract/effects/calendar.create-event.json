@@ -346,8 +346,8 @@
             "arguments": {
                 "calendar": "/remote.php/dav/calendars/alice/personal/",
                 "summary": "Reunião de equipe",
-                "start": "2026-03-12T09:00:00-03:00",
-                "end": "2026-03-12T10:00:00-03:00",
+                "start": "2026-03-13T09:00:00-03:00",
+                "end": "2026-03-13T10:00:00-03:00",
                 "timeZone": "America/Sao_Paulo",
                 "location": "Sala 2",
                 "confirm": true
@@ -384,8 +384,8 @@
             "arguments": {
                 "calendar": "/remote.php/dav/calendars/alice/personal/",
                 "summary": "Reunião de equipe",
-                "start": "2026-03-12T09:00:00-03:00",
-                "end": "2026-03-12T10:00:00-03:00",
+                "start": "2026-03-13T09:00:00-03:00",
+                "end": "2026-03-13T10:00:00-03:00",
                 "timeZone": "America/Sao_Paulo",
                 "location": "Sala 2"
             },
@@ -421,8 +421,8 @@
             "arguments": {
                 "calendar": "/remote.php/dav/calendars/alice/personal/",
                 "summary": "Reunião de equipe",
-                "start": "2026-03-12T09:00:00-03:00",
-                "end": "2026-03-12T10:00:00-03:00",
+                "start": "2026-03-13T09:00:00-03:00",
+                "end": "2026-03-13T10:00:00-03:00",
                 "timeZone": "America/Sao_Paulo",
                 "location": "Sala 2",
                 "confirm": true

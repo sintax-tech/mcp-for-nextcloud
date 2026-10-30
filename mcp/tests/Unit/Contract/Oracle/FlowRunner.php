@@ -137,13 +137,18 @@ final class FlowRunner {
 	}
 
 	/**
-	 * A plan asked now, unrecorded, turned into the arguments that confirm it.
+	 * A plan asked now, unrecorded, turned into the arguments that confirm it; the plan must be a real plan, so a flow
+	 * whose effect consumed its target has to point its arguments at a target that still exists.
 	 *
 	 * @param CriticalFlow $flow the flow
 	 * @return array<string, mixed> arguments of a confirmation valid at this moment
 	 */
 	private function confirmable(CriticalFlow $flow): array {
-		return $flow->confirmed($this->gate->call($flow->tool, $flow->arguments())['body']);
+		$plan = $this->gate->call($flow->tool, $flow->arguments())['body'];
+		// A refusal asked with arguments that no longer plan anything (a consumed target) would prove nothing.
+		$this->test->assertTrue($plan->result->structuredContent->requiresConfirmation ?? false,
+			$flow->tool . ': the arguments of a refusal step must still plan a write: ' . json_encode($plan) . json_encode($this->gate->logged()));
+		return $flow->confirmed($plan);
 	}
 
 	/**

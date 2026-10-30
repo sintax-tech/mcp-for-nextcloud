@@ -49,7 +49,8 @@ final class FilesEffectsContractTest extends TestCase {
 	public function testCreateOfATextFile(): void {
 		$folder = $this->tree->nodes[self::FOLDER_NODE]['id'];
 		$flow = (new CriticalFlow('create-text', 'files_create', 'files', 'create',
-			['path' => self::FOLDER . '/novo.txt', 'content' => "primeira linha\nsegunda linha\n"],
+			// The next free name: once a refusal step's target exists, the next step plans a new file again.
+			fn (): array => ['path' => $this->freeName(self::FOLDER . '/novo', '.txt'), 'content' => "primeira linha\nsegunda linha\n"],
 			fn (): array => $this->files()))
 			->withoutPlanChanged('files_create carries no plan_state: the plan only shows a name that is free, and a file '
 				. 'that takes the name between plan and confirmation is refused as FileExists, never answered with a new plan')
@@ -118,5 +119,18 @@ final class FilesEffectsContractTest extends TestCase {
 			'expires' => $expires instanceof \DateTimeInterface ? $expires->format('Y-m-d') : null,
 			'note' => $share->getNote(),
 		];
+	}
+
+	/**
+	 * @param string $stem path without extension, relative to the home of alice
+	 * @param string $extension extension with its dot
+	 * @return string `<stem><extension>`, or `<stem>-<n><extension>` with the first n whose node does not exist yet
+	 */
+	private function freeName(string $stem, string $extension): string {
+		$name = $stem . $extension;
+		for ($n = 2; isset($this->tree->nodes['/alice/files' . $name]); $n++) {
+			$name = $stem . '-' . $n . $extension;
+		}
+		return $name;
 	}
 }

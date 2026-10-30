@@ -56,8 +56,12 @@ final class CalendarEffectsContractTest extends TestCase {
 	/** @return void calendar_create_event in a calendar of alice: plan, strict confirm, effect and every refusal */
 	public function testCreationOfAnEvent(): void {
 		$flow = (new CriticalFlow('create-event', 'calendar_create_event', 'calendar', 'create',
-			['calendar' => self::PERSONAL, 'summary' => 'Reunião de equipe', 'start' => '2026-03-12T09:00:00-03:00',
-				'end' => '2026-03-12T10:00:00-03:00', 'timeZone' => 'America/Sao_Paulo', 'location' => 'Sala 2'],
+			// One day later per event already created: a refusal step plans a free slot, not an overlap with the
+			// event of the confirmed step (an overlap warning needs ext-intl, absent from php:8.3-cli).
+			fn (): array => ['calendar' => self::PERSONAL, 'summary' => 'Reunião de equipe',
+				'start' => sprintf('2026-03-%02dT09:00:00-03:00', 11 + count($this->store->objects[1])),
+				'end' => sprintf('2026-03-%02dT10:00:00-03:00', 11 + count($this->store->objects[1])),
+				'timeZone' => 'America/Sao_Paulo', 'location' => 'Sala 2'],
 			fn (): array => CalendarEffectsWiring::state($this->store, $this->dav)))
 			->withoutPlanChanged('A creation has no existing object to change between the plan and the confirmation, '
 				. 'and the Calendar module keeps no plan fingerprint (no PlanState/PlanChanged): the confirmed call is '

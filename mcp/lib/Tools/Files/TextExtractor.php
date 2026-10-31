@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
+use OCA\Mcp\Tools\ExtractedText;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\Files\File;
 use OCP\ITempManager;
@@ -176,7 +177,7 @@ class TextExtractor {
      */
     private function guarded(string $name, callable $extract): string {
         try {
-            return trim($extract());
+            return trim(ExtractedText::utf8($extract()));
         } catch (\Throwable) {
             return FilesMessages::notExtracted($name);
         }

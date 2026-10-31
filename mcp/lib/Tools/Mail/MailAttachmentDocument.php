@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Mail;
 
+use OCA\Mcp\Tools\ExtractedText;
 use OCA\Mcp\Tools\ToolFailure;
 use OCP\ITempManager;
 
@@ -168,6 +169,6 @@ final class MailAttachmentDocument {
 	 */
 	private static function xmlText(string $xml, array $breaks): string {
 		$text = strip_tags(preg_replace(array_keys($breaks), array_values($breaks), $xml) ?? $xml);
-		return trim(html_entity_decode($text, ENT_QUOTES | ENT_XML1, 'UTF-8'));
+		return trim(ExtractedText::utf8(html_entity_decode($text, ENT_QUOTES | ENT_XML1, 'UTF-8')));
 	}
 }

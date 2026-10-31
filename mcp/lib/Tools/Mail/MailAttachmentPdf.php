@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Mail;
 
+use OCA\Mcp\Tools\ExtractedText;
 use OCA\Mcp\Tools\ToolFailure;
 use Smalot\PdfParser\Config;
 
@@ -69,6 +70,6 @@ final class MailAttachmentPdf {
 		if ($filters->unbounded) {
 			throw new ToolFailure(MailAttachmentMessages::unreadable());
 		}
-		return $text;
+		return ExtractedText::utf8($text);
 	}
 }

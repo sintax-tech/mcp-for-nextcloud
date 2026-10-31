@@ -29,9 +29,10 @@ final class DeletePlanText {
 	 * Trash bin notes shared by the file and folder plans.
 	 *
 	 * @param array<string, mixed> $plan Concrete deletion plan.
-	 * @return list<string> The try-the-trash-bin-first risk, plus the received-share limitation when it applies.
+	 * @return list<string> The try-the-trash-bin-first risk, plus the received-share or unknown-owner limitation when it applies.
 	 */
 	public static function notes(array $plan): array {
-		return [DeleteMessages::risk(), ...(($plan['trashDestination'] ?? null) === 'owner_trash_not_checked' ? [TrashReceiptMessages::ownerTrash()] : [])];
+		$note = trim(TrashReceiptMessages::planNote(array_search($plan['trashDestination'] ?? null, TrashReceiptMessages::PLAN, true) ?: null));
+		return [DeleteMessages::risk(), ...($note === '' ? [] : [$note])];
 	}
 }

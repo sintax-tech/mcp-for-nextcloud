@@ -70,7 +70,7 @@ final class TrashReceiptVerifierTest extends TestCase {
 
 	/** @return void A file seen in the actor's own trash bin gets the moment of the check and the time-limit warning. */
 	public function testOwnFileObservedInTrash(): void {
-		$receipt = $this->verifier($this->node(File::class, 7))->receipt(true, 'alice', 7, false, self::DEFAULT);
+		$receipt = $this->verifier($this->node(File::class, 7))->receipt(TrashReceiptVerifier::OWN, 'alice', 7, false, self::DEFAULT);
 		self::assertSame(['status' => 'removed_observed_in_trash', 'trash' => 'observed_in_own_trash',
 			'trashCheckedAt' => '2026-10-30T12:00:00+00:00'], $receipt['fields']);
 		self::assertSame(TrashReceiptMessages::observedFile() . ' ' . TrashReceiptMessages::expiry(), $receipt['message']);
@@ -79,7 +79,7 @@ final class TrashReceiptVerifierTest extends TestCase {
 
 	/** @return void A folder receipt says only the folder itself was checked. */
 	public function testOwnFolderObservedInTrash(): void {
-		$receipt = $this->verifier($this->node(Folder::class, 8, '/alice/files_trashbin/files/docs.d1'))->receipt(true, 'alice', 8, true, self::DEFAULT);
+		$receipt = $this->verifier($this->node(Folder::class, 8, '/alice/files_trashbin/files/docs.d1'))->receipt(TrashReceiptVerifier::OWN, 'alice', 8, true, self::DEFAULT);
 		self::assertSame('observed_in_own_trash', $receipt['fields']['trash']);
 		self::assertStringStartsWith(TrashReceiptMessages::observedFolder(), $receipt['message']);
 	}
@@ -96,28 +96,41 @@ final class TrashReceiptVerifierTest extends TestCase {
 		];
 		foreach ($cases as $case => $verifier) {
 			self::assertSame(['fields' => ['trash' => 'not_confirmed'], 'message' => self::DEFAULT],
-				$verifier->receipt(true, 'alice', 7, false, self::DEFAULT), $case);
+				$verifier->receipt(TrashReceiptVerifier::OWN, 'alice', 7, false, self::DEFAULT), $case);
 		}
 	}
 
 	/** @return void A received share item never touches users, apps or any trash bin, even when it would be found. */
 	public function testReceivedShareNeverConsultsAnyTrash(): void {
+		$receipt = $this->silentVerifier()->receipt(TrashReceiptVerifier::OTHER, 'alice', 7, false, self::DEFAULT);
+		self::assertSame(['trash' => 'owner_trash_not_checked'], $receipt['fields']);
+		self::assertSame(self::DEFAULT . ' ' . TrashReceiptMessages::ownerTrash(), $receipt['message']);
+	}
+
+	/** @return void An unknown owner stays unconfirmed, names nobody else and consults no trash bin at all. */
+	public function testUnknownOwnerNeverConsultsAnyTrashNorNamesAnotherPerson(): void {
+		$receipt = $this->silentVerifier()->receipt(TrashReceiptVerifier::UNKNOWN, 'alice', 7, false, self::DEFAULT);
+		self::assertSame(['fields' => ['trash' => 'not_confirmed'], 'message' => self::DEFAULT], $receipt);
+		self::assertStringNotContainsString(TrashReceiptMessages::ownerTrash(), $receipt['message']);
+	}
+
+	/** @return TrashReceiptVerifier Verifier whose users, apps and container fail the test if touched. */
+	private function silentVerifier(): TrashReceiptVerifier {
 		$users = $this->createMock(IUserManager::class);
 		$users->expects(self::never())->method('get');
 		$apps = $this->createMock(IAppManager::class);
 		$apps->expects(self::never())->method('isEnabledForUser');
 		$container = $this->createMock(ContainerInterface::class);
 		$container->expects(self::never())->method('get');
-		$verifier = new TrashReceiptVerifier($apps, $users, $container, $this->createMock(ITimeFactory::class));
-		$receipt = $verifier->receipt(false, 'alice', 7, false, self::DEFAULT);
-		self::assertSame(['trash' => 'owner_trash_not_checked'], $receipt['fields']);
-		self::assertSame(self::DEFAULT . ' ' . TrashReceiptMessages::ownerTrash(), $receipt['message']);
+		return new TrashReceiptVerifier($apps, $users, $container, $this->createMock(ITimeFactory::class));
 	}
 
-	/** @return void Ownership comes from the owner and the storage, and a read failure is never treated as own. */
-	public function testOwnTrashNeedsOwnerAndNonSharedStorage(): void {
+	/** @return void Own, other and unknown owners are three distinct destinations; a read failure is never another person. */
+	public function testDestinationSeparatesOwnOtherAndUnknown(): void {
 		$verifier = $this->verifier(null);
-		foreach ([['alice', false, true], ['pedro', false, false], ['alice', true, false]] as [$owner, $shared, $expected]) {
+		$cases = [['alice', false, TrashReceiptVerifier::OWN], ['pedro', false, TrashReceiptVerifier::OTHER],
+			['alice', true, TrashReceiptVerifier::OTHER], ['', false, TrashReceiptVerifier::UNKNOWN]];
+		foreach ($cases as [$owner, $shared, $expected]) {
 			$user = $this->createMock(IUser::class);
 			$user->method('getUID')->willReturn($owner);
 			$storage = $this->createMock(\OCP\Files\Storage\IStorage::class);
@@ -125,10 +138,19 @@ final class TrashReceiptVerifierTest extends TestCase {
 			$node = $this->createMock(File::class);
 			$node->method('getOwner')->willReturn($user);
 			$node->method('getStorage')->willReturn($storage);
-			self::assertSame($expected, $verifier->ownTrash($node, 'alice'));
+			self::assertSame($expected, $verifier->destination($node, 'alice'));
 		}
+		$ownerless = $this->createMock(File::class);
+		$ownerless->method('getOwner')->willReturn(null);
+		self::assertSame(TrashReceiptVerifier::UNKNOWN, $verifier->destination($ownerless, 'alice'));
 		$broken = $this->createMock(File::class);
 		$broken->method('getOwner')->willThrowException(new \RuntimeException('gone'));
-		self::assertFalse($verifier->ownTrash($broken, 'alice'));
+		self::assertSame(TrashReceiptVerifier::UNKNOWN, $verifier->destination($broken, 'alice'));
+		$storageFailure = $this->createMock(File::class);
+		$alice = $this->createMock(IUser::class);
+		$alice->method('getUID')->willReturn('alice');
+		$storageFailure->method('getOwner')->willReturn($alice);
+		$storageFailure->method('getStorage')->willThrowException(new \RuntimeException('gone'));
+		self::assertSame(TrashReceiptVerifier::UNKNOWN, $verifier->destination($storageFailure, 'alice'));
 	}
 }

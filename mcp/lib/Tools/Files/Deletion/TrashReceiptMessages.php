@@ -10,6 +10,24 @@ use OCA\Mcp\L10n\Translator;
 
 /** Receipt texts for what was observed in the trash bin after deletion; none of them promises future recovery. */
 final class TrashReceiptMessages {
+	/** Plan field value for each destination of TrashReceiptVerifier. */
+	public const PLAN = [TrashReceiptVerifier::OWN => 'own_trash', TrashReceiptVerifier::OTHER => 'owner_trash_not_checked',
+		TrashReceiptVerifier::UNKNOWN => 'not_confirmed'];
+
+	/**
+	 * Plan note for a destination, with a leading space, or an empty string for the actor's own trash bin.
+	 *
+	 * @param string|null $destination Destination from TrashReceiptVerifier, or null without a verifier.
+	 * @return string Text appended to the plan message.
+	 */
+	public static function planNote(?string $destination): string {
+		return match ($destination) {
+			TrashReceiptVerifier::OTHER => ' ' . self::ownerTrash(),
+			TrashReceiptVerifier::UNKNOWN => ' ' . self::unknownTrash(),
+			default => '',
+		};
+	}
+
 	/** @return string File seen in the actor's own trash bin at the moment of the check. */
 	public static function observedFile(): string {
 		return Translator::t('The file is no longer at its original path and was confirmed in your trash bin at the time of the check. No recovery copy was created by MCP.');
@@ -23,6 +41,11 @@ final class TrashReceiptMessages {
 	/** @return string Time-limit warning attached to every observed receipt. */
 	public static function expiry(): string {
 		return Translator::t('The trash bin keeps items only for a limited time and can remove them automatically, for example when the configured time limit ends or the trash bin runs out of space. Recovery is not guaranteed.');
+	}
+
+	/** @return string Neutral plan note when the owner cannot be read; it names nobody and promises no check. */
+	public static function unknownTrash(): string {
+		return Translator::t('The trash bin destination of this item could not be determined, so it will not be confirmed after deletion.');
 	}
 
 	/** @return string Received-share limitation, stated in the plan and in the receipt. */

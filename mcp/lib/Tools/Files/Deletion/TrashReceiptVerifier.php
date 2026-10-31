@@ -21,6 +21,12 @@ use Psr\Container\ContainerInterface;
 class TrashReceiptVerifier {
 	/** Optional trash manager service id, resolved only after the app is known to be enabled. */
 	private const MANAGER = 'OCA\\Files_Trashbin\\Trash\\ITrashManager';
+	/** The item goes to the actor's own trash bin, the only one that is ever checked. */
+	public const OWN = 'own';
+	/** The item belongs to another person; their trash bin is never checked. */
+	public const OTHER = 'other';
+	/** The owner could not be read; no trash bin is checked and nobody else is named. */
+	public const UNKNOWN = 'unknown';
 
 	/**
 	 * @param IAppManager $apps Native per-actor application availability.
@@ -37,33 +43,40 @@ class TrashReceiptVerifier {
 	}
 
 	/**
-	 * Decides before the attempt whether the item would land in the actor's own trash bin.
+	 * Decides before the attempt whose trash bin the item would land in.
 	 *
 	 * @param Node $node Admitted source, read before deletion.
 	 * @param string $uid Authenticated actor.
-	 * @return bool True only for an item owned by the actor outside any received share.
+	 * @return string OWN for the actor's item outside any received share, OTHER for another owner or a received share, UNKNOWN when the owner cannot be read.
 	 */
-	public function ownTrash(Node $node, string $uid): bool {
+	public function destination(Node $node, string $uid): string {
 		try {
-			return $node->getOwner()?->getUID() === $uid && !$node->getStorage()->instanceOfStorage(ISharedStorage::class);
+			$owner = $node->getOwner()?->getUID();
+			if (!is_string($owner) || $owner === '') {
+				return self::UNKNOWN;
+			}
+			return $owner === $uid && !$node->getStorage()->instanceOfStorage(ISharedStorage::class) ? self::OWN : self::OTHER;
 		} catch (\Throwable) {
-			return false;
+			return self::UNKNOWN;
 		}
 	}
 
 	/**
 	 * Builds the trash part of a removal receipt.
 	 *
-	 * @param bool $own Result of ownTrash() taken before the attempt.
+	 * @param string $destination Result of destination() taken before the attempt.
 	 * @param string $uid Authenticated actor.
 	 * @param int $id Global file ID of the removed source.
 	 * @param bool $folder Whether the removed source was a folder.
 	 * @param string $default Unconfirmed-destination message of the caller.
 	 * @return array{fields: array<string, string>, message: string} Receipt fields (an observed removal also refines the status) and message.
 	 */
-	public function receipt(bool $own, string $uid, int $id, bool $folder, string $default): array {
-		if (!$own) {
+	public function receipt(string $destination, string $uid, int $id, bool $folder, string $default): array {
+		if ($destination === self::OTHER) {
 			return ['fields' => ['trash' => 'owner_trash_not_checked'], 'message' => $default . ' ' . TrashReceiptMessages::ownerTrash()];
+		}
+		if ($destination !== self::OWN) {
+			return ['fields' => ['trash' => 'not_confirmed'], 'message' => $default];
 		}
 		$checkedAt = $this->observe($uid, $id, $folder);
 		if ($checkedAt === null) {

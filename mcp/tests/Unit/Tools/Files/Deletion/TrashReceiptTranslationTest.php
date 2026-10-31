@@ -23,26 +23,26 @@ final class TrashReceiptTranslationTest extends TestCase {
 	public static function languages(): array {
 		return [
 			'en' => ['en', ['Try the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails',
-				'confirmed in your trash bin at the time of the check', 'Only the folder itself was checked', 'limited time', 'MCP does not check the trash bin of another person']],
+				'confirmed in your trash bin at the time of the check', 'Only the folder itself was checked', 'limited time', 'MCP does not check the trash bin of another person', 'could not be determined, so it will not be confirmed after deletion']],
 			'de' => ['de', ['Zuerst den Papierkorb versuchen: Nextcloud versucht, das Element in den Papierkorb zu verschieben, und kann es endgültig löschen',
-				'zum Zeitpunkt der Prüfung in Ihrem Papierkorb bestätigt', 'Geprüft wurde nur der Ordner selbst', 'begrenzte Zeit', 'MCP prüft nicht den Papierkorb einer anderen Person']],
+				'zum Zeitpunkt der Prüfung in Ihrem Papierkorb bestätigt', 'Geprüft wurde nur der Ordner selbst', 'begrenzte Zeit', 'MCP prüft nicht den Papierkorb einer anderen Person', 'konnte nicht ermittelt werden, daher wird es nach dem Löschen nicht bestätigt']],
 			'es' => ['es', ['Intenta la papelera primero: Nextcloud intenta mover el elemento a la papelera y puede eliminarlo de forma permanente',
-				'se confirmó en su papelera en el momento de la comprobación', 'Solo se comprobó la carpeta en sí', 'tiempo limitado', 'MCP no consulta la papelera de otra persona']],
+				'se confirmó en su papelera en el momento de la comprobación', 'Solo se comprobó la carpeta en sí', 'tiempo limitado', 'MCP no consulta la papelera de otra persona', 'No se pudo determinar el destino de este elemento en la papelera']],
 			'pt_BR' => ['pt_BR', ['Tenta a lixeira primeiro: o Nextcloud tenta mover o item para a lixeira e pode excluí-lo definitivamente',
-				'confirmado na sua lixeira no momento da checagem', 'Só a pasta em si foi verificada', 'tempo limitado', 'O MCP não consulta a lixeira de outra pessoa']],
+				'confirmado na sua lixeira no momento da checagem', 'Só a pasta em si foi verificada', 'tempo limitado', 'O MCP não consulta a lixeira de outra pessoa', 'Não foi possível determinar o destino deste item na lixeira']],
 		];
 	}
 
 	/**
 	 * @param string $language Account language.
-	 * @param list<string> $fragments Expected fragment of risk, observed file, observed folder, time-limit and owner texts.
+	 * @param list<string> $fragments Expected fragment of risk, observed file, observed folder, time-limit, owner and unknown-owner texts.
 	 * @return void
 	 */
 	#[\PHPUnit\Framework\Attributes\DataProvider('languages')]
 	public function testTextsAreTranslated(string $language, array $fragments): void {
 		Translator::use(new JsonL10n($language));
 		$texts = [DeleteMessages::risk(), TrashReceiptMessages::observedFile(), TrashReceiptMessages::observedFolder(),
-			TrashReceiptMessages::expiry(), TrashReceiptMessages::ownerTrash()];
+			TrashReceiptMessages::expiry(), TrashReceiptMessages::ownerTrash(), TrashReceiptMessages::unknownTrash()];
 		foreach ($texts as $index => $text) {
 			self::assertStringContainsString($fragments[$index], $text);
 		}

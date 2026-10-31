@@ -41,12 +41,12 @@ final class DeleteFileHandler {
 		$tree = $this->eligibility->tree($root, $uid, $file);
 		$shared = $this->eligibility->shared($root, $uid, $file, $tree);
 		$this->locks->assertWritable($file, $uid);
-		$own = $this->receipts?->ownTrash($file, $uid);
+		$destination = $this->receipts?->destination($file, $uid);
 		return ['action' => 'files_delete', 'path' => $root->getRelativePath($file->getPath()),
 			'id' => (int)$file->getId(), 'etag' => (string)$file->getEtag(), 'size' => $file->getSize(),
 			'shared' => $shared, 'requiresSharedConfirmation' => $shared, 'recoveryGuaranteed' => false, 'backupCreated' => false,
-			'message' => DeleteMessages::risk() . ' ' . DeleteMessages::supported() . ($shared ? ' ' . DeleteSharedConfirmation::message() : '') . ($own === false ? ' ' . TrashReceiptMessages::ownerTrash() : '')]
-			+ ($own === null ? [] : ['trashDestination' => $own ? 'own_trash' : 'owner_trash_not_checked']) + ($tree === null ? [] : ['nodeType' => 'folder', 'tree' => array_diff_key($tree, ['fingerprint' => true])]);
+			'message' => DeleteMessages::risk() . ' ' . DeleteMessages::supported() . ($shared ? ' ' . DeleteSharedConfirmation::message() : '') . TrashReceiptMessages::planNote($destination)]
+			+ ($destination === null ? [] : ['trashDestination' => TrashReceiptMessages::PLAN[$destination]]) + ($tree === null ? [] : ['nodeType' => 'folder', 'tree' => array_diff_key($tree, ['fingerprint' => true])]);
 	}
 
 	/**
@@ -70,9 +70,9 @@ final class DeleteFileHandler {
 		// A second resolution before the sink must still describe the exact file prepared above.
 		$file = $this->eligibility->file($root, $uid, $path, $etag, $id);
 		// Ownership is read before the attempt; a received share item is never looked up in the owner's trash bin.
-		$own = $this->receipts?->ownTrash($file, $uid) ?? false;
+		$destination = $this->receipts?->destination($file, $uid) ?? TrashReceiptVerifier::UNKNOWN;
 		$trash = $this->receipts === null ? null
-			: fn (string $default): array => $this->receipts->receipt($own, $uid, $id, $file instanceof Folder, $default);
+			: fn (string $default): array => $this->receipts->receipt($destination, $uid, $id, $file instanceof Folder, $default);
 		$failed = false;
 		$attempted = false;
 		try {

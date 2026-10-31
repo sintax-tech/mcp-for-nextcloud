@@ -40,11 +40,12 @@ final class DeleteTrashReceiptTest extends TestCase {
 	/**
 	 * @param string $path Source the eligibility double resolves.
 	 * @param \Closure(): mixed $manager Resolves the trash manager, or throws.
+	 * @param \Closure(): \OCP\Files\Node|null $source Replaces the resolved source node, when given.
 	 * @return DeleteFileHandler Handler with the real verifier over doubles of the official services.
 	 */
-	private function handler(string $path, \Closure $manager): DeleteFileHandler {
+	private function handler(string $path, \Closure $manager, ?\Closure $source = null): DeleteFileHandler {
 		$eligibility = $this->createMock(DeleteEligibility::class);
-		$eligibility->method('file')->willReturnCallback(fn () => $this->tree->node($path));
+		$eligibility->method('file')->willReturnCallback($source ?? fn () => $this->tree->node($path));
 		$locks = $this->createMock(LockAwareWrite::class);
 		$locks->method('run')->willReturnCallback(static fn ($work) => $work());
 		$user = $this->createMock(IUser::class);
@@ -164,5 +165,37 @@ final class DeleteTrashReceiptTest extends TestCase {
 			$kept->getEtag(), false, [], static fn (): array => [], static fn (): never => throw new \LogicException('must not be called'));
 		self::assertSame('preserved', self::data($result)['status']);
 		self::assertArrayNotHasKey('trash', self::data($result));
+	}
+
+	/** @return void An unreadable owner: neutral plan and receipt, nobody else named, no trash bin consulted, deletion unchanged. */
+	public function testUnknownOwnerIsNeutralAndConsultsNoTrash(): void {
+		$consulted = false;
+		$source = function (): File {
+			$real = $this->tree->node('/alice/files/a.txt');
+			$file = $this->createMock(File::class);
+			$file->method('getId')->willReturn($real->getId());
+			$file->method('getEtag')->willReturn($real->getEtag());
+			$file->method('getPath')->willReturn($real->getPath());
+			$file->method('getSize')->willReturn($real->getSize());
+			$file->method('getOwner')->willThrowException(new \RuntimeException('owner unreadable'));
+			$file->method('delete')->willReturnCallback(static fn () => $real->delete());
+			return $file;
+		};
+		$handler = $this->handler('/alice/files/a.txt', function () use (&$consulted): object {
+			$consulted = true;
+			return ($this->finder())();
+		}, $source);
+		$plan = $handler->plan($this->tree->node('/alice/files'), 'alice', ['path' => '/a.txt']);
+		self::assertSame('not_confirmed', $plan['trashDestination']);
+		self::assertStringContainsString(TrashReceiptMessages::unknownTrash(), $plan['message']);
+		self::assertStringNotContainsString(TrashReceiptMessages::ownerTrash(), $plan['message']);
+		self::assertContains(TrashReceiptMessages::unknownTrash(), DeletePlanText::lines($plan));
+		$data = self::data($handler->handle($this->tree->node('/alice/files'), 'alice', ['path' => '/a.txt']));
+		self::assertSame('removed_destination_unconfirmed', $data['status']);
+		self::assertSame('not_confirmed', $data['trash']);
+		self::assertSame(DeleteMessages::removed() . ' ' . DeleteMessages::risk(), $data['message']);
+		self::assertFalse($consulted, 'No trash bin may be consulted when the owner is unknown');
+		self::assertSame([], $this->lookups);
+		self::assertSame(['delete /alice/files/a.txt'], $this->tree->ops);
 	}
 }

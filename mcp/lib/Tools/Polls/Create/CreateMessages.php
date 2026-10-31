@@ -39,5 +39,13 @@ final class CreateMessages {
 		return [Translator::t('Each confirmation may create another poll. Native activity, logs and notifications follow server settings. Creation and options are not atomic; failures can leave a poll or options behind. No automatic retry or rollback. Check Polls before repeating. Output limits do not provide a transaction or an exactly-once guarantee.'),
 			Translator::t('Defaults are predicted from the pinned native persistence contract, not from the returned object. Public readback is checked before options; an observable mismatch stops with an uncertain result. Description NULL and empty string, and unset timezone values, can be indistinguishable through native getters.')];
 	}
+	/**
+	 * Warning of a confirmed create whose plan no longer matches, naming the installed Polls version.
+	 * @param string $version installed Polls release the new plan was built on
+	 * @return string the message in the language of the current user
+	 */
+	public static function planChanged(string $version): string {
+		return Translator::t('The poll changed since the plan; check it again. version: %s', [$version]);
+	}
 
 }

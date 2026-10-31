@@ -11,6 +11,8 @@ use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Files\Deletion\DeleteEligibility;
 use OCA\Mcp\Tools\Files\Deletion\DeleteMessages;
 use OCA\Mcp\Tools\Files\Deletion\DeleteOutcome;
+use OCA\Mcp\Tools\Files\Deletion\TrashReceiptMessages;
+use OCA\Mcp\Tools\Files\Deletion\TrashReceiptVerifier;
 use OCP\Files\Folder;
 use OCA\Mcp\Tools\Files\Deletion\Sharing\DeleteSharedConfirmation;
 
@@ -21,8 +23,9 @@ final class DeleteFileHandler {
 	 * @param LockAwareWrite $locks Existing lock-awareness, with its documented native/token-lock race limits.
 	 * @param \OCA\Mcp\Tools\Files\Deletion\DeleteTrashVeto $veto Refuses observed native opt-outs.
 	 * @param \Psr\Log\LoggerInterface $logger Logs only the failure class, without resource data.
+	 * @param TrashReceiptVerifier|null $receipts Reads only the actor's own trash bin after a removal; absent means no trash receipt.
 	 */
-	public function __construct(private DeleteEligibility $eligibility, private LockAwareWrite $locks, private \Psr\Log\LoggerInterface $logger, private \OCA\Mcp\Tools\Files\Deletion\DeleteTrashVeto $veto) {
+	public function __construct(private DeleteEligibility $eligibility, private LockAwareWrite $locks, private \Psr\Log\LoggerInterface $logger, private \OCA\Mcp\Tools\Files\Deletion\DeleteTrashVeto $veto, private ?TrashReceiptVerifier $receipts = null) {
 	}
 
 	/**
@@ -38,10 +41,12 @@ final class DeleteFileHandler {
 		$tree = $this->eligibility->tree($root, $uid, $file);
 		$shared = $this->eligibility->shared($root, $uid, $file, $tree);
 		$this->locks->assertWritable($file, $uid);
+		$destination = $this->receipts?->destination($file, $uid);
 		return ['action' => 'files_delete', 'path' => $root->getRelativePath($file->getPath()),
 			'id' => (int)$file->getId(), 'etag' => (string)$file->getEtag(), 'size' => $file->getSize(),
 			'shared' => $shared, 'requiresSharedConfirmation' => $shared, 'recoveryGuaranteed' => false, 'backupCreated' => false,
-			'message' => DeleteMessages::risk() . ' ' . DeleteMessages::supported() . ($shared ? ' ' . DeleteSharedConfirmation::message() : '')] + ($tree === null ? [] : ['nodeType' => 'folder', 'tree' => array_diff_key($tree, ['fingerprint' => true])]);
+			'message' => DeleteMessages::risk() . ' ' . DeleteMessages::supported() . ($shared ? ' ' . DeleteSharedConfirmation::message() : '') . TrashReceiptMessages::planNote($destination)]
+			+ ($destination === null ? [] : ['trashDestination' => TrashReceiptMessages::PLAN[$destination]]) + ($tree === null ? [] : ['nodeType' => 'folder', 'tree' => array_diff_key($tree, ['fingerprint' => true])]);
 	}
 
 	/**
@@ -64,6 +69,10 @@ final class DeleteFileHandler {
 		$this->locks->assertWritable($file, $uid);
 		// A second resolution before the sink must still describe the exact file prepared above.
 		$file = $this->eligibility->file($root, $uid, $path, $etag, $id);
+		// Ownership is read before the attempt; a received share item is never looked up in the owner's trash bin.
+		$destination = $this->receipts?->destination($file, $uid) ?? TrashReceiptVerifier::UNKNOWN;
+		$trash = $this->receipts === null ? null
+			: fn (string $default): array => $this->receipts->receipt($destination, $uid, $id, $file instanceof Folder, $default);
 		$failed = false;
 		$attempted = false;
 		try {
@@ -103,8 +112,8 @@ final class DeleteFileHandler {
 		}
 		if ($file instanceof Folder) {
 			return \OCA\Mcp\Tools\Files\Deletion\Folder\DeleteFolderOutcome::observe($root, $path, $id, $etag, $failed, $tree ?? [],
-				fn (Folder $current): array => $this->eligibility->tree($root, $uid, $current) ?? []);
+				fn (Folder $current): array => $this->eligibility->tree($root, $uid, $current) ?? [], $trash);
 		}
-		return DeleteOutcome::observe($root, $path, $id, $etag, $failed);
+		return DeleteOutcome::observe($root, $path, $id, $etag, $failed, $trash);
 	}
 }

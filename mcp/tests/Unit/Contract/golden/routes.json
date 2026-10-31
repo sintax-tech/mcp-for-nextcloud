@@ -97,6 +97,18 @@
             "resolves": "GroupDirectoryController::detail"
         },
         {
+            "name": "unknown_group_grants#index",
+            "url": "/api/group-grants/unknown",
+            "verb": "GET",
+            "resolves": "UnknownGroupGrantsController::index"
+        },
+        {
+            "name": "unknown_group_grants#clear",
+            "url": "/api/group-grants/unknown",
+            "verb": "DELETE",
+            "resolves": "UnknownGroupGrantsController::clear"
+        },
+        {
             "name": "grants#group",
             "url": "/api/group-grants",
             "verb": "GET",

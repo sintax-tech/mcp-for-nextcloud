@@ -41,7 +41,7 @@ class EditFlow {
 	public function handle(array $args, string $uid, bool $option): array {
 		if (($args['confirm'] ?? null) !== true) { throw new ToolFailure(EditMessages::refused()); }
 		PlanState::require($args); [$r,$c,$s,$e] = $this->prepare($args, $uid, $option); $plan = $this->plans->of($r, $c, $s, $e, $uid);
-		if (!PlanState::matches($plan['plan_state'], $args)) { throw new PlanChanged($plan); }
+		if (!PlanState::matches($plan['plan_state'], $args)) { throw new PlanChanged($this->plans->of($r, $c, $s, $e, $uid, true)); }
 		$shared = EditSharedGuard::confirm($plan, $args); if ($shared !== null) { return $shared; }
 		$receipt = $this->writer->write($c, $r, $s, $e, $plan, $uid);
 		return ToolResult::json($receipt + ['notice' => FormsMessages::NOTICE]) + (in_array($receipt['status'], ['applied','not_attempted'], true) ? [] : ['isError' => true]);

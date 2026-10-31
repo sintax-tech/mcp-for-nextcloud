@@ -8,7 +8,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 
 use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
+use OCA\Mcp\Tools\PlanState;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Contacts\ContactAccess;
 use OCA\Mcp\Tools\Contacts\ContactBackup;
@@ -215,7 +217,8 @@ final class ContactsPlanRendererTest extends TestCase {
             new SharedGuard($users),
             $backup,
             // The read-only account directory is not part of what a plan describes, so it stays empty here.
-            $this->createMock(SystemContacts::class)
+            $this->createMock(SystemContacts::class),
+            new PlanState((new InMemoryConfig())->mock($this)),
         );
     }
 

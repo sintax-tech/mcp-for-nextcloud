@@ -703,3 +703,47 @@ test('issue #11: leaving after preview sends no PUT and never announces Saved', 
 	assert.equal(ui.input('mcp-group-eligible').checked, false)
 	assert.equal(ui.calls.filter((call) => call.method === 'PUT').length, 0)
 })
+
+/** A canonical opaque row as returned by the admin-only directory. */
+const orphanGroup = () => stored({ unknownGrants: [{ id: 'a'.repeat(64), module: 'future', operation: 'write', value: 'allow' }], grantSnapshot: 'b'.repeat(64) })
+test('G1: unknown grants are shown as denied and cancellation sends no cleanup', async () => {
+	const ui = await app(null, orphanGroup())
+	assert.match(ui.ids['mcp-group-list'].all('button')[0].getAttribute('aria-label'), /Unknown grants: denied/)
+	await ui.open()
+	assert.match(ui.ids['mcp-group-detail'].textContent, /future.write/)
+	assert.match(ui.ids['mcp-group-detail'].textContent, /Stored value: Allow; effective: denied/)
+	ui.confirmations.allow = false
+	await ui.button('Clear unknown grant').click()
+	await tick()
+	assert.equal(ui.calls.filter((call) => call.method === 'DELETE').length, 0)
+	assert.match(ui.confirmations.messages[0], /Clear 1 unknown grant from group staff.*future.write.*Allow.*recorded/)
+})
+test('G1: cleanup sends exact IDs, snapshot, revision and strict confirmation, then reloads', async () => {
+	let cleaned = false
+	const ui = await app((call) => {
+		if (call.method === 'DELETE') { cleaned = true; return [200, { auditId: 'receipt-1', removed: 1, report: { unknownGrants: [] } }] }
+		if (cleaned && call.url.includes('/detail?')) return [200, stored()]
+	}, orphanGroup())
+	await ui.open()
+	await ui.button('Clear unknown grant').click()
+	await tick()
+	const command = ui.calls.find((call) => call.method === 'DELETE')
+	assert.equal(command.url, '/apps/mcp/api/group-grants/unknown')
+	assert.deepEqual(command.body, { gid: 'staff', ids: ['a'.repeat(64)], grantSnapshot: 'b'.repeat(64), expectedRevision: '9007199254740993', confirm: true })
+	assert.equal(ui.button('Clear unknown grant'), undefined)
+	assert.doesNotMatch(ui.ids['mcp-group-list'].all('button')[0].getAttribute('aria-label'), /Unknown grants: denied/)
+	assert.match(ui.ids['mcp-group-status'].textContent, /cleared and recorded/)
+	assert.ok(ui.events.includes('mcp-group-policy-saved'))
+})
+test('G1: conflict and unreadable cleanup responses reload without replay or false success', async () => {
+	for (const response of [[409, {}], [200, new SyntaxError('HTML')], [503, { uncertain: true }], [200, {}]]) {
+		const ui = await app((call) => call.method === 'DELETE' ? response : undefined, orphanGroup())
+		await ui.open()
+		await ui.button('Clear unknown grant').click()
+		await tick()
+		assert.equal(ui.calls.filter((call) => call.method === 'DELETE').length, 1)
+		assert.match(ui.ids['mcp-group-alert'].textContent, /changed|could not be confirmed/)
+		assert.equal(ui.events.includes('mcp-group-policy-saved'), false)
+		assert.equal(ui.calls.filter((call) => call.url.includes('/detail?')).length, 2)
+	}
+})

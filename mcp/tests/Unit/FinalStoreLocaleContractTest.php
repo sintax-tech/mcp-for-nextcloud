@@ -32,7 +32,7 @@ final class FinalStoreLocaleContractTest extends TestCase {
 	 */
 	#[DataProvider('locales')]
 	public function testFinalVersionIsAccepted(string $locale): void {
-		FinalStoreLocaleContract::descriptions([$locale => '1.2.3']);
+		FinalStoreLocaleContract::descriptions([$locale => '1.2.5']);
 	}
 
 	/**
@@ -44,6 +44,6 @@ final class FinalStoreLocaleContractTest extends TestCase {
 	#[DataProvider('locales')]
 	public function testReleaseCandidateIsRefused(string $locale): void {
 		$this->expectException(AssertionFailedError::class);
-		FinalStoreLocaleContract::descriptions([$locale => '1.2.3-rc.1']);
+		FinalStoreLocaleContract::descriptions([$locale => '1.2.5-rc.1']);
 	}
 }

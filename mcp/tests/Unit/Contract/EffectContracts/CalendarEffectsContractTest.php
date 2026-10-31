@@ -74,6 +74,9 @@ final class CalendarEffectsContractTest extends TestCase {
 		$this->assertCount(3, $this->store->objects[1], 'the fixture event and two created events');
 		// On the bytes the store holds, before the transcript replaced them: two UUIDs, stamps of now or of the clock.
 		$this->random->assertShapes($this);
+		foreach ($this->store->objects[1] as $row) {
+			$this->assertSame(1, preg_match_all('/^DTSTAMP:/m', $row['data']), 'exactly one DTSTAMP in every created event');
+		}
 	}
 
 	/**

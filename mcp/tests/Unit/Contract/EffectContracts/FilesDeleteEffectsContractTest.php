@@ -94,7 +94,7 @@ final class FilesDeleteEffectsContractTest extends TestCase {
 			$receipt = $this->confirm($path);
 			self::assertFalse($receipt->result->isError ?? false, $path . ': ' . json_encode($receipt));
 			$data = json_decode($receipt->result->content[0]->text, true, 512, JSON_THROW_ON_ERROR);
-			self::assertSame(['status' => 'removed_destination_unconfirmed', 'path' => $path, 'idBefore' => $id, 'recoveryConfirmed' => false],
+			self::assertSame(['status' => 'removed_destination_unconfirmed', 'path' => $path, 'idBefore' => $id, 'recoveryConfirmed' => false, 'trash' => 'not_confirmed'],
 				array_diff_key($data, ['message' => true]), $path);
 			self::assertSame($message . ' ' . DeleteMessages::risk(), $data['message'], $path);
 		}

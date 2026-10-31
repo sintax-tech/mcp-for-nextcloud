@@ -12,7 +12,7 @@ use OCA\Mcp\L10n\Translator;
 final class DeleteMessages {
 	/** @return string Warning shared by the plan, confirmed receipt and administrator documentation. */
 	public static function risk(): string {
-		return Translator::t('Deletion uses the native Nextcloud mechanism after the available preventive checks. Failures or changes can cause permanent deletion even while the trash bin is enabled. Grant this permission only if you accept this risk and maintain backups.');
+		return Translator::t('Try the trash bin first: Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails, even after the available preventive checks. Recovery is not guaranteed. Grant this permission only if you accept this risk and maintain backups.');
 	}
 
 	/** @return string Supported initial scope, without implying support for other backends. */
@@ -42,6 +42,6 @@ final class DeleteMessages {
 
 	/** @return string Description published in the tool guide. */
 	public static function tool(): string {
-		return 'Delete one own file or completely admitted folder after preventive checks, with a separate opt-in files.delete permission. Only unencrypted Local home originals or descendants of local received shares are supported; DELETE, not UPDATE, is required. Shared content requires confirm_shared, including shared descendants in a folder. Received share roots are always refused. Folders are refused with configured exclusion tags or incomplete inspection (2,000 nodes, 1 GiB, 64 levels). Preview returns the exact source, inspected folder counts, ID, ETag and a permanent-deletion risk warning; echo id and etag when confirming. Native trash recovery is not guaranteed, and no mandatory recovery copy is made. Personal, mounted and selected scope roots, other backends and reserved backup names (including canonical owner origins behind aliases) are refused. Plans disclose shared impact without recipient names; native restoration destinations can differ by actor/owner.';
+		return 'Try the trash bin first: delete one own file or completely admitted folder after preventive checks, with a separate opt-in files.delete permission. Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails. Only unencrypted Local home originals or descendants of local received shares are supported; DELETE, not UPDATE, is required. Shared content requires confirm_shared, including shared descendants in a folder. Received share roots are always refused. Folders are refused with configured exclusion tags or incomplete inspection (2,000 nodes, 1 GiB, 64 levels). Preview returns the exact source, inspected folder counts, ID, ETag and a permanent-deletion risk warning; echo id and etag when confirming. Recovery is not guaranteed, and no mandatory recovery copy is made. After a removal the receipt says whether the item was confirmed in your own trash bin at the time of the check; items inside shares you received go to the trash bin of the owner, which is never checked, so their destination is reported as not confirmed. Personal, mounted and selected scope roots, other backends and reserved backup names (including canonical owner origins behind aliases) are refused. Plans disclose shared impact without recipient names; native restoration destinations can differ by actor/owner.';
 	}
 }

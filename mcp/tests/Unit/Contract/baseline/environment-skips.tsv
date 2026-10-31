@@ -1,1 +1,3 @@
 OCA\Mcp\Tests\Unit\Scripts\Dev\SourceTreesTest::testARevisionIsReadFromGit	Git is absent from the standard php:8.3-cli image; this test needs a temporary Git repository.
+OCA\Mcp\Tests\Unit\Tools\Files\FilesReadUtf8Test::testSingleByteDocumentsComeBackAsValidUtf8	ZipArchive (ext-zip) is absent from the standard php:8.3-cli image; the declared-charset DOCX/ODT fixture requires it.
+OCA\Mcp\Tests\Unit\Tools\Mail\MailAttachmentUtf8Test::testSingleByteDocumentAttachmentsComeBackAsValidUtf8	ZipArchive (ext-zip) is absent from the standard php:8.3-cli image; the declared-charset DOCX/ODT fixture requires it.

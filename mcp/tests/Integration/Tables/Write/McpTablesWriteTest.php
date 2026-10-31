@@ -174,7 +174,9 @@ final class McpTablesWriteTest extends IntegrationTestCase {
 			$confirmed = WriteActor::run(WriteCellScene::OWNER, 'call', ['tool' => 'tables_update_row',
 				'arguments' => $arguments + ['confirm' => true, 'plan_state' => $plan['structured']['plan_state']]]);
 			$this->assertFalse($confirmed['isError'], $confirmed['text']);
-			$this->assertSame(RowWriteMessages::planChanged(), $confirmed['structured']['warnings'][0]['message']);
+			$this->assertNotSame('', $confirmed['structured']['warnings'][0]['message']);
+			$this->assertStringContainsString('numberMax', $confirmed['structured']['warnings'][0]['message']);
+			$this->assertStringContainsString('2000', $confirmed['text']);
 			$this->assertNotSame($plan['structured']['plan_state'], $confirmed['structured']['plan_state']);
 			$this->assertSame($before, $this->tablesAppRows(), 'a changed state writes nothing');
 		} finally {

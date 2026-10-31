@@ -867,7 +867,7 @@
                     {
                         "name": "files_delete",
                         "title": "Delete file or folder",
-                        "description": "Delete one own file or completely admitted folder after preventive checks, with a separate opt-in files.delete permission. Only unencrypted Local home originals or descendants of local received shares are supported; DELETE, not UPDATE, is required. Shared content requires confirm_shared, including shared descendants in a folder. Received share roots are always refused. Folders are refused with configured exclusion tags or incomplete inspection (2,000 nodes, 1 GiB, 64 levels). Preview returns the exact source, inspected folder counts, ID, ETag and a permanent-deletion risk warning; echo id and etag when confirming. Native trash recovery is not guaranteed, and no mandatory recovery copy is made. Personal, mounted and selected scope roots, other backends and reserved backup names (including canonical owner origins behind aliases) are refused. Plans disclose shared impact without recipient names; native restoration destinations can differ by actor/owner.",
+                        "description": "Try the trash bin first: delete one own file or completely admitted folder after preventive checks, with a separate opt-in files.delete permission. Nextcloud tries to move the item to the trash bin and may permanently delete it if that fails. Only unencrypted Local home originals or descendants of local received shares are supported; DELETE, not UPDATE, is required. Shared content requires confirm_shared, including shared descendants in a folder. Received share roots are always refused. Folders are refused with configured exclusion tags or incomplete inspection (2,000 nodes, 1 GiB, 64 levels). Preview returns the exact source, inspected folder counts, ID, ETag and a permanent-deletion risk warning; echo id and etag when confirming. Recovery is not guaranteed, and no mandatory recovery copy is made. After a removal the receipt says whether the item was confirmed in your own trash bin at the time of the check; items inside shares you received go to the trash bin of the owner, which is never checked, so their destination is reported as not confirmed. Personal, mounted and selected scope roots, other backends and reserved backup names (including canonical owner origins behind aliases) are refused. Plans disclose shared impact without recipient names; native restoration destinations can differ by actor/owner.",
                         "inputSchema": {
                             "type": "object",
                             "properties": {
@@ -1650,7 +1650,7 @@
                     {
                         "name": "contacts_create_contact",
                         "title": "Create contact",
-                        "description": "Create a contact in a writable personal or shared address book. Returns a detailed plan without writing. Show it to the user, wait for explicit approval, then repeat with confirm=true and the optional etag from the plan. Shared collections also require confirm_shared=true.",
+                        "description": "Create a contact in a writable personal or shared address book. The plan_state of the plan carries the contact UID that confirmation stores; send it back with confirm=true. Returns a detailed plan without writing. Show it to the user, wait for explicit approval, then repeat with confirm=true and the optional etag from the plan. Shared collections also require confirm_shared=true.",
                         "inputSchema": {
                             "type": "object",
                             "properties": {
@@ -1659,6 +1659,12 @@
                                     "minLength": 1,
                                     "maxLength": 1024,
                                     "description": "Address book path returned by List address books."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
                                 },
                                 "name": {
                                     "type": "string",

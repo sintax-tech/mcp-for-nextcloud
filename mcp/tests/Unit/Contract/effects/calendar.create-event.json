@@ -333,7 +333,7 @@
                 "objects": {
                     "1": [
                         "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
-                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:<real-clock DTSTAMP>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
                     ]
                 },
                 "dav": [
@@ -371,7 +371,7 @@
                 "objects": {
                     "1": [
                         "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
-                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:<real-clock DTSTAMP>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
                     ]
                 },
                 "dav": [
@@ -408,7 +408,7 @@
                 "objects": {
                     "1": [
                         "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
-                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:<real-clock DTSTAMP>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
                     ]
                 },
                 "dav": [
@@ -446,7 +446,7 @@
                 "objects": {
                     "1": [
                         "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//test//EN\r\nBEGIN:VEVENT\r\nUID:event\r\nDTSTAMP:20260301T100000Z\r\nSUMMARY:Planejamento\r\nDTSTART:20261001T120000Z\r\nDTEND:20261001T130000Z\r\nSEQUENCE:0\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n",
-                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:<real-clock DTSTAMP>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
+                        "BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//MCP for Cloud//Calendar//PT\r\nCALSCALE:GREGORIAN\r\nBEGIN:VEVENT\r\nUID:<drawn-uid#1>\r\nDTSTAMP:20260310T120000Z\r\nCREATED:20260310T120000Z\r\nLAST-MODIFIED:20260310T120000Z\r\nSEQUENCE:0\r\nDTSTART;TZID=America/Sao_Paulo:20260312T090000\r\nDTEND;TZID=America/Sao_Paulo:20260312T100000\r\nSUMMARY:Reunião de equipe\r\nLOCATION:Sala 2\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n"
                     ]
                 },
                 "dav": [

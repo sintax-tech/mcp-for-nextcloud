@@ -10,6 +10,7 @@ namespace OCA\Mcp\Tools\Contacts\Handler;
 
 use Closure;
 use LogicException;
+use RuntimeException;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tools\ArgumentValidationException;
 use OCA\Mcp\Tools\Calendar\Calendar;

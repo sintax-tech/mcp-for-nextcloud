@@ -63,6 +63,7 @@ final class SourceTreesTest extends TestCase {
 			$this->assertSame(['lib/Sub/A.php' => "<?php\nclass A {}\n", 'tests/ATest.php' => "<?php\n"], $files);
 		});
 	}
+
 	/** Host Git routing/config is ignored for the test and restored for the caller afterwards. */
 	public function testInheritedGitSettingsAreIsolatedAndRestored(): void {
 		$previous = getenv('GIT_DIR');

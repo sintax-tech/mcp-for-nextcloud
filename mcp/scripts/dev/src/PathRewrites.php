@@ -79,11 +79,10 @@ final class PathRewrites {
 	 * @return string expected text after path-only edits
 	 */
 	public static function text(string $text, array $pairs): string {
-		$count = 0;
 		return preg_replace_callback('~[A-Za-z0-9_./-]+~', static function (array $m) use ($pairs, $text): string {
 			[$value, $offset] = $m[0];
 			return self::repoBoundary($value, $text, $offset) ? (self::value($value, $pairs) ?? $value) : $value;
-		}, $text, -1, $count, PREG_OFFSET_CAPTURE);
+		}, $text, flags: PREG_OFFSET_CAPTURE);
 	}
 
 	/**

@@ -16,7 +16,11 @@ require_once __DIR__ . '/../../../../scripts/dev/bootstrap.php';
 
 /** Repository-relative paths have the same strict pair-only proof as app-relative paths. */
 final class RepositoryPathTest extends TestCase {
-	/** Updates only paths; a forgotten manifest or an unrelated metadata/order edit must fail. */
+	/**
+	 * Updates only paths; a forgotten manifest or an unrelated metadata/order edit must fail.
+	 *
+	 * @return void
+	 */
 	public function testRepositoryPathsPreserveEveryOtherManifestByte(): void {
 		$old = "mcp/lib/A/Probe.php\t10\tabc123\nother.php\t20\tdef456\n";
 		$new = str_replace('/A/', '/B/', $old);
@@ -27,7 +31,11 @@ final class RepositoryPathTest extends TestCase {
 		$this->assertSame(" mcp/lib/B/Probe.php:42", PathRewrites::text(" mcp/lib/A/Probe.php:42", ['lib/A/Probe.php' => 'lib/B/Probe.php']));
 	}
 
-	/** Coincidental fixture prefixes and lib-relative aliases cannot acquire a repository-root proof. */
+	/**
+	 * Coincidental fixture prefixes and lib-relative aliases cannot acquire a repository-root proof.
+	 *
+	 * @return void
+	 */
 	public function testOtherPrefixesAndEmbeddedTextStayUnproved(): void {
 		foreach (['fixtures/mcp/lib/', 'mcp/', 'other:mcp/lib/', 'other!mcp/lib/'] as $prefix) {
 			$old = $prefix . 'A/Probe.php';

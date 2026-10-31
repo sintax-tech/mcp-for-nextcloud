@@ -81,6 +81,30 @@ final class MoveEquivalenceR4RepositoryTest extends TestCase {
 	}
 
 	/**
+	 * A real move cannot disguise edits to another root or an embedded repository path.
+	 *
+	 * @param string $prefix unproved text before the app-relative path
+	 * @return void
+	 */
+	#[DataProvider('unprovedPrefixes')]
+	public function testUnprovedReaderPrefixFailsRealMove(string $prefix): void {
+		[$before, $after, $map, $old, $new] = $this->move('GrantPolicy');
+		$reader = 'tests/prefix-reader.tsv';
+		$before[$reader] = $prefix . $old . "\t10\tabc123\n";
+		$after[$reader] = $prefix . $new . "\t10\tabc123\n";
+		$problems = implode("\n", (new MoveEquivalence($before, $after, $map))->check());
+		$this->assertStringContainsString("$reader:1: path not proved", $problems);
+	}
+
+	/**
+	 * @return iterable<string,array{string}> embedded and partially matching repository roots
+	 */
+	public static function unprovedPrefixes(): iterable {
+		yield 'embedded repository root' => ['other:mcp/'];
+		yield 'partial repository root' => ['xmcp/'];
+	}
+
+	/**
 	 * Applies one mapped move in memory, importing old namespace siblings without changing behavior.
 	 * Unused imports are harmless and keep the fixture independent of each class's implementation details.
 	 *

@@ -25,6 +25,7 @@ use OCA\Mcp\Tools\Talk\ConversationReader;
 use OCA\Mcp\Tools\Talk\ConversationResolver;
 use OCA\Mcp\Tools\Talk\ConversationWriter;
 use OCA\Mcp\Tools\Talk\FileSharer;
+use OCA\Mcp\Tools\Talk\AttachedFile;
 use OCA\Mcp\Tools\Talk\GroupCreator;
 use OCA\Mcp\Tools\Talk\ReferenceLinker;
 use OCA\Mcp\Tools\Talk\TalkModule;
@@ -98,7 +99,7 @@ final class TalkWritesWiring {
 			$visibility, $this->files->referenceScope());
 		$attachments = new AttachmentAccess($this->shareManager, $visibility, $references);
 		$writer = new ConversationWriter($talk, $time, new AttachmentMessage(), $attachments);
-		$sharer = new FileSharer($this->shareManager, new UserFileResolver($this->files->root(), $visibility, $references), $writer);
+		$sharer = new FileSharer($this->shareManager, new UserFileResolver($this->files->root(), $visibility, $references), $writer, new AttachedFile($this->files->root()));
 		$resolver = new ConversationResolver($talk);
 		$names = new ActorNames($this->users);
 		$logger = $this->mock(LoggerInterface::class);

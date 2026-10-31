@@ -31,10 +31,7 @@ use PHPUnit\Framework\TestCase;
  * Effect contract of the Contacts module (RE-01): the edit of a contact, frozen through the endpoint with in-memory
  * address books as the observable effect and the CardDAV requests they received.
  *
- * The creation of a contact is deliberately not frozen yet (RE-01 decision Q1-a): its plan shows the random UID
- * {@see ContactCard::create()} draws before any double is reached, a different one on every plan and never the one
- * the confirmation writes (finding 2 of the RE-01 report). `uid` stays out of VolatileFields::KEYS; a `create-contact`
- * flow is added here once that finding is fixed.
+ * Creation is frozen separately by ContactsCreationEffectsContractTest after the 1.2.4 UID/plan-state correction.
  */
 final class ContactsEffectsContractTest extends TestCase {
 	/** Principal of the account every call is made for. */

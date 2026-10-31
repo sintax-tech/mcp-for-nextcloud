@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 /** Every published write needs its own CriticalFlow transcript; substring matches cannot establish coverage. */
 final class WriteToolCoverageTest extends TestCase {
-	/** @return void Contacts creation is the sole explicit Q1-a exception to the complete write-tool inventory */
+	/** @return void The 1.2.4 UID fix closes Q1-a: every published write must now be covered */
 	public function testEveryWriteHasItsOwnEffectTranscript(): void {
 		$discovery = json_decode(file_get_contents(__DIR__ . '/../golden/discovery.all-on.json'), true, 512, JSON_THROW_ON_ERROR);
 		$writes = array_column(array_filter($discovery['tools/list']['body']['result']['tools'],
@@ -23,7 +23,6 @@ final class WriteToolCoverageTest extends TestCase {
 				$covered[] = $flow['tool'];
 			}
 		}
-		// Q1-a: the creation preview itself draws a UID, so it stays reserved until that production bug is fixed.
-		$this->assertSame(['contacts_create_contact'], array_values(array_diff($writes, $covered)));
+		$this->assertSame([], array_values(array_diff($writes, $covered)));
 	}
 }

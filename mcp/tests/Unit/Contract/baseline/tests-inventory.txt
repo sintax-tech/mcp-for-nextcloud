@@ -193,6 +193,7 @@ OCA\Mcp\Tests\Unit\Admin\SettingsSectionTest::testInfoXmlRegistersBothSections
 OCA\Mcp\Tests\Unit\Admin\SettingsSectionTest::testPersonalFormRedirectsBackToTheOwnSection
 OCA\Mcp\Tests\Unit\Admin\SettingsSectionTest::testSectionsShareIdNameAndIcon
 OCA\Mcp\Tests\Unit\Admin\SettingsSectionTest::testSettingsRenderIntoTheOwnSectionOnly
+OCA\Mcp\Tests\Unit\Admin\UnknownGroupGrantsDirectoryTest::testGrantedFilterExcludesUnknownOnlyGroupsButKeepsMixedAndEligibility
 OCA\Mcp\Tests\Unit\ApplicationRegistrationTest::testCalendarDavIsBoundToTheDispatcherAndReaderStaysLazy
 OCA\Mcp\Tests\Unit\ApplicationRegistrationTest::testEveryRegisteredFactoryBuildsItsService
 OCA\Mcp\Tests\Unit\ApplicationRegistrationTest::testFileCreationAutowiresWithItsGuardsAndReachesTheModuleAndTheController
@@ -322,6 +323,142 @@ OCA\Mcp\Tests\Unit\Connections\MyConnectionsControllerTest::testAUserCannotRevok
 OCA\Mcp\Tests\Unit\Connections\MyConnectionsControllerTest::testEndpointsAreForUsersAndCsrfProtected
 OCA\Mcp\Tests\Unit\Connections\MyConnectionsControllerTest::testIndexListsOnlyTheOwnConnections
 OCA\Mcp\Tests\Unit\Connections\MyConnectionsControllerTest::testWithoutAnEnabledUserNothingIsListedOrRevoked
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\AdminSettingsEffectsContractTest::testCheckoutLimit
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\AdminSettingsEffectsContractTest::testFileWritePolicy
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\AdminSettingsEffectsContractTest::testHiddenTags
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\AdminSettingsEffectsContractTest::testLogsPrivacy
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\BackupSettingsEffectsContractTest::testBackupFolderAndCopies
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\CalendarEffectsContractTest::testCreationOfAnEvent
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\CalendarEffectsContractTest::testUpdateOfAnEvent
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\CalendarWritesEffectsContractTest::testDeletingAnEvent
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\CalendarWritesEffectsContractTest::testInvitingGuestsToAnEvent
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\CalendarWritesEffectsContractTest::testMovingAnEvent
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\CalendarWritesEffectsContractTest::testTransferringAnEvent
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\CheckoutEffectsContractTest::testCheckoutMintsTwoSingleUseLinks
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\CheckoutEffectsContractTest::testTheRoutesSpendTheLinksOnce
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\ConnectionRevocationEffectsContractTest::testAUserRevokesTheirOwnConnection
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\ConnectionRevocationEffectsContractTest::testAnAdministratorRevokesConnections
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\ConnectionRevocationEffectsContractTest::testRouteAttributes
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\ConnectionRevocationEffectsContractTest::testThePersonalSwitch
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\ConsentBarrierEffectsContractTest::testDisabledAccountAtTheAuthoritativeAdmission
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\ConsentBarrierEffectsContractTest::testTheControllerKeepsItsEarlyBlockedAnswer
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\ContactsCreationEffectsContractTest::testCreatingAContact
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\ContactsCreationEffectsContractTest::testTheShownUidIsWrittenOnlyWithItsPlanState
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\ContactsDeleteEffectsContractTest::testDeletionWithAStaleEtagIsRefused
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\ContactsDeleteEffectsContractTest::testPermanentDeletionOfAContactAfterItsBackup
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\ContactsEffectsContractTest::testEditOfAContact
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckEffectsContractTest::testLabelChangeOfACard
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckEffectsContractTest::testLinkOfAFileToACard
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckGatewayBoardEffectsContractTest::testDeletionOfAnEmptyBoard
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckGatewayBoardEffectsContractTest::testLabelChangeOfACard
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckGatewayBoardEffectsContractTest::testLinkOfAFileToACard
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckGatewayEffectsContractTest::testCreationOfACard
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckGatewayEffectsContractTest::testDeletionOfACard
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckGatewayEffectsContractTest::testDeletionOfAnEmptyList
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckGatewayEffectsContractTest::testMoveOfACard
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckGatewayEffectsContractTest::testWriteOnASharedBoardNeedsTheSharedConfirmation
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckRemainingEffectsContractTest::testAddingADependency
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckRemainingEffectsContractTest::testCreatingABoard
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckRemainingEffectsContractTest::testCreatingAStack
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckRemainingEffectsContractTest::testDependencyCyclesKeepTheNativeRows
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckRemainingEffectsContractTest::testEditingACard
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckRemainingEffectsContractTest::testLinkingATeamFileNeedsSharedConfirmation
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckRemainingEffectsContractTest::testRemovingADependency
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\DeckRemainingEffectsContractTest::testUnlinkingACardFile
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\EarlyLockBoundaryEffectsContractTest::testBackupPreparationRefusesBeforeCallingTheCopy
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\EarlyLockBoundaryEffectsContractTest::testTheReorganizationPreconditionRefusesTheLock
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesBatchEffectsContractTest::testBatchMovesAndRecordsItsUndo
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesBatchEffectsContractTest::testUndoOfADivergedBatchMovesNothing
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesBatchEffectsContractTest::testUndoPutsEveryItemBack
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesDeleteEffectsContractTest::testDeleteOfAFileGoesToTheTrash
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesDeleteEffectsContractTest::testDeleteOfAFolderGoesToTheTrash
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesDeleteEffectsContractTest::testReceiptsNeverClaimARecovery
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesDeleteEffectsContractTest::testStaleConfirmationAndStorageWithoutTrashDeleteNothing
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesEditEffectsContractTest::testAStaleEtagIsAConflictThatWritesNothing
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesEditEffectsContractTest::testEditTakesTheOriginalCopyBeforeTheWrite
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesEditEffectsContractTest::testReplaceTakesTheOriginalCopyBeforeTheWrite
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesEffectsContractTest::testCreateOfATextFile
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesEffectsContractTest::testShareOfAnOwnFileWithAUser
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesGuestExternalContractTest::testAGuestCannotWriteOnExternalStorage
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesReorganizationEffectsContractTest::testAHiddenDestinationIsRefused
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesReorganizationEffectsContractTest::testCopyOfAFile
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesReorganizationEffectsContractTest::testMkdirOfAFolder
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesReorganizationEffectsContractTest::testMoveOfAFile
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesSharingEffectsContractTest::testCreationOfAPublicLink
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesSharingEffectsContractTest::testTheConcreteShareTypeNeedsItsOwnGrant
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesSharingEffectsContractTest::testUnshareOfAUserShare
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesUploadRestoreEffectsContractTest::testRestoringTheSelectedVersion
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FilesUploadRestoreEffectsContractTest::testUploadAndTheCreateRoute
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FormsEffectsContractTest::testChangingTheTextOfAQuestion
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FormsEffectsContractTest::testCreatingAForm
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FormsNativeAdmissionContractTest::testTheNativeFactoriesAdmitOnlyTheCurrentActor
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\FormsOptionEffectsContractTest::testRenamingAnOption
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\GrantsControllerEffectsContractTest::testBulk
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\GrantsControllerEffectsContractTest::testCommandsPreviewAndUndo
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\GrantsControllerEffectsContractTest::testEveryRouteIsAdminOnly
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\GrantsControllerEffectsContractTest::testServiceSwitch
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\GrantsControllerEffectsContractTest::testUpdateOneUser
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\GroupGrantsEffectsContractTest::testPreviewAndSaveOfAGroupPolicy
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\LogsAccessEffectsContractTest::testGroupsThatMayReadTheServerLog
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\MailEffectsContractTest::testMarkingAMessageRead
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\MailWritesEffectsContractTest::testMovingAMessage
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\MailWritesEffectsContractTest::testSavingADraft
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\MailWritesEffectsContractTest::testSendingAMessage
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\MailWritesEffectsContractTest::testTheRefusalsOfEachWriteWriteNothing
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\NotesEffectsContractTest::testPartialEditOfANote
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\NotesSharedEffectsContractTest::testEachSharedWriteNeedsTheAdditionalConfirmation
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\NotesWritesEffectsContractTest::testCreationInASharedNotesFolderNeedsConfirmShared
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\NotesWritesEffectsContractTest::testCreationOfANote
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\NotesWritesEffectsContractTest::testDeletionOfANoteGoesToTheTrash
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\NotesWritesEffectsContractTest::testDeletionWithoutTrashBinIsRefused
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\NotesWritesEffectsContractTest::testMoveOfANote
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\NotesWritesEffectsContractTest::testWriteWithAStaleEtagIsRefused
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\OAuthClientsEffectsContractTest::testUpdateOauthClients
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\OAuthControllerEffectsContractTest::testARefusedConsentWritesNothing
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\OAuthControllerEffectsContractTest::testAnAcceptedConsentIssuesACodeThatExchangesForWorkingTokens
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\OAuthControllerEffectsContractTest::testTheEndpointsKeepTheirAccessAttributes
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\OAuthRefreshEffectsContractTest::testRotationAndReplay
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\PollsEffectsContractTest::testCreatingAPoll
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\ScopeEffectsContractTest::testScopeOfACalendar
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TablesEffectsContractTest::testCreatingARow
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TablesUpdateEffectsContractTest::testSharedUpdateNeedsConfirmShared
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TablesUpdateEffectsContractTest::testUpdatingARow
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TalkEffectsContractTest::testAttachmentOfAFile
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TalkEffectsContractTest::testReplyInAConversation
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TalkWritesEffectsContractTest::testCreatingAGroup
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TalkWritesEffectsContractTest::testEveryBatchItemIsSent
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TalkWritesEffectsContractTest::testMessageToAUser
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TalkWritesEffectsContractTest::testQuotingAFile
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TasksEffectsContractTest::testCreationOfATask
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TasksSharedEffectsContractTest::testSharedTaskWrites
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TasksWritesEffectsContractTest::testCompletionOfATask
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TasksWritesEffectsContractTest::testCreationOfASubtask
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TasksWritesEffectsContractTest::testDeletionOfATaskGoesToTheTrash
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TasksWritesEffectsContractTest::testDeletionWithoutCalendarTrashIsRefused
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TasksWritesEffectsContractTest::testEditOfATask
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TasksWritesEffectsContractTest::testSubtaskOfAParentGoneSinceThePlanIsRefused
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\TasksWritesEffectsContractTest::testWriteWithAStaleEtagIsRefused
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\VisibilityBoundaryEffectsContractTest::testTheShareOriginIsCheckedInItsOwnersTree
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\VisibilityBoundaryEffectsContractTest::testWritePathChecksAncestorsAndExistingTarget
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\WriteLockEffectsContractTest::testFilesLocksPrecedeTheBackupAndMove
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\WriteLockEffectsContractTest::testNotesLocksWriteNothing
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\WriteLockEffectsContractTest::testOwnManualLocksPermitTheWrites
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testDiscoveryOfEveryScenarioIsUnchanged with data set "all-on"
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testDiscoveryOfEveryScenarioIsUnchanged with data set "deck-without-dependencies"
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testDiscoveryOfEveryScenarioIsUnchanged with data set "files-link-only"
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testDiscoveryOfEveryScenarioIsUnchanged with data set "guest"
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testDiscoveryOfEveryScenarioIsUnchanged with data set "optional-apps-off"
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testDiscoveryOfEveryScenarioIsUnchanged with data set "unknown-grant"
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testGrantCatalogIsUnchanged
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testGuideOfEveryScenarioIsUnchanged with data set "all-on"
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testGuideOfEveryScenarioIsUnchanged with data set "deck-without-dependencies"
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testGuideOfEveryScenarioIsUnchanged with data set "files-link-only"
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testGuideOfEveryScenarioIsUnchanged with data set "guest"
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testGuideOfEveryScenarioIsUnchanged with data set "optional-apps-off"
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testGuideOfEveryScenarioIsUnchanged with data set "unknown-grant"
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testInitializeIsUnchanged
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testRoutesAreUnchanged
+OCA\Mcp\Tests\Unit\Contract\GoldenContractTest::testScenariosShowTheirOwnDifference
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\FixtureFileTest::testAFixtureWithoutMailPinsHasNoMailSources
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\FixtureFileTest::testEveryFixtureIsReproducedByteForByte
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\FixtureFileTest::testTheOldestCoveredReleaseOfEachApp
@@ -797,6 +934,11 @@ OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCall
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCA\Files_Trashbin\Storage @ 33"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCA\Files_Trashbin\Storage @ 34"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCA\Files_Trashbin\Storage @ 35"
+OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCA\Files_Trashbin\Trash\ITrashManager @ 31"
+OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCA\Files_Trashbin\Trash\ITrashManager @ 32"
+OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCA\Files_Trashbin\Trash\ITrashManager @ 33"
+OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCA\Files_Trashbin\Trash\ITrashManager @ 34"
+OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCA\Files_Trashbin\Trash\ITrashManager @ 35"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCA\Files_Trashbin\Trash\LegacyTrashBackend @ 31"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCA\Files_Trashbin\Trash\LegacyTrashBackend @ 32"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCA\Files_Trashbin\Trash\LegacyTrashBackend @ 33"
@@ -1326,6 +1468,11 @@ OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCall
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCP\DB\Exception @ 33"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCP\DB\Exception @ 34"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCP\DB\Exception @ 35"
+OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCP\DB\IResult @ 31"
+OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCP\DB\IResult @ 32"
+OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCP\DB\IResult @ 33"
+OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCP\DB\IResult @ 34"
+OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCP\DB\IResult @ 35"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCP\DB\ISchemaWrapper @ 31"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCP\DB\ISchemaWrapper @ 32"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryCalledMethodExistsInEveryCoveredMajor with data set "OCP\DB\ISchemaWrapper @ 33"
@@ -2805,6 +2952,11 @@ OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryNext
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryNextcloudClassTheAppNamesExists with data set "OCP\DB\Exception @ 33"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryNextcloudClassTheAppNamesExists with data set "OCP\DB\Exception @ 34"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryNextcloudClassTheAppNamesExists with data set "OCP\DB\Exception @ 35"
+OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryNextcloudClassTheAppNamesExists with data set "OCP\DB\IResult @ 31"
+OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryNextcloudClassTheAppNamesExists with data set "OCP\DB\IResult @ 32"
+OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryNextcloudClassTheAppNamesExists with data set "OCP\DB\IResult @ 33"
+OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryNextcloudClassTheAppNamesExists with data set "OCP\DB\IResult @ 34"
+OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryNextcloudClassTheAppNamesExists with data set "OCP\DB\IResult @ 35"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryNextcloudClassTheAppNamesExists with data set "OCP\DB\ISchemaWrapper @ 31"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryNextcloudClassTheAppNamesExists with data set "OCP\DB\ISchemaWrapper @ 32"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiContractTest::testEveryNextcloudClassTheAppNamesExists with data set "OCP\DB\ISchemaWrapper @ 33"
@@ -5252,6 +5404,20 @@ OCA\Mcp\Tests\Unit\Contract\NextcloudApi\VersionedOmissionContractTest::testBadD
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\VersionedOmissionContractTest::testBadDeclarationOrNativeSurfaceIsRejected with data set "wrong missing"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\VersionedOmissionContractTest::testBadDeclarationOrNativeSurfaceIsRejected with data set "wrong pin"
 OCA\Mcp\Tests\Unit\Contract\NextcloudApi\VersionedOmissionContractTest::testOrdinaryVersionGateIsNotConsumed
+OCA\Mcp\Tests\Unit\Contract\Oracle\InventoryCheckTest::testAuthorizedSkipMustStaySkipped
+OCA\Mcp\Tests\Unit\Contract\Oracle\InventoryCheckTest::testEnvironmentSkipPermissionIsClosed
+OCA\Mcp\Tests\Unit\Contract\Oracle\InventoryCheckTest::testEveryBaselineFileMustBeReadable
+OCA\Mcp\Tests\Unit\Contract\Oracle\InventoryCheckTest::testMapRenamesBaselineClasses
+OCA\Mcp\Tests\Unit\Contract\Oracle\InventoryCheckTest::testOtherDifferencesFail
+OCA\Mcp\Tests\Unit\Contract\Oracle\InventoryCheckTest::testSkippedOrIncompleteBaselineTestsFail
+OCA\Mcp\Tests\Unit\Contract\Oracle\InventoryCheckTest::testTheBaselineRunPasses
+OCA\Mcp\Tests\Unit\Contract\Oracle\OracleToolsTest::testEncodingKeepsObjectsAndLists
+OCA\Mcp\Tests\Unit\Contract\Oracle\OracleToolsTest::testLineDiffAlignsAMovedLine
+OCA\Mcp\Tests\Unit\Contract\Oracle\OracleToolsTest::testLineDiffShowsTheChangedLine
+OCA\Mcp\Tests\Unit\Contract\Oracle\OracleToolsTest::testMissingGoldenFails
+OCA\Mcp\Tests\Unit\Contract\Oracle\OracleToolsTest::testVolatileFieldsReplaceOnlyListedKeys
+OCA\Mcp\Tests\Unit\Contract\Oracle\WriteToolCoverageTest::testEveryWriteHasItsOwnEffectTranscript
+OCA\Mcp\Tests\Unit\Contract\PersistedNamesContractTest::testPersistedNamesAndDiKeysAreUnchanged
 OCA\Mcp\Tests\Unit\Contract\StructuredReferenceContractTest::testA6CalendarAppParametersAreCheckedOnAKeptAttach
 OCA\Mcp\Tests\Unit\Contract\StructuredReferenceContractTest::testA6NextcloudShapesAreCheckedOnLoopbackIpAndAliasHosts
 OCA\Mcp\Tests\Unit\Contract\StructuredReferenceContractTest::testA6PublicFolderLinkIsRemovedWhileAnExclusionIsConfigured with data set "exclusion tag configured"
@@ -5368,12 +5534,17 @@ OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidInputIsRejectedBeforeAny
 OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidInputIsRejectedBeforeAnyQuery with data set "nul"
 OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidInputIsRejectedBeforeAnyQuery with data set "null"
 OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidRowClosesTheCursorExactlyOnceBeforePropagatingTheError
+OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidStoredPermissionFailsTheWholeRead with data set "ambiguous dots"
 OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidStoredPermissionFailsTheWholeRead with data set "case changed"
 OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidStoredPermissionFailsTheWholeRead with data set "eligibility on ordinary module"
+OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidStoredPermissionFailsTheWholeRead with data set "empty module"
 OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidStoredPermissionFailsTheWholeRead with data set "empty operation"
 OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidStoredPermissionFailsTheWholeRead with data set "group deny"
-OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidStoredPermissionFailsTheWholeRead with data set "unknown module"
-OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidStoredPermissionFailsTheWholeRead with data set "unknown operation"
+OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidStoredPermissionFailsTheWholeRead with data set "invalid utf8"
+OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidStoredPermissionFailsTheWholeRead with data set "nul"
+OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidStoredPermissionFailsTheWholeRead with data set "oversized module"
+OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidStoredPermissionFailsTheWholeRead with data set "oversized operation"
+OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidStoredPermissionFailsTheWholeRead with data set "space"
 OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testInvalidStoredPermissionFailsTheWholeRead with data set "wrong system operation"
 OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testLargeRequestsAreChunkedWithoutLosingGroupsOrQueryingOneGroupAtATime
 OCA\Mcp\Tests\Unit\Db\GroupGrantsMapperTest::testMismatchedOriginalIdFailsTheWholeReadInsteadOfGrantingTheDigestOwner
@@ -5415,6 +5586,8 @@ OCA\Mcp\Tests\Unit\Db\ResourceScopeMapperTest::testTheLargestRevisionAndResource
 OCA\Mcp\Tests\Unit\Db\ResourceScopeMapperTest::testTheLimitItselfIsAccepted
 OCA\Mcp\Tests\Unit\Db\ResourceScopeMapperTest::testUsersWithModesAreListedOncePerUserByKeyInPagesAfterACursor
 OCA\Mcp\Tests\Unit\Db\ResourceScopeMapperTest::testWritesOutsideTheWriterTransactionAreRefused
+OCA\Mcp\Tests\Unit\Db\StoredGroupGrantTest::testCurrentCatalogAndSystemEligibilityRemainRecognized
+OCA\Mcp\Tests\Unit\Db\StoredGroupGrantTest::testDuplicateUnknownRowBlocksWholeReadAndClosesCursor
 OCA\Mcp\Tests\Unit\FinalStoreLocaleContractTest::testFinalVersionIsAccepted with data set "de"
 OCA\Mcp\Tests\Unit\FinalStoreLocaleContractTest::testFinalVersionIsAccepted with data set "en"
 OCA\Mcp\Tests\Unit\FinalStoreLocaleContractTest::testFinalVersionIsAccepted with data set "es"
@@ -5968,6 +6141,190 @@ OCA\Mcp\Tests\Unit\Scripts\CheckPackageTest::testPlainTarMultiMemberGzipAndNulPa
 OCA\Mcp\Tests\Unit\Scripts\CheckPackageTest::testTheCommandLineDefaultsToTemplatesAndLib
 OCA\Mcp\Tests\Unit\Scripts\CheckPackageTest::testTheCommandLineReportsOnStderrWithTheExitCode
 OCA\Mcp\Tests\Unit\Scripts\CheckPackageTest::testThePaxPathIsAppliedAndPaxHeaderNamesAreRefused
+OCA\Mcp\Tests\Unit\Scripts\Dev\MapCoverageTest::testAConsistentMapPasses
+OCA\Mcp\Tests\Unit\Scripts\Dev\MapCoverageTest::testAFileListedTwiceIsRefused
+OCA\Mcp\Tests\Unit\Scripts\Dev\MapCoverageTest::testAFileOutsideTheMapFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MapCoverageTest::testATransitionalTicketMustExist
+OCA\Mcp\Tests\Unit\Scripts\Dev\MapCoverageTest::testConflictingDestinationsFail
+OCA\Mcp\Tests\Unit\Scripts\Dev\MapCoverageTest::testLargeFilesOutsideTheInventoryOrAboveTheCeilingFail
+OCA\Mcp\Tests\Unit\Scripts\Dev\MapCoverageTest::testTheRepositoryMapAndInventoryMatchLib
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceR4RepositoryTest::testForgottenRealFrontendReaderFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceR4RepositoryTest::testForgottenRealPhpReaderFails with data set "GrantPolicy"
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceR4RepositoryTest::testForgottenRealPhpReaderFails with data set "OverridePreview"
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceR4RepositoryTest::testRealPlannedMovePasses with data set "AccessInspector"
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceR4RepositoryTest::testRealPlannedMovePasses with data set "GrantMatrix"
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceR4RepositoryTest::testRealPlannedMovePasses with data set "GrantPolicy"
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceR4RepositoryTest::testRealPlannedMovePasses with data set "GuestRestrictions"
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceR4RepositoryTest::testRealPlannedMovePasses with data set "OverridePreview"
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceR5RepositoryTest::testEveryReaderIsCovered with data set "EvasionProbe Mail fixture keys"
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceR5RepositoryTest::testEveryReaderIsCovered with data set "FilesModule keyed inventory"
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceR5RepositoryTest::testEveryReaderIsCovered with data set "OverridePreview two readers"
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceR5RepositoryTest::testEveryReaderIsCovered with data set "PolicyWriter sorted and keyed readers"
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceR5RepositoryTest::testUnpreparedOverrideIsExplicitlyRefused
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceRepositoryTest::testAMoveThatChangesWhatDirPointsToFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceRepositoryTest::testAMoveThatRebasesDirEquivalentlyPasses
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceRepositoryTest::testARealMovePasses
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceRepositoryTest::testARedirectedSecurityAttributeFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceRepositoryTest::testAWhitespaceChangeInsideARealStringFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceRepositoryTest::testHistoricalAndBackupDescriptionsPassRealMove
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceRepositoryTest::testRealAutoloadWithMissingSegmentFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceRepositoryTest::testTheTreeAgainstItselfPasses
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testAFileOmittedAtTheDestinationFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testAFullyQualifiedNameInTheBodyReplacedFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testAGuardImportReplacedByAnotherClassFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testAMoveTheMapDoesNotPlanFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testAMoveWithTheMapAndUpdatedCallersPasses
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testAPlannedDestinationIsNotAStaleReference
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testAStringLeftWithTheOldNameFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testAStringWithAnAlteredClassNameFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testAStringWithTheOldPathOfAMovedFileFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testAnAliasRedirectedToAnotherClassFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testAnAttributeWithArgumentsFollowsTheMap
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testAnEntryOfTheTicketLeftInPlaceFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testAnUnchangedSameNamespaceCallerFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testImportOrderWhitespaceAndCommentsAreIgnored
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testLocationDependentConstructsInAMovedFileFail
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testNewFilesAndOtherDataFail
+OCA\Mcp\Tests\Unit\Scripts\Dev\MoveEquivalenceTest::testTheMovedFilesArePaired
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testAbsoluteLiteralIncludePasses
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testLexicalPathChangesFail with data set "autoload guard"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testLexicalPathChangesFail with data set "cancelled segments"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testLexicalPathChangesFail with data set "glob missing segment"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testLexicalPathChangesFail with data set "printed dot"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testLexicalPathChangesFail with data set "realpath missing segment"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testRedirectedDirnameFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testSimpleBuiltinDepthCompensationPasses
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testStalePathBoundariesAndConsumers
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "dirname variable"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "file_exists variable"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "file_get_contents variable"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "glob variable"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "include misleading literal prefix"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "include parentheses prefix"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "include parenthesized"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "include relative expression"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "include variable"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "include_once misleading literal prefix"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "include_once parentheses prefix"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "include_once parenthesized"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "include_once relative expression"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "include_once variable"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "is_file variable"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "realpath variable"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "require misleading literal prefix"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "require parentheses prefix"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "require parenthesized"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "require relative expression"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "require variable"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "require_once misleading literal prefix"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "require_once parentheses prefix"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "require_once parenthesized"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "require_once relative expression"
+OCA\Mcp\Tests\Unit\Scripts\Dev\PathSafetyTest::testUnknownPathsInMovedFilesFail with data set "require_once variable"
+OCA\Mcp\Tests\Unit\Scripts\Dev\RepositoryPathTest::testOtherPrefixesAndEmbeddedTextStayUnproved
+OCA\Mcp\Tests\Unit\Scripts\Dev\RepositoryPathTest::testRepositoryPathsPreserveEveryOtherManifestByte
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testCompanionMovePasses
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testDirectoryDepthControls
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "01 function import"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "02 const import"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "03 group import"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "04 instanceof"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "05 new"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "06 static call"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "07 attribute"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "08 attribute args"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "09 PHPDoc"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "10 class_exists"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "11 partial string"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "12 heredoc"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "13 interpolation"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "14 escape"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "15 namespace block"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "16 second class"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "18 mixed function group"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "19 constant/class alias"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "20 namespace function alias"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewMatrixTest::testReviewMatrix with data set "21 free function namespace"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testCallableStringsFollowClassPairs
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testForgottenReadersFail
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "ReflectionClass filename"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "SplFileObject named include path"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "SplFileObject"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "debug_backtrace"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "debug_print_backtrace"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "explicit debug_backtrace"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "explicit debug_print_backtrace"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "explicit get_included_files"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "explicit set_include_path"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "explicit stream_resolve_include_path"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "file"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "fopen"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "get_included_files"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "gzfile"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "gzopen"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "named include_path"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "nested arguments"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "nullsafe filename"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "readfile"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "readgzfile"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "set_include_path"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "stream_resolve_include_path"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testImplicitLocationCallsFail with data set "unpack"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testMappedPathReadersPass
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testNamespaceCompositionInUnchangedSiblingFails
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testOnlyWholePairedPathChangesPass
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR4Test::testOrdinaryOpenWithoutIncludePathPasses
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR5Test::testAliasesAndSuffixes with data set "/A/Probe.php"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR5Test::testAliasesAndSuffixes with data set "/A/Probe.php#method:operation:1"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR5Test::testAliasesAndSuffixes with data set "/A/Probe.php:42"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR5Test::testAliasesAndSuffixes with data set "/lib/A/Probe.php"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR5Test::testAliasesAndSuffixes with data set "/lib/A/Probe.php#method:operation:1"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR5Test::testAliasesAndSuffixes with data set "/lib/A/Probe.php:42"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR5Test::testAliasesAndSuffixes with data set "A/Probe.php"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR5Test::testAliasesAndSuffixes with data set "A/Probe.php#method:operation:1"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR5Test::testAliasesAndSuffixes with data set "A/Probe.php:42"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR5Test::testAliasesAndSuffixes with data set "lib/A/Probe.php"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR5Test::testAliasesAndSuffixes with data set "lib/A/Probe.php#method:operation:1"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR5Test::testAliasesAndSuffixes with data set "lib/A/Probe.php:42"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR5Test::testCoincidingPrefixesFail
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR5Test::testExceptionFileIsRefused
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR5Test::testMemberNamedFilePasses
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR6Test::testOrderedExpectations with data set "assertEquals ['A/Probe.php']"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR6Test::testOrderedExpectations with data set "assertEquals [array('A/Probe.php')]"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR6Test::testOrderedExpectations with data set "assertEquals array("{$label}", 'A/Probe.php')"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR6Test::testOrderedExpectations with data set "assertEquals array('A/Probe.php')"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR6Test::testOrderedExpectations with data set "assertEquals array(['A/Probe.php'])"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR6Test::testOrderedExpectations with data set "assertSame ['A/Probe.php']"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR6Test::testOrderedExpectations with data set "assertSame [array('A/Probe.php')]"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR6Test::testOrderedExpectations with data set "assertSame array("{$label}", 'A/Probe.php')"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR6Test::testOrderedExpectations with data set "assertSame array('A/Probe.php')"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR6Test::testOrderedExpectations with data set "assertSame array(['A/Probe.php'])"
+OCA\Mcp\Tests\Unit\Scripts\Dev\ReviewR6Test::testOtherArgumentsAreNotExpectedArrays
+OCA\Mcp\Tests\Unit\Scripts\Dev\SourceTreesTest::testAFolderIsReadRelativeToItself
+OCA\Mcp\Tests\Unit\Scripts\Dev\SourceTreesTest::testARevisionIsReadFromGit
+OCA\Mcp\Tests\Unit\Scripts\Dev\SourceTreesTest::testInheritedGitSettingsAreIsolatedAndRestored
+OCA\Mcp\Tests\Unit\Scripts\Dev\TestInventoryTest::testAMissingBaselineTestIsReported
+OCA\Mcp\Tests\Unit\Scripts\Dev\TestInventoryTest::testAShortNameLookAlikeOutsideTheMapIsMissing
+OCA\Mcp\Tests\Unit\Scripts\Dev\TestInventoryTest::testFailureSetsAreComparedThroughTheMap
+OCA\Mcp\Tests\Unit\Scripts\Dev\TestInventoryTest::testMovedTestsAreFoundThroughTheMap
+OCA\Mcp\Tests\Unit\Scripts\Dev\TestInventoryTest::testTheInventoryFindsEveryTestMethod
+OCA\Mcp\Tests\Unit\Scripts\Dev\TokenNormalizerTest::testAnUndeclaredUnqualifiedNameStaysLiteral
+OCA\Mcp\Tests\Unit\Scripts\Dev\TokenNormalizerTest::testAttributeNamesResolveAsClassesWithArguments
+OCA\Mcp\Tests\Unit\Scripts\Dev\TokenNormalizerTest::testCallsToNamespacedFunctionsResolve
+OCA\Mcp\Tests\Unit\Scripts\Dev\TokenNormalizerTest::testDirectoryExpressionsFoldToPaths
+OCA\Mcp\Tests\Unit\Scripts\Dev\TokenNormalizerTest::testEveryFormOfClassReferenceResolves
+OCA\Mcp\Tests\Unit\Scripts\Dev\TokenNormalizerTest::testFunctionAndConstantNamesAreResolved
+OCA\Mcp\Tests\Unit\Scripts\Dev\TokenNormalizerTest::testImportedConstantsResolveToTheirImport
+OCA\Mcp\Tests\Unit\Scripts\Dev\TokenNormalizerTest::testNonClassNamesStayLiteral
+OCA\Mcp\Tests\Unit\Scripts\Dev\TokenNormalizerTest::testRenamesApplyToNamesAndClassStrings
+OCA\Mcp\Tests\Unit\Scripts\Dev\TokenNormalizerTest::testStringContentKeepsItsWhitespace
+OCA\Mcp\Tests\Unit\Scripts\Dev\TokenNormalizerTest::testTraitUseAndClosureUseAreNotImports
+OCA\Mcp\Tests\Unit\Scripts\Dev\TokenNormalizerTest::testWhitespaceAndCommentsAreLeftOut
+OCA\Mcp\Tests\Unit\Scripts\DevelopmentEntriesTest::testNonCanonicalNamesAreRefused
+OCA\Mcp\Tests\Unit\Scripts\DevelopmentEntriesTest::testPackageCheckRefusesAnArchiveWithDevelopmentFolders
+OCA\Mcp\Tests\Unit\Scripts\DevelopmentEntriesTest::testPackageCheckRefusesNonCanonicalNamesInARealArchive
+OCA\Mcp\Tests\Unit\Scripts\DevelopmentEntriesTest::testProductionEntriesPass
+OCA\Mcp\Tests\Unit\Scripts\DevelopmentEntriesTest::testScriptsAndTestsEntriesAreRefused
 OCA\Mcp\Tests\Unit\Service\AccessInspectorTest::testACalendarIsExplainedByTheCalendarExplainer
 OCA\Mcp\Tests\Unit\Service\AccessInspectorTest::testAPathIsNormalizedLikeTheTools
 OCA\Mcp\Tests\Unit\Service\AccessInspectorTest::testAPathOutsideTheContractIsRefused with data set "NUL"
@@ -7653,6 +8010,25 @@ OCA\Mcp\Tests\Unit\Service\Policy\ResolutionCoreTest::testSameManagerAndResolver
 OCA\Mcp\Tests\Unit\Service\Policy\ResolutionCoreTest::testTwoDatabaseBackendsDoNotPassAndReturningToSingletonDoesNotReactivate
 OCA\Mcp\Tests\Unit\Service\Policy\ResolutionCoreTest::testUnknownCatalogCellThrowsInsteadOfApplyingADefault
 OCA\Mcp\Tests\Unit\Service\Policy\ResolutionCoreTest::testUnknownEligibilityNeverCutsCredentialsAndExplicitDenyWins
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantResolutionTest::testBatchIncludesUnrelatedUsersAndGuestsWithoutGrantingUnknownRows
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantResolutionTest::testCorruptionStillBlocksTheAffectedPolicy
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantResolutionTest::testUnknownGrantDoesNotBreakKnownPolicy
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsControllerTest::testAdminRequiredBeforeReadOrWrite
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsControllerTest::testFrameworkGuardsAreNotDisabled
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsControllerTest::testValidationConcurrencyAndSuccessfulReadback
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsTest::testAuditDeliveryFailureLeavesCommittedPendingRecord
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsTest::testAuditFailureRollsBackCleanupAndRevision
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsTest::testCleanupRefusesIdFromAnotherGroupWithoutWriting
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsTest::testConcurrencyAndKnownReintroducedSelectionFailClosed
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsTest::testConfirmationIsStrict with data set "absent"
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsTest::testConfirmationIsStrict with data set "false"
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsTest::testConfirmationIsStrict with data set "integer"
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsTest::testConfirmationIsStrict with data set "string"
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsTest::testConfirmedSelectiveCleanupRecordsActorBeforeAfterAndResult
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsTest::testMalformedRowsStillBlockAndCannotBeCleanedAsUnknown
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsTest::testMutationBetweenAdmissionAndMutexRefusesCleanup
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsTest::testOrdinaryReplacementAndLifecyclePurgeDoNotCleanUnknownRows
+OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsTest::testUnknownRowsAreOpaqueAndOtherGroupsAndKnownGrantsSurvive
 OCA\Mcp\Tests\Unit\Service\PromptCatalogTest::testAPromptOfUnknownGrantIsLeftOutAndItsDirectUseIsUnavailable
 OCA\Mcp\Tests\Unit\Service\PromptCatalogTest::testAnUnknownNameResolvesToNothing
 OCA\Mcp\Tests\Unit\Service\PromptCatalogTest::testAnUnknownPromptIsInvalidParamsInBothEras
@@ -8336,6 +8712,9 @@ OCA\Mcp\Tests\Unit\Tools\Calendar\EventAttachmentOutputTest::testNoToolExposesAt
 OCA\Mcp\Tests\Unit\Tools\Calendar\EventAttachmentOutputTest::testNoToolExposesAttachInThePlanOrTheResult with data set "transfer"
 OCA\Mcp\Tests\Unit\Tools\Calendar\EventAttachmentOutputTest::testNoToolExposesAttachInThePlanOrTheResult with data set "update"
 OCA\Mcp\Tests\Unit\Tools\Calendar\EventAttachmentOutputTest::testUpdatingAnotherFieldKeepsTheAttachInTheDavObject
+OCA\Mcp\Tests\Unit\Tools\Calendar\EventStampTest::testACreatedEventSerializesExactlyOneDtstampFromTheModuleClock
+OCA\Mcp\Tests\Unit\Tools\Calendar\EventStampTest::testAnUpdateCollapsesADuplicateDtstampToTheModuleClock
+OCA\Mcp\Tests\Unit\Tools\Calendar\EventStampTest::testAnUpdateReplacesTheDtstampAndLeavesExactlyOne
 OCA\Mcp\Tests\Unit\Tools\Calendar\ListCalendarsTest::testBackendFailurePropagatesAsNonArgumentError
 OCA\Mcp\Tests\Unit\Tools\Calendar\ListCalendarsTest::testLibraryInvalidArgumentIsNotReportedAsInvalidParams
 OCA\Mcp\Tests\Unit\Tools\Calendar\ListCalendarsTest::testListsVisibleEventCalendarsWithOwnerAndWriteAccess
@@ -8655,6 +9034,9 @@ OCA\Mcp\Tests\Unit\Tools\Contacts\ContactBackupTest::testCollisionUsesAnotherNam
 OCA\Mcp\Tests\Unit\Tools\Contacts\ContactBackupTest::testFullVcardIsReadBackAndUniqueNameUsesAccountTimezone
 OCA\Mcp\Tests\Unit\Tools\Contacts\ContactBackupTest::testUnsafeNamesCannotEscapeBackupDirectory
 OCA\Mcp\Tests\Unit\Tools\Contacts\ContactBackupTest::testVerificationFailureFailsClosedAndReleasesMutex
+OCA\Mcp\Tests\Unit\Tools\Contacts\ContactCreatePlanTest::testAChangedPlanKeepsTheUidAndWritesNothing
+OCA\Mcp\Tests\Unit\Tools\Contacts\ContactCreatePlanTest::testAConfirmationWithoutThePlanUidWritesNothing
+OCA\Mcp\Tests\Unit\Tools\Contacts\ContactCreatePlanTest::testTheConfirmedContactKeepsTheUidThePlanShowed
 OCA\Mcp\Tests\Unit\Tools\Contacts\ContactsModuleTest::testAContactEditedWhileTheBackupWasBeingSavedIsNotDeleted
 OCA\Mcp\Tests\Unit\Tools\Contacts\ContactsModuleTest::testAnAddressBookThatChangedOwnerWhileTheBackupWasBeingSavedStopsTheDelete
 OCA\Mcp\Tests\Unit\Tools\Contacts\ContactsModuleTest::testBackupFailureNeverDeletesContact
@@ -9656,6 +10038,12 @@ OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteFileHandlerTest::testSecondBoundar
 OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteFileHandlerTest::testVoidVetoIsPreservedErrorWithoutFalsePermanentLossAlarm
 OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteGrantUpgradeTest::testOldFullAndUnconfiguredUsersStayDeniedAcrossInstances
 OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteGrantUpgradeTest::testOldFullGroupDoesNotAcquireDeleteAcrossInstances
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteTrashReceiptTest::testFolderOutcomeComposesTheReceiptOnlyAfterRemoval
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteTrashReceiptTest::testOwnFileReceiptIsObservedInOwnTrash
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteTrashReceiptTest::testOwnPlanStatesTryTheTrashBinFirst
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteTrashReceiptTest::testReceivedShareNeverConsultsTheOwnerTrash
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteTrashReceiptTest::testUnknownOwnerIsNeutralAndConsultsNoTrash
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteTrashReceiptTest::testVerificationFailureDoesNotBreakTheDeletion
 OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteTrashVetoTest::testBoundedVetoAndRemoval with data set "allowed"
 OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteTrashVetoTest::testBoundedVetoAndRemoval with data set "different node"
 OCA\Mcp\Tests\Unit\Tools\Files\Deletion\DeleteTrashVetoTest::testBoundedVetoAndRemoval with data set "opt-out"
@@ -9682,6 +10070,17 @@ OCA\Mcp\Tests\Unit\Tools\Files\Deletion\Sharing\DeleteLocalOriginTest::testOrigi
 OCA\Mcp\Tests\Unit\Tools\Files\Deletion\Sharing\DeleteOwnerLimitTest::testNativeOwnerLimitIsAuthoritative
 OCA\Mcp\Tests\Unit\Tools\Files\Deletion\Sharing\DeleteSharedConfirmationTest::testMissingSharedFlagHasNoEffectOrRecipientDisclosure
 OCA\Mcp\Tests\Unit\Tools\Files\Deletion\Sharing\DeleteSharedConfirmationTest::testNewSharedImpactAtFinalFrontierRefusesBeforeSink
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\TrashReceiptTranslationTest::testTextsAreTranslated with data set "de"
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\TrashReceiptTranslationTest::testTextsAreTranslated with data set "en"
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\TrashReceiptTranslationTest::testTextsAreTranslated with data set "es"
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\TrashReceiptTranslationTest::testTextsAreTranslated with data set "pt_BR"
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\TrashReceiptTranslationTest::testToolDescriptionStatesTryTheTrashBinFirst
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\TrashReceiptVerifierTest::testDestinationSeparatesOwnOtherAndUnknown
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\TrashReceiptVerifierTest::testDoubtfulObservationsStayUnconfirmed
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\TrashReceiptVerifierTest::testOwnFileObservedInTrash
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\TrashReceiptVerifierTest::testOwnFolderObservedInTrash
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\TrashReceiptVerifierTest::testReceivedShareNeverConsultsAnyTrash
+OCA\Mcp\Tests\Unit\Tools\Files\Deletion\TrashReceiptVerifierTest::testUnknownOwnerNeverConsultsAnyTrashNorNamesAnotherPerson
 OCA\Mcp\Tests\Unit\Tools\Files\FileBackupPrivacyTest::testTagFailureLeavesAnEmptyBackupAndOriginalUntouched with data set "assignment"
 OCA\Mcp\Tests\Unit\Tools\Files\FileBackupPrivacyTest::testTagFailureLeavesAnEmptyBackupAndOriginalUntouched with data set "lookup"
 OCA\Mcp\Tests\Unit\Tools\Files\FileBackupPrivacyTest::testTagsAreAssignedWhileBackupIsEmpty
@@ -10406,6 +10805,10 @@ OCA\Mcp\Tests\Unit\Tools\Forms\FormsResponseLimitsTest::testOversizedListPayload
 OCA\Mcp\Tests\Unit\Tools\Forms\FormsResponseLimitsTest::testReducedCursorCeilingRoundTrip
 OCA\Mcp\Tests\Unit\Tools\Forms\FormsResponseLimitsTest::testSerializedPayloadLimit
 OCA\Mcp\Tests\Unit\Tools\Forms\FormsResponseLimitsTest::testTotalTextBudgetAndUncutControl
+OCA\Mcp\Tests\Unit\Tools\Forms\PlanChangedNoticeTest::testAChangedDescriptionSuffixStaysVisible
+OCA\Mcp\Tests\Unit\Tools\Forms\PlanChangedNoticeTest::testAChangedFormsVersionIsNamedInTheWarning
+OCA\Mcp\Tests\Unit\Tools\Forms\PlanChangedNoticeTest::testAChangedQuestionDescriptionIsNamedInTheWarning
+OCA\Mcp\Tests\Unit\Tools\Forms\PlanChangedNoticeTest::testTheCreationWarningNamesTheInstalledVersion
 OCA\Mcp\Tests\Unit\Tools\Forms\Results\ResultFileAccessTest::testAllAliasesAndExactActorViewerWhitelist
 OCA\Mcp\Tests\Unit\Tools\Forms\Results\ResultFileAccessTest::testScopeFailureCannotBecomeEmpty
 OCA\Mcp\Tests\Unit\Tools\Forms\Results\ResultsAccessTest::testBothHandlersUidZeroHaveZeroDataReads
@@ -10937,6 +11340,7 @@ OCA\Mcp\Tests\Unit\Tools\PlanTextTest::testQuotedNamesKeepSimpleTextReadableAndE
 OCA\Mcp\Tests\Unit\Tools\PlanTextTest::testQuotedNamesRemainInertMarkdownAndAreNeverCutAfterExpansion
 OCA\Mcp\Tests\Unit\Tools\PlanTextTest::testQuotedWhitespaceAndFormatCharactersAreVisible
 OCA\Mcp\Tests\Unit\Tools\PlanTextTest::testStrongAndEmphasisWrapTheEscapedText
+OCA\Mcp\Tests\Unit\Tools\Polls\PlanChangedNoticeTest::testAChangedPollsVersionIsNamedInTheWarning
 OCA\Mcp\Tests\Unit\Tools\Polls\PollsConsoleTest::testConsoleContextIsRefusedBeforeNativeResolution
 OCA\Mcp\Tests\Unit\Tools\Polls\PollsContentRegistryTest::testExactGrantsAndSharedGates with data set "both protected reads"
 OCA\Mcp\Tests\Unit\Tools\Polls\PollsContentRegistryTest::testExactGrantsAndSharedGates with data set "default deny protected reads"
@@ -11212,10 +11616,20 @@ OCA\Mcp\Tests\Unit\Tools\Tables\Write\RowWriteGatesTest::testARelationToAViewNee
 OCA\Mcp\Tests\Unit\Tools\Tables\Write\RowWriteGatesTest::testHiddenNumbersTakeTheColumnLimits
 OCA\Mcp\Tests\Unit\Tools\Tables\Write\RowWriteGatesTest::testHiddenValueForms
 OCA\Mcp\Tests\Unit\Tools\Tables\Write\RowWriteGatesTest::testHiddenValuesFirstMatchWins
+OCA\Mcp\Tests\Unit\Tools\Tables\Write\RowWritePlanNoticeTest::testAChangedColumnLimitIsNamedInTheWarning
+OCA\Mcp\Tests\Unit\Tools\Tables\Write\RowWritePlanNoticeTest::testATinyOrLongNumberMaxStaysDistinct
+OCA\Mcp\Tests\Unit\Tools\Tables\Write\RowWritePlanNoticeTest::testTheLastChangedNumberMaxStaysVisible
 OCA\Mcp\Tests\Unit\Tools\Tables\Write\RowWriteRequestTest::testMalformedArgumentsAreInvalid
 OCA\Mcp\Tests\Unit\Tools\Tables\Write\RowWriteRequestTest::testTheBoundsAreAccepted
 OCA\Mcp\Tests\Unit\Tools\Tables\Write\TablesPlanRendererTest::testAHostileTitleAndValueStayInert
 OCA\Mcp\Tests\Unit\Tools\Tables\Write\TablesPlanRendererTest::testEveryTablesWriteHasAReadablePlan
+OCA\Mcp\Tests\Unit\Tools\Talk\AttachedFileTest::testAFailingUserFolderLookupFallsBackToTheFileName
+OCA\Mcp\Tests\Unit\Tools\Talk\AttachedFileTest::testANodeOutsideTheUserFolderIsNamedByItsFileNameOnly
+OCA\Mcp\Tests\Unit\Tools\Talk\AttachedFileTest::testTheAccountIdNeverAppearsForAPathThatDoesNotContainIt
+OCA\Mcp\Tests\Unit\Tools\Talk\AttachedFileTest::testThePlanAndTheResultNameTheFileBelowTheUserFolder with data set "account named like a folder of the path"
+OCA\Mcp\Tests\Unit\Tools\Talk\AttachedFileTest::testThePlanAndTheResultNameTheFileBelowTheUserFolder with data set "account named like the internal folder"
+OCA\Mcp\Tests\Unit\Tools\Talk\AttachedFileTest::testThePlanAndTheResultNameTheFileBelowTheUserFolder with data set "file received through a share"
+OCA\Mcp\Tests\Unit\Tools\Talk\AttachedFileTest::testThePlanAndTheResultNameTheFileBelowTheUserFolder with data set "own file"
 OCA\Mcp\Tests\Unit\Tools\Talk\AttachmentAccessTest::testAFileDeletedSinceTheShareIsReportedWithoutAName
 OCA\Mcp\Tests\Unit\Tools\Talk\AttachmentAccessTest::testAFolderShareHasNoMimeType
 OCA\Mcp\Tests\Unit\Tools\Talk\AttachmentAccessTest::testARoomShareOfThisConversationIsAccepted

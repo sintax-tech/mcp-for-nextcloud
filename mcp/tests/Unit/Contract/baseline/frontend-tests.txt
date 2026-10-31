@@ -39,6 +39,9 @@
 ✔ F6: the inspector does not open over a resource scope whose draft the administrator kept
 ✔ Forms presets render their explicit names in the inspector consumer
 ✔ Forms writing never implicitly grants response reading
+✔ G1: cleanup sends exact IDs, snapshot, revision and strict confirmation, then reloads
+✔ G1: conflict and unreadable cleanup responses reload without replay or false success
+✔ G1: unknown grants are shown as denied and cancellation sends no cleanup
 ✔ I2: fixed polite/status and assertive/alert regions survive errors; successful retry clears the old error
 ✔ L1: a blocked count the server computed is shown on its button
 ✔ L1: the filter goes to the server with the search, starts again at page 1, and names its counts

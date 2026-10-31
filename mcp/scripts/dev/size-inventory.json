@@ -1,5 +1,5 @@
 {
-	"base": "b2c6d9be",
+	"base": "71719106",
 	"limit": 300,
 	"final": [
 		{"fqcn":"OCA\\Mcp\\Controller\\GrantsController","ceiling":598},
@@ -11,7 +11,7 @@
 		{"fqcn":"OCA\\Mcp\\Service\\Calendar\\CalendarSelftestService","ceiling":420},
 		{"fqcn":"OCA\\Mcp\\Service\\GrantPolicy","ceiling":512},
 		{"fqcn":"OCA\\Mcp\\Service\\McpProtocol","ceiling":549},
-		{"fqcn":"OCA\\Mcp\\Service\\Policy\\PolicyEventPayload","ceiling":448},
+		{"fqcn":"OCA\\Mcp\\Service\\Policy\\PolicyEventPayload","ceiling":451},
 		{"fqcn":"OCA\\Mcp\\Tools\\Calendar\\CalendarMessages","ceiling":448},
 		{"fqcn":"OCA\\Mcp\\Tools\\Calendar\\CalendarPlanRenderer","ceiling":541},
 		{"fqcn":"OCA\\Mcp\\Tools\\Calendar\\EmbeddedDavDispatcher","ceiling":317},
@@ -35,7 +35,7 @@
 		{"fqcn":"OCA\\Mcp\\Controller\\CheckoutController","ceiling":562,"expires":"RE-24"},
 		{"fqcn":"OCA\\Mcp\\Service\\Policy\\PolicyWriter","ceiling":1485,"expires":"RE-06d","steps":[{"ticket":"RE-06","ceiling":1300},{"ticket":"RE-06b","ceiling":900},{"ticket":"RE-06c","ceiling":500}]},
 		{"fqcn":"OCA\\Mcp\\Service\\VisibilityGuard","ceiling":750,"expires":"RE-07"},
-		{"fqcn":"OCA\\Mcp\\Tools\\Contacts\\ContactsModule","ceiling":494,"expires":"RE-15"},
+		{"fqcn":"OCA\\Mcp\\Tools\\Contacts\\ContactsModule","ceiling":505,"expires":"RE-15"},
 		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckServiceGateway","ceiling":1039,"expires":"RE-26"},
 		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckToolModule","ceiling":1092,"expires":"RE-27"},
 		{"fqcn":"OCA\\Mcp\\Tools\\Files\\FilesMessages","ceiling":983,"expires":"RE-21c"},

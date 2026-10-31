@@ -13,13 +13,11 @@ use OCA\Mcp\L10n\Translator;
 final class CreateFormMessages {
 	public const GUIDE = 'forms_create_form requires forms.create and native creation permission. It creates a private form and its initial questions/options only in Forms 5.3.0, 5.3.7, 5.4.0 or 5.4.1. Preview is inert and confirmation repeats admission. It never edits caller-supplied IDs, publishes, shares, submits or sends mail. Native title synchronization may affect Files in 5.4.1; detected collisions stop after the empty form was created, and concurrent native effects remain possible. No extra Files grant or lock, rollback, retry or deduplication is implied.';
 	/** Localizes the constant native-effects warning shown in every plan.
+	 * @param string $version Installed Forms release the warning names.
 	 * @return string Warning without observed folder data.
 	 */
 	public static function warning(string $version): string {
-		if ($version === '5.4.1') {
-			return Translator::t('Creation follows the installed Forms app’s native behavior. In Forms %s, setting the title can rename or merge matching upload folders and remove empty folders with the new form ID prefix. Detected matches stop the title step, leaving a partially created form. Concurrent changes can still trigger native folder changes; these checks do not guarantee that Files remain unchanged.', [$version]);
-		}
-		return Translator::t('Creation follows the installed Forms app’s native behavior (Forms %s). Setting the title does not rename or merge upload folders in this version. Creation can still leave a partial form. These checks do not guarantee that Files remain unchanged.', [$version]);
+		return CreateFormVersionNotice::warning($version);
 	}
 	/** Warning of a confirmed create whose plan no longer matches, naming the installed Forms version.
 	 * @param string $version Installed Forms release the new plan was built on.

@@ -120,14 +120,48 @@ final class PlanChangedNoticeTest extends TestCase {
 			self::assertNotSame('', $message);
 			self::assertStringContainsString('description', $message);
 			self::assertStringContainsString('Recibo interno', $message);
+			self::assertStringNotContainsString('Recibo interno', json_encode($changed->plan['before']));
+			self::assertStringNotContainsString('Recibo interno', json_encode($changed->plan['after']));
 			$body = (new EditPlanRenderer())->render($changed->plan);
-			self::assertStringNotContainsString('Recibo interno', $body);
+			self::assertStringContainsString('Recibo interno', $body);
 			$text = PlanRenderer::render($this->module(), EditTools::name(false), $changed->plan);
 			self::assertStringContainsString('### ', $text);
 			self::assertStringContainsString('Warnings', $text);
 			self::assertStringContainsString('description', $text);
 			self::assertStringContainsString('Recibo interno', $text);
 			self::assertNotSame($before, $text);
+			self::assertSame([], $fixture->calls);
+		}
+	}
+
+	/**
+	 * A description of 350 identical characters whose only change is the suffix stays visible after the envelope cut.
+	 *
+	 * @return void
+	 */
+	public function testAChangedDescriptionSuffixStaysVisible(): void {
+		$fixture = new EditingFixture();
+		$fixture->question->data['description'] = str_repeat('a', 350) . 'OLD_SUFFIX';
+		$factory = $this->createMock(EditNativeFactory::class);
+		$factory->method('open')->willReturnCallback(static fn (): \OCA\Mcp\Tools\Forms\Editing\EditContext => $fixture->context());
+		$plans = new EditPlan(new PlanState((new InMemoryConfig())->mock($this)));
+		$throttle = new CreateNativeThrottle($this->createMock(\OCP\Security\Bruteforce\IThrottler::class), $this->createMock(\OCP\IRequest::class));
+		$flow = new EditFlow($factory, new EditState(), $plans, new EditWriter($factory, new EditState(), $plans, $throttle));
+		$args = ['form_id' => 1, 'question_id' => 2, 'changes' => ['required' => true]];
+		$plan = $flow->preview($args, 'alice', false);
+		$fixture->question->data['description'] = str_repeat('a', 350) . 'NEW_SUFFIX';
+		try {
+			$flow->handle($args + ['confirm' => true, PlanState::ARGUMENT => $plan[PlanState::ARGUMENT]], 'alice', false);
+			self::fail('the old question description was confirmed');
+		} catch (PlanChanged $changed) {
+			self::assertStringContainsString('NEW_SUFFIX', $changed->plan['warnings'][0]['message']);
+			$body = (new EditPlanRenderer())->render($changed->plan);
+			self::assertStringContainsString('NEW\_SUFFIX', $body);
+			$text = PlanRenderer::render($this->module(), EditTools::name(false), $changed->plan);
+			$warnings = strstr($text, '### ');
+			self::assertIsString($warnings);
+			self::assertStringNotContainsString('SUFFIX', $warnings);
+			self::assertStringContainsString($body, $text);
 			self::assertSame([], $fixture->calls);
 		}
 	}

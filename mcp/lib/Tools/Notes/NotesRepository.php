@@ -26,8 +26,8 @@ class NotesRepository {
     public const MAX_NOTES = 2000;
     /** Maximum note content size in bytes (1 MiB). */
     public const MAX_BYTES = 1024 * 1024;
-    /** Notes app default folder when the user never changed the setting. */
-    public const DEFAULT_FOLDER = 'Notes';
+    /** Notes app built-in default folder; {@see NotesFolderResolver} resolves the one a user actually has. */
+    public const DEFAULT_FOLDER = NotesFolderResolver::DEFAULT_FOLDER;
     /** File extensions the Notes app treats as notes. */
     private const EXTENSIONS = ['md', 'txt'];
     /** Highest " (n)" suffix tried before giving up on a title. */
@@ -37,7 +37,10 @@ class NotesRepository {
         private IRootFolder $rootFolder,
         private IConfig $config,
         private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
-    ) {}
+        private ?NotesFolderResolver $folders = null,
+    ) {
+        $this->folders ??= new NotesFolderResolver($rootFolder, $config);
+    }
 
     /**
      * @param string $userId authenticated user
@@ -47,7 +50,7 @@ class NotesRepository {
      */
     public function folder(string $userId, bool $create): ?Folder {
         $userFolder = $this->rootFolder->getUserFolder($userId);
-        $path = PathGuard::normalize($this->config->getUserValue($userId, 'notes', 'notesPath', self::DEFAULT_FOLDER) ?: self::DEFAULT_FOLDER);
+        $path = PathGuard::normalize($this->folders->path($userId));
         if ($create) {
             return NodeAccess::ensureFolder($userFolder, $path, $this->visibilityGuard);
         }
@@ -71,7 +74,7 @@ class NotesRepository {
      */
     public function existingAncestor(string $userId, string $category): Folder {
         $folder = $this->rootFolder->getUserFolder($userId);
-        $notes = PathGuard::normalize($this->config->getUserValue($userId, 'notes', 'notesPath', self::DEFAULT_FOLDER) ?: self::DEFAULT_FOLDER);
+        $notes = PathGuard::normalize($this->folders->path($userId));
         try {
             $below = PathGuard::normalize($category);
         } catch (InvalidArgumentException) {

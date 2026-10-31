@@ -51,6 +51,58 @@ final class XmlCharsetTest extends TestCase {
 	}
 
 	/**
+	 * Aliases of the text charsets are read as the charset they name.
+	 *
+	 * @return void
+	 */
+	public function testCharsetAliasesAreConverted(): void {
+		foreach (['latin1', 'cp1252', 'WINDOWS_1252', 'iso8859-1'] as $name) {
+			$this->assertSame('<?xml version="1.0" encoding="UTF-8"?><p>ação</p>', XmlCharset::toUtf8('<?xml version="1.0" encoding="' . $name . "\"?><p>a\xE7\xE3o</p>"), $name);
+		}
+	}
+
+	/**
+	 * Only the declaration, whose target is exactly `xml`, names the charset: another processing instruction at the start,
+	 * such as a stylesheet, or a pseudo-attribute merely ending in "encoding", converts nothing (review round 2, F4).
+	 *
+	 * @return void
+	 */
+	public function testOnlyTheXmlDeclarationNamesTheCharset(): void {
+		foreach (['<?xml-stylesheet type="text/xsl" encoding="ISO-8859-1" href="view.xsl"?><p>ação</p>',
+			'<?xmlfoo encoding="ISO-8859-1"?><p>ação</p>', '<?xml version="1.0" myencoding="ISO-8859-1"?><p>ação</p>'] as $xml) {
+			$this->assertSame($xml, XmlCharset::toUtf8($xml));
+		}
+	}
+
+	/**
+	 * Transfer encodings mbstring accepts (and UTF-16 named by a declaration readable as ASCII) are no text charset of an
+	 * entry: the bytes stay as they are, never wiped, scrambled or entity-decoded early (review round 2, F5).
+	 *
+	 * @return void
+	 */
+	public function testTransferEncodingsAreNotCharsets(): void {
+		foreach (['UUENCODE', 'BASE64', 'HTML-ENTITIES', 'Quoted-Printable', '7bit', '8bit', 'UTF-7', 'UTF-16', 'UCS-2'] as $name) {
+			$xml = '<?xml version="1.0" encoding="' . $name . '"?><p>a&amp;b &#233; =41</p>';
+			$this->assertSame($xml, XmlCharset::toUtf8($xml), $name);
+		}
+	}
+
+	/**
+	 * A UTF-16 entry with a declaration comes out declaring UTF-8, so a second pass changes nothing; every conversion is
+	 * idempotent (review round 2, F6).
+	 *
+	 * @return void
+	 */
+	public function testConvertedEntriesDeclareUtf8AndConvertOnce(): void {
+		$utf16 = "\xFF\xFE" . mb_convert_encoding('<?xml version="1.0" encoding="UTF-16"?><p>ação</p>', 'UTF-16LE', 'UTF-8');
+		$this->assertSame('<?xml version="1.0" encoding="UTF-8"?><p>ação</p>', XmlCharset::toUtf8($utf16));
+		foreach ([$utf16, '<?xml version="1.0" encoding="Windows-1252"?><p>' . BrokenTextSamples::latin() . '</p>', "<p>a\xE7\xE3o</p>"] as $xml) {
+			$once = XmlCharset::toUtf8($xml);
+			$this->assertSame($once, XmlCharset::toUtf8($once));
+		}
+	}
+
+	/**
 	 * UTF-8, no declaration and a charset mbstring does not know leave the bytes as they are.
 	 *
 	 * @return void

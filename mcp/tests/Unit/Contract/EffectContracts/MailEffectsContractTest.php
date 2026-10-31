@@ -11,8 +11,10 @@ use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\CriticalFlow;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\FlowRunner;
+use OCA\Mcp\Tests\Unit\Tools\BrokenTextSamples;
 use OCA\Mcp\Tests\Unit\Tools\Mail\FakeMailLinks;
 use OCA\Mcp\Tests\Unit\Tools\Mail\FakeMailMessageApp;
+use OCA\Mcp\Tests\Unit\Tools\Mail\FakeMimePart;
 use OCA\Mcp\Tools\Mail\Draft\MailDraftTools;
 use OCA\Mcp\Tools\Mail\Flag\MailFlagTools;
 use OCA\Mcp\Tools\Mail\MailAttachmentTools;
@@ -30,8 +32,8 @@ use PHPUnit\Framework\TestCase;
 require_once __DIR__ . '/../../../stubs/OCA/Mail/Events/MessageFlaggedEvent.php';
 
 /**
- * Effect contract of the Mail module (RE-01): marking one message read, frozen through the endpoint with a fake Mail
- * app whose IMAP server flags and recorded IMAP commands are the observable effect.
+ * Effect contracts of Mail (RE-01): marking a message read and extracting a PDF attachment, through the endpoint
+ * with real tools and parsers over a fake Mail app whose messages, flags and IMAP commands are observable.
  */
 final class MailEffectsContractTest extends TestCase {
 	/** Mail account of alice. */
@@ -90,6 +92,27 @@ final class MailEffectsContractTest extends TestCase {
 			})
 			->withoutVisibility('Mail messages live in the Mail app, not in Files: no system tag or excluded folder can hide a message from MCP');
 		(new FlowRunner($this, $this->gate, 'mail'))->run($flow);
+	}
+
+	/** @return void real PDF extraction preserves a CESU-8 surrogate pair without changing the message or flags */
+	public function testReadingAPdfAttachmentWithRealExtraction(): void {
+		$pdf = BrokenTextSamples::pdf();
+		$this->app->withMessage(self::INBOX, ['id' => self::MESSAGE, 'attachments' => true,
+			'structure' => FakeMimePart::multipart('multipart/mixed', [new FakeMimePart('text/plain'),
+				new FakeMimePart('application/octet-stream', 'emoji.bin', 'attachment')]),
+			'attachmentContents' => ['2' => $pdf]]);
+		$before = $this->app->messages;
+		$args = ['message_id' => self::MESSAGE, 'attachment_id' => '2'];
+		$out = $this->gate->call('mail_read_attachment', $args);
+		$t = new EffectTranscript($this, 'mail.read-pdf-utf8');
+		$t->record('read-pdf', $args, $out, $this->state() + ['sourceSha256' => hash('sha256', $pdf)]);
+		$t->assertGolden();
+		$this->assertSame($before, $this->app->messages, 'reading never changes the cached message, attachment or flags');
+		$body = json_decode($out['body']->result->content[0]->text, true, 512, JSON_THROW_ON_ERROR);
+		$this->assertSame(BrokenTextSamples::PDF_TEXT, $body['attachment']['text']);
+		$this->assertSame('pdf', $body['attachment']['kind']);
+		$this->assertSame(['imap:status', 'imap:fetch:envelope,size,structure', 'imap:status(selected)',
+			'imap:attachment:2', 'imap:logout'], $this->app->imapCommands());
 	}
 
 	/** @return array{serverFlags: list<string>, imap: list<string>} the flags the server holds and every IMAP command */

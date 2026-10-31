@@ -401,6 +401,7 @@ OCA\Mcp\Tests\Unit\Contract\EffectContracts\GrantsControllerEffectsContractTest:
 OCA\Mcp\Tests\Unit\Contract\EffectContracts\GroupGrantsEffectsContractTest::testPreviewAndSaveOfAGroupPolicy
 OCA\Mcp\Tests\Unit\Contract\EffectContracts\LogsAccessEffectsContractTest::testGroupsThatMayReadTheServerLog
 OCA\Mcp\Tests\Unit\Contract\EffectContracts\MailEffectsContractTest::testMarkingAMessageRead
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\MailEffectsContractTest::testReadingAPdfAttachmentWithRealExtraction
 OCA\Mcp\Tests\Unit\Contract\EffectContracts\MailWritesEffectsContractTest::testMovingAMessage
 OCA\Mcp\Tests\Unit\Contract\EffectContracts\MailWritesEffectsContractTest::testSavingADraft
 OCA\Mcp\Tests\Unit\Contract\EffectContracts\MailWritesEffectsContractTest::testSendingAMessage
@@ -418,6 +419,7 @@ OCA\Mcp\Tests\Unit\Contract\EffectContracts\OAuthControllerEffectsContractTest::
 OCA\Mcp\Tests\Unit\Contract\EffectContracts\OAuthControllerEffectsContractTest::testAnAcceptedConsentIssuesACodeThatExchangesForWorkingTokens
 OCA\Mcp\Tests\Unit\Contract\EffectContracts\OAuthControllerEffectsContractTest::testTheEndpointsKeepTheirAccessAttributes
 OCA\Mcp\Tests\Unit\Contract\EffectContracts\OAuthRefreshEffectsContractTest::testRotationAndReplay
+OCA\Mcp\Tests\Unit\Contract\EffectContracts\PdfTextEffectsContractTest::testReadingAPdfWithRealExtraction
 OCA\Mcp\Tests\Unit\Contract\EffectContracts\PollsEffectsContractTest::testCreatingAPoll
 OCA\Mcp\Tests\Unit\Contract\EffectContracts\ScopeEffectsContractTest::testScopeOfACalendar
 OCA\Mcp\Tests\Unit\Contract\EffectContracts\TablesEffectsContractTest::testCreatingARow

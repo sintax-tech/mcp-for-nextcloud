@@ -20,14 +20,13 @@ use OCA\Mcp\Tools\Contacts\ContactBackup;
 use OCA\Mcp\Tools\Contacts\ContactCard;
 use OCA\Mcp\Tools\Contacts\ContactsModule;
 use OCA\Mcp\Tools\Contacts\SystemContacts;
+use OCA\Mcp\Tools\PlanState;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Contacts\IManager;
 use OCP\Files\IRootFolder;
 use OCP\IAppConfig;
 use OCP\IGroupManager;
 use PHPUnit\Framework\TestCase;
-
-use OCA\Mcp\Tools\PlanState;
 
 /** Freezes the creation fixed in 1.2.4: the shown UID and signed plan are the ones CardDAV writes. */
 final class ContactsCreationEffectsContractTest extends TestCase {
@@ -56,7 +55,6 @@ final class ContactsCreationEffectsContractTest extends TestCase {
 				new IneffectiveLocks(), $location),
 			new SystemContacts($catalog, $this->createMock(IAppConfig::class), $this->createMock(IGroupManager::class), $users), new PlanState($this->gate->config()));
 	}
-
 
 	/** @return void strict confirmation, changed fields, real creation, no grant and Guest refusals */
 	public function testCreatingAContact(): void {

@@ -27,7 +27,7 @@ final class CreateFlowTest extends TestCase {
 		$flow = new CreateFormFlow($factory, $plans, $writer);
 		$args = ['title' => "<script>\n# hacked", 'questions' => [['type' => 'short', 'text' => 'Name', 'validation' => 'email']]];
 		$preview = $flow->preview($args, 'alice'); self::assertNull($preview['before']);
-		self::assertSame($args['title'], $preview['after']['title']); self::assertContains(CreateFormMessages::warning(), $preview['notes']);
+		self::assertSame($args['title'], $preview['after']['title']); self::assertContains(CreateFormMessages::warning('5.4.1'), $preview['notes']);
 		$body = (new CreateFormPlanRenderer())->render($preview);
 		self::assertStringNotContainsString('<script>', $body); self::assertStringNotContainsString("\n# hacked", $body); self::assertStringContainsString('Name', $body);
 		try { $flow->handle($args + ['confirm' => true, 'plan_state' => $flow->preview($args, 'bob')['plan_state']], 'alice'); self::fail('Cross-actor state accepted'); }

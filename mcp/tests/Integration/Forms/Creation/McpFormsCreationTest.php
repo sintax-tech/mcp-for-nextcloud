@@ -43,7 +43,9 @@ final class McpFormsCreationTest extends IntegrationTestCase {
 				]];
 				$before = FormsState::database(); $preview = $client->tool('forms_create_form', $args);
 				self::assertTrue($preview->ok(), $preview->describe()); $plan = $preview->structured();
-				self::assertArrayHasKey('plan_state', $plan); self::assertStringContainsString('5.4.1', $preview->text());
+				self::assertArrayHasKey('plan_state', $plan);
+				$installed = \OCP\Server::get(\OCP\App\IAppManager::class)->getAppVersion('forms');
+				self::assertStringContainsString($installed, $preview->text());
 				self::assertSame($before, FormsState::database()); self::assertSame($files, FormsState::files());
 				$changed = $client->tool('forms_create_form', ['title' => 'Changed'] + ['confirm' => true, 'plan_state' => $plan['plan_state']]);
 				self::assertTrue($changed->ok(), $changed->describe()); self::assertArrayHasKey('plan_state', $changed->structured());

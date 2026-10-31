@@ -15,7 +15,19 @@ final class CreateFormMessages {
 	/** Localizes the constant native-effects warning shown in every plan.
 	 * @return string Warning without observed folder data.
 	 */
-	public static function warning(): string { return Translator::t('Creation follows the installed Forms app’s native behavior. In Forms 5.4.1, setting the title can rename or merge matching upload folders and remove empty folders with the new form ID prefix. Detected matches stop the title step, leaving a partially created form. Concurrent changes can still trigger native folder changes; these checks do not guarantee that Files remain unchanged.'); }
+	public static function warning(string $version): string {
+		if ($version === '5.4.1') {
+			return Translator::t('Creation follows the installed Forms app’s native behavior. In Forms %s, setting the title can rename or merge matching upload folders and remove empty folders with the new form ID prefix. Detected matches stop the title step, leaving a partially created form. Concurrent changes can still trigger native folder changes; these checks do not guarantee that Files remain unchanged.', [$version]);
+		}
+		return Translator::t('Creation follows the installed Forms app’s native behavior (Forms %s). Setting the title does not rename or merge upload folders in this version. Creation can still leave a partial form. These checks do not guarantee that Files remain unchanged.', [$version]);
+	}
+	/** Warning of a confirmed create whose plan no longer matches, naming the installed Forms version.
+	 * @param string $version Installed Forms release the new plan was built on.
+	 * @return string Message in the language of the current user.
+	 */
+	public static function planChanged(string $version): string {
+		return Translator::t('The creation plan changed. Review the new plan before confirming. nativeVersion: %s', [$version]);
+	}
 	/** Describes the non-atomic sequence and recovery limits.
 	 * @return string Fixed sequence note.
 	 */

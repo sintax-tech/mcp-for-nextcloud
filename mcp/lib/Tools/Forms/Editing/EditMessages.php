@@ -46,6 +46,14 @@ final class EditMessages {
 		$notes[] = Translator::t('Restoring email validation alone does not restore a cleared selection. A later valid selection in the Forms interface or another authorized external edit can enable confirmations again, including with a different question, subject to native settings.');
 		return $notes;
 	}
+	/** Warning of a confirmed edit whose plan no longer matches, naming the field the new plan found.
+	 * @param string $field Bound field that the cell lines do not already explain, such as description.
+	 * @param string $value Value of that field now.
+	 * @return string Message in the language of the current user.
+	 */
+	public static function planChanged(string $field, string $value): string {
+		return Translator::t('The form changed since the plan; check it again. %s: %s', [$field, $value]);
+	}
 	/** Qualifies receipts as observations without repeating a prediction as an accomplished effect.
 	 * @return list<string> Fixed readback and recovery caveats.
 	 */

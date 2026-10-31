@@ -84,8 +84,11 @@ final class UnknownGroupGrantsTest extends TestCase {
 		$this->assertSame('delivered', $events[0]['status']);
 		$change = $payload['changes'][0];
 		$this->assertSame('team', $change['gid']);
-		$this->assertCount(2, json_decode($change['before'], true)['policy']['unknownGrants']);
-		$this->assertCount(1, json_decode($change['after'], true)['policy']['unknownGrants']);
+		$removed = array_values(array_filter($report['unknownGrants'], static fn (array $row): bool => $row['id'] === $id))[0];
+		$this->assertSame(['unknownCleanup' => [['module' => $removed['module'], 'operation' => $removed['operation']]]], json_decode($change['before'], true));
+		$this->assertSame(['unknownCleanup' => []], json_decode($change['after'], true));
+		$this->assertStringNotContainsString($id, $change['before']);
+		$this->assertStringNotContainsString('grantSnapshot', $change['before']);
 		$this->assertSame($events[0]['id'], $result['auditId']);
 	}
 
@@ -178,6 +181,23 @@ final class UnknownGroupGrantsTest extends TestCase {
 			$this->assertSame('0', $this->revision());
 			$this->assertCount(4, $this->rows('team'));
 			$this->assertSame([], $this->database->rows('mcp_policy_events'));
+		}
+	}
+
+	/** @return void An opaque ID from another group cannot delete either group's rows. */
+	public function testCleanupRefusesIdFromAnotherGroupWithoutWriting(): void {
+		$this->policy('other', grants: [['future', 'read']]);
+		$report = $this->service()->report('team');
+		$other = $this->service()->report('other');
+		$before = $this->database->dbal->fetchAllAssociative('SELECT * FROM mcp_group_grants ORDER BY group_key, module, operation');
+		try {
+			$this->service()->clear('0', 'admin', 'team', [$other['unknownGrants'][0]['id']], $report['grantSnapshot'], true);
+			$this->fail('An ID from another group was accepted');
+		} catch (PolicyConflict) {
+			$this->assertSame($before, $this->database->dbal->fetchAllAssociative('SELECT * FROM mcp_group_grants ORDER BY group_key, module, operation'));
+			$this->assertSame('0', $this->revision());
+			$this->assertSame([], $this->database->rows('mcp_policy_events'));
+			$this->assertFalse($this->db->inTransaction());
 		}
 	}
 

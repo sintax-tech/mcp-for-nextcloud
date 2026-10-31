@@ -31,6 +31,9 @@ use UnexpectedValueException;
  *
  *   A group save (ACTION_GROUP) carries one group change instead: {gid, key: 'group_grants', before, after}, where
  *   before/after are groupSnapshot() strings of the group's lifecycle state and grant rows, null when it had none.
+ *   Explicit unknown-grant cleanup uses the compact variant {unknownCleanup: list<{module, operation}>}: before
+ *   lists only removed pairs, sorted bytewise; after holds an empty list. Other grants/lifecycle are unchanged.
+ *   This variant contains no report selection IDs or snapshot fingerprints.
  * - preview (version 1): {v, actor, gid, revision, grants, memberHash, life}. Written by a group preview, never
  *   delivered: revision is the one the preview was taken at (no CAS), grants the target set, memberHash the SHA-256 of
  *   the member list sorted by bytes as JSON, life the lifecycle {state, gen} seen then, or null.

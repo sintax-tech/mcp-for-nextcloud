@@ -88,14 +88,11 @@ final class UnknownGroupGrants {
 							throw new PolicyConflict();
 						}
 					}
-					$after = $this->rows->read([$gid])[0];
+					$this->rows->read([$gid]);
 				} catch (\UnexpectedValueException $e) {
 					throw new PolicyUnavailable('Cannot clean group grants', previous: $e);
 				}
-				$auditId = $outbox->add(PolicyEventsMapper::KIND_AUDIT, PolicyEventPayload::audit($actor, PolicyEventPayload::ACTION_GROUP,
-					$current['revision'], PolicyWriter::next($current['revision']), null, null, [['gid' => $gid, 'key' => PolicyEventPayload::GROUP_KEY,
-						'before' => json_encode(['unknownCleanup' => true, 'policy' => $before], JSON_THROW_ON_ERROR),
-						'after' => json_encode(['unknownCleanup' => true, 'policy' => $after], JSON_THROW_ON_ERROR)]]));
+				$auditId = $outbox->add(PolicyEventsMapper::KIND_AUDIT, UnknownGroupGrantAudit::payload($actor, $gid, $current['revision'], $selected));
 				return true;
 			});
 		try {

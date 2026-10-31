@@ -1,4 +1,15 @@
 { "translations": {
+    "Unknown grants: denied" : "Permissões desconhecidas: negadas",
+    "Unknown group grants" : "Permissões de grupo desconhecidas",
+    "These saved grants are unknown to this version and grant no access. Other permissions continue to apply. Cleanup is optional and is recorded." : "Esta versão não reconhece estas permissões salvas e elas não concedem acesso. As outras permissões continuam valendo. A limpeza é opcional e fica registrada.",
+    "Stored value: Allow; effective: denied" : "Valor salvo: Permitir; efetivo: negado",
+    "Clear unknown grant" : "Limpar permissão desconhecida",
+    "Clear 1 unknown grant from group {group}? Key: {key}. Stored value: Allow. This cleanup will be recorded." : "Limpar 1 permissão desconhecida do grupo {group}? Chave: {key}. Valor salvo: Permitir. Esta limpeza ficará registrada.",
+    "Unknown grant cleared and recorded. Audit log delivery is pending." : "Permissão desconhecida limpa e registrada. O envio ao log de auditoria está pendente.",
+    "Unknown grant cleared and recorded." : "Permissão desconhecida limpa e registrada.",
+    "The saved grants changed. Review the refreshed group before clearing again." : "As permissões salvas mudaram. Confira o grupo atualizado antes de limpar novamente.",
+    "The cleanup could not be confirmed. Check the refreshed group before trying again." : "Não foi possível confirmar a limpeza. Confira o grupo atualizado antes de tentar novamente.",
+
     "Tag not found in Nextcloud." : "Tag não encontrada no Nextcloud.",
     "Failed to search images in Nextcloud." : "Não foi possível buscar imagens no Nextcloud.",
     "The specified snippet appears more than once in the file; provide a longer, unique snippet." : "O trecho informado aparece mais de uma vez no arquivo; informe um trecho maior e único.",

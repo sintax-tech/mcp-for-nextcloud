@@ -59,7 +59,7 @@ final class MoveEquivalence {
 		$php = static fn (array $paths): array => array_values(array_filter($paths, static fn (string $p): bool => str_ends_with($p, '.php')));
 		$this->pair($php($deleted), $php($added));
 		$this->collectRenames();
-		$this->problems = [...$this->problems, ...PathRewrites::nonPhp($this->before, $this->after, $this->pairs)];
+		$this->problems = [...$this->problems, ...PathRewrites::nonPhp($this->before, $this->after, $this->pairs, $this->renames)];
 		$targets = array_combine(array_values($this->pairs), array_values($this->pairs));
 		$normalizeBefore = new TokenNormalizer($this->beforeIndex);
 		$normalizeAfter = new TokenNormalizer($this->afterIndex);

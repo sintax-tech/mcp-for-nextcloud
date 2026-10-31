@@ -14,6 +14,7 @@ use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Dav\CollectionSchema as Schema;
+use OCA\Mcp\Tools\PlanState;
 use OCA\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\ToolFailure;
@@ -36,6 +37,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
      * @param SharedGuard $guard shared-owner confirmation policy
      * @param ContactBackup $backup verified contact backup service
      * @param SystemContacts $system read-only account catalog ("Accounts") governed by the admin enumeration rules
+     * @param PlanState|null $states HMAC of a creation plan; the container provides it, tests that create pass it
      * @return void
      */
     public function __construct(
@@ -46,6 +48,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
         private SharedGuard $guard,
         private ContactBackup $backup,
         private SystemContacts $system,
+        private ?PlanState $states = null,
     ) {}
 
     /**
@@ -120,9 +123,10 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
                 'contacts',
                 'contacts',
                 'contacts_create_contact',
-                'Create a contact in a writable personal or shared address book.',
+                'Create a contact in a writable personal or shared address book. '
+                    . 'The plan_state of the plan carries the contact UID that confirmation stores; send it back with confirm=true.',
                 'create',
-                ['addressbook' => $book] + $fields,
+                ['addressbook' => $book, PlanState::ARGUMENT => PlanState::property()] + $fields,
                 ['addressbook', 'name']
             ),
             Schema::definition(
@@ -164,7 +168,8 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
                 . 'editing it. Unknown vCard properties are preserved; the preview includes every '
                 . 'property before and after.',
             'Writes first show a plan without changing anything. Wait for an explicit yes, repeat '
-                . 'with confirm=true, and acknowledge another owner with confirm_shared=true. The '
+                . 'with confirm=true, and acknowledge another owner with confirm_shared=true. '
+                . 'Creating a contact repeats the plan_state of that plan: it carries the UID that is stored. The '
                 . 'optional etag prevents overwriting a newer edit.',
             'Contact deletion is PERMANENT in Nextcloud: there is no contact trash. After '
                 . ContactBackupText::destination()
@@ -185,8 +190,9 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
      * @throws InvalidArgumentException when the tool or supplied fields are invalid
      */
     public function preview(string $name, array $arguments, string $userId): array {
-        if ($name === 'contacts_delete_contact') {
-            return $this->deleteHandler()->preview($arguments, $userId);
+        $handler = $this->delegated($name);
+        if ($handler !== null) {
+            return $handler->preview($arguments, $userId);
         }
         return $this->prepare($name, $arguments, $userId)['plan'];
     }
@@ -216,8 +222,9 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
      * @throws RuntimeException when the native write or its read-back verification fails
      */
     public function call(string $name, array $arguments, string $userId): array {
-        if ($name === 'contacts_delete_contact') {
-            return $this->deleteHandler()->handle($arguments, $userId);
+        $handler = $this->delegated($name);
+        if ($handler !== null) {
+            return $handler->handle($arguments, $userId);
         }
         if ($name === 'contacts_list_addressbooks') {
             $books = array_map(static fn ($book) => (array) $book, $this->access->visible($userId));
@@ -267,9 +274,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
         $book = $prepared['book'];
         $card = $prepared['card'];
         $row = $prepared['row'];
-        $result = $row === null
-            ? $this->dav->put($userId, $book->uri, $prepared['uri'], $card->serialize())
-            : $this->dav->update($userId, $book->uri, $row['uri'], $row['etag'], $card->serialize());
+        $result = $this->dav->update($userId, $book->uri, $row['uri'], $row['etag'], $card->serialize());
         // Read back because native plugins may normalize the card and omit the response ETag.
         $written = $this->row($book->id, $prepared['uri']);
         return ToolResult::json(
@@ -401,15 +406,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
      * @throws InvalidArgumentException when the tool or edit fields are invalid
      */
     private function prepare(string $name, array $arguments, string $userId): array {
-        if (!in_array(
-            $name,
-            [
-                'contacts_create_contact',
-                'contacts_edit_contact',
-                'contacts_delete_contact',
-            ],
-            true
-        )) {
+        if (!in_array($name, ['contacts_edit_contact', 'contacts_delete_contact'], true)) {
             throw new InvalidArgumentException('Unknown tool');
         }
         if ($name === 'contacts_edit_contact' && array_intersect(
@@ -422,21 +419,15 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
             throw new ToolFailure(Translator::t('Account contacts are read-only; ask the administrator.'));
         }
         $book = $this->access->resolve($userId, $arguments['addressbook'], true);
-        $row = null;
-        $before = null;
-        if ($name !== 'contacts_create_contact') {
-            $row = $this->row($book->id, $arguments['uri']);
-            if (isset($arguments['etag']) && trim($arguments['etag'], '"') !== trim($row['etag'], '"')) {
-                throw new ToolFailure(CommonMessages::conflict());
-            }
-            $old = $this->cards->parse($row['data']);
-            $before = $this->cards->item($old);
-            $before['vcard'] = $row['data'];
-            $card = $name === 'contacts_delete_contact' ? null : $this->cards->patch($old, $arguments);
-        } else {
-            $card = $this->cards->create($arguments);
+        $row = $this->row($book->id, $arguments['uri']);
+        if (isset($arguments['etag']) && trim($arguments['etag'], '"') !== trim($row['etag'], '"')) {
+            throw new ToolFailure(CommonMessages::conflict());
         }
-        $uri = $row['uri'] ?? (string) $card->UID . '.vcf';
+        $old = $this->cards->parse($row['data']);
+        $before = $this->cards->item($old);
+        $before['vcard'] = $row['data'];
+        $card = $name === 'contacts_delete_contact' ? null : $this->cards->patch($old, $arguments);
+        $uri = $row['uri'];
         $notice = $this->guard->confirm($book, $userId, []);
         $shared = $notice === null ? [] : [json_decode($notice['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR)];
         $plan = [
@@ -467,6 +458,26 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
             ];
         }
         return compact('book', 'row', 'card', 'uri', 'plan');
+    }
+
+    /**
+     * The write whose behavior lives in its own handler. Other tools stay in this module.
+     *
+     * @param string $name registered tool name
+     * @return Handler\CreateContactHandler|Handler\DeleteContactHandler|null
+     */
+    private function delegated(string $name): Handler\CreateContactHandler|Handler\DeleteContactHandler|null {
+        return match ($name) {
+            'contacts_create_contact' => $this->createHandler(),
+            'contacts_delete_contact' => $this->deleteHandler(),
+            default => null,
+        };
+    }
+
+    /** @return Handler\CreateContactHandler creation plan, its UID and the confirmed write of that UID */
+    private function createHandler(): Handler\CreateContactHandler {
+        return new Handler\CreateContactHandler($this->access, $this->dav, $this->cards, $this->guard, $this->states,
+            fn (int $bookId, string $uri): array => $this->row($bookId, $uri));
     }
 
     /** @return Handler\DeleteContactHandler focused deletion handler using the existing shared preparation and row reader */

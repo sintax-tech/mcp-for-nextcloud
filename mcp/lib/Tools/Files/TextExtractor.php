@@ -7,7 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
+use OCA\Mcp\Tools\ExtractedText;
 use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Tools\XmlCharset;
 use OCP\Files\File;
 use OCP\ITempManager;
 use Smalot\PdfParser\Config;
@@ -176,7 +178,7 @@ class TextExtractor {
      */
     private function guarded(string $name, callable $extract): string {
         try {
-            return trim($extract());
+            return trim(ExtractedText::utf8($extract()));
         } catch (\Throwable) {
             return FilesMessages::notExtracted($name);
         }
@@ -229,6 +231,7 @@ class TextExtractor {
         if (!is_string($xml)) {
             throw new \RuntimeException('unreadable entry');
         }
+        $xml = XmlCharset::toUtf8($xml);
         $text = strip_tags((string)preg_replace(array_keys($breaks), array_values($breaks), $xml));
         return html_entity_decode($text, ENT_QUOTES | ENT_XML1, 'UTF-8');
     }

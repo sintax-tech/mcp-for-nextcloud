@@ -19,10 +19,11 @@ Deixe o Claude e outros clientes MCP trabalharem com seus arquivos, notas, calen
 
 ---
 
-## Novidades da 1.2.4, da 1.2.3 e da 1.2.2
+## Novidades da 1.2.2–1.2.5
 
-Veja [o changelog](CHANGELOG.md#124--2026-10-30) com as mudanças completas.
+Veja [o changelog](CHANGELOG.md#125--2026-10-31) com as mudanças completas.
 
+- **1.2.5: correção na leitura de arquivos PDF, DOCX e ODT ([#25](https://github.com/sintax-tech/mcp-for-nextcloud/issues/25)).** Alguns documentos faziam o `files_read` e as outras ferramentas de leitura falharem com o erro "Malformed UTF-8". O texto extraído agora volta sempre em UTF-8 válido: emoji e outros caracteres de PDFs são mantidos, DOCX e ODT num charset legado declarado são convertidos, e bytes ilegíveis viram U+FFFD. Sem mudança no banco de dados.
 - **1.2.4: correções ([#20](https://github.com/sintax-tech/mcp-for-nextcloud/issues/20), [#21](https://github.com/sintax-tech/mcp-for-nextcloud/issues/21), [#23](https://github.com/sintax-tech/mcp-for-nextcloud/issues/23)).** As ferramentas de Notas encontram a pasta escolhida no app Notes, também com nome traduzido; a busca de imagens informa tag inexistente ou falha da busca; o download dos metadados do cliente antes da página de consentimento OAuth tem limite de 5 segundos (sem contar a resolução de nomes); a página de administração carrega menos scripts pequenos. Um grant de grupo que esta versão não reconhece passa a negar só a si mesmo, e o administrador pode limpá-lo no editor do grupo com confirmação registrada. A exclusão de arquivos diz que o Nextcloud tenta a lixeira primeiro e pode excluir definitivamente se isso falhar; o recibo informa quando o item foi visto na sua própria lixeira. Eventos de calendário criados têm um único `DTSTAMP`, um contato novo mantém o UID do plano (a confirmação exige o `plan_state` do plano), `talk_attach_file` mostra o caminho dentro dos seus arquivos e os avisos de plano alterado dizem o que mudou. Sem mudança no banco de dados.
 - **1.2.3: correção da página de administração em branco ([#21](https://github.com/sintax-tech/mcp-for-nextcloud/issues/21)).** Em algumas hospedagens gerenciadas, a página Administração → MCP for Cloud podia ficar em branco por minutos porque um dos seus scripts não recebia resposta. Esse script agora faz parte de outro que a página já carregava; permissões e níveis de acesso não mudam. Sem alteração de banco de dados.
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Busque e leia mensagens e texto de anexos, abra links nativos e envie, salve rascunhos, sinalize ou mova mensagens com permissões opcionais separadas.

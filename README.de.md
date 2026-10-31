@@ -19,10 +19,11 @@ Claude und andere MCP-Clients arbeiten mit deinen Dateien, Notizen, Kalendern, K
 
 ---
 
-## Neu in 1.2.4, 1.2.3 und 1.2.2
+## Neu in 1.2.2–1.2.5
 
-Alle Änderungen stehen im [Changelog](CHANGELOG.md#124--2026-10-30).
+Alle Änderungen stehen im [Changelog](CHANGELOG.md#125--2026-10-31).
 
+- **1.2.5: Korrektur beim Lesen von PDF-, DOCX- und ODT-Dateien ([#25](https://github.com/sintax-tech/mcp-for-nextcloud/issues/25)).** Einige Dokumente ließen `files_read` und die anderen Lesewerkzeuge mit dem Fehler "Malformed UTF-8" scheitern. Extrahierter Text kommt jetzt immer als gültiges UTF-8 zurück: Emoji und andere Zeichen aus PDFs bleiben erhalten, DOCX und ODT in einem deklarierten Alt-Zeichensatz werden umgewandelt, und unlesbare Bytes werden zu U+FFFD. Keine Datenbankänderung.
 - **1.2.4: Korrekturen ([#20](https://github.com/sintax-tech/mcp-for-nextcloud/issues/20), [#21](https://github.com/sintax-tech/mcp-for-nextcloud/issues/21), [#23](https://github.com/sintax-tech/mcp-for-nextcloud/issues/23)).** Die Notes-Werkzeuge finden den in der Notes-App gewählten Ordner, auch mit übersetztem Namen; die Bildsuche meldet ein fehlendes Tag oder eine fehlgeschlagene Suche; der Download der Metadaten eines Clients vor der OAuth-Zustimmungsseite ist auf 5 Sekunden begrenzt (ohne Namensauflösung); die Administrationsseite lädt weniger kleine Skripte. Eine Gruppenberechtigung, die diese Version nicht kennt, verweigert nur sich selbst, und Administratoren können sie im Gruppeneditor mit protokollierter Bestätigung bereinigen. Das Löschen von Dateien sagt, dass Nextcloud zuerst den Papierkorb versucht und endgültig löschen kann, wenn das fehlschlägt; der Beleg meldet, wenn das Element in Ihrem eigenen Papierkorb gesehen wurde. Neu angelegte Kalenderereignisse haben genau ein `DTSTAMP`, ein neuer Kontakt behält die UID seines Plans (die Bestätigung braucht den `plan_state` des Plans), `talk_attach_file` zeigt den Pfad in Ihren Dateien und Hinweise auf geänderte Pläne nennen die Änderung. Keine Datenbankänderung.
 - **1.2.3: Korrektur der leeren Administrationsseite ([#21](https://github.com/sintax-tech/mcp-for-nextcloud/issues/21)).** Bei einigen verwalteten Hostings konnte die Seite Administration → MCP for Cloud minutenlang leer bleiben, weil eines ihrer Skripte keine Antwort erhielt. Dieses Skript ist jetzt Teil eines anderen, das die Seite ohnehin lädt; Berechtigungen und Zugriffsstufen bleiben unverändert. Keine Datenbankänderung.
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Nachrichten und Anhangtext suchen und lesen, native Links öffnen sowie Nachrichten mit getrennten optionalen Berechtigungen senden, als Entwurf speichern, markieren oder verschieben.

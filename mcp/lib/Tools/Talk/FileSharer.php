@@ -33,6 +33,7 @@ class FileSharer {
         private IShareManager $shareManager,
         private UserFileResolver $fileResolver,
         private ConversationWriter $writer,
+        private AttachedFile $attachedFile,
     ) {}
 
     /**
@@ -73,7 +74,7 @@ class FileSharer {
         $result = [
             'conversation_token' => $token,
             'attachmentId' => (int)$created->getId(),
-            'file' => self::describe($file),
+            'file' => $this->attachedFile->describe($userId, $file),
             'caption' => $caption,
             'captionSent' => null,
         ];
@@ -107,7 +108,7 @@ class FileSharer {
      * @throws FileAccessException When the file is missing, not shareable or already shared in this conversation
      */
     public function previewFile(Conversation $conversation, string $userId, string $path): array {
-        return self::describe($this->resolveShareable($conversation, $userId, $path));
+        return $this->attachedFile->describe($userId, $this->resolveShareable($conversation, $userId, $path));
     }
 
     /**
@@ -129,18 +130,6 @@ class FileSharer {
         }
 
         return $file;
-    }
-
-    /**
-     * @param object $file The file node, as an OCA\Files\File
-     * @return array{path:string, name:string, size:int}
-     */
-    private static function describe(object $file): array {
-        return [
-            'path' => $file->getPath(),
-            'name' => $file->getName(),
-            'size' => (int)$file->getSize(),
-        ];
     }
 
     /**

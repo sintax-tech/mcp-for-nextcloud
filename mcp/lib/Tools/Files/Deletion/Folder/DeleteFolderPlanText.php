@@ -29,6 +29,6 @@ final class DeleteFolderPlanText {
 		}
 		return [Translator::t('Delete folder') . ': ' . PlanText::strong($plan['path'], PHP_INT_MAX),
 			Translator::t('Inspected tree: %s files, %s folders (including the source), %s bytes.', [$tree['files'], $tree['folders'], $tree['bytes']]),
-			DeleteMessages::supported()];
+			DeleteMessages::supported(), ...\OCA\Mcp\Tools\Files\Deletion\DeletePlanText::notes($plan)];
 	}
 }

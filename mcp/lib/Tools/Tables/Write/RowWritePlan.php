@@ -76,7 +76,7 @@ class RowWritePlan {
 			PlanState::ARGUMENT => $this->state($tool, $prepared, $userId),
 			'notice' => TablesMessages::UNTRUSTED_NOTICE,
 		] + (in_array(self::NOTE_SHARED, $notes, true) ? ['shared' => true] : [])
-			+ ($changed ? ['warnings' => [['message' => RowWriteMessages::planChanged()]]] : []);
+			+ ($changed ? RowWritePlanNotice::fields($prepared) : []);
 	}
 
 	/**

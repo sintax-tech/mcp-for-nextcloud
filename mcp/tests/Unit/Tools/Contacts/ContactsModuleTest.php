@@ -7,8 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 
+use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\Calendar\DavResult;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
+use OCA\Mcp\Tools\PlanState;
 use OCA\Mcp\Tools\Contacts\ContactAccess;
 use OCA\Mcp\Tools\Contacts\ContactBackup;
 use OCA\Mcp\Tools\Contacts\ContactCard;
@@ -85,7 +87,8 @@ final class ContactsModuleTest extends TestCase {
             new ContactCard(),
             new SharedGuard($this->createMock(IUserManager::class)),
             $this->backup,
-            $this->system
+            $this->system,
+            new PlanState((new InMemoryConfig())->mock($this)),
         );
     }
 

@@ -39,11 +39,11 @@ class GroupDirectory {
         private PolicyStateMapper $state,
     ) {}
 
-    /** Filters of the list: every group, the groups with a stored grant, and the groups that cannot grant. */
+    /** Filters of the list: every group, the groups with a known stored grant, and the groups that cannot grant. */
     public const FILTERS = ['all', 'granted', 'blocked'];
 
     /**
-     * One page of 50 groups, after the search and the filter. "granted" keeps the groups with a stored grant, read from
+     * One page of 50 groups, after the search and the filter. "granted" keeps the groups with a known stored grant, read from
      * the grants table this page already scans. "blocked" keeps the groups the source classifier says cannot grant
      * (trusted false); it classifies every group the search matches, once, and reuses that for the page. counts gives
      * the size of each filter within the search; the blocked one is null unless that filter is active, since only then
@@ -72,14 +72,14 @@ class GroupDirectory {
                 $all[IdentityKey::group($gid)] = ['groupId' => $gid, 'displayName' => $group->getDisplayName()];
             }
             foreach (['mcp_group_grants', 'mcp_group_life'] as $table) {
-                $result = $this->db->getQueryBuilder()->select('group_key', 'group_id')->from($table)->executeQuery();
+                $result = \OCA\Mcp\Db\GroupGrantDirectoryIndex::rows($this->db, $table);
                 try {
                     while (($row = $result->fetch()) !== false) {
                         if (!is_string($row['group_id']) || $row['group_key'] !== IdentityKey::group($row['group_id'])) {
                             throw new PolicyUnavailable('Invalid stored group identity');
                         }
                         $all[$row['group_key']] ??= ['groupId' => $row['group_id'], 'displayName' => $row['group_id']];
-                        if ($table === 'mcp_group_grants') {
+                        if (\OCA\Mcp\Db\GroupGrantDirectoryIndex::hasKnownGrant($table, $row)) {
                             $granted[$row['group_id']] = true;
                         }
                     }

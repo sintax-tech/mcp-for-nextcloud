@@ -31,7 +31,7 @@ final class EventBuilder {
         $vcalendar = new VCalendar(['PRODID' => self::PRODID]);
         $event = $vcalendar->add('VEVENT', ['UID' => $uid]);
         $utcNow = $now->setTimezone(new DateTimeZone('UTC'));
-        $event->add('DTSTAMP', $utcNow);
+        (new EventStamp())->apply($event, $utcNow);
         $event->add('CREATED', $utcNow);
         $event->add('LAST-MODIFIED', $utcNow);
         $event->add('SEQUENCE', 0);
@@ -149,9 +149,9 @@ final class EventBuilder {
     public function touch(VEvent $event, DateTimeImmutable $now): void {
         $utcNow = $now->setTimezone(new DateTimeZone('UTC'));
         $sequence = isset($event->SEQUENCE) ? (int)(string)$event->SEQUENCE : 0;
-        unset($event->SEQUENCE, $event->DTSTAMP, $event->{'LAST-MODIFIED'});
+        unset($event->SEQUENCE, $event->{'LAST-MODIFIED'});
         $event->add('SEQUENCE', $sequence + 1);
-        $event->add('DTSTAMP', $utcNow);
+        (new EventStamp())->apply($event, $utcNow);
         $event->add('LAST-MODIFIED', $utcNow);
     }
 

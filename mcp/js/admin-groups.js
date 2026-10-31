@@ -5,6 +5,49 @@
 /** Group policy editor. Plain JavaScript, no build. Drafts survive refused saves; writes are never replayed. */
 (function () {
 	'use strict'
+	/** Diagnosis and explicit single-row cleanup, shipped with its consuming editor. */
+	class UnknownGroupGrants {
+		/** @returns {object|null} Textual warning for a directory row. */
+		static warning(group) {
+			return group.unknownGrants?.length ? { symbol: '?', text: t('mcp', 'Unknown grants: denied'), warning: true } : null
+		}
+		/** @returns {object[]} Fresh diagnosis replaces the open group's directory entry after readback. */
+		static refreshRow(rows, group) {
+			return rows.map((row) => row.groupId === group.groupId ? { ...row, ...group, unknownGrants: group.unknownGrants || [] } : row)
+		}
+		/** @returns {HTMLElement[]} Accessible diagnostics with one explicit cleanup action per opaque row. */
+		static render(group, busy, clean) {
+			if (!group.unknownGrants?.length) return []
+			const section = el('section', { className: 'mcp-note' })
+			section.setAttribute('aria-label', t('mcp', 'Unknown group grants'))
+			section.append(el('h4', { textContent: t('mcp', 'Unknown group grants') }),
+				el('p', { textContent: t('mcp', 'These saved grants are unknown to this version and grant no access. Other permissions continue to apply. Cleanup is optional and is recorded.') }))
+			for (const row of group.unknownGrants) {
+				section.append(el('p', {}, [el('span', { textContent: row.module + '.' + row.operation + ' — ' + t('mcp', 'Stored value: Allow; effective: denied') }),
+					el('button', { type: 'button', disabled: busy, textContent: t('mcp', 'Clear unknown grant'), onclick: () => clean(row) })]))
+			}
+			return [section]
+		}
+		/** Confirms the exact row and snapshot, never replays writes, and reloads after every attempt. */
+		static async clean(group, row, { api, setBusy, refresh, say, saved }) {
+			if (!window.confirm(t('mcp', 'Clear 1 unknown grant from group {group}? Key: {key}. Stored value: Allow. This cleanup will be recorded.',
+				{ group: group.groupId, key: row.module + '.' + row.operation }, undefined, { escape: false }))) return
+			setBusy(true)
+			try {
+				const result = await api('DELETE', '/api/group-grants/unknown', { gid: group.groupId, ids: [row.id], grantSnapshot: group.grantSnapshot, expectedRevision: group.revision, confirm: true })
+				if (!result.auditId || result.removed !== 1 || !result.report) throw new Error('unconfirmed')
+				say(result.auditPending ? t('mcp', 'Unknown grant cleared and recorded. Audit log delivery is pending.') : t('mcp', 'Unknown grant cleared and recorded.'))
+				saved()
+			} catch (error) {
+				say(error.message === '409' || error.message === '428'
+					? t('mcp', 'The saved grants changed. Review the refreshed group before clearing again.')
+					: t('mcp', 'The cleanup could not be confirmed. Check the refreshed group before trying again.'), true)
+			} finally {
+				setBusy(false)
+				await refresh(group.groupId)
+			}
+		}
+	}
 	const root = document.getElementById('mcp-group-editor')
 	if (!root) return
 	const search = document.getElementById('mcp-group-search')
@@ -118,7 +161,7 @@
 		if (!group.trusted) return { symbol: '', lock: true, text: t('mcp', 'Cannot grant access'), warning: false }
 		if (group.state === 'needs_confirm') return { symbol: '⚠', text: t('mcp', 'Awaiting confirmation'), warning: true }
 		if (group.state === 'pending_delete') return { symbol: '⚠', text: t('mcp', 'Deletion pending'), warning: true }
-		return null
+		return UnknownGroupGrants.warning(group)
 	}
 	/** @return {string} what a group grants, in words, for the accessible name and the tooltip of its row */
 	function grantSummary(group) {
@@ -271,6 +314,7 @@
 			const data = await api('GET', '/api/group-directory/detail?' + new URLSearchParams({ gid }))
 			if (seq !== detailSeq) return
 			current = data
+			rows = UnknownGroupGrants.refreshRow(rows, current)
 			if (!preserve) draft = copyGrants(data.grants)
 			if (!keepMessage) say('')
 			drawList()
@@ -445,7 +489,11 @@
 				: n('mcp', '%n member has individual settings that take precedence over this group.', '%n members have individual settings that take precedence over this group.', overrides)])
 		if (overrides !== 0) exceptions.append(el('button', { type: 'button', className: 'mcp-link-button', textContent: t('mcp', 'View in the matrix'), onclick: () => viewInMatrix(current.groupId, name) }))
 
-		const parts = [head, note, toolbar, fields, exceptions]
+		const parts = [head, note, ...UnknownGroupGrants.render(current, busy, (row) => UnknownGroupGrants.clean(current, row, {
+			api, say, setBusy: (value) => { busy = value; root.setAttribute('aria-busy', String(value)); render() },
+			refresh: async (gid) => { await open(gid, true, true) },
+			saved: () => window.dispatchEvent(new Event('mcp-group-policy-saved')),
+		})), toolbar, fields, exceptions]
 		const save = keyed('save', el('button', { type: 'button', className: 'primary', textContent: t('mcp', 'Save group policy'), disabled: busy || !preview, onclick: () => run('save') }))
 		const review = keyed('review', el('button', { type: 'button', className: 'primary', textContent: t('mcp', 'Review and save'), disabled: !editable, onclick: () => run('preview') }))
 		for (const button of [review, confirm, clear, save]) button.setAttribute('aria-describedby', 'mcp-group-diagnosis')

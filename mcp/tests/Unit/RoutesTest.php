@@ -150,6 +150,7 @@ final class RoutesTest extends TestCase {
             // No attribute at all is what makes a Nextcloud route admin-only.
             'grants#index' => [], 'grants#bulk' => [], 'grants#commands' => [], 'grants#undo' => [], 'grants#update' => [], 'grants#service' => [],
             'override_preview#index' => [], 'group_directory#index' => [], 'group_directory#detail' => [],
+            'unknown_group_grants#index' => [], 'unknown_group_grants#clear' => [],
             'grants#group' => [], 'grants#previewGroup' => [], 'grants#saveGroup' => [],
             'grants#oauthClients' => [], 'grants#updateOauthClients' => [],
             'grants#logsAccess' => [], 'grants#updateLogsAccess' => [],

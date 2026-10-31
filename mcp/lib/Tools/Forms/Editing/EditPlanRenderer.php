@@ -19,6 +19,7 @@ final class EditPlanRenderer {
 		$lines = [];
 		foreach (['action','target','before','after','requested','settingEffects','shared','confirmation','nativeVersion'] as $key) { $lines[] = '- ' . PlanText::quoted($key) . ': ' . self::value($plan[$key]); }
 		foreach ($plan['notes'] as $note) { $lines[] = '- ' . PlanText::quoted($note); }
+		foreach (EditPlanNotice::lines($plan) as $line) { $lines[] = $line; }
 		return implode("\n", $lines);
 	}
 	/** Renders JSON-like structure while quoting each text once, retaining complete hostile leaf values inertly.

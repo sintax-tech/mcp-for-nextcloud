@@ -28,6 +28,8 @@ return ['routes' => [
     // Group ids are opaque and may hold any byte but NUL, so they travel in the query or the body, never in the path.
     ['name' => 'group_directory#index', 'url' => '/api/group-directory', 'verb' => 'GET'],
     ['name' => 'group_directory#detail', 'url' => '/api/group-directory/detail', 'verb' => 'GET'],
+    ['name' => 'unknown_group_grants#index', 'url' => '/api/group-grants/unknown', 'verb' => 'GET'],
+    ['name' => 'unknown_group_grants#clear', 'url' => '/api/group-grants/unknown', 'verb' => 'DELETE'],
     ['name' => 'grants#group', 'url' => '/api/group-grants', 'verb' => 'GET'],
     ['name' => 'grants#previewGroup', 'url' => '/api/group-grants/preview', 'verb' => 'POST'],
     ['name' => 'grants#saveGroup', 'url' => '/api/group-grants', 'verb' => 'PUT'],

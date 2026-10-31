@@ -121,6 +121,6 @@ class CreateFormWriter {
 	 * @return list<string> Fixed receipt notes.
 	 */
 	private static function notes(CreateFormContext $context, bool $titleAttempted): array {
-		return [CreateFormMessages::sequence(), ...($context->version === '5.4.1' && $titleAttempted ? [CreateFormMessages::warning()] : [])];
+		return [CreateFormMessages::sequence(), ...($context->version === '5.4.1' && $titleAttempted ? [CreateFormMessages::warning($context->version)] : [])];
 	}
 }

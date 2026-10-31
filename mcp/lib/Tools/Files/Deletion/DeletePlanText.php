@@ -22,6 +22,16 @@ final class DeletePlanText {
 		if (($plan['nodeType'] ?? null) === 'folder') {
 			return Folder\DeleteFolderPlanText::lines($plan);
 		}
-		return [Translator::t('Delete file') . ': ' . PlanText::strong($plan['path'], PHP_INT_MAX), DeleteMessages::supported()];
+		return [Translator::t('Delete file') . ': ' . PlanText::strong($plan['path'], PHP_INT_MAX), DeleteMessages::supported(), ...self::notes($plan)];
+	}
+
+	/**
+	 * Trash bin notes shared by the file and folder plans.
+	 *
+	 * @param array<string, mixed> $plan Concrete deletion plan.
+	 * @return list<string> The try-the-trash-bin-first risk, plus the received-share limitation when it applies.
+	 */
+	public static function notes(array $plan): array {
+		return [DeleteMessages::risk(), ...(($plan['trashDestination'] ?? null) === 'owner_trash_not_checked' ? [TrashReceiptMessages::ownerTrash()] : [])];
 	}
 }

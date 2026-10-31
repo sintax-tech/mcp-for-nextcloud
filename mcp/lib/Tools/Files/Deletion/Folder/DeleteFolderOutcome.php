@@ -22,9 +22,10 @@ final class DeleteFolderOutcome {
 	 * @param bool $failed Whether the attempt or observation invalidation threw.
 	 * @param array<string,mixed> $before Complete pre-attempt observation.
 	 * @param callable(Folder):array<string,mixed> $inspect Fresh complete-tree observation, or refusal.
+	 * @param (callable(string): array{fields: array<string, string>, message: string})|null $trash Trash receipt for an observed removal.
 	 * @return array<string,mixed> MCP receipt without a trash/recovery promise.
 	 */
-	public static function observe(Folder $root, string $path, int $id, string $etag, bool $failed, array $before, callable $inspect): array {
+	public static function observe(Folder $root, string $path, int $id, string $etag, bool $failed, array $before, callable $inspect, ?callable $trash = null): array {
 		$state = 'uncertain';
 		try {
 			$node = $root->get(ltrim($path, '/'));
@@ -37,12 +38,14 @@ final class DeleteFolderOutcome {
 		} catch (\Throwable) {
 			// A partial/inaccessible subtree never becomes a claim of preserved contents.
 		}
+		$removed = DeleteFolderMessages::removed() . ' ' . DeleteMessages::risk();
+		$receipt = $state === 'removed_destination_unconfirmed' && $trash !== null ? $trash($removed) : null;
 		$message = match ($state) {
 			'preserved' => DeleteFolderMessages::preserved(),
-			'removed_destination_unconfirmed' => DeleteFolderMessages::removed() . ' ' . DeleteMessages::risk(),
+			'removed_destination_unconfirmed' => $receipt['message'] ?? $removed,
 			default => DeleteMessages::uncertain() . ' ' . DeleteMessages::risk(),
 		};
-		return ToolResult::json(['status' => $state, 'path' => $path, 'idBefore' => $id,
-			'recoveryConfirmed' => false, 'message' => $message]) + ($state === 'removed_destination_unconfirmed' ? [] : ['isError' => true]);
+		return ToolResult::json(array_replace(['status' => $state, 'path' => $path, 'idBefore' => $id,
+			'recoveryConfirmed' => false, 'message' => $message], $receipt['fields'] ?? [])) + ($state === 'removed_destination_unconfirmed' ? [] : ['isError' => true]);
 	}
 }

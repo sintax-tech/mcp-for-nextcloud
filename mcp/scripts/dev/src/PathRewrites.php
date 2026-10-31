@@ -112,6 +112,9 @@ final class PathRewrites {
 			preg_match_all('~[A-Za-z0-9_./-]+~', $after[$path], $matches, PREG_OFFSET_CAPTURE);
 			foreach ($matches[0] as [$value, $offset]) {
 				foreach ($pairs + array_combine(array_values($pairs), array_values($pairs)) as $old => $new) {
+					if (PathIdentity::namesDestination($value, $old, $new)) {
+						continue;
+					}
 					$match = PathIdentity::match($value, $old);
 					if ($match !== null) {
 						$line = substr_count(substr($after[$path], 0, $offset), "\n") + 1;

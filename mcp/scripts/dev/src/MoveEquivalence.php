@@ -213,7 +213,7 @@ final class MoveEquivalence {
 						&& (PathIdentity::unproved($value, $moved) || PathIdentity::unproved($value, $this->pairs[$moved]))) {
 						$this->problems[] = "$path:$line: path not proved: composed or basename-relative reference $value";
 					}
-					$match = PathIdentity::match($value, $moved);
+					$match = PathIdentity::namesDestination($value, $moved, $this->pairs[$moved]) ? null : PathIdentity::match($value, $moved);
 					if ($match !== null) {
 						$this->problems[] = PathIdentity::proved($match)
 							? "$path:$line: still refers to the file $moved, moved to {$this->pairs[$moved]} in this range"

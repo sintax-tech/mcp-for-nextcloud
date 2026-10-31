@@ -99,7 +99,7 @@ final class McpFormsCreationTest extends IntegrationTestCase {
 				elseif ($key === 'restrictCreation') { $app->setValueBool($name, $key, $prior['value']); }
 				else { $app->setValueArray($name, $key, $prior['value']); }
 			} }
-			 $policy->setGrant($uid, 'forms', 'create', false);
+			$policy->setGrant($uid, 'forms', 'create', false);
 		}
 	}
 	/** Runs native cold/warm/captured-null/other/lazy graphs in isolated PHP processes, using only disposable actors.

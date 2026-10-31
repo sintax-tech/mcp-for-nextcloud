@@ -20,7 +20,7 @@ final class AttendeeResolverTest extends TestCase {
 
 		self::assertSame(
 			[['uid' => 'bob', 'email' => 'bob@example.invalid', 'displayName' => 'Roberto Almeida'],
-			 ['uid' => 'carla', 'email' => 'carla@example.invalid', 'displayName' => 'Carla Dias']],
+			['uid' => 'carla', 'email' => 'carla@example.invalid', 'displayName' => 'Carla Dias']],
 			$attendees,
 		);
 	}

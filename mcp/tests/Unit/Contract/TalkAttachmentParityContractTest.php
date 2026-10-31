@@ -300,7 +300,7 @@ final class TalkAttachmentParityContractTest extends TestCase {
         $resolver->method('resolveForWriting')->willReturn($this->conversation());
         $resolver->method('resolveForReading')->willReturn($this->conversation());
         $files = new UserFileResolver($this->caller->filesystemRoot(), $this->guard, $this->filter($shares));
-        $sharer = new FileSharer($shares, $files, $this->writer($shares));
+        $sharer = new FileSharer($shares, $files, $this->writer($shares), new \OCA\Mcp\Tools\Talk\AttachedFile($this->caller->filesystemRoot()));
         $preview = new WritePreview($this->writer($shares), $sharer, $this->access($shares), new ActorNames($this->createMock(IUserManager::class)));
         return new \OCA\Mcp\Tools\Talk\TalkModule($this->talkServices(), new ConversationReader($this->talkServices(), $resolver,
             new ActorNames($this->createMock(IUserManager::class)), $this->filter($shares)), $resolver, $this->writer($shares), $sharer, $preview,

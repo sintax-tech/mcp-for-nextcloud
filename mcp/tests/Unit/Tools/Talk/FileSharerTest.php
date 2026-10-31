@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 
+use OCA\Mcp\Tools\Talk\AttachedFile;
 use OCA\Mcp\Tools\Talk\Conversation;
 use OCA\Mcp\Tools\Talk\ConversationAccessException;
 use OCA\Mcp\Tools\Talk\ConversationWriter;
@@ -16,6 +17,8 @@ use OCA\Mcp\Tools\Talk\Messages;
 use OCA\Mcp\Tools\Talk\UserFileResolver;
 use OCP\Constants;
 use OCP\Files\File;
+use OCP\Files\Folder;
+use OCP\Files\IRootFolder;
 use OCP\Share\IManager as IShareManager;
 use OCP\Share\IShare;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -29,17 +32,30 @@ class FileSharerTest extends TestCase {
     private ConversationWriter&MockObject $writer;
     private FileSharer $sharer;
     private File&MockObject $file;
+    private AttachedFile $attachedFile;
 
     protected function setUp(): void {
         parent::setUp();
         $this->shareManager = $this->createMock(IShareManager::class);
         $this->fileResolver = $this->createMock(ShareableFileResolverStub::class);
         $this->writer = $this->createMock(ConversationWriter::class);
-        $this->sharer = new FileSharer($this->shareManager, $this->fileResolver, $this->writer);
+        $this->attachedFile = new AttachedFile($this->givenUserFolderAt('/alice/files'));
+        $this->sharer = new FileSharer($this->shareManager, $this->fileResolver, $this->writer, $this->attachedFile);
         $this->file = $this->createMock(File::class);
         $this->file->method('getPath')->willReturn('/alice/files/relatorio.pdf');
         $this->file->method('getName')->willReturn('relatorio.pdf');
         $this->file->method('getSize')->willReturn(2048);
+    }
+
+    /** The native root, whose user folder answers getRelativePath the way Nextcloud's Folder does. */
+    private function givenUserFolderAt(string $home): IRootFolder {
+        $folder = $this->createMock(Folder::class);
+        $folder->method('getRelativePath')->willReturnCallback(static fn (string $path): ?string => $path === $home
+            ? '/'
+            : (str_starts_with($path, $home . '/') ? substr($path, strlen($home)) : null));
+        $root = $this->createMock(IRootFolder::class);
+        $root->method('getUserFolder')->willReturn($folder);
+        return $root;
     }
 
     /** No share of this file exists yet, neither by the user nor by anybody else. */
@@ -59,7 +75,7 @@ class FileSharerTest extends TestCase {
             'conversation_token' => 'abcd',
             'attachmentId' => 77,
             'file' => [
-                'path' => '/alice/files/relatorio.pdf',
+                'path' => '/relatorio.pdf',
                 'name' => 'relatorio.pdf',
                 'size' => 2048,
             ],
@@ -295,7 +311,7 @@ class FileSharerTest extends TestCase {
 
         $out = $this->sharer->previewFile($this->givenConversation('abcd'), 'alice', 'relatorio.pdf');
 
-        $this->assertSame(['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 2048], $out);
+        $this->assertSame(['path' => '/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 2048], $out);
     }
 
     public function testPreviewingAFileAlreadySharedInTheConversationIsRefusedByEitherLookup(): void {
@@ -306,7 +322,7 @@ class FileSharerTest extends TestCase {
             $manager->expects($this->never())->method('newShare');
             $resolver = $this->createMock(ShareableFileResolverStub::class);
             $resolver->method('resolveShareableFile')->willReturn($this->file);
-            $sharer = new FileSharer($manager, $resolver, $this->writer);
+            $sharer = new FileSharer($manager, $resolver, $this->writer, $this->attachedFile);
 
             try {
                 $sharer->previewFile($this->givenConversation('abcd'), 'alice', 'relatorio.pdf');

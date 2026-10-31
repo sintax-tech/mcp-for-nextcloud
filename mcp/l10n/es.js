@@ -1,6 +1,17 @@
 OC.L10N.register(
     "mcp",
     {
+    "Unknown grants: denied" : "Permisos desconocidos: denegados",
+    "Unknown group grants" : "Permisos de grupo desconocidos",
+    "These saved grants are unknown to this version and grant no access. Other permissions continue to apply. Cleanup is optional and is recorded." : "Esta versión no reconoce estos permisos guardados y no conceden acceso. Los demás permisos siguen vigentes. La limpieza es opcional y queda registrada.",
+    "Stored value: Allow; effective: denied" : "Valor guardado: Permitir; efectivo: denegado",
+    "Clear unknown grant" : "Eliminar permiso desconocido",
+    "Clear 1 unknown grant from group {group}? Key: {key}. Stored value: Allow. This cleanup will be recorded." : "¿Eliminar 1 permiso desconocido del grupo {group}? Clave: {key}. Valor guardado: Permitir. Esta limpieza quedará registrada.",
+    "Unknown grant cleared and recorded. Audit log delivery is pending." : "Permiso desconocido eliminado y registrado. El envío al registro de auditoría está pendiente.",
+    "Unknown grant cleared and recorded." : "Permiso desconocido eliminado y registrado.",
+    "The saved grants changed. Review the refreshed group before clearing again." : "Los permisos guardados cambiaron. Revise el grupo actualizado antes de volver a eliminar.",
+    "The cleanup could not be confirmed. Check the refreshed group before trying again." : "No se pudo confirmar la limpieza. Compruebe el grupo actualizado antes de intentarlo de nuevo.",
+
     "Tag not found in Nextcloud." : "Etiqueta no encontrada en Nextcloud.",
     "Failed to search images in Nextcloud." : "No se pudieron buscar imágenes en Nextcloud.",
     "The specified snippet appears more than once in the file; provide a longer, unique snippet." : "El fragmento indicado aparece más de una vez en el archivo; indique un fragmento más largo y único.",

@@ -1,6 +1,17 @@
 OC.L10N.register(
     "mcp",
     {
+    "Unknown grants: denied" : "Unbekannte Berechtigungen: verweigert",
+    "Unknown group grants" : "Unbekannte Gruppenberechtigungen",
+    "These saved grants are unknown to this version and grant no access. Other permissions continue to apply. Cleanup is optional and is recorded." : "Diese gespeicherten Berechtigungen sind dieser Version unbekannt und gewähren keinen Zugriff. Andere Berechtigungen gelten weiterhin. Die Bereinigung ist optional und wird protokolliert.",
+    "Stored value: Allow; effective: denied" : "Gespeicherter Wert: Erlauben; wirksam: verweigert",
+    "Clear unknown grant" : "Unbekannte Berechtigung entfernen",
+    "Clear 1 unknown grant from group {group}? Key: {key}. Stored value: Allow. This cleanup will be recorded." : "1 unbekannte Berechtigung der Gruppe {group} entfernen? Schlüssel: {key}. Gespeicherter Wert: Erlauben. Diese Bereinigung wird protokolliert.",
+    "Unknown grant cleared and recorded. Audit log delivery is pending." : "Unbekannte Berechtigung entfernt und erfasst. Die Übermittlung an das Auditprotokoll steht aus.",
+    "Unknown grant cleared and recorded." : "Unbekannte Berechtigung entfernt und protokolliert.",
+    "The saved grants changed. Review the refreshed group before clearing again." : "Die gespeicherten Berechtigungen haben sich geändert. Prüfen Sie die aktualisierte Gruppe, bevor Sie erneut bereinigen.",
+    "The cleanup could not be confirmed. Check the refreshed group before trying again." : "Die Bereinigung konnte nicht bestätigt werden. Prüfen Sie die aktualisierte Gruppe, bevor Sie es erneut versuchen.",
+
     "Tag not found in Nextcloud." : "Tag in Nextcloud nicht gefunden.",
     "Failed to search images in Nextcloud." : "Die Suche nach Bildern in Nextcloud ist fehlgeschlagen.",
     "The specified snippet appears more than once in the file; provide a longer, unique snippet." : "Der angegebene Textausschnitt kommt mehrmals in der Datei vor. Gib einen längeren, eindeutigen Ausschnitt an.",

@@ -11,8 +11,6 @@ use OCA\Mcp\Service\Policy\GrantUnknown;
 use OCA\Mcp\Service\Policy\PolicyUnavailable;
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\Compat\AppEnablement;
-use OCA\Mcp\Service\GrantMatrix;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\GuestRestrictions;
 use OCA\Mcp\Tools\Common\NodeAccess;
@@ -24,6 +22,8 @@ use OCA\Mcp\Mcp\Confirmation\PlanChanged;
 use OCA\Mcp\Mcp\Confirmation\PlanRenderer;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCA\Mcp\Mcp\Guide\ToolGuide;
+use OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry;
+use OCA\Mcp\Mcp\Tools\Discovery\ToolAccess;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
@@ -37,10 +37,12 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
  */
 class ToolRegistry {
 	private ?ToolGuide $guide = null;
+	private ToolAccess $access;
 
 	/**
 	 * @param list<ToolModule> $modules explicit module list, in tools/list order
 	 * @param GuestRestrictions|null $guests the apps Guests allows a guest; null only in tests without Guests
+	 * @param CapabilityRegistry|null $capabilities installation capabilities; null only in tests, where none holds
 	 */
 	public function __construct(
 		private array $modules,
@@ -49,7 +51,10 @@ class ToolRegistry {
 		private IUserManager $userManager,
 		private LoggerInterface $logger,
 		private ?GuestRestrictions $guests = null,
-	) {}
+		?CapabilityRegistry $capabilities = null,
+	) {
+		$this->access = new ToolAccess($policy, $appManager, $userManager, $guests, $capabilities ?? new CapabilityRegistry([], $logger));
+	}
 
 	/**
 	 * Every tool carries the display metadata clients show instead of the technical name:
@@ -101,7 +106,7 @@ class ToolRegistry {
 			}
 			foreach ($module->definitions() as $definition) {
 				try {
-					$allowed = $this->allowed($definition, $userId);
+					$allowed = $this->access->allowed($definition, $userId);
 				} catch (GrantUnknown) {
 					// Fail-closed for this tool only: a group in needs_confirm never empties the whole list. Calling
 					// it still answers 503; a failed read of the policy still fails the whole listing.
@@ -158,7 +163,7 @@ class ToolRegistry {
 						return false;
 					}
 				};
-				if (!self::permits($module, $userId) || !$this->allowed($definition, $userId)) {
+				if (!self::permits($module, $userId) || !$this->access->allowed($definition, $userId)) {
 					$audit(RestrictedModule::DENIED);
 					break 2;
 				}
@@ -277,37 +282,5 @@ class ToolRegistry {
 	 */
 	private static function permits(ToolModule $module, string $userId): bool {
 		return !$module instanceof RestrictedModule || $module->permits($userId);
-	}
-
-	/**
-	 * The grant decides first: the tool's operation, or any of the alternatives it lists in `grantAnyOf` when the kind
-	 * of write depends on the arguments (files_share shares with a person under `share` and creates a public link
-	 * under `link`). A tool listing alternatives must check the one each call needs itself, before planning and again
-	 * before writing; the registry only lets the call in. With no alternative granted and one unknown, the answer is
-	 * unknown (PolicyUnavailable, 503), never a denial.
-	 *
-	 * @param array{module:string, operation:string, grantAnyOf?:list<string>, app?:string} $definition
-	 */
-	private function allowed(array $definition, string $userId): bool {
-		try {
-			// Three-valued "any of": a known Allow wins over an unknown alternative, whatever their order.
-			$granted = $this->policy->grantedAny($userId, $definition['module'], $definition['grantAnyOf'] ?? [$definition['operation']]);
-		} catch (InvalidArgumentException) {
-			return false;
-		}
-		if (!$granted) {
-			return false;
-		}
-		// A guest reaches a module only when Guests allows the app behind it, and the tool's own app when it names one.
-		if ($this->guests !== null && (!$this->guests->allowsApp($userId, GrantMatrix::MODULE_APPS[$definition['module']] ?? '')
-			|| !$this->guests->allowsApp($userId, $definition['app'] ?? ''))) {
-			return false;
-		}
-		if (isset($definition['app'])) {
-			$user = $this->userManager->get($userId);
-			// An optional app in a version older than MCP supports counts as off (AppEnablement::MINIMUM_VERSIONS).
-			return $user !== null && AppEnablement::forUser($this->appManager, $definition['app'], $user);
-		}
-		return true;
 	}
 }

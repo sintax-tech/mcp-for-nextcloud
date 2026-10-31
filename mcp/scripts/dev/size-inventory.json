@@ -28,8 +28,7 @@
 		{"fqcn":"OCA\\Mcp\\Tools\\Talk\\TalkPlanRenderer","ceiling":377},
 		{"fqcn":"OCA\\Mcp\\Tools\\Tasks\\TaskData","ceiling":386},
 		{"fqcn":"OCA\\Mcp\\Tools\\Tasks\\TasksPlanRenderer","ceiling":406},
-		{"fqcn":"OCA\\Mcp\\Tools\\ToolGuide","ceiling":419},
-		{"fqcn":"OCA\\Mcp\\Tools\\ToolRegistry","ceiling":313}
+		{"fqcn":"OCA\\Mcp\\Tools\\ToolGuide","ceiling":419}
 	],
 	"transitional": [
 		{"fqcn":"OCA\\Mcp\\Controller\\CheckoutController","ceiling":562,"expires":"RE-24"},

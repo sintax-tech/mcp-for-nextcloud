@@ -43,6 +43,7 @@
             "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
             "OCA\\Mcp\\Tools\\Calendar\\EmbeddedDavDispatcher",
             "OCA\\Mcp\\Tools\\Deck\\DeckGatewayInterface",
+            "OCA\\Mcp\\Mcp\\Tools\\Discovery\\CapabilityRegistry",
             "OCA\\Mcp\\Mcp\\Tools\\ToolRegistry",
             "OCA\\Mcp\\Mcp\\Resources\\ResourceRegistry",
             "OCA\\Mcp\\Mcp\\Protocol\\McpProtocol"

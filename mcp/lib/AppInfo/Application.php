@@ -32,6 +32,8 @@ use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Notes\NotesFolderResolver;
 use OCA\Mcp\Tools\Notes\NotesModule;
 use OCA\Mcp\Tools\Notes\NotesRepository;
+use OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry;
+use OCA\Mcp\Mcp\Tools\Discovery\ModuleRegistrations;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\AppFramework\App;
@@ -125,6 +127,8 @@ class Application extends App implements IBootstrap {
 			new UserTimezone($c->get(IConfig::class)),
 			$c->get(\OCP\ISession::class),
 		));
+		// Modules of the 1.3.0 contract register their own services and capability probes.
+		ModuleRegistrations::register($context, self::MODULES);
 		$context->registerService(ToolRegistry::class, static fn (ContainerInterface $c): ToolRegistry => new ToolRegistry(
 			array_map(static fn (string $class) => $c->get($class), self::MODULES),
 			$c->get(GrantPolicy::class),
@@ -132,6 +136,7 @@ class Application extends App implements IBootstrap {
 			$c->get(IUserManager::class),
 			$c->get(LoggerInterface::class),
 			$c->get(GuestRestrictions::class),
+			$c->get(CapabilityRegistry::class),
 		));
 		$context->registerService(ResourceRegistry::class, static fn (ContainerInterface $c): ResourceRegistry => new ResourceRegistry(
 			$c->get(ToolRegistry::class),

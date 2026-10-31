@@ -36,6 +36,7 @@ class CreatePlan {
 			'notes'=>CreateMessages::notes(),'changed'=>$changed];
 		$state = $plan; unset($state['changed']);
 		$plan[PlanState::ARGUMENT] = $this->states->of(self::TOOL,$uid,$state);
+		if ($changed) { $plan['warnings'] = [['message' => CreateMessages::planChanged($version)]]; }
 		return $plan;
 	}
 	/**
@@ -45,7 +46,8 @@ class CreatePlan {
 	 */
 	public static function render(array $plan): string {
 		$lines = ['- '.PlanText::inline((string)$plan['request']['title'],128),
-			'- '.PlanText::inline((string)$plan['request']['type']),'- '.PlanText::inline((string)$plan['target']['owner'])];
+			'- '.PlanText::inline((string)$plan['request']['type']),'- '.PlanText::inline((string)$plan['target']['owner']),
+			'- version: '.PlanText::inline((string)$plan['version'],2000)];
 		foreach ($plan['options'] as $index=>$row) {
 			$requested = $plan['request']['options'][$index];
 			if (isset($requested['text'])) { $lines[] = '- #'.($index+1).' '.PlanText::inline((string)$requested['text'],1024); }

@@ -261,21 +261,21 @@ class WritePreviewTest extends TestCase {
         $this->sharer->expects($this->once())
             ->method('previewFile')
             ->with($conversation, 'alice', 'relatorio.pdf')
-            ->willReturn(['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 2048]);
+            ->willReturn(['path' => '/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 2048]);
 
         $draft = $this->previews->attach($conversation, 'alice', 'relatorio.pdf', ' olha o relatório ');
 
         $this->assertSame('talk_attach_file', $draft['action']);
         $this->assertSame('olha o relatório', $draft['draft']['message']);
         $this->assertSame(
-            ['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 2048],
+            ['path' => '/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 2048],
             $draft['draft']['file'],
         );
     }
 
     public function testAnAttachDraftWithoutACaptionReportsNoMessageAtAll(): void {
         $this->sharer->method('previewFile')
-            ->willReturn(['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 2048]);
+            ->willReturn(['path' => '/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 2048]);
 
         $draft = $this->previews->attach($this->givenConversation(), 'alice', 'relatorio.pdf', null);
 
@@ -359,7 +359,7 @@ class WritePreviewTest extends TestCase {
     public function testThePreviewNeverPublishesAnything(): void {
         $conversation = $this->givenConversation();
         $this->sharer->method('previewFile')
-            ->willReturn(['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 1]);
+            ->willReturn(['path' => '/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 1]);
         $this->givenQuotedComment('42', 'bob', 'oi');
 
         // Every way the writer or the sharer has to put something in a room: a draft of any tool must reach none.
@@ -382,7 +382,7 @@ class WritePreviewTest extends TestCase {
      */
     public function testNoPlanCarriesAnIdAndEveryPlanAsksForConfirmation(): void {
         $this->sharer->method('previewFile')
-            ->willReturn(['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 1]);
+            ->willReturn(['path' => '/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 1]);
         $this->attachmentAccess->method('requireRoomShareOf')->willReturn($this->givenShare());
         $this->attachmentAccess->method('describe')->willReturn([
             'attachmentId' => 77, 'name' => 'figura.png', 'size' => 1, 'mimeType' => 'image/png',

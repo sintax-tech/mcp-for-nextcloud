@@ -164,7 +164,7 @@ final class TalkPlanRendererTest extends TestCase {
 
     public function testAnAttachmentIsNamedByItsFileNameAndCarriesTheCaption(): void {
         $this->sharer->method('previewFile')
-            ->willReturn(['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 2048]);
+            ->willReturn(['path' => '/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 2048]);
 
         $body = TalkPlanRenderer::render('talk_attach_file', $this->previews->attach(
             $this->givenConversation(),
@@ -181,7 +181,7 @@ final class TalkPlanRendererTest extends TestCase {
 
     public function testAnAttachmentWithoutACaptionShowsNoEmptyCaption(): void {
         $this->sharer->method('previewFile')
-            ->willReturn(['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 10]);
+            ->willReturn(['path' => '/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 10]);
 
         $body = TalkPlanRenderer::render('talk_attach_file', $this->previews->attach(
             $this->givenConversation(),
@@ -299,7 +299,7 @@ final class TalkPlanRendererTest extends TestCase {
         Translator::use(new JsonL10n('pt_BR'));
 
         $this->sharer->method('previewFile')
-            ->willReturn(['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 2048]);
+            ->willReturn(['path' => '/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 2048]);
 
         $attach = (string)TalkPlanRenderer::render('talk_attach_file', $this->previews->attach(
             $this->givenConversation(),
@@ -365,7 +365,7 @@ final class TalkPlanRendererTest extends TestCase {
     public function testRenderingARealPlanPublishesNothingAndResolvesNothing(): void {
         $conversation = $this->givenConversation();
         $this->sharer->method('previewFile')
-            ->willReturn(['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 1]);
+            ->willReturn(['path' => '/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 1]);
         $this->attachmentAccess->method('requireRoomShareOf')->willReturn($this->givenShare());
         $this->attachmentAccess->method('describe')
             ->willReturn(['attachmentId' => 77, 'name' => 'figura.png', 'size' => 1, 'mimeType' => 'image/png']);
@@ -392,7 +392,7 @@ final class TalkPlanRendererTest extends TestCase {
     public function testEveryWriteToolHasAReadablePlan(): void {
         $conversation = $this->givenConversation();
         $this->sharer->method('previewFile')
-            ->willReturn(['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 1]);
+            ->willReturn(['path' => '/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 1]);
         $this->attachmentAccess->method('requireRoomShareOf')->willReturn($this->givenShare());
         $this->attachmentAccess->method('describe')
             ->willReturn(['attachmentId' => 77, 'name' => 'figura.png', 'size' => 1, 'mimeType' => 'image/png']);
@@ -437,7 +437,7 @@ final class TalkPlanRendererTest extends TestCase {
     public function testTheTextsOfOtherPeopleStayInertInTheRichPlans(): void {
         $conversation = $this->givenConversation();
         $this->sharer->method('previewFile')
-            ->willReturn(['path' => '/alice/files/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 1]);
+            ->willReturn(['path' => '/relatorio.pdf', 'name' => 'relatorio.pdf', 'size' => 1]);
         $this->attachmentAccess->method('requireRoomShareOf')->willReturn($this->givenShare());
         $this->attachmentAccess->method('describe')
             ->willReturn(['attachmentId' => 77, 'name' => 'figura.png', 'size' => 1, 'mimeType' => 'image/png']);

@@ -32,7 +32,7 @@ final class ServerInfoTest extends TestCase {
 	 * InstalledApp::version() to the version element of info.xml.
 	 */
 	public function testAnnouncedVersionIsTheInstalledAppVersion(): void {
-		$declared = (string) simplexml_load_file(__DIR__ . '/../../../appinfo/info.xml')->version;
+		$declared = (string) simplexml_load_file(dirname(__DIR__, 3) . '/appinfo/info.xml')->version;
 		$this->assertSame($declared, InstalledApp::version());
 		$this->assertNotSame(self::SENTINEL, $declared);
 

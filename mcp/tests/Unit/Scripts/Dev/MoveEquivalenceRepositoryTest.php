@@ -21,7 +21,8 @@ require_once __DIR__ . '/../../../../scripts/dev/bootstrap.php';
  * real mutations on top of them.
  *
  * Class names and paths are assembled from segments, so this file never holds a literal name or path that a later
- * move would leave stale. Once a class moves for real, its tests are skipped (that ticket proves its own move).
+ * move would leave stale. Once UserTimezone moves for real, its tests are skipped (RE-04 proves its own move); the
+ * PromptCatalog tests rebuild the tree before RE-03 from the moved one and keep running.
  */
 final class MoveEquivalenceRepositoryTest extends TestCase {
 	/** @var array<string,string>|null the app tree, read once */
@@ -43,7 +44,7 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 	/** One space added inside an interpolated message of ArgumentValidator fails (review A2). */
 	public function testAWhitespaceChangeInsideARealStringFails(): void {
 		$after = $this->userTimezone();
-		$path = self::lib(['Tools', 'ArgumentValidator']);
+		$path = self::located(['Tools', 'ArgumentValidator']);
 		$after[$path] = preg_replace('/"Invalid argument: \$key"/', '" Invalid argument: $key"', $after[$path], 1);
 		$problems = (new MoveEquivalence(self::tree(), $after, self::map()))->check();
 		$this->assertCount(1, $problems);
@@ -64,7 +65,8 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 	/** Moving PromptCatalogTest one folder deeper breaks `dirname(__DIR__, 3)`, so the RE-03 move fails (review R2-A6). */
 	public function testAMoveThatChangesWhatDirPointsToFails(): void {
 		$test = self::path('tests/Unit', ['Mcp', 'Prompts', 'PromptCatalogTest']);
-		$problems = (new MoveEquivalence(self::tree(), $this->promptCatalog(false), self::map()))->check();
+		[$before, $after] = $this->promptCatalogMove(false);
+		$problems = (new MoveEquivalence($before, $after, self::map()))->check();
 		$this->assertCount(1, $problems);
 		// The old expression reaches a file under the app folder; the same text in the deeper folder reaches tests/.
 		$this->assertStringStartsWith("$test: not equivalent to ", $problems[0]);
@@ -73,8 +75,9 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 
 	/** The same move passes once the test climbs one more level, `dirname(__DIR__, 4)`: the path is proved the same. */
 	public function testAMoveThatRebasesDirEquivalentlyPasses(): void {
-		$this->assertSame([], (new MoveEquivalence(self::tree(), $this->promptCatalog(true), self::map()))->check());
-		$this->assertEveryReaderFailsWhenForgotten($this->promptCatalog(true), self::lib(['Service', 'PromptCatalog']), self::lib(['Mcp', 'Prompts', 'PromptCatalog']));
+		[$before, $after] = $this->promptCatalogMove(true);
+		$this->assertSame([], (new MoveEquivalence($before, $after, self::map()))->check());
+		$this->assertEveryReaderFailsWhenForgotten($after, self::lib(['Service', 'PromptCatalog']), self::lib(['Mcp', 'Prompts', 'PromptCatalog']), $before);
 	}
 
 	/** The real bootstrap autoload must not accept an inaccessible, lexically cancelling path (R3-A7). */
@@ -107,12 +110,14 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 	 * @param array<string,string> $after correctly moved tree
 	 * @param string $old old production path
 	 * @param string $new new production path
+	 * @param array<string,string>|null $before tree before the move; the real tree when null
 	 * @return void
 	 */
-	private function assertEveryReaderFailsWhenForgotten(array $after, string $old, string $new): void {
-		foreach (RepositoryMoveFixture::forgottenReaders(self::tree(), $after, $old, $new) as $reader => $forgotten) {
+	private function assertEveryReaderFailsWhenForgotten(array $after, string $old, string $new, ?array $before = null): void {
+		$before ??= self::tree();
+		foreach (RepositoryMoveFixture::forgottenReaders($before, $after, $old, $new) as $reader => $forgotten) {
 			$this->assertNotSame($after[$reader], $forgotten[$reader]);
-			$this->assertStringContainsString("$reader:", implode("\n", (new MoveEquivalence(self::tree(), $forgotten, self::map()))->check()));
+			$this->assertStringContainsString("$reader:", implode("\n", (new MoveEquivalence($before, $forgotten, self::map()))->check()));
 		}
 	}
 
@@ -143,6 +148,30 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 			$tree[$test] = str_replace('dirname(__DIR__, 3)', 'dirname(__DIR__, 4)', $tree[$test]);
 		}
 		return $tree;
+	}
+
+	/**
+	 * The RE-03 move of PromptCatalog and its test as trees before and after it. Until RE-03 moves the class, the real
+	 * tree is the before side and the move is simulated; once it has moved, the real tree is the after side and the
+	 * before side is the real tree moved back, so the proof keeps running instead of being skipped.
+	 *
+	 * @param bool $rebased whether the moved test climbs one more folder to reach the app folder
+	 * @return array{0: array<string,string>, 1: array<string,string>} trees before and after the move
+	 */
+	private function promptCatalogMove(bool $rebased): array {
+		if (isset(self::tree()[self::lib(['Service', 'PromptCatalog'])])) {
+			return [self::tree(), $this->promptCatalog($rebased)];
+		}
+		$moved = ['Mcp', 'Prompts', 'PromptCatalogTest'];
+		$before = $this->moved(['Mcp', 'Prompts', 'PromptCatalog'], ['Service', 'PromptCatalog'], $moved, ['Service', 'PromptCatalogTest'],
+			[self::lib(['Service', 'PromptCatalog']) => [['Mcp', 'Prompts', 'CheckoutPrompt']]]);
+		$after = self::tree();
+		$climb = static fn (string $code): string => str_replace('dirname(__DIR__, 4)', 'dirname(__DIR__, 3)', $code);
+		$before[self::path('tests/Unit', ['Service', 'PromptCatalogTest'])] = $climb($before[self::path('tests/Unit', ['Service', 'PromptCatalogTest'])]);
+		if (!$rebased) {
+			$after[self::path('tests/Unit', $moved)] = $climb($after[self::path('tests/Unit', $moved)]);
+		}
+		return [$before, $after];
 	}
 
 	/**
@@ -189,6 +218,23 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 	 */
 	private static function lib(array $segments): string {
 		return self::path('lib', $segments);
+	}
+
+	/**
+	 * Path of a class of the base under lib/ in this tree: where the base had it, or its destination in the map once
+	 * its ticket has moved it.
+	 *
+	 * @param list<string> $segments class segments of the base under the app namespace
+	 * @return string the path
+	 */
+	private static function located(array $segments): string {
+		$path = self::lib($segments);
+		foreach (self::map()->entries as $entry) {
+			if (!isset(self::tree()[$path]) && $entry['path'] === $path) {
+				return (string)self::map()->pathOf($entry['target']);
+			}
+		}
+		return $path;
 	}
 
 	/**

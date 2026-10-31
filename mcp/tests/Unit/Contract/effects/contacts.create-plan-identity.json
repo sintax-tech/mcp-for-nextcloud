@@ -1,0 +1,244 @@
+{
+    "steps": [
+        {
+            "step": "preview",
+            "request": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "name": "Ana"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create contact**\n\nCreating the contact **Ana** in the address book *Contatos*.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with plan_state `<plan_state#1>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "contacts_create_contact",
+                            "title": "Create contact",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "contacts_create_contact",
+                            "addressbook": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Contatos",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/addressbooks/users/alice/personal/"
+                            },
+                            "etag": null,
+                            "before": null,
+                            "after": {
+                                "uid": "<contact-uid#1>",
+                                "name": "Ana",
+                                "organization": "",
+                                "title": "",
+                                "note": "",
+                                "url": "",
+                                "emails": [],
+                                "phones": [],
+                                "properties": [
+                                    {
+                                        "name": "VERSION",
+                                        "group": null,
+                                        "value": "3.0",
+                                        "serialized": "VERSION:3.0\r\n"
+                                    },
+                                    {
+                                        "name": "PRODID",
+                                        "group": null,
+                                        "value": "-//Sabre//Sabre VObject 4.5.6//EN",
+                                        "serialized": "PRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\n"
+                                    },
+                                    {
+                                        "name": "UID",
+                                        "group": null,
+                                        "value": "<contact-uid#1>",
+                                        "serialized": "UID:<contact-uid#1>\r\n"
+                                    },
+                                    {
+                                        "name": "FN",
+                                        "group": null,
+                                        "value": "Ana",
+                                        "serialized": "FN:Ana\r\n"
+                                    }
+                                ],
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:<contact-uid#1>\r\nFN:Ana\r\nEND:VCARD\r\n"
+                            },
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": "Contacts have no native trash or edit history; review the changes carefully.",
+                            "plan_state": "<plan_state#1>"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": [],
+                "dav": []
+            }
+        },
+        {
+            "step": "missing-plan",
+            "request": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "name": "Ana",
+                "confirm": true
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "error": {
+                        "code": -32602,
+                        "message": "plan_state: required with confirm: true; send the plan_state of the plan",
+                        "data": {
+                            "field": "plan_state",
+                            "rule": "required with confirm: true; send the plan_state of the plan"
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": [],
+                "dav": []
+            }
+        },
+        {
+            "step": "other-fields",
+            "request": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "name": "Another",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "**Create contact**\n\nCreating the contact **Another** in the address book *Contatos*.\n\n### Warnings\n\n- The creation plan changed. Review the new plan before confirming.\n\nNothing was changed. Confirm to execute.\n\n*Show this plan and ask for explicit confirmation.*\n\n*To confirm, repeat the call with plan_state `<plan_state#2>`.*"
+                            }
+                        ],
+                        "structuredContent": {
+                            "requiresConfirmation": true,
+                            "tool": "contacts_create_contact",
+                            "title": "Create contact",
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "contacts_create_contact",
+                            "addressbook": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Contatos",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/addressbooks/users/alice/personal/"
+                            },
+                            "etag": null,
+                            "before": null,
+                            "after": {
+                                "uid": "<contact-uid#1>",
+                                "name": "Another",
+                                "organization": "",
+                                "title": "",
+                                "note": "",
+                                "url": "",
+                                "emails": [],
+                                "phones": [],
+                                "properties": [
+                                    {
+                                        "name": "VERSION",
+                                        "group": null,
+                                        "value": "3.0",
+                                        "serialized": "VERSION:3.0\r\n"
+                                    },
+                                    {
+                                        "name": "PRODID",
+                                        "group": null,
+                                        "value": "-//Sabre//Sabre VObject 4.5.6//EN",
+                                        "serialized": "PRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\n"
+                                    },
+                                    {
+                                        "name": "UID",
+                                        "group": null,
+                                        "value": "<contact-uid#1>",
+                                        "serialized": "UID:<contact-uid#1>\r\n"
+                                    },
+                                    {
+                                        "name": "FN",
+                                        "group": null,
+                                        "value": "Another",
+                                        "serialized": "FN:Another\r\n"
+                                    }
+                                ],
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:<contact-uid#1>\r\nFN:Another\r\nEND:VCARD\r\n"
+                            },
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": "Contacts have no native trash or edit history; review the changes carefully.",
+                            "plan_state": "<plan_state#2>",
+                            "warnings": [
+                                {
+                                    "message": "The creation plan changed. Review the new plan before confirming."
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "state": {
+                "cards": [],
+                "dav": []
+            }
+        },
+        {
+            "step": "confirmed",
+            "request": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "name": "Ana",
+                "confirm": true,
+                "plan_state": "<plan_state#1>"
+            },
+            "response": {
+                "status": 200,
+                "body": {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "result": {
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "{\n    \"uid\": \"<contact-uid#1>\",\n    \"name\": \"Ana\",\n    \"organization\": \"\",\n    \"title\": \"\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [],\n    \"phones\": [],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"PRODID\",\n            \"group\": null,\n            \"value\": \"-//Sabre//Sabre VObject 4.5.6//EN\",\n            \"serialized\": \"PRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"<contact-uid#1>\",\n            \"serialized\": \"UID:<contact-uid#1>\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Ana\",\n            \"serialized\": \"FN:Ana\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\nUID:<contact-uid#1>\\r\\nFN:Ana\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"<contact-uid#1>.vcf\",\n    \"etag\": \"\\\"<contact-etag#1>\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"status\": 201\n}"
+                            }
+                        ]
+                    }
+                }
+            },
+            "state": {
+                "cards": [
+                    {
+                        "uri": "<contact-uid#1>.vcf",
+                        "etag": "<contact-etag#1>",
+                        "data": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:<contact-uid#1>\r\nFN:Ana\r\nEND:VCARD\r\n"
+                    }
+                ],
+                "dav": [
+                    "put personal/<contact-uid#1>.vcf"
+                ]
+            }
+        }
+    ]
+}

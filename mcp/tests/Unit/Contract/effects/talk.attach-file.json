@@ -33,7 +33,7 @@
                             "draft": {
                                 "message": "Segue o relatório do trimestre.",
                                 "file": {
-                                    "path": "/alice/files/Relatorios/Q3.pdf",
+                                    "path": "/Relatorios/Q3.pdf",
                                     "name": "Q3.pdf",
                                     "size": 11
                                 }
@@ -108,7 +108,7 @@
                             "draft": {
                                 "message": "Segue o relatório do trimestre.",
                                 "file": {
-                                    "path": "/alice/files/Relatorios/Q3.pdf",
+                                    "path": "/Relatorios/Q3.pdf",
                                     "name": "Q3.pdf",
                                     "size": 11
                                 }
@@ -158,7 +158,7 @@
                             "draft": {
                                 "message": "Segue o relatório do trimestre.",
                                 "file": {
-                                    "path": "/alice/files/Relatorios/Q3.pdf",
+                                    "path": "/Relatorios/Q3.pdf",
                                     "name": "Q3.pdf",
                                     "size": 11
                                 }
@@ -190,7 +190,7 @@
                         "content": [
                             {
                                 "type": "text",
-                                "text": "{\n    \"conversation_token\": \"abcd1234\",\n    \"attachmentId\": 15,\n    \"file\": {\n        \"path\": \"/alice/files/Relatorios/Q3.pdf\",\n        \"name\": \"Q3.pdf\",\n        \"size\": 11\n    },\n    \"caption\": \"Segue o relatório do trimestre.\",\n    \"captionSent\": true,\n    \"messageId\": 55\n}"
+                                "text": "{\n    \"conversation_token\": \"abcd1234\",\n    \"attachmentId\": 15,\n    \"file\": {\n        \"path\": \"/Relatorios/Q3.pdf\",\n        \"name\": \"Q3.pdf\",\n        \"size\": 11\n    },\n    \"caption\": \"Segue o relatório do trimestre.\",\n    \"captionSent\": true,\n    \"messageId\": 55\n}"
                             }
                         ]
                     }

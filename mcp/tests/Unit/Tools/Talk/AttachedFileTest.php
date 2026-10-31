@@ -26,7 +26,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 /**
- * Achado 3 of the RE-01 oracle: talk_attach_file named the file by its storage path, "/alice/files/...", which
+ * Finding 3 of the RE-01 oracle: talk_attach_file named the file by its storage path, "/alice/files/...", which
  * reveals the account id. The plan, its rendered text and the confirmed result must name the file the way the Files
  * tools do, by its path below the user folder, for the user's own files and for files received through a share.
  */

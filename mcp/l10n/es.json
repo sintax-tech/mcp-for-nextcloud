@@ -1,4 +1,6 @@
 { "translations": {
+    "Tag not found in Nextcloud." : "Etiqueta no encontrada en Nextcloud.",
+    "Failed to search images in Nextcloud." : "No se pudieron buscar imágenes en Nextcloud.",
     "The specified snippet appears more than once in the file; provide a longer, unique snippet." : "El fragmento indicado aparece más de una vez en el archivo; indique un fragmento más largo y único.",
     "Use only one of content, append or old/new." : "Use solo uno de content, append u old/new.",
     "append and old/new need the etag returned by notes_read or by the plan." : "append y old/new requieren el etag que devuelve notes_read o el plan.",

@@ -18,31 +18,31 @@ use OCP\IAppConfig;
  * diagnosis and do not respect the hiding by tags.
  */
 class LogFileNames {
-    /** App config key, a boolean. */
-    public const CONFIG_KEY = 'logs_hide_file_names';
+	/** App config key, a boolean. */
+	public const CONFIG_KEY = 'logs_hide_file_names';
 
-    public function __construct(
-        private IAppConfig $appConfig,
-        private VisibilityGuard $visibility,
-    ) {}
+	public function __construct(
+		private IAppConfig $appConfig,
+		private VisibilityGuard $visibility,
+	) {}
 
-    /** @return bool the administrator's choice; true when it cannot be read */
-    public function enabled(): bool {
-        try {
-            return $this->appConfig->getValueBool('mcp', self::CONFIG_KEY, true);
-        } catch (\Throwable) {
-            return true;
-        }
-    }
+	/** @return bool the administrator's choice; true when it cannot be read */
+	public function enabled(): bool {
+		try {
+			return $this->appConfig->getValueBool('mcp', self::CONFIG_KEY, true);
+		} catch (\Throwable) {
+			return true;
+		}
+	}
 
-    /** @param bool $enabled whether the log tools hide the text of messages while files are hidden by tags */
-    public function setEnabled(bool $enabled): void {
-        $this->appConfig->setValueBool('mcp', self::CONFIG_KEY, $enabled);
-    }
+	/** @param bool $enabled whether the log tools hide the text of messages while files are hidden by tags */
+	public function setEnabled(bool $enabled): void {
+		$this->appConfig->setValueBool('mcp', self::CONFIG_KEY, $enabled);
+	}
 
-    /** @return bool whether the log tools hide the text of messages right now */
-    public function active(): bool {
-        return $this->enabled()
-            && (!$this->visibility->isConfigurationValid() || $this->visibility->getHiddenTagIds() !== []);
-    }
+	/** @return bool whether the log tools hide the text of messages right now */
+	public function active(): bool {
+		return $this->enabled()
+			&& (!$this->visibility->isConfigurationValid() || $this->visibility->getHiddenTagIds() !== []);
+	}
 }

@@ -14,7 +14,7 @@ use RuntimeException;
  * caller answers with a generic message so the module never reveals whether a room exists but is closed.
  */
 class ConversationAccessException extends RuntimeException {
-    public function __construct(string $message, ?\Throwable $previous = null) {
-        parent::__construct($message, 0, $previous);
-    }
+	public function __construct(string $message, ?\Throwable $previous = null) {
+		parent::__construct($message, 0, $previous);
+	}
 }

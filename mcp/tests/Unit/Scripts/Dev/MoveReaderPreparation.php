@@ -64,7 +64,7 @@ final class MoveReaderPreparation {
 		}
 		// The counting test's composed basename loop needs three complete paths before a move can be proved.
 		$name = implode('', ['Override', 'Preview']) . '.php';
-		$pattern = '~foreach \(\[\'PolicyResolver.php\', \'PolicyOperationContext.php\', \'../' . preg_quote($name, '~') . '\'\] as \$file\) \{.*?\n        \}~s';
+		$pattern = '~foreach \(\[\'PolicyResolver.php\', \'PolicyOperationContext.php\', \'../' . preg_quote($name, '~') . '\'\] as \$file\) \{.*?\n(?: {8}|\t{2})\}~s';
 		$replacement = '';
 		foreach (['Service/Policy/PolicyResolver.php', 'Service/Policy/PolicyOperationContext.php', 'Service/' . $name] as $file) {
 			$replacement .= "\$this->assertStringContainsString('admin counting only, not an access decision', file_get_contents(\$lib . '/$file'));\n";

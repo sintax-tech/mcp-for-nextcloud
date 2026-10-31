@@ -15,16 +15,16 @@ use RuntimeException;
  * to the redirect_uri.
  */
 class OAuthException extends RuntimeException {
-    /**
-     * @param string $error RFC 6749 error code (invalid_request, invalid_grant, ...)
-     * @param string $description fixed human-readable text
-     * @param bool $redirectable whether the error may be reported to the client's redirect_uri
-     */
-    public function __construct(
-        public readonly string $error,
-        string $description,
-        public readonly bool $redirectable = false,
-    ) {
-        parent::__construct($description);
-    }
+	/**
+	 * @param string $error RFC 6749 error code (invalid_request, invalid_grant, ...)
+	 * @param string $description fixed human-readable text
+	 * @param bool $redirectable whether the error may be reported to the client's redirect_uri
+	 */
+	public function __construct(
+		public readonly string $error,
+		string $description,
+		public readonly bool $redirectable = false,
+	) {
+		parent::__construct($description);
+	}
 }

@@ -20,19 +20,19 @@ use OCP\Server;
  * value is left where it was. Runs in the compat suite, before any other test can touch the switch.
  */
 final class NativeClientMigrationTest extends IntegrationTestCase {
-    protected function setUp(): void {
-        parent::setUp();
-        if (getenv('MCP_IT_MODE') !== 'upgrade') {
-            $this->markTestSkipped('Only an upgrade cell has the switch the baseline wrote');
-        }
-    }
+	protected function setUp(): void {
+		parent::setUp();
+		if (getenv('MCP_IT_MODE') !== 'upgrade') {
+			$this->markTestSkipped('Only an upgrade cell has the switch the baseline wrote');
+		}
+	}
 
-    public function testTheNativeSwitchOfTheBaselineIsInTheTableAfterTheUpgrade(): void {
-        $row = (new OAuthClientsMapper($this->openIndependentConnection()))->find(NativeClient::CLIENT_ID);
-        $this->assertNotNull($row, 'the migration imported the switch');
-        $this->assertSame([OAuthClientsMapper::KIND_NATIVE, true, '1'], [$row['kind'], $row['enabled'], $row['gen']]);
-        $this->assertSame('1', ClientResolver::nativeGeneration(Server::get(OAuthClientsMapper::class)));
-        $this->assertSame(NativeClient::CLIENT_ID, Server::get(ClientResolver::class)->resolve(NativeClient::CLIENT_ID)->clientId);
-        $this->assertSame('1', Server::get(IConfig::class)->getAppValue('mcp', NativeClient::CONFIG_KEY), 'the legacy value is left as it was');
-    }
+	public function testTheNativeSwitchOfTheBaselineIsInTheTableAfterTheUpgrade(): void {
+		$row = (new OAuthClientsMapper($this->openIndependentConnection()))->find(NativeClient::CLIENT_ID);
+		$this->assertNotNull($row, 'the migration imported the switch');
+		$this->assertSame([OAuthClientsMapper::KIND_NATIVE, true, '1'], [$row['kind'], $row['enabled'], $row['gen']]);
+		$this->assertSame('1', ClientResolver::nativeGeneration(Server::get(OAuthClientsMapper::class)));
+		$this->assertSame(NativeClient::CLIENT_ID, Server::get(ClientResolver::class)->resolve(NativeClient::CLIENT_ID)->clientId);
+		$this->assertSame('1', Server::get(IConfig::class)->getAppValue('mcp', NativeClient::CONFIG_KEY), 'the legacy value is left as it was');
+	}
 }

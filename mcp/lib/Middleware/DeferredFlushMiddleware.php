@@ -16,9 +16,9 @@ use OCP\AppFramework\Middleware;
  * Never throws and never changes the request.
  */
 class DeferredFlushMiddleware extends Middleware {
-    public function __construct(private CauseProcessor $causes) {}
+	public function __construct(private CauseProcessor $causes) {}
 
-    public function beforeController($controller, $methodName): void {
-        $this->causes->flush();
-    }
+	public function beforeController($controller, $methodName): void {
+		$this->causes->flush();
+	}
 }

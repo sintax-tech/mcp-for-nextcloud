@@ -20,34 +20,34 @@ use OCP\Migration\SimpleMigrationStep;
  * leaves every user unrestricted, exactly as before, and a release without this feature ignores both tables.
  */
 class Version001100Date20261015020000 extends SimpleMigrationStep {
-    /**
-     * @param IOutput $output migration output
-     * @param Closure(): ISchemaWrapper $schemaClosure current schema
-     * @param array<string, mixed> $options migration options
-     * @return ISchemaWrapper|null the changed schema, or null when both tables already exist
-     */
-    public function changeSchema(IOutput $output, Closure $schemaClosure, array $options): ?ISchemaWrapper {
-        $schema = $schemaClosure();
-        $changed = false;
-        if (!$schema->hasTable(ResourceScopeMapper::MODES_TABLE)) {
-            $table = $schema->createTable(ResourceScopeMapper::MODES_TABLE);
-            $table->addColumn('user_key', Types::STRING, ['notnull' => true, 'length' => 64]);
-            $table->addColumn('module', Types::STRING, ['notnull' => true, 'length' => 32]);
-            $table->addColumn('user_id', Types::TEXT, ['notnull' => true]);
-            // Revision of the policy commit that saved this scope, so a delayed account cleanup never removes a later one.
-            $table->addColumn('policy_rev', Types::BIGINT, ['notnull' => true]);
-            $table->setPrimaryKey(['user_key', 'module']);
-            $changed = true;
-        }
-        if (!$schema->hasTable(ResourceScopeMapper::ITEMS_TABLE)) {
-            $table = $schema->createTable(ResourceScopeMapper::ITEMS_TABLE);
-            $table->addColumn('user_key', Types::STRING, ['notnull' => true, 'length' => 64]);
-            $table->addColumn('module', Types::STRING, ['notnull' => true, 'length' => 32]);
-            $table->addColumn('resource_key', Types::STRING, ['notnull' => true, 'length' => 64]);
-            $table->addColumn('resource_id', Types::TEXT, ['notnull' => true]);
-            $table->setPrimaryKey(['user_key', 'module', 'resource_key']);
-            $changed = true;
-        }
-        return $changed ? $schema : null;
-    }
+	/**
+	 * @param IOutput $output migration output
+	 * @param Closure(): ISchemaWrapper $schemaClosure current schema
+	 * @param array<string, mixed> $options migration options
+	 * @return ISchemaWrapper|null the changed schema, or null when both tables already exist
+	 */
+	public function changeSchema(IOutput $output, Closure $schemaClosure, array $options): ?ISchemaWrapper {
+		$schema = $schemaClosure();
+		$changed = false;
+		if (!$schema->hasTable(ResourceScopeMapper::MODES_TABLE)) {
+			$table = $schema->createTable(ResourceScopeMapper::MODES_TABLE);
+			$table->addColumn('user_key', Types::STRING, ['notnull' => true, 'length' => 64]);
+			$table->addColumn('module', Types::STRING, ['notnull' => true, 'length' => 32]);
+			$table->addColumn('user_id', Types::TEXT, ['notnull' => true]);
+			// Revision of the policy commit that saved this scope, so a delayed account cleanup never removes a later one.
+			$table->addColumn('policy_rev', Types::BIGINT, ['notnull' => true]);
+			$table->setPrimaryKey(['user_key', 'module']);
+			$changed = true;
+		}
+		if (!$schema->hasTable(ResourceScopeMapper::ITEMS_TABLE)) {
+			$table = $schema->createTable(ResourceScopeMapper::ITEMS_TABLE);
+			$table->addColumn('user_key', Types::STRING, ['notnull' => true, 'length' => 64]);
+			$table->addColumn('module', Types::STRING, ['notnull' => true, 'length' => 32]);
+			$table->addColumn('resource_key', Types::STRING, ['notnull' => true, 'length' => 64]);
+			$table->addColumn('resource_id', Types::TEXT, ['notnull' => true]);
+			$table->setPrimaryKey(['user_key', 'module', 'resource_key']);
+			$changed = true;
+		}
+		return $changed ? $schema : null;
+	}
 }

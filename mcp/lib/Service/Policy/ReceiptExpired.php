@@ -9,7 +9,7 @@ namespace OCA\Mcp\Service\Policy;
 
 /** The caller's own receipt, past its time to live (PolicyWriter::RECEIPT_TTL). HTTP adapters map this to 410. */
 class ReceiptExpired extends \RuntimeException {
-    public function __construct() {
-        parent::__construct('Receipt expired', 410);
-    }
+	public function __construct() {
+		parent::__construct('Receipt expired', 410);
+	}
 }

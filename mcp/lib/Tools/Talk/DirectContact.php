@@ -14,13 +14,13 @@ namespace OCA\Mcp\Tools\Talk;
  * raw account id does not.
  */
 final class DirectContact {
-    public function __construct(
-        public readonly string $id,
-        public readonly string $displayName,
-    ) {}
+	public function __construct(
+		public readonly string $id,
+		public readonly string $displayName,
+	) {}
 
-    /** @return array{id:string, displayName:string} */
-    public function describe(): array {
-        return ['id' => $this->id, 'displayName' => $this->displayName];
-    }
+	/** @return array{id:string, displayName:string} */
+	public function describe(): array {
+		return ['id' => $this->id, 'displayName' => $this->displayName];
+	}
 }

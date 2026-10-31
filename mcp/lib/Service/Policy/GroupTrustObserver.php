@@ -13,32 +13,32 @@ use Psr\Log\LoggerInterface;
 
 /** Persists observed loss of identity trust without remote I/O under the writer's mutex. */
 class GroupTrustObserver {
-    public function __construct(
-        private IDBConnection $db,
-        private PolicyWriter $writer,
-        private GroupLifeMapper $life,
-        private LoggerInterface $logger,
-    ) {}
+	public function __construct(
+		private IDBConnection $db,
+		private PolicyWriter $writer,
+		private GroupLifeMapper $life,
+		private LoggerInterface $logger,
+	) {}
 
-    /** @param list<array{groupId:string, gen:string}> $lost observations of active lifecycles */
-    public function observe(array $lost): void {
-        if ($lost === []) {
-            return;
-        }
-        if ($this->db->inTransaction()) {
-            $this->logger->warning('Group trust lost inside a foreign transaction; grants are withheld', ['app' => 'mcp']);
-            return;
-        }
-        $this->writer->runInternal([], static fn () => null, function () use ($lost): bool {
-            $changed = false;
-            foreach ($lost as $row) {
-                $current = $this->life->get($row['groupId']);
-                if (($current['state'] ?? null) === GroupLifeMapper::ACTIVE && $current['gen'] === $row['gen']) {
-                    $changed = $this->life->transition($row['groupId'], $row['gen'], GroupLifeMapper::NEEDS_CONFIRM,
-                        bin2hex(random_bytes(16))) || $changed;
-                }
-            }
-            return $changed;
-        });
-    }
+	/** @param list<array{groupId:string, gen:string}> $lost observations of active lifecycles */
+	public function observe(array $lost): void {
+		if ($lost === []) {
+			return;
+		}
+		if ($this->db->inTransaction()) {
+			$this->logger->warning('Group trust lost inside a foreign transaction; grants are withheld', ['app' => 'mcp']);
+			return;
+		}
+		$this->writer->runInternal([], static fn () => null, function () use ($lost): bool {
+			$changed = false;
+			foreach ($lost as $row) {
+				$current = $this->life->get($row['groupId']);
+				if (($current['state'] ?? null) === GroupLifeMapper::ACTIVE && $current['gen'] === $row['gen']) {
+					$changed = $this->life->transition($row['groupId'], $row['gen'], GroupLifeMapper::NEEDS_CONFIRM,
+						bin2hex(random_bytes(16))) || $changed;
+				}
+			}
+			return $changed;
+		});
+	}
 }

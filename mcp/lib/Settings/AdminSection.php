@@ -15,33 +15,33 @@ use OCP\Settings\IIconSection;
  * into it. The name is the product name and is not translated.
  */
 class AdminSection implements IIconSection {
-    /** Section id shared by the admin and personal menus. */
-    public const ID = 'mcp';
-    /** Product name shown in the menu. */
-    public const NAME = 'MCP for Cloud';
-    /** After the core entries, before the generic app sections. */
-    public const PRIORITY = 75;
+	/** Section id shared by the admin and personal menus. */
+	public const ID = 'mcp';
+	/** Product name shown in the menu. */
+	public const NAME = 'MCP for Cloud';
+	/** After the core entries, before the generic app sections. */
+	public const PRIORITY = 75;
 
-    /** @param IURLGenerator $urlGenerator resolves the icon path */
-    public function __construct(private IURLGenerator $urlGenerator) {}
+	/** @param IURLGenerator $urlGenerator resolves the icon path */
+	public function __construct(private IURLGenerator $urlGenerator) {}
 
-    /** @return string section id */
-    public function getID(): string {
-        return self::ID;
-    }
+	/** @return string section id */
+	public function getID(): string {
+		return self::ID;
+	}
 
-    /** @return string menu label */
-    public function getName(): string {
-        return self::NAME;
-    }
+	/** @return string menu label */
+	public function getName(): string {
+		return self::NAME;
+	}
 
-    /** @return int position in the menu */
-    public function getPriority(): int {
-        return self::PRIORITY;
-    }
+	/** @return int position in the menu */
+	public function getPriority(): int {
+		return self::PRIORITY;
+	}
 
-    /** @return string relative URL of the dark (monochrome) app icon, which the menu inverts in dark themes */
-    public function getIcon(): string {
-        return $this->urlGenerator->imagePath('mcp', 'app-dark.svg');
-    }
+	/** @return string relative URL of the dark (monochrome) app icon, which the menu inverts in dark themes */
+	public function getIcon(): string {
+		return $this->urlGenerator->imagePath('mcp', 'app-dark.svg');
+	}
 }

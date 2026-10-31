@@ -30,62 +30,62 @@ use OCP\Constants;
  * Stateless: every method is static and the class is never instantiated.
  */
 final class SharePermission {
-    /** Read only. */
-    public const VIEW = 'view';
-    /** Read and change; on a folder also create and delete inside it. */
-    public const EDIT = 'edit';
-    /** Existing bits that match neither level, as only a share made elsewhere can have. */
-    public const CUSTOM = 'custom';
-    /** Levels a caller may ask for, in the order the schema lists them. */
-    public const LEVELS = [self::VIEW, self::EDIT];
+	/** Read only. */
+	public const VIEW = 'view';
+	/** Read and change; on a folder also create and delete inside it. */
+	public const EDIT = 'edit';
+	/** Existing bits that match neither level, as only a share made elsewhere can have. */
+	public const CUSTOM = 'custom';
+	/** Levels a caller may ask for, in the order the schema lists them. */
+	public const LEVELS = [self::VIEW, self::EDIT];
 
-    /** Bits of `edit` on a file. */
-    private const EDIT_FILE = Constants::PERMISSION_READ | Constants::PERMISSION_UPDATE;
-    /** Bits of `edit` on a folder. */
-    private const EDIT_FOLDER = self::EDIT_FILE | Constants::PERMISSION_CREATE | Constants::PERMISSION_DELETE;
+	/** Bits of `edit` on a file. */
+	private const EDIT_FILE = Constants::PERMISSION_READ | Constants::PERMISSION_UPDATE;
+	/** Bits of `edit` on a folder. */
+	private const EDIT_FOLDER = self::EDIT_FILE | Constants::PERMISSION_CREATE | Constants::PERMISSION_DELETE;
 
-    private function __construct() {}
+	private function __construct() {}
 
-    /**
-     * The bits to store for a level. The core still caps them to what the node itself allows.
-     *
-     * @param string $level one of {@see self::LEVELS}
-     * @param bool $folder whether the shared node is a folder
-     * @return int OCP\Constants permission bits, never including PERMISSION_SHARE
-     * @throws ArgumentValidationException for any other level, with field `permission` and without the value
-     */
-    public static function bits(string $level, bool $folder): int {
-        return match ($level) {
-            self::VIEW => Constants::PERMISSION_READ,
-            self::EDIT => $folder ? self::EDIT_FOLDER : self::EDIT_FILE,
-            default => throw new ArgumentValidationException('Invalid argument: permission', 'permission',
-                Translator::t('one of: %s', [implode(', ', self::LEVELS)])),
-        };
-    }
+	/**
+	 * The bits to store for a level. The core still caps them to what the node itself allows.
+	 *
+	 * @param string $level one of {@see self::LEVELS}
+	 * @param bool $folder whether the shared node is a folder
+	 * @return int OCP\Constants permission bits, never including PERMISSION_SHARE
+	 * @throws ArgumentValidationException for any other level, with field `permission` and without the value
+	 */
+	public static function bits(string $level, bool $folder): int {
+		return match ($level) {
+			self::VIEW => Constants::PERMISSION_READ,
+			self::EDIT => $folder ? self::EDIT_FOLDER : self::EDIT_FILE,
+			default => throw new ArgumentValidationException('Invalid argument: permission', 'permission',
+				Translator::t('one of: %s', [implode(', ', self::LEVELS)])),
+		};
+	}
 
-    /**
-     * The level existing bits stand for, ignoring PERMISSION_SHARE.
-     *
-     * @param int $bits permissions of an existing share
-     * @param bool $folder whether the shared node is a folder
-     * @return string {@see self::VIEW}, {@see self::EDIT} or {@see self::CUSTOM}
-     */
-    public static function classify(int $bits, bool $folder): string {
-        return match ($bits & ~Constants::PERMISSION_SHARE) {
-            Constants::PERMISSION_READ => self::VIEW,
-            $folder ? self::EDIT_FOLDER : self::EDIT_FILE => self::EDIT,
-            default => self::CUSTOM,
-        };
-    }
+	/**
+	 * The level existing bits stand for, ignoring PERMISSION_SHARE.
+	 *
+	 * @param int $bits permissions of an existing share
+	 * @param bool $folder whether the shared node is a folder
+	 * @return string {@see self::VIEW}, {@see self::EDIT} or {@see self::CUSTOM}
+	 */
+	public static function classify(int $bits, bool $folder): string {
+		return match ($bits & ~Constants::PERMISSION_SHARE) {
+			Constants::PERMISSION_READ => self::VIEW,
+			$folder ? self::EDIT_FOLDER : self::EDIT_FILE => self::EDIT,
+			default => self::CUSTOM,
+		};
+	}
 
-    /**
-     * Whether the bits carry PERMISSION_SHARE: for a person or a group, the recipient may share it on; for a
-     * public link, outgoing federation is allowed for it.
-     *
-     * @param int $bits permissions of an existing share
-     * @return bool true when PERMISSION_SHARE is set
-     */
-    public static function reshare(int $bits): bool {
-        return ($bits & Constants::PERMISSION_SHARE) !== 0;
-    }
+	/**
+	 * Whether the bits carry PERMISSION_SHARE: for a person or a group, the recipient may share it on; for a
+	 * public link, outgoing federation is allowed for it.
+	 *
+	 * @param int $bits permissions of an existing share
+	 * @return bool true when PERMISSION_SHARE is set
+	 */
+	public static function reshare(int $bits): bool {
+		return ($bits & Constants::PERMISSION_SHARE) !== 0;
+	}
 }

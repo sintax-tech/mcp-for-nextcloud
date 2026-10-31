@@ -19,26 +19,26 @@ use PHPUnit\Framework\TestCase;
  * hand it must be convertible to string (files_image_search broke with 1.0.1 on NC 33).
  */
 final class SearchOperatorsStringableTest extends TestCase {
-    public function testSearchComparisonUsesCoreFormat(): void {
-        $c = new SearchComparison('mtime', ISearchComparison::COMPARE_GREATER_THAN_EQUAL, 10);
-        $this->assertSame('mtime gte 10', (string)$c);
-    }
+	public function testSearchComparisonUsesCoreFormat(): void {
+		$c = new SearchComparison('mtime', ISearchComparison::COMPARE_GREATER_THAN_EQUAL, 10);
+		$this->assertSame('mtime gte 10', (string)$c);
+	}
 
-    public function testMimeLikeComparisonIsStringable(): void {
-        $this->assertSame('mimetype like "image\\/%"', (string)new MimeLikeComparison());
-    }
+	public function testMimeLikeComparisonIsStringable(): void {
+		$this->assertSame('mimetype like "image\\/%"', (string)new MimeLikeComparison());
+	}
 
-    public function testNameLikeComparisonIsStringable(): void {
-        $this->assertSame('name like "%a%"', (string)new NameLikeComparison('%a%'));
-    }
+	public function testNameLikeComparisonIsStringable(): void {
+		$this->assertSame('name like "%a%"', (string)new NameLikeComparison('%a%'));
+	}
 
-    public function testBinaryOperatorImplodedLikeCore(): void {
-        $op = SearchBinaryOperator::and(
-            new MimeLikeComparison(),
-            new SearchComparison('name', ISearchComparison::COMPARE_LIKE, '%x%'),
-            new SearchComparison('mtime', ISearchComparison::COMPARE_LESS_THAN_EQUAL, 5),
-        );
-        $text = implode(' and ', [$op]);
-        $this->assertSame('((mimetype like "image\\/%" and name like "%x%") and mtime lte 5)', $text);
-    }
+	public function testBinaryOperatorImplodedLikeCore(): void {
+		$op = SearchBinaryOperator::and(
+			new MimeLikeComparison(),
+			new SearchComparison('name', ISearchComparison::COMPARE_LIKE, '%x%'),
+			new SearchComparison('mtime', ISearchComparison::COMPARE_LESS_THAN_EQUAL, 5),
+		);
+		$text = implode(' and ', [$op]);
+		$this->assertSame('((mimetype like "image\\/%" and name like "%x%") and mtime lte 5)', $text);
+	}
 }

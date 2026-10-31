@@ -21,8 +21,8 @@ use OCP\IDBConnection;
 use OCP\Server;
 
 if (PHP_SAPI !== 'cli' || !isset($argv[1])) {
-    fwrite(STDERR, "Usage: php legacy-credentials.php <output.json>\n");
-    exit(1);
+	fwrite(STDERR, "Usage: php legacy-credentials.php <output.json>\n");
+	exit(1);
 }
 require_once '/var/www/html/lib/base.php';
 require_once __DIR__ . '/../Compat/ReleaseUpgradeProbe.php';
@@ -42,23 +42,23 @@ $ttl = 6 * 3600;
 $verifier = rtrim(strtr(base64_encode(random_bytes(48)), '+/', '-_'), '=');
 $code = $hasher->generate('code');
 $store->insertCode(['code_hash' => $hasher->hash($code), 'user_id' => $uid, 'client_id' => $client, 'redirect_uri' => $redirect,
-    'code_challenge' => rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '='),
-    'resource' => $resource, 'scope' => 'mcp', 'expires_at' => $now + $ttl], $now);
+	'code_challenge' => rtrim(strtr(base64_encode(hash('sha256', $verifier, true)), '+/', '-_'), '='),
+	'resource' => $resource, 'scope' => 'mcp', 'expires_at' => $now + $ttl], $now);
 
 $tokens = [];
 foreach (['rotated', 'plain'] as $name) {
-    $tokens[$name] = ['access' => $hasher->generate('at'), 'refresh' => $hasher->generate('rt')];
-    $store->insertToken(['user_id' => $uid, 'client_id' => $client, 'resource' => $resource, 'scope' => 'mcp',
-        'access_hash' => $hasher->hash($tokens[$name]['access']), 'access_expires' => $now + $ttl,
-        'refresh_hash' => $hasher->hash($tokens[$name]['refresh']), 'refresh_expires' => $now + $ttl, 'created_at' => $now], $now);
+	$tokens[$name] = ['access' => $hasher->generate('at'), 'refresh' => $hasher->generate('rt')];
+	$store->insertToken(['user_id' => $uid, 'client_id' => $client, 'resource' => $resource, 'scope' => 'mcp',
+		'access_hash' => $hasher->hash($tokens[$name]['access']), 'access_expires' => $now + $ttl,
+		'refresh_hash' => $hasher->hash($tokens[$name]['refresh']), 'refresh_expires' => $now + $ttl, 'created_at' => $now], $now);
 }
 $spent = $tokens['rotated']['refresh'];
 $id = (int)$store->findByRefresh($hasher->hash($spent))['id'];
 $tokens['rotated'] = ['access' => $hasher->generate('at'), 'refresh' => $hasher->generate('rt')];
 if (!$store->rotate($id, $hasher->hash($spent), $hasher->hash($tokens['rotated']['access']), $now + $ttl,
-    $hasher->hash($tokens['rotated']['refresh']), $now + $ttl)) {
-    fwrite(STDERR, "The baseline store refused to rotate the legacy grant\n");
-    exit(1);
+	$hasher->hash($tokens['rotated']['refresh']), $now + $ttl)) {
+	fwrite(STDERR, "The baseline store refused to rotate the legacy grant\n");
+	exit(1);
 }
 
 // The native client switched on through the baseline's own setting, as its admin page writes it: the upgrade must carry it
@@ -68,11 +68,11 @@ Server::get(\OCP\IConfig::class)->setAppValue('mcp', 'oauth_native_client_enable
 $db = Server::get(IDBConnection::class);
 $rows = [];
 foreach (['mcp_oauth_codes', 'mcp_oauth_tokens', 'mcp_oauth_spent'] as $table) {
-    $qb = $db->getQueryBuilder();
-    $result = $qb->select('*')->from($table)->where($qb->expr()->eq('user_id', $qb->createNamedParameter($uid)))->executeQuery();
-    $rows[$table] = array_map(static fn (array $row): array => array_map('strval', $row), $result->fetchAll());
-    $result->closeCursor();
+	$qb = $db->getQueryBuilder();
+	$result = $qb->select('*')->from($table)->where($qb->expr()->eq('user_id', $qb->createNamedParameter($uid)))->executeQuery();
+	$rows[$table] = array_map(static fn (array $row): array => array_map('strval', $row), $result->fetchAll());
+	$result->closeCursor();
 }
 file_put_contents($argv[1], json_encode(['uid' => $uid, 'client' => $client, 'redirect' => $redirect, 'resource' => $resource,
-    'code' => $code, 'verifier' => $verifier, 'tokens' => $tokens, 'spent' => $spent, 'rows' => $rows], JSON_THROW_ON_ERROR));
+	'code' => $code, 'verifier' => $verifier, 'tokens' => $tokens, 'spent' => $spent, 'rows' => $rows], JSON_THROW_ON_ERROR));
 echo 'Issued legacy credentials: ', implode(', ', array_map(static fn ($t, $r): string => "$t=" . count($r), array_keys($rows), $rows)), PHP_EOL;

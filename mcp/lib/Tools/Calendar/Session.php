@@ -18,15 +18,15 @@ use OCP\IUserSession;
  * dispatcher refuses to dispatch at all when the two disagree.
  */
 final class Session {
-    /**
-     * @param IUserSession $session Nextcloud session
-     */
-    public function __construct(private IUserSession $session) {}
+	/**
+	 * @param IUserSession $session Nextcloud session
+	 */
+	public function __construct(private IUserSession $session) {}
 
-    /**
-     * @return string|null UID of the active user, or null when there is no session
-     */
-    public function uid(): ?string {
-        return $this->session->getUser()?->getUID();
-    }
+	/**
+	 * @return string|null UID of the active user, or null when there is no session
+	 */
+	public function uid(): ?string {
+		return $this->session->getUser()?->getUID();
+	}
 }

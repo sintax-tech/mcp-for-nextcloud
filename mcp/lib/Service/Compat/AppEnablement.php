@@ -21,74 +21,74 @@ use OCP\IUser;
  *   leave tools/list, a call is refused, and the admin page says why ({@see self::unsupported()}).
  */
 final class AppEnablement {
-    /**
-     * Oldest release of each optional app MCP calls into, per app id. Talk 21.1.4 is the first Nextcloud 31 release
-     * whose `ChatManager::addSystemMessage()` takes the participant as its second argument; Deck 1.15.0 is the first
-     * release for Nextcloud 31. Mail 5.0.0 is the first release for Nextcloud 32, the oldest Nextcloud MCP supports.
-     * Tables 1.0.0 is the first release that keeps the read-only columns of a view out of a row write (0.9.x, which
-     * also installs on Nextcloud 32, does not). tests/Unit/Contract checks the APIs used against these releases.
-     */
-    public const MINIMUM_VERSIONS = ['deck' => '1.15.0', 'spreed' => '21.1.4', 'mail' => '5.0.0', 'tables' => '1.0.0', 'forms' => '5.3.0', 'polls' => '8.6.3'];
+	/**
+	 * Oldest release of each optional app MCP calls into, per app id. Talk 21.1.4 is the first Nextcloud 31 release
+	 * whose `ChatManager::addSystemMessage()` takes the participant as its second argument; Deck 1.15.0 is the first
+	 * release for Nextcloud 31. Mail 5.0.0 is the first release for Nextcloud 32, the oldest Nextcloud MCP supports.
+	 * Tables 1.0.0 is the first release that keeps the read-only columns of a view out of a row write (0.9.x, which
+	 * also installs on Nextcloud 32, does not). tests/Unit/Contract checks the APIs used against these releases.
+	 */
+	public const MINIMUM_VERSIONS = ['deck' => '1.15.0', 'spreed' => '21.1.4', 'mail' => '5.0.0', 'tables' => '1.0.0', 'forms' => '5.3.0', 'polls' => '8.6.3'];
 
-    /**
-     * @param object $apps the server's IAppManager, of whichever supported Nextcloud is running
-     * @param string $appId app id, such as "deck" or "spreed"
-     * @param IUser|null $user the user, as IAppManager::isEnabledForUser() takes it
-     * @return bool whether the app is enabled for the user in a version MCP supports
-     */
-    public static function forUser(object $apps, string $appId, ?IUser $user): bool {
-        return $apps->isEnabledForUser($appId, $user) && self::supported($apps, $appId);
-    }
+	/**
+	 * @param object $apps the server's IAppManager, of whichever supported Nextcloud is running
+	 * @param string $appId app id, such as "deck" or "spreed"
+	 * @param IUser|null $user the user, as IAppManager::isEnabledForUser() takes it
+	 * @return bool whether the app is enabled for the user in a version MCP supports
+	 */
+	public static function forUser(object $apps, string $appId, ?IUser $user): bool {
+		return $apps->isEnabledForUser($appId, $user) && self::supported($apps, $appId);
+	}
 
-    /**
-     * @param object $apps the server's IAppManager, of whichever supported Nextcloud is running
-     * @param string $appId app id, such as "deck" or "spreed"
-     * @return bool whether the app is enabled for at least one user, in a version MCP supports
-     */
-    public static function forAnyone(object $apps, string $appId): bool {
-        return self::enabledForAnyone($apps, $appId) && self::supported($apps, $appId);
-    }
+	/**
+	 * @param object $apps the server's IAppManager, of whichever supported Nextcloud is running
+	 * @param string $appId app id, such as "deck" or "spreed"
+	 * @return bool whether the app is enabled for at least one user, in a version MCP supports
+	 */
+	public static function forAnyone(object $apps, string $appId): bool {
+		return self::enabledForAnyone($apps, $appId) && self::supported($apps, $appId);
+	}
 
-    /**
-     * @param object $apps the server's IAppManager, of whichever supported Nextcloud is running
-     * @return list<array{app:string, installed:string, required:string}> enabled apps older than their minimum
-     */
-    public static function unsupported(object $apps): array {
-        $found = [];
-        foreach (self::MINIMUM_VERSIONS as $appId => $required) {
-            if (self::enabledForAnyone($apps, $appId) && !self::supported($apps, $appId)) {
-                $found[] = ['app' => $appId, 'installed' => (string)$apps->getAppVersion($appId), 'required' => $required];
-            }
-        }
-        return $found;
-    }
+	/**
+	 * @param object $apps the server's IAppManager, of whichever supported Nextcloud is running
+	 * @return list<array{app:string, installed:string, required:string}> enabled apps older than their minimum
+	 */
+	public static function unsupported(object $apps): array {
+		$found = [];
+		foreach (self::MINIMUM_VERSIONS as $appId => $required) {
+			if (self::enabledForAnyone($apps, $appId) && !self::supported($apps, $appId)) {
+				$found[] = ['app' => $appId, 'installed' => (string)$apps->getAppVersion($appId), 'required' => $required];
+			}
+		}
+		return $found;
+	}
 
-    /**
-     * @param object $apps the server's IAppManager
-     * @param string $appId app id
-     * @return bool whether the app is enabled for at least one user, whatever its version
-     */
-    private static function enabledForAnyone(object $apps, string $appId): bool {
-        if (method_exists($apps, 'isEnabledForAnyone')) {
-            return (bool)$apps->isEnabledForAnyone($appId);
-        }
-        return (bool)$apps->isInstalled($appId);
-    }
+	/**
+	 * @param object $apps the server's IAppManager
+	 * @param string $appId app id
+	 * @return bool whether the app is enabled for at least one user, whatever its version
+	 */
+	private static function enabledForAnyone(object $apps, string $appId): bool {
+		if (method_exists($apps, 'isEnabledForAnyone')) {
+			return (bool)$apps->isEnabledForAnyone($appId);
+		}
+		return (bool)$apps->isInstalled($appId);
+	}
 
-    /**
-     * Only a version known to be too old is refused: an empty answer means the server could not tell, and an app
-     * without a minimum is never asked.
-     *
-     * @param object $apps the server's IAppManager
-     * @param string $appId app id
-     * @return bool whether the installed version is at least the minimum, when the app has one
-     */
-    private static function supported(object $apps, string $appId): bool {
-        $required = self::MINIMUM_VERSIONS[$appId] ?? null;
-        if ($required === null) {
-            return true;
-        }
-        $installed = (string)$apps->getAppVersion($appId);
-        return $installed === '' || version_compare($installed, $required, '>=');
-    }
+	/**
+	 * Only a version known to be too old is refused: an empty answer means the server could not tell, and an app
+	 * without a minimum is never asked.
+	 *
+	 * @param object $apps the server's IAppManager
+	 * @param string $appId app id
+	 * @return bool whether the installed version is at least the minimum, when the app has one
+	 */
+	private static function supported(object $apps, string $appId): bool {
+		$required = self::MINIMUM_VERSIONS[$appId] ?? null;
+		if ($required === null) {
+			return true;
+		}
+		$installed = (string)$apps->getAppVersion($appId);
+		return $installed === '' || version_compare($installed, $required, '>=');
+	}
 }

@@ -17,12 +17,12 @@ use OCA\Mcp\L10n\Translator;
  * and never the name that was asked for.
  */
 final class UnknownToolException extends ArgumentValidationException {
-    public function __construct() {
-        parent::__construct('Unknown tool', 'name', Translator::t('unknown tool; use one listed by tools/list'));
-    }
+	public function __construct() {
+		parent::__construct('Unknown tool', 'name', Translator::t('unknown tool; use one listed by tools/list'));
+	}
 
-    /** @return string the fixed message, not the "field: rule" form of the other argument errors */
-    public function clientMessage(): string {
-        return 'Unknown tool';
-    }
+	/** @return string the fixed message, not the "field: rule" form of the other argument errors */
+	public function clientMessage(): string {
+		return 'Unknown tool';
+	}
 }

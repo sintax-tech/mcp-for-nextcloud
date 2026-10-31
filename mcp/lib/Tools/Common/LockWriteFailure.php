@@ -15,19 +15,19 @@ use OCA\Mcp\Tools\ToolFailure;
  * the type lets the checkout routes answer 423 without comparing translated messages.
  */
 final class LockWriteFailure extends ToolFailure {
-    /**
-     * @param string $message translated explanation and advice, safe for the client
-     * @param array<string, mixed>|null $lock the lock as {@see LockAwareWrite} describes it, null when unknown
-     */
-    public function __construct(string $message, public readonly ?array $lock = null) {
-        parent::__construct($message);
-    }
+	/**
+	 * @param string $message translated explanation and advice, safe for the client
+	 * @param array<string, mixed>|null $lock the lock as {@see LockAwareWrite} describes it, null when unknown
+	 */
+	public function __construct(string $message, public readonly ?array $lock = null) {
+		parent::__construct($message);
+	}
 
-    /**
-     * @param string $sentence what else the person needs to know, e.g. where the backup taken before the write is
-     * @return self the same refusal with that sentence at the end
-     */
-    public function withNote(string $sentence): self {
-        return new self($this->getMessage() . ' ' . $sentence, $this->lock);
-    }
+	/**
+	 * @param string $sentence what else the person needs to know, e.g. where the backup taken before the write is
+	 * @return self the same refusal with that sentence at the end
+	 */
+	public function withNote(string $sentence): self {
+		return new self($this->getMessage() . ' ' . $sentence, $this->lock);
+	}
 }

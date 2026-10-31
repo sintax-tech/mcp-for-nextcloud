@@ -11,12 +11,12 @@ use Psr\Container\ContainerExceptionInterface;
 
 /** Component query port; rows are read through the existing CalendarStore. */
 interface TaskStore {
-    /**
-     * Queries live VTODO object URIs, including tasks without dates.
-     *
-     * @param int $calendarId ID of an authorized VTODO calendar
-     * @return list<string>
-     * @throws ContainerExceptionInterface when the core backend cannot be resolved
-     */
-    public function uris(int $calendarId): array;
+	/**
+	 * Queries live VTODO object URIs, including tasks without dates.
+	 *
+	 * @param int $calendarId ID of an authorized VTODO calendar
+	 * @return list<string>
+	 * @throws ContainerExceptionInterface when the core backend cannot be resolved
+	 */
+	public function uris(int $calendarId): array;
 }

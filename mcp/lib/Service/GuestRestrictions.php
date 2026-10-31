@@ -36,137 +36,137 @@ use Throwable;
  * read or applied, the request, or the module, is refused.
  */
 class GuestRestrictions {
-    public const APP = 'guests';
+	public const APP = 'guests';
 
-    /** @var array<string, array<string, bool>> answers of {@see self::allowsApp()} in this request, by user and app */
-    private array $apps = [];
-    /** @var array<string, bool> answers of {@see self::hidesExternalStorage()} in this request, by user */
-    private array $external = [];
+	/** @var array<string, array<string, bool>> answers of {@see self::allowsApp()} in this request, by user and app */
+	private array $apps = [];
+	/** @var array<string, bool> answers of {@see self::hidesExternalStorage()} in this request, by user */
+	private array $external = [];
 
-    public function __construct(
-        private IAppManager $appManager,
-        private IRequest $request,
-        private ContainerInterface $container,
-        private LoggerInterface $logger,
-    ) {}
+	public function __construct(
+		private IAppManager $appManager,
+		private IRequest $request,
+		private ContainerInterface $container,
+		private LoggerInterface $logger,
+	) {}
 
-    /**
-     * Applies the Guests restrictions to the user of the request, who must already be the session user.
-     *
-     * @param IUser $user authenticated user (app password or token owner)
-     * @return bool false when the request must be refused: a guest calling an app Guests does not allow to guests, or
-     *     restrictions that could not be applied; true for a non-guest, without Guests, or once they are applied
-     */
-    public function apply(IUser $user): bool {
-        return $this->setUp($user, true);
-    }
+	/**
+	 * Applies the Guests restrictions to the user of the request, who must already be the session user.
+	 *
+	 * @param IUser $user authenticated user (app password or token owner)
+	 * @return bool false when the request must be refused: a guest calling an app Guests does not allow to guests, or
+	 *     restrictions that could not be applied; true for a non-guest, without Guests, or once they are applied
+	 */
+	public function apply(IUser $user): bool {
+		return $this->setUp($user, true);
+	}
 
-    /**
-     * Applies the Guests restrictions to the owner of a request that carries no session, a checkout link: the app list
-     * against the requested URL and the filter of external storage, before any of the owner's files is resolved. The
-     * late part (sharing within groups, account listing) has nothing to act on there and needs a session user.
-     *
-     * Guests before v4.8.0 reads the user of `setupRestrictions()` from the session only, so without a session it
-     * would hide nothing: a guest is refused there.
-     *
-     * @param IUser $user owner of the link
-     * @return bool false when the request must be refused; true for a non-guest, without Guests, or once applied
-     */
-    public function applyToOwner(IUser $user): bool {
-        return $this->setUp($user, false);
-    }
+	/**
+	 * Applies the Guests restrictions to the owner of a request that carries no session, a checkout link: the app list
+	 * against the requested URL and the filter of external storage, before any of the owner's files is resolved. The
+	 * late part (sharing within groups, account listing) has nothing to act on there and needs a session user.
+	 *
+	 * Guests before v4.8.0 reads the user of `setupRestrictions()` from the session only, so without a session it
+	 * would hide nothing: a guest is refused there.
+	 *
+	 * @param IUser $user owner of the link
+	 * @return bool false when the request must be refused; true for a non-guest, without Guests, or once applied
+	 */
+	public function applyToOwner(IUser $user): bool {
+		return $this->setUp($user, false);
+	}
 
-    /**
-     * @param IUser $user the user the restrictions are for
-     * @param bool $session whether that user is the session user, so the steps that read the session apply to them
-     * @return bool false when the request must be refused
-     */
-    private function setUp(IUser $user, bool $session): bool {
-        if (!AppEnablement::forAnyone($this->appManager, self::APP)) {
-            return true;
-        }
-        try {
-            if (!$this->container->get('OCA\Guests\GuestManager')->isGuest($user)) {
-                return true;
-            }
-            if (!$this->container->get('OCA\Guests\AppWhitelist')->isUrlAllowed($user, $this->request->getPathInfo())) {
-                return false;
-            }
-            $restrictions = $this->container->get('OCA\Guests\RestrictionManager');
-            if (!$session && (new \ReflectionMethod($restrictions, 'setupRestrictions'))->getNumberOfParameters() === 0) {
-                $this->logger->warning('This Guests release applies its restrictions only to a session user; a checkout link of a guest is refused', ['app' => 'mcp']);
-                return false;
-            }
-            $restrictions->setupRestrictions($user);
-            if ($session) {
-                $restrictions->lateSetupRestrictions();
-            }
-            return true;
-        } catch (Throwable $e) {
-            $this->logger->error('The restrictions of the Guests app could not be applied to an MCP request; it is refused', [
-                'app' => 'mcp',
-                'exception' => $e,
-            ]);
-            return false;
-        }
-    }
+	/**
+	 * @param IUser $user the user the restrictions are for
+	 * @param bool $session whether that user is the session user, so the steps that read the session apply to them
+	 * @return bool false when the request must be refused
+	 */
+	private function setUp(IUser $user, bool $session): bool {
+		if (!AppEnablement::forAnyone($this->appManager, self::APP)) {
+			return true;
+		}
+		try {
+			if (!$this->container->get('OCA\Guests\GuestManager')->isGuest($user)) {
+				return true;
+			}
+			if (!$this->container->get('OCA\Guests\AppWhitelist')->isUrlAllowed($user, $this->request->getPathInfo())) {
+				return false;
+			}
+			$restrictions = $this->container->get('OCA\Guests\RestrictionManager');
+			if (!$session && (new \ReflectionMethod($restrictions, 'setupRestrictions'))->getNumberOfParameters() === 0) {
+				$this->logger->warning('This Guests release applies its restrictions only to a session user; a checkout link of a guest is refused', ['app' => 'mcp']);
+				return false;
+			}
+			$restrictions->setupRestrictions($user);
+			if ($session) {
+				$restrictions->lateSetupRestrictions();
+			}
+			return true;
+		} catch (Throwable $e) {
+			$this->logger->error('The restrictions of the Guests app could not be applied to an MCP request; it is refused', [
+				'app' => 'mcp',
+				'exception' => $e,
+			]);
+			return false;
+		}
+	}
 
-    /**
-     * Whether Guests lets the user reach an app, as it would answer for a URL of that app: always for a user who is not
-     * a guest, without Guests or with its list of apps turned off; otherwise only for an app on the list or one Guests
-     * always allows (files, dav...).
-     *
-     * @param string $userId authenticated user
-     * @param string $app app id behind a module (GrantMatrix::MODULE_APPS) or a tool; '' for the core, always allowed
-     * @return bool false also when Guests is enabled and its answer cannot be read
-     */
-    public function allowsApp(string $userId, string $app): bool {
-        if ($app === '') {
-            return true;
-        }
-        if (isset($this->apps[$userId][$app])) {
-            return $this->apps[$userId][$app];
-        }
-        try {
-            $allowed = !AppEnablement::forAnyone($this->appManager, self::APP)
-                || !$this->container->get('OCA\Guests\GuestManager')->isGuest($userId)
-                || !($whitelist = $this->container->get('OCA\Guests\AppWhitelist'))->isWhitelistEnabled()
-                || $whitelist->isAppWhitelisted($app);
-        } catch (Throwable $e) {
-            $this->logger->error('The apps the Guests app allows could not be read; the module is refused', [
-                'app' => 'mcp',
-                'exception' => $e,
-            ]);
-            $allowed = false;
-        }
-        return $this->apps[$userId][$app] = $allowed;
-    }
+	/**
+	 * Whether Guests lets the user reach an app, as it would answer for a URL of that app: always for a user who is not
+	 * a guest, without Guests or with its list of apps turned off; otherwise only for an app on the list or one Guests
+	 * always allows (files, dav...).
+	 *
+	 * @param string $userId authenticated user
+	 * @param string $app app id behind a module (GrantMatrix::MODULE_APPS) or a tool; '' for the core, always allowed
+	 * @return bool false also when Guests is enabled and its answer cannot be read
+	 */
+	public function allowsApp(string $userId, string $app): bool {
+		if ($app === '') {
+			return true;
+		}
+		if (isset($this->apps[$userId][$app])) {
+			return $this->apps[$userId][$app];
+		}
+		try {
+			$allowed = !AppEnablement::forAnyone($this->appManager, self::APP)
+				|| !$this->container->get('OCA\Guests\GuestManager')->isGuest($userId)
+				|| !($whitelist = $this->container->get('OCA\Guests\AppWhitelist'))->isWhitelistEnabled()
+				|| $whitelist->isAppWhitelisted($app);
+		} catch (Throwable $e) {
+			$this->logger->error('The apps the Guests app allows could not be read; the module is refused', [
+				'app' => 'mcp',
+				'exception' => $e,
+			]);
+			$allowed = false;
+		}
+		return $this->apps[$userId][$app] = $allowed;
+	}
 
-    /**
-     * Whether Guests hides external storage from the user: a guest while "allow external storage" is off. Guests does
-     * it with a mount filter, which core applies when it sets up all the mounts of a user, but not when it mounts a
-     * path on demand (`IPartialMountProvider`, files_external from Nextcloud 35 on: `MountProviderCollection::
-     * getUserMountsFromProviderByPath()` of v35.0.1 never calls `filterMounts()`). The Files gate asks this for every
-     * node, so a file on external storage stays out of reach however it is resolved.
-     *
-     * @param string $userId user whose files are reached
-     * @return bool true also when Guests is enabled and its answer cannot be read
-     */
-    public function hidesExternalStorage(string $userId): bool {
-        if (isset($this->external[$userId])) {
-            return $this->external[$userId];
-        }
-        try {
-            $hides = AppEnablement::forAnyone($this->appManager, self::APP)
-                && $this->container->get('OCA\Guests\GuestManager')->isGuest($userId)
-                && !$this->container->get('OCA\Guests\Config')->allowExternalStorage();
-        } catch (Throwable $e) {
-            $this->logger->error('Whether the Guests app hides external storage could not be read; it is hidden', [
-                'app' => 'mcp',
-                'exception' => $e,
-            ]);
-            $hides = true;
-        }
-        return $this->external[$userId] = $hides;
-    }
+	/**
+	 * Whether Guests hides external storage from the user: a guest while "allow external storage" is off. Guests does
+	 * it with a mount filter, which core applies when it sets up all the mounts of a user, but not when it mounts a
+	 * path on demand (`IPartialMountProvider`, files_external from Nextcloud 35 on: `MountProviderCollection::
+	 * getUserMountsFromProviderByPath()` of v35.0.1 never calls `filterMounts()`). The Files gate asks this for every
+	 * node, so a file on external storage stays out of reach however it is resolved.
+	 *
+	 * @param string $userId user whose files are reached
+	 * @return bool true also when Guests is enabled and its answer cannot be read
+	 */
+	public function hidesExternalStorage(string $userId): bool {
+		if (isset($this->external[$userId])) {
+			return $this->external[$userId];
+		}
+		try {
+			$hides = AppEnablement::forAnyone($this->appManager, self::APP)
+				&& $this->container->get('OCA\Guests\GuestManager')->isGuest($userId)
+				&& !$this->container->get('OCA\Guests\Config')->allowExternalStorage();
+		} catch (Throwable $e) {
+			$this->logger->error('Whether the Guests app hides external storage could not be read; it is hidden', [
+				'app' => 'mcp',
+				'exception' => $e,
+			]);
+			$hides = true;
+		}
+		return $this->external[$userId] = $hides;
+	}
 }

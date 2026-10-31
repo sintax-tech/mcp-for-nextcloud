@@ -45,7 +45,7 @@ final class FixtureFileTest extends TestCase {
 		$copy = tempnam(sys_get_temp_dir(), 'mcp-fixture-');
 		try {
 			FixtureFile::write($copy, "<?php\n", ['sources' => ['server' => '32.0.0'], 'recipientSources' => [], 'classes' => ['OCP\\IUser' => null]]);
-			$this->assertSame("<?php\nreturn [\n    'sources' => ['server' => '32.0.0'],\n    'recipientSources' => [],\n    'classes' => [\n        'OCP\\\\IUser' => NULL,\n    ],\n];\n", file_get_contents($copy));
+			$this->assertSame("<?php\nreturn [\n\t'sources' => ['server' => '32.0.0'],\n\t'recipientSources' => [],\n\t'classes' => [\n\t\t'OCP\\\\IUser' => NULL,\n\t],\n];\n", file_get_contents($copy));
 		} finally {
 			unlink($copy);
 		}

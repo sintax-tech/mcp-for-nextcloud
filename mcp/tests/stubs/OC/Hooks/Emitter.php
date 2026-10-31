@@ -15,15 +15,15 @@ namespace OC\Hooks;
  * never load.
  */
 interface Emitter {
-    /**
-     * @param string $event Event name
-     * @param callable $callback Callback invoked when the event happens
-     */
-    public function listen(string $event, callable $callback): void;
+	/**
+	 * @param string $event Event name
+	 * @param callable $callback Callback invoked when the event happens
+	 */
+	public function listen(string $event, callable $callback): void;
 
-    /**
-     * @param string $event Event name
-     * @param callable $callback Callback to remove
-     */
-    public function removeListener(string $event, callable $callback): void;
+	/**
+	 * @param string $event Event name
+	 * @param callable $callback Callback to remove
+	 */
+	public function removeListener(string $event, callable $callback): void;
 }

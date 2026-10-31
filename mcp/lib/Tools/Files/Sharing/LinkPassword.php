@@ -34,80 +34,80 @@ use Psr\Log\LoggerInterface;
  * {@see FilesMessages::linkPasswordRefused()} and the log keeps the exception class only. Stateless.
  */
 final class LinkPassword {
-    /** Length of the fallback password. */
-    public const LENGTH = 16;
-    /** Symbols of the fallback: no quote, backslash, backtick, angle bracket or space, so it is copied as it reads. */
-    public const SYMBOLS = '!#$%&*+-=?@_';
-    /** Fallback passwords tried before giving up. */
-    private const FALLBACK_TRIES = 2;
+	/** Length of the fallback password. */
+	public const LENGTH = 16;
+	/** Symbols of the fallback: no quote, backslash, backtick, angle bracket or space, so it is copied as it reads. */
+	public const SYMBOLS = '!#$%&*+-=?@_';
+	/** Fallback passwords tried before giving up. */
+	private const FALLBACK_TRIES = 2;
 
-    public function __construct(
-        private IEventDispatcher $events,
-        private ISecureRandom $random,
-        private LoggerInterface $logger,
-    ) {}
+	public function __construct(
+		private IEventDispatcher $events,
+		private ISecureRandom $random,
+		private LoggerInterface $logger,
+	) {}
 
-    /**
-     * @return string a new password the password policy accepts
-     * @throws ToolFailure when the policy refuses every candidate, or a listener fails while validating one
-     */
-    public function generate(): string {
-        $generated = $this->fromPolicy();
-        if ($generated !== null && $this->accepted($generated)) {
-            return $generated;
-        }
-        for ($try = 0; $try < self::FALLBACK_TRIES; $try++) {
-            $candidate = $this->fallback();
-            if ($this->accepted($candidate)) {
-                return $candidate;
-            }
-        }
-        throw new ToolFailure(FilesMessages::linkPasswordRefused());
-    }
+	/**
+	 * @return string a new password the password policy accepts
+	 * @throws ToolFailure when the policy refuses every candidate, or a listener fails while validating one
+	 */
+	public function generate(): string {
+		$generated = $this->fromPolicy();
+		if ($generated !== null && $this->accepted($generated)) {
+			return $generated;
+		}
+		for ($try = 0; $try < self::FALLBACK_TRIES; $try++) {
+			$candidate = $this->fallback();
+			if ($this->accepted($candidate)) {
+				return $candidate;
+			}
+		}
+		throw new ToolFailure(FilesMessages::linkPasswordRefused());
+	}
 
-    /** @return string|null the password of the policy app, null when no listener answered or the generator failed */
-    private function fromPolicy(): ?string {
-        $event = new GenerateSecurePasswordEvent(PasswordContext::SHARING);
-        try {
-            $this->events->dispatchTyped($event);
-        } catch (\Throwable) {
-            return null;
-        }
-        $password = $event->getPassword();
-        return $password === null || $password === '' ? null : $password;
-    }
+	/** @return string|null the password of the policy app, null when no listener answered or the generator failed */
+	private function fromPolicy(): ?string {
+		$event = new GenerateSecurePasswordEvent(PasswordContext::SHARING);
+		try {
+			$this->events->dispatchTyped($event);
+		} catch (\Throwable) {
+			return null;
+		}
+		$password = $event->getPassword();
+		return $password === null || $password === '' ? null : $password;
+	}
 
-    /**
-     * @param string $password candidate, never logged nor kept
-     * @return bool whether the administrator's password policy accepts the password for a share
-     * @throws ToolFailure when a listener fails in any other way than a refusal; its message is never read
-     */
-    private function accepted(string $password): bool {
-        try {
-            $this->events->dispatchTyped(new ValidatePasswordPolicyEvent($password, PasswordContext::SHARING));
-            return true;
-        } catch (HintException) {
-            return false;
-        } catch (\Throwable $e) {
-            $this->logger->warning('MCP link password validation failed', ['app' => 'mcp', 'exception_class' => $e::class]);
-            throw new ToolFailure(FilesMessages::linkPasswordRefused());
-        }
-    }
+	/**
+	 * @param string $password candidate, never logged nor kept
+	 * @return bool whether the administrator's password policy accepts the password for a share
+	 * @throws ToolFailure when a listener fails in any other way than a refusal; its message is never read
+	 */
+	private function accepted(string $password): bool {
+		try {
+			$this->events->dispatchTyped(new ValidatePasswordPolicyEvent($password, PasswordContext::SHARING));
+			return true;
+		} catch (HintException) {
+			return false;
+		} catch (\Throwable $e) {
+			$this->logger->warning('MCP link password validation failed', ['app' => 'mcp', 'exception_class' => $e::class]);
+			throw new ToolFailure(FilesMessages::linkPasswordRefused());
+		}
+	}
 
-    /** @return string LENGTH characters with every kind present, in an order drawn from a CSPRNG */
-    private function fallback(): string {
-        $all = ISecureRandom::CHAR_UPPER . ISecureRandom::CHAR_LOWER . ISecureRandom::CHAR_DIGITS . self::SYMBOLS;
-        $chars = str_split(
-            $this->random->generate(1, ISecureRandom::CHAR_UPPER)
-            . $this->random->generate(1, ISecureRandom::CHAR_LOWER)
-            . $this->random->generate(1, ISecureRandom::CHAR_DIGITS)
-            . $this->random->generate(1, self::SYMBOLS)
-            . $this->random->generate(self::LENGTH - 4, $all),
-        );
-        for ($i = count($chars) - 1; $i > 0; $i--) {
-            $j = random_int(0, $i);
-            [$chars[$i], $chars[$j]] = [$chars[$j], $chars[$i]];
-        }
-        return implode('', $chars);
-    }
+	/** @return string LENGTH characters with every kind present, in an order drawn from a CSPRNG */
+	private function fallback(): string {
+		$all = ISecureRandom::CHAR_UPPER . ISecureRandom::CHAR_LOWER . ISecureRandom::CHAR_DIGITS . self::SYMBOLS;
+		$chars = str_split(
+			$this->random->generate(1, ISecureRandom::CHAR_UPPER)
+			. $this->random->generate(1, ISecureRandom::CHAR_LOWER)
+			. $this->random->generate(1, ISecureRandom::CHAR_DIGITS)
+			. $this->random->generate(1, self::SYMBOLS)
+			. $this->random->generate(self::LENGTH - 4, $all),
+		);
+		for ($i = count($chars) - 1; $i > 0; $i--) {
+			$j = random_int(0, $i);
+			[$chars[$i], $chars[$j]] = [$chars[$j], $chars[$i]];
+		}
+		return implode('', $chars);
+	}
 }

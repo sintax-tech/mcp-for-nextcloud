@@ -307,13 +307,13 @@ namespace OCA\Deck\Service {
 
 namespace OCA\Deck\Service {
 class AttachmentService {
-    public function delete(int $cardId, int $attachmentId, string $type = 'deck_file'): \OCA\Deck\Db\Attachment { throw new \RuntimeException('stub'); }
+	public function delete(int $cardId, int $attachmentId, string $type = 'deck_file'): \OCA\Deck\Db\Attachment { throw new \RuntimeException('stub'); }
 }
 }
 namespace OCA\Deck\Sharing {
 class DeckShareProvider {
-    public function getSharedWithByType(int $cardId, int $shareType, $limit, $offset): array { throw new \RuntimeException('stub'); }
-    public function getShareById($id, $recipientId = null): \OCP\Share\IShare { throw new \RuntimeException('stub'); }
-    public function getSharesByPath(\OCP\Files\Node $path): array { throw new \RuntimeException('stub'); }
+	public function getSharedWithByType(int $cardId, int $shareType, $limit, $offset): array { throw new \RuntimeException('stub'); }
+	public function getShareById($id, $recipientId = null): \OCP\Share\IShare { throw new \RuntimeException('stub'); }
+	public function getSharesByPath(\OCP\Files\Node $path): array { throw new \RuntimeException('stub'); }
 }
 }

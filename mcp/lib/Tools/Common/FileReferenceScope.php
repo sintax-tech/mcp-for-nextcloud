@@ -15,17 +15,17 @@ use OCP\Files\Node;
  * exception of the Files scope does not extend to them.
  */
 interface FileReferenceScope {
-    /**
-     * @param string $userId authenticated user
-     * @return bool whether a Files scope narrows what this user's tools may reach at all; false lets the filter
-     *              skip the scope step and, when no exclusion is configured either, every resolution
-     */
-    public function restricts(string $userId): bool;
+	/**
+	 * @param string $userId authenticated user
+	 * @return bool whether a Files scope narrows what this user's tools may reach at all; false lets the filter
+	 *              skip the scope step and, when no exclusion is configured either, every resolution
+	 */
+	public function restricts(string $userId): bool;
 
-    /**
-     * @param string $userId authenticated user
-     * @param Node $node the referenced node, resolved in the user's own tree
-     * @return bool whether the node is inside the user's Files scope
-     */
-    public function allows(string $userId, Node $node): bool;
+	/**
+	 * @param string $userId authenticated user
+	 * @param Node $node the referenced node, resolved in the user's own tree
+	 * @return bool whether the node is inside the user's Files scope
+	 */
+	public function allows(string $userId, Node $node): bool;
 }

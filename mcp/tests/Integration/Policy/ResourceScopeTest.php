@@ -20,94 +20,94 @@ use RuntimeException;
  * the policy writer, seen from a second session. Ids are compared as stored bytes, never through the collation.
  */
 final class ResourceScopeTest extends IntegrationTestCase {
-    private string $uid = '';
+	private string $uid = '';
 
-    protected function setUp(): void {
-        parent::setUp();
-        $this->uid = 'mcp-it-scope-' . bin2hex(random_bytes(8));
-    }
+	protected function setUp(): void {
+		parent::setUp();
+		$this->uid = 'mcp-it-scope-' . bin2hex(random_bytes(8));
+	}
 
-    protected function tearDown(): void {
-        $db = $this->official();
-        foreach ([$this->uid, strtoupper($this->uid)] as $uid) {
-            foreach ([ResourceScopeMapper::MODES_TABLE, ResourceScopeMapper::ITEMS_TABLE] as $table) {
-                $qb = $db->getQueryBuilder();
-                $qb->delete($table)->where($qb->expr()->eq('user_key', $qb->createNamedParameter(IdentityKey::user($uid))))->executeStatement();
-            }
-        }
-        parent::tearDown();
-    }
+	protected function tearDown(): void {
+		$db = $this->official();
+		foreach ([$this->uid, strtoupper($this->uid)] as $uid) {
+			foreach ([ResourceScopeMapper::MODES_TABLE, ResourceScopeMapper::ITEMS_TABLE] as $table) {
+				$qb = $db->getQueryBuilder();
+				$qb->delete($table)->where($qb->expr()->eq('user_key', $qb->createNamedParameter(IdentityKey::user($uid))))->executeStatement();
+			}
+		}
+		parent::tearDown();
+	}
 
-    public function testTheTablesExistAndAreEmptyAfterInstallOrUpgrade(): void {
-        $db = $this->official();
-        foreach ([ResourceScopeMapper::MODES_TABLE, ResourceScopeMapper::ITEMS_TABLE] as $table) {
-            $this->assertTrue($db->tableExists($table), $table);
-        }
-        // Nothing is materialized: an upgraded instance has every user unrestricted.
-        foreach ([ResourceScopeMapper::MODES_TABLE, ResourceScopeMapper::ITEMS_TABLE] as $table) {
-            $qb = $db->getQueryBuilder();
-            $result = $qb->select($qb->func()->count('*', 'n'))->from($table)->executeQuery();
-            $count = (int)$result->fetchOne();
-            $result->closeCursor();
-            $this->assertSame(0, $count, $table);
-        }
-        $this->assertSame([], Server::get(ResourceScopeMapper::class)->forUser($this->uid));
-    }
+	public function testTheTablesExistAndAreEmptyAfterInstallOrUpgrade(): void {
+		$db = $this->official();
+		foreach ([ResourceScopeMapper::MODES_TABLE, ResourceScopeMapper::ITEMS_TABLE] as $table) {
+			$this->assertTrue($db->tableExists($table), $table);
+		}
+		// Nothing is materialized: an upgraded instance has every user unrestricted.
+		foreach ([ResourceScopeMapper::MODES_TABLE, ResourceScopeMapper::ITEMS_TABLE] as $table) {
+			$qb = $db->getQueryBuilder();
+			$result = $qb->select($qb->func()->count('*', 'n'))->from($table)->executeQuery();
+			$count = (int)$result->fetchOne();
+			$result->closeCursor();
+			$this->assertSame(0, $count, $table);
+		}
+		$this->assertSame([], Server::get(ResourceScopeMapper::class)->forUser($this->uid));
+	}
 
-    public function testScopesCommitOrRollBackWithTheWriterAndKeepExactIds(): void {
-        $writer = Server::get(PolicyWriter::class);
-        $scopes = Server::get(ResourceScopeMapper::class);
-        $other = new ResourceScopeMapper($this->openIndependentConnection());
-        $saved = '';
+	public function testScopesCommitOrRollBackWithTheWriterAndKeepExactIds(): void {
+		$writer = Server::get(PolicyWriter::class);
+		$scopes = Server::get(ResourceScopeMapper::class);
+		$other = new ResourceScopeMapper($this->openIndependentConnection());
+		$saved = '';
 
-        $command = function (bool $fail) use ($scopes, &$saved): \Closure {
-            return function ($snapshot, array $current) use ($fail, $scopes, &$saved): bool {
-                $saved = $current['revision'];
-                $scopes->replace($this->uid, 'files', ['42', DecimalCounter::MAX], $saved);
-                $scopes->replace($this->uid, 'calendar', [], $saved);
-                $scopes->replace($this->uid, 'tasks', ['42'], $saved);
-                if ($fail) {
-                    throw new RuntimeException('Injected after the scope writes');
-                }
-                return true;
-            };
-        };
-        try {
-            $writer->runInternal([], fn () => null, $command(true));
-            $this->fail('Injected failure swallowed');
-        } catch (RuntimeException $e) {
-            $this->assertSame('Injected after the scope writes', $e->getMessage());
-        }
-        $this->assertSame([], $other->forUser($this->uid));
-        $this->assertSame([], $scopes->forUser($this->uid));
+		$command = function (bool $fail) use ($scopes, &$saved): \Closure {
+			return function ($snapshot, array $current) use ($fail, $scopes, &$saved): bool {
+				$saved = $current['revision'];
+				$scopes->replace($this->uid, 'files', ['42', DecimalCounter::MAX], $saved);
+				$scopes->replace($this->uid, 'calendar', [], $saved);
+				$scopes->replace($this->uid, 'tasks', ['42'], $saved);
+				if ($fail) {
+					throw new RuntimeException('Injected after the scope writes');
+				}
+				return true;
+			};
+		};
+		try {
+			$writer->runInternal([], fn () => null, $command(true));
+			$this->fail('Injected failure swallowed');
+		} catch (RuntimeException $e) {
+			$this->assertSame('Injected after the scope writes', $e->getMessage());
+		}
+		$this->assertSame([], $other->forUser($this->uid));
+		$this->assertSame([], $scopes->forUser($this->uid));
 
-        $writer->runInternal([], fn () => null, $command(false));
-        $expected = [
-            'calendar' => ['policyRev' => $saved, 'items' => []],
-            'files' => ['policyRev' => $saved, 'items' => ['42', DecimalCounter::MAX]],
-            'tasks' => ['policyRev' => $saved, 'items' => ['42']],
-        ];
-        $this->assertSame($expected, $other->forUser($this->uid));
-        $this->assertSame([], $other->forUser(strtoupper($this->uid)), 'ids are never case-folded');
+		$writer->runInternal([], fn () => null, $command(false));
+		$expected = [
+			'calendar' => ['policyRev' => $saved, 'items' => []],
+			'files' => ['policyRev' => $saved, 'items' => ['42', DecimalCounter::MAX]],
+			'tasks' => ['policyRev' => $saved, 'items' => ['42']],
+		];
+		$this->assertSame($expected, $other->forUser($this->uid));
+		$this->assertSame([], $other->forUser(strtoupper($this->uid)), 'ids are never case-folded');
 
-        // A revision past the one read before a deletion keeps the scope; the cleanup removes only older ones.
-        $removed = [];
-        $writer->runInternal([], fn () => null, function () use ($scopes, $saved, &$removed): bool {
-            $removed = $scopes->removeUpTo($this->uid, $saved);
-            return $removed !== [];
-        });
-        $this->assertSame(['calendar', 'files', 'tasks'], $removed);
-        $this->assertSame([], $other->forUser($this->uid));
-    }
+		// A revision past the one read before a deletion keeps the scope; the cleanup removes only older ones.
+		$removed = [];
+		$writer->runInternal([], fn () => null, function () use ($scopes, $saved, &$removed): bool {
+			$removed = $scopes->removeUpTo($this->uid, $saved);
+			return $removed !== [];
+		});
+		$this->assertSame(['calendar', 'files', 'tasks'], $removed);
+		$this->assertSame([], $other->forUser($this->uid));
+	}
 
-    public function testTheRevisionColumnHoldsTheLargestCounter(): void {
-        $writer = Server::get(PolicyWriter::class);
-        $scopes = Server::get(ResourceScopeMapper::class);
-        $writer->runInternal([], fn () => null, function () use ($scopes): bool {
-            $scopes->replace($this->uid, 'files', ['1'], DecimalCounter::MAX);
-            return false;
-        });
-        $this->assertSame(['policyRev' => DecimalCounter::MAX, 'items' => ['1']],
-            (new ResourceScopeMapper($this->openIndependentConnection()))->forModule($this->uid, 'files'));
-    }
+	public function testTheRevisionColumnHoldsTheLargestCounter(): void {
+		$writer = Server::get(PolicyWriter::class);
+		$scopes = Server::get(ResourceScopeMapper::class);
+		$writer->runInternal([], fn () => null, function () use ($scopes): bool {
+			$scopes->replace($this->uid, 'files', ['1'], DecimalCounter::MAX);
+			return false;
+		});
+		$this->assertSame(['policyRev' => DecimalCounter::MAX, 'items' => ['1']],
+			(new ResourceScopeMapper($this->openIndependentConnection()))->forModule($this->uid, 'files'));
+	}
 }

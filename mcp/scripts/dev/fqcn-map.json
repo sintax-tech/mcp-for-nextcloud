@@ -1,5 +1,5 @@
 {
-	"base": "71719106",
+	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
 		{"path":"lib/AppInfo/Application.php","fqcn":"OCA\\Mcp\\AppInfo\\Application","target":"stays","owner":"AppInfo","ticket":null},
@@ -308,6 +308,7 @@
 		{"path":"lib/Tools/Deck/RecipientMessages.php","fqcn":"OCA\\Mcp\\Tools\\Deck\\RecipientMessages","target":"OCA\\Mcp\\Modules\\Deck\\RecipientMessages","owner":"Modules\\Deck","ticket":"RE-27"},
 		{"path":"lib/Tools/Deck/RecipientResolutionException.php","fqcn":"OCA\\Mcp\\Tools\\Deck\\RecipientResolutionException","target":"OCA\\Mcp\\Modules\\Deck\\RecipientResolutionException","owner":"Modules\\Deck","ticket":"RE-27"},
 		{"path":"lib/Tools/Deck/RecipientSnapshot.php","fqcn":"OCA\\Mcp\\Tools\\Deck\\RecipientSnapshot","target":"OCA\\Mcp\\Modules\\Deck\\RecipientSnapshot","owner":"Modules\\Deck","ticket":"RE-27"},
+		{"path":"lib/Tools/ExtractedText.php","fqcn":"OCA\\Mcp\\Tools\\ExtractedText","target":"OCA\\Mcp\\Platform\\Text\\ExtractedText","owner":"Platform","ticket":"RE-04"},
 		{"path":"lib/Tools/Files/Access/ActorRoot.php","fqcn":"OCA\\Mcp\\Tools\\Files\\Access\\ActorRoot","target":"OCA\\Mcp\\Platform\\FileAccess\\ActorRoot","owner":"Platform","ticket":"RE-04"},
 		{"path":"lib/Tools/Files/Access/PreviewRoot.php","fqcn":"OCA\\Mcp\\Tools\\Files\\Access\\PreviewRoot","target":"OCA\\Mcp\\Platform\\FileAccess\\PreviewRoot","owner":"Platform","ticket":"RE-04"},
 		{"path":"lib/Tools/Files/BackupMessages.php","fqcn":"OCA\\Mcp\\Tools\\Files\\BackupMessages","target":"OCA\\Mcp\\Modules\\Files\\BackupMessages","owner":"Modules\\Files","ticket":"RE-21"},
@@ -736,6 +737,7 @@
 		{"path":"lib/Tools/ToolRegistry.php","fqcn":"OCA\\Mcp\\Tools\\ToolRegistry","target":"OCA\\Mcp\\Mcp\\Tools\\ToolRegistry","owner":"Mcp","ticket":"RE-03"},
 		{"path":"lib/Tools/ToolResult.php","fqcn":"OCA\\Mcp\\Tools\\ToolResult","target":"OCA\\Mcp\\Mcp\\Tools\\Results\\ToolResult","owner":"Mcp","ticket":"RE-03"},
 		{"path":"lib/Tools/UnknownToolException.php","fqcn":"OCA\\Mcp\\Tools\\UnknownToolException","target":"OCA\\Mcp\\Mcp\\Tools\\UnknownToolException","owner":"Mcp","ticket":"RE-03"},
-		{"path":"lib/Tools/WriteGate.php","fqcn":"OCA\\Mcp\\Tools\\WriteGate","target":"OCA\\Mcp\\Mcp\\Confirmation\\WriteGate","owner":"Mcp","ticket":"RE-03"}
+		{"path":"lib/Tools/WriteGate.php","fqcn":"OCA\\Mcp\\Tools\\WriteGate","target":"OCA\\Mcp\\Mcp\\Confirmation\\WriteGate","owner":"Mcp","ticket":"RE-03"},
+		{"path":"lib/Tools/XmlCharset.php","fqcn":"OCA\\Mcp\\Tools\\XmlCharset","target":"OCA\\Mcp\\Platform\\Text\\XmlCharset","owner":"Platform","ticket":"RE-04"}
 	]
 }

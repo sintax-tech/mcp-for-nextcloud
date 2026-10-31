@@ -5495,6 +5495,7 @@ OCA\Mcp\Tests\Unit\Controller\LogsPrivacyControllerTest::testAdminOnlyLikeTheOth
 OCA\Mcp\Tests\Unit\Controller\LogsPrivacyControllerTest::testOnByDefaultAndActiveOnlyWithHiddenTags
 OCA\Mcp\Tests\Unit\Controller\LogsPrivacyControllerTest::testRefusesAnythingButABoolean
 OCA\Mcp\Tests\Unit\Controller\LogsPrivacyControllerTest::testSavesTheSwitch
+OCA\Mcp\Tests\Unit\Controller\McpControllerUtf8Test::testAnInvalidStringIsSubstitutedInsteadOfFailing
 OCA\Mcp\Tests\Unit\Controller\TagsControllerTest::testIndexDoesNotReportAnEmptyValidSelectionAfterTransientReadFailure
 OCA\Mcp\Tests\Unit\Controller\TagsControllerTest::testIndexFlagsAJsonObjectAsInvalidButNotTheEmptyList with data set "empty list"
 OCA\Mcp\Tests\Unit\Controller\TagsControllerTest::testIndexFlagsAJsonObjectAsInvalidButNotTheEmptyList with data set "empty object"
@@ -9881,6 +9882,12 @@ OCA\Mcp\Tests\Unit\Tools\Deck\Handler\StructureHandlersTest::testDeleteBoardWith
 OCA\Mcp\Tests\Unit\Tools\Deck\Handler\StructureHandlersTest::testDeleteStackDeletesAnEmptyList
 OCA\Mcp\Tests\Unit\Tools\Deck\Handler\StructureHandlersTest::testDeleteStackOnASharedBoardNeedsConfirmShared
 OCA\Mcp\Tests\Unit\Tools\Deck\Handler\StructureHandlersTest::testDeleteStackWithCardsIsRefusedWithTheCountAndLoggedAtDebug
+OCA\Mcp\Tests\Unit\Tools\ExtractedTextTest::testBinaryIsNeverGuessedIntoLetters
+OCA\Mcp\Tests\Unit\Tools\ExtractedTextTest::testControlCharactersAreRemoved
+OCA\Mcp\Tests\Unit\Tools\ExtractedTextTest::testNoCharsetIsGuessedForInvalidBytes
+OCA\Mcp\Tests\Unit\Tools\ExtractedTextTest::testStrayBytesInUtf8TextAreReplaced
+OCA\Mcp\Tests\Unit\Tools\ExtractedTextTest::testSurrogatesWrittenAsCesuAreRepaired
+OCA\Mcp\Tests\Unit\Tools\ExtractedTextTest::testValidTextIsKept
 OCA\Mcp\Tests\Unit\Tools\FileDeletionGuardTest::testNestedDeletionFailsTheProductionSourceAssertion with data set "handler"
 OCA\Mcp\Tests\Unit\Tools\FileDeletionGuardTest::testNestedDeletionFailsTheProductionSourceAssertion with data set "nested FD-1-name collision"
 OCA\Mcp\Tests\Unit\Tools\FileDeletionGuardTest::testNestedDeletionFailsTheProductionSourceAssertion with data set "nested undo-name collision"
@@ -10383,6 +10390,9 @@ OCA\Mcp\Tests\Unit\Tools\Files\FilesPlanTest::testRegistryRunsTheWriteOnceConfir
 OCA\Mcp\Tests\Unit\Tools\Files\FilesPlanTest::testReplacePlanShowsTheSingleOccurrenceAndTheDiff
 OCA\Mcp\Tests\Unit\Tools\Files\FilesPlanTest::testUndoBatchPlanShowsWhatGoesBackWithoutMarkingTheBatch
 OCA\Mcp\Tests\Unit\Tools\Files\FilesPlanTest::testVersionRestorePlanShowsTheVersionAndTheCurrentFile
+OCA\Mcp\Tests\Unit\Tools\Files\FilesReadUtf8Test::testPdfBytesComeBackAsValidUtf8
+OCA\Mcp\Tests\Unit\Tools\Files\FilesReadUtf8Test::testPdfWithASurrogatePairReadsThroughFilesRead
+OCA\Mcp\Tests\Unit\Tools\Files\FilesReadUtf8Test::testSingleByteDocumentsComeBackAsValidUtf8
 OCA\Mcp\Tests\Unit\Tools\Files\FilesResourceScopeTest::testA1ABatchFolderPathNeverTellsWhatExistsOutsideTheScope
 OCA\Mcp\Tests\Unit\Tools\Files\FilesResourceScopeTest::testA1EnsureFolderNeverNamesAFileOutsideTheScope
 OCA\Mcp\Tests\Unit\Tools\Files\FilesResourceScopeTest::testA1NoOtherDestinationTellsWhatExistsOutsideTheScope
@@ -10975,6 +10985,8 @@ OCA\Mcp\Tests\Unit\Tools\Mail\MailAttachmentToolsTest::testManipulatedIdsNeverRe
 OCA\Mcp\Tests\Unit\Tools\Mail\MailAttachmentToolsTest::testOversizedAndSealedMessagesAreRefusedWithoutContent
 OCA\Mcp\Tests\Unit\Tools\Mail\MailAttachmentToolsTest::testTheAttachmentIsReadAfterTheChecksOnTheSameClient
 OCA\Mcp\Tests\Unit\Tools\Mail\MailAttachmentToolsTest::testTheTextIsCutToMaxChars
+OCA\Mcp\Tests\Unit\Tools\Mail\MailAttachmentUtf8Test::testPdfAttachmentComesBackAsValidUtf8
+OCA\Mcp\Tests\Unit\Tools\Mail\MailAttachmentUtf8Test::testSingleByteDocumentAttachmentsComeBackAsValidUtf8
 OCA\Mcp\Tests\Unit\Tools\Mail\MailBodyPreflightTest::testADifferentMessageIdIsRefused
 OCA\Mcp\Tests\Unit\Tools\Mail\MailBodyPreflightTest::testAMessageWithinTheBudgetPassesOnAMetadataFetch
 OCA\Mcp\Tests\Unit\Tools\Mail\MailBodyPreflightTest::testBadMetadataIsRefused
@@ -12133,6 +12145,14 @@ OCA\Mcp\Tests\Unit\Tools\WritePlanContractTest::testEveryRegisteredModuleIsReadO
 OCA\Mcp\Tests\Unit\Tools\WritePlanContractTest::testEveryWritingModuleDeclaresItsPlanText
 OCA\Mcp\Tests\Unit\Tools\WritePlanContractTest::testNoCoveredModuleIsMissingFromTheApplication
 OCA\Mcp\Tests\Unit\Tools\WritePlanContractTest::testTheNewFileToolsHaveAHostileNameTest
+OCA\Mcp\Tests\Unit\Tools\XmlCharsetTest::testCharsetAliasesAreConverted
+OCA\Mcp\Tests\Unit\Tools\XmlCharsetTest::testConvertedEntriesDeclareUtf8AndConvertOnce
+OCA\Mcp\Tests\Unit\Tools\XmlCharsetTest::testDeclaredWindows1252IsConvertedBeforeEntities
+OCA\Mcp\Tests\Unit\Tools\XmlCharsetTest::testNothingUndeclaredOrUnknownIsConverted
+OCA\Mcp\Tests\Unit\Tools\XmlCharsetTest::testOnlyTheXmlDeclarationNamesTheCharset
+OCA\Mcp\Tests\Unit\Tools\XmlCharsetTest::testOtherDeclaredCharsetsAreConverted
+OCA\Mcp\Tests\Unit\Tools\XmlCharsetTest::testTransferEncodingsAreNotCharsets
+OCA\Mcp\Tests\Unit\Tools\XmlCharsetTest::testUtf16WithAByteOrderMarkIsConverted
 OCA\Mcp\Tests\Unit\UserTimezoneTest::testNothingConfiguredFallsBackToPhp
 OCA\Mcp\Tests\Unit\UserTimezoneTest::testUnknownPreferenceFallsBackToTheSystemDefault
 OCA\Mcp\Tests\Unit\UserTimezoneTest::testUserPreferenceWins

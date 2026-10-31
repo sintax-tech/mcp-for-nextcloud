@@ -43,16 +43,17 @@ class ContactCard {
     }
 
     /**
-     * Creates a vCard with a new UID and applies the supplied contact fields.
+     * Creates a vCard with the UID the plan already showed and applies the supplied contact fields.
      *
      * @param array<string, mixed> $arguments validated tool arguments; omitted editable fields remain unchanged
+     * @param string $uid contact UID chosen once for the plan and the confirmed write
      * @return VCard
      */
-    public function create(array $arguments): VCard {
+    public function create(array $arguments, string $uid): VCard {
         $card = new VCard(
             [
                 'VERSION' => '3.0',
-                'UID' => bin2hex(random_bytes(16)),
+                'UID' => $uid,
                 'FN' => $arguments['name'],
             ]
         );

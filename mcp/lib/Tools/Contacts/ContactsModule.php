@@ -14,6 +14,7 @@ use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Dav\CollectionSchema as Schema;
+use OCA\Mcp\Tools\PlanState;
 use OCA\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\ToolFailure;
@@ -36,6 +37,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
      * @param SharedGuard $guard shared-owner confirmation policy
      * @param ContactBackup $backup verified contact backup service
      * @param SystemContacts $system read-only account catalog ("Accounts") governed by the admin enumeration rules
+     * @param PlanState|null $states HMAC of a creation plan; the container provides it, tests that create pass it
      * @return void
      */
     public function __construct(
@@ -46,6 +48,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
         private SharedGuard $guard,
         private ContactBackup $backup,
         private SystemContacts $system,
+        private ?PlanState $states = null,
     ) {}
 
     /**
@@ -120,9 +123,10 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
                 'contacts',
                 'contacts',
                 'contacts_create_contact',
-                'Create a contact in a writable personal or shared address book.',
+                'Create a contact in a writable personal or shared address book. '
+                    . 'The plan_state of the plan carries the contact UID that confirmation stores; send it back with confirm=true.',
                 'create',
-                ['addressbook' => $book] + $fields,
+                ['addressbook' => $book, PlanState::ARGUMENT => PlanState::property()] + $fields,
                 ['addressbook', 'name']
             ),
             Schema::definition(
@@ -164,7 +168,8 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
                 . 'editing it. Unknown vCard properties are preserved; the preview includes every '
                 . 'property before and after.',
             'Writes first show a plan without changing anything. Wait for an explicit yes, repeat '
-                . 'with confirm=true, and acknowledge another owner with confirm_shared=true. The '
+                . 'with confirm=true, and acknowledge another owner with confirm_shared=true. '
+                . 'Creating a contact repeats the plan_state of that plan: it carries the UID that is stored. The '
                 . 'optional etag prevents overwriting a newer edit.',
             'Contact deletion is PERMANENT in Nextcloud: there is no contact trash. After '
                 . ContactBackupText::destination()
@@ -258,6 +263,9 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
         $prepared = $this->prepare($name, $arguments, $userId);
         if (!WriteGate::confirmed($arguments)) {
             return ToolResult::json($prepared['plan']);
+        }
+        if ($name === 'contacts_create_contact') {
+            $this->creates()->approve($prepared['plan'], $arguments, $userId);
         }
         if ($prepared['plan']['shared'] !== [] && ($arguments['confirm_shared'] ?? false) !== true) {
             throw new ToolFailure(
@@ -434,7 +442,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
             $before['vcard'] = $row['data'];
             $card = $name === 'contacts_delete_contact' ? null : $this->cards->patch($old, $arguments);
         } else {
-            $card = $this->cards->create($arguments);
+            $card = $this->cards->create($arguments, $this->creates()->uid($arguments));
         }
         $uri = $row['uri'] ?? (string) $card->UID . '.vcf';
         $notice = $this->guard->confirm($book, $userId, []);
@@ -466,7 +474,18 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
                 ),
             ];
         }
+        if ($name === 'contacts_create_contact') {
+            $plan = $this->creates()->stamp($plan, $userId, $arguments);
+        }
         return compact('book', 'row', 'card', 'uri', 'plan');
+    }
+
+    /** @return ContactCreatePlan binding of the creation UID; absent only when a test never creates */
+    private function creates(): ContactCreatePlan {
+        if ($this->states === null) {
+            throw new \LogicException('Contact creation needs a plan state');
+        }
+        return new ContactCreatePlan($this->states);
     }
 
     /** @return Handler\DeleteContactHandler focused deletion handler using the existing shared preparation and row reader */

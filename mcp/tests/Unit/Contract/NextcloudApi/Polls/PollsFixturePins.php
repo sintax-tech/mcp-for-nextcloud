@@ -17,7 +17,7 @@ final class PollsFixturePins {
 	 * @return string source header line, or empty for a fixture not generated with Polls
 	 */
 	public static function header(array $fixture): string {
-		return isset($fixture['pollsSources']) ? "    'pollsSources' => " . FixtureFile::literal($fixture['pollsSources']) . ",\n" : '';
+		return isset($fixture['pollsSources']) ? "\t'pollsSources' => " . FixtureFile::literal($fixture['pollsSources']) . ",\n" : '';
 	}
 	/**
 	 * Detects the optional oldest covered release.

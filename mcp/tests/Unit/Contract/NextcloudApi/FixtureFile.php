@@ -24,19 +24,19 @@ final class FixtureFile {
 	public static function write(string $path, string $header, array $fixture): void {
 		$lines = [];
 		foreach ($fixture['classes'] as $class => $surface) {
-			$lines[] = '        ' . var_export($class, true) . ' => ' . self::literal($surface) . ',';
+			$lines[] = "\t\t" . var_export($class, true) . ' => ' . self::literal($surface) . ',';
 		}
-		$pins = "    'sources' => " . self::literal($fixture['sources']) . ",\n"
-			. "    'recipientSources' => " . self::literal($fixture['recipientSources']) . ",\n";
+		$pins = "\t'sources' => " . self::literal($fixture['sources']) . ",\n"
+			. "\t'recipientSources' => " . self::literal($fixture['recipientSources']) . ",\n";
 		if (isset($fixture['mailSources'])) {
-			$pins .= "    'mailSources' => " . self::literal($fixture['mailSources']) . ",\n";
+			$pins .= "\t'mailSources' => " . self::literal($fixture['mailSources']) . ",\n";
 		}
 		if (isset($fixture['tablesSources'])) {
-			$pins .= "    'tablesSources' => " . self::literal($fixture['tablesSources']) . ",\n";
+			$pins .= "\t'tablesSources' => " . self::literal($fixture['tablesSources']) . ",\n";
 		}
 		$pins .= Forms\FormsSourcePins::line($fixture);
 		$pins .= Polls\PollsFixturePins::header($fixture);
-		file_put_contents($path, $header . "return [\n" . $pins . "    'classes' => [\n" . implode("\n", $lines) . "\n    ],\n];\n");
+		file_put_contents($path, $header . "return [\n" . $pins . "\t'classes' => [\n" . implode("\n", $lines) . "\n\t],\n];\n");
 	}
 
 	/**

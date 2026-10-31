@@ -21,7 +21,7 @@ final class FormsSourcePins {
 	 * @return string Optional PHP source line.
 	 */
 	public static function line(array $fixture): string {
-		return isset($fixture['formsSources']) ? "    'formsSources' => " . \OCA\Mcp\Tests\Unit\Contract\NextcloudApi\FixtureFile::literal($fixture['formsSources']) . ",\n" : '';
+		return isset($fixture['formsSources']) ? "\t'formsSources' => " . \OCA\Mcp\Tests\Unit\Contract\NextcloudApi\FixtureFile::literal($fixture['formsSources']) . ",\n" : '';
 	}
 
 	/** Resolves the oldest source covered for version-floor policy checks.

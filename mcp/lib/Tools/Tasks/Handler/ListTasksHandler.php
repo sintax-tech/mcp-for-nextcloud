@@ -15,8 +15,8 @@ use OCA\Mcp\Tools\Tasks\CategoryFilterNote;
 use OCA\Mcp\Tools\Tasks\TaskData;
 use OCA\Mcp\Tools\Tasks\TaskRowReader;
 use OCA\Mcp\Tools\Tasks\TaskStore;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /**
  * Backs `tasks_list_tasks`.

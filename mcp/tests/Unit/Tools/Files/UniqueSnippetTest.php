@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\UniqueSnippet;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

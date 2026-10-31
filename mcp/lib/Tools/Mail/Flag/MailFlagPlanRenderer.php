@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Mail\Flag;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\PlanText;
+use OCA\Mcp\Mcp\Confirmation\PlanText;
 
 /**
  * Writes the plan of a flag change as the text the person reads before confirming: the message (its subject, sender

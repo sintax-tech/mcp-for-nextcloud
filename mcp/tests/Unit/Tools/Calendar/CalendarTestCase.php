@@ -64,7 +64,7 @@ abstract class CalendarTestCase extends TestCase {
 	protected ScopeStub $scope;
 	protected FakeCalendarDav $dav;
 	protected CalendarModule $module;
-	protected \OCA\Mcp\Tools\ToolRegistry $registry;
+	protected \OCA\Mcp\Mcp\Tools\ToolRegistry $registry;
 	/** @var array<string, \OCA\Mcp\Tools\Calendar\CalendarTool> write handlers exercised directly by domain tests */
 	protected array $writeHandlers = [];
 	/** Value returned by dav/calendarRetentionObligation. */
@@ -184,7 +184,7 @@ abstract class CalendarTestCase extends TestCase {
 		$policy->method('grantedAny')->willReturn(true);
 		$apps = $this->createMock(\OCP\App\IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(true);
-		$this->registry = new \OCA\Mcp\Tools\ToolRegistry(
+		$this->registry = new \OCA\Mcp\Mcp\Tools\ToolRegistry(
 			[$this->module],
 			$policy,
 			$apps,

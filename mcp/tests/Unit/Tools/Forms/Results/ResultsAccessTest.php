@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Forms\Results;
 
 use OCA\Mcp\Tools\Forms\Results\ResultsAccess;
 use OCA\Mcp\Tools\Forms\FormsServices;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Tests\Unit\Tools\Forms\FormsFixture;
 use PHPUnit\Framework\TestCase;
 
@@ -76,7 +76,7 @@ final class ResultsAccessTest extends TestCase {
 		$files=$this->createMock(\OCA\Mcp\Tools\Forms\Attachments\ResultFileAccess::class);$files->expects(self::never())->method('begin');
 		$policy=$this->createMock(\OCA\Mcp\Service\GrantPolicy::class);$policy->method('within')->willReturnCallback(static fn($uid,$work)=>$work());$policy->method('granted')->willReturn(true);
 		$shape=new \OCA\Mcp\Tools\Forms\Results\SubmissionShape($reads,new \OCA\Mcp\Tools\Forms\Results\AnswerShape($files));
-		$mac=new \OCA\Mcp\Tools\PlanState((new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this));
+		$mac=new \OCA\Mcp\Mcp\Confirmation\PlanState((new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this));
 		$flow=new \OCA\Mcp\Tools\Forms\Results\ResultsReadFlow($policy,new ResultsAccess($forms),$reads,$schema,$shape,$files,$mac);
 		foreach([new \OCA\Mcp\Tools\Forms\Handler\ListSubmissionsHandler($flow),new \OCA\Mcp\Tools\Forms\Handler\ReadSubmissionHandler($flow)]as$handler){
 			try{$handler->handle(['form_id'=>5,'submission_id'=>1],'0');self::fail('UID0 own must refuse');}catch(ToolFailure$error){self::assertStringContainsString('identifier',$error->getMessage());}

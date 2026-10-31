@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Integration\Mail;
 
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Exclusion\ExclusionTestCase;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\Server;
 
 /**

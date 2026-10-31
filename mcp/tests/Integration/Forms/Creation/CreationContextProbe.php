@@ -116,7 +116,7 @@ final class CreationContextProbe {
 				return ['scenario' => $scenario, 'accepted' => true, 'persistedOwnerMatchesActor' => true, 'formId' => $id,
 					'initiallyLazy' => $initiallyLazy, 'sameProvenService' => Server::get(\OCA\Forms\Service\FormsService::class) === $service,
 					'cachedControllerPrepared' => $cached !== null, 'configCaptureFixture' => $configCapture, 'threeFreshCollaborators' => true, 'formsScopedCreationAllowed' => true, 'mcpScopedCreationWouldDeny' => true];
-			} catch (\OCA\Mcp\Tools\ToolFailure $error) {
+			} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $error) {
 				if (!$negative) { throw $error; }
 				return ['scenario' => $scenario, 'accepted' => false, 'initiallyLazy' => $initiallyLazy, 'sentinelWithoutShares' => true];
 			}

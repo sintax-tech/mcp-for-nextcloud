@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Tasks;
 
 use Closure;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Lock\ILockingProvider;
 use OCP\Lock\LockedException;
 

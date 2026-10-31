@@ -159,7 +159,7 @@ final class TalkReferenceTest extends ExclusionTestCase {
 			$this->assertInstanceOf(\OCA\Mcp\Service\Scope\FilesReferenceScope::class, $property($filter, 'scope'), $class);
 		}
 		$this->assertInstanceOf(\OCA\Mcp\Service\Scope\FilesScope::class,
-			$property($property(Server::get(\OCA\Mcp\Service\ResourceRegistry::class), 'filesGuard'), 'scope'), 'nc://files');
+			$property($property(Server::get(\OCA\Mcp\Mcp\Resources\ResourceRegistry::class), 'filesGuard'), 'scope'), 'nc://files');
 		$this->assertInstanceOf(\OCA\Mcp\Service\Scope\FilesScope::class,
 			$property($property(Server::get(\OCA\Mcp\Tools\Files\FilesModule::class), 'visibilityGuard'), 'scope'), 'files tools');
 	}

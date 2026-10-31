@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Deck;
 
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 
 /**
  * Ephemeral complete recipient portrait; hashes reuse PlanState and do not attest human consent or atomicity.

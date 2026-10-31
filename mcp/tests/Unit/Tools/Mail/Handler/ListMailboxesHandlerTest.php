@@ -12,7 +12,7 @@ use OCA\Mcp\Tests\Unit\Tools\Mail\FakeMailLinks;
 use OCA\Mcp\Tools\Mail\Handler\ListMailboxesHandler;
 use OCA\Mcp\Tools\Mail\MailGateway;
 use OCA\Mcp\Tools\Mail\MailUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /**

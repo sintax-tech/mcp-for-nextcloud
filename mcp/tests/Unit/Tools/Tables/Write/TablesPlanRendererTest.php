@@ -14,7 +14,7 @@ use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesScene;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesWriteWiring;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\WriteScene;
 use OCA\Mcp\Tools\Tables\TablesModule;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use PHPUnit\Framework\TestCase;
 
 /**

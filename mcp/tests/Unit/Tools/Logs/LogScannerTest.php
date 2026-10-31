@@ -11,7 +11,7 @@ use OCA\Mcp\Tools\Logs\LogFilter;
 use OCA\Mcp\Tools\Logs\LogReader;
 use OCA\Mcp\Tools\Logs\LogScanner;
 use OCA\Mcp\Tools\Logs\LogTime;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Log\ILogFactory;
 use OCP\Log\IWriter;
 use PHPUnit\Framework\TestCase;

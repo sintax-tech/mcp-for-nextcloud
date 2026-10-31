@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Notes;
 
 use InvalidArgumentException;
 use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 
 /**

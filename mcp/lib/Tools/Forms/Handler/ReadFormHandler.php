@@ -13,7 +13,7 @@ use OCA\Mcp\Tools\Forms\FormsServices;
 use OCA\Mcp\Tools\Forms\FormsCalls;
 use OCA\Mcp\Tools\Forms\Structure\FormsResponseBudget;
 use OCA\Mcp\Tools\Forms\Structure\FormFieldWhitelist;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /** Reads an authorized native Form entity, never submissions or a partial-array permission surrogate. */
 final class ReadFormHandler {

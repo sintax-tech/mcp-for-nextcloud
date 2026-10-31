@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Tasks;
 use InvalidArgumentException;
 use OCA\Mcp\Tests\Unit\Tools\Tasks\Handler\TaskListingCase;
 use OCA\Mcp\Tools\Calendar\DavResult;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /** Verifies reading, writing and filtering task categories (VTODO CATEGORIES) without widening visibility. */

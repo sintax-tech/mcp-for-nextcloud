@@ -11,13 +11,13 @@ use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Stack;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Deck\BoardBlueprint;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckMessages;
 use OCA\Mcp\Tools\Deck\DeckRefusalException;
 use OCA\Mcp\Tools\Deck\Handler\CreateBoardHandler;
-use OCA\Mcp\Tools\ToolPresentation;
+use OCA\Mcp\Mcp\Tools\ToolPresentation;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 

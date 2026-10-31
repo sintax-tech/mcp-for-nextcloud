@@ -15,7 +15,7 @@ use OCA\Mcp\Tools\Mail\MailGateway;
 use OCA\Mcp\Tools\Mail\MailMessageGateway;
 use OCA\Mcp\Tools\Mail\MailModule;
 use OCA\Mcp\Tools\Mail\MailServices;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\App\IAppManager;
 
 /**
@@ -105,7 +105,7 @@ final class MailDraftTools {
 	 * @param string $userId authenticated user UID
 	 * @return array<string, mixed> the plan
 	 * @throws InvalidArgumentException for a tool this class does not have, or a value the draft cannot carry
-	 * @throws \OCA\Mcp\Tools\ToolFailure when the account is not the user's or has no Drafts folder, or Mail is not
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when the account is not the user's or has no Drafts folder, or Mail is not
 	 *     available
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
@@ -121,8 +121,8 @@ final class MailDraftTools {
 	 * @return array{content:list<array{type:string, text:string}>} MCP result
 	 * @throws InvalidArgumentException for a tool this class does not have, a call without plan_state or a value the
 	 *     draft cannot carry
-	 * @throws \OCA\Mcp\Tools\PlanChanged when the account, the Drafts folder or the arguments are not the approved ones
-	 * @throws \OCA\Mcp\Tools\ToolFailure when no draft was created, the save has no known outcome, or Mail is not
+	 * @throws \OCA\Mcp\Mcp\Confirmation\PlanChanged when the account, the Drafts folder or the arguments are not the approved ones
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when no draft was created, the save has no known outcome, or Mail is not
 	 *     available
 	 */
 	public function call(string $name, array $arguments, string $userId): array {

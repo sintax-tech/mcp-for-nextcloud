@@ -17,7 +17,7 @@ use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Notes\NotesModule;
 use OCA\Mcp\Tools\Notes\NotesRepository;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
 use OCP\IUser;

@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 use OCA\Mcp\Tools\Polls\Create\{CreateAdmission,CreateSurface,CreateNative,CreateNormalizer,CreateWriter,CreatePlan,CreateFlow};
 use OCA\Mcp\Tools\Polls\{PollsSessionGuard,PollsSurface};
 use OCA\Mcp\Tools\Polls\Handler\CreatePollHandler;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\{IUser,IUserManager,IConfig};
 use OCP\App\IAppManager;
 use PHPUnit\Framework\TestCase;

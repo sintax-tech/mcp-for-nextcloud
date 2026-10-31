@@ -12,8 +12,8 @@ use OCA\Mcp\Tools\Mail\MailGateway;
 use OCA\Mcp\Tools\Mail\MailMessages;
 use OCA\Mcp\Tools\Mail\MailRows;
 use OCA\Mcp\Tools\Mail\MailUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /**
  * Backs `mail_list_mailboxes`: one page of the folders the Mail app cached for an account of the user.

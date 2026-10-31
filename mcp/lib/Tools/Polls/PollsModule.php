@@ -11,11 +11,11 @@ use InvalidArgumentException;
 use OCA\Mcp\Tools\Polls\Handler\ListPollsHandler;
 use OCA\Mcp\Tools\Polls\Handler\ReadPollHandler;
 use OCA\Mcp\Tools\Polls\Handler\{ListVotesHandler, ReadResultsHandler, ListLinksHandler};
-use OCA\Mcp\Tools\{PreviewsWrites,RendersPlans};
+use OCA\Mcp\Mcp\{Tools\PreviewsWrites,Tools\RendersPlans};
 use OCA\Mcp\Tools\Polls\Handler\CreatePollHandler;
 use OCA\Mcp\Tools\Polls\Create\{CreateDefinition,CreatePlan,CreateMessages};
-use OCA\Mcp\Tools\ToolGuideNotes;
-use OCA\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
+use OCA\Mcp\Mcp\Tools\ToolModule;
 
 /** Registers native read handlers; protected votes/results and existing links have independent grants. */
 final class PollsModule implements ToolModule, ToolGuideNotes, PreviewsWrites, RendersPlans {

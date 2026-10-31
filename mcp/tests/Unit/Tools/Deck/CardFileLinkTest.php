@@ -23,8 +23,8 @@ use OCA\Mcp\Tools\Deck\DeckServiceContext;
 use OCA\Mcp\Tools\Deck\Handler\LinkCardFileHandler;
 use OCA\Mcp\Tools\Deck\NativeCardFileLink;
 use OCA\Mcp\Tools\Deck\RecipientDirectory;
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\App\IAppManager;
 use OCP\Files\File;
 use OCP\Files\Folder;
@@ -454,7 +454,7 @@ final class CardFileLinkTest extends TestCase {
 		try {
 			$this->handler->handle($args, 'alice');
 			self::fail('A confirm without state must be refused');
-		} catch (\OCA\Mcp\Tools\ArgumentValidationException) {
+		} catch (\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException) {
 			self::assertSame(0, $this->writes);
 		}
 	}

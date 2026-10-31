@@ -21,7 +21,7 @@ use OCA\Mcp\Tools\Deck\RecipientExpansion;
 use OCA\Mcp\Tools\Deck\RecipientMessages;
 use OCA\Mcp\Tools\Deck\RecipientResolutionException;
 use OCA\Mcp\Tools\Deck\RecipientSnapshot;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\IConfig;
 use OCP\IUser;
 use PHPUnit\Framework\Attributes\DataProvider;

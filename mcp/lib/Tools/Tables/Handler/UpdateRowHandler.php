@@ -34,8 +34,8 @@ final class UpdateRowHandler {
 	 * @param array<string, mixed> $arguments validated tool arguments
 	 * @param string $userId authenticated user UID
 	 * @return array<string, mixed> the plan
-	 * @throws \OCA\Mcp\Tools\ArgumentValidationException for malformed arguments
-	 * @throws \OCA\Mcp\Tools\ToolFailure when the update is refused
+	 * @throws \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException for malformed arguments
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when the update is refused
 	 * @throws \OCA\Mcp\Tools\Tables\TablesUnavailableException when Tables is not available for the user
 	 */
 	public function preview(array $arguments, string $userId): array {
@@ -48,9 +48,9 @@ final class UpdateRowHandler {
 	 * @param array<string, mixed> $arguments validated tool arguments
 	 * @param string $userId authenticated user UID
 	 * @return array{content: list<array{type:string, text:string}>} MCP result
-	 * @throws \OCA\Mcp\Tools\ArgumentValidationException for malformed arguments
-	 * @throws \OCA\Mcp\Tools\PlanChanged when the state differs from the approved plan
-	 * @throws \OCA\Mcp\Tools\ToolFailure when the update is refused or not confirmed by Tables
+	 * @throws \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException for malformed arguments
+	 * @throws \OCA\Mcp\Mcp\Confirmation\PlanChanged when the state differs from the approved plan
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when the update is refused or not confirmed by Tables
 	 * @throws \OCA\Mcp\Tools\Tables\TablesUnavailableException when Tables is not available for the user
 	 */
 	public function handle(array $arguments, string $userId): array {

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tools\PlanRenderer;
+use OCA\Mcp\Mcp\Confirmation\PlanRenderer;
 use OCP\Share\IShare;
 
 /** The text a person reads before confirming files_unshare, rendered from the plans the module really returns. */
@@ -74,7 +74,7 @@ final class FilesUnsharePlanTest extends FilesToolsTestCase {
 		$this->share(['type' => IShare::TYPE_LINK, 'with' => null, 'token' => 'TOK']);
 		$definition = array_column($this->module->definitions(), null, 'name')['files_unshare'];
 		$render = fn (array $arguments): string => PlanRenderer::render($this->module, 'files_unshare',
-			\OCA\Mcp\Tools\WriteGate::plan($this->module, $definition, $this->validated('files_unshare', $arguments), 'alice'));
+			\OCA\Mcp\Mcp\Confirmation\WriteGate::plan($this->module, $definition, $this->validated('files_unshare', $arguments), 'alice'));
 
 		$person = $render(['path' => '/Documentos/ata.md', 'with' => 'user:bruno']);
 		self::assertStringContainsString('**Bruno Lima** deixará de ter acesso a **/Documentos/ata.md**.', $person);

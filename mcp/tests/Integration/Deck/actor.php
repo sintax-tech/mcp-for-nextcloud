@@ -339,7 +339,7 @@ switch ($action) {
 		$policy->setGrant($uid, 'deck', 'edit', $in['deckEdit'] ?? true);
 		$policy->setGrant($uid, 'files', 'read', $in['filesRead'] ?? true);
 		$policy->setGrant($uid, 'files', 'share', false); // Unlink reduces exposure and must not require this grant.
-		$registry = new OCA\Mcp\Tools\ToolRegistry([$module], $policy, $apps, Server::get(OCP\IUserManager::class),
+		$registry = new OCA\Mcp\Mcp\Tools\ToolRegistry([$module], $policy, $apps, Server::get(OCP\IUserManager::class),
 			Server::get(Psr\Log\LoggerInterface::class));
 		$tool = ($in['unlink'] ?? false) ? 'deck_unlink_card_file' : 'deck_list_card_files';
 		try { $out = ['result' => $policy->within($uid, fn () => $registry->call($tool, $in['arguments'], $uid))]; }
@@ -351,7 +351,7 @@ switch ($action) {
 			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
 		$policy = Server::get(OCA\Mcp\Service\GrantPolicy::class);
 		$policy->setGrant($uid, 'deck', 'edit', $in['grant'] ?? true);
-		$registry = new OCA\Mcp\Tools\ToolRegistry([$module], $policy, $apps, Server::get(OCP\IUserManager::class),
+		$registry = new OCA\Mcp\Mcp\Tools\ToolRegistry([$module], $policy, $apps, Server::get(OCP\IUserManager::class),
 			Server::get(Psr\Log\LoggerInterface::class));
 		$out = ['tools' => array_column($registry->list($uid), 'name')];
 		$tool = ($in['remove'] ?? false) ? 'deck_remove_card_dependency' : 'deck_add_card_dependency';
@@ -368,7 +368,7 @@ switch ($action) {
 			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
 		$policy = Server::get(OCA\Mcp\Service\GrantPolicy::class);
 		$policy->setGrant($uid, 'deck', 'read', $in['grant'] ?? true);
-		$registry = new OCA\Mcp\Tools\ToolRegistry([$module], $policy, $apps, Server::get(OCP\IUserManager::class),
+		$registry = new OCA\Mcp\Mcp\Tools\ToolRegistry([$module], $policy, $apps, Server::get(OCP\IUserManager::class),
 			Server::get(Psr\Log\LoggerInterface::class));
 		$out = ['tools' => array_column($registry->list($uid), 'name')];
 		try {
@@ -384,16 +384,16 @@ switch ($action) {
 			Server::get(OCP\IURLGenerator::class), Server::get(OCP\AppFramework\Utility\ITimeFactory::class),
 			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
 		try {
-			if (OCA\Mcp\Tools\WriteGate::confirmed($in['arguments'])) {
+			if (OCA\Mcp\Mcp\Confirmation\WriteGate::confirmed($in['arguments'])) {
 				$result = $module->call('deck_edit_card_labels', $in['arguments'], $uid);
 			} else {
 				$plan = $module->preview('deck_edit_card_labels', $in['arguments'], $uid);
-				$result = OCA\Mcp\Tools\Deck\DeckResult::ok(OCA\Mcp\Tools\WriteGate::envelope(
+				$result = OCA\Mcp\Tools\Deck\DeckResult::ok(OCA\Mcp\Mcp\Confirmation\WriteGate::envelope(
 					['name' => 'deck_edit_card_labels'], $plan));
 			}
 			$out = ['result'=>$result];
-		} catch (OCA\Mcp\Tools\PlanChanged $e) { $out = ['changedPlan'=>$e->plan]; }
-		catch (OCA\Mcp\Tools\ToolFailure $e) { $out = ['result'=>OCA\Mcp\Tools\Deck\DeckResult::error($e->getMessage())]; }
+		} catch (OCA\Mcp\Mcp\Confirmation\PlanChanged $e) { $out = ['changedPlan'=>$e->plan]; }
+		catch (OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) { $out = ['result'=>OCA\Mcp\Tools\Deck\DeckResult::error($e->getMessage())]; }
 		// Read through the same service that populates the native Deck UI, in this fresh actor request.
 		try { $out['nativeLabels'] = labelIds($cards->find($in['arguments']['cardId'])); }
 		catch (OCA\Deck\NoPermissionException) { $out['nativeLabels'] = null; }

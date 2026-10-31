@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 
 use DateTimeImmutable;
 use OCA\Mcp\Tools\Contacts\ContactBackup;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;
 use OCP\Files\Folder;

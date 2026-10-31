@@ -8,7 +8,7 @@ declare (strict_types=1);
 namespace OCA\Mcp\Tools\Polls\Create;
 
 use OCA\Mcp\Tools\Polls\{PollsSurface, PollsRefusal};
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 /** Pure prediction through native transient value objects; no returned object is reused by a sink. */
 class CreateNormalizer {
 	/**

@@ -18,7 +18,7 @@ use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\FilesPlanRenderer;
 use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Files\VersionTools;
-use OCA\Mcp\Tools\RendersPlans;
+use OCA\Mcp\Mcp\Tools\RendersPlans;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /** The Markdown a person reads for every Files write plan, built from the plans the module really returns. */

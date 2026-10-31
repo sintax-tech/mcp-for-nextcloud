@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Polls;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** Fixed, client-safe refusals; native exceptions never provide their text to the answer. */
 final class PollsRefusal extends ToolFailure {

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Sharing;
 
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Files\Sharing\ShareRecipient;
 use OCA\Mcp\Tools\Files\Sharing\ShareRecipientResolver;
 use OCP\IGroup;

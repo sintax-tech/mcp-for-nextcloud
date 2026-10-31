@@ -11,7 +11,7 @@ require_once __DIR__ . '/EditingFixture.php';
 require_once dirname(__DIR__) . '/Creation/NativeNoSuchFormException.php';
 use OCA\Mcp\Tools\Forms\Editing\{EditWriter, EditNativeFactory, EditState, EditPlan, EditRequest};
 use OCA\Mcp\Tools\Forms\Creation\CreateNativeThrottle;
-use OCA\Mcp\Tools\{PlanState, ToolFailure};
+use OCA\Mcp\Mcp\{Confirmation\PlanState, Tools\Results\ToolFailure};
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use PHPUnit\Framework\TestCase;
 /** Separates refusal before native entry from a second-delay failure after the controller was attempted. */

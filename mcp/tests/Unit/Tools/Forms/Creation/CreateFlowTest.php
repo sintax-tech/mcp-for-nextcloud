@@ -9,9 +9,9 @@ namespace OCA\Mcp\Tests\Unit\Tools\Forms\Creation;
 
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\Forms\Creation\{CreateFormContext,CreateFormFlow,CreateFormMessages,CreateFormPlan,CreateFormPlanRenderer,CreateFormWriter,FormsCreateNativeFactory};
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /** Tests preview/confirmation boundaries without mistaking doubles for native actor-capture runtime proof. */

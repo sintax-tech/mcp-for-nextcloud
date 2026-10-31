@@ -202,7 +202,7 @@ final class DeleteFileTest extends ExclusionTestCase {
 			try {
 				$gate->check($file, self::ALICE);
 				self::fail('Actual Noop locking must refuse');
-			} catch (\OCA\Mcp\Tools\ToolFailure $error) {
+			} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $error) {
 				self::assertStringContainsString('Nothing was deleted', $error->getMessage());
 				self::assertSame('keep', $file->getContent());
 			}

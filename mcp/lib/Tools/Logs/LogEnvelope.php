@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Logs;
 
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /**
  * The envelope of every answer of the logs module. A log entry is written by whoever used the server: a file name,

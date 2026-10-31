@@ -8,7 +8,7 @@ namespace OCA\Mcp\Tools\Files\Deletion;
 
 use OCP\Files\Folder;
 use OCP\Files\NotFoundException;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /** Observations are bounded: absence is not a trash receipt and native void is never treated as success. */
 final class DeleteOutcome {

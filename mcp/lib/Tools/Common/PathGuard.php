@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Common;
 
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 
 /** Normalizes a user-relative path and rejects traversal before any storage access. */
 final class PathGuard {

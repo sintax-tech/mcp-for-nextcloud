@@ -14,7 +14,7 @@ use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;
@@ -231,10 +231,10 @@ final class DeckPreviewTest extends TestCase {
 	public function testEditPlanRefusesAnAccountWithoutAccessBeforeAnythingIsWritten(): void {
 		$gateway = $this->gatewayWithAssignedCard([]);
 		$gateway->method('validateAssignees')->willThrowException(
-			new \OCA\Mcp\Tools\ArgumentValidationException('Invalid argument: assignees', 'assignees', 'each account must exist and have access to the board'),
+			new \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException('Invalid argument: assignees', 'assignees', 'each account must exist and have access to the board'),
 		);
 
-		$this->expectException(\OCA\Mcp\Tools\ArgumentValidationException::class);
+		$this->expectException(\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException::class);
 
 		$this->moduleWith($gateway)->preview('deck_edit_card', ['cardId' => 7, 'assign' => ['intruso']], 'alice');
 	}
@@ -243,7 +243,7 @@ final class DeckPreviewTest extends TestCase {
 		$gateway = $this->gatewayWithAssignedCard(['pedro']);
 		$gateway->expects(self::never())->method('findCard');
 
-		$this->expectException(\OCA\Mcp\Tools\ArgumentValidationException::class);
+		$this->expectException(\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException::class);
 
 		$this->moduleWith($gateway)->preview('deck_edit_card', ['cardId' => 7, 'assign' => ['pedro'], 'unassign' => ['pedro']], 'alice');
 	}

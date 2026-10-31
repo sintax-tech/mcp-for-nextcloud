@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Tools\Polls\{PollsContext,PollsCursor,PollsListing,PollsReading,PollsServices,PollsSessionGuard,PollsShapes,PollsSurface,PollsModule};
 use OCA\Mcp\Tools\Polls\Handler\{ListPollsHandler,ReadPollHandler};
 use OCP\{IUser,IUserManager,IUserSession};

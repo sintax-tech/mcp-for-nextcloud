@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files\Sharing;
 
 use OCA\Mcp\Tools\Common\PathGuard;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 
 /**

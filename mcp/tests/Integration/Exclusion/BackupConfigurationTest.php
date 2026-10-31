@@ -193,7 +193,7 @@ final class BackupConfigurationTest extends ExclusionTestCase {
 				self::assertTrue($result->isError(), $result->describe());
 			}
 			try { Server::get(ContactBackup::class)->save(self::ALICE, $this->run, 'corrupt', 'private'); self::fail('Contact copy bypassed corruption'); }
-			catch (\OCA\Mcp\Tools\ToolFailure) { }
+			catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure) { }
 			self::assertFalse($home->nodeExists('BK2 history/' . $this->run . '/forbidden.txt'));
 			self::assertFalse($home->nodeExists(ltrim($this->path('home', 'copy.txt'), '/')));
 			self::assertSame('unchanged', $home->get($this->path('home', 'corruption.txt'))->getContent());

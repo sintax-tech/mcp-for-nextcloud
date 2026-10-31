@@ -115,7 +115,7 @@ final class MailMessageTools {
 	 * @param string $userId authenticated user UID
 	 * @return array{content:list<array{type:string, text:string}>, isError?:bool} MCP result
 	 * @throws InvalidArgumentException for a tool this class does not have
-	 * @throws \OCA\Mcp\Tools\ToolFailure when a message, folder or account is not found or Mail is not available
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when a message, folder or account is not found or Mail is not available
 	 */
 	public function call(string $name, array $arguments, string $userId): array {
 		$zone = $this->timezones->forUser($userId);

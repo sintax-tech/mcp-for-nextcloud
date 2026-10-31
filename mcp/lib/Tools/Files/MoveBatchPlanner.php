@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 
 /** Native ordered plan with one shared type snapshot before folder creation or shared confirmation. */

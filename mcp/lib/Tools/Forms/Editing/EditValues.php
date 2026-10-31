@@ -7,7 +7,7 @@
 declare (strict_types=1);
 namespace OCA\Mcp\Tools\Forms\Editing;
 
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\L10n\Translator;
 /** Validates byte-faithful values and canonical internal state without silently repairing or shortening text. */
 final class EditValues

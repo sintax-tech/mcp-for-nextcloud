@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tools\Tasks;
 
 use Closure;
 use OCA\Mcp\Tools\Calendar\Calendar;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 
 /**
  * What the `parent` argument adds to a create or an edit: the hierarchy check and the parent titles in the plan,

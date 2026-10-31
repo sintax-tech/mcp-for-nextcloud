@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Tasks;
 
 use OCA\Mcp\Tools\Calendar\Calendar;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * Titles of the parent tasks a write plan names, so the person reads a task and not only a UID. A parent the

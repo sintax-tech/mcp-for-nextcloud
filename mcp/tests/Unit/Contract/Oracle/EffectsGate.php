@@ -9,13 +9,13 @@ namespace OCA\Mcp\Tests\Unit\Contract\Oracle;
 
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\GuestRestrictions;
-use OCA\Mcp\Service\McpProtocol;
-use OCA\Mcp\Service\PromptCatalog;
+use OCA\Mcp\Mcp\Protocol\McpProtocol;
+use OCA\Mcp\Mcp\Prompts\PromptCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\InstalledApp;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
-use OCA\Mcp\Tools\ToolModule;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\IConfig;
 use OCP\IUser;

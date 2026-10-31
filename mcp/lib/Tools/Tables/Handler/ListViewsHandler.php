@@ -13,8 +13,8 @@ use OCA\Mcp\Tools\Tables\Discovery\TablesPage;
 use OCA\Mcp\Tools\Tables\Discovery\ViewsDiscovery;
 use OCA\Mcp\Tools\Tables\TablesMessages;
 use OCA\Mcp\Tools\Tables\TablesUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /**
  * Backs `tables_list_views`: one page of the views the user can open ({@see ViewsDiscovery}), in table then view order.

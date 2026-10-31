@@ -14,7 +14,7 @@ use OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
 use OCA\Mcp\Tools\Forms\Creation\{CreateFormContext,CreateFormFlow,CreateFormPlan,CreateFormRequest,CreateFormWriter,FormsCreateNativeFactory};
 use OCA\Mcp\Tools\Forms\FormsModule;
 use OCA\Mcp\Tools\Forms\Handler\{CreateFormHandler,ListFormsHandler,ReadFormHandler,ListSubmissionsHandler,ReadSubmissionHandler};
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Tools\Forms\Editing\{EditFlow,EditNativeFactory,EditState,EditPlan,EditWriter};
 use OCA\Mcp\Tools\Forms\Handler\{EditQuestionHandler,EditOptionHandler};
 use PHPUnit\Framework\TestCase;

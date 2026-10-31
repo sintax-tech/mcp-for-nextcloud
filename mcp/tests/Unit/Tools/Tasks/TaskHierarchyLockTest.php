@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Tasks;
 use OCA\Mcp\Tests\Unit\InMemoryLocks;
 use OCA\Mcp\Tools\Tasks\TaskHierarchyLock;
 use OCA\Mcp\Tools\Tasks\TaskHierarchyMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 

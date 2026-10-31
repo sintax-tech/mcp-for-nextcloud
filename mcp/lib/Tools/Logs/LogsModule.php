@@ -10,9 +10,9 @@ namespace OCA\Mcp\Tools\Logs;
 use InvalidArgumentException;
 use OCA\Mcp\Service\LogFileNames;
 use OCA\Mcp\Service\LogsAccess;
-use OCA\Mcp\Tools\RestrictedModule;
-use OCA\Mcp\Tools\ToolGuideNotes;
-use OCA\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Tools\RestrictedModule;
+use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
+use OCA\Mcp\Mcp\Tools\ToolModule;
 use OCP\IConfig;
 
 /**
@@ -137,7 +137,7 @@ class LogsModule implements ToolModule, ToolGuideNotes, RestrictedModule {
 	 * @return array{content: list<array{type:string, text:string}>, structuredContent: array<string, mixed>}
 	 * @throws InvalidArgumentException for an unknown tool or an invalid filter, and for contains while messages are
 	 *         hidden, before anything is read
-	 * @throws \OCA\Mcp\Tools\ToolFailure when the log cannot be read
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when the log cannot be read
 	 */
 	public function call(string $name, array $arguments, string $userId): array {
 		if ($name !== 'logs_list' && $name !== 'logs_analyze') {

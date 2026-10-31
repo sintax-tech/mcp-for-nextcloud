@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Forms;
 
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** Maps native missing/forbidden failures identically without exposing ids, owners or service messages. */
 final class FormsCalls {

@@ -11,7 +11,7 @@ use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
 use OCA\Mcp\Tools\Deck\{CardFiles, DeckGatewayInterface, DeckRefusalException};
 use OCA\Mcp\Tools\Deck\Handler\CardFileHandler;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\Files\{File, Folder, IRootFolder};
 use OCP\Share\IShare;
 use PHPUnit\Framework\TestCase;
@@ -219,7 +219,7 @@ final class CardFilesTest extends TestCase {
 	public function testReceiptIsNotAcceptedOnPreview(): void {
 		$h = $this->handler();
 		$args = $this->confirmed($h);
-		$this->expectException(\OCA\Mcp\Tools\ArgumentValidationException::class);
+		$this->expectException(\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException::class);
 		$h->preview($args, 'alice');
 	}
 }

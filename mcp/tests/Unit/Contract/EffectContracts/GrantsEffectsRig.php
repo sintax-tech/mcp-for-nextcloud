@@ -14,7 +14,7 @@ use OCA\Mcp\Service\Policy\GroupGrantsService;
 use OCA\Mcp\Service\Policy\PolicyWriter;
 use OCA\Mcp\Tests\Unit\Admin\MatrixFixture;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\IGroupManager;
 use OCP\IRequest;

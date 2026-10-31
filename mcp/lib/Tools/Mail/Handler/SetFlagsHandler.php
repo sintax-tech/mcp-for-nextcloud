@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Mail\Handler;
 
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Mail\Flag\MailFlagEvent;
 use OCA\Mcp\Tools\Mail\Flag\MailFlagMessages;
 use OCA\Mcp\Tools\Mail\Flag\MailFlagPlan;
@@ -16,10 +16,10 @@ use OCA\Mcp\Tools\Mail\Flag\MailFlagStore;
 use OCA\Mcp\Tools\Mail\MailMessageLocator;
 use OCA\Mcp\Tools\Mail\MailServices;
 use OCA\Mcp\Tools\Mail\MailUnavailableException;
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /**
  * Backs `mail_set_flags`: read/unread and flagged/not flagged on one message of the user, as asked, never toggled.

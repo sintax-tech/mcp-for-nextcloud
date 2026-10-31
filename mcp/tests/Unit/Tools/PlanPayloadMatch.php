@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools;
 
-use OCA\Mcp\Tools\PlanText;
+use OCA\Mcp\Mcp\Confirmation\PlanText;
 
 /** Recognizes the existing inert text formats, including reversible quotes needed by complete creation plans. */
 final class PlanPayloadMatch {

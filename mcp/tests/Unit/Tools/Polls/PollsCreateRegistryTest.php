@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
 use OCA\Mcp\Service\GuestRestrictions;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\{IUser,IUserManager};
 use PHPUnit\Framework\TestCase;

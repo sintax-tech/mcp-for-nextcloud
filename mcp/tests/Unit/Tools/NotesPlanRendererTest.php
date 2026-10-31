@@ -54,7 +54,7 @@ final class NotesPlanRendererTest extends TestCase {
 			$access,
 			null,
 			null,
-			new \OCA\Mcp\Tools\PlanState($this->config->mock($this)),
+			new \OCA\Mcp\Mcp\Confirmation\PlanState($this->config->mock($this)),
 		);
 		$this->renderer = new NotesPlanRenderer();
 	}
@@ -317,7 +317,7 @@ final class NotesPlanRendererTest extends TestCase {
 
 	public function testThePartialPlanTellsTheModelWhichEtagAndPlanStateToConfirmWith(): void {
 		$plan = $this->module->preview('notes_edit', ['id' => $this->noteId, 'append' => 'Linha 3'], 'alice');
-		$text = \OCA\Mcp\Tools\PlanRenderer::render($this->module, 'notes_edit', $plan);
+		$text = \OCA\Mcp\Mcp\Confirmation\PlanRenderer::render($this->module, 'notes_edit', $plan);
 		$this->assertStringContainsString('To confirm, repeat the call with etag `' . $plan['etag'] . '`.', $text);
 		$this->assertStringContainsString('To confirm, repeat the call with plan_state `' . $plan['plan_state'] . '`.', $text);
 		$this->assertStringContainsString('the text below is added at the end of the note', $text);

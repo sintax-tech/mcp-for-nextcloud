@@ -19,7 +19,7 @@ use OCA\Mcp\Tests\Unit\SqliteDatabase;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
 use OCA\Mcp\Migration\Version001100Date20261015000000;
 use OCA\Mcp\Migration\Version001100Date20261015010000;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IAppConfig;
 use OCP\IDBConnection;
 use OCP\IUserManager;

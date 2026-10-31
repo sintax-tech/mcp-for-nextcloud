@@ -11,7 +11,7 @@ use InvalidArgumentException;
 use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\Stack;
 use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Deck\DeckConflictException;
 use OCA\Mcp\Tools\Deck\DeckErrors;
 use OCA\Mcp\Tools\Deck\DeckFailureLog;
@@ -21,7 +21,7 @@ use OCA\Mcp\Tools\Deck\DeckRefusalException;
 use OCA\Mcp\Tools\Deck\DeckResult;
 use OCA\Mcp\Tools\Deck\DeckSessionException;
 use OCA\Mcp\Tools\Deck\DeckUnconfirmedException;
-use OCA\Mcp\Tools\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
 use Psr\Log\LoggerInterface;
 
 /**

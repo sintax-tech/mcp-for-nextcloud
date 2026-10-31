@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Tables\Rows;
 
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 
 /**
  * The cursor of tables_list_rows: `v1.` + base64url of the public JSON `{"o": offset}` + `.` + a MAC. The MAC

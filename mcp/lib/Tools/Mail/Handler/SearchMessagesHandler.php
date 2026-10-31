@@ -15,7 +15,7 @@ use OCA\Mcp\Tools\Mail\MailMessageScope;
 use OCA\Mcp\Tools\Mail\MailMessageSearch;
 use OCA\Mcp\Tools\Mail\MailSearchCriteria;
 use OCA\Mcp\Tools\Mail\MailUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * Backs `mail_search_messages`: one page of the messages that match the filters, newest first, in one folder, in

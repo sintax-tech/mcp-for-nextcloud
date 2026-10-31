@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Tasks;
 
 use OCA\Mcp\Tools\Calendar\Calendar;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use Sabre\VObject\Component\VCalendar;
 
 /**

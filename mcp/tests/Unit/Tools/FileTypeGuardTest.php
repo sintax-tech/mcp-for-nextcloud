@@ -14,7 +14,7 @@ use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Tools\Common\FileTypeDenied;
 use OCA\Mcp\Tools\Common\FileTypeGuard;
 use OCA\Mcp\Tools\Common\FileTypeMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IAppConfig;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;

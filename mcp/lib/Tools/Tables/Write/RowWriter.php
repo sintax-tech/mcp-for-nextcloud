@@ -11,7 +11,7 @@ use OCA\Mcp\Tools\Tables\Rows\RowsRefusal;
 use OCA\Mcp\Tools\Tables\Rows\TablesSessionGuard;
 use OCA\Mcp\Tools\Tables\TablesServices;
 use OCA\Mcp\Tools\Tables\TablesUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * The one call that writes: RowService::create() or updateSet(), in the form the Tables controllers use, right after the

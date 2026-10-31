@@ -17,7 +17,7 @@ use OCA\Mcp\Tools\Calendar\CalendarDav;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\TrashPolicy;
-use OCA\Mcp\Tools\RendersPlans;
+use OCA\Mcp\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\Tasks\TaskData;
 use OCA\Mcp\Tools\Tasks\TaskStore;
 use OCA\Mcp\Tools\Tasks\TasksModule;

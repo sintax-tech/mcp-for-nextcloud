@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * files_mkdir: create folders, never overwrite what is already there.
@@ -127,7 +127,7 @@ final class FilesMkdirTest extends FilesToolsTestCase {
 			try {
 				$this->plan('files_mkdir', ['path' => $path]);
 				$this->fail('The unavailable destination must be refused');
-			} catch (\OCA\Mcp\Tools\ToolFailure $e) {
+			} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
 				$this->assertSame($path === '/secret.txt' ? CommonMessages::notFound() : CommonMessages::forbidden(), $e->getMessage());
 			}
 		}

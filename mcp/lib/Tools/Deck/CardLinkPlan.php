@@ -10,8 +10,8 @@ namespace OCA\Mcp\Tools\Deck;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Files\Sharing\SharePermission;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\PlanText;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanText;
 use OCP\Share\IShare;
 
 /**

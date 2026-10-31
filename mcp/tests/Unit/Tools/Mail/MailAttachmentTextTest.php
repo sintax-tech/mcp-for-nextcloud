@@ -12,7 +12,7 @@ use OCA\Mcp\Tools\Mail\MailAttachmentMessages;
 use OCA\Mcp\Tools\Mail\MailAttachmentPart;
 use OCA\Mcp\Tools\Mail\MailAttachmentText;
 use OCA\Mcp\Tools\Mail\MailPdfPreflight;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\ITempManager;
 use PHPUnit\Framework\TestCase;
 

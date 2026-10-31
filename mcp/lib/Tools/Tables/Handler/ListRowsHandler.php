@@ -7,14 +7,14 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Tables\Handler;
 
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Tables\Links\TablesLinks;
 use OCA\Mcp\Tools\Tables\Rows\RowReader;
 use OCA\Mcp\Tools\Tables\Rows\RowsRequest;
 use OCA\Mcp\Tools\Tables\TablesMessages;
 use OCA\Mcp\Tools\Tables\TablesUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /**
  * Backs `tables_list_rows`: one page of the rows of a table or a view the user can read ({@see RowReader}).

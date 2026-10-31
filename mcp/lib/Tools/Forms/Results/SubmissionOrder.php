@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Forms\Results;
 
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 
 /** Orders complete bounded headers and keys their state without exposing account identifiers. */
 final class SubmissionOrder {

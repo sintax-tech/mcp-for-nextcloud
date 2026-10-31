@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files\Handler;
 
-use OCA\Mcp\Tools\ArgumentValidationException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Tools\Common\FileTypeDenied;
 use OCA\Mcp\Service\FileWritePolicyUnavailable;
 

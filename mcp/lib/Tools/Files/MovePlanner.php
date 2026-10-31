@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 
 /** A validated plan, plus the confirmation a shared item needs when the caller has not given it. */

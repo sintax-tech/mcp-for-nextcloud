@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Forms\Editing;
 
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCA\Mcp\L10n\Translator;
 
 /** Implements the explicit module-level shared confirmation after native EDIT, never through an unrelated Files guard. */

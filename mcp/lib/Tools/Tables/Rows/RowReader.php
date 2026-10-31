@@ -7,13 +7,13 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Tables\Rows;
 
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Tools\Tables\Columns\ColumnLookup;
 use OCA\Mcp\Tools\Tables\TablesCalls;
 use OCA\Mcp\Tools\Tables\TablesMessages;
 use OCA\Mcp\Tools\Tables\TablesServices;
 use OCA\Mcp\Tools\Tables\TablesUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * Reads one page of rows the way RowService::findAllByView()/findAllByTable() does, with the user's filter, search and

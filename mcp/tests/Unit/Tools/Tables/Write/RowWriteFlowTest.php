@@ -11,11 +11,11 @@ use OCA\Mcp\Tests\Unit\Tools\Tables\Support\FakeTablesWriteApp;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesScene;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesWriteWiring;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\WriteScene;
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Tools\Tables\TablesMessages;
 use OCA\Mcp\Tools\Tables\Write\RowWriteMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /**

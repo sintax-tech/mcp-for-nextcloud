@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Forms\Editing;
 
 use OCA\Forms\Constants;
 use OCA\Forms\Db\Form;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** Reads only authorized active structure and the minimal native metadata needed to predict a point edit. */
 class EditState {

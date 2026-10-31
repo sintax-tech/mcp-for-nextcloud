@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit;
 
-use OCA\Mcp\Service\McpProtocol;
+use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use PHPUnit\Framework\TestCase;
 
 final class McpProtocolTest extends TestCase {
@@ -130,7 +130,7 @@ final class McpProtocolTest extends TestCase {
 	 * path have to survive as themselves; anything shaped like server state has to be dropped.
 	 */
 	public function testArgumentErrorsReachTheClientNamingTheField(): void {
-		$module = new class implements \OCA\Mcp\Tools\ToolModule {
+		$module = new class implements \OCA\Mcp\Mcp\Tools\ToolModule {
 			public function definitions(): array {
 				return [['name' => 'exemplo', 'description' => 'x', 'module' => 'files', 'operation' => 'read',
 					'inputSchema' => ['type' => 'object', 'additionalProperties' => false, 'properties' => [
@@ -143,7 +143,7 @@ final class McpProtocolTest extends TestCase {
 					]]]];
 			}
 			public function call(string $name, array $arguments, string $userId): array {
-				return \OCA\Mcp\Tools\ToolResult::json(['ok' => true]);
+				return \OCA\Mcp\Mcp\Tools\Results\ToolResult::json(['ok' => true]);
 			}
 		};
 		$casos = [
@@ -180,7 +180,7 @@ final class McpProtocolTest extends TestCase {
 
 	/** Semantic date failures retain the field and rule without disclosing input. */
 	public function testInvalidDateHasStructuredDetails(): void {
-		$module = new class implements \OCA\Mcp\Tools\ToolModule {
+		$module = new class implements \OCA\Mcp\Mcp\Tools\ToolModule {
 			public function definitions(): array {
 				return [['name' => 'date_test', 'description' => 'x', 'module' => 'files', 'operation' => 'read',
 					'inputSchema' => ['properties' => ['start' => ['type' => 'string']]]]];
@@ -201,7 +201,7 @@ final class McpProtocolTest extends TestCase {
 
 	/** @return array<string, mixed> the response to calling a one-tool module that runs $action */
 	private function failing(string $tool, array $arguments, callable $action): array {
-		$module = new class($tool, $action) implements \OCA\Mcp\Tools\ToolModule {
+		$module = new class($tool, $action) implements \OCA\Mcp\Mcp\Tools\ToolModule {
 			public function __construct(private string $tool, private $action) {}
 			public function definitions(): array {
 				return [['name' => $this->tool, 'description' => 'x', 'module' => 'files', 'operation' => 'read',
@@ -257,20 +257,20 @@ final class McpProtocolTest extends TestCase {
 		return $method->invoke($protocol, $message);
 	}
 
-	/** @param \OCA\Mcp\Tools\ToolModule $module the single tool this protocol exposes */
-	private function callWith(\OCA\Mcp\Tools\ToolModule $module, array|string $message): array {
+	/** @param \OCA\Mcp\Mcp\Tools\ToolModule $module the single tool this protocol exposes */
+	private function callWith(\OCA\Mcp\Mcp\Tools\ToolModule $module, array|string $message): array {
 		return self::withModules($this, [$module])->handle(json_encode($message), self::V, 'alice');
 	}
 
-	/** @param list<\OCA\Mcp\Tools\ToolModule> $modules tools the protocol may expose */
+	/** @param list<\OCA\Mcp\Mcp\Tools\ToolModule> $modules tools the protocol may expose */
 	private static function withModules(TestCase $test, array $modules, ?\Psr\Log\LoggerInterface $logger = null): McpProtocol {
 		$mock = fn (string $class) => (new \ReflectionMethod($test, 'createMock'))->invoke($test, $class);
 		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($test), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
 		$apps = $mock(\OCP\App\IAppManager::class);
 		InstalledApp::mock($apps);
-		return new McpProtocol(new \OCA\Mcp\Tools\ToolRegistry($modules, $policy,
+		return new McpProtocol(new \OCA\Mcp\Mcp\Tools\ToolRegistry($modules, $policy,
 			$apps, $mock(\OCP\IUserManager::class), $mock(\Psr\Log\LoggerInterface::class)),
-			new \OCA\Mcp\Service\PromptCatalog(), $policy, $logger ?? $mock(\Psr\Log\LoggerInterface::class), $apps);
+			new \OCA\Mcp\Mcp\Prompts\PromptCatalog(), $policy, $logger ?? $mock(\Psr\Log\LoggerInterface::class), $apps);
 	}
 
 	private function codes(array $out): array {

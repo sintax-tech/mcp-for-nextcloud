@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 use OCA\Mcp\Tools\Deck\{CardLabelChanges, DeckGatewayInterface, DeckConflictException, DeckPlanRenderer};
 use OCA\Mcp\Tools\Deck\Handler\EditCardLabelsHandler;
-use OCA\Mcp\Tools\{PlanState, PlanChanged, ArgumentValidationException};
+use OCA\Mcp\Mcp\{Confirmation\PlanState, Confirmation\PlanChanged, Tools\Validation\ArgumentValidationException};
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Log\LoggerInterface;
@@ -124,7 +124,7 @@ final class CardLabelsTest extends TestCase {
 			foreach(['en','pt_BR','es','de']as$lang){
 				\OCA\Mcp\L10n\Translator::use(new \OCA\Mcp\Tests\Unit\L10n\JsonL10n($lang));
 				$message=\OCA\Mcp\Tools\Deck\DeckMessages::planLabels();
-				$title=\OCA\Mcp\Tools\ToolPresentation::title(EditCardLabelsHandler::TOOL);
+				$title=\OCA\Mcp\Mcp\Tools\ToolPresentation::title(EditCardLabelsHandler::TOOL);
 				if($lang==='en'){self::assertStringContainsString('Only the requested',$message);}
 				else{self::assertStringNotContainsString('Only the requested',$message);self::assertNotSame('Change Deck card labels',$title);}
 			}
@@ -143,7 +143,7 @@ final class CardLabelsTest extends TestCase {
 		$g=$this->createMock(DeckGatewayInterface::class);$g->method('cardLabelState')->willReturn($this->state());
 		$g->expects(self::never())->method('changeCardLabel');
 		(new \ReflectionProperty($module,'gateway'))->setValue($module,$g);
-		$registry=new \OCA\Mcp\Tools\ToolRegistry([$module],$policy,$apps,$users,$logger);
+		$registry=new \OCA\Mcp\Mcp\Tools\ToolRegistry([$module],$policy,$apps,$users,$logger);
 		$args=['cardId'=>7,'add'=>[2]];
 		$p=$registry->call(EditCardLabelsHandler::TOOL,$args,'alice')['structuredContent'];
 		self::assertTrue($p['requiresConfirmation']);

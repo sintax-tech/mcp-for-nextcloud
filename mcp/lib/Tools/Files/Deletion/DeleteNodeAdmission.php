@@ -10,7 +10,7 @@ use OCA\Mcp\Service\BackupLocation;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Files\BackupWriteBoundary;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use OCP\Files\Node;
 use OCP\Share\IManager;

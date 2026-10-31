@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Mail;
 
 use OCA\Mcp\Tools\ExtractedText;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Tools\XmlCharset;
 use OCP\ITempManager;
 

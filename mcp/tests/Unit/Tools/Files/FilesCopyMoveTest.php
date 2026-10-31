@@ -38,7 +38,7 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
 			try {
 				$this->tool($tool, ['from' => self::SOURCE_PATH, 'to' => '/Copia/../../fora/ata.md']);
 				$this->fail("$tool accepted a traversal");
-			} catch (\OCA\Mcp\Tools\ArgumentValidationException $e) {
+			} catch (\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException $e) {
 				$this->assertSame('to', $e->details()['field'], $tool);
 				$this->assertStringNotContainsString('fora', json_encode($e->details()), $tool);
 			}
@@ -118,7 +118,7 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
 		for ($i = 0; $i < ReorganizationLimits::NODES + 1; $i++) {
 			$this->tree->addFile("/alice/files/Grande/arquivo-$i.txt", 'x', 'text/plain');
 		}
-		$this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
+		$this->expectException(\OCA\Mcp\Mcp\Tools\Results\ToolFailure::class);
 		$this->expectExceptionMessage(FilesMessages::copyTooManyNodes(ReorganizationLimits::NODES));
 		$this->reorganization()->measure($this->tree->node('/alice/files/Grande'));
 	}
@@ -329,7 +329,7 @@ final class FilesCopyMoveTest extends FilesToolsTestCase {
 		try {
 			$this->plan('files_copy', $arguments);
 			$this->fail('o plano aceitou copiar uma pasta com arquivo oculto');
-		} catch (\OCA\Mcp\Tools\ToolFailure $e) {
+		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
 			$this->assertSame(FilesMessages::folderExposureRefused(), $e->getMessage());
 		}
 		$this->assertSame(FilesMessages::folderExposureRefused(), $this->failure('files_copy', $arguments + ['confirm' => true]));

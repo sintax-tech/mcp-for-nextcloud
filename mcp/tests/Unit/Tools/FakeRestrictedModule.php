@@ -7,8 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools;
 
-use OCA\Mcp\Tools\RestrictedModule;
-use OCA\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Tools\RestrictedModule;
+use OCA\Mcp\Mcp\Tools\ToolModule;
+use OCA\Mcp\Tests\Unit\Mcp\Tools\ToolRegistryTest;
 
 /** A read-only module only some users may see, recording the calls it gets and the outcomes the registry audits. */
 final class FakeRestrictedModule implements ToolModule, RestrictedModule {

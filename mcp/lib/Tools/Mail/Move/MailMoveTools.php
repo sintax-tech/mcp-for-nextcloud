@@ -18,7 +18,7 @@ use OCA\Mcp\Tools\Mail\MailMessageLocator;
 use OCA\Mcp\Tools\Mail\MailMessageRows;
 use OCA\Mcp\Tools\Mail\MailModule;
 use OCA\Mcp\Tools\Mail\MailServices;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\EventDispatcher\IEventDispatcher;
 
 /**
@@ -100,7 +100,7 @@ final class MailMoveTools {
 	 * @param string $userId authenticated user UID
 	 * @return array<string, mixed> the plan
 	 * @throws InvalidArgumentException for a tool this class does not have
-	 * @throws \OCA\Mcp\Tools\ToolFailure when the message or the folder is not the user's or cannot be used, or Mail is
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when the message or the folder is not the user's or cannot be used, or Mail is
 	 *     not available
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
@@ -115,8 +115,8 @@ final class MailMoveTools {
 	 * @param string $userId authenticated user UID
 	 * @return array{content:list<array{type:string, text:string}>} MCP result
 	 * @throws InvalidArgumentException for a tool this class does not have, or a call without plan_state
-	 * @throws \OCA\Mcp\Tools\PlanChanged when the message, the destination or the arguments are not the approved ones
-	 * @throws \OCA\Mcp\Tools\ToolFailure when the move cannot be done, has no known outcome, or Mail is not available
+	 * @throws \OCA\Mcp\Mcp\Confirmation\PlanChanged when the message, the destination or the arguments are not the approved ones
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when the move cannot be done, has no known outcome, or Mail is not available
 	 */
 	public function call(string $name, array $arguments, string $userId): array {
 		return $this->handler($name, $userId)->handle($arguments, $userId);

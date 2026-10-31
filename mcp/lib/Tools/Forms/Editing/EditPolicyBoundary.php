@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Forms\Editing;
 
 use OCA\Mcp\Service\Policy\PolicyResolver;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** Renews effective edit policy without replacing the endpoint's external operation snapshot. */
 class EditPolicyBoundary {

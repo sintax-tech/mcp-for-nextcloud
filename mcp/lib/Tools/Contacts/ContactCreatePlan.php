@@ -9,9 +9,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Contacts;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\ArgumentValidationException;
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 
 /**
  * Binds the UID of a contact creation to the plan the person confirms.

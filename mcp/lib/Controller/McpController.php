@@ -14,7 +14,7 @@ use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\ResourceUrl;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\GuestRestrictions;
-use OCA\Mcp\Service\McpProtocol;
+use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use OCA\Mcp\Service\Policy\CauseProcessor;
 use OCA\Mcp\Service\Policy\PolicyUnavailable;
 use OCP\AppFramework\Controller;

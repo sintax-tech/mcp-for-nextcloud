@@ -12,7 +12,7 @@ use OCA\Mcp\Tools\Mail\MailCacheGeneration;
 use OCA\Mcp\Tools\Mail\MailMessages;
 use OCA\Mcp\Tools\Mail\MailServices;
 use OCA\Mcp\Tools\Mail\MailUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * Moves one cached message to another folder of its account on the mail server, only when the server still holds that

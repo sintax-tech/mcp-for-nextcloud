@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Files\Deletion\Folder;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Files\Deletion\DeleteNodeAdmission;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use OCP\Files\Node;
 

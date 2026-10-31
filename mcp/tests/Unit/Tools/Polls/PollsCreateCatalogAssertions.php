@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
 use PHPUnit\Framework\TestCase;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 
 /** Keep the exact original five read tools/negative checks and independently assert the one write. */
 final class PollsCreateCatalogAssertions {

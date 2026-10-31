@@ -280,7 +280,7 @@ final class VisibilityGuardMountBoundaryTest extends TestCase {
 		$file = $this->externalFile();
 		$this->byPath['/alice/files'] = new \OCP\Files\NotFoundException();
 
-		$this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
+		$this->expectException(\OCA\Mcp\Mcp\Tools\Results\ToolFailure::class);
 		$this->guard()->copyHiddenTags($file, $this->node(500, '/alice/files/b', '/alice/', $this->root));
 	}
 
@@ -305,7 +305,7 @@ final class VisibilityGuardMountBoundaryTest extends TestCase {
 	public function testFolderRenameGateRefusesAMoveIntoTheFolderWhoseIdTheMountRootBorrows(): void {
 		[$bobFiles, $received] = $this->receivedFolderBesideP();
 
-		$this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
+		$this->expectException(\OCA\Mcp\Mcp\Tools\Results\ToolFailure::class);
 		\OCA\Mcp\Tools\Files\FolderExposureGate::assertMove($bobFiles, $received, '/P/S', $this->guard());
 	}
 

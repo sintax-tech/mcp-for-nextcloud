@@ -9,7 +9,7 @@ namespace OCA\Mcp\Service;
 
 use OCA\Mcp\L10n\Translator;
 use OCP\Files\IFilenameValidator;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** One canonical backup document: current destination, preserved names and the Files copy preference. */
 final class BackupLocation {

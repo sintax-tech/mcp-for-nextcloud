@@ -12,18 +12,18 @@ use Closure;
 use LogicException;
 use RuntimeException;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Calendar\Calendar;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Contacts\ContactAccess;
 use OCA\Mcp\Tools\Contacts\ContactCard;
 use OCA\Mcp\Tools\Contacts\ContactCreatePlan;
 use OCA\Mcp\Tools\Contacts\ContactDav;
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use Sabre\VObject\Component\VCard;
 
 /**

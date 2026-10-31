@@ -7,14 +7,14 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Tables\Handler;
 
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Tables\Columns\ColumnLookup;
 use OCA\Mcp\Tools\Tables\Columns\ColumnShape;
 use OCA\Mcp\Tools\Tables\Links\TablesLinks;
 use OCA\Mcp\Tools\Tables\TablesMessages;
 use OCA\Mcp\Tools\Tables\TablesUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /**
  * Backs `tables_list_columns`: the columns of one table or one view the user can open ({@see ColumnLookup}), shaped by

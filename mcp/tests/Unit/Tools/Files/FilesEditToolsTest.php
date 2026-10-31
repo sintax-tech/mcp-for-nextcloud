@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Mcp\Checkout\CheckoutToken;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * files_replace, files_checkout and the shared-write guard as the Files tools expose them: the read
@@ -191,7 +191,7 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
 
 	/** The plan checks the etag too, so a stale one is refused before the user is asked. */
 	public function testCheckoutPlanWithAStaleEtagIsRefused(): void {
-		$this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
+		$this->expectException(\OCA\Mcp\Mcp\Tools\Results\ToolFailure::class);
 		$this->expectExceptionMessage(CommonMessages::conflict());
 		$this->plan('files_checkout', ['path' => '/Documentos/ata.md', 'etag' => 'outro']);
 	}

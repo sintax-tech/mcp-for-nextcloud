@@ -12,7 +12,7 @@ use OCA\Deck\BadRequestException;
 use OCA\Deck\Db\Assignment;
 use OCA\Deck\NoPermissionException;
 use OCA\Deck\StatusException;
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Deck\CardDueDateMessages;
 use OCA\Mcp\Tools\Deck\CardFormatter;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;

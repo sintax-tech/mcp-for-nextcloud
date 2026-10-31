@@ -11,7 +11,7 @@ use DateTimeZone;
 use OCA\Mcp\Tools\Mail\MailCursor;
 use OCA\Mcp\Tools\Mail\MailMessages;
 use OCA\Mcp\Tools\Mail\MailSearchCriteria;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /**

@@ -9,14 +9,14 @@ namespace OCA\Mcp\Tools\Files\Sharing;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Service\UserTimezone;
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\Folder;
 use OCP\Files\Node;

@@ -10,7 +10,7 @@
 		{"fqcn":"OCA\\Mcp\\OAuth\\TokenService","ceiling":354},
 		{"fqcn":"OCA\\Mcp\\Service\\Calendar\\CalendarSelftestService","ceiling":420},
 		{"fqcn":"OCA\\Mcp\\Service\\GrantPolicy","ceiling":512},
-		{"fqcn":"OCA\\Mcp\\Service\\McpProtocol","ceiling":549},
+		{"fqcn":"OCA\\Mcp\\Service\\McpProtocol","ceiling":552},
 		{"fqcn":"OCA\\Mcp\\Service\\Policy\\PolicyEventPayload","ceiling":451},
 		{"fqcn":"OCA\\Mcp\\Tools\\Calendar\\CalendarMessages","ceiling":448},
 		{"fqcn":"OCA\\Mcp\\Tools\\Calendar\\CalendarPlanRenderer","ceiling":541},
@@ -28,8 +28,8 @@
 		{"fqcn":"OCA\\Mcp\\Tools\\Talk\\TalkPlanRenderer","ceiling":377},
 		{"fqcn":"OCA\\Mcp\\Tools\\Tasks\\TaskData","ceiling":386},
 		{"fqcn":"OCA\\Mcp\\Tools\\Tasks\\TasksPlanRenderer","ceiling":406},
-		{"fqcn":"OCA\\Mcp\\Tools\\ToolGuide","ceiling":414},
-		{"fqcn":"OCA\\Mcp\\Tools\\ToolRegistry","ceiling":306}
+		{"fqcn":"OCA\\Mcp\\Tools\\ToolGuide","ceiling":419},
+		{"fqcn":"OCA\\Mcp\\Tools\\ToolRegistry","ceiling":313}
 	],
 	"transitional": [
 		{"fqcn":"OCA\\Mcp\\Controller\\CheckoutController","ceiling":562,"expires":"RE-24"},

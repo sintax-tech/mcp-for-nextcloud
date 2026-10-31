@@ -24,7 +24,7 @@ use OCA\Mcp\Tools\Deck\DeckRefusalException;
 use OCA\Mcp\Tools\Deck\DeckServiceContext;
 use OCA\Mcp\Tools\Deck\DeckServiceGateway;
 use OCA\Mcp\Tools\Deck\LinkRecipientContext;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\App\IAppManager;
 use OCP\IConfig;

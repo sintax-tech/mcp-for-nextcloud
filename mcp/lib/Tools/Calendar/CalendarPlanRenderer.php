@@ -11,8 +11,8 @@ use DateTimeImmutable;
 use DateTimeZone;
 use IntlDateFormatter;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\PlanText;
-use OCA\Mcp\Tools\RendersPlans;
+use OCA\Mcp\Mcp\Confirmation\PlanText;
+use OCA\Mcp\Mcp\Tools\RendersPlans;
 use Throwable;
 
 /**

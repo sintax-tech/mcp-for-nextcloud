@@ -12,7 +12,7 @@ use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Constants;
 use PHPUnit\Framework\TestCase;
 

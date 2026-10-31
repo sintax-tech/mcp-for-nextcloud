@@ -14,7 +14,7 @@ use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Notes\NotesFolderNotice;
 use OCA\Mcp\Tools\Notes\NotesRepository;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\File;
 use OCP\Files\Folder;
 

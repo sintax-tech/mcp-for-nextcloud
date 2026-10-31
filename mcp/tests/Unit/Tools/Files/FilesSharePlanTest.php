@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tools\PlanRenderer;
+use OCA\Mcp\Mcp\Confirmation\PlanRenderer;
 
 /** The text a person reads before confirming files_share, rendered from the plans the module really returns. */
 final class FilesSharePlanTest extends FilesToolsTestCase {
@@ -83,7 +83,7 @@ final class FilesSharePlanTest extends FilesToolsTestCase {
 		Translator::use(new JsonL10n('pt_BR'));
 		$this->shares->add(['node' => $this->tree->nodes['/alice/files/Documentos/ata.md']['id'], 'with' => 'bruno', 'permissions' => 19,
 			'nodeObject' => $this->tree->node('/alice/files/Documentos/ata.md')]);
-		$plan = \OCA\Mcp\Tools\WriteGate::plan($this->module, array_column($this->module->definitions(), null, 'name')['files_share'],
+		$plan = \OCA\Mcp\Mcp\Confirmation\WriteGate::plan($this->module, array_column($this->module->definitions(), null, 'name')['files_share'],
 			$this->validated('files_share', ['path' => '/Documentos/ata.md', 'with' => 'user:bruno']), 'alice');
 		$text = PlanRenderer::render($this->module, 'files_share', $plan);
 

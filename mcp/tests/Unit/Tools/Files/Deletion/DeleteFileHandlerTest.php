@@ -12,7 +12,7 @@ use OCA\Mcp\Tools\Files\Deletion\DeleteEligibility;
 use OCA\Mcp\Tools\Files\Deletion\DeleteMessages;
 use OCA\Mcp\Tools\Files\Deletion\DeleteOutcome;
 use OCA\Mcp\Tools\Files\Handler\DeleteFileHandler;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /** Discriminates void veto, successful removal, changed source and partial failures; no trash claim from void. */

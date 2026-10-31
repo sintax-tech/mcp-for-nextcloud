@@ -47,7 +47,7 @@ use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Files\VersionRestore;
 use OCA\Mcp\Tools\Files\VersionTools;
 use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;

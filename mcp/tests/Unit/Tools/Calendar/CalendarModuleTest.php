@@ -11,7 +11,7 @@ use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tools\RendersPlans;
+use OCA\Mcp\Mcp\Tools\RendersPlans;
 
 final class CalendarModuleTest extends CalendarTestCase {
 	public function testDefinitionsDeclareCatalogGrantsAppAndStrictSchemas(): void {
@@ -41,7 +41,7 @@ final class CalendarModuleTest extends CalendarTestCase {
 		$apps->method('isEnabledForUser')->willReturn(true);
 		$users = $this->createMock(\OCP\IUserManager::class);
 		$users->method('get')->willReturn($this->createMock(\OCP\IUser::class));
-		$registry = new \OCA\Mcp\Tools\ToolRegistry([$this->module], $policy, $apps, $users, new \Psr\Log\NullLogger());
+		$registry = new \OCA\Mcp\Mcp\Tools\ToolRegistry([$this->module], $policy, $apps, $users, new \Psr\Log\NullLogger());
 		$writes = static fn (array $tools): array => array_values(array_filter(array_column($tools, 'name'), static fn (string $n): bool => str_starts_with($n, 'calendar_') && !in_array($n, ['calendar_list_calendars', 'calendar_list_events'], true)));
 		self::assertSame([], $writes($registry->list('alice')));
 		foreach (['create', 'edit', 'move', 'delete', 'transfer'] as $operation) {
@@ -78,7 +78,7 @@ final class CalendarModuleTest extends CalendarTestCase {
 		$apps->method('isEnabledForUser')->willReturn(true);
 		$users = $this->createMock(\OCP\IUserManager::class);
 		$users->method('get')->willReturn($this->createMock(\OCP\IUser::class));
-		$registry = new \OCA\Mcp\Tools\ToolRegistry([$this->module], $policy, $apps, $users, new \Psr\Log\NullLogger());
+		$registry = new \OCA\Mcp\Mcp\Tools\ToolRegistry([$this->module], $policy, $apps, $users, new \Psr\Log\NullLogger());
 		// The two reads plus the guide, which the registry lists ahead of every module; no write is granted yet.
 		self::assertCount(3, $registry->list('alice'));
 		$policy->setGrant('alice', 'calendar', 'create', true);

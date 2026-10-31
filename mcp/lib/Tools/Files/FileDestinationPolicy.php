@@ -53,7 +53,7 @@ final class FileDestinationPolicy {
 	 * @param string $to Final normalized path passed to the sink.
 	 * @param callable():Node $write Official Nextcloud copy or move.
 	 * @return Node Result of the official write.
-	 * @throws \OCA\Mcp\Tools\ToolFailure If policy or the native write refuses.
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure If policy or the native write refuses.
 	 */
 	public function write(Node $source, string $to, callable $write): Node {
 		$this->assertProjected($source, $to);

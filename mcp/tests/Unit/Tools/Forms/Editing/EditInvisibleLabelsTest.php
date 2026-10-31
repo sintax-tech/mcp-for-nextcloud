@@ -10,11 +10,11 @@ namespace OCA\Mcp\Tests\Unit\Tools\Forms\Editing;
 require_once __DIR__ . '/EditingFixture.php';
 
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Forms\Creation\CreateNativeThrottle;
 use OCA\Mcp\Tools\Forms\Editing\{EditFlow, EditNativeFactory, EditPlan, EditSettings, EditState, EditWriter};
 use OCA\Mcp\Tools\Forms\Handler\{EditOptionHandler, EditQuestionHandler};
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use PHPUnit\Framework\TestCase;
 
 /** Discriminates invisible-only labels through both actual handlers without stripping valid format characters. */

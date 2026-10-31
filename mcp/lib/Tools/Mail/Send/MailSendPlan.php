@@ -11,7 +11,7 @@ use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Mail\MailModule;
 use OCA\Mcp\Tools\Mail\MailRows;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\App\IAppManager;
 
 /**

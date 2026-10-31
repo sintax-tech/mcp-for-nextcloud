@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Service;
 
 use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;

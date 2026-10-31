@@ -11,7 +11,7 @@ use OCA\Mcp\Service\Scope\FilesAccessGuard;
 use OCA\Mcp\Tools\Common\FileTypeGuard;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use OCP\Files\Node;
 

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Support;
 
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Tools\Tables\Columns\ColumnLookup;
 use OCA\Mcp\Tools\Tables\Handler\ListRowsHandler;
 use OCA\Mcp\Tools\Tables\Rows\RowReader;

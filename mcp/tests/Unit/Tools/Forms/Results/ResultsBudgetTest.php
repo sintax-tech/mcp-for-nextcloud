@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Results;
 
 use OCA\Mcp\Tools\Forms\Results\{ResultsBudget,SubmissionReads};
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 

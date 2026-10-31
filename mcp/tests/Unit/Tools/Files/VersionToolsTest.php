@@ -22,7 +22,7 @@ use OCA\Mcp\Tools\Files\VersionRestore;
 use OCA\Mcp\Tools\Files\VersionTools;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
 use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\Files\Folder;
 use OCP\Files\Lock\ILock;

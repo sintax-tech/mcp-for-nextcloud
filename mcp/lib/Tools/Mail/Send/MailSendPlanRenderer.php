@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Mail\Send;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\PlanText;
+use OCA\Mcp\Mcp\Confirmation\PlanText;
 
 /**
  * Renders a send plan as Markdown for the user: the sender, each recipient field, the subject, the text as a quote and

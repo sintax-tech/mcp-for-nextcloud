@@ -7,13 +7,13 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Tables\Write;
 
-use OCA\Mcp\Tools\ArgumentValidationException;
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Tools\Tables\TablesMessages;
 use OCA\Mcp\Tools\Tables\TablesUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /**
  * The plan and the confirmed call of a row write, shared by the two row handlers:

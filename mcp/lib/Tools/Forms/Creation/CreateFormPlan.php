@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Forms\Creation;
 
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Forms\FormsMessages;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 
 /** Binds the complete admitted structure, native capability, defaults and constant warnings to confirmation. */
 final class CreateFormPlan {

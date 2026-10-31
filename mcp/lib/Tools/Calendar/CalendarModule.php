@@ -15,10 +15,10 @@ use OCA\Mcp\Tools\Calendar\Handler\ListEvents;
 use OCA\Mcp\Tools\Calendar\Handler\MoveEvent;
 use OCA\Mcp\Tools\Calendar\Handler\TransferEvent;
 use OCA\Mcp\Tools\Calendar\Handler\UpdateEvent;
-use OCA\Mcp\Tools\PreviewsWrites;
-use OCA\Mcp\Tools\RendersPlans;
-use OCA\Mcp\Tools\ToolGuideNotes;
-use OCA\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Mcp\Tools\RendersPlans;
+use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
+use OCA\Mcp\Mcp\Tools\ToolModule;
 use RuntimeException;
 
 /**

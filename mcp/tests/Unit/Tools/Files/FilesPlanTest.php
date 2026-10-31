@@ -17,7 +17,7 @@ use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Files\VersionTools;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
@@ -231,7 +231,7 @@ final class FilesPlanTest extends FilesToolsTestCase {
 		try {
 			$this->plan('files_checkout', ['path' => '/MCP backups/contrato.docx.20260921-141320.bak']);
 			$this->fail('a checkout of the backup folder must not be planned');
-		} catch (\OCA\Mcp\Tools\ToolFailure $e) {
+		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
 			$this->assertSame(\OCA\Mcp\Tools\Files\FilesMessages::backupPath(), $e->getMessage());
 		}
 		$this->assertNothingWritten();
@@ -245,7 +245,7 @@ final class FilesPlanTest extends FilesToolsTestCase {
 		try {
 			$this->plan('files_checkout', ['path' => '/Documentos/ata.md']);
 			$this->fail('a checkout without files_versions must not be planned');
-		} catch (\OCA\Mcp\Tools\ToolFailure $e) {
+		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
 			$this->assertSame(\OCA\Mcp\Tools\Files\FilesMessages::versionsOff(), $e->getMessage());
 		}
 		$this->assertNothingWritten();

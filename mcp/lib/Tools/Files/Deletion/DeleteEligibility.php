@@ -10,7 +10,7 @@ use OCA\Mcp\Service\BackupLocation;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\PathGuard;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Tools\Files\Deletion\Folder\DeleteFolderBoundary;
 use OCA\Mcp\Tools\Files\Deletion\Folder\DeleteFolderMessages;
 use OCP\Files\Node;

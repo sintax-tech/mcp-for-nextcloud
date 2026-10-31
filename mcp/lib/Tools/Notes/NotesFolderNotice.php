@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Notes;
 
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\Folder;
 
 /**

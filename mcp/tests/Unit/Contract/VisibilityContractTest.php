@@ -28,10 +28,10 @@ use OCA\Mcp\Tools\Talk\FileAccessException;
 use OCA\Mcp\Tools\Talk\Messages as TalkMessages;
 use OCA\Mcp\Tools\Talk\TalkModule;
 use OCA\Mcp\Tools\Talk\UserFileResolver;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolModule;
-use OCA\Mcp\Tools\ToolRegistry;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\App\IAppManager;
 use OCP\Files\File;
 use OCP\Files\Folder;
@@ -878,7 +878,7 @@ final class VisibilityContractTest extends TestCase {
 			] as [$tool, $args]) {
 				foreach ([false, true] as $confirm) {
 					$out = $registry->call($tool, $args + ['confirm' => $confirm], 'alice');
-					$this->assertSame(\OCA\Mcp\Tools\ToolResult::error(CommonMessages::notFound()), $out, $tool);
+					$this->assertSame(\OCA\Mcp\Mcp\Tools\Results\ToolResult::error(CommonMessages::notFound()), $out, $tool);
 				}
 			}
 		}
@@ -886,7 +886,7 @@ final class VisibilityContractTest extends TestCase {
 		foreach (['files_create' => ['content' => 'new'], 'files_upload' => []] as $tool => $extra) {
 			foreach ([false, true] as $confirm) {
 				$out = $registry->call($tool, ['path' => '/private.txt', 'confirm' => $confirm] + $extra, 'alice');
-				$this->assertSame(\OCA\Mcp\Tools\ToolResult::error(CommonMessages::notFound()), $out, $tool);
+				$this->assertSame(\OCA\Mcp\Mcp\Tools\Results\ToolResult::error(CommonMessages::notFound()), $out, $tool);
 			}
 		}
 		$this->assertSame([], $this->tree->ops);

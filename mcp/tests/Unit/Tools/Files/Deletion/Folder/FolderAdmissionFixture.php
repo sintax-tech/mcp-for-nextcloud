@@ -80,7 +80,7 @@ final class FolderAdmissionFixture {
 		$this->guard = $mock(FilesAccessGuard::class);
 		$this->guard->method('isConfigurationValid')->willReturn(true);
 		$this->guard->method('assertVisible')->willReturnCallback(function ($node): void {
-			if (($this->flags[$node->getPath()] ?? '') === 'hidden') { throw new \OCA\Mcp\Tools\ToolFailure('Resource not found'); }
+			if (($this->flags[$node->getPath()] ?? '') === 'hidden') { throw new \OCA\Mcp\Mcp\Tools\Results\ToolFailure('Resource not found'); }
 		});
 		$shares = $mock(IManager::class);
 		$shares->method('getAccessList')->willReturnCallback(function ($node, $recursive, $current): array {

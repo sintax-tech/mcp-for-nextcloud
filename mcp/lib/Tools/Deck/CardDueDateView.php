@@ -11,7 +11,7 @@ use DateTimeImmutable;
 use DateTimeInterface;
 use DateTimeZone;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\PlanText;
+use OCA\Mcp\Mcp\Confirmation\PlanText;
 
 /**
  * Account-local deadline output and human-readable plans, separate from strict parsing/native storage.

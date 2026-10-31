@@ -43,9 +43,9 @@
             "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
             "OCA\\Mcp\\Tools\\Calendar\\EmbeddedDavDispatcher",
             "OCA\\Mcp\\Tools\\Deck\\DeckGatewayInterface",
-            "OCA\\Mcp\\Tools\\ToolRegistry",
-            "OCA\\Mcp\\Service\\ResourceRegistry",
-            "OCA\\Mcp\\Service\\McpProtocol"
+            "OCA\\Mcp\\Mcp\\Tools\\ToolRegistry",
+            "OCA\\Mcp\\Mcp\\Resources\\ResourceRegistry",
+            "OCA\\Mcp\\Mcp\\Protocol\\McpProtocol"
         ],
         "registerEventListener": [
             "OCP\\User\\Events\\UserChangedEvent -> OCA\\Mcp\\OAuth\\UserRevocationListener @0",

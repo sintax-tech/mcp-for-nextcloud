@@ -18,7 +18,7 @@ use OCA\Mcp\Tools\Calendar\TrashPolicy;
 use OCA\Mcp\Tools\Tasks\TaskData;
 use OCA\Mcp\Tools\Tasks\TaskStore;
 use OCA\Mcp\Tools\Tasks\TasksModule;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IConfig;
 use OCP\IUserManager;

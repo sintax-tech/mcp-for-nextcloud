@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Polls;
 
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 
 /** RowCursor's MAC format, with Polls-specific safe refusal and symmetric emission/consumption bounds. */
 final class PollsCursor {

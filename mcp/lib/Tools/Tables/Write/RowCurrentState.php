@@ -15,7 +15,7 @@ use OCA\Mcp\Tools\Tables\TablesCalls;
 use OCA\Mcp\Tools\Tables\TablesMessages;
 use OCA\Mcp\Tools\Tables\TablesServices;
 use OCA\Mcp\Tools\Tables\TablesUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * The row an update would change, read with the semantics of tables_list_rows: Row2Mapper::findAll() on the accepted

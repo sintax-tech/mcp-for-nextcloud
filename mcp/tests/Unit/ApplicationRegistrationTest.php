@@ -157,8 +157,8 @@ final class ApplicationRegistrationTest extends TestCase {
 		if (!$class->isFinal()) {
 			return $this->createMock($id);
 		}
-		if ($class->implementsInterface(\OCA\Mcp\Tools\ToolModule::class)) {
-			return $this->createMock(\OCA\Mcp\Tools\ToolModule::class);
+		if ($class->implementsInterface(\OCA\Mcp\Mcp\Tools\ToolModule::class)) {
+			return $this->createMock(\OCA\Mcp\Mcp\Tools\ToolModule::class);
 		}
 		$arguments = [];
 		foreach ($class->getConstructor()?->getParameters() ?? [] as $parameter) {
@@ -193,7 +193,7 @@ final class ApplicationRegistrationTest extends TestCase {
 		$this->assertInstanceOf(\OCA\Mcp\Tools\Files\Sharing\ShareLister::class, $lister);
 		foreach ([\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class, \OCA\Mcp\Tools\Files\Sharing\ShareFormatter::class,
 			\OCA\Mcp\Tools\Files\Sharing\ShareRecipientResolver::class, \OCA\Mcp\Tools\Files\Sharing\ShareWriter::class, \OCA\Mcp\Tools\Files\Sharing\ShareRemover::class,
-			\OCA\Mcp\Tools\Files\Sharing\LinkPassword::class, \OCA\Mcp\Tools\PlanState::class] as $service) {
+			\OCA\Mcp\Tools\Files\Sharing\LinkPassword::class, \OCA\Mcp\Mcp\Confirmation\PlanState::class] as $service) {
 			$this->assertInstanceOf($service, $container->get($service));
 		}
 		// Invariant 1: a hidden node is never listed nor shared, so the guard cannot be left out by the container.
@@ -269,22 +269,22 @@ final class ApplicationRegistrationTest extends TestCase {
 			},
 		);
 
-		$this->assertArrayHasKey(\OCA\Mcp\Service\ResourceRegistry::class, $factories);
+		$this->assertArrayHasKey(\OCA\Mcp\Mcp\Resources\ResourceRegistry::class, $factories);
 		foreach ($factories as $id => $factory) {
 			$service = $container->get($id);
 			$this->assertIsObject($service, 'factory of ' . $id . ' returned no object');
 		}
 
 		// mcp://guide must render the guide the mcp_guide tool returns, so both come from one ToolGuide.
-		$tools = $container->get(\OCA\Mcp\Tools\ToolRegistry::class);
-		$guide = (new \ReflectionProperty(\OCA\Mcp\Service\ResourceRegistry::class, 'guide'))
-			->getValue($container->get(\OCA\Mcp\Service\ResourceRegistry::class));
+		$tools = $container->get(\OCA\Mcp\Mcp\Tools\ToolRegistry::class);
+		$guide = (new \ReflectionProperty(\OCA\Mcp\Mcp\Resources\ResourceRegistry::class, 'guide'))
+			->getValue($container->get(\OCA\Mcp\Mcp\Resources\ResourceRegistry::class));
 		$this->assertSame($tools->guide(), $guide);
 
 		// B5: nc://files and the structured references answer to the Files scope; a missing wiring would read as
 		// "unrestricted" for the resources, which no unit test of the registry itself can see.
-		$this->assertInstanceOf(\OCA\Mcp\Service\Scope\FilesAccessGuard::class, (new \ReflectionProperty(\OCA\Mcp\Service\ResourceRegistry::class, 'filesGuard'))
-			->getValue($container->get(\OCA\Mcp\Service\ResourceRegistry::class)));
+		$this->assertInstanceOf(\OCA\Mcp\Service\Scope\FilesAccessGuard::class, (new \ReflectionProperty(\OCA\Mcp\Mcp\Resources\ResourceRegistry::class, 'filesGuard'))
+			->getValue($container->get(\OCA\Mcp\Mcp\Resources\ResourceRegistry::class)));
 		$this->assertInstanceOf(\OCA\Mcp\Service\Scope\FilesReferenceScope::class, $container->get(\OCA\Mcp\Tools\Common\FileReferenceScope::class));
 	}
 }

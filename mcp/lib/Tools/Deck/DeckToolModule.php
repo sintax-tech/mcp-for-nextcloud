@@ -33,12 +33,12 @@ use OCA\Mcp\Tools\Deck\Handler\ListStacksHandler;
 use OCA\Mcp\Tools\Deck\Handler\MoveCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\ReadCardDependenciesHandler;
 use OCA\Mcp\Tools\Deck\Handler\ReadCardHandler;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\PreviewsWrites;
-use OCA\Mcp\Tools\RendersPlans;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolGuideNotes;
-use OCA\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Mcp\Tools\RendersPlans;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
+use OCA\Mcp\Mcp\Tools\ToolModule;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
@@ -491,7 +491,7 @@ final class DeckToolModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	 * @param string $userId UID of the authenticated caller.
 	 * @return array<string, mixed> The plan, as the structured content of a non-error result.
 	 * @throws InvalidArgumentException For an unknown tool or an argument the write would refuse (-32602).
-	 * @throws \OCA\Mcp\Tools\ToolFailure When the Deck refuses the same read the write would do.
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure When the Deck refuses the same read the write would do.
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
 		if (in_array($name, [ChangeCardDependencyHandler::ADD, ChangeCardDependencyHandler::REMOVE], true)

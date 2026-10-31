@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Tools\Notes\NotesMessages;
-use OCA\Mcp\Tools\ToolPresentation;
+use OCA\Mcp\Mcp\Tools\ToolPresentation;
 use PHPUnit\Framework\TestCase;
 
 /**

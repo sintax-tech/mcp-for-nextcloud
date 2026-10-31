@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Mcp\Service\FileWritePolicy;
 use OCA\Mcp\Tools\Common\FileTypeDenied;
 use OCA\Mcp\Tools\Files\{Batch, CopyMoveContext, FileTypePreflight, ListedTreeCopy, ReorganizationLimits};
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 
 /** Both T15-6 milestones: no effects on whole preflight denial, and exact listed-copy partial receipts. */

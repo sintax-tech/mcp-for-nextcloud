@@ -14,7 +14,7 @@ use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
-use OCA\Mcp\Tools\ArgumentValidator;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
 use OCA\Mcp\Tools\Common\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\CheckoutService;
@@ -34,8 +34,8 @@ use OCA\Mcp\Tools\Files\OcrSupport;
 use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Files\VersionRestore;
 use OCA\Mcp\Tools\Files\VersionTools;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\IRootFolder;
@@ -245,7 +245,7 @@ abstract class FilesToolsTestCase extends TestCase {
 		$recipients = new \OCA\Mcp\Tools\Files\Sharing\ShareRecipientResolver($accounts, $groups);
 		$formatter = new \OCA\Mcp\Tools\Files\Sharing\ShareFormatter($recipients, $urls);
 		$this->shareLogger = $this->createMock(\Psr\Log\LoggerInterface::class);
-		$states = new \OCA\Mcp\Tools\PlanState($this->config->mock($this));
+		$states = new \OCA\Mcp\Mcp\Confirmation\PlanState($this->config->mock($this));
 		return [
 			'shareLister' => new \OCA\Mcp\Tools\Files\Sharing\ShareLister($access, $formatter),
 			'shareWriter' => new \OCA\Mcp\Tools\Files\Sharing\ShareWriter($access, $recipients, $formatter, $manager, $accounts, $groups,
@@ -299,22 +299,22 @@ abstract class FilesToolsTestCase extends TestCase {
 	 * what the test sees — a write that skipped a check would answer "the plan changed" or write, never the refusal.
 	 */
 	protected function tool(string $name, array $arguments = []): array {
-		if (in_array($name, self::STATEFUL_PLANS, true) && !array_key_exists(\OCA\Mcp\Tools\PlanState::ARGUMENT, $arguments)) {
+		if (in_array($name, self::STATEFUL_PLANS, true) && !array_key_exists(\OCA\Mcp\Mcp\Confirmation\PlanState::ARGUMENT, $arguments)) {
 			// These confirm only the state their plan showed: like the model, the test reads the plan first and gives
 			// its plan_state back. A test about a changed state or a missing one passes plan_state itself.
 			try {
-				$state = $this->plan($name, $arguments)[\OCA\Mcp\Tools\PlanState::ARGUMENT];
+				$state = $this->plan($name, $arguments)[\OCA\Mcp\Mcp\Confirmation\PlanState::ARGUMENT];
 			} catch (ToolFailure|\InvalidArgumentException) {
 				$state = self::UNPLANNED_STATE;
 			}
-			$arguments[\OCA\Mcp\Tools\PlanState::ARGUMENT] = $state;
+			$arguments[\OCA\Mcp\Mcp\Confirmation\PlanState::ARGUMENT] = $state;
 		}
 		return $this->module->call($name, $this->validated($name, $arguments), 'alice');
 	}
 
 	/** @return string the plan_state the plan of a stateful write gives right now, for a test that changes things after it */
 	protected function stateOf(string $name, array $arguments): string {
-		return $this->plan($name, $arguments)[\OCA\Mcp\Tools\PlanState::ARGUMENT];
+		return $this->plan($name, $arguments)[\OCA\Mcp\Mcp\Confirmation\PlanState::ARGUMENT];
 	}
 
 	/** @return array<string, mixed> the decoded JSON of the plan of a write */

@@ -11,7 +11,7 @@ use OCA\Mcp\Tools\Calendar\DavResult;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Contacts\ContactDav;
 use OCA\Mcp\Tools\Contacts\ContactStore;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * Address books in memory for the effect contract of Contacts: the read port the module reads through and the

@@ -14,7 +14,7 @@ use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\ResourceUrl;
 use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\McpProtocol;
+use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use OCA\Mcp\Tests\Unit\ArrayGroupBackend;
 use OCP\IRequest;
 use OCP\IURLGenerator;
@@ -425,7 +425,7 @@ final class McpControllerTest extends TestCase {
 	 * @param \Closure(): void|null $inside runs inside the tool, where a module may read a grant again
 	 */
 	private function groupProtocol(?\Closure $inside = null): McpProtocol {
-		$module = new class($inside) implements \OCA\Mcp\Tools\ToolModule {
+		$module = new class($inside) implements \OCA\Mcp\Mcp\Tools\ToolModule {
 			public function __construct(private ?\Closure $inside) {}
 			public function definitions(): array {
 				$schema = ['type' => 'object', 'additionalProperties' => false, 'properties' => new \stdClass()];
@@ -436,14 +436,14 @@ final class McpControllerTest extends TestCase {
 				if ($this->inside !== null) {
 					($this->inside)();
 				}
-				return \OCA\Mcp\Tools\ToolResult::json(['ok' => true]);
+				return \OCA\Mcp\Mcp\Tools\Results\ToolResult::json(['ok' => true]);
 			}
 		};
 		$apps = $this->createMock(\OCP\App\IAppManager::class);
 		InstalledApp::mock($apps);
-		return new McpProtocol(new \OCA\Mcp\Tools\ToolRegistry([$module], $this->policy,
+		return new McpProtocol(new \OCA\Mcp\Mcp\Tools\ToolRegistry([$module], $this->policy,
 			$apps, $this->createMock(\OCP\IUserManager::class), $this->createMock(\Psr\Log\LoggerInterface::class)),
-			new \OCA\Mcp\Service\PromptCatalog(), $this->policy, $this->createMock(\Psr\Log\LoggerInterface::class), $apps);
+			new \OCA\Mcp\Mcp\Prompts\PromptCatalog(), $this->policy, $this->createMock(\Psr\Log\LoggerInterface::class), $apps);
 	}
 
 	/** Alice eligible only through the Database group "team"; "staff" holds her too, without a policy. */

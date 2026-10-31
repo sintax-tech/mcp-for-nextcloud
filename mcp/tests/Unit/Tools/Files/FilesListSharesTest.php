@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\Sharing\ShareAccess;

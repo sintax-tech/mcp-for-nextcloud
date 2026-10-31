@@ -125,7 +125,7 @@ final class DeleteFolderTest extends ExclusionTestCase {
 				};
 				$dispatcher->addListener($name, $listener);
 				try {
-					$result = Server::get(GrantPolicy::class)->within(self::ALICE, fn () => Server::get(\OCA\Mcp\Tools\ToolRegistry::class)->call('files_delete', ['path' => $this->path('home', $leaf), 'confirm' => true], self::ALICE));
+					$result = Server::get(GrantPolicy::class)->within(self::ALICE, fn () => Server::get(\OCA\Mcp\Mcp\Tools\ToolRegistry::class)->call('files_delete', ['path' => $this->path('home', $leaf), 'confirm' => true], self::ALICE));
 					self::assertTrue($result['isError'] ?? false, json_encode($result));
 					$data = json_decode($result['content'][0]['text'], true);
 					self::assertSame($partial ? 'uncertain' : 'preserved', $data['status']);

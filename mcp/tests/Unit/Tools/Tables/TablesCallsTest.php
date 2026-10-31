@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Tables;
 
 use OCA\Mcp\Tools\Tables\TablesCalls;
 use OCA\Mcp\Tools\Tables\TablesMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Tables\Errors\InternalError;
 use OCA\Tables\Errors\NotFoundError;
 use OCA\Tables\Errors\PermissionError;

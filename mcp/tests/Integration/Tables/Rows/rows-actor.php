@@ -19,7 +19,7 @@ declare(strict_types=1);
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Tables\Rows\RowsCellScene;
 use OCA\Mcp\Tools\Tables\TablesModule;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
 use OCP\IUserSession;

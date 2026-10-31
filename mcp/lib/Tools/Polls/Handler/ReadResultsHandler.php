@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Polls\Handler;
 
 use OCA\Mcp\Tools\Polls\{PollsContext, PollsContentPage, PollsContentRequest, PollsMessages};
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /** Independent read handler for polls_read_results; there is no confirmation or mutation path. */
 final class ReadResultsHandler {

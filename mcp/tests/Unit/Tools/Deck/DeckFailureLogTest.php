@@ -21,7 +21,7 @@ use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCA\Mcp\Tools\Deck\DeckUnconfirmedException;
 use OCA\Mcp\Tools\Deck\Handler\AbstractHandler;
 use OCA\Mcp\Tools\Deck\Handler\ReadCardHandler;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Db\DoesNotExistException;
 use OCP\AppFramework\Db\MultipleObjectsReturnedException;

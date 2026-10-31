@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Common;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * User-facing strings of the classes in Tools/Common, which every module shares.
@@ -45,7 +45,7 @@ final class CommonMessages {
 	}
 
 	/**
-	 * The `plan_state` argument of a write that binds its confirmation to the state its plan showed ({@see \OCA\Mcp\Tools\PlanState}).
+	 * The `plan_state` argument of a write that binds its confirmation to the state its plan showed ({@see \OCA\Mcp\Mcp\Confirmation\PlanState}).
 	 * Fixed English, like every description of a module schema; only the `confirm` the registry adds is translated.
 	 *
 	 * @return string the description the model reads in the schema

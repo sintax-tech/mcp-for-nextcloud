@@ -8,13 +8,13 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Deck\Handler;
 
 use Closure;
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Deck\CardFiles;
 use OCA\Mcp\Tools\Deck\CardFormatter;
 use OCA\Mcp\Tools\Deck\DeckConflictException;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckMessages;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use Psr\Log\LoggerInterface;
 use Throwable;
 

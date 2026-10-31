@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion;
 
 use OCA\Mcp\Tools\Files\Deletion\DeleteBackendGate;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\Encryption\IManager;
 use OCP\Files\File;

@@ -10,7 +10,7 @@ use OCA\Mcp\Service\Scope\FilesAccessGuard;
 use OCA\Mcp\Service\Scope\FilesScope;
 use OCA\Mcp\Tools\Files\FolderExposureGate;
 use OCA\Mcp\Tools\Files\ReorganizationLimits;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use OCP\Files\Node;
 

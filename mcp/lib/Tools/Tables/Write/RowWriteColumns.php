@@ -12,7 +12,7 @@ use OCA\Mcp\Tools\Tables\TablesCalls;
 use OCA\Mcp\Tools\Tables\TablesMessages;
 use OCA\Mcp\Tools\Tables\TablesServices;
 use OCA\Mcp\Tools\Tables\TablesUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * The target of a write, read the way RowService::create()/updateSet() read it, under the native write permission and

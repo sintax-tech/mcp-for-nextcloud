@@ -11,8 +11,8 @@ use OCA\Mcp\Service\Policy\PolicyUnavailable;
 use OCA\Mcp\Tools\Calendar\CalendarException;
 use OCA\Mcp\Tools\Calendar\ScopedCalendarAccess;
 use OCA\Mcp\Tools\Tasks\TaskObjects;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /**
  * Backs `tasks_read_task`: one task of a visible task calendar, with its parent UID among the fields, the ETag and

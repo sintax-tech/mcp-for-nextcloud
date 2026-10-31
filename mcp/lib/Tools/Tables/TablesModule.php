@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Tables;
 
 use InvalidArgumentException;
-use OCA\Mcp\Tools\PreviewsWrites;
-use OCA\Mcp\Tools\RendersPlans;
+use OCA\Mcp\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\Tables\Discovery\TablesPage;
 use OCA\Mcp\Tools\Tables\Handler\CreateRowHandler;
 use OCA\Mcp\Tools\Tables\Handler\ListColumnsHandler;
@@ -22,8 +22,8 @@ use OCA\Mcp\Tools\Tables\Rows\RowsRequest;
 use OCA\Mcp\Tools\Tables\Write\RowWriteMessages;
 use OCA\Mcp\Tools\Tables\Write\RowWritePlanRenderer;
 use OCA\Mcp\Tools\Tables\Write\RowWriteRequest;
-use OCA\Mcp\Tools\ToolGuideNotes;
-use OCA\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
+use OCA\Mcp\Mcp\Tools\ToolModule;
 
 /**
  * Nextcloud Tables (issue #1): the tables and views the user can open, the columns of one of them, and the rows of one of
@@ -96,7 +96,7 @@ final class TablesModule implements ToolModule, ToolGuideNotes, PreviewsWrites, 
 	 * @param string $userId authenticated user UID
 	 * @return array{content:list<array{type:string, text:string}>, isError?:bool} MCP result
 	 * @throws InvalidArgumentException for a tool this module does not have, or both or neither of table_id and view_id
-	 * @throws \OCA\Mcp\Tools\ToolFailure when the table or view is not found or Tables is not available
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when the table or view is not found or Tables is not available
 	 */
 	public function call(string $name, array $arguments, string $userId): array {
 		return match ($name) {
@@ -118,7 +118,7 @@ final class TablesModule implements ToolModule, ToolGuideNotes, PreviewsWrites, 
 	 * @param string $userId authenticated user UID
 	 * @return array<string, mixed> the plan
 	 * @throws InvalidArgumentException for a tool this module does not write with, or malformed arguments
-	 * @throws \OCA\Mcp\Tools\ToolFailure when the write is refused or Tables is not available
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when the write is refused or Tables is not available
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
 		return match ($name) {

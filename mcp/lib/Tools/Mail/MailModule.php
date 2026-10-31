@@ -23,10 +23,10 @@ use OCA\Mcp\Tools\Mail\Move\MailMoveTools;
 use OCA\Mcp\Tools\Mail\Send\MailSendMessages;
 use OCA\Mcp\Tools\Mail\Send\MailSendPlanRenderer;
 use OCA\Mcp\Tools\Mail\Send\MailSendTools;
-use OCA\Mcp\Tools\PreviewsWrites;
-use OCA\Mcp\Tools\RendersPlans;
-use OCA\Mcp\Tools\ToolGuideNotes;
-use OCA\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Mcp\Tools\RendersPlans;
+use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
+use OCA\Mcp\Mcp\Tools\ToolModule;
 
 /**
  * Nextcloud Mail, read only (issue #1): the accounts of the user, the folders of one account, with the separate
@@ -142,7 +142,7 @@ final class MailModule implements ToolModule, ToolGuideNotes, PreviewsWrites, Re
 	 * @param string $userId authenticated user UID
 	 * @return array{content:list<array{type:string, text:string}>, isError?:bool} MCP result
 	 * @throws InvalidArgumentException for a tool this module does not have
-	 * @throws \OCA\Mcp\Tools\ToolFailure when the account is not found or Mail is not available
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when the account is not found or Mail is not available
 	 */
 	public function call(string $name, array $arguments, string $userId): array {
 		return match ($name) {
@@ -168,7 +168,7 @@ final class MailModule implements ToolModule, ToolGuideNotes, PreviewsWrites, Re
 	 * @param string $userId authenticated user UID
 	 * @return array<string, mixed> the plan
 	 * @throws InvalidArgumentException for a tool that is not a write of this module
-	 * @throws \OCA\Mcp\Tools\ToolFailure when the message or the account is not the user's, or Mail is not available
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when the message or the account is not the user's, or Mail is not available
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
 		return match (true) {

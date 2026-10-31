@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tools\Mail\Handler;
 use OCA\Mcp\Tools\Mail\MailGateway;
 use OCA\Mcp\Tools\Mail\MailRows;
 use OCA\Mcp\Tools\Mail\MailUnavailableException;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /**
  * Backs `mail_list_accounts`: the accounts the user owns in the Mail app, identified by id, name and address only.

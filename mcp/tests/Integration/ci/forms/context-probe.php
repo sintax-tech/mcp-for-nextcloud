@@ -41,7 +41,7 @@ $resolved = Server::get(FormsService::class);
 if ($resolved !== $service) { throw new RuntimeException('Expected cached native service identity'); }
 $accepted = true;
 try { (new FormsIdentityProbe($session))->assertActor($resolved,FormsScene::READER); }
-catch (\OCA\Mcp\Tools\ToolFailure) { $accepted=false; }
+catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure) { $accepted=false; }
 $expected = !in_array($scenario,['null','other'],true);
 if ($accepted !== $expected) { throw new RuntimeException('Real captured context outcome differs'); }
 if ($accepted) { (new FormsIdentityProbe($session))->assertActor($resolved,FormsScene::READER); }

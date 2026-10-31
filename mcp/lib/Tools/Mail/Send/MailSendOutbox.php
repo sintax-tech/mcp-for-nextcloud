@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Mail\Send;
 
 use OCA\Mcp\Tools\Mail\MailServices;
 use OCA\Mcp\Tools\Mail\MailUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * Sends one message the way the Mail app's own interface does (OutboxController::create(), then send()): the

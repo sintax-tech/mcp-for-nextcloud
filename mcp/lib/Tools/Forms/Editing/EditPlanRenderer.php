@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Forms\Editing;
 
-use OCA\Mcp\Tools\PlanText;
+use OCA\Mcp\Mcp\Confirmation\PlanText;
 
 /** Renders every admitted plan field reversibly and inertly, without the default inline truncation. */
 final class EditPlanRenderer {

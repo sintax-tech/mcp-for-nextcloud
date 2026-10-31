@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\SystemTag\ISystemTagObjectMapper;
 
 /** Verifies that backup privacy is established before any sensitive bytes are copied. */

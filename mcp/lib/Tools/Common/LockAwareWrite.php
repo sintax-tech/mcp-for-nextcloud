@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Common;
 
 use OCA\Mcp\Service\UserTimezone;
 use OCA\Mcp\Service\VisibilityGuard;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\Folder;

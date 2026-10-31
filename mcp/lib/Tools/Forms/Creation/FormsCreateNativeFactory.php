@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Forms\Creation;
 
 use OCA\Mcp\Tools\Forms\FormsServices;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IUserSession;
 
 /** Builds captured-actor collaborators explicitly, without cached controllers, DI resets or impersonation. */

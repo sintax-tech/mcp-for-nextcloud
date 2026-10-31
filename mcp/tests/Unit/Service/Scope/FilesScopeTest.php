@@ -276,7 +276,7 @@ final class FilesScopeTest extends TestCase {
 			try {
 				\OCA\Mcp\Tools\Common\NodeAccess::ensureFolder($root, $path, $gate);
 				$this->fail("$path was reached");
-			} catch (\OCA\Mcp\Tools\ToolFailure $e) {
+			} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
 				$this->assertSame(\OCA\Mcp\Tools\Common\CommonMessages::notFound(), $e->getMessage(), $path);
 			}
 		}

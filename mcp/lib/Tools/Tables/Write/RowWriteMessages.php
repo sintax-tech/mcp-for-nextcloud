@@ -186,15 +186,6 @@ final class RowWriteMessages {
 	}
 
 	/**
-	 * Warning of a plan made again because the state changed.
-	 *
-	 * @return string the message in the language of the current user
-	 */
-	public static function planChanged(): string {
-		return Translator::t('The table, the view or the row changed since the plan: this is the new plan.');
-	}
-
-	/**
 	 * Message of a creation plan.
 	 *
 	 * @return string the message in the language of the current user

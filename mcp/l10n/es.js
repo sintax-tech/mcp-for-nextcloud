@@ -1606,7 +1606,7 @@ OC.L10N.register(
     "This change may take the row out of this view." : "Este cambio puede sacar la fila de esta vista.",
     "Tables checks unique values when it saves." : "Tables comprueba los valores únicos al guardar.",
     "This table is shared with you: the change is seen by everybody it is shared with." : "Esta tabla está compartida con usted: el cambio lo ven todas las personas con quienes está compartida.",
-    "The table, the view or the row changed since the plan: this is the new plan." : "La tabla, la vista o la fila cambió desde el plan: este es el nuevo plan.",
+    "The table, the view or the row changed since the plan: this is the new plan. numberMax: %s" : "La tabla, la vista o la fila cambió desde el plan: este es el nuevo plan. numberMax: %s",
     "Nothing was saved yet: this is the row Tables would create." : "Todavía no se guardó nada: esta es la fila que Tables crearía.",
     "Nothing was saved yet: these are the cells Tables would change." : "Todavía no se guardó nada: estas son las celdas que Tables cambiaría.",
     "Tables returned a different value for at least one cell; the values it returned are shown." : "Tables devolvió un valor distinto en al menos una celda; se muestran los valores que devolvió.",

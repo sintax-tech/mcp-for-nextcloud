@@ -2,6 +2,18 @@
 
 All notable changes to the native Nextcloud app (`mcp/`). Versions follow `mcp/appinfo/info.xml`.
 
+## 1.2.5 — 2026-10-31
+
+Fix release on top of 1.2.4. No database change and no permission change; updating from 1.2.4 needs no step.
+
+### Fixed
+
+- **Reading PDF, DOCX and ODT files could fail with "Malformed UTF-8" ([#25](https://github.com/sintax-tech/mcp-for-nextcloud/issues/25)):** the text extracted from these documents was returned without a UTF-8 check, so some files made the whole answer fail with a server error (HTTP 500). This affected `files_read`, `files_version_read` and reading a file through `resources/read`; Mail attachments (`mail_read_attachment`) did not fail, but lost the affected characters. Two causes were found: the PDF parser writes characters outside the Basic Multilingual Plane, such as emoji, as two separately encoded halves (CESU-8), and the XML of a DOCX or ODT file that declares a legacy charset (for example `encoding="Windows-1252"`) was passed on without conversion. Extracted text is now always valid UTF-8: the two halves are joined back into the real character; XML that declares a known text charset is converted before its entities are decoded; any other invalid byte becomes the replacement character U+FFFD; and control characters other than tab and line breaks are removed. No charset is guessed, so text that does not declare its charset is never reinterpreted. As a safety net, the MCP response itself now replaces invalid UTF-8 instead of failing, as suggested in [#25](https://github.com/sintax-tech/mcp-for-nextcloud/issues/25).
+
+### Validation and limits
+
+The fix is covered by unit tests built from generated documents (a PDF with an emoji in its text map, DOCX and ODT files declaring Windows-1252); the full unit suite was run locally in a PHP 8.3 container, with no failure other than the known ones of that environment, the same set as in 1.2.4, and the front-end tests passed with Node. Two of the new tests need the PHP zip extension and are skipped where it is missing; they pass with it. Not tested on a live Nextcloud, and not with the file of the report, which we do not have. No remote CI run exists for this release. A DOCX or ODT file whose XML uses a legacy charset without declaring it still comes back with U+FFFD in place of those characters, not with the original letters.
+
 ## 1.2.4 — 2026-10-30
 
 Fix release on top of 1.2.3. No database change and no new permission; updating from 1.2.3 needs no step. Two changes affect existing setups: a group grant this version does not recognize no longer blocks the members of that group (see below), and confirming `contacts_create_contact` now requires the `plan_state` of its plan.

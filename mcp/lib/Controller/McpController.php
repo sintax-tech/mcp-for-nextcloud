@@ -77,7 +77,7 @@ class McpController extends Controller {
                     'method' => $this->request->getHeader('Mcp-Method'),
                     'name' => $this->request->getHeader('Mcp-Name'),
                 ]);
-                return new McpResponse($result['body'] === null ? '' : json_encode($result['body'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), $result['status']);
+                return new McpResponse($result['body'] === null ? '' : json_encode($result['body'], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE), $result['status']);
             });
         } finally {
             $this->releaseSession();

@@ -19,10 +19,11 @@ English · [Português (Brasil)](README.pt-BR.md) · [Deutsch](README.de.md) · 
 
 ---
 
-## What's new in 1.2.4, 1.2.3 and 1.2.2
+## What's new in 1.2.2–1.2.5
 
-See [the changelog](CHANGELOG.md#124--2026-10-30) for the full changes.
+See [the changelog](CHANGELOG.md#125--2026-10-31) for the full changes.
 
+- **1.2.5: fix for reading PDF, DOCX and ODT files ([#25](https://github.com/sintax-tech/mcp-for-nextcloud/issues/25)).** Some documents made `files_read` and the other reading tools fail with a "Malformed UTF-8" error. Extracted text now always comes back as valid UTF-8: emoji and other characters from PDFs are kept, DOCX and ODT files in a declared legacy charset are converted, and unreadable bytes become U+FFFD. No database change.
 - **1.2.4: fixes ([#20](https://github.com/sintax-tech/mcp-for-nextcloud/issues/20), [#21](https://github.com/sintax-tech/mcp-for-nextcloud/issues/21), [#23](https://github.com/sintax-tech/mcp-for-nextcloud/issues/23)).** The Notes tools find the folder chosen in the Notes app, also with a translated name; image search reports a missing tag or a failed search; the download of a client's metadata before the OAuth consent page has a 5-second limit (name resolution not included); the Administration page loads fewer small scripts. A group grant this version does not recognize now denies only itself, and administrators can clear it in the group editor with a recorded confirmation. File deletion says that Nextcloud tries the trash bin first and may delete permanently if that fails; the receipt says when the item was seen in your own trash bin. New calendar events carry one `DTSTAMP`, a new contact keeps the UID of its plan (confirmation needs the plan's `plan_state`), `talk_attach_file` shows the path inside your files, and "plan changed" warnings say what changed. No database change.
 - **1.2.3: fix for the blank Administration page ([#21](https://github.com/sintax-tech/mcp-for-nextcloud/issues/21)).** On some managed hosts the Administration → MCP for Cloud page could stay blank for minutes because one of its scripts received no answer. That script is now part of another one the page already loaded; permissions and access levels are unchanged. No database change.
 - **Mail ([#1](https://github.com/sintax-tech/mcp-for-nextcloud/issues/1)):** Search and read messages and attachment text, open native links, and send, draft, flag or move messages with separate opt-in permissions.

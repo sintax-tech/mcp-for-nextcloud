@@ -18,9 +18,7 @@
  * @var \OCP\IL10N $l
  */
 \OCP\Util::addScript('mcp', 'admin-picker');
-\OCP\Util::addScript('mcp', 'admin-polls-grants');
 \OCP\Util::addScript('mcp', 'admin-levels');
-\OCP\Util::addScript('mcp', 'admin-mail-grants');
 \OCP\Util::addScript('mcp', 'admin-grants');
 \OCP\Util::addScript('mcp', 'admin-level-popover');
 \OCP\Util::addScript('mcp', 'admin-exceptions');
@@ -32,7 +30,6 @@
 \OCP\Util::addScript('mcp', 'connections');
 \OCP\Util::addScript('mcp', 'admin-tabs');
 \OCP\Util::addScript('mcp', 'admin-file-write-policy');
-\OCP\Util::addScript('mcp', 'admin-backups');
 \OCP\Util::addStyle('mcp', 'admin');
 ?>
 <div id="mcp-admin" class="mcp-settings" data-service-enabled="<?php p($_['serviceEnabled'] ? '1' : '0'); ?>">

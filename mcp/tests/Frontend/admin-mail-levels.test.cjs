@@ -4,7 +4,7 @@
  */
 /**
  * Tests of the Mail levels and tooltips of the admin page: js/admin-levels.js gives Mail its own level names, and
- * js/admin-mail-grants.js describes the seven Mail operations and warns before a Mail write is granted. The levels are None, Accounts and folders, Messages, Messages and attachments, Messages,
+ * js/admin-levels.js also describes the seven Mail operations and warns before a Mail write is granted. The levels are None, Accounts and folders, Messages, Messages and attachments, Messages,
  * attachments and flags, Messages, attachments, flags and moving, the same with drafts, and with sending, never Edit or Full: no level
  * that existed before names a newer operation, and an operation without the ones before it stays a custom choice.
  */
@@ -86,7 +86,7 @@ test('the Mail names apply only to the Mail tier count, and other modules keep t
 })
 
 test('the Mail tooltips describe the seven operations and nothing else', () => {
-	const Grants = load(['admin-mail-grants.js']).McpAdminMailGrants
+	const Grants = load(['admin-levels.js']).McpAdminMailGrants
 	assert.equal(Grants.operationHint('mail', 'read'), 'List mail accounts and folders, never messages')
 	assert.equal(Grants.operationHint('mail', 'messages'), 'List, search and read messages, without marking them read; starts off')
 	assert.equal(Grants.operationHint('mail', 'attachments'), 'Read the text of attachments, never the files, without marking messages read; starts off')
@@ -115,13 +115,14 @@ test('the Mail tooltips describe the seven operations and nothing else', () => {
 	}
 	const template = fs.readFileSync(path.join(root, 'templates/admin.php'), 'utf8')
 	assert.equal(template.indexOf("'admin-level-names'"), -1, 'the level names live in js/admin-levels.js (issue #21)')
-	assert.ok(template.indexOf("'admin-mail-grants'") < template.indexOf("'admin-grants'"), 'Mail tooltips load before the grants')
+	assert.equal(template.indexOf("'admin-mail-grants'"), -1, 'the Mail warnings live in js/admin-levels.js')
+	assert.ok(template.indexOf("'admin-levels'") < template.indexOf("'admin-grants'"), 'Mail tooltips load with the levels, before the grants')
 })
 
 test('granting a Mail write asks first, and only a Mail write does', () => {
 	const asked = []
 	const context = { t: (app, text) => text, confirm: (text) => { asked.push(text); return false } }
-	vm.runInNewContext(fs.readFileSync(path.join(root, 'js', 'admin-mail-grants.js'), 'utf8'), context)
+	vm.runInNewContext(fs.readFileSync(path.join(root, 'js', 'admin-levels.js'), 'utf8'), context)
 	const Grants = context.McpAdminMailGrants
 	assert.deepEqual(plain(Grants.WRITE_OPERATIONS), ['flags', 'move', 'draft', 'send'])
 	assert.equal(Grants.writeWarning([{ module: 'mail', operation: 'messages' }, { module: 'files', operation: 'edit' }]), null)

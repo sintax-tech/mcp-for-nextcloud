@@ -5,12 +5,12 @@
 const fs = require('node:fs')
 const vm = require('node:vm')
 const path = require('node:path')
-/** Loads the real focused Polls preset policy before consumers, as admin.php does. */
+/** Loads the Polls preset policy from js/admin-levels.js, where the admin page loads it. */
 class PollsCreateContext {
 	/** @return {object} browser-shaped globals with the actual preset helper */
 	static load() {
 		const root = { t: (_, text) => text }
-		vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-polls-grants.js'), 'utf8'), root)
+		vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-levels.js'), 'utf8'), root)
 		return root
 	}
 }

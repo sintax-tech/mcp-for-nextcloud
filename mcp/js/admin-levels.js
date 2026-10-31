@@ -11,8 +11,130 @@
  * by operation. The tiers follow GrantPolicy::CATALOG; an operation the tiers do not name (a newer catalog) falls into
  * the last tier, so it is never hidden and never granted by a lower level.
  *
- * Pure functions, no DOM and no strings: js/admin-grants.js draws the cells and names the levels.
+ * The level functions are pure, with no DOM and no strings: js/admin-grants.js draws the cells and names the levels.
+ * The Polls presets and the Mail write warnings are defined below, in this file, so the page does not
+ * load them as their own scripts. The other admin scripts still read window.McpAdminPollsGrants and
+ * window.McpAdminMailGrants. Both are installed before the level functions run.
  */
+/** Polls-specific protected-read names; rendering never writes or expands a stored policy. */
+(function (root) {
+	'use strict'
+
+	/** @return {Object<string,string>} explicit cumulative names, never Edit or Full */
+	function levelLabels() {
+		return {
+			polls_read: t('mcp', 'Read polls'),
+			polls_read_create: t('mcp', 'Read polls and create private polls'),
+			polls_read_results: t('mcp', 'Read polls, votes and results'),
+			polls_read_results_links: t('mcp', 'Read polls, votes, results and existing links (credentials)'),
+		}
+	}
+
+	/** @return {Object<string,string>} common results key matches Forms; links is distinct from Files.link */
+	function operationLabels() {
+		return { results: t('mcp', 'results'), links: t('mcp', 'Read existing links (credentials)') }
+	}
+
+	/**
+	 * @param {string} module catalog module
+	 * @param {string} operation exact grant
+	 * @return {string|null} operation-specific warning, without changing Forms or Files hints
+	 */
+	function operationHint(module, operation) {
+		if (module !== 'polls') return null
+		if (operation === 'create') return t('mcp', 'Create private polls with initial options after a plan and confirmation; starts off; does not grant votes, results or credential links')
+		if (operation === 'results') return t('mcp', 'Read votes and results allowed by native Polls permissions; starts off')
+		if (operation === 'links') return t('mcp', 'Read existing participation links, including personal credentials, only with native edit permission; creates no links; starts off')
+		return null
+	}
+
+	/**
+	 * Independent named choices; creation never rides on a protected-read preset.
+	 * @param {string[]} operations actual catalog
+	 * @return {Array<{level:string, operations:string[]}>} exact preset sets
+	 */
+	function tiers(operations) {
+		const rows = [
+			{ level: 'polls_read', operations: ['read'] },
+			{ level: 'polls_read_create', operations: ['read', 'create'] },
+			{ level: 'polls_read_results', operations: ['read', 'results'] },
+			{ level: 'polls_read_results_links', operations: ['read', 'results', 'links'] },
+		]
+		return rows.filter(row => row.operations.every(operation => operations.includes(operation)))
+	}
+
+	/**
+	 * @param {string[]} operations catalog
+	 * @param {string} level named independent choice
+	 * @return {string[]} exact allowed set, in catalog order
+	 */
+	function operationsFor(operations, level) {
+		if (level === 'none') return []
+		const found = tiers(operations).find(row => row.level === level)
+		if (!found) throw new Error('Unknown level ' + level + ' for polls')
+		return operations.filter(operation => found.operations.includes(operation))
+	}
+
+	root.McpAdminPollsGrants = { levelLabels, operationLabels, operationHint, tiers, operationsFor }
+})(typeof window !== 'undefined' ? window : globalThis);
+
+/**
+ * What the Mail operations let the AI do, for the column tooltips of js/admin-grants.js: `read` lists accounts and
+ * folders, `messages` (off by default) lists, searches and reads the messages themselves, `attachments` (off by default)
+ * reads the text of an attachment, and the Mail writes, off by default: `flags` marks a message read or unread and
+ * flagged, `move` moves it to another folder of its account, `draft` saves a new draft, never sent, `send` sends a new message. Granting a Mail write, in the matrix, its popover, a bulk
+ * change or a group policy, first shows the warning of {@see writeWarning}.
+ */
+(function (root) {
+	'use strict'
+
+	/** The Mail operations that change a mailbox. */
+	const WRITE_OPERATIONS = ['flags', 'move', 'draft', 'send']
+
+	/**
+	 * The tooltip of a Mail operation.
+	 *
+	 * @param {string} module module id
+	 * @param {string} operation operation id
+	 * @return {string|null} the description, or null for any other module or operation
+	 */
+	function operationHint(module, operation) {
+		if (module !== 'mail') return null
+		if (operation === 'read') return t('mcp', 'List mail accounts and folders, never messages')
+		if (operation === 'messages') return t('mcp', 'List, search and read messages, without marking them read; starts off')
+		if (operation === 'attachments') return t('mcp', 'Read the text of attachments, never the files, without marking messages read; starts off')
+		if (operation === 'flags') return t('mcp', 'Mark messages read or unread and flag them, on the mail server, after a plan the user confirms; starts off')
+		if (operation === 'move') return t('mcp', 'Move messages to another folder of the same account, on the mail server, after a plan the user confirms; starts off')
+		if (operation === 'draft') return t('mcp', 'Create new drafts in the Drafts folder, never sent, after a plan the user confirms; starts off')
+		if (operation === 'send') return t('mcp', 'Send new messages through the mail account, which cannot be undone, after a plan the user confirms; starts off')
+		return null
+	}
+
+	/**
+	 * The warning to read before granting Mail writes, or null when the grants name none.
+	 *
+	 * @param {Array<{module: string, operation: string}>} granted operations about to be allowed
+	 * @return {string|null} the warning
+	 */
+	function writeWarning(granted) {
+		if (!granted.some((grant) => grant.module === 'mail' && WRITE_OPERATIONS.includes(grant.operation))) return null
+		return t('mcp', 'This lets the AI change mailboxes on the mail server: mark messages read or unread, flag them, move them to other folders, save new drafts or send messages, which cannot be undone. A message can carry hidden instructions that ask the AI to do so; every change still shows a plan the user has to confirm. Grant it only to people who want the AI to act on their mail.')
+	}
+
+	/**
+	 * Asks the administrator before granting Mail writes.
+	 *
+	 * @param {Array<{module: string, operation: string}>} granted operations about to be allowed
+	 * @return {boolean} true when no Mail write is granted, or the administrator agreed
+	 */
+	function confirmWrites(granted) {
+		const warning = writeWarning(granted)
+		return warning === null || root.confirm(warning)
+	}
+
+	root.McpAdminMailGrants = { WRITE_OPERATIONS, operationHint, writeWarning, confirmWrites }
+})(typeof window !== 'undefined' ? window : globalThis);
+
 (function (root) {
 	'use strict'
 

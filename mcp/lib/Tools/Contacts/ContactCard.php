@@ -50,14 +50,7 @@ class ContactCard {
      * @return VCard
      */
     public function create(array $arguments, string $uid): VCard {
-        $card = new VCard(
-            [
-                'VERSION' => '3.0',
-                'UID' => $uid,
-                'FN' => $arguments['name'],
-            ]
-        );
-        return $this->patch($card, $arguments);
+        return (new ContactIdentity())->card($this, $arguments, $uid);
     }
 
     /**

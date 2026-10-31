@@ -37,6 +37,9 @@ final class ContactCreatePlanTest extends TestCase {
 	private array $stored = ['uri' => 'none.vcf', 'etag' => '"v0"', 'data' => ''];
 	private int $puts = 0;
 
+	/**
+	 * Address book whose read-back returns the vCard stored by the last put.
+	 */
 	protected function setUp(): void {
 		$store = $this->createMock(ContactStore::class);
 		$store->method('books')->willReturn([

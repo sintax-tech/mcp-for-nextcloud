@@ -463,6 +463,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
     /**
      * The write whose behavior lives in its own handler. Other tools stay in this module.
      *
+     * @param string $name registered tool name
      * @return Handler\CreateContactHandler|Handler\DeleteContactHandler|null
      */
     private function delegated(string $name): Handler\CreateContactHandler|Handler\DeleteContactHandler|null {

@@ -76,6 +76,7 @@ final class CreateContactHandler {
 	 * @throws ArgumentValidationException when `plan_state` is missing or does not carry this plan's UID
 	 * @throws PlanChanged when the fields are not the ones the token approved; nothing was written
 	 * @throws LogicException when no plan state was provided
+	 * @throws RuntimeException when the authenticated session or native response is unexpected
 	 */
 	public function handle(array $arguments, string $userId): array {
 		$prepared = $this->prepare($arguments, $userId);

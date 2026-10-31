@@ -79,7 +79,10 @@ final class PathRewrites {
 	 * @return string expected text after path-only edits
 	 */
 	public static function text(string $text, array $pairs): string {
-		return preg_replace_callback('~[A-Za-z0-9_./-]+~', static fn (array $m): string => self::value($m[0], $pairs) ?? $m[0], $text);
+		return preg_replace_callback('~[A-Za-z0-9_./-]+~', static function (array $m) use ($pairs, $text): string {
+			[$value, $offset] = $m[0];
+			return self::repoBoundary($value, $text, $offset) ? (self::value($value, $pairs) ?? $value) : $value;
+		}, $text, flags: PREG_OFFSET_CAPTURE);
 	}
 
 	/**
@@ -112,7 +115,7 @@ final class PathRewrites {
 					$match = PathIdentity::match($value, $old);
 					if ($match !== null) {
 						$line = substr_count(substr($after[$path], 0, $offset), "\n") + 1;
-						if (!PathIdentity::proved($match)) {
+						if (!PathIdentity::proved($match) || !self::repoBoundary($value, $after[$path], $offset)) {
 							$problems[] = "$path:$line: path not proved: unrecognized prefix in $value";
 						} elseif (isset($pairs[$old])) {
 							$problems[] = "$path:$line: still refers to the file $old, moved to $new in this range";
@@ -123,4 +126,17 @@ final class PathRewrites {
 		}
 		return $problems;
 	}
+	/**
+	 * Repository-relative tokens must begin a value or a whitespace-separated field, not an embedded prefix.
+	 *
+	 * @param string $value matched path token
+	 * @param string $text complete non-PHP text
+	 * @param int $offset token byte offset
+	 * @return bool whether a repository-root prefix is proved at this boundary
+	 */
+	private static function repoBoundary(string $value, string $text, int $offset): bool {
+		return !str_starts_with($value, 'mcp/') || $offset === 0
+			|| ctype_space($text[$offset - 1]) || in_array($text[$offset - 1], ["'", '"', '`'], true);
+	}
+
 }

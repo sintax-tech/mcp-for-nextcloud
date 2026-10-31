@@ -127,4 +127,36 @@ final class RepositoryMoveFixture {
 		return $out;
 	}
 
+	/**
+	 * Finds path readers in the current tree, including newly added oracle manifests.
+	 *
+	 * @param array<string,string> $tree source tree before the simulated move
+	 * @param string $old moved app-relative path
+	 * @return list<string> reader paths; script fixtures are not application readers
+	 */
+	public static function readers(array $tree, string $old): array {
+		return array_keys(array_filter($tree, static fn (string $code, string $path): bool =>
+			(str_starts_with($path, 'tests/') || str_starts_with($path, 'js/'))
+			&& !str_contains($path, '/Scripts/') && str_contains($code, basename($old)), ARRAY_FILTER_USE_BOTH));
+	}
+
+	/**
+	 * Retains exactly one reader's retired paths while keeping all other move edits intact.
+	 *
+	 * @param array<string,string> $before baseline tree
+	 * @param array<string,string> $after correctly updated tree
+	 * @param string $old old app-relative path
+	 * @param string $new destination app-relative path
+	 * @return iterable<string,array<string,string>> reader path => tree with that reader forgotten
+	 */
+	public static function forgottenReaders(array $before, array $after, string $old, string $new): iterable {
+		foreach (self::readers($before, $old) as $reader) {
+			$forgotten = $after;
+			$forgotten[$reader] = str_ends_with($reader, '.php')
+				? self::pathsOnly($after[$reader], [$new => $old])
+				: PathRewrites::text($after[$reader], [$new => $old]);
+			yield $reader => $forgotten;
+		}
+	}
+
 }

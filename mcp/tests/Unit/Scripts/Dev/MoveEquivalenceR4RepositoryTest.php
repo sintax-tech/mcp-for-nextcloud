@@ -23,10 +23,14 @@ final class MoveEquivalenceR4RepositoryTest extends TestCase {
 	 */
 	#[DataProvider('classes')]
 	public function testRealPlannedMovePasses(string $short): void {
-		[$before, $after, $map, $old] = $this->move($short);
+		[$before, $after, $map, $old, $new] = $this->move($short);
 		$equivalence = new MoveEquivalence($before, $after, $map);
 		$this->assertSame([], $equivalence->check());
 		$this->assertArrayHasKey($old, $equivalence->pairs());
+		foreach (RepositoryMoveFixture::forgottenReaders($before, $after, $old, $new) as $reader => $forgotten) {
+			$this->assertNotSame($after[$reader], $forgotten[$reader], "$reader must be individually exercised");
+			$this->assertStringContainsString("$reader:", implode("\n", (new MoveEquivalence($before, $forgotten, $map))->check()));
+		}
 	}
 
 	/**
@@ -74,6 +78,30 @@ final class MoveEquivalenceR4RepositoryTest extends TestCase {
 		$problems = implode("\n", (new MoveEquivalence($before, $after, $map))->check());
 		$this->assertStringContainsString("$reader:", $problems);
 		$this->assertStringContainsString("still refers to the file $old", $problems);
+	}
+
+	/**
+	 * A real move cannot disguise edits to another root or an embedded repository path.
+	 *
+	 * @param string $prefix unproved text before the app-relative path
+	 * @return void
+	 */
+	#[DataProvider('unprovedPrefixes')]
+	public function testUnprovedReaderPrefixFailsRealMove(string $prefix): void {
+		[$before, $after, $map, $old, $new] = $this->move('GrantPolicy');
+		$reader = 'tests/prefix-reader.tsv';
+		$before[$reader] = $prefix . $old . "\t10\tabc123\n";
+		$after[$reader] = $prefix . $new . "\t10\tabc123\n";
+		$problems = implode("\n", (new MoveEquivalence($before, $after, $map))->check());
+		$this->assertStringContainsString("$reader:1: path not proved", $problems);
+	}
+
+	/**
+	 * @return iterable<string,array{string}> embedded and partially matching repository roots
+	 */
+	public static function unprovedPrefixes(): iterable {
+		yield 'embedded repository root' => ['other:mcp/'];
+		yield 'partial repository root' => ['xmcp/'];
 	}
 
 	/**

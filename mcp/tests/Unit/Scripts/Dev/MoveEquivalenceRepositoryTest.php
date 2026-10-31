@@ -9,6 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Scripts\Dev;
 
 use OCA\Mcp\Scripts\Dev\FqcnMap;
 use OCA\Mcp\Scripts\Dev\MoveEquivalence;
+use OCA\Mcp\Scripts\Dev\PathRewrites;
 use OCA\Mcp\Scripts\Dev\SourceTrees;
 use PHPUnit\Framework\TestCase;
 
@@ -36,6 +37,7 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 		$equivalence = new MoveEquivalence(self::tree(), $this->userTimezone(), self::map());
 		$this->assertSame([], $equivalence->check());
 		$this->assertCount(2, $equivalence->pairs());
+		$this->assertEveryReaderFailsWhenForgotten($this->userTimezone(), self::lib(['Service', 'UserTimezone']), self::lib(['Platform', 'Time', 'UserTimezone']));
 	}
 
 	/** One space added inside an interpolated message of ArgumentValidator fails (review A2). */
@@ -72,6 +74,7 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 	/** The same move passes once the test climbs one more level, `dirname(__DIR__, 4)`: the path is proved the same. */
 	public function testAMoveThatRebasesDirEquivalentlyPasses(): void {
 		$this->assertSame([], (new MoveEquivalence(self::tree(), $this->promptCatalog(true), self::map()))->check());
+		$this->assertEveryReaderFailsWhenForgotten($this->promptCatalog(true), self::lib(['Service', 'PromptCatalog']), self::lib(['Mcp', 'Prompts', 'PromptCatalog']));
 	}
 
 	/** The real bootstrap autoload must not accept an inaccessible, lexically cancelling path (R3-A7). */
@@ -95,6 +98,21 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 			$before[$path] .= "\n\$description = '" . $description . "';\n";
 			$after[$path] .= "\n\$description = '" . $description . "';\n";
 			$this->assertSame([], (new MoveEquivalence($before, $after, self::map()))->check(), $description);
+		}
+	}
+
+	/**
+	 * Keeps a negative proof for every current path reader, including future oracle additions.
+	 *
+	 * @param array<string,string> $after correctly moved tree
+	 * @param string $old old production path
+	 * @param string $new new production path
+	 * @return void
+	 */
+	private function assertEveryReaderFailsWhenForgotten(array $after, string $old, string $new): void {
+		foreach (RepositoryMoveFixture::forgottenReaders(self::tree(), $after, $old, $new) as $reader => $forgotten) {
+			$this->assertNotSame($after[$reader], $forgotten[$reader]);
+			$this->assertStringContainsString("$reader:", implode("\n", (new MoveEquivalence(self::tree(), $forgotten, self::map()))->check()));
 		}
 	}
 
@@ -146,6 +164,10 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 		$moved = [];
 		foreach ($tree as $path => $content) {
 			$moved[$path] = str_replace([$fqcn($class, '\\'), $fqcn($class, '\\\\')], [$fqcn($target, '\\'), $fqcn($target, '\\\\')], $content);
+			$pairs = [self::lib($class) => self::lib($target), self::path('tests/Unit', $test) => self::path('tests/Unit', $targetTest)];
+			$moved[$path] = str_ends_with($path, '.php')
+				? RepositoryMoveFixture::pathsOnly($moved[$path], $pairs)
+				: PathRewrites::text($moved[$path], $pairs);
 		}
 		$namespace = static fn (array $segments): string => 'namespace ' . $fqcn(array_slice($segments, 0, -1), '\\') . ';';
 		$moved[self::lib($target)] = str_replace($namespace($class), $namespace($target), $moved[self::lib($class)]);
@@ -186,7 +208,7 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 	 * @return array<string,string> path => content
 	 */
 	private static function tree(): array {
-		return self::$tree ??= SourceTrees::fromDirectory(__DIR__ . '/../../../..', ['appinfo', 'lib', 'scripts', 'templates', 'tests']);
+		return self::$tree ??= SourceTrees::fromDirectory(__DIR__ . '/../../../..', ['appinfo', 'lib', 'scripts', 'templates', 'tests', 'js']);
 	}
 
 	/**

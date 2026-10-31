@@ -22,30 +22,30 @@ use OCP\IUserSession;
  * only mirrors in shape.
  */
 class OverridePreviewController extends Controller {
-    public function __construct(string $appName, IRequest $request, private OverridePreview $preview,
-        private IUserSession $session, private IGroupManager $groups) {
-        parent::__construct($appName, $request);
-    }
+	public function __construct(string $appName, IRequest $request, private OverridePreview $preview,
+		private IUserSession $session, private IGroupManager $groups) {
+		parent::__construct($appName, $request);
+	}
 
-    /**
-     * Body {commands: list<{uid, module: string|null, operation, state: "inherit"}>}, the body of POST
-     * /api/grants/commands without expectedRevision.
-     *
-     * @return JSONResponse {cells: list<{uid, module, operation, before, after}>} where before and after are
-     *     {allowed: bool|null, source, groupIds}; null is unknown, never false. 400 for a body the command would refuse,
-     *     403 for a non-administrator, 503 when the policy cannot be read.
-     */
-    public function index(): JSONResponse {
-        $user = $this->session->getUser();
-        if ($user === null || !$this->groups->isAdmin($user->getUID())) {
-            return new JSONResponse(['error' => 'Forbidden'], 403);
-        }
-        try {
-            return new JSONResponse($this->preview->preview($this->request->getParam('commands')));
-        } catch (\InvalidArgumentException) {
-            return new JSONResponse(['error' => 'Invalid request'], 400);
-        } catch (PolicyUnavailable) {
-            return new JSONResponse(['error' => 'Unavailable'], 503);
-        }
-    }
+	/**
+	 * Body {commands: list<{uid, module: string|null, operation, state: "inherit"}>}, the body of POST
+	 * /api/grants/commands without expectedRevision.
+	 *
+	 * @return JSONResponse {cells: list<{uid, module, operation, before, after}>} where before and after are
+	 *     {allowed: bool|null, source, groupIds}; null is unknown, never false. 400 for a body the command would refuse,
+	 *     403 for a non-administrator, 503 when the policy cannot be read.
+	 */
+	public function index(): JSONResponse {
+		$user = $this->session->getUser();
+		if ($user === null || !$this->groups->isAdmin($user->getUID())) {
+			return new JSONResponse(['error' => 'Forbidden'], 403);
+		}
+		try {
+			return new JSONResponse($this->preview->preview($this->request->getParam('commands')));
+		} catch (\InvalidArgumentException) {
+			return new JSONResponse(['error' => 'Invalid request'], 400);
+		} catch (PolicyUnavailable) {
+			return new JSONResponse(['error' => 'Unavailable'], 503);
+		}
+	}
 }

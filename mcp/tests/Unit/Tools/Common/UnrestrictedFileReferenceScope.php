@@ -12,11 +12,11 @@ use OCP\Files\Node;
 
 /** A user without a Files scope: the scope step narrows nothing, for tests of the other steps of the filter. */
 final class UnrestrictedFileReferenceScope implements FileReferenceScope {
-    public function restricts(string $userId): bool {
-        return false;
-    }
+	public function restricts(string $userId): bool {
+		return false;
+	}
 
-    public function allows(string $userId, Node $node): bool {
-        return true;
-    }
+	public function allows(string $userId, Node $node): bool {
+		return true;
+	}
 }

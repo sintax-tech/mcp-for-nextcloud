@@ -17,24 +17,24 @@ use OCP\IConfig;
  * empty name does not fail, it falls through to the next source.
  */
 final class UserTimezone {
-    public function __construct(private IConfig $config) {}
+	public function __construct(private IConfig $config) {}
 
-    /**
-     * @param string $userId user whose preference decides
-     * @return \DateTimeZone timezone to render or interpret that user's dates in
-     */
-    public function forUser(string $userId): \DateTimeZone {
-        $candidates = [
-            $this->config->getUserValue($userId, 'core', 'timezone', ''),
-            $this->config->getSystemValueString('default_timezone', ''),
-        ];
-        foreach ($candidates as $candidate) {
-            try {
-                return new \DateTimeZone($candidate);
-            } catch (\Exception) {
-                // empty or unknown zone: try the next source in the precedence list
-            }
-        }
-        return new \DateTimeZone(date_default_timezone_get());
-    }
+	/**
+	 * @param string $userId user whose preference decides
+	 * @return \DateTimeZone timezone to render or interpret that user's dates in
+	 */
+	public function forUser(string $userId): \DateTimeZone {
+		$candidates = [
+			$this->config->getUserValue($userId, 'core', 'timezone', ''),
+			$this->config->getSystemValueString('default_timezone', ''),
+		];
+		foreach ($candidates as $candidate) {
+			try {
+				return new \DateTimeZone($candidate);
+			} catch (\Exception) {
+				// empty or unknown zone: try the next source in the precedence list
+			}
+		}
+		return new \DateTimeZone(date_default_timezone_get());
+	}
 }

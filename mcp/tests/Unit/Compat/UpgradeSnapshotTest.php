@@ -22,53 +22,53 @@ use PHPUnit\Framework\TestCase;
  * baseline code is the oracle of the integration test of the same name, on the upgrade cells.
  */
 final class UpgradeSnapshotTest extends TestCase {
-    public function testEveryOperationInEveryStateGetsThe108AnswerAndReadingWritesNothing(): void {
-        $data = new InMemoryConfig();
-        $config = $data->mock($this);
-        $store = new InMemoryOAuthStore();
-        $policy = InMemoryConfig::policy($config, $store);
-        $plan = SnapshotProbe::plan(GrantPolicy::CATALOG);
-        foreach ($plan as $uid => $values) {
-            $data->user[$uid]['mcp'] = array_filter($values, static fn (?string $value): bool => $value !== null);
-        }
-        $users = $data->user;
-        $revision = $data->revision;
-        $checked = 0;
-        foreach (SnapshotProbe::VALUES as $service) {
-            $data->app = $service === null ? [] : ['mcp' => ['service_enabled' => $service]];
-            $app = $data->app;
-            $matrix = $policy->forUsers(array_keys($plan));
-            foreach ($plan as $uid => $values) {
-                // One operation per user, as a request reads it (one snapshot), so the doubles stay small.
-                $policy->within($uid, function () use ($policy, $matrix, $service, $uid, $values, &$checked): void {
-                    $eligible = $values['eligible'] === '1';
-                    $connected = $values['connected'] === '1';
-                    $this->assertSame($eligible, $policy->eligible($uid), $uid);
-                    $this->assertSame($connected, $policy->connected($uid), $uid);
-                    $this->assertSame($service === '1' && $eligible && $connected, $policy->canConnect($uid), "$uid service $service");
-                    $this->assertSame($eligible, $matrix[$uid]['eligible'], $uid);
-                    $this->assertSame($connected, $matrix[$uid]['connected'], $uid);
-                    foreach (GrantPolicy::CATALOG as $module => $operations) {
-                        foreach ($operations as $operation) {
-                            $default = $operation === 'read' && $module !== 'logs' ? '1' : '0';
-                            $legacy = ($values["grant_{$module}_{$operation}"] ?? $default) === '1';
-                            $this->assertSame($legacy, $policy->granted($uid, $module, $operation), "$uid $module/$operation");
-                            $this->assertSame($legacy, $matrix[$uid]['grants'][$module][$operation], "$uid $module/$operation (matrix)");
-                            ++$checked;
-                        }
-                    }
-                });
-            }
-            $legacyEligible = array_keys(array_filter($plan, static fn (array $values): bool => $values['eligible'] === '1'));
-            $this->assertSame($legacyEligible, $policy->flaggedUsers(GrantPolicy::ELIGIBLE_KEY));
-            $this->assertSame(array_values(array_intersect($legacyEligible, array_keys(array_filter($plan,
-                static fn (array $values): bool => $values['connected'] === '1')))), $policy->connectedUsers());
-            $this->assertSame($app, $data->app, 'reading materialized an app value');
-        }
-        $this->assertSame(3 * 9 * array_sum(array_map('count', GrantPolicy::CATALOG)), $checked);
-        $this->assertSame($users, $data->user, 'reading materialized a default or changed a stored value');
-        $this->assertSame($revision, $data->revision);
-        $this->assertSame([], $data->events);
-        $this->assertSame([], $data->generations, 'nothing was cut');
-    }
+	public function testEveryOperationInEveryStateGetsThe108AnswerAndReadingWritesNothing(): void {
+		$data = new InMemoryConfig();
+		$config = $data->mock($this);
+		$store = new InMemoryOAuthStore();
+		$policy = InMemoryConfig::policy($config, $store);
+		$plan = SnapshotProbe::plan(GrantPolicy::CATALOG);
+		foreach ($plan as $uid => $values) {
+			$data->user[$uid]['mcp'] = array_filter($values, static fn (?string $value): bool => $value !== null);
+		}
+		$users = $data->user;
+		$revision = $data->revision;
+		$checked = 0;
+		foreach (SnapshotProbe::VALUES as $service) {
+			$data->app = $service === null ? [] : ['mcp' => ['service_enabled' => $service]];
+			$app = $data->app;
+			$matrix = $policy->forUsers(array_keys($plan));
+			foreach ($plan as $uid => $values) {
+				// One operation per user, as a request reads it (one snapshot), so the doubles stay small.
+				$policy->within($uid, function () use ($policy, $matrix, $service, $uid, $values, &$checked): void {
+					$eligible = $values['eligible'] === '1';
+					$connected = $values['connected'] === '1';
+					$this->assertSame($eligible, $policy->eligible($uid), $uid);
+					$this->assertSame($connected, $policy->connected($uid), $uid);
+					$this->assertSame($service === '1' && $eligible && $connected, $policy->canConnect($uid), "$uid service $service");
+					$this->assertSame($eligible, $matrix[$uid]['eligible'], $uid);
+					$this->assertSame($connected, $matrix[$uid]['connected'], $uid);
+					foreach (GrantPolicy::CATALOG as $module => $operations) {
+						foreach ($operations as $operation) {
+							$default = $operation === 'read' && $module !== 'logs' ? '1' : '0';
+							$legacy = ($values["grant_{$module}_{$operation}"] ?? $default) === '1';
+							$this->assertSame($legacy, $policy->granted($uid, $module, $operation), "$uid $module/$operation");
+							$this->assertSame($legacy, $matrix[$uid]['grants'][$module][$operation], "$uid $module/$operation (matrix)");
+							++$checked;
+						}
+					}
+				});
+			}
+			$legacyEligible = array_keys(array_filter($plan, static fn (array $values): bool => $values['eligible'] === '1'));
+			$this->assertSame($legacyEligible, $policy->flaggedUsers(GrantPolicy::ELIGIBLE_KEY));
+			$this->assertSame(array_values(array_intersect($legacyEligible, array_keys(array_filter($plan,
+				static fn (array $values): bool => $values['connected'] === '1')))), $policy->connectedUsers());
+			$this->assertSame($app, $data->app, 'reading materialized an app value');
+		}
+		$this->assertSame(3 * 9 * array_sum(array_map('count', GrantPolicy::CATALOG)), $checked);
+		$this->assertSame($users, $data->user, 'reading materialized a default or changed a stored value');
+		$this->assertSame($revision, $data->revision);
+		$this->assertSame([], $data->events);
+		$this->assertSame([], $data->generations, 'nothing was cut');
+	}
 }

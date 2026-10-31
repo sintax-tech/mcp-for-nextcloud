@@ -21,200 +21,200 @@ use OCP\IUserManager;
  * user in the output; e-mail may match the search but is never returned.
  */
 class GrantMatrix {
-    /** Users per page. */
-    public const PAGE_SIZE = 50;
-    /** Groups listed in the group filter. */
-    public const MAX_GROUPS = 200;
-    /** Highest page accepted, to bound offsets. */
-    public const MAX_PAGE = 10000;
-    /** Longest search term accepted. */
-    public const MAX_SEARCH = 100;
-    /** Matrix filters: '' every user, 'eligible' the eligible ones, 'connected' the eligible ones who also connected. */
-    public const FILTERS = ['' => null, 'eligible' => GrantPolicy::ELIGIBLE_KEY, 'connected' => GrantPolicy::CONNECTED_KEY];
-    /**
-     * Nextcloud app that provides each module of GrantPolicy::CATALOG; '' for a module of the core. The logs column
-     * follows {@see LogsAccess} instead: offered while the log is a file, and open only to the users of its role.
-     */
-    public const MODULE_APPS = ['files' => 'files', 'notes' => 'notes', 'deck' => 'deck', 'calendar' => 'calendar', 'talk' => 'spreed', 'contacts' => 'contacts', 'tasks' => 'dav', 'people' => '', 'logs' => '', 'mail' => 'mail', 'tables' => 'tables', 'forms' => 'forms', 'polls' => 'polls'];
-    /** Module whose column follows the role gate of {@see LogsAccess}. */
-    private const LOGS = 'logs';
+	/** Users per page. */
+	public const PAGE_SIZE = 50;
+	/** Groups listed in the group filter. */
+	public const MAX_GROUPS = 200;
+	/** Highest page accepted, to bound offsets. */
+	public const MAX_PAGE = 10000;
+	/** Longest search term accepted. */
+	public const MAX_SEARCH = 100;
+	/** Matrix filters: '' every user, 'eligible' the eligible ones, 'connected' the eligible ones who also connected. */
+	public const FILTERS = ['' => null, 'eligible' => GrantPolicy::ELIGIBLE_KEY, 'connected' => GrantPolicy::CONNECTED_KEY];
+	/**
+	 * Nextcloud app that provides each module of GrantPolicy::CATALOG; '' for a module of the core. The logs column
+	 * follows {@see LogsAccess} instead: offered while the log is a file, and open only to the users of its role.
+	 */
+	public const MODULE_APPS = ['files' => 'files', 'notes' => 'notes', 'deck' => 'deck', 'calendar' => 'calendar', 'talk' => 'spreed', 'contacts' => 'contacts', 'tasks' => 'dav', 'people' => '', 'logs' => '', 'mail' => 'mail', 'tables' => 'tables', 'forms' => 'forms', 'polls' => 'polls'];
+	/** Module whose column follows the role gate of {@see LogsAccess}. */
+	private const LOGS = 'logs';
 
-    public function __construct(
-        private GrantPolicy $policy,
-        private IUserManager $userManager,
-        private IGroupManager $groupManager,
-        private IAppManager $appManager,
-        private LogsAccess $logs,
-        private ResourceScopeMapper $scopes,
-    ) {}
+	public function __construct(
+		private GrantPolicy $policy,
+		private IUserManager $userManager,
+		private IGroupManager $groupManager,
+		private IAppManager $appManager,
+		private LogsAccess $logs,
+		private ResourceScopeMapper $scopes,
+	) {}
 
-    /**
-     * @param string $search term matched by the user backends against uid, display name and e-mail
-     * @param string $group group id to restrict to, '' for every user
-     * @param int $page 1-based page number
-     * @param string $filter key of FILTERS: '' for every user, 'eligible' or 'connected'
-     * @return array{users: list<array{uid:string, displayName:string, enabled:bool, eligible:bool, connected:bool, grants:array<string, array<string, bool>>, appsEnabled:array<string, bool>}>, page:int, pageSize:int, hasMore:bool, total:int|null, catalog:array<string, list<string>>, appsEnabled:array<string, bool>, groups:list<array{id:string, displayName:string}>, serviceEnabled:bool}
-     * @throws InvalidArgumentException for a page out of range, an oversized term, an unknown group or filter
-     */
-    public function page(string $search, string $group, int $page, string $filter = ''): array {
-        $search = trim($search);
-        if ($page < 1 || $page > self::MAX_PAGE || mb_strlen($search) > self::MAX_SEARCH || !array_key_exists($filter, self::FILTERS)) {
-            throw new InvalidArgumentException('Invalid request');
-        }
-        $offset = ($page - 1) * self::PAGE_SIZE;
-        [$users, $total] = match (true) {
-            $filter !== '' => $this->flaggedUsers(self::FILTERS[$filter], $group, $search, $offset),
-            $group === '' => $this->allUsers($search, $offset),
-            default => $this->groupUsers($group, $search, $offset),
-        };
-        $hasMore = count($users) > self::PAGE_SIZE;
-        $users = array_slice($users, 0, self::PAGE_SIZE);
-        $appsEnabled = $this->appsEnabled();
-        $catalog = array_filter(GrantPolicy::CATALOG, static fn (string $module) => $appsEnabled[$module], ARRAY_FILTER_USE_KEY);
-        return [
-            'users' => $this->rows($users),
-            'page' => $page,
-            'pageSize' => self::PAGE_SIZE,
-            'hasMore' => $hasMore,
-            'total' => $total,
-            'catalog' => $catalog,
-            'appsEnabled' => $appsEnabled,
-            'groups' => $this->groups(),
-            'serviceEnabled' => $this->policy->globalEnabled(),
-        ];
-    }
+	/**
+	 * @param string $search term matched by the user backends against uid, display name and e-mail
+	 * @param string $group group id to restrict to, '' for every user
+	 * @param int $page 1-based page number
+	 * @param string $filter key of FILTERS: '' for every user, 'eligible' or 'connected'
+	 * @return array{users: list<array{uid:string, displayName:string, enabled:bool, eligible:bool, connected:bool, grants:array<string, array<string, bool>>, appsEnabled:array<string, bool>}>, page:int, pageSize:int, hasMore:bool, total:int|null, catalog:array<string, list<string>>, appsEnabled:array<string, bool>, groups:list<array{id:string, displayName:string}>, serviceEnabled:bool}
+	 * @throws InvalidArgumentException for a page out of range, an oversized term, an unknown group or filter
+	 */
+	public function page(string $search, string $group, int $page, string $filter = ''): array {
+		$search = trim($search);
+		if ($page < 1 || $page > self::MAX_PAGE || mb_strlen($search) > self::MAX_SEARCH || !array_key_exists($filter, self::FILTERS)) {
+			throw new InvalidArgumentException('Invalid request');
+		}
+		$offset = ($page - 1) * self::PAGE_SIZE;
+		[$users, $total] = match (true) {
+			$filter !== '' => $this->flaggedUsers(self::FILTERS[$filter], $group, $search, $offset),
+			$group === '' => $this->allUsers($search, $offset),
+			default => $this->groupUsers($group, $search, $offset),
+		};
+		$hasMore = count($users) > self::PAGE_SIZE;
+		$users = array_slice($users, 0, self::PAGE_SIZE);
+		$appsEnabled = $this->appsEnabled();
+		$catalog = array_filter(GrantPolicy::CATALOG, static fn (string $module) => $appsEnabled[$module], ARRAY_FILTER_USE_KEY);
+		return [
+			'users' => $this->rows($users),
+			'page' => $page,
+			'pageSize' => self::PAGE_SIZE,
+			'hasMore' => $hasMore,
+			'total' => $total,
+			'catalog' => $catalog,
+			'appsEnabled' => $appsEnabled,
+			'groups' => $this->groups(),
+			'serviceEnabled' => $this->policy->globalEnabled(),
+		];
+	}
 
-    /**
-     * @param list<IUser> $users users to render
-     * @return list<array{uid:string, displayName:string, enabled:bool, eligible:bool, connected:bool, grants:array<string, array<string, bool>>, appsEnabled:array<string, bool>}>
-     */
-    public function rows(array $users): array {
-        $state = $this->policy->forUsers(array_map(static fn (IUser $user) => $user->getUID(), $users));
-        $scopes = $this->scopes($users);
-        return array_map(function (IUser $user) use ($state, $scopes): array {
-            $appsEnabled = [];
-            foreach (self::MODULE_APPS as $module => $app) {
-                $appsEnabled[$module] = $module === self::LOGS
-                    ? $this->logs->permits($user->getUID())
-                    : $app === 'files' || $app === '' || AppEnablement::forUser($this->appManager, $app, $user);
-            }
-            $row = [
-                'uid' => $user->getUID(),
-                'displayName' => $user->getDisplayName(),
-                'enabled' => $user->isEnabled(),
-                'appsEnabled' => $appsEnabled,
-            ] + $state[$user->getUID()];
-            $row['scope'] = $scopes[$user->getUID()];
-            return $row;
-        }, $users);
-    }
+	/**
+	 * @param list<IUser> $users users to render
+	 * @return list<array{uid:string, displayName:string, enabled:bool, eligible:bool, connected:bool, grants:array<string, array<string, bool>>, appsEnabled:array<string, bool>}>
+	 */
+	public function rows(array $users): array {
+		$state = $this->policy->forUsers(array_map(static fn (IUser $user) => $user->getUID(), $users));
+		$scopes = $this->scopes($users);
+		return array_map(function (IUser $user) use ($state, $scopes): array {
+			$appsEnabled = [];
+			foreach (self::MODULE_APPS as $module => $app) {
+				$appsEnabled[$module] = $module === self::LOGS
+					? $this->logs->permits($user->getUID())
+					: $app === 'files' || $app === '' || AppEnablement::forUser($this->appManager, $app, $user);
+			}
+			$row = [
+				'uid' => $user->getUID(),
+				'displayName' => $user->getDisplayName(),
+				'enabled' => $user->isEnabled(),
+				'appsEnabled' => $appsEnabled,
+			] + $state[$user->getUID()];
+			$row['scope'] = $scopes[$user->getUID()];
+			return $row;
+		}, $users);
+	}
 
-    /**
-     * The resource scope of each user and module of ResourceScopeMapper::MODULES, for the matrix cell: the mode and,
-     * when restricted, how many resources it keeps. No id and no name (contracts B.6). A scope that cannot be read is
-     * "unavailable" in every cell of the page, so the grants stay editable and the cell says "Scope unknown": it is
-     * never shown as unrestricted by default, nor left blank.
-     *
-     * @param list<IUser> $users users of the page
-     * @return array<string, array<string, array{mode:string, count:?int}>> by uid and module; mode is unrestricted,
-     *     restricted or unavailable
-     */
-    private function scopes(array $users): array {
-        $uids = array_map(static fn (IUser $user) => $user->getUID(), $users);
-        try {
-            $counts = $this->scopes->counts($uids);
-        } catch (\Throwable) {
-            $counts = null;
-        }
-        $scopes = [];
-        foreach ($uids as $uid) {
-            foreach (ResourceScopeMapper::MODULES as $module) {
-                $count = $counts === null ? null : ($counts[$uid][$module] ?? null);
-                $scopes[$uid][$module] = match (true) {
-                    $counts === null => ['mode' => 'unavailable', 'count' => null],
-                    $count === null => ['mode' => 'unrestricted', 'count' => null],
-                    default => ['mode' => 'restricted', 'count' => $count],
-                };
-            }
-        }
-        return $scopes;
-    }
+	/**
+	 * The resource scope of each user and module of ResourceScopeMapper::MODULES, for the matrix cell: the mode and,
+	 * when restricted, how many resources it keeps. No id and no name (contracts B.6). A scope that cannot be read is
+	 * "unavailable" in every cell of the page, so the grants stay editable and the cell says "Scope unknown": it is
+	 * never shown as unrestricted by default, nor left blank.
+	 *
+	 * @param list<IUser> $users users of the page
+	 * @return array<string, array<string, array{mode:string, count:?int}>> by uid and module; mode is unrestricted,
+	 *     restricted or unavailable
+	 */
+	private function scopes(array $users): array {
+		$uids = array_map(static fn (IUser $user) => $user->getUID(), $users);
+		try {
+			$counts = $this->scopes->counts($uids);
+		} catch (\Throwable) {
+			$counts = null;
+		}
+		$scopes = [];
+		foreach ($uids as $uid) {
+			foreach (ResourceScopeMapper::MODULES as $module) {
+				$count = $counts === null ? null : ($counts[$uid][$module] ?? null);
+				$scopes[$uid][$module] = match (true) {
+					$counts === null => ['mode' => 'unavailable', 'count' => null],
+					$count === null => ['mode' => 'unrestricted', 'count' => null],
+					default => ['mode' => 'restricted', 'count' => $count],
+				};
+			}
+		}
+		return $scopes;
+	}
 
-    /** @return array<string, bool> whether each module's app is enabled for anyone on the server, and the log is a file */
-    public function appsEnabled(): array {
-        $enabled = array_map(fn (string $app) => $app === 'files' || $app === '' || AppEnablement::forAnyone($this->appManager, $app), self::MODULE_APPS);
-        $enabled[self::LOGS] = $this->logs->available();
-        return $enabled;
-    }
+	/** @return array<string, bool> whether each module's app is enabled for anyone on the server, and the log is a file */
+	public function appsEnabled(): array {
+		$enabled = array_map(fn (string $app) => $app === 'files' || $app === '' || AppEnablement::forAnyone($this->appManager, $app), self::MODULE_APPS);
+		$enabled[self::LOGS] = $this->logs->available();
+		return $enabled;
+	}
 
-    /** @return list<array{id:string, displayName:string}> groups for the filter, at most MAX_GROUPS */
-    public function groups(): array {
-        return array_map(static fn ($group) => ['id' => $group->getGID(), 'displayName' => $group->getDisplayName()],
-            array_values($this->groupManager->search('', self::MAX_GROUPS)));
-    }
+	/** @return list<array{id:string, displayName:string}> groups for the filter, at most MAX_GROUPS */
+	public function groups(): array {
+		return array_map(static fn ($group) => ['id' => $group->getGID(), 'displayName' => $group->getDisplayName()],
+			array_values($this->groupManager->search('', self::MAX_GROUPS)));
+	}
 
-    /**
-     * One backend search on uid, display name and e-mail (stable33 Database::getDisplayNames), fetching one
-     * extra user to know whether another page exists.
-     *
-     * @return array{0: list<IUser>, 1: int|null} users and the total when it is cheap to know
-     */
-    private function allUsers(string $search, int $offset): array {
-        $users = array_values($this->userManager->searchDisplayName($search, self::PAGE_SIZE + 1, $offset));
-        $total = null;
-        if ($search === '') {
-            $count = $this->userManager->countUsersTotal();
-            $total = is_int($count) ? $count : null;
-        }
-        return [$users, $total];
-    }
+	/**
+	 * One backend search on uid, display name and e-mail (stable33 Database::getDisplayNames), fetching one
+	 * extra user to know whether another page exists.
+	 *
+	 * @return array{0: list<IUser>, 1: int|null} users and the total when it is cheap to know
+	 */
+	private function allUsers(string $search, int $offset): array {
+		$users = array_values($this->userManager->searchDisplayName($search, self::PAGE_SIZE + 1, $offset));
+		$total = null;
+		if ($search === '') {
+			$count = $this->userManager->countUsersTotal();
+			$total = is_int($count) ? $count : null;
+		}
+		return [$users, $total];
+	}
 
-    /**
-     * Eligible users, or eligible users who also connected (GrantPolicy::connectedUsers, the count of the status
-     * summary). Only those users are loaded (never the whole user base),
-     * then narrowed by group and by uid, display name or e-mail, ordered by display name like the backend search.
-     *
-     * @param string $key GrantPolicy::ELIGIBLE_KEY or GrantPolicy::CONNECTED_KEY
-     * @return array{0: list<IUser>, 1: int} users of the page (one extra when another page exists) and the exact total
-     * @throws InvalidArgumentException for an unknown group
-     */
-    private function flaggedUsers(string $key, string $gid, string $search, int $offset): array {
-        if ($gid !== '' && $this->groupManager->get($gid) === null) {
-            throw new InvalidArgumentException('Invalid request');
-        }
-        $users = [];
-        foreach ($key === GrantPolicy::CONNECTED_KEY ? $this->policy->connectedUsers() : $this->policy->flaggedUsers($key) as $uid) {
-            $user = $this->userManager->get($uid);
-            if ($user === null || ($gid !== '' && !$this->groupManager->isInGroup($uid, $gid))) {
-                continue;
-            }
-            if ($search !== '' && mb_stripos($uid, $search) === false && mb_stripos($user->getDisplayName(), $search) === false
-                && mb_stripos((string)$user->getEMailAddress(), $search) === false) {
-                continue;
-            }
-            $users[] = $user;
-        }
-        usort($users, static fn (IUser $a, IUser $b) => strcasecmp($a->getDisplayName(), $b->getDisplayName()) ?: strcmp($a->getUID(), $b->getUID()));
-        return [array_slice($users, $offset, self::PAGE_SIZE + 1), count($users)];
-    }
+	/**
+	 * Eligible users, or eligible users who also connected (GrantPolicy::connectedUsers, the count of the status
+	 * summary). Only those users are loaded (never the whole user base),
+	 * then narrowed by group and by uid, display name or e-mail, ordered by display name like the backend search.
+	 *
+	 * @param string $key GrantPolicy::ELIGIBLE_KEY or GrantPolicy::CONNECTED_KEY
+	 * @return array{0: list<IUser>, 1: int} users of the page (one extra when another page exists) and the exact total
+	 * @throws InvalidArgumentException for an unknown group
+	 */
+	private function flaggedUsers(string $key, string $gid, string $search, int $offset): array {
+		if ($gid !== '' && $this->groupManager->get($gid) === null) {
+			throw new InvalidArgumentException('Invalid request');
+		}
+		$users = [];
+		foreach ($key === GrantPolicy::CONNECTED_KEY ? $this->policy->connectedUsers() : $this->policy->flaggedUsers($key) as $uid) {
+			$user = $this->userManager->get($uid);
+			if ($user === null || ($gid !== '' && !$this->groupManager->isInGroup($uid, $gid))) {
+				continue;
+			}
+			if ($search !== '' && mb_stripos($uid, $search) === false && mb_stripos($user->getDisplayName(), $search) === false
+				&& mb_stripos((string)$user->getEMailAddress(), $search) === false) {
+				continue;
+			}
+			$users[] = $user;
+		}
+		usort($users, static fn (IUser $a, IUser $b) => strcasecmp($a->getDisplayName(), $b->getDisplayName()) ?: strcmp($a->getUID(), $b->getUID()));
+		return [array_slice($users, $offset, self::PAGE_SIZE + 1), count($users)];
+	}
 
-    /**
-     * @return array{0: list<IUser>, 1: int|null} users of the group and its size when there is no search
-     * @throws InvalidArgumentException for an unknown group
-     */
-    private function groupUsers(string $gid, string $search, int $offset): array {
-        $group = $this->groupManager->get($gid);
-        if ($group === null) {
-            throw new InvalidArgumentException('Invalid request');
-        }
-        $users = [];
-        foreach (array_keys($this->groupManager->displayNamesInGroup($gid, $search, self::PAGE_SIZE + 1, $offset)) as $uid) {
-            $user = $this->userManager->get((string)$uid);
-            if ($user !== null) {
-                $users[] = $user;
-            }
-        }
-        $count = $search === '' ? $group->count() : false;
-        return [$users, is_int($count) ? $count : null];
-    }
+	/**
+	 * @return array{0: list<IUser>, 1: int|null} users of the group and its size when there is no search
+	 * @throws InvalidArgumentException for an unknown group
+	 */
+	private function groupUsers(string $gid, string $search, int $offset): array {
+		$group = $this->groupManager->get($gid);
+		if ($group === null) {
+			throw new InvalidArgumentException('Invalid request');
+		}
+		$users = [];
+		foreach (array_keys($this->groupManager->displayNamesInGroup($gid, $search, self::PAGE_SIZE + 1, $offset)) as $uid) {
+			$user = $this->userManager->get((string)$uid);
+			if ($user !== null) {
+				$users[] = $user;
+			}
+		}
+		$count = $search === '' ? $group->count() : false;
+		return [$users, is_int($count) ? $count : null];
+	}
 }

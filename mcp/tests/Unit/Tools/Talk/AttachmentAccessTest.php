@@ -26,282 +26,282 @@ use RuntimeException;
  * reveals that an id exists somewhere else.
  */
 class AttachmentAccessTest extends TestCase {
-    private IShareManager&MockObject $shareManager;
-    private AttachmentAccess $access;
+	private IShareManager&MockObject $shareManager;
+	private AttachmentAccess $access;
 
-    protected function setUp(): void {
-        parent::setUp();
-        $this->shareManager = $this->createMock(IShareManager::class);
-        $this->access = new AttachmentAccess($this->shareManager, \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::openGuard($this), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
-    }
+	protected function setUp(): void {
+		parent::setUp();
+		$this->shareManager = $this->createMock(IShareManager::class);
+		$this->access = new AttachmentAccess($this->shareManager, \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::openGuard($this), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+	}
 
-    public function testARoomShareOfThisConversationIsAccepted(): void {
-        $this->givenShare(IShare::TYPE_ROOM, 'abcd', true);
+	public function testARoomShareOfThisConversationIsAccepted(): void {
+		$this->givenShare(IShare::TYPE_ROOM, 'abcd', true);
 
-        $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
+		$this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
 
-        $this->addToAssertionCount(1);
-    }
+		$this->addToAssertionCount(1);
+	}
 
-    /**
-     * Regression for the real-world failure: the share manager resolves ids as "<provider>:<id>" and throws on a
-     * bare number, so talk_quote_file answered "attachment not found" for the very id talk_attach_file returned.
-     */
-    public function testTheBareIdFromReadMessagesIsLookedUpAsAFullRoomShareId(): void {
-        $share = $this->createMock(IShare::class);
-        $share->method('getId')->willReturn('77');
-        $share->method('getShareType')->willReturn(IShare::TYPE_ROOM);
-        $share->method('getSharedWith')->willReturn('abcd');
-        $share->method('getNode')->willReturn($this->createMock(\OCP\Files\File::class));
-        $this->shareManager->method('getShareById')->willReturnCallback(
-            static function (string $id) use ($share): IShare {
-                if ($id !== 'ocRoomShare:77') {
-                    throw new RuntimeException('Invalid share id: ' . $id);
-                }
+	/**
+	 * Regression for the real-world failure: the share manager resolves ids as "<provider>:<id>" and throws on a
+	 * bare number, so talk_quote_file answered "attachment not found" for the very id talk_attach_file returned.
+	 */
+	public function testTheBareIdFromReadMessagesIsLookedUpAsAFullRoomShareId(): void {
+		$share = $this->createMock(IShare::class);
+		$share->method('getId')->willReturn('77');
+		$share->method('getShareType')->willReturn(IShare::TYPE_ROOM);
+		$share->method('getSharedWith')->willReturn('abcd');
+		$share->method('getNode')->willReturn($this->createMock(\OCP\Files\File::class));
+		$this->shareManager->method('getShareById')->willReturnCallback(
+			static function (string $id) use ($share): IShare {
+				if ($id !== 'ocRoomShare:77') {
+					throw new RuntimeException('Invalid share id: ' . $id);
+				}
 
-                return $share;
-            },
-        );
+				return $share;
+			},
+		);
 
-        $this->assertSame($share, $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77));
-    }
+		$this->assertSame($share, $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77));
+	}
 
-    public function testAnIdThatAlreadyHasAProviderIsNotPrefixedAgain(): void {
-        $this->assertSame('ocRoomShare:77', AttachmentAccess::fullShareId('ocRoomShare:77'));
-        $this->assertSame('ocRoomShare:77', AttachmentAccess::fullShareId(77));
-    }
+	public function testAnIdThatAlreadyHasAProviderIsNotPrefixedAgain(): void {
+		$this->assertSame('ocRoomShare:77', AttachmentAccess::fullShareId('ocRoomShare:77'));
+		$this->assertSame('ocRoomShare:77', AttachmentAccess::fullShareId(77));
+	}
 
-    public function testTheValidatedShareComesBackSoTheDraftCanNameTheFile(): void {
-        $this->givenShare(IShare::TYPE_ROOM, 'abcd', true);
+	public function testTheValidatedShareComesBackSoTheDraftCanNameTheFile(): void {
+		$this->givenShare(IShare::TYPE_ROOM, 'abcd', true);
 
-        $share = $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
+		$share = $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
 
-        $this->assertSame(77, (int)$share->getId());
-    }
+		$this->assertSame(77, (int)$share->getId());
+	}
 
-    public function testTheDescriptionNamesTheFileTheCardWillCarry(): void {
-        $node = $this->createMock(File::class);
-        $node->method('getName')->willReturn('relatorio.pdf');
-        $node->method('getSize')->willReturn(2048);
-        $node->method('getMimeType')->willReturn('application/pdf');
-        $share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
-        $share->method('getNode')->willReturn($node);
+	public function testTheDescriptionNamesTheFileTheCardWillCarry(): void {
+		$node = $this->createMock(File::class);
+		$node->method('getName')->willReturn('relatorio.pdf');
+		$node->method('getSize')->willReturn(2048);
+		$node->method('getMimeType')->willReturn('application/pdf');
+		$share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
+		$share->method('getNode')->willReturn($node);
 
-        // An id alone tells the user nothing about what is about to be cited in their name.
-        $this->assertSame(
-            ['attachmentId' => 77, 'name' => 'relatorio.pdf', 'size' => 2048, 'mimeType' => 'application/pdf'],
-            $this->access->describe($share),
-        );
-    }
+		// An id alone tells the user nothing about what is about to be cited in their name.
+		$this->assertSame(
+			['attachmentId' => 77, 'name' => 'relatorio.pdf', 'size' => 2048, 'mimeType' => 'application/pdf'],
+			$this->access->describe($share),
+		);
+	}
 
-    public function testAFileDeletedSinceTheShareIsReportedWithoutAName(): void {
-        $share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
-        $share->method('getNode')->willThrowException(new NotFoundException());
+	public function testAFileDeletedSinceTheShareIsReportedWithoutAName(): void {
+		$share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
+		$share->method('getNode')->willThrowException(new NotFoundException());
 
-        $description = $this->access->describe($share);
+		$description = $this->access->describe($share);
 
-        // Inventing a name for a file that is gone is worse than reporting none: the send will fail on its own.
-        $this->assertSame(['attachmentId' => 77, 'name' => null, 'size' => null, 'mimeType' => null], $description);
-    }
+		// Inventing a name for a file that is gone is worse than reporting none: the send will fail on its own.
+		$this->assertSame(['attachmentId' => 77, 'name' => null, 'size' => null, 'mimeType' => null], $description);
+	}
 
-    public function testAFolderShareHasNoMimeType(): void {
-        $folder = $this->createMock(Folder::class);
-        $folder->method('getName')->willReturn('fotos');
-        $folder->method('getSize')->willReturn(null);
-        $share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
-        $share->method('getNode')->willReturn($folder);
+	public function testAFolderShareHasNoMimeType(): void {
+		$folder = $this->createMock(Folder::class);
+		$folder->method('getName')->willReturn('fotos');
+		$folder->method('getSize')->willReturn(null);
+		$share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
+		$share->method('getNode')->willReturn($folder);
 
-        $this->assertSame(
-            ['attachmentId' => 77, 'name' => 'fotos', 'size' => null, 'mimeType' => null],
-            $this->access->describe($share),
-        );
-    }
+		$this->assertSame(
+			['attachmentId' => 77, 'name' => 'fotos', 'size' => null, 'mimeType' => null],
+			$this->access->describe($share),
+		);
+	}
 
-    public function testTheShareIsOnlyReadAndNeverWritten(): void {
-        $this->shareManager->expects($this->once())
-            ->method('getShareById')
-            ->with('ocRoomShare:77', 'alice')
-            ->willReturn($this->givenShare(IShare::TYPE_ROOM, 'abcd', true));
-        // Reading the share is all this may do: creating one here would publish the attachment a second time.
-        $this->shareManager->expects($this->never())->method('createShare');
-        $this->shareManager->expects($this->never())->method('newShare');
+	public function testTheShareIsOnlyReadAndNeverWritten(): void {
+		$this->shareManager->expects($this->once())
+			->method('getShareById')
+			->with('ocRoomShare:77', 'alice')
+			->willReturn($this->givenShare(IShare::TYPE_ROOM, 'abcd', true));
+		// Reading the share is all this may do: creating one here would publish the attachment a second time.
+		$this->shareManager->expects($this->never())->method('createShare');
+		$this->shareManager->expects($this->never())->method('newShare');
 
-        $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
-    }
+		$this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
+	}
 
-    public function testAShareOfAnotherConversationIsRefused(): void {
-        $this->givenShare(IShare::TYPE_ROOM, 'zzzz');
+	public function testAShareOfAnotherConversationIsRefused(): void {
+		$this->givenShare(IShare::TYPE_ROOM, 'zzzz');
 
-        $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::attachmentNotFound());
-        $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
-    }
+		$this->expectException(ConversationAccessException::class);
+		$this->expectExceptionMessage(Messages::attachmentNotFound());
+		$this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
+	}
 
-    public function testAShareThatIsNotOfTheConversationKindIsRefused(): void {
-        $this->givenShare(IShare::TYPE_LINK, 'abcd');
+	public function testAShareThatIsNotOfTheConversationKindIsRefused(): void {
+		$this->givenShare(IShare::TYPE_LINK, 'abcd');
 
-        $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::attachmentNotFound());
-        $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
-    }
-
-
-    public function testSomethingTheUserCannotSeeIsRefusedWithoutLeakingTheCause(): void {
-        $this->shareManager->method('getShareById')
-            ->willThrowException(new RuntimeException('Share 77 is not visible to alice at 10.0.0.9'));
-
-        try {
-            $this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
-            $this->fail('An attachment the user cannot see must be refused.');
-        } catch (ConversationAccessException $e) {
-            $this->assertSame(Messages::attachmentNotFound(), $e->getMessage());
-            $this->assertStringNotContainsString('not visible', $e->getMessage());
-            $this->assertStringNotContainsString('10.0.0.9', $e->getMessage());
-            // The cause is kept for the log only.
-            $this->assertInstanceOf(RuntimeException::class, $e->getPrevious());
-        }
-    }
-    public function testHiddenAttachmentIsRefusedAsNotFound(): void {
-        $node = $this->createMock(File::class);
-        $node->method('getId')->willReturn(777);
-        $owner = $this->createMock(\OCP\IUser::class);
-        $owner->method('getUID')->willReturn('alice');
-        $node->method('getOwner')->willReturn($owner);
-        $folder = $this->createMock(\OCP\Files\Folder::class);
-        $folder->method('getId')->willReturn(1);
-        $folder->method('getById')->with(777)->willReturn([$node]);
-        $node->method('getParent')->willReturn($folder);
-        $root = $this->createMock(\OCP\Files\IRootFolder::class);
-        $root->method('getUserFolder')->with('alice')->willReturn($folder);
-        $share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
-        $share->method('getNode')->willReturn($node);
-
-        $config = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
-        $config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
-        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
-        $tagMapper->method('getTagIdsForObjects')->willReturn(['777' => ['999']]);
-        $guard = new \OCA\Mcp\Service\VisibilityGuard($config->mock($this), $tagMapper, $root);
-
-        $access = new AttachmentAccess($this->shareManager, $guard, \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
-
-        $this->expectException(ConversationAccessException::class);
-        $this->expectExceptionMessage(Messages::attachmentNotFound());
-        $access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
-    }
-
-    public function testDescribeOmitsInfoWhenNodeIsHidden(): void {
-        $node = $this->createMock(File::class);
-        $node->method('getId')->willReturn(777);
-        $owner = $this->createMock(\OCP\IUser::class);
-        $owner->method('getUID')->willReturn('alice');
-        $node->method('getOwner')->willReturn($owner);
-        $folder = $this->createMock(\OCP\Files\Folder::class);
-        $folder->method('getId')->willReturn(1);
-        $folder->method('getById')->with(777)->willReturn([$node]);
-        $node->method('getParent')->willReturn($folder);
-        $root = $this->createMock(\OCP\Files\IRootFolder::class);
-        $root->method('getUserFolder')->with('alice')->willReturn($folder);
-        $node->method('getName')->willReturn('secret.pdf');
-        $node->method('getSize')->willReturn(2048);
-        $node->method('getMimeType')->willReturn('application/pdf');
-        $share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
-        $share->method('getNode')->willReturn($node);
-
-        $access = new AttachmentAccess($this->shareManager, $this->givenGuard(['777' => ['999']], $root), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
-
-        $desc = $access->describe($share);
-
-        $this->assertSame(['attachmentId' => 77, 'name' => null, 'size' => null, 'mimeType' => null], $desc);
-    }
-
-    /**
-     * An attachment may only pass when its node is resolved and seen as visible by the guard: a resolution
-     * failure can hide a missing tag check, so it is the very same refusal as an unknown id, never an acceptance.
-     */
-    public function testAnAttachmentWhoseNodeCannotBeCheckedIsRefusedAsNotFound(): void {
-        $share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
-        $share->method('getNode')->willThrowException(new RuntimeException('storage of share 77 is offline'));
-
-        $access = new AttachmentAccess($this->shareManager, $this->givenGuard(), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
-
-        try {
-            $access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
-            $this->fail('An attachment whose node cannot be checked against the hidden tags must be refused.');
-        } catch (ConversationAccessException $e) {
-            $this->assertSame(Messages::attachmentNotFound(), $e->getMessage());
-            $this->assertStringNotContainsString('storage', $e->getMessage());
-            $this->assertInstanceOf(RuntimeException::class, $e->getPrevious());
-        }
-    }
-
-    public function testAVisibleAttachmentIsStillAcceptedWhenTheGuardIsActive(): void {
-        $node = $this->createMock(File::class);
-        $node->method('getId')->willReturn(777);
-        // A node of the user's own storage, not a share mount: the guard reads its mounted chain only.
-        $storage = $this->createMock(\OCP\Files\Storage\IStorage::class);
-        $storage->method('instanceOfStorage')->willReturn(false);
-        $node->method('getStorage')->willReturn($storage);
-        $share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
-        $share->method('getNode')->willReturn($node);
-
-        $root = $this->createMock(\OCP\Files\IRootFolder::class);
-        $node->method('getParent')->willReturn($root);
-        $access = new AttachmentAccess($this->shareManager, $this->givenGuard([], $root), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
-
-        $this->assertSame($share, $access->requireRoomShareOf($this->givenConversation(), 'alice', 77));
-    }
+		$this->expectException(ConversationAccessException::class);
+		$this->expectExceptionMessage(Messages::attachmentNotFound());
+		$this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
+	}
 
 
-    /** @param bool $withNode whether the share resolves to a file, which the exclusion guard checks */
-    private function givenShare(int $shareType, string $sharedWith, bool $withNode = false): IShare&MockObject {
-        $share = $this->createMock(IShare::class);
-        if ($withNode) {
-            $share->method('getNode')->willReturn($this->createMock(\OCP\Files\File::class));
-        }
-        $share->method('getId')->willReturn('77');
-        $share->method('getShareType')->willReturn($shareType);
-        $share->method('getSharedWith')->willReturn($sharedWith);
-        $this->shareManager->method('getShareById')->willReturn($share);
+	public function testSomethingTheUserCannotSeeIsRefusedWithoutLeakingTheCause(): void {
+		$this->shareManager->method('getShareById')
+			->willThrowException(new RuntimeException('Share 77 is not visible to alice at 10.0.0.9'));
 
-        return $share;
-    }
+		try {
+			$this->access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
+			$this->fail('An attachment the user cannot see must be refused.');
+		} catch (ConversationAccessException $e) {
+			$this->assertSame(Messages::attachmentNotFound(), $e->getMessage());
+			$this->assertStringNotContainsString('not visible', $e->getMessage());
+			$this->assertStringNotContainsString('10.0.0.9', $e->getMessage());
+			// The cause is kept for the log only.
+			$this->assertInstanceOf(RuntimeException::class, $e->getPrevious());
+		}
+	}
+	public function testHiddenAttachmentIsRefusedAsNotFound(): void {
+		$node = $this->createMock(File::class);
+		$node->method('getId')->willReturn(777);
+		$owner = $this->createMock(\OCP\IUser::class);
+		$owner->method('getUID')->willReturn('alice');
+		$node->method('getOwner')->willReturn($owner);
+		$folder = $this->createMock(\OCP\Files\Folder::class);
+		$folder->method('getId')->willReturn(1);
+		$folder->method('getById')->with(777)->willReturn([$node]);
+		$node->method('getParent')->willReturn($folder);
+		$root = $this->createMock(\OCP\Files\IRootFolder::class);
+		$root->method('getUserFolder')->with('alice')->willReturn($folder);
+		$share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
+		$share->method('getNode')->willReturn($node);
 
-    private function givenConversation(): Conversation {
-        return new Conversation(new AccessRoomStub('abcd'), new AccessParticipantStub());
-    }
+		$config = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
+		$config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+		$tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+		$tagMapper->method('getTagIdsForObjects')->willReturn(['777' => ['999']]);
+		$guard = new \OCA\Mcp\Service\VisibilityGuard($config->mock($this), $tagMapper, $root);
 
-    /**
-     * @param array<string, list<string>> $tagsById tags of each file id
-     * @param \OCP\Files\IRootFolder|null $root root the guard resolves a share's owner tree through
-     */
-    private function givenGuard(array $tagsById = [], ?\OCP\Files\IRootFolder $root = null): \OCA\Mcp\Service\VisibilityGuard {
-        $config = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
-        $config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
-        $tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
-        $tagMapper->method('getTagIdsForObjects')
-            ->willReturnCallback(static function (array $ids) use ($tagsById): array {
-                $out = [];
-                foreach ($ids as $id) {
-                    $out[(string)$id] = $tagsById[(string)$id] ?? [];
-                }
+		$access = new AttachmentAccess($this->shareManager, $guard, \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
 
-                return $out;
-            });
+		$this->expectException(ConversationAccessException::class);
+		$this->expectExceptionMessage(Messages::attachmentNotFound());
+		$access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
+	}
 
-        return new \OCA\Mcp\Service\VisibilityGuard($config->mock($this), $tagMapper, $root);
-    }
+	public function testDescribeOmitsInfoWhenNodeIsHidden(): void {
+		$node = $this->createMock(File::class);
+		$node->method('getId')->willReturn(777);
+		$owner = $this->createMock(\OCP\IUser::class);
+		$owner->method('getUID')->willReturn('alice');
+		$node->method('getOwner')->willReturn($owner);
+		$folder = $this->createMock(\OCP\Files\Folder::class);
+		$folder->method('getId')->willReturn(1);
+		$folder->method('getById')->with(777)->willReturn([$node]);
+		$node->method('getParent')->willReturn($folder);
+		$root = $this->createMock(\OCP\Files\IRootFolder::class);
+		$root->method('getUserFolder')->with('alice')->willReturn($folder);
+		$node->method('getName')->willReturn('secret.pdf');
+		$node->method('getSize')->willReturn(2048);
+		$node->method('getMimeType')->willReturn('application/pdf');
+		$share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
+		$share->method('getNode')->willReturn($node);
+
+		$access = new AttachmentAccess($this->shareManager, $this->givenGuard(['777' => ['999']], $root), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+
+		$desc = $access->describe($share);
+
+		$this->assertSame(['attachmentId' => 77, 'name' => null, 'size' => null, 'mimeType' => null], $desc);
+	}
+
+	/**
+	 * An attachment may only pass when its node is resolved and seen as visible by the guard: a resolution
+	 * failure can hide a missing tag check, so it is the very same refusal as an unknown id, never an acceptance.
+	 */
+	public function testAnAttachmentWhoseNodeCannotBeCheckedIsRefusedAsNotFound(): void {
+		$share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
+		$share->method('getNode')->willThrowException(new RuntimeException('storage of share 77 is offline'));
+
+		$access = new AttachmentAccess($this->shareManager, $this->givenGuard(), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+
+		try {
+			$access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
+			$this->fail('An attachment whose node cannot be checked against the hidden tags must be refused.');
+		} catch (ConversationAccessException $e) {
+			$this->assertSame(Messages::attachmentNotFound(), $e->getMessage());
+			$this->assertStringNotContainsString('storage', $e->getMessage());
+			$this->assertInstanceOf(RuntimeException::class, $e->getPrevious());
+		}
+	}
+
+	public function testAVisibleAttachmentIsStillAcceptedWhenTheGuardIsActive(): void {
+		$node = $this->createMock(File::class);
+		$node->method('getId')->willReturn(777);
+		// A node of the user's own storage, not a share mount: the guard reads its mounted chain only.
+		$storage = $this->createMock(\OCP\Files\Storage\IStorage::class);
+		$storage->method('instanceOfStorage')->willReturn(false);
+		$node->method('getStorage')->willReturn($storage);
+		$share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
+		$share->method('getNode')->willReturn($node);
+
+		$root = $this->createMock(\OCP\Files\IRootFolder::class);
+		$node->method('getParent')->willReturn($root);
+		$access = new AttachmentAccess($this->shareManager, $this->givenGuard([], $root), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+
+		$this->assertSame($share, $access->requireRoomShareOf($this->givenConversation(), 'alice', 77));
+	}
+
+
+	/** @param bool $withNode whether the share resolves to a file, which the exclusion guard checks */
+	private function givenShare(int $shareType, string $sharedWith, bool $withNode = false): IShare&MockObject {
+		$share = $this->createMock(IShare::class);
+		if ($withNode) {
+			$share->method('getNode')->willReturn($this->createMock(\OCP\Files\File::class));
+		}
+		$share->method('getId')->willReturn('77');
+		$share->method('getShareType')->willReturn($shareType);
+		$share->method('getSharedWith')->willReturn($sharedWith);
+		$this->shareManager->method('getShareById')->willReturn($share);
+
+		return $share;
+	}
+
+	private function givenConversation(): Conversation {
+		return new Conversation(new AccessRoomStub('abcd'), new AccessParticipantStub());
+	}
+
+	/**
+	 * @param array<string, list<string>> $tagsById tags of each file id
+	 * @param \OCP\Files\IRootFolder|null $root root the guard resolves a share's owner tree through
+	 */
+	private function givenGuard(array $tagsById = [], ?\OCP\Files\IRootFolder $root = null): \OCA\Mcp\Service\VisibilityGuard {
+		$config = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
+		$config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+		$tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
+		$tagMapper->method('getTagIdsForObjects')
+			->willReturnCallback(static function (array $ids) use ($tagsById): array {
+				$out = [];
+				foreach ($ids as $id) {
+					$out[(string)$id] = $tagsById[(string)$id] ?? [];
+				}
+
+				return $out;
+			});
+
+		return new \OCA\Mcp\Service\VisibilityGuard($config->mock($this), $tagMapper, $root);
+	}
 }
 
 final class AccessRoomStub {
-    public function __construct(private string $token) {}
+	public function __construct(private string $token) {}
 
-    public function getToken(): string {
-        return $this->token;
-    }
+	public function getToken(): string {
+		return $this->token;
+	}
 }
 
 final class AccessParticipantStub {
-    public function getPermissions(): int {
-        return 128;
-    }
+	public function getPermissions(): int {
+		return 128;
+	}
 }

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Service\Policy;
 
 /** The caller must reload a fresh state after rollback (HTTP 409). */
 class PolicyConflict extends \RuntimeException {
-    public function __construct() {
-        parent::__construct('Policy changed since it was read', 409);
-    }
+	public function __construct() {
+		parent::__construct('Policy changed since it was read', 409);
+	}
 }

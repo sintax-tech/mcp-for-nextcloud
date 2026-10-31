@@ -27,53 +27,53 @@ use OCP\IUserSession;
  * The admin page uses the JSON API in GrantsController instead.
  */
 class SettingsController extends Controller {
-    public function __construct(
-        string $appName,
-        IRequest $request,
-        private IURLGenerator $urlGenerator,
-        private IUserSession $userSession,
-        private GrantPolicy $policy,
-        private CheckoutTokenStore $checkoutTokens,
-        private BatchStore $batches,
-    ) {
-        parent::__construct($appName, $request);
-    }
+	public function __construct(
+		string $appName,
+		IRequest $request,
+		private IURLGenerator $urlGenerator,
+		private IUserSession $userSession,
+		private GrantPolicy $policy,
+		private CheckoutTokenStore $checkoutTokens,
+		private BatchStore $batches,
+	) {
+		parent::__construct($appName, $request);
+	}
 
-    /**
-     * @param string $enabled '1' to connect (needs service on and eligibility), '0' to disconnect
-     * @return Response redirect to the personal page, or 400 for invalid input
-     */
-    #[NoAdminRequired]
-    public function personal(string $enabled = '0'): Response {
-        try {
-            return $this->applyPersonal($enabled);
-        } catch (InvalidArgumentException) {
-            return new DataDisplayResponse('Invalid request', 400, ['Content-Type' => 'text/plain; charset=utf-8']);
-        } catch (PolicyUnavailable) {
-            // Never assume the connection state: the page is reloaded by the user once storage is back.
-            return new DataDisplayResponse('Temporarily unavailable', 503, ['Content-Type' => 'text/plain; charset=utf-8']);
-        }
-    }
+	/**
+	 * @param string $enabled '1' to connect (needs service on and eligibility), '0' to disconnect
+	 * @return Response redirect to the personal page, or 400 for invalid input
+	 */
+	#[NoAdminRequired]
+	public function personal(string $enabled = '0'): Response {
+		try {
+			return $this->applyPersonal($enabled);
+		} catch (InvalidArgumentException) {
+			return new DataDisplayResponse('Invalid request', 400, ['Content-Type' => 'text/plain; charset=utf-8']);
+		} catch (PolicyUnavailable) {
+			// Never assume the connection state: the page is reloaded by the user once storage is back.
+			return new DataDisplayResponse('Temporarily unavailable', 503, ['Content-Type' => 'text/plain; charset=utf-8']);
+		}
+	}
 
-    /** @throws InvalidArgumentException without a valid user, value, service or eligibility */
-    private function applyPersonal(string $enabled): Response {
-        $user = $this->userSession->getUser();
-        if ($user === null || !$user->isEnabled() || !in_array($enabled, ['0', '1'], true)) {
-            throw new InvalidArgumentException('Invalid user or value');
-        }
-        $uid = $user->getUID();
-        // Reactivation needs the service on and admin eligibility still valid; disconnecting is always allowed.
-        if ($enabled === '1' && (!$this->policy->globalEnabled() || !$this->policy->eligible($uid))) {
-            throw new InvalidArgumentException('Connection not allowed');
-        }
-        // Disconnecting revokes every OAuth credential of the user in the same transaction (a cut by generation).
-        $this->policy->setConnected($uid, $enabled === '1');
-        if ($enabled === '0') {
-            // And every pending checkout link, so a link issued before the switch cannot be spent after it.
-            $this->checkoutTokens->deleteForUser($uid);
-            // And every batch still waiting to be undone: it must not outlive the connection that made it.
-            $this->batches->deleteForUser($uid);
-        }
-        return new RedirectResponse($this->urlGenerator->linkToRoute('settings.PersonalSettings.index', ['section' => PersonalSection::ID]));
-    }
+	/** @throws InvalidArgumentException without a valid user, value, service or eligibility */
+	private function applyPersonal(string $enabled): Response {
+		$user = $this->userSession->getUser();
+		if ($user === null || !$user->isEnabled() || !in_array($enabled, ['0', '1'], true)) {
+			throw new InvalidArgumentException('Invalid user or value');
+		}
+		$uid = $user->getUID();
+		// Reactivation needs the service on and admin eligibility still valid; disconnecting is always allowed.
+		if ($enabled === '1' && (!$this->policy->globalEnabled() || !$this->policy->eligible($uid))) {
+			throw new InvalidArgumentException('Connection not allowed');
+		}
+		// Disconnecting revokes every OAuth credential of the user in the same transaction (a cut by generation).
+		$this->policy->setConnected($uid, $enabled === '1');
+		if ($enabled === '0') {
+			// And every pending checkout link, so a link issued before the switch cannot be spent after it.
+			$this->checkoutTokens->deleteForUser($uid);
+			// And every batch still waiting to be undone: it must not outlive the connection that made it.
+			$this->batches->deleteForUser($uid);
+		}
+		return new RedirectResponse($this->urlGenerator->linkToRoute('settings.PersonalSettings.index', ['section' => PersonalSection::ID]));
+	}
 }

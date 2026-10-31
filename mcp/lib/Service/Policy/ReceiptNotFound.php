@@ -12,7 +12,7 @@ namespace OCA\Mcp\Service\Policy;
  * them, so an id never reveals whether someone else's receipt exists. HTTP adapters map this to 404.
  */
 class ReceiptNotFound extends \RuntimeException {
-    public function __construct() {
-        parent::__construct('Receipt not found', 404);
-    }
+	public function __construct() {
+		parent::__construct('Receipt not found', 404);
+	}
 }

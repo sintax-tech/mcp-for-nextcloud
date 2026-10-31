@@ -24,40 +24,40 @@ use OCP\Security\Ip\IRemoteAddress;
  * groups, so the strict comparison is the fail-closed reading of the listed role on every version.
  */
 class LogsRoleReader {
-    public function __construct(
-        private IConfig $config,
-        private LogsGroupsMapper $mapper,
-        private IGroupManager $groups,
-        private IRemoteAddress $remote,
-        private IUserSession $session,
-    ) {}
+	public function __construct(
+		private IConfig $config,
+		private LogsGroupsMapper $mapper,
+		private IGroupManager $groups,
+		private IRemoteAddress $remote,
+		private IUserSession $session,
+	) {}
 
-    /**
-     * @param list<string> $groupIds fresh membership, including any delivered event overlay
-     * @return array{available:bool,permitted:bool}
-     */
-    public function read(?string $uid, array $groupIds): array {
-        $available = LogsAccess::fileLog($this->config);
-        if (!$available || $uid === null) {
-            return ['available' => $available, 'permitted' => false];
-        }
-        // Match IGroupManager::isAdmin (NC32–35): the remote-address restriction denies native administration
-        // only when the uid asked about is the session user; any other uid keeps its administrator role.
-        if ($this->remote->allowsAdminActions() || $uid !== $this->session->getUser()?->getUID()) {
-            foreach ($this->groups->getBackends() as $backend) {
-                if ($backend->implementsActions(GroupInterface::IS_ADMIN) && $backend->isAdmin($uid)) {
-                    return ['available' => true, 'permitted' => true];
-                }
-            }
-            if (in_array('admin', $groupIds, true)) {
-                return ['available' => true, 'permitted' => true];
-            }
-        }
-        foreach ($this->mapper->state()['groups'] as $gid) {
-            if (in_array($gid, $groupIds, true)) {
-                return ['available' => true, 'permitted' => true];
-            }
-        }
-        return ['available' => true, 'permitted' => false];
-    }
+	/**
+	 * @param list<string> $groupIds fresh membership, including any delivered event overlay
+	 * @return array{available:bool,permitted:bool}
+	 */
+	public function read(?string $uid, array $groupIds): array {
+		$available = LogsAccess::fileLog($this->config);
+		if (!$available || $uid === null) {
+			return ['available' => $available, 'permitted' => false];
+		}
+		// Match IGroupManager::isAdmin (NC32–35): the remote-address restriction denies native administration
+		// only when the uid asked about is the session user; any other uid keeps its administrator role.
+		if ($this->remote->allowsAdminActions() || $uid !== $this->session->getUser()?->getUID()) {
+			foreach ($this->groups->getBackends() as $backend) {
+				if ($backend->implementsActions(GroupInterface::IS_ADMIN) && $backend->isAdmin($uid)) {
+					return ['available' => true, 'permitted' => true];
+				}
+			}
+			if (in_array('admin', $groupIds, true)) {
+				return ['available' => true, 'permitted' => true];
+			}
+		}
+		foreach ($this->mapper->state()['groups'] as $gid) {
+			if (in_array($gid, $groupIds, true)) {
+				return ['available' => true, 'permitted' => true];
+			}
+		}
+		return ['available' => true, 'permitted' => false];
+	}
 }

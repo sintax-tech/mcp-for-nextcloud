@@ -16,19 +16,19 @@ use OCA\Mcp\Service\Policy\DecimalCounter;
  * upgrade keeps it valid until a revocation.
  */
 final class CredentialGeneration {
-    /**
-     * @param array<string,mixed> $row code, grant or spent record with auth_global_epoch and auth_gen
-     * @param array{issue_seq:string, revoked_below:string} $generations the owner's generations
-     * @param string $epoch the global auth epoch
-     * @return bool whether the credential is not revoked; a missing or non-canonical counter is revoked
-     */
-    public static function live(array $row, array $generations, string $epoch): bool {
-        try {
-            $generation = DecimalCounter::validate((string)($row['auth_gen'] ?? ''), DecimalCounter::MAX);
-            $rowEpoch = DecimalCounter::validate((string)($row['auth_global_epoch'] ?? ''), DecimalCounter::MAX);
-            return $rowEpoch === $epoch && DecimalCounter::compare($generation, $generations['revoked_below']) > 0;
-        } catch (\InvalidArgumentException) {
-            return false;
-        }
-    }
+	/**
+	 * @param array<string,mixed> $row code, grant or spent record with auth_global_epoch and auth_gen
+	 * @param array{issue_seq:string, revoked_below:string} $generations the owner's generations
+	 * @param string $epoch the global auth epoch
+	 * @return bool whether the credential is not revoked; a missing or non-canonical counter is revoked
+	 */
+	public static function live(array $row, array $generations, string $epoch): bool {
+		try {
+			$generation = DecimalCounter::validate((string)($row['auth_gen'] ?? ''), DecimalCounter::MAX);
+			$rowEpoch = DecimalCounter::validate((string)($row['auth_global_epoch'] ?? ''), DecimalCounter::MAX);
+			return $rowEpoch === $epoch && DecimalCounter::compare($generation, $generations['revoked_below']) > 0;
+		} catch (\InvalidArgumentException) {
+			return false;
+		}
+	}
 }

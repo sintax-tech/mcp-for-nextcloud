@@ -17,6 +17,6 @@ namespace OCA\Mcp\Tools;
  * from the schema, and a second copy is a second thing to keep in sync.
  */
 interface ToolGuideNotes {
-    /** @return list<string> short behaviour notes about this module */
-    public function guideNotes(): array;
+	/** @return list<string> short behaviour notes about this module */
+	public function guideNotes(): array;
 }

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Service\Policy;
 
 /** Storage failure; HTTP adapters map this to 503 and preserve the draft. */
 class PolicyUnavailable extends \RuntimeException {
-    public function __construct(string $message = 'Policy storage unavailable', public readonly bool $uncertain = false, ?\Throwable $previous = null) {
-        parent::__construct($message, 503, $previous);
-    }
+	public function __construct(string $message = 'Policy storage unavailable', public readonly bool $uncertain = false, ?\Throwable $previous = null) {
+		parent::__construct($message, 503, $previous);
+	}
 }

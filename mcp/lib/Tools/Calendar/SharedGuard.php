@@ -19,36 +19,36 @@ use OCP\IUserManager;
  */
 final class SharedGuard {
 
-    /**
-     * @param IUserManager $users resolves the display name of the calendar owner
-     */
-    public function __construct(private IUserManager $users) {}
+	/**
+	 * @param IUserManager $users resolves the display name of the calendar owner
+	 */
+	public function __construct(private IUserManager $users) {}
 
-    /**
-     * @return array<string, mixed> optional `confirm_shared` property of a write tool
-     */
-    public static function property(): array {
-        return ['type' => 'boolean', 'description' => CalendarMessages::CONFIRM_SHARED_PROPERTY];
-    }
+	/**
+	 * @return array<string, mixed> optional `confirm_shared` property of a write tool
+	 */
+	public static function property(): array {
+		return ['type' => 'boolean', 'description' => CalendarMessages::CONFIRM_SHARED_PROPERTY];
+	}
 
-    /**
-     * @param Calendar $calendar calendar the write would touch
-     * @param string $userId authenticated UID
-     * @param array<string, mixed> $arguments tool arguments, read for `confirm_shared`
-     * @return array{content: list<array{type:string, text:string}>}|null confirmation to answer with, or null when the write may proceed
-     */
-    public function confirm(Calendar $calendar, string $userId, array $arguments): ?array {
-        if (!$calendar->ownedByOther($userId) || ($arguments['confirm_shared'] ?? null) === true) {
-            return null;
-        }
-        $displayName = $this->users->get($calendar->ownerId)?->getDisplayName() ?: $calendar->ownerId;
-        return ToolSchema::result([
-            'requiresConfirmation' => true,
-            'scope' => 'shared',
-            'owner' => $calendar->ownerId,
-            'ownerDisplayName' => $displayName,
-            'resource' => $calendar->name,
-            'message' => CalendarMessages::sharedConfirmation($calendar->name, $displayName),
-        ]);
-    }
+	/**
+	 * @param Calendar $calendar calendar the write would touch
+	 * @param string $userId authenticated UID
+	 * @param array<string, mixed> $arguments tool arguments, read for `confirm_shared`
+	 * @return array{content: list<array{type:string, text:string}>}|null confirmation to answer with, or null when the write may proceed
+	 */
+	public function confirm(Calendar $calendar, string $userId, array $arguments): ?array {
+		if (!$calendar->ownedByOther($userId) || ($arguments['confirm_shared'] ?? null) === true) {
+			return null;
+		}
+		$displayName = $this->users->get($calendar->ownerId)?->getDisplayName() ?: $calendar->ownerId;
+		return ToolSchema::result([
+			'requiresConfirmation' => true,
+			'scope' => 'shared',
+			'owner' => $calendar->ownerId,
+			'ownerDisplayName' => $displayName,
+			'resource' => $calendar->name,
+			'message' => CalendarMessages::sharedConfirmation($calendar->name, $displayName),
+		]);
+	}
 }

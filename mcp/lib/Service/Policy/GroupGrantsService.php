@@ -33,106 +33,106 @@ use OCA\Mcp\Db\GroupLifeMapper;
  * "until the administrator confirms or clears").
  */
 class GroupGrantsService {
-    public function __construct(
-        private PolicyWriter $writer,
-        private GroupSourceClassifier $classifier,
-        private PolicyResolver $resolver,
-        private GroupGrantsMapper $grants,
-        private GroupLifeMapper $life,
-    ) {}
+	public function __construct(
+		private PolicyWriter $writer,
+		private GroupSourceClassifier $classifier,
+		private PolicyResolver $resolver,
+		private GroupGrantsMapper $grants,
+		private GroupLifeMapper $life,
+	) {}
 
-    /**
-     * The stored policy of one group and whether it can grant now.
-     *
-     * @param string $gid the group, exact bytes
-     * @return array{groupId:string, trusted:bool, state:?string, grants:array<string, list<string>>}
-     * @throws \InvalidArgumentException for an invalid group id
-     * @throws PolicyUnavailable when the storage or the directory cannot be read
-     */
-    public function state(string $gid): array {
-        if (!PolicyEventPayload::validUid($gid)) {
-            throw new \InvalidArgumentException('Invalid group');
-        }
-        try {
-            $grants = $this->grants->forGroups([$gid])[0]['grants'];
-            $life = $this->life->get($gid);
-        } catch (\UnexpectedValueException|\OCP\DB\Exception $e) {
-            throw new PolicyUnavailable('Cannot read the group policy', previous: $e);
-        }
-        return ['groupId' => $gid, 'trusted' => $this->classifier->trusted($gid), 'state' => $life['state'] ?? null, 'grants' => $grants];
-    }
+	/**
+	 * The stored policy of one group and whether it can grant now.
+	 *
+	 * @param string $gid the group, exact bytes
+	 * @return array{groupId:string, trusted:bool, state:?string, grants:array<string, list<string>>}
+	 * @throws \InvalidArgumentException for an invalid group id
+	 * @throws PolicyUnavailable when the storage or the directory cannot be read
+	 */
+	public function state(string $gid): array {
+		if (!PolicyEventPayload::validUid($gid)) {
+			throw new \InvalidArgumentException('Invalid group');
+		}
+		try {
+			$grants = $this->grants->forGroups([$gid])[0]['grants'];
+			$life = $this->life->get($gid);
+		} catch (\UnexpectedValueException|\OCP\DB\Exception $e) {
+			throw new PolicyUnavailable('Cannot read the group policy', previous: $e);
+		}
+		return ['groupId' => $gid, 'trusted' => $this->classifier->trusted($gid), 'state' => $life['state'] ?? null, 'grants' => $grants];
+	}
 
-    /**
-     * @see PolicyWriter::previewGroupGrants()
-     * @throws \InvalidArgumentException|GroupSourceUntrusted|PolicyConflict|PolicyUnavailable
-     */
-    public function preview(string $expectedRevision, string $actor, string $gid, mixed $grants): array {
-        return $this->writer->previewGroupGrants($expectedRevision, $actor, $gid, $grants, $this->admit(...));
-    }
+	/**
+	 * @see PolicyWriter::previewGroupGrants()
+	 * @throws \InvalidArgumentException|GroupSourceUntrusted|PolicyConflict|PolicyUnavailable
+	 */
+	public function preview(string $expectedRevision, string $actor, string $gid, mixed $grants): array {
+		return $this->writer->previewGroupGrants($expectedRevision, $actor, $gid, $grants, $this->admit(...));
+	}
 
-    /**
-     * @see PolicyWriter::setGroupGrants()
-     * @throws \InvalidArgumentException|ReceiptNotFound|ReceiptExpired|GroupSourceUntrusted|PolicyConflict|PolicyUnavailable
-     */
-    public function save(string $expectedRevision, string $actor, string $gid, mixed $grants, string $previewId): array {
-        return $this->writer->setGroupGrants($expectedRevision, $actor, $gid, $grants, $previewId, $this->admit(...));
-    }
+	/**
+	 * @see PolicyWriter::setGroupGrants()
+	 * @throws \InvalidArgumentException|ReceiptNotFound|ReceiptExpired|GroupSourceUntrusted|PolicyConflict|PolicyUnavailable
+	 */
+	public function save(string $expectedRevision, string $actor, string $gid, mixed $grants, string $previewId): array {
+		return $this->writer->setGroupGrants($expectedRevision, $actor, $gid, $grants, $previewId, $this->admit(...));
+	}
 
-    /**
-     * The external phase of a group preview or save; never under the mutex.
-     *
-     * @param array{gid:string, grants:array, current:array, withdraws:bool, holders:list<string>} $command
-     * @return array{trusted:bool, members:list<string>, cuts:list<string>}
-     * @throws PolicyUnavailable when a backend, a membership or an eligibility cannot be read
-     */
-    public function admit(array $command): array {
-        $gid = $command['gid'];
-        $trusted = $this->classifier->trusted($gid);
-        $members = array_values($this->classifier->members($gid));
-        $cuts = $sources = [];
-        if ($command['withdraws']) {
-            foreach ($command['holders'] as $uid) {
-                if ($this->loses($uid, $gid, $sources)) {
-                    $cuts[] = $uid;
-                }
-            }
-        }
-        return ['trusted' => $trusted, 'members' => $members, 'cuts' => $cuts, 'sources' => array_values($sources)];
-    }
+	/**
+	 * The external phase of a group preview or save; never under the mutex.
+	 *
+	 * @param array{gid:string, grants:array, current:array, withdraws:bool, holders:list<string>} $command
+	 * @return array{trusted:bool, members:list<string>, cuts:list<string>}
+	 * @throws PolicyUnavailable when a backend, a membership or an eligibility cannot be read
+	 */
+	public function admit(array $command): array {
+		$gid = $command['gid'];
+		$trusted = $this->classifier->trusted($gid);
+		$members = array_values($this->classifier->members($gid));
+		$cuts = $sources = [];
+		if ($command['withdraws']) {
+			foreach ($command['holders'] as $uid) {
+				if ($this->loses($uid, $gid, $sources)) {
+					$cuts[] = $uid;
+				}
+			}
+		}
+		return ['trusted' => $trusted, 'members' => $members, 'cuts' => $cuts, 'sources' => array_values($sources)];
+	}
 
-    /**
-     * Whether a holder loses its last source of eligibility when $gid stops granting it.
-     *
-     * @param array<string, array{groupId:string, state:?string, gen:?string}> $sources receives the lifecycle of every
-     *     candidate group the resolutions read, by group digest
-     * @throws PolicyUnavailable when the membership or the policy cannot be read, or the holder's eligibility without
-     *     the group is unknown
-     */
-    private function loses(string $uid, string $gid, array &$sources): bool {
-        $context = $this->resolver->begin($uid, [], [], false);
-        try {
-            $candidates = $context->candidates();
-            $now = $context->eligible()->allowed;
-        } finally {
-            $context->close();
-        }
-        if (!in_array($gid, array_column($candidates, 'groupId'), true) || $now === false) {
-            return false;
-        }
-        $context = $this->resolver->begin($uid, [], [$gid], false);
-        try {
-            $candidates = [...$candidates, ...$context->candidates()];
-            $without = $context->eligible()->allowed;
-        } finally {
-            $context->close();
-        }
-        foreach ($candidates as $candidate) {
-            $sources[\OCA\Mcp\Db\IdentityKey::group($candidate['groupId'])] ??= ['groupId' => $candidate['groupId'],
-                'state' => $candidate['state'] ?? null, 'gen' => $candidate['gen'] ?? null];
-        }
-        if ($without === null) {
-            throw new PolicyUnavailable('Eligibility of a credential holder without the group is unknown');
-        }
-        return !$without;
-    }
+	/**
+	 * Whether a holder loses its last source of eligibility when $gid stops granting it.
+	 *
+	 * @param array<string, array{groupId:string, state:?string, gen:?string}> $sources receives the lifecycle of every
+	 *     candidate group the resolutions read, by group digest
+	 * @throws PolicyUnavailable when the membership or the policy cannot be read, or the holder's eligibility without
+	 *     the group is unknown
+	 */
+	private function loses(string $uid, string $gid, array &$sources): bool {
+		$context = $this->resolver->begin($uid, [], [], false);
+		try {
+			$candidates = $context->candidates();
+			$now = $context->eligible()->allowed;
+		} finally {
+			$context->close();
+		}
+		if (!in_array($gid, array_column($candidates, 'groupId'), true) || $now === false) {
+			return false;
+		}
+		$context = $this->resolver->begin($uid, [], [$gid], false);
+		try {
+			$candidates = [...$candidates, ...$context->candidates()];
+			$without = $context->eligible()->allowed;
+		} finally {
+			$context->close();
+		}
+		foreach ($candidates as $candidate) {
+			$sources[\OCA\Mcp\Db\IdentityKey::group($candidate['groupId'])] ??= ['groupId' => $candidate['groupId'],
+				'state' => $candidate['state'] ?? null, 'gen' => $candidate['gen'] ?? null];
+		}
+		if ($without === null) {
+			throw new PolicyUnavailable('Eligibility of a credential holder without the group is unknown');
+		}
+		return !$without;
+	}
 }

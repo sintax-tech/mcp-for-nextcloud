@@ -20,29 +20,29 @@ $rootFolder = Server::get(IRootFolder::class);
 $userFolder = $rootFolder->getUserFolder($uid);
 echo 'user folder: ', $userFolder::class, ' id=', $userFolder->getId(), "\n";
 try {
-    $node = $userFolder->get($path);
+	$node = $userFolder->get($path);
 } catch (Throwable $e) {
-    echo 'get failed: ', $e::class, ': ', $e->getMessage(), "\n";
-    exit(0);
+	echo 'get failed: ', $e::class, ': ', $e->getMessage(), "\n";
+	exit(0);
 }
 $current = $node;
 for ($i = 0; $i < 12; $i++) {
-    try {
-        $storage = $current->getStorage();
-        $owner = $current->getOwner();
-        echo sprintf("%s id=%d path=%s storage=%s shared=%s mount=%s owner=%s\n", $current::class, (int)$current->getId(), $current->getPath(),
-            $storage->getId(), $storage->instanceOfStorage(ISharedStorage::class) ? 'yes' : 'no', $current->getMountPoint()->getMountPoint(),
-            $owner === null ? 'null' : $owner->getUID());
-    } catch (Throwable $e) {
-        echo $current::class, ' step failed: ', $e::class, ': ', $e->getMessage(), "\n";
-    }
-    if ($current instanceof IRootFolder) {
-        break;
-    }
-    try {
-        $current = $current->getParent();
-    } catch (Throwable $e) {
-        echo 'getParent failed: ', $e::class, ': ', $e->getMessage(), "\n";
-        break;
-    }
+	try {
+		$storage = $current->getStorage();
+		$owner = $current->getOwner();
+		echo sprintf("%s id=%d path=%s storage=%s shared=%s mount=%s owner=%s\n", $current::class, (int)$current->getId(), $current->getPath(),
+			$storage->getId(), $storage->instanceOfStorage(ISharedStorage::class) ? 'yes' : 'no', $current->getMountPoint()->getMountPoint(),
+			$owner === null ? 'null' : $owner->getUID());
+	} catch (Throwable $e) {
+		echo $current::class, ' step failed: ', $e::class, ': ', $e->getMessage(), "\n";
+	}
+	if ($current instanceof IRootFolder) {
+		break;
+	}
+	try {
+		$current = $current->getParent();
+	} catch (Throwable $e) {
+		echo 'getParent failed: ', $e::class, ': ', $e->getMessage(), "\n";
+		break;
+	}
 }

@@ -11,21 +11,21 @@ use Sabre\VObject\Component\VCalendar;
 
 /** Request-local proposed write; no ICS or closure is persisted in the approval store. */
 final class PreparedCalendarWrite {
-    public function __construct(
-        public readonly Calendar $source,
-        public readonly ?Calendar $target,
-        public readonly ?StoredEvent $before,
-        public readonly ?VCalendar $after,
-        private Closure $write,
-    ) {}
+	public function __construct(
+		public readonly Calendar $source,
+		public readonly ?Calendar $target,
+		public readonly ?StoredEvent $before,
+		public readonly ?VCalendar $after,
+		private Closure $write,
+	) {}
 
-    /**
-     * Runs the prepared write callback after the caller has completed its confirmation checks.
-     *
-     * @return array<string, mixed> result produced by the handler callback
-     * @throws \Throwable when the underlying write callback fails
-     */
-    public function dispatch(): array {
-        return ($this->write)();
-    }
+	/**
+	 * Runs the prepared write callback after the caller has completed its confirmation checks.
+	 *
+	 * @return array<string, mixed> result produced by the handler callback
+	 * @throws \Throwable when the underlying write callback fails
+	 */
+	public function dispatch(): array {
+		return ($this->write)();
+	}
 }

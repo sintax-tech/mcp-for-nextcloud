@@ -25,24 +25,24 @@ use OCP\L10N\IFactory;
  * Accept-Language headers) never take precedence over account or server defaults.
  */
 class UserL10n {
-    public function __construct(private IFactory $factory) {
-    }
+	public function __construct(private IFactory $factory) {
+	}
 
-    /**
-     * Translator of the `mcp` app in the language of the given account.
-     *
-     * @param IUser $user authenticated user
-     */
-    public function forUser(IUser $user): IL10N {
-        try {
-            foreach ($this->factory->getLanguageIterator($user) as $lang) {
-                if ($lang === "en" || $this->factory->languageExists("mcp", $lang)) {
-                    return $this->factory->get("mcp", $lang);
-                }
-            }
-        } catch (\Throwable) {
-            // Fall back safely if the iterator is unavailable
-        }
-        return $this->factory->get("mcp", "en");
-    }
+	/**
+	 * Translator of the `mcp` app in the language of the given account.
+	 *
+	 * @param IUser $user authenticated user
+	 */
+	public function forUser(IUser $user): IL10N {
+		try {
+			foreach ($this->factory->getLanguageIterator($user) as $lang) {
+				if ($lang === "en" || $this->factory->languageExists("mcp", $lang)) {
+					return $this->factory->get("mcp", $lang);
+				}
+			}
+		} catch (\Throwable) {
+			// Fall back safely if the iterator is unavailable
+		}
+		return $this->factory->get("mcp", "en");
+	}
 }

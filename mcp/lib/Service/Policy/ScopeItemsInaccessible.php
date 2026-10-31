@@ -9,8 +9,8 @@ namespace OCA\Mcp\Service\Policy;
 
 /** Resources the target user cannot reach natively; nothing is written. */
 final class ScopeItemsInaccessible extends \RuntimeException {
-    /** @param list<string> $items the ids the target user cannot reach, in ascending numeric order */
-    public function __construct(public readonly array $items) {
-        parent::__construct('Resource not accessible to the user');
-    }
+	/** @param list<string> $items the ids the target user cannot reach, in ascending numeric order */
+	public function __construct(public readonly array $items) {
+		parent::__construct('Resource not accessible to the user');
+	}
 }

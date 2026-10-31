@@ -15,13 +15,13 @@ use OCP\IUserManager;
  * its raw identifier, which is what Talk shows as well.
  */
 class ActorNames {
-    public function __construct(private IUserManager $userManager) {}
+	public function __construct(private IUserManager $userManager) {}
 
-    /**
-     * @param string $actorId Actor identifier as Talk stores it
-     * @return string The display name, or the raw identifier when the account cannot be resolved
-     */
-    public function displayName(string $actorId): string {
-        return $this->userManager->get($actorId)?->getDisplayName() ?? $actorId;
-    }
+	/**
+	 * @param string $actorId Actor identifier as Talk stores it
+	 * @return string The display name, or the raw identifier when the account cannot be resolved
+	 */
+	public function displayName(string $actorId): string {
+		return $this->userManager->get($actorId)?->getDisplayName() ?? $actorId;
+	}
 }

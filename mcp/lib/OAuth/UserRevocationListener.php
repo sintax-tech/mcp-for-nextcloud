@@ -24,23 +24,23 @@ use Throwable;
  * (UserCauseListener), so a late deletion event never cuts the consent of a recreated account.
  */
 class UserRevocationListener implements IEventListener {
-    public function __construct(private PolicyWriter $writer, private IDBConnection $db, private LoggerInterface $logger,
-        private CauseProcessor $causes) {}
+	public function __construct(private PolicyWriter $writer, private IDBConnection $db, private LoggerInterface $logger,
+		private CauseProcessor $causes) {}
 
-    public function handle(Event $event): void {
-        if (!($event instanceof UserChangedEvent && $event->getFeature() === 'enabled'
-            && in_array($event->getValue(), [false, 0, '0', 'false'], true))) {
-            return;
-        }
-        try {
-            if ($this->db->inTransaction()) {
-                $this->logger->info('Account revocation left to the next use: the event came inside a transaction', ['app' => 'mcp']);
-                return;
-            }
-            $this->causes->flush();
-            $this->writer->revokeCredentials($event->getUser()->getUID());
-        } catch (Throwable $e) {
-            $this->logger->warning('Cannot revoke the OAuth credentials of a disabled account', ['app' => 'mcp', 'exception' => $e]);
-        }
-    }
+	public function handle(Event $event): void {
+		if (!($event instanceof UserChangedEvent && $event->getFeature() === 'enabled'
+			&& in_array($event->getValue(), [false, 0, '0', 'false'], true))) {
+			return;
+		}
+		try {
+			if ($this->db->inTransaction()) {
+				$this->logger->info('Account revocation left to the next use: the event came inside a transaction', ['app' => 'mcp']);
+				return;
+			}
+			$this->causes->flush();
+			$this->writer->revokeCredentials($event->getUser()->getUID());
+		} catch (Throwable $e) {
+			$this->logger->warning('Cannot revoke the OAuth credentials of a disabled account', ['app' => 'mcp', 'exception' => $e]);
+		}
+	}
 }

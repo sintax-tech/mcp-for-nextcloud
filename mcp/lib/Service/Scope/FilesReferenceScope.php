@@ -17,15 +17,15 @@ use OCP\Files\Node;
  * (D4) belongs to the Notes module only.
  */
 final class FilesReferenceScope implements FileReferenceScope {
-    public function __construct(private FilesScope $scope) {}
+	public function __construct(private FilesScope $scope) {}
 
-    /** @throws PolicyUnavailable when the scope cannot be read: never answered as "unrestricted" */
-    public function restricts(string $userId): bool {
-        return $this->scope->restricts($userId);
-    }
+	/** @throws PolicyUnavailable when the scope cannot be read: never answered as "unrestricted" */
+	public function restricts(string $userId): bool {
+		return $this->scope->restricts($userId);
+	}
 
-    /** @throws PolicyUnavailable when the scope cannot be read */
-    public function allows(string $userId, Node $node): bool {
-        return $this->scope->allows($userId, $node);
-    }
+	/** @throws PolicyUnavailable when the scope cannot be read */
+	public function allows(string $userId, Node $node): bool {
+		return $this->scope->allows($userId, $node);
+	}
 }

@@ -18,157 +18,157 @@ namespace OCA\Files_Versions\Versions;
 
 /** One stored version, as files_versions hands it out. */
 final class FakeVersion {
-    /** @var list<string> */
-    public array $contents = [];
-    /** @var list<resource> every stream read() handed out, so a test can see whether it was closed */
-    public array $handles = [];
-    /** When set, read() hands out a stream whose reads fail, as a version file that cannot be read to the end. */
-    public bool $failingRead = false;
+	/** @var list<string> */
+	public array $contents = [];
+	/** @var list<resource> every stream read() handed out, so a test can see whether it was closed */
+	public array $handles = [];
+	/** When set, read() hands out a stream whose reads fail, as a version file that cannot be read to the end. */
+	public bool $failingRead = false;
 
-    /**
-     * @param int|string $revision identifier the tools expose as a string
-     * @param int $timestamp when the version was taken
-     * @param int $size size in bytes
-     * @param string $mime MIME type at that moment
-     * @param string $name file name at that moment
-     */
-    public function __construct(
-        private int|string $revision,
-        private int $timestamp,
-        private int $size,
-        private string $mime,
-        private string $name,
-    ) {}
+	/**
+	 * @param int|string $revision identifier the tools expose as a string
+	 * @param int $timestamp when the version was taken
+	 * @param int $size size in bytes
+	 * @param string $mime MIME type at that moment
+	 * @param string $name file name at that moment
+	 */
+	public function __construct(
+		private int|string $revision,
+		private int $timestamp,
+		private int $size,
+		private string $mime,
+		private string $name,
+	) {}
 
-    /** @return int|string the revision identifier */
-    public function getRevisionId(): int|string {
-        return $this->revision;
-    }
+	/** @return int|string the revision identifier */
+	public function getRevisionId(): int|string {
+		return $this->revision;
+	}
 
-    /** @return int when the version was created */
-    public function getTimestamp(): int {
-        return $this->timestamp;
-    }
+	/** @return int when the version was created */
+	public function getTimestamp(): int {
+		return $this->timestamp;
+	}
 
-    /** @return int the size in bytes */
-    public function getSize(): int {
-        return $this->size;
-    }
+	/** @return int the size in bytes */
+	public function getSize(): int {
+		return $this->size;
+	}
 
-    /** @return string the file name at that moment */
-    public function getSourceFileName(): string {
-        return $this->name;
-    }
+	/** @return string the file name at that moment */
+	public function getSourceFileName(): string {
+		return $this->name;
+	}
 
-    /** @return string the MIME type at that moment */
-    public function getMimeType(): string {
-        return $this->mime;
-    }
+	/** @return string the MIME type at that moment */
+	public function getMimeType(): string {
+		return $this->mime;
+	}
 
-    /**
-     * @param string $content what read() should hand back
-     */
-    public function withContent(string $content): self {
-        $this->contents = [$content];
-        return $this;
-    }
+	/**
+	 * @param string $content what read() should hand back
+	 */
+	public function withContent(string $content): self {
+		$this->contents = [$content];
+		return $this;
+	}
 
-    /** @return resource|false a readable stream, as IVersionManager::read() returns */
-    public function read() {
-        if ($this->failingRead) {
-            if (!in_array('mcpfail', stream_get_wrappers(), true)) {
-                stream_wrapper_register('mcpfail', FailingReadStream::class);
-            }
-            return $this->handles[] = fopen('mcpfail://version', 'r');
-        }
-        if ($this->contents === []) {
-            return false;
-        }
-        $handle = fopen('php://memory', 'w+');
-        fwrite($handle, $this->contents[0]);
-        rewind($handle);
-        $this->handles[] = $handle;
-        return $handle;
-    }
+	/** @return resource|false a readable stream, as IVersionManager::read() returns */
+	public function read() {
+		if ($this->failingRead) {
+			if (!in_array('mcpfail', stream_get_wrappers(), true)) {
+				stream_wrapper_register('mcpfail', FailingReadStream::class);
+			}
+			return $this->handles[] = fopen('mcpfail://version', 'r');
+		}
+		if ($this->contents === []) {
+			return false;
+		}
+		$handle = fopen('php://memory', 'w+');
+		fwrite($handle, $this->contents[0]);
+		rewind($handle);
+		$this->handles[] = $handle;
+		return $handle;
+	}
 }
 
 /** A stream wrapper whose reads fail: stream_copy_to_stream() on it answers false. */
 final class FailingReadStream {
-    /** @var resource|null set by PHP */
-    public $context;
+	/** @var resource|null set by PHP */
+	public $context;
 
-    public function stream_open(string $path, string $mode, int $options, ?string &$opened): bool {
-        return true;
-    }
+	public function stream_open(string $path, string $mode, int $options, ?string &$opened): bool {
+		return true;
+	}
 
-    public function stream_read(int $count): string|false {
-        return false;
-    }
+	public function stream_read(int $count): string|false {
+		return false;
+	}
 
-    public function stream_eof(): bool {
-        return false;
-    }
+	public function stream_eof(): bool {
+		return false;
+	}
 
-    /** @return array<string, mixed> */
-    public function stream_stat(): array {
-        return [];
-    }
+	/** @return array<string, mixed> */
+	public function stream_stat(): array {
+		return [];
+	}
 }
 
 /** Stand-in for OCA\Files_Versions\Versions\IVersionManager. */
 final class FakeVersionManager {
-    /** @var list<FakeVersion> versions handed out, newest first */
-    public array $versions = [];
-    /** @var list<string> operations in order, so a test can assert what ran */
-    public array $ops = [];
-    /** Value rollback() answers; null is what files_versions returns on success. */
-    public bool|null $rollbackResult = null;
-    /**
-     * What the rollback does to the file, as the real one overwrites it with the version: a test puts the effect in
-     * the tree so the order against the backup is observable on one timeline.
-     *
-     * @var (\Closure(FakeVersion): void)|null
-     */
-    public ?\Closure $onRollback = null;
+	/** @var list<FakeVersion> versions handed out, newest first */
+	public array $versions = [];
+	/** @var list<string> operations in order, so a test can assert what ran */
+	public array $ops = [];
+	/** Value rollback() answers; null is what files_versions returns on success. */
+	public bool|null $rollbackResult = null;
+	/**
+	 * What the rollback does to the file, as the real one overwrites it with the version: a test puts the effect in
+	 * the tree so the order against the backup is observable on one timeline.
+	 *
+	 * @var (\Closure(FakeVersion): void)|null
+	 */
+	public ?\Closure $onRollback = null;
 
-    /**
-     * @param list<FakeVersion> $versions versions of the file
-     * @return self the manager, ready to be resolved by the container double
-     */
-    public static function with(array $versions): self {
-        $manager = new self();
-        $manager->versions = $versions;
-        return $manager;
-    }
+	/**
+	 * @param list<FakeVersion> $versions versions of the file
+	 * @return self the manager, ready to be resolved by the container double
+	 */
+	public static function with(array $versions): self {
+		$manager = new self();
+		$manager->versions = $versions;
+		return $manager;
+	}
 
-    /**
-     * @param \OCP\IUser $user owner of the versions
-     * @param \OCP\Files\FileInfo $file file the versions belong to
-     * @return list<FakeVersion> the versions
-     */
-    public function getVersionsForFile(\OCP\IUser $user, \OCP\Files\FileInfo $file): array {
-        $this->ops[] = 'list';
-        return $this->versions;
-    }
+	/**
+	 * @param \OCP\IUser $user owner of the versions
+	 * @param \OCP\Files\FileInfo $file file the versions belong to
+	 * @return list<FakeVersion> the versions
+	 */
+	public function getVersionsForFile(\OCP\IUser $user, \OCP\Files\FileInfo $file): array {
+		$this->ops[] = 'list';
+		return $this->versions;
+	}
 
-    /**
-     * @param FakeVersion $version version to roll back to
-     * @return bool|null what the real manager reports
-     */
-    public function rollback(FakeVersion $version): bool|null {
-        $this->ops[] = 'rollback';
-        if ($this->onRollback !== null) {
-            ($this->onRollback)($version);
-        }
-        return $this->rollbackResult;
-    }
+	/**
+	 * @param FakeVersion $version version to roll back to
+	 * @return bool|null what the real manager reports
+	 */
+	public function rollback(FakeVersion $version): bool|null {
+		$this->ops[] = 'rollback';
+		if ($this->onRollback !== null) {
+			($this->onRollback)($version);
+		}
+		return $this->rollbackResult;
+	}
 
-    /**
-     * @param FakeVersion $version version to read
-     * @return resource|false the content
-     */
-    public function read(FakeVersion $version) {
-        $this->ops[] = 'read';
-        return $version->read();
-    }
+	/**
+	 * @param FakeVersion $version version to read
+	 * @return resource|false the content
+	 */
+	public function read(FakeVersion $version) {
+		$this->ops[] = 'read';
+		return $version->read();
+	}
 }

@@ -16,7 +16,7 @@ use RuntimeException;
  * while "already shared in this conversation" can still be specific, which is a fact about the caller's own action.
  */
 class FileAccessException extends RuntimeException {
-    public function __construct(string $message, ?\Throwable $previous = null) {
-        parent::__construct($message, 0, $previous);
-    }
+	public function __construct(string $message, ?\Throwable $previous = null) {
+		parent::__construct($message, 0, $previous);
+	}
 }

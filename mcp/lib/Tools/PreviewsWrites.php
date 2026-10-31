@@ -20,13 +20,13 @@ namespace OCA\Mcp\Tools;
  * conversation that happens before them.
  */
 interface PreviewsWrites {
-    /**
-     * @param string $name tool name of a writing definition of this module
-     * @param array<string, mixed> $arguments arguments already validated against the tool schema
-     * @param string $userId authenticated user
-     * @return array<string, mixed> the plan as the structured content of the result
-     * @throws \InvalidArgumentException for a semantic problem the JSON Schema cannot express (-32602)
-     * @throws ToolFailure for a client-safe failure (not found, forbidden, conflict, precondition)
-     */
-    public function preview(string $name, array $arguments, string $userId): array;
+	/**
+	 * @param string $name tool name of a writing definition of this module
+	 * @param array<string, mixed> $arguments arguments already validated against the tool schema
+	 * @param string $userId authenticated user
+	 * @return array<string, mixed> the plan as the structured content of the result
+	 * @throws \InvalidArgumentException for a semantic problem the JSON Schema cannot express (-32602)
+	 * @throws ToolFailure for a client-safe failure (not found, forbidden, conflict, precondition)
+	 */
+	public function preview(string $name, array $arguments, string $userId): array;
 }

@@ -14,7 +14,7 @@ namespace OCA\Mcp\Service\Policy;
  * PolicyUnavailable. Never a denial, never a revocation.
  */
 class GrantUnknown extends PolicyUnavailable {
-    public function __construct(string $message = 'Policy resolution is unknown', ?\Throwable $previous = null) {
-        parent::__construct($message, false, $previous);
-    }
+	public function __construct(string $message = 'Policy resolution is unknown', ?\Throwable $previous = null) {
+		parent::__construct($message, false, $previous);
+	}
 }

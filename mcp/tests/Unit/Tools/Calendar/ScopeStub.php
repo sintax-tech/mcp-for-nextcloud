@@ -18,34 +18,34 @@ use OCA\Mcp\Tools\Calendar\ScopedCalendarAccess;
  * unreadable when $unavailable is set. Every question is recorded, so a test can tell what the tool asked.
  */
 final class ScopeStub implements ScopeReader {
-    /** @var array<string, list<string>> restricted modules and their items */
-    public array $restricted = [];
-    public bool $unavailable = false;
-    /** @var list<array{string, string, string}> uid, module and resource id of every question */
-    public array $asked = [];
+	/** @var array<string, list<string>> restricted modules and their items */
+	public array $restricted = [];
+	public bool $unavailable = false;
+	/** @var list<array{string, string, string}> uid, module and resource id of every question */
+	public array $asked = [];
 
-    /** @param list<string> $items calendar ids the module is restricted to; [] restricts it to nothing */
-    public function restrict(string $module, array $items): self {
-        $this->restricted[$module] = $items;
-        return $this;
-    }
+	/** @param list<string> $items calendar ids the module is restricted to; [] restricts it to nothing */
+	public function restrict(string $module, array $items): self {
+		$this->restricted[$module] = $items;
+		return $this;
+	}
 
-    public function inScope(string $userId, string $module, string $resourceId): bool {
-        $this->asked[] = [$userId, $module, $resourceId];
-        if ($this->unavailable) {
-            throw new PolicyUnavailable('Resource scope unavailable');
-        }
-        return !isset($this->restricted[$module]) || in_array($resourceId, $this->restricted[$module], true);
-    }
+	public function inScope(string $userId, string $module, string $resourceId): bool {
+		$this->asked[] = [$userId, $module, $resourceId];
+		if ($this->unavailable) {
+			throw new PolicyUnavailable('Resource scope unavailable');
+		}
+		return !isset($this->restricted[$module]) || in_array($resourceId, $this->restricted[$module], true);
+	}
 
-    public function assertReadable(string $userId, string $module): void {
-        if ($this->unavailable) {
-            throw new PolicyUnavailable('Resource scope unavailable');
-        }
-    }
+	public function assertReadable(string $userId, string $module): void {
+		if ($this->unavailable) {
+			throw new PolicyUnavailable('Resource scope unavailable');
+		}
+	}
 
-    /** The tools' calendar access over a store, narrowed by $scope (unrestricted by default). */
-    public static function access(CalendarStore $store, ?self $scope = null): ScopedCalendarAccess {
-        return new ScopedCalendarAccess(new CalendarAccess($store), $scope ?? new self());
-    }
+	/** The tools' calendar access over a store, narrowed by $scope (unrestricted by default). */
+	public static function access(CalendarStore $store, ?self $scope = null): ScopedCalendarAccess {
+		return new ScopedCalendarAccess(new CalendarAccess($store), $scope ?? new self());
+	}
 }

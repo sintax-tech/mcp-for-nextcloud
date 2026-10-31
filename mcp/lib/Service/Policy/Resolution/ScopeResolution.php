@@ -12,23 +12,23 @@ namespace OCA\Mcp\Service\Policy\Resolution;
  * and its items; resolved is the mode with the count. Unavailable is a read that failed: never "unrestricted".
  */
 readonly class ScopeResolution {
-    public const UNRESTRICTED = 'unrestricted';
-    public const RESTRICTED = 'restricted';
-    public const UNAVAILABLE = 'unavailable';
+	public const UNRESTRICTED = 'unrestricted';
+	public const RESTRICTED = 'restricted';
+	public const UNAVAILABLE = 'unavailable';
 
-    /**
-     * @param string $mode one of the constants
-     * @param list<string> $items allowed resource ids when restricted, possibly none; empty otherwise
-     * @param string|null $policyRev revision of the commit that saved the restriction, when restricted
-     */
-    public function __construct(
-        public string $mode,
-        public array $items = [],
-        public ?string $policyRev = null,
-    ) {}
+	/**
+	 * @param string $mode one of the constants
+	 * @param list<string> $items allowed resource ids when restricted, possibly none; empty otherwise
+	 * @param string|null $policyRev revision of the commit that saved the restriction, when restricted
+	 */
+	public function __construct(
+		public string $mode,
+		public array $items = [],
+		public ?string $policyRev = null,
+	) {}
 
-    /** @return int|null how many resources a restricted module keeps; null when not restricted */
-    public function count(): ?int {
-        return $this->mode === self::RESTRICTED ? count($this->items) : null;
-    }
+	/** @return int|null how many resources a restricted module keeps; null when not restricted */
+	public function count(): ?int {
+		return $this->mode === self::RESTRICTED ? count($this->items) : null;
+	}
 }

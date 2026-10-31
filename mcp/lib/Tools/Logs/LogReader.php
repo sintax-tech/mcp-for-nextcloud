@@ -20,27 +20,27 @@ use OCP\Log\ILogFactory;
  * each line with json_decode(), so a malformed line comes back as null. The rotated file (nextcloud.log.1) is not read.
  */
 class LogReader {
-    public function __construct(private ILogFactory $factory) {}
+	public function __construct(private ILogFactory $factory) {}
 
-    /**
-     * @param int $limit entries to read at most
-     * @param int $offset entries to skip from the end first
-     * @return list<mixed> decoded entries, newest first; anything that is not an object is a malformed line
-     * @throws ToolFailure when the log is not a file or the core cannot read it, with a message that names no path
-     */
-    public function entries(int $limit, int $offset): array {
-        try {
-            $writer = $this->factory->get('file');
-        } catch (\Throwable) {
-            throw new ToolFailure(Translator::t('The server log could not be read.'));
-        }
-        if (!$writer instanceof IFileBased) {
-            throw new ToolFailure(Translator::t('This server does not write its log to a file, so there is nothing to read.'));
-        }
-        try {
-            return array_values($writer->getEntries($limit, $offset));
-        } catch (\Throwable) {
-            throw new ToolFailure(Translator::t('The server log could not be read.'));
-        }
-    }
+	/**
+	 * @param int $limit entries to read at most
+	 * @param int $offset entries to skip from the end first
+	 * @return list<mixed> decoded entries, newest first; anything that is not an object is a malformed line
+	 * @throws ToolFailure when the log is not a file or the core cannot read it, with a message that names no path
+	 */
+	public function entries(int $limit, int $offset): array {
+		try {
+			$writer = $this->factory->get('file');
+		} catch (\Throwable) {
+			throw new ToolFailure(Translator::t('The server log could not be read.'));
+		}
+		if (!$writer instanceof IFileBased) {
+			throw new ToolFailure(Translator::t('This server does not write its log to a file, so there is nothing to read.'));
+		}
+		try {
+			return array_values($writer->getEntries($limit, $offset));
+		} catch (\Throwable) {
+			throw new ToolFailure(Translator::t('The server log could not be read.'));
+		}
+	}
 }

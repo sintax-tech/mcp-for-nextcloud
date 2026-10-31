@@ -12,7 +12,7 @@ namespace OCA\Mcp\Service\Policy;
  * named 'Database'. Nothing was written. HTTP adapters map this to 422 {"error":"group_source_untrusted"}.
  */
 class GroupSourceUntrusted extends \RuntimeException {
-    public function __construct() {
-        parent::__construct('Group source cannot guarantee group identity', 422);
-    }
+	public function __construct() {
+		parent::__construct('Group source cannot guarantee group identity', 422);
+	}
 }

@@ -17,20 +17,20 @@ use OCP\IConfig;
  * CalDavBackend::deleteCalendarObject deletes permanently when that dav value is '0' (line 1745).
  */
 class TrashPolicy {
-    /** App id holding the retention setting. */
-    private const APP = 'dav';
-    /** Retention setting key, in seconds. */
-    private const KEY = 'calendarRetentionObligation';
+	/** App id holding the retention setting. */
+	private const APP = 'dav';
+	/** Retention setting key, in seconds. */
+	private const KEY = 'calendarRetentionObligation';
 
-    /**
-     * @param IConfig $config Nextcloud configuration
-     */
-    public function __construct(private IConfig $config) {}
+	/**
+	 * @param IConfig $config Nextcloud configuration
+	 */
+	public function __construct(private IConfig $config) {}
 
-    /**
-     * @return bool false when retention is disabled and deletion would be permanent
-     */
-    public function recoverable(): bool {
-        return $this->config->getAppValue(self::APP, self::KEY) !== '0';
-    }
+	/**
+	 * @return bool false when retention is disabled and deletion would be permanent
+	 */
+	public function recoverable(): bool {
+		return $this->config->getAppValue(self::APP, self::KEY) !== '0';
+	}
 }

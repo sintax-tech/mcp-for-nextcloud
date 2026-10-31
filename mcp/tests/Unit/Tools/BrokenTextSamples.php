@@ -16,15 +16,18 @@ use OCA\Mcp\Tests\Unit\Tools\Mail\AttachmentSamples;
  * - {@see self::pdf()}: a one-page PDF whose Type0 font maps glyphs through a ToUnicode CMap; glyph 3 maps to the UTF-16
  *   surrogate pair D83D DE00 (U+1F600). smalot/pdfparser writes each half as its own CESU-8 sequence (ED A0 BD ED B8 80),
  *   which json_encode refuses as "Malformed UTF-8 characters".
- * - {@see self::docx()} and {@see self::odt()}: document XML written in Windows-1252, so "ação" reaches the text as the
- *   single bytes E7 E3.
+ * - {@see self::docx()} and {@see self::odt()}: document XML declared and written in Windows-1252 ("ação" is stored as
+ *   the single bytes E7 E3), with the numeric entities &#x20AC; and &#233;, which decode into UTF-8 next to those bytes.
  */
 final class BrokenTextSamples {
 	/** What the PDF shows, as valid UTF-8: glyphs 1, 2 and 3. */
 	public const PDF_TEXT = "Aá\u{1F600}";
 
 	/** What the DOCX and ODT paragraphs say, as valid UTF-8. */
-	public const LATIN_TEXT = 'Relatório de ação';
+	public const LATIN_TEXT = 'Relatório de ação € café';
+
+	/** XML declaration of the Windows-1252 entries. */
+	private const DECLARATION = '<?xml version="1.0" encoding="Windows-1252" standalone="yes"?>';
 
 	/**
 	 * Constructor of a class with static members only.
@@ -68,30 +71,40 @@ final class BrokenTextSamples {
 	}
 
 	/**
-	 * A DOCX whose paragraph is in Windows-1252.
+	 * A DOCX whose document XML is declared and written in Windows-1252, holding two paragraphs.
 	 *
 	 * @return string the archive
 	 */
 	public static function docx(): string {
-		return AttachmentSamples::docx(self::latin(), self::latin());
+		$paragraph = '<w:p><w:r><w:t>' . self::latin() . '</w:t></w:r></w:p>';
+		return AttachmentSamples::zip([
+			'[Content_Types].xml' => '<?xml version="1.0"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"/>',
+			'word/document.xml' => self::DECLARATION . '<w:document xmlns:w="w"><w:body>' . $paragraph . $paragraph . '</w:body></w:document>',
+		]);
 	}
 
 	/**
-	 * An ODT whose paragraph is in Windows-1252.
+	 * An ODT whose content XML is declared and written in Windows-1252, holding one paragraph.
 	 *
 	 * @return string the archive
 	 */
 	public static function odt(): string {
-		return AttachmentSamples::odt(self::latin());
+		return AttachmentSamples::zip([
+			'mimetype' => 'application/vnd.oasis.opendocument.text',
+			'META-INF/manifest.xml' => '<manifest:manifest xmlns:manifest="m"><manifest:file-entry manifest:full-path="content.xml"/></manifest:manifest>',
+			'content.xml' => self::DECLARATION . '<office:document-content xmlns:office="o" xmlns:text="t"><office:body><office:text><text:p>'
+				. self::latin() . '</text:p></office:text></office:body></office:document-content>',
+		]);
 	}
 
 	/**
-	 * {@see self::LATIN_TEXT} in Windows-1252.
+	 * {@see self::LATIN_TEXT} as stored in a Windows-1252 entry: single-byte accents, the euro sign and the "é" of "café"
+	 * as numeric entities.
 	 *
 	 * @return string the single-byte text
 	 */
-	private static function latin(): string {
-		return (string)mb_convert_encoding(self::LATIN_TEXT, 'Windows-1252', 'UTF-8');
+	public static function latin(): string {
+		return (string)mb_convert_encoding('Relatório de ação', 'Windows-1252', 'UTF-8') . ' &#x20AC; caf&#233;';
 	}
 
 	/**

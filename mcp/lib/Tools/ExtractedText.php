@@ -12,14 +12,13 @@ namespace OCA\Mcp\Tools;
  * the MCP response can always encode.
  *
  * Parsers do not promise UTF-8. smalot/pdfparser writes each half of a UTF-16 surrogate pair of a ToUnicode map as its
- * own three bytes (CESU-8), so an emoji or any character beyond U+FFFF comes out as bytes json_encode refuses; an XML
- * entry declared in a legacy charset comes out as single bytes. In order:
+ * own three bytes (CESU-8), so an emoji or any character beyond U+FFFF comes out as bytes json_encode refuses. In order:
  * 1. text that is already valid UTF-8 keeps every character;
  * 2. surrogate pairs written as CESU-8 become the character they encode, and lone surrogates become U+FFFD;
- * 3. text with no multibyte UTF-8 sequence at all, no NUL byte and few high bytes is single-byte text and is read as
- *    Windows-1252 (a superset of ISO-8859-1 for every printable character), so accents survive;
- * 4. any other invalid byte becomes U+FFFD: a byte inside UTF-8 text is a broken sequence far more often than a Latin-1
- *    character, and binary content is never guessed into letters.
+ * 3. any other invalid byte becomes U+FFFD. No charset is guessed here: in Windows-1252 the accented letters of most
+ *    Latin languages (E3, E7, F3...) are also UTF-8 lead bytes, so a guess cannot tell them from a truncated UTF-8
+ *    sequence or from binary content, and would turn both into wrong letters. A charset is converted only where the
+ *    document declares it ({@see XmlCharset}).
  * Control characters other than tab, line feed, form feed and carriage return are then removed, C1 controls included.
  */
 final class ExtractedText {
@@ -35,9 +34,6 @@ final class ExtractedText {
 
 	/** Control characters removed: C0 except tab, line feed, form feed and carriage return; DEL; C1. */
 	private const CONTROLS = '/[\x{0}-\x{8}\x{B}\x{E}-\x{1F}\x{7F}-\x{9F}]+/u';
-
-	/** Largest share of bytes at or above 0x80 that single-byte text may hold before it is taken for binary. */
-	private const MAX_HIGH_SHARE = 0.3;
 
 	/**
 	 * Constructor of a class with static members only.
@@ -61,7 +57,7 @@ final class ExtractedText {
 	}
 
 	/**
-	 * Invalid text made valid, by the steps 2 to 4 of the class description.
+	 * Invalid text made valid, by the steps 2 and 3 of the class description.
 	 *
 	 * @param string $text text that is not valid UTF-8
 	 * @return string valid UTF-8
@@ -69,13 +65,7 @@ final class ExtractedText {
 	private static function repaired(string $text): string {
 		$text = preg_replace_callback(self::CESU_PAIR, self::pair(...), $text) ?? $text;
 		$text = preg_replace(self::CESU_HALF, "\u{FFFD}", $text) ?? $text;
-		if (mb_check_encoding($text, 'UTF-8')) {
-			return $text;
-		}
-		if (self::singleByte($text)) {
-			return (string)mb_convert_encoding($text, 'UTF-8', 'Windows-1252');
-		}
-		return self::substituted($text);
+		return mb_check_encoding($text, 'UTF-8') ? $text : self::substituted($text);
 	}
 
 	/**
@@ -88,20 +78,6 @@ final class ExtractedText {
 		$high = 0xD000 | ((ord($match[1]) & 0x3F) << 6) | (ord($match[2]) & 0x3F);
 		$low = 0xD000 | ((ord($match[3]) & 0x3F) << 6) | (ord($match[4]) & 0x3F);
 		return (string)mb_chr(0x10000 + (($high - 0xD800) << 10) + ($low - 0xDC00), 'UTF-8');
-	}
-
-	/**
-	 * Whether the text reads as single-byte text: no multibyte UTF-8 sequence, no NUL byte, few high bytes.
-	 *
-	 * @param string $text invalid UTF-8
-	 * @return bool true when it is converted from Windows-1252
-	 */
-	private static function singleByte(string $text): bool {
-		if (str_contains($text, "\0") || preg_match('/(?![\x00-\x7F])(?:' . self::VALID . ')/', $text) === 1) {
-			return false;
-		}
-		$high = strlen($text) - strlen((string)preg_replace('/[\x80-\xFF]+/', '', $text));
-		return $high <= strlen($text) * self::MAX_HIGH_SHARE;
 	}
 
 	/**

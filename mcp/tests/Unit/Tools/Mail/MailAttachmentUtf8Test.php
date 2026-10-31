@@ -30,7 +30,7 @@ final class MailAttachmentUtf8Test extends TestCase {
 	}
 
 	/**
-	 * DOCX and ODT attachments whose XML is in Windows-1252 read with their accents, as valid UTF-8.
+	 * DOCX and ODT attachments whose XML declares Windows-1252 and holds entities read with every letter, as valid UTF-8.
 	 *
 	 * @return void
 	 */

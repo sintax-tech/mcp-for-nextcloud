@@ -40,7 +40,7 @@ final class FilesReadUtf8Test extends FilesToolsTestCase {
 	}
 
 	/**
-	 * DOCX and ODT whose XML is in Windows-1252 come back as valid UTF-8 with their accents.
+	 * DOCX and ODT whose XML declares Windows-1252 and holds entities come back as valid UTF-8 with every letter.
 	 *
 	 * @return void
 	 */

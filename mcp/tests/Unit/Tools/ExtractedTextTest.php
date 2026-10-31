@@ -12,7 +12,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Every output of {@see ExtractedText::utf8()} is valid UTF-8 that json_encode accepts without a substitution flag, and
- * what can be read back (surrogate pairs, single-byte text) is read back instead of replaced.
+ * surrogate pairs are read back instead of replaced, while no charset is ever guessed.
  */
 final class ExtractedTextTest extends TestCase {
 	/**
@@ -37,12 +37,16 @@ final class ExtractedTextTest extends TestCase {
 	}
 
 	/**
-	 * Text without any multibyte sequence is read as Windows-1252, quotes and the euro sign included.
+	 * No charset is guessed: undeclared single-byte text, truncated UTF-8 and lone surrogate halves surrounded by ASCII
+	 * all become U+FFFD, never Windows-1252 letters (issue #25 review, F1).
 	 *
 	 * @return void
 	 */
-	public function testSingleByteTextIsReadAsWindows1252(): void {
-		$this->assertSame('Relatório de ação “final” €', self::checked("Relat\xF3rio de a\xE7\xE3o \x93final\x94 \x80"));
+	public function testNoCharsetIsGuessedForInvalidBytes(): void {
+		$this->assertSame("Relat\u{FFFD}rio de a\u{FFFD}\u{FFFD}o", self::checked("Relat\xF3rio de a\xE7\xE3o"));
+		$this->assertSame("Report total: \u{FFFD}\u{FFFD}", self::checked("Report total: \xE2\x82"));
+		$this->assertSame("A long text with truncated emoji \u{FFFD}\u{FFFD}\u{FFFD}", self::checked("A long text with truncated emoji \xF0\x9F\x98"));
+		$this->assertSame("Text \u{FFFD}\u{FFFD}", self::checked("Text \xED\xA0"));
 	}
 
 	/**
@@ -56,12 +60,13 @@ final class ExtractedTextTest extends TestCase {
 	}
 
 	/**
-	 * Binary content is never turned into letters: with a NUL byte or mostly high bytes every invalid byte is U+FFFD.
+	 * Binary content is never turned into letters: every invalid byte is U+FFFD and the control bytes are dropped.
 	 *
 	 * @return void
 	 */
 	public function testBinaryIsNeverGuessedIntoLetters(): void {
 		$this->assertSame("PK\u{FFFD}\u{FFFD}", self::checked("PK\x00\xE1\xF3"));
+		$this->assertSame("ASCII binary header \u{FFFD}", self::checked("ASCII binary header \x01\x02\xFE"));
 		$this->assertSame("\u{FFFD}\u{FFFD}a\u{FFFD}", self::checked("\xE1\xF3a\xFE"));
 	}
 

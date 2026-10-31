@@ -39,7 +39,7 @@ class EditWriter {
 				function () use ($c, $r, $uid, $plan, &$attempted, &$t0): void {
 					$this->factory->assertAllowed($uid, $c);
 					$fresh = $this->states->read($c, $r, $uid); $effect = $this->states->effect($c, $r, $fresh);
-					$current = $this->plans->of($r, $c, $fresh, $effect, $uid);
+					$current = $this->plans->of($r, $c, $fresh, $effect, $uid, true);
 					if (!hash_equals($plan[PlanState::ARGUMENT], $current[PlanState::ARGUMENT])) { throw new PlanChanged($current); }
 					$t0 = time(); $attempted = true;
 				});

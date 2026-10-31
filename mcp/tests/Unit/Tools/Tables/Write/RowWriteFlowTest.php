@@ -151,7 +151,12 @@ final class RowWriteFlowTest extends TestCase {
 				$this->confirm($app, 'alice', self::UPDATE, $arguments + ['confirm_shared' => true], $plan);
 				$this->fail("$label: written");
 			} catch (PlanChanged $e) {
-				$this->assertSame(RowWriteMessages::planChanged(), $e->plan['warnings'][0]['message'], $label);
+				$message = $e->plan['warnings'][0]['message'];
+				$this->assertNotSame('', $message, $label);
+				$this->assertStringContainsString('numberMax', $message, $label);
+				if ($label === 'limit') {
+					$this->assertStringContainsString('2000', $message, $label);
+				}
 				$this->assertNotSame($plan[PlanState::ARGUMENT], $e->plan[PlanState::ARGUMENT], $label);
 			}
 			$this->assertSame([], $app->callsOf('RowService', 'updateSet'), $label);

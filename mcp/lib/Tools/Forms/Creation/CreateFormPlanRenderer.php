@@ -35,6 +35,7 @@ final class CreateFormPlanRenderer {
 				foreach ($options as $o => $text) { $lines[] = '    - ' . ($o + 1) . ': ' . PlanText::quoted($text); }
 			}
 		}
+		$lines[] = '- ' . Translator::t('Forms version') . ': ' . PlanText::quoted((string)$plan['nativeVersion']);
 		$lines[] = '- ' . Translator::t('Native defaults') . ': ' . PlanText::quoted(json_encode($plan['defaults'], JSON_THROW_ON_ERROR));
 		foreach ($plan['notes'] as $note) { $lines[] = '- ' . PlanText::inline($note, 5000); }
 		return implode("\n", $lines);

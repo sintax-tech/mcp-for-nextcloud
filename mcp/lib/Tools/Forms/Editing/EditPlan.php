@@ -22,9 +22,10 @@ class EditPlan {
 	 * @param array<string,mixed> $s Authorized state.
 	 * @param array<string,mixed> $e Prepared effect.
 	 * @param string $uid Actor.
+	 * @param bool $changed Whether a confirmed call found this instead of the approved plan.
 	 * @return array<string,mixed> Complete plan.
 	 */
-	public function of(array $r, EditContext $c, array $s, array $e, string $uid): array {
+	public function of(array $r, EditContext $c, array $s, array $e, string $uid, bool $changed = false): array {
 		$before = []; $after = []; $target = $r['option'] ? $s['option'] : $s['question'];
 		foreach ($r['changes'] as $key => $value) {
 			if ($key === 'unset_settings') { continue; }
@@ -40,6 +41,7 @@ class EditPlan {
 			'notes' => array_merge(EditMessages::notes(), EditMessages::emailNotes($r, $s, $e)), 'notice' => FormsMessages::NOTICE];
 		EditValues::json($plan);
 		$plan[PlanState::ARGUMENT] = $this->states->of(EditTools::name($r['option']), $uid, EditValues::canonical(['plan' => $plan, 'guard' => $s, 'effect' => $e]));
+		if ($changed) { $plan += EditPlanNotice::fields($r, $s); }
 		if (strlen(EditValues::json($plan)) > 131072 || strlen((new EditPlanRenderer())->render($plan)) > 131072) { throw new \OCA\Mcp\Tools\ToolFailure(EditMessages::limit()); }
 		return $plan;
 	}

@@ -11,9 +11,10 @@ use OCA\Mcp\Tools\PlanText;
 
 /**
  * The readable body of a row write plan, inside the common envelope of {@see \OCA\Mcp\Tools\PlanRenderer}: the target,
- * then one line per cell with its column and the value before and after. Every column title and value is text somebody
- * else wrote and goes through {@see PlanText}, so none of it reads as Markdown or HTML or opens a line; a long value is
- * shortened with its length, while the structured plan keeps it whole.
+ * then one line per cell with its column and the value before and after. When the plan changed, each numeric limit
+ * follows on its own line. Every column title and value is text somebody else wrote and goes through {@see PlanText},
+ * so none of it reads as Markdown or HTML or opens a line; a long value is shortened with its length, while the
+ * structured plan keeps it whole.
  */
 final class RowWritePlanRenderer {
 	/** Characters of a value shown inline. */
@@ -47,6 +48,9 @@ final class RowWritePlanRenderer {
 			if (is_string($note)) {
 				$lines[] = '- ' . PlanText::em($note);
 			}
+		}
+		foreach (RowWritePlanNotice::lines($plan) as $line) {
+			$lines[] = $line;
 		}
 		return implode("\n", $lines);
 	}

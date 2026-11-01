@@ -23,6 +23,7 @@ final class AdminSources {
 			'admin-groups.js' => ['groups'],
 			'admin-scope.js' => ['scope'],
 			'admin-inspector.js' => ['inspector'],
+			'admin-level-popover.js' => ['level-popover'],
 			default => [],
 		};
 		if ($groups === [] || !is_dir($app . '/src/admin/' . $groups[0])) {

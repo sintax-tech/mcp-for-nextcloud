@@ -308,9 +308,9 @@ final class AdminAssetsTest extends TestCase {
 		$grants = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js');
 		$this->assertMatchesRegularExpression("/if \(module === null && !value && !window\.confirm\(t\('mcp', 'Turn off “Can connect” for \{user\}\?'.*?\)\) \{\s*box\.checked = true\s*return\s*\}/s", $grants);
 		$this->assertLessThan(strpos($grants, "api('PUT', '/api/grants/' + encodeURIComponent(user.uid)"), strpos($grants, "Turn off “Can connect” for {user}?"), 'asked before the save');
-		$popover = (string)file_get_contents($app . '/src/admin/admin-level-popover.js');
-		$this->assertMatchesRegularExpression("/if \(losesEligibility\(.*?&& !window\.confirm\(.*?\) \{\s*render\(\)\s*return\s*\}/s", $popover);
-		$this->assertLessThan(strpos($popover, "matrix.api('POST', '/api/grants/commands'"), strpos($popover, 'if (losesEligibility('), 'asked before the command');
+		$popover = (string)AdminSources::readPath($app . '/src/admin/admin-level-popover.js');
+		$this->assertMatchesRegularExpression("/if \(context\.losesEligibility\(.*?&& !window\.confirm\(.*?\) \{\s*context\.render\(\)\s*return\s*\}/s", $popover);
+		$this->assertLessThan(strpos($popover, "matrix.api('POST', '/api/grants/commands'"), strpos($popover, 'if (context.losesEligibility('), 'asked before the command');
 		$template = (string)file_get_contents($app . '/templates/admin.php');
 		$this->assertStringContainsString('<div id="mcp-level-popover" class="mcp-popover" role="dialog" aria-labelledby="mcp-level-popover-title" hidden></div>', $template);
 	}

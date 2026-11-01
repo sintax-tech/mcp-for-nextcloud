@@ -39,7 +39,12 @@ admin/oauth-clients/recovery.js
 admin/oauth-clients/cards.js
 admin/oauth-clients/editor.js
 admin/matrix/start.js
-admin/admin-level-popover.js
+admin/level-popover/session.js
+admin/level-popover/planning.js
+admin/level-popover/wording.js
+admin/level-popover/rendering.js
+admin/level-popover/saving.js
+admin/level-popover/start.js
 admin/admin-exceptions.js
 admin/admin-row-actions.js
 admin/overrides/session.js

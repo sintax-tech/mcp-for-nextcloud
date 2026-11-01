@@ -74,7 +74,7 @@ final class AdminAssetContract extends Assert {
 		};
 		$grants = $at('admin/matrix/start.js');
 		self::assertLessThan($grants, $at('admin/admin-levels.js'));
-		foreach (['admin/admin-level-popover.js', 'admin/admin-exceptions.js', 'admin/admin-row-actions.js'] as $after) {
+		foreach (['admin/level-popover/start.js', 'admin/admin-exceptions.js', 'admin/admin-row-actions.js'] as $after) {
 			self::assertGreaterThan($grants, $at($after), $after);
 		}
 	}

@@ -155,7 +155,7 @@ final class AssetBuilder {
 				$body = file_get_contents($root . '/src/' . $source);
 				$hit = JsModuleSyntax::violation($body === false ? '' : $body);
 				if ($hit !== null) {
-					$problems[] = "forbidden module syntax: $hit in $source";
+					$problems[] = "forbidden module syntax: {$hit[0]} in $source:{$hit[1]}";
 				}
 			}
 		}

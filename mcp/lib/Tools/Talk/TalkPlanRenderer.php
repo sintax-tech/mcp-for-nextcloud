@@ -362,7 +362,6 @@ final class TalkPlanRenderer {
 
 		return $value;
 	}
-
 	/**
 	 * Reads a non-empty text nested under keys.
 	 *

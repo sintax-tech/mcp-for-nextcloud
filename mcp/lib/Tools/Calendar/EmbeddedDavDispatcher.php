@@ -290,7 +290,6 @@ class EmbeddedDavDispatcher implements CalendarDav {
 		}
 		return new DavResult($status, $response->getHeader('ETag'));
 	}
-
 	/**
 	 * Maps a Sabre exception to a user-facing calendar failure, never leaking its message or XML.
 	 *

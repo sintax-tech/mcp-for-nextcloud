@@ -4,7 +4,7 @@
 #
 # Disposable Nextcloud instance for the integration suite (.github/workflows/integration.yml).
 # It starts containers, so it refuses to run anywhere but a GitHub Actions runner or an explicit local run
-# (MCP_IT_LOCAL=1, which only run-local.sh sets: it brings the container engine up and always takes it down again).
+# (MCP_IT_LOCAL=1, which only run-local.sh sets: it starts the shared container engine when needed and leaves it running).
 #
 # Usage: harness.sh <packages|tools|start-db|start-nextcloud|install-app|fixtures|provision|report|test|collect>
 # Cell, from the workflow matrix:
@@ -225,7 +225,7 @@ cmd_install_app() {
         docker cp "$WORK/branch-pkg/mcp" "$NC:/tmp/mcp-next"
         docker exec "$NC" sh -c 'mv /var/www/html/custom_apps/mcp /tmp/mcp-previous \
             && mv /tmp/mcp-next /var/www/html/custom_apps/mcp && chown -R www-data:www-data /var/www/html/custom_apps/mcp'
-        occ upgrade
+        sh "$REPO_ROOT/mcp/tests/Integration/ci/upgrade-local-package.sh" "$NC"
     else
         docker cp "$WORK/mcp-branch.tar.gz" "$NC:/tmp/mcp-branch.tar.gz"
         docker exec -u www-data "$NC" tar -xzf /tmp/mcp-branch.tar.gz -C /var/www/html/custom_apps
@@ -371,7 +371,7 @@ provision_files_external() {
 provision_deck() {
     started=$(php -r 'echo (int)(microtime(true)*1000);')
     cache="$WORK/deck-downloads"
-    [ "${MCP_IT_LOCAL:-0}" != 1 ] || cache="$REPO_ROOT/mcp/tests/Integration/.local-runs/deck-downloads"
+    [ "${MCP_IT_LOCAL:-0}" != 1 ] || cache="$(sh "$REPO_ROOT/mcp/tests/Integration/ci/local-artifact-root.sh")/deck-downloads"
     mkdir -p "$cache"
     archive="$cache/deck-$DECK_TAG-$DECK_SHA.tar.gz"
     hit=warm

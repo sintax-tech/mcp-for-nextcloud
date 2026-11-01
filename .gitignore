@@ -60,3 +60,4 @@ AGENTS.md
 
 # ---- Integration runs on a Mac (run-local.sh) ----
 mcp/tests/Integration/.local-runs/
+.mcp-it-runs/

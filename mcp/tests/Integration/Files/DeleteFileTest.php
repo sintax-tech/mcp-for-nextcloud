@@ -45,7 +45,7 @@ final class DeleteFileTest extends ExclusionTestCase {
 			self::assertSame('fd1 exact native bytes', $file->getContent());
 			$reply = $client->write('files_delete', ['path' => $path, 'id' => $plan->structured()['id'], 'etag' => $plan->structured()['etag']]);
 			self::assertTrue($reply->ok(), $reply->describe());
-			self::assertSame('removed_destination_unconfirmed', $reply->json()['status']);
+			DeleteReceiptAssertions::observedInOwnTrash($reply->json());
 			self::assertFalse($reply->json()['recoveryConfirmed']);
 			self::assertFalse($this->exists(self::ALICE, $path));
 			$this->restore($file->getName(), $path);

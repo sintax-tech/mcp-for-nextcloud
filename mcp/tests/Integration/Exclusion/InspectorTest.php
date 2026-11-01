@@ -43,6 +43,8 @@ final class InspectorTest extends ExclusionTestCase {
 			$qb->delete($table)->where($qb->expr()->eq('user_key', $qb->createNamedParameter(IdentityKey::user(self::ALICE))))->executeStatement();
 		}
 		parent::tearDown();
+		// A5 refreshes mounts as Bob; its legacy view must not suppress later Alice hooks or misdirect trash restore.
+		\OCA\Mcp\Tests\Integration\Support\FixtureFilesystem::tearDown();
 	}
 
 	private function inspector(): AccessInspector {

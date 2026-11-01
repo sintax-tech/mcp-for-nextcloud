@@ -225,7 +225,7 @@ cmd_install_app() {
         docker cp "$WORK/branch-pkg/mcp" "$NC:/tmp/mcp-next"
         docker exec "$NC" sh -c 'mv /var/www/html/custom_apps/mcp /tmp/mcp-previous \
             && mv /tmp/mcp-next /var/www/html/custom_apps/mcp && chown -R www-data:www-data /var/www/html/custom_apps/mcp'
-        occ upgrade
+        sh "$REPO_ROOT/mcp/tests/Integration/ci/upgrade-local-package.sh" "$NC"
     else
         docker cp "$WORK/mcp-branch.tar.gz" "$NC:/tmp/mcp-branch.tar.gz"
         docker exec -u www-data "$NC" tar -xzf /tmp/mcp-branch.tar.gz -C /var/www/html/custom_apps

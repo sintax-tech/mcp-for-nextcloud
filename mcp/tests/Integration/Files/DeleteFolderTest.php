@@ -40,7 +40,7 @@ final class DeleteFolderTest extends ExclusionTestCase {
 			self::assertTrue($this->exists(self::ALICE, $path . '/nested/a.txt'));
 			$reply = $client->write('files_delete', ['path' => $path, 'id' => $plan->structured()['id'], 'etag' => $plan->structured()['etag']]);
 			self::assertTrue($reply->ok(), $reply->describe());
-			self::assertSame('removed_destination_unconfirmed', $reply->json()['status']);
+			DeleteReceiptAssertions::observedInOwnTrash($reply->json());
 			self::assertFalse($this->exists(self::ALICE, $path));
 			$session = Server::get(\OCP\IUserSession::class);
 			$before = $session->getUser();

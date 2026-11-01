@@ -6,12 +6,7 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Mcp\Guide;
-
-use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
-use OCA\Mcp\Mcp\Tools\Results\ToolResult;
-use OCA\Mcp\Mcp\Tools\ToolModule;
-use OCA\Mcp\Mcp\Tools\ToolPresentation;
-
+use OCA\Mcp\Mcp\Tools\{Results\ToolFailure, Results\ToolResult, ToolModule, ToolPresentation};
 /**
  * The `mcp_guide` tool: what the model needs to know about the other tools, built from the very
  * definitions tools/list is built from.

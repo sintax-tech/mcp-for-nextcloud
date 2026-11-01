@@ -7,16 +7,11 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Mcp\Protocol;
 
-use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use InvalidArgumentException;
-use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
-use OCA\Mcp\Mcp\Tools\ToolPresentation;
-use OCA\Mcp\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\{Prompts\PromptCatalog, Resources\ResourceRegistry, Tools\Results\ToolFailure, Tools\ToolPresentation, Tools\ToolRegistry, Tools\Validation\ArgumentValidationException};
+use OCA\Mcp\Service\GrantPolicy;
 use OCP\App\IAppManager;
 use Psr\Log\LoggerInterface;
-use OCA\Mcp\Mcp\Prompts\PromptCatalog;
-use OCA\Mcp\Mcp\Resources\ResourceRegistry;
-use OCA\Mcp\Service\GrantPolicy;
 
 /**
  * Dual-era MCP JSON-RPC handling for a single POSTed message.

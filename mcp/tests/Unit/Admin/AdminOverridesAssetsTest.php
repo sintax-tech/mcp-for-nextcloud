@@ -28,7 +28,7 @@ final class AdminOverridesAssetsTest extends TestCase {
 
 	public function testOverrideStringsAreCompleteInBothFormatsWithTheirPlaceholders(): void {
 		$app = self::app();
-		$keys = self::keys((string)file_get_contents($app . '/src/admin/admin-overrides.js'));
+		$keys = self::keys((string)AdminSources::readPath($app . '/src/admin/admin-overrides.js'));
 		// The one string the shared matrix script gained for the undo of a refused (503) receipt.
 		$keys[] = 'The change could not be undone because what these users inherit could not be read. Nothing was changed. Try again.';
 		$this->assertGreaterThan(25, count($keys));
@@ -53,7 +53,7 @@ final class AdminOverridesAssetsTest extends TestCase {
 
 	/** F2: the page cannot know what the groups would give, so it never promises a disconnect it cannot know. */
 	public function testThePreviewNeverPromisesADisconnect(): void {
-		$source = (string)file_get_contents(self::app() . '/src/admin/admin-overrides.js');
+		$source = (string)AdminSources::readPath(self::app() . '/src/admin/admin-overrides.js');
 		$this->assertDoesNotMatchRegularExpression('/will (be )?(signed out|disconnected|lose access|lose their)/i', $source);
 		$this->assertStringContainsString('they may be signed out of their MCP clients', $source);
 		$this->assertStringContainsString('undoing this does not sign them back in', $source);
@@ -62,13 +62,13 @@ final class AdminOverridesAssetsTest extends TestCase {
 	public function testTheSharedScriptOnlyExposesAndCallsAndTheOverridesScriptNeverTouchesItsState(): void {
 		$app = self::app();
 		$manifest = file($app . '/src/admin.manifest', FILE_IGNORE_NEW_LINES);
-		$this->assertLessThan(array_search('admin/admin-overrides.js', $manifest, true), array_search('admin/matrix/start.js', $manifest, true),
+		$this->assertLessThan(array_search('admin/overrides/start.js', $manifest, true), array_search('admin/matrix/start.js', $manifest, true),
 			'the matrix script exposes window.OCA.Mcp.Admin.matrix before the overrides script reads it');
 		$grants = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js');
 		foreach (['window.OCA.Mcp.Admin.matrix = {', 'window.OCA.Mcp.Admin.overrides?.decorateRow(row, user)', 'window.OCA.Mcp.Admin.overrides?.decorateCell(', "dispatchEvent(new Event('mcp-matrix-rendered'))"] as $needle) {
 			$this->assertStringContainsString($needle, $grants);
 		}
-		$overrides = (string)file_get_contents($app . '/src/admin/admin-overrides.js');
+		$overrides = (string)AdminSources::readPath($app . '/src/admin/admin-overrides.js');
 		$this->assertStringNotContainsString('state.data', $overrides, 'only through window.OCA.Mcp.Admin.matrix');
 		$this->assertStringNotContainsString("'/api/grants/' +", $overrides, 'a reset is a command, never a per-user write');
 		$this->assertStringContainsString("state: 'inherit'", $overrides);
@@ -78,7 +78,7 @@ final class AdminOverridesAssetsTest extends TestCase {
 	/** The preview is read only: one POST, to the route that has no write and answers 403 before it resolves anything. */
 	public function testThePreviewRouteIsTheOneThePageReadsAndItsControllerGuardsFirst(): void {
 		$app = self::app();
-		$this->assertStringContainsString("'/api/grants/commands/preview'", (string)file_get_contents($app . '/src/admin/admin-overrides.js'));
+		$this->assertStringContainsString("'/api/grants/commands/preview'", (string)AdminSources::readPath($app . '/src/admin/admin-overrides.js'));
 		$this->assertStringContainsString("'url' => '/api/grants/commands/preview', 'verb' => 'POST'", (string)file_get_contents($app . '/appinfo/routes.php'));
 		$controller = (string)file_get_contents($app . '/lib/Controller/OverridePreviewController.php');
 		$this->assertLessThan(strpos($controller, '$this->preview->preview('), strpos($controller, 'isAdmin('), 'the administrator check precedes the resolution');
@@ -94,13 +94,13 @@ final class AdminOverridesAssetsTest extends TestCase {
 	public function testTheLiveRegionsAreFixedAndWrittenAfterTheyAreCleared(): void {
 		$app = self::app();
 		foreach (['admin-groups', 'admin-overrides'] as $script) {
-			$source = (string)file_get_contents("$app/src/admin/$script.js");
+			$source = (string)AdminSources::readPath("$app/src/admin/$script.js");
 			$this->assertStringContainsString('clearTimeout(sayTimer)', $source, $script);
 			$this->assertMatchesRegularExpression('/sayTimer = setTimeout\(\(\) => \{\s*region\.textContent = message/', $source, $script);
 			$this->assertStringNotContainsString("setAttribute('role', error", $source, "$script: the role never changes at run time");
 		}
 		$this->assertStringContainsString('role="status" aria-live="polite"', (string)file_get_contents($app . '/templates/admin.php'));
-		$overrides = (string)file_get_contents($app . '/src/admin/admin-overrides.js');
+		$overrides = (string)AdminSources::readPath($app . '/src/admin/admin-overrides.js');
 		$this->assertStringContainsString("statusLine.setAttribute('role', 'status')", $overrides);
 		$this->assertStringContainsString("alertLine.setAttribute('role', 'alert')", $overrides);
 	}

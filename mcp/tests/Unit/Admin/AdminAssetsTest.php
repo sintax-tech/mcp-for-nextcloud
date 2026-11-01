@@ -71,7 +71,7 @@ final class AdminAssetsTest extends TestCase {
 	public function testAdminTemplateHasUniqueIdsAndBalancedDivs(): void {
 		$app = dirname(__DIR__, 3);
 		$template = (string)file_get_contents($app . '/templates/admin.php');
-		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js') . file_get_contents($app . '/src/shared/connections.js') . file_get_contents($app . '/src/admin/admin-tabs.js') . file_get_contents($app . '/src/admin/admin-picker.js') . file_get_contents($app . '/src/admin/admin-groups.js');
+		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js') . file_get_contents($app . '/src/shared/connections.js') . file_get_contents($app . '/src/admin/admin-tabs.js') . file_get_contents($app . '/src/admin/admin-picker.js') . AdminSources::readPath($app . '/src/admin/admin-groups.js');
 		preg_match_all("/getElementById\\('([^']+)'\\)/", $script, $used);
 		$this->assertNotEmpty($used[1]);
 		// The personal resource scope (src/settings/my-scope.js) is not in the admin bundle; its ids exist only on the personal page.
@@ -329,7 +329,7 @@ final class AdminAssetsTest extends TestCase {
 		$this->assertStringContainsString('id="mcp-only-exceptions" aria-pressed="false"', $template);
 		$this->assertStringContainsString('id="mcp-prev-bottom"', $template);
 		$this->assertGreaterThan(strpos($template, 'id="mcp-legend-levels"'), strpos($template, "Reading starts allowed, writing denied. Nextcloud permissions still apply."), 'the short help is in the legend');
-		$overrides = (string)file_get_contents($app . '/src/admin/admin-overrides.js');
+		$overrides = (string)AdminSources::readPath($app . '/src/admin/admin-overrides.js');
 		foreach (['mcp-reset-row', 'mcp-reset-cell', 'mcp-reset-help'] as $gone) {
 			$this->assertStringNotContainsString($gone, $overrides);
 		}

@@ -36,7 +36,8 @@ class AdminManifest {
 	 */
 	static loadsBefore(first, second) {
 		const fragments = AdminManifest.fragments()
-		const actual = p => p === 'admin/admin-grants.js' ? 'admin/matrix/start.js' : p
+		const starts = { 'admin/admin-grants.js':'admin/matrix/start.js', 'admin/admin-overrides.js':'admin/overrides/start.js', 'admin/admin-groups.js':'admin/groups/start.js', 'admin/admin-scope.js':'admin/scope/start.js' }
+		const actual = p => fragments.includes(starts[p]) ? starts[p] : p
 		const a = fragments.indexOf(actual(first))
 		const b = fragments.indexOf(actual(second))
 		return a >= 0 && b >= 0 && a < b
@@ -78,12 +79,20 @@ class AdminManifest {
 	 */
 	static script(name) {
 		if (name === 'admin-levels.js') return AdminManifest.levelsSource()
-		if (name === 'admin-grants.js' && AdminManifest.fragments().includes('admin/matrix/start.js')) {
-			return AdminManifest.fragments().filter(p => ['matrix','oauth-clients','protection','checkout','logs'].some(group => p.startsWith('admin/' + group + '/')))
+		const groups = {
+			'admin-grants.js': ['matrix','oauth-clients','protection','checkout','logs'],
+			'admin-overrides.js': ['overrides'],
+			'admin-groups.js': ['groups'],
+			'admin-scope.js': ['scope'],
+		}[name]
+		const fragments = AdminManifest.fragments()
+		if (groups && fragments.some(p => p === 'admin/' + groups[0] + '/start.js')) {
+			return fragments.filter(p => groups.some(group => p.startsWith('admin/' + group + '/')))
 				.map(p => AdminManifest.fragment(p)).join(';\n')
 		}
 		return AdminManifest.fragment('admin/' + name)
 	}
+
 	/**
 	 * Load an actual registered unit and expose one declared operation to the existing fixture.
 	 * Other operations of that unit remain the fixture dependencies when the case supplies them.

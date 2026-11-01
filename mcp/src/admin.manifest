@@ -42,7 +42,14 @@ admin/matrix/start.js
 admin/admin-level-popover.js
 admin/admin-exceptions.js
 admin/admin-row-actions.js
-admin/admin-overrides.js
+admin/overrides/session.js
+admin/overrides/planning.js
+admin/overrides/selection.js
+admin/overrides/decoration.js
+admin/overrides/preview.js
+admin/overrides/review.js
+admin/overrides/saving.js
+admin/overrides/start.js
 admin/admin-groups.js
 admin/admin-scope.js
 admin/admin-inspector.js

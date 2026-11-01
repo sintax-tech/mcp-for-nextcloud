@@ -45,8 +45,7 @@ final class InventoryCliTest extends TestCase {
 	 */
 	private function runCli(array $names, ?string $override = null): array {
 		$baseline = __DIR__ . '/../baseline';
-		$root = dirname(__DIR__, 4);
-		$dir = $root . '/build/inventory-cli-' . bin2hex(random_bytes(6));
+		$dir = sys_get_temp_dir() . '/mcp-inventory-cli-' . bin2hex(random_bytes(6));
 		mkdir($dir, 0700, true);
 		try {
 			$failureRows = file($baseline . '/environment-failures.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);

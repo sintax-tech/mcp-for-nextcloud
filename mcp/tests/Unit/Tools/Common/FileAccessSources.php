@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Common;
 
+use OCA\Mcp\Tests\Unit\ClassSource;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 
@@ -29,6 +30,6 @@ final class FileAccessSources {
 			'NodeAccessInfo' => NodeAccessInfo::class,
 			'SharedWriteGuard' => SharedWriteGuard::class,
 		};
-		return (string)file_get_contents((new \ReflectionClass($fqcn))->getFileName());
+		return ClassSource::read($fqcn);
 	}
 }

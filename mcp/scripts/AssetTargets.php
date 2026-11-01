@@ -12,7 +12,7 @@ namespace OCA\Mcp\Scripts;
  *
  * Manifest entries are paths relative to `src/` (`admin/picker.js`, `shared/connections.js`). The manifest files
  * themselves sit next to those trees. {@see self::REQUIRED} is the list of manifests that must exist; it is a
- * constant, not a directory listing. This ticket leaves it empty: RE-11 adds `src/admin.manifest` and RE-12 adds
+ * constant, not a directory listing. RE-11 requires `src/admin.manifest` and RE-12 adds
  * `src/settings.manifest`. Removing a file from disk never removes it from this list.
  */
 final class AssetTargets {
@@ -37,7 +37,7 @@ final class AssetTargets {
 	 *
 	 * @var list<string>
 	 */
-	public const REQUIRED = [];
+	public const REQUIRED = ['src/admin.manifest'];
 
 	/**
 	 * Whether a manifest entry is not a relative path contained in `src/`.

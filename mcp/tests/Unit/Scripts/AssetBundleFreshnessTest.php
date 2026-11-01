@@ -20,18 +20,18 @@ require_once __DIR__ . '/../../../scripts/AssetBuilder.php';
 /**
  * Covers bundle freshness and the constant list of manifests that must exist.
  *
- * The list is not discovered by reading `src/`. This ticket's list is empty, so a missing admin manifest is
- * not a failure until RE-11 adds `src/admin.manifest` here and on {@see AssetTargets::REQUIRED}.
+ * The list is not discovered by reading `src/`. RE-11 requires the admin manifest here and on
+ * {@see AssetTargets::REQUIRED}; removing it must fail even when the source tree is empty.
  */
 final class AssetBundleFreshnessTest extends TestCase {
 	/**
 	 * Manifests that must exist, as paths relative to the app directory.
 	 *
-	 * RE-11 adds `src/admin.manifest`. RE-12 adds `src/settings.manifest`.
+	 * RE-11 requires `src/admin.manifest`. RE-12 adds `src/settings.manifest`.
 	 *
 	 * @var list<string>
 	 */
-	private const REQUIRED_MANIFESTS = [];
+	private const REQUIRED_MANIFESTS = ['src/admin.manifest'];
 
 	/** @var list<string> temporary app directories created by this test */
 	private array $dirs = [];
@@ -57,7 +57,7 @@ final class AssetBundleFreshnessTest extends TestCase {
 		mkdir($dir . '/src', 0777, true);
 		$this->dirs[] = $dir;
 		file_put_contents("$dir/src/other.manifest", "admin/a.js\n");
-		$this->assertSame([], AssetBuilder::problems($dir, self::REQUIRED_MANIFESTS));
+		$this->assertSame(['missing required manifest: src/admin.manifest'], AssetBuilder::problems($dir, self::REQUIRED_MANIFESTS));
 		$this->assertSame(
 			['missing required manifest: src/admin.manifest'],
 			AssetBuilder::problems($dir, ['src/admin.manifest']),
@@ -78,10 +78,10 @@ final class AssetBundleFreshnessTest extends TestCase {
 		$this->assertSame([], AssetBuilder::freshnessProblems($dir));
 	}
 
-	/** This ticket migrates no script, so the application tree has nothing to bundle and is fresh. */
+	/** The migrated admin sources are covered by their required manifest and the committed bundle is fresh. */
 	public function testTheApplicationTreeIsFresh(): void {
 		$root = dirname(__DIR__, 3);
-		$this->assertSame([], SourceCoverage::javascript($root));
+		$this->assertNotEmpty(SourceCoverage::javascript($root));
 		$this->assertSame([], AssetBuilder::problems($root));
 		$this->assertSame([], AssetBuilder::freshnessProblems($root));
 	}

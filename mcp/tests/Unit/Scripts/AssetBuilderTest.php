@@ -220,6 +220,7 @@ final class AssetBuilderTest extends TestCase {
 		mkdir($dir . '/src/settings', 0777, true);
 		mkdir($dir . '/src/shared', 0777, true);
 		mkdir($dir . '/js', 0777, true);
+		file_put_contents($dir . '/src/admin.manifest', '');
 		$this->dirs[] = $dir;
 		return $dir;
 	}

@@ -7,8 +7,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Compat;
 
-use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
@@ -16,6 +14,9 @@ use OCP\IAppConfig;
 use OCP\IDBConnection;
 use OCP\IUserManager;
 use OCP\Server;
+
+require_once __DIR__ . '/LegacyOAuthNames.php';
+require_once __DIR__ . '/LegacyPolicyName.php';
 
 /** Snapshot written by the real 1.2.0 baseline; leaves the older 1.0.8 scenario untouched. */
 final class ReleaseUpgradeProbe {
@@ -36,7 +37,7 @@ final class ReleaseUpgradeProbe {
 		if ($kind === 'credentials') {
 			$users = Server::get(IUserManager::class);
 			$users->createUser(self::UID, bin2hex(random_bytes(24)));
-			$policy = Server::get(GrantPolicy::class);
+			$policy = Server::get(LegacyPolicyName::get());
 			$policy->setGlobalEnabled(true);
 			$policy->setEligible(self::UID, true);
 			$policy->setConnected(self::UID, true);
@@ -45,24 +46,27 @@ final class ReleaseUpgradeProbe {
 			Server::get(IAppConfig::class)->setValueString('mcp', 'rc_upgrade_marker', 'preserve-1.2.0');
 			$root = Server::get(IRootFolder::class)->getUserFolder(self::UID);
 			$root->newFolder('MCP backups')->newFile('rc-upgrade-original.bak', 'original preserved by 1.2.0');
-			$hasher = Server::get(TokenHasher::class);
+			$hasher = Server::get(LegacyOAuthNames::hasher());
 			$token = $hasher->generate('at');
 			$now = time();
-			$store = Server::get(OAuthStore::class);
+			$store = Server::get(LegacyOAuthNames::store());
 			$store->insertToken(['user_id' => self::UID, 'client_id' => 'https://mcp-it.example/rc-client',
 				'resource' => self::RESOURCE, 'scope' => 'mcp', 'access_hash' => $hasher->hash($token), 'access_expires' => $now + 3600,
 				'refresh_hash' => $hasher->hash($hasher->generate('rt')), 'refresh_expires' => $now + 3600, 'created_at' => $now], $now);
 			file_put_contents($output, json_encode(['baseline' => '1.2.0', 'token' => $token], JSON_THROW_ON_ERROR));
 			chmod($output, 0600);
 		} else {
-			file_put_contents($output, json_encode(['baseline' => '1.2.0', 'snapshot' => self::snapshot()], JSON_THROW_ON_ERROR));
+			file_put_contents($output, json_encode(['baseline' => '1.2.0', 'snapshot' => self::snapshot(true)], JSON_THROW_ON_ERROR));
 		}
 		echo "Release upgrade checkpoint: 1.2.0 / $kind (no credential values logged)\n";
 		exit(0);
 	}
 
-	/** @return array<string, mixed> stable values/hashes only; OAuth plaintext never enters diagnostic output */
-	public static function snapshot(): array {
+	/**
+	 * @param bool $baseline Whether the released baseline is still installed at this checkpoint.
+	 * @return array<string, mixed> Stable values/hashes only; never OAuth plaintext.
+	 */
+	public static function snapshot(bool $baseline = false): array {
 		$database = Server::get(IDBConnection::class);
 		$tables = ['preferences' => 'userid', 'mcp_oauth_tokens' => 'user_id'];
 		$hashes = [];
@@ -79,7 +83,7 @@ final class ReleaseUpgradeProbe {
 			sort($rows);
 			$hashes[$table] = ['count' => count($rows), 'sha256' => hash('sha256', json_encode($rows, JSON_THROW_ON_ERROR))];
 		}
-		$policy = Server::get(GrantPolicy::class);
+		$policy = Server::get($baseline ? LegacyPolicyName::get() : GrantPolicy::class);
 		$root = Server::get(IRootFolder::class)->getUserFolder(self::UID);
 		return ['auth' => Server::get(\OCA\Mcp\Db\AuthUsersMapper::class)->generations(self::UID),
 			'epoch' => Server::get(\OCA\Mcp\Db\PolicyStateMapper::class)->state()['auth_epoch'], 'rows' => $hashes, 'marker' => Server::get(IAppConfig::class)->getValueString('mcp', 'rc_upgrade_marker'),

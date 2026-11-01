@@ -62,7 +62,8 @@ $config = Server::get(IConfig::class);
 $appConfig = Server::get(IAppConfig::class);
 $userConfig = Server::get(IUserConfig::class);
 $db = Server::get(\OCP\IDBConnection::class);
-$store = new \OCA\Mcp\OAuth\OAuthStore($db);
+$storeClass = \OCA\Mcp\Tests\Integration\Compat\LegacyOAuthNames::store();
+$store = new $storeClass($db);
 // The baseline's constructor: (IConfig, OAuthStore, ?IUserConfig). Built by hand so the branch's container never
 // resolves it.
 $policyClass = \OCA\Mcp\Tests\Integration\Compat\LegacyPolicyName::get();
@@ -91,7 +92,7 @@ if ($mode === 'seed') {
 		}
 	}
 	// After the setters: the baseline's setEligible(false) deletes the user's tokens.
-	$hasher = Server::get(\OCA\Mcp\OAuth\TokenHasher::class);
+	$hasher = Server::get(\OCA\Mcp\Tests\Integration\Compat\LegacyOAuthNames::hasher());
 	$now = time();
 	$ttl = 6 * 3600;
 	$tokens = [];

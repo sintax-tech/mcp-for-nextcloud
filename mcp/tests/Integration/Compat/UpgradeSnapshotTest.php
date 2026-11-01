@@ -139,7 +139,7 @@ final class UpgradeSnapshotTest extends IntegrationTestCase {
 		// or Db the server's boot loaded from the branch before its loader; these are the ones the reading needed.
 		$this->assertSame([], preg_grep('/^OCA\\\\Mcp\\\\(Service|OAuth|Db)\\\\/', $read['boot']));
 		$this->assertContains(LegacyPolicyName::get(), $read['loaded']);
-		$this->assertContains('OCA\\Mcp\\OAuth\\OAuthStore', $read['loaded']);
+		$this->assertContains(LegacyOAuthNames::store(), $read['loaded']);
 		$this->assertSame($this->seed['answers'], $read['answers']);
 		$this->assertSame($this->seed['raw'], $read['raw']);
 		$this->assertSame($this->seed['raw'], $this->raw());

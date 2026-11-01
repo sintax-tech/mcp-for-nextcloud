@@ -371,7 +371,7 @@ provision_files_external() {
 provision_deck() {
     started=$(php -r 'echo (int)(microtime(true)*1000);')
     cache="$WORK/deck-downloads"
-    [ "${MCP_IT_LOCAL:-0}" != 1 ] || cache="$REPO_ROOT/mcp/tests/Integration/.local-runs/deck-downloads"
+    [ "${MCP_IT_LOCAL:-0}" != 1 ] || cache="$(sh "$REPO_ROOT/mcp/tests/Integration/ci/local-artifact-root.sh")/deck-downloads"
     mkdir -p "$cache"
     archive="$cache/deck-$DECK_TAG-$DECK_SHA.tar.gz"
     hit=warm

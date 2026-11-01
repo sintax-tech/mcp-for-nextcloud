@@ -409,11 +409,8 @@ scenario_traps() {
     expect_no_residue
 }
 
-# (c)(d) run-local.sh --shutdown queues like a run: it waits for A, sees B waiting, keeps the engine up and hands the
-# duty to stop it to B, which stops it. Alone, it stops the engine at once.
-# Mixed with the copy of the script before the queue: a legacy run holding the engine sees the tickets as waiting runs
-# and hands the engine over; a legacy waiter may cut in (it never looked at the queue), but the engine is never held
-# twice, the new runs keep their order among themselves, and the engine is stopped once, by the last run.
+# Legacy queue users retain their original lifecycle; the current local runner's shared-engine and
+# ownership-only shutdown contract is covered separately by shared-engine-test.sh.
 scenario_legacy() {
     reset legacy
     "$ROOT/legacy.sh" L1 wait > "$ROOT/out.L1" 2>&1 &
@@ -435,34 +432,7 @@ scenario_legacy() {
 }
 
 scenario_shutdown() {
-    reset shutdown
-    hold_first A
-    before=$(tickets)
-    sh "$HERE/run-local.sh" --shutdown > "$ROOT/out.S" 2>&1 &
-    S=$!
-    PIDS="$PIDS $S"
-    wait_for "the ticket of --shutdown" "[ \$(tickets) -gt $before ]"
-    queue_up B
-    touch "$ROOT/go.A"
-    status=0
-    wait "$S" || status=$?
-    [ "$status" = 0 ] || fail "--shutdown exited $status"
-    wait_all
-    expect_served "A B"
-    grep -q 'another run is waiting for the engine' "$ROOT/out.S" || fail "--shutdown did not hand the engine over"
-    events=$(grep -v -e '^inside' -e '^ready' "$EVENTS" | sed "s/ $S\$/ S/; s/^got \([AB]\) .*/got \1/; s/^colima \([a-z]*\) [0-9]*$/colima \1/" \
-        | tr '\n' ',')
-    # A starts the engine; --shutdown runs after A and before B; B takes over and stops it.
-    [ "$events" = "got A,colima status,colima start,done A,colima status S,got B,colima status,done B,colima stop," ] \
-        || fail "unexpected sequence $events"
-    expect_engine_once
-    expect_no_residue
-
-    reset shutdown-alone
-    touch "$FAKE_UP"
-    sh "$HERE/run-local.sh" --shutdown > "$ROOT/out.S" 2>&1 || fail "--shutdown alone failed"
-    grep -q 'stopping Colima' "$ROOT/out.S" || fail "--shutdown alone did not stop the engine"
-    expect_no_residue
+    sh "$HERE/shared-engine-test.sh"
 }
 
 # stays_false <description> <shell condition>: the condition stays false for 1 s (five polls of the runs).
@@ -690,37 +660,9 @@ scenario_slots_dead() {
     expect_no_residue
 }
 
-# run-local.sh --shutdown with both slots in use: it waits in the queue, gets the slot A frees while B still works,
-# removes only what runs that are gone left (not B's container, not the fixed name of an old copy while B is there),
-# leaves the engine up for B, and B, the last to leave, stops it.
+# The current runner cleans only recorded resources and skips live owners regardless of occupied slots.
 scenario_slots_shutdown() {
-    reset slots-shutdown
-    export MCP_IT_SLOTS=2
-    hold_slots A B
-    gone=$(dead_pid)
-    printf 'mcp-it-nextcloud-20261022-000000-%s\nmcp-it-db-20261022-000000-%s\nmcp-it-nextcloud-20261022-000000-%s\n' \
-        "$RUN_B" "$gone" "$gone" > "$ROOT/containers"
-    printf 'mcp-it-20261022-000000-%s\nmcp-it-20261022-000000-%s\nmcp-it\n' "$RUN_B" "$gone" > "$ROOT/networks"
-    before=$(tickets)
-    sh "$HERE/run-local.sh" --shutdown > "$ROOT/out.S" 2>&1 &
-    S=$!
-    PIDS="$PIDS $S"
-    wait_for "the ticket of --shutdown" "[ \$(tickets) -gt $before ]"
-    stays_false "--shutdown acted with both slots in use" "grep -q '^docker\|^colima status $S' '$EVENTS'"
-    touch "$ROOT/go.A"
-    status=0
-    wait "$S" || status=$?
-    [ "$status" = 0 ] || fail "--shutdown exited $status"
-    grep -q 'another run is waiting for the engine' "$ROOT/out.S" || fail "--shutdown did not leave the engine to B"
-    [ -f "$FAKE_UP" ] || fail "--shutdown stopped the engine under B"
-    [ "$(sort "$ROOT/containers" | tr '\n' ' ')" = "mcp-it-nextcloud-20261022-000000-$RUN_B " ] \
-        || fail "containers left: $(cat "$ROOT/containers")"
-    [ "$(sort "$ROOT/networks" | tr '\n' ' ')" = "mcp-it mcp-it-20261022-000000-$RUN_B " ] \
-        || fail "networks left: $(cat "$ROOT/networks")"
-    touch "$ROOT/go.B"
-    wait_all
-    expect_engine_once
-    expect_no_residue
+    sh "$HERE/shared-engine-test.sh"
 }
 
 # Review round 2, B1: a slot left without a pid (its creator died between mkdir and writing it) is claimed over once it

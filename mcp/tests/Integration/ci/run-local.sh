@@ -3,19 +3,16 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
 # Runs ONE cell of the integration matrix on a Mac, in disposable containers on Colima, through the same harness.sh the
-# GitHub workflow runs. The container engine is started only for the run and is always stopped again, on success, on
-# error and on INT/TERM: the test containers, their network and volumes are removed first, then `colima stop` runs, but
-# only when this script is the one that started it (an engine that was already running is left running).
+# GitHub workflow runs. The container engine is started when needed. On success,
+# error and INT/TERM: only this run's test containers, network and volumes are removed.
+# The shared Colima profile is always left running.
 #
-# Several runs (other agents, other terminals) share the one engine without touching each other: every run names its
-# containers, network and log directory with its own id and removes only those. Up to MCP_IT_SLOTS runs (default 2) use
-# the engine at once, each in a slot (~/.colima/mcp-it.lock, mcp-it.lock.2, ...: a directory holding the owner's pid;
-# a dead owner's slot is claimed over); the others wait in a queue of tickets (~/.colima/mcp-it.queue) and get in in
-# the order they arrived (see engine-queue.sh). Colima is stopped by the last run to leave, when a run of this script
-# started it (~/.colima/mcp-it.engine); otherwise the engine stays up for the runs still there.
+# Several runs share the engine through engine-queue.sh. Each run records exact resource names in
+# .mcp-it-runs/<cell>/owned-resources; --shutdown cleans only interrupted runs of this checkout.
+# The shared Colima profile is never stopped, including when this script starts it.
 #
 # Usage: run-local.sh <nc 32|33|34|35> <db mariadb|pgsql|sqlite> <mode fresh|upgrade|baseline> [--prune-images]
-#        run-local.sh --shutdown   (the only safe way to stop the engine by hand; see above)
+#        run-local.sh --shutdown   (clean this checkout's interrupted runs; leave live runs and Colima alone)
 #   baseline        diagnostics: the released baseline stays installed, never upgraded (use with MCP_IT_PHPUNIT_ARGS)
 #   --prune-images  also removes the images this run pulled (default: kept, they are only files on disk)
 #   MCP_IT_WITH_MAIL=1 (environment) also runs the Mail part of the cell (mail-cell.sh): a throwaway IMAP server and
@@ -24,34 +21,18 @@
 #                   more users and the scene the Tables tests read
 #
 # Logs and artifacts (run.log, resources.log, mcp-it/artifacts/: junit.xml, nextcloud.log, observations.txt,
-# provision.log) go to mcp/tests/Integration/.local-runs/<cell>-<timestamp>-<pid>/ (git-ignored). Image digests, the
+# provision.log) go to .mcp-it-runs/<cell>-<timestamp>-<pid>/ (git-ignored). Image digests, the
 # baseline tag and the cell come from .github/workflows/integration.yml, so there is one list of pins.
 set -eu
 
 # Runs take the engine's slots in the order they arrived (see engine-queue.sh).
 . "$(cd "$(dirname "$0")" && pwd)/engine-queue.sh"
+. "$(cd "$(dirname "$0")" && pwd)/shared-engine.sh"
 
-# run-local.sh --shutdown: the only safe way to stop the engine by hand. It takes its turn in the queue like a run (a
-# slot), so it never cuts a run in progress, removes the containers and networks dead runs left behind, and stops Colima
-# only when no other run uses or waits for it (otherwise the last of them stops it).
+# Cleanup is restricted to manifests written by this checkout; the Colima profile is shared.
 if [ "${1:-}" = "--shutdown" ]; then
-    command -v colima >/dev/null 2>&1 || { echo "colima is not installed" >&2; exit 2; }
-    trap release_lock EXIT
-    trap 'exit 130' INT
-    trap 'exit 143' TERM
-    acquire_lock
-    engine_lock || exit 3
-    if colima status >/dev/null 2>&1; then
-        # Other slots may be in use: only what runs that are gone left behind is removed.
-        remove_leftovers
-        # The engine is to be stopped: by this run if nobody else is there, otherwise by the last of them to leave.
-        echo "$$" > "$ENGINE_FLAG"
-        engine_release
-    else
-        log "Colima is not running"
-        rm -f "$ENGINE_FLAG"
-    fi
-    exit 0
+    sh "$(dirname "$0")/cleanup-local-runs.sh" "$(sh "$(dirname "$0")/local-artifact-root.sh")"
+    exit $?
 fi
 
 usage() {
@@ -71,7 +52,7 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 REPO_ROOT=$(cd "$HERE/../../../.." && pwd)
 WORKFLOW="$REPO_ROOT/.github/workflows/integration.yml"
 STAMP=$(date +%Y%m%d-%H%M%S)
-LOCAL_DIR="$REPO_ROOT/mcp/tests/Integration/.local-runs/nc$CELL_NC-$CELL_DB-$CELL_MODE-$STAMP-$$"
+LOCAL_DIR="$(sh "$HERE/local-artifact-root.sh")/nc$CELL_NC-$CELL_DB-$CELL_MODE-$STAMP-$$"
 mkdir -p "$LOCAL_DIR"
 
 # cell_field <field>: the value of the cell's field in the workflow matrix ('' for an empty value).
@@ -99,6 +80,8 @@ DB_NAME="mcp-it-db-$RUN_ID"
 export MCP_IT_NET="$NET_NAME" MCP_IT_NC_NAME="$NC_NAME" MCP_IT_DB_NAME="$DB_NAME"
 # The IMAP server of a Mail cell (MCP_IT_WITH_MAIL=1, see mail-cell.sh); never started otherwise.
 export MCP_IT_IMAP_NAME="mcp-it-imap-$RUN_ID"
+# Ownership survives an interrupted run, so --shutdown never guesses from global resource names.
+record_owned_resources "$LOCAL_DIR/owned-resources"
 export MCP_IT_LOCAL=1
 export RUNNER_TEMP="$LOCAL_DIR"
 export MCP_IT_NC="$CELL_NC" MCP_IT_NC_IMAGE="$NC_IMAGE" MCP_IT_DB="$CELL_DB" MCP_IT_DB_IMAGE="$DB_IMAGE"
@@ -159,7 +142,7 @@ cleanup() {
     fi
     # The downloads and packages of this run are rebuilt every time; only the logs and artifacts stay.
     rm -rf "$WORK/tools" "$WORK/branch-pkg" "$WORK/baseline-pkg" "$WORK/package-src" "$WORK/pglog" "$WORK"/*.tar.gz
-    [ "$HAVE_LOCK" = 1 ] && engine_release
+    [ "$HAVE_LOCK" = 1 ] && shared_engine_release
     summary
     release_lock
     exit "$status"
@@ -180,7 +163,7 @@ for tool in colima docker git php composer curl; do
 done
 
 acquire_lock
-engine_take
+shared_engine_take
 docker info >/dev/null
 
 log "cell: NC $CELL_NC, $CELL_DB, $CELL_MODE (baseline $BASELINE)"

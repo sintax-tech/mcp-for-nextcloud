@@ -18,10 +18,9 @@ Needs `brew install colima docker` (Colima, not Docker Desktop), plus the PHP an
 
 It runs the same steps as the workflow (packages, tools, start-db, start-nextcloud, install-app, fixtures, provision,
 report, test, collect) for that one cell, with the image digests, the cell and the baseline tag read from
-`.github/workflows/integration.yml`. The container engine is started for the run and always stopped again: on success,
-on error and on INT/TERM a trap removes the test containers, their network and volumes, the baseline worktree of the
-upgrade mode, and runs `colima stop`, but only when the script itself started Colima (an engine that was already
-running is left running). Images stay cached as files unless `--prune-images` is given. The pinned images are
+`.github/workflows/integration.yml`. Colima is started when needed and always left running because the default
+profile is shared. On success, error and INT/TERM a trap removes only this run's containers, network, volumes and
+baseline worktree. Images stay cached as files unless `--prune-images` is given. The pinned images are
 multi-architecture and run natively as arm64 on Apple silicon; the script prints the architecture it got.
 
 Several runs can be started from different places, also from the same checkout: each names its containers, network
@@ -31,18 +30,19 @@ cache is written atomically. Up to `MCP_IT_SLOTS` runs (default 2) use the engin
 they arrived (numbered tickets, nobody moves while a run is still choosing its number, a run is never overtaken by one
 that arrived after it; tickets of runs that are gone are dropped, and the slot of an owner that is gone is claimed by
 one run, never removed under another). A waiting run logs its position, the runs holding the slots and those ahead of
-it. Colima is started once, under an engine switch, by the first run that finds it down, and stopped by the last run to
-leave when nobody holds a slot or waits. Each run of NC 35 + MariaDB takes about 1.5 GB of the engine's memory; the
+it. Colima is started under an engine switch by the first run that finds it down; leaving a run releases its slot
+without stopping the shared engine. Each run of NC 35 + MariaDB takes about 1.5 GB of the engine's memory; the
 Colima profile here (4 CPUs, 8 GiB) fits 2 slots with room to spare, and 3 at most; give the engine about 2 GiB per slot
 plus 2 GiB before raising `MCP_IT_SLOTS` further (`MCP_IT_SLOTS=1` runs one at a time). The queue lives in
 `ci/engine-queue.sh` and is proven without Colima by `ci/engine-queue-test.sh [repetitions]` (fake `colima`/`docker`, a
 temporary `MCP_IT_LOCK_DIR`). A copy of `run-local.sh` from before the tickets or the slots still shares slot 1 safely,
 but does not wait for the queue and may take slot 1 ahead of it.
 
-**Never run `colima stop` (or `docker rm` on the `mcp-it-*` containers) by hand while a run may exist**: it cuts the run
-in progress. To shut the engine down yourself use `ci/run-local.sh --shutdown`: it waits its turn in the same queue,
-removes what dead runs left behind (never the containers of a run still in a slot), and stops Colima only when no run
-holds a slot or waits.
+**Never stop the shared Colima profile or remove another run's resources.** `ci/run-local.sh --shutdown` cleans
+only interrupted runs recorded in this checkout's `.mcp-it-runs/*/owned-resources` manifests. It skips live owners,
+uses exact container/network names and verifies anonymous-volume removal. It never scans global `mcp-it-*` names or
+stops Colima. `ci/shared-engine-test.sh` proves these boundaries; `php ci/local-artifact-root-test.php` proves
+that generated artifacts stay outside the app's recursive source readers.
 
 Diagnostics: mode `baseline` installs the released baseline (the tag in the workflow) and never upgrades it, so a scenario can
 be run against the published code; `MCP_IT_PHPUNIT_ARGS="--filter SomeTest"` limits the suite to one test. They were built
@@ -51,7 +51,7 @@ to find why a groupfolder version restore was refused (`Exclusion/MountsTest` no
 
 Logs and artifacts (`run.log` is the terminal output, `resources.log` the memory samples, `mcp-it/artifacts/` the junit,
 Nextcloud and database logs, `observations.txt` and `provision.log`) land in
-`mcp/tests/Integration/.local-runs/<cell>-<timestamp>/`, which is git-ignored. The exit status is the suite's.
+`.mcp-it-runs/<cell>-<timestamp>-<pid>/` at the repository root, which is git-ignored. The exit status is the suite's.
 A cell takes about 1.5 to 3 minutes once the images are pulled and the engine (a Linux VM with 4 CPUs and 8 GiB) uses
 up to roughly 2 to 3 GiB of host memory while it runs.
 
@@ -386,7 +386,7 @@ semantics, and file share/detach preservation. It deliberately records the nativ
 relations: the MCP refusal is a later ticket. On NC32/33 API absence is asserted while labels/files still run.
 These tests call native services; they do not implement or promise new MCP tools.
 
-Local runs cache only the Deck archive under `.local-runs/deck-downloads/`, keyed by tag and SHA, verifying its
+Local runs cache only the Deck archive under `.mcp-it-runs/deck-downloads/` at the repository root, keyed by tag and SHA, verifying its
 checksum even on a hit. Remove that directory for a cold download. `artifacts/deck-cost.tsv` separates download
 and checksum time from extraction/enablement, in milliseconds; `resources.log` samples the engine/containers.
 For comparable whole-cell timing, run the same existing tests with Deck enabled/disabled:
@@ -406,5 +406,6 @@ The normal integration suite still runs afterwards (or the explicit `MCP_IT_PHPU
     MCP_IT_RUN_UNIT=1 sh mcp/tests/Integration/ci/run-local.sh 35 mariadb fresh
 
 Frontend unit tests need no Nextcloud service: `node --test mcp/tests/Frontend/*.test.cjs`. Both suites keep their
-existing entry points. Fresh/upgrade and database selection are unchanged. Always finish with
-`ci/run-local.sh --shutdown` and check `colima status`; cached archives/images are files, not running services.
+existing entry points. Fresh/upgrade and database selection are unchanged. `ci/run-local.sh --shutdown` cleans interrupted runs recorded by this checkout and preserves live runs.
+The default Colima profile is shared and is always left running. Artifacts and cached downloads stay outside
+`mcp/`, so recursive unit-test source readers cannot ingest run output; cached archives/images are files, not running services.

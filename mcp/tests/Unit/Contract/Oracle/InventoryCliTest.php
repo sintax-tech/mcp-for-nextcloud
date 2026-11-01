@@ -14,8 +14,8 @@ final class InventoryCliTest extends TestCase {
 	/** Omitting the map uses the committed cumulative pairs for the current tree. */
 	public function testCurrentNamesPassWithoutAnExplicitMap(): void {
 		$map = InventoryRenames::load(__DIR__ . '/../baseline/test-renames.tsv');
-		$this->assertArrayHasKey('OCA\\Mcp\\Tests\\Unit\\Service\\PromptCatalogTest', $map);
-		$this->assertArrayHasKey('OCA\\Mcp\\Tests\\Unit\\UserTimezoneTest', $map);
+		$this->assertArrayHasKey(implode('\\', ['OCA', 'Mcp', 'Tests', 'Unit', 'Service', 'PromptCatalogTest']), $map);
+		$this->assertArrayHasKey(implode('\\', ['OCA', 'Mcp', 'Tests', 'Unit', 'UserTimezoneTest']), $map);
 		[$exit, $output] = $this->runCli($map);
 		$this->assertSame(0, $exit, $output);
 	}

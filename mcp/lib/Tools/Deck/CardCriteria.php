@@ -22,7 +22,7 @@ use OCA\Deck\Db\Card;
  *
  * Every day is the day the user sees: Deck keeps `duedate` in UTC, so near midnight the UTC calendar
  * and the user's one disagree, and a card due tonight in São Paulo would already read as tomorrow.
- * The caller passes the user's timezone ({@see \OCA\Mcp\Service\UserTimezone}).
+ * The caller passes the user's timezone ({@see \OCA\Mcp\Platform\Time\UserTimezone}).
  */
 final class CardCriteria {
 	/** Card due before today that was neither finished nor archived. */

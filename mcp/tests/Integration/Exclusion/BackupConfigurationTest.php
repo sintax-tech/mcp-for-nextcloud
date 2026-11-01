@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Exclusion;
 
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\Service\BackupLocation;
-use OCA\Mcp\Service\BackupCopies;
+use OCA\Mcp\Platform\Backups\BackupLocation;
+use OCA\Mcp\Platform\Backups\BackupCopies;
 use OCA\Mcp\Service\BackupSettingsWriter;
 use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tests\Integration\Support\Http;
@@ -216,7 +216,7 @@ final class BackupConfigurationTest extends ExclusionTestCase {
 			->where($query->expr()->eq('appid', $query->createNamedParameter('mcp')))
 			->andWhere($query->expr()->eq('configkey', $query->createNamedParameter(BackupLocation::KEY)))->executeStatement();
 		self::assertSame('BK3 A', $location->snapshot()['folder']);
-		$other = new BackupLocation(new \OCA\Mcp\Service\BackupSettingsDocument($database));
+		$other = new BackupLocation(new \OCA\Mcp\Platform\Backups\BackupSettingsDocument($database));
 		self::assertSame('BK3 B', $other->current()['folder']);
 		self::assertTrue(BackupLocation::contains('/BK3 B/forbidden.txt', $location));
 		self::assertSame($cached, $config->getValueString('mcp', BackupLocation::KEY), 'Reading must not invalidate AppConfig cache');

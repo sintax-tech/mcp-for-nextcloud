@@ -6,9 +6,9 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files\Deletion;
 
-use OCA\Mcp\Service\BackupLocation;
+use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Tools\Common\NodeAccess;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Tools\Files\BackupWriteBoundary;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
@@ -73,12 +73,12 @@ final class DeleteNodeAdmission {
 	 * @return void
 	 */
 	private function metadata(Node $node, string $path, ?string $etag = null, ?int $id = null): void {
-		if (!$node->isReadable()) { throw new ToolFailure(\OCA\Mcp\Tools\Common\CommonMessages::notFound()); }
+		if (!$node->isReadable()) { throw new ToolFailure(\OCA\Mcp\Platform\FileAccess\CommonMessages::notFound()); }
 		$this->visibility->assertVisible($node);
 		BackupWriteBoundary::check($path, $this->backups);
 		NodeAccess::checkEtag($node, $etag);
-		if ($id !== null && (int)$node->getId() !== $id) { throw new ToolFailure(\OCA\Mcp\Tools\Common\CommonMessages::conflict()); }
-		if (!$node->isDeletable()) { throw new ToolFailure(\OCA\Mcp\Tools\Common\CommonMessages::forbidden()); }
+		if ($id !== null && (int)$node->getId() !== $id) { throw new ToolFailure(\OCA\Mcp\Platform\FileAccess\CommonMessages::conflict()); }
+		if (!$node->isDeletable()) { throw new ToolFailure(\OCA\Mcp\Platform\FileAccess\CommonMessages::forbidden()); }
 	}
 
 }

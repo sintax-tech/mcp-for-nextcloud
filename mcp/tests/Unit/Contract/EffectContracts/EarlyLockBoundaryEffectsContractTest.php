@@ -12,7 +12,7 @@ use OCA\Mcp\Tests\Unit\Tools\Common\FakeLock;
 use OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
-use OCA\Mcp\Tools\Common\LockWriteFailure;
+use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Tools\Files\FileBackupPreparation;
 use OCA\Mcp\Tools\Files\Reorganization;
 use OCP\App\IAppManager;

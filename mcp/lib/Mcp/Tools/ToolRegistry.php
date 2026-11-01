@@ -13,7 +13,7 @@ use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\GuestRestrictions;
-use OCA\Mcp\Tools\Common\NodeAccess;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
 use OCP\Lock\LockedException;

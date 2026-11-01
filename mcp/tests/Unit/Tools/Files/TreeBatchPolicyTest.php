@@ -70,7 +70,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 		self::assertArrayNotHasKey('/alice/files/copy/a.php', $this->tree->nodes);
 		self::assertArrayNotHasKey('/alice/files/copy/a.txt', $this->tree->nodes);
 		self::assertContains('/copy/a.txt', $result['not_copied']);
-		self::assertContains(['path' => '/copy/a.txt', 'reason' => \OCA\Mcp\Tools\Common\CommonMessages::notFound()], $result['conflicts']);
+		self::assertContains(['path' => '/copy/a.txt', 'reason' => \OCA\Mcp\Platform\FileAccess\CommonMessages::notFound()], $result['conflicts']);
 		self::assertSame('alpha', $root->get('src.php/a.php')->getContent());
 		self::assertSame('beta', $root->get('copy/sub/b.txt')->getContent());
 		self::assertSame([], array_filter($this->tree->ops, static fn ($op) => str_starts_with($op, 'delete')));
@@ -233,7 +233,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 			(new FileTypePreflight($context))->inspect($source, '/target', $context->policy()->snapshot(), true);
 			self::fail('Hidden descendants must refuse generically');
 		} catch (ToolFailure $e) {
-			self::assertSame(\OCA\Mcp\Tools\Common\CommonMessages::notFound(), $e->getMessage());
+			self::assertSame(\OCA\Mcp\Platform\FileAccess\CommonMessages::notFound(), $e->getMessage());
 			self::assertStringNotContainsString('hidden.php', $e->getMessage());
 			self::assertSame([], $this->tree->ops);
 		}
@@ -346,7 +346,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 		$visible->method('isVisible')->willReturn(true);
 		$visible->method('assertVisible')->willReturnCallback(static function (\OCP\Files\Node $node): void {
 			if ($node->getPath() === '/alice/files/copy/sub/b.txt') {
-				throw new ToolFailure(\OCA\Mcp\Tools\Common\CommonMessages::notFound());
+				throw new ToolFailure(\OCA\Mcp\Platform\FileAccess\CommonMessages::notFound());
 			}
 		});
 		$context = new CopyMoveContext($old->reorganization, $old->access, $old->report, $visible, $old->locks, CopyMovePolicyFixture::guard($this));
@@ -379,7 +379,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 				if ($path === $first['source'] && $kind !== 'bytes') {
 					throw match ($kind) {
 						'quota' => new \OCP\Files\NotEnoughSpaceException(),
-						'mapped-quota' => new ToolFailure(\OCA\Mcp\Tools\Common\CommonMessages::insufficientQuota()),
+						'mapped-quota' => new ToolFailure(\OCA\Mcp\Platform\FileAccess\CommonMessages::insufficientQuota()),
 						default => new \OCA\Mcp\Service\FileWritePolicyUnavailable(),
 					};
 				}
@@ -420,7 +420,7 @@ final class TreeBatchPolicyTest extends FilesToolsTestCase {
 			(new FileTypePreflight($context))->inspect($this->tree->node('/alice/files/wide'), '/target', $context->policy()->snapshot());
 			self::fail('Pending nodes cannot disclose their count');
 		} catch (ToolFailure $e) {
-			self::assertSame(\OCA\Mcp\Tools\Common\CommonMessages::notFound(), $e->getMessage());
+			self::assertSame(\OCA\Mcp\Platform\FileAccess\CommonMessages::notFound(), $e->getMessage());
 			self::assertSame([], $this->tree->ops);
 		}
 	}

@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Mcp\Confirmation\PlanText;
 
 /**

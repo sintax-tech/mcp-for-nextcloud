@@ -15,7 +15,7 @@ use OCA\Mcp\Service\Policy\PolicyWriter;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Support\Credential;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tests\Integration\Exclusion\ExclusionTestCase;
 use OCA\Mcp\Tests\Integration\Support\Http;
 use OCP\Files\Folder;

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Mcp\Confirmation;
 
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Mcp\Tools\ToolModule;
 use OCA\Mcp\Mcp\Tools\ToolPresentation;

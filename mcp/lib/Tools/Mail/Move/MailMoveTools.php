@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Mail\Move;
 
 use InvalidArgumentException;
 use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tools\Mail\Handler\MoveMessageHandler;
 use OCA\Mcp\Tools\Mail\Link\MailLinks;
 use OCA\Mcp\Tools\Mail\MailGateway;

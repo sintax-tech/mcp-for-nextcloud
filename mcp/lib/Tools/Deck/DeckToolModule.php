@@ -8,11 +8,11 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Deck;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\Compat\AppEnablement;
+use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\Policy\PolicyUnavailable;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tools\Deck\Handler\AbstractHandler;
 use OCA\Mcp\Tools\Deck\Handler\CardFileHandler;
 use OCA\Mcp\Tools\Deck\Handler\ChangeCardDependencyHandler;

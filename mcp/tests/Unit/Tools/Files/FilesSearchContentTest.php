@@ -150,7 +150,7 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 	): FilesModule {
 		$extractor = new \OCA\Mcp\Tools\Files\TextExtractor($this->temp);
 		$backup = new \OCA\Mcp\Tools\Files\FileBackup($this->apps, $this->users, $this->time, $this->config->mock($this));
-		$access = new \OCA\Mcp\Tools\Common\NodeAccessInfo(\OCA\Mcp\Tests\Unit\Tools\FakeUsers::manager($this, \OCA\Mcp\Tests\Unit\Tools\FakeUsers::DEFAULTS), $this->tree->shareManager());
+		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo(\OCA\Mcp\Tests\Unit\Tools\FakeUsers::manager($this, \OCA\Mcp\Tests\Unit\Tools\FakeUsers::DEFAULTS), $this->tree->shareManager());
 		$db = $this->createMock(\OCP\IDBConnection::class);
 		$db->method('escapeLikeParameter')->willReturnCallback(fn (string $s) => addcslashes($s, '\\_%'));
 
@@ -173,7 +173,7 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 			$this->users,
 			$db,
 			$access,
-			new \OCA\Mcp\Tools\Common\SharedWriteGuard($access),
+			new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access),
 			new \OCA\Mcp\Tools\Files\CheckoutService(
 				$this->createMock(\OCP\IURLGenerator::class),
 				$this->config->mock($this),
@@ -184,8 +184,8 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 				$this->users,
 			),
 			new \OCA\Mcp\Tools\Files\VersionTools($this->apps, $this->users, $extractor, $backup, $access, $this->createMock(\Psr\Container\ContainerInterface::class), new \OCA\Mcp\Tools\Files\OcrSupport($this->apps)),
-			new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Tools\Common\SharedWriteGuard($access), $this->report(), $this->users),
-			new \OCA\Mcp\Tools\Files\MovePlanner(new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Tools\Common\SharedWriteGuard($access), $this->report(), $this->users), $access, new \OCA\Mcp\Tools\Common\SharedWriteGuard($access)),
+			new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $this->report(), $this->users),
+			new \OCA\Mcp\Tools\Files\MovePlanner(new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $this->report(), $this->users), $access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access)),
 			$this->batches,
 			$this->time,
 			$imageTools,

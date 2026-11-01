@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Controller;
 
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\Service\BackupCopies;
-use OCA\Mcp\Service\BackupLocation;
+use OCA\Mcp\Platform\Backups\BackupCopies;
+use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Service\BackupSettingsWriter;
 use OCA\Mcp\Service\Policy\DecimalCounter;
 use OCA\Mcp\Service\Policy\PolicyConflict;

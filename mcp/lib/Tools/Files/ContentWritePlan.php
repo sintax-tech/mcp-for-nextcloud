@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 
@@ -49,7 +49,7 @@ final class ContentWritePlan {
 		return ($this->backupPlan ?? new BackupPlan())->decorate($plan + [
 			'path' => $path,
 			'etag' => (string)$file->getEtag(),
-			'backup' => '/' . \OCA\Mcp\Service\BackupLocation::LEGACY,
+			'backup' => '/' . \OCA\Mcp\Platform\Backups\BackupLocation::LEGACY,
 			'access' => $this->access->describe($file, $userId),
 			'shared' => $shared === null ? [] : [$shared],
 			'requiresSharedConfirmation' => $shared !== null,

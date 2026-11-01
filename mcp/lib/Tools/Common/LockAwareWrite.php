@@ -6,8 +6,8 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Common;
-
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Platform\FileAccess\{CommonMessages, LockMessages, LockWriteFailure};
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;

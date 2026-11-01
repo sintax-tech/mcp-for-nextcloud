@@ -15,8 +15,8 @@ use OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\ContentCommit;
 use OCA\Mcp\Tools\Files\ContentWritePlan;
@@ -197,7 +197,7 @@ abstract class FilesToolsTestCase extends TestCase {
 			$this->visibilityGuard,
 			...$this->sharing($urls),
 			creation: new FileCreation($access, new SharedWriteGuard($access), $checkout, $this->filenames,
-				$this->visibilityGuard ?? new \OCA\Mcp\Service\Scope\FilesAccessGuard($config, $this->tagMapper, $this->visibilityRoot()), $this->creationLogger, $locks, fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this), backupLocation: new \OCA\Mcp\Service\BackupLocation($this->createMock(\OCA\Mcp\Service\BackupSettingsDocument::class))),
+				$this->visibilityGuard ?? new \OCA\Mcp\Service\Scope\FilesAccessGuard($config, $this->tagMapper, $this->visibilityRoot()), $this->creationLogger, $locks, fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this), backupLocation: new \OCA\Mcp\Platform\Backups\BackupLocation($this->createMock(\OCA\Mcp\Platform\Backups\BackupSettingsDocument::class))),
 			locks: $locks,
 			fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this),
 			editFile: new EditFileHandler($extractor, $guard, $plans, $commit, $gate, $locks, $this->visibilityGuard),
@@ -249,7 +249,7 @@ abstract class FilesToolsTestCase extends TestCase {
 		return [
 			'shareLister' => new \OCA\Mcp\Tools\Files\Sharing\ShareLister($access, $formatter),
 			'shareWriter' => new \OCA\Mcp\Tools\Files\Sharing\ShareWriter($access, $recipients, $formatter, $manager, $accounts, $groups,
-				new \OCA\Mcp\Service\UserTimezone($this->config->mock($this)), $this->time, $this->shareLogger, $this->linkPassword(), $states),
+				new \OCA\Mcp\Platform\Time\UserTimezone($this->config->mock($this)), $this->time, $this->shareLogger, $this->linkPassword(), $states),
 			'shareRemover' => new \OCA\Mcp\Tools\Files\Sharing\ShareRemover($access, $recipients, $manager, $this->shareLogger, $states),
 		];
 	}

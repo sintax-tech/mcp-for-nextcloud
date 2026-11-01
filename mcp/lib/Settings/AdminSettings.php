@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Settings;
 
 use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Compat\AppEnablement;
+use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCA\Mcp\Service\ConnectionList;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\LogsAccess;

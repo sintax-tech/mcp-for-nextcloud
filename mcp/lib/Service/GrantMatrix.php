@@ -9,7 +9,7 @@ namespace OCA\Mcp\Service;
 
 use InvalidArgumentException;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Compat\AppEnablement;
+use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCP\App\IAppManager;
 use OCP\IGroupManager;
 use OCP\IUser;

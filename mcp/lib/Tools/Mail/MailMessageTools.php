@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Mail;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tools\Mail\Handler\ListMessagesHandler;
 use OCA\Mcp\Tools\Mail\Handler\ReadMessageHandler;
 use OCA\Mcp\Tools\Mail\Handler\ReadThreadHandler;

@@ -50,7 +50,7 @@ final class AdminUnsupportedAppsTest extends TestCase {
 	}
 
 	public function testEveryAppWithAMinimumHasAProductName(): void {
-		foreach (array_keys(\OCA\Mcp\Service\Compat\AppEnablement::MINIMUM_VERSIONS) as $app) {
+		foreach (array_keys(\OCA\Mcp\Platform\Compat\AppEnablement::MINIMUM_VERSIONS) as $app) {
 			$this->assertArrayHasKey($app, AdminSettings::APP_NAMES, $app . ' needs the name the admin knows it by');
 		}
 	}

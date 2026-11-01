@@ -40,7 +40,7 @@ use OCA\Mcp\Mcp\Tools\ToolModule;
  * Its read operations are `read` (accounts and folders), `messages` (listing, search, reading and threads) and
  * `attachments` (the text of one attachment); its writes are `flags`, `move`, `draft` and `send`, planned first and confirmed by the user. Its tools carry the app
  * id, so the registry hides them and refuses a call while Mail is not enabled for the user or is older than MCP supports
- * ({@see \OCA\Mcp\Service\Compat\AppEnablement::MINIMUM_VERSIONS}). Each tool has its own handler; the module only
+ * ({@see \OCA\Mcp\Platform\Compat\AppEnablement::MINIMUM_VERSIONS}). Each tool has its own handler; the module only
  * describes the tools and delegates.
  */
 final class MailModule implements ToolModule, ToolGuideNotes, PreviewsWrites, RendersPlans {

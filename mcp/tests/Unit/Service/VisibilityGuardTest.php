@@ -11,7 +11,7 @@ use OCA\Mcp\Service\HiddenTagsUnavailableException;
 use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
@@ -197,7 +197,7 @@ final class VisibilityGuardTest extends TestCase {
 		$guard = $this->guard();
 		$this->assertTrue($guard->isVisible($this->tree->node('/alice/files/file')));
 		try {
-			\OCA\Mcp\Tools\Common\NodeAccess::mutate(function (): void {
+			\OCA\Mcp\Platform\FileAccess\NodeAccess::mutate(function (): void {
 				$this->tree->node('/alice/files/file')->move('/alice/files/secret/file');
 				throw new \RuntimeException('Mutation already happened');
 			}, $guard);

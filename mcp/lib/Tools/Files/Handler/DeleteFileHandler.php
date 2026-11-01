@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files\Handler;
 
 use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Common\PathGuard;
+use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Tools\Files\Deletion\DeleteEligibility;
 use OCA\Mcp\Tools\Files\Deletion\DeleteMessages;
 use OCA\Mcp\Tools\Files\Deletion\DeleteOutcome;

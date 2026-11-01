@@ -7,7 +7,7 @@
                 "lockedBy": "pedro"
             },
             "response": {
-                "class": "OCA\\Mcp\\Tools\\Common\\LockWriteFailure",
+                "class": "OCA\\Mcp\\Platform\\FileAccess\\LockWriteFailure",
                 "message": "The file “/Docs/old.md” is locked by Paulo Exemplo. Locked since 2025-10-08 11:05 (UTC). The lock has no end time. Ask that person to unlock it, or wait until the lock ends, and then try again. Nothing was changed."
             },
             "state": {

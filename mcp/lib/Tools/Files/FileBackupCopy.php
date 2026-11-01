@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
-use OCA\Mcp\Tools\Common\NodeAccess;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Common\LockMessages;
-use OCA\Mcp\Tools\Common\LockWriteFailure;
+use OCA\Mcp\Platform\FileAccess\LockMessages;
+use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;
@@ -21,10 +21,10 @@ final class FileBackupCopy {
 	/**
 	 * @param \OCA\Mcp\Service\VisibilityGuard|null $visibilityGuard existing privacy preservation
 	 * @param LockAwareWrite|null $locks existing lock-aware mutation gateway
-	 * @param \OCA\Mcp\Service\BackupLocation|null $location current destination reader
+	 * @param \OCA\Mcp\Platform\Backups\BackupLocation|null $location current destination reader
 	 */
 	public function __construct(private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard,
-		private ?LockAwareWrite $locks, private ?\OCA\Mcp\Service\BackupLocation $location) {
+		private ?LockAwareWrite $locks, private ?\OCA\Mcp\Platform\Backups\BackupLocation $location) {
 	}
 
 	/**
@@ -41,7 +41,7 @@ final class FileBackupCopy {
 		// The node the copy was working on when it failed, so a lock refusal names the backup and not the original.
 		$target = $root;
 		try {
-			$folder = NodeAccess::mutate(fn () => NodeAccess::ensureFolder($root, ($this->location?->current()['folder'] ?? \OCA\Mcp\Service\BackupLocation::LEGACY) . dirname($path)), $this->visibilityGuard);
+			$folder = NodeAccess::mutate(fn () => NodeAccess::ensureFolder($root, ($this->location?->current()['folder'] ?? \OCA\Mcp\Platform\Backups\BackupLocation::LEGACY) . dirname($path)), $this->visibilityGuard);
 			$target = $folder;
 			$base = $file->getName() . '.' . $stamp;
 			$name = $base . '.bak';

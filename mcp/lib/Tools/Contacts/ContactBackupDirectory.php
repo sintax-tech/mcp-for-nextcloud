@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Contacts;
 
-use OCA\Mcp\Service\BackupLocation;
+use OCA\Mcp\Platform\Backups\BackupLocation;
 
 /** Shares the configured destination without applying the optional Files-copy switch to Contacts. */
 final class ContactBackupDirectory {

@@ -7,12 +7,12 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
-use OCA\Mcp\Service\UserTimezone;
-use OCA\Mcp\Tools\Common\NodeAccess;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\Time\UserTimezone;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Common\LockMessages;
-use OCA\Mcp\Tools\Common\LockWriteFailure;
+use OCA\Mcp\Platform\FileAccess\LockMessages;
+use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -29,7 +29,7 @@ use OCP\Lock\ManuallyLockedException;
  */
 class FileBackup {
 	/** Legacy default name, retained as a compatibility alias; live destinations come from BackupLocation. */
-	public const FOLDER = \OCA\Mcp\Service\BackupLocation::LEGACY;
+	public const FOLDER = \OCA\Mcp\Platform\Backups\BackupLocation::LEGACY;
 
 	public function __construct(
 		private IAppManager $appManager,
@@ -38,17 +38,17 @@ class FileBackup {
 		private IConfig $config,
 		private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
 		private ?LockAwareWrite $locks = null,
-		private ?\OCA\Mcp\Service\BackupLocation $backupLocation = null,
-		private ?\OCA\Mcp\Service\BackupCopies $backupCopies = null,
+		private ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
+		private ?\OCA\Mcp\Platform\Backups\BackupCopies $backupCopies = null,
 	) {}
 
 	/**
 	 * @param string $path normalized user-relative path
-	 * @param \OCA\Mcp\Service\BackupLocation|null $location injected live backup settings
+	 * @param \OCA\Mcp\Platform\Backups\BackupLocation|null $location injected live backup settings
 	 * @return bool whether the path is the backup folder or inside it
 	 */
-	public static function isBackupPath(string $path, ?\OCA\Mcp\Service\BackupLocation $location = null): bool {
-		return \OCA\Mcp\Service\BackupLocation::contains($path, $location);
+	public static function isBackupPath(string $path, ?\OCA\Mcp\Platform\Backups\BackupLocation $location = null): bool {
+		return \OCA\Mcp\Platform\Backups\BackupLocation::contains($path, $location);
 	}
 
 	/**
@@ -70,7 +70,7 @@ class FileBackup {
 	 * @param bool $asUser whether the write runs as $userId; false on the checkout route without user session
 	 * @return string user-relative verified copy path, or empty string for an authorized suspension
 	 * @throws ToolFailure when versioning is off, the file is not writable, the etag differs, a lock refuses the
-	 *         write ({@see \OCA\Mcp\Tools\Common\LockWriteFailure}) or the copy fails
+	 *         write ({@see \OCA\Mcp\Platform\FileAccess\LockWriteFailure}) or the copy fails
 	 */
 	public function prepare(Folder $root, File $file, string $path, string $userId, ?string $etag, bool $asUser = true): string {
 		return (new FileBackupPreparation($this->appManager, $this->userManager, $this->locks, $this->backupCopies, $this->backupLocation))->prepare($file, $path, $userId, $etag, $asUser, fn () => $this->copy($root, $file, $path, $userId, $asUser));

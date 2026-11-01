@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Notes;
 
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Common\PathGuard;
+use OCA\Mcp\Platform\FileAccess\PathGuard;
 
 /**
  * Basenames the Notes policy evaluates.

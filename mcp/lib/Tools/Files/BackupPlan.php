@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\BackupCopies;
-use OCA\Mcp\Service\BackupLocation;
+use OCA\Mcp\Platform\Backups\BackupCopies;
+use OCA\Mcp\Platform\Backups\BackupLocation;
 
 /** Describes the copy that this actor's confirmed operation would actually create. */
 final class BackupPlan {

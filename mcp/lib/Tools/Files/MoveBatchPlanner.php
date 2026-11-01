@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 
@@ -51,8 +51,8 @@ final class MoveBatchPlanner {
 			$from = (string)$item['from'];
 			$to = (string)$item['to'];
 			try {
-				if (isset($typeDenied[\OCA\Mcp\Tools\Common\PathGuard::normalize($from) . "\0" . \OCA\Mcp\Tools\Common\PathGuard::normalize($to)])) {
-					throw new ToolFailure($typeDenied[\OCA\Mcp\Tools\Common\PathGuard::normalize($from) . "\0" . \OCA\Mcp\Tools\Common\PathGuard::normalize($to)]);
+				if (isset($typeDenied[\OCA\Mcp\Platform\FileAccess\PathGuard::normalize($from) . "\0" . \OCA\Mcp\Platform\FileAccess\PathGuard::normalize($to)])) {
+					throw new ToolFailure($typeDenied[\OCA\Mcp\Platform\FileAccess\PathGuard::normalize($from) . "\0" . \OCA\Mcp\Platform\FileAccess\PathGuard::normalize($to)]);
 				}
 				$check = $this->context->reorganization->inspect($root, $from, $to, mkdirs: $mkdirs);
 				// A locked item is one the run would refuse: it is listed as denied with the explanation, so the plan

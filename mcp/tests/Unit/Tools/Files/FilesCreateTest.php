@@ -11,7 +11,7 @@ use OCA\Mcp\Checkout\CheckoutToken;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileCreation;
 use OCA\Mcp\Tools\Files\FilesMessages;
@@ -390,7 +390,7 @@ final class FilesCreateTest extends FilesToolsTestCase {
 			$hidden[] = (int)$this->tree->node($path)->getId();
 		};
 		$out = $this->failure('files_create', ['path' => '/new-secret.txt', 'content' => 'x', 'confirm' => true]);
-		$this->assertSame(\OCA\Mcp\Tools\Common\CommonMessages::notFound(), $out);
+		$this->assertSame(\OCA\Mcp\Platform\FileAccess\CommonMessages::notFound(), $out);
 		$this->assertStringNotContainsString('new-secret', $out);
 	}
 

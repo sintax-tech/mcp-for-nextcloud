@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Integration\Tasks;
 
 use OCA\DAV\CalDAV\CalDavBackend;
 use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\Http;

@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tools\Files;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
 use OCA\Mcp\Tools\Common\FileTypeGuard;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use OCP\Files\Node;
@@ -26,7 +26,7 @@ final class CopyMoveContext {
 	 * @param FilesAccessGuard|null $visibilityGuard Visibility boundary.
 	 * @param LockAwareWrite|null $locks Official lock-aware writes.
 	 * @param FileTypeGuard|null $fileTypes Injected policy guard; core resolves it when omitted.
-	 * @param \OCA\Mcp\Service\BackupLocation|null $backupLocation live protected root names
+	 * @param \OCA\Mcp\Platform\Backups\BackupLocation|null $backupLocation live protected root names
 	 * @return void
 	 */
 	public function __construct(
@@ -36,7 +36,7 @@ final class CopyMoveContext {
 		public readonly ?FilesAccessGuard $visibilityGuard,
 		public readonly ?LockAwareWrite $locks,
 		private ?FileTypeGuard $fileTypes,
-		private ?\OCA\Mcp\Service\BackupLocation $backupLocation = null,
+		private ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
 	) {
 	}
 

@@ -189,7 +189,7 @@ final class FilesSharePlanStateTest extends FilesToolsTestCase {
 		$state = $this->plan('files_unshare', ['shareId' => $share->getFullId()])[PlanState::ARGUMENT];
 		$this->shares->shares = [];
 
-		self::assertSame(\OCA\Mcp\Tools\Common\CommonMessages::notFound(),
+		self::assertSame(\OCA\Mcp\Platform\FileAccess\CommonMessages::notFound(),
 			$this->failure('files_unshare', ['shareId' => $share->getFullId(), 'confirm' => true, PlanState::ARGUMENT => $state]));
 		self::assertSame([], $this->shares->writes);
 	}

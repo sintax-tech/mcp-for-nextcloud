@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Service\BackupLocation;
-use OCA\Mcp\Service\BackupCopies;
+use OCA\Mcp\Platform\Backups\BackupLocation;
+use OCA\Mcp\Platform\Backups\BackupCopies;
 use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Tools\Files\BackupPlan;
@@ -111,8 +111,8 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 	/** @return void a configured reservation is enforced through the extracted copy handler, including plans */
 	public function testCopyCannotUseAnyReservedDestination(): void {
 		[$location] = $this->settings('.mcp-backups', false);
-		$access = new \OCA\Mcp\Tools\Common\NodeAccessInfo($this->users, $this->tree->shareManager());
-		$service = new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Tools\Common\SharedWriteGuard($access), $this->report(), $this->users, backupLocation: $location);
+		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
+		$service = new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $this->report(), $this->users, backupLocation: $location);
 		foreach (['MCP backups', '.mcp-backups'] as $folder) {
 			foreach ([false, true] as $write) {
 				try {
@@ -239,7 +239,7 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 			$manager->versions = [(new \OCA\Files_Versions\Versions\FakeVersion('1', 1759100000, 3, 'text/plain', 'ata.md'))->withContent('old')];
 			$container = $this->createMock(\Psr\Container\ContainerInterface::class);
 			$container->method('get')->willReturn($manager);
-			$access = new \OCA\Mcp\Tools\Common\NodeAccessInfo($this->users, $this->tree->shareManager());
+			$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
 			$restore = new \OCA\Mcp\Tools\Files\VersionRestore($this->apps, $this->users, new \OCA\Mcp\Tools\Files\ContentTypeGate(\OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this)), $access, $container);
 			$file = $this->tree->node('/alice/files/Documentos/ata.md');
 			$before = $file->getContent();
@@ -270,10 +270,10 @@ final class BackupOperationsTest extends FilesToolsTestCase {
 			$this->config->app['mcp'][BackupLocation::KEY] = json_encode(['version' => 1, 'folder' => 'Documentos', 'reserved' => ['MCP backups', '.mcp-backups', 'Documentos'], 'copies' => $createCopy]);
 			return $copy;
 		});
-		$access = new \OCA\Mcp\Tools\Common\NodeAccessInfo($this->users, $this->tree->shareManager());
+		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
 		$unused = static fn () => throw new \LogicException('Unexpected callback');
 		$handler = new \OCA\Mcp\Tools\Files\Handler\CheckoutWriteHandler($this->visibilityRoot(), null, $backup,
-			new \OCA\Mcp\Tools\Common\SharedWriteGuard($access), $access, new \Psr\Log\NullLogger(), null, null, null, null, \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this),
+			new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access), $access, new \Psr\Log\NullLogger(), null, null, null, null, \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this),
 			$unused, $unused, $unused, static fn () => false, $unused, $unused,
 			static fn (int $status, string $message) => new \OCP\AppFramework\Http\JSONResponse(['error' => $message], $status), $unused);
 		$row = new \OCA\Mcp\Checkout\CheckoutToken(1, 'upload', 'alice', $file->getId(), '/Documentos/ata.md', $file->getEtag(), 'personal', true, PHP_INT_MAX, true);

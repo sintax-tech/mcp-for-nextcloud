@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
-use OCA\Mcp\Service\BackupLocation;
+use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** Fresh reservation admission, including checkout links issued before the administrator changed destinations. */

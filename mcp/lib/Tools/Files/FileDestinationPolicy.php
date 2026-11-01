@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\Tools\Common\FileTypeCheck;
 use OCA\Mcp\Tools\Common\FileTypeGuard;
-use OCA\Mcp\Tools\Common\PathGuard;
+use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCP\Files\File;
 use OCP\Files\Node;
 

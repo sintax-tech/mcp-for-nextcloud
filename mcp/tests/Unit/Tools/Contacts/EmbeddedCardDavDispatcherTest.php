@@ -159,7 +159,7 @@ final class EmbeddedCardDavDispatcherTest extends TestCase {
 				$call();
 				self::fail('an unsafe segment reached the server');
 			} catch (ToolFailure $e) {
-				self::assertSame(\OCA\Mcp\Tools\Common\CommonMessages::notFound(), $e->getMessage());
+				self::assertSame(\OCA\Mcp\Platform\FileAccess\CommonMessages::notFound(), $e->getMessage());
 			}
 		}
 		self::assertSame(0, $this->serversBuilt);

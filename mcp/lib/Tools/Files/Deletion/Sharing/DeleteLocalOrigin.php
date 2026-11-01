@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files\Deletion\Sharing;
 
-use OCA\Mcp\Service\BackupLocation;
+use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Tools\Files\BackupWriteBoundary;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;

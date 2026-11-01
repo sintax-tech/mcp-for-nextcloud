@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Deck;
 
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 
 /**
  * Read-only authorization and state preparation, ordered before native Circles expansion.

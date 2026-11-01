@@ -16,9 +16,9 @@ use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tests\Unit\Tools\Files\FakeFilenameValidator;
-use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Tools\Files\FileCreation;
@@ -136,7 +136,7 @@ final class CheckoutCreateTest extends TestCase {
 		$this->controller = new StagedCreateController('mcp', $request, $root, $this->session, $temp, $time, $this->policy,
 			$this->store, $this->hasher, $checkout, new FileBackup($apps, $users, $time, $config),
 			new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class), null, $users, $this->guard,
-			new FileCreation($access, new SharedWriteGuard($access), $checkout, $this->filenames, $guard, $this->createMock(LoggerInterface::class), $this->locks->service($this), fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this), backupLocation: new \OCA\Mcp\Service\BackupLocation($this->createMock(\OCA\Mcp\Service\BackupSettingsDocument::class))),
+			new FileCreation($access, new SharedWriteGuard($access), $checkout, $this->filenames, $guard, $this->createMock(LoggerInterface::class), $this->locks->service($this), fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this), backupLocation: new \OCA\Mcp\Platform\Backups\BackupLocation($this->createMock(\OCA\Mcp\Platform\Backups\BackupSettingsDocument::class))),
 			$this->locks->service($this), fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this));
 		$this->controller->route = ['token' => self::TOKEN];
 	}

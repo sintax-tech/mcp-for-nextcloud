@@ -13,7 +13,7 @@ use OCA\Mcp\Service\Policy\PolicyResolver;
 use OCA\Mcp\Service\Policy\PolicyUnavailable;
 use OCA\Mcp\Service\Scope\CalendarAccessExplainer;
 use OCA\Mcp\Service\Scope\FilesScope;
-use OCA\Mcp\Tools\Common\PathGuard;
+use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;
 use Throwable;

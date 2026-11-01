@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files\Deletion\Folder;
 
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Tools\Common\NodeAccess;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Tools\Files\Deletion\DeleteNodeAdmission;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
@@ -36,7 +36,7 @@ final class DeleteFolderAdmission {
 		if (!is_string($path)) { throw new ToolFailure(DeleteFolderMessages::refused()); }
 		$current = NodeAccess::get($root, $path, $this->visibility);
 		if (!$current instanceof Folder || $current->getId() !== $source->getId() || $current->getEtag() !== $source->getEtag()) {
-			throw new ToolFailure(\OCA\Mcp\Tools\Common\CommonMessages::conflict());
+			throw new ToolFailure(\OCA\Mcp\Platform\FileAccess\CommonMessages::conflict());
 		}
 		$shared = $this->nodes->source($root, $uid, $current, $path);
 		$observation = $boundary->inspect($root, $uid, $current, function (Node $node) use ($root, $uid, $current, &$shared): void {
@@ -45,7 +45,7 @@ final class DeleteFolderAdmission {
 			if (!is_string($path)) { throw new ToolFailure(DeleteFolderMessages::refused()); }
 			$fresh = NodeAccess::get($root, $path, $this->visibility);
 			if ($fresh->getId() !== $node->getId() || $fresh->getEtag() !== $node->getEtag()) {
-				throw new ToolFailure(\OCA\Mcp\Tools\Common\CommonMessages::conflict());
+				throw new ToolFailure(\OCA\Mcp\Platform\FileAccess\CommonMessages::conflict());
 			}
 			$impact = $this->nodes->descendant($uid, $fresh, $path);
 			$shared = $shared || $impact;

@@ -36,7 +36,7 @@
             "OCA\\Mcp\\Tools\\Calendar\\CalendarDav",
             "OCA\\Mcp\\Tools\\Contacts\\ContactStore",
             "OCA\\Mcp\\Tools\\Tasks\\TaskStore",
-            "OCA\\Mcp\\Tools\\Files\\Access\\ActorRoot",
+            "OCA\\Mcp\\Platform\\FileAccess\\ActorRoot",
             "OCA\\Mcp\\Service\\Scope\\ScopeReader",
             "OCA\\Mcp\\Tools\\Common\\FileReferenceScope",
             "OCA\\Mcp\\Tools\\Contacts\\ContactDav",

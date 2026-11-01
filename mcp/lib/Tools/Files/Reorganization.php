@@ -8,11 +8,11 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Common\NodeAccess;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\PathGuard;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\PathGuard;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;
@@ -42,7 +42,7 @@ final class Reorganization {
 		private ?\OCA\Mcp\Service\Scope\FilesAccessGuard $visibilityGuard = null,
 		private ?LockAwareWrite $locks = null,
 		private ?\OCA\Mcp\Tools\Common\FileTypeGuard $fileTypes = null,
-		private ?\OCA\Mcp\Service\BackupLocation $backupLocation = null,
+		private ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
 	) {}
 
 	/**
@@ -277,7 +277,7 @@ final class Reorganization {
 	 *
 	 * @param Node $node the node about to move
 	 * @param string $userId authenticated user
-	 * @throws \OCA\Mcp\Tools\Common\LockWriteFailure when a lock stops the move
+	 * @throws \OCA\Mcp\Platform\FileAccess\LockWriteFailure when a lock stops the move
 	 */
 	public function assertUnlocked(Node $node, string $userId): void {
 		$this->locks?->assertWritable($node, $userId);
@@ -921,7 +921,7 @@ final class Reorganization {
 	 * @return string the same path
 	 * @throws ToolFailure when the path is /MCP backups or inside it
 	 */
-	public static function notBackup(string $path, ?\OCA\Mcp\Service\BackupLocation $location = null): string {
+	public static function notBackup(string $path, ?\OCA\Mcp\Platform\Backups\BackupLocation $location = null): string {
 		return BackupWriteBoundary::checked($path, $location);
 	}
 

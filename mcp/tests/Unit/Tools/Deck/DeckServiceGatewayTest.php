@@ -21,7 +21,7 @@ use OCA\Deck\Service\BoardService;
 use OCA\Deck\Service\CardService;
 use OCA\Deck\Service\PermissionService;
 use OCA\Deck\Service\StackService;
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tools\Deck\CardCriteria;
 use OCA\Mcp\Tools\Deck\CardDueDate;
 use OCA\Mcp\Tools\Deck\DeckServiceGateway;

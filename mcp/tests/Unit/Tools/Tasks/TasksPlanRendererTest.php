@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Tasks;
 
 use DateTimeImmutable;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;

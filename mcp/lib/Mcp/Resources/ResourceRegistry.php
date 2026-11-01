@@ -9,10 +9,10 @@ namespace OCA\Mcp\Mcp\Resources;
 
 use OCA\Mcp\Service\Policy\GrantUnknown;
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\Common\NodeAccess;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Tools\Common\PathGuard;
+use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Service;
 
+use OCA\Mcp\Platform\Backups\{BackupLocation, BackupCopies, BackupFolderName};
 use OCA\Mcp\Service\Policy\PolicyWriter;
 use OCP\IAppConfig;
 use OCP\Files\IFilenameValidator;

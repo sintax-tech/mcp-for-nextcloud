@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Mcp\Confirmation;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCP\IConfig;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 

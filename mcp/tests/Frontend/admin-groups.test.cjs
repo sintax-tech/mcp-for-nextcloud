@@ -192,9 +192,7 @@ function matrixFunctions() {
 		state: { data: { users: [] } },
 	}
 	for (const name of ['rowUnavailableReason', 'unavailableReason', 'permissionCell', 'bulkPlan']) {
-		const start = source.indexOf('\tfunction ' + name + '(')
-		const end = source.indexOf('\n\t}', start) + 3
-		vm.runInNewContext(source.slice(start, end), context)
+		vm.runInNewContext(require('./AdminManifest.cjs').operation('function ' + name + '('), context)
 	}
 	return context
 }

@@ -110,9 +110,7 @@ test('the origin of a module: invalid, then individual, then unknown group, then
 
 const grants = require('./AdminManifest.cjs').script('admin-grants.js')
 function cut(declaration) {
-	const start = grants.indexOf('\t' + declaration)
-	assert.ok(start > 0, declaration + ' was found in src/admin/admin-grants.js')
-	return grants.slice(start, grants.indexOf('\n\t}\n', start) + 4)
+	return require('./AdminManifest.cjs').operation(declaration)
 }
 
 class Node {

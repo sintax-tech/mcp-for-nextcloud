@@ -62,9 +62,9 @@ final class AdminOverridesAssetsTest extends TestCase {
 	public function testTheSharedScriptOnlyExposesAndCallsAndTheOverridesScriptNeverTouchesItsState(): void {
 		$app = self::app();
 		$manifest = file($app . '/src/admin.manifest', FILE_IGNORE_NEW_LINES);
-		$this->assertLessThan(array_search('admin/admin-overrides.js', $manifest, true), array_search('admin/admin-grants.js', $manifest, true),
+		$this->assertLessThan(array_search('admin/admin-overrides.js', $manifest, true), array_search('admin/matrix/start.js', $manifest, true),
 			'the matrix script exposes window.OCA.Mcp.Admin.matrix before the overrides script reads it');
-		$grants = (string)file_get_contents($app . '/src/admin/admin-grants.js');
+		$grants = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js');
 		foreach (['window.OCA.Mcp.Admin.matrix = {', 'window.OCA.Mcp.Admin.overrides?.decorateRow(row, user)', 'window.OCA.Mcp.Admin.overrides?.decorateCell(', "dispatchEvent(new Event('mcp-matrix-rendered'))"] as $needle) {
 			$this->assertStringContainsString($needle, $grants);
 		}

@@ -76,8 +76,41 @@ class AdminManifest {
 	 * @return {string} the source the page runs for it
 	 */
 	static script(name) {
-		return name === 'admin-levels.js' ? AdminManifest.levelsSource() : AdminManifest.fragment('admin/' + name)
+		if (name === 'admin-levels.js') return AdminManifest.levelsSource()
+		if (name === 'admin-grants.js' && AdminManifest.fragments().includes('admin/matrix/start.js')) {
+			return AdminManifest.fragments().filter(p => p.startsWith('admin/matrix/') || p === 'admin/admin-grants.js')
+				.map(p => AdminManifest.fragment(p)).join(';\n')
+		}
+		return AdminManifest.fragment('admin/' + name)
 	}
+	/**
+	 * Load an actual registered unit and expose one declared operation to the existing fixture.
+	 * Other operations of that unit remain the fixture dependencies when the case supplies them.
+	 * @param {string} declaration original function or constant name
+	 * @return {string} executable unit and fixture binding
+	 */
+	static operation(declaration) {
+		const name = declaration.match(/(?:function|const) (\w+)/)?.[1]
+		const entry = AdminManifest.fragments().find(p => {
+			if (!p.startsWith('admin/matrix/') && p !== 'admin/admin-grants.js') return false
+			return new RegExp('(?:function|const) ' + name + '(?:\\(| )').test(AdminManifest.fragment(p))
+		})
+		if (!entry) throw Error('Missing declared operation: ' + declaration)
+		const source = AdminManifest.fragment(entry)
+		const address = entry === 'admin/admin-grants.js' ? 'settings' : 'matrix.' + path.basename(entry, '.js').replaceAll('-', '_')
+		const operations = [...source.matchAll(/^\t\t(?:async )?function (\w+)\(/gm)].map(m => m[1])
+		return ';\n' + AdminManifest.fragment('admin/registration.js') + ';\n' + source + `;\n(function () {
+			const target = globalThis
+			const before = Object.getOwnPropertyDescriptors(target)
+			;(globalThis.window || globalThis).OCA.Mcp.Admin.modules.${address}(target)
+			for (const key of ${JSON.stringify(operations)}) {
+				if (key === ${JSON.stringify(name)}) continue
+				if (before[key]) Object.defineProperty(target, key, before[key])
+				else delete target[key]
+			}
+		})();\n`
+	}
+
 }
 
 module.exports = AdminManifest

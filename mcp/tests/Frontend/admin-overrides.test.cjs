@@ -499,7 +499,7 @@ test('O1: undoing a 503 without uncertainty keeps the table, offers the same und
 		reloadLocked: async () => { reloads++ },
 		announce: () => {},
 	}
-	vm.runInNewContext(source.slice(start, end) + '\nthis.undoBulk = undoBulk', context)
+	vm.runInNewContext(require('./AdminManifest.cjs').operation('async function undoBulk('), context)
 	await context.undoBulk('receipt-1', '7')
 	assert.equal(reloads, 0)
 	assert.equal(notices.length, 1)
@@ -861,7 +861,7 @@ test('issue #11 matrix: an unreadable reset response uses real api uncertainty r
 			return { ok: true, status: 200, json: async () => { if (data instanceof Error) throw data; return data } }
 		},
 	}
-	vm.runInNewContext(matrixSource.slice(start, end) + '\nthis.api = api', context)
+	vm.runInNewContext(require('./AdminManifest.cjs').operation('async function api('), context)
 	matrix.api = context.api
 	await ui.rowButton('alice').click()
 	await ui.panelButton('confirm').click()

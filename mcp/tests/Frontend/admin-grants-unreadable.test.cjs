@@ -11,9 +11,7 @@ const vm = require('./AdminContext.cjs')
 const source = require('./AdminManifest.cjs').script('admin-grants.js')
 const uncertain = 'The server could not confirm whether the change was saved. The table was reloaded with the saved values.'
 function cut(declaration) {
-	const start = source.indexOf('\t' + declaration)
-	assert.ok(start > 0, declaration)
-	return source.slice(start, source.indexOf('\n\t}\n', start) + 4)
+	return require('./AdminManifest.cjs').operation(declaration)
 }
 function node() {
 	const classes = new Set()
@@ -57,9 +55,9 @@ function kit({ badRead = false, status = 200 } = {}) {
 		'function permissionCell(', 'function setBulkBusy(', 'function bulkPlan(', 'async function sendCommand(', 'async function bulk(', 'async function undoBulk(']
 	const serviceStart = source.indexOf("\tserviceBox.addEventListener('change',")
 	const serviceEnd = source.indexOf("\n\twindow.addEventListener('mcp-group-policy-saved'", serviceStart)
-	vm.runInNewContext('let matrixLocked = false, bulkBusy = false, loadSeq = 0;\n' + functions.map(cut).join('\n')
-		+ source.slice(serviceStart, serviceEnd)
-		+ '\nthis.api = api; this.load = load; this.bulk = bulk; this.undoBulk = undoBulk; this.permissionCell = permissionCell; this.locked = () => matrixLocked || bulkBusy', context)
+	vm.runInNewContext(functions.map(cut).join('\n')
+		+ require('./AdminManifest.cjs').operation('function attachService(') + '\nattachService();'
+		+ '\nthis.api = api; this.load = load; this.bulk = bulk; this.undoBulk = undoBulk; this.permissionCell = permissionCell; this.locked = () => globalThis.matrixLocked || globalThis.bulkBusy', context)
 	return { context, log, table, control, serviceBox, serviceStatus }
 }
 const reads = (k) => k.log.calls.filter((c) => c.method === 'GET')

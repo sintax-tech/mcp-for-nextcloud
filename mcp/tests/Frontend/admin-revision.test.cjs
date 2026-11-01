@@ -19,13 +19,9 @@ const source = require('./AdminManifest.cjs').script('admin-grants.js')
 
 /** The source of one function of the admin script, from its declaration to its closing brace. */
 function cut(declaration) {
-	const start = source.indexOf('\t' + declaration)
-	assert.ok(start > 0, declaration + ' was found in src/admin/admin-grants.js')
-	return source.slice(start, source.indexOf('\n\t}\n', start) + 4)
+	return require('./AdminManifest.cjs').operation(declaration)
 }
-const helpersStart = source.indexOf('\t/** Page event of a write this page committed')
-const helpers = source.slice(helpersStart, source.indexOf('\t/**\n\t * @param {HTMLElement} cell cell that shows the save result', helpersStart))
-assert.ok(helpersStart > 0 && helpers.includes('function followRevision('), 'the revision helpers were found in src/admin/admin-grants.js')
+const helpers = ['announce', 'oneStep', 'phpTrim', 'followRevision'].map(name => require('./AdminManifest.cjs').operation('function ' + name + '(')).join('\n')
 
 /**
  * Runs the server-log block against a fake server. `serve({method, body})` answers [status, body]. The picker is a stub

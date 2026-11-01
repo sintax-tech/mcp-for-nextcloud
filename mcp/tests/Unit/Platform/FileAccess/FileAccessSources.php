@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tests\Unit\Tools\Common;
+namespace OCA\Mcp\Tests\Unit\Platform\FileAccess;
 
 use OCA\Mcp\Tests\Unit\ClassSource;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;

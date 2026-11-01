@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Platform\FileAccess;
 
-use OCA\Mcp\Tests\Unit\Tools\Common\FileAccessSources;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;

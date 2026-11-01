@@ -752,6 +752,6 @@
 	],
 	"tests": [
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\ServerInfoTest","target":"OCA\\Mcp\\Tests\\Unit\\Mcp\\Protocol\\ServerInfoTest"},
-		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\Common\\FileAccessSources","target":"OCA\\Mcp\\Tests\\Unit\\Platform\\FileAccess\\FileAccessSources","owner":"Platform","ticket":"RE-04"}
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\Common\\FileAccessSources","target":"OCA\\Mcp\\Tests\\Unit\\Platform\\FileAccess\\FileAccessSources"}
 	]
 }

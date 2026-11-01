@@ -55,3 +55,7 @@ OCA\Mcp\Tests\Unit\Service\Scope\FilesScopeTest	OCA\Mcp\Tests\Unit\Access\Resour
 OCA\Mcp\Tests\Unit\Service\Scope\ScopeBoundariesTest	OCA\Mcp\Tests\Unit\Access\ResourceScope\ScopeBoundariesTest
 OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsControllerTest	OCA\Mcp\Tests\Unit\Controller\UnknownGroupGrantsControllerTest
 OCA\Mcp\Tests\Unit\Service\Scope\ScopeRoutesTest	OCA\Mcp\Tests\Unit\Controller\ScopeRoutesTest
+OCA\Mcp\Tests\Unit\Service\Policy\DecimalCounterTest	OCA\Mcp\Tests\Unit\Platform\Numbers\DecimalCounterTest
+OCA\Mcp\Tests\Unit\Tools\Common\LockAwareWriteTest	OCA\Mcp\Tests\Unit\Platform\FileAccess\LockAwareWriteTest
+OCA\Mcp\Tests\Unit\Service\BackupSettingsTest	OCA\Mcp\Tests\Unit\Access\Settings\BackupSettingsTest
+OCA\Mcp\Tests\Unit\OAuth\OAuthStoreTest	OCA\Mcp\Tests\Unit\OAuth\Storage\OAuthStoreTest

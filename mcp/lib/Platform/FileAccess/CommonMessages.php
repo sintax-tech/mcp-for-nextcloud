@@ -83,6 +83,11 @@ final class CommonMessages {
 		return Translator::t('Changes affect other people. Confirm with the user before continuing and run a new files_upload with confirm_shared: true; this upload link was issued without that confirmation.');
 	}
 
+	/** @return string Translated refusal when preserving the original backup fails. */
+	public static function backupFailed(): string {
+		return Translator::t('Editing blocked: could not create backup copy of original.');
+	}
+
 	/** @return string translated message when a resource cannot be found in Nextcloud */
 	public static function notFound(): string {
 		return Translator::t('Resource not found in Nextcloud.');

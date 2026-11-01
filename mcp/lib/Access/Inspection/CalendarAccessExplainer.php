@@ -11,8 +11,7 @@ use InvalidArgumentException;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Policy\PolicyResolver;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
-use OCA\Mcp\Tools\Calendar\CalendarAccess;
-use OCA\Mcp\Tools\Calendar\ScopedCalendarAccess;
+use OCA\Mcp\Access\ResourceScope\NativeCalendars;
 use Throwable;
 
 /**
@@ -38,9 +37,9 @@ class CalendarAccessExplainer {
 
 	/**
 	 * @param PolicyResolver $resolver the resolution the tools use
-	 * @param CalendarAccess $native the user's native calendars, never narrowed by the scope
+	 * @param NativeCalendars $native the user's native calendars, never narrowed by the scope
 	 */
-	public function __construct(private PolicyResolver $resolver, private CalendarAccess $native) {}
+	public function __construct(private PolicyResolver $resolver, private NativeCalendars $native) {}
 
 	/**
 	 * @param string $uid the user whose tools are explained
@@ -53,7 +52,7 @@ class CalendarAccessExplainer {
 	 * @throws InvalidArgumentException for a module, operation or id outside the contract
 	 */
 	public function explain(string $uid, string $module, string $calendarId, string $operation = 'read'): array {
-		$component = array_search($module, ScopedCalendarAccess::MODULES, true);
+		$component = array_search($module, NativeCalendars::MODULES, true);
 		if ($component === false || !GrantPolicy::inCatalog($module, $operation) || !preg_match('/^[1-9][0-9]*$/D', $calendarId)) {
 			throw new InvalidArgumentException('Invalid request');
 		}

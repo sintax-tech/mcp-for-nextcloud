@@ -11,7 +11,6 @@ use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tools\Calendar\Calendar;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
-use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Schema\DavCollectionSchema as Schema;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
@@ -135,7 +134,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 				'contacts_edit_contact',
 				'Edit only supplied contact fields, preserving unknown vCard properties.',
 				'edit',
-				['addressbook' => $book, 'uri' => $uri, 'etag' => ToolSchema::etag()] + $fields,
+				['addressbook' => $book, 'uri' => $uri, 'etag' => Schema::etag()] + $fields,
 				['addressbook', 'uri']
 			),
 			Schema::definition(
@@ -145,7 +144,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 				'Permanently delete a contact after saving a verified vCard backup in your Files. '
 					. 'Nextcloud has no contact trash.',
 				'delete',
-				['addressbook' => $book, 'uri' => $uri, 'etag' => ToolSchema::etag()],
+				['addressbook' => $book, 'uri' => $uri, 'etag' => Schema::etag()],
 				['addressbook', 'uri']
 			),
 		];

@@ -441,7 +441,7 @@ final class FilesMessages {
 
 	/** @return string the backup copy could not be created or verified */
 	public static function backupFailed(): string {
-		return Translator::t('Editing blocked: could not create backup copy of original.');
+		return CommonMessages::backupFailed();
 	}
 
 	/** @return string the snippet given to files_replace does not occur */

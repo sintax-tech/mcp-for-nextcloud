@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Access\Visibility;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Access\ResourceScope\FileReferenceScope;
-use OCA\Mcp\Tools\Talk\AttachmentAccess;
+use OCA\Mcp\Platform\Sharing\TalkShareIds;
 use OCP\Files\IRootFolder;
 use OCP\Files\Node;
 use OCP\Files\NotFoundException;
@@ -81,7 +81,7 @@ class OutputReferenceFilter {
 			return $attachmentId;
 		}
 		try {
-			$share = $this->shareManager->getShareById(AttachmentAccess::fullShareId($attachmentId), $userId);
+			$share = $this->shareManager->getShareById(TalkShareIds::fullShareId($attachmentId), $userId);
 			if ($share->getShareType() !== IShare::TYPE_ROOM || (string)$share->getSharedWith() !== $conversationToken) {
 				return null;
 			}

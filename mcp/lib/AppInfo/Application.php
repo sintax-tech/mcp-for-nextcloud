@@ -95,6 +95,8 @@ class Application extends App implements IBootstrap {
 		if (is_file($autoload)) {
 			require_once $autoload;
 		}
+		$context->registerService(\OCA\Mcp\Platform\FileAccess\WriteVisibility::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\FileAccess\WriteVisibility => $c->get(VisibilityGuard::class));
+		$context->registerService(\OCA\Mcp\Access\ResourceScope\NativeCalendars::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\ResourceScope\NativeCalendars => $c->get(\OCA\Mcp\Modules\Calendar\NativeCalendarsAdapter::class));
 		$context->registerService(CalendarSelftestReader::class, static fn (ContainerInterface $c): CalendarSelftestReader => new DavCalendarSelftestReader($c));
 		$context->registerService(CalendarDav::class, static fn (ContainerInterface $c): CalendarDav => $c->get(EmbeddedDavDispatcher::class));
 		$context->registerService(\OCA\Mcp\Tools\Contacts\ContactStore::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Contacts\DavContactStore($c));

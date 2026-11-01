@@ -104,7 +104,7 @@ final class ScopeFixture {
 	public function enumerator(): NativeResourceEnumerator {
 		$root = $this->mock(\OCP\Files\IRootFolder::class);
 		$root->method('getUserFolder')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $this->tree->rootFolder() : throw new \OCP\Files\NotFoundException());
-		return new NativeResourceEnumerator($root, new CalendarAccess($this->calendars), $this->guard);
+		return new NativeResourceEnumerator($root, new \OCA\Mcp\Modules\Calendar\NativeCalendarsAdapter(new CalendarAccess($this->calendars)), $this->guard);
 	}
 
 	/**

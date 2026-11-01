@@ -30,7 +30,7 @@ use Throwable;
 class TokenService {
 	public const CODE_TTL = 300;
 	public const ACCESS_TTL = 3600;
-	public const REFRESH_TTL = 30 * 86400;
+	public const REFRESH_TTL = \OCA\Mcp\OAuth\Storage\TokenLifetime::REFRESH_TTL;
 
 	public function __construct(
 		private \OCA\Mcp\OAuth\Storage\OAuthStore $store,

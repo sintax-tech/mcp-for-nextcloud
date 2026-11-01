@@ -12,9 +12,9 @@ namespace OCA\Mcp\Tools\Calendar;
  */
 final class ToolSchema {
 	/** Grant module of every calendar tool. */
-	public const MODULE = 'calendar';
+	public const MODULE = \OCA\Mcp\Modules\Calendar\Presentation\CalendarSchema::MODULE;
 	/** Nextcloud app that must be enabled for the user. */
-	public const APP = 'calendar';
+	public const APP = \OCA\Mcp\Modules\Calendar\Presentation\CalendarSchema::APP;
 
 	/**
 	 * @param string $name tool name
@@ -25,18 +25,7 @@ final class ToolSchema {
 	 * @return array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}
 	 */
 	public static function definition(string $name, string $description, string $operation, array $properties, array $required = []): array {
-		$schema = ['type' => 'object', 'properties' => (object)$properties, 'additionalProperties' => false];
-		if ($required !== []) {
-			$schema['required'] = $required;
-		}
-		return [
-			'name' => $name,
-			'description' => $description,
-			'inputSchema' => $schema,
-			'module' => self::MODULE,
-			'operation' => $operation,
-			'app' => self::APP,
-		];
+		return \OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder::definition(self::MODULE, self::APP, $name, $description, $operation, $properties, $required);
 	}
 
 	/**
@@ -44,21 +33,21 @@ final class ToolSchema {
 	 * @return array<string, mixed> calendar path property
 	 */
 	public static function calendar(string $description = CalendarMessages::PROP_CALENDAR): array {
-		return ['type' => 'string', 'minLength' => 1, 'maxLength' => 1024, 'description' => $description];
+		return \OCA\Mcp\Mcp\Tools\Schema\DavCollectionSchema::calendar($description);
 	}
 
 	/**
 	 * @return array<string, mixed> event UID property
 	 */
 	public static function uid(): array {
-		return ['type' => 'string', 'minLength' => 1, 'maxLength' => 255, 'description' => CalendarMessages::PROP_UID];
+		return \OCA\Mcp\Mcp\Tools\Schema\DavCollectionSchema::uid();
 	}
 
 	/**
 	 * @return array<string, mixed> optional ETag property for optimistic concurrency
 	 */
 	public static function etag(): array {
-		return ['type' => 'string', 'minLength' => 1, 'maxLength' => 128, 'description' => CalendarMessages::PROP_ETAG];
+		return \OCA\Mcp\Mcp\Tools\Schema\DavCollectionSchema::etag();
 	}
 
 	/**
@@ -66,7 +55,7 @@ final class ToolSchema {
 	 * @return array<string, mixed> date or timestamp property
 	 */
 	public static function date(string $description): array {
-		return ['type' => 'string', 'minLength' => 10, 'maxLength' => 40, 'description' => $description];
+		return \OCA\Mcp\Modules\Calendar\Presentation\CalendarSchema::date($description);
 	}
 
 	/**
@@ -76,7 +65,7 @@ final class ToolSchema {
 	 * @return array<string, mixed> text property
 	 */
 	public static function text(string $description, int $minLength, int $maxLength): array {
-		return ['type' => 'string', 'minLength' => $minLength, 'maxLength' => $maxLength, 'description' => $description];
+		return \OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder::text($description, $minLength, $maxLength);
 	}
 
 	/**
@@ -84,25 +73,14 @@ final class ToolSchema {
 	 * @return array<string, mixed> guest list property: internal account ids only
 	 */
 	public static function attendees(bool $allowEmpty = false): array {
-		return [
-			'type' => 'array',
-			'items' => ['type' => 'string', 'minLength' => 1, 'maxLength' => 64],
-			'minItems' => $allowEmpty ? 0 : 1,
-			'maxItems' => AttendeeResolver::MAX_ATTENDEES,
-			'uniqueItems' => true,
-			'description' => CalendarMessages::PROP_ATTENDEES,
-		];
+		return \OCA\Mcp\Modules\Calendar\Presentation\CalendarSchema::attendees($allowEmpty);
 	}
 
 	/**
 	 * @return array<string, mixed> opt-in invitation property, defaulting to sending nothing
 	 */
 	public static function sendInvitations(): array {
-		return [
-			'type' => 'boolean',
-			'default' => false,
-			'description' => CalendarMessages::PROP_SEND_INVITATIONS,
-		];
+		return \OCA\Mcp\Modules\Calendar\Presentation\CalendarSchema::sendInvitations();
 	}
 
 	/**
@@ -110,11 +88,7 @@ final class ToolSchema {
 	 * @return array{content: list<array{type:string, text:string}>} MCP result
 	 */
 	public static function result(mixed ...$blocks): array {
-		$content = [];
-		foreach ($blocks as $block) {
-			$content[] = ['type' => 'text', 'text' => json_encode($block, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE | JSON_THROW_ON_ERROR)];
-		}
-		return ['content' => $content];
+		return \OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder::result(...$blocks);
 	}
 
 	/**
@@ -122,6 +96,6 @@ final class ToolSchema {
 	 * @return array{content: list<array{type:string, text:string}>, isError: bool} MCP error result
 	 */
 	public static function error(string $message): array {
-		return ['content' => [['type' => 'text', 'text' => $message]], 'isError' => true];
+		return \OCA\Mcp\Mcp\Tools\Schema\SchemaBuilder::error($message);
 	}
 }

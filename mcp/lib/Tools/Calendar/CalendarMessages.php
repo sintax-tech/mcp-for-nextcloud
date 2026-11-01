@@ -38,7 +38,7 @@ final class CalendarMessages {
 	public const TOOL_MOVE_EVENT = 'Moves an event to another calendar of the same owner, without overwriting.';
 	public const TOOL_TRANSFER_EVENT = 'Transfers an event to a calendar owned by another user and shared with write permission. Requires confirm: true. Events with attendees are rejected: you remain the organizer and Nextcloud does not notify anyone in this operation.';
 
-	public const PROP_CALENDAR = 'calendar path, as returned by calendar_list_calendars';
+	public const PROP_CALENDAR = \OCA\Mcp\Mcp\Tools\Schema\DavCollectionSchema::PROP_CALENDAR;
 	public const PROP_ALL_DAY = 'all-day event';
 	public const EXPANSION_LIMIT = 'Occurrence expansion limit reached; reduce the calendar window.';
 
@@ -64,8 +64,8 @@ final class CalendarMessages {
 
 	// ---- Fixed property descriptions of the schema helpers ----
 
-	public const PROP_UID = 'event UID';
-	public const PROP_ETAG = 'expected etag; if it differs, nothing is changed';
+	public const PROP_UID = \OCA\Mcp\Mcp\Tools\Schema\DavCollectionSchema::PROP_UID;
+	public const PROP_ETAG = \OCA\Mcp\Mcp\Tools\Schema\DavCollectionSchema::PROP_ETAG;
 	public const PROP_ATTENDEES = 'Nextcloud account IDs (not emails); if you are not sure of someone\'s ID, call users_search first. Replaces the attendee list.';
 	public const PROP_SEND_INVITATIONS = 'true delivers the invitation to Nextcloud scheduling; email depends on server settings and does not confirm receipt';
 

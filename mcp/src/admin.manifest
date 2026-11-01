@@ -50,7 +50,13 @@ admin/overrides/preview.js
 admin/overrides/review.js
 admin/overrides/saving.js
 admin/overrides/start.js
-admin/admin-groups.js
+admin/groups/unknown-grants.js
+admin/groups/session.js
+admin/groups/directory.js
+admin/groups/drafts.js
+admin/groups/rendering.js
+admin/groups/saving.js
+admin/groups/start.js
 admin/admin-scope.js
 admin/admin-inspector.js
 shared/connections.js

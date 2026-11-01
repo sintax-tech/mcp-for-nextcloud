@@ -35,7 +35,7 @@ final class AdminAssetsTest extends TestCase {
 
 	public function testScriptsAndTemplatesUseNoFrontEndGlobalRemovedUpToNextcloud35(): void {
 		$app = dirname(__DIR__, 3);
-		$files = [...glob($app . '/js/*.js') ?: [], ...glob($app . '/src/*/*.js') ?: [], ...glob($app . '/src/*/*/*/*.js') ?: [], ...glob($app . '/templates/*.php') ?: []];
+		$files = [...glob($app . '/js/*.js') ?: [], ...glob($app . '/src/*/*.js') ?: [], ...glob($app . '/src/*/*/*.js') ?: [], ...glob($app . '/src/*/*/*/*.js') ?: [], ...glob($app . '/templates/*.php') ?: []];
 		$this->assertNotEmpty($files);
 		foreach ($files as $file) {
 			$source = (string)file_get_contents($file);

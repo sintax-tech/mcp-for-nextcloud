@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Behavioral tests of the row actions of the permission matrix (S5 of the admin redesign): js/admin-row-actions.js runs
- * unchanged against a stub of window.McpAdminMatrix and a minimal DOM, and the row pieces of js/admin-grants.js (the line
+ * Behavioral tests of the row actions of the permission matrix (S5 of the admin redesign): src/admin/admin-row-actions.js runs
+ * unchanged against a stub of window.McpAdminMatrix and a minimal DOM, and the row pieces of src/admin/admin-grants.js (the line
  * under the name and the "With exceptions" filter) are cut out of the source and run against stubs.
  */
 const { test } = require('node:test')
@@ -94,7 +94,7 @@ function setup({ overrides = true, clipboard = true } = {}) {
 		if (clipboard === 'refuses') throw new Error('NotAllowedError')
 		log.copied.push(text)
 	} } }
-	vm.runInNewContext(fs.readFileSync(path.join(root, 'js/admin-row-actions.js'), 'utf8'), { window, document, navigator, t, Event: class { constructor(type) { this.type = type } } })
+	vm.runInNewContext(require('./AdminManifest.cjs').script('admin-row-actions.js'), { window, document, navigator, t, Event: class { constructor(type) { this.type = type } } })
 	const button = (uid) => {
 		const trigger = window.McpRowActions.button(users.find((user) => user.uid === uid))
 		block.append(trigger)
@@ -203,12 +203,12 @@ test('a copy the browser refuses is reported, and without a clipboard the item i
 	assert.equal(none.menu.children[3].disabled, true)
 })
 
-/* The row pieces of js/admin-grants.js. */
+/* The row pieces of src/admin/admin-grants.js. */
 
-const grants = fs.readFileSync(path.join(root, 'js/admin-grants.js'), 'utf8')
+const grants = require('./AdminManifest.cjs').script('admin-grants.js')
 function cut(declaration) {
 	const start = grants.indexOf('\t' + declaration)
-	assert.ok(start > 0, declaration + ' was found in js/admin-grants.js')
+	assert.ok(start > 0, declaration + ' was found in src/admin/admin-grants.js')
 	return grants.slice(start, grants.indexOf('\n\t}\n', start) + 4)
 }
 

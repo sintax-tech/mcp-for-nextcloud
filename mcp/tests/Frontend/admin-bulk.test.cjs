@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Tests of the bulk change of the selection bar (S6 of the admin redesign): bulk() and bulkPlan() of js/admin-grants.js,
+ * Tests of the bulk change of the selection bar (S6 of the admin redesign): bulk() and bulkPlan() of src/admin/admin-grants.js,
  * cut out of the source and run against stubs, as in admin-revision.test.cjs. A bulk change stays explicit, as the "All"
  * menus of 331bdede made it: the confirmation says how many change, how many are left out and why and how many already
  * have it, nothing is sent when nobody changes, the command is one all-or-nothing write of explicit allow and deny
@@ -16,14 +16,14 @@ const fs = require('node:fs')
 const path = require('node:path')
 
 const root = path.join(__dirname, '../..')
-const source = fs.readFileSync(path.join(root, 'js/admin-grants.js'), 'utf8')
+const source = require('./AdminManifest.cjs').script('admin-grants.js')
 const tick = async () => { for (let i = 0; i < 12; i++) await new Promise(setImmediate) }
 const plain = (value) => JSON.parse(JSON.stringify(value))
 const REVISION = '9007199254740993'
 
 function cut(declaration) {
 	const start = source.indexOf('\t' + declaration)
-	assert.ok(start > 0, declaration + ' was found in js/admin-grants.js')
+	assert.ok(start > 0, declaration + ' was found in src/admin/admin-grants.js')
 	return source.slice(start, source.indexOf('\n\t}\n', start) + 4)
 }
 
@@ -35,7 +35,7 @@ function user(uid, allowed, { eligible = true, filesOff = false, enabled = true 
 
 function kit({ users, answer, confirm = true } = {}) {
 	const levels = {}
-	vm.runInNewContext(fs.readFileSync(path.join(root, 'js/admin-levels.js'), 'utf8'), levels)
+	vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), levels)
 	const log = { calls: [], confirms: [], notices: [], errors: [], busy: [], reloads: 0, policyErrors: [], announced: [] }
 	const sandbox = {
 		window: { McpAdminLevels: levels.McpAdminLevels, confirm: (text) => { log.confirms.push(text); return confirm } },

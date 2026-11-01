@@ -12,6 +12,9 @@ use RecursiveIteratorIterator;
 use RuntimeException;
 
 require_once __DIR__ . '/DevelopmentEntries.php';
+require_once __DIR__ . '/AssetBuilder.php';
+require_once __DIR__ . '/PackagedAssets.php';
+require_once __DIR__ . '/ArchiveMembers.php';
 
 /**
  * Inspects an app archive before it ships: `php scripts/check_package.php <archive.tar.gz> [sources...]`.
@@ -26,7 +29,11 @@ require_once __DIR__ . '/DevelopmentEntries.php';
  * - a missing license or attribution file from REQUIRED_LEGAL_FILES;
  * - a development-only entry under `mcp/scripts/` or `mcp/tests/` ({@see DevelopmentEntries});
  * - a script or style referenced with `Util::addScript/addStyle('mcp', X)` in the .php files of the sources
- *   (`templates lib` by default) that is not packaged as `mcp/js/X.js` or `mcp/css/X.css`.
+ *   (`templates lib` by default) that is not packaged as `mcp/js/X.js` or `mcp/css/X.css`;
+ * - an orphan `src/` script, a manifest entry that is not a file inside `src/`, or any other refusal of
+ *   {@see AssetBuilder}. The required manifests are {@see AssetTargets::REQUIRED}, not the files found on disk;
+ * - a file member whose name is repeated, a `mcp/src/` entry, or a bundle whose bytes are not the manifest
+ *   build ({@see PackagedAssets}). The tree being packaged cannot hide a different file inside the archive.
  *
  * The archive is read with a minimal tar reader of its own instead of PharData. PharData normalizes the
  * archive: it consumes the pax extended headers without exposing them or their typeflag, so the check that
@@ -68,28 +75,6 @@ final class PackageCheck {
 	/** A script or style the app registers: the kind (Script or Style) and the name. */
 	private const REFERENCE = '/add(Script|Style)\(\s*[\'"]mcp[\'"]\s*,\s*[\'"]([^\'"]+)[\'"]/';
 
-	/** Size of a tar block. */
-	private const BLOCK = 512;
-
-	/** Typeflags of pax extended headers: per-entry (x, and the Solaris X) and global (g). */
-	private const PAX_TYPES = ['x', 'X', 'g'];
-
-	/**
-	 * Largest metadata body kept in memory: a GNU long name (`L`) or the records of a pax header. A longer long
-	 * name is refused; a longer pax header is skipped unread and still reported (its `path` is then not applied).
-	 * GNU long link bodies (`K`) are never kept, whatever their size.
-	 */
-	public const METADATA_LIMIT = 65536;
-
-	/** What each extension typeflag is, for the message when the archive ends right after one. */
-	private const EXTENSIONS = [
-		'L' => 'GNU long name',
-		'K' => 'GNU long link',
-		'x' => 'pax extended header',
-		'X' => 'pax extended header',
-		'g' => 'pax global header',
-	];
-
 	/**
 	 * Runs every check on an archive.
 	 *
@@ -128,6 +113,9 @@ final class PackageCheck {
 		}
 		array_push($found, ...self::vendorProblems($entries));
 		array_push($found, ...DevelopmentEntries::problems($entries));
+		$root = getcwd() ?: '';
+		array_push($found, ...AssetBuilder::packageProblems($root));
+		array_push($found, ...PackagedAssets::problems($root, $members));
 		foreach ($sources as $source) {
 			foreach (self::phpFiles($source) as $path) {
 				preg_match_all(self::REFERENCE, (string)file_get_contents($path), $matches, PREG_SET_ORDER);
@@ -177,96 +165,14 @@ final class PackageCheck {
 	}
 
 	/**
-	 * Reads the entries of a tar archive, gzip-compressed or not.
-	 *
-	 * Pax extended headers and GNU long names are not entries of their own: they are applied to the entry that
-	 * follows, which is then marked as carrying a pax header. A global pax header marks every entry after it.
-	 * Directory names lose their trailing slash. The archive ends at its first zero block or at the end of the
-	 * data; for a gzip archive the rest of the stream is then read through, so a truncated or corrupt one fails.
+	 * The entries of a tar archive. The walk and the bundle bodies are {@see ArchiveMembers::read()}.
 	 *
 	 * @param string $archive path of the archive
-	 * @return list<array{name: string, dir: bool, pax: bool}> the entries, in archive order
-	 * @throws RuntimeException when the file cannot be opened, is a truncated or corrupt gzip stream, ends inside
-	 *                          an entry or right after an extension header (pax, GNU long name or long link), has
-	 *                          a bad header checksum or numeric field, or a GNU long name over
-	 *                          {@see self::METADATA_LIMIT}
+	 * @return list<array{name: string, dir: bool, pax: bool, link: bool, unsafe: bool, body?: string}> entries, in archive order
+	 * @throws RuntimeException when the archive cannot be read or is not a tar archive
 	 */
 	public static function members(string $archive): array {
-		$stream = new ArchiveStream($archive);
-		try {
-			$members = [];
-			$longName = null;
-			$paxPath = null;
-			$pax = false;
-			$globalPax = false;
-			// Typeflag of the last extension header read and not yet applied to an entry.
-			$pending = null;
-			while (true) {
-				$header = self::read($stream, self::BLOCK, $archive, true);
-				if ($header === '' || trim($header, "\0") === '') {
-					if ($pending !== null) {
-						throw new RuntimeException("$archive ends after a " . self::EXTENSIONS[$pending] . " (typeflag $pending) with no entry for it");
-					}
-					break;
-				}
-				self::verifyChecksum($header, $archive);
-				$type = $header[156];
-				$size = self::size(substr($header, 124, 12));
-				$padding = (self::BLOCK - $size % self::BLOCK) % self::BLOCK;
-				if ($type === 'L') {
-					if ($size > self::METADATA_LIMIT) {
-						throw new RuntimeException("$archive has a GNU long name of $size bytes, over the limit of " . self::METADATA_LIMIT);
-					}
-					$longName = rtrim(self::read($stream, $size, $archive), "\0");
-					self::skip($stream, $padding, $archive);
-					$pending = $type;
-					continue;
-				}
-				if (in_array($type, self::PAX_TYPES, true)) {
-					// A pax header over the limit is refused all the same: it is reported without being read.
-					$records = [];
-					if ($size <= self::METADATA_LIMIT) {
-						$records = self::paxRecords(self::read($stream, $size, $archive));
-					} else {
-						self::skip($stream, $size, $archive);
-					}
-					self::skip($stream, $padding, $archive);
-					if ($type === 'g') {
-						$globalPax = true;
-					} else {
-						$pax = true;
-						$paxPath = $records['path'] ?? $paxPath;
-					}
-					$pending = $type;
-					continue;
-				}
-				self::skip($stream, $size + $padding, $archive);
-				if ($type === 'K') {
-					$pending = $type;
-					continue;
-				}
-				$name = self::cut(substr($header, 0, 100));
-				$prefix = self::cut(substr($header, 345, 155));
-				if (substr($header, 257, 6) === "ustar\0" && $prefix !== '') {
-					$name = "$prefix/$name";
-				}
-				$name = $paxPath ?? $longName ?? $name;
-				// Old V7 tar marks a directory as a regular file (typeflag NUL) whose name ends in a slash.
-				$dir = $type === '5' || ($type === "\0" && str_ends_with($name, '/'));
-				if ($dir) {
-					$name = rtrim($name, '/');
-				}
-				$members[] = ['name' => $name, 'dir' => $dir, 'pax' => $pax || $globalPax];
-				$longName = null;
-				$paxPath = null;
-				$pax = false;
-				$pending = null;
-			}
-			$stream->finish();
-			return $members;
-		} finally {
-			$stream->close();
-		}
+		return ArchiveMembers::read($archive);
 	}
 
 	/**
@@ -288,30 +194,6 @@ final class PackageCheck {
 		}
 		sort($files, SORT_STRING);
 		return $files;
-	}
-
-	/**
-	 * Parses the records of a pax header body ("<length> <key>=<value>\n" each).
-	 *
-	 * @param string $body the header body
-	 * @return array<string, string> value per key; a malformed record ends the parsing
-	 */
-	private static function paxRecords(string $body): array {
-		$records = [];
-		$offset = 0;
-		while ($offset < strlen($body) && preg_match('/\G(\d+) /', $body, $match, 0, $offset)) {
-			$length = (int)$match[1];
-			if ($length <= strlen($match[0])) {
-				break;
-			}
-			$record = substr($body, $offset + strlen($match[0]), $length - strlen($match[0]) - 1);
-			$equals = strpos($record, '=');
-			if ($equals !== false) {
-				$records[substr($record, 0, $equals)] = substr($record, $equals + 1);
-			}
-			$offset += $length;
-		}
-		return $records;
 	}
 
 	/**
@@ -349,63 +231,12 @@ final class PackageCheck {
 	}
 
 	/**
-	 * Checks the header checksum: the byte sum with the checksum field read as spaces (unsigned or signed).
-	 *
-	 * @param string $header the 512-byte header
-	 * @param string $archive archive path, for the message
-	 * @throws RuntimeException when it does not match, which means the file is not a tar archive
-	 */
-	private static function verifyChecksum(string $header, string $archive): void {
-		$blank = substr_replace($header, str_repeat(' ', 8), 148, 8);
-		$unsigned = array_sum(unpack('C*', $blank));
-		$signed = array_sum(unpack('c*', $blank));
-		$stored = self::size(substr($header, 148, 8));
-		if ($stored !== $unsigned && $stored !== $signed) {
-			throw new RuntimeException("$archive is not a valid tar archive (bad header checksum)");
-		}
-	}
-
-	/**
 	 * @param string $field a NUL-terminated header field
 	 * @return string the field up to its first NUL
 	 */
 	private static function cut(string $field): string {
 		$end = strpos($field, "\0");
 		return $end === false ? $field : substr($field, 0, $end);
-	}
-
-	/**
-	 * Reads exactly $length bytes.
-	 *
-	 * @param ArchiveStream $stream the open archive
-	 * @param int $length bytes to read
-	 * @param string $archive archive path, for the message
-	 * @param bool $atBoundary true when the archive may legitimately end here (an empty read is returned)
-	 * @return string the bytes
-	 * @throws RuntimeException when the archive ends early or its gzip stream is corrupt
-	 */
-	private static function read(ArchiveStream $stream, int $length, string $archive, bool $atBoundary = false): string {
-		$data = $stream->read($length);
-		if (strlen($data) !== $length && !($atBoundary && $data === '')) {
-			throw new RuntimeException("$archive is truncated");
-		}
-		return $data;
-	}
-
-	/**
-	 * Skips $length bytes of content, in bounded steps so a large body is never held in memory.
-	 *
-	 * @param ArchiveStream $stream the open archive
-	 * @param int $length bytes to skip
-	 * @param string $archive archive path, for the message
-	 * @throws RuntimeException when the archive ends early or its gzip stream is corrupt
-	 */
-	private static function skip(ArchiveStream $stream, int $length, string $archive): void {
-		while ($length > 0) {
-			$step = min(1 << 20, $length);
-			self::read($stream, $step, $archive);
-			$length -= $step;
-		}
 	}
 }
 

@@ -4,7 +4,7 @@
  */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const { mountBackupSettings: mount } = require('../../js/admin-file-write-policy.js')
+const { mountBackupSettings: mount } = require('../../src/admin/admin-file-write-policy.js')
 
 /** @returns {Object} One loaded policy response. */
 function state() { return { version: 1, folder: 'MCP backups', reserved: ['MCP backups'], copies: true, revision: '3', versionsAvailable: true, versionsForActor: true, effectiveCopies: true } }

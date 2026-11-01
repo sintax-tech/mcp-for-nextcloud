@@ -30,7 +30,7 @@
 	/** Columns the matrix always shows besides the permissions: selection, user, "Can connect" and the row's actions. */
 	const FIXED_COLUMNS = 4
 	/**
-	 * view is "levels" (one access level per module, js/admin-levels.js) or "operations" (a box per operation); app filters
+	 * view is "levels" (one access level per module, src/admin/admin-levels.js) or "operations" (a box per operation); app filters
 	 * the operations view only. Both live in the address as #access?view=operations&app=<module>.
 	 */
 	const state = { search: '', group: '', filter: 'eligible', page: 1, app: '', view: 'levels', exceptionsOnly: false, data: null, groupsLoaded: false }
@@ -205,7 +205,7 @@
 		}
 	}
 
-	/** Page event of a write this page committed: detail {from, to}. js/admin-scope.js listens to it too. */
+	/** Page event of a write this page committed: detail {from, to}. src/admin/admin-scope.js listens to it too. */
 	const REVISION_MOVED = 'mcp-revision-moved'
 
 	/**
@@ -548,7 +548,7 @@
 		const sub = el('tr')
 		const rowSpan = levelsView ? 1 : 2
 		const selectHeader = el('th', { rowSpan, className: 'mcp-select-col', scope: 'col' }, [el('span', { className: 'mcp-sr-only', textContent: t('mcp', 'Select') })])
-		// The "select every user on this page" box of js/admin-overrides.js heads the selection column.
+		// The "select every user on this page" box of src/admin/admin-overrides.js heads the selection column.
 		window.McpAdminOverrides?.decorateHeader?.(selectHeader)
 		top.append(selectHeader)
 		top.append(el('th', { rowSpan, className: 'mcp-user-col', scope: 'col', textContent: t('mcp', 'User') }))
@@ -630,7 +630,7 @@
 	function buildRow(user) {
 		const row = el('tr', { className: user.enabled ? '' : 'mcp-disabled-user' })
 		row.dataset.uid = user.uid
-		// The selection box of js/admin-overrides.js goes here, in its own column instead of next to the name.
+		// The selection box of src/admin/admin-overrides.js goes here, in its own column instead of next to the name.
 		row.append(el('td', { className: 'mcp-select-col' }))
 		row.append(el('th', { scope: 'row', className: 'mcp-user-col' }, [el('span', { className: 'mcp-name', textContent: user.displayName }), userLine(user)]))
 		row.append(isLevelsView() ? eligibleCell(user) : permissionCell(user, null, user.eligible, t('mcp', 'Can connect'), { eligible: null }))
@@ -662,7 +662,7 @@
 				cell.classList.add('mcp-band-' + (index % 2))
 				if (i === 0) {
 					cell.classList.add('mcp-module')
-					// "Restricted to N" or "Scope unknown" of a resource scope, drawn and opened by js/admin-scope.js.
+					// "Restricted to N" or "Scope unknown" of a resource scope, drawn and opened by src/admin/admin-scope.js.
 					const mark = user.scope?.[module] && window.McpScopeUi ? window.McpScopeUi.indicator(user.uid, module, user.scope[module]) : null
 					if (mark) cell.append(mark)
 				}
@@ -695,7 +695,7 @@
 		return el('span', { className: 'mcp-uid', textContent: user.uid })
 	}
 
-	/** @return {HTMLTableCellElement} the cell with the row's actions menu (js/admin-row-actions.js) */
+	/** @return {HTMLTableCellElement} the cell with the row's actions menu (src/admin/admin-row-actions.js) */
 	function actionsCell(user) {
 		const cell = el('td', { className: 'mcp-actions-col' })
 		const button = window.McpRowActions?.button(user)
@@ -707,7 +707,7 @@
 	const OWN_SOURCES = ['individual_allow', 'individual_deny', 'invalid']
 
 	/**
-	 * Whether a user has a real exception on the page (js/admin-exceptions.js): an individual value that differs from what
+	 * Whether a user has a real exception on the page (src/admin/admin-exceptions.js): an individual value that differs from what
 	 * they would inherit. null while that is not known.
 	 *
 	 * @param {object} user row from the API
@@ -932,12 +932,12 @@
 			}
 		})
 		cell.append(box)
-		// The override state and the per-cell reset come from js/admin-overrides.js, when it is loaded.
+		// The override state and the per-cell reset come from src/admin/admin-overrides.js, when it is loaded.
 		window.McpAdminOverrides?.decorateCell(cell, box, user, module, module === null ? 'eligible' : body.operation)
 		return cell
 	}
 
-	/** @return {Object<string, string>} names of the access levels of js/admin-levels.js */
+	/** @return {Object<string, string>} names of the access levels of src/admin/admin-levels.js */
 	function levelLabels() {
 		return {
 			...window.McpAdminPollsGrants?.levelLabels(),
@@ -1031,7 +1031,7 @@
 			cell.dataset.mark = kind
 			cell.append(button)
 		}
-		// "Restricted to N" or "Scope unknown" of a resource scope, drawn and opened by js/admin-scope.js.
+		// "Restricted to N" or "Scope unknown" of a resource scope, drawn and opened by src/admin/admin-scope.js.
 		const mark = user.scope?.[module] && window.McpScopeUi ? window.McpScopeUi.indicator(user.uid, module, user.scope[module]) : null
 		if (mark) cell.append(mark)
 		return cell
@@ -1042,7 +1042,7 @@
 
 	/**
 	 * Where a cell's values come from and how to mark it. Only a real exception, an individual value that differs from what
-	 * the person would inherit (js/admin-exceptions.js), gets the person icon; individual values that only repeat the
+	 * the person would inherit (src/admin/admin-exceptions.js), gets the person icon; individual values that only repeat the
 	 * inheritance are drawn like what they repeat, and while that is not known yet they get no mark. Without the
 	 * classification every individual value is an exception, never fewer.
 	 *
@@ -1094,7 +1094,7 @@
 	}
 
 	/**
-	 * The control of a level cell: it opens the popover of js/admin-level-popover.js, where the level is chosen.
+	 * The control of a level cell: it opens the popover of src/admin/admin-level-popover.js, where the level is chosen.
 	 *
 	 * @param {object} user row from the API
 	 * @param {string|null} module module id, null for "Can connect"
@@ -1308,13 +1308,13 @@
 	}
 
 	/**
-	 * The selection bar's "Set" (js/admin-overrides.js): gives the selected users one level of a module, or turns "Can
+	 * The selection bar's "Set" (src/admin/admin-overrides.js): gives the selected users one level of a module, or turns "Can
 	 * connect" on or off. It confirms exactly what changes, how many are left out and why, and how many already have it,
 	 * sends nothing when nobody changes, saves one command and offers the undo. Every cell is an explicit allow or deny,
 	 * never an inheritance, as the level popover does for a removal (F1).
 	 *
 	 * @param {string|null} module module id, null for "Can connect"
-	 * @param {string} level a level of js/admin-levels.js; for "Can connect", "read" is on and "none" is off
+	 * @param {string} level a level of src/admin/admin-levels.js; for "Can connect", "read" is on and "none" is off
 	 * @param {string[]} uids the selected users of the page
 	 */
 	async function bulk(module, level, uids) {
@@ -2252,7 +2252,7 @@
 	}
 
 	/**
-	 * What js/admin-overrides.js needs from the matrix: the page on screen, the shared request, lock and undo notice,
+	 * What src/admin/admin-overrides.js needs from the matrix: the page on screen, the shared request, lock and undo notice,
 	 * and a re-render, so it can paint rows that were drawn before it loaded. It never touches the matrix state itself.
 	 */
 	window.McpAdminMatrix = {

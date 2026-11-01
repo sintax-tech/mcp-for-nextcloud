@@ -7,7 +7,7 @@
  * defaults, and an override goes back to inheritance for one cell, for one user or for the selected users of the
  * page, with a preview of exactly what is removed and the server receipt as the undo.
  *
- * Plain browser JavaScript, no build step. js/admin-grants.js calls decorateRow() and decorateCell() for every row it
+ * Plain browser JavaScript, no build step. src/admin/admin-grants.js calls decorateRow() and decorateCell() for every row it
  * draws and exposes window.McpAdminMatrix; this file never reads or writes the matrix state itself. A reset is the
  * command {state: "inherit"} of POST /apps/mcp/api/grants/commands: one transaction, which writes every cell or none.
  *
@@ -290,7 +290,7 @@
 	}
 
 	/**
-	 * Puts the select-all box in the header of the selection column, which js/admin-grants.js draws again on every render.
+	 * Puts the select-all box in the header of the selection column, which src/admin/admin-grants.js draws again on every render.
 	 *
 	 * @param {HTMLTableCellElement} header the header cell of the selection column
 	 */
@@ -328,7 +328,7 @@
 	// --- Rows and cells -----------------------------------------------------------------------------------------
 
 	/**
-	 * Adds the selection box to a row. The reset of the whole row is in the row's actions menu (js/admin-row-actions.js),
+	 * Adds the selection box to a row. The reset of the whole row is in the row's actions menu (src/admin/admin-row-actions.js),
 	 * through resetUser(), so the row carries no button repeated on every line.
 	 *
 	 * @param {HTMLTableRowElement} row row drawn by admin-grants.js; its first child is the selection cell
@@ -363,7 +363,7 @@
 
 	/**
 	 * Names the state of a cell (individual allow, individual deny or inherited) for the tooltip and the screen reader, and
-	 * outlines it only when it is a real exception (js/admin-exceptions.js): an individual value that repeats what the
+	 * outlines it only when it is a real exception (src/admin/admin-exceptions.js): an individual value that repeats what the
 	 * person inherits is named but not outlined, and before that is known nothing is outlined. Without the classification
 	 * every individual value is outlined, never fewer. A single value goes back to inheritance from the level popover, a
 	 * whole row from its actions menu.
@@ -735,7 +735,7 @@
 	}
 
 	/**
-	 * Opens the reset preview for exactly these cells of these users, as js/admin-exceptions.js does for the values that only
+	 * Opens the reset preview for exactly these cells of these users, as src/admin/admin-exceptions.js does for the values that only
 	 * repeat what the people inherit. The reset itself is the same command and the same preview as any other.
 	 *
 	 * @param {Array<{uid: string, module: string|null, operation: string}>} cells cells of the users on the page

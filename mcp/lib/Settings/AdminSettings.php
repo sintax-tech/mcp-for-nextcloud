@@ -22,7 +22,7 @@ use OCP\Settings\ISettings;
  * Admin page in the app's own "MCP for Cloud" section, in blocks: status (endpoint, service switch, version,
  * user summary), OAuth clients, hidden files & tags, OCR, the users × permissions matrix, the groups that may read
  * the server log and the active connections. The matrix, OAuth clients, tags and log groups are loaded and saved by
- * js/admin-grants.js; the connections by js/connections.js.
+ * src/admin/admin-grants.js; the connections by src/shared/connections.js, all in js/mcp-admin.js.
  */
 class AdminSettings implements ISettings {
 	/** Product name of each optional app with a minimum version, as the administrator knows it in the app list. */

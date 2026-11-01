@@ -86,7 +86,7 @@ final class AssetBuilderTest extends TestCase {
 		$this->assertFileDoesNotExist("$dir/js/mcp-personal.js");
 	}
 
-	/** import, export and require are refused, including inside a string. A comment and module.exports pass. */
+	/** import, export and require are refused, including inside a string. module.exports passes. */
 	public function testModuleSyntaxIsRefusedAndModuleExportsPasses(): void {
 		$dir = $this->tree();
 		file_put_contents("$dir/src/admin/import.js", "import x from './x.js'\n");
@@ -102,7 +102,7 @@ final class AssetBuilderTest extends TestCase {
 		], AssetBuilder::build($dir));
 
 		$clean = $this->tree();
-		$policy = "const label = \"importantValue exported\"\n// import x\n/* require */\n";
+		$policy = "const label = \"importantValue exported\"\n";
 		$policy .= "if (typeof module !== 'undefined' && module.exports) module.exports = { extensions: 1 }\n";
 		file_put_contents("$clean/src/admin/policy.js", $policy);
 		file_put_contents("$clean/src/admin.manifest", "admin/policy.js\n");

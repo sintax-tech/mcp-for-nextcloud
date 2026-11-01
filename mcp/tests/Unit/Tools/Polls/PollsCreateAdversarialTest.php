@@ -7,7 +7,7 @@
 declare (strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
-use OCA\Mcp\Tools\{ToolFailure, PlanChanged};
+use OCA\Mcp\Mcp\{Tools\Results\ToolFailure, Confirmation\PlanChanged};
 use PHPUnit\Framework\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 /** Adversarial stage/receipt/MAC proofs through the real creation flow. */

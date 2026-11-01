@@ -13,7 +13,7 @@ use Exception;
 use DateTimeZone;
 use IntlDateFormatter;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\PlanText;
+use OCA\Mcp\Mcp\Confirmation\PlanText;
 
 /**
  * Writes the plan of a task write as the text the person asked to confirm reads.

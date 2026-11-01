@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tools\Notes;
 
 use InvalidArgumentException;
 use OCA\Mcp\Tools\Files\UniqueSnippet;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 
 /**

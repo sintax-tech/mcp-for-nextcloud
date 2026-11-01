@@ -8,10 +8,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Service\VisibilityGuard;
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Share\Exceptions\GenericShareException;
 use OCP\Share\IShare;
 
@@ -260,7 +260,7 @@ final class FilesUnshareTest extends FilesToolsTestCase {
 	/** Each confirmed with the plan_state of its plan, as the model's would be: a removal that trusted the plan would go. */
 	public function testTheConfirmedCallChecksEverythingAgain(): void {
 		$share = $this->share();
-		$state = [\OCA\Mcp\Tools\PlanState::ARGUMENT => $this->stateOf('files_unshare', ['shareId' => $share->getFullId()])];
+		$state = [\OCA\Mcp\Mcp\Confirmation\PlanState::ARGUMENT => $this->stateOf('files_unshare', ['shareId' => $share->getFullId()])];
 
 		$this->sharePolicy->setGrant('alice', 'files', 'share', false);
 		self::assertSame(FilesMessages::shareNotGranted(), $this->confirmFailure(['shareId' => $share->getFullId()] + $state));
@@ -285,7 +285,7 @@ final class FilesUnshareTest extends FilesToolsTestCase {
 		$share = $this->share();
 		$room = $this->share(['type' => IShare::TYPE_ROOM, 'with' => 'room1']);
 		$byId = ['shareId' => $share->getFullId()];
-		$state = [\OCA\Mcp\Tools\PlanState::ARGUMENT => $this->stateOf('files_unshare', $byId)];
+		$state = [\OCA\Mcp\Mcp\Confirmation\PlanState::ARGUMENT => $this->stateOf('files_unshare', $byId)];
 
 		$hidden = [(string)$this->id('/Documentos/ata.md')];
 		$this->visibilityGuard->clearCache();

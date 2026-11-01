@@ -7,7 +7,7 @@
 declare (strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
-use OCA\Mcp\Tools\{ArgumentValidationException, ToolFailure, PlanChanged};
+use OCA\Mcp\Mcp\{Tools\Validation\ArgumentValidationException, Tools\Results\ToolFailure, Confirmation\PlanChanged};
 use OCA\Mcp\Tools\Polls\Create\{CreateRequest, CreateDefaults};
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;

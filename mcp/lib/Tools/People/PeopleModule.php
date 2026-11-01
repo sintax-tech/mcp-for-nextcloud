@@ -9,10 +9,10 @@ namespace OCA\Mcp\Tools\People;
 
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolGuideNotes;
-use OCA\Mcp\Tools\ToolModule;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
+use OCA\Mcp\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Collaboration\Collaborators\ISearch;
 use OCP\Share\IShare;
 use Psr\Log\LoggerInterface;

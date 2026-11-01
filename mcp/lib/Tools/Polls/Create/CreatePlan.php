@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Polls\Create;
 
-use OCA\Mcp\Tools\{PlanState,PlanText};
+use OCA\Mcp\Mcp\{Confirmation\PlanState,Confirmation\PlanText};
 
 /** Stateless signed preview; full scalar request/effect is bound before any presentation cut. */
 class CreatePlan {

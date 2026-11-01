@@ -26,6 +26,9 @@ final class MoveEquivalence {
 	/** @var array<string,string> old FQCN => new FQCN of every class moved in the range */
 	private array $renames = [];
 
+	/** @var array<string,string> old FQCN => new FQCN of the classes of `lib/` moved in the range */
+	private array $libRenames = [];
+
 	/** @var array<string,string> old path => new path of every moved PHP file */
 	private array $pairs = [];
 
@@ -59,7 +62,9 @@ final class MoveEquivalence {
 		$php = static fn (array $paths): array => array_values(array_filter($paths, static fn (string $p): bool => str_ends_with($p, '.php')));
 		$this->pair($php($deleted), $php($added));
 		$this->collectRenames();
-		$this->problems = [...$this->problems, ...PathRewrites::nonPhp($this->before, $this->after, $this->pairs)];
+		$this->problems = [...$this->problems, ...PathRewrites::nonPhp($this->before, $this->after, $this->pairs, $this->renames)];
+		$retired = array_filter($this->libRenames, fn (string $old): bool => !$this->afterIndex->declares($old), ARRAY_FILTER_USE_KEY);
+		$this->problems = [...$this->problems, ...ClassRewrites::stale($this->after, $retired)];
 		$targets = array_combine(array_values($this->pairs), array_values($this->pairs));
 		$normalizeBefore = new TokenNormalizer($this->beforeIndex);
 		$normalizeAfter = new TokenNormalizer($this->afterIndex);
@@ -174,6 +179,9 @@ final class MoveEquivalence {
 					$this->problems[] = "$new: $class became {$to[$k]}, which the FQCN map does not plan";
 				}
 				$this->renames[$class] = $to[$k];
+				if ($inLib) {
+					$this->libRenames[$class] = $to[$k];
+				}
 			}
 		}
 	}
@@ -213,7 +221,7 @@ final class MoveEquivalence {
 						&& (PathIdentity::unproved($value, $moved) || PathIdentity::unproved($value, $this->pairs[$moved]))) {
 						$this->problems[] = "$path:$line: path not proved: composed or basename-relative reference $value";
 					}
-					$match = PathIdentity::match($value, $moved);
+					$match = PathIdentity::namesDestination($value, $moved, $this->pairs[$moved]) ? null : PathIdentity::match($value, $moved);
 					if ($match !== null) {
 						$this->problems[] = PathIdentity::proved($match)
 							? "$path:$line: still refers to the file $moved, moved to {$this->pairs[$moved]} in this range"

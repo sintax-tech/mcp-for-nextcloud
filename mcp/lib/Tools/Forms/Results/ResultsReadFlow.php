@@ -11,9 +11,9 @@ use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\Policy\PolicyUnavailable;
 use OCA\Mcp\Tools\Forms\Attachments\ResultFileAccess;
 use OCA\Mcp\Tools\Forms\FormsMessages;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /** One read pipeline shared by the two handlers; no native writes, export, SQL or actor impersonation. */
 class ResultsReadFlow {

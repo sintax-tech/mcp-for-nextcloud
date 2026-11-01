@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
 use OCA\Mail\Events\MessageFlaggedEvent;
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Mail\Flag\MailFlagEvent;
 use OCA\Mcp\Tools\Mail\Flag\MailFlagRequest;
 use OCP\EventDispatcher\IEventDispatcher;

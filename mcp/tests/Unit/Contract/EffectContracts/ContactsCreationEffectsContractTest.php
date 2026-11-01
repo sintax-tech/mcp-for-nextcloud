@@ -20,7 +20,7 @@ use OCA\Mcp\Tools\Contacts\ContactBackup;
 use OCA\Mcp\Tools\Contacts\ContactCard;
 use OCA\Mcp\Tools\Contacts\ContactsModule;
 use OCA\Mcp\Tools\Contacts\SystemContacts;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Contacts\IManager;
 use OCP\Files\IRootFolder;

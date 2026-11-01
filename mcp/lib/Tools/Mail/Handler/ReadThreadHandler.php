@@ -12,7 +12,7 @@ use OCA\Mcp\Tools\Mail\MailMessageGateway;
 use OCA\Mcp\Tools\Mail\MailMessageLocator;
 use OCA\Mcp\Tools\Mail\MailMessageRows;
 use OCA\Mcp\Tools\Mail\MailUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * Backs `mail_read_thread`: the messages of the conversation one message belongs to, as the Mail app threaded them in

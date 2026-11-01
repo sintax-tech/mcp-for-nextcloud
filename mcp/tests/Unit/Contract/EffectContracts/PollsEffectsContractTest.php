@@ -16,7 +16,7 @@ use OCA\Mcp\Tests\Unit\Tools\Polls\NativeCreateScene;
 use OCA\Mcp\Tests\Unit\Tools\Polls\NativeCreateTestFactory;
 use OCA\Mcp\Tests\Unit\Tools\Polls\NativeScene;
 use OCA\Mcp\Tests\Unit\Tools\Polls\PollsContentTestFactory;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Tools\Polls\Create\CreateAdmission;
 use OCA\Mcp\Tools\Polls\Create\CreateFlow;
 use OCA\Mcp\Tools\Polls\Create\CreateNative;

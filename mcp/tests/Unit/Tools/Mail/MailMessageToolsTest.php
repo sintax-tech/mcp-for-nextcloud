@@ -13,7 +13,7 @@ use OCA\Mcp\Tools\Mail\MailGateway;
 use OCA\Mcp\Tools\Mail\MailMessages;
 use OCA\Mcp\Tools\Mail\MailMessageScope;
 use OCA\Mcp\Tools\Mail\MailMessageTools;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IConfig;
 use PHPUnit\Framework\TestCase;
 

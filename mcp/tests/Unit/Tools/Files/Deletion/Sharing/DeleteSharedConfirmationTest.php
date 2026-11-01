@@ -12,7 +12,7 @@ use OCA\Mcp\Tools\Files\Deletion\DeleteEligibility;
 use OCA\Mcp\Tools\Files\Deletion\DeleteTrashVeto;
 use OCA\Mcp\Tools\Files\Deletion\Sharing\DeleteSharedConfirmation;
 use OCA\Mcp\Tools\Files\Handler\DeleteFileHandler;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /** Shared acknowledgement is separate from confirm and is revalidated before any native attempt. */

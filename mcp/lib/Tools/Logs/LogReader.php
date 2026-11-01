@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Logs;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Log\IFileBased;
 use OCP\Log\ILogFactory;
 

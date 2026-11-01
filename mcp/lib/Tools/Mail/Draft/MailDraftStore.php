@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Mail\Draft;
 
 use OCA\Mcp\Tools\Mail\MailServices;
 use OCA\Mcp\Tools\Mail\MailUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * Saves one new draft through the Mail app's own draft save, IMailTransmission::saveDraft(), with no previous draft.

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Mail\Handler;
 
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Mail\Link\MailLinks;
 use OCA\Mcp\Tools\Mail\MailMessageLocator;
 use OCA\Mcp\Tools\Mail\MailServices;
@@ -16,10 +16,10 @@ use OCA\Mcp\Tools\Mail\Move\MailMoveDestination;
 use OCA\Mcp\Tools\Mail\Move\MailMoveMessages;
 use OCA\Mcp\Tools\Mail\Move\MailMovePlan;
 use OCA\Mcp\Tools\Mail\Move\MailMoveStore;
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\EventDispatcher\IEventDispatcher;
 
 /**

@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Forms\Creation;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\PlanText;
+use OCA\Mcp\Mcp\Confirmation\PlanText;
 
 /** Shows every admitted field and option as inert, reversible text, without a shortening fallback. */
 final class CreateFormPlanRenderer {

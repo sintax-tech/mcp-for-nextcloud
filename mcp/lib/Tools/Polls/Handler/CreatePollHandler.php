@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Polls\Handler;
 
 use OCA\Mcp\Tools\Polls\Create\CreateFlow;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /** One handler for the independently granted, confirmed private creation tool. */
 final class CreatePollHandler {

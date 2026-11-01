@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tools\Deck;
 use Closure;
 use OCA\Deck\Db\Acl;
 use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use Psr\Log\LoggerInterface;
 use Throwable;
 

@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tools\Tasks;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Common\OutputReferenceFilter;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use Sabre\VObject\Component\VCalendar;
 
 /**

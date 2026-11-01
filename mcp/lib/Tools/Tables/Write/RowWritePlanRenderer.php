@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Tables\Write;
 
-use OCA\Mcp\Tools\PlanText;
+use OCA\Mcp\Mcp\Confirmation\PlanText;
 
 /**
- * The readable body of a row write plan, inside the common envelope of {@see \OCA\Mcp\Tools\PlanRenderer}: the target,
+ * The readable body of a row write plan, inside the common envelope of {@see \OCA\Mcp\Mcp\Confirmation\PlanRenderer}: the target,
  * then one line per cell with its column and the value before and after. When the plan changed, each numeric limit
  * follows on its own line. Every column title and value is text somebody else wrote and goes through {@see PlanText},
  * so none of it reads as Markdown or HTML or opens a line; a long value is shortened with its length, while the

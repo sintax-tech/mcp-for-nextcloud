@@ -14,7 +14,7 @@ use OCA\Mcp\Tools\Mail\MailMessageLocator;
 use OCA\Mcp\Tools\Mail\MailMessageRows;
 use OCA\Mcp\Tools\Mail\MailRows;
 use OCA\Mcp\Tools\Mail\MailUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * Backs `mail_read_message`: the headers, the body as text and the attachment list of one message of the user.

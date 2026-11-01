@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Polls\Handler;
 
 use OCA\Mcp\Tools\Polls\{PollsContext, PollsListing, PollsMessages, PollsRequest};
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /** Handler for polls_list_polls, with no write/preview path. */
 final class ListPollsHandler {

@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Tables\Handler;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\RowsScene;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesRowsWiring;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesScene;
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Tables\TablesMessages;
 use PHPUnit\Framework\TestCase;
 
@@ -44,7 +44,7 @@ final class ListRowsHandlerTest extends TestCase {
 			try {
 				TablesRowsWiring::handler($this, RowsScene::app(), 'bob')->handle($args, 'bob');
 				$this->fail('accepted ' . json_encode($args));
-			} catch (ArgumentValidationException | \OCA\Mcp\Tools\ToolFailure) {
+			} catch (ArgumentValidationException | \OCA\Mcp\Mcp\Tools\Results\ToolFailure) {
 				$this->addToAssertionCount(1);
 			}
 		}

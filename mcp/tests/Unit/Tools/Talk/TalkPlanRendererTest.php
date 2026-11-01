@@ -475,7 +475,7 @@ final class TalkPlanRendererTest extends TestCase {
 		$this->assertStringNotContainsString('](javascript:', $group);
 		$this->assertStringNotContainsString('<b>', $group);
 		$this->assertStringNotContainsString("\n### ", $group);
-		$this->assertStringContainsString(\OCA\Mcp\Tools\PlanText::strong($payload), $group, 'the guest is shown, escaped, as bold');
+		$this->assertStringContainsString(\OCA\Mcp\Mcp\Confirmation\PlanText::strong($payload), $group, 'the guest is shown, escaped, as bold');
 	}
 
 	/** The last of the hostile checks: a lone carriage return cannot leave the block quote, and names stay literal. */

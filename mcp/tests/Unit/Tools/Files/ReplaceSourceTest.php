@@ -11,7 +11,7 @@ use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\ReplaceSource;
 use OCA\Mcp\Tools\Files\TextExtractor;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 
 /**

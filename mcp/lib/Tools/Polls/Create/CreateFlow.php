@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Polls\Create;
 
-use OCA\Mcp\Tools\{PlanState,PlanChanged,ArgumentValidationException,ToolFailure};
+use OCA\Mcp\Mcp\{Confirmation\PlanState,Confirmation\PlanChanged,Tools\Validation\ArgumentValidationException,Tools\Results\ToolFailure};
 use OCA\Mcp\Tools\Polls\PollsRefusal;
 use Psr\Log\LoggerInterface;
 

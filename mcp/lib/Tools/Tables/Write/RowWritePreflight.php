@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tools\Tables\Write;
 use OCA\Mcp\Tools\Tables\Rows\RowsRefusal;
 use OCA\Mcp\Tools\Tables\Rows\TablesSessionGuard;
 use OCA\Mcp\Tools\Tables\TablesUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * Everything a row write checks before the Tables app is asked to write, in this order, the same for the plan and for

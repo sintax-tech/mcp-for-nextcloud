@@ -314,7 +314,7 @@ final class TalkAttachmentParityContractTest extends TestCase {
 			return json_encode($run());
 		} catch (\OCA\Mcp\Service\Policy\PolicyUnavailable) {
 			return '503';
-		} catch (\OCA\Mcp\Tools\ToolFailure $e) {
+		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
 			return 'refused: ' . $e->getMessage();
 		}
 	}

@@ -11,7 +11,7 @@ use OCA\Mcp\Tools\Files\Batch;
 use OCA\Mcp\Tools\Files\BatchStore;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * files_undo_batch: giving a reorganization back.
@@ -201,13 +201,13 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 	public function testABatchOfSomebodyElseIsNotFound(): void {
 		$id = $this->batches->insert(new Batch(null, 'bob', 1790000000,
 			[['from' => '/Documentos/ata.md', 'to' => '/Arquivado/ata.md', 'toId' => 1]], [], null));
-		$this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
+		$this->expectException(\OCA\Mcp\Mcp\Tools\Results\ToolFailure::class);
 		$this->expectExceptionMessage(FilesMessages::batchNotFound());
 		$this->tool('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
 	}
 
 	public function testABatchThatDoesNotExistIsNotFound(): void {
-		$this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
+		$this->expectException(\OCA\Mcp\Mcp\Tools\Results\ToolFailure::class);
 		$this->expectExceptionMessage(FilesMessages::batchNotFound());
 		$this->tool('files_undo_batch', ['batch_id' => 9999, 'confirm' => true]);
 	}
@@ -216,7 +216,7 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 	public function testABatchPastItsLifetimeIsNotFound(): void {
 		$id = $this->runBatch();
 		$this->batches->rows[$id]['created_at'] = 1790000000 - BatchStore::LIFETIME_SECONDS - 1;
-		$this->expectException(\OCA\Mcp\Tools\ToolFailure::class);
+		$this->expectException(\OCA\Mcp\Mcp\Tools\Results\ToolFailure::class);
 		$this->expectExceptionMessage(FilesMessages::batchNotFound());
 		$this->tool('files_undo_batch', ['batch_id' => $id, 'confirm' => true]);
 	}

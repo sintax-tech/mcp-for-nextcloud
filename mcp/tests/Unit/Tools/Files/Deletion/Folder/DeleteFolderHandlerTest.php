@@ -11,7 +11,7 @@ use OCA\Mcp\Tools\Common\LockAwareWrite;
 use OCA\Mcp\Tools\Files\Deletion\DeleteEligibility;
 use OCA\Mcp\Tools\Files\Deletion\DeleteTrashVeto;
 use OCA\Mcp\Tools\Files\Handler\DeleteFileHandler;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use PHPUnit\Framework\TestCase;
 

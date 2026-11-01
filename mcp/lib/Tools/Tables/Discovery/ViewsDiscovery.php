@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tools\Tables\Discovery;
 use OCA\Mcp\Tools\Tables\TablesCalls;
 use OCA\Mcp\Tools\Tables\TablesServices;
 use OCA\Mcp\Tools\Tables\TablesUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * The views a user can open, from the three places the Tables app has them, each authorized again before it is shown:

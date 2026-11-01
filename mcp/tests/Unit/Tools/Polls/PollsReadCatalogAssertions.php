@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tools\Polls\PollsModule;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use PHPUnit\Framework\TestCase;
 
 /** Exact catalog update keeps the original read/schema/no-write checks and adds independent protected grants. */

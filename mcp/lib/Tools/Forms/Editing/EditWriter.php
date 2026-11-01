@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Forms\Editing;
 
 use OCA\Mcp\Tools\Forms\Creation\CreateNativeThrottle;
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** Makes exactly one native PATCH, revalidating after throttle and observing active actor-authorized state even after failure. */
 class EditWriter {

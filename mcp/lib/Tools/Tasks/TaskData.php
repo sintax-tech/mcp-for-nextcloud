@@ -14,7 +14,7 @@ use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tools\Calendar\DateInput;
 use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use Sabre\VObject\Component\VCalendar;
 use Sabre\VObject\Component\VTodo;
 use Sabre\VObject\Reader;

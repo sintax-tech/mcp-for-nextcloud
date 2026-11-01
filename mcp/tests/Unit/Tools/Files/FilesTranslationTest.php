@@ -19,7 +19,7 @@ use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\Reorganization;
 use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Files\VersionTools;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
 use OCP\IConfig;

@@ -14,7 +14,7 @@ use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\Logs\LogAnalyzer;
 use OCA\Mcp\Tools\Logs\LogRedactor;
 use OCA\Mcp\Tools\Logs\LogTime;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\SystemTag\ISystemTagObjectMapper;
 use PHPUnit\Framework\TestCase;
 

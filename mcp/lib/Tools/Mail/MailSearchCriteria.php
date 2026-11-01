@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Mail;
 
 use DateTimeImmutable;
 use DateTimeZone;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * The filters of one message search, validated, and their translation into the search query of the Mail app.

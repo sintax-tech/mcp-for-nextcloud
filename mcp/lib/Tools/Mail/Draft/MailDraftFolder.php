@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Mail\Draft;
 
 use OCA\Mcp\Tools\Mail\MailMessageGateway;
 use OCA\Mcp\Tools\Mail\MailUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * The Drafts folder of an account, as the Mail app's own draft save finds it: the folder the account settings name

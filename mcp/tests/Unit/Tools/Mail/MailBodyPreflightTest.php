@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 use OCA\Mcp\Tools\Mail\MailBodyPreflight;
 use OCA\Mcp\Tools\Mail\MailCacheGeneration;
 use OCA\Mcp\Tools\Mail\MailMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/../../../stubs/Horde/ImapClientStubs.php';

@@ -13,7 +13,7 @@ use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\Service\Scope\FilesScopes;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\SystemTag\ISystemTagObjectMapper;
 
 /**

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Forms\Structure;
 
 use OCA\Mcp\Tools\Forms\FormsMessages;
 use OCA\Mcp\Tools\Forms\FormsText;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** Bounds an already authorized, whitelisted response after native fetch; never a native-fetch memory cap. */
 final class FormsResponseBudget {

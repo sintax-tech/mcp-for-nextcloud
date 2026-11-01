@@ -9,11 +9,11 @@ namespace OCA\Mcp\Tools\Forms;
 
 use OCA\Mcp\Tools\Forms\Handler\ListFormsHandler;
 use OCA\Mcp\Tools\Forms\Handler\ReadFormHandler;
-use OCA\Mcp\Tools\ToolModule;
-use OCA\Mcp\Tools\ToolGuideNotes;
+use OCA\Mcp\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
 
 /** Registers Forms tools and delegates each tool to its own handler. */
-final class FormsModule implements ToolModule, ToolGuideNotes, \OCA\Mcp\Tools\PreviewsWrites, \OCA\Mcp\Tools\RendersPlans {
+final class FormsModule implements ToolModule, ToolGuideNotes, \OCA\Mcp\Mcp\Tools\PreviewsWrites, \OCA\Mcp\Mcp\Tools\RendersPlans {
 	/** Receives the focused Forms handlers.
 	 * @param ListFormsHandler $list Native discovery and cursor.
 	 * @param ReadFormHandler $read Native form structure.

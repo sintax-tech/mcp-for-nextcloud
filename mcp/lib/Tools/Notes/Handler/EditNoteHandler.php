@@ -25,7 +25,7 @@ use OCA\Mcp\Tools\Notes\NoteRenameSink;
 use OCA\Mcp\Tools\Notes\NoteTypeBoundary;
 use OCA\Mcp\Tools\Notes\NoteWrite;
 use OCA\Mcp\Tools\Notes\NotesRepository;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use Throwable;

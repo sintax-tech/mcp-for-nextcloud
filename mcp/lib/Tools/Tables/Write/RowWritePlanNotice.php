@@ -9,7 +9,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Tables\Write;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\PlanText;
+use OCA\Mcp\Mcp\Confirmation\PlanText;
 
 /**
  * The warning a confirmed row write shows when the state is no longer the approved one.

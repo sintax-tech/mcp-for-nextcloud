@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Mail\Flag;
 
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 
 /**
  * The flags a call asks for, as the state wanted: `seen` (read) and `flagged`, each true, false or not asked. There is no

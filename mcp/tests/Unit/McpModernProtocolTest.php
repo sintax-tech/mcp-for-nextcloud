@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit;
 
-use OCA\Mcp\Service\McpProtocol;
+use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use PHPUnit\Framework\TestCase;
 
 /** MCP 2026-07-28 (stateless) requests next to the legacy initialize flow on the same endpoint. */

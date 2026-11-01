@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Files\Handler;
 
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\PathGuard;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use OCP\Files\Node;
 use OCA\Mcp\Tools\Files\CopyMoveContext;

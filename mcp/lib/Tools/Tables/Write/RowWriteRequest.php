@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Tables\Write;
 
-use OCA\Mcp\Tools\ArgumentValidationException;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Tools\Tables\TablesMessages;
 
 /**

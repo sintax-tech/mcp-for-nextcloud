@@ -10,8 +10,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeShares;
-use OCA\Mcp\Tools\PlanRenderer;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Confirmation\PlanRenderer;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCP\Share\IShare;
 
 /** The text a person reads before confirming a public link: who can open it, until when, and what about the password. */

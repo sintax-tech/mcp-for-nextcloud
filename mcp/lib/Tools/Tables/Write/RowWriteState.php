@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Tables\Write;
 
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 
 /**
  * The state a row write was planned on, bound by its {@see PlanState}: the arguments that change the effect (target, row,

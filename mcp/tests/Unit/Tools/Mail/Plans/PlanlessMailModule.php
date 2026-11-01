@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Mail\Plans;
 
 use OCA\Mcp\Tools\Mail\MailModule;
-use OCA\Mcp\Tools\PreviewsWrites;
-use OCA\Mcp\Tools\RendersPlans;
-use OCA\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Mcp\Tools\RendersPlans;
+use OCA\Mcp\Mcp\Tools\ToolModule;
 
 /**
  * The Mail module with the plan text of one write taken away, as a module that forgot it would be: everything else is

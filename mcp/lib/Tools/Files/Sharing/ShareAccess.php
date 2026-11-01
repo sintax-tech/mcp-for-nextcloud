@@ -12,7 +12,7 @@ use OCA\Mcp\Service\Scope\FilesAccessGuard;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Common\PathGuard;
 use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use OCP\Files\Node;
 use OCP\Files\NotFoundException;
@@ -189,7 +189,7 @@ final class ShareAccess {
 	}
 
 	/**
-	 * The fields of a share a plan shows and a confirmed write depends on, for the {@see \OCA\Mcp\Tools\PlanState} of
+	 * The fields of a share a plan shows and a confirmed write depends on, for the {@see \OCA\Mcp\Mcp\Confirmation\PlanState} of
 	 * files_share and files_unshare. Whether a password exists, never the stored hash.
 	 *
 	 * @param IShare|null $share the share as read now, null when there is none

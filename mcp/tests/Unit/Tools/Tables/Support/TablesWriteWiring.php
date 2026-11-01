@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Support;
 
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Tools\Tables\Handler\CreateRowHandler;
 use OCA\Mcp\Tools\Tables\Handler\UpdateRowHandler;
 use OCA\Mcp\Tools\Tables\Rows\TablesSessionGuard;

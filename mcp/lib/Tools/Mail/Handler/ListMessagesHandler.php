@@ -14,7 +14,7 @@ use OCA\Mcp\Tools\Mail\MailMessageScope;
 use OCA\Mcp\Tools\Mail\MailMessageSearch;
 use OCA\Mcp\Tools\Mail\MailSearchCriteria;
 use OCA\Mcp\Tools\Mail\MailUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * Backs `mail_list_messages`: one page of the messages of one folder of the user, newest first, from the message

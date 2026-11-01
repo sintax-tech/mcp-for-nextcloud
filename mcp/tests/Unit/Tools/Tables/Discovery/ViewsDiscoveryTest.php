@@ -13,7 +13,7 @@ use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesScene;
 use OCA\Mcp\Tools\Tables\Discovery\TablesDiscovery;
 use OCA\Mcp\Tools\Tables\Discovery\ViewsDiscovery;
 use OCA\Mcp\Tools\Tables\TablesMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Tables\Errors\InternalError;
 use PHPUnit\Framework\TestCase;
 

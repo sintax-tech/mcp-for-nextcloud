@@ -13,7 +13,7 @@ use OCA\Mcp\L10n\UserL10n;
 use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\ResourceUrl;
 use OCA\Mcp\Service\GuestRestrictions;
-use OCA\Mcp\Service\McpProtocol;
+use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use OCA\Mcp\Service\Policy\CauseProcessor;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;

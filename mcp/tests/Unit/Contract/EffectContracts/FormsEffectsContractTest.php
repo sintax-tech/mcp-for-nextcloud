@@ -37,7 +37,7 @@ use OCA\Mcp\Tools\Forms\Handler\ListFormsHandler;
 use OCA\Mcp\Tools\Forms\Handler\ListSubmissionsHandler;
 use OCA\Mcp\Tools\Forms\Handler\ReadFormHandler;
 use OCA\Mcp\Tools\Forms\Handler\ReadSubmissionHandler;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\Security\Bruteforce\IThrottler;

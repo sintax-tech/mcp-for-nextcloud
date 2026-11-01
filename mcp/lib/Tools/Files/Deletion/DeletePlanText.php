@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files\Deletion;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\PlanText;
+use OCA\Mcp\Mcp\Confirmation\PlanText;
 
 /** Human plan body, with the exact admitted file made inert as Markdown and recovery claims kept bounded. */
 final class DeletePlanText {

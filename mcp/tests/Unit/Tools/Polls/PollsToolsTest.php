@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tools\Polls\{PollsCursor,PollsRefusal,PollsSurface,PollsText};
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -265,7 +265,7 @@ final class PollsToolsTest extends TestCase {
 
 	/** @return void the cursor cannot emit a next offset beyond what it accepts */
 	public function testOffsetCeilingKeepsHasMoreHonest(): void {
-		$cursor = new PollsCursor(new \OCA\Mcp\Tools\PlanState((new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this)));
+		$cursor = new PollsCursor(new \OCA\Mcp\Mcp\Confirmation\PlanState((new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this)));
 		$bound=['state'=>'test'];
 		$token=$cursor->next(100000,'polls_list_polls','alice',$bound);
 		$this->assertSame(100000,$cursor->offset($token,'polls_list_polls','alice',$bound));

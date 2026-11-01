@@ -25,7 +25,7 @@ use OCA\Deck\Service\PermissionService;
 use OCA\Deck\Service\StackService;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Service\UserTimezone;
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;
 use OCP\ISession;

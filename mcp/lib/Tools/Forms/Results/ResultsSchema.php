@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Forms\Results;
 
 use OCA\Forms\Db\Question;
 use OCA\Forms\Db\Option;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** Builds the active, form-relative schema before answering; unknown active types fail even without a page answer. */
 final class ResultsSchema {

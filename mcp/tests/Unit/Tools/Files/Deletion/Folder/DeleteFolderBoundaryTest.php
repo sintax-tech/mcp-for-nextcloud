@@ -10,7 +10,7 @@ use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
 use OCA\Mcp\Service\Scope\FilesScope;
 use OCA\Mcp\Tools\Files\Deletion\Folder\DeleteFolderBoundary;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /** Complete admission is required before returning any folder observation. */

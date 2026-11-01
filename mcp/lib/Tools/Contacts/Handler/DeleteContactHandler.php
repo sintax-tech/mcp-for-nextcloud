@@ -13,9 +13,9 @@ use OCA\Mcp\Tools\Contacts\ContactBackup;
 use OCA\Mcp\Tools\Contacts\ContactDav;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 
 /** Deletes one contact only after a mandatory, verified copy and fresh native ACL/ETag checks. */
 final class DeleteContactHandler {

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Logs;
 
-use OCA\Mcp\Tools\RestrictedModule;
+use OCA\Mcp\Mcp\Tools\RestrictedModule;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\Log\Audit\CriticalActionPerformedEvent;
 use Psr\Log\LoggerInterface;

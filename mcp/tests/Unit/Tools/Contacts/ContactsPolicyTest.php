@@ -17,7 +17,7 @@ use OCA\Mcp\Tools\Contacts\ContactCard;
 use OCA\Mcp\Tools\Contacts\ContactDav;
 use OCA\Mcp\Tools\Contacts\ContactStore;
 use OCA\Mcp\Tools\Contacts\ContactsModule;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\IUser;
 use OCP\IUserManager;

@@ -14,8 +14,8 @@ use OCA\Mcp\Tools\Forms\Discovery\FormCandidates;
 use OCA\Mcp\Tools\Forms\Discovery\FormListOrder;
 use OCA\Mcp\Tools\Forms\Discovery\FormListCursor;
 use OCA\Mcp\Tools\Forms\Structure\FormFieldWhitelist;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /** Lists one MAC-authenticated page of the currently reauthorized native candidate list. */
 class ListFormsHandler {

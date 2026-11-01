@@ -134,7 +134,7 @@ final class DeckServiceGatewayTest extends TestCase {
 		try {
 			$this->gateway->validateAssignees('alice', 10, ['secret-account']);
 			self::fail('accepted a missing account');
-		} catch (\OCA\Mcp\Tools\ArgumentValidationException $e) {
+		} catch (\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException $e) {
 			self::assertSame('assignees', $e->details()['field']);
 			self::assertStringNotContainsString('secret-account', $e->clientMessage());
 		}

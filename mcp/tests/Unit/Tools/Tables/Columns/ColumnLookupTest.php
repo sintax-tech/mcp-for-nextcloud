@@ -11,7 +11,7 @@ use OCA\Mcp\Tests\Unit\Tools\Tables\Support\FakeTablesApp;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesScene;
 use OCA\Mcp\Tools\Tables\Columns\ColumnLookup;
 use OCA\Mcp\Tools\Tables\TablesMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /**

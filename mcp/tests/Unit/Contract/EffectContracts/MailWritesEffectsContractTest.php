@@ -21,7 +21,7 @@ use OCA\Mcp\Tools\Mail\MailMessageTools;
 use OCA\Mcp\Tools\Mail\MailModule;
 use OCA\Mcp\Tools\Mail\Move\MailMoveTools;
 use OCA\Mcp\Tools\Mail\Send\MailSendTools;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\App\IAppManager;
 use OCP\EventDispatcher\IEventDispatcher;
 use OCP\ITempManager;

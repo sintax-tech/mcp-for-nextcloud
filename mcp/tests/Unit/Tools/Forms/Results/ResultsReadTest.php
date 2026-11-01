@@ -11,8 +11,8 @@ use OCA\Mcp\Tools\Forms\Results\{ResultsAccess, SubmissionReads, ResultsSchema, 
 use OCA\Mcp\Tools\Forms\Attachments\ResultFileAccess;
 use OCA\Mcp\Tools\Forms\Handler\{ListSubmissionsHandler, ReadSubmissionHandler};
 use OCA\Mcp\Tools\Forms\FormsServices;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\Forms\FormsFixture;

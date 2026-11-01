@@ -23,7 +23,7 @@ use OCA\Mcp\Tools\Deck\Handler\ListCardsHandler;
 use OCA\Mcp\Tools\Deck\Handler\ListStacksHandler;
 use OCA\Mcp\Tools\Deck\Handler\MoveCardHandler;
 use OCA\Mcp\Tools\Deck\Handler\ReadCardHandler;
-use OCA\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Tools\ToolModule;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IURLGenerator;
@@ -91,14 +91,14 @@ final class DeckToolModuleTest extends TestCase {
 	/** Only creation accepts assignments; schemas and guide expose the supported behavior. */
 	public function testCreationDeclaresAssigneesAndRejectsMalformedAccountIds(): void {
 		$schema = $this->definitionOf(CreateCardHandler::TOOL)['inputSchema'];
-		self::assertSame(['pedro'], \OCA\Mcp\Tools\ArgumentValidator::validate($schema, ['stackId' => 10, 'title' => 'New', 'assignees' => ['pedro']])['assignees']);
+		self::assertSame(['pedro'], \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator::validate($schema, ['stackId' => 10, 'title' => 'New', 'assignees' => ['pedro']])['assignees']);
 		self::assertArrayNotHasKey('assignees', $this->definitionOf(EditCardHandler::TOOL)['inputSchema']['properties']);
 		self::assertStringContainsString('assignments', implode(' ', $this->module->guideNotes()));
 		foreach ([[''], [123], 'pedro', array_fill(0, 101, 'pedro')] as $value) {
 			try {
-				\OCA\Mcp\Tools\ArgumentValidator::validate($schema, ['stackId' => 10, 'title' => 'New', 'assignees' => $value]);
+				\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator::validate($schema, ['stackId' => 10, 'title' => 'New', 'assignees' => $value]);
 				self::fail('accepted malformed assignees');
-			} catch (\OCA\Mcp\Tools\ArgumentValidationException $e) {
+			} catch (\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException $e) {
 				self::assertStringStartsWith('assignees', $e->details()['field']);
 			}
 		}
@@ -111,12 +111,12 @@ final class DeckToolModuleTest extends TestCase {
 		foreach (['assign', 'unassign'] as $field) {
 			self::assertSame('array', $schema['properties'][$field]['type']);
 			self::assertSame(100, $schema['properties'][$field]['maxItems']);
-			self::assertSame(['pedro'], \OCA\Mcp\Tools\ArgumentValidator::validate($schema, ['cardId' => 7, $field => ['pedro']])[$field]);
+			self::assertSame(['pedro'], \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator::validate($schema, ['cardId' => 7, $field => ['pedro']])[$field]);
 			foreach ([[''], [123], 'pedro', array_fill(0, 101, 'pedro')] as $value) {
 				try {
-					\OCA\Mcp\Tools\ArgumentValidator::validate($schema, ['cardId' => 7, $field => $value]);
+					\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator::validate($schema, ['cardId' => 7, $field => $value]);
 					self::fail('accepted malformed ' . $field);
-				} catch (\OCA\Mcp\Tools\ArgumentValidationException $e) {
+				} catch (\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException $e) {
 					self::assertStringStartsWith($field, $e->details()['field']);
 				}
 			}
@@ -255,7 +255,7 @@ final class DeckToolModuleTest extends TestCase {
 		$definition = $this->definitionOf(DeleteCardHandler::TOOL);
 		self::assertArrayNotHasKey('confirm', $definition['inputSchema']['properties'] ?? []);
 
-		$published = \OCA\Mcp\Tools\WriteGate::publish($definition);
+		$published = \OCA\Mcp\Mcp\Confirmation\WriteGate::publish($definition);
 		$confirm = $published['inputSchema']['properties']['confirm'];
 		self::assertSame('boolean', $confirm['type']);
 		self::assertArrayNotHasKey('const', $confirm);

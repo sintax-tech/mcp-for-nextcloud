@@ -16,8 +16,8 @@ use OCA\Mcp\Tests\Unit\Tools\Mail\Plans\MailPlanRendererTest;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Write\TablesPlanRendererTest;
 use OCA\Mcp\Tests\Unit\Tools\Talk\TalkPlanRendererTest;
 use OCA\Mcp\Tests\Unit\Tools\Tasks\TasksPlanRendererTest;
-use OCA\Mcp\Tools\PreviewsWrites;
-use OCA\Mcp\Tools\RendersPlans;
+use OCA\Mcp\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Mcp\Tools\RendersPlans;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -80,7 +80,7 @@ final class WritePlanContractTest extends TestCase {
 	/** The new file tools are named here, so the test that proves their names inert cannot disappear unnoticed. */
 	public function testTheNewFileToolsHaveAHostileNameTest(): void {
 		$files = (new \ReflectionClass(\OCA\Mcp\Tools\Files\FilesModule::class))->newInstanceWithoutConstructor();
-		$writes = array_column(array_filter($files->definitions(), static fn (array $d): bool => \OCA\Mcp\Tools\WriteGate::isWrite($d)), 'name');
+		$writes = array_column(array_filter($files->definitions(), static fn (array $d): bool => \OCA\Mcp\Mcp\Confirmation\WriteGate::isWrite($d)), 'name');
 		foreach (self::HOSTILE_NAME_TESTS as $tool => [$test, $method]) {
 			self::assertContains($tool, $writes, $tool . ' is no longer a write of the Files module');
 			self::assertTrue(method_exists($test, $method), $test . '::' . $method . ' is missing');

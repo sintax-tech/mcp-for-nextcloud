@@ -12,8 +12,8 @@ use OCA\Mcp\Tools\Tables\Discovery\TablesDiscovery;
 use OCA\Mcp\Tools\Tables\Discovery\TablesPage;
 use OCA\Mcp\Tools\Tables\TablesMessages;
 use OCA\Mcp\Tools\Tables\TablesUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /**
  * Backs `tables_list_tables`: one page of the tables the user can open ({@see TablesDiscovery}), in id order.

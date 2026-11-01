@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Common;
 
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** A name refused by the policy; HTTP adapters must map this type to 403. */
 final class FileTypeDenied extends ToolFailure {

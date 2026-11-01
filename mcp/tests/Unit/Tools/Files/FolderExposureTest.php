@@ -12,7 +12,7 @@ use OCA\Mcp\Tests\Unit\Tools\Common\FakeLock;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Files\Batch;
 use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Lock\ILock;
 use OCP\IConfig;
 use OCP\Share\IShare;

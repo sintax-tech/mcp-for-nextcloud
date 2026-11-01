@@ -28,11 +28,11 @@ use OCA\Mcp\Tools\Forms\Editing\EditPlanRenderer;
 use OCA\Mcp\Tools\Forms\Editing\EditState;
 use OCA\Mcp\Tools\Forms\Editing\EditTools;
 use OCA\Mcp\Tools\Forms\Editing\EditWriter;
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanRenderer;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\RendersPlans;
-use OCA\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanRenderer;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\RendersPlans;
+use OCA\Mcp\Mcp\Tools\ToolModule;
 use PHPUnit\Framework\TestCase;
 
 /**

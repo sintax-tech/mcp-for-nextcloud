@@ -18,8 +18,8 @@ use OCA\Mcp\Tools\Forms\Links\PublicLinkShaper;
 use OCA\Mcp\Tools\Forms\Structure\FormFieldWhitelist;
 use OCA\Mcp\Tools\Forms\Structure\FormStructureShape;
 use OCA\Mcp\Tools\Forms\Structure\FormsResponseBudget;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 require_once __DIR__ . '/FormsFixture.php';

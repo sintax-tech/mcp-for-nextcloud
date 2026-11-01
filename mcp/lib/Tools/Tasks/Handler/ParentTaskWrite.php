@@ -10,9 +10,9 @@ namespace OCA\Mcp\Tools\Tasks\Handler;
 use InvalidArgumentException;
 use OCA\Mcp\Tools\Tasks\TaskParentStep;
 use OCA\Mcp\Tools\Tasks\TaskWriteFlow;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
-use OCA\Mcp\Tools\WriteGate;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use RuntimeException;
 
 /**

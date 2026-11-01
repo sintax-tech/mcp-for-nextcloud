@@ -11,7 +11,7 @@ use OCA\Mcp\Checkout\CheckoutToken;
 use OCA\Mcp\Checkout\CheckoutTokenStore;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;
@@ -66,7 +66,7 @@ final class CheckoutService {
 	 * @param array<string, mixed> $access ownership description from NodeAccessInfo
 	 * @param bool $confirmed whether the caller passed confirm_shared; stored so the upload trusts the checkout
 	 * @return array{path:string, etag:string, size:int, mime:string, access:array<string, mixed>, download_url:string, upload_url:string, expires_at:string}
-	 * @throws \OCA\Mcp\Tools\ToolFailure when versioning is off, which the upload would refuse later
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when versioning is off, which the upload would refuse later
 	 */
 	public function issue(string $userId, File $file, string $path, array $access, bool $confirmed): array {
 		$this->assertAvailable($userId);

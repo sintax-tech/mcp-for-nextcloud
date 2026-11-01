@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Contacts;
 
 use OCA\Mcp\Tools\Calendar\Calendar;
 use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** Uses the Calendar collection descriptor for the identical ownership/shared guard metadata. */
 class ContactAccess {

@@ -11,7 +11,7 @@ require_once __DIR__ . '/EditingFixture.php';
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\Forms\Editing\{EditState, EditFlow, EditNativeFactory, EditPlan, EditPlanRenderer, EditRequest, EditWriter, EditMessages};
 use OCA\Mcp\Tools\Forms\Creation\CreateNativeThrottle;
-use OCA\Mcp\Tools\{PlanState, PlanChanged, ToolFailure};
+use OCA\Mcp\Mcp\{Confirmation\PlanState, Confirmation\PlanChanged, Tools\Results\ToolFailure};
 use PHPUnit\Framework\TestCase;
 /** Discriminates native guards, matched shared confirmation, B1 readback and one-shot partial effects. */
 final class EditStateFlowTest extends TestCase

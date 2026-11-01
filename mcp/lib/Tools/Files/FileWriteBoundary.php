@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\Tools\Common\FileTypeGuard;
 use OCP\Server;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** Resolves the required policy collaborator, including callers constructed outside the app container. */
 final class FileWriteBoundary {

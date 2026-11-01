@@ -8,13 +8,13 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Write;
 
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanRenderer;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\RendersPlans;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanRenderer;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\Tables\Handler\UpdateRowHandler;
 use OCA\Mcp\Tools\Tables\Write\RowWritePlanRenderer;
-use OCA\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Tools\ToolModule;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesWriteWiring;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\WriteScene;
 use PHPUnit\Framework\TestCase;

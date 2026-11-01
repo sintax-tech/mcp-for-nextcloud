@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Service;
 
 use OCA\Mcp\Tools\Common\FileTypeMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** Unreadable policy state; distinct from a denied name and never interpreted as off. */
 final class FileWritePolicyUnavailable extends ToolFailure {

@@ -16,7 +16,7 @@ use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\Sharing\ShareAccess;
 use OCA\Mcp\Tools\Files\Sharing\ShareRecipient;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Node;
 use OCP\Share\IShare;
 use PHPUnit\Framework\TestCase;

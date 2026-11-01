@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\PlanText;
+use OCA\Mcp\Mcp\Confirmation\PlanText;
 
 /**
  * Turns the plan of a Files write into the Markdown body the person reads before confirming.

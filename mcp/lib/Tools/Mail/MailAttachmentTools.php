@@ -93,7 +93,7 @@ final class MailAttachmentTools {
 	 * @param string $userId authenticated user UID
 	 * @return array{content:list<array{type:string, text:string}>} MCP result
 	 * @throws InvalidArgumentException for a tool this class does not have
-	 * @throws \OCA\Mcp\Tools\ToolFailure when the message or the attachment cannot be read, or Mail is not available
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when the message or the attachment cannot be read, or Mail is not available
 	 */
 	public function call(string $name, array $arguments, string $userId): array {
 		if (!self::handles($name)) {

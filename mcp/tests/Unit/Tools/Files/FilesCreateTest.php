@@ -10,13 +10,13 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Mcp\Checkout\CheckoutToken;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileCreation;
 use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\ToolRegistry;
-use OCA\Mcp\Tools\UnknownToolException;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\UnknownToolException;
 use OCP\IUser;
 use Psr\Log\LoggerInterface;
 
@@ -51,7 +51,7 @@ final class FilesCreateTest extends FilesToolsTestCase {
 	private function planFailure(string $tool, array $arguments): string {
 		try {
 			$this->plan($tool, $arguments);
-		} catch (\OCA\Mcp\Tools\ToolFailure $e) {
+		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
 			return $e->getMessage();
 		}
 		$this->fail("plan of $tool did not fail");

@@ -7,8 +7,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files\Deletion\Sharing;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /** A separate explicit shared-impact confirmation, independent of UPDATE and with no recipient disclosure. */
 final class DeleteSharedConfirmation {

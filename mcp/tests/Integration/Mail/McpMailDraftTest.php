@@ -11,7 +11,7 @@ use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tools\Mail\Draft\MailDraftMessages;
 use OCA\Mcp\Tools\Mail\MailMessages;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\Server;
 use PHPUnit\Framework\Attributes\Group;
 

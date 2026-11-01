@@ -55,7 +55,7 @@ final class DeckTranslationTest extends TestCase {
 		], [DeckMessages::TOOL_LIST_LABELS_DESCRIPTION, DeckMessages::PARAM_LABEL_LIMIT, DeckMessages::PARAM_LABEL_OFFSET]);
 		foreach (['en', 'pt_BR', 'es', 'de'] as $language) {
 			Translator::use(new JsonL10n($language));
-			$title = \OCA\Mcp\Tools\ToolPresentation::title('deck_list_labels');
+			$title = \OCA\Mcp\Mcp\Tools\ToolPresentation::title('deck_list_labels');
 			if ($language === 'en') { self::assertSame('List Deck labels', $title); }
 			else { self::assertNotSame('List Deck labels', $title, $language); }
 		}

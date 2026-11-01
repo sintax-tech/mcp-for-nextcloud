@@ -15,7 +15,7 @@ use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesHandlers;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesScene;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesWriteWiring;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\WriteScene;
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Tools\Tables\Handler\CreateRowHandler;
 use OCA\Mcp\Tools\Tables\Handler\UpdateRowHandler;
 use OCA\Mcp\Tools\Tables\Rows\TablesSessionGuard;

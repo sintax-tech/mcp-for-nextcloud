@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Forms\Discovery;
 
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 
 /** Authenticates format, offset, actor, Forms version, page size and reauthorized list state; not a snapshot. */
 final class FormListCursor {
@@ -59,7 +59,7 @@ final class FormListCursor {
 	 *
 	 * @param string|null $cursor the cursor, null for the first page
 	 * @return int the offset
-	 * @throws \OCA\Mcp\Tools\ToolFailure when the cursor is not one of this query, user and state
+	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when the cursor is not one of this query, user and state
 	 */
 	public function offset(?string $cursor): int {
 		if ($cursor === null) {
@@ -67,13 +67,13 @@ final class FormListCursor {
 		}
 		$parts = explode('.', $cursor);
 		if (strlen($cursor) > self::MAX_LENGTH || count($parts) !== 3 || $parts[0] !== self::FORMAT) {
-			throw new \OCA\Mcp\Tools\ToolFailure(\OCA\Mcp\Tools\Forms\FormsMessages::stale());
+			throw new \OCA\Mcp\Mcp\Tools\Results\ToolFailure(\OCA\Mcp\Tools\Forms\FormsMessages::stale());
 		}
 		$json = base64_decode(strtr($parts[1], '-_', '+/'), true);
 		$public = is_string($json) ? json_decode($json, true) : null;
 		$offset = is_array($public) && array_keys($public) === ['o'] ? $public['o'] : null;
 		if (!is_int($offset) || $offset < 0 || $offset > $this->maxOffset || !hash_equals($this->macOf($parts[0], $offset), $parts[2])) {
-			throw new \OCA\Mcp\Tools\ToolFailure(\OCA\Mcp\Tools\Forms\FormsMessages::stale());
+			throw new \OCA\Mcp\Mcp\Tools\Results\ToolFailure(\OCA\Mcp\Tools\Forms\FormsMessages::stale());
 		}
 		return $offset;
 	}

@@ -147,7 +147,7 @@ final class CardDueTimeTest extends TestCase {
 		$args = ['title' => 'Timed board', 'stacks' => [['title' => 'Todo', 'cards' => [['title' => 'Timed', 'duedate' => '2026-10-01T15:30']]]]];
 		self::assertSame('2026-10-01T15:30', BoardBlueprint::parse($args, 'alice', new DateTimeZone('Asia/Tokyo'))['stacks'][0]['cards'][0]['duedate']);
 		$args['stacks'][0]['cards'][0]['duedate'] = '2026-09-06T00:00';
-		$this->expectException(\OCA\Mcp\Tools\ArgumentValidationException::class);
+		$this->expectException(\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException::class);
 		BoardBlueprint::parse($args, 'alice', new DateTimeZone('America/Santiago'));
 	}
 }

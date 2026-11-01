@@ -12,9 +12,9 @@ use OCA\Mcp\AppInfo\Application;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
-use OCA\Mcp\Tools\ArgumentValidator;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Tools\People\PeopleModule;
-use OCA\Mcp\Tools\ToolPresentation;
+use OCA\Mcp\Mcp\Tools\ToolPresentation;
 use OCP\Collaboration\Collaborators\ISearch;
 use OCP\Share\IShare;
 use PHPUnit\Framework\TestCase;
@@ -244,7 +244,7 @@ final class PeopleModuleTest extends TestCase {
 		try {
 			$module->call('users_search', ['query' => $term, 'limit' => 10], 'alice');
 			self::fail('no failure');
-		} catch (\OCA\Mcp\Tools\ToolFailure $e) {
+		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
 			self::assertSame('The search for people failed; try again.', $e->getMessage());
 		}
 		self::assertSame([['app' => 'mcp', 'exception_class' => \RuntimeException::class]], array_column($logged, 1));
@@ -255,7 +255,7 @@ final class PeopleModuleTest extends TestCase {
 		$registryLogger->method('error')->willReturnCallback(function (mixed ...$args) use (&$logged): void {
 			$logged[] = $args;
 		});
-		$registry = new \OCA\Mcp\Tools\ToolRegistry([$module], $policy, $this->createMock(\OCP\App\IAppManager::class),
+		$registry = new \OCA\Mcp\Mcp\Tools\ToolRegistry([$module], $policy, $this->createMock(\OCP\App\IAppManager::class),
 			$this->createMock(\OCP\IUserManager::class), $registryLogger);
 		$result = $registry->call('users_search', ['query' => $term], 'alice');
 

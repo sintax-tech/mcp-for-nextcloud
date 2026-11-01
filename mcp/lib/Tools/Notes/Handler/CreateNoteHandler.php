@@ -19,7 +19,7 @@ use OCA\Mcp\Tools\Notes\NoteNames;
 use OCA\Mcp\Tools\Notes\NoteTypeBoundary;
 use OCA\Mcp\Tools\Notes\NoteWrite;
 use OCA\Mcp\Tools\Notes\NotesRepository;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;
 

@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Mcp\Tools\Deck\DeckCapabilities;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
-use OCA\Mcp\Tools\ArgumentValidationException;
-use OCA\Mcp\Tools\ToolRegistry;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -120,7 +120,7 @@ final class DependencyCapabilitiesTest extends TestCase {
 		try {
 			foreach (['en', 'pt_BR', 'es', 'de'] as $language) {
 				\OCA\Mcp\L10n\Translator::use(new \OCA\Mcp\Tests\Unit\L10n\JsonL10n($language));
-				$title = \OCA\Mcp\Tools\ToolPresentation::title('deck_read_card_dependencies');
+				$title = \OCA\Mcp\Mcp\Tools\ToolPresentation::title('deck_read_card_dependencies');
 				$message = \OCA\Mcp\Tools\Deck\DeckMessages::dependencyGraphLimit();
 				if ($language === 'en') {
 					self::assertSame('Read Deck card dependencies', $title);

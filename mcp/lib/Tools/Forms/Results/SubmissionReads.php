@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Forms\Results;
 
 use OCA\Forms\Db\Submission;
 use OCA\Mcp\Tools\Forms\FormsMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Db\DoesNotExistException;
 use Psr\Container\ContainerInterface;
 

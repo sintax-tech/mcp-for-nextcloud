@@ -32,7 +32,7 @@ final class SubmissionShape {
 			$item = $this->answers->of($answer, $active, $uid, $filesAllowed);
 			if ($item !== null) {
 				$items[] = $item;
-				if (count($items) > ResultsBudget::ANSWERS) { throw new \OCA\Mcp\Tools\ToolFailure(ResultsMessages::budget($list)); }
+				if (count($items) > ResultsBudget::ANSWERS) { throw new \OCA\Mcp\Mcp\Tools\Results\ToolFailure(ResultsMessages::budget($list)); }
 			}
 		}
 		usort($items, static fn (array $a, array $b): int => $a['id'] <=> $b['id']);

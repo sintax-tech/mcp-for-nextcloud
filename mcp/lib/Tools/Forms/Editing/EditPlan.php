@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Forms\Editing;
 
-use OCA\Mcp\Tools\PlanState;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Tools\Forms\FormsMessages;
 
 /** Binds the complete point edit, relevant private guard state and warnings without publishing other users or selectors. */
@@ -42,7 +42,7 @@ class EditPlan {
 		EditValues::json($plan);
 		$plan[PlanState::ARGUMENT] = $this->states->of(EditTools::name($r['option']), $uid, EditValues::canonical(['plan' => $plan, 'guard' => $s, 'effect' => $e]));
 		if ($changed) { $plan += EditPlanNotice::fields($r, $s); }
-		if (strlen(EditValues::json($plan)) > 131072 || strlen((new EditPlanRenderer())->render($plan)) > 131072) { throw new \OCA\Mcp\Tools\ToolFailure(EditMessages::limit()); }
+		if (strlen(EditValues::json($plan)) > 131072 || strlen((new EditPlanRenderer())->render($plan)) > 131072) { throw new \OCA\Mcp\Mcp\Tools\Results\ToolFailure(EditMessages::limit()); }
 		return $plan;
 	}
 }

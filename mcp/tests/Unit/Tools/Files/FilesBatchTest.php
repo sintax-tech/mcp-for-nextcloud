@@ -236,7 +236,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
 		try {
 			$reorganization->createFolders($this->tree->rootFolder(), ['/A/B', '/C']);
 			$this->fail('createFolders aceitou uma pasta sobre um arquivo');
-		} catch (\OCA\Mcp\Tools\ToolFailure $e) {
+		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
 			$this->assertSame(FilesMessages::destinationExists(), $e->getMessage());
 		}
 		$this->assertSame([], $this->tree->ops);
@@ -551,7 +551,7 @@ final class FilesBatchTest extends FilesToolsTestCase {
 			try {
 				$call();
 				$this->fail('o lote de bob foi achado por alice');
-			} catch (\OCA\Mcp\Tools\ToolFailure $e) {
+			} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
 				$this->assertSame(FilesMessages::batchNotFound(), $e->getMessage());
 			}
 		}

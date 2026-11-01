@@ -11,7 +11,7 @@ use InvalidArgumentException;
 use OCA\Mcp\Tests\Unit\Tools\Tasks\Handler\TaskListingCase;
 use OCA\Mcp\Tools\Calendar\DavResult;
 use OCA\Mcp\Tools\Tasks\TaskHierarchy;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * Verifies reading, writing and filtering subtasks (VTODO RELATED-TO parent links) without widening visibility.

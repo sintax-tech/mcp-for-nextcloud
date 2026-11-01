@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Mcp\Tools\Common\NodeAccess;
 use OCA\Mcp\Tools\Files\Access\ActorRoot;
 use OCA\Mcp\Tools\Files\Access\PreviewRoot;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 use OCP\Files\ForbiddenException;
 use OCP\Files\IRootFolder;

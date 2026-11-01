@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * files_tree: one bounded walk so an agent can plan a reorganization without a call per directory.
@@ -161,7 +161,7 @@ final class FilesTreeTest extends FilesToolsTestCase {
 		try {
 			$this->tree(['path' => '/nao-existe']);
 			$this->fail('uma pasta que não existe não pode dar árvore');
-		} catch (\OCA\Mcp\Tools\ToolFailure $e) {
+		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
 			$this->assertSame(CommonMessages::notFound(), $e->getMessage());
 		}
 		$this->tree->nodes['/alice/files/Documentos/2026/arquivo']['readable'] = false;

@@ -8,10 +8,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Tests\Unit\Tools\Files\Sharing\FakeShares;
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\Sharing\ShareFormatter;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Constants;
 use OCP\Share\IShare;
 
@@ -262,7 +262,7 @@ final class FilesShareLinkTest extends FilesToolsTestCase {
 		$state = $this->stateOf('files_share', ['path' => self::FILE, 'with' => 'link']);
 		$this->sharePolicy->setGrant('alice', 'files', 'link', false);
 		self::assertSame(FilesMessages::shareNotGranted(), $this->refusal('confirm',
-			['path' => self::FILE, 'with' => 'link', \OCA\Mcp\Tools\PlanState::ARGUMENT => $state]));
+			['path' => self::FILE, 'with' => 'link', \OCA\Mcp\Mcp\Confirmation\PlanState::ARGUMENT => $state]));
 		self::assertSame([], $this->shares->writes);
 	}
 
@@ -271,7 +271,7 @@ final class FilesShareLinkTest extends FilesToolsTestCase {
 		$state = $this->stateOf('files_share', ['path' => self::FILE, 'with' => 'link']);
 		$this->shares->settings['shareApiAllowLinks'] = false;
 		self::assertSame(FilesMessages::shareLinksDisabled(), $this->refusal('confirm',
-			['path' => self::FILE, 'with' => 'link', \OCA\Mcp\Tools\PlanState::ARGUMENT => $state]));
+			['path' => self::FILE, 'with' => 'link', \OCA\Mcp\Mcp\Confirmation\PlanState::ARGUMENT => $state]));
 		self::assertSame([], $this->shares->writes);
 	}
 }

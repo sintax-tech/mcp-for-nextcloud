@@ -13,7 +13,7 @@ use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Tools\Files\BackupPlan;
 use OCA\Mcp\Tools\Contacts\ContactBackup;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Lock\ILockingProvider;
 use PHPUnit\Framework\Attributes\DataProvider;

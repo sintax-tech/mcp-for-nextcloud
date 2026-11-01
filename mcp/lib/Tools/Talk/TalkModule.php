@@ -8,10 +8,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Talk;
 
 use InvalidArgumentException;
-use OCA\Mcp\Tools\PreviewsWrites;
-use OCA\Mcp\Tools\RendersPlans;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Tools\PreviewsWrites;
+use OCA\Mcp\Mcp\Tools\RendersPlans;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\ToolModule;
 use Psr\Log\LoggerInterface;
 use OCA\Mcp\Service\Policy\PolicyUnavailable;
 use Throwable;
@@ -839,6 +839,6 @@ class TalkModule implements ToolModule, PreviewsWrites, RendersPlans {
 	 * @return string sanitized message
 	 */
 	private static function loggable(Throwable $e): string {
-		return \OCA\Mcp\Tools\ToolRegistry::loggable($e->getPrevious() ?? $e);
+		return \OCA\Mcp\Mcp\Tools\ToolRegistry::loggable($e->getPrevious() ?? $e);
 	}
 }

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Mail\Handler;
 
-use OCA\Mcp\Tools\ArgumentValidationException;
+use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Mail\MailServices;
 use OCA\Mcp\Tools\Mail\MailUnavailableException;
 use OCA\Mcp\Tools\Mail\Send\MailSendAccount;
@@ -15,10 +15,10 @@ use OCA\Mcp\Tools\Mail\Send\MailSendOutbox;
 use OCA\Mcp\Tools\Mail\Send\MailSendOutcome;
 use OCA\Mcp\Tools\Mail\Send\MailSendPlan;
 use OCA\Mcp\Tools\Mail\Send\MailSendRequest;
-use OCA\Mcp\Tools\PlanChanged;
-use OCA\Mcp\Tools\PlanState;
-use OCA\Mcp\Tools\ToolFailure;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Confirmation\PlanChanged;
+use OCA\Mcp\Mcp\Confirmation\PlanState;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 
 /**
  * Backs `mail_send_message`: one new message from one of the user's own accounts, through the Mail app's Outbox and send

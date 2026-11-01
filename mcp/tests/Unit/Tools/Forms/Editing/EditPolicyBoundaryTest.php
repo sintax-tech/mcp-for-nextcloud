@@ -12,7 +12,7 @@ use OCA\Mcp\Service\Policy\{PolicyOperationContext,PolicyResolver,PolicyWriter};
 use OCA\Mcp\Service\Scope\ScopeGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\Forms\Editing\EditPolicyBoundary;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /** Separates per-stage admission from the still-open endpoint snapshot and closes only owned contexts. */

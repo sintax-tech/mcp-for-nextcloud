@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Mail\Move;
 
 use OCA\Mcp\Tools\Mail\MailMessageGateway;
 use OCA\Mcp\Tools\Mail\MailUnavailableException;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**
  * The folder a message is asked to move to, resolved through the user's own accounts on every call and checked the way

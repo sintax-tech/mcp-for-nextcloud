@@ -11,7 +11,7 @@ use OCA\Mcp\Tools\Calendar\Calendar;
 use OCA\Mcp\Tools\Tasks\TaskData;
 use OCA\Mcp\Tools\Tasks\TaskHierarchy;
 use OCA\Mcp\Tools\Tasks\TaskHierarchyMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 
 /**

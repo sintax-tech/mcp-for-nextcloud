@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
-use OCA\Mcp\Tools\ToolModule;
+use OCA\Mcp\Mcp\Tools\ToolModule;
 
 /**
  * Three Notes tools as their real module declares their grants (read, create, edit), so the real ToolRegistry can say

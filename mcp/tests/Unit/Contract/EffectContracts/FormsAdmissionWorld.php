@@ -19,7 +19,7 @@ use OCA\Mcp\Tools\Forms\Editing\EditNativeFactory;
 use OCA\Mcp\Tools\Forms\Editing\EditPolicyBoundary;
 use OCA\Mcp\Tools\Forms\FormsMessages;
 use OCA\Mcp\Tools\Forms\FormsServices;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\IUser;
 use OCP\IUserSession;

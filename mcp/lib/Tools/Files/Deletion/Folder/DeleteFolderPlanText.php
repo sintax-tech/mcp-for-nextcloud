@@ -8,7 +8,7 @@ namespace OCA\Mcp\Tools\Files\Deletion\Folder;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tools\Files\Deletion\DeleteMessages;
-use OCA\Mcp\Tools\PlanText;
+use OCA\Mcp\Mcp\Confirmation\PlanText;
 
 /** Renders complete folder counts without turning a partial inspection into a readable deletion plan. */
 final class DeleteFolderPlanText {

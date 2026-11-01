@@ -23,8 +23,8 @@ final class PathSafety {
 	 * @return string|null reason to refuse when the folder changes
 	 */
 	public static function unproved(array $tokens, int $i, string $path, ImportScope $scope, SourceTreeIndex $index): ?string {
-		[$id, $text] = $tokens[$i];
-		$include = in_array($id, self::INCLUDES, true);
+		[, $text] = $tokens[$i];
+		$include = self::includes($tokens, $i);
 		$call = in_array(strtolower(ltrim($text, '\\')), PathExpressions::CALLS, true) && ($tokens[$i + 1][1] ?? '') === '(';
 		if (!$include && !$call) {
 			return null;
@@ -64,8 +64,8 @@ final class PathSafety {
 	 */
 	public static function references(array $tokens): array {
 		$found = [];
-		foreach ($tokens as $i => [$id, $text]) {
-			$include = in_array($id, self::INCLUDES, true);
+		foreach ($tokens as $i => [, $text]) {
+			$include = self::includes($tokens, $i);
 			$call = in_array(strtolower(ltrim($text, '\\')), PathExpressions::CALLS, true) && ($tokens[$i + 1][1] ?? '') === '(';
 			if (!$include && !$call) {
 				continue;
@@ -89,6 +89,19 @@ final class PathSafety {
 			}
 		}
 		return array_values($found);
+	}
+
+	/**
+	 * Whether the token is an include or require statement. Without TOKEN_PARSE, a method named after the keyword
+	 * (`function require(`, `PlanState::require(`, `->include(`) is lexed as the keyword too; it reads no file.
+	 *
+	 * @param list<array{0:int|null,1:string,2:int}> $tokens significant tokens
+	 * @param int $i current token
+	 * @return bool true for an include or require statement
+	 */
+	private static function includes(array $tokens, int $i): bool {
+		return in_array($tokens[$i][0], self::INCLUDES, true)
+			&& !in_array($tokens[$i - 1][0] ?? null, [T_FUNCTION, T_DOUBLE_COLON, T_OBJECT_OPERATOR, T_NULLSAFE_OBJECT_OPERATOR], true);
 	}
 
 	/**

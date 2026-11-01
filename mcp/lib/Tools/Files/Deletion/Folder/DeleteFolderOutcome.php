@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files\Deletion\Folder;
 
 use OCA\Mcp\Tools\Files\Deletion\DeleteMessages;
-use OCA\Mcp\Tools\ToolResult;
+use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\Folder;
 use OCP\Files\NotFoundException;
 

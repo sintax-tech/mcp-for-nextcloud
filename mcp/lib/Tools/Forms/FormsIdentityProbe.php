@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Forms;
 
 use OCA\Forms\Constants;
 use OCA\Forms\Db\Form;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IUserSession;
 
 /** Proves the null/actor captured identity within the authenticated MCP endpoint invariant, never by mutating DI. */

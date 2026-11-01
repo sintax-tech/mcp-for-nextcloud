@@ -11,7 +11,7 @@ use OCA\Forms\Constants;
 use OCA\Forms\Db\Form;
 use OCA\Mcp\Tools\Forms\FormsServices;
 use OCA\Mcp\Tools\Forms\FormsMessages;
-use OCA\Mcp\Tools\ToolFailure;
+use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** Uses the proven FormsService instance for native RESULTS access, never cosmetic flags. */
 class ResultsAccess {

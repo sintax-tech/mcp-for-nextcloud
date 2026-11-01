@@ -12,6 +12,7 @@ use RecursiveIteratorIterator;
 use RuntimeException;
 
 require_once __DIR__ . '/DevelopmentEntries.php';
+require_once __DIR__ . '/AssetBuilder.php';
 
 /**
  * Inspects an app archive before it ships: `php scripts/check_package.php <archive.tar.gz> [sources...]`.
@@ -26,7 +27,9 @@ require_once __DIR__ . '/DevelopmentEntries.php';
  * - a missing license or attribution file from REQUIRED_LEGAL_FILES;
  * - a development-only entry under `mcp/scripts/` or `mcp/tests/` ({@see DevelopmentEntries});
  * - a script or style referenced with `Util::addScript/addStyle('mcp', X)` in the .php files of the sources
- *   (`templates lib` by default) that is not packaged as `mcp/js/X.js` or `mcp/css/X.css`.
+ *   (`templates lib` by default) that is not packaged as `mcp/js/X.js` or `mcp/css/X.css`;
+ * - an orphan `src/` script, a manifest entry that is not a file inside `src/`, or any other refusal of
+ *   {@see AssetBuilder}. The required manifests are {@see AssetTargets::REQUIRED}, not the files found on disk.
  *
  * The archive is read with a minimal tar reader of its own instead of PharData. PharData normalizes the
  * archive: it consumes the pax extended headers without exposing them or their typeflag, so the check that
@@ -128,6 +131,7 @@ final class PackageCheck {
 		}
 		array_push($found, ...self::vendorProblems($entries));
 		array_push($found, ...DevelopmentEntries::problems($entries));
+		array_push($found, ...AssetBuilder::packageProblems(getcwd() ?: ''));
 		foreach ($sources as $source) {
 			foreach (self::phpFiles($source) as $path) {
 				preg_match_all(self::REFERENCE, (string)file_get_contents($path), $matches, PREG_SET_ORDER);

@@ -8,7 +8,7 @@ HERE=$(cd "$(dirname "$0")" && pwd)
 root=$1
 ci="$root/mcp/tests/Integration/ci"
 mkdir -p "$ci"
-for script in run-local.sh engine-queue.sh shared-engine.sh cleanup-local-runs.sh local-artifact-root.sh; do
+for script in run-local.sh engine-queue.sh engine-locks.sh shared-engine.sh cleanup-local-runs.sh local-artifact-root.sh; do
 	cp "$HERE/$script" "$ci/$script"
 done
 sh "$ci/run-local.sh" --shutdown

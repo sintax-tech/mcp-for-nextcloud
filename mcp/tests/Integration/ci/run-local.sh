@@ -27,6 +27,7 @@ set -eu
 
 # Runs take the engine's slots in the order they arrived (see engine-queue.sh).
 . "$(cd "$(dirname "$0")" && pwd)/engine-queue.sh"
+. "$(cd "$(dirname "$0")" && pwd)/engine-locks.sh"
 . "$(cd "$(dirname "$0")" && pwd)/shared-engine.sh"
 
 # Cleanup is restricted to manifests written by this checkout; the Colima profile is shared.

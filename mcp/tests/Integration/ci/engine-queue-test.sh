@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
 # Proves the queue in front of the engine (engine-queue.sh) without Colima: the runs are small sh processes driving the
-# same functions as run-local.sh, `run-local.sh --shutdown` runs for real, and colima/docker are fakes on a PATH that
+# same functions as run-local.sh; shutdown runs in copied sandbox checkouts, and colima/docker are fakes on a PATH that
 # does not reach the real ones. The lock, the queue and the engine flag live in a temporary directory
 # (MCP_IT_LOCK_DIR); the real ~/.colima/mcp-it.* are never touched.
 #
@@ -25,6 +25,7 @@ STATE="$ROOT/state"
 export MCP_IT_LOCK_DIR="$STATE/mcp-it.lock" MCP_IT_LOCK_POLL=0.2 MCP_IT_LOCK_TIMEOUT=60
 # One slot unless a scenario of slots sets more: the scenarios of one slot prove the behavior of the queue before slots.
 export MCP_IT_SLOTS=1
+export LOCK_LIB="$HERE/engine-locks.sh"
 export SHARED_LIB="$HERE/shared-engine.sh" SHARED_QUEUE_CHECKS="$HERE/shared-queue-checks.sh"
 . "$SHARED_QUEUE_CHECKS"
 export EVENTS ROOT FAKE_UP="$ROOT/colima-up" LIB="$HERE/engine-queue.sh"
@@ -70,6 +71,7 @@ cat > "$ROOT/runner.sh" <<'EOF'
 set -eu
 NAME=$1
 . "$LIB"
+. "$LOCK_LIB"
 . "$SHARED_LIB"
 pause_at() {
     case " ${PAUSE:-} " in
@@ -306,12 +308,13 @@ scenario_fifo() {
     reset fifo
     hold_first A
     for name in B C D E F; do queue_up "$name"; done
+    wait_for_fifo_position_log
     touch "$ROOT/go.A"
     wait_all
     expect_served "A B C D E F"
     expect_engine_once
-    grep -q "queue position 5: the engine's 1 slot(s) are held by run(s) [0-9]*; waiting before this run: [0-9]* [0-9]* [0-9]* [0-9]*$" \
-        "$ROOT/out.F" || fail "F did not log its position and the runs ahead of it"
+    expect_fifo_position_log "$ROOT/out.F"
+    sh "$HERE/queue-position-test.sh"
     expect_no_residue
 }
 

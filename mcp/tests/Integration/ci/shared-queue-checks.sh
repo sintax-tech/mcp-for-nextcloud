@@ -29,3 +29,18 @@ shared_queue_finish_race() {
 	expect_shared_engine_once
 	expect_no_residue
 }
+
+# fifo_position_logged <log>: a slot holder may be a published PID or unknown while its PID is being published.
+fifo_position_logged() {
+	grep -Eq "queue position 5: the engine's 1 slot\(s\) are held by run\(s\) ([0-9]+|[?]); waiting before this run: [0-9]+ [0-9]+ [0-9]+ [0-9]+$" "$1"
+}
+
+# expect_fifo_position_log <log>: require the position and all four waiters without rejecting transient holders.
+expect_fifo_position_log() {
+	fifo_position_logged "$1" || fail "F did not log its position and the runs ahead of it"
+}
+
+# wait_for_fifo_position_log: keep A holding the slot until F has observed its required queue position.
+wait_for_fifo_position_log() {
+	wait_for "F to log queue position 5 before A leaves" 'fifo_position_logged "$ROOT/out.F"'
+}

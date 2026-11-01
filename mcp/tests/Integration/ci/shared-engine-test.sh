@@ -4,9 +4,7 @@
 # Proves ownership cleanup and shared-engine startup/release without touching real services.
 set -eu
 HERE=$(cd "$(dirname "$0")" && pwd)
-runs=$(sh "$HERE/local-artifact-root.sh")
-mkdir -p "$runs"
-MCP_SHARED_TEST_ROOT=$(mktemp -d "$runs/shared-engine-test.XXXXXX")
+MCP_SHARED_TEST_ROOT=$(mktemp -d "${TMPDIR:-/tmp}/mcp-it-shared-engine-test.XXXXXX")
 export MCP_SHARED_TEST_ROOT
 trap 'rm -rf "$MCP_SHARED_TEST_ROOT"' EXIT
 mkdir -p "$MCP_SHARED_TEST_ROOT/bin" "$MCP_SHARED_TEST_ROOT/runs/dead" "$MCP_SHARED_TEST_ROOT/runs/live"
@@ -59,11 +57,12 @@ test -f "$MCP_SHARED_TEST_ROOT/runs/live/owned-resources"
 test -f "$MCP_SHARED_TEST_ROOT/mcp-it-live-nc"
 test -f "$MCP_SHARED_TEST_ROOT/mcp-it-unrelated-nc"
 ! grep -q 'mcp-it-live\|mcp-it-unrelated' "$MCP_SHARED_TEST_ROOT/docker.log"
-# A sandboxed --shutdown must not consume the real checkout's interrupted-run sentinel.
+# A sandboxed --shutdown must not consume an interrupted-run sentinel in a sibling test checkout.
+mkdir -p "$MCP_SHARED_TEST_ROOT/sibling/.mcp-it-runs/interrupted"
 printf '%s\n' 999999999 mcp-it-sentinel-nc mcp-it-sentinel-db mcp-it-sentinel-net mcp-it-sentinel-imap \
-	> "$MCP_SHARED_TEST_ROOT/owned-resources"
+	> "$MCP_SHARED_TEST_ROOT/sibling/.mcp-it-runs/interrupted/owned-resources"
 sh "$HERE/shutdown-sandbox.sh" "$MCP_SHARED_TEST_ROOT/checkout"
-test -f "$MCP_SHARED_TEST_ROOT/owned-resources"
+test -f "$MCP_SHARED_TEST_ROOT/sibling/.mcp-it-runs/interrupted/owned-resources"
 # Invalid ownership data fails before resource mutation.
 mkdir -p "$MCP_SHARED_TEST_ROOT/invalid/run"
 printf '%s\n' 999999999 foreign-nc mcp-it-db mcp-it-net mcp-it-imap > "$MCP_SHARED_TEST_ROOT/invalid/run/owned-resources"
@@ -101,6 +100,7 @@ test -f "$MCP_SHARED_TEST_ROOT/up"
 # Removed global cleanup entry points cannot be reintroduced beside the safe lifecycle.
 (
 	. "$HERE/engine-queue.sh"
+	. "$HERE/engine-locks.sh"
 	! command -v remove_leftovers >/dev/null 2>&1
 	! command -v leftover >/dev/null 2>&1
 )

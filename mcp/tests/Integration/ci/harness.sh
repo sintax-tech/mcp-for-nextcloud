@@ -4,7 +4,7 @@
 #
 # Disposable Nextcloud instance for the integration suite (.github/workflows/integration.yml).
 # It starts containers, so it refuses to run anywhere but a GitHub Actions runner or an explicit local run
-# (MCP_IT_LOCAL=1, which only run-local.sh sets: it brings the container engine up and always takes it down again).
+# (MCP_IT_LOCAL=1, which only run-local.sh sets: it starts the shared container engine when needed and leaves it running).
 #
 # Usage: harness.sh <packages|tools|start-db|start-nextcloud|install-app|fixtures|provision|report|test|collect>
 # Cell, from the workflow matrix:

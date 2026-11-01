@@ -17,6 +17,10 @@ r=$MCP_SHARED_TEST_ROOT
 printf '%s\n' "$*" >> "$r/docker.log"
 case "$1 ${2:-}" in
 	'container inspect'|'network inspect'|'volume inspect') test -f "$r/$3" ;;
+	'container ls'|'network ls'|'volume ls')
+		for arg; do
+			case "$arg" in name=*) name=${arg#name=^}; name=${name%\$}; test ! -f "$r/$name" || echo "$name" ;; esac
+		done ;;
 	'inspect --format') echo mcp-it-owned-volume ;;
 	'rm -f') rm -f "$r/$4" "$r/mcp-it-owned-volume" ;;
 	'network rm') rm -f "$r/$3" ;;
@@ -55,8 +59,11 @@ test -f "$MCP_SHARED_TEST_ROOT/runs/live/owned-resources"
 test -f "$MCP_SHARED_TEST_ROOT/mcp-it-live-nc"
 test -f "$MCP_SHARED_TEST_ROOT/mcp-it-unrelated-nc"
 ! grep -q 'mcp-it-live\|mcp-it-unrelated' "$MCP_SHARED_TEST_ROOT/docker.log"
-# Empty --shutdown must not call Colima or scan the daemon's global inventory.
-sh "$HERE/run-local.sh" --shutdown
+# A sandboxed --shutdown must not consume the real checkout's interrupted-run sentinel.
+printf '%s\n' 999999999 mcp-it-sentinel-nc mcp-it-sentinel-db mcp-it-sentinel-net mcp-it-sentinel-imap \
+	> "$MCP_SHARED_TEST_ROOT/owned-resources"
+sh "$HERE/shutdown-sandbox.sh" "$MCP_SHARED_TEST_ROOT/checkout"
+test -f "$MCP_SHARED_TEST_ROOT/owned-resources"
 # Invalid ownership data fails before resource mutation.
 mkdir -p "$MCP_SHARED_TEST_ROOT/invalid/run"
 printf '%s\n' 999999999 foreign-nc mcp-it-db mcp-it-net mcp-it-imap > "$MCP_SHARED_TEST_ROOT/invalid/run/owned-resources"
@@ -91,4 +98,10 @@ set -e
 test "$start_exit" = 17
 test -f "$MCP_SHARED_TEST_ROOT/up"
 ! grep -q '^stop' "$MCP_SHARED_TEST_ROOT/colima.log"
+# Removed global cleanup entry points cannot be reintroduced beside the safe lifecycle.
+(
+	. "$HERE/engine-queue.sh"
+	! command -v remove_leftovers >/dev/null 2>&1
+	! command -v leftover >/dev/null 2>&1
+)
 echo 'Shared engine: owned resources removed; live/foreign resources preserved; startup reused; failure retained; no stop'

@@ -25,25 +25,16 @@
 #     and the run taking over, exactly one owns it;
 #   - a run holding a slot keeps $QUEUE_DIR/h.<pid> (its pid), so older copies of this script see it as waiting and
 #     never stop the engine under it;
-#   - starting and stopping Colima happen under $LOCK_DIR's engine switch ("${LOCK_DIR%.lock}.engine.lock", the same
-#     protocol): a run starts Colima if it is down; the run that leaves when no other run holds a slot, waits or is in
-#     the doorway stops it, if a run of this script started it ($ENGINE_FLAG). A run uses the engine only after taking
-#     the switch, so it never runs on an engine being stopped.
+#   - engine startup is serialized through the engine switch; shared-engine.sh owns the lifecycle and
+#     always leaves the shared Colima profile running. Resource cleanup requires a checkout-owned manifest.
 #
-# Older copies of run-local.sh (other worktrees) keep working next to this one: they use slot 1 as their lock, write
-# $QUEUE_DIR/<pid> files that others_waiting reads here as well, and their others_waiting reads the tickets and h.<pid>
-# here as waiting runs. They do not look at tickets or slots, so an older run may still take slot 1 ahead of the queue,
-# it takes a dead owner's lock over with rm -rf and it starts Colima without the switch, as it always did.
-#
-# Knobs: MCP_IT_SLOTS (runs using the engine at once, default 2), and for the tests MCP_IT_LOCK_DIR (lock path),
-# MCP_IT_LOCK_POLL (seconds between checks, default 2), MCP_IT_LOCK_TIMEOUT (seconds without the queue moving before
-# giving up, default 3600).
+# Older queue formats may use slot 1 and numeric entries; only dead entries are removed from the local queue.
+# Knobs: MCP_IT_SLOTS (default 2), MCP_IT_LOCK_DIR (lock path), MCP_IT_LOCK_POLL (default 2 seconds),
+# MCP_IT_LOCK_TIMEOUT (default 3600 seconds without queue movement).
 
 LOCK_DIR="${MCP_IT_LOCK_DIR:-$HOME/.colima/mcp-it.lock}"
 QUEUE_DIR="${LOCK_DIR%.lock}.queue"
 ENGINE_LOCK="${LOCK_DIR%.lock}.engine.lock"
-# Present while Colima runs because a run of this script started it: the last run to leave stops it.
-ENGINE_FLAG="${LOCK_DIR%.lock}.engine"
 SLOTS="${MCP_IT_SLOTS:-2}"
 case "$SLOTS" in '' | *[!0-9]* | 0) echo "MCP_IT_SLOTS must be a whole number of at least 1" >&2; exit 2 ;; esac
 HAVE_LOCK=0
@@ -53,7 +44,6 @@ TICKET=""
 HOLD="$QUEUE_DIR/h.$(printf '%010d' "$$")"
 SLOT_DIR=""
 ENGINE_HELD=""
-STARTED_COLIMA=0
 
 log() {
     echo "[run-local $(date +%H:%M:%S)] $*"
@@ -291,7 +281,7 @@ leave_slot() {
     rm -f "$HOLD"
 }
 
-# engine_lock: takes the engine switch (starting and stopping Colima); 1 after MCP_IT_LOCK_TIMEOUT seconds. A run that
+# engine_lock: takes the engine switch (serializing shared Colima startup); 1 after MCP_IT_LOCK_TIMEOUT seconds. A run that
 # already holds it (cleanup after a failed colima start) keeps it.
 engine_lock() {
     [ -z "$ENGINE_HELD" ] || return 0
@@ -311,95 +301,12 @@ engine_unlock() {
     return 0
 }
 
-# Whether another live run is using the engine (a slot), waiting for it or in the doorway; entries of dead runs are
-# dropped. Reads the tickets, h.<pid> and the <pid> entries of older copies of this script alike, and every slot
-# directory, whatever MCP_IT_SLOTS the other runs use.
-others_waiting() {
-    found=1
-    for entry in "$QUEUE_DIR"/* "$QUEUE_DIR"/.new.*; do
-        [ -e "$entry" ] || continue
-        pid=$(cat "$entry" 2>/dev/null || true)
-        [ "$pid" = "$$" ] && continue
-        if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
-            found=0
-        else
-            rm -f "$entry"
-        fi
-    done
-    for dir in "$LOCK_DIR" "$LOCK_DIR".[0-9]*; do
-        [ -d "$dir" ] || continue
-        owner=$(lock_owner "$dir")
-        [ "$owner" = "$$" ] && continue
-        # '' is a run still writing its pid: it is alive.
-        if [ -z "$owner" ] || kill -0 "$owner" 2>/dev/null; then
-            found=0
-        fi
-    done
-    return $found
-}
-
-# engine_take: with a slot held, starts Colima under the engine switch when it is down. STARTED_COLIMA=1 when a run of
-# this script started it (this or another run), so the last run to leave stops it.
+# Compatibility entry points delegate to the shared profile lifecycle; source shared-engine.sh too.
 engine_take() {
-    engine_lock || exit 3
-    if colima status >/dev/null 2>&1; then
-        if [ -f "$ENGINE_FLAG" ]; then
-            log "Colima was started by a run of this script that handed it over; this run stops it when nobody waits"
-            STARTED_COLIMA=1
-        else
-            log "Colima is already running (not started by this script); this run will not stop it"
-        fi
-    else
-        log "starting Colima (4 CPUs, 8 GiB)"
-        STARTED_COLIMA=1
-        echo "$$" > "$ENGINE_FLAG"
-        colima start --vm-type vz --mount-type virtiofs --cpu 4 --memory 8 --disk 40
-    fi
-    engine_unlock
+    shared_engine_take
 }
 
-# engine_release: under the engine switch, gives this run's slot up and then stops Colima when a run of this script
-# started it and no other run uses, waits for or is entering the engine; otherwise leaves it up for them. Leaving and
-# deciding under the switch make the last run through it see every other one gone: two runs leaving together never
-# each leave the engine up for the other.
+# Releasing a legacy caller's slot never transfers ownership of the shared engine.
 engine_release() {
-    if ! engine_lock; then
-        log "could not take the engine switch; Colima is left as it is"
-        return 0
-    fi
-    leave_slot
-    if [ -f "$ENGINE_FLAG" ]; then
-        if others_waiting; then
-            log "another run is waiting for the engine: Colima stays up for it, and it takes over stopping it"
-        else
-            log "stopping Colima (a run of this script started it and nobody is waiting)"
-            colima stop
-            rm -f "$ENGINE_FLAG"
-        fi
-    else
-        log "Colima was already running before this run; left as it was"
-    fi
-    engine_unlock
-}
-
-# remove_leftovers: with the engine switch held, removes the test containers and networks of runs that are gone (their
-# names end with the pid of their run), and those without a pid (fixed names of old copies) when no other run is there.
-remove_leftovers() {
-    busy=0
-    others_waiting && busy=1
-    for name in $(docker ps -a --format '{{.Names}}' --filter 'name=mcp-it' 2>/dev/null || true); do
-        if leftover "$name" "$busy"; then docker rm -f -v "$name" >/dev/null 2>&1 || true; fi
-    done
-    for name in $(docker network ls --format '{{.Name}}' --filter 'name=mcp-it' 2>/dev/null || true); do
-        if leftover "$name" "$busy"; then docker network rm "$name" >/dev/null 2>&1 || true; fi
-    done
-}
-
-# leftover <name> <busy>: whether a container or network was left by a run that is gone.
-leftover() {
-    pid=${1##*-}
-    case "$pid" in
-        '' | *[!0-9]*) [ "$2" = 0 ] ;;
-        *) ! kill -0 "$pid" 2>/dev/null ;;
-    esac
+    shared_engine_release
 }

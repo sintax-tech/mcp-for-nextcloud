@@ -25,6 +25,8 @@ STATE="$ROOT/state"
 export MCP_IT_LOCK_DIR="$STATE/mcp-it.lock" MCP_IT_LOCK_POLL=0.2 MCP_IT_LOCK_TIMEOUT=60
 # One slot unless a scenario of slots sets more: the scenarios of one slot prove the behavior of the queue before slots.
 export MCP_IT_SLOTS=1
+export SHARED_LIB="$HERE/shared-engine.sh" SHARED_QUEUE_CHECKS="$HERE/shared-queue-checks.sh"
+. "$SHARED_QUEUE_CHECKS"
 export EVENTS ROOT FAKE_UP="$ROOT/colima-up" LIB="$HERE/engine-queue.sh"
 QUEUE="$STATE/mcp-it.queue"
 FLAG="$STATE/mcp-it.engine"
@@ -68,6 +70,7 @@ cat > "$ROOT/runner.sh" <<'EOF'
 set -eu
 NAME=$1
 . "$LIB"
+. "$SHARED_LIB"
 pause_at() {
     case " ${PAUSE:-} " in
         *" $1 "*) ;;
@@ -128,16 +131,15 @@ rm "$ROOT/in/$NAME"
 exit 0
 EOF
 # A run of the copy of run-local.sh before the ticket queue (other worktrees may still run it): its lock, queue and
-# engine code verbatim, only polling faster.
+# queue code with faster polling and shared-profile-safe lifecycle.
 cat > "$ROOT/legacy.sh" <<'LEGACY'
 #!/bin/sh
 set -eu
 NAME=$1
+. "$SHARED_QUEUE_CHECKS"
 LOCK_DIR="${MCP_IT_LOCK_DIR:-$HOME/.colima/mcp-it.lock}"
 QUEUE_DIR="${LOCK_DIR%.lock}.queue"
-ENGINE_FLAG="${LOCK_DIR%.lock}.engine"
 HAVE_LOCK=0
-STARTED_COLIMA=0
 log() {
     echo "[run-local $(date +%H:%M:%S)] $*"
 }
@@ -178,15 +180,7 @@ cleanup() {
     status=$?
     trap - EXIT INT TERM
     set +e
-    if [ "$STARTED_COLIMA" = 1 ]; then
-        if others_waiting; then
-            log "another run is waiting for the engine: Colima stays up for it, and it takes over stopping it"
-        else
-            log "stopping Colima (a run of this script started it and nobody is waiting)"
-            colima stop
-            rm -f "$ENGINE_FLAG"
-        fi
-    fi
+    shared_legacy_engine_release
     [ "$HAVE_LOCK" = 1 ] && rm -rf "$LOCK_DIR"
     exit "$status"
 }
@@ -199,11 +193,7 @@ inside=$(ls "$ROOT/in" | wc -l | tr -d ' ')
 [ "$inside" -le "${MCP_IT_SLOTS:-1}" ] || echo "OVERLAP $NAME ($inside inside)" >> "$EVENTS"
 echo "inside $inside" >> "$EVENTS"
 echo "got $NAME $$" >> "$EVENTS"
-if colima status >/dev/null 2>&1; then
-    [ -f "$ENGINE_FLAG" ] && STARTED_COLIMA=1
-else
-    STARTED_COLIMA=1
-    echo "$$" > "$ENGINE_FLAG"
+if ! colima status >/dev/null 2>&1; then
     colima start
 fi
 if [ "${2:-}" = wait ]; then
@@ -291,23 +281,13 @@ expect_no_residue() {
     [ -n "$(ls -A "$QUEUE" 2>/dev/null)" ] && fail "queue entries left behind: $(ls -A "$QUEUE")"
     [ -n "$(ls -A "$ROOT/in")" ] && fail "a run did not finish its work: $(ls "$ROOT/in")"
     [ -n "$(ls -d "$MCP_IT_LOCK_DIR".* "$STATE/mcp-it.engine.lock" 2>/dev/null)" ] && fail "slot or engine switch left behind"
-    [ -e "$FAKE_UP" ] && fail "the engine was left running"
+    grep -q "^colima stop" "$EVENTS" && fail "the shared engine was stopped"
     return 0
 }
 
-# expect_engine_once: started once, stopped once, by the last run served, after all work.
+# expect_engine_once: startup is shared once; every caller leaves the profile running.
 expect_engine_once() {
-    [ "$(grep -c '^colima start' "$EVENTS")" = 1 ] || fail "colima started $(grep -c '^colima start' "$EVENTS") times"
-    [ "$(grep -c '^colima stop' "$EVENTS")" = 1 ] || fail "colima stopped $(grep -c '^colima stop' "$EVENTS") times"
-    [ "$(tail -n 1 "$EVENTS" | cut -d' ' -f1-2)" = "colima stop" ] || fail "colima stopped before the last run finished"
-    stopper=$(tail -n 1 "$EVENTS" | cut -d' ' -f3)
-    if [ "$MCP_IT_SLOTS" = 1 ]; then
-        name=$(sed -n 's/^done //p' "$EVENTS" | tail -n 1)
-        [ "$stopper" = "$(sed -n "s/^got $name //p" "$EVENTS")" ] || fail "colima was not stopped by the last run"
-    else
-        # With slots the last to leave is the last through the engine switch, not the last to write "done".
-        grep -q "^got [^ ]* $stopper\$" "$EVENTS" || fail "colima was stopped by $stopper, which is not a run"
-    fi
+    expect_shared_engine_once
 }
 
 reset() {
@@ -321,7 +301,7 @@ reset() {
     : > "$EVENTS"
 }
 
-# (a) Runs are served in the order they arrived; the engine started by the first is handed down and stopped by the last.
+# (a) Runs are served in the order they arrived; the engine started by the first is reused and preserved by every run.
 scenario_fifo() {
     reset fifo
     hold_first A
@@ -409,7 +389,7 @@ scenario_traps() {
     expect_no_residue
 }
 
-# Legacy queue users retain their original lifecycle; the current local runner's shared-engine and
+# The old queue fixture also follows the shared profile lifecycle; the current local runner's shared-engine and
 # ownership-only shutdown contract is covered separately by shared-engine-test.sh.
 scenario_legacy() {
     reset legacy
@@ -433,6 +413,7 @@ scenario_legacy() {
 
 scenario_shutdown() {
     sh "$HERE/shared-engine-test.sh"
+    sh "$HERE/cleanup-ownership-test.sh"
 }
 
 # stays_false <description> <shell condition>: the condition stays false for 1 s (five polls of the runs).
@@ -705,7 +686,7 @@ scenario_chain() {
 }
 
 # Two slots next to a copy of the script from before the slots: the old run L holds slot 1 (its lock) and starts the
-# engine, the new run A works in slot 2; L leaves first and, seeing A's h.<pid>, leaves the engine up; A stops it.
+# engine, the new run A works in slot 2; both release their slots and leave the shared engine up.
 scenario_slots_legacy() {
     reset slots-legacy
     export MCP_IT_SLOTS=2
@@ -741,27 +722,12 @@ scenario_slots_legacy() {
     expect_no_residue
 }
 
-# Review round 3, M1: A and B leave together, each stopping right after it lets the engine switch go. The first through
-# the switch has already left its slot, so the second sees nobody and stops the engine: never left up with nobody.
+# Concurrent exits release both slots without touching the shared profile.
 scenario_finish_race() {
-    reset finish-race
-    export MCP_IT_SLOTS=2
-    hold_slots A B
-    # Armed once both are past engine_take, so the pause is the one after leaving, not after starting.
-    wait_for "A and B ready" "grep -q '^ready A' '$EVENTS' && grep -q '^ready B' '$EVENTS'"
-    touch "$ROOT/arm.A.after-switch" "$ROOT/arm.B.after-switch"
-    touch "$ROOT/go.A"
-    wait_for "A past the switch" "[ -f '$ROOT/at.A.after-switch' ]"
-    touch "$ROOT/go.B"
-    wait_for "B past the switch" "[ -f '$ROOT/at.B.after-switch' ]"
-    touch "$ROOT/resume.A.after-switch" "$ROOT/resume.B.after-switch"
-    wait_all
-    expect_engine_once
-    expect_no_residue
+    shared_queue_finish_race
 }
 
-# Review round 3, M2: colima start fails. The cleanup keeps the switch it already holds (no wait for itself), stops
-# what the failed start left and removes the flag; the run fails at once, nothing is left.
+# Startup failures and TERM release the queue and engine switch while preserving the shared profile.
 scenario_start_error() {
     reset start-error
     export MCP_IT_SLOTS=2
@@ -774,7 +740,7 @@ scenario_start_error() {
     [ "$status" != 0 ] || fail "A did not fail when colima start failed"
     [ $(($(date +%s) - started)) -lt 10 ] || fail "A waited for its own engine switch"
     grep -q 'Timed out' "$ROOT/out.A" && fail "A timed out on its own engine switch"
-    [ "$(grep -c '^colima stop' "$EVENTS")" = 1 ] || fail "the failed start was not stopped"
+    expect_engine_once
     # The runner marks itself inside before engine_take; it fails there on purpose and never leaves the mark.
     rm -f "$ROOT/in/A"
     expect_no_residue
@@ -783,14 +749,14 @@ scenario_start_error() {
     reset start-term
     export MCP_IT_SLOTS=2
     start A
-    wait_for "A starting Colima" "grep -q 'starting Colima' '$ROOT/out.A' 2>/dev/null"
+    wait_for "A starting Colima" "grep -q 'starting shared Colima' '$ROOT/out.A' 2>/dev/null"
     kill -TERM "$RUN_A"
     status=0
     wait "$RUN_A" || status=$?
     PIDS=""
     [ "$status" = 143 ] || fail "A exited $status after SIGTERM during colima start"
     grep -q 'Timed out' "$ROOT/out.A" && fail "A timed out on its own engine switch"
-    [ "$(grep -c '^colima stop' "$EVENTS")" = 1 ] || fail "the engine started under TERM was not stopped"
+    expect_engine_once
     rm -f "$ROOT/in/A"
     expect_no_residue
 }

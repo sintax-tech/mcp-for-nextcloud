@@ -14,8 +14,20 @@ shared_engine_take() {
 
 # shared_engine_release: release only this run's slot, even after an error or interrupt.
 shared_engine_release() {
+	drop_dead_queue_marks
 	leave_slot
 	log "Shared Colima profile left running"
+}
+
+# drop_dead_queue_marks: clean only dead legacy waiters and holder marks in this queue, never engine resources.
+drop_dead_queue_marks() {
+	[ -n "${QUEUE_DIR:-}" ] || return 0
+	for entry in "$QUEUE_DIR"/[0-9]* "$QUEUE_DIR"/h.*; do
+		[ -f "$entry" ] || continue
+		pid=$(cat "$entry" 2>/dev/null || true)
+		case "$pid" in ''|*[!0-9]*) continue ;; esac
+		kill -0 "$pid" 2>/dev/null || rm -f "$entry"
+	done
 }
 
 # record_owned_resources <manifest>: exact names used by this run, never a global prefix scan.

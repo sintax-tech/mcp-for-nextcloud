@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * The real FilesScope over a policy double whose Files scope a test sets: the items of the operation's snapshot, read
- * at call time. The end-to-end path through the real writer and resolution core is {@see \OCA\Mcp\Tests\Unit\Service\Scope\FilesScopeActivationTest}.
+ * at call time. The end-to-end path through the real writer and resolution core is {@see \OCA\Mcp\Tests\Unit\Access\ResourceScope\FilesScopeActivationTest}.
  */
 final class FilesScopes {
 	/**

@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tests\Unit\Service;
+namespace OCA\Mcp\Tests\Unit\Access\Guests;
 
 use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCP\App\IAppManager;

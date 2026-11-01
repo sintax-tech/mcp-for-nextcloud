@@ -42,7 +42,7 @@ final class MoveEquivalenceR5RepositoryTest extends TestCase {
 	 */
 	public static function moves(): iterable {
 		yield 'OverridePreview two readers' => [implode('/', ['Service', 'OverridePreview']) . '.php', ['tests/Unit/Admin/AdminOverridesAssetsTest.php', 'tests/Unit/Admin/AdminGroupAssetsTest.php']];
-		yield 'PolicyWriter sorted and keyed readers' => [implode('/', ['Service', 'Policy', 'PolicyWriter']) . '.php', ['tests/Unit/Service/Scope/ScopeBoundariesTest.php', 'tests/Unit/Migration/ScopeSchemaTest.php', 'tests/Unit/Tools/FileWriteGuardCoverageTest.php']];
+		yield 'PolicyWriter sorted and keyed readers' => [implode('/', ['Service', 'Policy', 'PolicyWriter']) . '.php', ['tests/Unit/Access/ResourceScope/ScopeBoundariesTest.php', 'tests/Unit/Migration/ScopeSchemaTest.php', 'tests/Unit/Tools/FileWriteGuardCoverageTest.php']];
 		yield 'FilesModule keyed inventory' => [implode('/', ['Tools', 'Files', 'FilesModule']) . '.php', ['tests/Unit/Tools/FileWriteGuardCoverageTest.php', 'tests/Unit/Tools/Files/FileContentTypePolicyTest.php']];
 		yield 'EvasionProbe Mail fixture keys' => [implode('/', ['Tools', 'Mail', 'EvasionProbe']) . '.php', ['tests/Unit/Tools/FileWriteGuardCoverageTest.php']];
 	}

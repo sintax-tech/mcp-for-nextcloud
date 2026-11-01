@@ -760,6 +760,26 @@
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Policy\\GroupLifecycleDatabase","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Policy\\GroupLifecycleDatabase"},
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\Common\\OutputReferenceFilters","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Visibility\\OutputReferenceFilters"},
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\Common\\UnrestrictedFileReferenceScope","target":"OCA\\Mcp\\Tests\\Unit\\Access\\ResourceScope\\UnrestrictedFileReferenceScope"},
-		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\FileTypePolicyFixture","target":"OCA\\Mcp\\Tests\\Unit\\Access\\FileTypes\\FileTypePolicyFixture"}
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\FileTypePolicyFixture","target":"OCA\\Mcp\\Tests\\Unit\\Access\\FileTypes\\FileTypePolicyFixture"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\FileWritePolicyRecoveryTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\FileTypes\\FileWritePolicyRecoveryTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\FileTypeGuardTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\FileTypes\\FileTypeGuardTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\GrantPolicyGroupsTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Grants\\GrantPolicyGroupsTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\GuestRestrictionsTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Guests\\GuestRestrictionsTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\VisibilityGuardMountBoundaryTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Visibility\\VisibilityGuardMountBoundaryTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Policy\\CauseProcessingTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Policy\\CauseProcessingTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Policy\\GroupGrantsWriterTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Policy\\GroupGrantsWriterTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Policy\\GroupLifecycleTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Policy\\GroupLifecycleTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Policy\\InheritedEligibilityResetTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Policy\\InheritedEligibilityResetTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Policy\\PolicyEventDeliveryTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Policy\\PolicyEventDeliveryTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Policy\\ResolutionCoreTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Policy\\ResolutionCoreTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Policy\\UnknownGroupGrantResolutionTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Policy\\UnknownGroupGrantResolutionTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Scope\\ScopeCleanupTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Policy\\ScopeCleanupTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Scope\\ResourceScopeWriterTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Policy\\ResourceScopeWriterTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Scope\\CalendarScopeActivationTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\ResourceScope\\CalendarScopeActivationTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Scope\\FilesScopeActivationTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\ResourceScope\\FilesScopeActivationTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Scope\\FilesScopeTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\ResourceScope\\FilesScopeTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Scope\\ScopeBoundariesTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\ResourceScope\\ScopeBoundariesTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Policy\\UnknownGroupGrantsControllerTest","target":"OCA\\Mcp\\Tests\\Unit\\Controller\\UnknownGroupGrantsControllerTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Scope\\ScopeRoutesTest","target":"OCA\\Mcp\\Tests\\Unit\\Controller\\ScopeRoutesTest"}
 	]
 }

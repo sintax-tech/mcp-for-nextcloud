@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tests\Unit\Tools;
+namespace OCA\Mcp\Tests\Unit\Access\FileTypes;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypeTranslations;

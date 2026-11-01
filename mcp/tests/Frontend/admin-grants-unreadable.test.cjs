@@ -8,7 +8,7 @@ const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const path = require('node:path')
 const vm = require('node:vm')
-const source = fs.readFileSync(path.join(__dirname, '../../js/admin-grants.js'), 'utf8')
+const source = require('./AdminManifest.cjs').script('admin-grants.js')
 const uncertain = 'The server could not confirm whether the change was saved. The table was reloaded with the saved values.'
 function cut(declaration) {
 	const start = source.indexOf('\t' + declaration)

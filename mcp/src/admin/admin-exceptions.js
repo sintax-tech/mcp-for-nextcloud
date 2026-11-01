@@ -17,7 +17,7 @@
  * stored value is always an exception. Removing a redundant value changes nothing now, but it changes what happens when
  * the person leaves a group, so it is only ever done through the reset preview, never by itself.
  *
- * Plain browser JavaScript, no build step. js/admin-grants.js asks kindOf() while it draws a level cell, and the access
+ * Plain browser JavaScript, no build step. src/admin/admin-grants.js asks kindOf() while it draws a level cell, and the access
  * inspector asks classifyPerson() for the person it shows; this file never writes anything.
  */
 (function () {
@@ -260,7 +260,7 @@
 	})
 
 	/**
-	 * How js/admin-grants.js marks an individual value: exception (the person icon), redundant (drawn like what it repeats,
+	 * How src/admin/admin-grants.js marks an individual value: exception (the person icon), redundant (drawn like what it repeats,
 	 * with that origin), or pending (no mark yet).
 	 *
 	 * @param {string} uid user

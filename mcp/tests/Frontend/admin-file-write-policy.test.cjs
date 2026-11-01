@@ -7,7 +7,7 @@ const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const vm = require('node:vm')
 const path = require('node:path')
-const { extensions, validPolicy, mount } = require('../../js/admin-file-write-policy.js')
+const { extensions, validPolicy, mount } = require('../../src/admin/admin-file-write-policy.js')
 const off = { version: 1, mode: 'off', extensions: [], allowExtensionless: false }
 const response = (data, status = 200) => ({ ok: status === 200, status, json: async () => data })
 
@@ -150,7 +150,7 @@ test('empty list warning and extensionless switch follow mode without discarding
 })
 
 test('all new UI strings have matching German, Spanish and Portuguese JS/JSON translations', () => {
-	const sources = ['js/admin-file-write-policy.js', 'templates/admin-file-write-policy.php', 'templates/admin-file-write-policy-overview.php']
+	const sources = ['src/admin/admin-file-write-policy.js', 'templates/admin-file-write-policy.php', 'templates/admin-file-write-policy-overview.php']
 	const strings = new Set()
 	for (const file of sources) {
 		const source = fs.readFileSync(path.join(__dirname, '../..', file), 'utf8')

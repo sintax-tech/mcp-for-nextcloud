@@ -87,7 +87,7 @@ final class AdminGroupAssetsTest extends TestCase {
 
 	public function testGroupStringsAndPlaceholdersAreCompleteInBothFormats(): void {
 		$app = dirname(__DIR__, 3);
-		$source = file_get_contents($app . '/js/admin-groups.js');
+		$source = file_get_contents($app . '/src/admin/admin-groups.js');
 		preg_match_all("/t\\('mcp', '([^']+)'/", $source, $script);
 		$template = file_get_contents($app . '/templates/admin.php');
 		$start = strpos($template, 'id="mcp-group-editor"');

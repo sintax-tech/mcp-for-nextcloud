@@ -13,7 +13,7 @@ class PollsAdminLabels {
 	static check(root, cut) {
 		const context = { t: (app, text) => text }
 		context.window = context
-		vm.runInNewContext(fs.readFileSync(path.join(root, 'js/admin-levels.js'), 'utf8'), context)
+		vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), context)
 		vm.runInNewContext(cut('function operationLabels() {') + '\nthis.labels = operationLabels()', context)
 		const policy = fs.readFileSync(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 		const operations = new Set([...policy.matchAll(/^\s*'\w+' => \[((?:'\w+',? ?)+)\],$/gm)].flatMap((match) => match[1].match(/\w+/g)))

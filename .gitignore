@@ -60,4 +60,6 @@ AGENTS.md
 
 # ---- Integration runs on a Mac (run-local.sh) ----
 mcp/tests/Integration/.local-runs/
+
+# ---- Disposable runs on a Mac (admin-page.sh), outside the app source tree ----
 .mcp-it-runs/

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Behavioral tests of js/admin-grants.js found in the browser check of ticket 14 (T14): the server-log block follows the
+ * Behavioral tests of src/admin/admin-grants.js found in the browser check of ticket 14 (T14): the server-log block follows the
  * revision moves of the other blocks of the page and announces its own (D1, D2), and every operation of the catalog has
  * a translated column label (D5). The pieces are cut out of the source and run against stubs, as in
  * admin-oauth-clients.test.cjs.
@@ -15,17 +15,17 @@ const fs = require('node:fs')
 const path = require('node:path')
 
 const root = path.join(__dirname, '../..')
-const source = fs.readFileSync(path.join(root, 'js/admin-grants.js'), 'utf8')
+const source = require('./AdminManifest.cjs').script('admin-grants.js')
 
 /** The source of one function of the admin script, from its declaration to its closing brace. */
 function cut(declaration) {
 	const start = source.indexOf('\t' + declaration)
-	assert.ok(start > 0, declaration + ' was found in js/admin-grants.js')
+	assert.ok(start > 0, declaration + ' was found in src/admin/admin-grants.js')
 	return source.slice(start, source.indexOf('\n\t}\n', start) + 4)
 }
 const helpersStart = source.indexOf('\t/** Page event of a write this page committed')
 const helpers = source.slice(helpersStart, source.indexOf('\t/**\n\t * @param {HTMLElement} cell cell that shows the save result', helpersStart))
-assert.ok(helpersStart > 0 && helpers.includes('function followRevision('), 'the revision helpers were found in js/admin-grants.js')
+assert.ok(helpersStart > 0 && helpers.includes('function followRevision('), 'the revision helpers were found in src/admin/admin-grants.js')
 
 /**
  * Runs the server-log block against a fake server. `serve({method, body})` answers [status, body]. The picker is a stub

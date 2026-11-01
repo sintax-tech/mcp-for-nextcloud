@@ -56,7 +56,7 @@ final class AssetCanonicalTest extends TestCase {
 
 		$clean = $this->tree();
 		$policy = 'const a = "importantValue";' . "\n";
-		$policy .= 'const b = `${ /* require */ 1 }`;' . "\n";
+		$policy .= 'const b = `${ 1 }`;' . "\n";
 		$policy .= 'const c = `${ 1 / 2 }`;' . "\n";
 		$policy .= 'const d = `exported`;' . "\n";
 		file_put_contents("$clean/src/admin/policy.js", $policy);
@@ -74,6 +74,21 @@ final class AssetCanonicalTest extends TestCase {
 		$this->assertSame([
 			'forbidden module syntax: require in admin/increment.js:1',
 			'forbidden module syntax: require in admin/newline.js:2',
+		], AssetBuilder::build($dir));
+		$this->assertFileDoesNotExist("$dir/js/mcp-admin.js");
+	}
+
+	/** A regex class that looks like a comment, and a comment itself, do not hide require. */
+	public function testARegexClassOrACommentDoesNotHideRequire(): void {
+		$dir = $this->tree();
+		file_put_contents("$dir/src/admin/line.js", "const r = /[//]/; require(\"x\");\n");
+		file_put_contents("$dir/src/admin/block.js", "const r = /[/*]/; require(\"x\"); /* done */\n");
+		file_put_contents("$dir/src/admin/note.js", "// require\n");
+		file_put_contents("$dir/src/admin.manifest", "admin/line.js\nadmin/block.js\nadmin/note.js\n");
+		$this->assertSame([
+			'forbidden module syntax: require in admin/block.js:1',
+			'forbidden module syntax: require in admin/line.js:1',
+			'forbidden module syntax: require in admin/note.js:1',
 		], AssetBuilder::build($dir));
 		$this->assertFileDoesNotExist("$dir/js/mcp-admin.js");
 	}

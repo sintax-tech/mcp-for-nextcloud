@@ -56,7 +56,7 @@ final class AssetReviewTest extends TestCase {
 		$clean = $this->tree();
 		$policy = 'const a = `importantValue`;' . "\n";
 		$policy .= 'const b = `exported`;' . "\n";
-		$policy .= 'const c = `${ /* require */ 1 }`;' . "\n";
+		$policy .= 'const c = `${ 1 }`;' . "\n";
 		$policy .= 'const d = `${`${1}`}`;' . "\n";
 		file_put_contents("$clean/src/admin/policy.js", $policy);
 		file_put_contents("$clean/src/admin.manifest", "admin/policy.js\n");

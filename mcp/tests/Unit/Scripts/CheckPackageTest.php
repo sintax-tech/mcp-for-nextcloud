@@ -31,6 +31,8 @@ final class CheckPackageTest extends TestCase {
 	protected function setUp(): void {
 		$this->dir = sys_get_temp_dir() . '/mcp-check-package-' . bin2hex(random_bytes(6));
 		mkdir($this->dir . '/templates', 0777, true);
+		mkdir($this->dir . '/src', 0777, true);
+		file_put_contents($this->dir . '/src/admin.manifest', '');
 		file_put_contents($this->dir . '/templates/admin.php', "<?php\n\\OCP\\Util::addScript('mcp', 'admin');\n\\OCP\\Util::addStyle(\"mcp\", \"admin\");\n");
 	}
 

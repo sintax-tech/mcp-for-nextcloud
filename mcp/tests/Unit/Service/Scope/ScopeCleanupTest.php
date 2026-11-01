@@ -6,6 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service\Scope;
 
+use OCA\Mcp\Tests\Unit\Access\Policy\ScopeSources;
 use OCA\Mcp\Tests\Unit\Access\ResourceScope\ScopeFixture;
 
 use OCA\Mcp\Db\PolicyEventsMapper;
@@ -250,7 +251,7 @@ final class ScopeCleanupTest extends TestCase {
 		foreach ($constructor->getParameters() as $parameter) {
 			$this->assertStringNotContainsString('Time', (string)$parameter->getType(), 'no clock is injected into the cleanup');
 		}
-		$source = (string)file_get_contents((string)(new \ReflectionClass(ScopeCleanup::class))->getFileName());
+		$source = ScopeSources::read(ScopeCleanup::class);
 		foreach (['getTime', 'ITimeFactory', 'scope_absent', 'ABSENCE', 'runInternal'] as $needle) {
 			$count = substr_count($source, $needle);
 			// runInternal is the event path's single command; nothing else may appear.
@@ -385,7 +386,7 @@ final class ScopeCleanupTest extends TestCase {
 			$this->assertDoesNotMatchRegularExpression('/^delete(ForUser|User|All)/i', $method->getName(), 'no unqualified delete in the scope mapper');
 		}
 		foreach ([ResourceScopeMapper::class, ScopeCleanup::class] as $class) {
-			$source = (string)file_get_contents((string)(new \ReflectionClass($class))->getFileName());
+			$source = ScopeSources::read($class);
 			$this->assertStringNotContainsString('auth_gen', $source);
 			$this->assertStringNotContainsString('deleteForUser', $source);
 			$this->assertStringNotContainsString('scope_absent_since', $source, 'no code reads the notes of the dropped 24-hour rule');

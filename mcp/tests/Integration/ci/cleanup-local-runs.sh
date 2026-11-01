@@ -51,7 +51,8 @@ for manifest in "$runs"/*/owned-resources; do
 		docker network rm "$net" >/dev/null
 	fi
 	absent network "$net" || { echo "Cannot prove network absent: $net" >&2; exit 1; }
-	for volume in $(sort -u "$volume_manifest"); do
+	owned_volumes=$(sort -u "$volume_manifest")
+	for volume in $owned_volumes; do
 		if ! absent volume "$volume"; then
 			docker volume rm "$volume" >/dev/null
 		fi

@@ -32,12 +32,18 @@ case "$1 ${2:-}" in
 	*) exit 1 ;;
 esac
 DOCKER
-chmod +x "$MCP_CLEANUP_TEST_ROOT/bin/docker"
+cat > "$MCP_CLEANUP_TEST_ROOT/bin/sort" <<'SORT'
+#!/bin/sh
+set -eu
+[ ! -f "$MCP_CLEANUP_TEST_ROOT/journal-read-fails" ] || exit 1
+exec /usr/bin/sort "$@"
+SORT
+chmod +x "$MCP_CLEANUP_TEST_ROOT/bin/"*
 PATH="$MCP_CLEANUP_TEST_ROOT/bin:$PATH"
 export PATH
 manifest="$MCP_CLEANUP_TEST_ROOT/checkout/.mcp-it-runs/dead/owned-resources"
 # Each failed proof preserves both the interrupted run's ownership and the resource still needing cleanup.
-for fault in daemon-down inspect-fails list-fails remove-fails retains-container retains-volume; do
+for fault in daemon-down inspect-fails list-fails remove-fails retains-container retains-volume journal-read-fails; do
 	printf '%s\n' 999999999 mcp-it-owned-nc mcp-it-owned-db mcp-it-owned-net mcp-it-owned-imap > "$manifest"
 	for resource in nc db net imap volume; do touch "$MCP_CLEANUP_TEST_ROOT/mcp-it-owned-$resource"; done
 	touch "$MCP_CLEANUP_TEST_ROOT/$fault"
@@ -60,4 +66,4 @@ done
 printf '%s\n' 999999999 mcp-it-owned-nc mcp-it-owned-db mcp-it-owned-net mcp-it-owned-imap > "$manifest"
 sh "$HERE/shutdown-sandbox.sh" "$MCP_CLEANUP_TEST_ROOT/checkout"
 test ! -f "$manifest"
-echo 'Ownership cleanup: six failures retain manifests; retries clean exact resources; absent resources confirmed'
+echo 'Ownership cleanup: seven failures retain manifests; retries clean exact resources; absent resources confirmed'

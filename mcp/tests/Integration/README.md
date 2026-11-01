@@ -44,7 +44,7 @@ uses exact container/network names and verifies anonymous-volume removal. A fail
 responsive inventory; any failed removal or proof retains the manifest for retry. Exact volume names are saved in
 `owned-volumes` before container removal, so an interrupted cleanup can still remove its remaining volumes.
 It never scans global `mcp-it-*` names or stops Colima. `ci/shared-engine-test.sh` tests a sandboxed copy of the entrypoint, preserving real run manifests;
-`ci/cleanup-ownership-test.sh` covers interrupted runs and retry after six failure modes.
+`ci/cleanup-ownership-test.sh` covers interrupted runs and retry after seven failure modes.
 `php ci/local-artifact-root-test.php` proves that generated artifacts stay outside the app's recursive source readers.
 
 Diagnostics: mode `baseline` installs the released baseline (the tag in the workflow) and never upgrades it, so a scenario can

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Talk;
 
-use OCA\Mcp\Tools\Common\OutputReferenceFilter;
+use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCP\Files\File;
 use OCP\Share\IManager as IShareManager;
 use OCP\Share\IShare;
@@ -24,7 +24,7 @@ class AttachmentAccess {
 
 	public function __construct(
 		private IShareManager $shareManager,
-		private \OCA\Mcp\Service\VisibilityGuard $visibilityGuard,
+		private \OCA\Mcp\Access\Visibility\VisibilityGuard $visibilityGuard,
 		private OutputReferenceFilter $references,
 	) {}
 
@@ -52,7 +52,7 @@ class AttachmentAccess {
 	 *                          manager only resolves "<provider>:<id>", so the provider prefix is added here
 	 * @return IShare The validated share, so a draft can name the file the card will carry
 	 * @throws ConversationAccessException When the id is not a share of this conversation
-	 * @throws \OCA\Mcp\Service\Policy\PolicyUnavailable When the user's Files scope cannot be read, before any lookup
+	 * @throws \OCA\Mcp\Access\Policy\PolicyUnavailable When the user's Files scope cannot be read, before any lookup
 	 */
 	public function requireRoomShareOf(Conversation $conversation, string $userId, int $attachmentId): IShare {
 		// Before the lookup: an unreadable Files scope is the same 503 for a share that exists and one that does not.

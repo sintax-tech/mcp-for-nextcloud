@@ -8,13 +8,13 @@ namespace OCA\Mcp\Tests\Unit\Service\Scope;
 
 use OCA\Mcp\Db\PolicyEventsMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Policy\PolicyConflict;
-use OCA\Mcp\Service\Policy\PolicyEventPayload;
-use OCA\Mcp\Service\Policy\ScopeInactive;
-use OCA\Mcp\Service\Policy\ScopeItemsInaccessible;
-use OCA\Mcp\Service\Policy\ScopeTooLarge;
-use OCA\Mcp\Service\Scope\NativeResourceEnumerator;
-use OCA\Mcp\Service\Scope\ScopeActivation;
+use OCA\Mcp\Access\Policy\PolicyConflict;
+use OCA\Mcp\Access\Policy\PolicyEventPayload;
+use OCA\Mcp\Access\Policy\ScopeInactive;
+use OCA\Mcp\Access\Policy\ScopeItemsInaccessible;
+use OCA\Mcp\Access\Policy\ScopeTooLarge;
+use OCA\Mcp\Access\ResourceScope\NativeResourceEnumerator;
+use OCA\Mcp\Access\ResourceScope\ScopeActivation;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -222,7 +222,7 @@ final class ResourceScopeWriterTest extends TestCase {
 		try {
 			$writer->restoreReceipt((string)$first['receiptId'], $first['revision'], 'bob');
 			$this->fail('Foreign receipt restored');
-		} catch (\OCA\Mcp\Service\Policy\ReceiptNotFound) {
+		} catch (\OCA\Mcp\Access\Policy\ReceiptNotFound) {
 		}
 		$writer->setResourceScope($first['revision'], 'root', 'alice', 'calendar', ['11']);
 		$before = $this->fx->snapshot();

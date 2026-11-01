@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;

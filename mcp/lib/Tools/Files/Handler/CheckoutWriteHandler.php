@@ -8,11 +8,11 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files\Handler;
 
 use OCA\Mcp\Controller\CheckoutController;
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Tools\Files\FileWriteBoundary;
-use OCA\Mcp\Tools\Common\FileTypeDenied;
-use OCA\Mcp\Tools\Common\FileTypeGuard;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use LogicException;
 use Throwable;
 use Closure;

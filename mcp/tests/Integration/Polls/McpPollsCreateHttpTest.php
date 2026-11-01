@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Polls;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\{LoginFactory,McpClient,Credential};
 use OCP\Server;

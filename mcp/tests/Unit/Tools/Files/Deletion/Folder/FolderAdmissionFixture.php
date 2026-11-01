@@ -8,8 +8,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion\Folder;
 
 use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Platform\Backups\BackupSettingsDocument;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Service\Scope\FilesScope;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Access\ResourceScope\FilesScope;
 use OCA\Mcp\Tools\Files\Deletion\DeleteBackendGate;
 use OCA\Mcp\Tools\Files\Deletion\DeleteNodeAdmission;
 use OCA\Mcp\Tools\Files\Deletion\Folder\DeleteFolderAdmission;

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
-use OCA\Mcp\Tools\Common\FileTypeCheck;
+use OCA\Mcp\Access\FileTypes\FileTypeCheck;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
@@ -125,7 +125,7 @@ final class FileTypePreflight {
 			try {
 				// A hidden descendant refuses the entire operation generically, never as an item with a path.
 				$this->inspect($node, $to, $snapshot);
-			} catch (\OCA\Mcp\Tools\Common\FileTypeDenied|\OCA\Mcp\Service\FileWritePolicyUnavailable $e) {
+			} catch (\OCA\Mcp\Access\FileTypes\FileTypeDenied|\OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable $e) {
 				$conflicts[] = ['from' => $from, 'to' => $to, 'reason' => $e->getMessage()];
 			}
 			$aliases[] = ['to' => $to, 'physical' => $physical];

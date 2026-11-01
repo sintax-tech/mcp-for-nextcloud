@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Common;
 
-use OCA\Mcp\Tools\Common\FileReferenceScope;
+use OCA\Mcp\Access\ResourceScope\FileReferenceScope;
 use OCP\Files\Node;
 
 /** A user without a Files scope: the scope step narrows nothing, for tests of the other steps of the filter. */

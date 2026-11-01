@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Admin;
 
 use OCA\Mcp\Service\ConnectionList;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Settings\AdminSettings;
 use OCA\Mcp\Tools\Files\OcrSupport;
 use OCP\App\IAppManager;
@@ -35,7 +35,7 @@ final class AdminUnsupportedAppsTest extends TestCase {
 		$urls = $this->createMock(IURLGenerator::class);
 		$urls->method('linkToRouteAbsolute')->willReturn('https://cloud.test/mcp');
 		$connections = $this->createMock(ConnectionList::class);
-		return (new AdminSettings($this->createMock(GrantPolicy::class), $urls, new OcrSupport($apps), $apps, $connections, $this->createMock(\OCA\Mcp\Service\LogsAccess::class)))->getForm()->getParams();
+		return (new AdminSettings($this->createMock(GrantPolicy::class), $urls, new OcrSupport($apps), $apps, $connections, $this->createMock(\OCA\Mcp\Access\Logs\LogsAccess::class)))->getForm()->getParams();
 	}
 
 	public function testAnOldTalkIsListedWithItsProductNameAndBothVersions(): void {

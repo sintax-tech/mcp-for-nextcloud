@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Middleware;
 
-use OCA\Mcp\Service\Policy\CauseProcessor;
+use OCA\Mcp\Access\Policy\CauseProcessor;
 use OCP\AppFramework\Middleware;
 
 /**

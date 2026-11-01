@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
 use OCA\Mcp\Controller\ScopeController;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\Scope\ScopeActivation;
+use OCA\Mcp\Access\Policy\PolicyWriter;
+use OCA\Mcp\Access\ResourceScope\ScopeActivation;
 use OCA\Mcp\Tests\Unit\Service\Scope\ScopeFixture;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IRequest;

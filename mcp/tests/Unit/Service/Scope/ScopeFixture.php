@@ -13,10 +13,10 @@ use OCA\Mcp\Migration\Version001100Date20261014000000;
 use OCA\Mcp\Migration\Version001100Date20261015000000;
 use OCA\Mcp\Migration\Version001100Date20261015010000;
 use OCA\Mcp\Migration\Version001100Date20261015020000;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\Scope\NativeResourceEnumerator;
-use OCA\Mcp\Service\Scope\ScopeActivation;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Policy\PolicyWriter;
+use OCA\Mcp\Access\ResourceScope\NativeResourceEnumerator;
+use OCA\Mcp\Access\ResourceScope\ScopeActivation;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
@@ -117,7 +117,7 @@ final class ScopeFixture {
 		return new PolicyWriter($this->db, $this->state, $this->events, $this->config->mock($this->test),
 			$this->mock(IUserConfig::class), $this->mock(IAppConfig::class), $this->userManager(), $time,
 			new \OCA\Mcp\Db\AuthUsersMapper($this->db), new \OCA\Mcp\Db\RecheckMapper($this->db),
-			new \OCA\Mcp\Service\Policy\PolicyEventProcessor($this->events, $this->oauth, new \Psr\Log\NullLogger(), $time),
+			new \OCA\Mcp\Access\Policy\PolicyEventProcessor($this->events, $this->oauth, new \Psr\Log\NullLogger(), $time),
 			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), $this->oauth,
 			$this->scopes, $resources ?? $this->enumerator(),
 			$activation ?? new ScopeActivation(['files' => $open, 'calendar' => $open, 'tasks' => $open]));
@@ -128,7 +128,7 @@ final class ScopeFixture {
 	 *
 	 * @param PolicyWriter $writer the writer whose context the resolution checks
 	 */
-	public function resolver(PolicyWriter $writer): \OCA\Mcp\Service\Policy\PolicyResolver {
+	public function resolver(PolicyWriter $writer): \OCA\Mcp\Access\Policy\PolicyResolver {
 		$backend = (new \ReflectionMethod($this->test, 'createMockForIntersectionOfInterfaces'))->invoke($this->test, [\OCP\GroupInterface::class, \OCP\Group\Backend\INamedBackend::class]);
 		$backend->method('getBackendName')->willReturn('Database');
 		$backend->method('getUserGroups')->willReturn([]);
@@ -138,20 +138,20 @@ final class ScopeFixture {
 		$apps = $this->mock(\OCP\App\IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(true);
 		$apps->method('getAppVersion')->willReturn('99.0.0');
-		$logs = $this->mock(\OCA\Mcp\Service\Policy\LogsRoleReader::class);
+		$logs = $this->mock(\OCA\Mcp\Access\Policy\LogsRoleReader::class);
 		$logs->method('read')->willReturn(['available' => true, 'permitted' => true]);
 		$life = new \OCA\Mcp\Db\GroupLifeMapper($this->db);
-		return new \OCA\Mcp\Service\Policy\PolicyResolver($this->state, $writer, $this->config->mock($this->test),
+		return new \OCA\Mcp\Access\Policy\PolicyResolver($this->state, $writer, $this->config->mock($this->test),
 			$this->mock(IUserConfig::class), $this->mock(IAppConfig::class), $this->userManager(),
-			new \OCA\Mcp\Service\Policy\MembershipReader($groups), new \OCA\Mcp\Service\Policy\GroupSourceClassifier($groups),
+			new \OCA\Mcp\Access\Policy\MembershipReader($groups), new \OCA\Mcp\Access\Policy\GroupSourceClassifier($groups),
 			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), $life,
-			new \OCA\Mcp\Service\Policy\GroupTrustObserver($this->db, $writer, $life, $this->mock(\Psr\Log\LoggerInterface::class)),
+			new \OCA\Mcp\Access\Policy\GroupTrustObserver($this->db, $writer, $life, $this->mock(\Psr\Log\LoggerInterface::class)),
 			$apps, $logs, new ResourceScopeMapper($this->db));
 	}
 
 	/** The GrantPolicy the tools read, over resolver($writer). */
-	public function policy(PolicyWriter $writer): \OCA\Mcp\Service\GrantPolicy {
-		return new \OCA\Mcp\Service\GrantPolicy($this->config->mock($this->test), $this->mock(IUserConfig::class), $writer, $this->resolver($writer));
+	public function policy(PolicyWriter $writer): \OCA\Mcp\Access\Grants\GrantPolicy {
+		return new \OCA\Mcp\Access\Grants\GrantPolicy($this->config->mock($this->test), $this->mock(IUserConfig::class), $writer, $this->resolver($writer));
 	}
 
 	public function userManager(): IUserManager {

@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\Board;
 use OCA\Deck\Db\Stack;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckToolModule;

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;

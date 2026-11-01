@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Service\Scope\FilesReferenceScope;
-use OCA\Mcp\Service\Scope\FilesScope;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Access\ResourceScope\FilesReferenceScope;
+use OCA\Mcp\Access\ResourceScope\FilesScope;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCP\Files\IRootFolder;

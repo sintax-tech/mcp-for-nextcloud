@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Polls;
 
 use OCA\Mcp\Platform\Compat\AppEnablement;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
 

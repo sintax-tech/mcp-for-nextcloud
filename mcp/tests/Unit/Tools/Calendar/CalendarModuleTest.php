@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
 

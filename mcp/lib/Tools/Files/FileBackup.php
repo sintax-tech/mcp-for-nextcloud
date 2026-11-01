@@ -36,7 +36,7 @@ class FileBackup {
 		private IUserManager $userManager,
 		private ITimeFactory $time,
 		private IConfig $config,
-		private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
+		private ?\OCA\Mcp\Access\Visibility\VisibilityGuard $visibilityGuard = null,
 		private ?LockAwareWrite $locks = null,
 		private ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
 		private ?\OCA\Mcp\Platform\Backups\BackupCopies $backupCopies = null,

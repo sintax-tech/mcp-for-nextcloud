@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
-use OCA\Mcp\Service\GuestRestrictions;
-use OCA\Mcp\Service\Policy\PolicyResolver;
+use OCA\Mcp\Access\Guests\GuestRestrictions;
+use OCA\Mcp\Access\Policy\PolicyResolver;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\Forms\Creation\CreateFormContext;

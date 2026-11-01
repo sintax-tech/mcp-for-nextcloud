@@ -23,10 +23,10 @@ use OCA\Mcp\Migration\Version001100Date20261014000000;
 use OCA\Mcp\Migration\Version001100Date20261015000000;
 use OCA\Mcp\Migration\Version001100Date20261015010000;
 use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\Service\Policy\GroupLifecycle;
-use OCA\Mcp\Service\Policy\GroupSourceClassifier;
-use OCA\Mcp\Service\Policy\PolicyEventProcessor;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\GroupLifecycle;
+use OCA\Mcp\Access\Policy\GroupSourceClassifier;
+use OCA\Mcp\Access\Policy\PolicyEventProcessor;
+use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -86,7 +86,7 @@ trait GroupLifecycleDatabase {
 				[$hook, $this->duringExists] = [$this->duringExists, null];
 				$hook();
 			}
-			return $this->exists[$gid] ?? throw new \OCA\Mcp\Service\Policy\PolicyUnavailable('directory down');
+			return $this->exists[$gid] ?? throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('directory down');
 		});
 		$classifier->method('trusted')->willReturn(true);
 		$this->apps = new \OCA\Mcp\Tests\Unit\InMemoryAppConfig();

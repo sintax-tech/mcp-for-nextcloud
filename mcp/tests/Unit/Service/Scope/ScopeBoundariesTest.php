@@ -7,10 +7,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service\Scope;
 
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\GrantMatrix;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\LogsAccess;
-use OCA\Mcp\Service\Policy\PolicyEventPayload;
+use OCA\Mcp\Access\Grants\GrantMatrix;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Logs\LogsAccess;
+use OCA\Mcp\Access\Policy\PolicyEventPayload;
 use OCP\App\IAppManager;
 use OCP\IDBConnection;
 use OCP\IGroupManager;
@@ -153,8 +153,8 @@ final class ScopeBoundariesTest extends TestCase {
 		$expected = \OCA\Mcp\Tests\Unit\OrderedSourcePaths::sorted([
 			'Controller/MyScopeController.php',
 			'Controller/ScopeController.php',
-			'Service/Policy/PolicyWriter.php',
-			'Service/Scope/NativeResourceEnumerator.php',
+			'Access/Policy/PolicyWriter.php',
+			'Access/ResourceScope/NativeResourceEnumerator.php',
 		]);
 		$this->assertSame($expected, $users);
 	}

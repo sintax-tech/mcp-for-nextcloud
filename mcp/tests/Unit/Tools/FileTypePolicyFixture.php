@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools;
 
-use OCA\Mcp\Service\FileWritePolicy;
-use OCA\Mcp\Tools\Common\FileTypeGuard;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use OCP\IAppConfig;
 use OCP\IDBConnection;
 use PHPUnit\Framework\TestCase;

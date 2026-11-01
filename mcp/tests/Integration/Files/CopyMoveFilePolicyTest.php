@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Files;
 
-use OCA\Mcp\Service\FileWritePolicy;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
 use OCA\Mcp\Tests\Integration\Exclusion\ExclusionTestCase;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
-use OCA\Mcp\Tools\Common\FileTypeMessages;
+use OCA\Mcp\Access\FileTypes\FileTypeMessages;
 use OCP\IAppConfig;
 use OCP\Server;
 

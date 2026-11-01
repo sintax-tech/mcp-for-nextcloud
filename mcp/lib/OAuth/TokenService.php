@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\OAuth;
 
 use OCA\Mcp\Db\AuthUsersMapper;
-use OCA\Mcp\Service\Policy\PolicyEventProcessor;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\PolicyEventProcessor;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCA\Mcp\Db\OAuthClientsMapper;
 use Throwable;

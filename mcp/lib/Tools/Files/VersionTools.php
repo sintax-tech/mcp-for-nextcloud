@@ -46,7 +46,7 @@ final class VersionTools {
 		private ContainerInterface $container,
 		private OcrSupport $ocr,
 		private ?LockAwareWrite $locks = null,
-		private ?\OCA\Mcp\Service\Scope\FilesAccessGuard $visibilityGuard = null,
+		private ?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $visibilityGuard = null,
 		private ?VersionRestore $versionRestore = null,
 	) {}
 

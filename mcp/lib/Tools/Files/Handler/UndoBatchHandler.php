@@ -52,7 +52,7 @@ final class UndoBatchHandler {
 		try {
 			$types = (new FileTypePreflight($this->context))->moves($root, $batch->moves, $this->context->policy()->snapshot(), true);
 			$conflicts = array_merge($conflicts, $types);
-		} catch (\OCA\Mcp\Service\FileWritePolicyUnavailable $e) {
+		} catch (\OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable $e) {
 			$conflicts[] = ['from' => '', 'to' => '', 'reason' => $e->getMessage()];
 		}
 		if ($conflicts !== []) {
@@ -142,7 +142,7 @@ final class UndoBatchHandler {
 		try {
 			$types = (new FileTypePreflight($this->context))->moves($root, $batch->moves, $this->context->policy()->snapshot(), true);
 			$conflicts = array_merge($conflicts, $types);
-		} catch (\OCA\Mcp\Service\FileWritePolicyUnavailable $e) {
+		} catch (\OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable $e) {
 			$conflicts[] = ['from' => '', 'to' => '', 'reason' => $e->getMessage()];
 		}
 		[$removed, $kept] = $this->context->reorganization->emptyDirs($root, $batch);

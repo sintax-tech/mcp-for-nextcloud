@@ -96,7 +96,7 @@
 		{"path":"lib/Service/BackupFolderMatcher.php","fqcn":"OCA\\Mcp\\Service\\BackupFolderMatcher","target":"OCA\\Mcp\\Platform\\Backups\\BackupFolderMatcher","owner":"Platform","ticket":"RE-04"},
 		{"path":"lib/Service/BackupFolderName.php","fqcn":"OCA\\Mcp\\Service\\BackupFolderName","target":"OCA\\Mcp\\Platform\\Backups\\BackupFolderName","owner":"Platform","ticket":"RE-04"},
 		{"path":"lib/Service/BackupLocation.php","fqcn":"OCA\\Mcp\\Service\\BackupLocation","target":"OCA\\Mcp\\Platform\\Backups\\BackupLocation","owner":"Platform","ticket":"RE-04"},
-		{"path":"lib/Service/BackupMirrorVisibility.php","fqcn":"OCA\\Mcp\\Service\\BackupMirrorVisibility","target":"OCA\\Mcp\\Platform\\Backups\\BackupMirrorVisibility","owner":"Platform","ticket":"RE-04"},
+		{"path":"lib/Service/BackupMirrorVisibility.php","fqcn":"OCA\\Mcp\\Service\\BackupMirrorVisibility","target":"OCA\\Mcp\\Access\\Visibility\\BackupMirrorVisibility","owner":"Access","ticket":"RE-05","via":["OCA\\Mcp\\Platform\\Backups\\BackupMirrorVisibility"]},
 		{"path":"lib/Service/BackupSettingsDocument.php","fqcn":"OCA\\Mcp\\Service\\BackupSettingsDocument","target":"OCA\\Mcp\\Platform\\Backups\\BackupSettingsDocument","owner":"Platform","ticket":"RE-04"},
 		{"path":"lib/Service/BackupSettingsWriter.php","fqcn":"OCA\\Mcp\\Service\\BackupSettingsWriter","target":"OCA\\Mcp\\Access\\Settings\\BackupSettingsWriter","owner":"Access","ticket":"RE-05b"},
 		{"path":"lib/Service/Calendar/CalendarSelftestMessages.php","fqcn":"OCA\\Mcp\\Service\\Calendar\\CalendarSelftestMessages","target":"OCA\\Mcp\\Modules\\Calendar\\Selftest\\CalendarSelftestMessages","owner":"Modules\\Calendar","ticket":"RE-16"},

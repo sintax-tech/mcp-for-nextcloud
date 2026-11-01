@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Exclusion;
 
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use PHPUnit\Framework\Attributes\DataProvider;
 
 /** Real personal, external, groupfolder and received-share backup-location regressions. */

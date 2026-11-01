@@ -22,8 +22,8 @@ use Throwable;
 class UserFileResolver {
 	public function __construct(
 		private IRootFolder $rootFolder,
-		private \OCA\Mcp\Service\VisibilityGuard $visibilityGuard,
-		private \OCA\Mcp\Tools\Common\OutputReferenceFilter $references,
+		private \OCA\Mcp\Access\Visibility\VisibilityGuard $visibilityGuard,
+		private \OCA\Mcp\Access\Visibility\OutputReferenceFilter $references,
 	) {}
 
 	/**
@@ -34,7 +34,7 @@ class UserFileResolver {
 	 * @return File The file, guaranteed to be a file the user may read and share
 	 * @throws InvalidArgumentException When the path is empty, malformed or tries to escape the user folder
 	 * @throws FileAccessException When the file is missing, is a folder or cannot be shared
-	 * @throws \OCA\Mcp\Service\Policy\PolicyUnavailable When the user's Files scope cannot be read, before any lookup
+	 * @throws \OCA\Mcp\Access\Policy\PolicyUnavailable When the user's Files scope cannot be read, before any lookup
 	 */
 	public function resolveShareableFile(string $userId, string $path): File {
 		$cleanPath = $this->assertUsablePath($path);

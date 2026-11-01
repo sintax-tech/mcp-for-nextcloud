@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Tasks;
 
 use OCA\DAV\CalDAV\CalDavBackend;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
@@ -20,7 +20,7 @@ use OCA\Mcp\Tools\Calendar\CalendarStore;
 use OCA\Mcp\Tools\Calendar\ScopedCalendarAccess;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\TrashPolicy;
-use OCA\Mcp\Tools\Common\OutputReferenceFilter;
+use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCA\Mcp\Tools\Tasks\TaskData;
 use OCA\Mcp\Tools\Tasks\TaskHierarchyMessages;
 use OCA\Mcp\Tools\Tasks\TasksModule;

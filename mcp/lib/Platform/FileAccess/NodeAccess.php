@@ -26,7 +26,7 @@ final class NodeAccess {
 	 * @param callable():T $write mutation through the OCP node API
 	 * @return T
 	 */
-	public static function mutate(callable $write, ?\OCA\Mcp\Service\VisibilityGuard $guard = null): mixed {
+	public static function mutate(callable $write, ?\OCA\Mcp\Access\Visibility\VisibilityGuard $guard = null): mixed {
 		try {
 			return $write();
 		} finally {
@@ -75,7 +75,7 @@ final class NodeAccess {
 	 * @throws \OCP\Files\NotFoundException when the node does not exist
 	 * @throws ToolFailure when the node is not readable
 	 */
-	public static function get(Folder $root, string $path, ?\OCA\Mcp\Service\VisibilityGuard $guard = null): Node {
+	public static function get(Folder $root, string $path, ?\OCA\Mcp\Access\Visibility\VisibilityGuard $guard = null): Node {
 		$path = PathGuard::normalize($path);
 		$node = $path === '/' ? $root : $root->get(ltrim($path, '/'));
 		if ($guard !== null) {
@@ -114,12 +114,12 @@ final class NodeAccess {
 	 *
 	 * @param Folder $root base folder
 	 * @param string $relative path below $root ('' or '/' returns $root)
-	 * @param \OCA\Mcp\Service\VisibilityGuard|null $guard the gate of the caller's module; null checks nothing
+	 * @param \OCA\Mcp\Access\Visibility\VisibilityGuard|null $guard the gate of the caller's module; null checks nothing
 	 * @return Folder existing or newly created folder
 	 * @throws InvalidArgumentException for traversal or control characters
 	 * @throws ToolFailure when a file already uses one of the folder names, or not found for a refused path
 	 */
-	public static function ensureFolder(Folder $root, string $relative, ?\OCA\Mcp\Service\VisibilityGuard $guard = null): Folder {
+	public static function ensureFolder(Folder $root, string $relative, ?\OCA\Mcp\Access\Visibility\VisibilityGuard $guard = null): Folder {
 		$guard?->assertTraversable($root);
 		$folder = $root;
 		$missing = [];
@@ -156,7 +156,7 @@ final class NodeAccess {
 	 * @throws \OCP\Files\NotFoundException when the node does not exist
 	 * @throws ToolFailure when the node may not be reached or read
 	 */
-	public static function getBase(Folder $root, string $path, ?\OCA\Mcp\Service\VisibilityGuard $guard = null): Node {
+	public static function getBase(Folder $root, string $path, ?\OCA\Mcp\Access\Visibility\VisibilityGuard $guard = null): Node {
 		if (PathGuard::normalize($path) !== '/') {
 			return self::get($root, $path, $guard);
 		}

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Files\FilesMessages;
@@ -73,7 +73,7 @@ final class FilesUnshareTest extends FilesToolsTestCase {
 	private function hideTheMinutes(): void {
 		$tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
 		$this->config->app['mcp'][VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
-		$this->visibilityGuard = new \OCA\Mcp\Service\Scope\FilesAccessGuard($this->config->mock($this), $tagMapper, $this->visibilityRoot());
+		$this->visibilityGuard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $tagMapper, $this->visibilityRoot());
 		$this->setUp();
 		$tagMapper->method('getTagIdsForObjects')->willReturn([(string)$this->id('/Documentos/ata.md') => ['999']]);
 	}
@@ -280,7 +280,7 @@ final class FilesUnshareTest extends FilesToolsTestCase {
 			return array_combine($ids, array_map(static fn ($id): array => in_array((string)$id, $hidden, true) ? ['999'] : [], $ids));
 		});
 		$this->config->app['mcp'][VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
-		$this->visibilityGuard = new \OCA\Mcp\Service\Scope\FilesAccessGuard($this->config->mock($this), $tagMapper, $this->visibilityRoot());
+		$this->visibilityGuard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $tagMapper, $this->visibilityRoot());
 		$this->setUp();
 		$share = $this->share();
 		$room = $this->share(['type' => IShare::TYPE_ROOM, 'with' => 'room1']);

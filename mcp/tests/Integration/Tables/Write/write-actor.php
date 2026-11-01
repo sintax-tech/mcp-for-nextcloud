@@ -15,7 +15,7 @@ declare(strict_types=1);
  *   answers the previous one, so a test can change a limit between a plan and its confirmation and restore it.
  */
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Tables\Write\WriteCellScene;
 use OCA\Mcp\Tools\Tables\TablesModule;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;

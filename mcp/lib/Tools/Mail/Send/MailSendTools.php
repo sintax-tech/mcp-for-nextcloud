@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Mail\Send;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tools\Mail\Draft\MailDraftRequest;
 use OCA\Mcp\Tools\Mail\Handler\SendMessageHandler;
 use OCA\Mcp\Tools\Mail\MailGateway;

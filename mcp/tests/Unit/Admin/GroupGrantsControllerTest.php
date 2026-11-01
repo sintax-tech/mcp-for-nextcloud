@@ -8,12 +8,12 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Admin;
 
 use OCA\Mcp\Controller\GrantsController;
-use OCA\Mcp\Service\Policy\GroupGrantsService;
-use OCA\Mcp\Service\Policy\GroupSourceUntrusted;
-use OCA\Mcp\Service\Policy\PolicyConflict;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\ReceiptExpired;
-use OCA\Mcp\Service\Policy\ReceiptNotFound;
+use OCA\Mcp\Access\Policy\GroupGrantsService;
+use OCA\Mcp\Access\Policy\GroupSourceUntrusted;
+use OCA\Mcp\Access\Policy\PolicyConflict;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\ReceiptExpired;
+use OCA\Mcp\Access\Policy\ReceiptNotFound;
 use OCP\IRequest;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;

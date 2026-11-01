@@ -20,7 +20,7 @@ use OCA\Mcp\Tools\Mail\Link\MailLinks;
  *
  * They read, so their operation is `read` and the registry never asks for `confirm` nor marks them as writing. Who may
  * call them is decided by the separate grant `mail.messages` (`grantAnyOf`), which starts denied like every operation
- * but read ({@see \OCA\Mcp\Service\GrantPolicy::defaultGranted()}): the existing `mail.read` grant of accounts and
+ * but read ({@see \OCA\Mcp\Access\Grants\GrantPolicy::defaultGranted()}): the existing `mail.read` grant of accounts and
  * folders never opens the messages. Every tool carries the app id, so it is hidden while Mail is not enabled for the
  * user or is older than MCP supports.
  */

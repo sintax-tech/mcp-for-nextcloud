@@ -8,7 +8,7 @@ namespace OCA\Mcp\Tests\Unit\Service\Policy;
 
 use OCA\Mcp\Controller\UnknownGroupGrantsController;
 use OCA\Mcp\Db\GroupGrantRows;
-use OCA\Mcp\Service\Policy\UnknownGroupGrants;
+use OCA\Mcp\Access\Policy\UnknownGroupGrants;
 use OCP\IGroupManager;
 use OCP\IRequest;
 use OCP\IUser;

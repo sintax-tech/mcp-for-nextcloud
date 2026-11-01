@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Deck\Db\Acl;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Tools\Deck\BoardRecipientResolver;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;

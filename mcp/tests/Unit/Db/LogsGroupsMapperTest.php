@@ -8,7 +8,7 @@ namespace OCA\Mcp\Tests\Unit\Db;
 
 use OCA\Mcp\Db\LogsGroupsMapper;
 use OCA\Mcp\Migration\Version001002Date20261008000000;
-use OCA\Mcp\Service\LogsGroupsConflict;
+use OCA\Mcp\Access\Logs\LogsGroupsConflict;
 use OCA\Mcp\Tests\Unit\InMemoryAppConfig;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
 use PHPUnit\Framework\TestCase;

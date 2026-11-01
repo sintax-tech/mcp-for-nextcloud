@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Results;
 
 use OCA\Mcp\Tools\Forms\Attachments\ResultFileAccess;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\Files\{File,Folder,IRootFolder};
 use OCP\IURLGenerator;
 use PHPUnit\Framework\TestCase;

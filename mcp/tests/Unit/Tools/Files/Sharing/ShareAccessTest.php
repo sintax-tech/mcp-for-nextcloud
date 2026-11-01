@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Sharing;
 
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
@@ -37,7 +37,7 @@ final class ShareAccessTest extends TestCase {
 		$this->tree->addFile('/alice/files/Recebido.pdf', 'pdf', 'application/pdf', ['scope' => 'shared']);
 		$this->shares = new FakeShares($this);
 		$this->policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
-		$guard = $this->createMock(\OCA\Mcp\Service\Scope\FilesAccessGuard::class);
+		$guard = $this->createMock(\OCA\Mcp\Access\ResourceScope\FilesAccessGuard::class);
 		$guard->method('isVisible')->willReturnCallback(fn (Node $n): bool => !in_array($n->getId(), $this->hidden, true));
 		$guard->method('assertVisible')->willReturnCallback(function (Node $n): void {
 			if (in_array($n->getId(), $this->hidden, true)) {

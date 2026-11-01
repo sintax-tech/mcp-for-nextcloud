@@ -182,13 +182,13 @@ final class ScopeSchemaTest extends TestCase {
 			'Controller/ScopeController.php',
 			'Db/ResourceScopeMapper.php',
 			'Migration/Version001100Date20261015020000.php',
-			'Service/GrantMatrix.php',
-			'Service/Policy/PolicyEventPayload.php',
-			'Service/Policy/PolicyResolver.php',
-			'Service/Policy/PolicyWriter.php',
-			'Service/Policy/ScopeCleanup.php',
-			'Service/Scope/NativeResourceEnumerator.php',
-			'Service/Scope/ScopeGuard.php',
+			'Access/Grants/GrantMatrix.php',
+			'Access/Policy/PolicyEventPayload.php',
+			'Access/Policy/PolicyResolver.php',
+			'Access/Policy/PolicyWriter.php',
+			'Access/Policy/ScopeCleanup.php',
+			'Access/ResourceScope/NativeResourceEnumerator.php',
+			'Access/ResourceScope/ScopeGuard.php',
 		]);
 		$this->assertSame($expected, $readers);
 		$tables = array_values(array_filter($readers, static fn (string $file): bool

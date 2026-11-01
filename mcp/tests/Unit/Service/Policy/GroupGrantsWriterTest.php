@@ -12,18 +12,18 @@ use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyEventsMapper;
 use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\Listener\GroupLifecycleListener;
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\GroupGrantsService;
-use OCA\Mcp\Service\Policy\GroupSourceClassifier;
-use OCA\Mcp\Service\Policy\GroupSourceUntrusted;
-use OCA\Mcp\Service\Policy\PolicyConflict;
-use OCA\Mcp\Service\Policy\PolicyEventPayload;
-use OCA\Mcp\Service\Policy\PolicyOperationContext;
-use OCA\Mcp\Service\Policy\PolicyResolver;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\Policy\ReceiptExpired;
-use OCA\Mcp\Service\Policy\ReceiptNotFound;
+use OCA\Mcp\Access\Policy\CauseProcessor;
+use OCA\Mcp\Access\Policy\GroupGrantsService;
+use OCA\Mcp\Access\Policy\GroupSourceClassifier;
+use OCA\Mcp\Access\Policy\GroupSourceUntrusted;
+use OCA\Mcp\Access\Policy\PolicyConflict;
+use OCA\Mcp\Access\Policy\PolicyEventPayload;
+use OCA\Mcp\Access\Policy\PolicyOperationContext;
+use OCA\Mcp\Access\Policy\PolicyResolver;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\ReceiptExpired;
+use OCA\Mcp\Access\Policy\ReceiptNotFound;
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -111,7 +111,7 @@ final class GroupGrantsWriterTest extends TestCase {
 			$flag = $this->configData->user[$uid]['mcp']['eligible'] ?? null;
 			$raw = $flag === null ? [] : ['eligible' => ['present' => true, 'value' => $flag]];
 			return new PolicyOperationContext($this->revision(), $this->writer, $raw, $candidates, true, true, [], true, true,
-				\OCA\Mcp\Service\Scope\ScopeGuard::read($this->createMock(\OCA\Mcp\Db\ResourceScopeMapper::class), null));
+				\OCA\Mcp\Access\ResourceScope\ScopeGuard::read($this->createMock(\OCA\Mcp\Db\ResourceScopeMapper::class), null));
 		});
 		return $resolver;
 	}
@@ -137,8 +137,8 @@ final class GroupGrantsWriterTest extends TestCase {
 		});
 		$time = $this->createMock(\OCP\AppFramework\Utility\ITimeFactory::class);
 		$time->method('getTime')->willReturnCallback(fn (): int => $this->now);
-		$causes = new \OCA\Mcp\Service\Policy\CauseProcessor($this->writer, $this->rechecks,
-			new \OCA\Mcp\Service\Policy\CauseClassifier($users, $this->resolver()), $this->createMock(\OCA\Mcp\Service\Policy\DeferredQueue::class),
+		$causes = new \OCA\Mcp\Access\Policy\CauseProcessor($this->writer, $this->rechecks,
+			new \OCA\Mcp\Access\Policy\CauseClassifier($users, $this->resolver()), $this->createMock(\OCA\Mcp\Access\Policy\DeferredQueue::class),
 			$this->db, new \Psr\Log\NullLogger(), $this->apps->worker($this), $this->lifecycle);
 		$listener = new \OCA\Mcp\Listener\GroupLifecycleListener($this->lifecycle, $causes, $life, $this->grants, $this->rechecks,
 			$this->state, new OAuthStore($this->db), new AuthUsersMapper($this->db), $this->classifier(), $this->resolver(), $users,
@@ -226,7 +226,7 @@ final class GroupGrantsWriterTest extends TestCase {
 		return new PolicyWriter($this->db, $this->state, $events, $this->configData->mock($this),
 			$this->createMock(\OCP\Config\IUserConfig::class), $this->createMock(\OCP\IAppConfig::class),
 			$this->users(), $time, new AuthUsersMapper($this->db), $this->rechecks,
-			new \OCA\Mcp\Service\Policy\PolicyEventProcessor($events, new OAuthStore($this->db), new \Psr\Log\NullLogger(), $time),
+			new \OCA\Mcp\Access\Policy\PolicyEventProcessor($events, new OAuthStore($this->db), new \Psr\Log\NullLogger(), $time),
 			$this->grants, $life, new OAuthStore($this->db));
 	}
 
@@ -866,7 +866,7 @@ final class GroupGrantsWriterTest extends TestCase {
 				return $inherited;
 			});
 			$this->fail('the processed removal moved the revision');
-		} catch (\OCA\Mcp\Service\Policy\PolicyConflict) {
+		} catch (\OCA\Mcp\Access\Policy\PolicyConflict) {
 		}
 		$this->assertSame('1', $this->configData->user['ana']['mcp']['eligible'], 'nothing written');
 		$this->assertSame(['issue_seq' => '2', 'revoked_below' => '0'], $this->generations('ana'), 'still eligible by the Allow: no cut');
@@ -897,7 +897,7 @@ final class GroupGrantsWriterTest extends TestCase {
 				return $inherited;
 			});
 			$this->fail('the processed removal moved the revision');
-		} catch (\OCA\Mcp\Service\Policy\PolicyConflict) {
+		} catch (\OCA\Mcp\Access\Policy\PolicyConflict) {
 		}
 		$this->assertSame('1', $this->configData->user['ana']['mcp']['eligible'], 'the Allow stays: ana is still eligible');
 		$this->assertSame('0', $this->generations('ana')['revoked_below']);

@@ -8,10 +8,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\OAuth;
 
 use OCA\Mcp\Db\OAuthClientsMapper;
-use OCA\Mcp\Service\Policy\PolicyOutbox;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyConflict;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\PolicyOutbox;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyConflict;
+use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCP\IConfig;
 
 /**

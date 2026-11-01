@@ -6,8 +6,8 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service;
 
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Tests\Unit\ArrayGroupBackend;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;

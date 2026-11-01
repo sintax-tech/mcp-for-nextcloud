@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Platform\Backups\BackupCopies;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Tools\Files\BackupPlan;
 use OCA\Mcp\Tools\Contacts\ContactBackup;

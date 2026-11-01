@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Talk;
 
 use DateTimeInterface;
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Common\OutputReferenceFilter;
+use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCP\Comments\IComment;
 use Throwable;
 

@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract;
 
 use DateTimeImmutable;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
@@ -18,8 +18,8 @@ use OCA\Mcp\Tools\Calendar\CalendarStore;
 use OCA\Mcp\Tools\Calendar\DavResult;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\TrashPolicy;
-use OCA\Mcp\Tools\Common\FileReferenceScope;
-use OCA\Mcp\Tools\Common\OutputReferenceFilter;
+use OCA\Mcp\Access\ResourceScope\FileReferenceScope;
+use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCA\Mcp\Tools\Talk\ActorNames;
 use OCA\Mcp\Tools\Talk\Conversation;
 use OCA\Mcp\Tools\Talk\ConversationReader;
@@ -37,7 +37,7 @@ use OCP\Share\IManager as IShareManager;
 use OCP\Share\IShare;
 use OCP\SystemTag\ISystemTagObjectMapper;
 use PHPUnit\Framework\Attributes\DataProvider;
-use OCA\Mcp\Service\Scope\FilesReferenceScope;
+use OCA\Mcp\Access\ResourceScope\FilesReferenceScope;
 use OCA\Mcp\Tests\Unit\Service\Scope\FilesScopes;
 use PHPUnit\Framework\TestCase;
 use Sabre\VObject\Reader;
@@ -375,7 +375,7 @@ final class StructuredReferenceContractTest extends TestCase {
 				try {
 					$run();
 					self::fail("task tool $i answered for $uid");
-				} catch (\OCA\Mcp\Service\Policy\PolicyUnavailable) {
+				} catch (\OCA\Mcp\Access\Policy\PolicyUnavailable) {
 					$this->addToAssertionCount(1);
 				}
 			}

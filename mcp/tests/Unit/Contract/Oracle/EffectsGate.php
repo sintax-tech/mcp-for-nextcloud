@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\Oracle;
 
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\GuestRestrictions;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use OCA\Mcp\Mcp\Prompts\PromptCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;

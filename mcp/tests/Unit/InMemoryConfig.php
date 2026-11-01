@@ -54,8 +54,8 @@ final class InMemoryConfig {
 		return self::$authUsers[$config];
 	}
 
-	/** @return \OCA\Mcp\Service\Policy\PolicyEventProcessor the event delivery of the writer of $config */
-	public static function processor(IConfig $config): \OCA\Mcp\Service\Policy\PolicyEventProcessor {
+	/** @return \OCA\Mcp\Access\Policy\PolicyEventProcessor the event delivery of the writer of $config */
+	public static function processor(IConfig $config): \OCA\Mcp\Access\Policy\PolicyEventProcessor {
 		self::writer($config);
 		return self::$processors[$config];
 	}
@@ -70,8 +70,8 @@ final class InMemoryConfig {
 	 * A cause processor for a test whose users have no recheck causes: the preflight does nothing and issuance gets a
 	 * classification that would cut every cause (none is ever read). Causes are proven in CauseProcessingTest.
 	 */
-	public static function noCauses(TestCase $test): \OCA\Mcp\Service\Policy\CauseProcessor {
-		$causes = (new \ReflectionMethod($test, 'createMock'))->invoke($test, \OCA\Mcp\Service\Policy\CauseProcessor::class);
+	public static function noCauses(TestCase $test): \OCA\Mcp\Access\Policy\CauseProcessor {
+		$causes = (new \ReflectionMethod($test, 'createMock'))->invoke($test, \OCA\Mcp\Access\Policy\CauseProcessor::class);
 		$causes->method('classifier')->willReturn(static fn (string $uid, array $rows): array => array_fill_keys(array_column($rows, 'causeKey'), true));
 		return $causes;
 	}
@@ -80,16 +80,16 @@ final class InMemoryConfig {
 	 * A GrantPolicy over an IConfig mock of this class and the IUserConfig double that goes with it
 	 * (the policy lists flagged users through IUserConfig::searchUsersByValueString).
 	 */
-	public static function policy(IConfig $config, \OCA\Mcp\OAuth\OAuthStore $store): \OCA\Mcp\Service\GrantPolicy {
+	public static function policy(IConfig $config, \OCA\Mcp\OAuth\OAuthStore $store): \OCA\Mcp\Access\Grants\GrantPolicy {
 		$writer = self::writer($config, $store);
-		return new \OCA\Mcp\Service\GrantPolicy($config, self::$userConfigs[$config], $writer, self::resolver($config));
+		return new \OCA\Mcp\Access\Grants\GrantPolicy($config, self::$userConfigs[$config], $writer, self::resolver($config));
 	}
 
 	/**
 	 * The real resolver over the data of $config: no group backends unless $groupBackends lists some, grant rows and
 	 * lifecycles in an SQLite database of their own (groupDatabase()). Without group rows its answer is the 1.0.8 one.
 	 */
-	public static function resolver(IConfig $config): \OCA\Mcp\Service\Policy\PolicyResolver {
+	public static function resolver(IConfig $config): \OCA\Mcp\Access\Policy\PolicyResolver {
 		self::$resolvers ??= new \WeakMap();
 		self::$groupDatabases ??= new \WeakMap();
 		if (isset(self::$resolvers[$config])) {
@@ -122,19 +122,19 @@ final class InMemoryConfig {
 	 *
 	 * @param \Closure(): list<\OCP\GroupInterface> $backends the group backends, read on every call
 	 */
-	public static function resolverOver(TestCase $test, \OCA\Mcp\Db\PolicyStateMapper $state, \OCA\Mcp\Service\Policy\PolicyWriter $writer,
+	public static function resolverOver(TestCase $test, \OCA\Mcp\Db\PolicyStateMapper $state, \OCA\Mcp\Access\Policy\PolicyWriter $writer,
 		IConfig $config, IUserConfig $userConfig, \OCP\IAppConfig $appConfig, \OCP\IUserManager $users, \OCP\IDBConnection $db,
-		?\Closure $backends = null): \OCA\Mcp\Service\Policy\PolicyResolver {
+		?\Closure $backends = null): \OCA\Mcp\Access\Policy\PolicyResolver {
 		$mock = fn (string $class) => (new \ReflectionMethod($test, 'createMock'))->invoke($test, $class);
 		$manager = $mock(\OCP\IGroupManager::class);
 		$manager->method('getBackends')->willReturnCallback($backends ?? static fn (): array => []);
-		$logs = $mock(\OCA\Mcp\Service\Policy\LogsRoleReader::class);
+		$logs = $mock(\OCA\Mcp\Access\Policy\LogsRoleReader::class);
 		$logs->method('read')->willReturn(['available' => false, 'permitted' => false]);
 		$life = new \OCA\Mcp\Db\GroupLifeMapper($db);
-		return new \OCA\Mcp\Service\Policy\PolicyResolver($state, $writer, $config, $userConfig, $appConfig, $users,
-			new \OCA\Mcp\Service\Policy\MembershipReader($manager), new \OCA\Mcp\Service\Policy\GroupSourceClassifier($manager),
+		return new \OCA\Mcp\Access\Policy\PolicyResolver($state, $writer, $config, $userConfig, $appConfig, $users,
+			new \OCA\Mcp\Access\Policy\MembershipReader($manager), new \OCA\Mcp\Access\Policy\GroupSourceClassifier($manager),
 			new \OCA\Mcp\Db\GroupGrantsMapper($db), $life,
-			new \OCA\Mcp\Service\Policy\GroupTrustObserver($db, $writer, $life, new \Psr\Log\NullLogger()),
+			new \OCA\Mcp\Access\Policy\GroupTrustObserver($db, $writer, $life, new \Psr\Log\NullLogger()),
 			$mock(\OCP\App\IAppManager::class), $logs, new \OCA\Mcp\Db\ResourceScopeMapper($db));
 	}
 
@@ -145,7 +145,7 @@ final class InMemoryConfig {
 	 * @param \Closure(): array<string, list<string>> $groups
 	 */
 	public static function logsAccess(TestCase $test, IConfig $config, \OCP\IGroupManager $manager, \OCA\Mcp\Db\LogsGroupsMapper $mapper,
-		\OCP\Lock\ILockingProvider $locks): \OCA\Mcp\Service\LogsAccess {
+		\OCP\Lock\ILockingProvider $locks): \OCA\Mcp\Access\Logs\LogsAccess {
 		$mock = fn (string $class) => (new \ReflectionMethod($test, 'createMock'))->invoke($test, $class);
 		$remote = $mock(\OCP\Security\Ip\IRemoteAddress::class);
 		$remote->method('allowsAdminActions')->willReturn(true);
@@ -155,9 +155,9 @@ final class InMemoryConfig {
 			$user->method('getUID')->willReturn($uid);
 			return $user;
 		});
-		$roles = new \OCA\Mcp\Service\Policy\LogsRoleReader($config, $mapper, $manager, $remote, $mock(\OCP\IUserSession::class));
-		return new \OCA\Mcp\Service\LogsAccess($config, $manager, $mapper, $locks, self::writer($config), $roles,
-			new \OCA\Mcp\Service\Policy\MembershipReader($manager), $users);
+		$roles = new \OCA\Mcp\Access\Policy\LogsRoleReader($config, $mapper, $manager, $remote, $mock(\OCP\IUserSession::class));
+		return new \OCA\Mcp\Access\Logs\LogsAccess($config, $manager, $mapper, $locks, self::writer($config), $roles,
+			new \OCA\Mcp\Access\Policy\MembershipReader($manager), $users);
 	}
 
 	/**
@@ -208,7 +208,7 @@ final class InMemoryConfig {
 	 * controller of a test share its revision ($revision) and its events ($events, appended at $now). The database
 	 * is a mock without transactions: atomicity and rollback are proven against SQLite and the real server.
 	 */
-	public static function writer(IConfig $config, ?\OCA\Mcp\OAuth\OAuthStore $store = null): \OCA\Mcp\Service\Policy\PolicyWriter {
+	public static function writer(IConfig $config, ?\OCA\Mcp\OAuth\OAuthStore $store = null): \OCA\Mcp\Access\Policy\PolicyWriter {
 		self::$writers ??= new \WeakMap();
 		self::$states ??= new \WeakMap();
 		if (isset(self::$writers[$config])) {
@@ -224,7 +224,7 @@ final class InMemoryConfig {
 		});
 		$state->method('compareAndSet')->willReturnCallback(static function (string $expected) use ($data): void {
 			if ($expected !== (string)$data->revision) {
-				throw new \OCA\Mcp\Service\Policy\PolicyConflict();
+				throw new \OCA\Mcp\Access\Policy\PolicyConflict();
 			}
 			++$data->revision;
 		});
@@ -270,10 +270,10 @@ final class InMemoryConfig {
 		});
 		$store ??= new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore();
 		// The real delivery over the store double: a revocation's cleanup removes the store rows it covers.
-		$processor = new \OCA\Mcp\Service\Policy\PolicyEventProcessor($events, $store, new \Psr\Log\NullLogger(), $time);
+		$processor = new \OCA\Mcp\Access\Policy\PolicyEventProcessor($events, $store, new \Psr\Log\NullLogger(), $time);
 		self::$processors ??= new \WeakMap();
 		self::$processors[$config] = $processor;
-		return self::$writers[$config] = new \OCA\Mcp\Service\Policy\PolicyWriter($db, $state, $events, $config,
+		return self::$writers[$config] = new \OCA\Mcp\Access\Policy\PolicyWriter($db, $state, $events, $config,
 			self::$userConfigs[$config], $appConfig, $users, $time, $authUsers, $rechecks, $processor,
 			new \OCA\Mcp\Db\GroupGrantsMapper($db), new \OCA\Mcp\Db\GroupLifeMapper($db), new \OCA\Mcp\OAuth\OAuthStore($db));
 	}

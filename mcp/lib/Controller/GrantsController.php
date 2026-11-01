@@ -13,19 +13,19 @@ use OCA\Mcp\OAuth\ClientMetadataFetcher;
 use OCA\Mcp\OAuth\CustomClient;
 use OCA\Mcp\OAuth\NativeClient;
 use OCA\Mcp\OAuth\OAuthClientsService;
-use OCA\Mcp\Service\GrantMatrix;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\LogsAccess;
-use OCA\Mcp\Service\LogsGroupsConflict;
-use OCA\Mcp\Service\Policy\GroupGrantsService;
-use OCA\Mcp\Service\Policy\GroupSourceUntrusted;
-use OCA\Mcp\Service\Policy\MissingRevision;
-use OCA\Mcp\Service\Policy\PolicyConflict;
-use OCA\Mcp\Service\Policy\PolicyEventPayload;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\Policy\ReceiptExpired;
-use OCA\Mcp\Service\Policy\ReceiptNotFound;
+use OCA\Mcp\Access\Grants\GrantMatrix;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Logs\LogsAccess;
+use OCA\Mcp\Access\Logs\LogsGroupsConflict;
+use OCA\Mcp\Access\Policy\GroupGrantsService;
+use OCA\Mcp\Access\Policy\GroupSourceUntrusted;
+use OCA\Mcp\Access\Policy\MissingRevision;
+use OCA\Mcp\Access\Policy\PolicyConflict;
+use OCA\Mcp\Access\Policy\PolicyEventPayload;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\ReceiptExpired;
+use OCA\Mcp\Access\Policy\ReceiptNotFound;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;
@@ -204,7 +204,7 @@ class GrantsController extends Controller {
 				return new JSONResponse(['error' => 'NotFound'], Http::STATUS_NOT_FOUND);
 			} catch (ReceiptExpired) {
 				return new JSONResponse(['error' => 'Gone'], Http::STATUS_GONE);
-			} catch (\OCA\Mcp\Service\Policy\ScopeInactive) {
+			} catch (\OCA\Mcp\Access\Policy\ScopeInactive) {
 				// A resource scope receipt while its module's activation barrier is closed: nothing is restored.
 				return new JSONResponse(['error' => 'ScopeInactive'], Http::STATUS_UNPROCESSABLE_ENTITY);
 			}

@@ -12,7 +12,7 @@ use OCA\Mcp\Controller\MyScopeController;
 use OCA\Mcp\Controller\ScopeController;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Scope\NativeResourceEnumerator;
+use OCA\Mcp\Access\ResourceScope\NativeResourceEnumerator;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\Http;

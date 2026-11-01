@@ -31,7 +31,7 @@ function levels() {
 
 /** @return {string[]} GrantPolicy::CATALOG['forms'], read from the PHP source */
 function formsOperations() {
-	const policy = fs.readFileSync(path.join(root, 'lib/Service/GrantPolicy.php'), 'utf8')
+	const policy = fs.readFileSync(path.join(root, 'lib/Access/Grants/GrantPolicy.php'), 'utf8')
 	const line = policy.match(/'forms' => \[([^\]]*)\]/)
 	assert.ok(line, 'the Forms entry of GrantPolicy::CATALOG')
 	return [...line[1].matchAll(/'(\w+)'/g)].map((match) => match[1])

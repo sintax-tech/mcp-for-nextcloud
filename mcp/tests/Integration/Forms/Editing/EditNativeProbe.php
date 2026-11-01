@@ -41,7 +41,7 @@ final class EditNativeProbe {
 		$state=Server::get(EditState::class);$plans=Server::get(EditPlan::class);$before=$state->read($c,$r,FormsScene::OWNER);$effect=$state->effect($c,$r,$before);$plan=$plans->of($r,$c,$before,$effect,FormsScene::OWNER);
 
 		if($case==='external-revoke'){
-			$policy=Server::get(\OCA\Mcp\Service\GrantPolicy::class);
+			$policy=Server::get(\OCA\Mcp\Access\Grants\GrantPolicy::class);
 			try{return $policy->within(FormsScene::OWNER,function()use($policy,$factory,$state,$plans,$c,$r,$before,$effect,$plan):array{
 				if(!$policy->granted(FormsScene::OWNER,'forms','edit')){throw new \RuntimeException('Outer operation must start granted');}
 				$writer=new EditWriter(new EditRevokingFactory($factory),$state,$plans,Server::get(CreateNativeThrottle::class));

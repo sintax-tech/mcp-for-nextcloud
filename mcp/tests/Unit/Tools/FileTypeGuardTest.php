@@ -8,12 +8,12 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\FileWritePolicy;
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tools\Common\FileTypeDenied;
-use OCA\Mcp\Tools\Common\FileTypeGuard;
-use OCA\Mcp\Tools\Common\FileTypeMessages;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
+use OCA\Mcp\Access\FileTypes\FileTypeMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IAppConfig;
 use PHPUnit\Framework\Attributes\DataProvider;

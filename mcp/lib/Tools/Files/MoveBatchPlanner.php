@@ -36,7 +36,7 @@ final class MoveBatchPlanner {
 			foreach ((new FileTypePreflight($this->context))->moves($root, $moves, $this->context->policy()->snapshot()) as $conflict) {
 				$typeDenied[$conflict['from'] . "\0" . $conflict['to']] = $conflict['reason'];
 			}
-		} catch (\OCA\Mcp\Service\FileWritePolicyUnavailable $e) {
+		} catch (\OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable $e) {
 			foreach ($moves as $item) {
 				$typeDenied[$item['from'] . "\0" . $item['to']] = $e->getMessage();
 			}

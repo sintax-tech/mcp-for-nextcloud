@@ -8,7 +8,7 @@ namespace OCA\Mcp\Tests\Unit\Service\Scope;
 
 use OCA\Mcp\Controller\MyScopeController;
 use OCA\Mcp\Controller\ScopeController;
-use OCA\Mcp\Service\Scope\ScopeActivation;
+use OCA\Mcp\Access\ResourceScope\ScopeActivation;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IRequest;
@@ -28,7 +28,7 @@ final class ScopeRoutesTest extends TestCase {
 	}
 
 	/** @param array<string, mixed> $body request parameters */
-	private function controller(array $body = [], bool $open = false, ?\OCA\Mcp\Db\ResourceScopeMapper $reads = null, ?\OCA\Mcp\Service\Scope\NativeResourceEnumerator $resources = null): ScopeController {
+	private function controller(array $body = [], bool $open = false, ?\OCA\Mcp\Db\ResourceScopeMapper $reads = null, ?\OCA\Mcp\Access\ResourceScope\NativeResourceEnumerator $resources = null): ScopeController {
 		$request = $this->createMock(IRequest::class);
 		$request->method('getParam')->willReturnCallback(fn (string $key, $default = null) => $body[$key] ?? $default);
 		$session = $this->createMock(IUserSession::class);
@@ -133,8 +133,8 @@ final class ScopeRoutesTest extends TestCase {
 
 	/** Review F2: native resources that cannot be read refuse the save as unavailable, not as inaccessible. */
 	public function testAnUnreadableTreeRefusesTheSaveWith503NotInaccessible(): void {
-		$resources = $this->createMock(\OCA\Mcp\Service\Scope\NativeResourceEnumerator::class);
-		$resources->method('inaccessible')->willThrowException(new \OCA\Mcp\Service\Policy\PolicyUnavailable('Native resources unavailable'));
+		$resources = $this->createMock(\OCA\Mcp\Access\ResourceScope\NativeResourceEnumerator::class);
+		$resources->method('inaccessible')->willThrowException(new \OCA\Mcp\Access\Policy\PolicyUnavailable('Native resources unavailable'));
 		$before = $this->fx->snapshot();
 
 		$response = $this->controller(['expectedRevision' => $before['revision'], 'mode' => 'restricted', 'items' => [$this->fx->projects]], true, null, $resources)->update('alice', 'files');
@@ -209,10 +209,10 @@ final class ScopeRoutesTest extends TestCase {
 		$request->method('getParam')->willReturnCallback(fn (string $key, $default = null) => $body[$key] ?? $default);
 		$session = $this->createMock(IUserSession::class);
 		$session->method('getUser')->willReturn($this->fx->user('root'));
-		$grants = new \OCA\Mcp\Controller\GrantsController('mcp', $request, $this->createMock(\OCA\Mcp\Service\GrantMatrix::class),
-			$this->createMock(\OCA\Mcp\Service\GrantPolicy::class), $this->fx->userManager(), $this->createMock(\OCP\IConfig::class),
-			$this->createMock(\OCA\Mcp\Service\LogsAccess::class), $this->fx->writer(false), $this->fx->state, $session,
-				$this->createMock(\OCA\Mcp\Service\Policy\GroupGrantsService::class), $this->createMock(\OCA\Mcp\OAuth\OAuthClientsService::class));
+		$grants = new \OCA\Mcp\Controller\GrantsController('mcp', $request, $this->createMock(\OCA\Mcp\Access\Grants\GrantMatrix::class),
+			$this->createMock(\OCA\Mcp\Access\Grants\GrantPolicy::class), $this->fx->userManager(), $this->createMock(\OCP\IConfig::class),
+			$this->createMock(\OCA\Mcp\Access\Logs\LogsAccess::class), $this->fx->writer(false), $this->fx->state, $session,
+				$this->createMock(\OCA\Mcp\Access\Policy\GroupGrantsService::class), $this->createMock(\OCA\Mcp\OAuth\OAuthClientsService::class));
 
 		$response = $grants->undo();
 

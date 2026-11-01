@@ -325,7 +325,7 @@ switch ($action) {
 		$out = ['tagged' => true];
 		break;
 	case 'files-scope':
-		$writer = Server::get(OCA\Mcp\Service\Policy\PolicyWriter::class);
+		$writer = Server::get(OCA\Mcp\Access\Policy\PolicyWriter::class);
 		$state = Server::get(OCA\Mcp\Db\PolicyStateMapper::class)->state();
 		$writer->setResourceScope($state['revision'], 'admin', $in['actor'], 'files', $in['items']);
 		$out = ['changed' => true];
@@ -334,7 +334,7 @@ switch ($action) {
 		$module = new OCA\Mcp\Tools\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
 			Server::get(OCP\IURLGenerator::class), Server::get(OCP\AppFramework\Utility\ITimeFactory::class),
 			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
-		$policy = Server::get(OCA\Mcp\Service\GrantPolicy::class);
+		$policy = Server::get(OCA\Mcp\Access\Grants\GrantPolicy::class);
 		$policy->setGrant($uid, 'deck', 'read', true);
 		$policy->setGrant($uid, 'deck', 'edit', $in['deckEdit'] ?? true);
 		$policy->setGrant($uid, 'files', 'read', $in['filesRead'] ?? true);
@@ -349,7 +349,7 @@ switch ($action) {
 		$module = new OCA\Mcp\Tools\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
 			Server::get(OCP\IURLGenerator::class), Server::get(OCP\AppFramework\Utility\ITimeFactory::class),
 			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
-		$policy = Server::get(OCA\Mcp\Service\GrantPolicy::class);
+		$policy = Server::get(OCA\Mcp\Access\Grants\GrantPolicy::class);
 		$policy->setGrant($uid, 'deck', 'edit', $in['grant'] ?? true);
 		$registry = new OCA\Mcp\Mcp\Tools\ToolRegistry([$module], $policy, $apps, Server::get(OCP\IUserManager::class),
 			Server::get(Psr\Log\LoggerInterface::class));
@@ -366,7 +366,7 @@ switch ($action) {
 		$module = new OCA\Mcp\Tools\Deck\DeckToolModule(OC::$server, $apps, Server::get(Psr\Log\LoggerInterface::class),
 			Server::get(OCP\IURLGenerator::class), Server::get(OCP\AppFramework\Utility\ITimeFactory::class),
 			Server::get(OCP\IUserManager::class), Server::get(OCP\IConfig::class), Server::get(OCP\ISession::class));
-		$policy = Server::get(OCA\Mcp\Service\GrantPolicy::class);
+		$policy = Server::get(OCA\Mcp\Access\Grants\GrantPolicy::class);
 		$policy->setGrant($uid, 'deck', 'read', $in['grant'] ?? true);
 		$registry = new OCA\Mcp\Mcp\Tools\ToolRegistry([$module], $policy, $apps, Server::get(OCP\IUserManager::class),
 			Server::get(Psr\Log\LoggerInterface::class));

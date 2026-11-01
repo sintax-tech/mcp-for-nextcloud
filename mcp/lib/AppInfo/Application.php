@@ -7,13 +7,13 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\AppInfo;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use OCA\Mcp\Mcp\Prompts\PromptCatalog;
-use OCA\Mcp\Service\GuestRestrictions;
+use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Mcp\Resources\ResourceRegistry;
 use OCA\Mcp\Platform\Time\UserTimezone;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tools\Calendar\CalendarModule;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckServiceGateway;
@@ -101,9 +101,9 @@ class Application extends App implements IBootstrap {
 		$context->registerService(\OCA\Mcp\Tools\Tasks\TaskStore::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Tasks\DavTaskStore($c));
 		$context->registerService(\OCA\Mcp\Platform\FileAccess\ActorRoot::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Platform\FileAccess\ActorRoot($c->get(\OCP\Files\IRootFolder::class), $c->get(IUserSession::class)));
 		// The tools read the resource scope from the policy snapshot of their operation.
-		$context->registerService(\OCA\Mcp\Service\Scope\ScopeReader::class, static fn (ContainerInterface $c): \OCA\Mcp\Service\Scope\ScopeReader => $c->get(\OCA\Mcp\Service\GrantPolicy::class));
+		$context->registerService(\OCA\Mcp\Access\ResourceScope\ScopeReader::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\ResourceScope\ScopeReader => $c->get(\OCA\Mcp\Access\Grants\GrantPolicy::class));
 		// The Files scope step of the structured-reference filter: the user's Files resource scope of the operation.
-		$context->registerService(\OCA\Mcp\Tools\Common\FileReferenceScope::class, static fn (ContainerInterface $c): \OCA\Mcp\Tools\Common\FileReferenceScope => $c->get(\OCA\Mcp\Service\Scope\FilesReferenceScope::class));
+		$context->registerService(\OCA\Mcp\Access\ResourceScope\FileReferenceScope::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\ResourceScope\FileReferenceScope => $c->get(\OCA\Mcp\Access\ResourceScope\FilesReferenceScope::class));
 		$context->registerService(\OCA\Mcp\Tools\Contacts\ContactDav::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Contacts\EmbeddedCardDavDispatcher(
 			static fn (): \Sabre\DAV\Server => \OCA\Mcp\Tools\Contacts\EmbeddedCardDavServer::create(),
 			new Session($c->get(IUserSession::class)), $c->get(\OCP\IAppConfig::class), $c->get(LoggerInterface::class),
@@ -149,7 +149,7 @@ class Application extends App implements IBootstrap {
 			new NotesRepository($c->get(IRootFolder::class), $c->get(IConfig::class), null, $c->get(NotesFolderResolver::class)),
 			$c->get(ToolRegistry::class)->guide(),
 			// nc://files answers to the Files gate, the resource scope included; nc://notes keeps the plain guard (D4).
-			$c->get(\OCA\Mcp\Service\Scope\FilesAccessGuard::class),
+			$c->get(\OCA\Mcp\Access\ResourceScope\FilesAccessGuard::class),
 			$c->get(GuestRestrictions::class),
 		));
 		$context->registerService(McpProtocol::class, static fn (ContainerInterface $c): McpProtocol => new McpProtocol(

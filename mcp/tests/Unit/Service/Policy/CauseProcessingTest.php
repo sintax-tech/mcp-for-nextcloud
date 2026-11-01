@@ -20,15 +20,15 @@ use OCA\Mcp\Migration\Version001002Date20261008000000;
 use OCA\Mcp\Migration\Version001100Date20261015000000;
 use OCA\Mcp\Migration\Version001100Date20261015010000;
 use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\Service\Policy\CauseClassifier;
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\DeferredQueue;
-use OCA\Mcp\Service\Policy\GroupLifecycle;
-use OCA\Mcp\Service\Policy\PolicyEventProcessor;
-use OCA\Mcp\Service\Policy\PolicyOperationContext;
-use OCA\Mcp\Service\Policy\PolicyResolver;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\CauseClassifier;
+use OCA\Mcp\Access\Policy\CauseProcessor;
+use OCA\Mcp\Access\Policy\DeferredQueue;
+use OCA\Mcp\Access\Policy\GroupLifecycle;
+use OCA\Mcp\Access\Policy\PolicyEventProcessor;
+use OCA\Mcp\Access\Policy\PolicyOperationContext;
+use OCA\Mcp\Access\Policy\PolicyResolver;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Tests\Unit\InMemoryAppConfig;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
@@ -137,7 +137,7 @@ final class CauseProcessingTest extends TestCase {
 		$candidates = $eligible === null ? [['groupId' => 'lost', 'grants' => ['_system' => ['eligible']], 'trusted' => false, 'state' => 'active']] : [];
 		return new PolicyOperationContext('0', $writer, $raw, $candidates, true, true, [], true, true,
 				// No account: the guard is unrestricted and never reads its mapper.
-				\OCA\Mcp\Service\Scope\ScopeGuard::read((new \ReflectionClass(\OCA\Mcp\Db\ResourceScopeMapper::class))->newInstanceWithoutConstructor(), null));
+				\OCA\Mcp\Access\ResourceScope\ScopeGuard::read((new \ReflectionClass(\OCA\Mcp\Db\ResourceScopeMapper::class))->newInstanceWithoutConstructor(), null));
 	}
 
 	private static function gen(string $seed): string {

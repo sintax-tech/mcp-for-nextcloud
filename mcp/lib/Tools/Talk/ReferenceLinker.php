@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tools\Talk;
 
 use InvalidArgumentException;
 use OCA\Mcp\Platform\Compat\AppEnablement;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\GuestRestrictions;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Tools\Calendar\ScopedCalendarAccess;
 use OCA\Mcp\Tools\Calendar\CalendarException;
 use OCA\Mcp\Tools\Calendar\CalendarStore;

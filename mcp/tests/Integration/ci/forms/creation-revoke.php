@@ -6,5 +6,5 @@
 declare(strict_types=1);
 /** Changes only the fixed synthetic actor's create grant in a separate disposable-test process. */
 require dirname(__DIR__, 2) . '/bootstrap.php';
-\OCP\Server::get(\OCA\Mcp\Service\GrantPolicy::class)->setGrant(\OCA\Mcp\Tests\Integration\Forms\FormsScene::READER, 'forms', 'create', false);
+\OCP\Server::get(\OCA\Mcp\Access\Grants\GrantPolicy::class)->setGrant(\OCA\Mcp\Tests\Integration\Forms\FormsScene::READER, 'forms', 'create', false);
 echo 'revoked';

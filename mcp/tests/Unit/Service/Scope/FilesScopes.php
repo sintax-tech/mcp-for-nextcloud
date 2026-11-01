@@ -6,10 +6,10 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service\Scope;
 
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Scope\FilesScope;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\ResourceScope\FilesScope;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCP\Files\IRootFolder;
 use PHPUnit\Framework\TestCase;
 

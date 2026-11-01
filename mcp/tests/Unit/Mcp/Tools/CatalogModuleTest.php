@@ -11,7 +11,7 @@ use LogicException;
 use OCA\Mcp\Mcp\Tools\Discovery\CapabilityRegistry;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCA\Mcp\Mcp\Tools\UnknownToolException;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Mcp\Tools\Catalog\BuiltTools;
 use OCA\Mcp\Tests\Unit\Mcp\Tools\Catalog\DuplicateProbeModule;

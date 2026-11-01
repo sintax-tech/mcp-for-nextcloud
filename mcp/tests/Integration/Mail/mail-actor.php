@@ -13,7 +13,7 @@ declare(strict_types=1);
  * - tools, calls, pages: the message tools actions of MailMessageActions.
  */
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Mail\MailActor;
 use OCA\Mcp\Tests\Integration\Mail\MailMessageActions;
 use OCA\Mcp\Tools\Mail\MailModule;

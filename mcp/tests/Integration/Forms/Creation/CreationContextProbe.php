@@ -70,7 +70,7 @@ final class CreationContextProbe {
 					return ['scenario' => $scenario, 'accepted' => true, 'status' => 'partial', 'nativeApiEditObserved' => true, 'noQuestionSink' => true, 'receiptOnlyPreviouslyObservedPrefix' => true];
 				}
 				if ($scenario === 'external-revoke') {
-					$policy = Server::get(\OCA\Mcp\Service\GrantPolicy::class);
+					$policy = Server::get(\OCA\Mcp\Access\Grants\GrantPolicy::class);
 					try {
 						return $policy->within(FormsScene::READER, function () use ($policy, $graph, $args): array {
 							if (!$policy->granted(FormsScene::READER, 'forms', 'create')) { throw new \RuntimeException('Outer snapshot must begin granted'); }

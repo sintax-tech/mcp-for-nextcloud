@@ -13,7 +13,7 @@ use OCA\Mcp\OAuth\ClientResolver;
 use OCA\Mcp\OAuth\OAuthException;
 use OCA\Mcp\OAuth\ResourceUrl;
 use OCA\Mcp\OAuth\TokenService;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IRequest;
@@ -58,7 +58,7 @@ final class OAuthControllerFlowTest extends TestCase {
 		$resolver->method('resolve')->willReturn(new ClientMetadata('https://claude.ai/c', 'Claude', ['https://claude.ai/cb']));
 		$this->policy = $this->createMock(GrantPolicy::class);
 		$this->policy->method('globalEnabled')->willReturnCallback(fn () => $this->serviceOn);
-		$this->policy->method('eligible')->willReturnCallback(fn () => $this->eligible ?? throw new \OCA\Mcp\Service\Policy\PolicyUnavailable());
+		$this->policy->method('eligible')->willReturnCallback(fn () => $this->eligible ?? throw new \OCA\Mcp\Access\Policy\PolicyUnavailable());
 		$this->tokens = $this->createMock(TokenService::class);
 		$urls = $this->createMock(ResourceUrl::class);
 		$urls->method('base')->willReturn(self::ISSUER . '/apps/mcp/');
@@ -109,7 +109,7 @@ final class OAuthControllerFlowTest extends TestCase {
 	public function testAPolicyStorageFailureIssuesNoCodeAndTellsTheClientToRetry(): void {
 		$controller = $this->controller();
 		$pending = $this->authorize($controller);
-		$this->tokens->method('consent')->willThrowException(new \OCA\Mcp\Service\Policy\PolicyUnavailable());
+		$this->tokens->method('consent')->willThrowException(new \OCA\Mcp\Access\Policy\PolicyUnavailable());
 
 		$response = $controller->consent($pending, 'allow');
 
@@ -135,7 +135,7 @@ final class OAuthControllerFlowTest extends TestCase {
 	public function testATokenRequestDuringAStorageFailureIsRetriable(): void {
 		$controller = $this->controller();
 		$this->params = ['grant_type' => 'refresh_token'];
-		$this->tokens->method('refresh')->willThrowException(new \OCA\Mcp\Service\Policy\PolicyUnavailable());
+		$this->tokens->method('refresh')->willThrowException(new \OCA\Mcp\Access\Policy\PolicyUnavailable());
 		$this->tokens->expects($this->once())->method('housekeeping');
 
 		$response = $controller->token();

@@ -8,8 +8,8 @@ namespace OCA\Mcp\Tests\Unit\Admin;
 
 use OCA\Mcp\Db\GroupGrantsMapper;
 use OCA\Mcp\Db\GroupLifeMapper;
-use OCA\Mcp\Service\GroupDirectory;
-use OCA\Mcp\Service\Policy\GroupSourceClassifier;
+use OCA\Mcp\Access\Grants\GroupDirectory;
+use OCA\Mcp\Access\Policy\GroupSourceClassifier;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCP\IGroupManager;
 use PHPUnit\Framework\TestCase;

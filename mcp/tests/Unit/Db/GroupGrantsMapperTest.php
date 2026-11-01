@@ -16,7 +16,7 @@ use OCA\Mcp\Migration\Version000800Date20261002000000;
 use OCA\Mcp\Migration\Version000800Date20261002010000;
 use OCA\Mcp\Migration\Version001002Date20261008000000;
 use OCA\Mcp\Migration\Version001100Date20261014000000;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
@@ -202,7 +202,7 @@ final class GroupGrantsMapperTest extends TestCase {
 
 	/** @return array<string, array{string,string}> */
 	public static function invalidStoredPermissions(): array {
-		return \OCA\Mcp\Tests\Unit\Service\Policy\UnknownGroupGrantsTest::malformedPairs();
+		return \OCA\Mcp\Tests\Unit\Access\Policy\UnknownGroupGrantsTest::malformedPairs();
 	}
 
 	#[DataProvider('invalidStoredPermissions')]

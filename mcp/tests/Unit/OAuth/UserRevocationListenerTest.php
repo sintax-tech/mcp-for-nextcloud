@@ -7,8 +7,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\OAuth;
 
 use OCA\Mcp\OAuth\UserRevocationListener;
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\CauseProcessor;
+use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCP\IDBConnection;
 use OCP\IUser;

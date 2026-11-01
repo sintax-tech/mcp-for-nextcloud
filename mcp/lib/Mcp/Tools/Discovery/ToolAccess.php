@@ -9,11 +9,11 @@ namespace OCA\Mcp\Mcp\Tools\Discovery;
 
 use InvalidArgumentException;
 use OCA\Mcp\Platform\Compat\AppEnablement;
-use OCA\Mcp\Service\GrantMatrix;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\GuestRestrictions;
-use OCA\Mcp\Service\Policy\GrantUnknown;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Grants\GrantMatrix;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Guests\GuestRestrictions;
+use OCA\Mcp\Access\Policy\GrantUnknown;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
 

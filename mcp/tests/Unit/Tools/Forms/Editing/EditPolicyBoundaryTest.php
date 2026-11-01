@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Editing;
 
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\{PolicyOperationContext,PolicyResolver,PolicyWriter};
-use OCA\Mcp\Service\Scope\ScopeGuard;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Policy\{PolicyOperationContext,PolicyResolver,PolicyWriter};
+use OCA\Mcp\Access\ResourceScope\ScopeGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\Forms\Editing\EditPolicyBoundary;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -46,7 +46,7 @@ final class EditPolicyBoundaryTest extends TestCase {
 		self::assertSame([true, false, false, false], $observeFlags);
 		foreach ($contexts as $context) {
 			try { $context->serviceEnabled(); self::fail('Context remained open'); }
-			catch (\OCA\Mcp\Service\Policy\PolicyUnavailable) { self::assertTrue(true); }
+			catch (\OCA\Mcp\Access\Policy\PolicyUnavailable) { self::assertTrue(true); }
 		}
 	}
 	/** Uses real effective gates, including deny/unknown semantics and a deliberately unrestricted Forms scope.

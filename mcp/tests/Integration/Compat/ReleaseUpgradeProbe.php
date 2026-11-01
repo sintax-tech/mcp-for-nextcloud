@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Integration\Compat;
 
 use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\OAuth\TokenHasher;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
 use OCP\IAppConfig;

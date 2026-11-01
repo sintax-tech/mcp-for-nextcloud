@@ -16,7 +16,7 @@ use OCA\Mcp\Tools\Calendar\CalendarStore;
 use OCA\Mcp\Tools\Calendar\Classification;
 use OCA\Mcp\Tools\Calendar\EventRepository;
 use OCA\Mcp\Tools\Calendar\ScopedCalendarAccess;
-use OCA\Mcp\Tools\Common\OutputReferenceFilter;
+use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Talk\ActorNames;
 use OCA\Mcp\Tools\Talk\AttachmentAccess;

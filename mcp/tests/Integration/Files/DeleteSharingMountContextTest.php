@@ -35,7 +35,7 @@ final class DeleteSharingMountContextTest extends ExclusionTestCase {
 	 */
 	#[DataProvider('orders')]
 	public function testFreshReceivedMountsWithoutDavWarmup(array $order): void {
-		\OCP\Server::get(\OCA\Mcp\Service\GrantPolicy::class)->setGrant(self::BOB, 'files', 'delete', true);
+		\OCP\Server::get(\OCA\Mcp\Access\Grants\GrantPolicy::class)->setGrant(self::BOB, 'files', 'delete', true);
 		foreach ($order as $kind) {
 			$file = $this->makeFile('home', $kind . '-' . $this->run . '/nested/a.txt', 'fresh mount exact bytes');
 			$file->getParent()->newFile('other.txt', 'different HTTP response bytes');

@@ -8,9 +8,9 @@ namespace OCA\Mcp\Tests\Unit\Service\Policy;
 
 use OCA\Mcp\Db\GroupLifeMapper;
 use OCA\Mcp\Db\IdentityKey;
-use OCA\Mcp\Service\Policy\CauseClassifier;
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\DeferredQueue;
+use OCA\Mcp\Access\Policy\CauseClassifier;
+use OCA\Mcp\Access\Policy\CauseProcessor;
+use OCA\Mcp\Access\Policy\DeferredQueue;
 use OCA\Mcp\Tests\Unit\InMemoryAppConfig;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\NullLogger;
@@ -71,7 +71,7 @@ final class GroupLifecycleTest extends TestCase {
 		$this->assertTrue($this->lifecycle->deleted('staff', $pending));
 		$this->assertSame([], $this->rows('staff'));
 		$this->assertNull($this->life->get('staff'));
-		$this->assertSame(\OCA\Mcp\Service\Policy\PolicyWriter::next($revision), $this->revision(), 'one purge, one revision');
+		$this->assertSame(\OCA\Mcp\Access\Policy\PolicyWriter::next($revision), $this->revision(), 'one purge, one revision');
 		$this->assertSame(['_system/eligible', 'notes/edit'], $this->rows('team'), 'another group is untouched');
 		$this->assertFalse($this->lifecycle->deleted('staff', $pending), 'a repeated event is a no-op');
 	}
@@ -97,7 +97,7 @@ final class GroupLifecycleTest extends TestCase {
 		$this->lifecycle->created('old', '3');
 		$this->assertSame([], $this->rows('old'));
 		$this->assertNull($this->life->get('old'));
-		$this->assertSame(\OCA\Mcp\Service\Policy\PolicyWriter::next($revision), $this->revision());
+		$this->assertSame(\OCA\Mcp\Access\Policy\PolicyWriter::next($revision), $this->revision());
 
 		$revision = $this->revision();
 		$this->lifecycle->created('new', '4');
@@ -122,9 +122,9 @@ final class GroupLifecycleTest extends TestCase {
 		$this->lifecycle->created('staff', null);
 		$this->assertSame('needs_confirm', $this->life->get('staff')['state']);
 		$this->assertSame(['_system/eligible', 'notes/edit'], $this->rows('staff'));
-		$this->assertSame(\OCA\Mcp\Service\Policy\PolicyWriter::next($revision), $this->revision());
+		$this->assertSame(\OCA\Mcp\Access\Policy\PolicyWriter::next($revision), $this->revision());
 		$this->lifecycle->created('staff', null);
-		$this->assertSame(\OCA\Mcp\Service\Policy\PolicyWriter::next($revision), $this->revision(), 'already suspended: no-op');
+		$this->assertSame(\OCA\Mcp\Access\Policy\PolicyWriter::next($revision), $this->revision(), 'already suspended: no-op');
 	}
 
 	public function testAGroupWithoutLifecycleNeverTakesTheMutex(): void {
@@ -153,7 +153,7 @@ final class GroupLifecycleTest extends TestCase {
 		$this->assertSame(['_system/eligible', 'notes/edit'], $this->rows('failed'), 'a failed deletion keeps its rows');
 		$this->assertSame('pending_delete', $this->life->get('unreadable')['state'], 'a failed read decides nothing');
 		$this->assertSame('active', $this->life->get('kept')['state']);
-		$this->assertSame(\OCA\Mcp\Service\Policy\PolicyWriter::next(\OCA\Mcp\Service\Policy\PolicyWriter::next($revision)), $this->revision());
+		$this->assertSame(\OCA\Mcp\Access\Policy\PolicyWriter::next(\OCA\Mcp\Access\Policy\PolicyWriter::next($revision)), $this->revision());
 		// Idempotent: the decided ones are not pending any more.
 		$this->exists['unreadable'] = false;
 		$this->assertSame(1, $this->lifecycle->reconcile());

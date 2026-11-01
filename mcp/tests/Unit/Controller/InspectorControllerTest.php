@@ -7,8 +7,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Controller;
 
 use OCA\Mcp\Controller\InspectorController;
-use OCA\Mcp\Service\AccessInspector;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Inspection\AccessInspector;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IGroupManager;
 use OCP\IRequest;

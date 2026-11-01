@@ -15,7 +15,7 @@ use OCA\Mcp\OAuth\CustomClient;
 use OCA\Mcp\OAuth\NativeClient;
 use OCA\Mcp\OAuth\ResourceUrl;
 use OCA\Mcp\OAuth\TokenService;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\AppFramework\Http\RedirectResponse;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IRequest;

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Mail;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tools\Mail\MailBodyPreflight;
 use OCA\Mcp\Tools\Mail\MailMessages;

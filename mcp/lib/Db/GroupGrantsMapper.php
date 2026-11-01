@@ -98,7 +98,7 @@ final class GroupGrantsMapper {
 	 * @throws \OCP\DB\Exception when a statement fails
 	 */
 	public function replaceGroup(string $gid, array $grants): void {
-		if (\OCA\Mcp\Service\Policy\PolicyEventPayload::groupGrants($grants) !== $grants) {
+		if (\OCA\Mcp\Access\Policy\PolicyEventPayload::groupGrants($grants) !== $grants) {
 			throw new InvalidArgumentException('Group grants must be canonical');
 		}
 		$this->deleteGroup($gid);

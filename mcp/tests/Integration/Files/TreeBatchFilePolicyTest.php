@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Files;
 
-use OCA\Mcp\Service\FileWritePolicy;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
-use OCA\Mcp\Tools\Common\FileTypeGuard;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use OCA\Mcp\Platform\FileAccess\{NodeAccessInfo, SharedWriteGuard};
 use OCA\Mcp\Tools\Files\{CopyMoveContext, FileTypePreflight, ListedTreeCopy, MoveReport, Reorganization};
 use OCP\Files\{Folder, IRootFolder};
@@ -136,7 +136,7 @@ final class TreeBatchFilePolicyTest extends IntegrationTestCase {
 			$this->context->policy()->write($this->source(), '/' . $this->base . '/blocked',
 				fn () => self::fail('The native sink must not run'));
 			self::fail('A forbidden descendant must refuse the whole move');
-		} catch (\OCA\Mcp\Tools\Common\FileTypeDenied) {
+		} catch (\OCA\Mcp\Access\FileTypes\FileTypeDenied) {
 			self::assertFalse($this->root->nodeExists($this->base . '/blocked'));
 			self::assertSame('blocked', $this->root->get($this->base . '/src.php/sub/blocked.php')->getContent());
 		}

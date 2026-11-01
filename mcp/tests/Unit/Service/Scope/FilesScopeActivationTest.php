@@ -6,14 +6,14 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service\Scope;
 
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\Policy\ScopeInactive;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Service\Scope\FilesReferenceScope;
-use OCA\Mcp\Service\Scope\FilesScope;
-use OCA\Mcp\Service\Scope\ScopeActivation;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\ScopeInactive;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Access\ResourceScope\FilesReferenceScope;
+use OCA\Mcp\Access\ResourceScope\FilesScope;
+use OCA\Mcp\Access\ResourceScope\ScopeActivation;
 use OCP\SystemTag\ISystemTagObjectMapper;
 use PHPUnit\Framework\TestCase;
 

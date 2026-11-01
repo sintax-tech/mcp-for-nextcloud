@@ -9,7 +9,7 @@ namespace OCA\Mcp\Controller;
 
 use InvalidArgumentException;
 use OCA\Mcp\Service\ConnectionList;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;

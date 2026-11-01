@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Sharing\DeckShareProvider;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\CriticalFlow;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\FlowRunner;

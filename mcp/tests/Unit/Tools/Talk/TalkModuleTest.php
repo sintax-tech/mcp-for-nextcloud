@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\Talk\Conversation;
 use OCA\Mcp\Tools\Talk\ConversationAccessException;

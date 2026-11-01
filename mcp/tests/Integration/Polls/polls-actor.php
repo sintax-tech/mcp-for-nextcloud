@@ -49,7 +49,7 @@ final class PollsNativeProbe {
 		$guard=new PollsSessionGuard($session);
 		$counter=new PollsCountingService(Server::get(\OCA\Polls\Service\PollService::class));
 		$services=new PollsServices(Server::get(\OCP\App\IAppManager::class),$users,new PollsProbeContainer($counter),
-			Server::get(\OCA\Mcp\Service\GrantPolicy::class),new PollsSurface());
+			Server::get(\OCA\Mcp\Access\Grants\GrantPolicy::class),new PollsSurface());
 		$cursor=new PollsCursor(Server::get(\OCA\Mcp\Mcp\Confirmation\PlanState::class));$shapes=new PollsShapes();$context=new PollsContext($services,$guard,Server::get(\Psr\Log\LoggerInterface::class));
 		$module=new PollsModule(new ListPollsHandler($context,new PollsListing($services,$guard,$shapes,$cursor)),
 			new ReadPollHandler($context,new PollsReading($services,$guard,$shapes,$cursor)),

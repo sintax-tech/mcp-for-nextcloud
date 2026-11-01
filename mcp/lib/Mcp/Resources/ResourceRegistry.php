@@ -7,11 +7,11 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Mcp\Resources;
 
-use OCA\Mcp\Service\Policy\GrantUnknown;
+use OCA\Mcp\Access\Policy\GrantUnknown;
 use InvalidArgumentException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\FilesModule;
@@ -27,9 +27,9 @@ use OCP\App\IAppManager;
 use OCP\Files\File;
 use OCP\Files\IRootFolder;
 use OCP\IUserManager;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\GuestRestrictions;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Guests\GuestRestrictions;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 
 /**
  * Registry of MCP resources and resource templates for the MCP for Cloud app.

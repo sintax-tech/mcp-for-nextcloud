@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Files;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Exclusion\ExclusionTestCase;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
@@ -137,7 +137,7 @@ final class DeleteFileTest extends ExclusionTestCase {
 	/** @return void Scope exclusion answers like missing, and native trash OFF refuses without deleting. */
 	public function testScopeAndAppOffRefuse(): void {
 		$file = $this->makeFile('home', 'scoped.txt', 'keep');
-		$writer = Server::get(\OCA\Mcp\Service\Policy\PolicyWriter::class);
+		$writer = Server::get(\OCA\Mcp\Access\Policy\PolicyWriter::class);
 		$state = Server::get(\OCA\Mcp\Db\PolicyStateMapper::class);
 		$writer->setResourceScope($state->state()['revision'], 'admin', self::ALICE, 'files', []);
 		try {

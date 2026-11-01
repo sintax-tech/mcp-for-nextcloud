@@ -6,10 +6,10 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service\Scope;
 
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Service\Scope\FilesScope;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Access\ResourceScope\FilesScope;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCP\Files\Folder;
@@ -95,7 +95,7 @@ final class FilesScopeTest extends TestCase {
 	public function testExternalStorageGuestsHidesIsOutOfReachAndTheRestIsNot(): void {
 		$this->tree->nodes['/alice/files/Archive/old.md']['scope'] = 'external';
 		foreach ([true, false] as $hides) {
-			$guests = $this->createMock(\OCA\Mcp\Service\GuestRestrictions::class);
+			$guests = $this->createMock(\OCA\Mcp\Access\Guests\GuestRestrictions::class);
 			$guests->method('hidesExternalStorage')->willReturnCallback(fn (string $uid): bool => $uid === 'alice' && $hides);
 			$gate = new FilesAccessGuard($this->config->mock($this), $this->tags(), $this->tree->filesystemRoot(), null, null, null, $this->scope(), $guests);
 			$label = $hides ? 'hidden' : 'allowed';
@@ -291,7 +291,7 @@ final class FilesScopeTest extends TestCase {
 		$broken->method('getStorage')->willReturn($this->createMock(IStorage::class));
 		$broken->method('getParent')->willThrowException(new \OCP\Files\NotFoundException());
 		$scope = $this->scope();
-		$resolution = static fn (string $mode, array $items = []) => new \OCA\Mcp\Service\Policy\Resolution\ScopeResolution($mode, $items);
+		$resolution = static fn (string $mode, array $items = []) => new \OCA\Mcp\Access\Policy\Resolution\ScopeResolution($mode, $items);
 		$this->assertNull($scope->candidatesIn($resolution('unrestricted'), $broken), 'no chain, no failure, without a scope');
 		$this->assertNull($scope->candidatesIn($resolution('unavailable'), $broken));
 		$this->assertContains($this->projects, $scope->candidatesIn($resolution('restricted', [$this->projects]), $this->node('/Projects/deep/plan.md')));

@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Deck\Service\BoardService;
 use OCA\Deck\Sharing\DeckShareProvider;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Deck\BoardRecipientResolver;

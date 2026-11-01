@@ -20,7 +20,7 @@ use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\VersionRestore;
 use OCA\Mcp\Tools\Files\VersionTools;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
@@ -187,8 +187,8 @@ final class VersionToolsTest extends TestCase {
 			return array_fill_keys($ids, $hidden ? ['999'] : []);
 		});
 		$config = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
-		$config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = '["999"]';
-		$guard = new \OCA\Mcp\Service\Scope\FilesAccessGuard($config->mock($this), $mapper, $this->tree->filesystemRoot());
+		$config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = '["999"]';
+		$guard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($config->mock($this), $mapper, $this->tree->filesystemRoot());
 		$this->assertTrue($guard->isVisible($this->file()));
 		$this->manager->onRollback = static function () use (&$hidden): void { $hidden = true; };
 		$this->tree->afterWrite = static function (string $path) use (&$hidden): void {

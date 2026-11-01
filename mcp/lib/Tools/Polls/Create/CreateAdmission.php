@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Polls\Create;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCA\Mcp\Tools\Polls\{PollsRefusal,PollsSurface};
 use OCP\{IUserManager};

@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Admin;
 
-use OCA\Mcp\Service\GrantMatrix;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantMatrix;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCP\IAppConfig;
 use OCP\App\IAppManager;
@@ -74,19 +74,19 @@ final class MatrixFixture {
 	}
 
 	/** The role gate of the logs module over the same config and groups; members of 'admin' are the administrators. */
-	public function logsAccess(): \OCA\Mcp\Service\LogsAccess {
+	public function logsAccess(): \OCA\Mcp\Access\Logs\LogsAccess {
 		$config = $this->config->mock($this->test);
 		$groups = $this->groupManager();
 		$mapper = new \OCA\Mcp\Db\LogsGroupsMapper($this->logsDb->connection(), $this->appConfig->worker($this->test));
 		$remote = $this->mock(\OCP\Security\Ip\IRemoteAddress::class);
 		$remote->method('allowsAdminActions')->willReturn(true);
-		$roles = new \OCA\Mcp\Service\Policy\LogsRoleReader($config, $mapper, $groups, $remote, $this->mock(\OCP\IUserSession::class));
-		return new \OCA\Mcp\Service\LogsAccess($config, $groups, $mapper, $this->locks, $this->writer(), $roles,
-			new \OCA\Mcp\Service\Policy\MembershipReader($groups), $this->userManager());
+		$roles = new \OCA\Mcp\Access\Policy\LogsRoleReader($config, $mapper, $groups, $remote, $this->mock(\OCP\IUserSession::class));
+		return new \OCA\Mcp\Access\Logs\LogsAccess($config, $groups, $mapper, $this->locks, $this->writer(), $roles,
+			new \OCA\Mcp\Access\Policy\MembershipReader($groups), $this->userManager());
 	}
 
-	/** @return \OCA\Mcp\Service\Policy\PolicyWriter the writer behind the policy, shared by every worker of the fixture */
-	public function writer(): \OCA\Mcp\Service\Policy\PolicyWriter {
+	/** @return \OCA\Mcp\Access\Policy\PolicyWriter the writer behind the policy, shared by every worker of the fixture */
+	public function writer(): \OCA\Mcp\Access\Policy\PolicyWriter {
 		return InMemoryConfig::writer($this->policyConfig, $this->oauth);
 	}
 

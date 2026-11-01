@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Admin;
 
 use OCA\Mcp\Service\ConnectionList;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\LogsAccess;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Logs\LogsAccess;
 use OCA\Mcp\Settings\AdminSettings;
 use OCA\Mcp\Tools\Files\OcrSupport;
 use OCP\App\IAppManager;

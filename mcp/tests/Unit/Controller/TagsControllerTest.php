@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Controller;
 
 use OCA\Mcp\Controller\TagsController;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCP\AppFramework\Http;
 use OCP\IRequest;

@@ -140,10 +140,10 @@ class UserFileResolverTest extends TestCase {
 		$this->userFolder->method('getId')->willReturn(1);
 		$this->userFolder->method('getById')->with(12345)->willReturn([$file]);
 		$config = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
-		$config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+		$config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
 		$tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
 		$tagMapper->method('getTagIdsForObjects')->willReturn(['12345' => ['999']]);
-		$guard = new \OCA\Mcp\Service\VisibilityGuard($config->mock($this), $tagMapper, $this->rootFolder);
+		$guard = new \OCA\Mcp\Access\Visibility\VisibilityGuard($config->mock($this), $tagMapper, $this->rootFolder);
 		$resolver = new UserFileResolver($this->rootFolder, $guard, \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
 
 		$this->expectException(FileAccessException::class);

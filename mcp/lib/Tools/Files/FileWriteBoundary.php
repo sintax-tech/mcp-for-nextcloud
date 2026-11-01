@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
-use OCA\Mcp\Tools\Common\FileTypeGuard;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use OCP\Server;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 

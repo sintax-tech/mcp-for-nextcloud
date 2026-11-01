@@ -177,10 +177,10 @@ class AttachmentAccessTest extends TestCase {
 		$share->method('getNode')->willReturn($node);
 
 		$config = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
-		$config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+		$config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
 		$tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
 		$tagMapper->method('getTagIdsForObjects')->willReturn(['777' => ['999']]);
-		$guard = new \OCA\Mcp\Service\VisibilityGuard($config->mock($this), $tagMapper, $root);
+		$guard = new \OCA\Mcp\Access\Visibility\VisibilityGuard($config->mock($this), $tagMapper, $root);
 
 		$access = new AttachmentAccess($this->shareManager, $guard, \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
 
@@ -274,9 +274,9 @@ class AttachmentAccessTest extends TestCase {
 	 * @param array<string, list<string>> $tagsById tags of each file id
 	 * @param \OCP\Files\IRootFolder|null $root root the guard resolves a share's owner tree through
 	 */
-	private function givenGuard(array $tagsById = [], ?\OCP\Files\IRootFolder $root = null): \OCA\Mcp\Service\VisibilityGuard {
+	private function givenGuard(array $tagsById = [], ?\OCP\Files\IRootFolder $root = null): \OCA\Mcp\Access\Visibility\VisibilityGuard {
 		$config = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
-		$config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+		$config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
 		$tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
 		$tagMapper->method('getTagIdsForObjects')
 			->willReturnCallback(static function (array $ids) use ($tagsById): array {
@@ -288,7 +288,7 @@ class AttachmentAccessTest extends TestCase {
 				return $out;
 			});
 
-		return new \OCA\Mcp\Service\VisibilityGuard($config->mock($this), $tagMapper, $root);
+		return new \OCA\Mcp\Access\Visibility\VisibilityGuard($config->mock($this), $tagMapper, $root);
 	}
 }
 

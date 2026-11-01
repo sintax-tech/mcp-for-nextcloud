@@ -24,7 +24,7 @@ final class LocalArtifactRootCheck {
 		try {
 			file_put_contents($run . '/generated.php', $marker);
 			$tree = SourceTrees::fromDirectory($root . '/mcp', ['appinfo', 'lib', 'scripts', 'templates', 'tests', 'js']);
-			if (!isset($tree['lib/Service/GrantPolicy.php'], $tree['tests/Integration/Files/DeleteFileTest.php'])) {
+			if (!isset($tree['lib/Access/Grants/GrantPolicy.php'], $tree['tests/Integration/Files/DeleteFileTest.php'])) {
 				throw new RuntimeException('The proof must include real production and integration source files');
 			}
 			if (in_array($marker, $tree, true)) {

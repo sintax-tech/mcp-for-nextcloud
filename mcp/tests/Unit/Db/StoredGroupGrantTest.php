@@ -8,7 +8,7 @@ namespace OCA\Mcp\Tests\Unit\Db;
 
 use OCA\Mcp\Db\GroupGrantRows;
 use OCA\Mcp\Db\StoredGroupGrant;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\DB\IResult;
 use OCP\DB\QueryBuilder\IParameter;
 use OCP\DB\QueryBuilder\IQueryBuilder;

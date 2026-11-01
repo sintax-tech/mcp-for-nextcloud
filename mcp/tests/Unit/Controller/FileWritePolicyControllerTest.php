@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Controller;
 
 use OCA\Mcp\Controller\FileWritePolicyController;
-use OCA\Mcp\Service\FileWritePolicy;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
 use OCA\Mcp\Tests\Unit\InMemoryAppConfig;
 use OCP\IAppConfig;
 use OCP\IDBConnection;

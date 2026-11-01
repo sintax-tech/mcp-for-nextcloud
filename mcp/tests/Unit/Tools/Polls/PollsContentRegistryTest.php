@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
-use OCA\Mcp\Service\GuestRestrictions;
+use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\{IUser, IUserManager};
 use OCP\App\IAppManager;

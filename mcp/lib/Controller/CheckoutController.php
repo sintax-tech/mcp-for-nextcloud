@@ -7,15 +7,15 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Controller;
 
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Tools\Files\Handler\CheckoutWriteHandler;
 use OCA\Mcp\Checkout\CheckoutToken;
 use OCA\Mcp\Checkout\CheckoutTokenStore;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\L10n\UserL10n;
 use OCA\Mcp\OAuth\TokenHasher;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\GuestRestrictions;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
@@ -88,11 +88,11 @@ class CheckoutController extends Controller {
 		private LoggerInterface $logger,
 		private ?UserL10n $l10n = null,
 		private ?IUserManager $userManager = null,
-		private ?\OCA\Mcp\Service\Scope\FilesAccessGuard $visibilityGuard = null,
+		private ?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $visibilityGuard = null,
 		private ?FileCreation $creation = null,
 		private ?LockAwareWrite $locks = null,
 		private ?GuestRestrictions $guests = null,
-		private ?\OCA\Mcp\Tools\Common\FileTypeGuard $fileTypes = null,
+		private ?\OCA\Mcp\Access\FileTypes\FileTypeGuard $fileTypes = null,
 	) {
 		parent::__construct($appName, $request);
 	}

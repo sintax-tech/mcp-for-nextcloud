@@ -8,14 +8,14 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
 use OCA\Mcp\Controller\GrantsController;
-use OCA\Mcp\Service\GrantMatrix;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\LogsAccess;
+use OCA\Mcp\Access\Grants\GrantMatrix;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Logs\LogsAccess;
 use OCA\Mcp\OAuth\OAuthClientsService;
-use OCA\Mcp\Service\Policy\GroupGrantsService;
-use OCA\Mcp\Service\Policy\GroupSourceClassifier;
-use OCA\Mcp\Service\Policy\PolicyOperationContext;
-use OCA\Mcp\Service\Policy\PolicyResolver;
+use OCA\Mcp\Access\Policy\GroupGrantsService;
+use OCA\Mcp\Access\Policy\GroupSourceClassifier;
+use OCA\Mcp\Access\Policy\PolicyOperationContext;
+use OCA\Mcp\Access\Policy\PolicyResolver;
 use OCA\Mcp\Tests\Unit\Service\Policy\GroupLifecycleDatabase;
 use OCP\IConfig;
 use OCP\IRequest;
@@ -26,7 +26,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * Effect contract of the group policy routes (`grants#previewGroup`, `grants#saveGroup`, RE-01): the real
- * {@see GrantsController} over the real {@see GroupGrantsService} and {@see \OCA\Mcp\Service\Policy\PolicyWriter} on
+ * {@see GrantsController} over the real {@see GroupGrantsService} and {@see \OCA\Mcp\Access\Policy\PolicyWriter} on
  * SQLite. The directory is a double (the group can grant or not; ana and bob are its members) and so is the resolution
  * of one member, which is built from the stored group rows exactly as GroupGrantsWriterTest does. The effect is read
  * from the database: the grant rows and lifecycle of the group, the policy revision, and what ana inherits from it.
@@ -155,7 +155,7 @@ final class GroupGrantsEffectsContractTest extends TestCase {
 				}
 			}
 			return new PolicyOperationContext($this->revision(), $this->writer, [], $candidates, true, true, [], true, true,
-				\OCA\Mcp\Service\Scope\ScopeGuard::read($this->createMock(\OCA\Mcp\Db\ResourceScopeMapper::class), null));
+				\OCA\Mcp\Access\ResourceScope\ScopeGuard::read($this->createMock(\OCA\Mcp\Db\ResourceScopeMapper::class), null));
 		});
 		return $resolver;
 	}

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Integration\Polls;
 
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\{LoginFactory,McpClient,Http,Credential};
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\Server;
 use PHPUnit\Framework\Attributes\Group;
 

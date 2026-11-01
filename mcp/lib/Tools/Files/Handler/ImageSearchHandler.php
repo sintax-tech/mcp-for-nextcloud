@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files\Handler;
 
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Tools\Files\FilesMessages;

@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Notes;
 
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Tools\Common\FileTypeDenied;
-use OCA\Mcp\Tools\Common\FileTypeGuard;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Mcp\Confirmation\PlanState;

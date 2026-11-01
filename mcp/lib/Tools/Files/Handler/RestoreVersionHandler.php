@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files\Handler;
 
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Common\LockAwareWrite;

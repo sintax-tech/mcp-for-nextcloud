@@ -13,7 +13,7 @@ use OCA\Mcp\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\ToolModule;
 use Psr\Log\LoggerInterface;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use Throwable;
 
 /**

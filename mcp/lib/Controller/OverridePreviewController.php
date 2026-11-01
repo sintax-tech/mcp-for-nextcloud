@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Controller;
 
-use OCA\Mcp\Service\OverridePreview;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Grants\OverridePreview;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IGroupManager;

@@ -8,15 +8,15 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Notes;
 
-use OCA\Mcp\Service\FileWritePolicy;
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
-use OCA\Mcp\Tools\Common\FileTypeDenied;
-use OCA\Mcp\Tools\Common\FileTypeGuard;
-use OCA\Mcp\Tools\Common\FileTypeMessages;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
+use OCA\Mcp\Access\FileTypes\FileTypeMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Notes\NoteContentSink;

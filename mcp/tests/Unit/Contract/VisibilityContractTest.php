@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract;
 
 use OCA\Mcp\AppInfo\Application;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
@@ -126,7 +126,7 @@ final class VisibilityContractTest extends TestCase {
 		$this->tagManager->method('getTagsByIds')->willReturn([self::HIDDEN_TAG => $hiddenTag]);
 
 		$this->config->app['mcp'][VisibilityGuard::CONFIG_KEY] = json_encode([self::HIDDEN_TAG]);
-		$this->guard = new \OCA\Mcp\Service\Scope\FilesAccessGuard($this->config->mock($this), $this->tagMapper, $this->tree->filesystemRoot(), $this->tagManager);
+		$this->guard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $this->tagMapper, $this->tree->filesystemRoot(), $this->tagManager);
 	}
 
 	private function build(string $class): object {
@@ -143,7 +143,7 @@ final class VisibilityContractTest extends TestCase {
 				$args[] = FilesActorRootFixture::create($this, $this->tree->rootFolder());
 				continue;
 			}
-			if ($name === VisibilityGuard::class || $name === \OCA\Mcp\Service\Scope\FilesAccessGuard::class) {
+			if ($name === VisibilityGuard::class || $name === \OCA\Mcp\Access\ResourceScope\FilesAccessGuard::class) {
 				$args[] = $this->guard;
 				continue;
 			}

@@ -50,7 +50,7 @@ final class LockAwareWriteTest extends TestCase {
 		$this->manager = new FakeLockManager();
 	}
 
-	private function locks(?FakeLockManager $manager = null, ?\OCA\Mcp\Service\VisibilityGuard $visibility = null): LockAwareWrite {
+	private function locks(?FakeLockManager $manager = null, ?\OCA\Mcp\Access\Visibility\VisibilityGuard $visibility = null): LockAwareWrite {
 		$apps = $this->createMock(IAppManager::class);
 		$apps->method('getAppInfo')->willReturnCallback(static fn (string $app): ?array => match ($app) {
 			'text' => ['id' => 'text', 'name' => 'Text'],
@@ -317,7 +317,7 @@ final class LockAwareWriteTest extends TestCase {
 
 	public function testALockedFileHiddenFromTheUserIsNotNamed(): void {
 		$this->manager->put(new FakeLock($this->id, ILock::TYPE_USER, 'pedro', self::CREATED));
-		$guard = $this->createMock(\OCA\Mcp\Service\VisibilityGuard::class);
+		$guard = $this->createMock(\OCA\Mcp\Access\Visibility\VisibilityGuard::class);
 		$guard->method('isVisible')->willReturnCallback(fn (Node $node): bool => $node->getPath() !== '/alice/files' . self::PATH);
 		$locks = $this->locks(visibility: $guard);
 		$e = $this->refusal(fn () => $locks->assertWritable($this->tree->node('/alice/files/Notes'), 'alice', '/Notes'));
@@ -335,7 +335,7 @@ final class LockAwareWriteTest extends TestCase {
 	/** The user's own lock on a file they cannot see says nothing in the folder's plan: no warning, no metadata. */
 	public function testTheOwnLockOfAHiddenFileInsideAFolderSaysNothing(): void {
 		$this->manager->put(new FakeLock($this->id, ILock::TYPE_USER, 'alice', self::CREATED));
-		$guard = $this->createMock(\OCA\Mcp\Service\VisibilityGuard::class);
+		$guard = $this->createMock(\OCA\Mcp\Access\Visibility\VisibilityGuard::class);
 		$guard->method('isVisible')->willReturnCallback(fn (Node $node): bool => $node->getPath() !== '/alice/files' . self::PATH);
 		$locks = $this->locks(visibility: $guard);
 		$folder = $this->tree->node('/alice/files/Notes');

@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Common;
 
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\Common\FileReferenceScope;
-use OCA\Mcp\Tools\Common\OutputReferenceFilter;
+use OCA\Mcp\Access\ResourceScope\FileReferenceScope;
+use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCP\Files\IRootFolder;
 use OCP\IConfig;
 use OCP\IURLGenerator;

@@ -15,13 +15,13 @@ use OCA\Mcp\Listener\UserCauseListener;
 use OCA\Mcp\Migration\Version001100Date20261014000000;
 use OCA\Mcp\Migration\Version001100Date20261015010000;
 use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\GroupSourceClassifier;
-use OCA\Mcp\Service\Policy\PolicyOperationContext;
-use OCA\Mcp\Service\Policy\PolicyResolver;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\Policy\ScopeCleanup;
+use OCA\Mcp\Access\Policy\CauseProcessor;
+use OCA\Mcp\Access\Policy\GroupSourceClassifier;
+use OCA\Mcp\Access\Policy\PolicyOperationContext;
+use OCA\Mcp\Access\Policy\PolicyResolver;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\ScopeCleanup;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -115,7 +115,7 @@ final class UserCauseListenerTest extends TestCase {
 				false => [],
 			};
 			return new PolicyOperationContext('0', $this->createMock(PolicyWriter::class), $raw, $candidates, true, true, [], true, true,
-				\OCA\Mcp\Service\Scope\ScopeGuard::read($this->createMock(\OCA\Mcp\Db\ResourceScopeMapper::class), null));
+				\OCA\Mcp\Access\ResourceScope\ScopeGuard::read($this->createMock(\OCA\Mcp\Db\ResourceScopeMapper::class), null));
 		});
 		$time = $this->createMock(ITimeFactory::class);
 		$time->method('getTime')->willReturn(1_760_000_000);

@@ -78,7 +78,7 @@ abstract class FilesToolsTestCase extends TestCase {
 	protected FilesModule $module;
 	/** files_lock behind ILockManager, without any lock until a test puts one. */
 	protected FakeLockManager $locks;
-	protected ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null;
+	protected ?\OCA\Mcp\Access\Visibility\VisibilityGuard $visibilityGuard = null;
 	/** @var list<string> tokens handed out per route, in order */
 	protected array $issued = [];
 	/** @var array<string, string> accounts the sharing tools know, uid => display name */
@@ -86,7 +86,7 @@ abstract class FilesToolsTestCase extends TestCase {
 	/** @var array<string, array{name:string, members:list<string>}> groups the sharing tools know, by gid */
 	protected array $groups = ['finance' => ['name' => 'Financeiro', 'members' => ['alice', 'bruno']], 'board' => ['name' => 'Diretoria', 'members' => ['carla']]];
 	/** Grants of the sharing tools: read only until a test allows share or link. */
-	protected \OCA\Mcp\Service\GrantPolicy $sharePolicy;
+	protected \OCA\Mcp\Access\Grants\GrantPolicy $sharePolicy;
 	/** @var list<string> passwords the password_policy generator hands out for links, in order; empty means no generator */
 	protected array $linkPasswords = [];
 	/** Whether the password policy refuses every password, as one no generated password can meet. */
@@ -197,7 +197,7 @@ abstract class FilesToolsTestCase extends TestCase {
 			$this->visibilityGuard,
 			...$this->sharing($urls),
 			creation: new FileCreation($access, new SharedWriteGuard($access), $checkout, $this->filenames,
-				$this->visibilityGuard ?? new \OCA\Mcp\Service\Scope\FilesAccessGuard($config, $this->tagMapper, $this->visibilityRoot()), $this->creationLogger, $locks, fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this), backupLocation: new \OCA\Mcp\Platform\Backups\BackupLocation($this->createMock(\OCA\Mcp\Platform\Backups\BackupSettingsDocument::class))),
+				$this->visibilityGuard ?? new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($config, $this->tagMapper, $this->visibilityRoot()), $this->creationLogger, $locks, fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this), backupLocation: new \OCA\Mcp\Platform\Backups\BackupLocation($this->createMock(\OCA\Mcp\Platform\Backups\BackupSettingsDocument::class))),
 			locks: $locks,
 			fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this),
 			editFile: new EditFileHandler($extractor, $guard, $plans, $commit, $gate, $locks, $this->visibilityGuard),

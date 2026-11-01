@@ -1,14 +1,15 @@
+/* shared/connections.js */
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Active OAuth connections of the MCP app, shared by the admin page (every user, GET/DELETE /apps/mcp/api/connections)
- * and the personal page (only the signed-in user, GET/DELETE /apps/mcp/api/my/connections). The root element's
- * data-scope ("admin" or "personal") picks the API and the columns.
- * The personal page's read-only resource scope is the second block in this file. On the admin page
- * those elements are absent and that block returns without doing anything.
- * Plain browser JavaScript, no build step; strings go through t('mcp', …) for translation.
+ * Active OAuth connections of the MCP app. This fragment is part of both generated bundles, js/mcp-admin.js and
+ * js/mcp-personal.js, which the PHP builder joins from src/admin.manifest and src/settings.manifest.
+ * The admin page lists every user (GET/DELETE /apps/mcp/api/connections) and the personal page only the signed-in
+ * user (GET/DELETE /apps/mcp/api/my/connections); the root element's data-scope ("admin" or "personal") picks the
+ * API and the columns. Plain browser JavaScript that runs as written, without module syntax;
+ * strings go through t('mcp', …) for translation.
  */
 (function () {
 	'use strict'
@@ -252,7 +253,12 @@
 
 	load()
 })();
-
+;
+/* settings/my-scope.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 /**
  * The user's own resource scope, read only (issue #4, B7; contracts B.6): for Files, Calendar and Tasks, whether the
  * MCP tools reach every resource or only the ones the administrator selected. GET /api/my/scope answers for the

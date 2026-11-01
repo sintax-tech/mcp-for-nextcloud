@@ -6,7 +6,7 @@ namespace OCA\Mcp\Tests\Unit\Admin;
 use PHPUnit\Framework\Assert;
 /**
  * Static admin asset registration contract: the admin page loads one script, js/mcp-admin.js, built from
- * src/admin.manifest, and the personal page keeps js/connections.js until RE-12.
+ * src/admin.manifest, and the personal page loads one script, js/mcp-personal.js, built from src/settings.manifest.
  */
 final class AdminAssetContract extends Assert {
 	/** The 13 scripts the admin page loaded one by one up to 1.2.5; their sources now live in src/ and ship only inside js/mcp-admin.js. */
@@ -31,7 +31,8 @@ final class AdminAssetContract extends Assert {
 		$personal = (string)file_get_contents($app . '/templates/personal.php');
 		self::assertStringNotContainsString("'personal-scope'", $personal);
 		self::assertFileDoesNotExist($app . '/js/personal-scope.js');
-		self::assertStringContainsString("addScript('mcp', 'connections')", $personal);
+		self::assertStringContainsString("addScript('mcp', 'mcp-personal')", $personal);
+		self::assertFileDoesNotExist($app . '/js/connections.js');
 		preg_match_all("/Util::add(Script|Style)\\(\\s*'mcp'\\s*,\\s*'([^']+)'/", $personal, $personalMatches, PREG_SET_ORDER);
 		self::assertCount(2, $personalMatches);
 		self::verifyOrder(self::fragments($app));

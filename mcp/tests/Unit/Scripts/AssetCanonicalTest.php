@@ -102,6 +102,7 @@ final class AssetCanonicalTest extends TestCase {
 			self::ustar('mcp/js/mcp-admin.js', $good)
 			. self::ustar('mcp/js/./mcp-admin.js', "/* stale */\n")
 			. self::ustar('mcp/./src/admin/leaked.js', "var leaked = 1\n")
+			. self::ustar('mcp/js/mcp-personal.js', '')
 			. str_repeat("\0", 1024),
 		));
 		$this->assertSame([
@@ -116,12 +117,13 @@ final class AssetCanonicalTest extends TestCase {
 		$dir = $this->appWithAdminBundle();
 		$good = "/* admin/a.js */\nvar a = 1\n";
 		$tar = "$dir/package.tar.gz";
-		file_put_contents($tar, gzencode(self::ustar('mcp//js/mcp-admin.js', $good) . str_repeat("\0", 1024)));
+		file_put_contents($tar, gzencode(self::ustar('mcp//js/mcp-admin.js', $good) . self::ustar('mcp/js/mcp-personal.js', '') . str_repeat("\0", 1024)));
 		$this->assertSame([], $this->packaged($dir, $tar));
 
 		file_put_contents($tar, gzencode(
 			self::ustar('mcp/js/../src/admin/leaked.js', "var leaked = 1\n")
 			. self::ustar('/mcp/js/mcp-admin.js', $good)
+			. self::ustar('mcp/js/mcp-personal.js', '')
 			. str_repeat("\0", 1024),
 		));
 		$this->assertSame([
@@ -137,6 +139,7 @@ final class AssetCanonicalTest extends TestCase {
 		$tar = "$dir/package.tar.gz";
 		file_put_contents($tar, gzencode(
 			self::ustar('mcp/js/./mcp-admin.js', '', '2', 'stale.js')
+			. self::ustar('mcp/js/mcp-personal.js', '')
 			. str_repeat("\0", 1024),
 		));
 		$this->assertSame([
@@ -208,6 +211,7 @@ final class AssetCanonicalTest extends TestCase {
 		mkdir($dir . '/src/settings', 0777, true);
 		mkdir($dir . '/src/shared', 0777, true);
 		mkdir($dir . '/js', 0777, true);
+		file_put_contents($dir . '/src/settings.manifest', '');
 		$this->dirs[] = $dir;
 		return $dir;
 	}

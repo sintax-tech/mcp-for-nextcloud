@@ -8,7 +8,7 @@
  */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -574,7 +574,7 @@ test('S5: in the operations view only a real exception is outlined; a repeated v
 	assert.ok(!repeated.cell.classes.has('mcp-override-exception'))
 	assert.match(repeated.box.getAttribute('aria-label'), /Individual override: denied — the same as inherited$/)
 	assert.ok(!decorate('pending').cell.classes.has('mcp-override-exception'), 'nothing is outlined before the answer')
-	delete ui.window.McpAdminExceptions
+	delete ui.window.OCA.Mcp.Admin.exceptions
 	const without = new Element('td', ui.document)
 	ui.window.McpAdminOverrides.decorateCell(without, new Element('input', ui.document), alice(), 'notes', 'edit')
 	assert.ok(without.classes.has('mcp-override-exception'), 'without the classification every individual value is outlined')

@@ -5,7 +5,7 @@
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const path = require('node:path')
 const Context = require('./PollsCreateContext.cjs')
 /** Exercises the real named preset policy and its existing consumers, never writing a stored policy. */
@@ -33,7 +33,7 @@ test('the actual admin loads the presets with the levels, before the grants, and
 	assert.ok(require('./AdminManifest.cjs').loadsBefore('admin/admin-levels.js', 'admin/admin-grants.js'))
 	for (const name of ['admin-grants.js','admin-groups.js','admin-inspector.js','admin-level-popover.js']) {
 		const source = require('./AdminManifest.cjs').script(name)
-		assert.match(source, /McpAdminPollsGrants/)
+		assert.match(source, /pollsGrants/)
 	}
 	const helper = Context.load().McpAdminPollsGrants
 	assert.match(helper.operationHint('polls', 'create'), /starts off/)
@@ -53,7 +53,7 @@ test('real inspector DOM retains create as an independent custom combination wit
 test('missing Polls helper offers no preset and cannot grant an accumulated fallback', () => {
 	const root = { t: (_, text) => text }
 	vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), root)
-	delete root.McpAdminPollsGrants
+	delete root.OCA.Mcp.Admin.pollsGrants
 	const levels = root.McpAdminLevels
 	const operations = ['read', 'results', 'links', 'create']
 	assert.deepEqual([...levels.levels('polls', operations)], ['none'])

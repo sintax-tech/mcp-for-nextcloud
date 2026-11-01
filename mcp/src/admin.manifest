@@ -1,3 +1,4 @@
+admin/registration.js
 admin/admin-picker.js
 admin/access/levels/polls.js
 admin/access/levels/files.js

@@ -63,7 +63,7 @@ class AdminManifest {
 	 */
 	static levelsSource() {
 		return AdminManifest.fragments()
-			.filter((fragment) => fragment.startsWith('admin/access/levels/') || fragment === 'admin/admin-levels.js')
+			.filter((fragment) => fragment === 'admin/registration.js' || fragment.startsWith('admin/access/levels/') || fragment === 'admin/admin-levels.js')
 			.map((fragment) => AdminManifest.fragment(fragment))
 			.join(';\n')
 	}

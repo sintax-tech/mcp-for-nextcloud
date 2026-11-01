@@ -5,7 +5,7 @@
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const path = require('node:path')
 
 /** Polls registration has one read tier, with no automatic results or future write capability. */

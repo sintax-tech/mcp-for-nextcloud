@@ -74,7 +74,7 @@
 		return { files: t('mcp', 'Files'), notes: t('mcp', 'Notes'), deck: t('mcp', 'Deck'), calendar: t('mcp', 'Calendar'), contacts: t('mcp', 'Contacts'), tasks: t('mcp', 'Tasks'), talk: t('mcp', 'Talk'), people: t('mcp', 'People'), logs: t('mcp', 'Server log'), mail: t('mcp', 'Mail'), tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls') }[module] || module
 	}
 	function operationName(operation) {
-		return { ...window.McpAdminPollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
+		return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 	}
 	/** The first check that blocks, by the code of the effective access (EffectiveResult::blockingGate). */
 	function gateText(gate) {
@@ -229,13 +229,13 @@
 	 */
 	function renderModules(operations) {
 		const general = generalBlock(operations) !== null
-		const levels = window.McpAdminLevels
+		const levels = window.OCA.Mcp.Admin.levels
 		const byModule = new Map()
 		for (const row of operations) {
 			if (!byModule.has(row.module)) byModule.set(row.module, [])
 			byModule.get(row.module).push(row)
 		}
-		const levelName = { ...window.McpAdminPollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }
+		const levelName = { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }
 		const items = [...byModule.entries()].map(([module, rows]) => {
 			const operationList = rows.map((row) => row.operation)
 			const values = Object.fromEntries(rows.map((row) => [row.operation, row.grant ? row.grant.allowed : row.allowed]))
@@ -273,7 +273,7 @@
 			const index = individual.indexOf(row)
 			return [row.operation, index < 0 ? row.grant : known[index].after || { source: 'default', groupIds: [] }]
 		}))
-		const origin = window.McpAdminLevels.originOf(rows.map((row) => row.operation), repeated)
+		const origin = window.OCA.Mcp.Admin.levels.originOf(rows.map((row) => row.operation), repeated)
 		const text = {
 			group: t('mcp', 'Group: {groups}', { groups: origin.groupIds.join(', ') }),
 			unknown: t('mcp', 'Group awaiting confirmation: {groups}', { groups: origin.groupIds.join(', ') }),
@@ -286,7 +286,7 @@
 	 * or another inspection is dropped.
 	 */
 	async function classifyShown(data, mine) {
-		const exceptions = window.McpAdminExceptions
+		const exceptions = window.OCA.Mcp.Admin.exceptions
 		if (!exceptions?.classifyPerson || typeof data.revision !== 'string') return
 		const cells = data.operations.map((row) => ({ module: row.module, operation: row.operation, allowed: row.grant?.allowed ?? null, source: row.grant?.source }))
 		if (!cells.some((cell) => cell.source === 'individual_allow' || cell.source === 'individual_deny')) return
@@ -391,9 +391,9 @@
 			const answer = await get(path, Object.assign({ uid: user }, query))
 			if (stale(kind, mine, user)) return
 			target.textContent = explanation(answer)
-			if (answer.reason === 'out_of_scope' && window.McpScopeUi) {
+			if (answer.reason === 'out_of_scope' && window.OCA.Mcp.Admin.scope) {
 				const change = el('button', { type: 'button', textContent: t('mcp', 'Open the resource scope') })
-				change.addEventListener('click', () => window.McpScopeUi.open(user, module))
+				change.addEventListener('click', () => window.OCA.Mcp.Admin.scope.open(user, module))
 				target.append(' ', change)
 			}
 		} catch (error) {
@@ -433,7 +433,7 @@
 	 * @return {boolean} whether the drawer opened
 	 */
 	function openDrawer(trigger) {
-		if (window.McpScopeUi?.close?.() === false) {
+		if (window.OCA.Mcp.Admin.scope?.close?.() === false) {
 			trigger?.focus?.()
 			return false
 		}
@@ -490,7 +490,7 @@
 	})
 
 	// The actions menu of a matrix row inspects that user (src/admin/admin-row-actions.js), in the drawer.
-	window.McpInspectorUi = {
+	window.OCA.Mcp.Admin.inspector = {
 		open(target, trigger) {
 			if (!openDrawer(trigger)) return false
 			user.value = target

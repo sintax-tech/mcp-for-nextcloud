@@ -63,13 +63,13 @@ final class AdminOverridesAssetsTest extends TestCase {
 		$app = self::app();
 		$manifest = file($app . '/src/admin.manifest', FILE_IGNORE_NEW_LINES);
 		$this->assertLessThan(array_search('admin/admin-overrides.js', $manifest, true), array_search('admin/admin-grants.js', $manifest, true),
-			'the matrix script exposes window.McpAdminMatrix before the overrides script reads it');
+			'the matrix script exposes window.OCA.Mcp.Admin.matrix before the overrides script reads it');
 		$grants = (string)file_get_contents($app . '/src/admin/admin-grants.js');
-		foreach (['window.McpAdminMatrix = {', 'window.McpAdminOverrides?.decorateRow(row, user)', 'window.McpAdminOverrides?.decorateCell(', "dispatchEvent(new Event('mcp-matrix-rendered'))"] as $needle) {
+		foreach (['window.OCA.Mcp.Admin.matrix = {', 'window.OCA.Mcp.Admin.overrides?.decorateRow(row, user)', 'window.OCA.Mcp.Admin.overrides?.decorateCell(', "dispatchEvent(new Event('mcp-matrix-rendered'))"] as $needle) {
 			$this->assertStringContainsString($needle, $grants);
 		}
 		$overrides = (string)file_get_contents($app . '/src/admin/admin-overrides.js');
-		$this->assertStringNotContainsString('state.data', $overrides, 'only through window.McpAdminMatrix');
+		$this->assertStringNotContainsString('state.data', $overrides, 'only through window.OCA.Mcp.Admin.matrix');
 		$this->assertStringNotContainsString("'/api/grants/' +", $overrides, 'a reset is a command, never a per-user write');
 		$this->assertStringContainsString("state: 'inherit'", $overrides);
 		$this->assertStringNotContainsString('granted', $overrides, 'the form with a boolean is never mixed with the triestate command');

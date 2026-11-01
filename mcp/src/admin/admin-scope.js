@@ -16,7 +16,7 @@
  * A write of this page (a module here, or the matrix, OAuth clients or server log of src/admin/admin-grants.js) is announced
  * with the revision it was sent with and the one it made (event "mcp-revision-moved"); a module still at the first
  * takes the second and keeps its draft, since nothing but that write lies between them.
- * Exposes window.McpScopeUi for the matrix, which shows "Restricted to N" (or "Scope unknown") in the module's first
+ * Exposes window.OCA.Mcp.Admin.scope for the matrix, which shows "Restricted to N" (or "Scope unknown") in the module's first
  * cell and opens this panel from it.
  *
  * The panel is a drawer at the side of the page (S9): the Access tab shows one sentence and a button, and the drawer
@@ -263,7 +263,7 @@
 	/** Opens the drawer; the focus goes back to `trigger` when it closes. */
 	function openDrawer(trigger) {
 		// Only one drawer is open at a time: the inspector closes when the scope opens.
-		window.McpInspectorUi?.close?.()
+		window.OCA.Mcp.Admin.inspector?.close?.()
 		returnFocus = trigger || document.activeElement || null
 		// The row of a "…" button that opened the drawer: the table may be drawn again meanwhile, and its new button is
 		// the one that gets the focus back.
@@ -659,7 +659,7 @@
 		return true
 	}
 
-	window.McpScopeUi = { indicator, open, close: closeDrawer }
+	window.OCA.Mcp.Admin.scope = { indicator, open, close: closeDrawer }
 	// A module exactly at the revision a write of this page committed from takes the one it made; its draft stays.
 	window.addEventListener(REVISION_MOVED, (event) => {
 		for (const state of Object.values(modules)) {
@@ -667,7 +667,7 @@
 		}
 	})
 	// A matrix drawn before this script ran is drawn again, now with the scope marks.
-	window.McpAdminMatrix?.refresh?.()
+	window.OCA.Mcp.Admin.matrix?.refresh?.()
 	if (!root) return
 	entryButton?.addEventListener('click', () => {
 		openDrawer(entryButton)

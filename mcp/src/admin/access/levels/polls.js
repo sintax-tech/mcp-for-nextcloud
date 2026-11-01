@@ -4,7 +4,7 @@
  */
 /**
  * Access levels of Polls: four named, independent presets instead of cumulative tiers, so creating polls never rides on
- * a protected read. src/admin/admin-levels.js asks window.McpAdminPollsGrants for the Polls tiers and levels.
+ * a protected read. src/admin/admin-levels.js asks window.OCA.Mcp.Admin.pollsGrants for the Polls tiers and levels.
  */
 /** Polls-specific protected-read names; rendering never writes or expands a stored policy. */
 (function (root) {
@@ -65,5 +65,5 @@
 		return operations.filter(operation => found.operations.includes(operation))
 	}
 
-	root.McpAdminPollsGrants = { levelLabels, operationLabels, operationHint, tiers, operationsFor }
+	root.OCA.Mcp.Admin.pollsGrants = { levelLabels, operationLabels, operationHint, tiers, operationsFor }
 })(typeof window !== 'undefined' ? window : globalThis)

@@ -19,7 +19,7 @@ const test = require('node:test')
 const assert = require('node:assert')
 const fs = require('node:fs')
 const path = require('node:path')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const AdminManifest = require('./AdminManifest.cjs')
 const { extractMember } = require('./extract-bundle.cjs')
 

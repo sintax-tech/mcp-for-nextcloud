@@ -1,10 +1,24 @@
+/* admin/registration.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** The admin namespace, shared by the independently registered page units. */
+(function (root) {
+	'use strict'
+
+	root.OCA = root.OCA || {}
+	root.OCA.Mcp = root.OCA.Mcp || {}
+	root.OCA.Mcp.Admin = root.OCA.Mcp.Admin || { modules: {}, sessions: {} }
+})(typeof window !== 'undefined' ? window : globalThis)
+;
 /* admin/admin-picker.js */
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Generic searchable multi-select picker of the admin page, exposed as window.McpAdminPicker.
+ * Generic searchable multi-select picker of the admin page, exposed as window.OCA.Mcp.Admin.picker.
  *
  * One control: the selected options as removable chips on top, a search field that only filters the
  * existing options (typing never creates one) and a collapsed listbox that opens on focus. It
@@ -406,7 +420,7 @@
 		}
 	}
 
-	window.McpAdminPicker = { create }
+	window.OCA.Mcp.Admin.picker = { create }
 })()
 ;
 /* admin/access/levels/polls.js */
@@ -416,7 +430,7 @@
  */
 /**
  * Access levels of Polls: four named, independent presets instead of cumulative tiers, so creating polls never rides on
- * a protected read. src/admin/admin-levels.js asks window.McpAdminPollsGrants for the Polls tiers and levels.
+ * a protected read. src/admin/admin-levels.js asks window.OCA.Mcp.Admin.pollsGrants for the Polls tiers and levels.
  */
 /** Polls-specific protected-read names; rendering never writes or expands a stored policy. */
 (function (root) {
@@ -477,7 +491,7 @@
 		return operations.filter(operation => found.operations.includes(operation))
 	}
 
-	root.McpAdminPollsGrants = { levelLabels, operationLabels, operationHint, tiers, operationsFor }
+	root.OCA.Mcp.Admin.pollsGrants = { levelLabels, operationLabels, operationHint, tiers, operationsFor }
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
 /* admin/access/levels/files.js */
@@ -487,12 +501,12 @@
  */
 /**
  * Access levels of Files: Read, then Edit adds editing, creating, moving and restoring, then Full adds sharing, links and deleting.
- * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
-	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.files = [['read'], ['edit', 'create', 'move', 'restore'], ['share', 'link', 'delete']]
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
@@ -503,12 +517,12 @@
  */
 /**
  * Access levels of Notes: Read, then Edit adds creating, editing and moving, then Full adds deleting.
- * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
-	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.notes = [['read'], ['create', 'edit', 'move'], ['delete']]
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
@@ -519,12 +533,12 @@
  */
 /**
  * Access levels of Deck: Read, then Edit adds creating, editing and moving, then Full adds deleting.
- * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
-	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.deck = [['read'], ['create', 'edit', 'move'], ['delete']]
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
@@ -535,12 +549,12 @@
  */
 /**
  * Access levels of Calendar: Read, then Edit adds creating, editing and moving, then Full adds deleting and transferring.
- * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
-	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.calendar = [['read'], ['create', 'edit', 'move'], ['delete', 'transfer']]
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
@@ -551,12 +565,12 @@
  */
 /**
  * Access levels of Contacts: Read, then Edit adds creating and editing, then Full adds deleting.
- * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
-	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.contacts = [['read'], ['create', 'edit'], ['delete']]
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
@@ -567,12 +581,12 @@
  */
 /**
  * Access levels of Tasks: Read, then Edit adds creating and editing, then Full adds deleting.
- * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
-	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.tasks = [['read'], ['create', 'edit'], ['delete']]
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
@@ -583,12 +597,12 @@
  */
 /**
  * Access levels of Talk: Read, then Edit adds replying, attaching and quoting, then Full adds create.
- * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
-	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.talk = [['read'], ['reply', 'attach', 'quote'], ['create']]
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
@@ -599,12 +613,12 @@
  */
 /**
  * Access levels of People: one operation, so only Read.
- * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
-	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.people = [['read']]
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
@@ -615,12 +629,12 @@
  */
 /**
  * Access levels of Logs: one operation, so only Read.
- * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
-	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.logs = [['read']]
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
@@ -688,11 +702,11 @@
 	 * its second opens the messages, its third adds the text of attachments, and the next ones add the Mail writes, so
 	 * none of its levels is called Full. src/admin/admin-grants.js translates the names.
 	 */
-	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.mail = [['read'], ['messages'], ['attachments'], ['flags'], ['move'], ['draft'], ['send']]
 	catalog.tierNames.mail = ['folders', 'messages', 'attachments', 'flags', 'move', 'draft', 'send']
 
-	root.McpAdminMailGrants = { WRITE_OPERATIONS, operationHint, writeWarning, confirmWrites }
+	root.OCA.Mcp.Admin.mailGrants = { WRITE_OPERATIONS, operationHint, writeWarning, confirmWrites }
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
 /* admin/access/levels/tables.js */
@@ -702,12 +716,12 @@
  */
 /**
  * Access levels of Tables: Read, then Full adds creating and editing together.
- * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
-	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.tables = [['read'], ['create', 'edit']]
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
@@ -718,12 +732,12 @@
  */
 /**
  * Access levels of Forms: Read, then writing forms, then writing forms and reading responses; src/admin/admin-grants.js translates the names.
- * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
 	'use strict'
 
-	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.forms = [['read'], ['create', 'edit'], ['results']]
 	catalog.tierNames.forms = ['read', 'forms_write', 'forms_write_results']
 })(typeof window !== 'undefined' ? window : globalThis)
@@ -744,14 +758,14 @@
  *
  * The level functions are pure, with no DOM and no strings: src/admin/admin-grants.js draws the cells and names the levels.
  * The tiers of each module live in its own file, src/admin/access/levels/<app>.js, which registers them in
- * window.McpAdminLevelCatalog before this file runs (src/admin.manifest lists them first). Polls has named presets
- * instead of tiers (src/admin/access/levels/polls.js, window.McpAdminPollsGrants) and Mail adds its write warnings
- * (src/admin/access/levels/mail.js, window.McpAdminMailGrants); the other admin scripts read both.
+ * window.OCA.Mcp.Admin.levelCatalog before this file runs (src/admin.manifest lists them first). Polls has named presets
+ * instead of tiers (src/admin/access/levels/polls.js, window.OCA.Mcp.Admin.pollsGrants) and Mail adds its write warnings
+ * (src/admin/access/levels/mail.js, window.OCA.Mcp.Admin.mailGrants); the other admin scripts read both.
  */
 (function (root) {
 	'use strict'
 
-	const catalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 
 	/** Cumulative tiers per module, from src/admin/access/levels/<app>.js: [Read, Edit, Full]. Modules with one operation have only Read. */
 	const TIERS = catalog.tiers
@@ -784,7 +798,7 @@
 	 * @return {Array<{level: string, operations: string[]}>} one entry per tier, cumulative in this order
 	 */
 	function tiers(module, operations) {
-		if (module === 'polls') return root.McpAdminPollsGrants?.tiers(operations) || []
+		if (module === 'polls') return root.OCA.Mcp.Admin.pollsGrants?.tiers(operations) || []
 		const known = TIERS[module] || [operations.filter((operation) => operation === 'read'), operations.filter((operation) => operation !== 'read')]
 		const listed = known.map((tier) => tier.filter((operation) => operations.includes(operation)))
 		const rest = operations.filter((operation) => !listed.some((tier) => tier.includes(operation)))
@@ -813,7 +827,7 @@
 	 * @return {string[]} the operations that level allows, in catalog order
 	 */
 	function operationsFor(module, operations, level) {
-		if (module === 'polls') return root.McpAdminPollsGrants?.operationsFor(operations, level) || []
+		if (module === 'polls') return root.OCA.Mcp.Admin.pollsGrants?.operationsFor(operations, level) || []
 		const all = tiers(module, operations)
 		const upTo = all.findIndex((tier) => tier.level === level)
 		if (level !== 'none' && upTo < 0) {
@@ -864,7 +878,7 @@
 		return { source: 'default', groupIds: [] }
 	}
 
-	root.McpAdminLevels = { TIERS, MODULE_TIER_NAMES, tierNames, tiers, levels, operationsFor, levelOf, originOf }
+	root.OCA.Mcp.Admin.levels = { TIERS, MODULE_TIER_NAMES, tierNames, tiers, levels, operationsFor, levelOf, originOf }
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
 /* admin/admin-grants.js */
@@ -941,7 +955,7 @@
 	/** @return {Object<string, string>} operation labels */
 	function operationLabels() {
 		return {
-			...window.McpAdminPollsGrants?.operationLabels(),
+			...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(),
 			read: t('mcp', 'read'),
 			results: t('mcp', 'results'),
 			edit: t('mcp', 'edit'),
@@ -983,7 +997,7 @@
 		if (module === 'calendar' && operation === 'transfer') {
 			return t('mcp', 'Move an event to another person’s calendar')
 		}
-		const mailHint = window.McpAdminPollsGrants?.operationHint(module, operation) || (window.McpAdminMailGrants ? window.McpAdminMailGrants.operationHint(module, operation) : null)
+		const mailHint = window.OCA.Mcp.Admin.pollsGrants?.operationHint(module, operation) || (window.OCA.Mcp.Admin.mailGrants ? window.OCA.Mcp.Admin.mailGrants.operationHint(module, operation) : null)
 		if (mailHint) return mailHint
 		const hints = {
 			read: t('mcp', 'List, search and read'),
@@ -1278,7 +1292,7 @@
 
 	/** @return {boolean} whether the matrix shows one level per module */
 	function isLevelsView() {
-		return state.view === 'levels' && Boolean(window.McpAdminLevels)
+		return state.view === 'levels' && Boolean(window.OCA.Mcp.Admin.levels)
 	}
 
 	/** @return {string} the app whose columns are shown alone, '' for all; the levels view always shows every module */
@@ -1419,7 +1433,7 @@
 		const rowSpan = levelsView ? 1 : 2
 		const selectHeader = el('th', { rowSpan, className: 'mcp-select-col', scope: 'col' }, [el('span', { className: 'mcp-sr-only', textContent: t('mcp', 'Select') })])
 		// The "select every user on this page" box of src/admin/admin-overrides.js heads the selection column.
-		window.McpAdminOverrides?.decorateHeader?.(selectHeader)
+		window.OCA.Mcp.Admin.overrides?.decorateHeader?.(selectHeader)
 		top.append(selectHeader)
 		top.append(el('th', { rowSpan, className: 'mcp-user-col', scope: 'col', textContent: t('mcp', 'User') }))
 		const canConnect = t('mcp', 'Can connect')
@@ -1489,7 +1503,7 @@
 	 */
 	function renderRow(user) {
 		const row = buildRow(user)
-		window.McpAdminOverrides?.decorateRow(row, user)
+		window.OCA.Mcp.Admin.overrides?.decorateRow(row, user)
 		return row
 	}
 
@@ -1533,7 +1547,7 @@
 				if (i === 0) {
 					cell.classList.add('mcp-module')
 					// "Restricted to N" or "Scope unknown" of a resource scope, drawn and opened by src/admin/admin-scope.js.
-					const mark = user.scope?.[module] && window.McpScopeUi ? window.McpScopeUi.indicator(user.uid, module, user.scope[module]) : null
+					const mark = user.scope?.[module] && window.OCA.Mcp.Admin.scope ? window.OCA.Mcp.Admin.scope.indicator(user.uid, module, user.scope[module]) : null
 					if (mark) cell.append(mark)
 				}
 				row.append(cell)
@@ -1568,7 +1582,7 @@
 	/** @return {HTMLTableCellElement} the cell with the row's actions menu (src/admin/admin-row-actions.js) */
 	function actionsCell(user) {
 		const cell = el('td', { className: 'mcp-actions-col' })
-		const button = window.McpRowActions?.button(user)
+		const button = window.OCA.Mcp.Admin.rowActions?.button(user)
 		if (button) cell.append(button)
 		return cell
 	}
@@ -1584,7 +1598,7 @@
 	 * @return {boolean|null}
 	 */
 	function hasException(user) {
-		const exceptions = window.McpAdminExceptions
+		const exceptions = window.OCA.Mcp.Admin.exceptions
 		if (!exceptions) return null
 		const cells = []
 		if (OWN_SOURCES.includes(user.origins?.eligible?.source)) cells.push([null, 'eligible'])
@@ -1738,7 +1752,7 @@
 			cell.append(mark, el('span', { className: 'mcp-sr-only', textContent: user.displayName + ' — ' + label + ': ' + cell.title }))
 			if (checked === null) cell.append(el('button', { type: 'button', textContent: t('mcp', 'Retry'), onclick: reloadLocked }))
 			// A saved individual override stays visible and removable here, even though the cell cannot be edited.
-			window.McpAdminOverrides?.decorateCell(cell, null, user, module, module === null ? 'eligible' : body.operation)
+			window.OCA.Mcp.Admin.overrides?.decorateCell(cell, null, user, module, module === null ? 'eligible' : body.operation)
 			return cell
 		}
 		const box = el('input', { type: 'checkbox', checked })
@@ -1763,7 +1777,7 @@
 				box.checked = true
 				return
 			}
-			if (value && module !== null && window.McpAdminMailGrants && !window.McpAdminMailGrants.confirmWrites([{ module, operation: body.operation }])) {
+			if (value && module !== null && window.OCA.Mcp.Admin.mailGrants && !window.OCA.Mcp.Admin.mailGrants.confirmWrites([{ module, operation: body.operation }])) {
 				box.checked = false
 				return
 			}
@@ -1803,14 +1817,14 @@
 		})
 		cell.append(box)
 		// The override state and the per-cell reset come from src/admin/admin-overrides.js, when it is loaded.
-		window.McpAdminOverrides?.decorateCell(cell, box, user, module, module === null ? 'eligible' : body.operation)
+		window.OCA.Mcp.Admin.overrides?.decorateCell(cell, box, user, module, module === null ? 'eligible' : body.operation)
 		return cell
 	}
 
 	/** @return {Object<string, string>} names of the access levels of src/admin/admin-levels.js */
 	function levelLabels() {
 		return {
-			...window.McpAdminPollsGrants?.levelLabels(),
+			...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(),
 			none: t('mcp', 'None'),
 			read: t('mcp', 'Read'),
 			edit: t('mcp', 'Edit'),
@@ -1857,7 +1871,7 @@
 	 * @return {HTMLTableCellElement}
 	 */
 	function levelCell(user, module, operations, index) {
-		const levels = window.McpAdminLevels
+		const levels = window.OCA.Mcp.Admin.levels
 		const cell = el('td', { className: 'mcp-cell mcp-level-cell mcp-module mcp-band-' + (index % 2) })
 		cell.dataset.module = module
 		cell.dataset.levelKey = module
@@ -1902,7 +1916,7 @@
 			cell.append(button)
 		}
 		// "Restricted to N" or "Scope unknown" of a resource scope, drawn and opened by src/admin/admin-scope.js.
-		const mark = user.scope?.[module] && window.McpScopeUi ? window.McpScopeUi.indicator(user.uid, module, user.scope[module]) : null
+		const mark = user.scope?.[module] && window.OCA.Mcp.Admin.scope ? window.OCA.Mcp.Admin.scope.indicator(user.uid, module, user.scope[module]) : null
 		if (mark) cell.append(mark)
 		return cell
 	}
@@ -1923,13 +1937,13 @@
 	 *     source (group, unknown, default) of a cell with no individual value
 	 */
 	function originMark(user, module, operations) {
-		const levels = window.McpAdminLevels
+		const levels = window.OCA.Mcp.Admin.levels
 		const origins = module === null ? { eligible: user.origins?.eligible } : user.origins?.grants?.[module]
 		const origin = levels.originOf(operations, origins)
 		if (origin.source !== 'individual' && origin.source !== 'invalid') {
 			return { origin, mark: origin.source }
 		}
-		const exceptions = window.McpAdminExceptions
+		const exceptions = window.OCA.Mcp.Admin.exceptions
 		const individual = operations.filter((operation) => INDIVIDUAL_SOURCES.includes(origins?.[operation]?.source))
 		const kinds = exceptions ? individual.map((operation) => exceptions.kindOf(user.uid, module, operation)) : []
 		if (!exceptions || origin.source === 'invalid' || kinds.some((kind) => kind.kind === 'exception')) {
@@ -1976,7 +1990,7 @@
 	 */
 	function levelButton(user, module, className, parts, title, label) {
 		const button = el('button', { type: 'button', className, title }, parts)
-		button.onclick = () => window.McpLevelPopover?.open(button, user.uid, module)
+		button.onclick = () => window.OCA.Mcp.Admin.levelPopover?.open(button, user.uid, module)
 		button.setAttribute('aria-label', label)
 		button.setAttribute('aria-haspopup', 'dialog')
 		button.setAttribute('aria-expanded', 'false')
@@ -2193,7 +2207,7 @@
 			return
 		}
 		const operationList = module === null ? ['eligible'] : state.data.catalog[module]
-		const allowed = module === null ? (level === 'read' ? ['eligible'] : []) : window.McpAdminLevels.operationsFor(module, operationList, level)
+		const allowed = module === null ? (level === 'read' ? ['eligible'] : []) : window.OCA.Mcp.Admin.levels.operationsFor(module, operationList, level)
 		const plan = bulkPlan(module, operationList, Object.fromEntries(operationList.map((operation) => [operation, allowed.includes(operation)])), uids)
 		const levelName = module === null ? (level === 'read' ? t('mcp', 'Yes') : t('mcp', 'No')) : levelLabels()[level] || level
 		const vars = { permission: module === null ? t('mcp', 'Can connect') : moduleLabels()[module] || module, level: levelName }
@@ -2212,7 +2226,7 @@
 		if (module === null && level !== 'read') {
 			lines.push(t('mcp', 'They are signed out of their MCP clients, and undoing this does not sign them back in.'))
 		}
-		const mailWarning = module !== null && window.McpAdminMailGrants ? window.McpAdminMailGrants.writeWarning(plan.changes.filter((change) => change.granted).map((change) => ({ module, operation: change.operation }))) : null
+		const mailWarning = module !== null && window.OCA.Mcp.Admin.mailGrants ? window.OCA.Mcp.Admin.mailGrants.writeWarning(plan.changes.filter((change) => change.granted).map((change) => ({ module, operation: change.operation }))) : null
 		if (mailWarning) lines.push(mailWarning)
 		if (!window.confirm([question, ...lines].join('\n'))) {
 			return
@@ -2416,7 +2430,7 @@
 		// also shows it and the tab carries a marker.
 		const overviewAlert = document.getElementById('mcp-tags-invalid-overview')
 		const tabAlert = document.getElementById('mcp-tab-protection-alert')
-		if (!container || !window.McpAdminPicker) {
+		if (!container || !window.OCA.Mcp.Admin.picker) {
 			return
 		}
 
@@ -2483,7 +2497,7 @@
 			const res = await api('GET', '/api/admin/tags')
 			allTags = res.tags || []
 
-			const picker = window.McpAdminPicker.create({
+			const picker = window.OCA.Mcp.Admin.picker.create({
 				container,
 				status,
 				options: allTags.map((tag) => ({ id: String(tag.id), label: tag.name, badge: tagBadge(tag.type) })),
@@ -3021,7 +3035,7 @@
 		const container = document.getElementById('mcp-logs-groups')
 		const status = document.getElementById('mcp-logs-status')
 		const summary = document.getElementById('mcp-logs-summary')
-		if (!container || !window.McpAdminPicker) {
+		if (!container || !window.OCA.Mcp.Admin.picker) {
 			return
 		}
 		let version = 0
@@ -3039,7 +3053,7 @@
 				options.push({ id: id, label: t('mcp', '{group} (group removed)', { group: id }, undefined, { escape: false }) })
 			}
 			if (!picker) {
-				picker = window.McpAdminPicker.create({
+				picker = window.OCA.Mcp.Admin.picker.create({
 					container,
 					status,
 					options,
@@ -3125,7 +3139,7 @@
 	 * What src/admin/admin-overrides.js needs from the matrix: the page on screen, the shared request, lock and undo notice,
 	 * and a re-render, so it can paint rows that were drawn before it loaded. It never touches the matrix state itself.
 	 */
-	window.McpAdminMatrix = {
+	window.OCA.Mcp.Admin.matrix = {
 		data: () => state.data,
 		api,
 		announce,
@@ -3188,14 +3202,14 @@
  * Taking "Can connect" away signs the person out of every MCP client, so it is asked first, in words, and nothing is sent
  * without that confirmation. An unknown "after" counts as taken away.
  *
- * Plain browser JavaScript, no build step. src/admin/admin-grants.js opens it from a level cell through window.McpLevelPopover and
- * exposes window.McpAdminMatrix; this file never touches the matrix state itself.
+ * Plain browser JavaScript, no build step. src/admin/admin-grants.js opens it from a level cell through window.OCA.Mcp.Admin.levelPopover and
+ * exposes window.OCA.Mcp.Admin.matrix; this file never touches the matrix state itself.
  */
 (function () {
 	'use strict'
 
-	const matrix = window.McpAdminMatrix
-	const levels = window.McpAdminLevels
+	const matrix = window.OCA.Mcp.Admin.matrix
+	const levels = window.OCA.Mcp.Admin.levels
 	const popover = document.getElementById('mcp-level-popover')
 	if (!matrix || !levels || !popover) {
 		return
@@ -3339,7 +3353,7 @@
 		if (module === null) {
 			return level === 'read' ? t('mcp', 'Yes') : t('mcp', 'No')
 		}
-		return { ...window.McpAdminPollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }[level] || level
+		return { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }[level] || level
 	}
 
 	/** @return {string} the level these values are, for any module, "Can connect" included */
@@ -3535,7 +3549,7 @@
 			render()
 			return
 		}
-		if (window.McpAdminMailGrants && !window.McpAdminMailGrants.confirmWrites(commands.filter((command) => command.state === 'allow'))) {
+		if (window.OCA.Mcp.Admin.mailGrants && !window.OCA.Mcp.Admin.mailGrants.confirmWrites(commands.filter((command) => command.state === 'allow'))) {
 			render()
 			return
 		}
@@ -3676,7 +3690,7 @@
 		}
 	})
 
-	window.McpLevelPopover = { open, close, planLevel, planInherit, planOperation, planTarget, inheritedValues, losesEligibility }
+	window.OCA.Mcp.Admin.levelPopover = { open, close, planLevel, planInherit, planOperation, planTarget, inheritedValues, losesEligibility }
 })()
 ;
 /* admin/admin-exceptions.js */
@@ -3705,7 +3719,7 @@
 (function () {
 	'use strict'
 
-	const matrix = window.McpAdminMatrix
+	const matrix = window.OCA.Mcp.Admin.matrix
 	if (!matrix) {
 		return
 	}
@@ -3937,7 +3951,7 @@
 	reviewButton?.addEventListener('click', () => {
 		const cells = redundantCells()
 		if (cells.length > 0) {
-			window.McpAdminOverrides?.reviewCells(cells, reviewButton)
+			window.OCA.Mcp.Admin.overrides?.reviewCells(cells, reviewButton)
 		}
 	})
 
@@ -3973,7 +3987,7 @@
 		}, 0))
 	}
 
-	window.McpAdminExceptions = { kindOf, redundantCells, kindOfAnswer, chunks, classifyPerson, status: () => result.status }
+	window.OCA.Mcp.Admin.exceptions = { kindOf, redundantCells, kindOfAnswer, chunks, classifyPerson, status: () => result.status }
 })()
 ;
 /* admin/admin-row-actions.js */
@@ -3993,7 +4007,7 @@
 (function () {
 	'use strict'
 
-	const matrix = window.McpAdminMatrix
+	const matrix = window.OCA.Mcp.Admin.matrix
 	const menu = document.getElementById('mcp-row-menu')
 	if (!matrix || !menu) {
 		return
@@ -4018,19 +4032,19 @@
 
 	/** @return {Array<{label: string, run: Function, disabled: boolean}>} the actions of a user, in menu order */
 	function actions(user, trigger) {
-		const overrides = window.McpAdminOverrides
+		const overrides = window.OCA.Mcp.Admin.overrides
 		return [
 			{
 				label: t('mcp', 'Inspect access'),
-				disabled: !window.McpInspectorUi,
+				disabled: !window.OCA.Mcp.Admin.inspector,
 				// The inspector opens as a drawer that takes the focus and gives it back to this button.
-				run: () => window.McpInspectorUi.open(user.uid, trigger),
+				run: () => window.OCA.Mcp.Admin.inspector.open(user.uid, trigger),
 			},
 			{
 				label: t('mcp', 'Restrict resources'),
-				disabled: !window.McpScopeUi,
+				disabled: !window.OCA.Mcp.Admin.scope,
 				// The resource scope opens as a drawer that takes the focus and gives it back to this button.
-				run: () => window.McpScopeUi.open(user.uid, undefined, trigger),
+				run: () => window.OCA.Mcp.Admin.scope.open(user.uid, undefined, trigger),
 			},
 			{
 				label: t('mcp', 'Give everything back to inheritance…'),
@@ -4159,7 +4173,7 @@
 	// A table drawn again replaces the button the menu belongs to.
 	window.addEventListener('mcp-matrix-rendered', () => close(false))
 
-	window.McpRowActions = { button, open, close }
+	window.OCA.Mcp.Admin.rowActions = { button, open, close }
 })()
 ;
 /* admin/admin-overrides.js */
@@ -4173,7 +4187,7 @@
  * page, with a preview of exactly what is removed and the server receipt as the undo.
  *
  * Plain browser JavaScript, no build step. src/admin/admin-grants.js calls decorateRow() and decorateCell() for every row it
- * draws and exposes window.McpAdminMatrix; this file never reads or writes the matrix state itself. A reset is the
+ * draws and exposes window.OCA.Mcp.Admin.matrix; this file never reads or writes the matrix state itself. A reset is the
  * command {state: "inherit"} of POST /apps/mcp/api/grants/commands: one transaction, which writes every cell or none.
  *
  * What the page may promise: the table only knows each cell's current source, never what the groups would give once an
@@ -4187,7 +4201,7 @@
 (function () {
 	'use strict'
 
-	const matrix = window.McpAdminMatrix
+	const matrix = window.OCA.Mcp.Admin.matrix
 	const table = document.getElementById('mcp-matrix')
 	// The toolbar goes before the table's wrapper, or before the table itself when the wrapper is missing. With no
 	// attached anchor it would be created outside the page and every message and the preview would be lost silently,
@@ -4428,7 +4442,7 @@
 		const names = matrix.levelLabels?.() || {}
 		const choices = module === null
 			? [['read', t('mcp', 'Yes')], ['none', t('mcp', 'No')]]
-			: window.McpAdminLevels.levels(module, matrix.data().catalog[module]).map((level) => [level, names[level] || level])
+			: window.OCA.Mcp.Admin.levels.levels(module, matrix.data().catalog[module]).map((level) => [level, names[level] || level])
 		levelChoice.replaceChildren(...choices.map(([value, text]) => el('option', { value, textContent: text })))
 	}
 
@@ -4551,7 +4565,7 @@
 			// An unavailable cell without an override of its own says nothing more than it already does.
 			return
 		}
-		const exceptions = window.McpAdminExceptions
+		const exceptions = window.OCA.Mcp.Admin.exceptions
 		const mark = !kind ? null : kind === 'invalid' || !exceptions ? 'exception' : exceptions.kindOf(user.uid, module, operation).kind
 		const stateName = !kind ? t('mcp', 'Inherited')
 			: mark === 'redundant' ? names[kind] + ' — ' + t('mcp', 'the same as inherited')
@@ -4912,7 +4926,7 @@
 		start(pageUsers().filter((user) => uids.has(user.uid)), (user, cell) => keys.has(afterKey(user.uid, cell.module, cell.operation)), trigger)
 	}
 
-	window.McpAdminOverrides = { decorateRow, decorateHeader, decorateCell, plan, reviewCells, resetUser, hasOverrides }
+	window.OCA.Mcp.Admin.overrides = { decorateRow, decorateHeader, decorateCell, plan, reviewCells, resetUser, hasOverrides }
 	// The matrix may have been drawn before this file ran: draw it again so its rows carry the controls.
 	matrix.refresh()
 })()
@@ -5046,7 +5060,7 @@
 		return { files: t('mcp', 'Files'), notes: t('mcp', 'Notes'), deck: t('mcp', 'Deck'), calendar: t('mcp', 'Calendar'), contacts: t('mcp', 'Contacts'), tasks: t('mcp', 'Tasks'), talk: t('mcp', 'Talk'), people: t('mcp', 'People'), logs: t('mcp', 'Server log'), mail: t('mcp', 'Mail'), tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls') }[module] || module
 	}
 	function operationName(operation) {
-		return { ...window.McpAdminPollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
+		return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 	}
 	function grantKeys(grants) {
 		return Object.entries(grants).flatMap(([module, operations]) => operations.map((operation) => module + ':' + operation)).sort()
@@ -5257,16 +5271,16 @@
 	function levelIn(grants, module) {
 		const operations = current.catalog[module]
 		const granted = operationsIn(grants, module)
-		return window.McpAdminLevels.levelOf(module, operations, Object.fromEntries(operations.map((operation) => [operation, granted.includes(operation)])))
+		return window.OCA.Mcp.Admin.levels.levelOf(module, operations, Object.fromEntries(operations.map((operation) => [operation, granted.includes(operation)])))
 	}
 	/** What a member gets without any grant: GrantPolicy::defaultGranted(), reading except the server log. */
 	function defaultLevel(module) {
 		const operations = current.catalog[module]
-		return window.McpAdminLevels.levelOf(module, operations, Object.fromEntries(operations.map((operation) => [operation, operation === 'read' && module !== 'logs'])))
+		return window.OCA.Mcp.Admin.levels.levelOf(module, operations, Object.fromEntries(operations.map((operation) => [operation, operation === 'read' && module !== 'logs'])))
 	}
 	/** For a group the lowest level is "Not granted": the members keep what they have from elsewhere. */
 	function levelName(level) {
-		return { ...window.McpAdminPollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'Not granted'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom') }[level] || level
+		return { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'Not granted'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom') }[level] || level
 	}
 	/** A level in words, a custom one with its operations, since "Custom → Custom" would say nothing. */
 	function levelText(grants, module) {
@@ -5390,8 +5404,8 @@
 					return el('label', {}, [box, operationName(operation)])
 				}))
 			} else {
-				control = el('span', { className: 'mcp-group-levels' }, window.McpAdminLevels.levels(module, operations).map((choice) => keyed('level:' + module + ':' + choice,
-					levelButton(module, choice, choice === level, () => setOperations(module, window.McpAdminLevels.operationsFor(module, operations, choice), 'level:' + module + ':' + choice)))))
+				control = el('span', { className: 'mcp-group-levels' }, window.OCA.Mcp.Admin.levels.levels(module, operations).map((choice) => keyed('level:' + module + ':' + choice,
+					levelButton(module, choice, choice === level, () => setOperations(module, window.OCA.Mcp.Admin.levels.operationsFor(module, operations, choice), 'level:' + module + ':' + choice)))))
 			}
 			control.setAttribute('role', 'group')
 			control.setAttribute('aria-labelledby', 'mcp-group-module-' + module)
@@ -5445,7 +5459,7 @@
 	}
 	async function run(action) {
 		if (busy || !current || (action === 'save' && !preview)) return
-		if (action === 'save' && window.McpAdminMailGrants && !window.McpAdminMailGrants.confirmWrites(Object.entries(draft)
+		if (action === 'save' && window.OCA.Mcp.Admin.mailGrants && !window.OCA.Mcp.Admin.mailGrants.confirmWrites(Object.entries(draft)
 			.flatMap(([module, operations]) => operations.filter((operation) => !(current.grants[module] || []).includes(operation)).map((operation) => ({ module, operation }))))) return
 		busy = true
 		const gid = current.groupId
@@ -5518,7 +5532,7 @@
  * A write of this page (a module here, or the matrix, OAuth clients or server log of src/admin/admin-grants.js) is announced
  * with the revision it was sent with and the one it made (event "mcp-revision-moved"); a module still at the first
  * takes the second and keeps its draft, since nothing but that write lies between them.
- * Exposes window.McpScopeUi for the matrix, which shows "Restricted to N" (or "Scope unknown") in the module's first
+ * Exposes window.OCA.Mcp.Admin.scope for the matrix, which shows "Restricted to N" (or "Scope unknown") in the module's first
  * cell and opens this panel from it.
  *
  * The panel is a drawer at the side of the page (S9): the Access tab shows one sentence and a button, and the drawer
@@ -5765,7 +5779,7 @@
 	/** Opens the drawer; the focus goes back to `trigger` when it closes. */
 	function openDrawer(trigger) {
 		// Only one drawer is open at a time: the inspector closes when the scope opens.
-		window.McpInspectorUi?.close?.()
+		window.OCA.Mcp.Admin.inspector?.close?.()
 		returnFocus = trigger || document.activeElement || null
 		// The row of a "…" button that opened the drawer: the table may be drawn again meanwhile, and its new button is
 		// the one that gets the focus back.
@@ -6161,7 +6175,7 @@
 		return true
 	}
 
-	window.McpScopeUi = { indicator, open, close: closeDrawer }
+	window.OCA.Mcp.Admin.scope = { indicator, open, close: closeDrawer }
 	// A module exactly at the revision a write of this page committed from takes the one it made; its draft stays.
 	window.addEventListener(REVISION_MOVED, (event) => {
 		for (const state of Object.values(modules)) {
@@ -6169,7 +6183,7 @@
 		}
 	})
 	// A matrix drawn before this script ran is drawn again, now with the scope marks.
-	window.McpAdminMatrix?.refresh?.()
+	window.OCA.Mcp.Admin.matrix?.refresh?.()
 	if (!root) return
 	entryButton?.addEventListener('click', () => {
 		openDrawer(entryButton)
@@ -6271,7 +6285,7 @@
 		return { files: t('mcp', 'Files'), notes: t('mcp', 'Notes'), deck: t('mcp', 'Deck'), calendar: t('mcp', 'Calendar'), contacts: t('mcp', 'Contacts'), tasks: t('mcp', 'Tasks'), talk: t('mcp', 'Talk'), people: t('mcp', 'People'), logs: t('mcp', 'Server log'), mail: t('mcp', 'Mail'), tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls') }[module] || module
 	}
 	function operationName(operation) {
-		return { ...window.McpAdminPollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
+		return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 	}
 	/** The first check that blocks, by the code of the effective access (EffectiveResult::blockingGate). */
 	function gateText(gate) {
@@ -6426,13 +6440,13 @@
 	 */
 	function renderModules(operations) {
 		const general = generalBlock(operations) !== null
-		const levels = window.McpAdminLevels
+		const levels = window.OCA.Mcp.Admin.levels
 		const byModule = new Map()
 		for (const row of operations) {
 			if (!byModule.has(row.module)) byModule.set(row.module, [])
 			byModule.get(row.module).push(row)
 		}
-		const levelName = { ...window.McpAdminPollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }
+		const levelName = { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }
 		const items = [...byModule.entries()].map(([module, rows]) => {
 			const operationList = rows.map((row) => row.operation)
 			const values = Object.fromEntries(rows.map((row) => [row.operation, row.grant ? row.grant.allowed : row.allowed]))
@@ -6470,7 +6484,7 @@
 			const index = individual.indexOf(row)
 			return [row.operation, index < 0 ? row.grant : known[index].after || { source: 'default', groupIds: [] }]
 		}))
-		const origin = window.McpAdminLevels.originOf(rows.map((row) => row.operation), repeated)
+		const origin = window.OCA.Mcp.Admin.levels.originOf(rows.map((row) => row.operation), repeated)
 		const text = {
 			group: t('mcp', 'Group: {groups}', { groups: origin.groupIds.join(', ') }),
 			unknown: t('mcp', 'Group awaiting confirmation: {groups}', { groups: origin.groupIds.join(', ') }),
@@ -6483,7 +6497,7 @@
 	 * or another inspection is dropped.
 	 */
 	async function classifyShown(data, mine) {
-		const exceptions = window.McpAdminExceptions
+		const exceptions = window.OCA.Mcp.Admin.exceptions
 		if (!exceptions?.classifyPerson || typeof data.revision !== 'string') return
 		const cells = data.operations.map((row) => ({ module: row.module, operation: row.operation, allowed: row.grant?.allowed ?? null, source: row.grant?.source }))
 		if (!cells.some((cell) => cell.source === 'individual_allow' || cell.source === 'individual_deny')) return
@@ -6588,9 +6602,9 @@
 			const answer = await get(path, Object.assign({ uid: user }, query))
 			if (stale(kind, mine, user)) return
 			target.textContent = explanation(answer)
-			if (answer.reason === 'out_of_scope' && window.McpScopeUi) {
+			if (answer.reason === 'out_of_scope' && window.OCA.Mcp.Admin.scope) {
 				const change = el('button', { type: 'button', textContent: t('mcp', 'Open the resource scope') })
-				change.addEventListener('click', () => window.McpScopeUi.open(user, module))
+				change.addEventListener('click', () => window.OCA.Mcp.Admin.scope.open(user, module))
 				target.append(' ', change)
 			}
 		} catch (error) {
@@ -6630,7 +6644,7 @@
 	 * @return {boolean} whether the drawer opened
 	 */
 	function openDrawer(trigger) {
-		if (window.McpScopeUi?.close?.() === false) {
+		if (window.OCA.Mcp.Admin.scope?.close?.() === false) {
 			trigger?.focus?.()
 			return false
 		}
@@ -6687,7 +6701,7 @@
 	})
 
 	// The actions menu of a matrix row inspects that user (src/admin/admin-row-actions.js), in the drawer.
-	window.McpInspectorUi = {
+	window.OCA.Mcp.Admin.inspector = {
 		open(target, trigger) {
 			if (!openDrawer(trigger)) return false
 			user.value = target

@@ -5,7 +5,7 @@
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const path = require('node:path')
 
 /** Minimal DOM for the Polls inspector contract; all rendering comes from the production script. */
@@ -95,10 +95,10 @@ test('real inspector DOM renders the protected labels, cumulative level and sele
 
 test('all admin label consumers delegate to the loaded Polls helper and translations agree with Forms common results', () => {
 	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-inspector.js', 'admin-level-popover.js']) {
-		assert.match(require('./AdminManifest.cjs').script(file), /McpAdminPollsGrants\?\.levelLabels/)
+		assert.match(require('./AdminManifest.cjs').script(file), /pollsGrants\?\.levelLabels/)
 	}
 	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-inspector.js']) {
-		assert.match(require('./AdminManifest.cjs').script(file), /McpAdminPollsGrants\?\.operationLabels/)
+		assert.match(require('./AdminManifest.cjs').script(file), /pollsGrants\?\.operationLabels/)
 	}
 	const template = fs.readFileSync(path.join(__dirname, '../../templates/admin.php'), 'utf8')
 	assert.equal(template.indexOf("'admin-polls-grants'"), -1)

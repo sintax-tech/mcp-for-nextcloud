@@ -21,14 +21,14 @@
  * Taking "Can connect" away signs the person out of every MCP client, so it is asked first, in words, and nothing is sent
  * without that confirmation. An unknown "after" counts as taken away.
  *
- * Plain browser JavaScript, no build step. src/admin/admin-grants.js opens it from a level cell through window.McpLevelPopover and
- * exposes window.McpAdminMatrix; this file never touches the matrix state itself.
+ * Plain browser JavaScript, no build step. src/admin/admin-grants.js opens it from a level cell through window.OCA.Mcp.Admin.levelPopover and
+ * exposes window.OCA.Mcp.Admin.matrix; this file never touches the matrix state itself.
  */
 (function () {
 	'use strict'
 
-	const matrix = window.McpAdminMatrix
-	const levels = window.McpAdminLevels
+	const matrix = window.OCA.Mcp.Admin.matrix
+	const levels = window.OCA.Mcp.Admin.levels
 	const popover = document.getElementById('mcp-level-popover')
 	if (!matrix || !levels || !popover) {
 		return
@@ -172,7 +172,7 @@
 		if (module === null) {
 			return level === 'read' ? t('mcp', 'Yes') : t('mcp', 'No')
 		}
-		return { ...window.McpAdminPollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }[level] || level
+		return { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }[level] || level
 	}
 
 	/** @return {string} the level these values are, for any module, "Can connect" included */
@@ -368,7 +368,7 @@
 			render()
 			return
 		}
-		if (window.McpAdminMailGrants && !window.McpAdminMailGrants.confirmWrites(commands.filter((command) => command.state === 'allow'))) {
+		if (window.OCA.Mcp.Admin.mailGrants && !window.OCA.Mcp.Admin.mailGrants.confirmWrites(commands.filter((command) => command.state === 'allow'))) {
 			render()
 			return
 		}
@@ -509,5 +509,5 @@
 		}
 	})
 
-	window.McpLevelPopover = { open, close, planLevel, planInherit, planOperation, planTarget, inheritedValues, losesEligibility }
+	window.OCA.Mcp.Admin.levelPopover = { open, close, planLevel, planInherit, planOperation, planTarget, inheritedValues, losesEligibility }
 })()

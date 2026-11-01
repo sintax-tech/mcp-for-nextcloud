@@ -23,7 +23,7 @@
 (function () {
 	'use strict'
 
-	const matrix = window.McpAdminMatrix
+	const matrix = window.OCA.Mcp.Admin.matrix
 	if (!matrix) {
 		return
 	}
@@ -255,7 +255,7 @@
 	reviewButton?.addEventListener('click', () => {
 		const cells = redundantCells()
 		if (cells.length > 0) {
-			window.McpAdminOverrides?.reviewCells(cells, reviewButton)
+			window.OCA.Mcp.Admin.overrides?.reviewCells(cells, reviewButton)
 		}
 	})
 
@@ -291,5 +291,5 @@
 		}, 0))
 	}
 
-	window.McpAdminExceptions = { kindOf, redundantCells, kindOfAnswer, chunks, classifyPerson, status: () => result.status }
+	window.OCA.Mcp.Admin.exceptions = { kindOf, redundantCells, kindOfAnswer, chunks, classifyPerson, status: () => result.status }
 })()

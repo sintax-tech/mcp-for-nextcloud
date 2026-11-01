@@ -10,7 +10,7 @@
  */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const fs = require('node:fs')
 const path = require('node:path')
 
@@ -97,7 +97,7 @@ test('the Mail tooltips describe the seven operations and nothing else', () => {
 	assert.equal(Grants.operationHint('mail', 'other'), null)
 	assert.equal(Grants.operationHint('files', 'read'), null)
 	const grants = require('./AdminManifest.cjs').script('admin-grants.js')
-	assert.match(grants, /McpAdminMailGrants\.operationHint\(module, operation\)/)
+	assert.match(grants, /mailGrants\.operationHint\(module, operation\)/)
 	assert.match(grants, /folders: t\('mcp', 'Accounts and folders'\)/)
 	assert.match(grants, /messages: t\('mcp', 'Messages'\)/)
 	assert.match(grants, /attachments: t\('mcp', 'Messages and attachments'\)/)
@@ -142,8 +142,8 @@ test('granting a Mail write asks first, and only a Mail write does', () => {
 
 test('every way of granting asks before a Mail write: matrix cell, bulk, popover and group policy', () => {
 	const read = (file) => require('./AdminManifest.cjs').script(file)
-	assert.match(read('admin-grants.js'), /McpAdminMailGrants\.confirmWrites\(\[\{ module, operation: body\.operation \}\]\)/, 'matrix cell')
-	assert.match(read('admin-grants.js'), /McpAdminMailGrants\.writeWarning\(plan\.changes\.filter/, 'bulk change')
-	assert.match(read('admin-level-popover.js'), /McpAdminMailGrants\.confirmWrites\(commands\.filter\(\(command\) => command\.state === 'allow'\)\)/, 'popover')
-	assert.match(read('admin-groups.js'), /action === 'save' && window\.McpAdminMailGrants && !window\.McpAdminMailGrants\.confirmWrites\(/, 'group policy')
+	assert.match(read('admin-grants.js'), /mailGrants\.confirmWrites\(\[\{ module, operation: body\.operation \}\]\)/, 'matrix cell')
+	assert.match(read('admin-grants.js'), /mailGrants\.writeWarning\(plan\.changes\.filter/, 'bulk change')
+	assert.match(read('admin-level-popover.js'), /mailGrants\.confirmWrites\(commands\.filter\(\(command\) => command\.state === 'allow'\)\)/, 'popover')
+	assert.match(read('admin-groups.js'), /action === 'save' && window\.OCA\.Mcp\.Admin\.mailGrants && !window\.OCA\.Mcp\.Admin\.mailGrants\.confirmWrites\(/, 'group policy')
 })

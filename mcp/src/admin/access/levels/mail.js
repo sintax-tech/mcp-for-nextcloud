@@ -61,9 +61,9 @@
 	 * its second opens the messages, its third adds the text of attachments, and the next ones add the Mail writes, so
 	 * none of its levels is called Full. src/admin/admin-grants.js translates the names.
 	 */
-	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.mail = [['read'], ['messages'], ['attachments'], ['flags'], ['move'], ['draft'], ['send']]
 	catalog.tierNames.mail = ['folders', 'messages', 'attachments', 'flags', 'move', 'draft', 'send']
 
-	root.McpAdminMailGrants = { WRITE_OPERATIONS, operationHint, writeWarning, confirmWrites }
+	root.OCA.Mcp.Admin.mailGrants = { WRITE_OPERATIONS, operationHint, writeWarning, confirmWrites }
 })(typeof window !== 'undefined' ? window : globalThis)

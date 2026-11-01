@@ -8,7 +8,7 @@
  * page, with a preview of exactly what is removed and the server receipt as the undo.
  *
  * Plain browser JavaScript, no build step. src/admin/admin-grants.js calls decorateRow() and decorateCell() for every row it
- * draws and exposes window.McpAdminMatrix; this file never reads or writes the matrix state itself. A reset is the
+ * draws and exposes window.OCA.Mcp.Admin.matrix; this file never reads or writes the matrix state itself. A reset is the
  * command {state: "inherit"} of POST /apps/mcp/api/grants/commands: one transaction, which writes every cell or none.
  *
  * What the page may promise: the table only knows each cell's current source, never what the groups would give once an
@@ -22,7 +22,7 @@
 (function () {
 	'use strict'
 
-	const matrix = window.McpAdminMatrix
+	const matrix = window.OCA.Mcp.Admin.matrix
 	const table = document.getElementById('mcp-matrix')
 	// The toolbar goes before the table's wrapper, or before the table itself when the wrapper is missing. With no
 	// attached anchor it would be created outside the page and every message and the preview would be lost silently,
@@ -263,7 +263,7 @@
 		const names = matrix.levelLabels?.() || {}
 		const choices = module === null
 			? [['read', t('mcp', 'Yes')], ['none', t('mcp', 'No')]]
-			: window.McpAdminLevels.levels(module, matrix.data().catalog[module]).map((level) => [level, names[level] || level])
+			: window.OCA.Mcp.Admin.levels.levels(module, matrix.data().catalog[module]).map((level) => [level, names[level] || level])
 		levelChoice.replaceChildren(...choices.map(([value, text]) => el('option', { value, textContent: text })))
 	}
 
@@ -386,7 +386,7 @@
 			// An unavailable cell without an override of its own says nothing more than it already does.
 			return
 		}
-		const exceptions = window.McpAdminExceptions
+		const exceptions = window.OCA.Mcp.Admin.exceptions
 		const mark = !kind ? null : kind === 'invalid' || !exceptions ? 'exception' : exceptions.kindOf(user.uid, module, operation).kind
 		const stateName = !kind ? t('mcp', 'Inherited')
 			: mark === 'redundant' ? names[kind] + ' — ' + t('mcp', 'the same as inherited')
@@ -747,7 +747,7 @@
 		start(pageUsers().filter((user) => uids.has(user.uid)), (user, cell) => keys.has(afterKey(user.uid, cell.module, cell.operation)), trigger)
 	}
 
-	window.McpAdminOverrides = { decorateRow, decorateHeader, decorateCell, plan, reviewCells, resetUser, hasOverrides }
+	window.OCA.Mcp.Admin.overrides = { decorateRow, decorateHeader, decorateCell, plan, reviewCells, resetUser, hasOverrides }
 	// The matrix may have been drawn before this file ran: draw it again so its rows carry the controls.
 	matrix.refresh()
 })()

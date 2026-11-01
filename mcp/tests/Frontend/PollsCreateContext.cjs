@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 const fs = require('node:fs')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const path = require('node:path')
 /** Loads the Polls preset policy from src/admin/access/levels/polls.js (through AdminManifest), where the admin page loads it. */
 class PollsCreateContext {

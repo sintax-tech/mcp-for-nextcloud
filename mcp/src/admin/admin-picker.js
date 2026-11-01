@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Generic searchable multi-select picker of the admin page, exposed as window.McpAdminPicker.
+ * Generic searchable multi-select picker of the admin page, exposed as window.OCA.Mcp.Admin.picker.
  *
  * One control: the selected options as removable chips on top, a search field that only filters the
  * existing options (typing never creates one) and a collapsed listbox that opens on focus. It
@@ -405,5 +405,5 @@
 		}
 	}
 
-	window.McpAdminPicker = { create }
+	window.OCA.Mcp.Admin.picker = { create }
 })()

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 const fs = require('node:fs')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const path = require('node:path')
 
 /** Minimal DOM for the Polls inspector contract; all rendering comes from the production script. */

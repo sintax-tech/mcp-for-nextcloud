@@ -173,7 +173,7 @@ final class AdminAssetsTest extends TestCase {
 	/** The matrix draws "Restricted to N" through src/admin/admin-scope.js and reloads after a scope is saved (B7). */
 	public function testTheMatrixShowsTheResourceScopeOfARestrictedModule(): void {
 		$script = (string)file_get_contents(dirname(__DIR__, 3) . '/src/admin/admin-grants.js');
-		$this->assertStringContainsString("window.McpScopeUi.indicator(user.uid, module, user.scope[module])", $script);
+		$this->assertStringContainsString("window.OCA.Mcp.Admin.scope.indicator(user.uid, module, user.scope[module])", $script);
 		$this->assertStringContainsString("window.addEventListener('mcp-scope-saved', reloadLocked)", $script);
 	}
 
@@ -346,7 +346,7 @@ final class AdminAssetsTest extends TestCase {
 		$this->assertStringContainsString("'%n selected person is left out: this permission is unavailable or unknown for them.'", $grants);
 		$this->assertStringContainsString("'%n selected person already has it.'", $grants);
 		$this->assertStringContainsString("matrix.bulk(moduleChoice.value || null, levelChoice.value, uids)", $overrides);
-		$this->assertStringContainsString('window.McpAdminOverrides?.decorateHeader?.(selectHeader)', $grants);
+		$this->assertStringContainsString('window.OCA.Mcp.Admin.overrides?.decorateHeader?.(selectHeader)', $grants);
 	}
 
 	/**

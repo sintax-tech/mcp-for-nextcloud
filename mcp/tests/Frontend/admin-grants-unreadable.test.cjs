@@ -7,7 +7,7 @@ const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const fs = require('node:fs')
 const path = require('node:path')
-const vm = require('node:vm')
+const vm = require('./AdminContext.cjs')
 const source = require('./AdminManifest.cjs').script('admin-grants.js')
 const uncertain = 'The server could not confirm whether the change was saved. The table was reloaded with the saved values.'
 function cut(declaration) {

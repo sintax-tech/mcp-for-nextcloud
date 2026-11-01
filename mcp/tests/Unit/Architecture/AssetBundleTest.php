@@ -42,7 +42,7 @@ final class AssetBundleTest extends TestCase {
 		sort($found, SORT_STRING);
 		$expected = array_values(AssetTargets::MANIFESTS);
 		sort($expected, SORT_STRING);
-		$this->assertSame($expected, $found);
+		$this->assertSame([], \OCA\Mcp\Tests\Architecture\Inventory\AssetRules::scripts($found));
 		$this->assertSame(['js/mcp-admin.js', 'js/mcp-personal.js'], $found);
 	}
 
@@ -53,11 +53,9 @@ final class AssetBundleTest extends TestCase {
 	 */
 	public function testEachTemplateRegistersOnlyItsOwnBundle(): void {
 		$app = dirname(__DIR__, 3);
-		foreach (glob($app . '/templates/*.php') ?: [] as $path) {
-			preg_match_all("/Util::addScript\\(\\s*'mcp'\\s*,\\s*'([^']+)'/", (string)file_get_contents($path), $matches);
-			$expected = isset(self::SCRIPTS[basename($path)]) ? [self::SCRIPTS[basename($path)]] : [];
-			$this->assertSame($expected, $matches[1], basename($path));
-		}
+		$templates = [];
+		foreach (glob($app . '/templates/*.php') ?: [] as $path) { $templates[basename($path)] = (string)file_get_contents($path); }
+		$this->assertSame([], \OCA\Mcp\Tests\Architecture\Inventory\AssetRules::templates($templates));
 	}
 
 	/**

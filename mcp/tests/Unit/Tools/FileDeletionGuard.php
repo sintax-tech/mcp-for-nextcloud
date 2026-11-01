@@ -38,20 +38,7 @@ final class FileDeletionGuard {
 	 * @throws \PHPUnit\Framework\AssertionFailedError When any source violates the deletion rule.
 	 */
 	public static function assertNoNodeDeletion(array $files, string $undoOwner): void {
-		$files = ApprovedDeleteSink::remaining($files);
-		$owner = realpath($undoOwner);
-		foreach ($files as $file) {
-			$source = (string)file_get_contents($file);
-			if ($owner !== false && realpath($file) === $owner && str_contains($source, '->delete()')) {
-				$undo = strpos($source, 'function undoBatch');
-				$first = strpos($source, '->delete()');
-				Assert::assertNotFalse($undo, 'a remoção precisa estar dentro de undoBatch');
-				Assert::assertGreaterThan($undo, $first, 'a remoção está antes de undoBatch');
-				Assert::assertSame(1, preg_match_all('/->delete\(\)/', $source), 'a remoção do lote é uma só, dentro do desfazer');
-				continue;
-			}
-			Assert::assertDoesNotMatchRegularExpression('/->delete\(\)/', $source,
-				basename($file) . ' calls Node::delete(); the MCP removes no file and no folder');
-		}
+		\OCA\Mcp\Tests\Architecture\Inventory\FilesDeletionPolicy::assertNodes($files, $undoOwner,
+			\OCA\Mcp\Tests\Architecture\Inventory\FilesSources::sink(dirname(__DIR__, 3), \OCA\Mcp\Tools\Files\Handler\DeleteFileHandler::class));
 	}
 }

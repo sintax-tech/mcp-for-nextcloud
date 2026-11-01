@@ -64,7 +64,13 @@ admin/scope/rendering.js
 admin/scope/browsing.js
 admin/scope/saving.js
 admin/scope/start.js
-admin/admin-inspector.js
+admin/inspector/session.js
+admin/inspector/wording.js
+admin/inspector/verdict.js
+admin/inspector/rendering.js
+admin/inspector/inspection.js
+admin/inspector/drawer.js
+admin/inspector/start.js
 shared/connections.js
 admin/admin-tabs.js
 admin/admin-file-write-policy.js

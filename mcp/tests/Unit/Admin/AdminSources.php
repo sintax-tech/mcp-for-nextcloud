@@ -22,6 +22,7 @@ final class AdminSources {
 			'admin-overrides.js' => ['overrides'],
 			'admin-groups.js' => ['groups'],
 			'admin-scope.js' => ['scope'],
+			'admin-inspector.js' => ['inspector'],
 			default => [],
 		};
 		if ($groups === [] || !is_dir($app . '/src/admin/' . $groups[0])) {

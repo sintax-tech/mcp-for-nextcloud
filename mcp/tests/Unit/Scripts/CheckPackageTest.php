@@ -286,6 +286,7 @@ final class CheckPackageTest extends TestCase {
 			self::file('mcp/appinfo/info.xml', '<info/>'),
 			...array_map(static fn (string $path): string => self::file($path, 'License or notice'), PackageCheck::REQUIRED_LEGAL_FILES),
 			self::file('mcp/js/admin.js', 'x'),
+			self::file('mcp/js/mcp-admin.js', ''),
 			self::file('mcp/css/admin.css', 'x'),
 			self::dir('mcp/vendor'),
 			self::file('mcp/vendor/autoload.php'),

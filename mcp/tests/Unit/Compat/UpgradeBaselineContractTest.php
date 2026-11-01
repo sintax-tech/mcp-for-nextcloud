@@ -7,7 +7,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Compat;
 
-use OCA\Mcp\Tests\Integration\Compat\LegacyCatalogContract;
 use OCA\Mcp\Tests\Integration\Compat\UpgradeBaseline;
 use PHPUnit\Framework\TestCase;
 
@@ -16,13 +15,9 @@ require_once __DIR__ . '/../../Integration/Compat/UpgradeBaseline.php';
 
 /** Upgrade fixture guards cannot turn removals, unknown additions or malformed input into passing comparisons. */
 final class UpgradeBaselineContractTest extends TestCase {
-	/** @return void all baseline operations remain exact and only mail.read may be added */
+	/** @return void All legacy operations remain exact and only the reviewed 1.2.2 additions are accepted. */
 	public function testCatalogRecognizesTheExplicitAdditionAndRejectsOtherChanges(): void {
-		$baseline = ['files' => ['read', 'edit'], 'notes' => ['read']];
-		self::assertSame($baseline, LegacyCatalogContract::baseline($baseline, [...$baseline, 'mail' => ['read']]));
-		foreach ([['files' => ['read'], 'notes' => ['read'], 'mail' => ['read']], [...$baseline, 'mail' => ['read', 'write']], [...$baseline, 'unknown' => ['read']], ['mail' => ['read']]] as $current) {
-			try { LegacyCatalogContract::baseline($baseline, $current); self::fail('Unexpected catalog accepted'); } catch (\UnexpectedValueException) { }
-		}
+		LegacyCatalogAssertions::catalog();
 	}
 
 	/** @return void known snapshots are distinct and malformed or unexpected checkpoints are never silently skipped */
@@ -62,17 +57,9 @@ final class UpgradeBaselineContractTest extends TestCase {
 		}
 	}
 
-	/** @return void explicit new-cell checking preserves every legacy value and rejects changed Mail defaults */
+	/** @return void Every new default is checked and every legacy answer remains observable. */
 	public function testMatrixChecksTheNewCellBeforeRemovingOnlyThatCell(): void {
-		$legacy = ['1' => ['matrix' => ['alice' => ['eligible' => true, 'connected' => false, 'grants' => ['files' => ['read' => false]]]]]];
-		$branch = $legacy;
-		$branch['1']['matrix']['alice']['grants']['mail'] = ['read' => true];
-		self::assertSame($legacy, LegacyCatalogContract::answers($branch));
-		$branch['1']['matrix']['alice']['grants']['files']['read'] = true;
-		self::assertNotSame($legacy, LegacyCatalogContract::answers($branch), 'Changed legacy answers cannot be projected away');
-		$branch['1']['matrix']['alice']['grants']['mail'] = ['read' => false];
-		$this->expectException(\UnexpectedValueException::class);
-		LegacyCatalogContract::answers($branch);
+		LegacyCatalogAssertions::matrix();
 	}
 
 }

@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Active OAuth connections of the MCP app, shared by the admin page (every user, GET/DELETE /apps/mcp/api/connections)
- * and the personal page (only the signed-in user, GET/DELETE /apps/mcp/api/my/connections). The root element's
- * data-scope ("admin" or "personal") picks the API and the columns.
- * The personal page's read-only resource scope is the second block in this file. On the admin page
- * those elements are absent and that block returns without doing anything.
- * Plain browser JavaScript, no build step; strings go through t('mcp', …) for translation.
+ * Active OAuth connections of the MCP app. This fragment is part of both generated bundles, js/mcp-admin.js and
+ * js/mcp-personal.js, which the PHP builder joins from src/admin.manifest and src/settings.manifest.
+ * The admin page lists every user (GET/DELETE /apps/mcp/api/connections) and the personal page only the signed-in
+ * user (GET/DELETE /apps/mcp/api/my/connections); the root element's data-scope ("admin" or "personal") picks the
+ * API and the columns. Plain browser JavaScript that runs as written, without module syntax;
+ * strings go through t('mcp', …) for translation.
  */
 (function () {
 	'use strict'

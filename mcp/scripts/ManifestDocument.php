@@ -46,11 +46,35 @@ final class ManifestDocument {
 				continue;
 			}
 			$seen[$line] = true;
-			if ($personal && str_starts_with($line, AssetTargets::ADMIN_PREFIX)) {
+			if ($personal && self::adminFile($root, $line)) {
 				$problems[] = "admin source in personal manifest: $line";
 			}
 			$paths[] = $line;
 		}
 		return ['paths' => $paths, 'problems' => $problems];
+	}
+
+	/**
+	 * Whether a personal-manifest entry is an admin fragment, by its text or by the file it resolves to.
+	 *
+	 * A line under `admin/` is refused even when the file is missing. A `shared/` line whose `realpath` is a
+	 * file under `src/admin/` is the same refusal: a symlink must not copy an admin fragment into the personal
+	 * bundle under another name.
+	 *
+	 * @param string $root app directory
+	 * @param string $line one manifest entry, relative to `src/`
+	 * @return bool true when the personal bundle must not contain this entry
+	 */
+	private static function adminFile(string $root, string $line): bool {
+		if (str_starts_with($line, AssetTargets::ADMIN_PREFIX)) {
+			return true;
+		}
+		$src = realpath($root . '/src');
+		$resolved = realpath($root . '/src/' . $line);
+		if ($src === false || $resolved === false || !is_file($resolved)) {
+			return false;
+		}
+		$admin = rtrim(str_replace('\\', '/', $src), '/') . '/' . AssetTargets::ADMIN_PREFIX;
+		return str_starts_with(str_replace('\\', '/', $resolved), $admin);
 	}
 }

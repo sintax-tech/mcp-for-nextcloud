@@ -12,7 +12,8 @@ const zlib = require('node:zlib')
  *
  * The name is the path stored in the archive (`mcp/js/mcp-admin.js`), not a path on disk. The reader does not
  * call `tar`, so AppleDouble entries are not hidden. GNU long names and pax headers are not applied: the bundles
- * this helper is for have short ustar names.
+ * this helper is for have short ustar names. A member name that occurs twice is refused: tar would install the
+ * last copy, and returning the first would hide that.
  *
  * @param {string} archivePath path of the `.tar.gz`
  * @param {string} memberName member to return
@@ -21,6 +22,7 @@ const zlib = require('node:zlib')
 function extractMember(archivePath, memberName) {
 	const raw = zlib.gunzipSync(fs.readFileSync(archivePath))
 	let offset = 0
+	let found = null
 	while (offset + 512 <= raw.length) {
 		const header = raw.subarray(offset, offset + 512)
 		if (header.every((byte) => byte === 0)) {
@@ -35,10 +37,16 @@ function extractMember(archivePath, memberName) {
 		const body = raw.subarray(offset, offset + size)
 		offset += Math.ceil(size / 512) * 512
 		if (full === memberName && type !== '5') {
-			return body.toString('utf8')
+			if (found !== null) {
+				throw new Error('duplicate archive member: ' + memberName)
+			}
+			found = body
 		}
 	}
-	throw new Error('not in archive: ' + memberName)
+	if (found === null) {
+		throw new Error('not in archive: ' + memberName)
+	}
+	return found.toString('utf8')
 }
 
 /**

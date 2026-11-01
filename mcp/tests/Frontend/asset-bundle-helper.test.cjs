@@ -39,6 +39,36 @@ test('extractMember reads the bundle out of a gzip ustar archive', () => {
 	}
 })
 
+test('extractMember refuses a member that appears twice', () => {
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mcp-bundle-'))
+	const archive = path.join(dir, 'mcp.tar.gz')
+	try {
+		const good = '/* admin/a.js */\nvar a = 1\n'
+		fs.writeFileSync(archive, zlib.gzipSync(Buffer.concat([
+			ustar('mcp/js/mcp-admin.js', good),
+			ustar('mcp/js/mcp-admin.js', '/* stale */\n'),
+			Buffer.alloc(1024),
+		])))
+		assert.throws(
+			() => extractMember(archive, 'mcp/js/mcp-admin.js'),
+			/duplicate archive member: mcp\/js\/mcp-admin\.js/,
+		)
+	} finally {
+		fs.rmSync(dir, { recursive: true })
+	}
+})
+
+test('loadManifest refuses a path listed twice', () => {
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mcp-manifest-'))
+	const file = path.join(dir, 'admin.manifest')
+	try {
+		fs.writeFileSync(file, 'admin/a.js\nadmin/a.js\n')
+		assert.throws(() => loadManifest(file), /duplicate entry: admin\/a\.js/)
+	} finally {
+		fs.rmSync(dir, { recursive: true })
+	}
+})
+
 /**
  * One ustar member: header plus body padded to a whole block.
  *

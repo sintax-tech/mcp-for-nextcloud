@@ -47,6 +47,27 @@ final class AssetBuilder {
 	}
 
 	/**
+	 * Bundle bytes for a tree that is clean enough to build, keyed by archive member name.
+	 *
+	 * Null when the tree itself has a problem, so a caller does not compare an archive against a build that
+	 * must not be published. An empty list means there is no manifest to package.
+	 *
+	 * @param string $root app directory
+	 * @return array<string, string>|null `mcp/js/...` => bundle bytes, or null when the tree cannot be built
+	 */
+	public static function expectedBundles(string $root): ?array {
+		$plan = self::plan($root, AssetTargets::REQUIRED);
+		if ($plan['problems'] !== []) {
+			return null;
+		}
+		$files = [];
+		foreach ($plan['bundles'] as $target => $sources) {
+			$files['mcp/' . $target] = BundleText::render($root, $sources);
+		}
+		return $files;
+	}
+
+	/**
 	 * Writes both bundles, or writes nothing and returns the problems.
 	 *
 	 * @param string $root app directory

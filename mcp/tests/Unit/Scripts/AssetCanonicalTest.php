@@ -38,7 +38,7 @@ final class AssetCanonicalTest extends TestCase {
 		}
 	}
 
-	/** A `}` inside a regex, a string, a nested template or a comment does not end the interpolation early. */
+	/** A `}` inside a regex, a string, a nested template or a comment does not hide require. */
 	public function testABraceInsideARegexOrStringDoesNotHideModuleSyntax(): void {
 		$dir = $this->tree();
 		file_put_contents("$dir/src/admin/regex.js", 'const x = `${ /}/.test("}") ? require("x") : "" }`;' . "\n");
@@ -47,21 +47,35 @@ final class AssetCanonicalTest extends TestCase {
 		file_put_contents("$dir/src/admin/comment.js", 'const x = `${ /* } */ require("x") }`;' . "\n");
 		file_put_contents("$dir/src/admin.manifest", "admin/regex.js\nadmin/string.js\nadmin/nested.js\nadmin/comment.js\n");
 		$this->assertSame([
-			'forbidden module syntax: require in admin/comment.js',
-			'forbidden module syntax: require in admin/nested.js',
-			'forbidden module syntax: require in admin/regex.js',
-			'forbidden module syntax: require in admin/string.js',
+			'forbidden module syntax: require in admin/comment.js:1',
+			'forbidden module syntax: require in admin/nested.js:1',
+			'forbidden module syntax: require in admin/regex.js:1',
+			'forbidden module syntax: require in admin/string.js:1',
 		], AssetBuilder::build($dir));
 		$this->assertFileDoesNotExist("$dir/js/mcp-admin.js");
 
 		$clean = $this->tree();
-		$policy = 'const a = `${ "require}" }`;' . "\n";
+		$policy = 'const a = "importantValue";' . "\n";
 		$policy .= 'const b = `${ /* require */ 1 }`;' . "\n";
 		$policy .= 'const c = `${ 1 / 2 }`;' . "\n";
-		$policy .= 'const d = `require stays literal`;' . "\n";
+		$policy .= 'const d = `exported`;' . "\n";
 		file_put_contents("$clean/src/admin/policy.js", $policy);
 		file_put_contents("$clean/src/admin.manifest", "admin/policy.js\n");
 		$this->assertSame([], AssetBuilder::build($clean));
+	}
+
+	/** A newline or a postfix after a value must not make require look like a regex. A partial word passes. */
+	public function testDivisionAfterANewlineOrIncrementDoesNotHideRequire(): void {
+		$dir = $this->tree();
+		file_put_contents("$dir/src/admin/newline.js", "const x = `\${ 10\n / require(\"x\") / 2 }`;\n");
+		file_put_contents("$dir/src/admin/increment.js", 'let a=10; const x = `${ a++ / require("x") / 2 }`;' . "\n");
+		file_put_contents("$dir/src/admin/partial.js", "const importantValue = 1\nconst exported = 2\n");
+		file_put_contents("$dir/src/admin.manifest", "admin/newline.js\nadmin/increment.js\nadmin/partial.js\n");
+		$this->assertSame([
+			'forbidden module syntax: require in admin/increment.js:1',
+			'forbidden module syntax: require in admin/newline.js:2',
+		], AssetBuilder::build($dir));
+		$this->assertFileDoesNotExist("$dir/js/mcp-admin.js");
 	}
 
 	/** `mcp/js/./mcp-admin.js` is the admin bundle, and `mcp/./src/` is packaged source. */

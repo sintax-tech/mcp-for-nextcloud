@@ -8,247 +8,153 @@ declare(strict_types=1);
 namespace OCA\Mcp\Scripts;
 
 /**
- * Refuses JavaScript module syntax in a bundle fragment.
+ * Refuses JavaScript module words in a bundle fragment.
  *
- * Fragments are concatenated as classic scripts. `import`, `export` and `require` are refused when they appear as
- * whole words in code. The same words inside a comment or a string are kept, and `exports` is not `export`, so
- * `module.exports` passes. A template literal is a string except for each `${…}` interpolation, which is scanned
- * as code. Inside that interpolation a `}` ends it only in code: a string, a comment, a nested template and a
- * regex literal may contain `}` without ending the interpolation. An escaped `\`` or `\${` stays in the literal.
+ * Fragments are concatenated as classic scripts. After comments are blanked, `import`, `export` and `require`
+ * are refused as whole identifiers anywhere else in the file: code, strings and template literals. A comment is
+ * removed only outside a string or a template, so `//` inside either stays text and the word there still fails.
+ * `}` is not used to decide what is code. `exports` is not `export`, so `module.exports` passes, and so does a
+ * longer identifier such as `importantValue` or `exported`.
  */
 final class JsModuleSyntax {
-	/** Words that would change the fragment from a classic script into a module or a CommonJS load. */
-	private const WORDS = ['import', 'export', 'require'];
-
-	/** Identifiers after which `/` starts a regex, not a division. */
-	private const REGEX_KEYWORDS = [
-		'return', 'throw', 'case', 'delete', 'void', 'typeof', 'yield', 'await', 'else', 'do', 'in', 'of', 'instanceof',
-	];
+	/** Identifiers that would change the fragment from a classic script into a module or a CommonJS load. */
+	private const WORDS = 'import|export|require';
 
 	/**
-	 * The first forbidden word in the source, if any.
+	 * The first forbidden identifier, and the 1-based line it stands on.
 	 *
 	 * @param string $source the fragment as stored on disk
-	 * @return string|null `import`, `export` or `require`, or null when the fragment is a classic script
+	 * @return array{0: string, 1: int}|null the word and its line, or null when the fragment may ship
 	 */
-	public static function violation(string $source): ?string {
-		$code = self::code($source);
-		foreach (self::WORDS as $word) {
-			if (preg_match('/\b' . $word . '\b/', $code) === 1) {
-				return $word;
-			}
+	public static function violation(string $source): ?array {
+		$blank = self::blankComments($source);
+		$found = preg_match(
+			'/(?<![A-Za-z0-9_$])(' . self::WORDS . ')(?![A-Za-z0-9_$])/',
+			$blank,
+			$match,
+			PREG_OFFSET_CAPTURE,
+		);
+		if ($found !== 1) {
+			return null;
 		}
-		return null;
+		$offset = $match[1][1];
+		return [$match[1][0], 1 + substr_count(substr($source, 0, $offset), "\n")];
 	}
 
 	/**
-	 * The source with comments and quoted text removed, so a word inside them is not code.
+	 * The source with comments replaced by spaces. Newlines stay, so a later offset is the same line.
+	 *
+	 * A string or a template is copied unchanged, including a `//` or a `/*` inside it. `${…}` is code again,
+	 * and a nested template inside it is a string again. The brace that closes the interpolation is counted
+	 * only in that code, not inside the string or the nested template.
 	 *
 	 * @param string $source the fragment as stored on disk
-	 * @return string the code with comments and strings replaced by spaces
+	 * @return string the same bytes, with comment text turned into spaces
 	 */
-	private static function code(string $source): string {
-		$offset = 0;
-		return self::span($source, $offset, strlen($source), false);
-	}
-
-	/**
-	 * One code span. Inside a template interpolation the matching code `}` ends it.
-	 *
-	 * @param string $source the fragment as stored on disk
-	 * @param int $offset current index, advanced to the first character after this span
-	 * @param int $length byte length of `$source`
-	 * @param bool $interpolation true when this span is the inside of `${…}`
-	 * @return string the code in the span
-	 */
-	private static function span(string $source, int &$offset, int $length, bool $interpolation): string {
+	private static function blankComments(string $source): string {
+		$length = strlen($source);
 		$out = '';
-		$depth = $interpolation ? 1 : 0;
-		$regexOk = true;
-		$ident = '';
-		while ($offset < $length) {
-			$c = $source[$offset];
-			if (self::isIdent($c)) {
-				$ident .= $c;
-				$out .= $c;
-				$offset++;
-				$regexOk = false;
-				continue;
-			}
-			if ($ident !== '' && in_array($ident, self::REGEX_KEYWORDS, true)) {
-				$regexOk = true;
-			}
-			$ident = '';
-			$next = $offset + 1 < $length ? $source[$offset + 1] : '';
-			if ($c === ' ' || $c === "\t" || $c === "\r" || $c === "\n") {
-				if ($c === "\n") {
-					$regexOk = true;
+		$i = 0;
+		/** @var list<array{kind: string, braces: int, root: bool}> $stack code or template frames */
+		$stack = [['kind' => 'code', 'braces' => 0, 'root' => true]];
+		while ($i < $length) {
+			$top = count($stack) - 1;
+			$c = $source[$i];
+			$next = $i + 1 < $length ? $source[$i + 1] : '';
+			if ($stack[$top]['kind'] === 'template') {
+				if ($c === '\\' && $next !== '') {
+					$out .= $c . $next;
+					$i += 2;
+					continue;
+				}
+				if ($c === '`') {
+					array_pop($stack);
+					$out .= $c;
+					$i++;
+					continue;
+				}
+				if ($c === '$' && $next === '{') {
+					$stack[] = ['kind' => 'code', 'braces' => 0, 'root' => false];
+					$out .= $c . $next;
+					$i += 2;
+					continue;
 				}
 				$out .= $c;
-				$offset++;
+				$i++;
 				continue;
 			}
 			if ($c === '/' && $next === '/') {
-				$offset += 2;
-				while ($offset < $length && $source[$offset] !== "\n") {
-					$offset++;
+				while ($i < $length && $source[$i] !== "\n") {
+					$out .= ' ';
+					$i++;
 				}
-				$out .= ' ';
 				continue;
 			}
 			if ($c === '/' && $next === '*') {
-				$offset += 2;
-				while ($offset + 1 < $length && !($source[$offset] === '*' && $source[$offset + 1] === '/')) {
-					$offset++;
+				$out .= '  ';
+				$i += 2;
+				while ($i < $length && !($source[$i] === '*' && ($i + 1 < $length && $source[$i + 1] === '/'))) {
+					$out .= $source[$i] === "\n" ? "\n" : ' ';
+					$i++;
 				}
-				$offset += 2;
-				$out .= ' ';
-				continue;
-			}
-			if ($c === '/' && $regexOk && self::skipRegex($source, $offset, $length)) {
-				$out .= ' ';
-				$regexOk = false;
+				if ($i < $length) {
+					$out .= ' ';
+					$i++;
+					if ($i < $length) {
+						$out .= ' ';
+						$i++;
+					}
+				}
 				continue;
 			}
 			if ($c === '"' || $c === "'") {
-				self::skipQuoted($source, $offset, $length, $c);
-				$out .= ' ';
-				$regexOk = false;
+				self::takeQuoted($source, $i, $length, $out, $c);
 				continue;
 			}
 			if ($c === '`') {
-				$out .= self::template($source, $offset, $length);
-				$regexOk = false;
-				continue;
-			}
-			if ($interpolation && $c === '{') {
-				$depth++;
+				$stack[] = ['kind' => 'template', 'braces' => 0, 'root' => false];
 				$out .= $c;
-				$offset++;
-				$regexOk = true;
+				$i++;
 				continue;
 			}
-			if ($interpolation && $c === '}') {
-				$depth--;
-				$offset++;
-				if ($depth === 0) {
-					break;
-				}
-				$out .= '}';
-				$regexOk = true;
-				continue;
+			if ($c === '{') {
+				$stack[$top]['braces']++;
+			} elseif ($c === '}' && $stack[$top]['braces'] > 0) {
+				$stack[$top]['braces']--;
+			} elseif ($c === '}' && $stack[$top]['root'] === false) {
+				array_pop($stack);
 			}
 			$out .= $c;
-			$offset++;
-			$regexOk = !($c === ')' || $c === ']' || $c === '.');
+			$i++;
 		}
 		return $out;
 	}
 
 	/**
-	 * A template literal. Literal parts are dropped; each interpolation is scanned as code.
+	 * Copies one quoted string, escapes included, so a comment mark inside it is kept.
 	 *
 	 * @param string $source the fragment as stored on disk
-	 * @param int $offset index of the opening backtick, advanced past the closing one
+	 * @param int $i index of the opening quote, advanced past the closing one
 	 * @param int $length byte length of `$source`
-	 * @return string the code inside the interpolations
-	 */
-	private static function template(string $source, int &$offset, int $length): string {
-		$out = '';
-		$offset++;
-		while ($offset < $length) {
-			if ($source[$offset] === '\\') {
-				$offset += $offset + 1 < $length ? 2 : 1;
-				continue;
-			}
-			if ($source[$offset] === '`') {
-				$offset++;
-				break;
-			}
-			$next = $offset + 1 < $length ? $source[$offset + 1] : '';
-			if ($source[$offset] === '$' && $next === '{') {
-				$offset += 2;
-				$out .= ' ' . self::span($source, $offset, $length, true) . ' ';
-				continue;
-			}
-			$offset++;
-		}
-		return $out === '' ? ' ' : $out;
-	}
-
-	/**
-	 * Consumes one regex literal, including a `}` in the body or in a character class.
-	 *
-	 * @param string $source the fragment as stored on disk
-	 * @param int $offset index of the opening slash; unchanged when this is not a regex
-	 * @param int $length byte length of `$source`
-	 * @return bool true when a regex was consumed
-	 */
-	private static function skipRegex(string $source, int &$offset, int $length): bool {
-		$start = $offset;
-		$offset++;
-		$class = false;
-		while ($offset < $length) {
-			$c = $source[$offset];
-			if ($c === '\\') {
-				$offset += $offset + 1 < $length ? 2 : 1;
-				continue;
-			}
-			if ($c === "\n") {
-				break;
-			}
-			if ($c === '[' && !$class) {
-				$class = true;
-				$offset++;
-				continue;
-			}
-			if ($c === ']' && $class) {
-				$class = false;
-				$offset++;
-				continue;
-			}
-			if ($c === '/' && !$class) {
-				$offset++;
-				while ($offset < $length && ctype_alpha($source[$offset])) {
-					$offset++;
-				}
-				return true;
-			}
-			$offset++;
-		}
-		$offset = $start;
-		return false;
-	}
-
-	/**
-	 * Skips one quoted string, including an escaped quote and a `}` inside it.
-	 *
-	 * @param string $source the fragment as stored on disk
-	 * @param int $offset index of the opening quote, advanced past the closing one
-	 * @param int $length byte length of `$source`
+	 * @param string $out the blanked source being built
 	 * @param string $quote `'` or `"`
 	 * @return void
 	 */
-	private static function skipQuoted(string $source, int &$offset, int $length, string $quote): void {
-		$offset++;
-		while ($offset < $length) {
-			if ($source[$offset] === '\\') {
-				$offset += $offset + 1 < $length ? 2 : 1;
+	private static function takeQuoted(string $source, int &$i, int $length, string &$out, string $quote): void {
+		$out .= $quote;
+		$i++;
+		while ($i < $length) {
+			$c = $source[$i];
+			if ($c === '\\' && $i + 1 < $length) {
+				$out .= $c . $source[$i + 1];
+				$i += 2;
 				continue;
 			}
-			if ($source[$offset] === $quote) {
-				$offset++;
+			$out .= $c;
+			$i++;
+			if ($c === $quote) {
 				break;
 			}
-			$offset++;
 		}
-	}
-
-	/**
-	 * @param string $c one source byte
-	 * @return bool true when it continues a JavaScript identifier
-	 */
-	private static function isIdent(string $c): bool {
-		return $c !== '' && (ctype_alnum($c) || str_contains('$_', $c));
 	}
 }

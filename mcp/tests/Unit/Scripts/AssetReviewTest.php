@@ -47,16 +47,16 @@ final class AssetReviewTest extends TestCase {
 		file_put_contents("$dir/src/admin/nested.js", 'const x = `${`${require("x")}`}`;' . "\n");
 		file_put_contents("$dir/src/admin.manifest", "admin/require.js\nadmin/import.js\nadmin/nested.js\n");
 		$this->assertSame([
-			'forbidden module syntax: import in admin/import.js',
-			'forbidden module syntax: require in admin/nested.js',
-			'forbidden module syntax: require in admin/require.js',
+			'forbidden module syntax: import in admin/import.js:1',
+			'forbidden module syntax: require in admin/nested.js:1',
+			'forbidden module syntax: require in admin/require.js:1',
 		], AssetBuilder::build($dir));
 		$this->assertFileDoesNotExist("$dir/js/mcp-admin.js");
 
 		$clean = $this->tree();
-		$policy = 'const a = `require stays literal`;' . "\n";
-		$policy .= 'const b = `\\${require("x")}`;' . "\n";
-		$policy .= 'const c = `${"require"}`;' . "\n";
+		$policy = 'const a = `importantValue`;' . "\n";
+		$policy .= 'const b = `exported`;' . "\n";
+		$policy .= 'const c = `${ /* require */ 1 }`;' . "\n";
 		$policy .= 'const d = `${`${1}`}`;' . "\n";
 		file_put_contents("$clean/src/admin/policy.js", $policy);
 		file_put_contents("$clean/src/admin.manifest", "admin/policy.js\n");

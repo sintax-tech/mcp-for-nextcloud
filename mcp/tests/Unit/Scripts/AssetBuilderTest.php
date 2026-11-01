@@ -86,21 +86,23 @@ final class AssetBuilderTest extends TestCase {
 		$this->assertFileDoesNotExist("$dir/js/mcp-personal.js");
 	}
 
-	/** import, export and require are refused. module.exports, and the words inside a string or a comment, pass. */
+	/** import, export and require are refused, including inside a string. A comment and module.exports pass. */
 	public function testModuleSyntaxIsRefusedAndModuleExportsPasses(): void {
 		$dir = $this->tree();
 		file_put_contents("$dir/src/admin/import.js", "import x from './x.js'\n");
 		file_put_contents("$dir/src/admin/export.js", "export const x = 1\n");
 		file_put_contents("$dir/src/admin/require.js", "const x = require('./x.js')\n");
-		file_put_contents("$dir/src/admin.manifest", "admin/import.js\nadmin/export.js\nadmin/require.js\n");
+		file_put_contents("$dir/src/admin/quoted.js", "const label = \"import export require\"\n");
+		file_put_contents("$dir/src/admin.manifest", "admin/import.js\nadmin/export.js\nadmin/require.js\nadmin/quoted.js\n");
 		$this->assertSame([
-			'forbidden module syntax: export in admin/export.js',
-			'forbidden module syntax: import in admin/import.js',
-			'forbidden module syntax: require in admin/require.js',
+			'forbidden module syntax: export in admin/export.js:1',
+			'forbidden module syntax: import in admin/import.js:1',
+			'forbidden module syntax: import in admin/quoted.js:1',
+			'forbidden module syntax: require in admin/require.js:1',
 		], AssetBuilder::build($dir));
 
 		$clean = $this->tree();
-		$policy = "const label = \"import export require\"\n// import x\n/* require */\n";
+		$policy = "const label = \"importantValue exported\"\n// import x\n/* require */\n";
 		$policy .= "if (typeof module !== 'undefined' && module.exports) module.exports = { extensions: 1 }\n";
 		file_put_contents("$clean/src/admin/policy.js", $policy);
 		file_put_contents("$clean/src/admin.manifest", "admin/policy.js\n");

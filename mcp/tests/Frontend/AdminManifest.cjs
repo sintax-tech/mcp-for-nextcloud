@@ -6,6 +6,7 @@
 
 const fs = require('node:fs')
 const path = require('node:path')
+const { loadManifest } = require('./load-manifest.cjs')
 
 /**
  * The admin page's sources as src/admin.manifest lists them: what js/mcp-admin.js is built from, in page order.
@@ -18,14 +19,12 @@ class AdminManifest {
 	}
 
 	/**
-	 * The fragments of the admin bundle: one path per line relative to src/, blank lines and `#` lines skipped.
+	 * The fragments of the admin bundle, read by the builder's own manifest reader (RE-10).
 	 *
 	 * @return {string[]} paths relative to src/, in manifest order
 	 */
 	static fragments() {
-		return fs.readFileSync(path.join(AdminManifest.app(), 'src/admin.manifest'), 'utf8').split('\n')
-			.map((line) => line.trim())
-			.filter((line) => line !== '' && !line.startsWith('#'))
+		return loadManifest(path.join(AdminManifest.app(), 'src/admin.manifest'))
 	}
 
 	/**

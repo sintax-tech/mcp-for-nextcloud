@@ -10,9 +10,11 @@ namespace OCA\Mcp\Scripts;
 /**
  * Compares the bundles stored in an app archive with the build of the tree being packaged.
  *
- * `tar` keeps the last copy when a member name is repeated, so a duplicate file member is refused even when the
- * first copy matches. A `mcp/src/` entry ships source that the package must not contain. A bundle member has to
- * be the bytes {@see AssetBuilder::expectedBundles()} would write, not merely a file of the right name.
+ * Each member still carries the name as written in the archive. This class applies
+ * {@see ArchiveMembers::canonical()} before it captures a body, counts a duplicate, refuses `mcp/src/` or
+ * compares a bundle with {@see AssetBuilder::expectedBundles()}. `tar` installs `mcp/js/./mcp-admin.js` as
+ * `mcp/js/mcp-admin.js` and keeps the last copy. A symlink or hard link is not those bytes. `..` and an
+ * absolute name are refused rather than resolved.
  */
 final class PackagedAssets {
 	/**
@@ -22,15 +24,28 @@ final class PackagedAssets {
 	 * at the captured bundle bodies. It does not rebuild from the archive.
 	 *
 	 * @param string $root app directory, the working directory of the package
-	 * @param list<array{name: string, dir: bool, pax: bool, body?: string}> $members archive entries, in order
+	 * @param list<array{name: string, dir: bool, pax: bool, link?: bool, unsafe?: bool, body?: string}> $members archive entries, in order
 	 * @return list<string> sorted problems, empty when the packaged bundles match the tree
 	 */
 	public static function problems(string $root, array $members): array {
 		$problems = [];
 		$counts = [];
 		$bodies = [];
+		$linkLast = [];
 		foreach ($members as $member) {
-			$name = $member['name'];
+			$written = $member['name'];
+			if ($member['unsafe'] ?? false) {
+				$problems[] = 'unsafe archive member: ' . $written;
+				continue;
+			}
+			$name = ArchiveMembers::canonical($written);
+			if ($name === null) {
+				$problems[] = 'unsafe archive member: ' . $written;
+				continue;
+			}
+			if ($member['link'] ?? false) {
+				$problems[] = "archive link: $name";
+			}
 			if ($name === 'mcp/src' || str_starts_with($name, 'mcp/src/')) {
 				$problems[] = "packaged source: $name";
 			}
@@ -38,7 +53,9 @@ final class PackagedAssets {
 				continue;
 			}
 			$counts[$name] = ($counts[$name] ?? 0) + 1;
-			if (array_key_exists('body', $member)) {
+			$link = $member['link'] ?? false;
+			$linkLast[$name] = $link;
+			if (!$link && array_key_exists('body', $member)) {
 				$bodies[$name][] = $member['body'];
 			}
 		}
@@ -56,7 +73,7 @@ final class PackagedAssets {
 					continue;
 				}
 				$installed = $copies === [] ? null : $copies[array_key_last($copies)];
-				if ($installed !== $bytes) {
+				if (($linkLast[$name] ?? false) || $installed !== $bytes) {
 					$problems[] = "packaged bundle differs: $name";
 				}
 			}

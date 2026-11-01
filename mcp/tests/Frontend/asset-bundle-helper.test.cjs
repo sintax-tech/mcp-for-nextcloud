@@ -58,6 +58,49 @@ test('extractMember refuses a member that appears twice', () => {
 	}
 })
 
+test('extractMember treats a dot segment as the same member', () => {
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mcp-bundle-'))
+	const archive = path.join(dir, 'mcp.tar.gz')
+	try {
+		const good = '/* admin/a.js */\nvar a = 1\n'
+		fs.writeFileSync(archive, zlib.gzipSync(Buffer.concat([
+			ustar('mcp/js/mcp-admin.js', good),
+			ustar('mcp/js/./mcp-admin.js', '/* stale */\n'),
+			Buffer.alloc(1024),
+		])))
+		assert.throws(
+			() => extractMember(archive, 'mcp/js/mcp-admin.js'),
+			/duplicate archive member: mcp\/js\/mcp-admin\.js/,
+		)
+	} finally {
+		fs.rmSync(dir, { recursive: true })
+	}
+})
+
+test('extractMember refuses a canonical src member and an unsafe name', () => {
+	const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mcp-bundle-'))
+	const archive = path.join(dir, 'mcp.tar.gz')
+	try {
+		fs.writeFileSync(archive, zlib.gzipSync(Buffer.concat([
+			ustar('mcp/js/mcp-admin.js', '/* admin/a.js */\nvar a = 1\n'),
+			ustar('mcp/./src/admin/leaked.js', 'var leaked = 1\n'),
+			Buffer.alloc(1024),
+		])))
+		assert.throws(() => extractMember(archive, 'mcp/js/mcp-admin.js'), /packaged source: mcp\/src\/admin\/leaked\.js/)
+		fs.writeFileSync(archive, zlib.gzipSync(Buffer.concat([
+			ustar('mcp/js/mcp-admin.js', '/* admin/a.js */\nvar a = 1\n'),
+			ustar('mcp/js/../src/admin/leaked.js', 'var leaked = 1\n'),
+			Buffer.alloc(1024),
+		])))
+		assert.throws(
+			() => extractMember(archive, 'mcp/js/mcp-admin.js'),
+			/unsafe archive member: mcp\/js\/\.\.\/src\/admin\/leaked\.js/,
+		)
+	} finally {
+		fs.rmSync(dir, { recursive: true })
+	}
+})
+
 test('loadManifest refuses a path listed twice', () => {
 	const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mcp-manifest-'))
 	const file = path.join(dir, 'admin.manifest')

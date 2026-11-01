@@ -36,12 +36,7 @@ final class RepositoryMoveFixture {
 			$before[$old] = '<?php namespace OCA\\Mcp\\Tools\\Mail; class EvasionProbe {}';
 			$before['scripts/dev/fqcn-map.json'] = json_encode($data);
 		}
-		$old = CurrentMoveSource::path($before, $data, $old);
-		if (!$prepared) {
-			$before = CurrentMoveSource::unprepared($before, $old);
-		}
-		$before['scripts/dev/fqcn-map.json'] = json_encode($data, JSON_THROW_ON_ERROR);
-		$entry = array_values(array_filter($data['entries'], static fn (array $e): bool => $e['path'] === $old && $e['target'] !== FqcnMap::STAYS))[0];
+		[$before, $data, $old, $entry] = CurrentMoveSource::prepare($before, $data, $old, $prepared);
 		$oldClass = $entry['fqcn'];
 		$newClass = $entry['target'];
 		$map = FqcnMap::fromJson($before['scripts/dev/fqcn-map.json']);

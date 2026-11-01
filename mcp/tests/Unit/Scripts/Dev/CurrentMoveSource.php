@@ -16,6 +16,27 @@ final class CurrentMoveSource {
 	}
 
 	/**
+	 * Prepares only fixture state and selects the actual moving entry, including an extracted catalog.
+	 *
+	 * @param array<string,string> $tree live source tree
+	 * @param array<string,mixed> $data decoded map
+	 * @param string $old requested historical source path
+	 * @param bool $prepared false injects the deliberately unprepared reader
+	 * @return array{array<string,string>,array<string,mixed>,string,array<string,mixed>} tree, map, path and entry
+	 * @throws \RuntimeException when the requested source has no mapped declaration
+	 * @throws \JsonException when the fixture map cannot be encoded
+	 */
+	public static function prepare(array $tree, array $data, string $old, bool $prepared): array {
+		$old = self::path($tree, $data, $old);
+		if (!$prepared) {
+			$tree = self::unprepared($tree, $old);
+		}
+		$tree['scripts/dev/fqcn-map.json'] = json_encode($data, JSON_THROW_ON_ERROR);
+		$entry = array_values(array_filter($data['entries'], static fn (array $e): bool => $e['path'] === $old && $e['target'] !== FqcnMap::STAYS))[0];
+		return [$tree, $data, $old, $entry];
+	}
+
+	/**
 	 * Uses a present chain step as the source and gives the fixture a later, isolated destination.
 	 * GrantCatalog becomes the catalog reader's source after extraction, preserving frontend refusal controls.
 	 *
@@ -23,6 +44,8 @@ final class CurrentMoveSource {
 	 * @param array<string,mixed> $data decoded production map, changed only in memory
 	 * @param string $old requested historical path
 	 * @return string actual source path
+	 * @throws \RuntimeException when no mapped source exists
+	 * @throws \JsonException when the map cannot be encoded
 	 */
 	public static function path(array $tree, array &$data, string $old): string {
 		if (isset($tree[$old])) {

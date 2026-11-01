@@ -36,9 +36,9 @@ final class PathSafety {
 		if ($call && !PathExpressions::builtin($tokens, $i, $scope, $index)) {
 			return "$text path callable not proved builtin";
 		}
-		// dirname itself is proved only by the narrow root rule, never by evaluating an arbitrary argument.
+		// Source roots and the exact node runtime-path form have separate, narrow proofs.
 		if ($call && strtolower(ltrim($text, '\\')) === 'dirname') {
-			return PathExpressions::fold($tokens, $i, $path, $scope, $index) === null ? "$text path not proved" : null;
+			return RuntimeDirname::unproved($tokens, $i, $path, $scope, $index);
 		}
 		if ($include && $end !== null) {
 			$last = $end + ($paren ? 1 : 0);

@@ -154,7 +154,7 @@ final class NodeAccessInfoTest extends TestCase {
 	 */
 	public function testNoUserFacingSentenceLivesOutsideTheMessagesClass(): void {
 		foreach (['NodeAccessInfo', 'SharedWriteGuard'] as $class) {
-			$source = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Tools/Common/' . $class . '.php');
+			$source = FileAccessSources::read($class);
 			preg_match_all("/'((?:[^'\\\\]|\\\\.)*)'/", $source, $matches);
 			foreach ($matches[1] as $literal) {
 				$this->assertDoesNotMatchRegularExpression('/[áàâãéêíóôõúç]/u', $literal,

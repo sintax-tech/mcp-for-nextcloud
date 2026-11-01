@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix interactions operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.interactions = function (context) {
 		let searchTimer = null
 
@@ -21,6 +25,7 @@
 		 * reached by Tab could be hidden (WCAG 2.4.11). Measured on screen, so it holds at any width and in either direction.
 		 *
 		 * @param {FocusEvent} event focusin on the scrolling block of the matrix
+		 * @return {*} operation result
 		 */
 		function revealFocus(event) {
 			const wrap = event.currentTarget
@@ -56,7 +61,9 @@
 		}
 
 
-		/** Install the original attachService handlers. */
+		/** Install the original attachService handlers.
+		 * @return {*} operation result
+		 */
 		function attachService() {
 			context.serviceBox.addEventListener('change', async () => {
 				const value = context.serviceBox.checked
@@ -91,14 +98,18 @@
 
 		}
 
-		/** Install the original attachReloads handlers. */
+		/** Install the original attachReloads handlers.
+		 * @return {*} operation result
+		 */
 		function attachReloads() {
 			window.addEventListener('mcp-group-policy-saved', context.reloadLocked)
 			window.addEventListener('mcp-scope-saved', context.reloadLocked)
 
 		}
 
-		/** Install the original attachInteractions handlers. */
+		/** Install the original attachInteractions handlers.
+		 * @return {*} operation result
+		 */
 		function attachInteractions() {
 			context.table.parentElement?.addEventListener('focusin', context.revealFocus)
 

@@ -3,15 +3,21 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Individual override saving operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.overrides.saving = function (context) {
-		/** Sends the command of the open preview. Nothing is repeated on its own: a retry is the administrator's click. */
+		/** Sends the command of the open preview. Nothing is repeated on its own: a retry is the administrator's click.
+		 * @return {Promise<*>} operation result
+		 */
 		async function execute() {
 			if (context.review === null || context.saving || context.matrix.isBusy()) {
 				return

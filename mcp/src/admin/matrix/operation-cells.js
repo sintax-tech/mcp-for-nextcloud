@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix operation cells operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.operation_cells = function (context) {
 		/**
 		 * The states a permission cell can show, drawn in one place: allowed and denied are a checkbox
@@ -56,6 +60,7 @@
 		 * @param {HTMLTableCellElement} cell the cell
 		 * @param {string} key key of PERMISSION_STATES
 		 * @param {string} [detail] extra sentence (the reason of an unavailable cell)
+		 * @return {*} operation result
 		 */
 		function paintState(cell, key, detail) {
 			for (const other of Object.values(PERMISSION_STATES)) {
@@ -151,7 +156,7 @@
 				}
 			})
 			cell.append(box)
-			// The override state and the per-cell reset come from src/admin/admin-overrides.js, when it is loaded.
+			// The override state and the per-cell reset come from src/admin/overrides/start.js, when it is loaded.
 			window.OCA.Mcp.Admin.overrides?.decorateCell(cell, box, user, module, module === null ? 'eligible' : body.operation)
 			return cell
 		}

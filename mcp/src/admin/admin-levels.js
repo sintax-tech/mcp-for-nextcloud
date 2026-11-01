@@ -11,7 +11,7 @@
  * by operation. The tiers follow GrantPolicy::CATALOG; an operation the tiers do not name (a newer catalog) falls into
  * the last tier, so it is never hidden and never granted by a lower level.
  *
- * The level functions are pure, with no DOM and no strings: src/admin/admin-grants.js draws the cells and names the levels.
+ * The level functions are pure, with no DOM and no strings: src/admin/matrix/level-cells.js draws the cells and src/admin/matrix/labels.js names the levels.
  * The tiers of each module live in its own file, src/admin/access/levels/<app>.js, which registers them in
  * window.OCA.Mcp.Admin.levelCatalog before this file runs (src/admin.manifest lists them first). Polls has named presets
  * instead of tiers (src/admin/access/levels/polls.js, window.OCA.Mcp.Admin.pollsGrants) and Mail adds its write warnings
@@ -30,7 +30,7 @@
 
 	/**
 	 * Names of the tiers of the modules whose tiers are not Read, Edit and Full, in tier order (Forms and Mail, from
-	 * their files). src/admin/admin-grants.js translates them.
+	 * their files). src/admin/matrix/labels.js translates them.
 	 */
 	const MODULE_TIER_NAMES = catalog.tierNames
 

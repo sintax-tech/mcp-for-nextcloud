@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix eligibility operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.eligibility = function (context) {
 		/**
 		 * "Can connect" in the levels view: Yes or No in words, its origin as an icon like the module cells, and the popover to

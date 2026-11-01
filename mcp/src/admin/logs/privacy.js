@@ -3,17 +3,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Original privacy editor.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.logs = admin.modules.logs || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.logs.privacy = function (context) {
 		/**
 		 * Server log section: the switch that hides the text of log messages in the log tools, through GET and PUT
 		 * /apps/mcp/api/logs-privacy.
+		 * @return {Promise<*>} operation result
 		 */
 		async function initLogsPrivacy() {
 			const box = document.getElementById('mcp-logs-hide-file-names')

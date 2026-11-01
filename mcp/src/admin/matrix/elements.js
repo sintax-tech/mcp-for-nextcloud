@@ -3,17 +3,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix elements operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.elements = function (context) {
 		/**
 		 * @param {HTMLElement} cell cell that shows the save result
 		 * @param {boolean} ok whether the save worked
+		 * @return {*} operation result
 		 */
 		function flash(cell, ok) {
 			cell.classList.remove('mcp-ok', 'mcp-error')

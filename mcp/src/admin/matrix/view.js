@@ -3,15 +3,21 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix view operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.view = function (context) {
-		/** Filter only presentation; user queries and permission payloads stay unchanged. */
+		/** Filter only presentation; user queries and permission payloads stay unchanged.
+		 * @return {*} operation result
+		 */
 		function applyAppFilter() {
 			const app = context.shownApp()
 			for (const cell of context.table.querySelectorAll('[data-module]')) {
@@ -33,7 +39,9 @@
 		}
 
 
-		/** Read the Access tab's app parameter on reload and history navigation. */
+		/** Read the Access tab's app parameter on reload and history navigation.
+		 * @return {*} operation result
+		 */
 		function readAppFromHash() {
 			const [tab, query = ''] = window.location.hash.slice(1).split('?')
 			if (tab !== 'access') {
@@ -73,6 +81,7 @@
 		 *
 		 * @param {string} view "levels" or "operations"
 		 * @param {string} [app] module to show alone in the operations view
+		 * @return {*} operation result
 		 */
 		function setView(view, app) {
 			context.state.view = view
@@ -93,6 +102,7 @@
 		 * Writes the chosen app into the address (#access?app=<module>, no parameter for all apps).
 		 *
 		 * @param {boolean} replace correct the current entry instead of adding a history entry
+		 * @return {*} operation result
 		 */
 		function writeAppToHash(replace) {
 			const [tab, query = ''] = window.location.hash.slice(1).split('?')
@@ -122,7 +132,9 @@
 		}
 
 
-		/** Install this unit’s original listeners once, at its historical startup phase. */
+		/** Install this unit’s original listeners once, at its historical startup phase.
+		 * @return {*} operation result
+		 */
 		function attachView() {
 			context.appSelect.addEventListener('change', () => {
 				context.state.app = context.appSelect.value

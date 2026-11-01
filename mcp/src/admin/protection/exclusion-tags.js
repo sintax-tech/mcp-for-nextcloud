@@ -3,14 +3,21 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Original exclusion tags editor.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.protection = admin.modules.protection || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.protection.exclusion_tags = function (context) {
+		/**
+		 * @return {Promise<*>} operation result
+		 */
 		async function initTagsSection() {
 			const container = document.getElementById('mcp-tags-list')
 			const warning = document.getElementById('mcp-tags-warning')
@@ -26,7 +33,9 @@
 				return
 			}
 
-			/** @param {boolean} isInvalid shows or hides every sign of the unreadable setting */
+			/** @param {boolean} isInvalid shows or hides every sign of the unreadable setting
+			 * @return {*} operation result
+			 */
 			function setInvalidState(isInvalid) {
 				if (invalid) {
 					invalid.style.display = isInvalid ? 'block' : 'none'
@@ -57,7 +66,9 @@
 				return { text: t('mcp', 'Collaborative'), title: t('mcp', 'Users can assign and remove this tag'), className: 'mcp-tag-type-collaborative' }
 			}
 
-			/** @param {string[]} selectedIds warns when a collaborative tag, removable by editors, is selected */
+			/** @param {string[]} selectedIds warns when a collaborative tag, removable by editors, is selected
+			 * @return {*} operation result
+			 */
 			function updateWarning(selectedIds) {
 				if (!warning) {
 					return
@@ -71,6 +82,7 @@
 			 * so the picker rolls the selection back; on success the invalid-setting block goes away.
 			 *
 			 * @param {string[]} tagIds the ids to save
+			 * @return {Promise<*>} operation result
 			 */
 			async function saveTags(tagIds) {
 				try {

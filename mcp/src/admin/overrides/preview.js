@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Individual override preview operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.overrides.preview = function (context) {
 		// --- Preview and reset ------------------------------------------------------------------------------------
 
@@ -19,6 +23,7 @@
 		 * @param {object[]} users users to reset
 		 * @param {Array<{module: string|null, operation: string}>|null} only restrict to these cells
 		 * @param {HTMLElement} trigger control that asked, which gets the focus back when the preview is cancelled
+		 * @return {*} operation result
 		 */
 		function start(users, only, trigger) {
 			if (context.saving || context.matrix.isBusy()) {
@@ -49,6 +54,7 @@
 		 * whose command refuses on its own what it cannot determine.
 		 *
 		 * @param {object} current the preview that asked; an answer for a preview that was closed or replaced is dropped
+		 * @return {Promise<*>} operation result
 		 */
 		async function loadAfter(current) {
 			try {
@@ -74,7 +80,9 @@
 		}
 
 
-		/** @param {boolean} restoreFocus give the focus back to the control that opened the preview */
+		/** @param {boolean} restoreFocus give the focus back to the control that opened the preview
+		 * @return {*} operation result
+		 */
 		function close(restoreFocus) {
 			const trigger = context.review?.trigger
 			context.review = null
@@ -91,6 +99,7 @@
 		 * as the last resort on the toolbar itself, so the focus never falls back to the page when a preview goes away.
 		 *
 		 * @param {HTMLElement|undefined} trigger control that opened the preview, which a reload may have replaced
+		 * @return {*} operation result
 		 */
 		function focusSomething(trigger) {
 			const usable = (node) => node && node.isConnected !== false && !node.disabled
@@ -105,6 +114,7 @@
 		 *
 		 * @param {Array<{uid: string, module: string|null, operation: string}>} cells cells of the users on the page
 		 * @param {HTMLElement} trigger control that asked
+		 * @return {*} operation result
 		 */
 		function reviewCells(cells, trigger) {
 			const keys = new Set(cells.map((cell) => context.afterKey(cell.uid, cell.module, cell.operation)))

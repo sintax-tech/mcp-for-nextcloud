@@ -2,7 +2,10 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Compose the matrix and start its original effects in their original order. */
+/** Compose the matrix and start its original effects in their original order.
+ * @param {object} admin operation input
+ * @return {void} operation result
+ */
 (function (admin) {
 	'use strict'
 	const root = document.getElementById('mcp-admin')
@@ -30,12 +33,13 @@
 	admin.modules.logs.readers(context)
 	admin.modules.oauth_clients.editor(context)
 	context.attachView()
+	context.attachExceptions()
 	context.attachNotices()
 	context.attachService()
 	context.attachReloads()
 	context.attachInteractions()
 	/**
-	 * What src/admin/admin-overrides.js needs from the matrix: the page on screen, the shared request, lock and undo notice,
+	 * What src/admin/overrides/start.js needs from the matrix: the page on screen, the shared request, lock and undo notice,
 	 * and a re-render, so it can paint rows that were drawn before it loaded. It never touches the matrix state itself.
 	 */
 	window.OCA.Mcp.Admin.matrix = {

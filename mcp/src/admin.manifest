@@ -57,7 +57,13 @@ admin/groups/drafts.js
 admin/groups/rendering.js
 admin/groups/saving.js
 admin/groups/start.js
-admin/admin-scope.js
+admin/scope/session.js
+admin/scope/loading.js
+admin/scope/drawer.js
+admin/scope/rendering.js
+admin/scope/browsing.js
+admin/scope/saving.js
+admin/scope/start.js
 admin/admin-inspector.js
 shared/connections.js
 admin/admin-tabs.js

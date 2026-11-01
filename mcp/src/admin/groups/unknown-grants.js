@@ -3,24 +3,37 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Explicit diagnosis and cleanup of an unknown group grant.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.groups.unknown_grants = function (context) {
 		const UnknownGroupGrants = class UnknownGroupGrants {
-			/** @returns {object|null} Textual warning for a directory row. */
+			/** @returns {object|null} Textual warning for a directory row.
+			 * @param {*} group operation input
+			 */
 			static warning(group) {
 				return group.unknownGrants?.length ? { symbol: '?', text: t('mcp', 'Unknown grants: denied'), warning: true } : null
 			}
-			/** @returns {object[]} Fresh diagnosis replaces the open group's directory entry after readback. */
+			/** @returns {object[]} Fresh diagnosis replaces the open group's directory entry after readback.
+			 * @param {*} rows operation input
+			 * @param {*} group operation input
+			 */
 			static refreshRow(rows, group) {
 				return rows.map((row) => row.groupId === group.groupId ? { ...row, ...group, unknownGrants: group.unknownGrants || [] } : row)
 			}
-			/** @returns {HTMLElement[]} Accessible diagnostics with one explicit cleanup action per opaque row. */
+			/** @returns {HTMLElement[]} Accessible diagnostics with one explicit cleanup action per opaque row.
+			 * @param {*} group operation input
+			 * @param {*} busy operation input
+			 * @param {*} clean operation input
+			 */
 			static render(group, busy, clean) {
 				if (!group.unknownGrants?.length) return []
 				const section = context.el('section', { className: 'mcp-note' })
@@ -33,7 +46,12 @@
 				}
 				return [section]
 			}
-			/** Confirms the exact row and snapshot, never replays writes, and reloads after every attempt. */
+			/** Confirms the exact row and snapshot, never replays writes, and reloads after every attempt.
+			 * @param {*} group operation input
+			 * @param {*} row operation input
+			 * @param {object} options operation input
+			 * @return {Promise<*>} operation result
+			 */
 			static async clean(group, row, { api, setBusy, refresh, say, saved }) {
 				if (!window.confirm(t('mcp', 'Clear 1 unknown grant from group {group}? Key: {key}. Stored value: Allow. This cleanup will be recorded.',
 					{ group: group.groupId, key: row.module + '.' + row.operation }, undefined, { escape: false }))) return

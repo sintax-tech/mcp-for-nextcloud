@@ -3,17 +3,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Original upload limit editor.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.checkout = admin.modules.checkout || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.checkout.upload_limit = function (context) {
 		/**
 		 * Checkout upload limit of the status block, in whole MiB, through GET and PUT /apps/mcp/api/checkout-limit.
 		 * Next to it: the effective limit and PHP's post_max_size ceiling.
+		 * @return {Promise<*>} operation result
 		 */
 		async function initCheckoutLimit() {
 			const input = document.getElementById('mcp-checkout-limit')
@@ -22,7 +27,9 @@
 			const info = document.getElementById('mcp-checkout-limit-info')
 			const mib = (bytes) => Math.round(bytes / 1048576 * 10) / 10
 
-			/** @param {object} data limit returned by the API, in bytes */
+			/** @param {object} data limit returned by the API, in bytes
+			 * @return {*} operation result
+			 */
 			function show(data) {
 				// Round up and never show 0: a stored value below 1 MiB would fail the field's own min of 1 on the next save.
 				input.value = String(Math.max(1, Math.ceil(data.configuredBytes / 1048576)))

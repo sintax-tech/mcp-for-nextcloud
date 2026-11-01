@@ -5,10 +5,10 @@
 /**
  * The actions of one row of the permission matrix, in a "…" menu at the end of the row, so the row does not repeat a
  * button on every line: inspect the user's access, restrict their resources, give every individual value back to
- * inheritance (the reset preview of src/admin/admin-overrides.js, nothing is removed without it) and copy the user ID.
+ * inheritance (the reset preview of src/admin/overrides/preview.js, nothing is removed without it) and copy the user ID.
  *
  * A menu button with role="menu" items: Enter, Space or the arrow keys open it, the arrow keys move between the items,
- * Escape and Tab close it, and the focus goes back to the button. Plain browser JavaScript, no build step; src/admin/admin-grants.js
+ * Escape and Tab close it, and the focus goes back to the button. Plain browser JavaScript, concatenated by the PHP asset builder; src/admin/matrix/rows.js
  * asks button() for every row it draws, and this file never touches the matrix state.
  */
 (function () {

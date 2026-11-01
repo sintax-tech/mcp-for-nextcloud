@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Individual override selection operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.overrides.selection = function (context) {
 		// --- Toolbar: the selection bar, the reset of the selected users, live regions and the preview -------------
 
@@ -62,7 +66,9 @@
 			return context.pageUsers().filter((user) => context.selected.has(user.uid))
 		}
 
-		/** Keeps the toolbar's counters, the select-all box and the button state in line with the selection and the lock. */
+		/** Keeps the toolbar's counters, the select-all box and the button state in line with the selection and the lock.
+		 * @return {*} operation result
+		 */
 		function updateToolbar() {
 			const users = context.pageUsers()
 			const chosen = context.selectedUsers()
@@ -79,7 +85,9 @@
 			}
 		}
 
-		/** The choices of the selection bar: "Can connect" first, then every module of the catalog. */
+		/** The choices of the selection bar: "Can connect" first, then every module of the catalog.
+		 * @return {*} operation result
+		 */
 		function fillModules() {
 			const catalog = context.matrix.data()?.catalog || {}
 			const labels = context.matrix.labels().modules
@@ -89,7 +97,9 @@
 			context.fillLevels()
 		}
 
-		/** The levels of the chosen module, or Yes and No for "Can connect". */
+		/** The levels of the chosen module, or Yes and No for "Can connect".
+		 * @return {*} operation result
+		 */
 		function fillLevels() {
 			const module = moduleChoice.value || null
 			const names = context.matrix.levelLabels?.() || {}
@@ -99,7 +109,9 @@
 			levelChoice.replaceChildren(...choices.map(([value, text]) => context.el('option', { value, textContent: text })))
 		}
 
-		/** Sets the chosen level for the selected people, through the matrix's bulk change. */
+		/** Sets the chosen level for the selected people, through the matrix's bulk change.
+		 * @return {*} operation result
+		 */
 		function applySelection() {
 			if (context.saving || context.matrix.isBusy()) {
 				context.say(t('mcp', 'Wait until the change in progress is saved.'), true)
@@ -111,7 +123,9 @@
 			}
 		}
 
-		/** Clears the selection of the page. */
+		/** Clears the selection of the page.
+		 * @return {*} operation result
+		 */
 		function clearAll() {
 			context.selected.clear()
 			for (const box of context.table.querySelectorAll('input.mcp-row-select')) {
@@ -122,9 +136,10 @@
 		}
 
 		/**
-		 * Puts the select-all box in the header of the selection column, which src/admin/admin-grants.js draws again on every render.
+		 * Puts the select-all box in the header of the selection column, which src/admin/matrix/start.js draws again on every render.
 		 *
 		 * @param {HTMLTableCellElement} header the header cell of the selection column
+		 * @return {*} operation result
 		 */
 		function decorateHeader(header) {
 			header.append(selectAll)

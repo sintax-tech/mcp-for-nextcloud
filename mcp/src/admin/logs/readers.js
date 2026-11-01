@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Original readers editor.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.logs = admin.modules.logs || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.logs.readers = function (context) {
 		/**
 		 * Server log section: the groups whose members may read the log besides the administrators, through
@@ -17,6 +21,7 @@
 		 * the list it changed (`previous`), so the server answers 409 when another window or administrator
 		 * saved first and a removed group is never put back. A listed group that was deleted shows as an
 		 * option marked "(group removed)", to be removed.
+		 * @return {Promise<*>} operation result
 		 */
 		async function initLogsAccess() {
 			const container = document.getElementById('mcp-logs-groups')
@@ -31,7 +36,9 @@
 			let picker = null
 			context.followRevision(() => logsRevision, (revision) => { logsRevision = revision })
 
-			/** @param {object} data state returned by the API */
+			/** @param {object} data state returned by the API
+			 * @return {*} operation result
+			 */
 			function show(data) {
 				version = data.version
 				logsRevision = data.revision
@@ -85,6 +92,7 @@
 			 *
 			 * @param {string[]} groups the saved group ids
 			 * @param {Array<{id: string, label: string}>} options the known groups, for their display names
+			 * @return {*} operation result
 			 */
 			function paintSummary(groups, options) {
 				if (!summary) {
@@ -105,7 +113,9 @@
 				}
 			}
 
-			/** Loads the list again, after a conflict or a failure. */
+			/** Loads the list again, after a conflict or a failure.
+			 * @return {Promise<*>} operation result
+			 */
 			async function reload() {
 				try {
 					show(await context.api('GET', '/api/logs-access'))

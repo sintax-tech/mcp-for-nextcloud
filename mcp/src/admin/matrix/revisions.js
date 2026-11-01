@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix revisions operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.revisions = function (context) {
 		const REVISION_MOVED = 'mcp-revision-moved'
 
@@ -20,6 +24,7 @@
 		 *
 		 * @param {string} from revision the write was sent with
 		 * @param {string} to revision the server answered with
+		 * @return {*} operation result
 		 */
 		function announce(from, to) {
 			if (typeof from === 'string' && typeof to === 'string' && from !== to) {
@@ -67,6 +72,7 @@
 		 *
 		 * @param {Function} get () => the block's revision
 		 * @param {Function} set (revision) => void
+		 * @return {*} operation result
 		 */
 		function followRevision(get, set) {
 			window.addEventListener(REVISION_MOVED, (event) => {

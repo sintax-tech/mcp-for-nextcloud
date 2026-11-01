@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** One OAuth editor session and its live queue, revisions and card drafts.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.oauth_clients.session = function (context) {
 		const hostsInput = document.getElementById('mcp-oauth-hosts')
 		const hostsSave = document.getElementById('mcp-oauth-hosts-save')

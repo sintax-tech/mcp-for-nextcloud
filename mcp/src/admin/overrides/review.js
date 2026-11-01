@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Individual override review operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.overrides.review = function (context) {
 		/**
 		 * @param {{allowed: boolean|null, source: string, groupIds: string[]}|undefined} outcome the cell after the reset
@@ -76,7 +80,9 @@
 		}
 
 
-		/** Draws the preview: the exact cells, what each has before and after, what may change and the buttons. */
+		/** Draws the preview: the exact cells, what each has before and after, what may change and the buttons.
+		 * @return {*} operation result
+		 */
 		function renderReview() {
 			const result = context.review.plan
 			// The preview is drawn again when the server's answer arrives: the focus stays on what had it.

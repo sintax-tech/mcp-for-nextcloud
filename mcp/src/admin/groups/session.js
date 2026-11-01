@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Group policy session operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.groups.session = function (context) {
 		const root = context.root
 		const search = document.getElementById('mcp-group-search')
@@ -53,6 +57,12 @@
 		const untrusted = () => t('mcp', 'This group comes from a source that cannot guarantee group identity (for example LDAP). Grant MCP access to its members individually.')
 
 
+		/**
+		 * @param {*} tag operation input
+		 * @param {*} props operation input
+		 * @param {*} children operation input
+		 * @return {*} operation result
+		 */
 		function el(tag, props = {}, children = []) {
 			const node = document.createElement(tag)
 			Object.assign(node, props)
@@ -64,6 +74,9 @@
 		 * Writes into the fixed live regions. Both are cleared at once and the message is written shortly after, in
 		 * another task, so the same error twice in a row is announced again, and a message that was replaced or cleared
 		 * in the meantime never appears.
+		 * @param {*} message operation input
+		 * @param {boolean} error operation input
+		 * @return {*} operation result
 		 */
 		function say(message, error = false) {
 			clearTimeout(sayTimer)
@@ -74,6 +87,12 @@
 			sayTimer = setTimeout(() => { region.textContent = message }, SAY_DELAY)
 		}
 
+		/**
+		 * @param {*} method operation input
+		 * @param {*} path operation input
+		 * @param {*} body operation input
+		 * @return {Promise<*>} operation result
+		 */
 		async function api(method, path, body) {
 			const response = await fetch(OC.generateUrl('/apps/mcp' + path), {
 				method,
@@ -89,26 +108,48 @@
 			return data
 		}
 
+		/**
+		 * @param {*} module operation input
+		 * @return {*} operation result
+		 */
 		function moduleName(module) {
 			return { files: t('mcp', 'Files'), notes: t('mcp', 'Notes'), deck: t('mcp', 'Deck'), calendar: t('mcp', 'Calendar'), contacts: t('mcp', 'Contacts'), tasks: t('mcp', 'Tasks'), talk: t('mcp', 'Talk'), people: t('mcp', 'People'), logs: t('mcp', 'Server log'), mail: t('mcp', 'Mail'), tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls') }[module] || module
 		}
 
+		/**
+		 * @param {*} operation operation input
+		 * @return {*} operation result
+		 */
 		function operationName(operation) {
 			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 		}
 
+		/**
+		 * @param {*} grants operation input
+		 * @return {*} operation result
+		 */
 		function grantKeys(grants) {
 			return Object.entries(grants).flatMap(([module, operations]) => operations.map((operation) => module + ':' + operation)).sort()
 		}
 
+		/**
+		 * @return {*} operation result
+		 */
 		function dirty() {
 			return current && JSON.stringify(context.grantKeys(draft)) !== JSON.stringify(context.grantKeys(current.grants))
 		}
 
+		/**
+		 * @return {*} operation result
+		 */
 		function discardDraft() {
 			return !context.dirty() || window.confirm(t('mcp', 'Discard the unsaved group changes?'))
 		}
 
+		/**
+		 * @param {*} group operation input
+		 * @return {*} operation result
+		 */
 		function diagnosis(group) {
 			if (group.invalidId) return t('mcp', 'The directory returned an invalid group ID. This group cannot be edited.')
 			if (group.trusted === null) return t('mcp', 'The group source is unavailable. Retry before editing.')

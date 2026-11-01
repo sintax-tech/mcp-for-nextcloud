@@ -3,19 +3,25 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix rendering operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.rendering = function (context) {
 		let observedHeaderRow = null
 		let headerObserver = null
 
 
-		/** Makes the second header row stick right below the first one, whose height depends on the density. */
+		/** Makes the second header row stick right below the first one, whose height depends on the density.
+		 * @return {*} operation result
+		 */
 		function stickSecondHeaderRow() {
 			const [top, sub] = context.table.tHead.rows
 			if (!top || !sub) {
@@ -33,6 +39,7 @@
 		 * render there measures zero; showing the tab (or changing density or font size) resizes the row
 		 * and the observer re-sticks the second row below it. A browser without ResizeObserver keeps the
 		 * render-time measure, which is correct whenever the panel is visible.
+		 * @return {*} operation result
 		 */
 		function observeHeaderRow() {
 			if (!window.ResizeObserver) {
@@ -51,7 +58,9 @@
 		}
 
 
-		/** Renders header and rows from state.data. */
+		/** Renders header and rows from state.data.
+		 * @return {*} operation result
+		 */
 		function render() {
 			const data = context.state.data
 			// After a conflict the saved switch may differ from what this page last showed.
@@ -78,7 +87,7 @@
 			const sub = context.el('tr')
 			const rowSpan = levelsView ? 1 : 2
 			const selectHeader = context.el('th', { rowSpan, className: 'mcp-select-col', scope: 'col' }, [context.el('span', { className: 'mcp-sr-only', textContent: t('mcp', 'Select') })])
-			// The "select every user on this page" box of src/admin/admin-overrides.js heads the selection column.
+			// The "select every user on this page" box of src/admin/overrides/start.js heads the selection column.
 			window.OCA.Mcp.Admin.overrides?.decorateHeader?.(selectHeader)
 			top.append(selectHeader)
 			top.append(context.el('th', { rowSpan, className: 'mcp-user-col', scope: 'col', textContent: t('mcp', 'User') }))

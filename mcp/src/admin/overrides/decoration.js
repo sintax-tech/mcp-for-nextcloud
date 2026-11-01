@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Individual override decoration operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.overrides.decoration = function (context) {
 		// --- Rows and cells -----------------------------------------------------------------------------------------
 
@@ -17,8 +21,9 @@
 		 * Adds the selection box to a row. The reset of the whole row is in the row's actions menu (src/admin/admin-row-actions.js),
 		 * through resetUser(), so the row carries no button repeated on every line.
 		 *
-		 * @param {HTMLTableRowElement} row row drawn by admin-grants.js; its first child is the selection cell
+		 * @param {HTMLTableRowElement} row row drawn by matrix/rows.js; its first child is the selection cell
 		 * @param {object} user row from the API
+		 * @return {*} operation result
 		 */
 		function decorateRow(row, user) {
 			const slot = row.children[0]
@@ -33,7 +38,9 @@
 		}
 
 
-		/** @return {boolean} whether the user has any individual value a reset would remove */
+		/** @return {boolean} whether the user has any individual value a reset would remove
+		 * @param {*} user operation input
+		 */
 		function hasOverrides(user) {
 			return context.overrideCells(user).length > 0
 		}
@@ -44,6 +51,7 @@
 		 *
 		 * @param {object} user row from the API
 		 * @param {HTMLElement} trigger control that asked, which gets the focus back when the preview is cancelled
+		 * @return {*} operation result
 		 */
 		function resetUser(user, trigger) {
 			context.start([user], null, trigger)
@@ -62,6 +70,7 @@
 		 * @param {object} user row from the API
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {string} operation operation id, "eligible" for "Can connect"
+		 * @return {*} operation result
 		 */
 		function decorateCell(cell, box, user, module, operation) {
 			const origin = module === null ? user.origins?.eligible : user.origins?.grants?.[module]?.[operation]

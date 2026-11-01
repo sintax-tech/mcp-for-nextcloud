@@ -2,7 +2,10 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Compose and start the OAuth clients editor at its original matrix startup phase. */
+/** Compose and start the OAuth clients editor at its original matrix startup phase.
+ * @param {object} admin operation input
+ * @return {void} operation result
+ */
 (function (admin) {
 	'use strict'
 	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
@@ -23,7 +26,9 @@
 			admin.modules.oauth_clients.cards(context)
 			matrix.followRevision(() => context.oauthRevision, (revision) => { context.oauthRevision = revision })
 
-			/** @param {object} data settings returned by the API */
+			/** @param {object} data settings returned by the API
+			 * @return {*} operation result
+			 */
 			function show(data) {
 				context.oauthRevision = data.revision
 				context.confirmed = data
@@ -40,6 +45,7 @@
 			 * @param {HTMLElement} status status span next to the control
 			 * @param {boolean} ok whether the save worked
 			 * @param {string} [message] text shown on failure
+			 * @return {*} operation result
 			 */
 			function report(status, ok, message) {
 				status.textContent = ok ? t('mcp', 'Saved') : (message || t('mcp', 'Not saved'))

@@ -2,7 +2,10 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** The admin namespace, shared by the independently registered page units. */
+/** The admin namespace, shared by the independently registered page units.
+ * @param {object} root operation input
+ * @return {void} operation result
+ */
 (function (root) {
 	'use strict'
 

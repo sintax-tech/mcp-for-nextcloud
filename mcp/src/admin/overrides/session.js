@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Individual override session operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.overrides.session = function (context) {
 		/** Sources of a cell's origin that are an individual override, by kind. Everything else is inherited. */
 		const OVERRIDES = { individual_allow: 'allow', individual_deny: 'deny', invalid: 'invalid' }
@@ -70,6 +74,7 @@
 		 *
 		 * @param {string} message text, '' to clear both
 		 * @param {boolean} [error] an error goes to the alert region
+		 * @return {*} operation result
 		 */
 		function say(message, error = false) {
 			clearTimeout(sayTimer)

@@ -21,7 +21,7 @@
  * Taking "Can connect" away signs the person out of every MCP client, so it is asked first, in words, and nothing is sent
  * without that confirmation. An unknown "after" counts as taken away.
  *
- * Plain browser JavaScript, no build step. src/admin/admin-grants.js opens it from a level cell through window.OCA.Mcp.Admin.levelPopover and
+ * Plain browser JavaScript, concatenated by the PHP asset builder. src/admin/matrix/level-cells.js opens it from a level cell through window.OCA.Mcp.Admin.levelPopover and
  * exposes window.OCA.Mcp.Admin.matrix; this file never touches the matrix state itself.
  */
 (function () {

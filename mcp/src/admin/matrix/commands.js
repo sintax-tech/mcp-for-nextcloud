@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix commands operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.commands = function (context) {
 		/**
 		 * What a bulk change would do: per operation, the users whose saved value differs from the target and that value; users
@@ -73,7 +77,7 @@
 
 
 		/**
-		 * The selection bar's "Set" (src/admin/admin-overrides.js): gives the selected users one level of a module, or turns "Can
+		 * The selection bar's "Set" (src/admin/overrides/start.js): gives the selected users one level of a module, or turns "Can
 		 * connect" on or off. It confirms exactly what changes, how many are left out and why, and how many already have it,
 		 * sends nothing when nobody changes, saves one command and offers the undo. Every cell is an explicit allow or deny,
 		 * never an inheritance, as the level popover does for a removal (F1).
@@ -81,6 +85,7 @@
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {string} level a level of src/admin/admin-levels.js; for "Can connect", "read" is on and "none" is off
 		 * @param {string[]} uids the selected users of the page
+		 * @return {Promise<*>} operation result
 		 */
 		async function bulk(module, level, uids) {
 			// The plan is computed from the table on screen, so never from one that is being replaced.
@@ -147,6 +152,7 @@
 		 *
 		 * @param {string} receiptId receipt of the saved command
 		 * @param {string} savedRevision revision that command committed
+		 * @return {Promise<*>} operation result
 		 */
 		async function undoBulk(receiptId, savedRevision) {
 			context.setBulkBusy(true)

@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix notices operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.notices = function (context) {
 		/** Seconds the undo of a bulk change stays offered; it waits while the pointer or focus is on it. */
 		const UNDO_SECONDS = 10
@@ -27,6 +31,7 @@
 		 * operation can never finish on top of a newer one's notice, undo or focus.
 		 *
 		 * @param {boolean} on whether an operation is running
+		 * @return {*} operation result
 		 */
 		function setBulkBusy(on) {
 			bulkBusy = on
@@ -46,7 +51,9 @@
 		}
 
 
-		/** Clears the notice and forgets the undo it offered. */
+		/** Clears the notice and forgets the undo it offered.
+		 * @return {*} operation result
+		 */
 		function hideNotice() {
 			clearTimeout(noticeTimer)
 			pendingUndo = null
@@ -56,7 +63,9 @@
 		}
 
 
-		/** Starts the countdown, unless the admin is on the notice or a bulk change is still running. */
+		/** Starts the countdown, unless the admin is on the notice or a bulk change is still running.
+		 * @return {*} operation result
+		 */
 		function armNotice() {
 			clearTimeout(noticeTimer)
 			if (!bulkBusy && !notice.matches(':hover') && !notice.contains(document.activeElement)) {
@@ -70,6 +79,7 @@
 		 *
 		 * @param {string} message text of the notice
 		 * @param {Function|null} undo restores the previous values
+		 * @return {*} operation result
 		 */
 		function showNotice(message, undo) {
 			// A newer notice takes the single undo slot; say so instead of dropping the older undo silently.
@@ -82,7 +92,9 @@
 		}
 
 
-		/** Install this unit’s original listeners once, at its historical startup phase. */
+		/** Install this unit’s original listeners once, at its historical startup phase.
+		 * @return {*} operation result
+		 */
 		function attachNotices() {
 			notice.addEventListener('mouseenter', () => clearTimeout(noticeTimer))
 			notice.addEventListener('focusin', () => clearTimeout(noticeTimer))

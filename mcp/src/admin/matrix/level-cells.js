@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix level cells operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.level_cells = function (context) {
 		const INDIVIDUAL_SOURCES = ['individual_allow', 'individual_deny', 'invalid']
 
@@ -17,7 +21,7 @@
 		/**
 		 * Where a module's values come from, as a sentence for the tooltip and screen readers.
 		 *
-		 * @param {{source: string, groupIds: string[]}} origin what McpAdminLevels.originOf() returned
+		 * @param {{source: string, groupIds: string[]}} origin what OCA.Mcp.Admin.levels.originOf() returned
 		 * @return {string}
 		 */
 		function originText(origin) {
@@ -88,7 +92,7 @@
 				cell.dataset.mark = kind
 				cell.append(button)
 			}
-			// "Restricted to N" or "Scope unknown" of a resource scope, drawn and opened by src/admin/admin-scope.js.
+			// "Restricted to N" or "Scope unknown" of a resource scope, drawn and opened by src/admin/scope/start.js.
 			const mark = user.scope?.[module] && window.OCA.Mcp.Admin.scope ? window.OCA.Mcp.Admin.scope.indicator(user.uid, module, user.scope[module]) : null
 			if (mark) cell.append(mark)
 			return cell
@@ -131,7 +135,10 @@
 		}
 
 
-		/** @return {string|null} the icon class of a mark: a person for an exception, a group for a group, none otherwise */
+		/** @return {string|null} the icon class of a mark: a person for an exception, a group for a group, none otherwise
+		 * @param {*} origin operation input
+		 * @param {*} mark operation input
+		 */
 		function markIcon(origin, mark) {
 			if (mark === 'exception') return 'icon-user'
 			if (mark === 'pending') return null
@@ -142,6 +149,8 @@
 		/**
 		 * @return {string} where a cell's values come from, in words: a screen reader hears "Exception" where the eye sees the
 		 *     person icon, and the inspector says the same
+		 * @param {*} origin operation input
+		 * @param {*} mark operation input
 		 */
 		function markText(origin, mark) {
 			if (mark === 'pending') return t('mcp', 'Set for this person')

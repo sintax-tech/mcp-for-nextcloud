@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix rows operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.rows = function (context) {
 		const OWN_SOURCES = ['individual_allow', 'individual_deny', 'invalid']
 
@@ -32,7 +36,7 @@
 		function buildRow(user) {
 			const row = context.el('tr', { className: user.enabled ? '' : 'mcp-disabled-user' })
 			row.dataset.uid = user.uid
-			// The selection box of src/admin/admin-overrides.js goes here, in its own column instead of next to the name.
+			// The selection box of src/admin/overrides/start.js goes here, in its own column instead of next to the name.
 			row.append(context.el('td', { className: 'mcp-select-col' }))
 			row.append(context.el('th', { scope: 'row', className: 'mcp-user-col' }, [context.el('span', { className: 'mcp-name', textContent: user.displayName }), context.userLine(user)]))
 			row.append(context.isLevelsView() ? context.eligibleCell(user) : context.permissionCell(user, null, user.eligible, t('mcp', 'Can connect'), { eligible: null }))
@@ -64,7 +68,7 @@
 					cell.classList.add('mcp-band-' + (index % 2))
 					if (i === 0) {
 						cell.classList.add('mcp-module')
-						// "Restricted to N" or "Scope unknown" of a resource scope, drawn and opened by src/admin/admin-scope.js.
+						// "Restricted to N" or "Scope unknown" of a resource scope, drawn and opened by src/admin/scope/start.js.
 						const mark = user.scope?.[module] && window.OCA.Mcp.Admin.scope ? window.OCA.Mcp.Admin.scope.indicator(user.uid, module, user.scope[module]) : null
 						if (mark) cell.append(mark)
 					}
@@ -99,7 +103,9 @@
 		}
 
 
-		/** @return {HTMLTableCellElement} the cell with the row's actions menu (src/admin/admin-row-actions.js) */
+		/** @return {HTMLTableCellElement} the cell with the row's actions menu (src/admin/admin-row-actions.js)
+		 * @param {*} user operation input
+		 */
 		function actionsCell(user) {
 			const cell = context.el('td', { className: 'mcp-actions-col' })
 			const button = window.OCA.Mcp.Admin.rowActions?.button(user)
@@ -134,6 +140,7 @@
 		/**
 		 * The "All | With exceptions (N)" filter: it counts the users of this page who have a real exception and, when chosen,
 		 * shows only them. It works on the page on screen, so it says so; nothing is asked of the server.
+		 * @return {*} operation result
 		 */
 		function applyExceptionsFilter() {
 			if (!context.onlyButtons.exceptions || !context.state.data) return
@@ -193,10 +200,22 @@
 				.reduce((sum, [, operations]) => sum + operations.length, 0)
 		}
 
+		/** Bind the existing All/With exceptions controls at their original startup phase.
+		 * @return {void}
+		 */
+		function attachExceptions() {
+			for (const [only, button] of Object.entries(context.onlyButtons)) {
+				button?.addEventListener('click', () => {
+					context.state.exceptionsOnly = only === 'exceptions'
+					context.applyExceptionsFilter()
+				})
+			}
+		}
+
 		Object.defineProperties(context, {
 			OWN_SOURCES: { configurable: true, get: () => OWN_SOURCES },
 		})
 
-		Object.assign(context, { actionsCell, applyExceptionsFilter, buildRow, hasException, renderRow, rowUnavailableReason, userLine, visiblePermissionColumns })
+		Object.assign(context, { actionsCell, applyExceptionsFilter, attachExceptions, buildRow, hasException, renderRow, rowUnavailableReason, userLine, visiblePermissionColumns })
 	}
 })((globalThis.window || globalThis).OCA.Mcp.Admin)

@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Individual override planning operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.overrides.planning = function (context) {
 		/**
 		 * @param {object} user row from the API
@@ -116,7 +120,11 @@
 		}
 
 
-		/** @return {string} key of one cell of one user */
+		/** @return {string} key of one cell of one user
+		 * @param {*} uid operation input
+		 * @param {*} module operation input
+		 * @param {*} operation operation input
+		 */
 		function afterKey(uid, module, operation) {
 			return uid + '\0' + (module ?? '') + '\0' + operation
 		}

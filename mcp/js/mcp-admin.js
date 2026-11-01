@@ -3,7 +3,10 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** The admin namespace, shared by the independently registered page units. */
+/** The admin namespace, shared by the independently registered page units.
+ * @param {object} root operation input
+ * @return {void} operation result
+ */
 (function (root) {
 	'use strict'
 
@@ -644,7 +647,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * What the Mail operations let the AI do, for the column tooltips of src/admin/admin-grants.js: `read` lists accounts and
+ * What the Mail operations let the AI do, for the column tooltips of src/admin/matrix/labels.js: `read` lists accounts and
  * folders, `messages` (off by default) lists, searches and reads the messages themselves, `attachments` (off by default)
  * reads the text of an attachment, and the Mail writes, off by default: `flags` marks a message read or unread and
  * flagged, `move` moves it to another folder of its account, `draft` saves a new draft, never sent, `send` sends a new message. Granting a Mail write, in the matrix, its popover, a bulk
@@ -700,7 +703,7 @@
 	/*
 	 * The Mail tiers for src/admin/admin-levels.js. Mail only reads at first: its first tier lists accounts and folders,
 	 * its second opens the messages, its third adds the text of attachments, and the next ones add the Mail writes, so
-	 * none of its levels is called Full. src/admin/admin-grants.js translates the names.
+	 * none of its levels is called Full. src/admin/matrix/labels.js translates the names.
 	 */
 	const catalog = root.OCA.Mcp.Admin.levelCatalog = root.OCA.Mcp.Admin.levelCatalog || { tiers: {}, tierNames: {} }
 	catalog.tiers.mail = [['read'], ['messages'], ['attachments'], ['flags'], ['move'], ['draft'], ['send']]
@@ -731,7 +734,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Access levels of Forms: Read, then writing forms, then writing forms and reading responses; src/admin/admin-grants.js translates the names.
+ * Access levels of Forms: Read, then writing forms, then writing forms and reading responses; src/admin/matrix/labels.js translates the names.
  * Registered in window.OCA.Mcp.Admin.levelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
  */
 (function (root) {
@@ -756,7 +759,7 @@
  * by operation. The tiers follow GrantPolicy::CATALOG; an operation the tiers do not name (a newer catalog) falls into
  * the last tier, so it is never hidden and never granted by a lower level.
  *
- * The level functions are pure, with no DOM and no strings: src/admin/admin-grants.js draws the cells and names the levels.
+ * The level functions are pure, with no DOM and no strings: src/admin/matrix/level-cells.js draws the cells and src/admin/matrix/labels.js names the levels.
  * The tiers of each module live in its own file, src/admin/access/levels/<app>.js, which registers them in
  * window.OCA.Mcp.Admin.levelCatalog before this file runs (src/admin.manifest lists them first). Polls has named presets
  * instead of tiers (src/admin/access/levels/polls.js, window.OCA.Mcp.Admin.pollsGrants) and Mail adds its write warnings
@@ -775,7 +778,7 @@
 
 	/**
 	 * Names of the tiers of the modules whose tiers are not Read, Edit and Full, in tier order (Forms and Mail, from
-	 * their files). src/admin/admin-grants.js translates them.
+	 * their files). src/admin/matrix/labels.js translates them.
 	 */
 	const MODULE_TIER_NAMES = catalog.tierNames
 
@@ -887,13 +890,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Initial matrix controls and saved page state.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.session = function (context) {
 		const root = context.root
 		/** Columns the matrix always shows besides the permissions: selection, user, "Can connect" and the row's actions. */
@@ -956,13 +963,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix labels operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.labels = function (context) {
 		/** @return {Object<string, string>} module labels */
 		function moduleLabels() {
@@ -1079,13 +1090,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix requests operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.requests = function (context) {
 		let matrixLocked = false
 
@@ -1118,7 +1133,9 @@
 		}
 
 
-		/** Reloads the matrix with every matrix write blocked until the new page is on screen. */
+		/** Reloads the matrix with every matrix write blocked until the new page is on screen.
+		 * @return {Promise<*>} operation result
+		 */
 		async function reloadLocked() {
 			matrixLocked = true
 			try {
@@ -1149,7 +1166,9 @@
 		}
 
 
-		/** @param {string} message error shown to the admin */
+		/** @param {string} message error shown to the admin
+		 * @return {*} operation result
+		 */
 		function notifyError(message) {
 			// The old notification global is gone since Nextcloud 34 and OCP.Toast is deprecated, so without it the browser's own dialog
 			// still shows the message instead of losing it.
@@ -1174,13 +1193,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix revisions operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.revisions = function (context) {
 		const REVISION_MOVED = 'mcp-revision-moved'
 
@@ -1191,6 +1214,7 @@
 		 *
 		 * @param {string} from revision the write was sent with
 		 * @param {string} to revision the server answered with
+		 * @return {*} operation result
 		 */
 		function announce(from, to) {
 			if (typeof from === 'string' && typeof to === 'string' && from !== to) {
@@ -1238,6 +1262,7 @@
 		 *
 		 * @param {Function} get () => the block's revision
 		 * @param {Function} set (revision) => void
+		 * @return {*} operation result
 		 */
 		function followRevision(get, set) {
 			window.addEventListener(REVISION_MOVED, (event) => {
@@ -1261,17 +1286,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix elements operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.elements = function (context) {
 		/**
 		 * @param {HTMLElement} cell cell that shows the save result
 		 * @param {boolean} ok whether the save worked
+		 * @return {*} operation result
 		 */
 		function flash(cell, ok) {
 			cell.classList.remove('mcp-ok', 'mcp-error')
@@ -1305,13 +1335,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix loading operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.loading = function (context) {
 		let loadSeq = 0
 
@@ -1319,6 +1353,7 @@
 		/**
 		 * Reads the current page from the server and re-renders the table; a failure is shown in the table with a retry.
 		 * The page and its revision always come from the same response, and only the newest request is rendered.
+		 * @return {Promise<*>} operation result
 		 */
 		async function load() {
 			const seq = ++loadSeq
@@ -1347,7 +1382,9 @@
 		}
 
 
-		/** Replaces the body with an error row and a retry button, keeping the last header. */
+		/** Replaces the body with an error row and a retry button, keeping the last header.
+		 * @return {*} operation result
+		 */
 		function renderError() {
 			const retry = context.el('button', { type: 'button', textContent: t('mcp', 'Retry'), onclick: context.load })
 			const cell = context.el('td', { colSpan: context.state.data ? context.FIXED_COLUMNS + context.visiblePermissionColumns() : 1, className: 'mcp-empty mcp-load-error' },
@@ -1357,7 +1394,9 @@
 		}
 
 
-		/** Fills the group filter once, keeping the current selection. */
+		/** Fills the group filter once, keeping the current selection.
+		 * @return {*} operation result
+		 */
 		function renderGroups() {
 			if (context.state.groupsLoaded) {
 				return
@@ -1369,7 +1408,9 @@
 		}
 
 
-		/** Populate app choices from the actual catalog, preserving a valid selection. */
+		/** Populate app choices from the actual catalog, preserving a valid selection.
+		 * @return {*} operation result
+		 */
 		function renderApps() {
 			const labels = context.moduleLabels()
 			const modules = Object.keys(context.state.data.catalog)
@@ -1401,15 +1442,21 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix view operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.view = function (context) {
-		/** Filter only presentation; user queries and permission payloads stay unchanged. */
+		/** Filter only presentation; user queries and permission payloads stay unchanged.
+		 * @return {*} operation result
+		 */
 		function applyAppFilter() {
 			const app = context.shownApp()
 			for (const cell of context.table.querySelectorAll('[data-module]')) {
@@ -1431,7 +1478,9 @@
 		}
 
 
-		/** Read the Access tab's app parameter on reload and history navigation. */
+		/** Read the Access tab's app parameter on reload and history navigation.
+		 * @return {*} operation result
+		 */
 		function readAppFromHash() {
 			const [tab, query = ''] = window.location.hash.slice(1).split('?')
 			if (tab !== 'access') {
@@ -1471,6 +1520,7 @@
 		 *
 		 * @param {string} view "levels" or "operations"
 		 * @param {string} [app] module to show alone in the operations view
+		 * @return {*} operation result
 		 */
 		function setView(view, app) {
 			context.state.view = view
@@ -1491,6 +1541,7 @@
 		 * Writes the chosen app into the address (#access?app=<module>, no parameter for all apps).
 		 *
 		 * @param {boolean} replace correct the current entry instead of adding a history entry
+		 * @return {*} operation result
 		 */
 		function writeAppToHash(replace) {
 			const [tab, query = ''] = window.location.hash.slice(1).split('?')
@@ -1520,7 +1571,9 @@
 		}
 
 
-		/** Install this unit’s original listeners once, at its historical startup phase. */
+		/** Install this unit’s original listeners once, at its historical startup phase.
+		 * @return {*} operation result
+		 */
 		function attachView() {
 			context.appSelect.addEventListener('change', () => {
 				context.state.app = context.appSelect.value
@@ -1549,19 +1602,25 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix rendering operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.rendering = function (context) {
 		let observedHeaderRow = null
 		let headerObserver = null
 
 
-		/** Makes the second header row stick right below the first one, whose height depends on the density. */
+		/** Makes the second header row stick right below the first one, whose height depends on the density.
+		 * @return {*} operation result
+		 */
 		function stickSecondHeaderRow() {
 			const [top, sub] = context.table.tHead.rows
 			if (!top || !sub) {
@@ -1579,6 +1638,7 @@
 		 * render there measures zero; showing the tab (or changing density or font size) resizes the row
 		 * and the observer re-sticks the second row below it. A browser without ResizeObserver keeps the
 		 * render-time measure, which is correct whenever the panel is visible.
+		 * @return {*} operation result
 		 */
 		function observeHeaderRow() {
 			if (!window.ResizeObserver) {
@@ -1597,7 +1657,9 @@
 		}
 
 
-		/** Renders header and rows from state.data. */
+		/** Renders header and rows from state.data.
+		 * @return {*} operation result
+		 */
 		function render() {
 			const data = context.state.data
 			// After a conflict the saved switch may differ from what this page last showed.
@@ -1624,7 +1686,7 @@
 			const sub = context.el('tr')
 			const rowSpan = levelsView ? 1 : 2
 			const selectHeader = context.el('th', { rowSpan, className: 'mcp-select-col', scope: 'col' }, [context.el('span', { className: 'mcp-sr-only', textContent: t('mcp', 'Select') })])
-			// The "select every user on this page" box of src/admin/admin-overrides.js heads the selection column.
+			// The "select every user on this page" box of src/admin/overrides/start.js heads the selection column.
 			window.OCA.Mcp.Admin.overrides?.decorateHeader?.(selectHeader)
 			top.append(selectHeader)
 			top.append(context.el('th', { rowSpan, className: 'mcp-user-col', scope: 'col', textContent: t('mcp', 'User') }))
@@ -1704,13 +1766,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix rows operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.rows = function (context) {
 		const OWN_SOURCES = ['individual_allow', 'individual_deny', 'invalid']
 
@@ -1733,7 +1799,7 @@
 		function buildRow(user) {
 			const row = context.el('tr', { className: user.enabled ? '' : 'mcp-disabled-user' })
 			row.dataset.uid = user.uid
-			// The selection box of src/admin/admin-overrides.js goes here, in its own column instead of next to the name.
+			// The selection box of src/admin/overrides/start.js goes here, in its own column instead of next to the name.
 			row.append(context.el('td', { className: 'mcp-select-col' }))
 			row.append(context.el('th', { scope: 'row', className: 'mcp-user-col' }, [context.el('span', { className: 'mcp-name', textContent: user.displayName }), context.userLine(user)]))
 			row.append(context.isLevelsView() ? context.eligibleCell(user) : context.permissionCell(user, null, user.eligible, t('mcp', 'Can connect'), { eligible: null }))
@@ -1765,7 +1831,7 @@
 					cell.classList.add('mcp-band-' + (index % 2))
 					if (i === 0) {
 						cell.classList.add('mcp-module')
-						// "Restricted to N" or "Scope unknown" of a resource scope, drawn and opened by src/admin/admin-scope.js.
+						// "Restricted to N" or "Scope unknown" of a resource scope, drawn and opened by src/admin/scope/start.js.
 						const mark = user.scope?.[module] && window.OCA.Mcp.Admin.scope ? window.OCA.Mcp.Admin.scope.indicator(user.uid, module, user.scope[module]) : null
 						if (mark) cell.append(mark)
 					}
@@ -1800,7 +1866,9 @@
 		}
 
 
-		/** @return {HTMLTableCellElement} the cell with the row's actions menu (src/admin/admin-row-actions.js) */
+		/** @return {HTMLTableCellElement} the cell with the row's actions menu (src/admin/admin-row-actions.js)
+		 * @param {*} user operation input
+		 */
 		function actionsCell(user) {
 			const cell = context.el('td', { className: 'mcp-actions-col' })
 			const button = window.OCA.Mcp.Admin.rowActions?.button(user)
@@ -1835,6 +1903,7 @@
 		/**
 		 * The "All | With exceptions (N)" filter: it counts the users of this page who have a real exception and, when chosen,
 		 * shows only them. It works on the page on screen, so it says so; nothing is asked of the server.
+		 * @return {*} operation result
 		 */
 		function applyExceptionsFilter() {
 			if (!context.onlyButtons.exceptions || !context.state.data) return
@@ -1894,11 +1963,23 @@
 				.reduce((sum, [, operations]) => sum + operations.length, 0)
 		}
 
+		/** Bind the existing All/With exceptions controls at their original startup phase.
+		 * @return {void}
+		 */
+		function attachExceptions() {
+			for (const [only, button] of Object.entries(context.onlyButtons)) {
+				button?.addEventListener('click', () => {
+					context.state.exceptionsOnly = only === 'exceptions'
+					context.applyExceptionsFilter()
+				})
+			}
+		}
+
 		Object.defineProperties(context, {
 			OWN_SOURCES: { configurable: true, get: () => OWN_SOURCES },
 		})
 
-		Object.assign(context, { actionsCell, applyExceptionsFilter, buildRow, hasException, renderRow, rowUnavailableReason, userLine, visiblePermissionColumns })
+		Object.assign(context, { actionsCell, applyExceptionsFilter, attachExceptions, buildRow, hasException, renderRow, rowUnavailableReason, userLine, visiblePermissionColumns })
 	}
 })((globalThis.window || globalThis).OCA.Mcp.Admin)
 ;
@@ -1908,13 +1989,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix operation cells operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.operation_cells = function (context) {
 		/**
 		 * The states a permission cell can show, drawn in one place: allowed and denied are a checkbox
@@ -1961,6 +2046,7 @@
 		 * @param {HTMLTableCellElement} cell the cell
 		 * @param {string} key key of PERMISSION_STATES
 		 * @param {string} [detail] extra sentence (the reason of an unavailable cell)
+		 * @return {*} operation result
 		 */
 		function paintState(cell, key, detail) {
 			for (const other of Object.values(PERMISSION_STATES)) {
@@ -2056,7 +2142,7 @@
 				}
 			})
 			cell.append(box)
-			// The override state and the per-cell reset come from src/admin/admin-overrides.js, when it is loaded.
+			// The override state and the per-cell reset come from src/admin/overrides/start.js, when it is loaded.
 			window.OCA.Mcp.Admin.overrides?.decorateCell(cell, box, user, module, module === null ? 'eligible' : body.operation)
 			return cell
 		}
@@ -2075,13 +2161,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix level cells operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.level_cells = function (context) {
 		const INDIVIDUAL_SOURCES = ['individual_allow', 'individual_deny', 'invalid']
 
@@ -2089,7 +2179,7 @@
 		/**
 		 * Where a module's values come from, as a sentence for the tooltip and screen readers.
 		 *
-		 * @param {{source: string, groupIds: string[]}} origin what McpAdminLevels.originOf() returned
+		 * @param {{source: string, groupIds: string[]}} origin what OCA.Mcp.Admin.levels.originOf() returned
 		 * @return {string}
 		 */
 		function originText(origin) {
@@ -2160,7 +2250,7 @@
 				cell.dataset.mark = kind
 				cell.append(button)
 			}
-			// "Restricted to N" or "Scope unknown" of a resource scope, drawn and opened by src/admin/admin-scope.js.
+			// "Restricted to N" or "Scope unknown" of a resource scope, drawn and opened by src/admin/scope/start.js.
 			const mark = user.scope?.[module] && window.OCA.Mcp.Admin.scope ? window.OCA.Mcp.Admin.scope.indicator(user.uid, module, user.scope[module]) : null
 			if (mark) cell.append(mark)
 			return cell
@@ -2203,7 +2293,10 @@
 		}
 
 
-		/** @return {string|null} the icon class of a mark: a person for an exception, a group for a group, none otherwise */
+		/** @return {string|null} the icon class of a mark: a person for an exception, a group for a group, none otherwise
+		 * @param {*} origin operation input
+		 * @param {*} mark operation input
+		 */
 		function markIcon(origin, mark) {
 			if (mark === 'exception') return 'icon-user'
 			if (mark === 'pending') return null
@@ -2214,6 +2307,8 @@
 		/**
 		 * @return {string} where a cell's values come from, in words: a screen reader hears "Exception" where the eye sees the
 		 *     person icon, and the inspector says the same
+		 * @param {*} origin operation input
+		 * @param {*} mark operation input
 		 */
 		function markText(origin, mark) {
 			if (mark === 'pending') return t('mcp', 'Set for this person')
@@ -2257,13 +2352,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix eligibility operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.eligibility = function (context) {
 		/**
 		 * "Can connect" in the levels view: Yes or No in words, its origin as an icon like the module cells, and the popover to
@@ -2322,13 +2421,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix notices operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.notices = function (context) {
 		/** Seconds the undo of a bulk change stays offered; it waits while the pointer or focus is on it. */
 		const UNDO_SECONDS = 10
@@ -2346,6 +2449,7 @@
 		 * operation can never finish on top of a newer one's notice, undo or focus.
 		 *
 		 * @param {boolean} on whether an operation is running
+		 * @return {*} operation result
 		 */
 		function setBulkBusy(on) {
 			bulkBusy = on
@@ -2365,7 +2469,9 @@
 		}
 
 
-		/** Clears the notice and forgets the undo it offered. */
+		/** Clears the notice and forgets the undo it offered.
+		 * @return {*} operation result
+		 */
 		function hideNotice() {
 			clearTimeout(noticeTimer)
 			pendingUndo = null
@@ -2375,7 +2481,9 @@
 		}
 
 
-		/** Starts the countdown, unless the admin is on the notice or a bulk change is still running. */
+		/** Starts the countdown, unless the admin is on the notice or a bulk change is still running.
+		 * @return {*} operation result
+		 */
 		function armNotice() {
 			clearTimeout(noticeTimer)
 			if (!bulkBusy && !notice.matches(':hover') && !notice.contains(document.activeElement)) {
@@ -2389,6 +2497,7 @@
 		 *
 		 * @param {string} message text of the notice
 		 * @param {Function|null} undo restores the previous values
+		 * @return {*} operation result
 		 */
 		function showNotice(message, undo) {
 			// A newer notice takes the single undo slot; say so instead of dropping the older undo silently.
@@ -2401,7 +2510,9 @@
 		}
 
 
-		/** Install this unit’s original listeners once, at its historical startup phase. */
+		/** Install this unit’s original listeners once, at its historical startup phase.
+		 * @return {*} operation result
+		 */
 		function attachNotices() {
 			notice.addEventListener('mouseenter', () => clearTimeout(noticeTimer))
 			notice.addEventListener('focusin', () => clearTimeout(noticeTimer))
@@ -2447,13 +2558,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix commands operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.commands = function (context) {
 		/**
 		 * What a bulk change would do: per operation, the users whose saved value differs from the target and that value; users
@@ -2517,7 +2632,7 @@
 
 
 		/**
-		 * The selection bar's "Set" (src/admin/admin-overrides.js): gives the selected users one level of a module, or turns "Can
+		 * The selection bar's "Set" (src/admin/overrides/start.js): gives the selected users one level of a module, or turns "Can
 		 * connect" on or off. It confirms exactly what changes, how many are left out and why, and how many already have it,
 		 * sends nothing when nobody changes, saves one command and offers the undo. Every cell is an explicit allow or deny,
 		 * never an inheritance, as the level popover does for a removal (F1).
@@ -2525,6 +2640,7 @@
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {string} level a level of src/admin/admin-levels.js; for "Can connect", "read" is on and "none" is off
 		 * @param {string[]} uids the selected users of the page
+		 * @return {Promise<*>} operation result
 		 */
 		async function bulk(module, level, uids) {
 			// The plan is computed from the table on screen, so never from one that is being replaced.
@@ -2591,6 +2707,7 @@
 		 *
 		 * @param {string} receiptId receipt of the saved command
 		 * @param {string} savedRevision revision that command committed
+		 * @return {Promise<*>} operation result
 		 */
 		async function undoBulk(receiptId, savedRevision) {
 			context.setBulkBusy(true)
@@ -2634,13 +2751,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix interactions operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.interactions = function (context) {
 		let searchTimer = null
 
@@ -2652,6 +2773,7 @@
 		 * reached by Tab could be hidden (WCAG 2.4.11). Measured on screen, so it holds at any width and in either direction.
 		 *
 		 * @param {FocusEvent} event focusin on the scrolling block of the matrix
+		 * @return {*} operation result
 		 */
 		function revealFocus(event) {
 			const wrap = event.currentTarget
@@ -2687,7 +2809,9 @@
 		}
 
 
-		/** Install the original attachService handlers. */
+		/** Install the original attachService handlers.
+		 * @return {*} operation result
+		 */
 		function attachService() {
 			context.serviceBox.addEventListener('change', async () => {
 				const value = context.serviceBox.checked
@@ -2722,14 +2846,18 @@
 
 		}
 
-		/** Install the original attachReloads handlers. */
+		/** Install the original attachReloads handlers.
+		 * @return {*} operation result
+		 */
 		function attachReloads() {
 			window.addEventListener('mcp-group-policy-saved', context.reloadLocked)
 			window.addEventListener('mcp-scope-saved', context.reloadLocked)
 
 		}
 
-		/** Install the original attachInteractions handlers. */
+		/** Install the original attachInteractions handlers.
+		 * @return {*} operation result
+		 */
 		function attachInteractions() {
 			context.table.parentElement?.addEventListener('focusin', context.revealFocus)
 
@@ -2791,14 +2919,21 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Original exclusion tags editor.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.protection = admin.modules.protection || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.protection.exclusion_tags = function (context) {
+		/**
+		 * @return {Promise<*>} operation result
+		 */
 		async function initTagsSection() {
 			const container = document.getElementById('mcp-tags-list')
 			const warning = document.getElementById('mcp-tags-warning')
@@ -2814,7 +2949,9 @@
 				return
 			}
 
-			/** @param {boolean} isInvalid shows or hides every sign of the unreadable setting */
+			/** @param {boolean} isInvalid shows or hides every sign of the unreadable setting
+			 * @return {*} operation result
+			 */
 			function setInvalidState(isInvalid) {
 				if (invalid) {
 					invalid.style.display = isInvalid ? 'block' : 'none'
@@ -2845,7 +2982,9 @@
 				return { text: t('mcp', 'Collaborative'), title: t('mcp', 'Users can assign and remove this tag'), className: 'mcp-tag-type-collaborative' }
 			}
 
-			/** @param {string[]} selectedIds warns when a collaborative tag, removable by editors, is selected */
+			/** @param {string[]} selectedIds warns when a collaborative tag, removable by editors, is selected
+			 * @return {*} operation result
+			 */
 			function updateWarning(selectedIds) {
 				if (!warning) {
 					return
@@ -2859,6 +2998,7 @@
 			 * so the picker rolls the selection back; on success the invalid-setting block goes away.
 			 *
 			 * @param {string[]} tagIds the ids to save
+			 * @return {Promise<*>} operation result
 			 */
 			async function saveTags(tagIds) {
 				try {
@@ -2925,17 +3065,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Original upload limit editor.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.checkout = admin.modules.checkout || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.checkout.upload_limit = function (context) {
 		/**
 		 * Checkout upload limit of the status block, in whole MiB, through GET and PUT /apps/mcp/api/checkout-limit.
 		 * Next to it: the effective limit and PHP's post_max_size ceiling.
+		 * @return {Promise<*>} operation result
 		 */
 		async function initCheckoutLimit() {
 			const input = document.getElementById('mcp-checkout-limit')
@@ -2944,7 +3089,9 @@
 			const info = document.getElementById('mcp-checkout-limit-info')
 			const mib = (bytes) => Math.round(bytes / 1048576 * 10) / 10
 
-			/** @param {object} data limit returned by the API, in bytes */
+			/** @param {object} data limit returned by the API, in bytes
+			 * @return {*} operation result
+			 */
 			function show(data) {
 				// Round up and never show 0: a stored value below 1 MiB would fail the field's own min of 1 on the next save.
 				input.value = String(Math.max(1, Math.ceil(data.configuredBytes / 1048576)))
@@ -2994,17 +3141,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Original privacy editor.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.logs = admin.modules.logs || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.logs.privacy = function (context) {
 		/**
 		 * Server log section: the switch that hides the text of log messages in the log tools, through GET and PUT
 		 * /apps/mcp/api/logs-privacy.
+		 * @return {Promise<*>} operation result
 		 */
 		async function initLogsPrivacy() {
 			const box = document.getElementById('mcp-logs-hide-file-names')
@@ -3058,13 +3210,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Original readers editor.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.logs = admin.modules.logs || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.logs.readers = function (context) {
 		/**
 		 * Server log section: the groups whose members may read the log besides the administrators, through
@@ -3072,6 +3228,7 @@
 		 * the list it changed (`previous`), so the server answers 409 when another window or administrator
 		 * saved first and a removed group is never put back. A listed group that was deleted shows as an
 		 * option marked "(group removed)", to be removed.
+		 * @return {Promise<*>} operation result
 		 */
 		async function initLogsAccess() {
 			const container = document.getElementById('mcp-logs-groups')
@@ -3086,7 +3243,9 @@
 			let picker = null
 			context.followRevision(() => logsRevision, (revision) => { logsRevision = revision })
 
-			/** @param {object} data state returned by the API */
+			/** @param {object} data state returned by the API
+			 * @return {*} operation result
+			 */
 			function show(data) {
 				version = data.version
 				logsRevision = data.revision
@@ -3140,6 +3299,7 @@
 			 *
 			 * @param {string[]} groups the saved group ids
 			 * @param {Array<{id: string, label: string}>} options the known groups, for their display names
+			 * @return {*} operation result
 			 */
 			function paintSummary(groups, options) {
 				if (!summary) {
@@ -3160,7 +3320,9 @@
 				}
 			}
 
-			/** Loads the list again, after a conflict or a failure. */
+			/** Loads the list again, after a conflict or a failure.
+			 * @return {Promise<*>} operation result
+			 */
 			async function reload() {
 				try {
 					show(await context.api('GET', '/api/logs-access'))
@@ -3187,13 +3349,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** One OAuth editor session and its live queue, revisions and card drafts.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.oauth_clients.session = function (context) {
 		const hostsInput = document.getElementById('mcp-oauth-hosts')
 		const hostsSave = document.getElementById('mcp-oauth-hosts-save')
@@ -3246,13 +3412,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** OAuth client saving operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.oauth_clients.saving = function (context) {
 		/**
 		 * Runs one task of the block after the previous one has finished.
@@ -3374,13 +3544,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** OAuth client recovery operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.oauth_clients.recovery = function (context) {
 		/**
 		 * When a save failed because the page was out of date (409, or 428 without a revision) or the server could not
@@ -3448,13 +3622,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** OAuth client cards operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.oauth_clients.cards = function (context) {
 		/**
 		 * One self-hosted client: name, Enabled, client_id with Copy (once saved), redirect URIs, Save and Delete.
@@ -3590,7 +3768,10 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Compose and start the OAuth clients editor at its original matrix startup phase. */
+/** Compose and start the OAuth clients editor at its original matrix startup phase.
+ * @param {object} admin operation input
+ * @return {void} operation result
+ */
 (function (admin) {
 	'use strict'
 	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
@@ -3611,7 +3792,9 @@
 			admin.modules.oauth_clients.cards(context)
 			matrix.followRevision(() => context.oauthRevision, (revision) => { context.oauthRevision = revision })
 
-			/** @param {object} data settings returned by the API */
+			/** @param {object} data settings returned by the API
+			 * @return {*} operation result
+			 */
 			function show(data) {
 				context.oauthRevision = data.revision
 				context.confirmed = data
@@ -3628,6 +3811,7 @@
 			 * @param {HTMLElement} status status span next to the control
 			 * @param {boolean} ok whether the save worked
 			 * @param {string} [message] text shown on failure
+			 * @return {*} operation result
 			 */
 			function report(status, ok, message) {
 				status.textContent = ok ? t('mcp', 'Saved') : (message || t('mcp', 'Not saved'))
@@ -3690,7 +3874,10 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Compose the matrix and start its original effects in their original order. */
+/** Compose the matrix and start its original effects in their original order.
+ * @param {object} admin operation input
+ * @return {void} operation result
+ */
 (function (admin) {
 	'use strict'
 	const root = document.getElementById('mcp-admin')
@@ -3718,12 +3905,13 @@
 	admin.modules.logs.readers(context)
 	admin.modules.oauth_clients.editor(context)
 	context.attachView()
+	context.attachExceptions()
 	context.attachNotices()
 	context.attachService()
 	context.attachReloads()
 	context.attachInteractions()
 	/**
-	 * What src/admin/admin-overrides.js needs from the matrix: the page on screen, the shared request, lock and undo notice,
+	 * What src/admin/overrides/start.js needs from the matrix: the page on screen, the shared request, lock and undo notice,
 	 * and a re-render, so it can paint rows that were drawn before it loaded. It never touches the matrix state itself.
 	 */
 	window.OCA.Mcp.Admin.matrix = {
@@ -3788,7 +3976,7 @@
  * Taking "Can connect" away signs the person out of every MCP client, so it is asked first, in words, and nothing is sent
  * without that confirmation. An unknown "after" counts as taken away.
  *
- * Plain browser JavaScript, no build step. src/admin/admin-grants.js opens it from a level cell through window.OCA.Mcp.Admin.levelPopover and
+ * Plain browser JavaScript, concatenated by the PHP asset builder. src/admin/matrix/level-cells.js opens it from a level cell through window.OCA.Mcp.Admin.levelPopover and
  * exposes window.OCA.Mcp.Admin.matrix; this file never touches the matrix state itself.
  */
 (function () {
@@ -4299,7 +4487,7 @@
  * stored value is always an exception. Removing a redundant value changes nothing now, but it changes what happens when
  * the person leaves a group, so it is only ever done through the reset preview, never by itself.
  *
- * Plain browser JavaScript, no build step. src/admin/admin-grants.js asks kindOf() while it draws a level cell, and the access
+ * Plain browser JavaScript, concatenated by the PHP asset builder. src/admin/matrix/level-cells.js asks kindOf() while it draws a level cell, and the access
  * inspector asks classifyPerson() for the person it shows; this file never writes anything.
  */
 (function () {
@@ -4542,7 +4730,7 @@
 	})
 
 	/**
-	 * How src/admin/admin-grants.js marks an individual value: exception (the person icon), redundant (drawn like what it repeats,
+	 * How src/admin/matrix/level-cells.js marks an individual value: exception (the person icon), redundant (drawn like what it repeats,
 	 * with that origin), or pending (no mark yet).
 	 *
 	 * @param {string} uid user
@@ -4584,10 +4772,10 @@
 /**
  * The actions of one row of the permission matrix, in a "…" menu at the end of the row, so the row does not repeat a
  * button on every line: inspect the user's access, restrict their resources, give every individual value back to
- * inheritance (the reset preview of src/admin/admin-overrides.js, nothing is removed without it) and copy the user ID.
+ * inheritance (the reset preview of src/admin/overrides/preview.js, nothing is removed without it) and copy the user ID.
  *
  * A menu button with role="menu" items: Enter, Space or the arrow keys open it, the arrow keys move between the items,
- * Escape and Tab close it, and the focus goes back to the button. Plain browser JavaScript, no build step; src/admin/admin-grants.js
+ * Escape and Tab close it, and the focus goes back to the button. Plain browser JavaScript, concatenated by the PHP asset builder; src/admin/matrix/rows.js
  * asks button() for every row it draws, and this file never touches the matrix state.
  */
 (function () {
@@ -4768,13 +4956,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Individual override session operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.overrides.session = function (context) {
 		/** Sources of a cell's origin that are an individual override, by kind. Everything else is inherited. */
 		const OVERRIDES = { individual_allow: 'allow', individual_deny: 'deny', invalid: 'invalid' }
@@ -4835,6 +5027,7 @@
 		 *
 		 * @param {string} message text, '' to clear both
 		 * @param {boolean} [error] an error goes to the alert region
+		 * @return {*} operation result
 		 */
 		function say(message, error = false) {
 			clearTimeout(sayTimer)
@@ -4870,13 +5063,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Individual override planning operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.overrides.planning = function (context) {
 		/**
 		 * @param {object} user row from the API
@@ -4983,7 +5180,11 @@
 		}
 
 
-		/** @return {string} key of one cell of one user */
+		/** @return {string} key of one cell of one user
+		 * @param {*} uid operation input
+		 * @param {*} module operation input
+		 * @param {*} operation operation input
+		 */
 		function afterKey(uid, module, operation) {
 			return uid + '\0' + (module ?? '') + '\0' + operation
 		}
@@ -4998,13 +5199,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Individual override selection operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.overrides.selection = function (context) {
 		// --- Toolbar: the selection bar, the reset of the selected users, live regions and the preview -------------
 
@@ -5057,7 +5262,9 @@
 			return context.pageUsers().filter((user) => context.selected.has(user.uid))
 		}
 
-		/** Keeps the toolbar's counters, the select-all box and the button state in line with the selection and the lock. */
+		/** Keeps the toolbar's counters, the select-all box and the button state in line with the selection and the lock.
+		 * @return {*} operation result
+		 */
 		function updateToolbar() {
 			const users = context.pageUsers()
 			const chosen = context.selectedUsers()
@@ -5074,7 +5281,9 @@
 			}
 		}
 
-		/** The choices of the selection bar: "Can connect" first, then every module of the catalog. */
+		/** The choices of the selection bar: "Can connect" first, then every module of the catalog.
+		 * @return {*} operation result
+		 */
 		function fillModules() {
 			const catalog = context.matrix.data()?.catalog || {}
 			const labels = context.matrix.labels().modules
@@ -5084,7 +5293,9 @@
 			context.fillLevels()
 		}
 
-		/** The levels of the chosen module, or Yes and No for "Can connect". */
+		/** The levels of the chosen module, or Yes and No for "Can connect".
+		 * @return {*} operation result
+		 */
 		function fillLevels() {
 			const module = moduleChoice.value || null
 			const names = context.matrix.levelLabels?.() || {}
@@ -5094,7 +5305,9 @@
 			levelChoice.replaceChildren(...choices.map(([value, text]) => context.el('option', { value, textContent: text })))
 		}
 
-		/** Sets the chosen level for the selected people, through the matrix's bulk change. */
+		/** Sets the chosen level for the selected people, through the matrix's bulk change.
+		 * @return {*} operation result
+		 */
 		function applySelection() {
 			if (context.saving || context.matrix.isBusy()) {
 				context.say(t('mcp', 'Wait until the change in progress is saved.'), true)
@@ -5106,7 +5319,9 @@
 			}
 		}
 
-		/** Clears the selection of the page. */
+		/** Clears the selection of the page.
+		 * @return {*} operation result
+		 */
 		function clearAll() {
 			context.selected.clear()
 			for (const box of context.table.querySelectorAll('input.mcp-row-select')) {
@@ -5117,9 +5332,10 @@
 		}
 
 		/**
-		 * Puts the select-all box in the header of the selection column, which src/admin/admin-grants.js draws again on every render.
+		 * Puts the select-all box in the header of the selection column, which src/admin/matrix/start.js draws again on every render.
 		 *
 		 * @param {HTMLTableCellElement} header the header cell of the selection column
+		 * @return {*} operation result
 		 */
 		function decorateHeader(header) {
 			header.append(selectAll)
@@ -5177,13 +5393,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Individual override decoration operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.overrides.decoration = function (context) {
 		// --- Rows and cells -----------------------------------------------------------------------------------------
 
@@ -5191,8 +5411,9 @@
 		 * Adds the selection box to a row. The reset of the whole row is in the row's actions menu (src/admin/admin-row-actions.js),
 		 * through resetUser(), so the row carries no button repeated on every line.
 		 *
-		 * @param {HTMLTableRowElement} row row drawn by admin-grants.js; its first child is the selection cell
+		 * @param {HTMLTableRowElement} row row drawn by matrix/rows.js; its first child is the selection cell
 		 * @param {object} user row from the API
+		 * @return {*} operation result
 		 */
 		function decorateRow(row, user) {
 			const slot = row.children[0]
@@ -5207,7 +5428,9 @@
 		}
 
 
-		/** @return {boolean} whether the user has any individual value a reset would remove */
+		/** @return {boolean} whether the user has any individual value a reset would remove
+		 * @param {*} user operation input
+		 */
 		function hasOverrides(user) {
 			return context.overrideCells(user).length > 0
 		}
@@ -5218,6 +5441,7 @@
 		 *
 		 * @param {object} user row from the API
 		 * @param {HTMLElement} trigger control that asked, which gets the focus back when the preview is cancelled
+		 * @return {*} operation result
 		 */
 		function resetUser(user, trigger) {
 			context.start([user], null, trigger)
@@ -5236,6 +5460,7 @@
 		 * @param {object} user row from the API
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {string} operation operation id, "eligible" for "Can connect"
+		 * @return {*} operation result
 		 */
 		function decorateCell(cell, box, user, module, operation) {
 			const origin = module === null ? user.origins?.eligible : user.origins?.grants?.[module]?.[operation]
@@ -5281,13 +5506,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Individual override preview operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.overrides.preview = function (context) {
 		// --- Preview and reset ------------------------------------------------------------------------------------
 
@@ -5297,6 +5526,7 @@
 		 * @param {object[]} users users to reset
 		 * @param {Array<{module: string|null, operation: string}>|null} only restrict to these cells
 		 * @param {HTMLElement} trigger control that asked, which gets the focus back when the preview is cancelled
+		 * @return {*} operation result
 		 */
 		function start(users, only, trigger) {
 			if (context.saving || context.matrix.isBusy()) {
@@ -5327,6 +5557,7 @@
 		 * whose command refuses on its own what it cannot determine.
 		 *
 		 * @param {object} current the preview that asked; an answer for a preview that was closed or replaced is dropped
+		 * @return {Promise<*>} operation result
 		 */
 		async function loadAfter(current) {
 			try {
@@ -5352,7 +5583,9 @@
 		}
 
 
-		/** @param {boolean} restoreFocus give the focus back to the control that opened the preview */
+		/** @param {boolean} restoreFocus give the focus back to the control that opened the preview
+		 * @return {*} operation result
+		 */
 		function close(restoreFocus) {
 			const trigger = context.review?.trigger
 			context.review = null
@@ -5369,6 +5602,7 @@
 		 * as the last resort on the toolbar itself, so the focus never falls back to the page when a preview goes away.
 		 *
 		 * @param {HTMLElement|undefined} trigger control that opened the preview, which a reload may have replaced
+		 * @return {*} operation result
 		 */
 		function focusSomething(trigger) {
 			const usable = (node) => node && node.isConnected !== false && !node.disabled
@@ -5383,6 +5617,7 @@
 		 *
 		 * @param {Array<{uid: string, module: string|null, operation: string}>} cells cells of the users on the page
 		 * @param {HTMLElement} trigger control that asked
+		 * @return {*} operation result
 		 */
 		function reviewCells(cells, trigger) {
 			const keys = new Set(cells.map((cell) => context.afterKey(cell.uid, cell.module, cell.operation)))
@@ -5400,13 +5635,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Individual override review operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.overrides.review = function (context) {
 		/**
 		 * @param {{allowed: boolean|null, source: string, groupIds: string[]}|undefined} outcome the cell after the reset
@@ -5473,7 +5712,9 @@
 		}
 
 
-		/** Draws the preview: the exact cells, what each has before and after, what may change and the buttons. */
+		/** Draws the preview: the exact cells, what each has before and after, what may change and the buttons.
+		 * @return {*} operation result
+		 */
 		function renderReview() {
 			const result = context.review.plan
 			// The preview is drawn again when the server's answer arrives: the focus stays on what had it.
@@ -5570,15 +5811,21 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Individual override saving operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.overrides.saving = function (context) {
-		/** Sends the command of the open preview. Nothing is repeated on its own: a retry is the administrator's click. */
+		/** Sends the command of the open preview. Nothing is repeated on its own: a retry is the administrator's click.
+		 * @return {Promise<*>} operation result
+		 */
 		async function execute() {
 			if (context.review === null || context.saving || context.matrix.isBusy()) {
 				return
@@ -5653,7 +5900,10 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Compose the overrides editor and start its original effects once. */
+/** Compose the overrides editor and start its original effects once.
+ * @param {object} admin operation input
+ * @return {void} operation result
+ */
 (function (admin) {
 	'use strict'
 	const matrix = window.OCA.Mcp.Admin.matrix
@@ -5687,24 +5937,37 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Explicit diagnosis and cleanup of an unknown group grant.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.groups.unknown_grants = function (context) {
 		const UnknownGroupGrants = class UnknownGroupGrants {
-			/** @returns {object|null} Textual warning for a directory row. */
+			/** @returns {object|null} Textual warning for a directory row.
+			 * @param {*} group operation input
+			 */
 			static warning(group) {
 				return group.unknownGrants?.length ? { symbol: '?', text: t('mcp', 'Unknown grants: denied'), warning: true } : null
 			}
-			/** @returns {object[]} Fresh diagnosis replaces the open group's directory entry after readback. */
+			/** @returns {object[]} Fresh diagnosis replaces the open group's directory entry after readback.
+			 * @param {*} rows operation input
+			 * @param {*} group operation input
+			 */
 			static refreshRow(rows, group) {
 				return rows.map((row) => row.groupId === group.groupId ? { ...row, ...group, unknownGrants: group.unknownGrants || [] } : row)
 			}
-			/** @returns {HTMLElement[]} Accessible diagnostics with one explicit cleanup action per opaque row. */
+			/** @returns {HTMLElement[]} Accessible diagnostics with one explicit cleanup action per opaque row.
+			 * @param {*} group operation input
+			 * @param {*} busy operation input
+			 * @param {*} clean operation input
+			 */
 			static render(group, busy, clean) {
 				if (!group.unknownGrants?.length) return []
 				const section = context.el('section', { className: 'mcp-note' })
@@ -5717,7 +5980,12 @@
 				}
 				return [section]
 			}
-			/** Confirms the exact row and snapshot, never replays writes, and reloads after every attempt. */
+			/** Confirms the exact row and snapshot, never replays writes, and reloads after every attempt.
+			 * @param {*} group operation input
+			 * @param {*} row operation input
+			 * @param {object} options operation input
+			 * @return {Promise<*>} operation result
+			 */
 			static async clean(group, row, { api, setBusy, refresh, say, saved }) {
 				if (!window.confirm(t('mcp', 'Clear 1 unknown grant from group {group}? Key: {key}. Stored value: Allow. This cleanup will be recorded.',
 					{ group: group.groupId, key: row.module + '.' + row.operation }, undefined, { escape: false }))) return
@@ -5750,13 +6018,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Group policy session operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.groups.session = function (context) {
 		const root = context.root
 		const search = document.getElementById('mcp-group-search')
@@ -5800,6 +6072,12 @@
 		const untrusted = () => t('mcp', 'This group comes from a source that cannot guarantee group identity (for example LDAP). Grant MCP access to its members individually.')
 
 
+		/**
+		 * @param {*} tag operation input
+		 * @param {*} props operation input
+		 * @param {*} children operation input
+		 * @return {*} operation result
+		 */
 		function el(tag, props = {}, children = []) {
 			const node = document.createElement(tag)
 			Object.assign(node, props)
@@ -5811,6 +6089,9 @@
 		 * Writes into the fixed live regions. Both are cleared at once and the message is written shortly after, in
 		 * another task, so the same error twice in a row is announced again, and a message that was replaced or cleared
 		 * in the meantime never appears.
+		 * @param {*} message operation input
+		 * @param {boolean} error operation input
+		 * @return {*} operation result
 		 */
 		function say(message, error = false) {
 			clearTimeout(sayTimer)
@@ -5821,6 +6102,12 @@
 			sayTimer = setTimeout(() => { region.textContent = message }, SAY_DELAY)
 		}
 
+		/**
+		 * @param {*} method operation input
+		 * @param {*} path operation input
+		 * @param {*} body operation input
+		 * @return {Promise<*>} operation result
+		 */
 		async function api(method, path, body) {
 			const response = await fetch(OC.generateUrl('/apps/mcp' + path), {
 				method,
@@ -5836,26 +6123,48 @@
 			return data
 		}
 
+		/**
+		 * @param {*} module operation input
+		 * @return {*} operation result
+		 */
 		function moduleName(module) {
 			return { files: t('mcp', 'Files'), notes: t('mcp', 'Notes'), deck: t('mcp', 'Deck'), calendar: t('mcp', 'Calendar'), contacts: t('mcp', 'Contacts'), tasks: t('mcp', 'Tasks'), talk: t('mcp', 'Talk'), people: t('mcp', 'People'), logs: t('mcp', 'Server log'), mail: t('mcp', 'Mail'), tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls') }[module] || module
 		}
 
+		/**
+		 * @param {*} operation operation input
+		 * @return {*} operation result
+		 */
 		function operationName(operation) {
 			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 		}
 
+		/**
+		 * @param {*} grants operation input
+		 * @return {*} operation result
+		 */
 		function grantKeys(grants) {
 			return Object.entries(grants).flatMap(([module, operations]) => operations.map((operation) => module + ':' + operation)).sort()
 		}
 
+		/**
+		 * @return {*} operation result
+		 */
 		function dirty() {
 			return current && JSON.stringify(context.grantKeys(draft)) !== JSON.stringify(context.grantKeys(current.grants))
 		}
 
+		/**
+		 * @return {*} operation result
+		 */
 		function discardDraft() {
 			return !context.dirty() || window.confirm(t('mcp', 'Discard the unsaved group changes?'))
 		}
 
+		/**
+		 * @param {*} group operation input
+		 * @return {*} operation result
+		 */
 		function diagnosis(group) {
 			if (group.invalidId) return t('mcp', 'The directory returned an invalid group ID. This group cannot be edited.')
 			if (group.trusted === null) return t('mcp', 'The group source is unavailable. Retry before editing.')
@@ -5911,13 +6220,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Group policy directory operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.groups.directory = function (context) {
 		/** Material Design Icons "lock-outline", in the text colour, so it follows the theme; decoration, hidden from assistive technology. */
 		const LOCK_ICON = '<svg class="mcp-group-lock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12,17C10.89,17 10,16.1 10,15C10,13.89 10.89,13 12,13A2,2 0 0,1 14,15A2,2 0 0,1 12,17M18,20V10H6V20H18M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V10C4,8.89 4.89,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/></svg>'
@@ -5926,6 +6239,7 @@
 		 * phrase always carries the state in words, next to a symbol, so it never depends on colour.
 		 *
 		 * @return {{symbol: string, lock?: boolean, text: string, warning: boolean}|null} a lock is drawn as an icon, not as a symbol
+		 * @param {*} group operation input
 		 */
 		function rowState(group) {
 			if (group.invalidId) return { symbol: '⊘', text: t('mcp', 'Cannot be edited: invalid group ID'), warning: false }
@@ -5936,13 +6250,17 @@
 			if (group.state === 'pending_delete') return { symbol: '⚠', text: t('mcp', 'Deletion pending'), warning: true }
 			return context.UnknownGroupGrants.warning(group)
 		}
-		/** @return {string} what a group grants, in words, for the accessible name and the tooltip of its row */
+		/** @return {string} what a group grants, in words, for the accessible name and the tooltip of its row
+		 * @param {*} group operation input
+		 */
 		function grantSummary(group) {
 			const granted = Object.entries(group.grants || {}).filter(([, operations]) => operations.length > 0).map(([module]) => module)
 			if (granted.length === 0) return t('mcp', 'Grants nothing')
 			return t('mcp', 'Grants: {permissions}', { permissions: granted.map((module) => module === '_system' ? t('mcp', 'Can connect') : context.moduleName(module)).join(', ') }, undefined, context.RAW)
 		}
-		/** @return {string} what a group grants in one or two words, for the end of its row: "—", "Can connect" or "N modules" */
+		/** @return {string} what a group grants in one or two words, for the end of its row: "—", "Can connect" or "N modules"
+		 * @param {*} group operation input
+		 */
 		function grantShort(group) {
 			const granted = Object.entries(group.grants || {}).filter(([, operations]) => operations.length > 0).map(([module]) => module)
 			const apps = granted.filter((module) => module !== '_system').length
@@ -5955,6 +6273,7 @@
 		 * the row's accessible name and tooltip, so nothing is told by the symbol or a colour alone.
 		 *
 		 * @return {HTMLButtonElement} the row's button; drawList() puts each in its list item
+		 * @param {*} group operation input
 		 */
 		function groupRow(group) {
 			const differs = group.groupId !== null && group.groupId !== group.displayName
@@ -5981,17 +6300,26 @@
 		let buttons = []
 		/** The rows that can take the focus, in order. */
 		const items = () => buttons.filter((button) => !button.disabled)
-		/** One stop in the tab order for the whole list (the open group, else the first); the arrows move inside it. */
+		/** One stop in the tab order for the whole list (the open group, else the first); the arrows move inside it.
+		 * @param {*} target operation input
+		 * @return {*} operation result
+		 */
 		function rove(target) {
 			for (const button of items()) button.tabIndex = button === target ? 0 : -1
 		}
-		/** Scrolls the list, and only the list, so that a row is in view. */
+		/** Scrolls the list, and only the list, so that a row is in view.
+		 * @param {*} button operation input
+		 * @return {*} operation result
+		 */
 		function keepVisible(button) {
 			if (typeof button.offsetTop !== 'number' || typeof context.list.clientHeight !== 'number') return
 			const top = button.offsetTop - context.list.offsetTop
 			if (top < context.list.scrollTop) context.list.scrollTop = top
 			else if (top + button.offsetHeight > context.list.scrollTop + context.list.clientHeight) context.list.scrollTop = top + button.offsetHeight - context.list.clientHeight
 		}
+		/**
+		 * @return {*} operation result
+		 */
 		function drawList() {
 			buttons = context.rows.map(context.groupRow)
 			context.list.replaceChildren(...buttons.map((button) => context.el('li', {}, [button])))
@@ -6012,7 +6340,10 @@
 			context.rove(target)
 			target.focus()
 		})
-		/** The filter buttons say how many groups each shows, when the server knows it without extra work. */
+		/** The filter buttons say how many groups each shows, when the server knows it without extra work.
+		 * @param {*} counts operation input
+		 * @return {*} operation result
+		 */
 		function drawFilters(counts) {
 			const names = { all: t('mcp', 'All'), granted: t('mcp', 'With grants'), blocked: t('mcp', 'Blocked groups') }
 			const counted = { all: (count) => t('mcp', 'All ({count})', { count }, undefined, context.RAW), granted: (count) => t('mcp', 'With grants ({count})', { count }, undefined, context.RAW), blocked: (count) => t('mcp', 'Blocked groups ({count})', { count }, undefined, context.RAW) }
@@ -6032,7 +6363,10 @@
 				context.loadList()
 			})
 		}
-		/** On a narrow screen the list folds into the picker above the editor; on a wide one both columns stay. */
+		/** On a narrow screen the list folds into the picker above the editor; on a wide one both columns stay.
+		 * @param {*} isOpen operation input
+		 * @return {*} operation result
+		 */
 		function setListOpen(isOpen) {
 			if (!context.columns || !context.picker) return
 			context.columns.setAttribute('data-list', isOpen ? 'open' : 'closed')
@@ -6044,6 +6378,9 @@
 			context.setListOpen(isOpen)
 			if (isOpen) context.search.focus()
 		})
+		/**
+		 * @return {Promise<*>} operation result
+		 */
 		async function loadList() {
 			const seq = ++context.listSeq
 			context.list.setAttribute('aria-busy', 'true')
@@ -6073,9 +6410,20 @@
 				if (seq === context.listSeq) context.list.setAttribute('aria-busy', 'false')
 			}
 		}
+		/**
+		 * @param {*} action operation input
+		 * @return {*} operation result
+		 */
 		function retry(action) {
 			return context.el('button', { type: 'button', textContent: t('mcp', 'Retry'), onclick: action })
 		}
+		/**
+		 * @param {*} gid operation input
+		 * @param {boolean} preserve operation input
+		 * @param {boolean} keepMessage operation input
+		 * @param {*} displayName operation input
+		 * @return {Promise<*>} operation result
+		 */
 		async function open(gid, preserve = false, keepMessage = false, displayName = null) {
 			if (context.busy || (!preserve && !context.discardDraft())) return
 			if (displayName !== null) context.shownName = displayName
@@ -6116,13 +6464,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Group policy drafts operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.groups.drafts = function (context) {
 		/** Operations of a module in a grants object, whether it came as an object or as PHP's empty array. */
 		const operationsIn = (grants, module) => (grants && !Array.isArray(grants) && grants[module]) || []
@@ -6131,28 +6483,45 @@
 		/**
 		 * The level a set of granted operations makes, with the matrix's tiers (src/admin/admin-levels.js). A group only grants, so an
 		 * operation outside the set is "not granted", never denied.
+		 * @param {*} grants operation input
+		 * @param {*} module operation input
+		 * @return {*} operation result
 		 */
 		function levelIn(grants, module) {
 			const operations = context.current.catalog[module]
 			const granted = operationsIn(grants, module)
 			return window.OCA.Mcp.Admin.levels.levelOf(module, operations, Object.fromEntries(operations.map((operation) => [operation, granted.includes(operation)])))
 		}
-		/** What a member gets without any grant: GrantPolicy::defaultGranted(), reading except the server log. */
+		/** What a member gets without any grant: GrantPolicy::defaultGranted(), reading except the server log.
+		 * @param {*} module operation input
+		 * @return {*} operation result
+		 */
 		function defaultLevel(module) {
 			const operations = context.current.catalog[module]
 			return window.OCA.Mcp.Admin.levels.levelOf(module, operations, Object.fromEntries(operations.map((operation) => [operation, operation === 'read' && module !== 'logs'])))
 		}
-		/** For a group the lowest level is "Not granted": the members keep what they have from elsewhere. */
+		/** For a group the lowest level is "Not granted": the members keep what they have from elsewhere.
+		 * @param {*} level operation input
+		 * @return {*} operation result
+		 */
 		function levelName(level) {
 			return { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'Not granted'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom') }[level] || level
 		}
-		/** A level in words, a custom one with its operations, since "Custom → Custom" would say nothing. */
+		/** A level in words, a custom one with its operations, since "Custom → Custom" would say nothing.
+		 * @param {*} grants operation input
+		 * @param {*} module operation input
+		 * @return {*} operation result
+		 */
 		function levelText(grants, module) {
 			const level = context.levelIn(grants, module)
 			if (level !== 'custom') return context.levelName(level)
 			return t('mcp', 'Custom ({operations})', { operations: context.current.catalog[module].filter((operation) => operationsIn(grants, module).includes(operation)).map(context.operationName).join(', ') }, undefined, context.RAW)
 		}
-		/** One line per changed module, "Files: Read → Edit", and one for "Can connect". */
+		/** One line per changed module, "Files: Read → Edit", and one for "Can connect".
+		 * @param {*} before operation input
+		 * @param {*} after operation input
+		 * @return {*} operation result
+		 */
 		function changes(before, after) {
 			const lines = []
 			const eligible = (grants) => operationsIn(grants, '_system').includes('eligible')
@@ -6166,6 +6535,12 @@
 			}
 			return lines
 		}
+		/**
+		 * @param {*} module operation input
+		 * @param {*} operations operation input
+		 * @param {*} focusKey operation input
+		 * @return {*} operation result
+		 */
 		function setOperations(module, operations, focusKey) {
 			if (operations.length) context.draft[module] = [...operations].sort()
 			else delete context.draft[module]
@@ -6177,6 +6552,9 @@
 		 * The matrix's group filter lists the groups it can filter by; a group it does not list (an external group, or one that
 		 * no longer exists) is said so here, and the page does not move. The focus goes to the exceptions filter, a real
 		 * control, which also tells a screen reader where it landed.
+		 * @param {*} gid operation input
+		 * @param {*} name operation input
+		 * @return {*} operation result
 		 */
 		function viewInMatrix(gid, name) {
 			const select = document.getElementById('mcp-group')
@@ -6191,7 +6569,13 @@
 			document.getElementById('mcp-block-matrix')?.scrollIntoView?.({ block: 'start' })
 			exceptionsOnly?.focus()
 		}
-		/** A pressed level carries a check mark besides aria-pressed, as in the matrix popover, so it never depends on colour. */
+		/** A pressed level carries a check mark besides aria-pressed, as in the matrix popover, so it never depends on colour.
+		 * @param {*} module operation input
+		 * @param {*} level operation input
+		 * @param {*} pressed operation input
+		 * @param {*} onclick operation input
+		 * @return {*} operation result
+		 */
 		function levelButton(module, level, pressed, onclick) {
 			const children = []
 			if (pressed) {
@@ -6220,18 +6604,23 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Group policy rendering operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.groups.rendering = function (context) {
 		/**
 		 * Draws the open group and focuses the control drawn under focusKey, so a change redraws without losing the place.
 		 *
 		 * @param {string|null} focusKey key of the control to focus, or null to leave the focus alone
+		 * @return {*} operation result
 		 */
 		function render(focusKey = null) {
 			const controls = new Map()
@@ -6356,14 +6745,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Group policy saving operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.groups.saving = function (context) {
+		/**
+		 * @param {*} action operation input
+		 * @return {Promise<*>} operation result
+		 */
 		async function run(action) {
 			if (context.busy || !context.current || (action === 'save' && !context.preview)) return
 			if (action === 'save' && window.OCA.Mcp.Admin.mailGrants && !window.OCA.Mcp.Admin.mailGrants.confirmWrites(Object.entries(context.draft)
@@ -6421,7 +6818,10 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Compose the groups editor and start its original effects once. */
+/** Compose the groups editor and start its original effects once.
+ * @param {object} admin operation input
+ * @return {void} operation result
+ */
 (function (admin) {
 	'use strict'
 	const root = document.getElementById('mcp-group-editor')
@@ -6444,700 +6844,1023 @@
 	context.loadList()
 })((globalThis.window || globalThis).OCA.Mcp.Admin)
 ;
-/* admin/admin-scope.js */
+/* admin/scope/session.js */
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/**
- * Resource scope panel of the admin page (issue #4, B7; contracts B.6). Plain JavaScript, no build. One user at a
- * time: per module of the scope (Files, Calendar, Tasks) the administrator chooses "All resources" or "Only
- * selected" and picks folders, calendars or task lists from the user's own Nextcloud resources, through the admin
- * routes of the scope (GET /api/scope/{uid}/{module}, its candidates, PUT with expectedRevision, undo through
- * /api/grants/undo). Nothing here decides access: the server validates every item and the tools apply the scope.
- *
- * A module whose activation barrier is still closed on the server (`active: false`) is shown with its saved state
- * and browsable, but cannot be saved, and says so: the tools of that module do not apply a scope yet. A conflict
- * (409) never repeats the write: the current scope is read again and shown. Each module keeps the revision its own
- * draft was read at, so a draft made before a change elsewhere is refused by the server instead of overwriting it.
- * A write of this page (a module here, or the matrix, OAuth clients or server log of src/admin/admin-grants.js) is announced
- * with the revision it was sent with and the one it made (event "mcp-revision-moved"); a module still at the first
- * takes the second and keeps its draft, since nothing but that write lies between them.
- * Exposes window.OCA.Mcp.Admin.scope for the matrix, which shows "Restricted to N" (or "Scope unknown") in the module's first
- * cell and opens this panel from it.
- *
- * The panel is a drawer at the side of the page (S9): the Access tab shows one sentence and a button, and the drawer
- * opens from that button, from a "Restricted to N" cell or from the actions menu of a matrix row. Its modules are tabs
- * that say the saved state ("Files: 3", "Calendar: all") and whether a draft is not saved. Escape and the close button
- * close it, asking first when a draft would be lost, and the focus goes back to the control that opened it. The drawer
- * is not modal, so the matrix stays usable beside it: opening another person while a draft is open asks first too, and
- * close() says whether the drawer really closed, so another drawer never opens over a draft that was kept.
+/** Resource scope session operations.
+ * @param {object} admin app registry
+ * @return {void}
  */
-(function () {
+(function (admin) {
 	'use strict'
-	const MODULES = ['files', 'calendar', 'tasks']
-	const UNDO_SECONDS = 10
-	/** Delay before a message is written, so the same message twice in a row is announced twice (as in the matrix). */
-	const SAY_DELAY = 60
-	const root = document.getElementById('mcp-scope')
-	const form = document.getElementById('mcp-scope-form')
-	const userInput = document.getElementById('mcp-scope-user')
-	const status = document.getElementById('mcp-scope-status')
-	const alertBox = document.getElementById('mcp-scope-alert')
-	const container = document.getElementById('mcp-scope-modules')
-	const tabs = document.getElementById('mcp-scope-tabs')
-	const drawerTitle = document.getElementById('mcp-scope-title')
-	const closeButton = document.getElementById('mcp-scope-close')
-	const entryButton = document.getElementById('mcp-scope-entry')
-	/** The module whose tab is open, and the control the focus goes back to when the drawer closes. */
-	let currentTab = 'files'
-	let returnFocus = null
-	let returnRow = null
-	let uid = null
-	let seq = 0
-	let sayTimer = null
-	/** @type {Object<string, object>} state of each module of the open user */
-	let modules = {}
-	/** Page event of a write this page committed: detail {from, to}; src/admin/admin-grants.js sends and follows it too. */
-	const REVISION_MOVED = 'mcp-revision-moved'
 
-	function el(tag, props = {}, children = []) {
-		const node = document.createElement(tag)
-		Object.assign(node, props)
-		node.append(...children)
-		return node
-	}
-	function say(message, error = false) {
-		clearTimeout(sayTimer)
-		status.textContent = ''
-		alertBox.textContent = ''
-		if (message === '') return
-		const region = error ? alertBox : status
-		sayTimer = setTimeout(() => { region.textContent = message }, SAY_DELAY)
-	}
-	async function api(method, path, query, body) {
-		const url = OC.generateUrl('/apps/mcp' + path) + (query ? '?' + new URLSearchParams(query) : '')
-		const response = await fetch(url, {
-			method,
-			headers: { 'Content-Type': 'application/json', Accept: 'application/json', requesttoken: OC.requestToken },
-			body: body === undefined ? undefined : JSON.stringify(body),
-		})
-		// A 2xx HTML response cannot confirm a save or undo; retain HTTP status handling for errors.
-		const data = await response.json().catch((error) => {
-			if (response.ok) throw Object.assign(new Error('unconfirmed'), { cause: error })
-			return {}
-		})
-		if (!response.ok) throw Object.assign(new Error(String(response.status)), { status: response.status, data })
-		return data
-	}
-	function scopePath(module, suffix = '') {
-		return '/api/scope/' + encodeURIComponent(uid) + '/' + module + suffix
-	}
-	function title(module) {
-		return { files: t('mcp', 'Files: folders'), calendar: t('mcp', 'Calendar: calendars'), tasks: t('mcp', 'Tasks: task lists') }[module]
-	}
-	function emptyText(module) {
-		return {
-			files: t('mcp', 'Nothing selected: the Files tools of this user reach no folder.'),
-			calendar: t('mcp', 'Nothing selected: the Calendar tools of this user reach no calendar.'),
-			tasks: t('mcp', 'Nothing selected: the Tasks tools of this user reach no task list.'),
-		}[module]
-	}
-	function failure(error) {
-		if (error.status === 403) return t('mcp', 'Only administrators can change the resource scope.')
-		if (error.status === 400) return t('mcp', 'Check the user ID and try again.')
-		if (error.status === 503) return t('mcp', 'The MCP policy cannot be read right now. Nothing was changed. Try again shortly.')
-		return t('mcp', 'The request failed. Try again.')
-	}
-	/** What a saved or selected item is called on screen: its path for a folder, its name otherwise. */
-	function label(item) {
-		if (item.found === false) return t('mcp', 'Resource no longer found ({id})', { id: item.id }, undefined, { escape: false })
-		return item.path || item.name
-	}
-	function badges(item) {
-		const out = []
-		if (item.found === false) out.push(el('span', { className: 'mcp-badge', textContent: t('mcp', 'not found: it has no effect') }))
-		if (item.excluded) out.push(el('span', { className: 'mcp-badge', textContent: t('mcp', 'excluded by a tag: choosing it has no effect') }))
-		if (item.inaccessible) out.push(el('span', { className: 'mcp-badge mcp-badge-error', textContent: t('mcp', 'the user cannot reach it in Nextcloud') }))
-		return out
-	}
-
+	admin.modules.scope = admin.modules.scope || {}
 	/**
-	 * A message of one module: shown under it and announced through the page's live regions, which exist from the
-	 * start (a region created with its text already in it is not reliably announced).
+	 * @param {object} context operation input
+	 * @return {void} operation result
 	 */
-	function note(state, message, error = false) {
-		state.line = message
-		if (message !== '') say(title(state.module) + ': ' + message, error)
-	}
+	admin.modules.scope.session = function (context) {
+		const MODULES = ['files', 'calendar', 'tasks']
+		const UNDO_SECONDS = 10
+		/** Delay before a message is written, so the same message twice in a row is announced twice (as in the matrix). */
+		const SAY_DELAY = 60
+		const root = document.getElementById('mcp-scope')
+		const form = document.getElementById('mcp-scope-form')
+		const userInput = document.getElementById('mcp-scope-user')
+		const status = document.getElementById('mcp-scope-status')
+		const alertBox = document.getElementById('mcp-scope-alert')
+		const container = document.getElementById('mcp-scope-modules')
+		const tabs = document.getElementById('mcp-scope-tabs')
+		const drawerTitle = document.getElementById('mcp-scope-title')
+		const closeButton = document.getElementById('mcp-scope-close')
+		const entryButton = document.getElementById('mcp-scope-entry')
+		/** The module whose tab is open, and the control the focus goes back to when the drawer closes. */
+		let currentTab = 'files'
+		let returnFocus = null
+		let returnRow = null
+		let uid = null
+		let seq = 0
+		let sayTimer = null
+		/** @type {Object<string, object>} state of each module of the open user */
+		let modules = {}
+		/** Page event of a write this page committed: detail {from, to}; src/admin/matrix/start.js sends and follows it too. */
+		const REVISION_MOVED = 'mcp-revision-moved'
 
-	/** @return {boolean} whether the draft differs from what is saved */
-	function dirty(state) {
-		const ids = (items) => items.map((item) => item.id).sort().join(',')
-		return state.mode !== state.savedMode || (state.mode === 'restricted' && ids(state.items) !== ids(state.savedItems))
-	}
 
-	async function openUser(target, focusModule) {
-		const mine = ++seq
-		uid = target
-		modules = {}
-		currentTab = focusModule || MODULES[0]
-		tabs?.replaceChildren()
-		container.replaceChildren()
-		container.setAttribute('aria-busy', 'true')
-		say(t('mcp', 'Loading the resource scope…'))
-		try {
-			const loaded = await Promise.all(MODULES.map((module) => api('GET', scopePath(module))))
-			if (mine !== seq) return
-			loaded.forEach((data) => {
-				modules[data.module] = {
-					module: data.module, active: data.active, limit: data.limit, revision: data.revision,
-					mode: data.mode, savedMode: data.mode, items: [...data.items], savedItems: [...data.items],
-					search: '', parents: [], results: null, page: 1, undo: null, saving: false, stale: false,
-				}
+		/**
+		 * @param {*} tag operation input
+		 * @param {*} props operation input
+		 * @param {*} children operation input
+		 * @return {*} operation result
+		 */
+		function el(tag, props = {}, children = []) {
+			const node = document.createElement(tag)
+			Object.assign(node, props)
+			node.append(...children)
+			return node
+		}
+
+		/**
+		 * @param {*} message operation input
+		 * @param {boolean} error operation input
+		 * @return {*} operation result
+		 */
+		function say(message, error = false) {
+			clearTimeout(sayTimer)
+			status.textContent = ''
+			alertBox.textContent = ''
+			if (message === '') return
+			const region = error ? alertBox : status
+			sayTimer = setTimeout(() => { region.textContent = message }, SAY_DELAY)
+		}
+
+		/**
+		 * @param {*} method operation input
+		 * @param {*} path operation input
+		 * @param {*} query operation input
+		 * @param {*} body operation input
+		 * @return {Promise<*>} operation result
+		 */
+		async function api(method, path, query, body) {
+			const url = OC.generateUrl('/apps/mcp' + path) + (query ? '?' + new URLSearchParams(query) : '')
+			const response = await fetch(url, {
+				method,
+				headers: { 'Content-Type': 'application/json', Accept: 'application/json', requesttoken: OC.requestToken },
+				body: body === undefined ? undefined : JSON.stringify(body),
 			})
-			MODULES.forEach((module) => container.append(renderModule(modules[module])))
-			renderTabs()
-			say(t('mcp', 'Resource scope of {user}.', { user: uid }, undefined, { escape: false }))
-			const heading = document.getElementById('mcp-scope-heading-' + (focusModule || MODULES[0]))
-			if (focusModule && heading) {
-				heading.scrollIntoView?.({ block: 'start' })
-				heading.focus?.()
-			}
-		} catch (error) {
-			if (mine !== seq) return
-			uid = null
-			say(failure(error), true)
-		} finally {
-			if (mine === seq) container.setAttribute('aria-busy', 'false')
-		}
-	}
-
-	/** Reads one module again from the server; its draft is replaced by the saved scope and its revision. */
-	async function reload(state) {
-		const data = await api('GET', scopePath(state.module))
-		Object.assign(state, { active: data.active, revision: data.revision, stale: false,
-			mode: data.mode, savedMode: data.mode, items: [...data.items], savedItems: [...data.items] })
-		rerender(state)
-	}
-
-	/**
-	 * The policy revision moved (a save, an undo, a conflict): the three modules are read again. A module with an
-	 * unsaved draft keeps it. When it already took the revision this page's own write made (`current`), the draft is
-	 * still valid and stays as it is. Otherwise it keeps the revision it was read at, and says so: saving it is refused
-	 * by the server (409) rather than accepted against a scope it never saw, and discarding it loads the saved scope.
-	 *
-	 * @param {object} origin the module that saved, undid or was refused
-	 * @param {string} [current] revision made by this page's own write, when it committed
-	 */
-	async function reloadAll(origin, current) {
-		for (const module of MODULES) {
-			const state = modules[module]
-			if (state === origin || !dirty(state)) {
-				await reload(state).catch(() => {})
-			} else if (current === undefined || state.revision !== current) {
-				state.stale = true
-				state.line = t('mcp', 'Changed before the policy moved, so saving will be refused. Discard the changes to load the saved scope.')
-				rerender(state)
-			}
-		}
-	}
-
-	function rerender(state, focusId) {
-		const old = document.getElementById('mcp-scope-module-' + state.module)
-		const fresh = renderModule(state)
-		if (old) old.replaceWith(fresh)
-		renderTabs()
-		if (focusId) document.getElementById(focusId)?.focus?.()
-	}
-
-	/** @return {string} the tab of a module: its saved state, and whether a draft is not saved */
-	function tabLabel(state) {
-		const name = { files: t('mcp', 'Files'), calendar: t('mcp', 'Calendar'), tasks: t('mcp', 'Tasks') }[state.module]
-		const saved = state.savedMode === 'restricted'
-			? t('mcp', '{module}: {count}', { module: name, count: state.savedItems.length }, undefined, { escape: false })
-			: t('mcp', '{module}: all', { module: name }, undefined, { escape: false })
-		return dirty(state) ? saved + ' (' + t('mcp', 'not saved') + ')' : saved
-	}
-
-	/** The module tabs of the drawer (WAI-ARIA tabs: the arrow keys, Home and End move between them). */
-	function renderTabs() {
-		if (!tabs) return
-		const shown = MODULES.filter((module) => modules[module])
-		tabs.replaceChildren(...shown.map((module, index) => {
-			const selected = module === currentTab
-			const tab = el('button', { type: 'button', id: 'mcp-scope-tab-' + module, textContent: tabLabel(modules[module]), tabIndex: selected ? 0 : -1 })
-			tab.setAttribute('role', 'tab')
-			tab.setAttribute('aria-selected', String(selected))
-			tab.setAttribute('aria-controls', 'mcp-scope-module-' + module)
-			tab.addEventListener('click', () => selectTab(module, true))
-			tab.addEventListener('keydown', (event) => {
-				const next = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: shown.length - 1 }[event.key]
-				if (next === undefined) return
-				event.preventDefault?.()
-				selectTab(shown[(next + shown.length) % shown.length], true)
+			// A 2xx HTML response cannot confirm a save or undo; retain HTTP status handling for errors.
+			const data = await response.json().catch((error) => {
+				if (response.ok) throw Object.assign(new Error('unconfirmed'), { cause: error })
+				return {}
 			})
-			return tab
-		}))
-	}
-
-	/** Shows one module's section and marks its tab. */
-	function selectTab(module, focus) {
-		currentTab = module
-		for (const other of MODULES) {
-			const section = document.getElementById('mcp-scope-module-' + other)
-			if (section) section.hidden = Boolean(tabs) && other !== module
+			if (!response.ok) throw Object.assign(new Error(String(response.status)), { status: response.status, data })
+			return data
 		}
-		renderTabs()
-		if (focus) document.getElementById('mcp-scope-tab-' + module)?.focus?.()
-	}
 
-	/**
-	 * Puts the open drawer right under the Nextcloud header. A drawer is position: fixed, but Nextcloud 35 blurs the content
-	 * behind it (backdrop-filter on #content-vue), which makes that box, not the window, the one it is placed in: its top
-	 * would then be counted from the box, one header too low. The offset is measured, not assumed, since a theme may turn
-	 * the blur off.
-	 */
-	function placeDrawer() {
-		root.style?.removeProperty?.('top')
-		const rect = root.getBoundingClientRect?.()
-		if (!rect) return
-		const header = document.getElementById('header')?.getBoundingClientRect?.().bottom ?? 0
-		const shift = rect.top - header
-		if (Math.abs(shift) >= 1) root.style.top = (parseFloat(getComputedStyle(root).top) - shift) + 'px'
-	}
-
-	/** Opens the drawer; the focus goes back to `trigger` when it closes. */
-	function openDrawer(trigger) {
-		// Only one drawer is open at a time: the inspector closes when the scope opens.
-		window.OCA.Mcp.Admin.inspector?.close?.()
-		returnFocus = trigger || document.activeElement || null
-		// The row of a "…" button that opened the drawer: the table may be drawn again meanwhile, and its new button is
-		// the one that gets the focus back.
-		returnRow = returnFocus?.closest?.('tr')?.dataset?.uid ?? null
-		root.classList?.add('mcp-drawer-open')
-		root.setAttribute('role', 'dialog')
-		placeDrawer()
-	}
-
-	/** @return {boolean} whether a module has a draft that is not saved */
-	function hasDraft() {
-		return Object.values(modules).some(dirty)
-	}
-
-	/** Drops the drafts the administrator agreed to lose, so they never come back when the drawer opens again. */
-	function forget() {
-		seq++
-		uid = null
-		modules = {}
-		tabs?.replaceChildren()
-		container.replaceChildren()
-	}
-
-	/**
-	 * Closes the drawer, asking first when a draft of a module would be lost.
-	 *
-	 * @return {boolean} whether the drawer is closed now: false when the administrator kept the draft
-	 */
-	function closeDrawer() {
-		if (!root.classList?.contains('mcp-drawer-open')) return true
-		if (hasDraft()) {
-			if (!window.confirm(t('mcp', 'Close the resource scope? The changes that are not saved are lost.'))) return false
-			forget()
+		/**
+		 * @param {*} module operation input
+		 * @param {*} suffix operation input
+		 * @return {*} operation result
+		 */
+		function scopePath(module, suffix = '') {
+			return '/api/scope/' + encodeURIComponent(uid) + '/' + module + suffix
 		}
-		root.classList.remove('mcp-drawer-open')
-		root.removeAttribute?.('role')
-		root.style?.removeProperty?.('top')
-		const target = returnFocus
-		returnFocus = null
-		focusBack(target)
-		window.dispatchEvent?.(new Event('mcp-drawer-closed'))
-		return true
-	}
 
-	/**
-	 * Whether the drafts of the open user may be lost to open another one (or the same one read again): asked, never
-	 * assumed.
-	 *
-	 * @return {boolean}
-	 */
-	function mayReplace() {
-		return !hasDraft() || window.confirm(t('mcp', 'Open another person? The changes that are not saved for {user} are lost.', { user: uid }, undefined, { escape: false }))
-	}
+		/**
+		 * @param {*} module operation input
+		 * @return {*} operation result
+		 */
+		function title(module) {
+			return { files: t('mcp', 'Files: folders'), calendar: t('mcp', 'Calendar: calendars'), tasks: t('mcp', 'Tasks: task lists') }[module]
+		}
 
-	/**
-	 * Gives the focus back to the control that opened the drawer, or, when the table was drawn again and that control is
-	 * gone, to the same row's "…" button, then to the drawer's own button on the Access tab: never to the page.
-	 */
-	function focusBack(target) {
-		if (target && target.isConnected !== false) {
-			target.focus?.()
-			return
+		/**
+		 * @param {*} module operation input
+		 * @return {*} operation result
+		 */
+		function emptyText(module) {
+			return {
+				files: t('mcp', 'Nothing selected: the Files tools of this user reach no folder.'),
+				calendar: t('mcp', 'Nothing selected: the Calendar tools of this user reach no calendar.'),
+				tasks: t('mcp', 'Nothing selected: the Tasks tools of this user reach no task list.'),
+			}[module]
 		}
-		const rows = [...(document.getElementById('mcp-matrix')?.tBodies?.[0]?.rows || [])]
-		const row = returnRow === null ? null : rows.find((candidate) => candidate.dataset.uid === returnRow)
-		;(row?.querySelector('button.mcp-row-actions-button') || entryButton)?.focus?.()
-	}
 
-	function renderModule(state) {
-		const module = state.module
-		const section = el('section', { id: 'mcp-scope-module-' + module, className: 'mcp-scope-module', hidden: Boolean(tabs) && module !== currentTab })
-		const heading = el('h3', { id: 'mcp-scope-heading-' + module, textContent: title(module), tabIndex: -1 })
-		section.setAttribute('aria-labelledby', heading.id)
-		section.append(heading)
-		if (state.stale) {
-			section.append(el('p', { className: 'mcp-scope-inactive', textContent: t('mcp', 'Changed before the policy moved, so saving will be refused. Discard the changes to load the saved scope.') }))
+		/**
+		 * @param {*} error operation input
+		 * @return {*} operation result
+		 */
+		function failure(error) {
+			if (error.status === 403) return t('mcp', 'Only administrators can change the resource scope.')
+			if (error.status === 400) return t('mcp', 'Check the user ID and try again.')
+			if (error.status === 503) return t('mcp', 'The MCP policy cannot be read right now. Nothing was changed. Try again shortly.')
+			return t('mcp', 'The request failed. Try again.')
 		}
-		if (!state.active) {
-			section.append(el('p', { className: 'mcp-scope-inactive', textContent: t('mcp', 'Not available in this version: the tools of this module do not apply a scope yet, so nothing can be saved. You can still browse.') }))
+
+		/** What a saved or selected item is called on screen: its path for a folder, its name otherwise.
+		 * @param {*} item operation input
+		 * @return {*} operation result
+		 */
+		function label(item) {
+			if (item.found === false) return t('mcp', 'Resource no longer found ({id})', { id: item.id }, undefined, { escape: false })
+			return item.path || item.name
 		}
-		const fieldset = el('fieldset', {}, [el('legend', { textContent: t('mcp', 'Resources the MCP tools of {user} may reach', { user: uid }, undefined, { escape: false }) })])
-		;[['unrestricted', t('mcp', 'All resources')], ['restricted', t('mcp', 'Only selected')]].forEach(([value, text]) => {
-			const id = 'mcp-scope-mode-' + module + '-' + value
-			const radio = el('input', { type: 'radio', name: 'mcp-scope-mode-' + module, id, value, checked: state.mode === value })
-			radio.addEventListener('change', () => {
-				if (!radio.checked) return
-				state.mode = value
-				rerender(state, id)
-			})
-			fieldset.append(el('span', { className: 'mcp-scope-choice' }, [radio, el('label', { htmlFor: id, textContent: text })]))
+
+		/**
+		 * @param {*} item operation input
+		 * @return {*} operation result
+		 */
+		function badges(item) {
+			const out = []
+			if (item.found === false) out.push(context.el('span', { className: 'mcp-badge', textContent: t('mcp', 'not found: it has no effect') }))
+			if (item.excluded) out.push(context.el('span', { className: 'mcp-badge', textContent: t('mcp', 'excluded by a tag: choosing it has no effect') }))
+			if (item.inaccessible) out.push(context.el('span', { className: 'mcp-badge mcp-badge-error', textContent: t('mcp', 'the user cannot reach it in Nextcloud') }))
+			return out
+		}
+
+
+		/**
+		 * A message of one module: shown under it and announced through the page's live regions, which exist from the
+		 * start (a region created with its text already in it is not reliably announced).
+		 * @param {*} state operation input
+		 * @param {*} message operation input
+		 * @param {boolean} error operation input
+		 * @return {*} operation result
+		 */
+		function note(state, message, error = false) {
+			state.line = message
+			if (message !== '') context.say(context.title(state.module) + ': ' + message, error)
+		}
+
+
+		/** @return {boolean} whether the draft differs from what is saved
+		 * @param {*} state operation input
+		 */
+		function dirty(state) {
+			const ids = (items) => items.map((item) => item.id).sort().join(',')
+			return state.mode !== state.savedMode || (state.mode === 'restricted' && ids(state.items) !== ids(state.savedItems))
+		}
+
+		Object.defineProperties(context, {
+			MODULES: { configurable: true, get: () => MODULES },
+			UNDO_SECONDS: { configurable: true, get: () => UNDO_SECONDS },
+			SAY_DELAY: { configurable: true, get: () => SAY_DELAY },
+			root: { configurable: true, get: () => root },
+			form: { configurable: true, get: () => form },
+			userInput: { configurable: true, get: () => userInput },
+			status: { configurable: true, get: () => status },
+			alertBox: { configurable: true, get: () => alertBox },
+			container: { configurable: true, get: () => container },
+			tabs: { configurable: true, get: () => tabs },
+			drawerTitle: { configurable: true, get: () => drawerTitle },
+			closeButton: { configurable: true, get: () => closeButton },
+			entryButton: { configurable: true, get: () => entryButton },
+			currentTab: { configurable: true, get: () => currentTab, set: (value) => { currentTab = value } },
+			returnFocus: { configurable: true, get: () => returnFocus, set: (value) => { returnFocus = value } },
+			returnRow: { configurable: true, get: () => returnRow, set: (value) => { returnRow = value } },
+			uid: { configurable: true, get: () => uid, set: (value) => { uid = value } },
+			seq: { configurable: true, get: () => seq, set: (value) => { seq = value } },
+			sayTimer: { configurable: true, get: () => sayTimer, set: (value) => { sayTimer = value } },
+			modules: { configurable: true, get: () => modules, set: (value) => { modules = value } },
+			REVISION_MOVED: { configurable: true, get: () => REVISION_MOVED },
 		})
-		section.append(fieldset)
-		if (state.mode === 'restricted') {
-			section.append(renderSelection(state), renderPicker(state))
-		}
-		// Nothing can be sent twice: Save, Discard and Undo wait for the answer of the request in flight.
-		const save = el('button', { type: 'button', id: 'mcp-scope-save-' + module, textContent: t('mcp', 'Save'), disabled: state.saving || !state.active || !dirty(state) })
-		save.addEventListener('click', () => saveModule(state))
-		const discard = el('button', { type: 'button', id: 'mcp-scope-discard-' + module, textContent: t('mcp', 'Discard changes'), disabled: state.saving || (!dirty(state) && !state.stale) })
-		discard.addEventListener('click', async () => {
-			if (state.stale) {
-				// A draft of an older revision: what is saved now comes from the server, not from the old copy.
-				await reload(state).catch((error) => note(state, failure(error), true))
-				rerender(state, 'mcp-scope-mode-' + module + '-' + state.mode)
-				return
-			}
-			Object.assign(state, { mode: state.savedMode, items: [...state.savedItems] })
-			rerender(state, 'mcp-scope-mode-' + module + '-' + state.mode)
-		})
-		const actions = el('div', { className: 'mcp-scope-actions' }, [save, discard])
-		if (state.undo) {
-			const offer = state.undo
-			const undo = el('button', { type: 'button', id: 'mcp-scope-undo-' + module, textContent: t('mcp', 'Undo'), disabled: state.saving })
-			undo.addEventListener('click', () => undoModule(state))
-			// The ten seconds pause while the pointer or the focus is on the button (WCAG 2.2.1).
-			const hold = (key, value) => () => {
-				offer[key] = value
-				if (!value) expireUndo(state, offer)
-			}
-			undo.addEventListener('mouseenter', hold('hover', true))
-			undo.addEventListener('mouseleave', hold('hover', false))
-			undo.addEventListener('focus', hold('focus', true))
-			undo.addEventListener('blur', hold('focus', false))
-			actions.append(undo)
-		}
-		section.append(actions)
-		section.append(el('p', { id: 'mcp-scope-line-' + module, className: 'mcp-scope-line', textContent: state.line || '', tabIndex: -1 }))
-		return section
-	}
 
-	function renderSelection(state) {
-		const module = state.module
-		const wrap = el('div', { className: 'mcp-scope-selection' })
-		wrap.append(el('p', { textContent: state.items.length === 0 ? emptyText(module) : t('mcp', '{count} of at most {limit} selected', { count: state.items.length, limit: state.limit }, undefined, { escape: false }) }))
-		if (state.items.length > 0) {
-			const list = el('ul', { className: 'mcp-scope-list' })
-			list.setAttribute('aria-label', t('mcp', 'Selected resources'))
-			state.items.forEach((item, index) => {
-				const remove = el('button', { type: 'button', id: 'mcp-scope-remove-' + module + '-' + item.id, textContent: t('mcp', 'Remove') })
-				remove.setAttribute('aria-label', t('mcp', 'Remove {name}', { name: label(item) }, undefined, { escape: false }))
-				remove.addEventListener('click', () => {
-					state.items = state.items.filter((other) => other.id !== item.id)
-					// The focus goes to the next item, else the previous one, else the mode choice.
-					const next = state.items[index] || state.items[index - 1]
-					rerender(state, next ? 'mcp-scope-remove-' + module + '-' + next.id : 'mcp-scope-mode-' + module + '-restricted')
+		Object.assign(context, { api, badges, dirty, el, emptyText, failure, label, note, say, scopePath, title })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/scope/loading.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Resource scope loading operations.
+ * @param {object} admin app registry
+ * @return {void}
+ */
+(function (admin) {
+	'use strict'
+
+	admin.modules.scope = admin.modules.scope || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
+	admin.modules.scope.loading = function (context) {
+		/**
+		 * @param {*} target operation input
+		 * @param {*} focusModule operation input
+		 * @return {Promise<*>} operation result
+		 */
+		async function openUser(target, focusModule) {
+			const mine = ++context.seq
+			context.uid = target
+			context.modules = {}
+			context.currentTab = focusModule || context.MODULES[0]
+			context.tabs?.replaceChildren()
+			context.container.replaceChildren()
+			context.container.setAttribute('aria-busy', 'true')
+			context.say(t('mcp', 'Loading the resource scope…'))
+			try {
+				const loaded = await Promise.all(context.MODULES.map((module) => context.api('GET', context.scopePath(module))))
+				if (mine !== context.seq) return
+				loaded.forEach((data) => {
+					context.modules[data.module] = {
+						module: data.module, active: data.active, limit: data.limit, revision: data.revision,
+						mode: data.mode, savedMode: data.mode, items: [...data.items], savedItems: [...data.items],
+						search: '', parents: [], results: null, page: 1, undo: null, saving: false, stale: false,
+					}
 				})
-				list.append(el('li', {}, [el('span', { textContent: label(item) }), ...badges(item), remove]))
-			})
-			wrap.append(list)
-		}
-		return wrap
-	}
-
-	function renderPicker(state) {
-		const module = state.module
-		const picker = el('div', { className: 'mcp-scope-picker' })
-		const searchId = 'mcp-scope-search-' + module
-		const search = el('input', { type: 'search', id: searchId, value: state.search, autocomplete: 'off', spellcheck: false })
-		const go = el('button', { type: 'button', textContent: t('mcp', 'Search') })
-		const run = () => { state.search = search.value; state.page = 1; state.results = null; browse(state, searchId) }
-		go.addEventListener('click', run)
-		search.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); run() } })
-		picker.append(el('label', { htmlFor: searchId, textContent: module === 'files' ? t('mcp', 'Find a folder of the user') : t('mcp', 'Find a calendar or task list of the user') }), search, go)
-		if (module === 'files') {
-			const here = state.parents[state.parents.length - 1]
-			picker.append(el('p', { className: 'mcp-scope-where', textContent: here ? t('mcp', 'In folder {path}', { path: here.path }, undefined, { escape: false }) : t('mcp', 'In the top folder of the user') }))
-			if (here) {
-				const up = el('button', { type: 'button', id: 'mcp-scope-up-files', textContent: t('mcp', 'Up one folder') })
-				up.addEventListener('click', () => { state.parents.pop(); state.page = 1; state.results = null; browse(state, 'mcp-scope-up-files') })
-				picker.append(up, addButton(state, here, t('mcp', 'Add this folder')))
-			}
-		}
-		const results = el('ul', { className: 'mcp-scope-results' })
-		results.setAttribute('aria-label', t('mcp', 'Resources found'))
-		const count = el('p', { className: 'mcp-scope-count' })
-		count.setAttribute('aria-live', 'polite')
-		if (state.results === null) {
-			count.textContent = t('mcp', 'Search, or press Search with an empty field to list everything.')
-		} else {
-			count.textContent = state.results.total === 0 ? t('mcp', 'Nothing found.') : t('mcp', '{shown} of {total} shown', { shown: state.results.items.length, total: state.results.total }, undefined, { escape: false })
-			state.results.items.forEach((item) => {
-				const row = el('li', {}, [el('span', { textContent: label(item) }), ...badges(item), addButton(state, item)])
-				if (module === 'files') {
-					const open = el('button', { type: 'button', textContent: t('mcp', 'Open') })
-					open.setAttribute('aria-label', t('mcp', 'Open {name}', { name: label(item) }, undefined, { escape: false }))
-					open.addEventListener('click', () => { state.parents.push(item); state.page = 1; state.results = null; state.search = ''; browse(state, searchId) })
-					row.append(open)
+				context.MODULES.forEach((module) => context.container.append(context.renderModule(context.modules[module])))
+				context.renderTabs()
+				context.say(t('mcp', 'Resource scope of {user}.', { user: context.uid }, undefined, { escape: false }))
+				const heading = document.getElementById('mcp-scope-heading-' + (focusModule || context.MODULES[0]))
+				if (focusModule && heading) {
+					heading.scrollIntoView?.({ block: 'start' })
+					heading.focus?.()
 				}
-				results.append(row)
-			})
-			if (state.results.hasMore) {
-				const more = el('button', { type: 'button', id: 'mcp-scope-more-' + module, textContent: t('mcp', 'Show more') })
-				more.addEventListener('click', () => { state.page += 1; browse(state, 'mcp-scope-more-' + module, true) })
-				picker.append(results, count, more)
-				return picker
+			} catch (error) {
+				if (mine !== context.seq) return
+				context.uid = null
+				context.say(context.failure(error), true)
+			} finally {
+				if (mine === context.seq) context.container.setAttribute('aria-busy', 'false')
 			}
 		}
-		picker.append(results, count)
-		return picker
-	}
 
-	function addButton(state, item, text) {
-		const chosen = state.items.some((other) => other.id === item.id)
-		const add = el('button', { type: 'button', textContent: text || (chosen ? t('mcp', 'Added') : t('mcp', 'Add')), disabled: chosen })
-		add.setAttribute('aria-label', chosen ? t('mcp', '{name} is selected', { name: label(item) }, undefined, { escape: false }) : t('mcp', 'Add {name}', { name: label(item) }, undefined, { escape: false }))
-		add.addEventListener('click', () => {
-			if (state.items.length >= state.limit) {
-				note(state, t('mcp', 'At most {limit} resources can be selected.', { limit: state.limit }, undefined, { escape: false }), true)
-				rerender(state)
-				return
+
+		/** Reads one module again from the server; its draft is replaced by the saved scope and its revision.
+		 * @param {*} state operation input
+		 * @return {Promise<*>} operation result
+		 */
+		async function reload(state) {
+			const data = await context.api('GET', context.scopePath(state.module))
+			Object.assign(state, { active: data.active, revision: data.revision, stale: false,
+				mode: data.mode, savedMode: data.mode, items: [...data.items], savedItems: [...data.items] })
+			context.rerender(state)
+		}
+
+
+		/**
+		 * The policy revision moved (a save, an undo, a conflict): the three modules are read again. A module with an
+		 * unsaved draft keeps it. When it already took the revision this page's own write made (`current`), the draft is
+		 * still valid and stays as it is. Otherwise it keeps the revision it was read at, and says so: saving it is refused
+		 * by the server (409) rather than accepted against a scope it never saw, and discarding it loads the saved scope.
+		 *
+		 * @param {object} origin the module that saved, undid or was refused
+		 * @param {string} [current] revision made by this page's own write, when it committed
+		 * @return {Promise<*>} operation result
+		 */
+		async function reloadAll(origin, current) {
+			for (const module of context.MODULES) {
+				const state = context.modules[module]
+				if (state === origin || !context.dirty(state)) {
+					await context.reload(state).catch(() => {})
+				} else if (current === undefined || state.revision !== current) {
+					state.stale = true
+					state.line = t('mcp', 'Changed before the policy moved, so saving will be refused. Discard the changes to load the saved scope.')
+					context.rerender(state)
+				}
 			}
-			state.items = [...state.items, { id: item.id, name: item.name, path: item.path, found: true, excluded: item.excluded }]
-			note(state, t('mcp', '{name} added. Save to apply it.', { name: label(item) }, undefined, { escape: false }))
-			rerender(state, 'mcp-scope-search-' + state.module)
-		})
-		return add
-	}
-
-	async function browse(state, focusId, append = false) {
-		const query = { search: state.search, page: String(state.page) }
-		const here = state.parents[state.parents.length - 1]
-		if (state.module === 'files' && here) query.parent = here.id
-		try {
-			const data = await api('GET', scopePath(state.module, '/candidates'), query)
-			state.results = append && state.results ? Object.assign(data, { items: [...state.results.items, ...data.items] }) : data
-			state.line = ''
-		} catch (error) {
-			state.results = null
-			note(state, failure(error), true)
 		}
-		rerender(state, focusId)
-	}
 
-	async function saveModule(state) {
-		if (state.saving) return
-		// The revision this module's draft was read at, never one another module moved to since.
-		const body = state.mode === 'unrestricted'
-			? { expectedRevision: state.revision, mode: 'unrestricted' }
-			: { expectedRevision: state.revision, mode: 'restricted', items: state.items.map((item) => item.id) }
-		state.saving = true
-		note(state, t('mcp', 'Saving…'))
-		rerender(state)
-		try {
-			const result = await api('PUT', scopePath(state.module), null, body)
-			state.saving = false
-			announce(body.expectedRevision, result.revision)
-			await reloadAll(state, result.revision)
-			note(state, result.changed ? t('mcp', 'Saved. It applies from the next MCP call of the user; sessions are not ended.') : t('mcp', 'Nothing changed.'))
-			if (result.changed && result.receiptId) offerUndo(state, result.receiptId, result.revision)
-			rerender(state, 'mcp-scope-line-' + state.module)
-			window.dispatchEvent(new Event('mcp-scope-saved'))
-		} catch (error) {
-			state.saving = false
-			await saveFailed(state, error)
-		}
+		Object.assign(context, { openUser, reload, reloadAll })
 	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/scope/drawer.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Resource scope drawer operations.
+ * @param {object} admin app registry
+ * @return {void}
+ */
+(function (admin) {
+	'use strict'
 
-	async function saveFailed(state, error) {
-		const data = error.data || {}
-		if (error.message === 'unconfirmed') {
-			note(state, t('mcp', 'The save could not be confirmed: it may have been applied. The saved scope is shown again; check it before changing it.'), true)
-			const line = state.line
-			await reloadAll(state)
-			state.line = line
-		} else if (error.status === 409) {
-			// Never written again from here: the admin sees what is saved now and decides.
-			note(state, t('mcp', 'The policy changed after this scope was loaded, so nothing was saved. The saved scope is shown again.'), true)
-			const line = state.line
-			await reloadAll(state)
-			state.line = line
-		} else if (error.status === 422 && data.error === 'ScopeInactive') {
-			state.active = false
-			note(state, t('mcp', 'Not saved: the tools of this module do not apply a resource scope in this version.'), true)
-		} else if (error.status === 422 && data.error === 'Inaccessible') {
-			const missing = new Set(data.items || [])
-			state.items = state.items.map((item) => missing.has(item.id) ? Object.assign({}, item, { inaccessible: true }) : item)
-			note(state, t('mcp', 'Not saved: the user cannot reach the marked resources in Nextcloud. Remove them and save again.'), true)
-		} else if (error.status === 422 && data.error === 'TooManyResources') {
-			note(state, t('mcp', 'Not saved: at most {limit} resources can be selected.', { limit: data.limit || state.limit }, undefined, { escape: false }), true)
-		} else if (error.status === 503 && data.uncertain) {
-			note(state, t('mcp', 'The save could not be confirmed: it may have been applied. The saved scope is shown again; check it before changing it.'), true)
-			const line = state.line
-			await reloadAll(state)
-			state.line = line
-		} else {
-			note(state, failure(error), true)
-		}
-		rerender(state, 'mcp-scope-line-' + state.module)
-	}
-
-	function offerUndo(state, receiptId, savedRevision) {
-		const offer = { receiptId, savedRevision, hover: false, focus: false, expired: false }
-		state.undo = offer
-		setTimeout(() => {
-			offer.expired = true
-			expireUndo(state, offer)
-		}, UNDO_SECONDS * 1000)
-	}
-
-	/** Removes an expired undo once neither the pointer nor the focus holds it; the focus never falls to the page. */
-	function expireUndo(state, offer) {
-		if (state.undo !== offer || !offer.expired || offer.hover || offer.focus) return
-		const focused = document.activeElement && document.activeElement.id === 'mcp-scope-undo-' + state.module
-		state.undo = null
-		rerender(state, focused ? 'mcp-scope-line-' + state.module : undefined)
-	}
-
-	async function undoModule(state) {
-		if (state.saving) return
-		const { receiptId, savedRevision } = state.undo
-		state.undo = null
-		state.saving = true
-		rerender(state)
-		let current
-		try {
-			current = (await api('POST', '/api/grants/undo', null, { receiptId, expectedRevision: savedRevision })).revision
-			announce(savedRevision, current)
-			note(state, t('mcp', 'Change undone.'))
-			window.dispatchEvent(new Event('mcp-scope-saved'))
-		} catch (error) {
-			note(state, error.message === 'unconfirmed'
-				? t('mcp', 'The save could not be confirmed: it may have been applied. The saved scope is shown again; check it before changing it.')
-				: error.status === 409
-					? t('mcp', 'The policy changed after this change, so it can no longer be undone.')
-					: error.status === 410
-						? t('mcp', 'This change can no longer be undone: the time to undo it has passed.')
-						: failure(error), true)
-		}
-		state.saving = false
-		const line = state.line
-		await reloadAll(state, current)
-		state.line = line
-		rerender(state, 'mcp-scope-line-' + state.module)
-	}
-
+	admin.modules.scope = admin.modules.scope || {}
 	/**
-	 * Tells the other blocks of the page that a write of this panel moved the revision from `from` to `to`.
-	 *
-	 * @param {string} from revision the write was sent with
-	 * @param {string} to revision the server answered with
+	 * @param {object} context operation input
+	 * @return {void} operation result
 	 */
-	function announce(from, to) {
-		if (typeof from === 'string' && typeof to === 'string' && from !== to) {
-			window.dispatchEvent(new CustomEvent(REVISION_MOVED, { detail: { from, to } }))
+	admin.modules.scope.drawer = function (context) {
+		/** @return {string} the tab of a module: its saved state, and whether a draft is not saved
+		 * @param {*} state operation input
+		 */
+		function tabLabel(state) {
+			const name = { files: t('mcp', 'Files'), calendar: t('mcp', 'Calendar'), tasks: t('mcp', 'Tasks') }[state.module]
+			const saved = state.savedMode === 'restricted'
+				? t('mcp', '{module}: {count}', { module: name, count: state.savedItems.length }, undefined, { escape: false })
+				: t('mcp', '{module}: all', { module: name }, undefined, { escape: false })
+			return context.dirty(state) ? saved + ' (' + t('mcp', 'not saved') + ')' : saved
 		}
-	}
 
-	/**
-	 * The matrix cell mark of a module that is restricted, or whose scope cannot be read: visible text, no colour or
-	 * icon alone, and a way into the panel. An unrestricted module gets no mark.
-	 *
-	 * @param {string} target uid of the row
-	 * @param {string} module scope module
-	 * @param {{mode: string, count: ?number}} scope the cell's scope from the matrix
-	 * @return {HTMLButtonElement|null}
-	 */
-	function indicator(target, module, scope) {
-		const unknown = scope.mode === 'unavailable'
-		if (!unknown && scope.mode !== 'restricted') return null
-		const mark = el('span', { className: 'mcp-scope-mark', textContent: unknown ? '?' : '◩' })
-		mark.setAttribute('aria-hidden', 'true')
-		const button = el('button', { type: 'button', className: 'mcp-scope-indicator' }, [mark, ' ' + (unknown ? t('mcp', 'Scope unknown') : t('mcp', 'Restricted to {count}', { count: scope.count }, undefined, { escape: false }))])
-		button.title = unknown
-			? t('mcp', 'The scope cannot be read now, so the tools of this module refuse until it can. Open the resource scope.')
-			: t('mcp', 'The MCP tools of this user reach only the selected resources of this module. Open the resource scope.')
-		button.addEventListener('click', () => open(target, module, button))
-		return button
-	}
 
-	/**
-	 * Opens the drawer on one user, at one module when given.
-	 *
-	 * @param {string} target user ID
-	 * @param {string} [module] module whose tab opens
-	 * @param {HTMLElement} [trigger] control the focus goes back to when the drawer closes
-	 */
-	function open(target, module, trigger) {
-		if (!root) return false
-		// The same person in the open drawer: only the tab changes, and the draft stays.
-		if (root.classList?.contains('mcp-drawer-open') && target === uid && Object.keys(modules).length > 0) {
-			if (module) selectTab(module, true)
+		/** The module tabs of the drawer (WAI-ARIA tabs: the arrow keys, Home and End move between them).
+		 * @return {*} operation result
+		 */
+		function renderTabs() {
+			if (!context.tabs) return
+			const shown = context.MODULES.filter((module) => context.modules[module])
+			context.tabs.replaceChildren(...shown.map((module, index) => {
+				const selected = module === context.currentTab
+				const tab = context.el('button', { type: 'button', id: 'mcp-scope-tab-' + module, textContent: context.tabLabel(context.modules[module]), tabIndex: selected ? 0 : -1 })
+				tab.setAttribute('role', 'tab')
+				tab.setAttribute('aria-selected', String(selected))
+				tab.setAttribute('aria-controls', 'mcp-scope-module-' + module)
+				tab.addEventListener('click', () => context.selectTab(module, true))
+				tab.addEventListener('keydown', (event) => {
+					const next = { ArrowRight: index + 1, ArrowLeft: index - 1, Home: 0, End: shown.length - 1 }[event.key]
+					if (next === undefined) return
+					event.preventDefault?.()
+					context.selectTab(shown[(next + shown.length) % shown.length], true)
+				})
+				return tab
+			}))
+		}
+
+
+		/** Shows one module's section and marks its tab.
+		 * @param {*} module operation input
+		 * @param {*} focus operation input
+		 * @return {*} operation result
+		 */
+		function selectTab(module, focus) {
+			context.currentTab = module
+			for (const other of context.MODULES) {
+				const section = document.getElementById('mcp-scope-module-' + other)
+				if (section) section.hidden = Boolean(context.tabs) && other !== module
+			}
+			context.renderTabs()
+			if (focus) document.getElementById('mcp-scope-tab-' + module)?.focus?.()
+		}
+
+
+		/**
+		 * Puts the open drawer right under the Nextcloud header. A drawer is position: fixed, but Nextcloud 35 blurs the content
+		 * behind it (backdrop-filter on #content-vue), which makes that box, not the window, the one it is placed in: its top
+		 * would then be counted from the box, one header too low. The offset is measured, not assumed, since a theme may turn
+		 * the blur off.
+		 * @return {*} operation result
+		 */
+		function placeDrawer() {
+			context.root.style?.removeProperty?.('top')
+			const rect = context.root.getBoundingClientRect?.()
+			if (!rect) return
+			const header = document.getElementById('header')?.getBoundingClientRect?.().bottom ?? 0
+			const shift = rect.top - header
+			if (Math.abs(shift) >= 1) context.root.style.top = (parseFloat(getComputedStyle(context.root).top) - shift) + 'px'
+		}
+
+
+		/** Opens the drawer; the focus goes back to `trigger` when it closes.
+		 * @param {*} trigger operation input
+		 * @return {*} operation result
+		 */
+		function openDrawer(trigger) {
+			// Only one drawer is open at a time: the inspector closes when the scope opens.
+			window.OCA.Mcp.Admin.inspector?.close?.()
+			context.returnFocus = trigger || document.activeElement || null
+			// The row of a "…" button that opened the drawer: the table may be drawn again meanwhile, and its new button is
+			// the one that gets the focus back.
+			context.returnRow = context.returnFocus?.closest?.('tr')?.dataset?.uid ?? null
+			context.root.classList?.add('mcp-drawer-open')
+			context.root.setAttribute('role', 'dialog')
+			context.placeDrawer()
+		}
+
+
+		/** @return {boolean} whether a module has a draft that is not saved */
+		function hasDraft() {
+			return Object.values(context.modules).some(context.dirty)
+		}
+
+
+		/** Drops the drafts the administrator agreed to lose, so they never come back when the drawer opens again.
+		 * @return {*} operation result
+		 */
+		function forget() {
+			context.seq++
+			context.uid = null
+			context.modules = {}
+			context.tabs?.replaceChildren()
+			context.container.replaceChildren()
+		}
+
+
+		/**
+		 * Closes the drawer, asking first when a draft of a module would be lost.
+		 *
+		 * @return {boolean} whether the drawer is closed now: false when the administrator kept the draft
+		 */
+		function closeDrawer() {
+			if (!context.root.classList?.contains('mcp-drawer-open')) return true
+			if (context.hasDraft()) {
+				if (!window.confirm(t('mcp', 'Close the resource scope? The changes that are not saved are lost.'))) return false
+				context.forget()
+			}
+			context.root.classList.remove('mcp-drawer-open')
+			context.root.removeAttribute?.('role')
+			context.root.style?.removeProperty?.('top')
+			const target = context.returnFocus
+			context.returnFocus = null
+			context.focusBack(target)
+			window.dispatchEvent?.(new Event('mcp-drawer-closed'))
 			return true
 		}
-		// The drawer is not modal: another person can be opened from the matrix while a draft is open.
-		if (!mayReplace()) {
-			trigger?.focus?.()
-			return false
-		}
-		openDrawer(trigger)
-		userInput.value = target
-		drawerTitle?.focus?.()
-		openUser(target, module)
-		return true
-	}
 
-	window.OCA.Mcp.Admin.scope = { indicator, open, close: closeDrawer }
-	// A module exactly at the revision a write of this page committed from takes the one it made; its draft stays.
-	window.addEventListener(REVISION_MOVED, (event) => {
-		for (const state of Object.values(modules)) {
-			if (state.revision === event.detail.from) state.revision = event.detail.to
+
+		/**
+		 * Whether the drafts of the open user may be lost to open another one (or the same one read again): asked, never
+		 * assumed.
+		 *
+		 * @return {boolean}
+		 */
+		function mayReplace() {
+			return !context.hasDraft() || window.confirm(t('mcp', 'Open another person? The changes that are not saved for {user} are lost.', { user: context.uid }, undefined, { escape: false }))
 		}
-	})
-	// A matrix drawn before this script ran is drawn again, now with the scope marks.
-	window.OCA.Mcp.Admin.matrix?.refresh?.()
-	if (!root) return
-	entryButton?.addEventListener('click', () => {
-		openDrawer(entryButton)
-		userInput.focus?.()
-	})
-	closeButton?.addEventListener('click', () => closeDrawer())
-	root.addEventListener('keydown', (event) => {
-		if (event.key === 'Escape' && root.classList?.contains('mcp-drawer-open')) {
-			event.preventDefault?.()
-			closeDrawer()
+
+
+		/**
+		 * Gives the focus back to the control that opened the drawer, or, when the table was drawn again and that control is
+		 * gone, to the same row's "…" button, then to the drawer's own button on the Access tab: never to the page.
+		 * @param {*} target operation input
+		 * @return {*} operation result
+		 */
+		function focusBack(target) {
+			if (target && target.isConnected !== false) {
+				target.focus?.()
+				return
+			}
+			const rows = [...(document.getElementById('mcp-matrix')?.tBodies?.[0]?.rows || [])]
+			const row = context.returnRow === null ? null : rows.find((candidate) => candidate.dataset.uid === context.returnRow)
+			;(row?.querySelector('button.mcp-row-actions-button') || context.entryButton)?.focus?.()
 		}
-	})
-	form.addEventListener('submit', (event) => {
-		event.preventDefault()
-		const target = userInput.value.trim()
-		if (target === '') {
-			say(t('mcp', 'Enter the user ID.'), true)
-			return
+
+		Object.assign(context, { closeDrawer, focusBack, forget, hasDraft, mayReplace, openDrawer, placeDrawer, renderTabs, selectTab, tabLabel })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/scope/rendering.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Resource scope rendering operations.
+ * @param {object} admin app registry
+ * @return {void}
+ */
+(function (admin) {
+	'use strict'
+
+	admin.modules.scope = admin.modules.scope || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
+	admin.modules.scope.rendering = function (context) {
+		/**
+		 * @param {*} state operation input
+		 * @param {*} focusId operation input
+		 * @return {*} operation result
+		 */
+		function rerender(state, focusId) {
+			const old = document.getElementById('mcp-scope-module-' + state.module)
+			const fresh = context.renderModule(state)
+			if (old) old.replaceWith(fresh)
+			context.renderTabs()
+			if (focusId) document.getElementById(focusId)?.focus?.()
 		}
-		if (!mayReplace()) return
-		openUser(target, null)
-	})
-})()
+
+
+		/**
+		 * @param {*} state operation input
+		 * @return {*} operation result
+		 */
+		function renderModule(state) {
+			const module = state.module
+			const section = context.el('section', { id: 'mcp-scope-module-' + module, className: 'mcp-scope-module', hidden: Boolean(context.tabs) && module !== context.currentTab })
+			const heading = context.el('h3', { id: 'mcp-scope-heading-' + module, textContent: context.title(module), tabIndex: -1 })
+			section.setAttribute('aria-labelledby', heading.id)
+			section.append(heading)
+			if (state.stale) {
+				section.append(context.el('p', { className: 'mcp-scope-inactive', textContent: t('mcp', 'Changed before the policy moved, so saving will be refused. Discard the changes to load the saved scope.') }))
+			}
+			if (!state.active) {
+				section.append(context.el('p', { className: 'mcp-scope-inactive', textContent: t('mcp', 'Not available in this version: the tools of this module do not apply a scope yet, so nothing can be saved. You can still browse.') }))
+			}
+			const fieldset = context.el('fieldset', {}, [context.el('legend', { textContent: t('mcp', 'Resources the MCP tools of {user} may reach', { user: context.uid }, undefined, { escape: false }) })])
+			;[['unrestricted', t('mcp', 'All resources')], ['restricted', t('mcp', 'Only selected')]].forEach(([value, text]) => {
+				const id = 'mcp-scope-mode-' + module + '-' + value
+				const radio = context.el('input', { type: 'radio', name: 'mcp-scope-mode-' + module, id, value, checked: state.mode === value })
+				radio.addEventListener('change', () => {
+					if (!radio.checked) return
+					state.mode = value
+					context.rerender(state, id)
+				})
+				fieldset.append(context.el('span', { className: 'mcp-scope-choice' }, [radio, context.el('label', { htmlFor: id, textContent: text })]))
+			})
+			section.append(fieldset)
+			if (state.mode === 'restricted') {
+				section.append(context.renderSelection(state), context.renderPicker(state))
+			}
+			// Nothing can be sent twice: Save, Discard and Undo wait for the answer of the request in flight.
+			const save = context.el('button', { type: 'button', id: 'mcp-scope-save-' + module, textContent: t('mcp', 'Save'), disabled: state.saving || !state.active || !context.dirty(state) })
+			save.addEventListener('click', () => context.saveModule(state))
+			const discard = context.el('button', { type: 'button', id: 'mcp-scope-discard-' + module, textContent: t('mcp', 'Discard changes'), disabled: state.saving || (!context.dirty(state) && !state.stale) })
+			discard.addEventListener('click', async () => {
+				if (state.stale) {
+					// A draft of an older revision: what is saved now comes from the server, not from the old copy.
+					await context.reload(state).catch((error) => context.note(state, context.failure(error), true))
+					context.rerender(state, 'mcp-scope-mode-' + module + '-' + state.mode)
+					return
+				}
+				Object.assign(state, { mode: state.savedMode, items: [...state.savedItems] })
+				context.rerender(state, 'mcp-scope-mode-' + module + '-' + state.mode)
+			})
+			const actions = context.el('div', { className: 'mcp-scope-actions' }, [save, discard])
+			if (state.undo) {
+				const offer = state.undo
+				const undo = context.el('button', { type: 'button', id: 'mcp-scope-undo-' + module, textContent: t('mcp', 'Undo'), disabled: state.saving })
+				undo.addEventListener('click', () => context.undoModule(state))
+				// The ten seconds pause while the pointer or the focus is on the button (WCAG 2.2.1).
+				const hold = (key, value) => () => {
+					offer[key] = value
+					if (!value) context.expireUndo(state, offer)
+				}
+				undo.addEventListener('mouseenter', hold('hover', true))
+				undo.addEventListener('mouseleave', hold('hover', false))
+				undo.addEventListener('focus', hold('focus', true))
+				undo.addEventListener('blur', hold('focus', false))
+				actions.append(undo)
+			}
+			section.append(actions)
+			section.append(context.el('p', { id: 'mcp-scope-line-' + module, className: 'mcp-scope-line', textContent: state.line || '', tabIndex: -1 }))
+			return section
+		}
+
+
+		/**
+		 * @param {*} state operation input
+		 * @return {*} operation result
+		 */
+		function renderSelection(state) {
+			const module = state.module
+			const wrap = context.el('div', { className: 'mcp-scope-selection' })
+			wrap.append(context.el('p', { textContent: state.items.length === 0 ? context.emptyText(module) : t('mcp', '{count} of at most {limit} selected', { count: state.items.length, limit: state.limit }, undefined, { escape: false }) }))
+			if (state.items.length > 0) {
+				const list = context.el('ul', { className: 'mcp-scope-list' })
+				list.setAttribute('aria-label', t('mcp', 'Selected resources'))
+				state.items.forEach((item, index) => {
+					const remove = context.el('button', { type: 'button', id: 'mcp-scope-remove-' + module + '-' + item.id, textContent: t('mcp', 'Remove') })
+					remove.setAttribute('aria-label', t('mcp', 'Remove {name}', { name: context.label(item) }, undefined, { escape: false }))
+					remove.addEventListener('click', () => {
+						state.items = state.items.filter((other) => other.id !== item.id)
+						// The focus goes to the next item, else the previous one, else the mode choice.
+						const next = state.items[index] || state.items[index - 1]
+						context.rerender(state, next ? 'mcp-scope-remove-' + module + '-' + next.id : 'mcp-scope-mode-' + module + '-restricted')
+					})
+					list.append(context.el('li', {}, [context.el('span', { textContent: context.label(item) }), ...context.badges(item), remove]))
+				})
+				wrap.append(list)
+			}
+			return wrap
+		}
+
+		Object.assign(context, { renderModule, renderSelection, rerender })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/scope/browsing.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Resource scope browsing operations.
+ * @param {object} admin app registry
+ * @return {void}
+ */
+(function (admin) {
+	'use strict'
+
+	admin.modules.scope = admin.modules.scope || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
+	admin.modules.scope.browsing = function (context) {
+		/**
+		 * @param {*} state operation input
+		 * @return {*} operation result
+		 */
+		function renderPicker(state) {
+			const module = state.module
+			const picker = context.el('div', { className: 'mcp-scope-picker' })
+			const searchId = 'mcp-scope-search-' + module
+			const search = context.el('input', { type: 'search', id: searchId, value: state.search, autocomplete: 'off', spellcheck: false })
+			const go = context.el('button', { type: 'button', textContent: t('mcp', 'Search') })
+			const run = () => { state.search = search.value; state.page = 1; state.results = null; context.browse(state, searchId) }
+			go.addEventListener('click', run)
+			search.addEventListener('keydown', (event) => { if (event.key === 'Enter') { event.preventDefault(); run() } })
+			picker.append(context.el('label', { htmlFor: searchId, textContent: module === 'files' ? t('mcp', 'Find a folder of the user') : t('mcp', 'Find a calendar or task list of the user') }), search, go)
+			if (module === 'files') {
+				const here = state.parents[state.parents.length - 1]
+				picker.append(context.el('p', { className: 'mcp-scope-where', textContent: here ? t('mcp', 'In folder {path}', { path: here.path }, undefined, { escape: false }) : t('mcp', 'In the top folder of the user') }))
+				if (here) {
+					const up = context.el('button', { type: 'button', id: 'mcp-scope-up-files', textContent: t('mcp', 'Up one folder') })
+					up.addEventListener('click', () => { state.parents.pop(); state.page = 1; state.results = null; context.browse(state, 'mcp-scope-up-files') })
+					picker.append(up, context.addButton(state, here, t('mcp', 'Add this folder')))
+				}
+			}
+			const results = context.el('ul', { className: 'mcp-scope-results' })
+			results.setAttribute('aria-label', t('mcp', 'Resources found'))
+			const count = context.el('p', { className: 'mcp-scope-count' })
+			count.setAttribute('aria-live', 'polite')
+			if (state.results === null) {
+				count.textContent = t('mcp', 'Search, or press Search with an empty field to list everything.')
+			} else {
+				count.textContent = state.results.total === 0 ? t('mcp', 'Nothing found.') : t('mcp', '{shown} of {total} shown', { shown: state.results.items.length, total: state.results.total }, undefined, { escape: false })
+				state.results.items.forEach((item) => {
+					const row = context.el('li', {}, [context.el('span', { textContent: context.label(item) }), ...context.badges(item), context.addButton(state, item)])
+					if (module === 'files') {
+						const open = context.el('button', { type: 'button', textContent: t('mcp', 'Open') })
+						open.setAttribute('aria-label', t('mcp', 'Open {name}', { name: context.label(item) }, undefined, { escape: false }))
+						open.addEventListener('click', () => { state.parents.push(item); state.page = 1; state.results = null; state.search = ''; context.browse(state, searchId) })
+						row.append(open)
+					}
+					results.append(row)
+				})
+				if (state.results.hasMore) {
+					const more = context.el('button', { type: 'button', id: 'mcp-scope-more-' + module, textContent: t('mcp', 'Show more') })
+					more.addEventListener('click', () => { state.page += 1; context.browse(state, 'mcp-scope-more-' + module, true) })
+					picker.append(results, count, more)
+					return picker
+				}
+			}
+			picker.append(results, count)
+			return picker
+		}
+
+
+		/**
+		 * @param {*} state operation input
+		 * @param {*} item operation input
+		 * @param {*} text operation input
+		 * @return {*} operation result
+		 */
+		function addButton(state, item, text) {
+			const chosen = state.items.some((other) => other.id === item.id)
+			const add = context.el('button', { type: 'button', textContent: text || (chosen ? t('mcp', 'Added') : t('mcp', 'Add')), disabled: chosen })
+			add.setAttribute('aria-label', chosen ? t('mcp', '{name} is selected', { name: context.label(item) }, undefined, { escape: false }) : t('mcp', 'Add {name}', { name: context.label(item) }, undefined, { escape: false }))
+			add.addEventListener('click', () => {
+				if (state.items.length >= state.limit) {
+					context.note(state, t('mcp', 'At most {limit} resources can be selected.', { limit: state.limit }, undefined, { escape: false }), true)
+					context.rerender(state)
+					return
+				}
+				state.items = [...state.items, { id: item.id, name: item.name, path: item.path, found: true, excluded: item.excluded }]
+				context.note(state, t('mcp', '{name} added. Save to apply it.', { name: context.label(item) }, undefined, { escape: false }))
+				context.rerender(state, 'mcp-scope-search-' + state.module)
+			})
+			return add
+		}
+
+
+		/**
+		 * @param {*} state operation input
+		 * @param {*} focusId operation input
+		 * @param {boolean} append operation input
+		 * @return {Promise<*>} operation result
+		 */
+		async function browse(state, focusId, append = false) {
+			const query = { search: state.search, page: String(state.page) }
+			const here = state.parents[state.parents.length - 1]
+			if (state.module === 'files' && here) query.parent = here.id
+			try {
+				const data = await context.api('GET', context.scopePath(state.module, '/candidates'), query)
+				state.results = append && state.results ? Object.assign(data, { items: [...state.results.items, ...data.items] }) : data
+				state.line = ''
+			} catch (error) {
+				state.results = null
+				context.note(state, context.failure(error), true)
+			}
+			context.rerender(state, focusId)
+		}
+
+		Object.assign(context, { addButton, browse, renderPicker })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/scope/saving.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Resource scope saving operations.
+ * @param {object} admin app registry
+ * @return {void}
+ */
+(function (admin) {
+	'use strict'
+
+	admin.modules.scope = admin.modules.scope || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
+	admin.modules.scope.saving = function (context) {
+		/**
+		 * @param {*} state operation input
+		 * @return {Promise<*>} operation result
+		 */
+		async function saveModule(state) {
+			if (state.saving) return
+			// The revision this module's draft was read at, never one another module moved to since.
+			const body = state.mode === 'unrestricted'
+				? { expectedRevision: state.revision, mode: 'unrestricted' }
+				: { expectedRevision: state.revision, mode: 'restricted', items: state.items.map((item) => item.id) }
+			state.saving = true
+			context.note(state, t('mcp', 'Saving…'))
+			context.rerender(state)
+			try {
+				const result = await context.api('PUT', context.scopePath(state.module), null, body)
+				state.saving = false
+				context.announce(body.expectedRevision, result.revision)
+				await context.reloadAll(state, result.revision)
+				context.note(state, result.changed ? t('mcp', 'Saved. It applies from the next MCP call of the user; sessions are not ended.') : t('mcp', 'Nothing changed.'))
+				if (result.changed && result.receiptId) context.offerUndo(state, result.receiptId, result.revision)
+				context.rerender(state, 'mcp-scope-line-' + state.module)
+				window.dispatchEvent(new Event('mcp-scope-saved'))
+			} catch (error) {
+				state.saving = false
+				await context.saveFailed(state, error)
+			}
+		}
+
+
+		/**
+		 * @param {*} state operation input
+		 * @param {*} error operation input
+		 * @return {Promise<*>} operation result
+		 */
+		async function saveFailed(state, error) {
+			const data = error.data || {}
+			if (error.message === 'unconfirmed') {
+				context.note(state, t('mcp', 'The save could not be confirmed: it may have been applied. The saved scope is shown again; check it before changing it.'), true)
+				const line = state.line
+				await context.reloadAll(state)
+				state.line = line
+			} else if (error.status === 409) {
+				// Never written again from here: the admin sees what is saved now and decides.
+				context.note(state, t('mcp', 'The policy changed after this scope was loaded, so nothing was saved. The saved scope is shown again.'), true)
+				const line = state.line
+				await context.reloadAll(state)
+				state.line = line
+			} else if (error.status === 422 && data.error === 'ScopeInactive') {
+				state.active = false
+				context.note(state, t('mcp', 'Not saved: the tools of this module do not apply a resource scope in this version.'), true)
+			} else if (error.status === 422 && data.error === 'Inaccessible') {
+				const missing = new Set(data.items || [])
+				state.items = state.items.map((item) => missing.has(item.id) ? Object.assign({}, item, { inaccessible: true }) : item)
+				context.note(state, t('mcp', 'Not saved: the user cannot reach the marked resources in Nextcloud. Remove them and save again.'), true)
+			} else if (error.status === 422 && data.error === 'TooManyResources') {
+				context.note(state, t('mcp', 'Not saved: at most {limit} resources can be selected.', { limit: data.limit || state.limit }, undefined, { escape: false }), true)
+			} else if (error.status === 503 && data.uncertain) {
+				context.note(state, t('mcp', 'The save could not be confirmed: it may have been applied. The saved scope is shown again; check it before changing it.'), true)
+				const line = state.line
+				await context.reloadAll(state)
+				state.line = line
+			} else {
+				context.note(state, context.failure(error), true)
+			}
+			context.rerender(state, 'mcp-scope-line-' + state.module)
+		}
+
+
+		/**
+		 * @param {*} state operation input
+		 * @param {*} receiptId operation input
+		 * @param {*} savedRevision operation input
+		 * @return {*} operation result
+		 */
+		function offerUndo(state, receiptId, savedRevision) {
+			const offer = { receiptId, savedRevision, hover: false, focus: false, expired: false }
+			state.undo = offer
+			setTimeout(() => {
+				offer.expired = true
+				context.expireUndo(state, offer)
+			}, context.UNDO_SECONDS * 1000)
+		}
+
+
+		/** Removes an expired undo once neither the pointer nor the focus holds it; the focus never falls to the page.
+		 * @param {*} state operation input
+		 * @param {*} offer operation input
+		 * @return {*} operation result
+		 */
+		function expireUndo(state, offer) {
+			if (state.undo !== offer || !offer.expired || offer.hover || offer.focus) return
+			const focused = document.activeElement && document.activeElement.id === 'mcp-scope-undo-' + state.module
+			state.undo = null
+			context.rerender(state, focused ? 'mcp-scope-line-' + state.module : undefined)
+		}
+
+
+		/**
+		 * @param {*} state operation input
+		 * @return {Promise<*>} operation result
+		 */
+		async function undoModule(state) {
+			if (state.saving) return
+			const { receiptId, savedRevision } = state.undo
+			state.undo = null
+			state.saving = true
+			context.rerender(state)
+			let current
+			try {
+				current = (await context.api('POST', '/api/grants/undo', null, { receiptId, expectedRevision: savedRevision })).revision
+				context.announce(savedRevision, current)
+				context.note(state, t('mcp', 'Change undone.'))
+				window.dispatchEvent(new Event('mcp-scope-saved'))
+			} catch (error) {
+				context.note(state, error.message === 'unconfirmed'
+					? t('mcp', 'The save could not be confirmed: it may have been applied. The saved scope is shown again; check it before changing it.')
+					: error.status === 409
+						? t('mcp', 'The policy changed after this change, so it can no longer be undone.')
+						: error.status === 410
+							? t('mcp', 'This change can no longer be undone: the time to undo it has passed.')
+							: context.failure(error), true)
+			}
+			state.saving = false
+			const line = state.line
+			await context.reloadAll(state, current)
+			state.line = line
+			context.rerender(state, 'mcp-scope-line-' + state.module)
+		}
+
+
+		/**
+		 * Tells the other blocks of the page that a write of this panel moved the revision from `from` to `to`.
+		 *
+		 * @param {string} from revision the write was sent with
+		 * @param {string} to revision the server answered with
+		 * @return {*} operation result
+		 */
+		function announce(from, to) {
+			if (typeof from === 'string' && typeof to === 'string' && from !== to) {
+				window.dispatchEvent(new CustomEvent(context.REVISION_MOVED, { detail: { from, to } }))
+			}
+		}
+
+		Object.assign(context, { announce, expireUndo, offerUndo, saveFailed, saveModule, undoModule })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/scope/start.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Resource scope public entry and original listener registration.
+ * @param {object} admin app registry
+ * @return {void}
+ */
+(function (admin) {
+	'use strict'
+
+	admin.modules.scope = admin.modules.scope || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
+	admin.modules.scope.entry = function (context) {
+		/**
+		 * The matrix cell mark of a module that is restricted, or whose scope cannot be read: visible text, no colour or
+		 * icon alone, and a way into the panel. An unrestricted module gets no mark.
+		 *
+		 * @param {string} target uid of the row
+		 * @param {string} module scope module
+		 * @param {{mode: string, count: ?number}} scope the cell's scope from the matrix
+		 * @return {HTMLButtonElement|null}
+		 */
+		function indicator(target, module, scope) {
+			const unknown = scope.mode === 'unavailable'
+			if (!unknown && scope.mode !== 'restricted') return null
+			const mark = context.el('span', { className: 'mcp-scope-mark', textContent: unknown ? '?' : '◩' })
+			mark.setAttribute('aria-hidden', 'true')
+			const button = context.el('button', { type: 'button', className: 'mcp-scope-indicator' }, [mark, ' ' + (unknown ? t('mcp', 'Scope unknown') : t('mcp', 'Restricted to {count}', { count: scope.count }, undefined, { escape: false }))])
+			button.title = unknown
+				? t('mcp', 'The scope cannot be read now, so the tools of this module refuse until it can. Open the resource scope.')
+				: t('mcp', 'The MCP tools of this user reach only the selected resources of this module. Open the resource scope.')
+			button.addEventListener('click', () => open(target, module, button))
+			return button
+		}
+
+
+		/**
+		 * Opens the drawer on one user, at one module when given.
+		 *
+		 * @param {string} target user ID
+		 * @param {string} [module] module whose tab opens
+		 * @param {HTMLElement} [trigger] control the focus goes back to when the drawer closes
+		 * @return {*} operation result
+		 */
+		function open(target, module, trigger) {
+			if (!context.root) return false
+			// The same person in the open drawer: only the tab changes, and the draft stays.
+			if (context.root.classList?.contains('mcp-drawer-open') && target === context.uid && Object.keys(context.modules).length > 0) {
+				if (module) context.selectTab(module, true)
+				return true
+			}
+			// The drawer is not modal: another person can be opened from the matrix while a draft is open.
+			if (!context.mayReplace()) {
+				trigger?.focus?.()
+				return false
+			}
+			context.openDrawer(trigger)
+			context.userInput.value = target
+			context.drawerTitle?.focus?.()
+			context.openUser(target, module)
+			return true
+		}
+
+		window.OCA.Mcp.Admin.scope = { indicator, open, close: context.closeDrawer }
+		// A module exactly at the revision a write of this page committed from takes the one it made; its draft stays.
+		window.addEventListener(context.REVISION_MOVED, (event) => {
+			for (const state of Object.values(context.modules)) {
+				if (state.revision === event.detail.from) state.revision = event.detail.to
+			}
+		})
+		// A matrix drawn before this script ran is drawn again, now with the scope marks.
+		window.OCA.Mcp.Admin.matrix?.refresh?.()
+		if (!context.root) return
+		context.entryButton?.addEventListener('click', () => {
+			context.openDrawer(context.entryButton)
+			context.userInput.focus?.()
+		})
+		context.closeButton?.addEventListener('click', () => context.closeDrawer())
+		context.root.addEventListener('keydown', (event) => {
+			if (event.key === 'Escape' && context.root.classList?.contains('mcp-drawer-open')) {
+				event.preventDefault?.()
+				context.closeDrawer()
+			}
+		})
+		context.form.addEventListener('submit', (event) => {
+			event.preventDefault()
+			const target = context.userInput.value.trim()
+			if (target === '') {
+				context.say(t('mcp', 'Enter the user ID.'), true)
+				return
+			}
+			if (!context.mayReplace()) return
+			context.openUser(target, null)
+		})
+
+		Object.assign(context, { indicator, open })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/** Compose the scope editor and start its original effects once.
+ * @param {object} admin operation input
+ * @return {void} operation result
+ */
+(function (admin) {
+	'use strict'
+
+	const context = {}
+	admin.sessions.scope = context
+	admin.modules.scope.session(context)
+	admin.modules.scope.loading(context)
+	admin.modules.scope.drawer(context)
+	admin.modules.scope.rendering(context)
+	admin.modules.scope.browsing(context)
+	admin.modules.scope.saving(context)
+	admin.modules.scope.entry(context)
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
 ;
 /* admin/admin-inspector.js */
 /*
@@ -7926,7 +8649,7 @@
  * lives in the URL hash, so a reload, the history back/forward buttons and a copied link reopen the
  * same tab; an unknown hash opens the first tab. Without JavaScript the panels carry no `hidden`
  * attribute and stay visible, and the tab bar stays display:none — the page degrades to the old
- * single-page layout. Plain browser JavaScript, no build step.
+ * single-page layout. Plain browser JavaScript, concatenated by the PHP asset builder.
  */
 (function () {
 	'use strict'

@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** OAuth client recovery operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.oauth_clients.recovery = function (context) {
 		/**
 		 * When a save failed because the page was out of date (409, or 428 without a revision) or the server could not

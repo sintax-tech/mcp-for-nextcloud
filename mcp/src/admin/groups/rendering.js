@@ -3,18 +3,23 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Group policy rendering operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.groups.rendering = function (context) {
 		/**
 		 * Draws the open group and focuses the control drawn under focusKey, so a change redraws without losing the place.
 		 *
 		 * @param {string|null} focusKey key of the control to focus, or null to leave the focus alone
+		 * @return {*} operation result
 		 */
 		function render(focusKey = null) {
 			const controls = new Map()

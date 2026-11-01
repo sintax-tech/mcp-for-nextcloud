@@ -3,14 +3,22 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Group policy saving operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.groups.saving = function (context) {
+		/**
+		 * @param {*} action operation input
+		 * @return {Promise<*>} operation result
+		 */
 		async function run(action) {
 			if (context.busy || !context.current || (action === 'save' && !context.preview)) return
 			if (action === 'save' && window.OCA.Mcp.Admin.mailGrants && !window.OCA.Mcp.Admin.mailGrants.confirmWrites(Object.entries(context.draft)

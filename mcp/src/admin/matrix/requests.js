@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Matrix requests operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.matrix.requests = function (context) {
 		let matrixLocked = false
 
@@ -42,7 +46,9 @@
 		}
 
 
-		/** Reloads the matrix with every matrix write blocked until the new page is on screen. */
+		/** Reloads the matrix with every matrix write blocked until the new page is on screen.
+		 * @return {Promise<*>} operation result
+		 */
 		async function reloadLocked() {
 			matrixLocked = true
 			try {
@@ -73,7 +79,9 @@
 		}
 
 
-		/** @param {string} message error shown to the admin */
+		/** @param {string} message error shown to the admin
+		 * @return {*} operation result
+		 */
 		function notifyError(message) {
 			// The old notification global is gone since Nextcloud 34 and OCP.Toast is deprecated, so without it the browser's own dialog
 			// still shows the message instead of losing it.

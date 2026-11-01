@@ -3,13 +3,17 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Group policy directory operations.
- * @param {object} context live bindings of this editor
+ * @param {object} admin app registry
  * @return {void}
  */
 (function (admin) {
 	'use strict'
 
 	admin.modules.groups = admin.modules.groups || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
 	admin.modules.groups.directory = function (context) {
 		/** Material Design Icons "lock-outline", in the text colour, so it follows the theme; decoration, hidden from assistive technology. */
 		const LOCK_ICON = '<svg class="mcp-group-lock" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false"><path d="M12,17C10.89,17 10,16.1 10,15C10,13.89 10.89,13 12,13A2,2 0 0,1 14,15A2,2 0 0,1 12,17M18,20V10H6V20H18M18,8A2,2 0 0,1 20,10V20A2,2 0 0,1 18,22H6C4.89,22 4,21.1 4,20V10C4,8.89 4.89,8 6,8H7V6A5,5 0 0,1 12,1A5,5 0 0,1 17,6V8H18M12,3A3,3 0 0,0 9,6V8H15V6A3,3 0 0,0 12,3Z"/></svg>'
@@ -18,6 +22,7 @@
 		 * phrase always carries the state in words, next to a symbol, so it never depends on colour.
 		 *
 		 * @return {{symbol: string, lock?: boolean, text: string, warning: boolean}|null} a lock is drawn as an icon, not as a symbol
+		 * @param {*} group operation input
 		 */
 		function rowState(group) {
 			if (group.invalidId) return { symbol: '⊘', text: t('mcp', 'Cannot be edited: invalid group ID'), warning: false }
@@ -28,13 +33,17 @@
 			if (group.state === 'pending_delete') return { symbol: '⚠', text: t('mcp', 'Deletion pending'), warning: true }
 			return context.UnknownGroupGrants.warning(group)
 		}
-		/** @return {string} what a group grants, in words, for the accessible name and the tooltip of its row */
+		/** @return {string} what a group grants, in words, for the accessible name and the tooltip of its row
+		 * @param {*} group operation input
+		 */
 		function grantSummary(group) {
 			const granted = Object.entries(group.grants || {}).filter(([, operations]) => operations.length > 0).map(([module]) => module)
 			if (granted.length === 0) return t('mcp', 'Grants nothing')
 			return t('mcp', 'Grants: {permissions}', { permissions: granted.map((module) => module === '_system' ? t('mcp', 'Can connect') : context.moduleName(module)).join(', ') }, undefined, context.RAW)
 		}
-		/** @return {string} what a group grants in one or two words, for the end of its row: "—", "Can connect" or "N modules" */
+		/** @return {string} what a group grants in one or two words, for the end of its row: "—", "Can connect" or "N modules"
+		 * @param {*} group operation input
+		 */
 		function grantShort(group) {
 			const granted = Object.entries(group.grants || {}).filter(([, operations]) => operations.length > 0).map(([module]) => module)
 			const apps = granted.filter((module) => module !== '_system').length
@@ -47,6 +56,7 @@
 		 * the row's accessible name and tooltip, so nothing is told by the symbol or a colour alone.
 		 *
 		 * @return {HTMLButtonElement} the row's button; drawList() puts each in its list item
+		 * @param {*} group operation input
 		 */
 		function groupRow(group) {
 			const differs = group.groupId !== null && group.groupId !== group.displayName
@@ -73,17 +83,26 @@
 		let buttons = []
 		/** The rows that can take the focus, in order. */
 		const items = () => buttons.filter((button) => !button.disabled)
-		/** One stop in the tab order for the whole list (the open group, else the first); the arrows move inside it. */
+		/** One stop in the tab order for the whole list (the open group, else the first); the arrows move inside it.
+		 * @param {*} target operation input
+		 * @return {*} operation result
+		 */
 		function rove(target) {
 			for (const button of items()) button.tabIndex = button === target ? 0 : -1
 		}
-		/** Scrolls the list, and only the list, so that a row is in view. */
+		/** Scrolls the list, and only the list, so that a row is in view.
+		 * @param {*} button operation input
+		 * @return {*} operation result
+		 */
 		function keepVisible(button) {
 			if (typeof button.offsetTop !== 'number' || typeof context.list.clientHeight !== 'number') return
 			const top = button.offsetTop - context.list.offsetTop
 			if (top < context.list.scrollTop) context.list.scrollTop = top
 			else if (top + button.offsetHeight > context.list.scrollTop + context.list.clientHeight) context.list.scrollTop = top + button.offsetHeight - context.list.clientHeight
 		}
+		/**
+		 * @return {*} operation result
+		 */
 		function drawList() {
 			buttons = context.rows.map(context.groupRow)
 			context.list.replaceChildren(...buttons.map((button) => context.el('li', {}, [button])))
@@ -104,7 +123,10 @@
 			context.rove(target)
 			target.focus()
 		})
-		/** The filter buttons say how many groups each shows, when the server knows it without extra work. */
+		/** The filter buttons say how many groups each shows, when the server knows it without extra work.
+		 * @param {*} counts operation input
+		 * @return {*} operation result
+		 */
 		function drawFilters(counts) {
 			const names = { all: t('mcp', 'All'), granted: t('mcp', 'With grants'), blocked: t('mcp', 'Blocked groups') }
 			const counted = { all: (count) => t('mcp', 'All ({count})', { count }, undefined, context.RAW), granted: (count) => t('mcp', 'With grants ({count})', { count }, undefined, context.RAW), blocked: (count) => t('mcp', 'Blocked groups ({count})', { count }, undefined, context.RAW) }
@@ -124,7 +146,10 @@
 				context.loadList()
 			})
 		}
-		/** On a narrow screen the list folds into the picker above the editor; on a wide one both columns stay. */
+		/** On a narrow screen the list folds into the picker above the editor; on a wide one both columns stay.
+		 * @param {*} isOpen operation input
+		 * @return {*} operation result
+		 */
 		function setListOpen(isOpen) {
 			if (!context.columns || !context.picker) return
 			context.columns.setAttribute('data-list', isOpen ? 'open' : 'closed')
@@ -136,6 +161,9 @@
 			context.setListOpen(isOpen)
 			if (isOpen) context.search.focus()
 		})
+		/**
+		 * @return {Promise<*>} operation result
+		 */
 		async function loadList() {
 			const seq = ++context.listSeq
 			context.list.setAttribute('aria-busy', 'true')
@@ -165,9 +193,20 @@
 				if (seq === context.listSeq) context.list.setAttribute('aria-busy', 'false')
 			}
 		}
+		/**
+		 * @param {*} action operation input
+		 * @return {*} operation result
+		 */
 		function retry(action) {
 			return context.el('button', { type: 'button', textContent: t('mcp', 'Retry'), onclick: action })
 		}
+		/**
+		 * @param {*} gid operation input
+		 * @param {boolean} preserve operation input
+		 * @param {boolean} keepMessage operation input
+		 * @param {*} displayName operation input
+		 * @return {Promise<*>} operation result
+		 */
 		async function open(gid, preserve = false, keepMessage = false, displayName = null) {
 			if (context.busy || (!preserve && !context.discardDraft())) return
 			if (displayName !== null) context.shownName = displayName

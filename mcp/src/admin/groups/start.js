@@ -2,7 +2,10 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Compose the groups editor and start its original effects once. */
+/** Compose the groups editor and start its original effects once.
+ * @param {object} admin operation input
+ * @return {void} operation result
+ */
 (function (admin) {
 	'use strict'
 	const root = document.getElementById('mcp-group-editor')

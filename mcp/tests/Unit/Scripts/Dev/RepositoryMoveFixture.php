@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Scripts\Dev;
 
+use OCA\Mcp\Scripts\Dev\ClassRewrites;
 use OCA\Mcp\Scripts\Dev\FqcnMap;
 use OCA\Mcp\Scripts\Dev\PathRewrites;
 use OCA\Mcp\Scripts\Dev\SourceTreeIndex;
@@ -65,7 +66,8 @@ final class RepositoryMoveFixture {
 		$after = [];
 		foreach ($before as $path => $content) {
 			if (!str_ends_with($path, '.php')) {
-				$after[$path] = str_starts_with($path, 'tests/') ? PathRewrites::text($content, [$old => $new]) : $content;
+				// A move commit updates the paths and the class names a non-PHP test holds (the DI golden names modules).
+				$after[$path] = str_starts_with($path, 'tests/') ? PathRewrites::text(ClassRewrites::text($content, [$oldClass => $newClass]), [$old => $new]) : $content;
 				continue;
 			}
 			$group = 'use ' . $namespace . '\\{';

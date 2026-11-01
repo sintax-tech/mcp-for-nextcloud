@@ -82,4 +82,6 @@ admin/inspector/drawer.js
 admin/inspector/start.js
 shared/connections.js
 admin/admin-tabs.js
-admin/admin-file-write-policy.js
+admin/file-write-policy/validation.js
+admin/file-write-policy/editor.js
+admin/backups/editor.js

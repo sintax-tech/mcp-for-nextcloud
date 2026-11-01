@@ -85,11 +85,12 @@ class AdminManifest {
 			'admin-groups.js': ['groups'],
 			'admin-scope.js': ['scope'],
 			'admin-inspector.js': ['inspector'],
+			'admin-file-write-policy.js': ['file-write-policy','backups'],
 			'admin-picker.js': ['picker'],
 			'admin-level-popover.js': ['level-popover'],
 		}[name]
 		const fragments = AdminManifest.fragments()
-		if (groups && fragments.some(p => p === 'admin/' + groups[0] + '/start.js')) {
+		if (groups && fragments.some(p => p.startsWith('admin/' + groups[0] + '/'))) {
 			return fragments.filter(p => groups.some(group => p.startsWith('admin/' + group + '/')))
 				.map(p => AdminManifest.fragment(p)).join(';\n')
 		}

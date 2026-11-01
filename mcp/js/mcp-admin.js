@@ -9419,17 +9419,17 @@
 	initial.element?.scrollIntoView()
 })()
 ;
-/* admin/admin-file-write-policy.js */
+/* admin/file-write-policy/validation.js */
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/**
- * File policy form, including independent protection alerts. No build step or inline handlers.
- * @param {Window|typeof globalThis} scope Browser globals, or node exports for tests.
- * @returns {void}
+/** file-write-policy/validation operations.
+ * @param {object} scope browser primitives
+ * @param {object} admin app registry
+ * @return {void} registers and starts the original editor
  */
-(function (scope) {
+(function (scope, admin) {
 	'use strict'
 
 	/**
@@ -9471,6 +9471,25 @@
 			&& value.extensions.length <= 128
 			&& JSON.stringify([...new Set(value.extensions)].sort()) === JSON.stringify(value.extensions)
 	}
+
+
+	admin.fileWritePolicy = { phpTrim, extensions, validPolicy }
+})((globalThis.window || globalThis), (globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/file-write-policy/editor.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** file-write-policy/editor operations.
+ * @param {object} scope browser primitives
+ * @param {object} admin app registry
+ * @return {void} registers and starts the original editor
+ */
+(function (scope, admin) {
+	'use strict'
+
+	const { phpTrim, extensions, validPolicy } = admin.fileWritePolicy
 
 	/**
 	 * Bind one form using injectable browser primitives for request and DOM tests.
@@ -9645,16 +9664,23 @@
 		return { ready, submit, aggregate }
 	}
 
-	if (typeof module !== 'undefined' && module.exports) module.exports = { extensions, validPolicy, mount }
+
+	admin.fileWritePolicy.mount = mount
 	if (scope.document) mount(scope.document, scope.fetch.bind(scope), scope.t,
 		scope.OC.generateUrl('/apps/mcp/api/file-write-policy'), () => scope.OC.requestToken, scope.MutationObserver)
-})(typeof window !== 'undefined' ? window : globalThis);
-
-/**
- * Revisioned administrator backup editor. It runs after the file-type policy, in this same file, so the page does not
- * load it apart. Transport and display values never become HTML.
+})((globalThis.window || globalThis), (globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/backups/editor.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-(function (scope) {
+/** backups/editor operations.
+ * @param {object} scope browser primitives
+ * @param {object} admin app registry
+ * @return {void} registers and starts the original editor
+ */
+(function (scope, admin) {
 	'use strict'
 
 	/**
@@ -9736,6 +9762,7 @@
 		})
 		return { ready: load(), reload: load }
 	}
-	if (typeof module !== 'undefined' && module.exports) module.exports.mountBackupSettings = mount
+
+	admin.backupSettings = { mount }
 	if (scope.document) mount(scope.document, scope.fetch.bind(scope), scope.t, scope.OC.generateUrl('/apps/mcp/api/backup-settings'), () => scope.OC.requestToken)
-})(typeof window !== 'undefined' ? window : globalThis)
+})((globalThis.window || globalThis), (globalThis.window || globalThis).OCA.Mcp.Admin)

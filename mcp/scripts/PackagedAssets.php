@@ -7,12 +7,15 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Scripts;
 
+require_once __DIR__ . '/UnexpectedScripts.php';
+
 /**
  * Compares the bundles stored in an app archive with the build of the tree being packaged.
  *
  * Each member still carries the name as written in the archive. This class applies
  * {@see ArchiveMembers::canonical()} before it captures a body, counts a duplicate, refuses `mcp/src/` or
- * compares a bundle with {@see AssetBuilder::expectedBundles()}. `tar` installs `mcp/js/./mcp-admin.js` as
+ * compares a bundle with {@see AssetBuilder::expectedBundles()}. A script under `mcp/js/` that is not one of the two
+ * bundles is refused by {@see UnexpectedScripts}. `tar` installs `mcp/js/./mcp-admin.js` as
  * `mcp/js/mcp-admin.js` and keeps the last copy. A symlink or hard link is not those bytes. `..` and an
  * absolute name are refused rather than resolved.
  */
@@ -51,6 +54,10 @@ final class PackagedAssets {
 			}
 			if ($member['dir']) {
 				continue;
+			}
+			$script = UnexpectedScripts::problem($name);
+			if ($script !== null) {
+				$problems[] = $script;
 			}
 			$counts[$name] = ($counts[$name] ?? 0) + 1;
 			$link = $member['link'] ?? false;

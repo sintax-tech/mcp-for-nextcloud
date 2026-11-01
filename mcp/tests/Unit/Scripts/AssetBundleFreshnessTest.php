@@ -27,11 +27,11 @@ final class AssetBundleFreshnessTest extends TestCase {
 	/**
 	 * Manifests that must exist, as paths relative to the app directory.
 	 *
-	 * RE-11 requires `src/admin.manifest`. RE-12 adds `src/settings.manifest`.
+	 * Both `src/admin.manifest` and `src/settings.manifest` are required.
 	 *
 	 * @var list<string>
 	 */
-	private const REQUIRED_MANIFESTS = ['src/admin.manifest'];
+	private const REQUIRED_MANIFESTS = ['src/admin.manifest', 'src/settings.manifest'];
 
 	/** @var list<string> temporary app directories created by this test */
 	private array $dirs = [];
@@ -57,11 +57,28 @@ final class AssetBundleFreshnessTest extends TestCase {
 		mkdir($dir . '/src', 0777, true);
 		$this->dirs[] = $dir;
 		file_put_contents("$dir/src/other.manifest", "admin/a.js\n");
-		$this->assertSame(['missing required manifest: src/admin.manifest'], AssetBuilder::problems($dir, self::REQUIRED_MANIFESTS));
 		$this->assertSame(
-			['missing required manifest: src/admin.manifest'],
-			AssetBuilder::problems($dir, ['src/admin.manifest']),
+			['missing required manifest: src/admin.manifest', 'missing required manifest: src/settings.manifest'],
+			AssetBuilder::problems($dir, self::REQUIRED_MANIFESTS),
 		);
+		$this->assertSame(
+			['missing required manifest: src/admin.manifest', 'missing required manifest: src/settings.manifest'],
+			AssetBuilder::problems($dir),
+		);
+	}
+
+	/** Deleting either manifest, with the other present, fails the build and the package check on its own. */
+	public function testDeletingEitherRequiredManifestFails(): void {
+		foreach (AssetTargets::REQUIRED as $kept) {
+			$dir = sys_get_temp_dir() . '/mcp-fresh-' . bin2hex(random_bytes(4));
+			mkdir($dir . '/src', 0777, true);
+			$this->dirs[] = $dir;
+			file_put_contents("$dir/$kept", '');
+			$missing = array_values(array_diff(AssetTargets::REQUIRED, [$kept]))[0];
+			$this->assertSame(["missing required manifest: $missing"], AssetBuilder::problems($dir));
+			$this->assertSame(["missing required manifest: $missing"], AssetBuilder::packageProblems($dir));
+			$this->assertSame(["missing required manifest: $missing"], AssetBuilder::build($dir));
+		}
 	}
 
 	/** A bundle that does not match its sources is stale, and a rebuild clears that. */
@@ -72,8 +89,9 @@ final class AssetBundleFreshnessTest extends TestCase {
 		$this->dirs[] = $dir;
 		file_put_contents("$dir/src/admin/a.js", "var a = 1\n");
 		file_put_contents("$dir/src/admin.manifest", "admin/a.js\n");
+		file_put_contents("$dir/src/settings.manifest", '');
 		file_put_contents("$dir/js/mcp-admin.js", "var stale = 1\n");
-		$this->assertSame(['stale bundle: js/mcp-admin.js'], AssetBuilder::freshnessProblems($dir));
+		$this->assertSame(['stale bundle: js/mcp-admin.js', 'stale bundle: js/mcp-personal.js'], AssetBuilder::freshnessProblems($dir));
 		$this->assertSame([], AssetBuilder::build($dir));
 		$this->assertSame([], AssetBuilder::freshnessProblems($dir));
 	}

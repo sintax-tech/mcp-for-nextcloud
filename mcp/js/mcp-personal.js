@@ -1,3 +1,4 @@
+/* shared/connections.js */
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
@@ -252,7 +253,12 @@
 
 	load()
 })();
-
+;
+/* settings/my-scope.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 /**
  * The user's own resource scope, read only (issue #4, B7; contracts B.6): for Files, Calendar and Tasks, whether the
  * MCP tools reach every resource or only the ones the administrator selected. GET /api/my/scope answers for the

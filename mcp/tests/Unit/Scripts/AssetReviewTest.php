@@ -122,6 +122,7 @@ final class AssetReviewTest extends TestCase {
 		file_put_contents($tar, gzencode(
 			self::ustar('mcp/js/mcp-admin.js', $good)
 			. self::ustar('mcp/js/mcp-admin.js', "/* stale */\n")
+			. self::ustar('mcp/js/mcp-personal.js', '')
 			. str_repeat("\0", 1024),
 		));
 		$this->assertSame(
@@ -137,6 +138,7 @@ final class AssetReviewTest extends TestCase {
 		file_put_contents($tar, gzencode(
 			self::ustar('mcp/js/mcp-admin.js', "/* stale */\n")
 			. self::ustar('mcp/src/admin/leaked.js', "var leaked = 1\n")
+			. self::ustar('mcp/js/mcp-personal.js', '')
 			. str_repeat("\0", 1024),
 		));
 		$this->assertSame(
@@ -150,7 +152,7 @@ final class AssetReviewTest extends TestCase {
 		$dir = $this->appWithAdminBundle();
 		$tar = "$dir/package.tar.gz";
 		file_put_contents($tar, gzencode(self::ustar('mcp/appinfo/info.xml', '<info/>') . str_repeat("\0", 1024)));
-		$this->assertSame(['missing packaged bundle: mcp/js/mcp-admin.js'], $this->packaged($dir, $tar));
+		$this->assertSame(['missing packaged bundle: mcp/js/mcp-admin.js', 'missing packaged bundle: mcp/js/mcp-personal.js'], $this->packaged($dir, $tar));
 	}
 
 	/** A bundle whose bytes are the manifest build, and an archive without src/, passes the archive gate. */
@@ -159,6 +161,7 @@ final class AssetReviewTest extends TestCase {
 		$tar = "$dir/package.tar.gz";
 		file_put_contents($tar, gzencode(
 			self::ustar('mcp/js/mcp-admin.js', "/* admin/a.js */\nvar a = 1\n")
+			. self::ustar('mcp/js/mcp-personal.js', '')
 			. str_repeat("\0", 1024),
 		));
 		$this->assertSame([], $this->packaged($dir, $tar));
@@ -226,6 +229,7 @@ final class AssetReviewTest extends TestCase {
 		mkdir($dir . '/src/settings', 0777, true);
 		mkdir($dir . '/src/shared', 0777, true);
 		mkdir($dir . '/js', 0777, true);
+		file_put_contents($dir . '/src/settings.manifest', '');
 		$this->dirs[] = $dir;
 		return $dir;
 	}

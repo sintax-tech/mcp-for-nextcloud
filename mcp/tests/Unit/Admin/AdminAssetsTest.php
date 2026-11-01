@@ -51,7 +51,7 @@ final class AdminAssetsTest extends TestCase {
 	 */
 	public function testErrorsReachTheUserEvenWithoutTheToastGlobal(): void {
 		$app = dirname(__DIR__, 3);
-		foreach (['js/connections', 'src/admin/admin-grants'] as $script) {
+		foreach (['src/shared/connections', 'src/admin/admin-grants'] as $script) {
 			$source = (string)file_get_contents("$app/$script.js");
 			$this->assertSame(1, preg_match('/function notifyError\(message\) \{(.*?)\n\t\}/s', $source, $body), $script);
 			$this->assertStringContainsString('OCP.Toast.error(message)', $body[1], $script);
@@ -74,9 +74,8 @@ final class AdminAssetsTest extends TestCase {
 		$script = (string)file_get_contents($app . '/src/admin/admin-grants.js') . file_get_contents($app . '/src/shared/connections.js') . file_get_contents($app . '/src/admin/admin-tabs.js') . file_get_contents($app . '/src/admin/admin-picker.js') . file_get_contents($app . '/src/admin/admin-groups.js');
 		preg_match_all("/getElementById\\('([^']+)'\\)/", $script, $used);
 		$this->assertNotEmpty($used[1]);
-		// The personal resource scope lives in connections.js and looks up ids that exist only on the personal page.
-		$personalOnly = ['mcp-my-scope-status', 'mcp-my-scope-list'];
-		foreach (array_diff(array_unique($used[1]), $personalOnly) as $id) {
+		// The personal resource scope (src/settings/my-scope.js) is not in the admin bundle; its ids exist only on the personal page.
+		foreach (array_unique($used[1]) as $id) {
 			$this->assertSame(1, substr_count($template, 'id="' . $id . '"'), "id $id must appear exactly once");
 		}
 		$this->assertSame(1, substr_count($template, "t('Excluded from MCP access')"));
@@ -396,9 +395,9 @@ final class AdminAssetsTest extends TestCase {
 	public function testPersonalTemplateCarriesTheConnectionsBlock(): void {
 		$app = dirname(__DIR__, 3);
 		$template = (string)file_get_contents($app . '/templates/personal.php');
-		$this->assertStringContainsString("Util::addScript('mcp', 'connections')", $template);
+		$this->assertStringContainsString("Util::addScript('mcp', 'mcp-personal')", $template);
 		$this->assertStringContainsString('data-scope="personal"', $template);
-		preg_match_all("/getElementById\\('([^']+)'\\)/", (string)file_get_contents($app . '/js/connections.js'), $used);
+		preg_match_all("/getElementById\\('([^']+)'\\)/", (string)file_get_contents($app . '/src/shared/connections.js') . file_get_contents($app . '/src/settings/my-scope.js'), $used);
 		// Admin-only elements: the search box and the Status card the revoke buttons refresh.
 		foreach (array_diff(array_unique($used[1]), ['mcp-connections-search', 'mcp-count-connections']) as $id) {
 			$this->assertSame(1, substr_count($template, 'id="' . $id . '"'), "id $id must appear exactly once");
@@ -413,7 +412,7 @@ final class AdminAssetsTest extends TestCase {
 	/** Revoke buttons name their connection, an emptied last page steps back, and narrow screens have a layout. */
 	public function testConnectionsScriptAndStylesCoverAccessibilityAndNarrowScreens(): void {
 		$app = dirname(__DIR__, 3);
-		$script = (string)file_get_contents($app . '/js/connections.js');
+		$script = (string)file_get_contents($app . '/src/shared/connections.js');
 		foreach (["'Revoke {client} for {user}'", "'Revoke {client}'", "'Revoke all connections of {user}'"] as $label) {
 			$this->assertStringContainsString($label, $script);
 		}

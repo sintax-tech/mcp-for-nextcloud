@@ -15,7 +15,7 @@ use OCP\IURLGenerator;
 use OCP\IUserSession;
 use OCP\Settings\ISettings;
 
-/** Personal page in the app's own "MCP for Cloud" section: status, own connection switch, own OAuth connections (js/connections.js) and app password guidance. */
+/** Personal page in the app's own "MCP for Cloud" section: status, own connection switch, own OAuth connections (src/shared/connections.js, in js/mcp-personal.js) and app password guidance. */
 class PersonalSettings implements ISettings {
 	public function __construct(
 		private GrantPolicy $policy,

@@ -21,6 +21,7 @@ use Psr\Log\LoggerInterface;
  * services stay where Application registers them until its own ticket migrates it.
  */
 final class ModuleRegistrations {
+	/** Static helper only; never instantiated. */
 	private function __construct() {
 	}
 
@@ -64,15 +65,18 @@ final class ModuleRegistrations {
 	}
 
 	/**
-	 * The probes, resolved from the container only when the registry first reads them.
+	 * One factory per probe class, so the registry builds each probe only when first asked and isolates a probe whose
+	 * resolution fails (container, constructor, autoload) from the others.
 	 *
 	 * @param ContainerInterface $c app container
 	 * @param list<class-string<CapabilityProbe>> $probes probe classes
-	 * @return iterable<CapabilityProbe> lazy probes
+	 * @return array<class-string<CapabilityProbe>, \Closure(): CapabilityProbe> factories by probe class
 	 */
-	private static function resolve(ContainerInterface $c, array $probes): iterable {
+	private static function resolve(ContainerInterface $c, array $probes): array {
+		$factories = [];
 		foreach ($probes as $probe) {
-			yield $c->get($probe);
+			$factories[$probe] ??= static fn (): mixed => $c->get($probe);
 		}
+		return $factories;
 	}
 }

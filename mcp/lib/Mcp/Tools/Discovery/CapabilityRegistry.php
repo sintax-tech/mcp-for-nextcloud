@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Mcp\Tools\Discovery;
 
+use Closure;
 use OCA\Mcp\Mcp\Tools\CapabilityProbe;
 use Psr\Log\LoggerInterface;
 
@@ -15,22 +16,30 @@ use Psr\Log\LoggerInterface;
  * the modules registered, once per request.
  *
  * A probe is about the installation, so the answer is cached by key alone, without the user. It fails closed: a key
- * no probe answers is false, and a probe that throws (in keys() or supports()) counts as false, with one warning in
- * the log per key and request. The probes are built the first time a key is asked, never before.
+ * no probe answers is false, and a probe that fails anywhere (building it, keys() or supports()) counts as false for
+ * its keys, never for the keys of another probe, with one warning in the log per probe and request. The probes are
+ * built the first time a key is asked, never before.
  */
 final class CapabilityRegistry {
 	/** @var array<string, bool> answers of this request, by key */
 	private array $answers = [];
 
-	/** @var array<string, CapabilityProbe>|null probe answering each key; null until a key is first asked */
+	/** @var array<string, int|string>|null entry of $probes answering each key; null until a key is first asked */
 	private ?array $owners = null;
 
+	/** @var array<int|string, CapabilityProbe> probes built so far, by entry */
+	private array $built = [];
+
+	/** @var array<int|string, true> entries already reported in the log */
+	private array $warned = [];
+
 	/**
-	 * @param iterable<CapabilityProbe> $probes probes of every module; a lazy iterable is read on the first question
+	 * @param array<int|string, CapabilityProbe|Closure(): CapabilityProbe> $probes probes of every module, or factories
+	 *     that build one when first asked; a string key names the probe in the log (its class)
 	 * @param LoggerInterface $logger receives the warning of a failing probe
 	 */
 	public function __construct(
-		private readonly iterable $probes,
+		private readonly array $probes,
 		private readonly LoggerInterface $logger,
 	) {
 	}
@@ -63,51 +72,63 @@ final class CapabilityRegistry {
 	 * @return bool the answer
 	 */
 	private function ask(string $key): bool {
-		$probe = $this->owners()[$key] ?? null;
-		if ($probe === null) {
+		$entry = $this->owners()[$key] ?? null;
+		if ($entry === null) {
 			return false;
 		}
 		try {
-			return $probe->supports($key) === true;
+			return $this->built[$entry]->supports($key) === true;
 		} catch (\Throwable $e) {
-			$this->warn($key, $e);
+			$this->warn($entry, $e);
 			return false;
 		}
 	}
 
 	/**
-	 * Indexes the probes by the keys they answer; the first probe registered for a key answers it.
+	 * Builds every probe and indexes it by the keys it answers; the first probe registered for a key answers it. A
+	 * probe that cannot be built or cannot list its keys answers none, and the others are still indexed.
 	 *
-	 * @return array<string, CapabilityProbe> probe by key
+	 * @return array<string, int|string> entry of $probes by key
 	 */
 	private function owners(): array {
 		if ($this->owners !== null) {
 			return $this->owners;
 		}
 		$owners = [];
-		foreach ($this->probes as $probe) {
+		foreach ($this->probes as $entry => $probe) {
 			try {
-				$keys = $probe->keys();
+				$built = $probe instanceof Closure ? $probe() : $probe;
+				if (!$built instanceof CapabilityProbe) {
+					throw new \UnexpectedValueException('not a ' . CapabilityProbe::class);
+				}
+				$keys = $built->keys();
 			} catch (\Throwable $e) {
-				$this->warn($probe::class, $e);
+				$this->warn($entry, $e);
 				continue;
 			}
+			$this->built[$entry] = $built;
 			foreach ($keys as $key) {
-				$owners[$key] ??= $probe;
+				$owners[$key] ??= $entry;
 			}
 		}
 		return $this->owners = $owners;
 	}
 
 	/**
-	 * Logs a failing probe with its class and the exception class, never the message.
+	 * Logs a failing probe once per request, with its name and the exception class, never the message.
 	 *
-	 * @param string $subject capability key, or the probe class when its keys could not be read
+	 * @param int|string $entry entry of $probes that failed
 	 * @param \Throwable $e what the probe threw
 	 */
-	private function warn(string $subject, \Throwable $e): void {
+	private function warn(int|string $entry, \Throwable $e): void {
+		if (isset($this->warned[$entry])) {
+			return;
+		}
+		$this->warned[$entry] = true;
+		$probe = $this->probes[$entry];
+		$name = is_string($entry) ? $entry : ($probe instanceof CapabilityProbe ? $probe::class : 'probe #' . $entry);
 		try {
-			$this->logger->warning('MCP capability probe failed', ['app' => 'mcp', 'capability' => $subject, 'exception_class' => $e::class]);
+			$this->logger->warning('MCP capability probe failed', ['app' => 'mcp', 'probe' => $name, 'exception_class' => $e::class]);
 		} catch (\Throwable) {
 			// The answer is already false; a failing logger changes nothing.
 		}

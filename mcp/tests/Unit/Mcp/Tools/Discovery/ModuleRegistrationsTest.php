@@ -54,6 +54,30 @@ final class ModuleRegistrationsTest extends TestCase {
 		self::assertSame([LoggerInterface::class, FeatureProbe::class], $asked);
 	}
 
+	/**
+	 * The real resolution, through the factories ModuleRegistrations hands the registry: a probe whose resolution
+	 * throws (container, constructor, autoload) answers false with one warning, and a healthy one still answers.
+	 */
+	public function testAProbeThatFailsToResolveIsIsolated(): void {
+		$resolve = new \ReflectionMethod(ModuleRegistrations::class, 'resolve');
+		$asked = [];
+		$container = $this->createMock(ContainerInterface::class);
+		$container->method('get')->willReturnCallback(static function (string $id) use (&$asked): object {
+			$asked[] = $id;
+			return $id === FeatureProbe::class ? new FeatureProbe(true, ['probe.other']) : throw new \RuntimeException('autoload');
+		});
+		$logger = $this->createMock(LoggerInterface::class);
+		$logger->expects(self::once())->method('warning')->with('MCP capability probe failed',
+			['app' => 'mcp', 'probe' => ProbeRegistration::class, 'exception_class' => \RuntimeException::class]);
+		$registry = new CapabilityRegistry($resolve->invoke(null, $container, [ProbeRegistration::class, FeatureProbe::class]), $logger);
+		self::assertSame([], $asked);
+		foreach ([1, 2] as $ignored) {
+			self::assertFalse($registry->supports('probe.feature'));
+			self::assertTrue($registry->supports('probe.other'));
+		}
+		self::assertSame([ProbeRegistration::class, FeatureProbe::class], $asked);
+	}
+
 	/** A module naming a class that is not a ModuleRegistration is refused. */
 	public function testARegistrationOfTheWrongTypeFails(): void {
 		$this->expectException(\LogicException::class);

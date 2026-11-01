@@ -35,14 +35,35 @@ final class CapabilityRegistryTest extends TestCase {
 		self::assertSame(2, $probe->asked);
 	}
 
-	/** A probe that throws counts as false, with one warning per key, its class and no message. */
+	/** A probe that throws counts as false, with one warning per probe and request, its class and no message. */
 	public function testAThrowingProbeIsFalseWithOneWarning(): void {
 		$logger = $this->createMock(LoggerInterface::class);
 		$logger->expects(self::once())->method('warning')->with('MCP capability probe failed',
-			['app' => 'mcp', 'capability' => 'probe.feature', 'exception_class' => \RuntimeException::class]);
-		$registry = new CapabilityRegistry([new FeatureProbe(new \RuntimeException('secret path'))], $logger);
-		self::assertFalse($registry->supports('probe.feature'));
-		self::assertFalse($registry->supports('probe.feature'));
+			['app' => 'mcp', 'probe' => FeatureProbe::class, 'exception_class' => \RuntimeException::class]);
+		$registry = new CapabilityRegistry([new FeatureProbe(new \RuntimeException('secret path'), ['probe.a', 'probe.b'])], $logger);
+		foreach (['probe.a', 'probe.b', 'probe.a'] as $key) {
+			self::assertFalse($registry->supports($key), $key);
+		}
+	}
+
+	/** A probe that cannot be built answers false for its keys only, once, and leaves the other probes answering. */
+	public function testAProbeThatCannotBeBuiltIsIsolated(): void {
+		$logger = $this->createMock(LoggerInterface::class);
+		$logger->expects(self::once())->method('warning')->with('MCP capability probe failed',
+			['app' => 'mcp', 'probe' => 'Broken\\Probe', 'exception_class' => \RuntimeException::class]);
+		$built = 0;
+		$registry = new CapabilityRegistry([
+			'Broken\\Probe' => static function () use (&$built): FeatureProbe {
+				$built++;
+				throw new \RuntimeException('constructor failed');
+			},
+			FeatureProbe::class => static fn (): FeatureProbe => new FeatureProbe(true, ['probe.other']),
+		], $logger);
+		foreach ([1, 2] as $ignored) {
+			self::assertTrue($registry->supports('probe.other'));
+			self::assertFalse($registry->supports('probe.feature'));
+		}
+		self::assertSame(1, $built);
 	}
 
 	/** A probe whose keys cannot be read answers nothing; the others still do. A failing logger changes nothing. */
@@ -60,13 +81,13 @@ final class CapabilityRegistryTest extends TestCase {
 		self::assertFalse($registry->supports('probe.feature'));
 	}
 
-	/** A lazy list of probes is read only when the first key is asked. */
+	/** A probe given as a factory is built only when the first key is asked, and once. */
 	public function testProbesAreBuiltOnlyWhenAsked(): void {
 		$built = 0;
-		$probes = (static function () use (&$built): \Generator {
+		$probes = [FeatureProbe::class => static function () use (&$built): FeatureProbe {
 			$built++;
-			yield new FeatureProbe(true);
-		})();
+			return new FeatureProbe(true);
+		}];
 		$registry = new CapabilityRegistry($probes, $this->createMock(LoggerInterface::class));
 		self::assertSame(0, $built);
 		self::assertTrue($registry->supports('probe.feature'));

@@ -71,7 +71,7 @@ final class AdminAssetsTest extends TestCase {
 	public function testAdminTemplateHasUniqueIdsAndBalancedDivs(): void {
 		$app = dirname(__DIR__, 3);
 		$template = (string)file_get_contents($app . '/templates/admin.php');
-		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js') . file_get_contents($app . '/src/shared/connections.js') . file_get_contents($app . '/src/admin/admin-tabs.js') . file_get_contents($app . '/src/admin/admin-picker.js') . AdminSources::readPath($app . '/src/admin/admin-groups.js');
+		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js') . file_get_contents($app . '/src/shared/connections.js') . file_get_contents($app . '/src/admin/admin-tabs.js') . AdminSources::readPath($app . '/src/admin/admin-picker.js') . AdminSources::readPath($app . '/src/admin/admin-groups.js');
 		preg_match_all("/getElementById\\('([^']+)'\\)/", $script, $used);
 		$this->assertNotEmpty($used[1]);
 		// The personal resource scope (src/settings/my-scope.js) is not in the admin bundle; its ids exist only on the personal page.
@@ -536,8 +536,8 @@ final class AdminAssetsTest extends TestCase {
 		$this->assertStringContainsString("t('mcp', 'The groups were changed in another window or by another administrator; the current list was loaded.')", $logs);
 		$this->assertStringContainsString("t('mcp', '{group} (group removed)'", $logs);
 		// One save at a time, with the control locked, is the picker's contract.
-		$picker = (string)file_get_contents($app . '/src/admin/admin-picker.js');
-		$this->assertMatchesRegularExpression('/if \(busy \|\| \(fallbackText !== null && !force\)\) \{\s*return/', $picker);
+		$picker = (string)AdminSources::readPath($app . '/src/admin/admin-picker.js');
+		$this->assertMatchesRegularExpression('/if \(context\.busy \|\| \(context\.fallbackText !== null && !force\)\) \{\s*return/', $picker);
 		$this->assertStringContainsString("setAttribute('aria-busy', locked ? 'true' : 'false')", $picker);
 	}
 
@@ -562,12 +562,12 @@ final class AdminAssetsTest extends TestCase {
 	public function testUnreadableTagsCanBeRepairedWithoutAnySystemTags(): void {
 		$app = dirname(__DIR__, 3);
 		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js');
-		$picker = (string)file_get_contents($app . '/src/admin/admin-picker.js');
+		$picker = (string)AdminSources::readPath($app . '/src/admin/admin-picker.js');
 		$this->assertStringContainsString('await picker.commit({ force: true })', $script);
 		$this->assertStringContainsString('commit({ force = false } = {})', $picker);
-		$this->assertStringContainsString('return commit(new Set(selected), force)', $picker);
-		$this->assertStringContainsString('if (busy || (fallbackText !== null && !force))', $picker);
-		$this->assertMatchesRegularExpression('/if \(spec.confirmSave && !\(await spec.confirmSave\(Array.from\(next\)\)\)\) \{\s*return/', $picker);
+		$this->assertStringContainsString('return context.commit(new Set(context.selected), force)', $picker);
+		$this->assertStringContainsString('if (context.busy || (context.fallbackText !== null && !force))', $picker);
+		$this->assertMatchesRegularExpression('/if \(context.spec.confirmSave && !\(await context.spec.confirmSave\(Array.from\(next\)\)\)\) \{\s*return/', $picker);
 		$this->assertStringContainsString("confirmSave: (nextIds) => nextIds.length > 0", $script);
 		$this->assertStringContainsString("await context.api('PUT', '/api/admin/tags', { tagIds })", $script);
 		$this->assertStringContainsString('setInvalidState(false)', $script);

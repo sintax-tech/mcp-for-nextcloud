@@ -1,5 +1,9 @@
 admin/registration.js
-admin/admin-picker.js
+admin/picker/session.js
+admin/picker/list.js
+admin/picker/rendering.js
+admin/picker/saving.js
+admin/picker/start.js
 admin/access/levels/polls.js
 admin/access/levels/files.js
 admin/access/levels/notes.js

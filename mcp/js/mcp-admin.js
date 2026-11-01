@@ -15,50 +15,423 @@
 	root.OCA.Mcp.Admin = root.OCA.Mcp.Admin || { modules: {}, sessions: {} }
 })(typeof window !== 'undefined' ? window : globalThis)
 ;
-/* admin/admin-picker.js */
+/* admin/picker/session.js */
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/**
- * Generic searchable multi-select picker of the admin page, exposed as window.OCA.Mcp.Admin.picker.
- *
- * One control: the selected options as removable chips on top, a search field that only filters the
- * existing options (typing never creates one) and a collapsed listbox that opens on focus. It
- * implements the WAI-ARIA combobox + multi-selectable listbox pattern (aria-expanded,
- * aria-activedescendant, arrows, Enter, Escape, Backspace on an empty field). Saving is the caller's
- * async function; while it runs the whole control is locked (aria-busy), and a failure rolls the
- * selection back to the previous state and reports through the caller's onError hook. Nothing here
- * knows about logs or tags, so the 1.1.0 group editor reuses it as-is. Plain browser JavaScript, no
- * build step; strings go through t('mcp', …) for translation.
+/** picker session operations.
+ * @param {object} admin app registry
+ * @return {void} registers the focused operations
  */
-(function () {
+(function (admin) {
 	'use strict'
 
 	let pickerCount = 0
 
+	admin.modules.picker = admin.modules.picker || {}
 	/**
-	 * @param {string} tag tag name
-	 * @param {object} attrs attributes; textContent sets text, and any aria-* name becomes an attribute
-	 * @param {Array<Node|string>} children
-	 * @return {HTMLElement}
+	 * @param {object} context operation input
+	 * @return {void} operation result
 	 */
-	function el(tag, attrs, children) {
-		const node = document.createElement(tag)
-		for (const [name, value] of Object.entries(attrs)) {
-			if (name === 'textContent') {
-				node.textContent = value
-			} else if (name === 'className') {
-				node.className = value
-			} else {
-				node.setAttribute(name, value)
+	admin.modules.picker.session = function (context) {
+		/**
+		 * @param {string} tag tag name
+		 * @param {object} attrs attributes; textContent sets text, and any aria-* name becomes an attribute
+		 * @param {Array<Node|string>} children
+		 * @return {HTMLElement}
+		 */
+		function el(tag, attrs, children) {
+			const node = document.createElement(tag)
+			for (const [name, value] of Object.entries(attrs)) {
+				if (name === 'textContent') {
+					node.textContent = value
+				} else if (name === 'className') {
+					node.className = value
+				} else {
+					node.setAttribute(name, value)
+				}
+			}
+			for (const child of children || []) {
+				node.append(child)
+			}
+			return node
+		}
+
+		const container = context.spec.container
+		const uid = 'mcp-picker-' + (++pickerCount)
+		const listId = uid + '-list'
+
+		let options = context.spec.options
+		let selected = new Set(context.spec.selectedIds.filter((id) => options.some((option) => option.id === id)))
+		let busy = false
+		let fallbackText = options.length === 0 ? context.spec.emptyOptionsText : null
+		let activeIndex = -1
+
+		const fallback = el('p', { className: 'mcp-picker-fallback mcp-empty', hidden: 'hidden' })
+		const chips = el('div', { className: 'mcp-picker-chips' })
+		const input = el('input', {
+			type: 'text',
+			className: 'mcp-picker-search',
+			role: 'combobox',
+			'aria-expanded': 'false',
+			'aria-controls': listId,
+			'aria-label': context.spec.searchLabel,
+			placeholder: context.spec.searchLabel,
+			autocomplete: 'off',
+			spellcheck: 'false',
+		})
+		const list = el('ul', {
+			id: listId,
+			className: 'mcp-picker-list',
+			role: 'listbox',
+			'aria-multiselectable': 'true',
+			'aria-label': context.spec.listLabel,
+			hidden: 'hidden',
+		})
+		const noMatch = el('li', { className: 'mcp-picker-no-match', textContent: context.spec.noMatchText, hidden: 'hidden' })
+		const box = el('div', { className: 'mcp-picker-box' }, [chips, input])
+		container.classList.add('mcp-picker')
+		container.setAttribute('aria-busy', 'false')
+		container.replaceChildren(fallback, box, list)
+
+
+		/** @param {string} text status text for the save feedback element
+		 * @return {*} operation result
+		 */
+		function setStatus(text) {
+			if (context.spec.status) {
+				context.spec.status.textContent = text
 			}
 		}
-		for (const child of children || []) {
-			node.append(child)
-		}
-		return node
+
+		Object.defineProperties(context, {
+			container: { configurable: true, get: () => container },
+			uid: { configurable: true, get: () => uid },
+			listId: { configurable: true, get: () => listId },
+			options: { configurable: true, get: () => options, set: (value) => { options = value } },
+			selected: { configurable: true, get: () => selected, set: (value) => { selected = value } },
+			busy: { configurable: true, get: () => busy, set: (value) => { busy = value } },
+			fallbackText: { configurable: true, get: () => fallbackText, set: (value) => { fallbackText = value } },
+			activeIndex: { configurable: true, get: () => activeIndex, set: (value) => { activeIndex = value } },
+			fallback: { configurable: true, get: () => fallback },
+			chips: { configurable: true, get: () => chips },
+			input: { configurable: true, get: () => input },
+			list: { configurable: true, get: () => list },
+			noMatch: { configurable: true, get: () => noMatch },
+			box: { configurable: true, get: () => box },
+		})
+
+		Object.assign(context, { el, setStatus })
 	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/picker/list.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** picker list operations.
+ * @param {object} admin app registry
+ * @return {void} registers the focused operations
+ */
+(function (admin) {
+	'use strict'
+
+	admin.modules.picker = admin.modules.picker || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
+	admin.modules.picker.list = function (context) {
+		/** @return {HTMLElement[]} the list items the filter currently shows */
+		function visibleItems() {
+			return Array.from(context.list.querySelectorAll('[role="option"]')).filter((item) => !item.hidden)
+		}
+
+
+		/**
+		 * @return {*} operation result
+		 */
+		function openList() {
+			if (context.options.length === 0) {
+				return
+			}
+			context.list.hidden = false
+			context.input.setAttribute('aria-expanded', 'true')
+		}
+
+
+		/**
+		 * @return {*} operation result
+		 */
+		function closeList() {
+			context.list.hidden = true
+			context.input.setAttribute('aria-expanded', 'false')
+			context.input.removeAttribute('aria-activedescendant')
+			context.activeIndex = -1
+			for (const item of context.list.querySelectorAll('.mcp-picker-active')) {
+				item.classList.remove('mcp-picker-active')
+			}
+		}
+
+
+		/** @param {number} delta keyboard steps within the visible options, wrapping around
+		 * @return {*} operation result
+		 */
+		function moveActive(delta) {
+			const items = context.visibleItems()
+			if (items.length === 0) {
+				context.input.removeAttribute('aria-activedescendant')
+				context.activeIndex = -1
+				return
+			}
+			context.activeIndex = (context.activeIndex + delta + items.length) % items.length
+			items.forEach((item, index) => item.classList.toggle('mcp-picker-active', index === context.activeIndex))
+			context.input.setAttribute('aria-activedescendant', items[context.activeIndex].id)
+			items[context.activeIndex].scrollIntoView({ block: 'nearest' })
+		}
+
+
+		/** Rebuilds the option items and keeps the current filter applied.
+		 * @return {*} operation result
+		 */
+		function renderList() {
+			const activeId = context.visibleItems()[context.activeIndex]?.dataset.optionId
+			context.list.replaceChildren()
+			context.options.forEach((option, index) => {
+				const item = el('li', {
+					id: context.listId + '-opt-' + index,
+					className: 'mcp-picker-option',
+					role: 'option',
+					'aria-selected': context.selected.has(option.id) ? 'true' : 'false',
+				}, [option.label])
+				if (option.badge) {
+					item.append(el('span', {
+						className: 'mcp-tag-type ' + (option.badge.className || ''),
+						title: option.badge.title || '',
+						textContent: option.badge.text,
+					}))
+				}
+				item.dataset.optionId = option.id
+				context.list.append(item)
+			})
+			context.list.append(context.noMatch)
+			context.applyFilter()
+			const items = context.visibleItems()
+			const restoredIndex = items.findIndex((item) => item.dataset.optionId === activeId)
+			if (restoredIndex >= 0 && !context.list.hidden) {
+				context.activeIndex = restoredIndex
+				items[context.activeIndex].classList.add('mcp-picker-active')
+				context.input.setAttribute('aria-activedescendant', items[context.activeIndex].id)
+			}
+		}
+
+
+		/** Filters with a plain substring on the labels; typing never creates an option.
+		 * @return {*} operation result
+		 */
+		function applyFilter() {
+			const query = context.input.value.trim().toLowerCase()
+			let matches = 0
+			for (const item of context.list.querySelectorAll('[role="option"]')) {
+				const option = context.options[Number(item.id.slice(context.listId.length + 5))]
+				const show = query === '' || option.label.toLowerCase().includes(query)
+				item.hidden = !show
+				if (show) {
+					matches++
+				}
+			}
+			context.noMatch.hidden = matches !== 0
+			context.activeIndex = -1
+			context.input.removeAttribute('aria-activedescendant')
+		}
+
+		Object.assign(context, { visibleItems, openList, closeList, moveActive, renderList, applyFilter })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/picker/rendering.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** picker rendering operations.
+ * @param {object} admin app registry
+ * @return {void} registers the focused operations
+ */
+(function (admin) {
+	'use strict'
+
+	admin.modules.picker = admin.modules.picker || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
+	admin.modules.picker.rendering = function (context) {
+		/** Rebuilds the chips of the selected options.
+		 * @return {*} operation result
+		 */
+		function renderChips() {
+			context.chips.replaceChildren()
+			for (const option of context.options) {
+				if (!context.selected.has(option.id)) {
+					continue
+				}
+				const chip = el('span', { className: 'mcp-picker-chip' }, [option.label])
+				if (option.badge) {
+					chip.append(el('span', {
+						className: 'mcp-tag-type ' + (option.badge.className || ''),
+						title: option.badge.title || '',
+						textContent: option.badge.text,
+					}))
+				}
+				const remove = el('button', {
+					type: 'button',
+					className: 'mcp-picker-remove',
+					'aria-label': t('mcp', 'Remove {name}', { name: option.label }, undefined, { escape: false }),
+				}, ['×'])
+				remove.addEventListener('click', () => context.toggle(option.id))
+				chip.append(remove)
+				context.chips.append(chip)
+			}
+		}
+
+
+		/** Shows every control part, the empty text or the fallback text as the state asks.
+		 * @return {*} operation result
+		 */
+		function paint() {
+			if (context.fallbackText !== null) {
+				context.fallback.textContent = context.fallbackText
+				context.fallback.hidden = false
+				context.box.hidden = true
+				context.closeList()
+				context.list.hidden = true
+				return
+			}
+			context.fallback.hidden = true
+			context.box.hidden = false
+			context.renderChips()
+			context.renderList()
+		}
+
+
+		/** @param {boolean} locked locks every control while a save runs
+		 * @return {*} operation result
+		 */
+		function setBusy(locked) {
+			context.busy = locked
+			context.container.setAttribute('aria-busy', locked ? 'true' : 'false')
+			context.input.disabled = locked
+			context.box.classList.toggle('mcp-picker-busy', locked)
+			for (const button of context.chips.querySelectorAll('button')) {
+				button.disabled = locked
+			}
+		}
+
+		Object.assign(context, { renderChips, paint, setBusy })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/picker/saving.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** picker saving operations.
+ * @param {object} admin app registry
+ * @return {void} registers the focused operations
+ */
+(function (admin) {
+	'use strict'
+
+	admin.modules.picker = admin.modules.picker || {}
+	/**
+	 * @param {object} context operation input
+	 * @return {void} operation result
+	 */
+	admin.modules.picker.saving = function (context) {
+		/**
+		 * Persists a new selection: confirms first when the caller asks, locks the control, keeps the
+		 * previous state on failure and reports through the status element and the onError hook.
+		 *
+		 * @param {Set<string>} next the intended selection
+		 * @param {boolean} force permits an explicit save while the options show a fallback
+		 * @return {Promise<*>} operation result
+		 */
+		async function commit(next, force = false) {
+			if (context.busy || (context.fallbackText !== null && !force)) {
+				return
+			}
+			if (context.spec.confirmSave && !(await context.spec.confirmSave(Array.from(next)))) {
+				return
+			}
+			// Rebuilding chips and disabling the input can send keyboard focus to the body.
+			const restoreFocus = document.activeElement === context.input || context.chips.contains(document.activeElement)
+			const before = context.selected
+			context.selected = new Set(next)
+			context.paint()
+			context.spec.onChange?.(Array.from(context.selected))
+			context.setBusy(true)
+			context.setStatus(t('mcp', 'Saving…'))
+			try {
+				const result = await context.spec.save(Array.from(context.selected), Array.from(before))
+				context.setStatus(t('mcp', 'Saved'))
+				if (context.spec.clearSavedAfterMs) {
+					const savedText = t('mcp', 'Saved')
+					setTimeout(() => {
+						if (context.spec.status && context.spec.status.textContent === savedText) {
+							context.spec.status.textContent = ''
+						}
+					}, context.spec.clearSavedAfterMs)
+				}
+				await context.spec.onSaved?.(result)
+			} catch (error) {
+				// Rollback first, so an onError hook that resynchronizes wins over the old state.
+				context.selected = before
+				context.paint()
+				context.spec.onChange?.(Array.from(context.selected))
+				context.setStatus(context.spec.errorStatus ?? t('mcp', 'Not saved'))
+				await context.spec.onError?.(error)
+			} finally {
+				context.setBusy(false)
+				if (restoreFocus && !context.box.hidden
+					&& (document.activeElement === document.body || document.activeElement === context.input)) {
+					context.input.focus()
+				}
+			}
+		}
+
+
+		/** @param {string} id option to add to or drop from the selection
+		 * @return {*} operation result
+		 */
+		function toggle(id) {
+			const next = new Set(context.selected)
+			if (next.has(id)) {
+				next.delete(id)
+			} else {
+				next.add(id)
+			}
+			context.commit(next)
+		}
+
+		Object.assign(context, { commit, toggle })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/picker/start.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Picker composition and public creation entry.
+ * @param {object} admin app registry
+ * @return {void} publishes the picker
+ */
+(function (admin) {
+	'use strict'
 
 	/**
 	 * @param {object} spec
@@ -81,315 +454,77 @@
 	 * @param {HTMLElement} [spec.status] element that receives the saving/saved/error feedback
 	 * @param {number} [spec.clearSavedAfterMs] clears the "Saved" status after this many ms
 	 * @param {string} [spec.errorStatus] status text after a failed save (default: the "Not saved" text)
+	 * @return {*} operation result
 	 */
 	function create(spec) {
-		const container = spec.container
-		const uid = 'mcp-picker-' + (++pickerCount)
-		const listId = uid + '-list'
-
-		let options = spec.options
-		let selected = new Set(spec.selectedIds.filter((id) => options.some((option) => option.id === id)))
-		let busy = false
-		let fallbackText = options.length === 0 ? spec.emptyOptionsText : null
-		let activeIndex = -1
-
-		const fallback = el('p', { className: 'mcp-picker-fallback mcp-empty', hidden: 'hidden' })
-		const chips = el('div', { className: 'mcp-picker-chips' })
-		const input = el('input', {
-			type: 'text',
-			className: 'mcp-picker-search',
-			role: 'combobox',
-			'aria-expanded': 'false',
-			'aria-controls': listId,
-			'aria-label': spec.searchLabel,
-			placeholder: spec.searchLabel,
-			autocomplete: 'off',
-			spellcheck: 'false',
+		const context = { spec }
+		admin.modules.picker.session(context)
+		admin.modules.picker.list(context)
+		admin.modules.picker.rendering(context)
+		admin.modules.picker.saving(context)
+		context.input.addEventListener('focus', context.openList)
+		context.input.addEventListener('input', () => {
+			context.applyFilter()
+			context.openList()
 		})
-		const list = el('ul', {
-			id: listId,
-			className: 'mcp-picker-list',
-			role: 'listbox',
-			'aria-multiselectable': 'true',
-			'aria-label': spec.listLabel,
-			hidden: 'hidden',
-		})
-		const noMatch = el('li', { className: 'mcp-picker-no-match', textContent: spec.noMatchText, hidden: 'hidden' })
-		const box = el('div', { className: 'mcp-picker-box' }, [chips, input])
-		container.classList.add('mcp-picker')
-		container.setAttribute('aria-busy', 'false')
-		container.replaceChildren(fallback, box, list)
-
-		/** @param {string} text status text for the save feedback element */
-		function setStatus(text) {
-			if (spec.status) {
-				spec.status.textContent = text
-			}
-		}
-
-		/** @return {HTMLElement[]} the list items the filter currently shows */
-		function visibleItems() {
-			return Array.from(list.querySelectorAll('[role="option"]')).filter((item) => !item.hidden)
-		}
-
-		function openList() {
-			if (options.length === 0) {
-				return
-			}
-			list.hidden = false
-			input.setAttribute('aria-expanded', 'true')
-		}
-
-		function closeList() {
-			list.hidden = true
-			input.setAttribute('aria-expanded', 'false')
-			input.removeAttribute('aria-activedescendant')
-			activeIndex = -1
-			for (const item of list.querySelectorAll('.mcp-picker-active')) {
-				item.classList.remove('mcp-picker-active')
-			}
-		}
-
-		/** @param {number} delta keyboard steps within the visible options, wrapping around */
-		function moveActive(delta) {
-			const items = visibleItems()
-			if (items.length === 0) {
-				input.removeAttribute('aria-activedescendant')
-				activeIndex = -1
-				return
-			}
-			activeIndex = (activeIndex + delta + items.length) % items.length
-			items.forEach((item, index) => item.classList.toggle('mcp-picker-active', index === activeIndex))
-			input.setAttribute('aria-activedescendant', items[activeIndex].id)
-			items[activeIndex].scrollIntoView({ block: 'nearest' })
-		}
-
-		/** Rebuilds the option items and keeps the current filter applied. */
-		function renderList() {
-			const activeId = visibleItems()[activeIndex]?.dataset.optionId
-			list.replaceChildren()
-			options.forEach((option, index) => {
-				const item = el('li', {
-					id: listId + '-opt-' + index,
-					className: 'mcp-picker-option',
-					role: 'option',
-					'aria-selected': selected.has(option.id) ? 'true' : 'false',
-				}, [option.label])
-				if (option.badge) {
-					item.append(el('span', {
-						className: 'mcp-tag-type ' + (option.badge.className || ''),
-						title: option.badge.title || '',
-						textContent: option.badge.text,
-					}))
-				}
-				item.dataset.optionId = option.id
-				list.append(item)
-			})
-			list.append(noMatch)
-			applyFilter()
-			const items = visibleItems()
-			const restoredIndex = items.findIndex((item) => item.dataset.optionId === activeId)
-			if (restoredIndex >= 0 && !list.hidden) {
-				activeIndex = restoredIndex
-				items[activeIndex].classList.add('mcp-picker-active')
-				input.setAttribute('aria-activedescendant', items[activeIndex].id)
-			}
-		}
-
-		/** Filters with a plain substring on the labels; typing never creates an option. */
-		function applyFilter() {
-			const query = input.value.trim().toLowerCase()
-			let matches = 0
-			for (const item of list.querySelectorAll('[role="option"]')) {
-				const option = options[Number(item.id.slice(listId.length + 5))]
-				const show = query === '' || option.label.toLowerCase().includes(query)
-				item.hidden = !show
-				if (show) {
-					matches++
-				}
-			}
-			noMatch.hidden = matches !== 0
-			activeIndex = -1
-			input.removeAttribute('aria-activedescendant')
-		}
-
-		/** Rebuilds the chips of the selected options. */
-		function renderChips() {
-			chips.replaceChildren()
-			for (const option of options) {
-				if (!selected.has(option.id)) {
-					continue
-				}
-				const chip = el('span', { className: 'mcp-picker-chip' }, [option.label])
-				if (option.badge) {
-					chip.append(el('span', {
-						className: 'mcp-tag-type ' + (option.badge.className || ''),
-						title: option.badge.title || '',
-						textContent: option.badge.text,
-					}))
-				}
-				const remove = el('button', {
-					type: 'button',
-					className: 'mcp-picker-remove',
-					'aria-label': t('mcp', 'Remove {name}', { name: option.label }, undefined, { escape: false }),
-				}, ['×'])
-				remove.addEventListener('click', () => toggle(option.id))
-				chip.append(remove)
-				chips.append(chip)
-			}
-		}
-
-		/** Shows every control part, the empty text or the fallback text as the state asks. */
-		function paint() {
-			if (fallbackText !== null) {
-				fallback.textContent = fallbackText
-				fallback.hidden = false
-				box.hidden = true
-				closeList()
-				list.hidden = true
-				return
-			}
-			fallback.hidden = true
-			box.hidden = false
-			renderChips()
-			renderList()
-		}
-
-		/** @param {boolean} locked locks every control while a save runs */
-		function setBusy(locked) {
-			busy = locked
-			container.setAttribute('aria-busy', locked ? 'true' : 'false')
-			input.disabled = locked
-			box.classList.toggle('mcp-picker-busy', locked)
-			for (const button of chips.querySelectorAll('button')) {
-				button.disabled = locked
-			}
-		}
-
-		/**
-		 * Persists a new selection: confirms first when the caller asks, locks the control, keeps the
-		 * previous state on failure and reports through the status element and the onError hook.
-		 *
-		 * @param {Set<string>} next the intended selection
-		 * @param {boolean} force permits an explicit save while the options show a fallback
-		 */
-		async function commit(next, force = false) {
-			if (busy || (fallbackText !== null && !force)) {
-				return
-			}
-			if (spec.confirmSave && !(await spec.confirmSave(Array.from(next)))) {
-				return
-			}
-			// Rebuilding chips and disabling the input can send keyboard focus to the body.
-			const restoreFocus = document.activeElement === input || chips.contains(document.activeElement)
-			const before = selected
-			selected = new Set(next)
-			paint()
-			spec.onChange?.(Array.from(selected))
-			setBusy(true)
-			setStatus(t('mcp', 'Saving…'))
-			try {
-				const result = await spec.save(Array.from(selected), Array.from(before))
-				setStatus(t('mcp', 'Saved'))
-				if (spec.clearSavedAfterMs) {
-					const savedText = t('mcp', 'Saved')
-					setTimeout(() => {
-						if (spec.status && spec.status.textContent === savedText) {
-							spec.status.textContent = ''
-						}
-					}, spec.clearSavedAfterMs)
-				}
-				await spec.onSaved?.(result)
-			} catch (error) {
-				// Rollback first, so an onError hook that resynchronizes wins over the old state.
-				selected = before
-				paint()
-				spec.onChange?.(Array.from(selected))
-				setStatus(spec.errorStatus ?? t('mcp', 'Not saved'))
-				await spec.onError?.(error)
-			} finally {
-				setBusy(false)
-				if (restoreFocus && !box.hidden
-					&& (document.activeElement === document.body || document.activeElement === input)) {
-					input.focus()
-				}
-			}
-		}
-
-		/** @param {string} id option to add to or drop from the selection */
-		function toggle(id) {
-			const next = new Set(selected)
-			if (next.has(id)) {
-				next.delete(id)
-			} else {
-				next.add(id)
-			}
-			commit(next)
-		}
-
-		input.addEventListener('focus', openList)
-		input.addEventListener('input', () => {
-			applyFilter()
-			openList()
-		})
-		input.addEventListener('keydown', (event) => {
+		context.input.addEventListener('keydown', (event) => {
 			switch (event.key) {
 			case 'ArrowDown':
 				event.preventDefault()
-				openList()
-				moveActive(1)
+				context.openList()
+				context.moveActive(1)
 				break
 			case 'ArrowUp':
 				event.preventDefault()
-				openList()
-				moveActive(-1)
+				context.openList()
+				context.moveActive(-1)
 				break
 			case 'Enter':
 				event.preventDefault()
-				if (list.hidden) {
-					openList()
-					moveActive(1)
-				} else if (activeIndex >= 0) {
-					const item = visibleItems()[activeIndex]
+				if (context.list.hidden) {
+					context.openList()
+					context.moveActive(1)
+				} else if (context.activeIndex >= 0) {
+					const item = context.visibleItems()[context.activeIndex]
 					if (item) {
-						toggle(item.dataset.optionId)
+						context.toggle(item.dataset.optionId)
 					}
 				}
 				break
 			case 'Escape':
-				if (input.value !== '') {
-					input.value = ''
-					applyFilter()
+				if (context.input.value !== '') {
+					context.input.value = ''
+					context.applyFilter()
 				} else {
-					closeList()
+					context.closeList()
 				}
 				break
 			case 'Backspace':
-				if (input.value === '' && selected.size > 0) {
-					const last = options.filter((option) => selected.has(option.id)).pop()
+				if (context.input.value === '' && context.selected.size > 0) {
+					const last = context.options.filter((option) => context.selected.has(option.id)).pop()
 					if (last) {
-						toggle(last.id)
+						context.toggle(last.id)
 					}
 				}
 				break
 			}
 		})
-		list.addEventListener('mousedown', (event) => {
+		context.list.addEventListener('mousedown', (event) => {
 			// mousedown, not click: the focus stays in the search field.
 			const item = event.target.closest('[role="option"]')
-			if (!item || busy) {
+			if (!item || context.busy) {
 				return
 			}
 			event.preventDefault()
-			toggle(item.dataset.optionId)
+			context.toggle(item.dataset.optionId)
 		})
 		document.addEventListener('click', (event) => {
-			if (!container.contains(event.target)) {
-				closeList()
+			if (!context.container.contains(event.target)) {
+				context.closeList()
 			}
 		})
 
-		paint()
+		context.paint()
 
 		return {
 			/**
@@ -399,32 +534,32 @@
 			 * @param {string[]} nextSelectedIds
 			 */
 			setOptions(nextOptions, nextSelectedIds) {
-				options = nextOptions
-				selected = new Set(nextSelectedIds.filter((id) => options.some((option) => option.id === id)))
-				fallbackText = options.length === 0 ? spec.emptyOptionsText : null
-				if (busy) {
-					setBusy(false)
+				context.options = nextOptions
+				context.selected = new Set(nextSelectedIds.filter((id) => context.options.some((option) => option.id === id)))
+				context.fallbackText = context.options.length === 0 ? context.spec.emptyOptionsText : null
+				if (context.busy) {
+					context.setBusy(false)
 				}
-				paint()
+				context.paint()
 			},
 			/** Saves again; force bypasses the fallback message, keeping confirmation and locking. */
 			commit({ force = false } = {}) {
-				return commit(new Set(selected), force)
+				return context.commit(new Set(context.selected), force)
 			},
 			/** Shows a plain message instead of the control, for a load failure or an empty option list. */
 			showFallback(text) {
-				fallbackText = text
-				paint()
+				context.fallbackText = text
+				context.paint()
 			},
 			/** @return {string[]} the currently selected option ids */
 			getSelected() {
-				return Array.from(selected)
+				return Array.from(context.selected)
 			},
 		}
 	}
 
-	window.OCA.Mcp.Admin.picker = { create }
-})()
+	admin.picker = { create }
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
 ;
 /* admin/access/levels/polls.js */
 /*

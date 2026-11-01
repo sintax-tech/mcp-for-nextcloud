@@ -23,6 +23,7 @@ final class AdminSources {
 			'admin-groups.js' => ['groups'],
 			'admin-scope.js' => ['scope'],
 			'admin-inspector.js' => ['inspector'],
+			'admin-picker.js' => ['picker'],
 			'admin-level-popover.js' => ['level-popover'],
 			default => [],
 		};

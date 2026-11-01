@@ -36,7 +36,7 @@ class AdminManifest {
 	 */
 	static loadsBefore(first, second) {
 		const fragments = AdminManifest.fragments()
-		const starts = { 'admin/admin-grants.js':'admin/matrix/start.js', 'admin/admin-overrides.js':'admin/overrides/start.js', 'admin/admin-groups.js':'admin/groups/start.js', 'admin/admin-scope.js':'admin/scope/start.js', 'admin/admin-inspector.js':'admin/inspector/start.js', 'admin/admin-level-popover.js':'admin/level-popover/start.js' }
+		const starts = { 'admin/admin-grants.js':'admin/matrix/start.js', 'admin/admin-overrides.js':'admin/overrides/start.js', 'admin/admin-groups.js':'admin/groups/start.js', 'admin/admin-scope.js':'admin/scope/start.js', 'admin/admin-inspector.js':'admin/inspector/start.js', 'admin/admin-picker.js':'admin/picker/start.js', 'admin/admin-level-popover.js':'admin/level-popover/start.js' }
 		const actual = p => fragments.includes(starts[p]) ? starts[p] : p
 		const a = fragments.indexOf(actual(first))
 		const b = fragments.indexOf(actual(second))
@@ -85,6 +85,7 @@ class AdminManifest {
 			'admin-groups.js': ['groups'],
 			'admin-scope.js': ['scope'],
 			'admin-inspector.js': ['inspector'],
+			'admin-picker.js': ['picker'],
 			'admin-level-popover.js': ['level-popover'],
 		}[name]
 		const fragments = AdminManifest.fragments()

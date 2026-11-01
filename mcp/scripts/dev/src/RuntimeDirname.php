@@ -30,7 +30,7 @@ final class RuntimeDirname {
 		}
 		$operand = array_slice($tokens, $i + 2, 6);
 		$runtime = count($operand) === 6 && $operand[0][0] === T_VARIABLE && $operand[1][0] === T_OBJECT_OPERATOR
-			&& $operand[2][0] === T_STRING && strtolower($operand[2][1]) === 'getpath'
+			&& $operand[0][1] !== '$this' && $operand[2][0] === T_STRING && strtolower($operand[2][1]) === 'getpath'
 			&& array_column(array_slice($operand, 3), 1) === ['(', ')', ')'];
 		return $runtime ? null : $tokens[$i][1] . ' path not proved';
 	}

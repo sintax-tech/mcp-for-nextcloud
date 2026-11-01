@@ -24,7 +24,7 @@ final class RuntimeDirnameTest extends TestCase {
 
 	/** Unknown variables, source-dependent operands and callable overrides remain refused. */
 	public function testUnprovedOperandsStillFail(): void {
-		foreach (['dirname($path)', 'dirname($node->getPath(__DIR__))', 'dirname($node->getPath() . __DIR__)',
+		foreach (['dirname($this->getPath())', 'dirname($path)', 'dirname($node->getPath(__DIR__))', 'dirname($node->getPath() . __DIR__)',
 			'dirname($node?->getPath())', 'dirname(__DIR__ . "/child")'] as $expression) {
 			$this->assertNotSame([], $this->check("return $expression;"), $expression);
 		}

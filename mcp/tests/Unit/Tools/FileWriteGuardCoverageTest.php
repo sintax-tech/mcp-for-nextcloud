@@ -19,11 +19,11 @@ final class FileWriteGuardCoverageTest extends TestCase {
 	 */
 	private function classified(): array {
 		return [
-			'Access/Grants/GrantPolicy.php#<global>:literal-move:1' => 'label: files operation catalog entry',
-			'Access/Grants/GrantPolicy.php#<global>:literal-move:2' => 'label: notes operation catalog entry',
-			'Access/Grants/GrantPolicy.php#<global>:literal-move:3' => 'label: deck operation catalog entry',
-			'Access/Grants/GrantPolicy.php#<global>:literal-move:4' => 'label: calendar operation catalog entry',
-			'Access/Grants/GrantPolicy.php#<global>:literal-move:5' => 'label: mail operation catalog entry',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:1' => 'label: files operation catalog entry',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:2' => 'label: notes operation catalog entry',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:3' => 'label: deck operation catalog entry',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:4' => 'label: calendar operation catalog entry',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:5' => 'label: mail operation catalog entry',
 			'Service/Calendar/CalendarSelftestService.php#run:literal-move:1' => 'label: self-test operation grant name',
 			'Service/Calendar/CalendarSelftestService.php#run:literal-move:2' => 'label: self-test stage identifier',
 			'Service/Calendar/CalendarSelftestService.php#run:literal-move:3' => 'label: self-test report detail key',

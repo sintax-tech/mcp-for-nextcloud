@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools;
 
 use OCA\Mcp\L10n\Translator;
+use OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypeTranslations;
 use OCA\Mcp\Access\FileTypes\FileWritePolicy;
 use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
@@ -144,10 +145,10 @@ final class FileTypeGuardTest extends TestCase {
 
 	/** Each new literal is translated in all shipped catalogs, whose JS and JSON entries agree. */
 	public function testAllPolicyMessagesAreTranslated(): void {
-		$root = dirname(__DIR__, 3) . '/l10n/';
 		foreach (['pt_BR', 'es', 'de'] as $locale) {
-			$data = json_decode((string)file_get_contents($root . $locale . '.json'), true, 512, JSON_THROW_ON_ERROR);
-			$js = (string)file_get_contents($root . $locale . '.js');
+			$sources = FileTypeTranslations::read($locale);
+			$data = json_decode($sources['json'], true, 512, JSON_THROW_ON_ERROR);
+			$js = $sources['javascript'];
 			foreach ([FileTypeMessages::denied(), FileTypeMessages::unavailable(), FileTypeMessages::invalid()] as $source) {
 				self::assertArrayHasKey($source, $data['translations']);
 				$translated = $data['translations'][$source];

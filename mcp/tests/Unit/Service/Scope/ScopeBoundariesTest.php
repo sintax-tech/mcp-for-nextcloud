@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service\Scope;
 
 use OCA\Mcp\Tests\Unit\Access\ResourceScope\ScopeFixture;
+use OCA\Mcp\Tests\Unit\Access\ResourceScope\ScopeBoundarySources;
 
 use OCA\Mcp\Db\ResourceScopeMapper;
 use OCA\Mcp\Access\Grants\GrantMatrix;
@@ -144,14 +145,7 @@ final class ScopeBoundariesTest extends TestCase {
 
 	/** The enumerator lists what the account reaches in Nextcloud; a tool must never use it as its view. */
 	public function testNoToolOrMcpEndpointUsesTheNativeEnumerator(): void {
-		$root = dirname(__DIR__, 4) . '/lib';
-		$users = [];
-		foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)) as $file) {
-			if (str_contains((string)file_get_contents((string)$file), 'NativeResourceEnumerator')) {
-				$users[] = substr((string)$file, strlen($root) + 1);
-			}
-		}
-		sort($users);
+		$users = ScopeBoundarySources::enumeratorCallers();
 		$expected = \OCA\Mcp\Tests\Unit\OrderedSourcePaths::sorted([
 			'Controller/MyScopeController.php',
 			'Controller/ScopeController.php',

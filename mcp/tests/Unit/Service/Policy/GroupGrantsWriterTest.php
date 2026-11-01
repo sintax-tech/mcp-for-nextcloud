@@ -7,6 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service\Policy;
 
 use OCA\Mcp\Tests\Unit\Access\Policy\GroupLifecycleDatabase;
+use OCA\Mcp\Tests\Unit\Access\Policy\ConcurrentGroupLifeMapper;
 
 use OCA\Mcp\Db\AuthUsersMapper;
 use OCA\Mcp\Db\GroupLifeMapper;
@@ -778,19 +779,10 @@ final class GroupGrantsWriterTest extends TestCase {
 		$this->members = ['ana'];
 		$mark = bin2hex(random_bytes(16));
 		$marked = false;
-		$life = new class($this->db, function () use ($mark, &$marked): void {
+		$life = new ConcurrentGroupLifeMapper($this->db, function () use ($mark, &$marked): void {
 			$this->database->dbal->update('mcp_group_life', ['state' => 'pending_delete', 'gen' => $mark], ['group_key' => IdentityKey::group('team')]);
 			$marked = true;
-		}) extends GroupLifeMapper {
-			public function __construct(\OCP\IDBConnection $db, private ?\Closure $concurrent) { parent::__construct($db); }
-			public function transition(string $gid, string $expectedGen, string $state, string $gen): bool {
-				if ($this->concurrent !== null) {
-					[$concurrent, $this->concurrent] = [$this->concurrent, null];
-					$concurrent();
-				}
-				return parent::transition($gid, $expectedGen, $state, $gen);
-			}
-		};
+		});
 		$attempts = 0;
 		$issued = $this->issueAdmitted('ana', function () use (&$attempts, &$marked, $mark): ?array {
 			if (++$attempts > 1 && $marked) {

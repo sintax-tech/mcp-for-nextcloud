@@ -6,7 +6,7 @@
 		{"fqcn":"OCA\\Mcp\\Db\\GroupLifeMapper","ceiling":354},
 		{"fqcn":"OCA\\Mcp\\Db\\ResourceScopeMapper","ceiling":471},
 		{"fqcn":"OCA\\Mcp\\Listener\\GroupLifecycleListener","ceiling":384},
-		{"fqcn":"OCA\\Mcp\\OAuth\\OAuthStore","ceiling":377},
+		{"fqcn":"OCA\\Mcp\\OAuth\\Storage\\OAuthStore","ceiling":377},
 		{"fqcn":"OCA\\Mcp\\OAuth\\TokenService","ceiling":354},
 		{"fqcn":"OCA\\Mcp\\Service\\Calendar\\CalendarSelftestService","ceiling":420},
 		{"fqcn":"OCA\\Mcp\\Service\\GrantPolicy","ceiling":512},

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCA\Mcp\Mcp\Tools\UnknownToolException;

@@ -19,7 +19,7 @@ use OCA\Mcp\Tests\Unit\Mcp\Tools\Catalog\FeatureProbe;
 use OCA\Mcp\Tests\Unit\Mcp\Tools\Catalog\ProbeContainer;
 use OCA\Mcp\Tests\Unit\Mcp\Tools\Catalog\ProbeModule;
 use OCA\Mcp\Tests\Unit\Mcp\Tools\Catalog\UnsafeProbeModule;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCP\App\IAppManager;
 use OCP\IUser;
 use OCP\IUserManager;

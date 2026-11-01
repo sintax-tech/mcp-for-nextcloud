@@ -132,7 +132,7 @@ final class CardLabelsTest extends TestCase {
 	}
 	public function testRegistryRechecksDeckEditGrantAndAppBeforePreviewOrConfirm(): void {
 		$data=new \OCA\Mcp\Tests\Unit\InMemoryConfig();$config=$data->mock($this);
-		$policy=\OCA\Mcp\Tests\Unit\InMemoryConfig::policy($config,new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$policy=\OCA\Mcp\Tests\Unit\InMemoryConfig::policy($config,new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		$policy->setGrant('alice','deck','edit',true);
 		$apps=$this->createMock(\OCP\App\IAppManager::class);$enabled=true;
 		$apps->method('isEnabledForUser')->willReturnCallback(function()use(&$enabled){return $enabled;});

@@ -8,7 +8,7 @@ namespace OCA\Mcp\Tests\Integration\OAuth;
 
 use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\OAuthException;
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Fixtures;

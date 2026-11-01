@@ -18,7 +18,7 @@ use OCA\Mcp\Access\Settings\BackupSettingsWriter;
 use OCA\Mcp\Access\Policy\PolicyEventProcessor;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;

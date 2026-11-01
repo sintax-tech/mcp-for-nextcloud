@@ -22,7 +22,7 @@ use OCA\Mcp\Migration\Version001002Date20261008000000;
 use OCA\Mcp\Migration\Version001100Date20261014000000;
 use OCA\Mcp\Migration\Version001100Date20261015000000;
 use OCA\Mcp\Migration\Version001100Date20261015010000;
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\Access\Policy\GroupLifecycle;
 use OCA\Mcp\Access\Policy\GroupSourceClassifier;
 use OCA\Mcp\Access\Policy\PolicyEventProcessor;
@@ -76,7 +76,7 @@ trait GroupLifecycleDatabase {
 			$this->createMock(IUserConfig::class), $this->createMock(IAppConfig::class), $this->createMock(IUserManager::class),
 			$time, new AuthUsersMapper($this->db), $this->rechecks,
 			new PolicyEventProcessor($events, new OAuthStore($this->db), new NullLogger(), $time),
-			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\OAuthStore($this->db));
+			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db));
 		$this->life = new GroupLifeMapper($this->db);
 		$this->grants = new GroupGrantsMapper($this->db);
 		$classifier = $this->createMock(GroupSourceClassifier::class);

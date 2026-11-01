@@ -13,7 +13,7 @@ use OCA\Mcp\Checkout\CheckoutToken;
 use OCA\Mcp\Checkout\CheckoutTokenStore;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\L10n\UserL10n;
-use OCA\Mcp\OAuth\TokenHasher;
+use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;

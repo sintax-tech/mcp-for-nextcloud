@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
-namespace OCA\Mcp\Tests\Unit\OAuth;
+namespace OCA\Mcp\Tests\Unit\OAuth\Storage;
 
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Tests\Unit\FakeDatabase;
 use PHPUnit\Framework\TestCase;

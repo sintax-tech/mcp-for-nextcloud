@@ -36,7 +36,7 @@ final class CalendarModuleTest extends CalendarTestCase {
 	}
 
 	public function testWritesAreVisibleWithoutAnySelftestWhenGrantedAndHiddenWhenNot(): void {
-		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		$apps = $this->createMock(\OCP\App\IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(true);
 		$users = $this->createMock(\OCP\IUserManager::class);
@@ -73,7 +73,7 @@ final class CalendarModuleTest extends CalendarTestCase {
 	}
 
 	public function testPublicRegistryExposesInvitationAnnotationsAndStillRequiresGrants(): void {
-		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		$apps = $this->createMock(\OCP\App\IAppManager::class);
 		$apps->method('isEnabledForUser')->willReturn(true);
 		$users = $this->createMock(\OCP\IUserManager::class);

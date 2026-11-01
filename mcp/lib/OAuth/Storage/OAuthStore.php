@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\OAuth;
+namespace OCA\Mcp\OAuth\Storage;
 
 use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use OCP\DB\QueryBuilder\IQueryBuilder;
@@ -166,7 +166,7 @@ class OAuthStore {
 		if (!$this->db->inTransaction()) {
 			throw new \LogicException('Refresh rotation runs only inside the policy writer transaction');
 		}
-		$this->purgeSpent($refreshExpires - TokenService::REFRESH_TTL);
+		$this->purgeSpent($refreshExpires - \OCA\Mcp\OAuth\TokenService::REFRESH_TTL);
 		$row = $this->findByRefresh($oldRefreshHash);
 		if ($row === null || (int)$row['id'] !== $id) {
 			return false;

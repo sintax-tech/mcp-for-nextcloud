@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Checkout;
 
 use OCA\Mcp\Checkout\CheckoutToken;
 use OCA\Mcp\Controller\CheckoutController;
-use OCA\Mcp\OAuth\TokenHasher;
+use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
@@ -93,7 +93,7 @@ final class CheckoutCreateTest extends TestCase {
 		$this->store = new InMemoryCheckoutTokenStore();
 		$this->config = new InMemoryConfig();
 		$this->config->app['mcp'][CheckoutService::MAX_BYTES_KEY] = (string)self::LIMIT;
-		$this->policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$this->policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		$this->policy->setGlobalEnabled(true);
 		$this->policy->setEligible('alice', true);
 		$this->policy->setConnected('alice', true);

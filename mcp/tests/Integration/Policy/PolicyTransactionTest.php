@@ -12,7 +12,7 @@ use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\PolicyStateSeeder;
 use OCA\Mcp\Migration\PolicyStateSeedStep;
 use OCA\Mcp\Migration\Version001100Date20261015000000;
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Policy\PolicyConflict;
 use OCA\Mcp\Access\Policy\PolicyOutbox;
@@ -126,7 +126,7 @@ final class PolicyTransactionTest extends IntegrationTestCase {
 				($this->after)('outbox');
 			}
 		};
-		$writer = new PolicyWriter($db, $mapper, $events, $config, $users, $apps, Server::get(IUserManager::class), Server::get(\OCP\AppFramework\Utility\ITimeFactory::class), Server::get(\OCA\Mcp\Db\AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class), Server::get(\OCA\Mcp\Access\Policy\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class), Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(\OCA\Mcp\OAuth\OAuthStore::class));
+		$writer = new PolicyWriter($db, $mapper, $events, $config, $users, $apps, Server::get(IUserManager::class), Server::get(\OCP\AppFramework\Utility\ITimeFactory::class), Server::get(\OCA\Mcp\Db\AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class), Server::get(\OCA\Mcp\Access\Policy\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class), Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(\OCA\Mcp\OAuth\Storage\OAuthStore::class));
 		try {
 			$result = $writer->runAdmin($before['revision'], [Fixtures::ALICE], function () use ($db): void {
 				$this->assertFalse($db->inTransaction());
@@ -259,7 +259,7 @@ final class PolicyTransactionTest extends IntegrationTestCase {
 			}
 		};
 		$failing = new GrantPolicy($config, $users, new PolicyWriter($db, $mapper, Server::get(PolicyEventsMapper::class), $config, $users, $apps,
-			Server::get(IUserManager::class), Server::get(\OCP\AppFramework\Utility\ITimeFactory::class), Server::get(\OCA\Mcp\Db\AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class), Server::get(\OCA\Mcp\Access\Policy\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class), Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(\OCA\Mcp\OAuth\OAuthStore::class)),
+			Server::get(IUserManager::class), Server::get(\OCP\AppFramework\Utility\ITimeFactory::class), Server::get(\OCA\Mcp\Db\AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class), Server::get(\OCA\Mcp\Access\Policy\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class), Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(\OCA\Mcp\OAuth\Storage\OAuthStore::class)),
 			Server::get(\OCA\Mcp\Access\Policy\PolicyResolver::class));
 		try {
 			$failing->setGrant(Fixtures::ALICE, 'notes', 'edit', false);

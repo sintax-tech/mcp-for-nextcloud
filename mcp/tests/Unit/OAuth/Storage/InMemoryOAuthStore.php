@@ -5,9 +5,9 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tests\Unit\OAuth;
+namespace OCA\Mcp\Tests\Unit\OAuth\Storage;
 
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 
 /**
  * OAuthStore double keeping rows in arrays, with the same single-use and generation semantics as the SQL

@@ -15,7 +15,7 @@ use OCA\Mcp\Db\PolicyEventsMapper;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\RecheckMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\ResourceScope\NativeResourceEnumerator;
 use OCA\Mcp\Access\ResourceScope\ScopeActivation;

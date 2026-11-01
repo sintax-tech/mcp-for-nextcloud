@@ -10,7 +10,7 @@ namespace OCA\Mcp\Service;
 use InvalidArgumentException;
 use OCA\Mcp\OAuth\CustomClient;
 use OCA\Mcp\OAuth\NativeClient;
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\OAuth\TokenService;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCA\Mcp\Db\OAuthClientsMapper;

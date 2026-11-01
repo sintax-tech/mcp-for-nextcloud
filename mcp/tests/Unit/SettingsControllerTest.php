@@ -25,7 +25,7 @@ final class SettingsControllerTest extends TestCase {
 	private GrantPolicy $policy;
 	private SettingsController $controller;
 	private InMemoryConfig $data;
-	private \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore $store;
+	private \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore $store;
 	private CheckoutTokenStore $checkoutTokens;
 	private BatchStore $batches;
 	private bool $aliceEnabled = true;
@@ -33,7 +33,7 @@ final class SettingsControllerTest extends TestCase {
 
 	protected function setUp(): void {
 		$this->data = new InMemoryConfig();
-		$this->store = new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore();
+		$this->store = new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore();
 		$this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->data->mock($this), $this->store);
 		$alice = $this->createMock(IUser::class);
 		$alice->method('getUID')->willReturn('alice');

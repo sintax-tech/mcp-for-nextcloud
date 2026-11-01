@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Access\Policy;
 
 use OCA\Mcp\Db\PolicyEventsMapper;
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCP\AppFramework\Utility\ITimeFactory;
 use Psr\Log\LoggerInterface;
 use Throwable;

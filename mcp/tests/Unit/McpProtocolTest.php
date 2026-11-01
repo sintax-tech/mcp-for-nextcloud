@@ -265,7 +265,7 @@ final class McpProtocolTest extends TestCase {
 	/** @param list<\OCA\Mcp\Mcp\Tools\ToolModule> $modules tools the protocol may expose */
 	private static function withModules(TestCase $test, array $modules, ?\Psr\Log\LoggerInterface $logger = null): McpProtocol {
 		$mock = fn (string $class) => (new \ReflectionMethod($test, 'createMock'))->invoke($test, $class);
-		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($test), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($test), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		$apps = $mock(\OCP\App\IAppManager::class);
 		InstalledApp::mock($apps);
 		return new McpProtocol(new \OCA\Mcp\Mcp\Tools\ToolRegistry($modules, $policy,

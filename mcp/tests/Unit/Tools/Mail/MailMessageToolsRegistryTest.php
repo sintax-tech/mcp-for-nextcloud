@@ -11,7 +11,7 @@ use InvalidArgumentException;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Tools\Mail\Flag\MailFlagTools;
 use OCA\Mcp\Tools\Mail\Draft\MailDraftTools;
 use OCA\Mcp\Tools\Mail\Move\MailMoveTools;

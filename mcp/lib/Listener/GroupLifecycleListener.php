@@ -13,7 +13,7 @@ use OCA\Mcp\Db\GroupLifeMapper;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\RecheckMapper;
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\Access\Policy\CauseProcessor;
 use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use OCA\Mcp\Access\Policy\GroupLifecycle;

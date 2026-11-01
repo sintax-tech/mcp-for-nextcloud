@@ -9,9 +9,9 @@ namespace OCA\Mcp\Tests\Unit;
 
 use OCA\Mcp\Checkout\CheckoutToken;
 use OCA\Mcp\Checkout\CheckoutTokenStore;
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\Tests\Unit\Checkout\InMemoryCheckoutTokenStore;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\Tools\Files\InMemoryBatchStore;
 use OCA\Mcp\Tools\Files\Batch;
 use OCA\Mcp\Tools\Files\BatchStore;

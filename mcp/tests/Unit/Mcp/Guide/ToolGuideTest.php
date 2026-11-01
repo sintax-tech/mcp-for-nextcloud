@@ -32,7 +32,7 @@ final class ToolGuideTest extends TestCase {
 	private array $enabledApps = ['notes', 'deck'];
 
 	protected function setUp(): void {
-		$this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		$this->policy->setGrant('alice', 'files', 'read', true);
 		$this->policy->setGrant('alice', 'files', 'edit', true);
 		$this->policy->setGrant('alice', 'notes', 'read', true);

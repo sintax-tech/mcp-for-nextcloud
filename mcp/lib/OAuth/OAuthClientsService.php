@@ -34,7 +34,7 @@ class OAuthClientsService {
 		private PolicyWriter $writer,
 		private IConfig $config,
 		private OAuthClientsMapper $clients,
-		private OAuthStore $oauth,
+		private \OCA\Mcp\OAuth\Storage\OAuthStore $oauth,
 	) {}
 
 	/**

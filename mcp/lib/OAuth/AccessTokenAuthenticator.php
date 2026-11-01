@@ -19,14 +19,14 @@ use Throwable;
  * Resolves an `Authorization: Bearer` access token issued by this app into its user: the hash must exist, the token
  * must not be expired, a token of the native client or of a self-hosted client needs that client enabled (and stored,
  * for a self-hosted one), read from the app's table on every request, its audience must be this MCP server,
- * its (epoch, generation) must still be valid (CredentialGeneration) and the owner must pass the TokenOwnerGate.
+ * its (epoch, generation) must still be valid (\OCA\Mcp\OAuth\Storage\CredentialGeneration) and the owner must pass the TokenOwnerGate.
  * Validation takes no lock and writes nothing, except the consumption of the owner's pending recheck causes and the
  * cut of an owner observed unusable.
  */
 class AccessTokenAuthenticator {
 	public function __construct(
-		private OAuthStore $store,
-		private TokenHasher $hasher,
+		private \OCA\Mcp\OAuth\Storage\OAuthStore $store,
+		private \OCA\Mcp\OAuth\Storage\TokenHasher $hasher,
 		private ITimeFactory $time,
 		private TokenOwnerGate $gate,
 		private AuthUsersMapper $authUsers,
@@ -67,7 +67,7 @@ class AccessTokenAuthenticator {
 			$this->gate->preflight($uid);
 			// s0 of contracts §3.1 (iii): read before the owner check, and the only cut that check may apply.
 			$generations = $this->authUsers->generations($uid);
-			if (!CredentialGeneration::live($row, $generations, $this->state->state()['auth_epoch'])) {
+			if (!\OCA\Mcp\OAuth\Storage\CredentialGeneration::live($row, $generations, $this->state->state()['auth_epoch'])) {
 				return null;
 			}
 		} catch (PolicyUnavailable $e) {

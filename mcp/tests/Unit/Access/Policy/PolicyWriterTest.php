@@ -18,7 +18,7 @@ use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Access\Policy\SnapshotInvalidated;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Config\IUserConfig;
@@ -67,7 +67,7 @@ final class PolicyWriterTest extends TestCase {
 	 *
 	 * @return list<object>
 	 */
-	private function tail(IDBConnection $db, \OCA\Mcp\OAuth\OAuthStore $oauth, ITimeFactory $time): array {
+	private function tail(IDBConnection $db, \OCA\Mcp\OAuth\Storage\OAuthStore $oauth, ITimeFactory $time): array {
 		return [$time, new \OCA\Mcp\Db\AuthUsersMapper($db), new \OCA\Mcp\Db\RecheckMapper($db),
 			new \OCA\Mcp\Access\Policy\PolicyEventProcessor($this->events($db), $oauth, new \Psr\Log\NullLogger(), $time),
 			new \OCA\Mcp\Db\GroupGrantsMapper($db), new \OCA\Mcp\Db\GroupLifeMapper($db), $oauth];
@@ -507,7 +507,7 @@ final class PolicyWriterTest extends TestCase {
 		return new PolicyWriter($this->db, $this->state, new PolicyEventsMapper($this->db, $time), $config,
 			$this->createMock(IUserConfig::class), $apps, $users, $time, $authUsers ?? new \OCA\Mcp\Db\AuthUsersMapper($this->db),
 			new \OCA\Mcp\Db\RecheckMapper($this->db), new PolicyEventProcessor($this->events(), new InMemoryOAuthStore(), new \Psr\Log\NullLogger(), $time),
-			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\OAuthStore($this->db));
+			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db));
 	}
 
 	/** @return list<array{id:string, kind:string, payload:array}> the stored events, decoded */

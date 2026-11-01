@@ -16,7 +16,7 @@ use OCA\Mcp\Access\Policy\PolicyEventProcessor;
 use OCA\Mcp\Access\Policy\PolicyConflict;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Migration\Version001100Date20261015000000;
 use OCA\Mcp\Migration\Version001100Date20261015010000;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

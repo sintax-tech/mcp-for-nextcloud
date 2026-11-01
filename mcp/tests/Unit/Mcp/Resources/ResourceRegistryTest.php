@@ -62,7 +62,7 @@ final class ResourceRegistryTest extends TestCase {
 
 		$this->config = new InMemoryConfig();
 		$this->policyConfig = $this->config->mock($this);
-		$this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->policyConfig, new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->policyConfig, new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		$this->policy->setGrant('alice', 'files', 'read', true);
 		$this->policy->setGrant('alice', 'notes', 'read', true);
 

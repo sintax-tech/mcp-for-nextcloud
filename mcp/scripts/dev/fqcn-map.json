@@ -785,6 +785,8 @@
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\Common\\LockAwareWriteTest","target":"OCA\\Mcp\\Tests\\Unit\\Platform\\FileAccess\\LockAwareWriteTest"},
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\BackupSettingsTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Settings\\BackupSettingsTest"},
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\Common\\FakeLockManager","target":"OCA\\Mcp\\Tests\\Unit\\Platform\\FileAccess\\FakeLockManager"},
-		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\Common\\FakeLock","target":"OCA\\Mcp\\Tests\\Unit\\Platform\\FileAccess\\FakeLock"}
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\Common\\FakeLock","target":"OCA\\Mcp\\Tests\\Unit\\Platform\\FileAccess\\FakeLock"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\OAuth\\OAuthStoreTest","target":"OCA\\Mcp\\Tests\\Unit\\OAuth\\Storage\\OAuthStoreTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\OAuth\\InMemoryOAuthStore","target":"OCA\\Mcp\\Tests\\Unit\\OAuth\\Storage\\InMemoryOAuthStore"}
 	]
 }

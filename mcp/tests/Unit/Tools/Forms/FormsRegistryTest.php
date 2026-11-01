@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Forms;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Tools\Forms\FormsModule;
 use OCA\Mcp\Tools\Forms\FormsServices;
 use OCA\Mcp\Tools\Forms\FormsIdentityProbe;

@@ -360,7 +360,7 @@ final class DeckStructureToolsTest extends TestCase {
 	}
 
 	private function registry(DeckGatewayInterface $gateway): ToolRegistry {
-		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		foreach (GrantPolicy::CATALOG['deck'] as $operation) {
 			$policy->setGrant('alice', 'deck', $operation, true);
 		}

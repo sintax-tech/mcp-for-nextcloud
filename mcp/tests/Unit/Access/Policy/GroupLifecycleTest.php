@@ -258,7 +258,7 @@ final class GroupLifecycleTest extends TestCase {
 			}
 			$this->database->dbal->insert($table, $row);
 		}
-		$holders = array_values((new \OCA\Mcp\OAuth\OAuthStore($this->db))->liveHolders(100, '0'));
+		$holders = array_values((new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db))->liveHolders(100, '0'));
 		usort($holders, static fn (array $a, array $b): int => strcmp($a['uid'], $b['uid']));
 		$this->assertSame([['uid' => 'alice', 'gen' => '5'], ['uid' => 'bob', 'gen' => '4']], $holders);
 	}

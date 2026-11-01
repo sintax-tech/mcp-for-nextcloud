@@ -17,7 +17,7 @@ use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use OCA\Mcp\Access\Policy\CauseProcessor;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCP\IRequest;
 use OCP\IURLGenerator;
 use OCP\IUser;

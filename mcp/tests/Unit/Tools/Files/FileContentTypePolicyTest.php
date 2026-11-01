@@ -11,7 +11,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Files_Versions\Versions\FakeVersion;
 use OCA\Files_Versions\Versions\FakeVersionManager;
 use OCA\Mcp\Checkout\CheckoutTokenStore;
-use OCA\Mcp\OAuth\TokenHasher;
+use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\Access\FileTypes\FileWritePolicy;
 use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Platform\Time\UserTimezone;

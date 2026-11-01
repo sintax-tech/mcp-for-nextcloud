@@ -11,7 +11,7 @@ use OCA\Mcp\Tests\Unit\Access\Policy\GroupLifecycleDatabase;
 use OCA\Mcp\Db\AuthUsersMapper;
 use OCA\Mcp\Db\GroupLifeMapper;
 use OCA\Mcp\Db\PolicyEventsMapper;
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\Access\Policy\GrantUnknown;
 use OCA\Mcp\Access\Policy\PolicyEventProcessor;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools;
 
 use InvalidArgumentException;
 use OCA\Mcp\Checkout\CheckoutTokenStore;
-use OCA\Mcp\OAuth\TokenHasher;
+use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;

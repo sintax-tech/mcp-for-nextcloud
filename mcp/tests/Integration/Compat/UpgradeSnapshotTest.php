@@ -13,7 +13,7 @@ use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Migration\PolicyStateSeedStep;
 use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\OAuthException;
-use OCA\Mcp\OAuth\TokenHasher;
+use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;

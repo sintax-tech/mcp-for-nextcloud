@@ -56,7 +56,7 @@ class ReferenceLinkerTest extends TestCase {
 			->willReturnCallback(fn (string $app): bool => in_array($app, $this->enabledApps, true));
 		$users = $this->users = $this->createMock(IUserManager::class);
 		$users->method('get')->willReturnCallback(fn (string $uid): ?IUser => $uid === 'alice' ? $this->createMock(IUser::class) : null);
-		$this->grants = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$this->grants = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 
 		$urls = $this->urls = $this->createMock(IURLGenerator::class);
 		$urls->method('linkToRouteAbsolute')->willReturnCallback(

@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\OAuth;
+namespace OCA\Mcp\OAuth\Storage;
 
 use OCA\Mcp\Platform\Numbers\DecimalCounter;
 

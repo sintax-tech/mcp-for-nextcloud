@@ -33,7 +33,7 @@ final class MatrixFixture {
 	public GrantPolicy $policy;
 	/** The IConfig mock the policy, its writer and the logs gate share. */
 	public \OCP\IConfig $policyConfig;
-	public \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore $oauth;
+	public \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore $oauth;
 	/** The authoritative table of the administrator's OAuth clients. */
 	public \OCA\Mcp\Tests\Unit\OAuth\ClientsTable $clients;
 	/** @var array<string, array{name:string, email:string, enabled:bool}> */
@@ -54,7 +54,7 @@ final class MatrixFixture {
 		$this->locks = new \OCA\Mcp\Tests\Unit\InMemoryLocks();
 		$this->logsDb = new \OCA\Mcp\Tests\Unit\SqliteDatabase($test, [new \OCA\Mcp\Migration\Version001002Date20261008000000()]);
 		$this->scopeDb = new \OCA\Mcp\Tests\Unit\SqliteDatabase($test, [new \OCA\Mcp\Migration\Version001100Date20261015020000()]);
-		$this->oauth = new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore();
+		$this->oauth = new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore();
 		$this->clients = new \OCA\Mcp\Tests\Unit\OAuth\ClientsTable($test);
 		$this->config->userExists = fn (string $uid): bool => isset($this->users[$uid]);
 		$this->policyConfig = $this->config->mock($test);

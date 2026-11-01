@@ -171,7 +171,7 @@ final class LogsModuleTest extends TestCase {
 
 	/** The registry around the module, as Application wires it; root holds the grant, alice is outside the role. */
 	private function registry(?IWriter $writer = null): ToolRegistry {
-		$policy = InMemoryConfig::policy($this->config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$policy = InMemoryConfig::policy($this->config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		$policy->setGrant('root', 'logs', 'read', true);
 		$policy->setGrant('alice', 'logs', 'read', true);
 		return new ToolRegistry([$this->module($writer)], $policy, $this->createMock(IAppManager::class), $this->createMock(IUserManager::class), $this->createMock(LoggerInterface::class));

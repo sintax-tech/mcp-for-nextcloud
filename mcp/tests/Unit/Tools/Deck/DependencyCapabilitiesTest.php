@@ -76,7 +76,7 @@ final class DependencyCapabilitiesTest extends TestCase {
 
 	public function testRealRegistryFiltersReadGrantAndPerUserAppOnEveryRequest(): void {
 		$data = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
-		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($data->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($data->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		$apps = $this->apps('1.18.5');
 		$users = $this->createMock(\OCP\IUserManager::class);
 		$users->method('get')->willReturn($this->createMock(\OCP\IUser::class));
@@ -96,7 +96,7 @@ final class DependencyCapabilitiesTest extends TestCase {
 	}
 	public function testPerUserDisabledAppHidesAndRefusesOtherwiseSupportedTool(): void {
 		$data = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
-		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($data->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($data->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		$policy->setGrant('alice', 'deck', 'read', true);
 		$apps = $this->createMock(IAppManager::class);
 		$apps->method('getAppVersion')->willReturn('1.19.0');

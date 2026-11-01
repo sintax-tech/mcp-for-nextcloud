@@ -19,7 +19,7 @@ use OCA\Mcp\Migration\Version000800Date20261002010000;
 use OCA\Mcp\Migration\Version001002Date20261008000000;
 use OCA\Mcp\Migration\Version001100Date20261015000000;
 use OCA\Mcp\Migration\Version001100Date20261015010000;
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\Access\Policy\CauseClassifier;
 use OCA\Mcp\Access\Policy\CauseProcessor;
 use OCA\Mcp\Access\Policy\DeferredQueue;
@@ -101,7 +101,7 @@ final class CauseProcessingTest extends TestCase {
 		$this->writer = new PolicyWriter($this->db, $this->state, $events, $config, $this->createMock(IUserConfig::class),
 			$this->createMock(IAppConfig::class), $users, $time, $this->authUsers, $this->rechecks,
 			new PolicyEventProcessor($events, new OAuthStore($this->db), $logger, $time),
-			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\OAuthStore($this->db));
+			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db));
 		$resolver = $this->createMock(PolicyResolver::class);
 		$resolver->method('begin')->willReturnCallback(function (string $uid, array $added = [], array $removed = [], bool $observe = true): PolicyOperationContext {
 			$this->assertFalse($observe, 'cause classification never persists an observation');

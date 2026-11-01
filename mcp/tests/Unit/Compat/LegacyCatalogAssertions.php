@@ -29,7 +29,10 @@ final class LegacyCatalogAssertions {
 		$missing['files'] = ['read', 'delete'];
 		$unknown = $current;
 		$unknown['mail'][] = 'write';
-		foreach ([$missing, $unknown, $current + ['unknown' => ['read']], $baseline + ['mail' => ['read']], ['mail' => ['read']]] as $invalid) {
+		$reordered = $current;
+		$reordered['files'] = ['edit', 'read', 'delete'];
+		$modulesReordered = array_reverse($current, true);
+		foreach ([$missing, $unknown, $reordered, $modulesReordered, $current + ['unknown' => ['read']], $baseline + ['mail' => ['read']], ['mail' => ['read']]] as $invalid) {
 			try {
 				LegacyCatalogContract::baseline($baseline, $invalid);
 				Assert::fail('Unexpected catalog accepted');

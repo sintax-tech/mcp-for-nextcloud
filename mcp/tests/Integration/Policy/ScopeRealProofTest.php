@@ -18,6 +18,7 @@ use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tools\Common\CommonMessages;
 use OCA\Mcp\Tests\Integration\Exclusion\ExclusionTestCase;
 use OCA\Mcp\Tests\Integration\Support\Http;
+use OCA\Mcp\Tests\Integration\Support\FixtureFilesystem;
 use OCP\Files\Folder;
 use OCP\Server;
 use OCP\Share\IManager;
@@ -37,6 +38,15 @@ final class ScopeRealProofTest extends ExclusionTestCase {
 			foreach (['reply', 'attach', 'quote', 'create'] as $operation) {
 				$policy->setGrant($uid, 'talk', $operation, true);
 			}
+		}
+	}
+
+	/** @return void Clear the native view remounted for Bob after the fixture cleanup. */
+	protected function tearDown(): void {
+		try {
+			parent::tearDown();
+		} finally {
+			FixtureFilesystem::tearDown();
 		}
 	}
 

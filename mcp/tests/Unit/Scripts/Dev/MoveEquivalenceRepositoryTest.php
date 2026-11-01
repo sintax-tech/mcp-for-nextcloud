@@ -21,8 +21,8 @@ require_once __DIR__ . '/../../../../scripts/dev/bootstrap.php';
  * real mutations on top of them.
  *
  * Class names and paths are assembled from segments, so this file never holds a literal name or path that a later
- * move would leave stale. Once UserTimezone moves for real, its tests are skipped (RE-04 proves its own move); the
- * PromptCatalog tests rebuild the tree before RE-03 from the moved one and keep running.
+ * move would leave stale. Both move fixtures rebuild the earlier tree once their classes have moved, so their
+ * positive and negative controls keep running.
  */
 final class MoveEquivalenceRepositoryTest extends TestCase {
 	/** @var array<string,string>|null the app tree, read once */
@@ -35,29 +35,30 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 
 	/** A `git mv` of UserTimezone and its test, with namespaces and every caller updated, passes. */
 	public function testARealMovePasses(): void {
-		$equivalence = new MoveEquivalence(self::tree(), $this->userTimezone(), self::map());
+		[$before, $after] = $this->userTimezone();
+		$equivalence = new MoveEquivalence($before, $after, self::map());
 		$this->assertSame([], $equivalence->check());
 		$this->assertCount(2, $equivalence->pairs());
-		$this->assertEveryReaderFailsWhenForgotten($this->userTimezone(), self::lib(['Service', 'UserTimezone']), self::lib(['Platform', 'Time', 'UserTimezone']));
+		$this->assertEveryReaderFailsWhenForgotten($after, self::lib(['Service', 'UserTimezone']), self::lib(['Platform', 'Time', 'UserTimezone']), $before);
 	}
 
 	/** One space added inside an interpolated message of ArgumentValidator fails (review A2). */
 	public function testAWhitespaceChangeInsideARealStringFails(): void {
-		$after = $this->userTimezone();
+		[$before, $after] = $this->userTimezone();
 		$path = self::located(['Tools', 'ArgumentValidator']);
 		$after[$path] = preg_replace('/"Invalid argument: \$key"/', '" Invalid argument: $key"', $after[$path], 1);
-		$problems = (new MoveEquivalence(self::tree(), $after, self::map()))->check();
+		$problems = (new MoveEquivalence($before, $after, self::map()))->check();
 		$this->assertCount(1, $problems);
 		$this->assertStringStartsWith("$path: not equivalent to $path:", $problems[0]);
 	}
 
 	/** Redirecting the brute-force attribute of OAuthController to another attribute under the same alias fails (review A3). */
 	public function testARedirectedSecurityAttributeFails(): void {
-		$after = $this->userTimezone();
+		[$before, $after] = $this->userTimezone();
 		$path = self::lib(['Controller', 'OAuthController']);
 		$attribute = implode('\\', ['OCP', 'AppFramework', 'Http', 'Attribute', '']);
 		$after[$path] = str_replace("use {$attribute}BruteForceProtection;", "use {$attribute}NoCSRFRequired as BruteForceProtection;", $after[$path]);
-		$problems = (new MoveEquivalence(self::tree(), $after, self::map()))->check();
+		$problems = (new MoveEquivalence($before, $after, self::map()))->check();
 		$this->assertCount(1, $problems);
 		$this->assertStringContainsString("C:{$attribute}BruteForceProtection` became", $problems[0]);
 	}
@@ -82,11 +83,11 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 
 	/** The real bootstrap autoload must not accept an inaccessible, lexically cancelling path (R3-A7). */
 	public function testRealAutoloadWithMissingSegmentFails(): void {
-		$after = $this->userTimezone();
+		[$before, $after] = $this->userTimezone();
 		$path = self::lib(['AppInfo', 'Application']);
 		$after[$path] = str_replace("'/../../vendor/autoload.php'", "'/no-such-r3/../../../vendor/autoload.php'", $after[$path], $count);
 		$this->assertSame(1, $count);
-		$problems = (new MoveEquivalence(self::tree(), $after, self::map()))->check();
+		$problems = (new MoveEquivalence($before, $after, self::map()))->check();
 		$this->assertCount(1, $problems);
 		$this->assertStringStartsWith("$path: not equivalent to $path:", $problems[0]);
 	}
@@ -96,8 +97,7 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 		$path = self::lib(['AppInfo', 'Application']);
 		$old = self::lib(['Service', 'UserTimezone']);
 		foreach (["The former path was $old; this is historical text.", "$old.bak"] as $description) {
-			$before = self::tree();
-			$after = $this->userTimezone();
+			[$before, $after] = $this->userTimezone();
 			$before[$path] .= "\n\$description = '" . $description . "';\n";
 			$after[$path] .= "\n\$description = '" . $description . "';\n";
 			$this->assertSame([], (new MoveEquivalence($before, $after, self::map()))->check(), $description);
@@ -122,12 +122,12 @@ final class MoveEquivalenceRepositoryTest extends TestCase {
 	}
 
 	/**
-	 * The tree after moving UserTimezone to Platform\Time, as the RE-04 move commit would.
+	 * Builds both sides of the RE-04 move before and after the real migration.
 	 *
-	 * @return array<string,string> path => content
+	 * @return array{0: array<string,string>, 1: array<string,string>} trees before and after the move
 	 */
 	private function userTimezone(): array {
-		return $this->moved(['Service', 'UserTimezone'], ['Platform', 'Time', 'UserTimezone'], ['UserTimezoneTest'], ['Platform', 'Time', 'UserTimezoneTest'], []);
+		return UserTimezoneMoveFixture::trees(self::tree(), $this->moved(...));
 	}
 
 	/**

@@ -21,7 +21,7 @@
  * Taking "Can connect" away signs the person out of every MCP client, so it is asked first, in words, and nothing is sent
  * without that confirmation. An unknown "after" counts as taken away.
  *
- * Plain browser JavaScript, no build step. js/admin-grants.js opens it from a level cell through window.McpLevelPopover and
+ * Plain browser JavaScript, no build step. src/admin/admin-grants.js opens it from a level cell through window.McpLevelPopover and
  * exposes window.McpAdminMatrix; this file never touches the matrix state itself.
  */
 (function () {
@@ -167,7 +167,7 @@
 		return module === null ? t('mcp', 'Can connect') : matrix.labels().modules[module] || module
 	}
 
-	/** @return {string} name of a level of js/admin-levels.js, or Yes / No for "Can connect" */
+	/** @return {string} name of a level of src/admin/admin-levels.js, or Yes / No for "Can connect" */
 	function levelName(module, level) {
 		if (module === null) {
 			return level === 'read' ? t('mcp', 'Yes') : t('mcp', 'No')

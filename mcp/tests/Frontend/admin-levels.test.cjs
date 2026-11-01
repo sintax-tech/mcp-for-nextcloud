@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Tests of the access levels (S2 of the admin redesign): the level ↔ operations mapping of js/admin-levels.js against the
- * catalog of GrantPolicy, and the level cell of js/admin-grants.js, cut out of the source and run against stubs as in
+ * Tests of the access levels (S2 of the admin redesign): the level ↔ operations mapping of src/admin/admin-levels.js against the
+ * catalog of GrantPolicy, and the level cell of src/admin/admin-grants.js, cut out of the source and run against stubs as in
  * admin-revision.test.cjs. A level is presentation only: the server keeps receiving operations.
  */
 const { test } = require('node:test')
@@ -15,7 +15,7 @@ const path = require('node:path')
 
 const root = path.join(__dirname, '../..')
 const context = require('./PollsCreateContext.cjs').load()
-vm.runInNewContext(fs.readFileSync(path.join(root, 'js/admin-levels.js'), 'utf8'), context)
+vm.runInNewContext(fs.readFileSync(path.join(root, 'src/admin/admin-levels.js'), 'utf8'), context)
 const Levels = context.McpAdminLevels
 const plain = (value) => JSON.parse(JSON.stringify(value))
 
@@ -106,12 +106,12 @@ test('the origin of a module: invalid, then individual, then unknown group, then
 	assert.deepEqual(plain(Levels.originOf(ops, at(o('individual_allow'), o('invalid')))), o('invalid'))
 })
 
-/* The level cell of js/admin-grants.js. */
+/* The level cell of src/admin/admin-grants.js. */
 
-const grants = fs.readFileSync(path.join(root, 'js/admin-grants.js'), 'utf8')
+const grants = fs.readFileSync(path.join(root, 'src/admin/admin-grants.js'), 'utf8')
 function cut(declaration) {
 	const start = grants.indexOf('\t' + declaration)
-	assert.ok(start > 0, declaration + ' was found in js/admin-grants.js')
+	assert.ok(start > 0, declaration + ' was found in src/admin/admin-grants.js')
 	return grants.slice(start, grants.indexOf('\n\t}\n', start) + 4)
 }
 

@@ -4,7 +4,7 @@
  */
 /**
  * Tests of the Tables column of the admin page: GrantPolicy::CATALOG offers Tables reading, creating and editing rows,
- * js/admin-levels.js gives it the three levels None, Read and Full (creating and editing together), and every place that
+ * src/admin/admin-levels.js gives it the three levels None, Read and Full (creating and editing together), and every place that
  * names a module names Tables.
  */
 const { test } = require('node:test')
@@ -24,7 +24,7 @@ const plain = (value) => JSON.parse(JSON.stringify(value))
 function levels() {
 	const context = { t: (app, text) => text }
 	for (const file of ['admin-levels.js']) {
-		vm.runInNewContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), context)
+		vm.runInNewContext(fs.readFileSync(path.join(root, 'src/admin', file), 'utf8'), context)
 	}
 	return context.McpAdminLevels
 }
@@ -52,7 +52,7 @@ test('Tables levels are None, Read and Full', () => {
 
 test('every module label map names Tables', () => {
 	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-inspector.js']) {
-		const source = fs.readFileSync(path.join(root, 'js', file), 'utf8')
+		const source = fs.readFileSync(path.join(root, 'src/admin', file), 'utf8')
 		assert.match(source, /tables: t\('mcp', 'Tables'\)/, file)
 	}
 })

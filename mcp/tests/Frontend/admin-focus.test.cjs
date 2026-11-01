@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Tests of revealFocus() of js/admin-grants.js, cut out of the source and run against stubs, as in admin-bulk.test.cjs:
+ * Tests of revealFocus() of src/admin/admin-grants.js, cut out of the source and run against stubs, as in admin-bulk.test.cjs:
  * a control that takes the focus inside the matrix is scrolled out from under the sticky columns of its row (the
  * selection box and the name at the start, the "…" menu at the end), so a cell reached by Tab is never hidden
  * (WCAG 2.4.11).
@@ -15,11 +15,11 @@ const fs = require('node:fs')
 const path = require('node:path')
 
 const root = path.join(__dirname, '../..')
-const source = fs.readFileSync(path.join(root, 'js/admin-grants.js'), 'utf8')
+const source = fs.readFileSync(path.join(root, 'src/admin/admin-grants.js'), 'utf8')
 
 function cut(declaration) {
 	const start = source.indexOf('\t' + declaration)
-	assert.ok(start > 0, declaration + ' was found in js/admin-grants.js')
+	assert.ok(start > 0, declaration + ' was found in src/admin/admin-grants.js')
 	return source.slice(start, source.indexOf('\n\t}\n', start) + 4)
 }
 

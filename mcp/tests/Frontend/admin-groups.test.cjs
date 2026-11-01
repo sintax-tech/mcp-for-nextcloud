@@ -78,8 +78,8 @@ async function app(handler, group = stored()) {
 		},
 	}
 	vm.createContext(context)
-	vm.runInContext(fs.readFileSync(path.join(__dirname, '../../js/admin-levels.js'), 'utf8'), context)
-	vm.runInContext(fs.readFileSync(path.join(__dirname, '../../js/admin-groups.js'), 'utf8'), context)
+	vm.runInContext(fs.readFileSync(path.join(__dirname, '../../src/admin/admin-levels.js'), 'utf8'), context)
+	vm.runInContext(fs.readFileSync(path.join(__dirname, '../../src/admin/admin-groups.js'), 'utf8'), context)
 	await tick()
 	const open = async () => { await ids['mcp-group-list'].all('button')[0].click(); await tick() }
 	const button = (text) => ids['mcp-group-detail'].all('button').find((node) => node.textContent === text)
@@ -182,7 +182,7 @@ test('T17: group search and pagination use their own endpoint and page state', a
 
 /** Exercise the matrix's shipped render/planning functions with the same lightweight elements. */
 function matrixFunctions() {
-	const source = fs.readFileSync(path.join(__dirname, '../../js/admin-grants.js'), 'utf8')
+	const source = fs.readFileSync(path.join(__dirname, '../../src/admin/admin-grants.js'), 'utf8')
 	const document = {}
 	const context = {
 		t: (_, text) => text, document, window: {},

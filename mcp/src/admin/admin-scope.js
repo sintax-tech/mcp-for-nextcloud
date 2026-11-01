@@ -13,7 +13,7 @@
  * and browsable, but cannot be saved, and says so: the tools of that module do not apply a scope yet. A conflict
  * (409) never repeats the write: the current scope is read again and shown. Each module keeps the revision its own
  * draft was read at, so a draft made before a change elsewhere is refused by the server instead of overwriting it.
- * A write of this page (a module here, or the matrix, OAuth clients or server log of js/admin-grants.js) is announced
+ * A write of this page (a module here, or the matrix, OAuth clients or server log of src/admin/admin-grants.js) is announced
  * with the revision it was sent with and the one it made (event "mcp-revision-moved"); a module still at the first
  * takes the second and keeps its draft, since nothing but that write lies between them.
  * Exposes window.McpScopeUi for the matrix, which shows "Restricted to N" (or "Scope unknown") in the module's first
@@ -51,7 +51,7 @@
 	let sayTimer = null
 	/** @type {Object<string, object>} state of each module of the open user */
 	let modules = {}
-	/** Page event of a write this page committed: detail {from, to}; js/admin-grants.js sends and follows it too. */
+	/** Page event of a write this page committed: detail {from, to}; src/admin/admin-grants.js sends and follows it too. */
 	const REVISION_MOVED = 'mcp-revision-moved'
 
 	function el(tag, props = {}, children = []) {

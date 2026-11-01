@@ -36,7 +36,7 @@ class PollsCreateDom {
 	static load(files, extra = {}) {
 		const root = { t: (_, text, args = {}) => text.replace(/\{(\w+)\}/g, (_, key) => args[key] ?? key), ...extra }
 		root.window = root
-		for (const file of files) vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js', file), 'utf8'), root)
+		for (const file of files) vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../src/admin', file), 'utf8'), root)
 		return root
 	}
 

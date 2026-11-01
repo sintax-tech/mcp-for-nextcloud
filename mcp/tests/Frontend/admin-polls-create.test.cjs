@@ -13,7 +13,7 @@ class PollsCreateAdmin {
 	/** @return {object} actual frontend policy */
 	static levels() {
 		const root = Context.load()
-		vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-levels.js'), 'utf8'), root)
+		vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../src/admin/admin-levels.js'), 'utf8'), root)
 		return root.McpAdminLevels
 	}
 }
@@ -30,9 +30,9 @@ test('Polls creation is an explicit independent preset, protected reads do not a
 test('the actual admin loads the presets with the levels, before the grants, and all four consumers use the helper', () => {
 	const template = fs.readFileSync(path.join(__dirname, '../../templates/admin.php'), 'utf8')
 	assert.equal(template.indexOf("'admin-polls-grants'"), -1)
-	assert.ok(template.indexOf("'admin-levels'") < template.indexOf("'admin-grants'"))
+	assert.ok(require('./AdminManifest.cjs').loadsBefore('admin/admin-levels.js', 'admin/admin-grants.js'))
 	for (const name of ['admin-grants.js','admin-groups.js','admin-inspector.js','admin-level-popover.js']) {
-		const source = fs.readFileSync(path.join(__dirname, '../../js', name), 'utf8')
+		const source = fs.readFileSync(path.join(__dirname, '../../src/admin', name), 'utf8')
 		assert.match(source, /McpAdminPollsGrants/)
 	}
 	const helper = Context.load().McpAdminPollsGrants
@@ -52,7 +52,7 @@ test('real inspector DOM retains create as an independent custom combination wit
 
 test('missing Polls helper offers no preset and cannot grant an accumulated fallback', () => {
 	const root = { t: (_, text) => text }
-	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-levels.js'), 'utf8'), root)
+	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../src/admin/admin-levels.js'), 'utf8'), root)
 	delete root.McpAdminPollsGrants
 	const levels = root.McpAdminLevels
 	const operations = ['read', 'results', 'links', 'create']
@@ -68,7 +68,7 @@ test('missing Polls helper offers no preset and cannot grant an accumulated fall
 
 test('Polls presets come from admin-levels alone, and an unknown level grants nothing', () => {
 	const root = { t: (_, text) => text }
-	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-levels.js'), 'utf8'), root)
+	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../src/admin/admin-levels.js'), 'utf8'), root)
 	const levels = root.McpAdminLevels
 	const operations = ['read', 'results', 'links', 'create']
 	assert.ok(root.McpAdminPollsGrants)

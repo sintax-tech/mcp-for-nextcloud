@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Behavioral tests of js/admin-inspector.js, using only Node's built-in test runner and a minimal DOM. */
+/** Behavioral tests of src/admin/admin-inspector.js, using only Node's built-in test runner and a minimal DOM. */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const vm = require('node:vm')
@@ -62,9 +62,9 @@ async function app(handler) {
 			return { ok: status < 400, status, json: async () => body }
 		},
 	}
-	// The page loads js/admin-levels.js before the inspector, in the same global, so its Polls and Mail helpers see t().
-	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-levels.js'), 'utf8'), context)
-	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-inspector.js'), 'utf8'), context)
+	// The page loads src/admin/admin-levels.js before the inspector, in the same global, so its Polls and Mail helpers see t().
+	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../src/admin/admin-levels.js'), 'utf8'), context)
+	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../src/admin/admin-inspector.js'), 'utf8'), context)
 	const submit = async (id) => { await ids[id].listeners.submit({ preventDefault() {} }); await tick() }
 	return { ids, calls, submit, window }
 }

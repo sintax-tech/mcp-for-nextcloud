@@ -38,7 +38,7 @@ class PollsProtectedAdmin {
 	static load(files, extra = {}) {
 		const root = { t: (_, text, args = {}) => text.replace(/\{(\w+)\}/g, (_, key) => args[key] ?? key), ...extra }
 		root.window = root
-		for (const file of files) vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js', file), 'utf8'), root)
+		for (const file of files) vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../src/admin', file), 'utf8'), root)
 		return root
 	}
 
@@ -95,14 +95,14 @@ test('real inspector DOM renders the protected labels, cumulative level and sele
 
 test('all admin label consumers delegate to the loaded Polls helper and translations agree with Forms common results', () => {
 	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-inspector.js', 'admin-level-popover.js']) {
-		assert.match(fs.readFileSync(path.join(__dirname, '../../js', file), 'utf8'), /McpAdminPollsGrants\?\.levelLabels/)
+		assert.match(fs.readFileSync(path.join(__dirname, '../../src/admin', file), 'utf8'), /McpAdminPollsGrants\?\.levelLabels/)
 	}
 	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-inspector.js']) {
-		assert.match(fs.readFileSync(path.join(__dirname, '../../js', file), 'utf8'), /McpAdminPollsGrants\?\.operationLabels/)
+		assert.match(fs.readFileSync(path.join(__dirname, '../../src/admin', file), 'utf8'), /McpAdminPollsGrants\?\.operationLabels/)
 	}
 	const template = fs.readFileSync(path.join(__dirname, '../../templates/admin.php'), 'utf8')
 	assert.equal(template.indexOf("'admin-polls-grants'"), -1)
-	assert.ok(template.indexOf("'admin-levels'") < template.indexOf("'admin-grants'"))
+	assert.ok(require('./AdminManifest.cjs').loadsBefore('admin/admin-levels.js', 'admin/admin-grants.js'))
 	for (const [lang, result, anonymous] of [['pt_BR', 'resultados', 'Anônimo'], ['es', 'resultados', 'Anónimo'], ['de', 'Ergebnisse', 'Anonym']]) {
 		const json = JSON.parse(fs.readFileSync(path.join(__dirname, '../../l10n', lang + '.json'), 'utf8')).translations
 		let js

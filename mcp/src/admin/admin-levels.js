@@ -11,7 +11,7 @@
  * by operation. The tiers follow GrantPolicy::CATALOG; an operation the tiers do not name (a newer catalog) falls into
  * the last tier, so it is never hidden and never granted by a lower level.
  *
- * The level functions are pure, with no DOM and no strings: js/admin-grants.js draws the cells and names the levels.
+ * The level functions are pure, with no DOM and no strings: src/admin/admin-grants.js draws the cells and names the levels.
  * The Polls presets and the Mail write warnings are defined below, in this file, so the page does not
  * load them as their own scripts. The other admin scripts still read window.McpAdminPollsGrants and
  * window.McpAdminMailGrants. Both are installed before the level functions run.
@@ -79,7 +79,7 @@
 })(typeof window !== 'undefined' ? window : globalThis);
 
 /**
- * What the Mail operations let the AI do, for the column tooltips of js/admin-grants.js: `read` lists accounts and
+ * What the Mail operations let the AI do, for the column tooltips of src/admin/admin-grants.js: `read` lists accounts and
  * folders, `messages` (off by default) lists, searches and reads the messages themselves, `attachments` (off by default)
  * reads the text of an attachment, and the Mail writes, off by default: `flags` marks a message read or unread and
  * flagged, `move` moves it to another folder of its account, `draft` saves a new draft, never sent, `send` sends a new message. Granting a Mail write, in the matrix, its popover, a bulk
@@ -160,7 +160,7 @@
 	/**
 	 * Names of the tiers of the modules whose tiers are not Read, Edit and Full, in tier order. Mail only reads at first:
 	 * its first tier lists accounts and folders, its second opens the messages, its third adds the text of attachments,
-	 * and the next ones add the Mail writes, so none of its levels is called Full. js/admin-grants.js translates them.
+	 * and the next ones add the Mail writes, so none of its levels is called Full. src/admin/admin-grants.js translates them.
 	 */
 	const MODULE_TIER_NAMES = {
 		forms: ['read', 'forms_write', 'forms_write_results'],

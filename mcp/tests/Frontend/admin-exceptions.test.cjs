@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Behavioral tests of js/admin-exceptions.js (S4 of the admin redesign): of the individual values on the page, which are
+ * Behavioral tests of src/admin/admin-exceptions.js (S4 of the admin redesign): of the individual values on the page, which are
  * real exceptions and which only repeat what the person inherits, read from the read-only preview the reset uses. The
  * script runs unchanged against a stub of window.McpAdminMatrix; it never writes, and the review goes through the reset.
  */
@@ -58,7 +58,7 @@ function setup({ users, preview, popoverOpen = false, menuOpen = false, drawerOp
 	function fire(name) { for (const action of listeners[name] || []) action() }
 	let onRefresh = null
 	const n = (app, one, many, count) => (count === 1 ? one : many).replace('%n', count)
-	vm.runInNewContext(fs.readFileSync(path.join(root, 'js/admin-exceptions.js'), 'utf8'), { window, document, n, setTimeout })
+	vm.runInNewContext(fs.readFileSync(path.join(root, 'src/admin/admin-exceptions.js'), 'utf8'), { window, document, n, setTimeout })
 	return {
 		api: window.McpAdminExceptions,
 		elements,

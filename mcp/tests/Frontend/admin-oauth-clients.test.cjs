@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Behavioral tests of the OAuth clients block of js/admin-grants.js (F2 of the review of PR #8) with Node's built-in
+ * Behavioral tests of the OAuth clients block of src/admin/admin-grants.js (F2 of the review of PR #8) with Node's built-in
  * runner and a minimal DOM: every save carries the revision of the page, the saves of the block go one at a time, and a
  * 409 (another window saved first) rebuilds the cards from the server instead of resending the stale list.
  *
@@ -57,13 +57,13 @@ class Element {
 	querySelector(selector) { return this.querySelectorAll(selector)[0] ?? null }
 }
 
-const source = fs.readFileSync(path.join(__dirname, '../../js/admin-grants.js'), 'utf8')
+const source = fs.readFileSync(path.join(__dirname, '../../src/admin/admin-grants.js'), 'utf8')
 const start = source.indexOf('\tasync function initOauthClients() {')
 const block = source.slice(start, source.indexOf('\n\t}\n', start) + 4)
-assert.ok(start > 0 && block.length > 500, 'the OAuth clients block was found in js/admin-grants.js')
+assert.ok(start > 0 && block.length > 500, 'the OAuth clients block was found in src/admin/admin-grants.js')
 const helpersStart = source.indexOf('\t/** Page event of a write this page committed')
 const helpers = source.slice(helpersStart, source.indexOf('\t/**\n\t * @param {HTMLElement} cell cell that shows the save result', helpersStart))
-assert.ok(helpersStart > 0 && helpers.includes('function followRevision('), 'the revision helpers were found in js/admin-grants.js')
+assert.ok(helpersStart > 0 && helpers.includes('function followRevision('), 'the revision helpers were found in src/admin/admin-grants.js')
 
 const REDIRECT = 'https://harness.example.com/oauth/callback'
 const client = (id, name, enabled = true) => ({ id, clientId: 'nextcloud-mcp-custom-' + id, name, enabled, redirectUris: [REDIRECT] })

@@ -19,7 +19,7 @@ use OCA\Mcp\Migration\Version000800Date20261002010000;
 use OCA\Mcp\Migration\Version001002Date20261008000000;
 use OCA\Mcp\Migration\Version001100Date20261015000000;
 use OCA\Mcp\Migration\Version001100Date20261015010000;
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\Access\Policy\CauseClassifier;
 use OCA\Mcp\Access\Policy\CauseProcessor;
 use OCA\Mcp\Access\Policy\DeferredQueue;
@@ -101,7 +101,7 @@ final class CauseProcessingTest extends TestCase {
 		$this->writer = new PolicyWriter($this->db, $this->state, $events, $config, $this->createMock(IUserConfig::class),
 			$this->createMock(IAppConfig::class), $users, $time, $this->authUsers, $this->rechecks,
 			new PolicyEventProcessor($events, new OAuthStore($this->db), $logger, $time),
-			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\OAuthStore($this->db));
+			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db));
 		$resolver = $this->createMock(PolicyResolver::class);
 		$resolver->method('begin')->willReturnCallback(function (string $uid, array $added = [], array $removed = [], bool $observe = true): PolicyOperationContext {
 			$this->assertFalse($observe, 'cause classification never persists an observation');
@@ -270,7 +270,7 @@ final class CauseProcessingTest extends TestCase {
 			return false;
 		}, $this->processor->classifier());
 		$this->assertSame($old, $this->authUsers->generations('alice')['revoked_below']);
-		$this->assertSame(1, \OCA\Mcp\Service\Policy\DecimalCounter::compare((string)$issued, $old));
+		$this->assertSame(1, \OCA\Mcp\Platform\Numbers\DecimalCounter::compare((string)$issued, $old));
 		$this->assertSame([], $this->rechecks->causes('alice'));
 		// The After of the consumed cause, a retry and the job: nothing to do, the new generation stays valid.
 		$this->processor->after('alice', IdentityKey::accountCause(), self::gen('acc'));
@@ -292,7 +292,7 @@ final class CauseProcessingTest extends TestCase {
 		$this->assertSame(0, $this->processor->reconcile());
 		$generations = $this->authUsers->generations('alice');
 		$this->assertSame($issued, $generations['issue_seq']);
-		$this->assertSame(1, \OCA\Mcp\Service\Policy\DecimalCounter::compare($issued, $generations['revoked_below']));
+		$this->assertSame(1, \OCA\Mcp\Platform\Numbers\DecimalCounter::compare($issued, $generations['revoked_below']));
 		// T8 (vi): a new native operation after the issuance records a new gen, and that one cuts.
 		$this->record(RecheckMapper::REASON_ACCOUNT, null, self::gen('acc-2'));
 		$this->assertSame(1, $this->processor->reconcile());

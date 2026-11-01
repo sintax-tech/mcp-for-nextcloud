@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Checkout;
 
 use OCA\Mcp\Checkout\CheckoutToken;
 use OCA\Mcp\Controller\CheckoutController;
-use OCA\Mcp\OAuth\TokenHasher;
+use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
@@ -72,7 +72,7 @@ final class CheckoutCreateTest extends TestCase {
 
 	private FakeTree $tree;
 	/** files_lock behind ILockManager, without any lock until a test puts one. */
-	private \OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager $locks;
+	private \OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLockManager $locks;
 	private InMemoryCheckoutTokenStore $store;
 	private InMemoryConfig $config;
 	private GrantPolicy $policy;
@@ -93,7 +93,7 @@ final class CheckoutCreateTest extends TestCase {
 		$this->store = new InMemoryCheckoutTokenStore();
 		$this->config = new InMemoryConfig();
 		$this->config->app['mcp'][CheckoutService::MAX_BYTES_KEY] = (string)self::LIMIT;
-		$this->policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$this->policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		$this->policy->setGlobalEnabled(true);
 		$this->policy->setEligible('alice', true);
 		$this->policy->setConnected('alice', true);
@@ -102,7 +102,7 @@ final class CheckoutCreateTest extends TestCase {
 		$this->session = $this->createMock(IUserSession::class);
 		$this->session->method('getUser')->willReturn(null);
 		$this->filenames = new FakeFilenameValidator();
-		$this->locks = new \OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager();
+		$this->locks = new \OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLockManager();
 		$this->rebuild();
 		$this->stage('PK docx bytes');
 	}
@@ -577,7 +577,7 @@ final class CheckoutCreateTest extends TestCase {
 	public function testATokenLockOnTheNewFileIsALockedRefusal(): void {
 		$this->issue();
 		$this->tree->afterCreate = function (string $path): void {
-			$this->locks->put(new \OCA\Mcp\Tests\Unit\Tools\Common\FakeLock($this->tree->nodes[$path]['id'], \OCP\Files\Lock\ILock::TYPE_TOKEN, 'pedro'));
+			$this->locks->put(new \OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLock($this->tree->nodes[$path]['id'], \OCP\Files\Lock\ILock::TYPE_TOKEN, 'pedro'));
 		};
 		$response = $this->controller->upload();
 		$this->assertSame(423, $response->getStatus());

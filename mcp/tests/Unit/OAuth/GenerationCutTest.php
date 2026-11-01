@@ -22,8 +22,8 @@ use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\AuthorizationRequest;
 use OCA\Mcp\OAuth\ClientMetadata;
 use OCA\Mcp\OAuth\OAuthException;
-use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\OAuth\TokenHasher;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
+use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\OAuth\TokenOwnerGate;
 use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Access\Grants\GrantPolicy;
@@ -118,7 +118,7 @@ final class GenerationCutTest extends TestCase {
 		$processor = new PolicyEventProcessor($events, $cleanup, new NullLogger(), $time);
 		$this->writer = new PolicyWriter($this->db, $this->state, $events, $config, $userConfig, $apps, $users, $time,
 			$this->authUsers, new RecheckMapper($this->db), $processor,
-			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\OAuthStore($this->db));
+			new \OCA\Mcp\Db\GroupGrantsMapper($this->db), new \OCA\Mcp\Db\GroupLifeMapper($this->db), new \OCA\Mcp\OAuth\Storage\OAuthStore($this->db));
 		$this->policy = new GrantPolicy($config, $userConfig, $this->writer,
 			InMemoryConfig::resolverOver($this, $this->state, $this->writer, $config, $userConfig, $apps, $users, $this->db,
 				fn (): array => [new \OCA\Mcp\Tests\Unit\ArrayGroupBackend(fn (): array => $this->groups, 'Database', function (): void {

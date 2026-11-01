@@ -163,7 +163,7 @@ final class DeleteFileTest extends ExclusionTestCase {
 	public function testCurrentHistoricAndUnicodeBackupNamesAreRefused(): void {
 		$before = Server::get(\OCA\Mcp\Platform\Backups\BackupSettingsDocument::class)->read();
 		$config = Server::get(IAppConfig::class);
-		$writer = Server::get(\OCA\Mcp\Service\BackupSettingsWriter::class);
+		$writer = Server::get(\OCA\Mcp\Access\Settings\BackupSettingsWriter::class);
 		$state = Server::get(\OCA\Mcp\Db\PolicyStateMapper::class);
 		try {
 			foreach (['Réservé', '.fd1-current'] as $name) {

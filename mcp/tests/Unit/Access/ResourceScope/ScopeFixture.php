@@ -18,7 +18,7 @@ use OCA\Mcp\Access\ResourceScope\NativeResourceEnumerator;
 use OCA\Mcp\Access\ResourceScope\ScopeActivation;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarStore;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
@@ -104,7 +104,7 @@ final class ScopeFixture {
 	public function enumerator(): NativeResourceEnumerator {
 		$root = $this->mock(\OCP\Files\IRootFolder::class);
 		$root->method('getUserFolder')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $this->tree->rootFolder() : throw new \OCP\Files\NotFoundException());
-		return new NativeResourceEnumerator($root, new CalendarAccess($this->calendars), $this->guard);
+		return new NativeResourceEnumerator($root, new \OCA\Mcp\Modules\Calendar\NativeCalendarsAdapter(new CalendarAccess($this->calendars)), $this->guard);
 	}
 
 	/**

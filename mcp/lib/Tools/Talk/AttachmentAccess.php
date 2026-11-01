@@ -19,8 +19,6 @@ use Throwable;
  * already approved.
  */
 class AttachmentAccess {
-	/** Share provider id the manager needs as prefix of every share id; from spreed's RoomShareProvider::identifier(). */
-	private const ROOM_PROVIDER_ID = 'ocRoomShare';
 
 	public function __construct(
 		private IShareManager $shareManager,
@@ -36,9 +34,7 @@ class AttachmentAccess {
 	 * @return string Full share id
 	 */
 	public static function fullShareId(int|string $id): string {
-		$id = (string)$id;
-
-		return str_contains($id, ':') ? $id : self::ROOM_PROVIDER_ID . ':' . $id;
+		return \OCA\Mcp\Platform\Sharing\TalkShareIds::fullShareId($id);
 	}
 
 	/**

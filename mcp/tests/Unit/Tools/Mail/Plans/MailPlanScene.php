@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Mail\Plans;
 
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\Tools\Mail\FakeMailMessageApp;
 use OCA\Mcp\Tests\Unit\Tools\Mail\MailMessageToolsRegistryTest;
 use OCA\Mcp\Tools\Mail\MailModule;

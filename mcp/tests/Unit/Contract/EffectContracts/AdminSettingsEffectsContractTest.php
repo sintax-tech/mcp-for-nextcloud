@@ -12,7 +12,7 @@ use OCA\Mcp\Controller\CheckoutLimitController;
 use OCA\Mcp\Controller\FileWritePolicyController;
 use OCA\Mcp\Controller\LogsPrivacyController;
 use OCA\Mcp\Controller\TagsController;
-use OCA\Mcp\OAuth\TokenHasher;
+use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\Access\FileTypes\FileWritePolicy;
 use OCA\Mcp\Access\Logs\LogFileNames;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;

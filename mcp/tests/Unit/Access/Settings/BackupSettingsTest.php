@@ -5,18 +5,18 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tests\Unit\Service;
+namespace OCA\Mcp\Tests\Unit\Access\Settings;
 
 use OCA\Mcp\Db;
 use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Platform\Backups\BackupCopies;
-use OCA\Mcp\Service\BackupSettingsWriter;
+use OCA\Mcp\Access\Settings\BackupSettingsWriter;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Access\Policy\PolicyEventProcessor;
 use OCA\Mcp\Access\Policy\PolicyConflict;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Migration\Version001100Date20261015000000;
 use OCA\Mcp\Migration\Version001100Date20261015010000;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

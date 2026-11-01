@@ -26,7 +26,7 @@ use OCA\Mcp\Access\ResourceScope\ScopeReader;
  */
 class ScopedCalendarAccess {
 	/** Scope module of each component a tool reads. */
-	public const MODULES = ['VEVENT' => 'calendar', 'VTODO' => 'tasks'];
+	public const MODULES = \OCA\Mcp\Access\ResourceScope\NativeCalendars::MODULES;
 
 	/**
 	 * @param CalendarAccess $native the user's native calendars

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Compat;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Compat\SnapshotProbe;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use PHPUnit\Framework\TestCase;
 
 /**

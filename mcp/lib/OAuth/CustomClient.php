@@ -9,7 +9,7 @@ namespace OCA\Mcp\OAuth;
 
 use InvalidArgumentException;
 use OCA\Mcp\Db\OAuthClientsMapper;
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 
 /**

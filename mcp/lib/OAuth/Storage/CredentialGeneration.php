@@ -5,9 +5,9 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\OAuth;
+namespace OCA\Mcp\OAuth\Storage;
 
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Platform\Numbers\DecimalCounter;
 
 /**
  * The validity rule of every OAuth credential (contracts §3.1), apart from the account and policy checks of the

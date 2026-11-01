@@ -43,7 +43,7 @@ final class AccessInspectorTest extends TestCase {
 		$root->method('getUserFolder')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $this->fx->tree->rootFolder() : throw new NotFoundException());
 		$resolver = $this->fx->resolver($this->writer);
 		$this->inspector = new I($resolver, $root, $this->fx->guard,
-			new CalendarAccessExplainer($resolver, new CalendarAccess($this->fx->calendars)),
+			new CalendarAccessExplainer($resolver, new \OCA\Mcp\Modules\Calendar\NativeCalendarsAdapter(new CalendarAccess($this->fx->calendars))),
 			new \OCA\Mcp\Access\ResourceScope\FilesScope($this->fx->policy($this->writer), $this->fx->guard, $this->fx->tree->filesystemRoot()));
 	}
 
@@ -206,7 +206,7 @@ final class AccessInspectorTest extends TestCase {
 		$resolver = $this->fx->resolver($this->writer);
 		$root = $this->createMock(IRootFolder::class);
 		$root->method('getUserFolder')->willReturnCallback(fn (string $uid) => $this->fx->tree->rootFolder());
-		$inspector = new I($resolver, $root, $this->fx->guard, new CalendarAccessExplainer($resolver, new CalendarAccess($this->fx->calendars)), $scope);
+		$inspector = new I($resolver, $root, $this->fx->guard, new CalendarAccessExplainer($resolver, new \OCA\Mcp\Modules\Calendar\NativeCalendarsAdapter(new CalendarAccess($this->fx->calendars))), $scope);
 		$this->assertSame(['reason' => I::NOT_EVALUATED, 'gate' => 'resource_scope_unknown', 'exclusion' => null, 'folder' => null],
 			$inspector->path('alice', '/Projects'));
 	}

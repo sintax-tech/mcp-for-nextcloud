@@ -17,7 +17,7 @@ use OCA\Mcp\Tools\Calendar\CalendarStore;
 use OCA\Mcp\Tools\Calendar\Classification;
 use OCA\Mcp\Tools\Calendar\EventMapper;
 use OCA\Mcp\Tools\Calendar\EventRepository;
-use OCA\Mcp\Tools\Calendar\ToolSchema as CalendarSchema;
+use OCA\Mcp\Access\Grants\GrantMatrix;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCP\App\IAppManager;
@@ -143,7 +143,7 @@ class ReferenceLinker {
 			|| isset($reference['card_id']) || isset($reference['board_id'])) {
 			throw new InvalidArgumentException(Messages::invalidReference());
 		}
-		$this->assertModuleUsable($userId, 'calendar', CalendarSchema::APP, Messages::referenceCalendarOff());
+		$this->assertModuleUsable($userId, 'calendar', GrantMatrix::MODULE_APPS['calendar'], Messages::referenceCalendarOff());
 
 		try {
 			// The calendar tools' own rules: the path must be one of the caller's visible calendars, and the

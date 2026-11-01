@@ -32,6 +32,8 @@
     },
     "di": {
         "registerService": [
+            "OCA\\Mcp\\Platform\\FileAccess\\WriteVisibility",
+            "OCA\\Mcp\\Access\\ResourceScope\\NativeCalendars",
             "OCA\\Mcp\\Service\\Calendar\\CalendarSelftestReader",
             "OCA\\Mcp\\Tools\\Calendar\\CalendarDav",
             "OCA\\Mcp\\Tools\\Contacts\\ContactStore",

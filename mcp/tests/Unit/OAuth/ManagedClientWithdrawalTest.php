@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\OAuth;
 
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
+
 use OCA\Mcp\Controller\OAuthController;
 use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\AuthorizationValidator;
@@ -17,7 +19,7 @@ use OCA\Mcp\OAuth\NativeClient;
 use OCA\Mcp\OAuth\OAuthClientsService;
 use OCA\Mcp\OAuth\OAuthException;
 use OCA\Mcp\OAuth\ResourceUrl;
-use OCA\Mcp\OAuth\TokenHasher;
+use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\OAuth\TokenOwnerGate;
 use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Access\Grants\GrantPolicy;

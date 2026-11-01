@@ -8,7 +8,7 @@ namespace OCA\Mcp\Tests\Integration\OAuth;
 
 use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\OAuthException;
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Fixtures;
@@ -38,7 +38,7 @@ final class LegacyCredentialsTest extends IntegrationTestCase {
 
 	protected function tearDown(): void {
 		if ($this->legacy !== null) {
-			Server::get(OAuthStore::class)->deleteUpToGeneration(Fixtures::LEGACY, \OCA\Mcp\Service\Policy\DecimalCounter::MAX);
+			Server::get(OAuthStore::class)->deleteUpToGeneration(Fixtures::LEGACY, \OCA\Mcp\Platform\Numbers\DecimalCounter::MAX);
 			$config = Server::get(IConfig::class);
 			foreach ([GrantPolicy::ELIGIBLE_KEY, GrantPolicy::CONNECTED_KEY] as $key) {
 				$config->deleteUserValue(Fixtures::LEGACY, 'mcp', $key);

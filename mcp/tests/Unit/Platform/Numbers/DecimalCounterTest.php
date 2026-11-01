@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
-namespace OCA\Mcp\Tests\Unit\Service\Policy;
+namespace OCA\Mcp\Tests\Unit\Platform\Numbers;
 
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use PHPUnit\Framework\TestCase;
 
 final class DecimalCounterTest extends TestCase {

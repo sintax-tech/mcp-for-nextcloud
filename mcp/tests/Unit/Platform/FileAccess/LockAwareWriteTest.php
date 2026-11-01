@@ -5,13 +5,13 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tests\Unit\Tools\Common;
+namespace OCA\Mcp\Tests\Unit\Platform\FileAccess;
 
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Tools\Common\LockAwareWrite;
+use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\LockMessages;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
@@ -74,8 +74,15 @@ final class LockAwareWriteTest extends TestCase {
 			$time,
 			new UserTimezone($config),
 			$logger,
-			$visibility,
+			$visibility ?? $this->visible(),
 		);
+	}
+
+	/** @return \OCA\Mcp\Platform\FileAccess\WriteVisibility Explicit unrestricted visibility for lock-only fixtures. */
+	private function visible(): \OCA\Mcp\Platform\FileAccess\WriteVisibility {
+		$visibility = $this->createMock(\OCA\Mcp\Platform\FileAccess\WriteVisibility::class);
+		$visibility->method('isVisible')->willReturn(true);
+		return $visibility;
 	}
 
 	private function utc(): UserTimezone {
@@ -257,7 +264,7 @@ final class LockAwareWriteTest extends TestCase {
 
 	public function testADisplayNameThatIsTheUidIsNotShown(): void {
 		$locks = new LockAwareWrite($this->manager, FakeUsers::manager($this, ['alice' => 'Alice', 'jsilva' => 'jsilva']),
-			$this->createMock(IAppManager::class), $this->createMock(ITimeFactory::class), $this->utc(), new \Psr\Log\NullLogger());
+			$this->createMock(IAppManager::class), $this->createMock(ITimeFactory::class), $this->utc(), new \Psr\Log\NullLogger(), $this->visible());
 		$this->manager->put(new FakeLock($this->id, ILock::TYPE_USER, 'jsilva', self::CREATED));
 		$e = $this->refusal(fn () => $locks->assertWritable($this->note, 'alice', self::PATH));
 		$this->assertStringContainsString('is locked by someone else.', $e->getMessage());
@@ -387,7 +394,7 @@ final class LockAwareWriteTest extends TestCase {
 	 */
 	public function testAnExceptionOwnerIsNeverResolvedByGuessingWhetherItIsAnAccount(): void {
 		$locks = new LockAwareWrite($this->manager, FakeUsers::manager($this, ['alice' => 'Alice', 'text' => 'Texto Silva']),
-			$this->createMock(IAppManager::class), $this->createMock(ITimeFactory::class), $this->utc(), new \Psr\Log\NullLogger());
+			$this->createMock(IAppManager::class), $this->createMock(ITimeFactory::class), $this->utc(), new \Psr\Log\NullLogger(), $this->visible());
 		$e = $this->refusal(fn () => $locks->capture(static function (): void {
 			throw new ManuallyLockedException('/alice/files/x', null, 'files_lock/x', 'text', 120);
 		}, $this->note, 'alice', self::PATH));

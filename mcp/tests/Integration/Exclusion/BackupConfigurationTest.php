@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Integration\Exclusion;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Platform\Backups\BackupCopies;
-use OCA\Mcp\Service\BackupSettingsWriter;
+use OCA\Mcp\Access\Settings\BackupSettingsWriter;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Integration\Support\Http;
 use OCA\Mcp\Tools\Contacts\ContactBackup;

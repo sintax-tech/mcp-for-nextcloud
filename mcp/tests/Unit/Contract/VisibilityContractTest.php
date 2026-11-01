@@ -231,7 +231,7 @@ final class VisibilityContractTest extends TestCase {
 		if ($this->policy !== null) {
 			return $this->policy;
 		}
-		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->config->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		foreach (GrantPolicy::CATALOG as $module => $operations) {
 			foreach ($operations as $operation) {
 				$policy->setGrant('alice', $module, $operation, true);

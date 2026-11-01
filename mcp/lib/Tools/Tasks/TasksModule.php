@@ -13,10 +13,9 @@ use OCA\Mcp\Tools\Calendar\ScopedCalendarAccess;
 use OCA\Mcp\Tools\Calendar\CalendarDav;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
-use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCA\Mcp\Tools\Calendar\TrashPolicy;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
-use OCA\Mcp\Tools\Dav\CollectionSchema as Schema;
+use OCA\Mcp\Mcp\Tools\Schema\DavCollectionSchema as Schema;
 use OCA\Mcp\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\Tasks\Handler\CreateTaskHandler;
@@ -71,8 +70,8 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
 	 * @return list<array<string, mixed>>
 	 */
 	public function definitions(): array {
-		$calendar = ToolSchema::calendar('VTODO calendar path from List task calendars.');
-		$identity = ['calendar' => $calendar, 'uid' => ToolSchema::uid()];
+		$calendar = Schema::calendar('VTODO calendar path from List task calendars.');
+		$identity = ['calendar' => $calendar, 'uid' => Schema::uid()];
 		$fields = [
 			'summary' => Schema::text('Task title. Omit fields to preserve their existing values.', 1, 1024),
 			'description' => Schema::text('Task description.'),
@@ -165,21 +164,21 @@ final class TasksModule implements ToolModule, PreviewsWrites, ToolGuideNotes, R
 				'tasks_edit_task',
 				'Edit supplied fields of a simple task, preserving other properties.',
 				'edit',
-				$identity + ['etag' => ToolSchema::etag()] + $fields,
+				$identity + ['etag' => Schema::etag()] + $fields,
 				['calendar', 'uid'],
 			],
 			[
 				'tasks_complete_task',
 				'Mark a simple task completed with 100 percent progress and a completion timestamp.',
 				'edit',
-				$identity + ['etag' => ToolSchema::etag()],
+				$identity + ['etag' => Schema::etag()],
 				['calendar', 'uid'],
 			],
 			[
 				'tasks_delete_task',
 				'Move a simple task to the calendar trash. Refused when calendar retention is zero.',
 				'delete',
-				$identity + ['etag' => ToolSchema::etag()],
+				$identity + ['etag' => Schema::etag()],
 				['calendar', 'uid'],
 			],
 		];

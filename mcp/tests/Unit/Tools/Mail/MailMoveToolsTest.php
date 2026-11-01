@@ -11,7 +11,7 @@ use OCA\Mail\Events\MessageDeletedEvent;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Mail\MailGateway;
 use OCA\Mcp\Tools\Mail\MailMessages;

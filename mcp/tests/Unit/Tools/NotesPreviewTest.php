@@ -227,7 +227,7 @@ final class NotesPreviewTest extends TestCase {
 	}
 
 	private function registry(): ToolRegistry {
-		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy((new InMemoryConfig())->mock($this), new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		foreach (GrantPolicy::CATALOG['notes'] as $operation) {
 			$policy->setGrant('alice', 'notes', $operation, true);
 		}

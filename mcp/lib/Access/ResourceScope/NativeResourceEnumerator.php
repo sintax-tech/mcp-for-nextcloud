@@ -9,11 +9,9 @@ namespace OCA\Mcp\Access\ResourceScope;
 
 use InvalidArgumentException;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
-use OCA\Mcp\Tools\Calendar\Calendar;
-use OCA\Mcp\Tools\Calendar\CalendarAccess;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\Files\Node;
@@ -35,12 +33,15 @@ class NativeResourceEnumerator {
 	public const MAX_PAGE = 10000;
 	/** Longest search term accepted. */
 	public const MAX_SEARCH = 100;
-	/** Calendar component each scope module of a calendar holds. */
-	private const COMPONENTS = ['calendar' => 'VEVENT', 'tasks' => 'VTODO'];
 
+	/**
+	 * @param IRootFolder $rootFolder Native user trees.
+	 * @param NativeCalendars $calendars Native calendar enumeration independent of MCP scope.
+	 * @param VisibilityGuard $guard Exclusion tags used to annotate Files candidates.
+	 */
 	public function __construct(
 		private IRootFolder $rootFolder,
-		private CalendarAccess $calendars,
+		private NativeCalendars $calendars,
 		private VisibilityGuard $guard,
 	) {}
 
@@ -116,7 +117,7 @@ class NativeResourceEnumerator {
 					}
 				}
 			} else {
-				$items = array_values(array_map(static fn (Calendar $calendar): array => self::describeCalendar($calendar), $this->calendarsById($uid, $module)));
+				$items = array_values(array_map(static fn (NativeCalendar $calendar): array => self::describeCalendar($calendar), $this->calendarsById($uid, $module)));
 			}
 		} catch (InvalidArgumentException $e) {
 			throw $e;
@@ -197,7 +198,7 @@ class NativeResourceEnumerator {
 	}
 
 	/** @return array{id:string, name:string, path:null, excluded:false} */
-	private static function describeCalendar(Calendar $calendar): array {
+	private static function describeCalendar(NativeCalendar $calendar): array {
 		return ['id' => (string)$calendar->id, 'name' => $calendar->name, 'path' => null, 'excluded' => false];
 	}
 
@@ -214,10 +215,10 @@ class NativeResourceEnumerator {
 		return ['id' => $id, 'found' => false, 'name' => null, 'path' => null, 'excluded' => false];
 	}
 
-	/** @return array<string, Calendar> the user's visible calendars of the module's component, by id */
+	/** @return array<string, NativeCalendar> the user's visible calendars of the module's component, by id */
 	private function calendarsById(string $uid, string $module): array {
 		$calendars = [];
-		foreach ($this->calendars->visible($uid, self::COMPONENTS[$module]) as $calendar) {
+		foreach ($this->calendars->visible($uid, (string)array_search($module, NativeCalendars::MODULES, true)) as $calendar) {
 			$calendars[(string)$calendar->id] = $calendar;
 		}
 		return $calendars;

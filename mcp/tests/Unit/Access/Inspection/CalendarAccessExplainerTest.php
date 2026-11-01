@@ -46,7 +46,7 @@ final class CalendarAccessExplainerTest extends TestCase {
 		$this->policy = $this->fx->policy($this->writer);
 		$native = new CalendarAccess($this->fx->calendars);
 		$this->tools = new ScopedCalendarAccess($native, $this->policy);
-		$this->explainer = new E($this->fx->resolver($this->writer), $native);
+		$this->explainer = new E($this->fx->resolver($this->writer), new \OCA\Mcp\Modules\Calendar\NativeCalendarsAdapter($native));
 	}
 
 	private function scope(string $module, ?array $items): void {

@@ -67,7 +67,7 @@ final class NativeResourceEnumeratorTest extends TestCase {
 	public function testCandidatesNeverConsultTheMcpPolicy(): void {
 		$constructor = (new \ReflectionClass(NativeResourceEnumerator::class))->getConstructor();
 		$types = array_map(static fn (\ReflectionParameter $p): string => (string)$p->getType(), $constructor->getParameters());
-		$this->assertSame([\OCP\Files\IRootFolder::class, \OCA\Mcp\Tools\Calendar\CalendarAccess::class, \OCA\Mcp\Access\Visibility\VisibilityGuard::class], $types);
+		$this->assertSame([\OCP\Files\IRootFolder::class, \OCA\Mcp\Access\ResourceScope\NativeCalendars::class, \OCA\Mcp\Access\Visibility\VisibilityGuard::class], $types);
 		$this->assertNotSame([], $this->fx->enumerator()->candidates('alice', 'calendar', '', 1)['items']);
 	}
 
@@ -115,7 +115,7 @@ final class NativeResourceEnumeratorTest extends TestCase {
 		}
 		$calendars = $this->createMock(\OCA\Mcp\Tools\Calendar\CalendarStore::class);
 		$calendars->method('calendarsForPrincipal')->willThrowException(new \RuntimeException('CalDAV down'));
-		$enumerator = new NativeResourceEnumerator($this->createMock(\OCP\Files\IRootFolder::class), new \OCA\Mcp\Tools\Calendar\CalendarAccess($calendars), $this->fx->guard);
+		$enumerator = new NativeResourceEnumerator($this->createMock(\OCP\Files\IRootFolder::class), new \OCA\Mcp\Modules\Calendar\NativeCalendarsAdapter(new \OCA\Mcp\Tools\Calendar\CalendarAccess($calendars)), $this->fx->guard);
 		$this->expectException(PolicyUnavailable::class);
 		$enumerator->inaccessible('alice', 'calendar', ['11']);
 	}

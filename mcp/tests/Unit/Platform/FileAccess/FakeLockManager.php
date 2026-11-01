@@ -5,11 +5,11 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tests\Unit\Tools\Common;
+namespace OCA\Mcp\Tests\Unit\Platform\FileAccess;
 
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
-use OCA\Mcp\Tools\Common\LockAwareWrite;
+use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\Lock\ILock;
@@ -56,8 +56,10 @@ final class FakeLockManager implements ILockManager {
 	 *
 	 * @param TestCase $test test building the mocks
 	 * @param LoggerInterface|null $logger where refusals are logged, a NullLogger when omitted
+	 * @param \OCA\Mcp\Platform\FileAccess\WriteVisibility|null $visibility Explicit access gate for boundary tests.
+	 * @return LockAwareWrite Service with an explicit visibility dependency.
 	 */
-	public function service(TestCase $test, ?LoggerInterface $logger = null): LockAwareWrite {
+	public function service(TestCase $test, ?LoggerInterface $logger = null, ?\OCA\Mcp\Platform\FileAccess\WriteVisibility $visibility = null): LockAwareWrite {
 		$mock = static fn (string $class): object => (new \ReflectionMethod($test, 'createMock'))->invoke($test, $class);
 		$apps = $mock(IAppManager::class);
 		$apps->method('getAppInfo')->willReturnCallback(static fn (string $app): ?array => match ($app) {
@@ -69,7 +71,17 @@ final class FakeLockManager implements ILockManager {
 		$time->method('getTime')->willReturn(1759922100);
 		$config = $mock(IConfig::class);
 		$config->method('getUserValue')->willReturn('UTC');
-		return new LockAwareWrite($this, FakeUsers::manager($test, FakeUsers::DEFAULTS), $apps, $time, new UserTimezone($config), $logger ?? new NullLogger());
+		return new LockAwareWrite($this, FakeUsers::manager($test, FakeUsers::DEFAULTS), $apps, $time, new UserTimezone($config), $logger ?? new NullLogger(), $visibility ?? $this->visibility($mock));
+	}
+
+	/**
+	 * @param callable(class-string):object $mock Test-owned native mock factory.
+	 * @return \OCA\Mcp\Platform\FileAccess\WriteVisibility Explicit visibility for fixtures without hidden tags.
+	 */
+	private function visibility(callable $mock): \OCA\Mcp\Platform\FileAccess\WriteVisibility {
+		$visibility = $mock(\OCA\Mcp\Platform\FileAccess\WriteVisibility::class);
+		$visibility->method('isVisible')->willReturn(true);
+		return $visibility;
 	}
 
 	/** The exception files_lock's storage wrapper throws for that lock. */

@@ -5,14 +5,19 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Dav;
-
-use OCA\Mcp\Tools\Calendar\ToolSchema;
+namespace OCA\Mcp\Mcp\Tools\Schema;
 
 /** Schema fragments shared by the personal DAV collection modules. */
-final class CollectionSchema {
+final class DavCollectionSchema {
+	/** Released DAV calendar property description. */
+	public const PROP_CALENDAR = 'calendar path, as returned by calendar_list_calendars';
+	/** Released DAV uid property description. */
+	public const PROP_UID = 'event UID';
+	/** Released DAV etag property description. */
+	public const PROP_ETAG = 'expected etag; if it differs, nothing is changed';
+
 	/**
-	 * Builds a bounded text field using the existing calendar schema helper.
+	 * Builds a bounded text field using the shared protocol schema builder.
 	 *
 	 * @param string $description English field description
 	 * @param int $minimum minimum text length
@@ -20,7 +25,7 @@ final class CollectionSchema {
 	 * @return array<string, mixed>
 	 */
 	public static function text(string $description, int $minimum = 0, int $maximum = 65536): array {
-		return ToolSchema::text($description, $minimum, $maximum);
+		return SchemaBuilder::text($description, $minimum, $maximum);
 	}
 
 	/**
@@ -44,9 +49,7 @@ final class CollectionSchema {
 		array $properties,
 		array $required = [],
 	): array {
-		$definition = ToolSchema::definition($name, $description, $operation, $properties, $required);
-		$definition['module'] = $module;
-		$definition['app'] = $app;
+		$definition = SchemaBuilder::definition($module, $app, $name, $description, $operation, $properties, $required);
 		if ($operation !== 'read') {
 			$definition['description'] .= ' Returns a detailed plan without writing. Show it to the user, '
 				. 'wait for explicit approval, then repeat with confirm=true and the optional etag from the plan. '
@@ -87,5 +90,27 @@ final class CollectionSchema {
 			'default' => 50,
 			'description' => 'Maximum results (1-200).',
 		];
+	}
+
+	/**
+	 * @param string $description English source text shown to calendar-tool clients
+	 * @return array<string, mixed> calendar path property
+	 */
+	public static function calendar(string $description = self::PROP_CALENDAR): array {
+		return ['type' => 'string', 'minLength' => 1, 'maxLength' => 1024, 'description' => $description];
+	}
+
+	/**
+	 * @return array<string, mixed> event UID property
+	 */
+	public static function uid(): array {
+		return ['type' => 'string', 'minLength' => 1, 'maxLength' => 255, 'description' => self::PROP_UID];
+	}
+
+	/**
+	 * @return array<string, mixed> optional ETag property for optimistic concurrency
+	 */
+	public static function etag(): array {
+		return ['type' => 'string', 'minLength' => 1, 'maxLength' => 128, 'description' => self::PROP_ETAG];
 	}
 }

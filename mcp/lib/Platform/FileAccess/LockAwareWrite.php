@@ -5,10 +5,9 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Common;
+namespace OCA\Mcp\Platform\FileAccess;
 use OCA\Mcp\Platform\FileAccess\{CommonMessages, LockMessages, LockWriteFailure};
 use OCA\Mcp\Platform\Time\UserTimezone;
-use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -65,7 +64,7 @@ class LockAwareWrite {
 		private ITimeFactory $time,
 		private UserTimezone $timezone,
 		private LoggerInterface $logger,
-		private ?VisibilityGuard $visibility = null,
+		private WriteVisibility $visibility,
 	) {}
 
 	/** @return bool whether a lock provider (files_lock) is there; without one, no lock can exist */

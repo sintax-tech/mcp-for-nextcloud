@@ -29,7 +29,7 @@ use OCP\SystemTag\ISystemTagObjectMapper;
  *
  * When no hidden tags are configured in oc_appconfig, all operations have zero overhead.
  */
-class VisibilityGuard {
+class VisibilityGuard implements \OCA\Mcp\Platform\FileAccess\WriteVisibility {
 	public const CONFIG_KEY = 'hidden_system_tags';
 
 	/** Reasons explain() gives; only the administrator's inspector shows them, the tools answer "not found". */
@@ -568,7 +568,7 @@ class VisibilityGuard {
 	public function copyHiddenTags(Node $source, Node $destination): void {
 		if (!$this->isConfigurationValid()) {
 			$this->warnInvalidConfiguration();
-			throw new ToolFailure(\OCA\Mcp\Tools\Files\FilesMessages::backupFailed());
+			throw new ToolFailure(CommonMessages::backupFailed());
 		}
 		$hiddenTags = $this->getHiddenTagIds();
 		if ($hiddenTags === []) {
@@ -582,7 +582,7 @@ class VisibilityGuard {
 			$cid = (int)$current->getId();
 			if ($cid <= 0 || isset($seen[$cid])) {
 				$this->warnVisibilityFailure();
-				throw new ToolFailure(\OCA\Mcp\Tools\Files\FilesMessages::backupFailed());
+				throw new ToolFailure(CommonMessages::backupFailed());
 			}
 			$seen[$cid] = true;
 			try {
@@ -599,7 +599,7 @@ class VisibilityGuard {
 				$current = $parent;
 			} catch (\Throwable $e) {
 				$this->warnVisibilityFailure();
-				throw new ToolFailure(\OCA\Mcp\Tools\Files\FilesMessages::backupFailed(), 0, $e);
+				throw new ToolFailure(CommonMessages::backupFailed(), 0, $e);
 			}
 		}
 
@@ -612,7 +612,7 @@ class VisibilityGuard {
 				}
 			} catch (\Throwable $e) {
 				$this->warnVisibilityFailure();
-				throw new ToolFailure(\OCA\Mcp\Tools\Files\FilesMessages::backupFailed(), 0, $e);
+				throw new ToolFailure(CommonMessages::backupFailed(), 0, $e);
 			}
 		}
 	}

@@ -80,7 +80,7 @@ final class InMemoryConfig {
 	 * A GrantPolicy over an IConfig mock of this class and the IUserConfig double that goes with it
 	 * (the policy lists flagged users through IUserConfig::searchUsersByValueString).
 	 */
-	public static function policy(IConfig $config, \OCA\Mcp\OAuth\OAuthStore $store): \OCA\Mcp\Access\Grants\GrantPolicy {
+	public static function policy(IConfig $config, \OCA\Mcp\OAuth\Storage\OAuthStore $store): \OCA\Mcp\Access\Grants\GrantPolicy {
 		$writer = self::writer($config, $store);
 		return new \OCA\Mcp\Access\Grants\GrantPolicy($config, self::$userConfigs[$config], $writer, self::resolver($config));
 	}
@@ -208,7 +208,7 @@ final class InMemoryConfig {
 	 * controller of a test share its revision ($revision) and its events ($events, appended at $now). The database
 	 * is a mock without transactions: atomicity and rollback are proven against SQLite and the real server.
 	 */
-	public static function writer(IConfig $config, ?\OCA\Mcp\OAuth\OAuthStore $store = null): \OCA\Mcp\Access\Policy\PolicyWriter {
+	public static function writer(IConfig $config, ?\OCA\Mcp\OAuth\Storage\OAuthStore $store = null): \OCA\Mcp\Access\Policy\PolicyWriter {
 		self::$writers ??= new \WeakMap();
 		self::$states ??= new \WeakMap();
 		if (isset(self::$writers[$config])) {
@@ -268,14 +268,14 @@ final class InMemoryConfig {
 			}
 			return $pending;
 		});
-		$store ??= new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore();
+		$store ??= new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore();
 		// The real delivery over the store double: a revocation's cleanup removes the store rows it covers.
 		$processor = new \OCA\Mcp\Access\Policy\PolicyEventProcessor($events, $store, new \Psr\Log\NullLogger(), $time);
 		self::$processors ??= new \WeakMap();
 		self::$processors[$config] = $processor;
 		return self::$writers[$config] = new \OCA\Mcp\Access\Policy\PolicyWriter($db, $state, $events, $config,
 			self::$userConfigs[$config], $appConfig, $users, $time, $authUsers, $rechecks, $processor,
-			new \OCA\Mcp\Db\GroupGrantsMapper($db), new \OCA\Mcp\Db\GroupLifeMapper($db), new \OCA\Mcp\OAuth\OAuthStore($db));
+			new \OCA\Mcp\Db\GroupGrantsMapper($db), new \OCA\Mcp\Db\GroupLifeMapper($db), new \OCA\Mcp\OAuth\Storage\OAuthStore($db));
 	}
 
 	/**

@@ -57,7 +57,7 @@ final class McpControllerTest extends TestCase {
 	protected function setUp(): void {
 		$this->store = new InMemoryConfig();
 		$this->config = $this->store->mock($this);
-		$this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->config, new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->config, new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		$this->policy->setGlobalEnabled(true);
 		foreach (['alice', 'bob'] as $uid) {
 			$this->policy->setEligible($uid, true);

@@ -13,7 +13,7 @@ use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Migration\PolicyStateSeedStep;
 use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\OAuthException;
-use OCA\Mcp\OAuth\TokenHasher;
+use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
@@ -139,7 +139,7 @@ final class UpgradeSnapshotTest extends IntegrationTestCase {
 		// or Db the server's boot loaded from the branch before its loader; these are the ones the reading needed.
 		$this->assertSame([], preg_grep('/^OCA\\\\Mcp\\\\(Service|OAuth|Db)\\\\/', $read['boot']));
 		$this->assertContains(LegacyPolicyName::get(), $read['loaded']);
-		$this->assertContains('OCA\\Mcp\\OAuth\\OAuthStore', $read['loaded']);
+		$this->assertContains(LegacyOAuthNames::store(), $read['loaded']);
 		$this->assertSame($this->seed['answers'], $read['answers']);
 		$this->assertSame($this->seed['raw'], $read['raw']);
 		$this->assertSame($this->seed['raw'], $this->raw());

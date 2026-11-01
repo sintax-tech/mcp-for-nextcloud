@@ -10,7 +10,7 @@ use OCA\Mcp\Db\AuthUsersMapper;
 use OCA\Mcp\Db\GroupLifeMapper;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\RecheckMapper;
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\Server;
@@ -39,7 +39,7 @@ final class AuthStateTest extends IntegrationTestCase {
 		}
 		$qb = $db->getQueryBuilder();
 		$qb->delete('mcp_group_life')->where($qb->expr()->eq('group_key', $qb->createNamedParameter(IdentityKey::group($this->gid))))->executeStatement();
-		Server::get(OAuthStore::class)->deleteUpToGeneration($this->uid, \OCA\Mcp\Service\Policy\DecimalCounter::MAX);
+		Server::get(OAuthStore::class)->deleteUpToGeneration($this->uid, \OCA\Mcp\Platform\Numbers\DecimalCounter::MAX);
 		parent::tearDown();
 	}
 

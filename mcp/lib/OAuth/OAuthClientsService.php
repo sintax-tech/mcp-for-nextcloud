@@ -34,7 +34,7 @@ class OAuthClientsService {
 		private PolicyWriter $writer,
 		private IConfig $config,
 		private OAuthClientsMapper $clients,
-		private OAuthStore $oauth,
+		private \OCA\Mcp\OAuth\Storage\OAuthStore $oauth,
 	) {}
 
 	/**
@@ -126,7 +126,7 @@ class OAuthClientsService {
 		if (!$native) {
 			// A consent page of the native client opened before this is never admitted again (its generation is older).
 			try {
-				$gen = \OCA\Mcp\Service\Policy\DecimalCounter::increment($gen);
+				$gen = \OCA\Mcp\Platform\Numbers\DecimalCounter::increment($gen);
 			} catch (\InvalidArgumentException $e) {
 				throw new PolicyUnavailable('OAuth client generation exhausted', previous: $e);
 			}

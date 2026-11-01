@@ -31,7 +31,7 @@ final class PromptCatalogTest extends TestCase {
 	protected function setUp(): void {
 		$this->data = new InMemoryConfig();
 		$this->config = $this->data->mock($this);
-		$this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->config, new \OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore());
+		$this->policy = \OCA\Mcp\Tests\Unit\InMemoryConfig::policy($this->config, new \OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore());
 		$this->catalog = new PromptCatalog();
 	}
 

@@ -11,7 +11,7 @@ use InvalidArgumentException;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
+use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesHandlers;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesScene;
 use OCA\Mcp\Mcp\Tools\PreviewsWrites;

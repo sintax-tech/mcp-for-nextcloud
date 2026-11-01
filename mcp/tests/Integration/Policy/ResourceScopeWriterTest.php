@@ -10,7 +10,7 @@ use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\PolicyEventsMapper;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\OAuth\OAuthStore;
+use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\Access\Grants\GrantMatrix;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Access\ResourceScope\NativeResourceEnumerator;

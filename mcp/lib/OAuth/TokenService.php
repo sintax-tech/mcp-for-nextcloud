@@ -30,11 +30,11 @@ use Throwable;
 class TokenService {
 	public const CODE_TTL = 300;
 	public const ACCESS_TTL = 3600;
-	public const REFRESH_TTL = 30 * 86400;
+	public const REFRESH_TTL = \OCA\Mcp\OAuth\Storage\TokenLifetime::REFRESH_TTL;
 
 	public function __construct(
-		private OAuthStore $store,
-		private TokenHasher $hasher,
+		private \OCA\Mcp\OAuth\Storage\OAuthStore $store,
+		private \OCA\Mcp\OAuth\Storage\TokenHasher $hasher,
 		private ITimeFactory $time,
 		private TokenOwnerGate $gate,
 		private PolicyWriter $writer,
@@ -112,7 +112,7 @@ class TokenService {
 				|| $row['client_id'] !== $get('client_id') || $row['redirect_uri'] !== $get('redirect_uri')
 				|| !Pkce::verify($get('code_verifier'), (string)$row['code_challenge'])
 				|| ($get('resource') !== '' && !ResourceUrl::sameResource($get('resource'), (string)$row['resource']))
-				|| !CredentialGeneration::live($row, $generations, $state['auth_epoch'])) {
+				|| !\OCA\Mcp\OAuth\Storage\CredentialGeneration::live($row, $generations, $state['auth_epoch'])) {
 				$error = new OAuthException('invalid_grant', 'Invalid authorization code');
 				return;
 			}
@@ -164,7 +164,7 @@ class TokenService {
 				$lost = true;
 				return;
 			}
-			if (!CredentialGeneration::live($current, $generations, $state['auth_epoch'])) {
+			if (!\OCA\Mcp\OAuth\Storage\CredentialGeneration::live($current, $generations, $state['auth_epoch'])) {
 				$revoked = true;
 				return;
 			}
@@ -272,7 +272,7 @@ class TokenService {
 			$this->writer->runCredential($uid, fn () => null, function ($snapshot, array $state, array $generations) use ($hash, $clientId, $uid): bool {
 				$spent = $this->store->findSpent($hash);
 				if ($spent !== null && $spent['client_id'] === $clientId && (int)$spent['expires_at'] >= $this->time->getTime()
-					&& CredentialGeneration::live($spent, $generations, $state['auth_epoch'])) {
+					&& \OCA\Mcp\OAuth\Storage\CredentialGeneration::live($spent, $generations, $state['auth_epoch'])) {
 					$this->store->deleteForOwnerAndClient($uid, $clientId);
 				}
 				return false;

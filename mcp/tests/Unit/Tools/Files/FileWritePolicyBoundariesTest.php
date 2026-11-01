@@ -11,7 +11,7 @@ use ReflectionProperty;
 use OCA\Mcp\Checkout\CheckoutToken;
 use OCA\Mcp\Checkout\CheckoutTokenStore;
 use OCA\Mcp\Controller\CheckoutController;
-use OCA\Mcp\OAuth\TokenHasher;
+use OCA\Mcp\OAuth\Storage\TokenHasher;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture;
 use OCA\Mcp\Access\FileTypes\FileTypeDenied;

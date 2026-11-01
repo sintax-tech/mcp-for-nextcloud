@@ -15,8 +15,7 @@ declare(strict_types=1);
  * step; a row only names it.
  */
 
-use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\OAuth\TokenHasher;
+use OCA\Mcp\Tests\Integration\Compat\LegacyOAuthNames;
 use OCP\IDBConnection;
 use OCP\Server;
 
@@ -33,8 +32,8 @@ $uid = 'mcp-it-legacy';
 $client = 'https://mcp-it.example/client.json';
 $redirect = 'https://mcp-it.example/callback';
 $resource = 'https://mcp-it.example/index.php/apps/mcp/mcp';
-$hasher = Server::get(TokenHasher::class);
-$store = Server::get(OAuthStore::class);
+$hasher = Server::get(LegacyOAuthNames::hasher());
+$store = Server::get(LegacyOAuthNames::store());
 $now = time();
 // Long enough for the rest of the job; the baseline's own TTLs only apply to what it issues itself.
 $ttl = 6 * 3600;

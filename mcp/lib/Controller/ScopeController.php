@@ -10,7 +10,7 @@ namespace OCA\Mcp\Controller;
 use InvalidArgumentException;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use OCA\Mcp\Access\Policy\MissingRevision;
 use OCA\Mcp\Access\Policy\PolicyConflict;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;

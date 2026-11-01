@@ -178,7 +178,7 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 				$this->createMock(\OCP\IURLGenerator::class),
 				$this->config->mock($this),
 				$this->time,
-				new \OCA\Mcp\OAuth\TokenHasher($this->config->mock($this)),
+				new \OCA\Mcp\OAuth\Storage\TokenHasher($this->config->mock($this)),
 				$this->store,
 				$this->apps,
 				$this->users,

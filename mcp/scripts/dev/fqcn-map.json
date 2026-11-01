@@ -2,6 +2,14 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Platform/Sharing/TalkShareIds.php","fqcn":"OCA\\Mcp\\Platform\\Sharing\\TalkShareIds","target":"stays","owner":"Platform","ticket":null},
+		{"path":"lib/Platform/FileAccess/WriteVisibility.php","fqcn":"OCA\\Mcp\\Platform\\FileAccess\\WriteVisibility","target":"stays","owner":"Platform","ticket":null},
+		{"path":"lib/OAuth/Storage/TokenLifetime.php","fqcn":"OCA\\Mcp\\OAuth\\Storage\\TokenLifetime","target":"stays","owner":"OAuth","ticket":null},
+		{"path":"lib/Modules/Calendar/Presentation/CalendarSchema.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\Presentation\\CalendarSchema","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Modules/Calendar/NativeCalendarsAdapter.php","fqcn":"OCA\\Mcp\\Modules\\Calendar\\NativeCalendarsAdapter","target":"stays","owner":"Modules\\Calendar","ticket":null},
+		{"path":"lib/Mcp/Tools/Schema/SchemaBuilder.php","fqcn":"OCA\\Mcp\\Mcp\\Tools\\Schema\\SchemaBuilder","target":"stays","owner":"Mcp","ticket":null},
+		{"path":"lib/Access/ResourceScope/NativeCalendars.php","fqcn":"OCA\\Mcp\\Access\\ResourceScope\\NativeCalendars","target":"stays","owner":"Access","ticket":null},
+		{"path":"lib/Access/ResourceScope/NativeCalendar.php","fqcn":"OCA\\Mcp\\Access\\ResourceScope\\NativeCalendar","target":"stays","owner":"Access","ticket":null},
 		{"path":"lib/Access/Grants/GrantCatalog.php","fqcn":"OCA\\Mcp\\Access\\Grants\\GrantCatalog","target":"stays","owner":"Access","ticket":null},
 		{"path":"lib/AppInfo/Application.php","fqcn":"OCA\\Mcp\\AppInfo\\Application","target":"stays","owner":"AppInfo","ticket":null},
 		{"path":"lib/BackgroundJob/PolicyCleanupJob.php","fqcn":"OCA\\Mcp\\BackgroundJob\\PolicyCleanupJob","target":"stays","owner":"BackgroundJob","ticket":null},
@@ -780,6 +788,13 @@
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Scope\\FilesScopeTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\ResourceScope\\FilesScopeTest"},
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Scope\\ScopeBoundariesTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\ResourceScope\\ScopeBoundariesTest"},
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Policy\\UnknownGroupGrantsControllerTest","target":"OCA\\Mcp\\Tests\\Unit\\Controller\\UnknownGroupGrantsControllerTest"},
-		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Scope\\ScopeRoutesTest","target":"OCA\\Mcp\\Tests\\Unit\\Controller\\ScopeRoutesTest"}
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Scope\\ScopeRoutesTest","target":"OCA\\Mcp\\Tests\\Unit\\Controller\\ScopeRoutesTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Policy\\DecimalCounterTest","target":"OCA\\Mcp\\Tests\\Unit\\Platform\\Numbers\\DecimalCounterTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\Common\\LockAwareWriteTest","target":"OCA\\Mcp\\Tests\\Unit\\Platform\\FileAccess\\LockAwareWriteTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\BackupSettingsTest","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Settings\\BackupSettingsTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\Common\\FakeLockManager","target":"OCA\\Mcp\\Tests\\Unit\\Platform\\FileAccess\\FakeLockManager"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\Common\\FakeLock","target":"OCA\\Mcp\\Tests\\Unit\\Platform\\FileAccess\\FakeLock"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\OAuth\\OAuthStoreTest","target":"OCA\\Mcp\\Tests\\Unit\\OAuth\\Storage\\OAuthStoreTest"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\OAuth\\InMemoryOAuthStore","target":"OCA\\Mcp\\Tests\\Unit\\OAuth\\Storage\\InMemoryOAuthStore"}
 	]
 }

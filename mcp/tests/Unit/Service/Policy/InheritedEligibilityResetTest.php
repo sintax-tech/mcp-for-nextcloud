@@ -6,6 +6,8 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service\Policy;
 
+use OCA\Mcp\Tests\Unit\Access\Policy\GroupLifecycleDatabase;
+
 use OCA\Mcp\Db\AuthUsersMapper;
 use OCA\Mcp\Db\GroupLifeMapper;
 use OCA\Mcp\Db\PolicyEventsMapper;

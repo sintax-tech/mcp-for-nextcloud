@@ -193,7 +193,7 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 			$guard,
 			$this->apps,
 			$ftsManager,
-			fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this),
+			fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this),
 		);
 	}
 }

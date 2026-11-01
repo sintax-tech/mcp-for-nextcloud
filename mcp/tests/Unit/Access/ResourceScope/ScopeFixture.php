@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
-namespace OCA\Mcp\Tests\Unit\Service\Scope;
+namespace OCA\Mcp\Tests\Unit\Access\ResourceScope;
 
 use OCA\Mcp\Db\PolicyEventsMapper;
 use OCA\Mcp\Db\PolicyStateMapper;

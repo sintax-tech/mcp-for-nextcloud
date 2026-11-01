@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Access\ResourceScope;
 
-use OCA\Mcp\Tests\Unit\Service\Scope\ScopeFixture;
+use OCA\Mcp\Tests\Unit\Access\ResourceScope\ScopeFixture;
 
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\ResourceScope\NativeResourceEnumerator;

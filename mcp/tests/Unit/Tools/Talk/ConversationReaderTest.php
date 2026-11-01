@@ -33,7 +33,7 @@ class ConversationReaderTest extends TestCase {
 		$this->resolver = $this->createMock(ConversationResolver::class);
 		$this->userManager = $this->createMock(IUserManager::class);
 		// The real ActorNames over the mocked accounts: the reader still owns the reading, not the naming rule.
-		$this->reader = new ConversationReader($this->talkServices, $this->resolver, new ActorNames($this->userManager), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+		$this->reader = new ConversationReader($this->talkServices, $this->resolver, new ActorNames($this->userManager), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
 	}
 
 	public function testLimitZeroIsAnArgumentErrorBeforeAnyTalkCall(): void {
@@ -230,7 +230,7 @@ class ConversationReaderTest extends TestCase {
 		$share->method('getNode')->willReturn($node);
 		$shares = $this->createMock(\OCP\Share\IManager::class);
 		$shares->method('getShareById')->with('ocRoomShare:12', 'alice')->willReturn($share);
-		$access = new \OCA\Mcp\Tools\Talk\AttachmentAccess($shares, \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::openGuard($this), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+		$access = new \OCA\Mcp\Tools\Talk\AttachmentAccess($shares, \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::openGuard($this), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
 
 		$found = $access->requireRoomShareOf(new \OCA\Mcp\Tools\Talk\Conversation(new ReaderRoomStub('abcd'), new ReaderParticipantStub()), 'alice', $attachmentId);
 

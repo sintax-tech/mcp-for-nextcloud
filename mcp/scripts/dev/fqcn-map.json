@@ -753,6 +753,13 @@
 	],
 	"tests": [
 		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\ServerInfoTest","target":"OCA\\Mcp\\Tests\\Unit\\Mcp\\Protocol\\ServerInfoTest"},
-		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\Common\\FileAccessSources","target":"OCA\\Mcp\\Tests\\Unit\\Platform\\FileAccess\\FileAccessSources"}
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\Common\\FileAccessSources","target":"OCA\\Mcp\\Tests\\Unit\\Platform\\FileAccess\\FileAccessSources"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Admin\\MatrixFixture","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Grants\\MatrixFixture"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Scope\\ScopeFixture","target":"OCA\\Mcp\\Tests\\Unit\\Access\\ResourceScope\\ScopeFixture"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Scope\\FilesScopes","target":"OCA\\Mcp\\Tests\\Unit\\Access\\ResourceScope\\FilesScopes"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Service\\Policy\\GroupLifecycleDatabase","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Policy\\GroupLifecycleDatabase"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\Common\\OutputReferenceFilters","target":"OCA\\Mcp\\Tests\\Unit\\Access\\Visibility\\OutputReferenceFilters"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\Common\\UnrestrictedFileReferenceScope","target":"OCA\\Mcp\\Tests\\Unit\\Access\\ResourceScope\\UnrestrictedFileReferenceScope"},
+		{"fqcn":"OCA\\Mcp\\Tests\\Unit\\Tools\\FileTypePolicyFixture","target":"OCA\\Mcp\\Tests\\Unit\\Access\\FileTypes\\FileTypePolicyFixture"}
 	]
 }

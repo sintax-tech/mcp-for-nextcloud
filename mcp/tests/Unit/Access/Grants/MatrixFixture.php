@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tests\Unit\Admin;
+namespace OCA\Mcp\Tests\Unit\Access\Grants;
 
 use OCA\Mcp\Access\Grants\GrantMatrix;
 use OCA\Mcp\Access\Grants\GrantPolicy;

@@ -6,6 +6,8 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service\Scope;
 
+use OCA\Mcp\Tests\Unit\Access\ResourceScope\ScopeFixture;
+
 use OCA\Mcp\Db\PolicyEventsMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
 use OCA\Mcp\Service\Policy\DecimalCounter;

@@ -13,7 +13,7 @@ use OCA\Mcp\Checkout\CheckoutTokenStore;
 use OCA\Mcp\Controller\CheckoutController;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Access\Grants\GrantPolicy;
-use OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture;
+use OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture;
 use OCA\Mcp\Access\FileTypes\FileTypeDenied;
 use OCA\Mcp\Tools\Files\FileCreation;
 use OCA\Mcp\Tools\Files\FilesModule;

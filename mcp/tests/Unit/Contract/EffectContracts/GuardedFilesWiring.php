@@ -21,7 +21,7 @@ use OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tests\Unit\Tools\Files\AbsentFileTypePolicy;
 use OCA\Mcp\Tests\Unit\Tools\Files\FakeFilenameValidator;
-use OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture;
+use OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\ActorRoot;

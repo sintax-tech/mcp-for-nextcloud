@@ -6,6 +6,8 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service\Scope;
 
+use OCA\Mcp\Tests\Unit\Access\ResourceScope\ScopeFixture;
+
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Access\Policy\ScopeInactive;

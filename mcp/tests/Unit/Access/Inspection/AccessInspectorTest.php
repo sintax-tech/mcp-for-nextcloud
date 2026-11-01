@@ -12,7 +12,7 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Access\Inspection\CalendarAccessExplainer;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
-use OCA\Mcp\Tests\Unit\Service\Scope\ScopeFixture;
+use OCA\Mcp\Tests\Unit\Access\ResourceScope\ScopeFixture;
 use OCA\Mcp\Tools\Calendar\CalendarAccess;
 use OCP\Files\IRootFolder;
 use OCP\Files\NotFoundException;

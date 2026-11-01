@@ -11,7 +11,7 @@ use OCA\Mcp\Controller\ScopeController;
 use OCA\Mcp\Db\ResourceScopeMapper;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Access\ResourceScope\ScopeActivation;
-use OCA\Mcp\Tests\Unit\Service\Scope\ScopeFixture;
+use OCA\Mcp\Tests\Unit\Access\ResourceScope\ScopeFixture;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IRequest;
 use OCP\IUserSession;

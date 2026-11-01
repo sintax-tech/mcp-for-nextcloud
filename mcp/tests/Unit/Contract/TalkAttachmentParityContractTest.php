@@ -11,7 +11,7 @@ use DateTime;
 use DateTimeImmutable;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters;
+use OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
 use OCA\Mcp\Tools\Talk\ActorNames;
@@ -262,7 +262,7 @@ final class TalkAttachmentParityContractTest extends TestCase {
 	public function testAFileOnlyOutsideTheFilesScopeAnswersAsAMissingAttachment(): void {
 		$this->given(['/alice/files/Docs/plan.pdf']);
 		$selected = [(string)$this->caller->nodes['/alice/files/Secret']['id']];
-		$this->scope = new \OCA\Mcp\Access\ResourceScope\FilesReferenceScope(\OCA\Mcp\Tests\Unit\Service\Scope\FilesScopes::over(
+		$this->scope = new \OCA\Mcp\Access\ResourceScope\FilesReferenceScope(\OCA\Mcp\Tests\Unit\Access\ResourceScope\FilesScopes::over(
 			$this, $this->guard, $this->caller->filesystemRoot(), static fn (): array => $selected));
 		$shares = $this->shares();
 
@@ -284,7 +284,7 @@ final class TalkAttachmentParityContractTest extends TestCase {
 		self::assertSame([], $this->published, 'nothing is published');
 
 		$selected = [(string)$this->caller->nodes['/alice/files/Docs']['id']];
-		$this->scope = new \OCA\Mcp\Access\ResourceScope\FilesReferenceScope(\OCA\Mcp\Tests\Unit\Service\Scope\FilesScopes::over(
+		$this->scope = new \OCA\Mcp\Access\ResourceScope\FilesReferenceScope(\OCA\Mcp\Tests\Unit\Access\ResourceScope\FilesScopes::over(
 			$this, $this->guard, $this->caller->filesystemRoot(), static fn (): array => $selected));
 		self::assertSame(self::SHARE, $this->readAttachmentId($shares, self::SHARE), 'inside the scope it reads as before');
 	}
@@ -334,7 +334,7 @@ final class TalkAttachmentParityContractTest extends TestCase {
 		}
 		$readable = true;
 		$selected = [(string)$this->caller->addFolder('/alice/files/Projects')];
-		$this->scope = new \OCA\Mcp\Access\ResourceScope\FilesReferenceScope(\OCA\Mcp\Tests\Unit\Service\Scope\FilesScopes::over(
+		$this->scope = new \OCA\Mcp\Access\ResourceScope\FilesReferenceScope(\OCA\Mcp\Tests\Unit\Access\ResourceScope\FilesScopes::over(
 			$this, $this->guard, $this->caller->filesystemRoot(), static function () use (&$readable, $selected): array|false {
 				return $readable ? $selected : false;
 			}));

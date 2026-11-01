@@ -21,7 +21,7 @@ use OCA\Mcp\Access\Policy\PolicyOperationContext;
 use OCA\Mcp\Access\Policy\PolicyResolver;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
-use OCA\Mcp\Tests\Unit\Service\Policy\GroupLifecycleDatabase;
+use OCA\Mcp\Tests\Unit\Access\Policy\GroupLifecycleDatabase;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Group\Events\BeforeGroupCreatedEvent;
 use OCP\Group\Events\BeforeGroupDeletedEvent;

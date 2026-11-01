@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tests\Unit\Tools\Common;
+namespace OCA\Mcp\Tests\Unit\Access\ResourceScope;
 
 use OCA\Mcp\Access\ResourceScope\FileReferenceScope;
 use OCP\Files\Node;

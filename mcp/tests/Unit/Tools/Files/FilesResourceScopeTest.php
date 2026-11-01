@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Files;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
-use OCA\Mcp\Tests\Unit\Service\Scope\FilesScopes;
+use OCA\Mcp\Tests\Unit\Access\ResourceScope\FilesScopes;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

@@ -7,6 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Admin;
 
+use OCA\Mcp\Tests\Unit\Access\Grants\MatrixFixture;
+
 use OCA\Mcp\Controller\GrantsController;
 use OCA\Mcp\OAuth\ClientMetadataFetcher;
 use OCA\Mcp\OAuth\CustomClient;

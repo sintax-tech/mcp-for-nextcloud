@@ -58,7 +58,7 @@ final class TasksScopeTest extends TestCase {
 		$time->method('now')->willReturn(new DateTimeImmutable('2026-10-01T12:00:00Z'));
 		$this->module = new TasksModule(ScopeStub::access($this->store, $this->scope), $this->store, $tasks, $this->dav,
 			new TaskData(), new SharedGuard($this->createMock(IUserManager::class)), new TrashPolicy($config), $time,
-			\OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+			\OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
 	}
 
 	/** @return list<string> paths tasks_list_calendars returns */

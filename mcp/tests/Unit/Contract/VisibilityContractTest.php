@@ -684,7 +684,7 @@ final class VisibilityContractTest extends TestCase {
 		// 25. talk_attach_file
 		$rootFolder = $this->createMock(IRootFolder::class);
 		$rootFolder->method('getUserFolder')->willReturnCallback(fn () => $this->tree->rootFolder());
-		$resolver = new UserFileResolver($rootFolder, $this->guard, \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+		$resolver = new UserFileResolver($rootFolder, $this->guard, \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
 		foreach (['/secret_direct.txt', '/SecretFolder/secret_ancestral.txt'] as $p) {
 			try {
 				$resolver->resolveShareableFile('alice', $p);
@@ -710,7 +710,7 @@ final class VisibilityContractTest extends TestCase {
 
 			$conv = new Conversation(new ContractTalkRoomStub('token123'), new ContractTalkParticipantStub());
 
-			$attachmentAccess = new AttachmentAccess($shareManager, $this->guard, \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+			$attachmentAccess = new AttachmentAccess($shareManager, $this->guard, \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
 
 			try {
 				$attachmentAccess->requireRoomShareOf($conv, 'alice', 1);

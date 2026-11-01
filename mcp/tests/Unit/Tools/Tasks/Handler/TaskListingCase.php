@@ -97,7 +97,7 @@ abstract class TaskListingCase extends TestCase {
 			new SharedGuard($this->createMock(IUserManager::class)),
 			new TrashPolicy($config),
 			$time,
-			\OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this),
+			\OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this),
 			null,
 			$locks
 		);

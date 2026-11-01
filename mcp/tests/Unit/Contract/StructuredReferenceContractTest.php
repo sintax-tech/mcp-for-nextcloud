@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Contract;
 use DateTimeImmutable;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters;
+use OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
 use OCA\Mcp\Tools\Calendar\CalendarDav;
@@ -38,7 +38,7 @@ use OCP\Share\IShare;
 use OCP\SystemTag\ISystemTagObjectMapper;
 use PHPUnit\Framework\Attributes\DataProvider;
 use OCA\Mcp\Access\ResourceScope\FilesReferenceScope;
-use OCA\Mcp\Tests\Unit\Service\Scope\FilesScopes;
+use OCA\Mcp\Tests\Unit\Access\ResourceScope\FilesScopes;
 use PHPUnit\Framework\TestCase;
 use Sabre\VObject\Reader;
 

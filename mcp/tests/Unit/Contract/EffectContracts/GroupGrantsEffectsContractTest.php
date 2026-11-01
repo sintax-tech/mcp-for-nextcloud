@@ -16,7 +16,7 @@ use OCA\Mcp\Access\Policy\GroupGrantsService;
 use OCA\Mcp\Access\Policy\GroupSourceClassifier;
 use OCA\Mcp\Access\Policy\PolicyOperationContext;
 use OCA\Mcp\Access\Policy\PolicyResolver;
-use OCA\Mcp\Tests\Unit\Service\Policy\GroupLifecycleDatabase;
+use OCA\Mcp\Tests\Unit\Access\Policy\GroupLifecycleDatabase;
 use OCP\IConfig;
 use OCP\IRequest;
 use OCP\IUser;

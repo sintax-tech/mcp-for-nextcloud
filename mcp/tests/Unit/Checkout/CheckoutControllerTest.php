@@ -175,7 +175,7 @@ final class CheckoutControllerTest extends TestCase {
 			$this->temp, $this->time, $this->policy, $this->store, $this->hasher,
 			new CheckoutService($urls, $config, $this->time, $this->hasher, $this->store, $this->apps, $this->users), $backup,
 			new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class),
-			$l10n, $this->users, locks: $this->locks->service($this), guests: $this->guests(), fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this));
+			$l10n, $this->users, locks: $this->locks->service($this), guests: $this->guests(), fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this));
 	}
 
 	/** @return \OCA\Mcp\Access\Guests\GuestRestrictions|null a double answering {@see self::$guestAllowed}, recording when it ran */
@@ -895,7 +895,7 @@ final class CheckoutControllerTest extends TestCase {
 			$this->temp, $this->time, $this->policy, $this->store, $this->hasher,
 			new CheckoutService($this->createMock(IURLGenerator::class), $this->config->mock($this), $this->time, $this->hasher, $this->store, $this->apps, $this->users),
 			$backup, new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class),
-			null, $this->users, $guard, fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this));
+			null, $this->users, $guard, fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this));
 		$controller->route = ['token' => self::TOKEN];
 
 		$controller->staged = 'new content';
@@ -940,7 +940,7 @@ final class CheckoutControllerTest extends TestCase {
 			$this->temp, $this->time, $this->policy, $this->store, $this->hasher,
 			new CheckoutService($this->createMock(IURLGenerator::class), $this->config->mock($this), $this->time, $this->hasher, $this->store, $this->apps, $this->users),
 			new FileBackup($this->apps, $this->users, $this->time, $this->config->mock($this)), new SharedWriteGuard($access), $access,
-			$this->createMock(LoggerInterface::class), null, $this->users, $guard, locks: $this->locks->service($this), fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this));
+			$this->createMock(LoggerInterface::class), null, $this->users, $guard, locks: $this->locks->service($this), fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this));
 		$controller->route = ['token' => self::TOKEN];
 		$controller->staged = 'new content';
 		$this->headers['Content-Length'] = '11';

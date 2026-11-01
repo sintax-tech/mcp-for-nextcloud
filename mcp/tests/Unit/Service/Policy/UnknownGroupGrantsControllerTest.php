@@ -6,6 +6,8 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service\Policy;
 
+use OCA\Mcp\Tests\Unit\Access\Policy\GroupLifecycleDatabase;
+
 use OCA\Mcp\Controller\UnknownGroupGrantsController;
 use OCA\Mcp\Db\GroupGrantRows;
 use OCA\Mcp\Access\Policy\UnknownGroupGrants;

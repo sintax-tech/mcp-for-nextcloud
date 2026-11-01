@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
-namespace OCA\Mcp\Tests\Unit\Service\Scope;
+namespace OCA\Mcp\Tests\Unit\Access\ResourceScope;
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 
 /**
  * The real FilesScope over a policy double whose Files scope a test sets: the items of the operation's snapshot, read
- * at call time. The end-to-end path through the real writer and resolution core is {@see FilesScopeActivationTest}.
+ * at call time. The end-to-end path through the real writer and resolution core is {@see \OCA\Mcp\Tests\Unit\Service\Scope\FilesScopeActivationTest}.
  */
 final class FilesScopes {
 	/**

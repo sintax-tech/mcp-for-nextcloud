@@ -670,7 +670,7 @@ final class ResourceRegistryTest extends TestCase {
 	public function testFilesResourcesFollowTheFilesScopeAndNotesDoNot(): void {
 		$items = [(string)$this->tree->addFolder('/alice/files/Projects')];
 		$plain = $this->openGuard();
-		$scope = \OCA\Mcp\Tests\Unit\Service\Scope\FilesScopes::over($this, $plain, $this->tree->filesystemRoot(),
+		$scope = \OCA\Mcp\Tests\Unit\Access\ResourceScope\FilesScopes::over($this, $plain, $this->tree->filesystemRoot(),
 			static function () use (&$items): array|false { return $items; });
 		$files = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class),
 			$this->tree->filesystemRoot(), null, null, null, $scope);

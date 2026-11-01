@@ -16,7 +16,7 @@ use OCA\Mcp\Tests\Unit\InMemoryLocks;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarDav;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarStore;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
-use OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters;
+use OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\TrashPolicy;

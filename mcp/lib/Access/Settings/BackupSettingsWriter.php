@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Service;
+namespace OCA\Mcp\Access\Settings;
 
 use OCA\Mcp\Platform\Backups\{BackupCopies, BackupFolderName, BackupLocation};
 use OCA\Mcp\Access\Policy\PolicyWriter;

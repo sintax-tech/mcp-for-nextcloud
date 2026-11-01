@@ -5,12 +5,12 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tests\Unit\Service;
+namespace OCA\Mcp\Tests\Unit\Access\Settings;
 
 use OCA\Mcp\Db;
 use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Platform\Backups\BackupCopies;
-use OCA\Mcp\Service\BackupSettingsWriter;
+use OCA\Mcp\Access\Settings\BackupSettingsWriter;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Access\Policy\PolicyEventProcessor;
 use OCA\Mcp\Access\Policy\PolicyConflict;

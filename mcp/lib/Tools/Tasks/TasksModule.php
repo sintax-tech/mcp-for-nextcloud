@@ -16,7 +16,7 @@ use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCA\Mcp\Tools\Calendar\TrashPolicy;
 use OCA\Mcp\Access\Visibility\OutputReferenceFilter;
-use OCA\Mcp\Tools\Dav\CollectionSchema as Schema;
+use OCA\Mcp\Mcp\Tools\Schema\DavCollectionSchema as Schema;
 use OCA\Mcp\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Tools\Tasks\Handler\CreateTaskHandler;

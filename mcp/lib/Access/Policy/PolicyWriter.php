@@ -6,7 +6,7 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Access\Policy;
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use Closure;
 use OCA\Mcp\Db\AuthUsersMapper;
 use OCA\Mcp\Db\GroupGrantsMapper;

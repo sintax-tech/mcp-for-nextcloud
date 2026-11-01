@@ -13,7 +13,7 @@ use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
-use OCA\Mcp\Tools\Common\LockAwareWrite;
+use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Tools\Notes\Handler\CreateNoteHandler;
 use OCA\Mcp\Tools\Notes\Handler\EditNoteHandler;

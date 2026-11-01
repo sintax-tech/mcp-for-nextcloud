@@ -14,7 +14,7 @@ use OCA\Mcp\Migration\Version001100Date20261015010000;
 use OCA\Mcp\Platform\Backups\BackupCopies;
 use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Platform\Backups\BackupSettingsDocument;
-use OCA\Mcp\Service\BackupSettingsWriter;
+use OCA\Mcp\Access\Settings\BackupSettingsWriter;
 use OCA\Mcp\Access\Policy\PolicyEventProcessor;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;

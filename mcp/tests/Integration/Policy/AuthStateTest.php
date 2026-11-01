@@ -39,7 +39,7 @@ final class AuthStateTest extends IntegrationTestCase {
 		}
 		$qb = $db->getQueryBuilder();
 		$qb->delete('mcp_group_life')->where($qb->expr()->eq('group_key', $qb->createNamedParameter(IdentityKey::group($this->gid))))->executeStatement();
-		Server::get(OAuthStore::class)->deleteUpToGeneration($this->uid, \OCA\Mcp\Service\Policy\DecimalCounter::MAX);
+		Server::get(OAuthStore::class)->deleteUpToGeneration($this->uid, \OCA\Mcp\Platform\Numbers\DecimalCounter::MAX);
 		parent::tearDown();
 	}
 

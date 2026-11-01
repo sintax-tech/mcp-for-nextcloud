@@ -151,7 +151,7 @@ final class DeleteSharingTest extends ExclusionTestCase {
 	public function testHistoricalOwnerReservationRefusesAlias(): void {
 		$config = Server::get(\OCP\IAppConfig::class);
 		$before = Server::get(\OCA\Mcp\Platform\Backups\BackupSettingsDocument::class)->read();
-		$writer = Server::get(\OCA\Mcp\Service\BackupSettingsWriter::class);
+		$writer = Server::get(\OCA\Mcp\Access\Settings\BackupSettingsWriter::class);
 		$state = Server::get(\OCA\Mcp\Db\PolicyStateMapper::class);
 		$name = 'FD3 Café ' . $this->run;
 		try {

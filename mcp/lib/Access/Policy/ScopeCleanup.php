@@ -6,7 +6,7 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Access\Policy;
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\ResourceScopeMapper;
 use OCP\IAppConfig;

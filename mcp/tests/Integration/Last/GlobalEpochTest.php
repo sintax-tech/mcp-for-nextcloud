@@ -21,7 +21,7 @@ use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\OAuth\TokenOwnerGate;
 use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Access\Grants\GrantPolicy;
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use OCA\Mcp\Access\Policy\PolicyEventProcessor;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;

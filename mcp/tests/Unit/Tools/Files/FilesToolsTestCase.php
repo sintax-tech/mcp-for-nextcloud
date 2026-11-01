@@ -11,7 +11,7 @@ use OCA\Mcp\Checkout\CheckoutTokenStore;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Tests\Unit\Checkout\InMemoryCheckoutTokenStore;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager;
+use OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLockManager;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;

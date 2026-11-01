@@ -38,7 +38,7 @@ final class LegacyCredentialsTest extends IntegrationTestCase {
 
 	protected function tearDown(): void {
 		if ($this->legacy !== null) {
-			Server::get(OAuthStore::class)->deleteUpToGeneration(Fixtures::LEGACY, \OCA\Mcp\Service\Policy\DecimalCounter::MAX);
+			Server::get(OAuthStore::class)->deleteUpToGeneration(Fixtures::LEGACY, \OCA\Mcp\Platform\Numbers\DecimalCounter::MAX);
 			$config = Server::get(IConfig::class);
 			foreach ([GrantPolicy::ELIGIBLE_KEY, GrantPolicy::CONNECTED_KEY] as $key) {
 				$config->deleteUserValue(Fixtures::LEGACY, 'mcp', $key);

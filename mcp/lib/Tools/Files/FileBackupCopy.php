@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
-use OCA\Mcp\Tools\Common\LockAwareWrite;
+use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\LockMessages;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

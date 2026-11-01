@@ -5,13 +5,13 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tests\Unit\Tools\Common;
+namespace OCA\Mcp\Tests\Unit\Platform\FileAccess;
 
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Tools\Common\LockAwareWrite;
+use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\LockMessages;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;

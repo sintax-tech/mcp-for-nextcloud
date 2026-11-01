@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Service\Policy;
+namespace OCA\Mcp\Platform\Numbers;
 
 /** Canonical signed-BIGINT counters, without platform-size casts or arithmetic extensions. */
 final class DecimalCounter {

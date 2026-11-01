@@ -9,7 +9,7 @@ namespace OCA\Mcp\Access\ResourceScope;
 
 use InvalidArgumentException;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tools\Calendar\Calendar;

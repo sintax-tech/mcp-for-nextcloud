@@ -512,7 +512,7 @@ class GrantsController extends Controller {
 		if (!is_string($expected)) {
 			throw new InvalidArgumentException('Invalid request');
 		}
-		return \OCA\Mcp\Service\Policy\DecimalCounter::validate($expected);
+		return \OCA\Mcp\Platform\Numbers\DecimalCounter::validate($expected);
 	}
 
 	/**

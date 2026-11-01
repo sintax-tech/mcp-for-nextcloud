@@ -5,11 +5,11 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tests\Unit\Tools\Common;
+namespace OCA\Mcp\Tests\Unit\Platform\FileAccess;
 
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
-use OCA\Mcp\Tools\Common\LockAwareWrite;
+use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\Lock\ILock;

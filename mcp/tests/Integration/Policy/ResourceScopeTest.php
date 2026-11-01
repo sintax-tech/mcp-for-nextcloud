@@ -8,7 +8,7 @@ namespace OCA\Mcp\Tests\Integration\Policy;
 
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\Server;

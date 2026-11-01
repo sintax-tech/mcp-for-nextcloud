@@ -15,7 +15,7 @@ use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\RecheckMapper;
 use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\Access\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use OCA\Mcp\Access\Policy\GroupLifecycle;
 use OCA\Mcp\Access\Policy\GroupSourceClassifier;
 use OCA\Mcp\Access\Policy\PolicyResolver;

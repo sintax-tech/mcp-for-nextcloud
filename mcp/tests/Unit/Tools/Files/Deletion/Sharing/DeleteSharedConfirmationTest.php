@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files\Deletion\Sharing;
 
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
-use OCA\Mcp\Tools\Common\LockAwareWrite;
+use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Tools\Files\Deletion\DeleteEligibility;
 use OCA\Mcp\Tools\Files\Deletion\DeleteTrashVeto;
 use OCA\Mcp\Tools\Files\Deletion\Sharing\DeleteSharedConfirmation;

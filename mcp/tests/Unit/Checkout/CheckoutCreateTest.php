@@ -72,7 +72,7 @@ final class CheckoutCreateTest extends TestCase {
 
 	private FakeTree $tree;
 	/** files_lock behind ILockManager, without any lock until a test puts one. */
-	private \OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager $locks;
+	private \OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLockManager $locks;
 	private InMemoryCheckoutTokenStore $store;
 	private InMemoryConfig $config;
 	private GrantPolicy $policy;
@@ -102,7 +102,7 @@ final class CheckoutCreateTest extends TestCase {
 		$this->session = $this->createMock(IUserSession::class);
 		$this->session->method('getUser')->willReturn(null);
 		$this->filenames = new FakeFilenameValidator();
-		$this->locks = new \OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager();
+		$this->locks = new \OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLockManager();
 		$this->rebuild();
 		$this->stage('PK docx bytes');
 	}
@@ -577,7 +577,7 @@ final class CheckoutCreateTest extends TestCase {
 	public function testATokenLockOnTheNewFileIsALockedRefusal(): void {
 		$this->issue();
 		$this->tree->afterCreate = function (string $path): void {
-			$this->locks->put(new \OCA\Mcp\Tests\Unit\Tools\Common\FakeLock($this->tree->nodes[$path]['id'], \OCP\Files\Lock\ILock::TYPE_TOKEN, 'pedro'));
+			$this->locks->put(new \OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLock($this->tree->nodes[$path]['id'], \OCP\Files\Lock\ILock::TYPE_TOKEN, 'pedro'));
 		};
 		$response = $this->controller->upload();
 		$this->assertSame(423, $response->getStatus());

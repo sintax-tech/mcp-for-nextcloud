@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Common;
+namespace OCA\Mcp\Platform\FileAccess;
 use OCA\Mcp\Platform\FileAccess\{CommonMessages, LockMessages, LockWriteFailure};
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;

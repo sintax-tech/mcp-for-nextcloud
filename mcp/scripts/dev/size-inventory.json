@@ -16,7 +16,7 @@
 		{"fqcn":"OCA\\Mcp\\Tools\\Calendar\\CalendarPlanRenderer","ceiling":541},
 		{"fqcn":"OCA\\Mcp\\Tools\\Calendar\\EmbeddedDavDispatcher","ceiling":317},
 		{"fqcn":"OCA\\Mcp\\Tools\\Calendar\\Scheduling\\PlanWarnings","ceiling":382},
-		{"fqcn":"OCA\\Mcp\\Tools\\Common\\LockAwareWrite","ceiling":436},
+		{"fqcn":"OCA\\Mcp\\Platform\\FileAccess\\LockAwareWrite","ceiling":436},
 		{"fqcn":"OCA\\Mcp\\Tools\\Common\\OutputReferenceFilter","ceiling":441},
 		{"fqcn":"OCA\\Mcp\\Tools\\Contacts\\SystemContacts","ceiling":312},
 		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckGatewayInterface","ceiling":483},

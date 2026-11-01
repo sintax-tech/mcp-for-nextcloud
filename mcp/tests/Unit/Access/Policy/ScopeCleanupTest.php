@@ -11,7 +11,7 @@ use OCA\Mcp\Tests\Unit\Access\ResourceScope\ScopeFixture;
 
 use OCA\Mcp\Db\PolicyEventsMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Policy\DecimalCounter;
+use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Access\Policy\ScopeCleanup;

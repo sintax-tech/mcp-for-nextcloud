@@ -5,12 +5,12 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Dav;
+namespace OCA\Mcp\Mcp\Tools\Schema;
 
 use OCA\Mcp\Tools\Calendar\ToolSchema;
 
 /** Schema fragments shared by the personal DAV collection modules. */
-final class CollectionSchema {
+final class DavCollectionSchema {
 	/**
 	 * Builds a bounded text field using the existing calendar schema helper.
 	 *

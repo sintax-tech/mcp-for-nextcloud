@@ -270,7 +270,7 @@ final class CauseProcessingTest extends TestCase {
 			return false;
 		}, $this->processor->classifier());
 		$this->assertSame($old, $this->authUsers->generations('alice')['revoked_below']);
-		$this->assertSame(1, \OCA\Mcp\Service\Policy\DecimalCounter::compare((string)$issued, $old));
+		$this->assertSame(1, \OCA\Mcp\Platform\Numbers\DecimalCounter::compare((string)$issued, $old));
 		$this->assertSame([], $this->rechecks->causes('alice'));
 		// The After of the consumed cause, a retry and the job: nothing to do, the new generation stays valid.
 		$this->processor->after('alice', IdentityKey::accountCause(), self::gen('acc'));
@@ -292,7 +292,7 @@ final class CauseProcessingTest extends TestCase {
 		$this->assertSame(0, $this->processor->reconcile());
 		$generations = $this->authUsers->generations('alice');
 		$this->assertSame($issued, $generations['issue_seq']);
-		$this->assertSame(1, \OCA\Mcp\Service\Policy\DecimalCounter::compare($issued, $generations['revoked_below']));
+		$this->assertSame(1, \OCA\Mcp\Platform\Numbers\DecimalCounter::compare($issued, $generations['revoked_below']));
 		// T8 (vi): a new native operation after the issuance records a new gen, and that one cuts.
 		$this->record(RecheckMapper::REASON_ACCOUNT, null, self::gen('acc-2'));
 		$this->assertSame(1, $this->processor->reconcile());

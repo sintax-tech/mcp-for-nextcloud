@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Tests\Unit\Tools\Common\FakeLock;
-use OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager;
+use OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLock;
+use OCA\Mcp\Tests\Unit\Platform\FileAccess\FakeLockManager;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCP\Files\Lock\ILock;

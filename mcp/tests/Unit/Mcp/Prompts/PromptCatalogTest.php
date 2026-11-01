@@ -160,7 +160,7 @@ final class PromptCatalogTest extends TestCase {
 
 	/** B6: the grant comment names what files.create allows now. */
 	public function testTheCreateGrantIsDescribedAsNewFilesToo(): void {
-		$policy = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Access/Grants/GrantPolicy.php');
+		$policy = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Access/Grants/GrantCatalog.php');
 		$this->assertStringContainsString("'create' adds a folder, a copy or a new file", $policy);
 		$admin = (string)file_get_contents(dirname(__DIR__, 4) . '/js/admin-grants.js');
 		$this->assertStringContainsString("t('mcp', 'Create folders, copies and new files')", $admin);

@@ -2,6 +2,7 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Access/Grants/GrantCatalog.php","fqcn":"OCA\\Mcp\\Access\\Grants\\GrantCatalog","target":"stays","owner":"Access","ticket":null},
 		{"path":"lib/AppInfo/Application.php","fqcn":"OCA\\Mcp\\AppInfo\\Application","target":"stays","owner":"AppInfo","ticket":null},
 		{"path":"lib/BackgroundJob/PolicyCleanupJob.php","fqcn":"OCA\\Mcp\\BackgroundJob\\PolicyCleanupJob","target":"stays","owner":"BackgroundJob","ticket":null},
 		{"path":"lib/BackgroundJob/ReconcileJob.php","fqcn":"OCA\\Mcp\\BackgroundJob\\ReconcileJob","target":"stays","owner":"BackgroundJob","ticket":null},

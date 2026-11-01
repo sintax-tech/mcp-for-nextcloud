@@ -41,7 +41,7 @@ final class RepositoryMoveFixture {
 			$before = CurrentMoveSource::unprepared($before, $old);
 		}
 		$before['scripts/dev/fqcn-map.json'] = json_encode($data, JSON_THROW_ON_ERROR);
-		$entry = array_values(array_filter($data['entries'], static fn (array $e): bool => $e['path'] === $old))[0];
+		$entry = array_values(array_filter($data['entries'], static fn (array $e): bool => $e['path'] === $old && $e['target'] !== FqcnMap::STAYS))[0];
 		$oldClass = $entry['fqcn'];
 		$newClass = $entry['target'];
 		$map = FqcnMap::fromJson($before['scripts/dev/fqcn-map.json']);

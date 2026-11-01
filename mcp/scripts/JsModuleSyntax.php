@@ -12,13 +12,18 @@ namespace OCA\Mcp\Scripts;
  *
  * Fragments are concatenated as classic scripts. `import`, `export` and `require` are refused when they appear as
  * whole words in code. The same words inside a comment or a string are kept, and `exports` is not `export`, so
- * `module.exports` (used by the existing admin scripts so Node tests can load them) passes. A template literal is
- * a string except for each `${…}` interpolation, which is code and is scanned again, including a template nested
- * inside it. An escaped `\`` or `\${` stays inside the literal.
+ * `module.exports` passes. A template literal is a string except for each `${…}` interpolation, which is scanned
+ * as code. Inside that interpolation a `}` ends it only in code: a string, a comment, a nested template and a
+ * regex literal may contain `}` without ending the interpolation. An escaped `\`` or `\${` stays in the literal.
  */
 final class JsModuleSyntax {
 	/** Words that would change the fragment from a classic script into a module or a CommonJS load. */
 	private const WORDS = ['import', 'export', 'require'];
+
+	/** Identifiers after which `/` starts a regex, not a division. */
+	private const REGEX_KEYWORDS = [
+		'return', 'throw', 'case', 'delete', 'void', 'typeof', 'yield', 'await', 'else', 'do', 'in', 'of', 'instanceof',
+	];
 
 	/**
 	 * The first forbidden word in the source, if any.
@@ -39,9 +44,6 @@ final class JsModuleSyntax {
 	/**
 	 * The source with comments and quoted text removed, so a word inside them is not code.
 	 *
-	 * Template interpolations are left in place. A forbidden word only in the literal part of a template is not
-	 * code; the same word inside `${…}` is.
-	 *
 	 * @param string $source the fragment as stored on disk
 	 * @return string the code with comments and strings replaced by spaces
 	 */
@@ -51,7 +53,7 @@ final class JsModuleSyntax {
 	}
 
 	/**
-	 * One code span. Inside a template interpolation the matching `}` ends it.
+	 * One code span. Inside a template interpolation the matching code `}` ends it.
 	 *
 	 * @param string $source the fragment as stored on disk
 	 * @param int $offset current index, advanced to the first character after this span
@@ -62,9 +64,30 @@ final class JsModuleSyntax {
 	private static function span(string $source, int &$offset, int $length, bool $interpolation): string {
 		$out = '';
 		$depth = $interpolation ? 1 : 0;
+		$regexOk = true;
+		$ident = '';
 		while ($offset < $length) {
 			$c = $source[$offset];
+			if (self::isIdent($c)) {
+				$ident .= $c;
+				$out .= $c;
+				$offset++;
+				$regexOk = false;
+				continue;
+			}
+			if ($ident !== '' && in_array($ident, self::REGEX_KEYWORDS, true)) {
+				$regexOk = true;
+			}
+			$ident = '';
 			$next = $offset + 1 < $length ? $source[$offset + 1] : '';
+			if ($c === ' ' || $c === "\t" || $c === "\r" || $c === "\n") {
+				if ($c === "\n") {
+					$regexOk = true;
+				}
+				$out .= $c;
+				$offset++;
+				continue;
+			}
 			if ($c === '/' && $next === '/') {
 				$offset += 2;
 				while ($offset < $length && $source[$offset] !== "\n") {
@@ -82,19 +105,27 @@ final class JsModuleSyntax {
 				$out .= ' ';
 				continue;
 			}
+			if ($c === '/' && $regexOk && self::skipRegex($source, $offset, $length)) {
+				$out .= ' ';
+				$regexOk = false;
+				continue;
+			}
 			if ($c === '"' || $c === "'") {
 				self::skipQuoted($source, $offset, $length, $c);
 				$out .= ' ';
+				$regexOk = false;
 				continue;
 			}
 			if ($c === '`') {
 				$out .= self::template($source, $offset, $length);
+				$regexOk = false;
 				continue;
 			}
 			if ($interpolation && $c === '{') {
 				$depth++;
 				$out .= $c;
 				$offset++;
+				$regexOk = true;
 				continue;
 			}
 			if ($interpolation && $c === '}') {
@@ -104,10 +135,12 @@ final class JsModuleSyntax {
 					break;
 				}
 				$out .= '}';
+				$regexOk = true;
 				continue;
 			}
 			$out .= $c;
 			$offset++;
+			$regexOk = !($c === ')' || $c === ']' || $c === '.');
 		}
 		return $out;
 	}
@@ -144,7 +177,51 @@ final class JsModuleSyntax {
 	}
 
 	/**
-	 * Skips one quoted string, including an escaped quote.
+	 * Consumes one regex literal, including a `}` in the body or in a character class.
+	 *
+	 * @param string $source the fragment as stored on disk
+	 * @param int $offset index of the opening slash; unchanged when this is not a regex
+	 * @param int $length byte length of `$source`
+	 * @return bool true when a regex was consumed
+	 */
+	private static function skipRegex(string $source, int &$offset, int $length): bool {
+		$start = $offset;
+		$offset++;
+		$class = false;
+		while ($offset < $length) {
+			$c = $source[$offset];
+			if ($c === '\\') {
+				$offset += $offset + 1 < $length ? 2 : 1;
+				continue;
+			}
+			if ($c === "\n") {
+				break;
+			}
+			if ($c === '[' && !$class) {
+				$class = true;
+				$offset++;
+				continue;
+			}
+			if ($c === ']' && $class) {
+				$class = false;
+				$offset++;
+				continue;
+			}
+			if ($c === '/' && !$class) {
+				$offset++;
+				while ($offset < $length && ctype_alpha($source[$offset])) {
+					$offset++;
+				}
+				return true;
+			}
+			$offset++;
+		}
+		$offset = $start;
+		return false;
+	}
+
+	/**
+	 * Skips one quoted string, including an escaped quote and a `}` inside it.
 	 *
 	 * @param string $source the fragment as stored on disk
 	 * @param int $offset index of the opening quote, advanced past the closing one
@@ -165,5 +242,13 @@ final class JsModuleSyntax {
 			}
 			$offset++;
 		}
+	}
+
+	/**
+	 * @param string $c one source byte
+	 * @return bool true when it continues a JavaScript identifier
+	 */
+	private static function isIdent(string $c): bool {
+		return $c !== '' && (ctype_alnum($c) || str_contains('$_', $c));
 	}
 }

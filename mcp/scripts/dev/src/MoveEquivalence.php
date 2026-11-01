@@ -26,6 +26,9 @@ final class MoveEquivalence {
 	/** @var array<string,string> old FQCN => new FQCN of every class moved in the range */
 	private array $renames = [];
 
+	/** @var array<string,string> old FQCN => new FQCN of the classes of `lib/` moved in the range */
+	private array $libRenames = [];
+
 	/** @var array<string,string> old path => new path of every moved PHP file */
 	private array $pairs = [];
 
@@ -60,6 +63,8 @@ final class MoveEquivalence {
 		$this->pair($php($deleted), $php($added));
 		$this->collectRenames();
 		$this->problems = [...$this->problems, ...PathRewrites::nonPhp($this->before, $this->after, $this->pairs, $this->renames)];
+		$retired = array_filter($this->libRenames, fn (string $old): bool => !$this->afterIndex->declares($old), ARRAY_FILTER_USE_KEY);
+		$this->problems = [...$this->problems, ...ClassRewrites::stale($this->after, $retired)];
 		$targets = array_combine(array_values($this->pairs), array_values($this->pairs));
 		$normalizeBefore = new TokenNormalizer($this->beforeIndex);
 		$normalizeAfter = new TokenNormalizer($this->afterIndex);
@@ -174,6 +179,9 @@ final class MoveEquivalence {
 					$this->problems[] = "$new: $class became {$to[$k]}, which the FQCN map does not plan";
 				}
 				$this->renames[$class] = $to[$k];
+				if ($inLib) {
+					$this->libRenames[$class] = $to[$k];
+				}
 			}
 		}
 	}

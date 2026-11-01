@@ -22,7 +22,8 @@ declare(strict_types=1);
  * The root of a variable is not traced: rewriting a paired suffix after an unrelated root can be accepted.
  * These cases require runtime tests and human review; no filesystem/data-flow equivalence is implied.
  * Non-PHP tests may only replace whole path tokens using the actual file pairs and whole class names (plain or
- * JSON-escaped) using the class renames of the range; all other bytes must match.
+ * JSON-escaped) using the class renames of the range; all other bytes must match. A non-PHP file that still names
+ * a class of lib/ retired in the range fails, whether it changed or not.
  */
 
 use OCA\Mcp\Scripts\Dev\FqcnMap;

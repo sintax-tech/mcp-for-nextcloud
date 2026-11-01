@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Behavioral tests of js/admin-scope.js and the personal scope block of js/connections.js (issue #4, B7: S13 display, S14), with Node's test runner and a minimal DOM. */
+/** Behavioral tests of src/admin/admin-scope.js and the personal scope block of js/connections.js (issue #4, B7: S13 display, S14), with Node's test runner and a minimal DOM. */
 const { test } = require('node:test')
 const assert = require('node:assert/strict')
 const vm = require('node:vm')
@@ -110,7 +110,7 @@ async function app(handler = () => undefined, options = {}) {
 		confirm: (text) => { confirms.push(text); return options.confirm !== false },
 	}
 	const confirms = []
-	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../js/admin-scope.js'), 'utf8'), context)
+	vm.runInNewContext(require('./AdminManifest.cjs').script('admin-scope.js'), context)
 	const open = async (uid = 'alice') => {
 		ids['mcp-scope-user'].value = uid
 		await ids['mcp-scope-form'].listeners.submit({ preventDefault() {} })

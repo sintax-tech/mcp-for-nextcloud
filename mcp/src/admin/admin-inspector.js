@@ -13,7 +13,7 @@
  * fix it, next to the four general checks. Then one line per module gives the level the person has, where it comes
  * from, the resource scope and what blocks it; the table of every operation stays one click away. An individual value
  * that only repeats what the person inherits is said as the matrix says it ("also set for this person, with the same
- * value"), through the same read-only preview (js/admin-exceptions.js); until that is known it is "set for this person".
+ * value"), through the same read-only preview (src/admin/admin-exceptions.js); until that is known it is "set for this person".
  */
 (function () {
 	'use strict'
@@ -37,7 +37,7 @@
 	let catalog = {}
 	let seq = 0
 	/**
-	 * What each individual value of the person on screen is (js/admin-exceptions.js, the same preview and rule as the
+	 * What each individual value of the person on screen is (src/admin/admin-exceptions.js, the same preview and rule as the
 	 * matrix): per "module/operation", {kind: exception|redundant, after}. Null until known, and when it cannot be read:
 	 * every individual value is then said as set for this person, never as repeating what they inherit.
 	 */
@@ -489,7 +489,7 @@
 		}
 	})
 
-	// The actions menu of a matrix row inspects that user (js/admin-row-actions.js), in the drawer.
+	// The actions menu of a matrix row inspects that user (src/admin/admin-row-actions.js), in the drawer.
 	window.McpInspectorUi = {
 		open(target, trigger) {
 			if (!openDrawer(trigger)) return false

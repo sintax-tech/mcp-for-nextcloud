@@ -4,7 +4,7 @@
  */
 /**
  * Tests of the Forms column of the admin page: GrantPolicy::CATALOG offers Forms reading, results, creating and editing,
- * js/admin-levels.js keeps response reading independent from the writing preset, and every place that
+ * src/admin/admin-levels.js keeps response reading independent from the writing preset, and every place that
  * names a module names Forms.
  */
 const { test } = require('node:test')
@@ -24,7 +24,7 @@ const plain = (value) => JSON.parse(JSON.stringify(value))
 function levels() {
 	const context = { t: (app, text) => text }
 	for (const file of ['admin-levels.js']) {
-		vm.runInNewContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), context)
+		vm.runInNewContext(require('./AdminManifest.cjs').script(file), context)
 	}
 	return context.McpAdminLevels
 }
@@ -56,7 +56,7 @@ test('Forms writing never implicitly grants response reading', () => {
 
 test('every module label map names Forms', () => {
 	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-inspector.js']) {
-		const source = fs.readFileSync(path.join(root, 'js', file), 'utf8')
+		const source = require('./AdminManifest.cjs').script(file)
 		assert.match(source, /forms: t\('mcp', 'Forms'\)/, file)
 	}
 })
@@ -70,7 +70,7 @@ function planner() {
 	const context = { document, t: (app, text) => text }
 	context.window = { McpAdminMatrix: { data: () => ({ catalog: { forms: formsOperations() } }) }, addEventListener() {} }
 	for (const file of ['admin-levels.js', 'admin-level-popover.js']) {
-		vm.runInNewContext(fs.readFileSync(path.join(root, 'js', file), 'utf8'), context)
+		vm.runInNewContext(require('./AdminManifest.cjs').script(file), context)
 	}
 	return { api: context.window.McpLevelPopover, user }
 }
@@ -87,14 +87,14 @@ test('popover commands grant writes without results and grant results only when 
 
 test('results labels use translation in all admin paths and combined presets have explicit names', () => {
 	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-inspector.js']) {
-		const source = fs.readFileSync(path.join(root, 'js', file), 'utf8')
+		const source = require('./AdminManifest.cjs').script(file)
 		assert.match(source, /results: t\('mcp', 'results'\)/, file)
 	}
 	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-level-popover.js', 'admin-inspector.js']) {
-		assert.match(fs.readFileSync(path.join(root, 'js', file), 'utf8'), /forms_write_results: t\('mcp', 'Read and write forms and read responses'\)/)
+		assert.match(require('./AdminManifest.cjs').script(file), /forms_write_results: t\('mcp', 'Read and write forms and read responses'\)/)
 	}
 	const hint = 'Reserved for reading responses allowed by native Forms permissions; starts off'
-	assert.ok(fs.readFileSync(path.join(root, 'js/admin-grants.js'), 'utf8').includes(hint))
+	assert.ok(require('./AdminManifest.cjs').script('admin-grants.js').includes(hint))
 	for (const locale of ['pt_BR', 'es', 'de']) {
 		const translations = JSON.parse(fs.readFileSync(path.join(root, 'l10n', locale + '.json'), 'utf8')).translations
 		assert.notEqual(translations.results, 'results')

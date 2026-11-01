@@ -10,7 +10,7 @@ const vm = require('node:vm')
 const path = require('node:path')
 const root = path.join(__dirname, '../..')
 const context = {}
-vm.runInNewContext(fs.readFileSync(path.join(root, 'js/admin-levels.js'), 'utf8'), context)
+vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), context)
 const levels = context.McpAdminLevels
 
 test('old Full cells do not acquire Delete; a new Full grant includes it explicitly', () => {

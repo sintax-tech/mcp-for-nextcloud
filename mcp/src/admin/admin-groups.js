@@ -331,7 +331,7 @@
 	/** The catalog's modules, without the "Can connect" key. */
 	const modules = () => Object.entries(current.catalog).filter(([module]) => module !== '_system')
 	/**
-	 * The level a set of granted operations makes, with the matrix's tiers (js/admin-levels.js). A group only grants, so an
+	 * The level a set of granted operations makes, with the matrix's tiers (src/admin/admin-levels.js). A group only grants, so an
 	 * operation outside the set is "not granted", never denied.
 	 */
 	function levelIn(grants, module) {

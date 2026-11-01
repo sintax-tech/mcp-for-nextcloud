@@ -14,8 +14,8 @@ use Throwable;
  * Replaces bundle files by writing a temporary sibling and renaming it.
  *
  * The destination is not opened for writing until every temporary file is complete. A failure deletes the
- * temporary files and leaves every destination as it was. Rename is atomic on the same filesystem, which the
- * sibling temporary file guarantees.
+ * temporary files and puts back every destination this call already replaced, so the whole set is published or
+ * none of it is. Rename is atomic on the same filesystem, which the sibling temporary file guarantees.
  */
 final class AtomicReplace {
 	/**
@@ -36,11 +36,17 @@ final class AtomicReplace {
 				}
 				$temps[$path] = self::stage($path, $contents);
 			}
+			$previous = [];
 			foreach ($temps as $path => $temp) {
-				if (!rename($temp, $path)) {
+				$previous[$path] = self::snapshot($path);
+			}
+			$published = [];
+			foreach ($temps as $path => $temp) {
+				if (is_dir($path) || !rename($temp, $path)) {
 					throw new RuntimeException("cannot replace $path");
 				}
 				unset($temps[$path]);
+				$published[] = $path;
 			}
 		} catch (Throwable $error) {
 			foreach ($temps as $temp) {
@@ -48,7 +54,52 @@ final class AtomicReplace {
 					unlink($temp);
 				}
 			}
+			foreach ($published ?? [] as $path) {
+				self::restore($path, $previous[$path] ?? null);
+			}
 			throw $error instanceof RuntimeException ? $error : new RuntimeException($error->getMessage(), 0, $error);
+		}
+	}
+
+	/**
+	 * The bytes to put back if a later rename fails.
+	 *
+	 * A missing path and anything that is not a regular file (a directory blocking the rename) have nothing to
+	 * restore. The file is read before any rename, so a published destination can be returned to these bytes.
+	 *
+	 * @param string $path destination
+	 * @return string|null the previous bytes, or null when there was no file to restore
+	 * @throws RuntimeException when the existing file cannot be read
+	 */
+	private static function snapshot(string $path): ?string {
+		if (!is_file($path)) {
+			return null;
+		}
+		$bytes = file_get_contents($path);
+		if ($bytes === false) {
+			throw new RuntimeException("cannot replace $path");
+		}
+		return $bytes;
+	}
+
+	/**
+	 * Puts one destination back to the bytes it had before this call renamed it.
+	 *
+	 * @param string $path destination already replaced
+	 * @param string|null $bytes previous bytes, or null when the path did not exist
+	 * @return void
+	 * @throws RuntimeException when the previous bytes cannot be written back
+	 */
+	private static function restore(string $path, ?string $bytes): void {
+		if ($bytes === null) {
+			if (is_file($path)) {
+				unlink($path);
+			}
+			return;
+		}
+		$written = file_put_contents($path, $bytes, LOCK_EX);
+		if ($written !== strlen($bytes)) {
+			throw new RuntimeException("cannot replace $path");
 		}
 	}
 

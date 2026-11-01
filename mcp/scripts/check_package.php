@@ -13,6 +13,7 @@ use RuntimeException;
 
 require_once __DIR__ . '/DevelopmentEntries.php';
 require_once __DIR__ . '/AssetBuilder.php';
+require_once __DIR__ . '/PackagedAssets.php';
 
 /**
  * Inspects an app archive before it ships: `php scripts/check_package.php <archive.tar.gz> [sources...]`.
@@ -29,7 +30,9 @@ require_once __DIR__ . '/AssetBuilder.php';
  * - a script or style referenced with `Util::addScript/addStyle('mcp', X)` in the .php files of the sources
  *   (`templates lib` by default) that is not packaged as `mcp/js/X.js` or `mcp/css/X.css`;
  * - an orphan `src/` script, a manifest entry that is not a file inside `src/`, or any other refusal of
- *   {@see AssetBuilder}. The required manifests are {@see AssetTargets::REQUIRED}, not the files found on disk.
+ *   {@see AssetBuilder}. The required manifests are {@see AssetTargets::REQUIRED}, not the files found on disk;
+ * - a file member whose name is repeated, a `mcp/src/` entry, or a bundle whose bytes are not the manifest
+ *   build ({@see PackagedAssets}). The tree being packaged cannot hide a different file inside the archive.
  *
  * The archive is read with a minimal tar reader of its own instead of PharData. PharData normalizes the
  * archive: it consumes the pax extended headers without exposing them or their typeflag, so the check that
@@ -104,7 +107,11 @@ final class PackageCheck {
 	 */
 	public static function problems(string $archive, array $sources): array {
 		$found = [];
-		$members = self::members($archive);
+		$capture = [];
+		foreach (AssetTargets::MANIFESTS as $bundle) {
+			$capture[] = 'mcp/' . $bundle;
+		}
+		$members = self::members($archive, $capture);
 		$names = [];
 		$entries = [];
 		foreach ($members as $member) {
@@ -131,7 +138,9 @@ final class PackageCheck {
 		}
 		array_push($found, ...self::vendorProblems($entries));
 		array_push($found, ...DevelopmentEntries::problems($entries));
-		array_push($found, ...AssetBuilder::packageProblems(getcwd() ?: ''));
+		$root = getcwd() ?: '';
+		array_push($found, ...AssetBuilder::packageProblems($root));
+		array_push($found, ...PackagedAssets::problems($root, $members));
 		foreach ($sources as $source) {
 			foreach (self::phpFiles($source) as $path) {
 				preg_match_all(self::REFERENCE, (string)file_get_contents($path), $matches, PREG_SET_ORDER);
@@ -187,15 +196,17 @@ final class PackageCheck {
 	 * follows, which is then marked as carrying a pax header. A global pax header marks every entry after it.
 	 * Directory names lose their trailing slash. The archive ends at its first zero block or at the end of the
 	 * data; for a gzip archive the rest of the stream is then read through, so a truncated or corrupt one fails.
+	 * Names in `$capture` also return their file body, so a caller can compare those bytes with a build.
 	 *
 	 * @param string $archive path of the archive
-	 * @return list<array{name: string, dir: bool, pax: bool}> the entries, in archive order
+	 * @param list<string> $capture member names whose file bodies are returned in `body`
+	 * @return list<array{name: string, dir: bool, pax: bool, body?: string}> the entries, in archive order
 	 * @throws RuntimeException when the file cannot be opened, is a truncated or corrupt gzip stream, ends inside
 	 *                          an entry or right after an extension header (pax, GNU long name or long link), has
 	 *                          a bad header checksum or numeric field, or a GNU long name over
 	 *                          {@see self::METADATA_LIMIT}
 	 */
-	public static function members(string $archive): array {
+	public static function members(string $archive, array $capture = []): array {
 		$stream = new ArchiveStream($archive);
 		try {
 			$members = [];
@@ -244,11 +255,6 @@ final class PackageCheck {
 					$pending = $type;
 					continue;
 				}
-				self::skip($stream, $size + $padding, $archive);
-				if ($type === 'K') {
-					$pending = $type;
-					continue;
-				}
 				$name = self::cut(substr($header, 0, 100));
 				$prefix = self::cut(substr($header, 345, 155));
 				if (substr($header, 257, 6) === "ustar\0" && $prefix !== '') {
@@ -260,7 +266,23 @@ final class PackageCheck {
 				if ($dir) {
 					$name = rtrim($name, '/');
 				}
-				$members[] = ['name' => $name, 'dir' => $dir, 'pax' => $pax || $globalPax];
+				if ($type === 'K') {
+					self::skip($stream, $size + $padding, $archive);
+					$pending = $type;
+					continue;
+				}
+				$body = null;
+				if (!$dir && in_array($name, $capture, true)) {
+					$body = self::read($stream, $size, $archive);
+					self::skip($stream, $padding, $archive);
+				} else {
+					self::skip($stream, $size + $padding, $archive);
+				}
+				$member = ['name' => $name, 'dir' => $dir, 'pax' => $pax || $globalPax];
+				if ($body !== null) {
+					$member['body'] = $body;
+				}
+				$members[] = $member;
 				$longName = null;
 				$paxPath = null;
 				$pax = false;

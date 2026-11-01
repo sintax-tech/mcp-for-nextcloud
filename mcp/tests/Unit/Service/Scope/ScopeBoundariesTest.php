@@ -150,11 +150,12 @@ final class ScopeBoundariesTest extends TestCase {
 			}
 		}
 		sort($users);
-		$this->assertSame([
+		$expected = \OCA\Mcp\Tests\Unit\OrderedSourcePaths::sorted([
 			'Controller/MyScopeController.php',
 			'Controller/ScopeController.php',
 			'Service/Policy/PolicyWriter.php',
 			'Service/Scope/NativeResourceEnumerator.php',
-		], $users);
+		]);
+		$this->assertSame($expected, $users);
 	}
 }

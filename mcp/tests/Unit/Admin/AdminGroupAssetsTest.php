@@ -76,13 +76,13 @@ final class AdminGroupAssetsTest extends TestCase {
 		unset($files);
 		// The two admin read models: the group statistics and the preview of a reset. Both count for an administrator and
 		// never decide access (the preview class repeats the notice).
-		$this->assertSame(['beginManyGrants' => ['Service/GroupDirectory.php', 'Service/OverridePreview.php'],
-			'inherited' => ['Service/GroupDirectory.php', 'Service/OverridePreview.php']],
+		$expected = \OCA\Mcp\Tests\Unit\OrderedSourcePaths::sorted(['beginManyGrants' => ['Service/GroupDirectory.php', 'Service/OverridePreview.php'],
+			'inherited' => ['Service/GroupDirectory.php', 'Service/OverridePreview.php']]);
+		$this->assertSame($expected,
 			$callers, 'Grant-only references and dynamic methods must never escape the admin read models');
-		foreach (['PolicyResolver.php', 'PolicyOperationContext.php', '../OverridePreview.php'] as $file) {
-			$this->assertStringContainsString('admin counting only, not an access decision',
-				file_get_contents($lib . '/Service/Policy/' . $file));
-		}
+		$this->assertStringContainsString('admin counting only, not an access decision', file_get_contents($lib . '/Service/Policy/PolicyResolver.php'));
+		$this->assertStringContainsString('admin counting only, not an access decision', file_get_contents($lib . '/Service/Policy/PolicyOperationContext.php'));
+		$this->assertStringContainsString('admin counting only, not an access decision', file_get_contents($lib . '/Service/OverridePreview.php'));
 	}
 
 	public function testGroupStringsAndPlaceholdersAreCompleteInBothFormats(): void {

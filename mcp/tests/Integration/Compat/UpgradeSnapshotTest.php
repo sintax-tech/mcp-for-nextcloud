@@ -138,7 +138,7 @@ final class UpgradeSnapshotTest extends IntegrationTestCase {
 		// The script refuses any class of the app the reading loaded from elsewhere, and any class of Service, OAuth
 		// or Db the server's boot loaded from the branch before its loader; these are the ones the reading needed.
 		$this->assertSame([], preg_grep('/^OCA\\\\Mcp\\\\(Service|OAuth|Db)\\\\/', $read['boot']));
-		$this->assertContains('OCA\\Mcp\\Service\\GrantPolicy', $read['loaded']);
+		$this->assertContains(LegacyPolicyName::get(), $read['loaded']);
 		$this->assertContains('OCA\\Mcp\\OAuth\\OAuthStore', $read['loaded']);
 		$this->assertSame($this->seed['answers'], $read['answers']);
 		$this->assertSame($this->seed['raw'], $read['raw']);

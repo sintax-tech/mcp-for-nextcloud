@@ -35,6 +35,7 @@ require_once '/var/www/html/lib/base.php';
 require_once __DIR__ . '/../Compat/ReleaseUpgradeProbe.php';
 \OCA\Mcp\Tests\Integration\Compat\ReleaseUpgradeProbe::checkpoint('policy', $argv[2]);
 require_once __DIR__ . '/../Compat/SnapshotProbe.php';
+require_once __DIR__ . '/../Compat/LegacyPolicyName.php';
 
 if ($mode === 'seed') {
 	Server::get(\OCP\App\IAppManager::class)->loadApp('mcp');
@@ -64,13 +65,14 @@ $db = Server::get(\OCP\IDBConnection::class);
 $store = new \OCA\Mcp\OAuth\OAuthStore($db);
 // The baseline's constructor: (IConfig, OAuthStore, ?IUserConfig). Built by hand so the branch's container never
 // resolves it.
-$policy = new \OCA\Mcp\Service\GrantPolicy($config, $store, $userConfig);
+$policyClass = \OCA\Mcp\Tests\Integration\Compat\LegacyPolicyName::get();
+$policy = new $policyClass($config, $store, $userConfig);
 $source = (string)(new ReflectionClass($policy))->getFileName();
 if ($mode === 'read' && !str_starts_with($source, $lib)) {
 	fwrite(STDERR, "GrantPolicy came from $source, not from the baseline at $lib\n");
 	exit(1);
 }
-$catalog = \OCA\Mcp\Service\GrantPolicy::CATALOG;
+$catalog = $policyClass::CATALOG;
 $uids = SnapshotProbe::uids();
 $result = ['source' => $source, 'catalog' => $catalog];
 

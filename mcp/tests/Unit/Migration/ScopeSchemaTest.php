@@ -177,7 +177,7 @@ final class ScopeSchemaTest extends TestCase {
 			}
 		}
 		sort($readers);
-		$this->assertSame([
+		$expected = \OCA\Mcp\Tests\Unit\OrderedSourcePaths::sorted([
 			'Controller/MyScopeController.php',
 			'Controller/ScopeController.php',
 			'Db/ResourceScopeMapper.php',
@@ -189,7 +189,8 @@ final class ScopeSchemaTest extends TestCase {
 			'Service/Policy/ScopeCleanup.php',
 			'Service/Scope/NativeResourceEnumerator.php',
 			'Service/Scope/ScopeGuard.php',
-		], $readers);
+		]);
+		$this->assertSame($expected, $readers);
 		$tables = array_values(array_filter($readers, static fn (string $file): bool
 			=> str_contains((string)file_get_contents($root . '/' . $file), 'mcp_scope_')));
 		$this->assertSame(['Db/ResourceScopeMapper.php'], array_values(array_diff($tables, ['Migration/Version001100Date20261015020000.php'])),

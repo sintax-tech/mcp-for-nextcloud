@@ -18,22 +18,26 @@ final class RuntimeDirnameTest extends TestCase {
 	/** A node path is a runtime value; moving the PHP file changes neither its operand nor dirname. */
 	public function testRuntimeNodePathPasses(): void {
 		foreach (['dirname', '\\dirname'] as $call) {
+			$this->assertSame([], $this->check("return $call((string)\$node->getPath());"));
 			$this->assertSame([], $this->check("return $call(\$node->getPath());"));
 		}
 	}
 
 	/** Unknown variables, source-dependent operands and callable overrides remain refused. */
 	public function testUnprovedOperandsStillFail(): void {
-		foreach (['dirname($this->getPath())', 'dirname($path)', 'dirname($node->getPath(__DIR__))', 'dirname($node->getPath() . __DIR__)',
+		foreach (['dirname($this->getPath())', 'dirname((string)$this->getPath())', 'dirname((string)$node?->getPath())',
+			'dirname((string)$node->getName())', 'dirname((string)$node->getPath(), 2)', 'dirname((string)$node->getPath() . __DIR__)', 'dirname($path)', 'dirname($node->getPath(__DIR__))', 'dirname($node->getPath() . __DIR__)',
 			'dirname($node?->getPath())', 'dirname(__DIR__ . "/child")'] as $expression) {
 			$this->assertNotSame([], $this->check("return $expression;"), $expression);
 		}
 		$this->assertNotSame([], $this->check('return dirname($node->getPath());', 'use function Other\\dirname;'));
+		$this->assertNotSame([], $this->check('return dirname((string)$node->getPath());', 'use function Other\\dirname;'));
 	}
 
 	/** Token comparison still rejects a changed runtime operand. */
 	public function testChangedOperandFails(): void {
 		$this->assertNotSame([], $this->check('return dirname($node->getPath());', '', 'return dirname($other->getPath());'));
+		$this->assertNotSame([], $this->check('return dirname((string)$node->getPath());', '', 'return dirname((string)$other->getPath());'));
 	}
 
 	/**

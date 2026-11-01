@@ -28,7 +28,11 @@ final class RuntimeDirname {
 		if (PathExpressions::fold($tokens, $i, $path, $scope, $index) !== null) {
 			return null;
 		}
-		$operand = array_slice($tokens, $i + 2, 6);
+		$start = $i + 2;
+		if (($tokens[$start][0] ?? null) === T_STRING_CAST) {
+			$start++;
+		}
+		$operand = array_slice($tokens, $start, 6);
 		$runtime = count($operand) === 6 && $operand[0][0] === T_VARIABLE && $operand[1][0] === T_OBJECT_OPERATOR
 			&& $operand[0][1] !== '$this' && $operand[2][0] === T_STRING && strtolower($operand[2][1]) === 'getpath'
 			&& array_column(array_slice($operand, 3), 1) === ['(', ')', ')'];

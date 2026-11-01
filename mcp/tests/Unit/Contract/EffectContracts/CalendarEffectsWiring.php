@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
 use DateTimeImmutable;
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarStore;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
 use OCA\Mcp\Tools\Calendar\AttendeeResolver;

@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tools\Calendar;
 
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tools\Calendar\Scheduling\PlanWarnings;
 use Sabre\VObject\Component\VCalendar;
 use Sabre\VObject\Component\VEvent;

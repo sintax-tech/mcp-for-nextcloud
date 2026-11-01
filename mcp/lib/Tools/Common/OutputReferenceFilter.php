@@ -6,7 +6,7 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Common;
-
+use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tools\Talk\AttachmentAccess;
 use OCP\Files\IRootFolder;

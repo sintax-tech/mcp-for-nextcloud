@@ -88,8 +88,8 @@ final class ContactBackupTest extends TestCase {
 		try {
 			$this->backup->save('alice', 'Team', 'Name', self::CARD);
 			self::fail('a locked backup folder was accepted');
-		} catch (\OCA\Mcp\Tools\Common\LockWriteFailure $e) {
-			self::assertStringStartsWith(\OCA\Mcp\Tools\Common\LockMessages::lockedWithoutDetails(), $e->getMessage());
+		} catch (\OCA\Mcp\Platform\FileAccess\LockWriteFailure $e) {
+			self::assertStringStartsWith(\OCA\Mcp\Platform\FileAccess\LockMessages::lockedWithoutDetails(), $e->getMessage());
 			self::assertStringEndsWith('The contact backup could not be saved and verified; the contact was not deleted.', $e->getMessage());
 		}
 	}

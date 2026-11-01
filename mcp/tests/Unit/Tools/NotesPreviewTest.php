@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Tools;
 
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Notes\NotesModule;
 use OCA\Mcp\Tools\Notes\NotesRepository;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;

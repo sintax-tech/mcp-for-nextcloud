@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Deck\Handler;
 
 use Closure;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Deck\CardFileLinkPreparation;
 use OCA\Mcp\Tools\Deck\CardLinkMessages;
 use OCA\Mcp\Tools\Deck\CardLinkPlan;

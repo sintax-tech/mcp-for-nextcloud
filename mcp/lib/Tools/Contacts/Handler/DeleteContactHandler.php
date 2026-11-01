@@ -12,7 +12,7 @@ use OCA\Mcp\Tools\Contacts\ContactAccess;
 use OCA\Mcp\Tools\Contacts\ContactBackup;
 use OCA\Mcp\Tools\Contacts\ContactDav;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;

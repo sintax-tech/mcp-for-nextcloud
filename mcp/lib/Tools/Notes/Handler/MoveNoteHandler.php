@@ -10,12 +10,12 @@ namespace OCA\Mcp\Tools\Notes\Handler;
 
 use OCA\Mcp\Service\FileWritePolicyUnavailable;
 use OCA\Mcp\Service\VisibilityGuard;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Common\FileTypeDenied;
 use OCA\Mcp\Tools\Common\FileTypeGuard;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Notes\NoteRenameSink;
 use OCA\Mcp\Tools\Notes\NoteTypeBoundary;
 use OCA\Mcp\Tools\Notes\NoteWrite;

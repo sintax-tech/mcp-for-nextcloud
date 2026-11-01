@@ -12,7 +12,7 @@ use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use OCA\Mcp\Mcp\Prompts\PromptCatalog;
 use OCA\Mcp\Service\GuestRestrictions;
 use OCA\Mcp\Mcp\Resources\ResourceRegistry;
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tools\Calendar\CalendarModule;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
@@ -99,7 +99,7 @@ class Application extends App implements IBootstrap {
 		$context->registerService(CalendarDav::class, static fn (ContainerInterface $c): CalendarDav => $c->get(EmbeddedDavDispatcher::class));
 		$context->registerService(\OCA\Mcp\Tools\Contacts\ContactStore::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Contacts\DavContactStore($c));
 		$context->registerService(\OCA\Mcp\Tools\Tasks\TaskStore::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Tasks\DavTaskStore($c));
-		$context->registerService(\OCA\Mcp\Tools\Files\Access\ActorRoot::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Files\Access\ActorRoot($c->get(\OCP\Files\IRootFolder::class), $c->get(IUserSession::class)));
+		$context->registerService(\OCA\Mcp\Platform\FileAccess\ActorRoot::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Platform\FileAccess\ActorRoot($c->get(\OCP\Files\IRootFolder::class), $c->get(IUserSession::class)));
 		// The tools read the resource scope from the policy snapshot of their operation.
 		$context->registerService(\OCA\Mcp\Service\Scope\ScopeReader::class, static fn (ContainerInterface $c): \OCA\Mcp\Service\Scope\ScopeReader => $c->get(\OCA\Mcp\Service\GrantPolicy::class));
 		// The Files scope step of the structured-reference filter: the user's Files resource scope of the operation.

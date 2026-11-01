@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Tasks;
 
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tools\Calendar\Calendar;
 use OCA\Mcp\Tools\Calendar\CalendarDav;
 use OCA\Mcp\Tools\Calendar\CalendarStore;
@@ -17,7 +17,7 @@ use OCA\Mcp\Tools\Calendar\ScopedCalendarAccess;
 use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\TrashedObject;
 use OCA\Mcp\Tools\Calendar\TrashPolicy;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;

@@ -150,7 +150,7 @@ final class DeleteSharingTest extends ExclusionTestCase {
 	/** @return void An innocently named received alias cannot release a historical NFC owner backup reservation. */
 	public function testHistoricalOwnerReservationRefusesAlias(): void {
 		$config = Server::get(\OCP\IAppConfig::class);
-		$before = Server::get(\OCA\Mcp\Service\BackupSettingsDocument::class)->read();
+		$before = Server::get(\OCA\Mcp\Platform\Backups\BackupSettingsDocument::class)->read();
 		$writer = Server::get(\OCA\Mcp\Service\BackupSettingsWriter::class);
 		$state = Server::get(\OCA\Mcp\Db\PolicyStateMapper::class);
 		$name = 'FD3 Café ' . $this->run;
@@ -167,9 +167,9 @@ final class DeleteSharingTest extends ExclusionTestCase {
 				self::assertSame('reserved bytes', $file->getContent());
 			}
 		} finally {
-			$before === null ? $config->deleteKey('mcp', \OCA\Mcp\Service\BackupLocation::KEY)
-				: $config->setValueString('mcp', \OCA\Mcp\Service\BackupLocation::KEY, $before, false);
-			Server::get(\OCA\Mcp\Service\BackupLocation::class)->invalidate();
+			$before === null ? $config->deleteKey('mcp', \OCA\Mcp\Platform\Backups\BackupLocation::KEY)
+				: $config->setValueString('mcp', \OCA\Mcp\Platform\Backups\BackupLocation::KEY, $before, false);
+			Server::get(\OCA\Mcp\Platform\Backups\BackupLocation::class)->invalidate();
 		}
 	}
 

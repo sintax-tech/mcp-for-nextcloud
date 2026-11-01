@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Deck;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Tools\Files\Sharing\SharePermission;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Confirmation\PlanText;

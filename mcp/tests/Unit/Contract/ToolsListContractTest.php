@@ -233,7 +233,7 @@ final class ToolsListContractTest extends TestCase {
 			$this->assertFalse($annotations->idempotentHint, "$name: repeating the call sends a second message");
 			// The confirmation is the boolean the registry publishes on every write: nothing is stored between
 			// the plan and the send, so there is no id, no token and no fingerprint for the client to carry back.
-			$this->assertSame(['type' => 'boolean', 'description' => \OCA\Mcp\Tools\Common\CommonMessages::confirmParameter()], json_decode(json_encode($tools[$name]->inputSchema->properties->confirm), true), $name);
+			$this->assertSame(['type' => 'boolean', 'description' => \OCA\Mcp\Platform\FileAccess\CommonMessages::confirmParameter()], json_decode(json_encode($tools[$name]->inputSchema->properties->confirm), true), $name);
 			$this->assertObjectNotHasProperty('approval_id', $tools[$name]->inputSchema->properties, $name);
 			$this->assertFalse(
 				in_array('approval_id', $tools[$name]->inputSchema->required ?? [], true),

@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Mail\Flag;
 
 use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Mail\MailCacheGeneration;
 use OCA\Mcp\Tools\Mail\MailMessageRows;
 use OCA\Mcp\Tools\Mail\MailMessages;

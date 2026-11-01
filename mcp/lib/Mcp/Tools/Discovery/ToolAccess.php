@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Mcp\Tools\Discovery;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\Compat\AppEnablement;
+use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCA\Mcp\Service\GrantMatrix;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\GuestRestrictions;

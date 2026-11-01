@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 
 /**
  * Every user-facing string of the Files module: tool descriptions, parameter descriptions and failure

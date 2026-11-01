@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Calendar;
 
-use OCA\Mcp\Service\Compat\AppEnablement;
+use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;

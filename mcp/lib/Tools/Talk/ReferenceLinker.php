@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Talk;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\Compat\AppEnablement;
+use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\GuestRestrictions;
 use OCA\Mcp\Tools\Calendar\ScopedCalendarAccess;

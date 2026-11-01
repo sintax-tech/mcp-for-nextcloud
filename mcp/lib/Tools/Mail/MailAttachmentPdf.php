@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Mail;
 
-use OCA\Mcp\Tools\ExtractedText;
+use OCA\Mcp\Platform\Text\ExtractedText;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use Smalot\PdfParser\Config;
 

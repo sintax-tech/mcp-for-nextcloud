@@ -13,9 +13,9 @@ use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
-use OCA\Mcp\Tools\Common\CommonMessages;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\Reorganization;
@@ -139,7 +139,7 @@ final class VisibilityContractTest extends TestCase {
 				$args[] = $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : ($name === 'string' ? 'mcp' : null);
 				continue;
 			}
-			if ($name === \OCA\Mcp\Tools\Files\Access\ActorRoot::class) {
+			if ($name === \OCA\Mcp\Platform\FileAccess\ActorRoot::class) {
 				$args[] = FilesActorRootFixture::create($this, $this->tree->rootFolder());
 				continue;
 			}

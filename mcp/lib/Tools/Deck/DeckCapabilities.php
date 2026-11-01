@@ -11,7 +11,7 @@ use Closure;
 use OCA\Deck\Db\Card;
 use OCA\Deck\Db\CardMapper;
 use OCA\Deck\Service\CardService;
-use OCA\Mcp\Service\Compat\AppEnablement;
+use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCP\App\IAppManager;
 use OCP\Util;
 

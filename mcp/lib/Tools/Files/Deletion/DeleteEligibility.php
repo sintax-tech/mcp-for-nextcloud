@@ -6,10 +6,10 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files\Deletion;
 
-use OCA\Mcp\Service\BackupLocation;
+use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Tools\Common\NodeAccess;
-use OCA\Mcp\Tools\Common\PathGuard;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
+use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Tools\Files\Deletion\Folder\DeleteFolderBoundary;
 use OCA\Mcp\Tools\Files\Deletion\Folder\DeleteFolderMessages;
@@ -104,7 +104,7 @@ class DeleteEligibility {
 	public function verifyTree(Folder $root, string $uid, string $path, int $id, string $etag, array $before): void {
 		$current = $this->file($root, $uid, $path, $etag, $id);
 		if (!$current instanceof Folder || $this->tree($root, $uid, $current) !== $before) {
-			throw new ToolFailure(\OCA\Mcp\Tools\Common\CommonMessages::conflict());
+			throw new ToolFailure(\OCA\Mcp\Platform\FileAccess\CommonMessages::conflict());
 		}
 	}
 

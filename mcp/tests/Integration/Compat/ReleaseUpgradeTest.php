@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Compat;
 
 use OCA\Mcp\OAuth\AccessTokenAuthenticator;
-use OCA\Mcp\Service\BackupLocation;
+use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\IAppConfig;
 use OCP\Server;

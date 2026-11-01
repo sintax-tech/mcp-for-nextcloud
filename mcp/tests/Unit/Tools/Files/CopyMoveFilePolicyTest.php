@@ -154,10 +154,10 @@ final class CopyMoveFilePolicyTest extends FilesToolsTestCase {
 
 	/** The branch without an optional lock service still checks policy immediately before the copy. */
 	public function testUnlockedCopyBranchRechecksTheActualSink(): void {
-		$access = new \OCA\Mcp\Tools\Common\NodeAccessInfo($this->users, $this->tree->shareManager());
+		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo($this->users, $this->tree->shareManager());
 		$fixture = CopyMovePolicyFixture::forTest($this);
 		$fixture->reads = [self::policy(), array_replace(self::policy(), ['extensions' => []])];
-		$reorganization = new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Tools\Common\SharedWriteGuard($access),
+		$reorganization = new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access),
 			$this->report(), $this->users, fileTypes: $fixture->guard);
 		try {
 			$reorganization->copy($this->tree->rootFolder(), 'alice', '/input.txt', '/output.txt', null, false);

@@ -8,10 +8,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Contacts;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\UserTimezone;
-use OCA\Mcp\Tools\Common\LockMessages;
-use OCA\Mcp\Tools\Common\LockWriteFailure;
-use OCA\Mcp\Tools\Common\NodeAccess;
+use OCA\Mcp\Platform\Time\UserTimezone;
+use OCA\Mcp\Platform\FileAccess\LockMessages;
+use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -38,7 +38,7 @@ class ContactBackup {
 		private ITimeFactory $time,
 		private IConfig $config,
 		private ILockingProvider $locks,
-		private ?\OCA\Mcp\Service\BackupLocation $backupLocation = null,
+		private ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
 	) {}
 
 	/**

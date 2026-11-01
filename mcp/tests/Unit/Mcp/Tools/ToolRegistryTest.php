@@ -427,9 +427,9 @@ final class ToolRegistryTest extends TestCase {
 		$registry = new ToolRegistry([$module], $this->policy, $this->createMock(IAppManager::class), $this->createMock(IUserManager::class), $logger);
 		$this->policy->setGrant('root', 'logs', 'read', true);
 		$module->throw = new \OCP\Lock\ManuallyLockedException('/root/files/x', null, 'files_lock/x', 'text', -1);
-		$this->assertSame(ToolResult::error(\OCA\Mcp\Tools\Common\LockMessages::lockedWithoutDetails()), $registry->call('logs_list', [], 'root'));
+		$this->assertSame(ToolResult::error(\OCA\Mcp\Platform\FileAccess\LockMessages::lockedWithoutDetails()), $registry->call('logs_list', [], 'root'));
 		$module->throw = new \OCP\Lock\LockedException('/root/files/x');
-		$this->assertSame(ToolResult::error(\OCA\Mcp\Tools\Common\CommonMessages::locked()), $registry->call('logs_list', [], 'root'));
+		$this->assertSame(ToolResult::error(\OCA\Mcp\Platform\FileAccess\CommonMessages::locked()), $registry->call('logs_list', [], 'root'));
 	}
 
 	public function testAFailingFallbackLoggerKeepsRefusalsAndWithholdsData(): void {

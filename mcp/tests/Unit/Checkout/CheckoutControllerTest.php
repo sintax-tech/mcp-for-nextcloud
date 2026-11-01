@@ -14,8 +14,8 @@ use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Tools\Files\FilesMessages;
@@ -907,7 +907,7 @@ final class CheckoutControllerTest extends TestCase {
 		$guard->clearCache();
 		$missing = $controller->$method();
 		$this->assertSame($this->code($missing), $this->code($res));
-		$this->assertStringContainsString(\OCA\Mcp\Tools\Common\CommonMessages::notFound(), json_encode($res->getData()));
+		$this->assertStringContainsString(\OCA\Mcp\Platform\FileAccess\CommonMessages::notFound(), json_encode($res->getData()));
 		$this->assertSame(json_encode($missing->getData()), json_encode($res->getData()));
 		$this->assertSame([], $this->tree->ops);
 	}

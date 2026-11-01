@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
 
@@ -80,7 +80,7 @@ final class MovePlanner {
 				$dirs[] = ['path' => $path, 'exists' => false, 'willCreate' => false, 'reason' => $e->getMessage()];
 				continue;
 			}
-			$relative = ltrim(\OCA\Mcp\Tools\Common\PathGuard::normalize($path), '/');
+			$relative = ltrim(\OCA\Mcp\Platform\FileAccess\PathGuard::normalize($path), '/');
 			$exists = false;
 			if ($relative === '') {
 				$exists = true;

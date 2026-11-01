@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\ReorganizationLimits;
 
@@ -229,9 +229,9 @@ final class FilesBatchTest extends FilesToolsTestCase {
 	 */
 	public function testCreateFoldersChecksEveryFolderBeforeMakingTheFirst(): void {
 		$this->tree->addFile('/alice/files/C', 'um arquivo', 'text/plain');
-		$access = new \OCA\Mcp\Tools\Common\NodeAccessInfo(
+		$access = new \OCA\Mcp\Platform\FileAccess\NodeAccessInfo(
 			\OCA\Mcp\Tests\Unit\Tools\FakeUsers::manager($this, \OCA\Mcp\Tests\Unit\Tools\FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$reorganization = new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Tools\Common\SharedWriteGuard($access),
+		$reorganization = new \OCA\Mcp\Tools\Files\Reorganization($access, new \OCA\Mcp\Platform\FileAccess\SharedWriteGuard($access),
 			$this->report(), $this->users);
 		try {
 			$reorganization->createFolders($this->tree->rootFolder(), ['/A/B', '/C']);

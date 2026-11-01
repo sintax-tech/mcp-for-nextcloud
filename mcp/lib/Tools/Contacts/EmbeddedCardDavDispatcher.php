@@ -12,7 +12,7 @@ use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tools\Calendar\CapturingSapi;
 use OCA\Mcp\Tools\Calendar\DavResult;
 use OCA\Mcp\Tools\Calendar\Session;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IAppConfig;
 use Psr\Log\LoggerInterface;

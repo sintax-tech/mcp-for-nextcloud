@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Common;
 
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
 use OCP\App\IAppManager;

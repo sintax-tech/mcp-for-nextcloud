@@ -161,7 +161,7 @@ final class DeleteFileTest extends ExclusionTestCase {
 
 	/** @return void Default, configured and historical NFC-equivalent reservations never reach deletion. */
 	public function testCurrentHistoricAndUnicodeBackupNamesAreRefused(): void {
-		$before = Server::get(\OCA\Mcp\Service\BackupSettingsDocument::class)->read();
+		$before = Server::get(\OCA\Mcp\Platform\Backups\BackupSettingsDocument::class)->read();
 		$config = Server::get(IAppConfig::class);
 		$writer = Server::get(\OCA\Mcp\Service\BackupSettingsWriter::class);
 		$state = Server::get(\OCA\Mcp\Db\PolicyStateMapper::class);
@@ -185,9 +185,9 @@ final class DeleteFileTest extends ExclusionTestCase {
 				}
 			}
 		} finally {
-			$before === null ? $config->deleteKey('mcp', \OCA\Mcp\Service\BackupLocation::KEY)
-				: $config->setValueString('mcp', \OCA\Mcp\Service\BackupLocation::KEY, $before, false);
-			Server::get(\OCA\Mcp\Service\BackupLocation::class)->invalidate();
+			$before === null ? $config->deleteKey('mcp', \OCA\Mcp\Platform\Backups\BackupLocation::KEY)
+				: $config->setValueString('mcp', \OCA\Mcp\Platform\Backups\BackupLocation::KEY, $before, false);
+			Server::get(\OCA\Mcp\Platform\Backups\BackupLocation::class)->invalidate();
 		}
 	}
 

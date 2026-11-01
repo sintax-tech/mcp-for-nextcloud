@@ -269,15 +269,15 @@ final class FilesScopeTest extends TestCase {
 		$this->scopes['alice'] = [$this->nested];
 		$gate = $this->gate();
 		$root = $this->tree->rootFolder();
-		$this->assertSame('/alice/files/A/B/C/new/x', \OCA\Mcp\Tools\Common\NodeAccess::ensureFolder($root, '/A/B/C/new/x', $gate)->getPath());
-		$this->assertSame('/alice/files/A/B/C', \OCA\Mcp\Tools\Common\NodeAccess::ensureFolder($root, '/A/B/C', $gate)->getPath());
+		$this->assertSame('/alice/files/A/B/C/new/x', \OCA\Mcp\Platform\FileAccess\NodeAccess::ensureFolder($root, '/A/B/C/new/x', $gate)->getPath());
+		$this->assertSame('/alice/files/A/B/C', \OCA\Mcp\Platform\FileAccess\NodeAccess::ensureFolder($root, '/A/B/C', $gate)->getPath());
 		$this->tree->ops = [];
 		foreach (['/A/new', '/A/B/new/x', '/Fresh/x/y', '/Archive/x', '/A/B'] as $path) {
 			try {
-				\OCA\Mcp\Tools\Common\NodeAccess::ensureFolder($root, $path, $gate);
+				\OCA\Mcp\Platform\FileAccess\NodeAccess::ensureFolder($root, $path, $gate);
 				$this->fail("$path was reached");
 			} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
-				$this->assertSame(\OCA\Mcp\Tools\Common\CommonMessages::notFound(), $e->getMessage(), $path);
+				$this->assertSame(\OCA\Mcp\Platform\FileAccess\CommonMessages::notFound(), $e->getMessage(), $path);
 			}
 		}
 		$this->assertSame([], $this->tree->ops, 'no folder on the way to a refusal');

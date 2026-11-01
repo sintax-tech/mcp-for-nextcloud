@@ -11,26 +11,22 @@ declare(strict_types=1);
  * those of skipped.txt or the exact documented environment-skips.tsv permissions; failing tests remain exactly the environment failures (missing intl/zip/gd in php:8.3-cli).
  *
  * Usage: php tests/Unit/Contract/baseline/check-inventory.php <junit.xml> [<fqcn-map.tsv>]
- * The optional map (old FQCN TAB new FQCN, one per line, from RE-01b) renames baseline classes before comparing.
+ * Defaults to the versioned test-renames.tsv (old FQCN TAB new FQCN); an explicit second argument overrides it.
+ * Every move ticket appends its baseline-to-current class renames to test-renames.tsv in the same commit.
  * Exit 0 when the report holds the baseline; 1 otherwise, with the differences; 2 on bad usage.
  */
 
 require __DIR__ . '/../../../../vendor/autoload.php';
 
 use OCA\Mcp\Tests\Unit\Contract\Oracle\InventoryCheck;
+use OCA\Mcp\Tests\Unit\Contract\Oracle\InventoryRenames;
 
 if ($argc < 2 || !is_file($argv[1])) {
 	fwrite(STDERR, "usage: php check-inventory.php <junit.xml> [<fqcn-map.tsv>]\n");
 	exit(2);
 }
-$map = [];
-if (isset($argv[2])) {
-	foreach (file($argv[2], FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $line) {
-		[$old, $new] = explode("\t", $line, 2) + [1 => ''];
-		$map[$old] = $new;
-	}
-}
 try {
+	$map = InventoryRenames::load($argv[2] ?? __DIR__ . '/test-renames.tsv');
 	$check = InventoryCheck::fromBaseline(__DIR__, $map);
 } catch (\RuntimeException $error) {
 	fwrite(STDERR, $error->getMessage() . "\n");

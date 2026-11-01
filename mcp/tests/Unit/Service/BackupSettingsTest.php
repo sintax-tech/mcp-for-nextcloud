@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Service;
 
 use OCA\Mcp\Db;
-use OCA\Mcp\Service\BackupLocation;
-use OCA\Mcp\Service\BackupCopies;
+use OCA\Mcp\Platform\Backups\BackupLocation;
+use OCA\Mcp\Platform\Backups\BackupCopies;
 use OCA\Mcp\Service\BackupSettingsWriter;
 use OCA\Mcp\Service\Policy\PolicyWriter;
 use OCA\Mcp\Service\Policy\PolicyEventProcessor;
@@ -35,7 +35,7 @@ final class BackupSettingsTest extends TestCase {
 	private SqliteDatabase $database;
 	private IAppConfig $config;
 	private int $loads = 0;
-	private \OCA\Mcp\Service\BackupSettingsDocument $document;
+	private \OCA\Mcp\Platform\Backups\BackupSettingsDocument $document;
 	private int $invalidations = 0;
 	/** @var array<string, string> models the official writer's value cache across transaction rollback */
 	private array $writerCache = [];
@@ -75,7 +75,7 @@ final class BackupSettingsTest extends TestCase {
 			}
 			return $db->getQueryBuilder();
 		});
-		$this->document = new \OCA\Mcp\Service\BackupSettingsDocument($readerConnection);
+		$this->document = new \OCA\Mcp\Platform\Backups\BackupSettingsDocument($readerConnection);
 		$this->location = new BackupLocation($this->document);
 		$apps = $this->createMock(IAppManager::class);
 		$available = function (): bool {
@@ -217,7 +217,7 @@ final class BackupSettingsTest extends TestCase {
 		self::assertSame(['MCP backups', 'Cópias MCP'], $this->location->current()['reserved']);
 		self::assertTrue(BackupLocation::contains('/Cópias MCP/new.txt', $this->location));
 		$this->expectException(\InvalidArgumentException::class);
-		\OCA\Mcp\Service\BackupFolderName::normalize("invalid\xff");
+		\OCA\Mcp\Platform\Backups\BackupFolderName::normalize("invalid\xff");
 	}
 
 	/** @return void listings reuse a snapshot but explicit boundaries detect another instance and invalidation */

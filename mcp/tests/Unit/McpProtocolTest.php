@@ -217,7 +217,7 @@ final class McpProtocolTest extends TestCase {
 
 	/** A path that leaves the user's folder is an argument error like any other: field, fixed rule, no value. */
 	public function testPathTraversalAnswersWithTheFieldAndAFixedRule(): void {
-		$out = $this->failing('ler', ['path' => '/../../etc/passwd'], static fn (array $a) => \OCA\Mcp\Tools\Common\PathGuard::normalize($a['path']));
+		$out = $this->failing('ler', ['path' => '/../../etc/passwd'], static fn (array $a) => \OCA\Mcp\Platform\FileAccess\PathGuard::normalize($a['path']));
 		$this->assertSame(-32602, $out['body']['error']['code']);
 		$this->assertSame('path', $out['body']['error']['data']['field']);
 		$this->assertNotSame('', $out['body']['error']['data']['rule']);
@@ -228,7 +228,7 @@ final class McpProtocolTest extends TestCase {
 
 	/** A control character in a path is the same kind of error, with the same answer. */
 	public function testAControlCharacterInAPathAnswersTheSameWay(): void {
-		$out = $this->failing('ler', ['path' => "/a\0b"], static fn (array $a) => \OCA\Mcp\Tools\Common\PathGuard::normalize($a['path']));
+		$out = $this->failing('ler', ['path' => "/a\0b"], static fn (array $a) => \OCA\Mcp\Platform\FileAccess\PathGuard::normalize($a['path']));
 		$this->assertSame('path', $out['body']['error']['data']['field']);
 		$this->assertNotSame('', $out['body']['error']['data']['rule']);
 	}

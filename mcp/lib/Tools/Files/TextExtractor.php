@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
-use OCA\Mcp\Tools\ExtractedText;
+use OCA\Mcp\Platform\Text\ExtractedText;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
-use OCA\Mcp\Tools\XmlCharset;
+use OCA\Mcp\Platform\Text\XmlCharset;
 use OCP\Files\File;
 use OCP\ITempManager;
 use Smalot\PdfParser\Config;

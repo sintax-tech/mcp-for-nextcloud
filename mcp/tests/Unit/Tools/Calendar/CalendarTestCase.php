@@ -155,7 +155,7 @@ abstract class CalendarTestCase extends TestCase {
 		$zoneConfig = $this->createMock(IConfig::class);
 		$zoneConfig->method('getUserValue')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $this->accountTimezone : '');
 		$zoneConfig->method('getSystemValueString')->willReturn('');
-		$zones = new \OCA\Mcp\Service\UserTimezone($zoneConfig);
+		$zones = new \OCA\Mcp\Platform\Time\UserTimezone($zoneConfig);
 		$groups = $this->createMock(IGroupManager::class);
 		$groups->method('getUserGroupIds')->willReturn([]);
 		$warnings = new PlanWarnings(

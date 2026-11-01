@@ -97,7 +97,7 @@ final class PlanRendererTest extends TestCase {
 	public function testFooterDoesNotRepeatTheNoChangeSentence(): void {
 		foreach (['en', 'pt_BR', 'es'] as $language) {
 			Translator::use(new JsonL10n($language));
-			$message = \OCA\Mcp\Tools\Common\CommonMessages::planNothingChanged();
+			$message = \OCA\Mcp\Platform\FileAccess\CommonMessages::planNothingChanged();
 			$firstSentence = explode('.', $message, 2)[0] . '.';
 			$instruction = trim(substr($message, strlen($firstSentence)));
 			$plan = ['message' => $message];

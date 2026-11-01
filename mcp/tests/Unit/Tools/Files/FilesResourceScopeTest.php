@@ -11,7 +11,7 @@ use OCA\Mcp\Service\Policy\PolicyUnavailable;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
 use OCA\Mcp\Service\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\Service\Scope\FilesScopes;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\SystemTag\ISystemTagObjectMapper;
@@ -260,7 +260,7 @@ final class FilesResourceScopeTest extends FilesToolsTestCase {
 		$root = $this->tree->rootFolder();
 		$refusal = function (string $path) use ($root): string {
 			try {
-				\OCA\Mcp\Tools\Common\NodeAccess::ensureFolder($root, $path, $this->visibilityGuard);
+				\OCA\Mcp\Platform\FileAccess\NodeAccess::ensureFolder($root, $path, $this->visibilityGuard);
 			} catch (ToolFailure $e) {
 				return $e->getMessage();
 			}

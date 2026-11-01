@@ -11,7 +11,7 @@ namespace OCA\Mcp\Tools\Notes\Handler;
 use Closure;
 use InvalidArgumentException;
 use OCA\Mcp\Service\VisibilityGuard;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Tools\Notes\NotesFolderNotice;
 use OCA\Mcp\Tools\Notes\NotesRepository;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;

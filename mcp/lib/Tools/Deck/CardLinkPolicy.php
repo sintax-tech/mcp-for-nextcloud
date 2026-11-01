@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Deck;
 
-use OCA\Mcp\Service\Compat\AppEnablement;
+use OCA\Mcp\Platform\Compat\AppEnablement;
 use OCP\App\IAppManager;
 use OCP\IConfig;
 use OCP\IUserManager;

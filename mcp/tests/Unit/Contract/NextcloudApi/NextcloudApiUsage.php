@@ -19,7 +19,7 @@ namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi;
 final class NextcloudApiUsage {
 	/**
 	 * Releases each fixture of tests/fixtures/nextcloud-api is generated from: the oldest release of every declared
-	 * Nextcloud major, with the oldest Deck and Talk MCP supports on it ({@see \OCA\Mcp\Service\Compat\AppEnablement}).
+	 * Nextcloud major, with the oldest Deck and Talk MCP supports on it ({@see \OCA\Mcp\Platform\Compat\AppEnablement}).
 	 */
 	public const SOURCES = [
 		'31' => ['server' => '31.0.0', 'deck' => '1.15.0', 'spreed' => '21.1.4'],
@@ -510,7 +510,7 @@ final class NextcloudApiUsage {
 		'OCP\\App\\IAppManager::isEnabledForAnyone' => [
 			'missing' => ['31'],
 			'fallback' => 'OCP\\App\\IAppManager::isInstalled',
-			'by' => \OCA\Mcp\Service\Compat\AppEnablement::class,
+			'by' => \OCA\Mcp\Platform\Compat\AppEnablement::class,
 		],
 		'OCA\\Deck\\Db\\CardMapper::findAllForStacks' => [
 			'missing' => ['31', '32'],

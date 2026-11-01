@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
-use OCA\Mcp\Service\BackupCopies;
+use OCA\Mcp\Platform\Backups\BackupCopies;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Common\NodeAccess;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\IUserManager;
@@ -22,11 +22,11 @@ final class FileBackupPreparation {
 	 * @param IAppManager $appManager official per-user enablement
 	 * @param IUserManager $userManager acting user resolution
 	 * @param LockAwareWrite|null $locks existing write lock checks
-	 * @param \OCA\Mcp\Service\BackupLocation|null $location current reserved names
+	 * @param \OCA\Mcp\Platform\Backups\BackupLocation|null $location current reserved names
 	 * @param BackupCopies|null $copies effective preference, null retains standalone mandatory defaults
 	 */
 	public function __construct(private IAppManager $appManager, private IUserManager $userManager,
-		private ?LockAwareWrite $locks, private ?BackupCopies $copies, private ?\OCA\Mcp\Service\BackupLocation $location) {
+		private ?LockAwareWrite $locks, private ?BackupCopies $copies, private ?\OCA\Mcp\Platform\Backups\BackupLocation $location) {
 	}
 
 	/**

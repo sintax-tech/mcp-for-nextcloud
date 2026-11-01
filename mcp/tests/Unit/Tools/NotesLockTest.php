@@ -11,9 +11,9 @@ use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\Common\FakeLock;
 use OCA\Mcp\Tests\Unit\Tools\Common\FakeLockManager;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
-use OCA\Mcp\Tools\Common\LockWriteFailure;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Notes\NotesModule;
 use OCA\Mcp\Tools\Notes\NotesRepository;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
@@ -129,7 +129,7 @@ final class NotesLockTest extends TestCase {
 			$this->call('notes_edit', ['id' => $this->id, 'content' => 'novo', 'title' => 'Outro']);
 			$this->fail('the refused rename was reported as a success');
 		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
-			$this->assertSame(\OCA\Mcp\Tools\Common\CommonMessages::locked() . ' The new content was saved; only the title was not changed.', $e->getMessage());
+			$this->assertSame(\OCA\Mcp\Platform\FileAccess\CommonMessages::locked() . ' The new content was saved; only the title was not changed.', $e->getMessage());
 		}
 		$this->assertSame('novo', $this->tree->nodes[self::NOTE]['content']);
 	}
@@ -141,7 +141,7 @@ final class NotesLockTest extends TestCase {
 			$this->call('notes_edit', ['id' => $this->id, 'content' => 'novo', 'title' => 'Outro']);
 			$this->fail('the refused rename was reported as a success');
 		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
-			$this->assertSame(\OCA\Mcp\Tools\Common\CommonMessages::forbidden() . ' The new content was saved; only the title was not changed.', $e->getMessage());
+			$this->assertSame(\OCA\Mcp\Platform\FileAccess\CommonMessages::forbidden() . ' The new content was saved; only the title was not changed.', $e->getMessage());
 		}
 	}
 

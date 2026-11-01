@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
 use OCA\Mcp\Checkout\CheckoutTokenStore;
-use OCA\Mcp\Service\BackupSettingsDocument;
+use OCA\Mcp\Platform\Backups\BackupSettingsDocument;
 use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Service\GuestRestrictions;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
@@ -28,7 +28,7 @@ use OCA\Mcp\Tests\Unit\Tools\Files\InMemoryBatchStore;
 use OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture;
 use OCA\Mcp\Tools\Common\FileTypeGuard;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Files\Access\ActorRoot;
+use OCA\Mcp\Platform\FileAccess\ActorRoot;
 use OCA\Mcp\Tools\Files\BatchStore;
 use OCA\Mcp\Tools\Files\ContentTypeGate;
 use OCA\Mcp\Tools\Files\FilesModule;

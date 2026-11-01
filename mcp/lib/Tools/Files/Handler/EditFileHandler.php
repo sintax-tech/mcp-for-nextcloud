@@ -10,9 +10,9 @@ namespace OCA\Mcp\Tools\Files\Handler;
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Common\NodeAccess;
-use OCA\Mcp\Tools\Common\PathGuard;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
+use OCA\Mcp\Platform\FileAccess\PathGuard;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\ContentCommit;
 use OCA\Mcp\Tools\Files\ContentTypeGate;
 use OCA\Mcp\Tools\Files\ContentWritePlan;
@@ -41,7 +41,7 @@ final class EditFileHandler {
 	 * @param ContentCommit $commit Backup and write. Receives the module's backup at execution time.
 	 * @param ContentTypeGate $types Current-name policy, one snapshot per boundary.
 	 * @param LockAwareWrite|null $locks Refuses a locked file before any backup. Null where files_lock is not wired.
-	 * @param \OCA\Mcp\Service\BackupLocation|null $backupLocation configured protected roots
+	 * @param \OCA\Mcp\Platform\Backups\BackupLocation|null $backupLocation configured protected roots
 	 * @param FilesAccessGuard|null $visibilityGuard Scope and exclusion tags of the resolved file.
 	 */
 	public function __construct(
@@ -52,7 +52,7 @@ final class EditFileHandler {
 		private ContentTypeGate $types,
 		private ?LockAwareWrite $locks = null,
 		private ?FilesAccessGuard $visibilityGuard = null,
-		private ?\OCA\Mcp\Service\BackupLocation $backupLocation = null,
+		private ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
 	) {
 	}
 

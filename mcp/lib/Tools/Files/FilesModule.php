@@ -6,21 +6,21 @@
 declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
-
+use OCA\Mcp\Platform\FileAccess as Access;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Common\NodeAccess;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Tools\Files\Handler\EditFileHandler;
 use OCA\Mcp\Tools\Files\Handler\ReplaceFileHandler;
 use OCA\Mcp\Tools\Files\Handler\RestoreVersionHandler;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\PathGuard;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\PathGuard;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\Sharing\ShareAccess;
 use OCA\Mcp\Tools\Files\Sharing\ShareLister;
 use OCA\Mcp\Tools\Files\Sharing\ShareRemover;
 use OCA\Mcp\Tools\Files\Sharing\SharePermission;
 use OCA\Mcp\Tools\Files\Sharing\ShareWriter;
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
@@ -101,7 +101,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
 		private ?EditFileHandler $editFile = null,
 		private ?ReplaceFileHandler $replaceFile = null,
 		private ?RestoreVersionHandler $restoreVersion = null,
-		private ?\OCA\Mcp\Service\BackupLocation $backupLocation = null,
+		private ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
 		private ?BackupPlan $backupPlan = null,
 		private ?Handler\DeleteFileHandler $deleteFile = null,
 		private ?Access\ActorRoot $actorRoot = null,

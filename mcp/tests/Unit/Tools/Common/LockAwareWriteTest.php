@@ -7,14 +7,14 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Common;
 
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Common\LockMessages;
-use OCA\Mcp\Tools\Common\LockWriteFailure;
-use OCA\Mcp\Tools\Common\NodeAccess;
+use OCA\Mcp\Platform\FileAccess\LockMessages;
+use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Utility\ITimeFactory;

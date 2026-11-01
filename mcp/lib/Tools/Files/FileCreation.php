@@ -9,12 +9,12 @@ namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\Service\Scope\FilesAccessGuard;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Common\NodeAccess;
-use OCA\Mcp\Tools\Common\NodeAccessInfo;
-use OCA\Mcp\Tools\Common\PathGuard;
-use OCA\Mcp\Tools\Common\SharedWriteGuard;
+use OCA\Mcp\Platform\FileAccess\NodeAccess;
+use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
+use OCA\Mcp\Platform\FileAccess\PathGuard;
+use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;
@@ -54,7 +54,7 @@ final class FileCreation {
 		private LoggerInterface $logger,
 		private LockAwareWrite $locks,
 		private \OCA\Mcp\Tools\Common\FileTypeGuard $fileTypes,
-		private \OCA\Mcp\Service\BackupLocation $backupLocation,
+		private \OCA\Mcp\Platform\Backups\BackupLocation $backupLocation,
 	) {}
 
 	/**
@@ -243,7 +243,7 @@ final class FileCreation {
 	 * @return File the new file
 	 * @throws FileExists when the name is taken before the creation, or the file changed before the write
 	 * @throws ArgumentValidationException when the storage refuses the name
-	 * @throws ToolFailure with the message of a lock ({@see \OCA\Mcp\Tools\Common\LockWriteFailure}) or a full quota, or {@see FilesMessages::createFailed()}
+	 * @throws ToolFailure with the message of a lock ({@see \OCA\Mcp\Platform\FileAccess\LockWriteFailure}) or a full quota, or {@see FilesMessages::createFailed()}
 	 */
 	public function write(Folder $folder, string $name, mixed $content, ?string $userId = null, bool $asUser = true): File {
 		return (new FileCreationWriter($this->visibilityGuard, $this->logger, $this->locks, $this->fileTypes))->write($folder, $name, $content, $userId, $asUser);

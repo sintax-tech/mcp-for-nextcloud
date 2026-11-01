@@ -30,7 +30,7 @@ use OCA\Mcp\Mcp\Tools\ToolModule;
  * them; with the separate `create` and `edit` grants, one row created or updated per call through the Tables app, after a
  * plan. `read` is granted by default like every read; `create` and `edit` start denied like every write. Its tools carry
  * the app id, so the registry hides them and refuses a call while Tables is not enabled for the user or is older than MCP
- * supports ({@see \OCA\Mcp\Service\Compat\AppEnablement::MINIMUM_VERSIONS}). Each tool has its own handler; the module
+ * supports ({@see \OCA\Mcp\Platform\Compat\AppEnablement::MINIMUM_VERSIONS}). Each tool has its own handler; the module
  * only describes the tools and delegates.
  */
 final class TablesModule implements ToolModule, ToolGuideNotes, PreviewsWrites, RendersPlans {

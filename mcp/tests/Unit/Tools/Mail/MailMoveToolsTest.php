@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Mail;
 
 use OCA\Mail\Events\MessageDeletedEvent;
 use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\UserTimezone;
+use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;

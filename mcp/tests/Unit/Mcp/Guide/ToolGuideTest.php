@@ -11,7 +11,7 @@ use OCA\Mcp\Service\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Mcp\Guide\ToolGuide;
 use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
-use OCA\Mcp\Tools\Common\CommonMessages;
+use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\ToolModule;
 use OCA\Mcp\Mcp\Tools\ToolPresentation;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;

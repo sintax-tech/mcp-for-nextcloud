@@ -139,8 +139,8 @@ function setup({ users, preview, commands, confirm = true } = {}) {
 		confirm: (text) => { confirms.push(text); return confirm },
 	}
 	const context = { window, document, t: (app, text, vars) => text.replace(/\{(\w+)\}/g, (_, key) => vars?.[key] ?? '{' + key + '}') }
-	vm.runInNewContext(fs.readFileSync(path.join(root, 'src/admin/admin-levels.js'), 'utf8'), context)
-	vm.runInNewContext(fs.readFileSync(path.join(root, 'src/admin/admin-level-popover.js'), 'utf8'), context)
+	vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), context)
+	vm.runInNewContext(require('./AdminManifest.cjs').script('admin-level-popover.js'), context)
 	const trigger = new Element('button', document)
 	return { api: window.McpLevelPopover, popover, trigger, document, calls, notices, errors, confirms, busy, data, reloads: () => reloads }
 }

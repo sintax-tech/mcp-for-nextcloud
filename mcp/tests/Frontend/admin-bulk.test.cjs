@@ -16,7 +16,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 
 const root = path.join(__dirname, '../..')
-const source = fs.readFileSync(path.join(root, 'src/admin/admin-grants.js'), 'utf8')
+const source = require('./AdminManifest.cjs').script('admin-grants.js')
 const tick = async () => { for (let i = 0; i < 12; i++) await new Promise(setImmediate) }
 const plain = (value) => JSON.parse(JSON.stringify(value))
 const REVISION = '9007199254740993'
@@ -35,7 +35,7 @@ function user(uid, allowed, { eligible = true, filesOff = false, enabled = true 
 
 function kit({ users, answer, confirm = true } = {}) {
 	const levels = {}
-	vm.runInNewContext(fs.readFileSync(path.join(root, 'src/admin/admin-levels.js'), 'utf8'), levels)
+	vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), levels)
 	const log = { calls: [], confirms: [], notices: [], errors: [], busy: [], reloads: 0, policyErrors: [], announced: [] }
 	const sandbox = {
 		window: { McpAdminLevels: levels.McpAdminLevels, confirm: (text) => { log.confirms.push(text); return confirm } },

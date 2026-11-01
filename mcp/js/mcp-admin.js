@@ -409,24 +409,14 @@
 	window.McpAdminPicker = { create }
 })()
 ;
-/* admin/admin-levels.js */
+/* admin/access/levels/polls.js */
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /**
- * Access levels of the admin page: one level per module (None, Read, Edit, Full) instead of a box per operation.
- *
- * A level is only a way to show and choose a set of operations; the server never sees it. Each module's operations are
- * split into cumulative tiers (Read, then Edit adds its tier, then Full adds the last one), so a level is the union of
- * the tiers up to it. A set of allowed operations that is no such union is "custom" and is shown and edited operation
- * by operation. The tiers follow GrantPolicy::CATALOG; an operation the tiers do not name (a newer catalog) falls into
- * the last tier, so it is never hidden and never granted by a lower level.
- *
- * The level functions are pure, with no DOM and no strings: src/admin/admin-grants.js draws the cells and names the levels.
- * The Polls presets and the Mail write warnings are defined below, in this file, so the page does not
- * load them as their own scripts. The other admin scripts still read window.McpAdminPollsGrants and
- * window.McpAdminMailGrants. Both are installed before the level functions run.
+ * Access levels of Polls: four named, independent presets instead of cumulative tiers, so creating polls never rides on
+ * a protected read. src/admin/admin-levels.js asks window.McpAdminPollsGrants for the Polls tiers and levels.
  */
 /** Polls-specific protected-read names; rendering never writes or expands a stored policy. */
 (function (root) {
@@ -488,8 +478,157 @@
 	}
 
 	root.McpAdminPollsGrants = { levelLabels, operationLabels, operationHint, tiers, operationsFor }
-})(typeof window !== 'undefined' ? window : globalThis);
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/files.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/**
+ * Access levels of Files: Read, then Edit adds editing, creating, moving and restoring, then Full adds sharing, links and deleting.
+ * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ */
+(function (root) {
+	'use strict'
 
+	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.files = [['read'], ['edit', 'create', 'move', 'restore'], ['share', 'link', 'delete']]
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/notes.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/**
+ * Access levels of Notes: Read, then Edit adds creating, editing and moving, then Full adds deleting.
+ * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ */
+(function (root) {
+	'use strict'
+
+	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.notes = [['read'], ['create', 'edit', 'move'], ['delete']]
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/deck.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/**
+ * Access levels of Deck: Read, then Edit adds creating, editing and moving, then Full adds deleting.
+ * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ */
+(function (root) {
+	'use strict'
+
+	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.deck = [['read'], ['create', 'edit', 'move'], ['delete']]
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/calendar.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/**
+ * Access levels of Calendar: Read, then Edit adds creating, editing and moving, then Full adds deleting and transferring.
+ * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ */
+(function (root) {
+	'use strict'
+
+	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.calendar = [['read'], ['create', 'edit', 'move'], ['delete', 'transfer']]
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/contacts.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/**
+ * Access levels of Contacts: Read, then Edit adds creating and editing, then Full adds deleting.
+ * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ */
+(function (root) {
+	'use strict'
+
+	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.contacts = [['read'], ['create', 'edit'], ['delete']]
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/tasks.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/**
+ * Access levels of Tasks: Read, then Edit adds creating and editing, then Full adds deleting.
+ * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ */
+(function (root) {
+	'use strict'
+
+	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.tasks = [['read'], ['create', 'edit'], ['delete']]
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/talk.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/**
+ * Access levels of Talk: Read, then Edit adds replying, attaching and quoting, then Full adds create.
+ * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ */
+(function (root) {
+	'use strict'
+
+	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.talk = [['read'], ['reply', 'attach', 'quote'], ['create']]
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/people.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/**
+ * Access levels of People: one operation, so only Read.
+ * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ */
+(function (root) {
+	'use strict'
+
+	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.people = [['read']]
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/logs.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/**
+ * Access levels of Logs: one operation, so only Read.
+ * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ */
+(function (root) {
+	'use strict'
+
+	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.logs = [['read']]
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/mail.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 /**
  * What the Mail operations let the AI do, for the column tooltips of src/admin/admin-grants.js: `read` lists accounts and
  * folders, `messages` (off by default) lists, searches and reads the messages themselves, `attachments` (off by default)
@@ -544,40 +683,87 @@
 		return warning === null || root.confirm(warning)
 	}
 
-	root.McpAdminMailGrants = { WRITE_OPERATIONS, operationHint, writeWarning, confirmWrites }
-})(typeof window !== 'undefined' ? window : globalThis);
+	/*
+	 * The Mail tiers for src/admin/admin-levels.js. Mail only reads at first: its first tier lists accounts and folders,
+	 * its second opens the messages, its third adds the text of attachments, and the next ones add the Mail writes, so
+	 * none of its levels is called Full. src/admin/admin-grants.js translates the names.
+	 */
+	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.mail = [['read'], ['messages'], ['attachments'], ['flags'], ['move'], ['draft'], ['send']]
+	catalog.tierNames.mail = ['folders', 'messages', 'attachments', 'flags', 'move', 'draft', 'send']
 
+	root.McpAdminMailGrants = { WRITE_OPERATIONS, operationHint, writeWarning, confirmWrites }
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/tables.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/**
+ * Access levels of Tables: Read, then Full adds creating and editing together.
+ * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ */
 (function (root) {
 	'use strict'
 
-	/** Cumulative tiers per module: [Read, Edit, Full]. Modules with one operation have only Read. */
-	const TIERS = {
-		files: [['read'], ['edit', 'create', 'move', 'restore'], ['share', 'link', 'delete']],
-		notes: [['read'], ['create', 'edit', 'move'], ['delete']],
-		deck: [['read'], ['create', 'edit', 'move'], ['delete']],
-		calendar: [['read'], ['create', 'edit', 'move'], ['delete', 'transfer']],
-		contacts: [['read'], ['create', 'edit'], ['delete']],
-		tasks: [['read'], ['create', 'edit'], ['delete']],
-		talk: [['read'], ['reply', 'attach', 'quote'], ['create']],
-		people: [['read']],
-		logs: [['read']],
-		mail: [['read'], ['messages'], ['attachments'], ['flags'], ['move'], ['draft'], ['send']],
-		tables: [['read'], ['create', 'edit']],
-		forms: [['read'], ['create', 'edit'], ['results']],
-	}
+	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.tables = [['read'], ['create', 'edit']]
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/access/levels/forms.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/**
+ * Access levels of Forms: Read, then writing forms, then writing forms and reading responses; src/admin/admin-grants.js translates the names.
+ * Registered in window.McpAdminLevelCatalog, which src/admin/admin-levels.js reads; see that file for how tiers make levels.
+ */
+(function (root) {
+	'use strict'
+
+	const catalog = root.McpAdminLevelCatalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+	catalog.tiers.forms = [['read'], ['create', 'edit'], ['results']]
+	catalog.tierNames.forms = ['read', 'forms_write', 'forms_write_results']
+})(typeof window !== 'undefined' ? window : globalThis)
+;
+/* admin/admin-levels.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/**
+ * Access levels of the admin page: one level per module (None, Read, Edit, Full) instead of a box per operation.
+ *
+ * A level is only a way to show and choose a set of operations; the server never sees it. Each module's operations are
+ * split into cumulative tiers (Read, then Edit adds its tier, then Full adds the last one), so a level is the union of
+ * the tiers up to it. A set of allowed operations that is no such union is "custom" and is shown and edited operation
+ * by operation. The tiers follow GrantPolicy::CATALOG; an operation the tiers do not name (a newer catalog) falls into
+ * the last tier, so it is never hidden and never granted by a lower level.
+ *
+ * The level functions are pure, with no DOM and no strings: src/admin/admin-grants.js draws the cells and names the levels.
+ * The tiers of each module live in its own file, src/admin/access/levels/<app>.js, which registers them in
+ * window.McpAdminLevelCatalog before this file runs (src/admin.manifest lists them first). Polls has named presets
+ * instead of tiers (src/admin/access/levels/polls.js, window.McpAdminPollsGrants) and Mail adds its write warnings
+ * (src/admin/access/levels/mail.js, window.McpAdminMailGrants); the other admin scripts read both.
+ */
+(function (root) {
+	'use strict'
+
+	const catalog = root.McpAdminLevelCatalog || { tiers: {}, tierNames: {} }
+
+	/** Cumulative tiers per module, from src/admin/access/levels/<app>.js: [Read, Edit, Full]. Modules with one operation have only Read. */
+	const TIERS = catalog.tiers
 
 	/** Names of the tiers by how many a module has. */
 	const TIER_NAMES = { 1: ['read'], 2: ['read', 'full'], 3: ['read', 'edit', 'full'] }
 
 	/**
-	 * Names of the tiers of the modules whose tiers are not Read, Edit and Full, in tier order. Mail only reads at first:
-	 * its first tier lists accounts and folders, its second opens the messages, its third adds the text of attachments,
-	 * and the next ones add the Mail writes, so none of its levels is called Full. src/admin/admin-grants.js translates them.
+	 * Names of the tiers of the modules whose tiers are not Read, Edit and Full, in tier order (Forms and Mail, from
+	 * their files). src/admin/admin-grants.js translates them.
 	 */
-	const MODULE_TIER_NAMES = {
-		forms: ['read', 'forms_write', 'forms_write_results'],
-		mail: ['folders', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'],
-	}
+	const MODULE_TIER_NAMES = catalog.tierNames
 
 	/**
 	 * @param {string} module module id

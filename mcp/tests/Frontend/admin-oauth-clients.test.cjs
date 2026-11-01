@@ -57,7 +57,7 @@ class Element {
 	querySelector(selector) { return this.querySelectorAll(selector)[0] ?? null }
 }
 
-const source = fs.readFileSync(path.join(__dirname, '../../src/admin/admin-grants.js'), 'utf8')
+const source = require('./AdminManifest.cjs').script('admin-grants.js')
 const start = source.indexOf('\tasync function initOauthClients() {')
 const block = source.slice(start, source.indexOf('\n\t}\n', start) + 4)
 assert.ok(start > 0 && block.length > 500, 'the OAuth clients block was found in src/admin/admin-grants.js')

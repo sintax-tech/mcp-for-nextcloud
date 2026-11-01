@@ -41,6 +41,44 @@ class AdminManifest {
 		const b = fragments.indexOf(second)
 		return a >= 0 && b >= 0 && a < b
 	}
+
+	/**
+	 * The source of one fragment of the admin bundle; a path the manifest does not list is an error, so a test never
+	 * runs a file the page does not load.
+	 *
+	 * @param {string} fragment path relative to src/, as listed in src/admin.manifest
+	 * @return {string} the fragment's source
+	 */
+	static fragment(fragment) {
+		if (!AdminManifest.fragments().includes(fragment)) {
+			throw new Error(fragment + ' is not in src/admin.manifest')
+		}
+		return fs.readFileSync(path.join(AdminManifest.app(), 'src', fragment), 'utf8')
+	}
+
+	/**
+	 * The access levels as the page runs them: every src/admin/access/levels/<app>.js, then the level functions of
+	 * src/admin/admin-levels.js, in manifest order and joined as the bundle joins them.
+	 *
+	 * @return {string} one script that installs McpAdminPollsGrants, McpAdminMailGrants and McpAdminLevels
+	 */
+	static levelsSource() {
+		return AdminManifest.fragments()
+			.filter((fragment) => fragment.startsWith('admin/access/levels/') || fragment === 'admin/admin-levels.js')
+			.map((fragment) => AdminManifest.fragment(fragment))
+			.join(';\n')
+	}
+
+	/**
+	 * The source of an admin script by its file name under src/admin/; admin-levels.js stands for all the access levels
+	 * ({@link AdminManifest.levelsSource}), which were one file up to RE-11.
+	 *
+	 * @param {string} name file name, such as admin-grants.js
+	 * @return {string} the source the page runs for it
+	 */
+	static script(name) {
+		return name === 'admin-levels.js' ? AdminManifest.levelsSource() : AdminManifest.fragment('admin/' + name)
+	}
 }
 
 module.exports = AdminManifest

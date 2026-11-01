@@ -63,8 +63,8 @@ async function app(handler) {
 		},
 	}
 	// The page loads src/admin/admin-levels.js before the inspector, in the same global, so its Polls and Mail helpers see t().
-	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../src/admin/admin-levels.js'), 'utf8'), context)
-	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../src/admin/admin-inspector.js'), 'utf8'), context)
+	vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), context)
+	vm.runInNewContext(require('./AdminManifest.cjs').script('admin-inspector.js'), context)
 	const submit = async (id) => { await ids[id].listeners.submit({ preventDefault() {} }); await tick() }
 	return { ids, calls, submit, window }
 }

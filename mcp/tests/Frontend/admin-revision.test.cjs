@@ -15,7 +15,7 @@ const fs = require('node:fs')
 const path = require('node:path')
 
 const root = path.join(__dirname, '../..')
-const source = fs.readFileSync(path.join(root, 'src/admin/admin-grants.js'), 'utf8')
+const source = require('./AdminManifest.cjs').script('admin-grants.js')
 
 /** The source of one function of the admin script, from its declaration to its closing brace. */
 function cut(declaration) {

@@ -58,7 +58,7 @@ function setup({ users, preview, popoverOpen = false, menuOpen = false, drawerOp
 	function fire(name) { for (const action of listeners[name] || []) action() }
 	let onRefresh = null
 	const n = (app, one, many, count) => (count === 1 ? one : many).replace('%n', count)
-	vm.runInNewContext(fs.readFileSync(path.join(root, 'src/admin/admin-exceptions.js'), 'utf8'), { window, document, n, setTimeout })
+	vm.runInNewContext(require('./AdminManifest.cjs').script('admin-exceptions.js'), { window, document, n, setTimeout })
 	return {
 		api: window.McpAdminExceptions,
 		elements,

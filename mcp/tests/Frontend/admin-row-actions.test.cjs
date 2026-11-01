@@ -94,7 +94,7 @@ function setup({ overrides = true, clipboard = true } = {}) {
 		if (clipboard === 'refuses') throw new Error('NotAllowedError')
 		log.copied.push(text)
 	} } }
-	vm.runInNewContext(fs.readFileSync(path.join(root, 'src/admin/admin-row-actions.js'), 'utf8'), { window, document, navigator, t, Event: class { constructor(type) { this.type = type } } })
+	vm.runInNewContext(require('./AdminManifest.cjs').script('admin-row-actions.js'), { window, document, navigator, t, Event: class { constructor(type) { this.type = type } } })
 	const button = (uid) => {
 		const trigger = window.McpRowActions.button(users.find((user) => user.uid === uid))
 		block.append(trigger)
@@ -205,7 +205,7 @@ test('a copy the browser refuses is reported, and without a clipboard the item i
 
 /* The row pieces of src/admin/admin-grants.js. */
 
-const grants = fs.readFileSync(path.join(root, 'src/admin/admin-grants.js'), 'utf8')
+const grants = require('./AdminManifest.cjs').script('admin-grants.js')
 function cut(declaration) {
 	const start = grants.indexOf('\t' + declaration)
 	assert.ok(start > 0, declaration + ' was found in src/admin/admin-grants.js')

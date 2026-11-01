@@ -14,7 +14,7 @@ class PollsAdminContract {
 	static levels() {
 		const context = require('./PollsCreateContext.cjs').load()
 		for (const file of ['admin-levels.js']) {
-			vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../src/admin', file), 'utf8'), context)
+			vm.runInNewContext(require('./AdminManifest.cjs').script(file), context)
 		}
 		return context.McpAdminLevels
 	}
@@ -30,6 +30,6 @@ test('Polls has only None and Read, without a future Full grant', () => {
 
 test('every module label map names Polls', () => {
 	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-inspector.js']) {
-		assert.match(fs.readFileSync(path.join(__dirname, '../../src/admin', file), 'utf8'), /polls: t\('mcp', 'Polls'\)/)
+		assert.match(require('./AdminManifest.cjs').script(file), /polls: t\('mcp', 'Polls'\)/)
 	}
 })

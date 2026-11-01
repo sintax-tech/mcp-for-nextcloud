@@ -15,7 +15,7 @@ const path = require('node:path')
 
 const root = path.join(__dirname, '../..')
 const context = require('./PollsCreateContext.cjs').load()
-vm.runInNewContext(fs.readFileSync(path.join(root, 'src/admin/admin-levels.js'), 'utf8'), context)
+vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), context)
 const Levels = context.McpAdminLevels
 const plain = (value) => JSON.parse(JSON.stringify(value))
 
@@ -108,7 +108,7 @@ test('the origin of a module: invalid, then individual, then unknown group, then
 
 /* The level cell of src/admin/admin-grants.js. */
 
-const grants = fs.readFileSync(path.join(root, 'src/admin/admin-grants.js'), 'utf8')
+const grants = require('./AdminManifest.cjs').script('admin-grants.js')
 function cut(declaration) {
 	const start = grants.indexOf('\t' + declaration)
 	assert.ok(start > 0, declaration + ' was found in src/admin/admin-grants.js')

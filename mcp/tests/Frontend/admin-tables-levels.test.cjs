@@ -24,7 +24,7 @@ const plain = (value) => JSON.parse(JSON.stringify(value))
 function levels() {
 	const context = { t: (app, text) => text }
 	for (const file of ['admin-levels.js']) {
-		vm.runInNewContext(fs.readFileSync(path.join(root, 'src/admin', file), 'utf8'), context)
+		vm.runInNewContext(require('./AdminManifest.cjs').script(file), context)
 	}
 	return context.McpAdminLevels
 }
@@ -52,7 +52,7 @@ test('Tables levels are None, Read and Full', () => {
 
 test('every module label map names Tables', () => {
 	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-inspector.js']) {
-		const source = fs.readFileSync(path.join(root, 'src/admin', file), 'utf8')
+		const source = require('./AdminManifest.cjs').script(file)
 		assert.match(source, /tables: t\('mcp', 'Tables'\)/, file)
 	}
 })

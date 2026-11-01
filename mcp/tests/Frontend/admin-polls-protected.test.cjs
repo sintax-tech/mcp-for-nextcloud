@@ -38,7 +38,7 @@ class PollsProtectedAdmin {
 	static load(files, extra = {}) {
 		const root = { t: (_, text, args = {}) => text.replace(/\{(\w+)\}/g, (_, key) => args[key] ?? key), ...extra }
 		root.window = root
-		for (const file of files) vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../src/admin', file), 'utf8'), root)
+		for (const file of files) vm.runInNewContext(require('./AdminManifest.cjs').script(file), root)
 		return root
 	}
 
@@ -95,10 +95,10 @@ test('real inspector DOM renders the protected labels, cumulative level and sele
 
 test('all admin label consumers delegate to the loaded Polls helper and translations agree with Forms common results', () => {
 	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-inspector.js', 'admin-level-popover.js']) {
-		assert.match(fs.readFileSync(path.join(__dirname, '../../src/admin', file), 'utf8'), /McpAdminPollsGrants\?\.levelLabels/)
+		assert.match(require('./AdminManifest.cjs').script(file), /McpAdminPollsGrants\?\.levelLabels/)
 	}
 	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-inspector.js']) {
-		assert.match(fs.readFileSync(path.join(__dirname, '../../src/admin', file), 'utf8'), /McpAdminPollsGrants\?\.operationLabels/)
+		assert.match(require('./AdminManifest.cjs').script(file), /McpAdminPollsGrants\?\.operationLabels/)
 	}
 	const template = fs.readFileSync(path.join(__dirname, '../../templates/admin.php'), 'utf8')
 	assert.equal(template.indexOf("'admin-polls-grants'"), -1)

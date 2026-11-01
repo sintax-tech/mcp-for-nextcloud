@@ -1,4 +1,17 @@
 admin/admin-picker.js
+admin/access/levels/polls.js
+admin/access/levels/files.js
+admin/access/levels/notes.js
+admin/access/levels/deck.js
+admin/access/levels/calendar.js
+admin/access/levels/contacts.js
+admin/access/levels/tasks.js
+admin/access/levels/talk.js
+admin/access/levels/people.js
+admin/access/levels/logs.js
+admin/access/levels/mail.js
+admin/access/levels/tables.js
+admin/access/levels/forms.js
 admin/admin-levels.js
 admin/admin-grants.js
 admin/admin-level-popover.js

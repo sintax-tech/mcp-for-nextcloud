@@ -74,7 +74,7 @@ class Element {
 const plain = (value) => JSON.parse(JSON.stringify(value))
 const tick = async () => { for (let i = 0; i < 12; i++) await new Promise(setImmediate) }
 const REVISION = '9007199254740993'
-const source = fs.readFileSync(path.join(__dirname, '../../src/admin/admin-overrides.js'), 'utf8')
+const source = require('./AdminManifest.cjs').script('admin-overrides.js')
 
 const origin = (kind, groupIds = []) => ({ source: kind, groupIds })
 /** A matrix row of the API: `overrides` maps "module:operation" ("eligible" for Can connect) to a source. */
@@ -478,7 +478,7 @@ test('T16: while a change is saving the controls are locked and a second reset i
 })
 
 test('O1: undoing a 503 without uncertainty keeps the table, offers the same undo again and does not reload', async () => {
-	const source = fs.readFileSync(path.join(__dirname, '../../src/admin/admin-grants.js'), 'utf8')
+	const source = require('./AdminManifest.cjs').script('admin-grants.js')
 	const start = source.indexOf('\tasync function undoBulk(')
 	const end = source.indexOf('\n\t}\n', start) + 4
 	const notices = []
@@ -808,7 +808,7 @@ test('S4: the review of redundant values resets exactly the cells it names, user
 test('S6: the selection bar appears with a selection, sets a level or "Can connect" for exactly the selected people, and clears', async () => {
 	const ui = app([alice(), bob(), carol()])
 	const levels = {}
-	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../src/admin/admin-levels.js'), 'utf8'), levels)
+	vm.runInNewContext(require('./AdminManifest.cjs').levelsSource(), levels)
 	ui.window.McpAdminLevels = levels.McpAdminLevels
 	const bar = ui.toolbar.querySelector('div.mcp-selection-bar')
 	assert.equal(bar.hidden, true, 'no bar without a selection')
@@ -849,7 +849,7 @@ test('S6: the select-all box heads the selection column and keeps its accessible
 
 test('issue #11 matrix: an unreadable reset response uses real api uncertainty recovery, with no success or undo', async () => {
 	const ui = app([alice()], () => [200, new SyntaxError('HTML proxy response')])
-	const matrixSource = fs.readFileSync(path.join(__dirname, '../../src/admin/admin-grants.js'), 'utf8')
+	const matrixSource = require('./AdminManifest.cjs').script('admin-grants.js')
 	const start = matrixSource.indexOf('\tasync function api(')
 	const end = matrixSource.indexOf('\n\t}\n', start) + 4
 	const matrix = ui.window.McpAdminMatrix

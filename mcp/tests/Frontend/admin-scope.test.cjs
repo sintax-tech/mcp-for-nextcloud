@@ -110,7 +110,7 @@ async function app(handler = () => undefined, options = {}) {
 		confirm: (text) => { confirms.push(text); return options.confirm !== false },
 	}
 	const confirms = []
-	vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../src/admin/admin-scope.js'), 'utf8'), context)
+	vm.runInNewContext(require('./AdminManifest.cjs').script('admin-scope.js'), context)
 	const open = async (uid = 'alice') => {
 		ids['mcp-scope-user'].value = uid
 		await ids['mcp-scope-form'].listeners.submit({ preventDefault() {} })

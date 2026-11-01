@@ -1387,6 +1387,14 @@
 		},
 		{
 			"rule": "native-app",
+			"source": "lib/Tools/Deck/Handler/FollowupCardsHandler.php",
+			"target": "OCA\\Deck\\Db\\Card",
+			"line": 97,
+			"reason": "Move this native-app PHPDoc type behind the Deck Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
 			"source": "lib/Tools/Deck/Handler/ListBoardsHandler.php",
 			"target": "OCA\\Deck\\Db\\Board",
 			"line": 58,

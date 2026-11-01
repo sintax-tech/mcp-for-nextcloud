@@ -18,9 +18,18 @@ final class NativeAppBoundaryTest extends ArchitectureCase {
 			"\$x = 'OCA\\\\Guests\\\\GuestManager';",
 			'try {} catch (\\OCA\\Forms\\Service\\FormService $e) {}',
 			'/** @param \\OCA\\Deck\\Db\\Card $card */ function x($card) {}',
+			'/** @param array<string, \\OCA\\Deck\\Db\\Card> $cards */ function x($cards) {}',
+			"/** @return array{\n * card: \\OCA\\Deck\\Db\\Card\n * } */ function x() {}",
 		] as $code) { self::assertNotSame([], self::fixture('lib/Modules/Deck/Reading/X.php', $code)); }
 		self::assertSame([], self::fixture('lib/Modules/Deck/Integration/X.php', 'use OCA\\Deck\\Db\\Card;'));
 	}
+	public function testIncompletePrefixIsDiagnosedAndLiteralConcatenationIsResolved(): void {
+		$joined = self::fixture('lib/Modules/Deck/Reading/X.php', "\$x = 'OCA\\\\' . 'Deck\\\\Db\\\\Card';");
+		self::assertSame('OCA\\Deck\\Db\\Card', $joined[0]['target']);
+		$this->expectException(RuntimeException::class);
+		self::fixture('lib/Modules/Deck/Reading/X.php', "\$x = 'OCA\\\\' . \$app . '\\\\Db\\\\Card';");
+	}
+
 	public function testDocumentationProseAndSeeAreNotTypes(): void {
 		self::assertSame([], ClassReferences::read('<?php /** {@see \\OCA\\Mcp\\Mcp\\Confirmation\\PlanState} @return object as an OCA\\Files\\File */ function x() {}'));
 	}

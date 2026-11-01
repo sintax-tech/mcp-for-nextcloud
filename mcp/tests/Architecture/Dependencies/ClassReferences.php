@@ -38,10 +38,10 @@ final class ClassReferences {
 				continue;
 			}
 			if ($id === T_DOC_COMMENT) {
-				preg_match_all('/@(param|return|var|throws|property(?:-read|-write)?)\s+([^\s]+)/', $text, $types);
-				foreach ($types[2] as $type) {
-					preg_match_all('/\\\\?[A-Za-z_][A-Za-z0-9_]*(?:\\\\[A-Za-z_][A-Za-z0-9_]*)*/', $type, $names);
-					foreach ($names[0] as $name) {
+				foreach (self::docTypes($text) as $type) {
+					preg_match_all('/\\\\?[A-Za-z_][A-Za-z0-9_]*(?:\\\\[A-Za-z_][A-Za-z0-9_]*)*/', $type, $names, PREG_OFFSET_CAPTURE);
+					foreach ($names[0] as [$name, $offset]) {
+						if (str_starts_with(ltrim(substr($type, $offset + strlen($name))), ':')) { continue; }
 						if (str_contains($name, '\\') || $scope->isImported($name)) { $result[] = ['target' => $scope->resolveClass($name), 'line' => $line, 'kind' => 'doc-type']; }
 					}
 				}
@@ -49,8 +49,11 @@ final class ClassReferences {
 			}
 			if ($id === T_CONSTANT_ENCAPSED_STRING) {
 				$name = self::literal($text);
-				if (preg_match('/^\\\\?(?:OCA|OCP|Psr|Sabre|Smalot|Symfony)\\\\[A-Za-z0-9_\\\\]+$/D', $name)) {
-					$result[] = ['target' => ltrim($name, '\\'), 'line' => $line, 'kind' => str_ends_with($name, '\\') ? 'dynamic-prefix' : 'literal'];
+				while (($tokens[$i + 1][1] ?? '') === '.' && ($tokens[$i + 2][0] ?? null) === T_CONSTANT_ENCAPSED_STRING) {
+					$name .= self::literal($tokens[$i + 2][1]); $i += 2;
+				}
+				if (preg_match('/^\\\\?(?:OCA|OCP|Psr|Sabre|Smalot|Symfony)\\\\[A-Za-z0-9_\\\\]*$/D', $name)) {
+					$result[] = ['target' => ltrim($name, '\\'), 'line' => $line, 'kind' => (str_ends_with($name, '\\') || ($tokens[$i + 1][1] ?? '') === '.') ? 'dynamic-prefix' : 'literal'];
 				}
 				continue;
 			}
@@ -63,6 +66,27 @@ final class ClassReferences {
 			}
 		}
 		return array_values(array_unique($result, SORT_REGULAR));
+	}
+
+	/** @param string $doc PHPDoc, including multiline generic/shape types. @return list<string> Type expressions only, without descriptions. */
+	private static function docTypes(string $doc): array {
+		$doc = preg_replace('/^\s*\* ?/m', '', $doc);
+		preg_match_all('/@(param|return|var|throws|property(?:-read|-write)?)\s+/', $doc, $tags, PREG_OFFSET_CAPTURE);
+		$types = [];
+		foreach ($tags[0] as [$tag, $offset]) {
+			$type = ''; $depth = 0; $quote = null;
+			for ($i = $offset + strlen($tag); $i < strlen($doc); $i++) {
+				$char = $doc[$i];
+				if ($quote !== null) { if ($char === $quote && ($doc[$i - 1] ?? '') !== '\\') { $quote = null; } $type .= ' '; continue; }
+				if ($char === "'" || $char === '"') { $quote = $char; $type .= ' '; continue; }
+				if (ctype_space($char) && $depth === 0) { break; }
+				if (str_contains('<{[(', $char)) { $depth++; }
+				if (str_contains('>}])', $char)) { $depth--; }
+				$type .= $char;
+			}
+			$types[] = $type;
+		}
+		return $types;
 	}
 
 	/** @param array<mixed> $tokens Significant tokens. @param int $i Name position. @return bool Signature/property type, not a bitwise constant or ternary expression. */

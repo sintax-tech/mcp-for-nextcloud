@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Deck;
 
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCP\Files\File;
 use OCP\Files\IRootFolder;
 use OCP\Share\IShare;

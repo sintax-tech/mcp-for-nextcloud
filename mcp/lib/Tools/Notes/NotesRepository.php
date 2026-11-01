@@ -36,7 +36,7 @@ class NotesRepository {
 	public function __construct(
 		private IRootFolder $rootFolder,
 		private IConfig $config,
-		private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard = null,
+		private ?\OCA\Mcp\Access\Visibility\VisibilityGuard $visibilityGuard = null,
 		private ?NotesFolderResolver $folders = null,
 	) {
 		$this->folders ??= new NotesFolderResolver($rootFolder, $config);

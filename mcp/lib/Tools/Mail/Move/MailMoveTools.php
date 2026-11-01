@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Mail\Move;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tools\Mail\Handler\MoveMessageHandler;
 use OCA\Mcp\Tools\Mail\Link\MailLinks;

@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files\Handler;
 
-use OCA\Mcp\Tools\Common\FileTypeDenied;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCP\Files\NotFoundException;
 use OCA\Mcp\Tools\Files\CheckoutService;
 use OCA\Mcp\Tools\Files\FileBackup;
@@ -20,8 +20,8 @@ use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
-use OCA\Mcp\Tools\Common\FileTypeGuard;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\Folder;

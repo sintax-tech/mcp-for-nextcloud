@@ -17,7 +17,7 @@ use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Notes\NotesModule;
 use OCA\Mcp\Tools\Notes\NotesRepository;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCP\App\IAppManager;
@@ -434,7 +434,7 @@ final class NotesModuleTest extends TestCase {
 	}
 
 	public function testSearchNotesVisibilityGuardFiltersHiddenNotes(): void {
-		$guard = $this->createMock(\OCA\Mcp\Service\VisibilityGuard::class);
+		$guard = $this->createMock(\OCA\Mcp\Access\Visibility\VisibilityGuard::class);
 		$guard->method('filter')->willReturnCallback(function (iterable $nodes): array {
 			$filtered = [];
 			foreach ($nodes as $node) {

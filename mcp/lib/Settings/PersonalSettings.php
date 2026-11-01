@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Settings;
 
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\Util;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\IURLGenerator;
 use OCP\IUserSession;

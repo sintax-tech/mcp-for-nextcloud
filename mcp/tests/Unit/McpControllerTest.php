@@ -13,7 +13,7 @@ use OCA\Mcp\L10n\UserL10n;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\OAuth\AccessTokenAuthenticator;
 use OCA\Mcp\OAuth\ResourceUrl;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use OCA\Mcp\Tests\Unit\ArrayGroupBackend;
 use OCP\IRequest;
@@ -36,8 +36,8 @@ final class McpControllerTest extends TestCase {
 	private array $headers = [];
 	/** @var AccessTokenAuthenticator&\PHPUnit\Framework\MockObject\MockObject */
 	private AccessTokenAuthenticator $authenticator;
-	/** @var \OCA\Mcp\Service\Policy\CauseProcessor&\PHPUnit\Framework\MockObject\MockObject */
-	private \OCA\Mcp\Service\Policy\CauseProcessor $causes;
+	/** @var \OCA\Mcp\Access\Policy\CauseProcessor&\PHPUnit\Framework\MockObject\MockObject */
+	private \OCA\Mcp\Access\Policy\CauseProcessor $causes;
 	private ?IUser $volatileUser = null;
 	/** @var string|null `user_id` of the simulated ISession, the value the DI container hands out as `userId` */
 	private ?string $sessionUid = null;
@@ -65,7 +65,7 @@ final class McpControllerTest extends TestCase {
 		}
 		$this->login('alice');
 		$this->authenticator = $this->createMock(AccessTokenAuthenticator::class);
-		$this->causes = $this->createMock(\OCA\Mcp\Service\Policy\CauseProcessor::class);
+		$this->causes = $this->createMock(\OCA\Mcp\Access\Policy\CauseProcessor::class);
 		$this->headers = [
 			'Content-Type' => 'application/json',
 			'Accept' => 'application/json, text/event-stream',
@@ -109,9 +109,9 @@ final class McpControllerTest extends TestCase {
 		return $controller;
 	}
 
-	/** @return \OCA\Mcp\Service\GuestRestrictions a double recording whom it was applied to and under which session uid */
-	private function guests(): \OCA\Mcp\Service\GuestRestrictions {
-		$guests = $this->createMock(\OCA\Mcp\Service\GuestRestrictions::class);
+	/** @return \OCA\Mcp\Access\Guests\GuestRestrictions a double recording whom it was applied to and under which session uid */
+	private function guests(): \OCA\Mcp\Access\Guests\GuestRestrictions {
+		$guests = $this->createMock(\OCA\Mcp\Access\Guests\GuestRestrictions::class);
 		$guests->method('apply')->willReturnCallback(function (IUser $user): bool {
 			$this->guestCalls[] = $user->getUID() . '@' . ($this->sessionUid ?? 'none');
 			return $this->guestAllowed;
@@ -273,7 +273,7 @@ final class McpControllerTest extends TestCase {
 	public function testAnUnreadableCredentialStateIsATemporaryFailure(): void {
 		$this->login(null);
 		$this->headers['Authorization'] = 'Bearer ncmcp_at_valid';
-		$this->authenticator->method('authenticate')->willThrowException(new \OCA\Mcp\Service\Policy\PolicyUnavailable());
+		$this->authenticator->method('authenticate')->willThrowException(new \OCA\Mcp\Access\Policy\PolicyUnavailable());
 		$response = $this->controller('{}')->post();
 		$this->assertSame(503, $response->getStatus());
 		$this->assertSame('1', self::headers($response)['Retry-After']);
@@ -284,7 +284,7 @@ final class McpControllerTest extends TestCase {
 	public function testBasicProcessesTheUsersCausesAndAnUnreadableOneIsATemporaryFailure(): void {
 		$this->headers['Authorization'] = 'Basic Zm9vOmJhcg==';
 		$this->causes->expects($this->exactly(2))->method('preflight')->with('alice')->willReturnOnConsecutiveCalls(
-			null, $this->throwException(new \OCA\Mcp\Service\Policy\PolicyUnavailable()));
+			null, $this->throwException(new \OCA\Mcp\Access\Policy\PolicyUnavailable()));
 		$this->assertSame(405, $this->controller()->get()->getStatus());
 		$response = $this->controller('{}')->post();
 		$this->assertSame(503, $response->getStatus());
@@ -493,7 +493,7 @@ final class McpControllerTest extends TestCase {
 	public function testAPolicyUnavailableInsideAToolAnswers503(): void {
 		$this->groupEligibleAlice();
 		$protocol = $this->groupProtocol(function (): void {
-			throw new \OCA\Mcp\Service\Policy\PolicyUnavailable('Policy resolution is unknown');
+			throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('Policy resolution is unknown');
 		});
 		$this->assertSame(503, $this->call($protocol, 'notes_probe')[0]);
 	}

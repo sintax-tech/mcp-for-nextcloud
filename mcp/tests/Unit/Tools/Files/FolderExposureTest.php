@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\Tools\Common\FakeLock;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Files\Batch;
@@ -34,7 +34,7 @@ final class FolderExposureTest extends FilesToolsTestCase {
 		$mapper = $this->createMock(ISystemTagObjectMapper::class);
 		$mapper->method('getTagIdsForObjects')->willReturnCallback(fn (array $ids): array => array_combine($ids,
 			array_map(fn ($id): array => in_array((int)$id, $this->tagged, true) ? ['999'] : [], $ids)));
-		$this->visibilityGuard = new \OCA\Mcp\Service\Scope\FilesAccessGuard($config, $mapper, $this->visibilityRoot());
+		$this->visibilityGuard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($config, $mapper, $this->visibilityRoot());
 		parent::setUp();
 		$this->tree->addFolder('/alice/files/Destination');
 		$this->sharePolicy->setGrant('alice', 'files', 'share', true);

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCP\Files\IRootFolder;
@@ -124,7 +124,7 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 		$ftsManager->method('isProviderIndexed')->with('files')->willReturn(true);
 		$ftsManager->method('search')->willReturn([$searchResult]);
 
-		$guard = $this->createMock(\OCA\Mcp\Service\Scope\FilesAccessGuard::class);
+		$guard = $this->createMock(\OCA\Mcp\Access\ResourceScope\FilesAccessGuard::class);
 		$guard->method('filter')->willReturn([]); // hides all nodes
 
 		$root = $this->createMock(IRootFolder::class);
@@ -146,7 +146,7 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 	private function buildModuleWithFts(
 		IRootFolder $root,
 		IFullTextSearchManager $ftsManager,
-		?\OCA\Mcp\Service\Scope\FilesAccessGuard $guard = null,
+		?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $guard = null,
 	): FilesModule {
 		$extractor = new \OCA\Mcp\Tools\Files\TextExtractor($this->temp);
 		$backup = new \OCA\Mcp\Tools\Files\FileBackup($this->apps, $this->users, $this->time, $this->config->mock($this));
@@ -193,7 +193,7 @@ final class FilesSearchContentTest extends FilesToolsTestCase {
 			$guard,
 			$this->apps,
 			$ftsManager,
-			fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this),
+			fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this),
 		);
 	}
 }

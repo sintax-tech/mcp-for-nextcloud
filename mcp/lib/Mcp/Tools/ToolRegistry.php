@@ -7,12 +7,12 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Mcp\Tools;
 
-use OCA\Mcp\Service\Policy\GrantUnknown;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\GrantUnknown;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\GuestRestrictions;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCP\App\IAppManager;
 use OCP\IUserManager;

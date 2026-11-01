@@ -66,7 +66,7 @@ final class MoveReaderPreparation {
 		$name = implode('', ['Override', 'Preview']) . '.php';
 		$pattern = '~foreach \(\[\'PolicyResolver.php\', \'PolicyOperationContext.php\', \'../' . preg_quote($name, '~') . '\'\] as \$file\) \{.*?\n(?: {8}|\t{2})\}~s';
 		$replacement = '';
-		foreach (['Service/Policy/PolicyResolver.php', 'Service/Policy/PolicyOperationContext.php', 'Service/' . $name] as $file) {
+		foreach (['Access/Policy/PolicyResolver.php', 'Access/Policy/PolicyOperationContext.php', 'Service/' . $name] as $file) {
 			$replacement .= "\$this->assertStringContainsString('admin counting only, not an access decision', file_get_contents(\$lib . '/$file'));\n";
 		}
 		return preg_replace_callback($pattern, static fn (): string => $replacement, $code);

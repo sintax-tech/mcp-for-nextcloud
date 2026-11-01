@@ -8,13 +8,13 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract\Oracle;
 
 use OCA\Mcp\AppInfo\Application;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\GuestRestrictions;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use OCA\Mcp\Mcp\Prompts\PromptCatalog;
 use OCA\Mcp\Mcp\Resources\ResourceRegistry;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Unit\ArrayGroupBackend;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\InstalledApp;

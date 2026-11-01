@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Mcp\Tools;
 
-use OCA\Mcp\Service\Policy\GrantUnknown;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Policy\GrantUnknown;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Tools\ToolModule;
@@ -88,7 +88,7 @@ final class ToolRegistryTest extends TestCase {
 		});
 		$guests = null;
 		if ($this->guestApps !== null) {
-			$guests = $this->createMock(\OCA\Mcp\Service\GuestRestrictions::class);
+			$guests = $this->createMock(\OCA\Mcp\Access\Guests\GuestRestrictions::class);
 			$guests->method('allowsApp')->willReturnCallback(fn (string $uid, string $app): bool =>
 				$app === '' || !isset($this->guestApps[$uid]) || in_array($app, $this->guestApps[$uid], true));
 		}

@@ -17,7 +17,7 @@ use OCP\ITempManager;
  *
  * It reads, so its operation is `read` and the registry never asks for `confirm` nor marks it as writing. Who may call
  * it is decided by the separate grant `mail.attachments` (`grantAnyOf`), which starts denied like every operation but
- * read ({@see \OCA\Mcp\Service\GrantPolicy::defaultGranted()}): neither `mail.read` nor `mail.messages` opens an
+ * read ({@see \OCA\Mcp\Access\Grants\GrantPolicy::defaultGranted()}): neither `mail.read` nor `mail.messages` opens an
  * attachment. It does not need `mail.messages` either: the tool resolves the message, its folder and its account
  * itself and returns nothing of the message but the attachment text; in practice the ids come from mail_read_message.
  * It carries the app id, so it is hidden while Mail is not enabled for the user or is older than MCP supports, and it

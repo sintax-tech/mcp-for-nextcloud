@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Contract;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarDav;
@@ -207,7 +207,7 @@ final class ToolErrorsLanguagesTest extends TestCase {
 		$services = $this->createMock(TalkServices::class);
 		$services->method('manager')->willThrowException(new \RuntimeException('spreed is unreachable'));
 		$resolver = new ConversationResolver($services);
-		$reader = new ConversationReader($services, $resolver, $this->createMock(ActorNames::class), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+		$reader = new ConversationReader($services, $resolver, $this->createMock(ActorNames::class), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
 		return new TalkModule(
 			$services,
 			$reader,

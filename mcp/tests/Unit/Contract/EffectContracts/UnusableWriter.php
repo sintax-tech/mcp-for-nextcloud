@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\PolicyWriter;
 
 /**
  * The policy failure of the controller effect contracts: the real {@see PolicyWriter} in the state it is left in after

@@ -23,8 +23,8 @@ final class PollsTestRig {
 	public IUserSession $session;
 	/** @var string|null endpoint actor, mutable only to model endpoint context changes in tests */
 	public ?string $uid = 'alice';
-	/** @var \OCA\Mcp\Service\GrantPolicy real grant policy */
-	public \OCA\Mcp\Service\GrantPolicy $policy;
+	/** @var \OCA\Mcp\Access\Grants\GrantPolicy real grant policy */
+	public \OCA\Mcp\Access\Grants\GrantPolicy $policy;
 	/** @var PollsModule actual module */
 	public PollsModule $module;
 	/** @var PollsServices actual resolver */

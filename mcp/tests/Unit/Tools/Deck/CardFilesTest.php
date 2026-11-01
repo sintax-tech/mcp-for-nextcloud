@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Tools\Deck\{CardFiles, DeckGatewayInterface, DeckRefusalException};
 use OCA\Mcp\Tools\Deck\Handler\CardFileHandler;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
@@ -211,8 +211,8 @@ final class CardFilesTest extends TestCase {
 		} catch (DeckRefusalException) {
 			self::assertTrue(true);
 		}
-		$this->guard->method('assertScopeReadable')->willThrowException(new \OCA\Mcp\Service\Policy\PolicyUnavailable());
-		$this->expectException(\OCA\Mcp\Service\Policy\PolicyUnavailable::class);
+		$this->guard->method('assertScopeReadable')->willThrowException(new \OCA\Mcp\Access\Policy\PolicyUnavailable());
+		$this->expectException(\OCA\Mcp\Access\Policy\PolicyUnavailable::class);
 		$this->handler(false)->handle(['cardId' => 7], 'alice');
 	}
 

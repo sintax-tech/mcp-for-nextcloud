@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Tools\Common\FileTypeDenied;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;

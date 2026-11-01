@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tools\Deck\Handler;
 use InvalidArgumentException;
 use OCA\Deck\Db\Assignment;
 use OCA\Deck\Db\Stack;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Tools\Deck\DeckConflictException;
 use OCA\Mcp\Tools\Deck\DeckErrors;

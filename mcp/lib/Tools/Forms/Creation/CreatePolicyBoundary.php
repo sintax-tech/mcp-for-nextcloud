@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Forms\Creation;
 
-use OCA\Mcp\Service\Policy\PolicyResolver;
+use OCA\Mcp\Access\Policy\PolicyResolver;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /** Reassembles one non-observing policy boundary without joining or replacing the endpoint snapshot. */

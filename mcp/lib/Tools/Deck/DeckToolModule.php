@@ -9,9 +9,9 @@ namespace OCA\Mcp\Tools\Deck;
 
 use InvalidArgumentException;
 use OCA\Mcp\Platform\Compat\AppEnablement;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Tools\Deck\Handler\AbstractHandler;
 use OCA\Mcp\Tools\Deck\Handler\CardFileHandler;

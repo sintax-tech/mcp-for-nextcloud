@@ -156,9 +156,9 @@ final class FakeShares {
 		return $manager;
 	}
 
-	/** @return \OCA\Mcp\Service\Scope\FilesAccessGuard a guard that hides nothing, for tests where visibility is not the point */
-	public function guardShowingAll(): \OCA\Mcp\Service\Scope\FilesAccessGuard {
-		$guard = $this->mock(\OCA\Mcp\Service\Scope\FilesAccessGuard::class);
+	/** @return \OCA\Mcp\Access\ResourceScope\FilesAccessGuard a guard that hides nothing, for tests where visibility is not the point */
+	public function guardShowingAll(): \OCA\Mcp\Access\ResourceScope\FilesAccessGuard {
+		$guard = $this->mock(\OCA\Mcp\Access\ResourceScope\FilesAccessGuard::class);
 		$guard->method('isVisible')->willReturn(true);
 		$guard->method('isTraversable')->willReturn(true);
 		$guard->method('isConfigurationValid')->willReturn(true);

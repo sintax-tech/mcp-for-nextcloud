@@ -9,9 +9,9 @@ namespace OCA\Mcp\Tests\Integration\Policy;
 
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\Policy\ScopeCleanup;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\ScopeCleanup;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\Credential;
 use OCA\Mcp\Tests\Integration\Support\Http;

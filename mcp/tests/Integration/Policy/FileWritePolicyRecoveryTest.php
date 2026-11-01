@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Policy;
 
-use OCA\Mcp\Service\FileWritePolicy;
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\IAppConfig;
 use OCP\IDBConnection;

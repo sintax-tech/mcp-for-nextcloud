@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Forms\Editing;
 
 use OCA\Mcp\Tools\Forms\FormsServices;
 use OCA\Mcp\Tools\Forms\Creation\CreateNativeArguments;
-use OCA\Mcp\Service\GuestRestrictions;
+use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IUserSession;
 

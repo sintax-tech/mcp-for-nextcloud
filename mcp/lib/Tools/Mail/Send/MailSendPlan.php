@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Mail\Send;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Mail\MailModule;
 use OCA\Mcp\Tools\Mail\MailRows;

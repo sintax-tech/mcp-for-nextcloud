@@ -19,11 +19,11 @@ final class FileWriteGuardCoverageTest extends TestCase {
 	 */
 	private function classified(): array {
 		return [
-			'Service/GrantPolicy.php#<global>:literal-move:1' => 'label: files operation catalog entry',
-			'Service/GrantPolicy.php#<global>:literal-move:2' => 'label: notes operation catalog entry',
-			'Service/GrantPolicy.php#<global>:literal-move:3' => 'label: deck operation catalog entry',
-			'Service/GrantPolicy.php#<global>:literal-move:4' => 'label: calendar operation catalog entry',
-			'Service/GrantPolicy.php#<global>:literal-move:5' => 'label: mail operation catalog entry',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:1' => 'label: files operation catalog entry',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:2' => 'label: notes operation catalog entry',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:3' => 'label: deck operation catalog entry',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:4' => 'label: calendar operation catalog entry',
+			'Access/Grants/GrantCatalog.php#<global>:literal-move:5' => 'label: mail operation catalog entry',
 			'Service/Calendar/CalendarSelftestService.php#run:literal-move:1' => 'label: self-test operation grant name',
 			'Service/Calendar/CalendarSelftestService.php#run:literal-move:2' => 'label: self-test stage identifier',
 			'Service/Calendar/CalendarSelftestService.php#run:literal-move:3' => 'label: self-test report detail key',
@@ -56,7 +56,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Tools/Mail/Move/MailMoveStore.php#move:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Mail\\MailMoveToolsTest::testAnotherGenerationNeverMovesAMessage',
 			'Tools/Mail/Handler/MoveMessageHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Mail\\MailMoveToolsTest::testAConfirmedCallMovesOnTheCheckedSelection',
 			'Tools/Calendar/Handler/UpdateEvent.php#prepare:touch:1' => 'DAV: update an in-memory event timestamp, not Files touch',
-			'Service/FileWritePolicy.php#recoverStringType:rollback:1' => 'database: rollback owned configuration repair, not Files',
+			'Access/FileTypes/FileWritePolicy.php#recoverStringType:rollback:1' => 'database: rollback owned configuration repair, not Files',
 
 			'Tools/Files/Handler/CheckoutWriteHandler.php#write:putcontent:1' => 'guarded: OCA\Mcp\Tests\Unit\Tools\Files\FileWritePolicyBoundariesTest::testPolicyChangeDuringBackupRefusesContentSinkAndKeepsOriginalAndBackup',
 			'Tools/Files/FileCreationWriter.php#write:newfile:1' => 'guarded: OCA\Mcp\Tests\Unit\Tools\Files\FileWritePolicyBoundariesTest::testDirectCreationSinkRefusesBeforeNewFile',
@@ -86,7 +86,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Tools/Files/FileBackupCopy.php#copy:putcontent:1' => 'D3: mandatory internal backup bytes; never reads policy',
 			'Tools/Contacts/ContactBackup.php#save:newfile:1' => 'D3: mandatory internal vCard backup; never reads policy',
 			'Tools/Calendar/EventRelocator.php#prepare:move:1' => 'DAV: not Files, official CalDAV move',
-			'Service/Policy/PolicyWriter.php#failure:rollback:1' => 'database: not Files, application transaction rollback',
+			'Access/Policy/PolicyWriter.php#failure:rollback:1' => 'database: not Files, application transaction rollback',
 			'Service/Calendar/CalendarSelftestService.php#run:move:1' => 'DAV: not Files, diagnostic CalDAV move',
 		];
 	}

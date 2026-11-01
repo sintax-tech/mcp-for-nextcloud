@@ -13,7 +13,7 @@ use OCA\Mcp\Db\PolicyEventsMapper;
 use OCA\Mcp\Db\RecheckMapper;
 use OCA\Mcp\Migration\Version001100Date20261015010000;
 use OCA\Mcp\Service\Policy\DecimalCounter;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\IDBConnection;

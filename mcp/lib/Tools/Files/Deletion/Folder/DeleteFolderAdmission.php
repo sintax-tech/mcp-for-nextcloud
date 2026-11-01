@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tools\Files\Deletion\Folder;
 
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Tools\Files\Deletion\DeleteNodeAdmission;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

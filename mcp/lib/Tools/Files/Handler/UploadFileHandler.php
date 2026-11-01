@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tools\Files\Handler;
 
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
-use OCA\Mcp\Tools\Common\FileTypeDenied;
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 
 use OCA\Mcp\Tools\Files\FileCreation;
 use OCP\Files\Folder;

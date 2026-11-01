@@ -49,7 +49,7 @@ final class PollsSeed {
 				\OCP\Server::get(\OCA\Polls\Service\VoteService::class)->set($ids['options'][$name][0],\OCA\Polls\Db\Vote::VOTE_YES);
 			}
 		}
-		$policy=\OCP\Server::get(\OCA\Mcp\Service\GrantPolicy::class);
+		$policy=\OCP\Server::get(\OCA\Mcp\Access\Grants\GrantPolicy::class);
 		$policy->setGlobalEnabled(true);
 		foreach (PollsScene::USERS as $uid) {
 			$policy->setEligible($uid,true);$policy->setConnected($uid,true);$policy->setGrant($uid,'polls','read',true);

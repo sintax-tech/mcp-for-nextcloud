@@ -74,7 +74,7 @@ final class ResultsAccessTest extends TestCase {
 		$container=$this->createMock(\Psr\Container\ContainerInterface::class);$container->expects(self::never())->method('get');
 		$reads=new \OCA\Mcp\Tools\Forms\Results\SubmissionReads($container);$schema=new \OCA\Mcp\Tools\Forms\Results\ResultsSchema($reads);
 		$files=$this->createMock(\OCA\Mcp\Tools\Forms\Attachments\ResultFileAccess::class);$files->expects(self::never())->method('begin');
-		$policy=$this->createMock(\OCA\Mcp\Service\GrantPolicy::class);$policy->method('within')->willReturnCallback(static fn($uid,$work)=>$work());$policy->method('granted')->willReturn(true);
+		$policy=$this->createMock(\OCA\Mcp\Access\Grants\GrantPolicy::class);$policy->method('within')->willReturnCallback(static fn($uid,$work)=>$work());$policy->method('granted')->willReturn(true);
 		$shape=new \OCA\Mcp\Tools\Forms\Results\SubmissionShape($reads,new \OCA\Mcp\Tools\Forms\Results\AnswerShape($files));
 		$mac=new \OCA\Mcp\Mcp\Confirmation\PlanState((new \OCA\Mcp\Tests\Unit\InMemoryConfig())->mock($this));
 		$flow=new \OCA\Mcp\Tools\Forms\Results\ResultsReadFlow($policy,new ResultsAccess($forms),$reads,$schema,$shape,$files,$mac);

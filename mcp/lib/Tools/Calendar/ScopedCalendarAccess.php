@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Calendar;
 
 use LogicException;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Scope\ScopeReader;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\ResourceScope\ScopeReader;
 
 /**
  * The calendars the tools may reach: the native {@see CalendarAccess} narrowed by the user's resource scope

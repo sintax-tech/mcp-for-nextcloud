@@ -17,9 +17,9 @@ class FormsCreateNativeFactory {
 	 * @param IUserSession $session Actual authenticated endpoint session.
 	 * @param FormsServices $forms Native enablement and exact FormsService identity probe.
 	 * @param CreatePolicyBoundary $policy Fresh MCP admission at stage boundaries.
-	 * @param \OCA\Mcp\Service\GuestRestrictions $guests Existing per-app Guests restrictions.
+	 * @param \OCA\Mcp\Access\Guests\GuestRestrictions $guests Existing per-app Guests restrictions.
 	 */
-	public function __construct(private IUserSession $session, private FormsServices $forms, private CreatePolicyBoundary $policy, private \OCA\Mcp\Service\GuestRestrictions $guests) {
+	public function __construct(private IUserSession $session, private FormsServices $forms, private CreatePolicyBoundary $policy, private \OCA\Mcp\Access\Guests\GuestRestrictions $guests) {
 	}
 	/** Creates the version-specific native graph under the same real session and Forms namespace.
 	 * @param string $uid Authenticated actor.

@@ -39,9 +39,9 @@ final class Reorganization {
 		private SharedWriteGuard $guard,
 		private MoveReport $report,
 		private \OCP\IUserManager $userManager,
-		private ?\OCA\Mcp\Service\Scope\FilesAccessGuard $visibilityGuard = null,
+		private ?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $visibilityGuard = null,
 		private ?LockAwareWrite $locks = null,
-		private ?\OCA\Mcp\Tools\Common\FileTypeGuard $fileTypes = null,
+		private ?\OCA\Mcp\Access\FileTypes\FileTypeGuard $fileTypes = null,
 		private ?\OCA\Mcp\Platform\Backups\BackupLocation $backupLocation = null,
 	) {}
 

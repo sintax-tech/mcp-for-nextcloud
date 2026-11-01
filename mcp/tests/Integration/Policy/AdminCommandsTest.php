@@ -8,7 +8,7 @@ namespace OCA\Mcp\Tests\Integration\Policy;
 
 use OCA\Mcp\Db\PolicyEventsMapper;
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -102,7 +102,7 @@ final class AdminCommandsTest extends IntegrationTestCase {
 		};
 		$writer = new PolicyWriter($db, $state, Server::get(PolicyEventsMapper::class), $config, Server::get(IUserConfig::class),
 			Server::get(IAppConfig::class), Server::get(IUserManager::class), Server::get(ITimeFactory::class), $authUsers,
-			Server::get(\OCA\Mcp\Db\RecheckMapper::class), Server::get(\OCA\Mcp\Service\Policy\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class), Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(\OCA\Mcp\OAuth\OAuthStore::class));
+			Server::get(\OCA\Mcp\Db\RecheckMapper::class), Server::get(\OCA\Mcp\Access\Policy\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class), Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(\OCA\Mcp\OAuth\OAuthStore::class));
 		try {
 			$writer->applyCells($revision['revision'], 'admin', 'grants.commands', [
 				['uid' => Fixtures::ALICE, 'key' => 'grant_notes_edit', 'value' => '1'],
@@ -152,7 +152,7 @@ final class AdminCommandsTest extends IntegrationTestCase {
 		try {
 			$writer->restoreReceipt((string)$saved['receiptId'], $saved['revision'], 'admin');
 			$this->fail('A receipt was undone twice');
-		} catch (\OCA\Mcp\Service\Policy\PolicyConflict) {
+		} catch (\OCA\Mcp\Access\Policy\PolicyConflict) {
 		}
 		$this->assertSame([Fixtures::BOB => '0'], $this->seenBy($other)['grant_notes_edit']);
 	}

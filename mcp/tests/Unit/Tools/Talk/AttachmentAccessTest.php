@@ -32,7 +32,7 @@ class AttachmentAccessTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 		$this->shareManager = $this->createMock(IShareManager::class);
-		$this->access = new AttachmentAccess($this->shareManager, \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::openGuard($this), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+		$this->access = new AttachmentAccess($this->shareManager, \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::openGuard($this), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
 	}
 
 	public function testARoomShareOfThisConversationIsAccepted(): void {
@@ -177,12 +177,12 @@ class AttachmentAccessTest extends TestCase {
 		$share->method('getNode')->willReturn($node);
 
 		$config = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
-		$config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+		$config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
 		$tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
 		$tagMapper->method('getTagIdsForObjects')->willReturn(['777' => ['999']]);
-		$guard = new \OCA\Mcp\Service\VisibilityGuard($config->mock($this), $tagMapper, $root);
+		$guard = new \OCA\Mcp\Access\Visibility\VisibilityGuard($config->mock($this), $tagMapper, $root);
 
-		$access = new AttachmentAccess($this->shareManager, $guard, \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+		$access = new AttachmentAccess($this->shareManager, $guard, \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
 
 		$this->expectException(ConversationAccessException::class);
 		$this->expectExceptionMessage(Messages::attachmentNotFound());
@@ -207,7 +207,7 @@ class AttachmentAccessTest extends TestCase {
 		$share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
 		$share->method('getNode')->willReturn($node);
 
-		$access = new AttachmentAccess($this->shareManager, $this->givenGuard(['777' => ['999']], $root), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+		$access = new AttachmentAccess($this->shareManager, $this->givenGuard(['777' => ['999']], $root), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
 
 		$desc = $access->describe($share);
 
@@ -222,7 +222,7 @@ class AttachmentAccessTest extends TestCase {
 		$share = $this->givenShare(IShare::TYPE_ROOM, 'abcd');
 		$share->method('getNode')->willThrowException(new RuntimeException('storage of share 77 is offline'));
 
-		$access = new AttachmentAccess($this->shareManager, $this->givenGuard(), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+		$access = new AttachmentAccess($this->shareManager, $this->givenGuard(), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
 
 		try {
 			$access->requireRoomShareOf($this->givenConversation(), 'alice', 77);
@@ -246,7 +246,7 @@ class AttachmentAccessTest extends TestCase {
 
 		$root = $this->createMock(\OCP\Files\IRootFolder::class);
 		$node->method('getParent')->willReturn($root);
-		$access = new AttachmentAccess($this->shareManager, $this->givenGuard([], $root), \OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+		$access = new AttachmentAccess($this->shareManager, $this->givenGuard([], $root), \OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
 
 		$this->assertSame($share, $access->requireRoomShareOf($this->givenConversation(), 'alice', 77));
 	}
@@ -274,9 +274,9 @@ class AttachmentAccessTest extends TestCase {
 	 * @param array<string, list<string>> $tagsById tags of each file id
 	 * @param \OCP\Files\IRootFolder|null $root root the guard resolves a share's owner tree through
 	 */
-	private function givenGuard(array $tagsById = [], ?\OCP\Files\IRootFolder $root = null): \OCA\Mcp\Service\VisibilityGuard {
+	private function givenGuard(array $tagsById = [], ?\OCP\Files\IRootFolder $root = null): \OCA\Mcp\Access\Visibility\VisibilityGuard {
 		$config = new \OCA\Mcp\Tests\Unit\InMemoryConfig();
-		$config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+		$config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
 		$tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
 		$tagMapper->method('getTagIdsForObjects')
 			->willReturnCallback(static function (array $ids) use ($tagsById): array {
@@ -288,7 +288,7 @@ class AttachmentAccessTest extends TestCase {
 				return $out;
 			});
 
-		return new \OCA\Mcp\Service\VisibilityGuard($config->mock($this), $tagMapper, $root);
+		return new \OCA\Mcp\Access\Visibility\VisibilityGuard($config->mock($this), $tagMapper, $root);
 	}
 }
 

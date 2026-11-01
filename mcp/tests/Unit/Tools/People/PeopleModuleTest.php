@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\People;
 
 use InvalidArgumentException;
 use OCA\Mcp\AppInfo\Application;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;

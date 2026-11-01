@@ -12,7 +12,7 @@ use OCA\Mcp\OAuth\CustomClient;
 use OCA\Mcp\OAuth\OAuthClientsService;
 use OCA\Mcp\Tests\Integration\Support\Http;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\Server;
 
 /** Issue #13: real rendered consent, session cookies, CSRF and an administrator's external callback. */

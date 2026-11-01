@@ -11,7 +11,7 @@ use OCA\Mcp\Db\GroupLifeMapper;
 use OCA\Mcp\Db\IdentityKey;
 use OCA\Mcp\Db\RecheckMapper;
 use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\Server;
 use RuntimeException;

@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Logs;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\LogsAccess;
+use OCA\Mcp\Access\Logs\LogsAccess;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\Logs\LogAudit;
 use OCA\Mcp\Tools\Logs\LogEnvelope;
@@ -81,8 +81,8 @@ final class LogsModuleTest extends TestCase {
 		$db = new \OCA\Mcp\Tests\Unit\SqliteDatabase($this, [new \OCA\Mcp\Migration\Version001002Date20261008000000()]);
 		$mapper = new \OCA\Mcp\Db\LogsGroupsMapper($db->connection(), (new \OCA\Mcp\Tests\Unit\InMemoryAppConfig())->worker($this));
 		$access = \OCA\Mcp\Tests\Unit\InMemoryConfig::logsAccess($this, $config, $groups, $mapper, new \OCA\Mcp\Tests\Unit\InMemoryLocks());
-		$guard = new \OCA\Mcp\Service\VisibilityGuard($config, $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class));
-		$fileNames = new \OCA\Mcp\Service\LogFileNames($this->appConfig->worker($this), $guard);
+		$guard = new \OCA\Mcp\Access\Visibility\VisibilityGuard($config, $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class));
+		$fileNames = new \OCA\Mcp\Access\Logs\LogFileNames($this->appConfig->worker($this), $guard);
 		return new LogsModule($access, new LogScanner(new LogReader($factory)), new LogAudit($dispatcher, $logger), $config, $fileNames);
 	}
 
@@ -324,7 +324,7 @@ final class LogsModuleTest extends TestCase {
 
 	/** Files are hidden by a tag: the hidden-tags setting holds one id. */
 	private function hideByTag(): void {
-		$this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = '["42"]';
+		$this->config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = '["42"]';
 	}
 
 	/** @param string $text an answer of the tools, which must carry none of the leaked parts */
@@ -389,7 +389,7 @@ final class LogsModuleTest extends TestCase {
 
 	public function testTurnedOffTheLogToolsShowFullMessages(): void {
 		$this->hideByTag();
-		$this->appConfig->stored['mcp'][\OCA\Mcp\Service\LogFileNames::CONFIG_KEY] = '0';
+		$this->appConfig->stored['mcp'][\OCA\Mcp\Access\Logs\LogFileNames::CONFIG_KEY] = '0';
 		$this->log = new FakeFileLog(self::leakyLog());
 
 		[$text, $list] = $this->call('logs_list');
@@ -415,7 +415,7 @@ final class LogsModuleTest extends TestCase {
 
 	/** An unreadable hidden-tags setting hides everything in the guard, so the log tools hide messages too. */
 	public function testAnInvalidHiddenTagsSettingHidesMessages(): void {
-		$this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = '{}';
+		$this->config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = '{}';
 		$this->log = new FakeFileLog(self::leakyLog());
 
 		$this->assertNoLeak($this->call('logs_list')[0]);
@@ -486,7 +486,7 @@ final class LogsModuleTest extends TestCase {
 
 	public function testTurnedOffTheUserAgentIsShown(): void {
 		$this->hideByTag();
-		$this->appConfig->stored['mcp'][\OCA\Mcp\Service\LogFileNames::CONFIG_KEY] = '0';
+		$this->appConfig->stored['mcp'][\OCA\Mcp\Access\Logs\LogFileNames::CONFIG_KEY] = '0';
 		$this->log = new FakeFileLog(self::agentLog());
 
 		$this->assertSame('BackupClient/1.0 source=secret/salary.pdf', $this->call('logs_list')[1]['entries'][0]['userAgent']);

@@ -21,7 +21,7 @@ final class FormsResultsScene {
 	 * @return void
 	 */
 	public function seed(): void {
-		$apps=Server::get(\OCP\App\IAppManager::class);$apps->loadApp('forms');$policy=Server::get(\OCA\Mcp\Service\GrantPolicy::class);
+		$apps=Server::get(\OCP\App\IAppManager::class);$apps->loadApp('forms');$policy=Server::get(\OCA\Mcp\Access\Grants\GrantPolicy::class);
 		foreach([FormsScene::OWNER,FormsScene::READER,FormsScene::EDITOR,FormsScene::OUTSIDE]as$uid){$policy->setGrant($uid,'forms','results',true);}
 		$api=new FormsApiScene();$id=$api->form('FO2 synthetic results',['submitMultiple'=>true]);
 		$share=$api->share($id,0,FormsScene::READER,['submit']);$outside=$api->share($id,0,FormsScene::OUTSIDE,['submit']);$editor=$api->share($id,0,FormsScene::EDITOR,['submit','results']);

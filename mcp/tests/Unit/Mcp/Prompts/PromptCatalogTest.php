@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Mcp\Prompts;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use OCA\Mcp\Mcp\Prompts\PromptCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
@@ -90,7 +90,7 @@ final class PromptCatalogTest extends TestCase {
 		$this->policy->setGrant('alice', 'files', 'create', true);
 		$this->assertSame([PromptCatalog::CREATE_FILE], array_column($this->catalog->list($this->policy, 'alice'), 'name'));
 		$this->assertNotNull($this->catalog->get(PromptCatalog::CREATE_FILE, $this->policy, 'alice'));
-		$this->expectException(\OCA\Mcp\Service\Policy\GrantUnknown::class);
+		$this->expectException(\OCA\Mcp\Access\Policy\GrantUnknown::class);
 		$this->catalog->get(PromptCatalog::EDIT_LOCALLY, $this->policy, 'alice');
 	}
 
@@ -160,7 +160,7 @@ final class PromptCatalogTest extends TestCase {
 
 	/** B6: the grant comment names what files.create allows now. */
 	public function testTheCreateGrantIsDescribedAsNewFilesToo(): void {
-		$policy = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Service/GrantPolicy.php');
+		$policy = (string)file_get_contents(dirname(__DIR__, 4) . '/lib/Access/Grants/GrantCatalog.php');
 		$this->assertStringContainsString("'create' adds a folder, a copy or a new file", $policy);
 		$admin = (string)file_get_contents(dirname(__DIR__, 4) . '/src/admin/admin-grants.js');
 		$this->assertStringContainsString("t('mcp', 'Create folders, copies and new files')", $admin);

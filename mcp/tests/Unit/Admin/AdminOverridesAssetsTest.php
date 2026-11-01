@@ -83,7 +83,7 @@ final class AdminOverridesAssetsTest extends TestCase {
 		$controller = (string)file_get_contents($app . '/lib/Controller/OverridePreviewController.php');
 		$this->assertLessThan(strpos($controller, '$this->preview->preview('), strpos($controller, 'isAdmin('), 'the administrator check precedes the resolution');
 		$this->assertStringNotContainsString('NoAdminRequired', $controller);
-		$service = (string)file_get_contents($app . '/lib/Service/OverridePreview.php');
+		$service = (string)file_get_contents($app . '/lib/Access/Grants/OverridePreview.php');
 		foreach (['setUserValue', 'deleteUserValue', 'applyCells', 'runInternal', 'beginTransaction'] as $write) {
 			$this->assertStringNotContainsString($write, $service, 'a preview never writes');
 		}

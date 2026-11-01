@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tools\Logs;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\LogFileNames;
-use OCA\Mcp\Service\LogsAccess;
+use OCA\Mcp\Access\Logs\LogFileNames;
+use OCA\Mcp\Access\Logs\LogsAccess;
 use OCA\Mcp\Mcp\Tools\RestrictedModule;
 use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
 use OCA\Mcp\Mcp\Tools\ToolModule;

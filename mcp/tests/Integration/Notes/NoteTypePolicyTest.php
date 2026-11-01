@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Notes;
 
-use OCA\Mcp\Service\FileWritePolicy;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
 use OCA\Mcp\Tests\Integration\Exclusion\ExclusionTestCase;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
 use OCA\Mcp\Tests\Integration\Support\ToolReply;

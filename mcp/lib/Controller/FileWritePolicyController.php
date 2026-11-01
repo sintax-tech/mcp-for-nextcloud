@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Controller;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\FileWritePolicy;
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\FileTypes\FileWritePolicy;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;

@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Contract;
 
 use OCA\Mcp\AppInfo\Application;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\LogsAccess;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Logs\LogsAccess;
 use OCA\Mcp\Mcp\Protocol\McpProtocol;
 use OCA\Mcp\Mcp\Prompts\PromptCatalog;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;

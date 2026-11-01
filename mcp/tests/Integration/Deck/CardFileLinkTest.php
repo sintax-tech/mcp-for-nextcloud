@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Integration\Deck;
 
-use OCA\Mcp\Service\GrantPolicy;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Grants\GrantPolicy;
+use OCA\Mcp\Access\Policy\PolicyWriter;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Integration\Guests\GuestScenario;
 use OCA\Mcp\Tests\Integration\Guests\GuestTestSupport;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;

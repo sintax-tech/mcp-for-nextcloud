@@ -108,7 +108,7 @@ final class FilesModuleTest extends TestCase {
 			$access, $shared,
 			new CheckoutService($urls, $appConfig, $time, new TokenHasher($appConfig), $this->createMock(CheckoutTokenStore::class), $apps, $users),
 			$versions, $reorganization, $planner, $store, $time, $imageTools, new OcrSupport($apps),
-			fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this),
+			fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this),
 			editFile: new EditFileHandler($extractor, $shared, $plans, $commit, $gate),
 			replaceFile: new ReplaceFileHandler($extractor, $shared, $plans, $commit, $gate),
 			restoreVersion: new RestoreVersionHandler($access, $shared, $gate));

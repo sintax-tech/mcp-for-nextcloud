@@ -9,7 +9,7 @@ namespace OCA\Mcp\Mcp\Protocol;
 
 use InvalidArgumentException;
 use OCA\Mcp\Mcp\{Prompts\PromptCatalog, Resources\ResourceRegistry, Tools\Results\ToolFailure, Tools\ToolPresentation, Tools\ToolRegistry, Tools\Validation\ArgumentValidationException};
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\App\IAppManager;
 use Psr\Log\LoggerInterface;
 

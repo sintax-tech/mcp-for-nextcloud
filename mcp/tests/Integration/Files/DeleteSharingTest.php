@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Files;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Exclusion\ExclusionTestCase;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Tests\Integration\Support\McpClient;
@@ -178,7 +178,7 @@ final class DeleteSharingTest extends ExclusionTestCase {
 		$file = $this->makeFile('home', 'scope/incoming/sub/a.txt', 'keep whole tree');
 		$share = $this->share($file->getParent()->getParent()->getParent());
 		$path = $share->getTarget() . '/incoming';
-		$writer = Server::get(\OCA\Mcp\Service\Policy\PolicyWriter::class);
+		$writer = Server::get(\OCA\Mcp\Access\Policy\PolicyWriter::class);
 		$state = Server::get(\OCA\Mcp\Db\PolicyStateMapper::class);
 		// A long-lived CLI fixture predates the new share; refresh its public mount setup before native scope admission.
 		\OCA\Mcp\Tests\Integration\Support\FixtureFilesystem::tearDown();

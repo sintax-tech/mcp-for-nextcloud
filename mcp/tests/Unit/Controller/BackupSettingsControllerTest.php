@@ -11,7 +11,7 @@ use OCA\Mcp\Controller\BackupSettingsController;
 use OCA\Mcp\Platform\Backups\BackupLocation;
 use OCA\Mcp\Platform\Backups\BackupCopies;
 use OCA\Mcp\Service\BackupSettingsWriter;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCP\IAppConfig;
 use OCP\IRequest;

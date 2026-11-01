@@ -8,11 +8,11 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Notes\Handler;
 
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Tools\Common\FileTypeDenied;
-use OCA\Mcp\Tools\Common\FileTypeGuard;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Notes\NoteNames;

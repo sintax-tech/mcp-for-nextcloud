@@ -9,7 +9,7 @@ namespace OCA\Mcp\OAuth;
 
 use OCA\Mcp\Db\AuthUsersMapper;
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCA\Mcp\Db\OAuthClientsMapper;
 use OCP\IUser;

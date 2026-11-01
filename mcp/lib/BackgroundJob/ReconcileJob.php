@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\BackgroundJob;
 
-use OCA\Mcp\Service\Policy\CauseProcessor;
-use OCA\Mcp\Service\Policy\GroupLifecycle;
-use OCA\Mcp\Service\Policy\ScopeCleanup;
+use OCA\Mcp\Access\Policy\CauseProcessor;
+use OCA\Mcp\Access\Policy\GroupLifecycle;
+use OCA\Mcp\Access\Policy\ScopeCleanup;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\BackgroundJob\TimedJob;
 

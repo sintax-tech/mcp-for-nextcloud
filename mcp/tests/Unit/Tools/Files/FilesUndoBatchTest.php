@@ -61,8 +61,8 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 			}
 			return array_fill_keys($ids, []);
 		});
-		$this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = '["999"]';
-		$this->visibilityGuard = new \OCA\Mcp\Service\Scope\FilesAccessGuard($this->config->mock($this), $mapper, $this->visibilityRoot());
+		$this->config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = '["999"]';
+		$this->visibilityGuard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $mapper, $this->visibilityRoot());
 		$this->setUp();
 		$moves = [];
 		for ($i = 0; $i < $size; $i++) {
@@ -90,8 +90,8 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 		$mapper->method('getTagIdsForObjects')->willReturnCallback(static function (array $ids) use (&$hidden): array {
 			return array_combine($ids, array_map(static fn ($id): array => in_array((int)$id, $hidden, true) ? ['999'] : [], $ids));
 		});
-		$this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = '["999"]';
-		$this->visibilityGuard = new \OCA\Mcp\Service\Scope\FilesAccessGuard($this->config->mock($this), $mapper, $this->visibilityRoot());
+		$this->config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = '["999"]';
+		$this->visibilityGuard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $mapper, $this->visibilityRoot());
 		$this->setUp();
 		$id = $this->runBatch(['/Arquivado/2026']);
 		$docId = $this->tree->nodes['/alice/files/Documentos']['id'];
@@ -439,8 +439,8 @@ final class FilesUndoBatchTest extends FilesToolsTestCase {
 			$ids,
 			array_map(fn ($id): array => in_array((int)$id, $this->hiddenIds, true) ? ['999'] : [], $ids),
 		));
-		$this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
-		$this->visibilityGuard = new \OCA\Mcp\Service\Scope\FilesAccessGuard($this->config->mock($this), $tagMapper);
+		$this->config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+		$this->visibilityGuard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $tagMapper);
 		$this->setUp();
 	}
 

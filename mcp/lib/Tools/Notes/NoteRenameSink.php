@@ -8,9 +8,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Notes;
 
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
-use OCA\Mcp\Tools\Common\FileTypeDenied;
-use OCA\Mcp\Tools\Common\FileTypeGuard;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 
 /**
  * Fresh policy snapshot of the final basename of a note rename or category move.

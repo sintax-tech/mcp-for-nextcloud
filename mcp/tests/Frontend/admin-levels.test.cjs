@@ -21,7 +21,7 @@ const plain = (value) => JSON.parse(JSON.stringify(value))
 
 /** GrantPolicy::CATALOG as PHP declares it: module => list of operations. */
 function catalog() {
-	const policy = fs.readFileSync(path.join(root, 'lib/Service/GrantPolicy.php'), 'utf8')
+	const policy = fs.readFileSync(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 	const body = policy.slice(policy.indexOf('public const CATALOG = ['), policy.indexOf('];', policy.indexOf('public const CATALOG = [')))
 	const out = {}
 	for (const [, module, operations] of body.matchAll(/'(\w+)' => \[([^\]]*)\]/g)) {

@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
-use OCA\Mcp\Service\VisibilityGuard;
-use OCA\Mcp\Tests\Unit\Service\Scope\FilesScopes;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
+use OCA\Mcp\Tests\Unit\Access\ResourceScope\FilesScopes;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

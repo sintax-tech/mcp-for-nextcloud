@@ -114,8 +114,8 @@ final class FilesMkdirTest extends FilesToolsTestCase {
 
 	public function testItRefusesAnExistingHiddenFileAsNotFound(): void {
 		$tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
-		$this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
-		$this->visibilityGuard = new \OCA\Mcp\Service\Scope\FilesAccessGuard($this->config->mock($this), $tagMapper, $this->visibilityRoot());
+		$this->config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+		$this->visibilityGuard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $tagMapper, $this->visibilityRoot());
 		$this->setUp();
 
 		$id = $this->tree->addFile('/alice/files/secret.txt', 'secret');
@@ -148,8 +148,8 @@ final class FilesMkdirTest extends FilesToolsTestCase {
 
 	public function testAFolderUnderAHiddenFolderNamedZeroIsRefused(): void {
 		$tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
-		$this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
-		$this->visibilityGuard = new \OCA\Mcp\Service\Scope\FilesAccessGuard($this->config->mock($this), $tagMapper);
+		$this->config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+		$this->visibilityGuard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $tagMapper);
 		$this->setUp();
 		$zeroId = $this->tree->addFolder('/alice/files/Docs/0');
 		$tagMapper->method('getTagIdsForObjects')->willReturnCallback(static fn (array $ids): array => array_combine(

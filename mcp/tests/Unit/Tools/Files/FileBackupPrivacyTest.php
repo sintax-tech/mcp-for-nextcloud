@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -68,7 +68,7 @@ final class FileBackupPrivacyTest extends FilesToolsTestCase {
 					throw new \RuntimeException('Unavailable');
 				}
 			});
-		$guard = new \OCA\Mcp\Service\Scope\FilesAccessGuard($this->config->mock($this), $mapper, $this->tree->filesystemRoot());
+		$guard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $mapper, $this->tree->filesystemRoot());
 		return new FileBackup($this->apps, $this->users, $this->time, $this->config->mock($this), $guard);
 	}
 }

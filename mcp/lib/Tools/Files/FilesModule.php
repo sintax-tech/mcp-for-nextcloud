@@ -32,7 +32,7 @@ use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCP\App\IAppManager;
 use OCP\Files\Node;
 use OCP\FullTextSearch\IFullTextSearchManager;
@@ -97,7 +97,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
 		private ?ShareRemover $shareRemover = null,
 		private ?FileCreation $creation = null,
 		private ?LockAwareWrite $locks = null,
-		private ?\OCA\Mcp\Tools\Common\FileTypeGuard $fileTypes = null,
+		private ?\OCA\Mcp\Access\FileTypes\FileTypeGuard $fileTypes = null,
 		private ?EditFileHandler $editFile = null,
 		private ?ReplaceFileHandler $replaceFile = null,
 		private ?RestoreVersionHandler $restoreVersion = null,

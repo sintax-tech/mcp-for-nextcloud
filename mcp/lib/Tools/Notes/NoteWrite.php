@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Notes;
 
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;

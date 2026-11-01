@@ -31,7 +31,7 @@ final class NextcloudApiUsage {
 
 	/**
 	 * Classes lib/ names that the fixtures do not carry, by app: the Guests app is not part of the trees the fixtures are
-	 * generated from. {@see \OCA\Mcp\Service\GuestRestrictions} resolves these services by name and refuses the
+	 * generated from. {@see \OCA\Mcp\Access\Guests\GuestRestrictions} resolves these services by name and refuses the
 	 * request when one is missing or fails, and Integration/Guests/GuestRestrictionsTest calls them on the release the
 	 * harness pins (guests v4.10.1).
 	 */

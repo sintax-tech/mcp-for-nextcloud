@@ -11,7 +11,7 @@ use OCA\Mcp\OAuth\TokenHasher;
 use OCA\Mcp\OAuth\TokenOwnerGate;
 use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\Service\ConnectionList;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\InMemoryOAuthStore;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -67,7 +67,7 @@ final class ConnectionsFixture {
 $writer = InMemoryConfig::writer($config, $this->store);
 		$gate = new TokenOwnerGate($users, InMemoryConfig::policy($config, $this->store), $writer,
 			$this->mock(\OCP\Config\IUserConfig::class), $this->mock(\OCP\IAppConfig::class), new \Psr\Log\NullLogger(),
-			$this->mock(\OCA\Mcp\Service\Policy\CauseProcessor::class));
+			$this->mock(\OCA\Mcp\Access\Policy\CauseProcessor::class));
 		$tokens = new TokenService($this->store, new TokenHasher($system), $time, $gate, $writer,
 			InMemoryConfig::authUsers($config), InMemoryConfig::processor($config), $this->clients->mapper);
 		return new ConnectionList($this->store, $tokens, $users, $time, $this->clients->mapper);

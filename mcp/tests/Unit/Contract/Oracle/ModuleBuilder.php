@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\Oracle;
 
-use OCA\Mcp\Service\LogsAccess;
+use OCA\Mcp\Access\Logs\LogsAccess;
 use OCA\Mcp\Tools\Deck\DeckCapabilities;
 use OCP\App\IAppManager;
 use PHPUnit\Framework\TestCase;

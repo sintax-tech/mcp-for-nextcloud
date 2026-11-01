@@ -19,11 +19,11 @@ use OCP\Lock\ManuallyLockedException;
 /** Creates and verifies the original copy in the current configured destination. */
 final class FileBackupCopy {
 	/**
-	 * @param \OCA\Mcp\Service\VisibilityGuard|null $visibilityGuard existing privacy preservation
+	 * @param \OCA\Mcp\Access\Visibility\VisibilityGuard|null $visibilityGuard existing privacy preservation
 	 * @param LockAwareWrite|null $locks existing lock-aware mutation gateway
 	 * @param \OCA\Mcp\Platform\Backups\BackupLocation|null $location current destination reader
 	 */
-	public function __construct(private ?\OCA\Mcp\Service\VisibilityGuard $visibilityGuard,
+	public function __construct(private ?\OCA\Mcp\Access\Visibility\VisibilityGuard $visibilityGuard,
 		private ?LockAwareWrite $locks, private ?\OCA\Mcp\Platform\Backups\BackupLocation $location) {
 	}
 

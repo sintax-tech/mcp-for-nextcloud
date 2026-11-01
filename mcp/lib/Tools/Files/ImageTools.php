@@ -75,7 +75,7 @@ final class ImageTools {
 		private LoggerInterface $logger,
 		private ContainerInterface $container,
 		private IDBConnection $db,
-		private ?\OCA\Mcp\Service\Scope\FilesAccessGuard $visibilityGuard = null,
+		private ?\OCA\Mcp\Access\ResourceScope\FilesAccessGuard $visibilityGuard = null,
 	) {}
 
 	/**

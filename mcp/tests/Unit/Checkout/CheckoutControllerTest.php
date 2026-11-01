@@ -12,7 +12,7 @@ use OCA\Mcp\Checkout\CheckoutToken;
 use OCA\Mcp\L10n\UserL10n;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\OAuth\TokenHasher;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
@@ -175,12 +175,12 @@ final class CheckoutControllerTest extends TestCase {
 			$this->temp, $this->time, $this->policy, $this->store, $this->hasher,
 			new CheckoutService($urls, $config, $this->time, $this->hasher, $this->store, $this->apps, $this->users), $backup,
 			new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class),
-			$l10n, $this->users, locks: $this->locks->service($this), guests: $this->guests(), fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this));
+			$l10n, $this->users, locks: $this->locks->service($this), guests: $this->guests(), fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this));
 	}
 
-	/** @return \OCA\Mcp\Service\GuestRestrictions|null a double answering {@see self::$guestAllowed}, recording when it ran */
-	private function guests(): ?\OCA\Mcp\Service\GuestRestrictions {
-		$guests = $this->createMock(\OCA\Mcp\Service\GuestRestrictions::class);
+	/** @return \OCA\Mcp\Access\Guests\GuestRestrictions|null a double answering {@see self::$guestAllowed}, recording when it ran */
+	private function guests(): ?\OCA\Mcp\Access\Guests\GuestRestrictions {
+		$guests = $this->createMock(\OCA\Mcp\Access\Guests\GuestRestrictions::class);
 		$guests->method('applyToOwner')->willReturnCallback(function (IUser $owner): bool {
 			$this->guestCalls[] = $owner->getUID() . ($this->tree->opened === [] && $this->tree->ops === [] ? ' before any file' : ' after a file');
 			return $this->guestAllowed ?? true;
@@ -875,9 +875,9 @@ final class CheckoutControllerTest extends TestCase {
 	/** @dataProvider checkoutVisibilityKinds */
 	public function testV1CheckoutExcludedAndMissingAreByteIdentical(string $kind, string $method): void {
 		$tagMapper = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
-		$this->config->app['mcp'][\OCA\Mcp\Service\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
+		$this->config->app['mcp'][\OCA\Mcp\Access\Visibility\VisibilityGuard::CONFIG_KEY] = json_encode(['999']);
 		$tagMapper->method('getTagIdsForObjects')->willReturn([(string)$this->tree->nodes['/alice/files/Documentos/ata.md']['id'] => ['999']]);
-		$guard = new \OCA\Mcp\Service\Scope\FilesAccessGuard($this->config->mock($this), $tagMapper, $this->tree->filesystemRoot());
+		$guard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $tagMapper, $this->tree->filesystemRoot());
 
 		$root = $this->createMock(IRootFolder::class);
 		$root->method('getUserFolder')->willReturnCallback(fn (string $uid) => $uid === 'alice'
@@ -895,7 +895,7 @@ final class CheckoutControllerTest extends TestCase {
 			$this->temp, $this->time, $this->policy, $this->store, $this->hasher,
 			new CheckoutService($this->createMock(IURLGenerator::class), $this->config->mock($this), $this->time, $this->hasher, $this->store, $this->apps, $this->users),
 			$backup, new SharedWriteGuard($access), $access, $this->createMock(LoggerInterface::class),
-			null, $this->users, $guard, fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this));
+			null, $this->users, $guard, fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this));
 		$controller->route = ['token' => self::TOKEN];
 
 		$controller->staged = 'new content';
@@ -919,17 +919,17 @@ final class CheckoutControllerTest extends TestCase {
 	 * @param \Closure(): (list<string>|null|false) $items selected folders, null unrestricted, false unreadable
 	 */
 	private function scopedController(string $method, \Closure $items): TestableCheckoutController {
-		$policy = $this->createMock(\OCA\Mcp\Service\GrantPolicy::class);
+		$policy = $this->createMock(\OCA\Mcp\Access\Grants\GrantPolicy::class);
 		$policy->method('operationUser')->willReturnCallback(fn (): ?string => $this->policy->operationUser());
 		$policy->method('scopeItems')->willReturnCallback(static function () use ($items): ?array {
 			$value = $items();
-			return $value === false ? throw new \OCA\Mcp\Service\Policy\PolicyUnavailable('Resource scope unavailable') : $value;
+			return $value === false ? throw new \OCA\Mcp\Access\Policy\PolicyUnavailable('Resource scope unavailable') : $value;
 		});
 		$tags = $this->createMock(\OCP\SystemTag\ISystemTagObjectMapper::class);
 		$tags->method('getTagIdsForObjects')->willReturn([]);
-		$plain = new \OCA\Mcp\Service\VisibilityGuard($this->config->mock($this), $tags, $this->tree->filesystemRoot());
-		$guard = new \OCA\Mcp\Service\Scope\FilesAccessGuard($this->config->mock($this), $tags, $this->tree->filesystemRoot(), null, null, null,
-			new \OCA\Mcp\Service\Scope\FilesScope($policy, $plain, $this->tree->filesystemRoot()));
+		$plain = new \OCA\Mcp\Access\Visibility\VisibilityGuard($this->config->mock($this), $tags, $this->tree->filesystemRoot());
+		$guard = new \OCA\Mcp\Access\ResourceScope\FilesAccessGuard($this->config->mock($this), $tags, $this->tree->filesystemRoot(), null, null, null,
+			new \OCA\Mcp\Access\ResourceScope\FilesScope($policy, $plain, $this->tree->filesystemRoot()));
 		$root = $this->createMock(IRootFolder::class);
 		$root->method('getUserFolder')->willReturnCallback(fn (string $uid) => $uid === 'alice' ? $this->tree->rootFolder() : throw new \LogicException('other user'));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
@@ -940,7 +940,7 @@ final class CheckoutControllerTest extends TestCase {
 			$this->temp, $this->time, $this->policy, $this->store, $this->hasher,
 			new CheckoutService($this->createMock(IURLGenerator::class), $this->config->mock($this), $this->time, $this->hasher, $this->store, $this->apps, $this->users),
 			new FileBackup($this->apps, $this->users, $this->time, $this->config->mock($this)), new SharedWriteGuard($access), $access,
-			$this->createMock(LoggerInterface::class), null, $this->users, $guard, locks: $this->locks->service($this), fileTypes: \OCA\Mcp\Tests\Unit\Tools\FileTypePolicyFixture::off($this));
+			$this->createMock(LoggerInterface::class), null, $this->users, $guard, locks: $this->locks->service($this), fileTypes: \OCA\Mcp\Tests\Unit\Access\FileTypes\FileTypePolicyFixture::off($this));
 		$controller->route = ['token' => self::TOKEN];
 		$controller->staged = 'new content';
 		$this->headers['Content-Length'] = '11';

@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
-use OCA\Mcp\Tools\Common\FileTypeCheck;
-use OCA\Mcp\Tools\Common\FileTypeGuard;
+use OCA\Mcp\Access\FileTypes\FileTypeCheck;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCP\Files\File;
 use OCP\Files\Node;
@@ -34,8 +34,8 @@ final class FileDestinationPolicy {
 	 * @param string $to Normalized final destination path.
 	 * @param FileTypeCheck|null $snapshot Shared preflight boundary for projected file names.
 	 * @return void
-	 * @throws \OCA\Mcp\Tools\Common\FileTypeDenied If the destination type is refused.
-	 * @throws \OCA\Mcp\Service\FileWritePolicyUnavailable If policy cannot be evaluated.
+	 * @throws \OCA\Mcp\Access\FileTypes\FileTypeDenied If the destination type is refused.
+	 * @throws \OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable If policy cannot be evaluated.
 	 */
 	public function assertProjected(Node $source, string $to, ?FileTypeCheck $snapshot = null): void {
 		if ($source instanceof File) {

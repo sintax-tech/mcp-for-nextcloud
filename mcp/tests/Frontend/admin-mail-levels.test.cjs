@@ -33,7 +33,7 @@ function load(files) {
 
 /** @return {string[]} GrantPolicy::CATALOG['mail'], read from the PHP source */
 function mailOperations() {
-	const policy = fs.readFileSync(path.join(root, 'lib/Service/GrantPolicy.php'), 'utf8')
+	const policy = fs.readFileSync(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 	const line = policy.match(/'mail' => \[([^\]]*)\]/)
 	assert.ok(line, 'the Mail entry of GrantPolicy::CATALOG')
 	return [...line[1].matchAll(/'(\w+)'/g)].map((match) => match[1])

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Integration\Forms;
 
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Support\{McpClient,LoginFactory,Http};
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\Server;
 
 /** FO2 runtime proofs use real authenticated MCP/Forms/Files, never substituted source fixtures. */
@@ -79,11 +79,11 @@ final class McpFormsResultsTest extends IntegrationTestCase {
 		$s=FormsResultsScene::read();$uid=FormsScene::OWNER;$args=['form_id'=>$s['form'],'submission_id'=>$s['submissions'][$uid]];$login=LoginFactory::basic($uid);$client=new McpClient($login);
 		$visible=$client->tool('forms_read_submission',$args);self::assertTrue($visible->ok(),$visible->describe());$answers=$visible->json()['untrusted']['submission']['answers'];$file=array_values(array_filter($answers,static fn(array$a):bool=>isset($a['attachment'])))[0]['attachment'];
 		$viewer=Http::request('GET',$file['url'],['Authorization: '.$login->authorization()]);self::assertContains($viewer['status'],[200,302,303]);self::assertStringNotContainsString('/login',$viewer['headers']);
-		$writer=Server::get(\OCA\Mcp\Service\Policy\PolicyWriter::class);$states=Server::get(\OCA\Mcp\Db\PolicyStateMapper::class);
+		$writer=Server::get(\OCA\Mcp\Access\Policy\PolicyWriter::class);$states=Server::get(\OCA\Mcp\Db\PolicyStateMapper::class);
 		$writer->setResourceScope($states->state()['revision'],'admin',$uid,'files',[]);
 		try{$scoped=$client->tool('forms_read_submission',$args);self::assertTrue($scoped->ok(),$scoped->describe());self::assertCount(count($answers)-1,$scoped->json()['untrusted']['submission']['answers']);self::assertStringNotContainsString('"attachment"',$scoped->text());}
 		finally{$writer->setResourceScope($states->state()['revision'],'admin',$uid,'files',null);}
-		$guard=Server::get(\OCA\Mcp\Service\Scope\FilesAccessGuard::class);$before=$guard->getHiddenTagIds();$tags=Server::get(\OCP\SystemTag\ISystemTagManager::class);$mapper=Server::get(\OCP\SystemTag\ISystemTagObjectMapper::class);$tag=$tags->createTag('fo2-hidden-'.bin2hex(random_bytes(4)),true,true);
+		$guard=Server::get(\OCA\Mcp\Access\ResourceScope\FilesAccessGuard::class);$before=$guard->getHiddenTagIds();$tags=Server::get(\OCP\SystemTag\ISystemTagManager::class);$mapper=Server::get(\OCP\SystemTag\ISystemTagObjectMapper::class);$tag=$tags->createTag('fo2-hidden-'.bin2hex(random_bytes(4)),true,true);
 		try{$mapper->assignTags((string)$s['fileId'],'files',[$tag->getId()]);$guard->setHiddenTagIds([...$before,$tag->getId()]);usleep(4000000);
 			$hidden=$client->tool('forms_read_submission',$args);self::assertTrue($hidden->ok(),$hidden->describe());self::assertSame($scoped->json(),$hidden->json());
 		}finally{$mapper->unassignTags((string)$s['fileId'],'files',[$tag->getId()]);$guard->setHiddenTagIds($before);$tags->deleteTags([$tag->getId()]);usleep(4000000);}

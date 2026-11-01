@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Files;
 
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Tools\Common\LockAwareWrite;
@@ -53,7 +53,7 @@ final class FileCreation {
 		private FilesAccessGuard $visibilityGuard,
 		private LoggerInterface $logger,
 		private LockAwareWrite $locks,
-		private \OCA\Mcp\Tools\Common\FileTypeGuard $fileTypes,
+		private \OCA\Mcp\Access\FileTypes\FileTypeGuard $fileTypes,
 		private \OCA\Mcp\Platform\Backups\BackupLocation $backupLocation,
 	) {}
 

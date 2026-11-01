@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Deck;
 
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Service\Scope\FilesAccessGuard;
+use OCA\Mcp\Access\ResourceScope\FilesAccessGuard;
 use OCA\Mcp\Tools\Deck\CardFileNodeAccess;
 use OCA\Mcp\Tools\Deck\CardLinkMessages;
 use OCA\Mcp\Tools\Deck\CardLinkPlan;

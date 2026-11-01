@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tools\Files;
 
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
@@ -157,7 +157,7 @@ final class ListedTreeCopy {
 			if ($source instanceof Folder) {
 				if ($this->context->policy()->snapshot()->isActive()) {
 					// A policy enabled after an off preflight cannot fall through to native tree copy.
-					throw new \OCA\Mcp\Tools\Common\FileTypeDenied();
+					throw new \OCA\Mcp\Access\FileTypes\FileTypeDenied();
 				}
 				return $copy();
 			}

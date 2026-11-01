@@ -534,7 +534,7 @@ final class NextcloudApiContractTest extends TestCase {
 		foreach (['OCP\\IUserManager', 'OCA\\Talk\\Chat\\ChatManager', 'OCA\\Deck\\Db\\CardMapper', 'OCA\\DAV\\CalDAV\\EmbeddedCalDavServer', 'OCA\\DAV\\AppInfo\\PluginManager'] as $class) {
 			$this->assertArrayHasKey($class, $classes);
 		}
-		$this->assertArrayNotHasKey('OCA\\Mcp\\Service\\GrantPolicy', $classes, 'the app is not a dependency of itself');
+		$this->assertArrayNotHasKey('OCA\\Mcp\\Access\\Grants\\GrantPolicy', $classes, 'the app is not a dependency of itself');
 		foreach (['addSystemMessage', 'findAllForStacks', 'isEnabledForAnyone', 'searchUsersByValueString'] as $method) {
 			$this->assertArrayHasKey($method, self::scanner()->methods());
 		}

@@ -199,7 +199,7 @@ final class ApplicationRegistrationTest extends TestCase {
 		// Invariant 1: a hidden node is never listed nor shared, so the guard cannot be left out by the container.
 		$guard = (new \ReflectionProperty(\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class, 'visibilityGuard'))
 			->getValue($container->get(\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class));
-		$this->assertInstanceOf(\OCA\Mcp\Service\VisibilityGuard::class, $guard);
+		$this->assertInstanceOf(\OCA\Mcp\Access\Visibility\VisibilityGuard::class, $guard);
 		$this->assertFalse((new \ReflectionMethod(\OCA\Mcp\Tools\Files\Sharing\ShareAccess::class, '__construct'))
 			->getParameters()[2]->allowsNull(), 'o guard de visibilidade é obrigatório');
 
@@ -229,7 +229,7 @@ final class ApplicationRegistrationTest extends TestCase {
 
 		$creation = $container->get(\OCA\Mcp\Tools\Files\FileCreation::class);
 		$this->assertInstanceOf(\OCA\Mcp\Tools\Files\FileCreation::class, $creation);
-		$this->assertInstanceOf(\OCA\Mcp\Service\VisibilityGuard::class,
+		$this->assertInstanceOf(\OCA\Mcp\Access\Visibility\VisibilityGuard::class,
 			(new \ReflectionProperty(\OCA\Mcp\Tools\Files\FileCreation::class, 'visibilityGuard'))->getValue($creation));
 		$this->assertInstanceOf(\OCP\Files\IFilenameValidator::class,
 			(new \ReflectionProperty(\OCA\Mcp\Tools\Files\FileCreation::class, 'filenames'))->getValue($creation));
@@ -283,8 +283,8 @@ final class ApplicationRegistrationTest extends TestCase {
 
 		// B5: nc://files and the structured references answer to the Files scope; a missing wiring would read as
 		// "unrestricted" for the resources, which no unit test of the registry itself can see.
-		$this->assertInstanceOf(\OCA\Mcp\Service\Scope\FilesAccessGuard::class, (new \ReflectionProperty(\OCA\Mcp\Mcp\Resources\ResourceRegistry::class, 'filesGuard'))
+		$this->assertInstanceOf(\OCA\Mcp\Access\ResourceScope\FilesAccessGuard::class, (new \ReflectionProperty(\OCA\Mcp\Mcp\Resources\ResourceRegistry::class, 'filesGuard'))
 			->getValue($container->get(\OCA\Mcp\Mcp\Resources\ResourceRegistry::class)));
-		$this->assertInstanceOf(\OCA\Mcp\Service\Scope\FilesReferenceScope::class, $container->get(\OCA\Mcp\Tools\Common\FileReferenceScope::class));
+		$this->assertInstanceOf(\OCA\Mcp\Access\ResourceScope\FilesReferenceScope::class, $container->get(\OCA\Mcp\Access\ResourceScope\FileReferenceScope::class));
 	}
 }

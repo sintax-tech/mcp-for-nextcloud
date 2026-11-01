@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use PHPUnit\Framework\TestCase;
 
 /** Consent admission at both boundaries, with the code table and connection observed independently of the page. */

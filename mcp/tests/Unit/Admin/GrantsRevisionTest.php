@@ -7,10 +7,12 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Admin;
 
+use OCA\Mcp\Tests\Unit\Access\Grants\MatrixFixture;
+
 use OCA\Mcp\Controller\GrantsController;
 use OCA\Mcp\Db\PolicyEventsMapper;
-use OCA\Mcp\Service\Policy\PolicyEventPayload;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\PolicyEventPayload;
+use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;
 use OCP\IUser;
@@ -49,15 +51,15 @@ final class GrantsRevisionTest extends TestCase {
 		$session->method('getUser')->willReturn($user);
 		return new GrantsController('mcp', $request, $this->fx->matrix(), $this->fx->policy, $this->fx->userManager(),
 			$this->fx->config->mock($this), $this->fx->logsAccess(), $this->fx->writer(), $this->fx->state(), $session,
-			$this->createMock(\OCA\Mcp\Service\Policy\GroupGrantsService::class), $this->fx->clients());
+			$this->createMock(\OCA\Mcp\Access\Policy\GroupGrantsService::class), $this->fx->clients());
 	}
 
 	/** Review F1 of B2: a re-read for the response that fails after the commit answers uncertain, with the receipt. */
 	public function testAReReadThatFailsAfterTheCommitAnswersUncertainWithTheRevisionAndReceipt(): void {
-		$failing = $this->createMock(\OCA\Mcp\Service\GrantMatrix::class);
-		$failing->method('rows')->willThrowException(new \OCA\Mcp\Service\Policy\PolicyUnavailable('Resource scopes unavailable'));
+		$failing = $this->createMock(\OCA\Mcp\Access\Grants\GrantMatrix::class);
+		$failing->method('rows')->willThrowException(new \OCA\Mcp\Access\Policy\PolicyUnavailable('Resource scopes unavailable'));
 		$failing->method('groups')->willThrowException(new \RuntimeException('Groups unavailable'));
-		$policy = $this->createMock(\OCA\Mcp\Service\GrantPolicy::class);
+		$policy = $this->createMock(\OCA\Mcp\Access\Grants\GrantPolicy::class);
 		$policy->method('globalEnabled')->willThrowException(new \RuntimeException('Config unavailable'));
 		$build = function (array $body) use ($failing, $policy): GrantsController {
 			$body['expectedRevision'] = $this->revision();
@@ -69,7 +71,7 @@ final class GrantsRevisionTest extends TestCase {
 			$session->method('getUser')->willReturn($user);
 			return new GrantsController('mcp', $request, $failing, $policy, $this->fx->userManager(),
 				$this->fx->config->mock($this), $this->fx->logsAccess(), $this->fx->writer(), $this->fx->state(), $session,
-				$this->createMock(\OCA\Mcp\Service\Policy\GroupGrantsService::class), $this->fx->clients());
+				$this->createMock(\OCA\Mcp\Access\Policy\GroupGrantsService::class), $this->fx->clients());
 		};
 
 		$revision = $this->revision();
@@ -404,7 +406,7 @@ final class GrantsRevisionTest extends TestCase {
 	public function testStorageFailuresAre503AndSayWhetherTheOutcomeIsUncertain(): void {
 		$state = $this->fx->state();
 		$writer = $this->createMock(PolicyWriter::class);
-		$writer->method('applyCells')->willThrowException(new \OCA\Mcp\Service\Policy\PolicyUnavailable('lost', true));
+		$writer->method('applyCells')->willThrowException(new \OCA\Mcp\Access\Policy\PolicyUnavailable('lost', true));
 		$request = $this->createMock(IRequest::class);
 		$request->method('getParam')->willReturnCallback(fn (string $key, $default = null) => ['eligible' => true, 'expectedRevision' => '0'][$key] ?? $default);
 		$session = $this->createMock(IUserSession::class);
@@ -413,7 +415,7 @@ final class GrantsRevisionTest extends TestCase {
 		$session->method('getUser')->willReturn($admin);
 		$controller = new GrantsController('mcp', $request, $this->fx->matrix(), $this->fx->policy, $this->fx->userManager(),
 			$this->fx->config->mock($this), $this->fx->logsAccess(), $writer, $state, $session,
-			$this->createMock(\OCA\Mcp\Service\Policy\GroupGrantsService::class), $this->fx->clients());
+			$this->createMock(\OCA\Mcp\Access\Policy\GroupGrantsService::class), $this->fx->clients());
 		$response = $controller->update('ana');
 		$this->assertSame([503, ['error' => 'Unavailable', 'uncertain' => true]], [$response->getStatus(), $response->getData()]);
 	}

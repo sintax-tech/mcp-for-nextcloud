@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Talk;
 use InvalidArgumentException;
 use OCA\Deck\Db\Card;
 use OCA\Deck\NoPermissionException;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tools\Calendar\Calendar;
 use OCA\Mcp\Tools\Calendar\ScopedCalendarAccess;
@@ -167,7 +167,7 @@ class ReferenceLinkerTest extends TestCase {
 
 	/** A guest whose Guests list lacks Deck cannot reference a card, as if Deck were off; nothing is read. */
 	public function testADeckGuestsDoesNotAllowIsTheSameAsADeckThatIsOff(): void {
-		$guests = $this->createMock(\OCA\Mcp\Service\GuestRestrictions::class);
+		$guests = $this->createMock(\OCA\Mcp\Access\Guests\GuestRestrictions::class);
 		$guests->method('allowsApp')->willReturnCallback(static fn (string $uid, string $app): bool => $app !== 'deck');
 		$classification = new Classification();
 		$linker = new ReferenceLinker($this->deck, $this->calendars, $this->store, new EventRepository($this->store, $classification),
@@ -215,7 +215,7 @@ class ReferenceLinkerTest extends TestCase {
 				$outcomes[] = [$e::class, $e->getMessage()];
 			}
 		}
-		$this->assertSame([\OCA\Mcp\Service\Policy\PolicyUnavailable::class, 'Resource scope unavailable'], $outcomes[0]);
+		$this->assertSame([\OCA\Mcp\Access\Policy\PolicyUnavailable::class, 'Resource scope unavailable'], $outcomes[0]);
 		$this->assertSame($outcomes[0], $outcomes[1]);
 		$this->assertSame([], $store->rangesAsked);
 	}

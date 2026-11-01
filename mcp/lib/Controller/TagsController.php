@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Controller;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\HiddenTagsUnavailableException;
-use OCA\Mcp\Service\VisibilityGuard;
+use OCA\Mcp\Access\Visibility\HiddenTagsUnavailableException;
+use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;
 use OCP\AppFramework\Http\JSONResponse;

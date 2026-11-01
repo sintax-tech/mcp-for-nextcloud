@@ -16,7 +16,7 @@ set_exception_handler(static function (\Throwable $error): void {
 	fwrite(STDERR, $error::class . ': ' . $error->getMessage() . "\n");
 	exit(1);
 });
-$policy = \OCP\Server::get(\OCA\Mcp\Service\GrantPolicy::class);
+$policy = \OCP\Server::get(\OCA\Mcp\Access\Grants\GrantPolicy::class);
 $policy->setGlobalEnabled(true);
 foreach ([FormsScene::OWNER, FormsScene::READER, FormsScene::EDITOR, FormsScene::OUTSIDE] as $uid) {
 	$policy->setEligible($uid, true);

@@ -16,13 +16,13 @@ use OCA\Mcp\OAuth\OAuthException;
 use OCA\Mcp\OAuth\TokenService;
 use OCA\Mcp\OAuth\OAuthStore;
 use OCA\Mcp\OAuth\TokenHasher;
-use OCA\Mcp\Service\Policy\GroupGrantsService;
-use OCA\Mcp\Service\Policy\GroupLifecycle;
-use OCA\Mcp\Service\Policy\GroupSourceUntrusted;
-use OCA\Mcp\Service\Policy\PolicyConflict;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
-use OCA\Mcp\Service\Policy\PolicyResolver;
-use OCA\Mcp\Service\Policy\PolicyWriter;
+use OCA\Mcp\Access\Policy\GroupGrantsService;
+use OCA\Mcp\Access\Policy\GroupLifecycle;
+use OCA\Mcp\Access\Policy\GroupSourceUntrusted;
+use OCA\Mcp\Access\Policy\PolicyConflict;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyResolver;
+use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCP\Config\IUserConfig;
 use OCP\Group\Backend\INamedBackend;
@@ -426,7 +426,7 @@ final class GroupGrantsTest extends OAuthAccountTestCase {
 		$writer = new PolicyWriter($this->official(), Server::get(PolicyStateMapper::class), Server::get(\OCA\Mcp\Db\PolicyEventsMapper::class),
 			Server::get(IConfig::class), Server::get(IUserConfig::class), Server::get(\OCP\IAppConfig::class), Server::get(IUserManager::class),
 			Server::get(\OCP\AppFramework\Utility\ITimeFactory::class), Server::get(AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class),
-			Server::get(\OCA\Mcp\Service\Policy\PolicyEventProcessor::class), Server::get(GroupGrantsMapper::class), $life, Server::get(OAuthStore::class));
+			Server::get(\OCA\Mcp\Access\Policy\PolicyEventProcessor::class), Server::get(GroupGrantsMapper::class), $life, Server::get(OAuthStore::class));
 		$hooks = [];
 		try {
 			$writer->setGroupGrants($preview['revision'], self::ACTOR, $gid, $preview['grants'], $preview['previewId'], $this->admit($hooks, $attempts));

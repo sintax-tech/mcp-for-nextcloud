@@ -9,10 +9,10 @@ namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
 use OCA\Mcp\Controller\GrantsController;
 use OCA\Mcp\Controller\OverridePreviewController;
-use OCA\Mcp\Service\OverridePreview;
-use OCA\Mcp\Service\Policy\GroupGrantsService;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Tests\Unit\Admin\MatrixFixture;
+use OCA\Mcp\Access\Grants\OverridePreview;
+use OCA\Mcp\Access\Policy\GroupGrantsService;
+use OCA\Mcp\Access\Policy\PolicyWriter;
+use OCA\Mcp\Tests\Unit\Access\Grants\MatrixFixture;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;

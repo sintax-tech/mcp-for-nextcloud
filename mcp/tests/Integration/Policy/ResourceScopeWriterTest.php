@@ -11,10 +11,10 @@ use OCA\Mcp\Db\PolicyEventsMapper;
 use OCA\Mcp\Db\PolicyStateMapper;
 use OCA\Mcp\Db\ResourceScopeMapper;
 use OCA\Mcp\OAuth\OAuthStore;
-use OCA\Mcp\Service\GrantMatrix;
-use OCA\Mcp\Service\Policy\PolicyWriter;
-use OCA\Mcp\Service\Scope\NativeResourceEnumerator;
-use OCA\Mcp\Service\Scope\ScopeActivation;
+use OCA\Mcp\Access\Grants\GrantMatrix;
+use OCA\Mcp\Access\Policy\PolicyWriter;
+use OCA\Mcp\Access\ResourceScope\NativeResourceEnumerator;
+use OCA\Mcp\Access\ResourceScope\ScopeActivation;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCP\AppFramework\Utility\ITimeFactory;
@@ -70,7 +70,7 @@ final class ResourceScopeWriterTest extends IntegrationTestCase {
 		$writer = new PolicyWriter($db, $state, Server::get(PolicyEventsMapper::class), Server::get(IConfig::class), Server::get(IUserConfig::class),
 			Server::get(IAppConfig::class), Server::get(IUserManager::class), Server::get(ITimeFactory::class),
 			Server::get(\OCA\Mcp\Db\AuthUsersMapper::class), Server::get(\OCA\Mcp\Db\RecheckMapper::class),
-			Server::get(\OCA\Mcp\Service\Policy\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class),
+			Server::get(\OCA\Mcp\Access\Policy\PolicyEventProcessor::class), Server::get(\OCA\Mcp\Db\GroupGrantsMapper::class),
 			Server::get(\OCA\Mcp\Db\GroupLifeMapper::class), Server::get(OAuthStore::class), Server::get(ResourceScopeMapper::class), $resources, new ScopeActivation(['files' => true, 'calendar' => true, 'tasks' => true]));
 		$before = $state->state();
 		$other = new ResourceScopeMapper($this->openIndependentConnection());

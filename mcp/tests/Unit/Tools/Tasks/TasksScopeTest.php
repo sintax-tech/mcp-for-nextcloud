@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Tasks;
 
 use DateTimeImmutable;
-use OCA\Mcp\Service\Policy\PolicyUnavailable;
+use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarDav;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\FakeCalendarStore;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
@@ -58,7 +58,7 @@ final class TasksScopeTest extends TestCase {
 		$time->method('now')->willReturn(new DateTimeImmutable('2026-10-01T12:00:00Z'));
 		$this->module = new TasksModule(ScopeStub::access($this->store, $this->scope), $this->store, $tasks, $this->dav,
 			new TaskData(), new SharedGuard($this->createMock(IUserManager::class)), new TrashPolicy($config), $time,
-			\OCA\Mcp\Tests\Unit\Tools\Common\OutputReferenceFilters::inactive($this));
+			\OCA\Mcp\Tests\Unit\Access\Visibility\OutputReferenceFilters::inactive($this));
 	}
 
 	/** @return list<string> paths tasks_list_calendars returns */

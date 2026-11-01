@@ -13,7 +13,7 @@ use OCA\Mcp\Tools\Forms\Handler\{ListSubmissionsHandler, ReadSubmissionHandler};
 use OCA\Mcp\Tools\Forms\FormsServices;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
-use OCA\Mcp\Service\GrantPolicy;
+use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\Forms\FormsFixture;
 use PHPUnit\Framework\TestCase;

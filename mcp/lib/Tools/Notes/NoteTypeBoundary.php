@@ -8,9 +8,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tools\Notes;
 
-use OCA\Mcp\Tools\Common\FileTypeDenied;
-use OCA\Mcp\Tools\Common\FileTypeGuard;
-use OCA\Mcp\Service\FileWritePolicyUnavailable;
+use OCA\Mcp\Access\FileTypes\FileTypeDenied;
+use OCA\Mcp\Access\FileTypes\FileTypeGuard;
+use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 
 /**
  * One file-name policy snapshot shared by every basename of a single Notes preflight.

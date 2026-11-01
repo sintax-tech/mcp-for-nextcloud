@@ -102,7 +102,7 @@ final class AdminAssetsTest extends TestCase {
 		$section = substr($template, $start, $end - $start);
 		preg_match_all("/\\\$l->t\\('([^']+)'\\)/", $section, $fromTemplate);
 		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js');
-		$oauthScript = substr($script, (int)strpos($script, 'async function initOauthClients'));
+		$oauthScript = AdminSources::readGroups(['oauth-clients', 'checkout', 'logs']);
 		preg_match_all("/t\\('mcp', '([^']+)'/", $oauthScript, $fromScript);
 		$strings = array_unique(array_merge($fromTemplate[1], $fromScript[1]));
 		$this->assertGreaterThan(8, count($strings));
@@ -479,7 +479,7 @@ final class AdminAssetsTest extends TestCase {
 		// The revision sent is the one on screen (T14 D1: kept apart only to announce the move the save made).
 		$this->assertSame(3, substr_count($script, 'const sent = context.state.data.revision'), 'cell, bulk command and service');
 		$this->assertStringContainsString('const sent = logsRevision', $script);
-		$this->assertStringContainsString('const sent = oauthRevision', $script);
+		$this->assertStringContainsString('const sent = context.oauthRevision', $script);
 		$this->assertStringContainsString("if (e.message === '409' || e.message === '428') {", $script);
 		$this->assertStringContainsString("e.message === '503' && e.data && e.data.uncertain", $script);
 	}

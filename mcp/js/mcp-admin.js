@@ -2785,17 +2785,20 @@
 	}
 })((globalThis.window || globalThis).OCA.Mcp.Admin)
 ;
-/* admin/admin-grants.js */
+/* admin/protection/exclusion-tags.js */
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Existing settings blocks, delegated during the matrix extraction. */
+/** Original exclusion tags editor.
+ * @param {object} context live bindings of this editor
+ * @return {void}
+ */
 (function (admin) {
 	'use strict'
-	admin.modules.settings = function (context) {
 
-
+	admin.modules.protection = admin.modules.protection || {}
+	admin.modules.protection.exclusion_tags = function (context) {
 		async function initTagsSection() {
 			const container = document.getElementById('mcp-tags-list')
 			const warning = document.getElementById('mcp-tags-warning')
@@ -2912,400 +2915,24 @@
 			}
 		}
 
+		Object.assign(context, { initTagsSection })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/checkout/upload-limit.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Original upload limit editor.
+ * @param {object} context live bindings of this editor
+ * @return {void}
+ */
+(function (admin) {
+	'use strict'
 
-		/**
-		 * OAuth clients section: allowed client_id hosts, the native client switch and the self-hosted clients, each with
-		 * its name, Enabled setting and redirect URIs, through GET and PUT /apps/mcp/api/oauth-clients. The saves of this
-		 * block go one at a time, and each queues an intent (this client, this change), not a body: the list it sends is
-		 * built when its turn comes, from the clients the server confirmed last, and carries the revision of that same
-		 * answer. So two quick changes never resend a list from before the first one (turning B off cannot turn A back on).
-		 * A page that is out of date (another window or administrator saved first) gets 409 and is rebuilt from the
-		 * server; the intents queued behind the refused one are dropped with it, never sent on the reloaded page. A card
-		 * with typed changes the server does not have (a new client, or a changed name or redirect URIs) stays on screen
-		 * through that rebuild, marked as not saved, for the admin to check and save again. A save of another block of this
-		 * page moves the revision too; that move is adopted (see announce()), so it never refuses a save here.
-		 */
-		async function initOauthClients() {
-			const hostsInput = document.getElementById('mcp-oauth-hosts')
-			const hostsSave = document.getElementById('mcp-oauth-hosts-save')
-			const hostsStatus = document.getElementById('mcp-oauth-hosts-status')
-			const nativeBox = document.getElementById('mcp-native-client')
-			const nativeStatus = document.getElementById('mcp-native-client-status')
-			const details = document.getElementById('mcp-native-client-details')
-			const clientId = document.getElementById('mcp-native-client-id')
-			const redirects = document.getElementById('mcp-native-redirects')
-			const customList = document.getElementById('mcp-custom-clients')
-			const customAdd = document.getElementById('mcp-custom-add')
-			/** Self-hosted clients as the server last returned them; each card edits one of them (or a new one). */
-			let customClients = []
-			let cardCount = 0
-			// The block's own revision, from its own GET or save; never the matrix's, never an error body's.
-			let oauthRevision = null
-			let queue = Promise.resolve()
-			// Advances when the page is reloaded after a refused save: intents queued before that are dropped.
-			let epoch = 0
-			/** Per card: the client it was built from, and what is typed in it now. */
-			const drafts = new WeakMap()
-			/** The server's last answer: what is stored at this block's revision. */
-			let confirmed = null
-			context.followRevision(() => oauthRevision, (revision) => { oauthRevision = revision })
-
-			/** @param {object} data settings returned by the API */
-			function show(data) {
-				oauthRevision = data.revision
-				confirmed = data
-				hostsInput.value = data.hosts.join(', ')
-				nativeBox.checked = data.nativeClientEnabled
-				details.hidden = !data.nativeClientEnabled
-				clientId.textContent = data.nativeClientId
-				redirects.replaceChildren(...data.nativeRedirectUris.map((uri) => context.el('li', {}, [context.el('code', { textContent: uri })])))
-				customClients = data.customClients
-			}
-
-			/**
-			 * @param {HTMLElement} status status span next to the control
-			 * @param {boolean} ok whether the save worked
-			 * @param {string} [message] text shown on failure
-			 */
-			function report(status, ok, message) {
-				status.textContent = ok ? t('mcp', 'Saved') : (message || t('mcp', 'Not saved'))
-				context.flash(status, ok)
-			}
-
-			/**
-			 * Runs one task of the block after the previous one has finished.
-			 *
-			 * @param {Function} task async work
-			 * @return {Promise<*>} what the task returned
-			 */
-			function enqueue(task) {
-				const run = queue.then(task)
-				queue = run.catch(() => {})
-				return run
-			}
-
-			/**
-			 * Sends one change when its turn comes: the body is built then by `build`, from the clients the server confirmed
-			 * last, with the revision of that same answer, which is then replaced by the revision and clients the server
-			 * answers with. The policy revision moved, so the matrix is reloaded to keep its own saves valid. An intent
-			 * queued before a reload is dropped (error "stale"); a refused save drops the intents queued behind it.
-			 *
-			 * @param {Function} build (clients) => the changed settings
-			 * @return {Promise<object>} the settings the server saved
-			 */
-			function put(build) {
-				const queuedAt = epoch
-				return enqueue(async () => {
-					if (queuedAt !== epoch) {
-						throw new Error('stale')
-					}
-					try {
-						const sent = oauthRevision
-						const change = build(customClients)
-						const committed = changes(change, confirmed)
-						const data = await context.api('PUT', '/api/oauth-clients', { ...change, expectedRevision: sent })
-						oauthRevision = data.revision
-						customClients = data.customClients
-						confirmed = data
-						if (committed && context.oneStep(sent, data.revision)) {
-							context.announce(sent, data.revision)
-						}
-						context.load()
-						return data
-					} catch (e) {
-						if (e.message === '409' || e.message === '428' || (e.message === '503' && e.data && e.data.uncertain)) {
-							epoch++
-						}
-						throw e
-					}
-				})
-			}
-
-			/**
-			 * Whether a request differs from the settings stored at the block's revision, compared the way the server compares
-			 * them (OAuthClientsService): the server then commits it and the revision advances. Hosts are trimmed, lowercased
-			 * (ASCII only) and without duplicates, and the default list is stored as no list (GrantsController::hosts,
-			 * writeHosts); clients keep their order, with names and redirect URIs trimmed and URIs without duplicates
-			 * (CustomClient::validate, validateUris). Every trim is PHP's own (phpTrim()). A value still holding a control
-			 * character after it, which the server refuses, counts as unsure. False when unsure, so nothing is announced then.
-			 *
-			 * @param {object} change the settings sent (hosts, nativeClientEnabled or customClients)
-			 * @param {object} stored the server's last answer
-			 * @return {boolean}
-			 */
-			function changes(change, stored) {
-				const control = (text) => /[\x00-\x1f\x7f]/.test(text)
-				const uris = (list) => [...new Set(list.map(context.phpTrim))]
-				if (change.nativeClientEnabled !== undefined && change.nativeClientEnabled !== stored.nativeClientEnabled) {
-					return true
-				}
-				if (change.hosts !== undefined) {
-					// strtolower() of PHP 8 changes A-Z only.
-					const hosts = [...new Set(change.hosts.map((host) => context.phpTrim(host).replace(/[A-Z]/g, (letter) => letter.toLowerCase())))]
-					if (hosts.some(control)) {
-						return false
-					}
-					// Stored as no list when the request is the default set; only known while the default is what is stored.
-					const isDefault = stored.hostsDefault && hosts.length === stored.hosts.length && hosts.every((host) => stored.hosts.includes(host))
-					if (stored.hostsDefault ? !isDefault : hosts.join(',') !== stored.hosts.join(',')) {
-						return true
-					}
-				}
-				if (change.customClients !== undefined) {
-					if (change.customClients.some((client) => control(context.phpTrim(client.name)) || uris(client.redirectUris).some(control))) {
-						return false
-					}
-					const key = (clients) => JSON.stringify(clients.map((client) => [client.id ?? null, context.phpTrim(client.name), client.enabled, uris(client.redirectUris)]))
-					if (key(change.customClients) !== key(stored.customClients)) {
-						return true
-					}
-				}
-				return false
-			}
-
-			/**
-			 * When a save failed because the page was out of date (409, or 428 without a revision) or the server could not
-			 * confirm it (503 uncertain), shows what is stored now, in the queue's order, and tells the admin nothing was
-			 * overwritten. The cards with unsaved typed changes are kept (see keepUnsaved()). An intent dropped behind such a
-			 * save is handled by that reload.
-			 *
-			 * @param {Error} e error thrown by put()
-			 * @return {Promise<boolean>} whether the error was handled here (the settings are then reloaded)
-			 */
-			async function recover(e) {
-				if (e.message === 'stale') {
-					return true
-				}
-				if (e.message === '409' || e.message === '428') {
-					context.notifyError(t('mcp', 'The OAuth client settings were changed in another window or by another administrator. The current settings were loaded; nothing was overwritten.'))
-				} else if (e.message === '503' && e.data && e.data.uncertain) {
-					context.notifyError(t('mcp', 'The server could not confirm whether the change was saved. The current settings were loaded.'))
-				} else {
-					return false
-				}
-				try {
-					const unsaved = [...customList.children].filter((card) => drafts.get(card)?.edited())
-					show(await enqueue(() => context.api('GET', '/api/oauth-clients')))
-					customList.replaceChildren(...keepUnsaved(unsaved))
-				} catch (reload) {
-					context.notifyError(t('mcp', 'Could not load the OAuth client settings.'))
-				}
-				return true
-			}
-
-			/**
-			 * The cards of the clients the server has now, with the cards whose typed changes it does not have put back: a
-			 * saved client keeps its edited card in its place, a new card comes after the saved ones, and the edits of a
-			 * client deleted elsewhere come back as a new card. Each card put back says it was not saved.
-			 *
-			 * @param {HTMLElement[]} unsaved cards with typed changes, read before the reload
-			 * @return {HTMLElement[]} the cards to show
-			 */
-			function keepUnsaved(unsaved) {
-				const kept = new Map(unsaved.filter((card) => drafts.get(card).client.id !== null).map((card) => [drafts.get(card).client.id, card]))
-				const cards = customClients.map((client) => kept.get(client.id) || customCard(client))
-				const extra = unsaved.filter((card) => !cards.includes(card)).map((card) => {
-					if (drafts.get(card).client.id === null) {
-						return card
-					}
-					const fresh = customCard({ ...drafts.get(card).read(), id: null })
-					report(fresh.querySelector('.mcp-status'), false, t('mcp', 'Not saved: this client was deleted in the meantime. Your changes are kept here as a new client; saving adds it again.'))
-					return fresh
-				})
-				for (const card of unsaved.filter((card) => cards.includes(card) || extra.includes(card))) {
-					report(card.querySelector('.mcp-status'), false, t('mcp', 'Not saved: the settings changed after this page was loaded. Your changes are kept here; check them and save again.'))
-				}
-				return [...cards, ...extra]
-			}
-
-			/**
-			 * Saves one change to the list of self-hosted clients.
-			 *
-			 * @param {Function} change (clients) => every client to keep, a new one without id; applied to the clients the
-			 *     server confirmed last, when the save's turn comes
-			 * @return {Promise<object|undefined>} the client the server added, if any
-			 */
-			async function saveCustom(change) {
-				let before = new Set()
-				await put((clients) => {
-					before = new Set(clients.map((client) => client.id))
-					return { customClients: change(clients).map(({ id, name, enabled, redirectUris }) => ({ id, name, enabled, redirectUris })) }
-				})
-				return customClients.find((client) => !before.has(client.id))
-			}
-
-			/**
-			 * One self-hosted client: name, Enabled, client_id with Copy (once saved), redirect URIs, Save and Delete.
-			 * Saving or deleting replaces only this card, so unsaved edits in the other cards stay.
-			 *
-			 * @param {object} client a stored client, or {id: null, ...} for a new one
-			 * @return {HTMLElement} the card
-			 */
-			function customCard(client) {
-				const n = ++cardCount
-				const saved = client.id !== null
-				const name = context.el('input', { type: 'text', id: 'mcp-custom-name-' + n, value: client.name, maxLength: 64, autocomplete: 'off', spellcheck: false })
-				const enabled = context.el('input', { type: 'checkbox', className: 'checkbox', id: 'mcp-custom-enabled-' + n, checked: client.enabled })
-				const uris = context.el('textarea', {
-					id: 'mcp-custom-uris-' + n, className: 'mcp-custom-redirects', rows: 3, spellcheck: false, autocomplete: 'off',
-					placeholder: 'https://harness.example.com/oauth/callback', value: client.redirectUris.join('\n'),
-				})
-				const status = context.el('span', { className: 'mcp-status' })
-				status.setAttribute('aria-live', 'polite')
-				const save = context.el('button', { type: 'button', textContent: t('mcp', 'Save') })
-				const remove = context.el('button', { type: 'button', textContent: t('mcp', 'Delete') })
-				const rows = [
-					context.el('p', {}, [context.el('label', { htmlFor: name.id, textContent: t('mcp', 'Name') }), ' ', name]),
-					context.el('p', {}, [enabled, context.el('label', { htmlFor: enabled.id, textContent: t('mcp', 'Enabled') })]),
-				]
-				if (saved) {
-					const code = context.el('code', { textContent: client.clientId })
-					const copy = context.el('button', { type: 'button', className: 'mcp-copy', textContent: t('mcp', 'Copy') })
-					copy.addEventListener('click', () => {
-						navigator.clipboard.writeText(client.clientId).then(
-							() => { copy.textContent = t('mcp', 'Copied') },
-							() => context.notifyError(t('mcp', 'Could not copy the client_id.')),
-						)
-					})
-					rows.push(context.el('p', {}, ['client_id: ', code, ' ', copy]))
-				}
-				rows.push(
-					context.el('p', {}, [context.el('label', { htmlFor: uris.id, textContent: t('mcp', 'Accepted redirect URIs') })]),
-					uris,
-					context.el('p', { className: 'settings-hint mcp-hint', textContent: t('mcp', 'One URI per line, exactly as the client sends it, port included: https (http only for 127.0.0.1, localhost or [::1]), no wildcard or fragment, up to 2000 bytes.') }),
-					context.el('p', {}, [save, ' ', remove, ' ', status]),
-				)
-				const card = context.el('div', { className: 'mcp-custom-client' }, rows)
-
-				/** @return {object} the client as edited in the card */
-				function read() {
-					return {
-						id: client.id,
-						name: name.value.trim(),
-						enabled: enabled.checked,
-						redirectUris: uris.value.split('\n').map((uri) => uri.trim()).filter((uri) => uri !== ''),
-					}
-				}
-
-				/** @return {boolean} whether the card holds what the server does not have: any new card, or a changed name or URI list */
-				function edited() {
-					const entry = read()
-					return !saved || entry.name !== client.name || entry.redirectUris.join('\n') !== client.redirectUris.join('\n')
-				}
-				drafts.set(card, { client, read, edited })
-
-				save.addEventListener('click', async () => {
-					const entry = read()
-					save.disabled = true
-					try {
-						const added = await saveCustom((clients) => saved
-							? clients.map((other) => other.id === client.id ? entry : other)
-							: [...clients, entry])
-						const next = customCard(saved ? customClients.find((other) => other.id === client.id) : added)
-						card.replaceWith(next)
-						next.querySelector('.mcp-status').textContent = t('mcp', 'Saved')
-						context.flash(next.querySelector('.mcp-status'), true)
-					} catch (e) {
-						if (!(await recover(e))) {
-							report(status, false, t('mcp', 'Not saved: each client needs a name of up to 64 characters that no other client has, and 1 to 20 redirect URIs (absolute https URIs, without user name, wildcard or fragment).'))
-						}
-					} finally {
-						save.disabled = false
-					}
-				})
-
-				// A saved client's Enabled setting applies at once, like the native client's; a new one's is saved with it.
-				enabled.addEventListener('change', async () => {
-					if (!saved) {
-						return
-					}
-					const value = enabled.checked
-					enabled.disabled = true
-					try {
-						await saveCustom((clients) => clients.map((other) => other.id === client.id ? { ...other, enabled: value } : other))
-						report(status, true)
-					} catch (e) {
-						enabled.checked = !value
-						if (!(await recover(e))) {
-							report(status, false)
-							context.notifyError(t('mcp', 'Could not change the self-hosted client.'))
-						}
-					} finally {
-						enabled.disabled = false
-					}
-				})
-
-				remove.addEventListener('click', async () => {
-					if (!saved) {
-						card.remove()
-						return
-					}
-					if (!window.confirm(t('mcp', 'Delete the client “{name}”? Its connections are signed out at once.', { name: client.name }))) {
-						return
-					}
-					remove.disabled = true
-					try {
-						await saveCustom((clients) => clients.filter((other) => other.id !== client.id))
-						card.remove()
-					} catch (e) {
-						if (!(await recover(e))) {
-							report(status, false)
-							context.notifyError(t('mcp', 'Could not delete the self-hosted client.'))
-						}
-					} finally {
-						remove.disabled = false
-					}
-				})
-				return card
-			}
-
-			try {
-				show(await context.api('GET', '/api/oauth-clients'))
-			} catch (e) {
-				context.notifyError(t('mcp', 'Could not load the OAuth client settings.'))
-				return
-			}
-			customList.replaceChildren(...customClients.map(customCard))
-			customAdd.addEventListener('click', () => {
-				const card = customCard({ id: null, name: '', enabled: true, redirectUris: [] })
-				customList.append(card)
-				card.querySelector('input[type="text"]').focus()
-			})
-
-			hostsSave.addEventListener('click', async () => {
-				const hosts = hostsInput.value.split(',').map((host) => host.trim().toLowerCase()).filter((host) => host !== '')
-				hostsSave.disabled = true
-				try {
-					show(await put(() => ({ hosts })))
-					report(hostsStatus, true)
-				} catch (e) {
-					if (!(await recover(e))) {
-						report(hostsStatus, false, t('mcp', 'Invalid host list: use lowercase host names only, without https://, port, path or *, and keep at least one.'))
-					}
-				} finally {
-					hostsSave.disabled = false
-				}
-			})
-
-			nativeBox.addEventListener('change', async () => {
-				const value = nativeBox.checked
-				nativeBox.disabled = true
-				try {
-					show(await put(() => ({ nativeClientEnabled: value })))
-					report(nativeStatus, true)
-				} catch (e) {
-					nativeBox.checked = !value
-					if (!(await recover(e))) {
-						report(nativeStatus, false)
-						context.notifyError(t('mcp', 'Could not change the native client.'))
-					}
-				} finally {
-					nativeBox.disabled = false
-				}
-			})
-		}
-
-
+	admin.modules.checkout = admin.modules.checkout || {}
+	admin.modules.checkout.upload_limit = function (context) {
 		/**
 		 * Checkout upload limit of the status block, in whole MiB, through GET and PUT /apps/mcp/api/checkout-limit.
 		 * Next to it: the effective limit and PHP's post_max_size ceiling.
@@ -3357,7 +2984,24 @@
 			})
 		}
 
+		Object.assign(context, { initCheckoutLimit })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/logs/privacy.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Original privacy editor.
+ * @param {object} context live bindings of this editor
+ * @return {void}
+ */
+(function (admin) {
+	'use strict'
 
+	admin.modules.logs = admin.modules.logs || {}
+	admin.modules.logs.privacy = function (context) {
 		/**
 		 * Server log section: the switch that hides the text of log messages in the log tools, through GET and PUT
 		 * /apps/mcp/api/logs-privacy.
@@ -3404,7 +3048,24 @@
 			})
 		}
 
+		Object.assign(context, { initLogsPrivacy })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/logs/readers.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Original readers editor.
+ * @param {object} context live bindings of this editor
+ * @return {void}
+ */
+(function (admin) {
+	'use strict'
 
+	admin.modules.logs = admin.modules.logs || {}
+	admin.modules.logs.readers = function (context) {
 		/**
 		 * Server log section: the groups whose members may read the log besides the administrators, through
 		 * GET and PUT /apps/mcp/api/logs-access. The picker locks while a save runs and each save carries
@@ -3516,7 +3177,511 @@
 			await reload()
 		}
 
-		Object.assign(context, { initCheckoutLimit, initLogsAccess, initLogsPrivacy, initOauthClients, initTagsSection })
+		Object.assign(context, { initLogsAccess })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/oauth-clients/session.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** One OAuth editor session and its live queue, revisions and card drafts.
+ * @param {object} context live bindings of this editor
+ * @return {void}
+ */
+(function (admin) {
+	'use strict'
+
+	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	admin.modules.oauth_clients.session = function (context) {
+		const hostsInput = document.getElementById('mcp-oauth-hosts')
+		const hostsSave = document.getElementById('mcp-oauth-hosts-save')
+		const hostsStatus = document.getElementById('mcp-oauth-hosts-status')
+		const nativeBox = document.getElementById('mcp-native-client')
+		const nativeStatus = document.getElementById('mcp-native-client-status')
+		const details = document.getElementById('mcp-native-client-details')
+		const clientId = document.getElementById('mcp-native-client-id')
+		const redirects = document.getElementById('mcp-native-redirects')
+		const customList = document.getElementById('mcp-custom-clients')
+		const customAdd = document.getElementById('mcp-custom-add')
+		/** Self-hosted clients as the server last returned them; each card edits one of them (or a new one). */
+		let customClients = []
+		let cardCount = 0
+		// The block's own revision, from its own GET or save; never the matrix's, never an error body's.
+		let oauthRevision = null
+		let queue = Promise.resolve()
+		// Advances when the page is reloaded after a refused save: intents queued before that are dropped.
+		let epoch = 0
+		/** Per card: the client it was built from, and what is typed in it now. */
+		const drafts = new WeakMap()
+		/** The server's last answer: what is stored at this block's revision. */
+		let confirmed = null
+
+		Object.defineProperties(context, {
+			hostsInput: { configurable: true, get: () => hostsInput },
+			hostsSave: { configurable: true, get: () => hostsSave },
+			hostsStatus: { configurable: true, get: () => hostsStatus },
+			nativeBox: { configurable: true, get: () => nativeBox },
+			nativeStatus: { configurable: true, get: () => nativeStatus },
+			details: { configurable: true, get: () => details },
+			clientId: { configurable: true, get: () => clientId },
+			redirects: { configurable: true, get: () => redirects },
+			customList: { configurable: true, get: () => customList },
+			customAdd: { configurable: true, get: () => customAdd },
+			customClients: { configurable: true, get: () => customClients, set: (value) => { customClients = value } },
+			cardCount: { configurable: true, get: () => cardCount, set: (value) => { cardCount = value } },
+			oauthRevision: { configurable: true, get: () => oauthRevision, set: (value) => { oauthRevision = value } },
+			queue: { configurable: true, get: () => queue, set: (value) => { queue = value } },
+			epoch: { configurable: true, get: () => epoch, set: (value) => { epoch = value } },
+			drafts: { configurable: true, get: () => drafts },
+			confirmed: { configurable: true, get: () => confirmed, set: (value) => { confirmed = value } },
+		})
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/oauth-clients/saving.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** OAuth client saving operations.
+ * @param {object} context live bindings of this editor
+ * @return {void}
+ */
+(function (admin) {
+	'use strict'
+
+	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	admin.modules.oauth_clients.saving = function (context) {
+		/**
+		 * Runs one task of the block after the previous one has finished.
+		 *
+		 * @param {Function} task async work
+		 * @return {Promise<*>} what the task returned
+		 */
+		function enqueue(task) {
+			const run = context.queue.then(task)
+			context.queue = run.catch(() => {})
+			return run
+		}
+
+
+		/**
+		 * Sends one change when its turn comes: the body is built then by `build`, from the clients the server confirmed
+		 * last, with the revision of that same answer, which is then replaced by the revision and clients the server
+		 * answers with. The policy revision moved, so the matrix is reloaded to keep its own saves valid. An intent
+		 * queued before a reload is dropped (error "stale"); a refused save drops the intents queued behind it.
+		 *
+		 * @param {Function} build (clients) => the changed settings
+		 * @return {Promise<object>} the settings the server saved
+		 */
+		function put(build) {
+			const queuedAt = context.epoch
+			return context.enqueue(async () => {
+				if (queuedAt !== context.epoch) {
+					throw new Error('stale')
+				}
+				try {
+					const sent = context.oauthRevision
+					const change = build(context.customClients)
+					const committed = context.changes(change, context.confirmed)
+					const data = await context.api('PUT', '/api/oauth-clients', { ...change, expectedRevision: sent })
+					context.oauthRevision = data.revision
+					context.customClients = data.customClients
+					context.confirmed = data
+					if (committed && context.oneStep(sent, data.revision)) {
+						context.announce(sent, data.revision)
+					}
+					context.load()
+					return data
+				} catch (e) {
+					if (e.message === '409' || e.message === '428' || (e.message === '503' && e.data && e.data.uncertain)) {
+						context.epoch++
+					}
+					throw e
+				}
+			})
+		}
+
+
+		/**
+		 * Whether a request differs from the settings stored at the block's revision, compared the way the server compares
+		 * them (OAuthClientsService): the server then commits it and the revision advances. Hosts are trimmed, lowercased
+		 * (ASCII only) and without duplicates, and the default list is stored as no list (GrantsController::hosts,
+		 * writeHosts); clients keep their order, with names and redirect URIs trimmed and URIs without duplicates
+		 * (CustomClient::validate, validateUris). Every trim is PHP's own (phpTrim()). A value still holding a control
+		 * character after it, which the server refuses, counts as unsure. False when unsure, so nothing is announced then.
+		 *
+		 * @param {object} change the settings sent (hosts, nativeClientEnabled or customClients)
+		 * @param {object} stored the server's last answer
+		 * @return {boolean}
+		 */
+		function changes(change, stored) {
+			const control = (text) => /[\x00-\x1f\x7f]/.test(text)
+			const uris = (list) => [...new Set(list.map(context.phpTrim))]
+			if (change.nativeClientEnabled !== undefined && change.nativeClientEnabled !== stored.nativeClientEnabled) {
+				return true
+			}
+			if (change.hosts !== undefined) {
+				// strtolower() of PHP 8 changes A-Z only.
+				const hosts = [...new Set(change.hosts.map((host) => context.phpTrim(host).replace(/[A-Z]/g, (letter) => letter.toLowerCase())))]
+				if (hosts.some(control)) {
+					return false
+				}
+				// Stored as no list when the request is the default set; only known while the default is what is stored.
+				const isDefault = stored.hostsDefault && hosts.length === stored.hosts.length && hosts.every((host) => stored.hosts.includes(host))
+				if (stored.hostsDefault ? !isDefault : hosts.join(',') !== stored.hosts.join(',')) {
+					return true
+				}
+			}
+			if (change.customClients !== undefined) {
+				if (change.customClients.some((client) => control(context.phpTrim(client.name)) || uris(client.redirectUris).some(control))) {
+					return false
+				}
+				const key = (clients) => JSON.stringify(clients.map((client) => [client.id ?? null, context.phpTrim(client.name), client.enabled, uris(client.redirectUris)]))
+				if (key(change.customClients) !== key(stored.customClients)) {
+					return true
+				}
+			}
+			return false
+		}
+
+
+		/**
+		 * Saves one change to the list of self-hosted clients.
+		 *
+		 * @param {Function} change (clients) => every client to keep, a new one without id; applied to the clients the
+		 *     server confirmed last, when the save's turn comes
+		 * @return {Promise<object|undefined>} the client the server added, if any
+		 */
+		async function saveCustom(change) {
+			let before = new Set()
+			await context.put((clients) => {
+				before = new Set(clients.map((client) => client.id))
+				return { customClients: change(clients).map(({ id, name, enabled, redirectUris }) => ({ id, name, enabled, redirectUris })) }
+			})
+			return context.customClients.find((client) => !before.has(client.id))
+		}
+
+		Object.assign(context, { changes, enqueue, put, saveCustom })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/oauth-clients/recovery.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** OAuth client recovery operations.
+ * @param {object} context live bindings of this editor
+ * @return {void}
+ */
+(function (admin) {
+	'use strict'
+
+	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	admin.modules.oauth_clients.recovery = function (context) {
+		/**
+		 * When a save failed because the page was out of date (409, or 428 without a revision) or the server could not
+		 * confirm it (503 uncertain), shows what is stored now, in the queue's order, and tells the admin nothing was
+		 * overwritten. The cards with unsaved typed changes are kept (see keepUnsaved()). An intent dropped behind such a
+		 * save is handled by that reload.
+		 *
+		 * @param {Error} e error thrown by put()
+		 * @return {Promise<boolean>} whether the error was handled here (the settings are then reloaded)
+		 */
+		async function recover(e) {
+			if (e.message === 'stale') {
+				return true
+			}
+			if (e.message === '409' || e.message === '428') {
+				context.notifyError(t('mcp', 'The OAuth client settings were changed in another window or by another administrator. The current settings were loaded; nothing was overwritten.'))
+			} else if (e.message === '503' && e.data && e.data.uncertain) {
+				context.notifyError(t('mcp', 'The server could not confirm whether the change was saved. The current settings were loaded.'))
+			} else {
+				return false
+			}
+			try {
+				const unsaved = [...context.customList.children].filter((card) => context.drafts.get(card)?.edited())
+				context.show(await context.enqueue(() => context.api('GET', '/api/oauth-clients')))
+				context.customList.replaceChildren(...context.keepUnsaved(unsaved))
+			} catch (reload) {
+				context.notifyError(t('mcp', 'Could not load the OAuth client settings.'))
+			}
+			return true
+		}
+
+
+		/**
+		 * The cards of the clients the server has now, with the cards whose typed changes it does not have put back: a
+		 * saved client keeps its edited card in its place, a new card comes after the saved ones, and the edits of a
+		 * client deleted elsewhere come back as a new card. Each card put back says it was not saved.
+		 *
+		 * @param {HTMLElement[]} unsaved cards with typed changes, read before the reload
+		 * @return {HTMLElement[]} the cards to show
+		 */
+		function keepUnsaved(unsaved) {
+			const kept = new Map(unsaved.filter((card) => context.drafts.get(card).client.id !== null).map((card) => [context.drafts.get(card).client.id, card]))
+			const cards = context.customClients.map((client) => kept.get(client.id) || context.customCard(client))
+			const extra = unsaved.filter((card) => !cards.includes(card)).map((card) => {
+				if (context.drafts.get(card).client.id === null) {
+					return card
+				}
+				const fresh = context.customCard({ ...context.drafts.get(card).read(), id: null })
+				context.report(fresh.querySelector('.mcp-status'), false, t('mcp', 'Not saved: this client was deleted in the meantime. Your changes are kept here as a new client; saving adds it again.'))
+				return fresh
+			})
+			for (const card of unsaved.filter((card) => cards.includes(card) || extra.includes(card))) {
+				context.report(card.querySelector('.mcp-status'), false, t('mcp', 'Not saved: the settings changed after this page was loaded. Your changes are kept here; check them and save again.'))
+			}
+			return [...cards, ...extra]
+		}
+
+		Object.assign(context, { keepUnsaved, recover })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/oauth-clients/cards.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** OAuth client cards operations.
+ * @param {object} context live bindings of this editor
+ * @return {void}
+ */
+(function (admin) {
+	'use strict'
+
+	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	admin.modules.oauth_clients.cards = function (context) {
+		/**
+		 * One self-hosted client: name, Enabled, client_id with Copy (once saved), redirect URIs, Save and Delete.
+		 * Saving or deleting replaces only this card, so unsaved edits in the other cards stay.
+		 *
+		 * @param {object} client a stored client, or {id: null, ...} for a new one
+		 * @return {HTMLElement} the card
+		 */
+		function customCard(client) {
+			const n = ++context.cardCount
+			const saved = client.id !== null
+			const name = context.el('input', { type: 'text', id: 'mcp-custom-name-' + n, value: client.name, maxLength: 64, autocomplete: 'off', spellcheck: false })
+			const enabled = context.el('input', { type: 'checkbox', className: 'checkbox', id: 'mcp-custom-enabled-' + n, checked: client.enabled })
+			const uris = context.el('textarea', {
+				id: 'mcp-custom-uris-' + n, className: 'mcp-custom-redirects', rows: 3, spellcheck: false, autocomplete: 'off',
+				placeholder: 'https://harness.example.com/oauth/callback', value: client.redirectUris.join('\n'),
+			})
+			const status = context.el('span', { className: 'mcp-status' })
+			status.setAttribute('aria-live', 'polite')
+			const save = context.el('button', { type: 'button', textContent: t('mcp', 'Save') })
+			const remove = context.el('button', { type: 'button', textContent: t('mcp', 'Delete') })
+			const rows = [
+				context.el('p', {}, [context.el('label', { htmlFor: name.id, textContent: t('mcp', 'Name') }), ' ', name]),
+				context.el('p', {}, [enabled, context.el('label', { htmlFor: enabled.id, textContent: t('mcp', 'Enabled') })]),
+			]
+			if (saved) {
+				const code = context.el('code', { textContent: client.clientId })
+				const copy = context.el('button', { type: 'button', className: 'mcp-copy', textContent: t('mcp', 'Copy') })
+				copy.addEventListener('click', () => {
+					navigator.clipboard.writeText(client.clientId).then(
+						() => { copy.textContent = t('mcp', 'Copied') },
+						() => context.notifyError(t('mcp', 'Could not copy the client_id.')),
+					)
+				})
+				rows.push(context.el('p', {}, ['client_id: ', code, ' ', copy]))
+			}
+			rows.push(
+				context.el('p', {}, [context.el('label', { htmlFor: uris.id, textContent: t('mcp', 'Accepted redirect URIs') })]),
+				uris,
+				context.el('p', { className: 'settings-hint mcp-hint', textContent: t('mcp', 'One URI per line, exactly as the client sends it, port included: https (http only for 127.0.0.1, localhost or [::1]), no wildcard or fragment, up to 2000 bytes.') }),
+				context.el('p', {}, [save, ' ', remove, ' ', status]),
+			)
+			const card = context.el('div', { className: 'mcp-custom-client' }, rows)
+
+			/** @return {object} the client as edited in the card */
+			function read() {
+				return {
+					id: client.id,
+					name: name.value.trim(),
+					enabled: enabled.checked,
+					redirectUris: uris.value.split('\n').map((uri) => uri.trim()).filter((uri) => uri !== ''),
+				}
+			}
+
+			/** @return {boolean} whether the card holds what the server does not have: any new card, or a changed name or URI list */
+			function edited() {
+				const entry = read()
+				return !saved || entry.name !== client.name || entry.redirectUris.join('\n') !== client.redirectUris.join('\n')
+			}
+			context.drafts.set(card, { client, read, edited })
+
+			save.addEventListener('click', async () => {
+				const entry = read()
+				save.disabled = true
+				try {
+					const added = await context.saveCustom((clients) => saved
+						? clients.map((other) => other.id === client.id ? entry : other)
+						: [...clients, entry])
+					const next = context.customCard(saved ? context.customClients.find((other) => other.id === client.id) : added)
+					card.replaceWith(next)
+					next.querySelector('.mcp-status').textContent = t('mcp', 'Saved')
+					context.flash(next.querySelector('.mcp-status'), true)
+				} catch (e) {
+					if (!(await context.recover(e))) {
+						context.report(status, false, t('mcp', 'Not saved: each client needs a name of up to 64 characters that no other client has, and 1 to 20 redirect URIs (absolute https URIs, without user name, wildcard or fragment).'))
+					}
+				} finally {
+					save.disabled = false
+				}
+			})
+
+			// A saved client's Enabled setting applies at once, like the native client's; a new one's is saved with it.
+			enabled.addEventListener('change', async () => {
+				if (!saved) {
+					return
+				}
+				const value = enabled.checked
+				enabled.disabled = true
+				try {
+					await context.saveCustom((clients) => clients.map((other) => other.id === client.id ? { ...other, enabled: value } : other))
+					context.report(status, true)
+				} catch (e) {
+					enabled.checked = !value
+					if (!(await context.recover(e))) {
+						context.report(status, false)
+						context.notifyError(t('mcp', 'Could not change the self-hosted client.'))
+					}
+				} finally {
+					enabled.disabled = false
+				}
+			})
+
+			remove.addEventListener('click', async () => {
+				if (!saved) {
+					card.remove()
+					return
+				}
+				if (!window.confirm(t('mcp', 'Delete the client “{name}”? Its connections are signed out at once.', { name: client.name }))) {
+					return
+				}
+				remove.disabled = true
+				try {
+					await context.saveCustom((clients) => clients.filter((other) => other.id !== client.id))
+					card.remove()
+				} catch (e) {
+					if (!(await context.recover(e))) {
+						context.report(status, false)
+						context.notifyError(t('mcp', 'Could not delete the self-hosted client.'))
+					}
+				} finally {
+					remove.disabled = false
+				}
+			})
+			return card
+		}
+
+		Object.assign(context, { customCard })
+	}
+})((globalThis.window || globalThis).OCA.Mcp.Admin)
+;
+/* admin/oauth-clients/editor.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
+/** Compose and start the OAuth clients editor at its original matrix startup phase. */
+(function (admin) {
+	'use strict'
+	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	/**
+	 * @param {object} matrix matrix request, revision and presentation dependencies
+	 * @return {void}
+	 */
+	admin.modules.oauth_clients.editor = function (matrix) {
+		/** @return {Promise<void>} initial settings load and original listener registration */
+		async function initOauthClients() {
+			const context = { api: matrix.api, flash: matrix.flash, el: matrix.el,
+				notifyError: matrix.notifyError, oneStep: matrix.oneStep, phpTrim: matrix.phpTrim,
+				announce: matrix.announce, load: matrix.load }
+			admin.sessions.oauthClients = context
+			admin.modules.oauth_clients.session(context)
+			admin.modules.oauth_clients.saving(context)
+			admin.modules.oauth_clients.recovery(context)
+			admin.modules.oauth_clients.cards(context)
+			matrix.followRevision(() => context.oauthRevision, (revision) => { context.oauthRevision = revision })
+
+			/** @param {object} data settings returned by the API */
+			function show(data) {
+				context.oauthRevision = data.revision
+				context.confirmed = data
+				context.hostsInput.value = data.hosts.join(', ')
+				context.nativeBox.checked = data.nativeClientEnabled
+				context.details.hidden = !data.nativeClientEnabled
+				context.clientId.textContent = data.nativeClientId
+				context.redirects.replaceChildren(...data.nativeRedirectUris.map((uri) => context.el('li', {}, [context.el('code', { textContent: uri })])))
+				context.customClients = data.customClients
+			}
+
+
+			/**
+			 * @param {HTMLElement} status status span next to the control
+			 * @param {boolean} ok whether the save worked
+			 * @param {string} [message] text shown on failure
+			 */
+			function report(status, ok, message) {
+				status.textContent = ok ? t('mcp', 'Saved') : (message || t('mcp', 'Not saved'))
+				context.flash(status, ok)
+			}
+
+			context.show = show
+			context.report = report
+
+			try {
+				show(await context.api('GET', '/api/oauth-clients'))
+			} catch (e) {
+				context.notifyError(t('mcp', 'Could not load the OAuth client settings.'))
+				return
+			}
+			context.customList.replaceChildren(...context.customClients.map(context.customCard))
+			context.customAdd.addEventListener('click', () => {
+				const card = context.customCard({ id: null, name: '', enabled: true, redirectUris: [] })
+				context.customList.append(card)
+				card.querySelector('input[type="text"]').focus()
+			})
+
+			context.hostsSave.addEventListener('click', async () => {
+				const hosts = context.hostsInput.value.split(',').map((host) => host.trim().toLowerCase()).filter((host) => host !== '')
+				context.hostsSave.disabled = true
+				try {
+					show(await context.put(() => ({ hosts })))
+					report(context.hostsStatus, true)
+				} catch (e) {
+					if (!(await context.recover(e))) {
+						report(context.hostsStatus, false, t('mcp', 'Invalid host list: use lowercase host names only, without https://, port, path or *, and keep at least one.'))
+					}
+				} finally {
+					context.hostsSave.disabled = false
+				}
+			})
+
+			context.nativeBox.addEventListener('change', async () => {
+				const value = context.nativeBox.checked
+				context.nativeBox.disabled = true
+				try {
+					show(await context.put(() => ({ nativeClientEnabled: value })))
+					report(context.nativeStatus, true)
+				} catch (e) {
+					context.nativeBox.checked = !value
+					if (!(await context.recover(e))) {
+						report(context.nativeStatus, false)
+						context.notifyError(t('mcp', 'Could not change the native client.'))
+					}
+				} finally {
+					context.nativeBox.disabled = false
+				}
+			})		}
+		matrix.initOauthClients = initOauthClients
 	}
 })((globalThis.window || globalThis).OCA.Mcp.Admin)
 ;
@@ -3547,7 +3712,11 @@
 	admin.modules.matrix.notices(context)
 	admin.modules.matrix.commands(context)
 	admin.modules.matrix.interactions(context)
-	admin.modules.settings(context)
+	admin.modules.protection.exclusion_tags(context)
+	admin.modules.checkout.upload_limit(context)
+	admin.modules.logs.privacy(context)
+	admin.modules.logs.readers(context)
+	admin.modules.oauth_clients.editor(context)
 	context.attachView()
 	context.attachNotices()
 	context.attachService()

@@ -29,7 +29,15 @@ admin/matrix/eligibility.js
 admin/matrix/notices.js
 admin/matrix/commands.js
 admin/matrix/interactions.js
-admin/admin-grants.js
+admin/protection/exclusion-tags.js
+admin/checkout/upload-limit.js
+admin/logs/privacy.js
+admin/logs/readers.js
+admin/oauth-clients/session.js
+admin/oauth-clients/saving.js
+admin/oauth-clients/recovery.js
+admin/oauth-clients/cards.js
+admin/oauth-clients/editor.js
 admin/matrix/start.js
 admin/admin-level-popover.js
 admin/admin-exceptions.js

@@ -41,6 +41,23 @@ final class AdminSources {
 		return implode(";\n", $units);
 	}
 	/**
+	 * @param list<string> $groups work folders whose strings are asserted together
+	 * @return string actual complete scripts in manifest order
+	 */
+	public static function readGroups(array $groups): string {
+		$app = dirname(__DIR__, 3);
+		$units = [];
+		foreach (file($app . '/src/admin.manifest', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) ?: [] as $entry) {
+			foreach ($groups as $group) {
+				if (str_starts_with($entry, 'admin/' . $group . '/')) {
+					$units[] = (string)file_get_contents($app . '/src/' . $entry);
+				}
+			}
+		}
+		return implode(";\n", $units);
+	}
+
+	/**
 	 * @param string $source registered source units
 	 * @param string $name declared function name
 	 * @return string complete function at its actual indentation

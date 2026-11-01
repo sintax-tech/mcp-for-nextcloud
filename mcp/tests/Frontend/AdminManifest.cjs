@@ -36,8 +36,9 @@ class AdminManifest {
 	 */
 	static loadsBefore(first, second) {
 		const fragments = AdminManifest.fragments()
-		const a = fragments.indexOf(first)
-		const b = fragments.indexOf(second)
+		const actual = p => p === 'admin/admin-grants.js' ? 'admin/matrix/start.js' : p
+		const a = fragments.indexOf(actual(first))
+		const b = fragments.indexOf(actual(second))
 		return a >= 0 && b >= 0 && a < b
 	}
 
@@ -78,7 +79,7 @@ class AdminManifest {
 	static script(name) {
 		if (name === 'admin-levels.js') return AdminManifest.levelsSource()
 		if (name === 'admin-grants.js' && AdminManifest.fragments().includes('admin/matrix/start.js')) {
-			return AdminManifest.fragments().filter(p => p.startsWith('admin/matrix/') || p === 'admin/admin-grants.js')
+			return AdminManifest.fragments().filter(p => ['matrix','oauth-clients','protection','checkout','logs'].some(group => p.startsWith('admin/' + group + '/')))
 				.map(p => AdminManifest.fragment(p)).join(';\n')
 		}
 		return AdminManifest.fragment('admin/' + name)
@@ -92,14 +93,15 @@ class AdminManifest {
 	static operation(declaration) {
 		const name = declaration.match(/(?:function|const) (\w+)/)?.[1]
 		const entry = AdminManifest.fragments().find(p => {
-			if (!p.startsWith('admin/matrix/') && p !== 'admin/admin-grants.js') return false
+			if (!['matrix','oauth-clients','protection','checkout','logs'].some(group => p.startsWith('admin/' + group + '/'))) return false
 			return new RegExp('(?:function|const) ' + name + '(?:\\(| )').test(AdminManifest.fragment(p))
 		})
 		if (!entry) throw Error('Missing declared operation: ' + declaration)
 		const source = AdminManifest.fragment(entry)
-		const address = entry === 'admin/admin-grants.js' ? 'settings' : 'matrix.' + path.basename(entry, '.js').replaceAll('-', '_')
+		const dependencies = entry.startsWith('admin/oauth-clients/') ? AdminManifest.fragments().filter(p => p.startsWith('admin/oauth-clients/') && p !== entry).map(p => AdminManifest.fragment(p)).join(';\n') + ';\n' : ''
+		const address = entry.split('/')[1].replaceAll('-', '_') + '.' + path.basename(entry, '.js').replaceAll('-', '_')
 		const operations = [...source.matchAll(/^\t\t(?:async )?function (\w+)\(/gm)].map(m => m[1])
-		return ';\n' + AdminManifest.fragment('admin/registration.js') + ';\n' + source + `;\n(function () {
+		return ';\n' + AdminManifest.fragment('admin/registration.js') + ';\n' + dependencies + source + `;\n(function () {
 			const target = globalThis
 			const before = Object.getOwnPropertyDescriptors(target)
 			;(globalThis.window || globalThis).OCA.Mcp.Admin.modules.${address}(target)

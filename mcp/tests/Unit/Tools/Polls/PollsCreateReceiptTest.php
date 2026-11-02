@@ -7,7 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
-use OCA\Mcp\Tools\Polls\Create\{CreateAttempt, CreateMessages};
+use OCA\Mcp\Modules\Polls\Creation\CreateAttempt;
+use OCA\Mcp\Modules\Polls\Presentation\CreateMessages;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 

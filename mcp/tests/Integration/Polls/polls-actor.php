@@ -6,8 +6,18 @@
 declare(strict_types=1);
 
 use OCA\Mcp\Tests\Integration\Polls\{PollsScene,PollsCountingService,PollsProbeContainer};
-use OCA\Mcp\Tools\Polls\{PollsServices,PollsSurface,PollsSessionGuard,PollsContext,PollsShapes,PollsCursor,PollsListing,PollsReading,PollsModule,PollsRefusal};
-use OCA\Mcp\Tools\Polls\Handler\{ListPollsHandler,ReadPollHandler};
+use OCA\Mcp\Modules\Polls\Integration\PollsServices;
+use OCA\Mcp\Modules\Polls\Integration\PollsSessionGuard;
+use OCA\Mcp\Modules\Polls\Integration\PollsSurface;
+use OCA\Mcp\Modules\Polls\PollsModule;
+use OCA\Mcp\Modules\Polls\PollsRefusal;
+use OCA\Mcp\Modules\Polls\Presentation\PollsShapes;
+use OCA\Mcp\Modules\Polls\Reading\ListPollsHandler;
+use OCA\Mcp\Modules\Polls\Reading\PollsContext;
+use OCA\Mcp\Modules\Polls\Reading\PollsCursor;
+use OCA\Mcp\Modules\Polls\Reading\PollsListing;
+use OCA\Mcp\Modules\Polls\Reading\PollsReading;
+use OCA\Mcp\Modules\Polls\Reading\ReadPollHandler;
 use OCP\Server;
 
 require dirname(__DIR__).'/bootstrap.php';
@@ -53,10 +63,10 @@ final class PollsNativeProbe {
 		$cursor=new PollsCursor(Server::get(\OCA\Mcp\Mcp\Confirmation\PlanState::class));$shapes=new PollsShapes();$context=new PollsContext($services,$guard,Server::get(\Psr\Log\LoggerInterface::class));
 		$module=new PollsModule(new ListPollsHandler($context,new PollsListing($services,$guard,$shapes,$cursor)),
 			new ReadPollHandler($context,new PollsReading($services,$guard,$shapes,$cursor)),
-			Server::get(\OCA\Mcp\Tools\Polls\Handler\ListVotesHandler::class),
-			Server::get(\OCA\Mcp\Tools\Polls\Handler\ReadResultsHandler::class),
-			Server::get(\OCA\Mcp\Tools\Polls\Handler\ListLinksHandler::class),
-			Server::get(\OCA\Mcp\Tools\Polls\Handler\CreatePollHandler::class));
+			Server::get(\OCA\Mcp\Modules\Polls\Reading\ListVotesHandler::class),
+			Server::get(\OCA\Mcp\Modules\Polls\Reading\ReadResultsHandler::class),
+			Server::get(\OCA\Mcp\Modules\Polls\Reading\ListLinksHandler::class),
+			Server::get(\OCA\Mcp\Modules\Polls\Creation\CreatePollHandler::class));
 		if ($action==='native') {
 			$native->cleanSession();$guard->native($native,$uid);
 			$polls=Server::get(\OCA\Polls\Service\PollService::class)->listPolls();$ids=[];

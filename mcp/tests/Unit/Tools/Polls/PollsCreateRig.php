@@ -7,9 +7,16 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
-use OCA\Mcp\Tools\Polls\Create\{CreateAdmission,CreateSurface,CreateNative,CreateNormalizer,CreateWriter,CreatePlan,CreateFlow};
-use OCA\Mcp\Tools\Polls\{PollsSessionGuard,PollsSurface};
-use OCA\Mcp\Tools\Polls\Handler\CreatePollHandler;
+use OCA\Mcp\Modules\Polls\Admission\CreateAdmission;
+use OCA\Mcp\Modules\Polls\Creation\CreateFlow;
+use OCA\Mcp\Modules\Polls\Creation\CreateNative;
+use OCA\Mcp\Modules\Polls\Creation\CreateNormalizer;
+use OCA\Mcp\Modules\Polls\Creation\CreatePlan;
+use OCA\Mcp\Modules\Polls\Creation\CreatePollHandler;
+use OCA\Mcp\Modules\Polls\Creation\CreateWriter;
+use OCA\Mcp\Modules\Polls\Integration\CreateSurface;
+use OCA\Mcp\Modules\Polls\Integration\PollsSessionGuard;
+use OCA\Mcp\Modules\Polls\Integration\PollsSurface;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCP\{IUser,IUserManager,IConfig};
 use OCP\App\IAppManager;

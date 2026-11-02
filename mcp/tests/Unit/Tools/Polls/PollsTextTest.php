@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
-use OCA\Mcp\Tools\Polls\PollsText;
+use OCA\Mcp\Modules\Polls\Presentation\PollsText;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -75,7 +75,7 @@ final class PollsTextTest extends TestCase {
 	public function testValidUtf8RemainsByteIdenticalBeforeDigest(): void {
 		$rig=new PollsTestRig($this);$rig->poll(1);$value="<b>x</b>\u{0085}\u{200E}\t\n";
 		$rig->option(1,1,['text'=>$value]);
-		$rows=(new \OCA\Mcp\Tools\Polls\PollsShapes())->options(
+		$rows=(new \OCA\Mcp\Modules\Polls\Presentation\PollsShapes())->options(
 			[new \OCA\Polls\Db\Option(NativeScene::$options[1][0])],1,static function (): void {});
 		$this->assertSame($value,$rows[0]['text']);
 	}
@@ -101,7 +101,7 @@ final class PollsTextTest extends TestCase {
 		$rig=new PollsTestRig($this);$rig->poll(1);$rig->option(1);$rig->option(2,1,['text'=>"a\u{0085}b"]);
 		$first=$rig->call('polls_read_poll',['poll_id'=>1,'options_limit'=>1]);
 		NativeScene::$options[1][1]['text']="a\u{009F}b";
-		$this->expectException(\OCA\Mcp\Tools\Polls\PollsRefusal::class);
+		$this->expectException(\OCA\Mcp\Modules\Polls\PollsRefusal::class);
 		$this->expectExceptionMessage('changed');
 		$rig->call('polls_read_poll',['poll_id'=>1,'options_limit'=>1,'options_cursor'=>$first['nextCursor']]);
 	}

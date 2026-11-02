@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
-use OCA\Mcp\Tools\Polls\PollsRefusal;
+use OCA\Mcp\Modules\Polls\PollsRefusal;
 use PHPUnit\Framework\Attributes\{RunInSeparateProcess,PreserveGlobalState};
 use PHPUnit\Framework\TestCase;
 

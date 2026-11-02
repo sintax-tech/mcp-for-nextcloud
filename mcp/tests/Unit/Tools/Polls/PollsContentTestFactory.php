@@ -7,9 +7,20 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
-use OCA\Mcp\Tools\Polls\{PollsContext, PollsServices, PollsSessionGuard, PollsCursor, PollsContentPage, PollsContentPolicy,
-	PollsContentSurface, PollsAnonymousIdentity, PollsVoteShapes, PollsResultShapes, PollsLinkShapes};
-use OCA\Mcp\Tools\Polls\Handler\{ListVotesHandler, ReadResultsHandler, ListLinksHandler};
+use OCA\Mcp\Modules\Polls\Integration\PollsContentSurface;
+use OCA\Mcp\Modules\Polls\Integration\PollsServices;
+use OCA\Mcp\Modules\Polls\Integration\PollsSessionGuard;
+use OCA\Mcp\Modules\Polls\Presentation\PollsAnonymousIdentity;
+use OCA\Mcp\Modules\Polls\Presentation\PollsLinkShapes;
+use OCA\Mcp\Modules\Polls\Presentation\PollsResultShapes;
+use OCA\Mcp\Modules\Polls\Presentation\PollsVoteShapes;
+use OCA\Mcp\Modules\Polls\Reading\ListLinksHandler;
+use OCA\Mcp\Modules\Polls\Reading\ListVotesHandler;
+use OCA\Mcp\Modules\Polls\Reading\PollsContentPage;
+use OCA\Mcp\Modules\Polls\Reading\PollsContentPolicy;
+use OCA\Mcp\Modules\Polls\Reading\PollsContext;
+use OCA\Mcp\Modules\Polls\Reading\PollsCursor;
+use OCA\Mcp\Modules\Polls\Reading\ReadResultsHandler;
 use PHPUnit\Framework\TestCase;
 
 /** Adds the real protected-read handlers without rewriting the existing PO-1 rig behavior. */

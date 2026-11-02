@@ -22,7 +22,7 @@ final class PollsProbeContainer implements \Psr\Container\ContainerInterface {
 	 * @return mixed native dependency
 	 */
 	public function get(string $id): mixed {
-		return $id===\OCA\Mcp\Tools\Polls\PollsSurface::POLLS?$this->counter:\OCP\Server::get($id);
+		return $id===\OCA\Mcp\Modules\Polls\Integration\PollsSurface::POLLS?$this->counter:\OCP\Server::get($id);
 	}
 	/**
 	 * Native class availability.

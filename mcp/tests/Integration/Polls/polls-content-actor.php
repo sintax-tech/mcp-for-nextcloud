@@ -45,9 +45,9 @@ final class PollsContentActorProcess {
 			\OCP\Server::get(\OCP\ISession::class)->set('ncPollsPublicToken', 'synthetic-po2-old-token');
 			$out = [];
 			try {
-				$result = \OCP\Server::get(\OCA\Mcp\Tools\Polls\PollsModule::class)->call($in['tool'], $in['arguments'], $uid);
+				$result = \OCP\Server::get(\OCA\Mcp\Modules\Polls\PollsModule::class)->call($in['tool'], $in['arguments'], $uid);
 				$out['answer'] = json_decode($result['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR);
-			} catch (\OCA\Mcp\Tools\Polls\PollsRefusal $error) {
+			} catch (\OCA\Mcp\Modules\Polls\PollsRefusal $error) {
 				$out['error'] = $error->getMessage();
 			}
 			$store = \OCP\Server::get(\OCP\ISession::class);
@@ -58,7 +58,7 @@ final class PollsContentActorProcess {
 			throw new RuntimeException('Unknown fixture action');
 		}
 		try {
-			$guard = \OCP\Server::get(\OCA\Mcp\Tools\Polls\PollsSessionGuard::class);
+			$guard = \OCP\Server::get(\OCA\Mcp\Modules\Polls\Integration\PollsSessionGuard::class);
 			$guard->native($native, $uid);
 			$poll = \OCP\Server::get(\OCA\Polls\Service\PollService::class)->get($in['poll_id']);
 			$all = $poll->getIsAllowed(\OCA\Polls\Db\Poll::PERMISSION_POLL_RESULTS_VIEW);
@@ -75,7 +75,7 @@ final class PollsContentActorProcess {
 			}
 			$options = [];
 			if ($all) {
-				foreach (\OCP\Server::get(\OCA\Mcp\Tools\Polls\PollsServices::class)->options($native)->list($in['poll_id']) as $option) {
+				foreach (\OCP\Server::get(\OCA\Mcp\Modules\Polls\Integration\PollsServices::class)->options($native)->list($in['poll_id']) as $option) {
 					$row = $option->jsonSerialize();
 					$options[] = ['id' => $row['id'], 'votes' => array_intersect_key($row['votes'], array_flip(['yes', 'no', 'maybe', 'count'])), 'flag' => $option->getShowResults()];
 				}

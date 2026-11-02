@@ -69,6 +69,7 @@ final class CauseCommands implements CauseCommandsContract {
 	 * @param list<array{causeKey:string, gen:string}> $causes
 	 * @param array<string, bool> $classification cause_key => cut
 	 * @return list<array{causeKey:string, gen:string, cut:bool}>
+	 * @throws \LogicException When any selected cause lacks a boolean classification.
 	 */
 	public static function classified(array $causes, array $classification): array {
 		$classified = [];

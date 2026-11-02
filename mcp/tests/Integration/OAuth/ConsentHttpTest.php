@@ -12,6 +12,8 @@ use OCA\Mcp\OAuth\Clients\CustomClient;
 use OCA\Mcp\OAuth\Clients\OAuthClientsService;
 use OCA\Mcp\Tests\Integration\Support\Http;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
+use OCA\Mcp\Tests\Integration\Support\{Credential, McpClient};
+use OCP\Files\IRootFolder;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCP\Server;
 
@@ -54,10 +56,10 @@ final class ConsentHttpTest extends OAuthAccountTestCase {
 	}
 
 	/** A cookie session, including the real login and CSRF checks; no OCS-APIRequest bypass. */
-	private function browse(string $method, string $url, ?array $form = null): array {
+	private function browse(string $method, string $url, ?array $form = null, array $headers = []): array {
 		curl_setopt_array($this->browser, [CURLOPT_URL => $url, CURLOPT_CUSTOMREQUEST => $method,
 			CURLOPT_POSTFIELDS => $form === null ? null : http_build_query($form),
-			CURLOPT_HTTPHEADER => $form === null ? ['Accept: text/html'] : ['Accept: text/html', 'Origin: http://localhost', 'Content-Type: application/x-www-form-urlencoded']]);
+			CURLOPT_HTTPHEADER => [...($form === null ? ['Accept: text/html'] : ['Accept: text/html', 'Origin: http://localhost', 'Content-Type: application/x-www-form-urlencoded']), ...$headers]]);
 		$raw = curl_exec($this->browser);
 		$this->assertIsString($raw);
 		$size = curl_getinfo($this->browser, CURLINFO_HEADER_SIZE);
@@ -132,11 +134,75 @@ final class ConsentHttpTest extends OAuthAccountTestCase {
 					'client_id' => CustomClient::clientId($client['id']), 'redirect_uri' => $redirect,
 				]));
 			$this->assertSame(200, $token['status'], $token['body']);
-			$this->assertNotEmpty(json_decode($token['body'], true)['access_token']);
+			$body = json_decode($token['body'], true, 512, JSON_THROW_ON_ERROR);
+			$this->assertNotEmpty($body['access_token']);
+			$this->bearerLifecycle($body, CustomClient::clientId($client['id']), $fields['requesttoken']);
 			$replay = $this->browse('POST', $url, $post);
 			$this->assertStringContainsString('The authorization request expired.', $replay['body']);
 		} finally {
+			curl_close($this->browser);
 			$save($saved);
 		}
 	}
+
+	/** Real OAuth Bearer: initialize, rotate, preview/confirm a Files write, revoke by the personal HTTP API, then 401. */
+	private function bearerLifecycle(array $tokens, string $clientId, string $csrf): void {
+		$endpoint = Http::BASE . '/index.php/apps/mcp/';
+		$old = new McpClient(Credential::bearer($this->uid, $tokens['access_token']));
+		$this->assertSame(200, $old->listStatus());
+		$initialize = Http::request('POST', $endpoint, [
+			'Authorization: Bearer ' . $tokens['access_token'],
+			'Content-Type: application/json', 'Accept: application/json, text/event-stream',
+		], json_encode(['jsonrpc' => '2.0', 'id' => 1, 'method' => 'initialize', 'params' => [
+			'protocolVersion' => '2025-06-18', 'capabilities' => (object)[],
+			'clientInfo' => ['name' => 'OAuth lifecycle proof', 'version' => '1'],
+		]], JSON_THROW_ON_ERROR));
+		$this->assertSame(200, $initialize['status']);
+		$this->assertArrayHasKey('result', json_decode($initialize['body'], true));
+
+		$refresh = Http::request('POST', $endpoint . 'oauth/token',
+			['Content-Type: application/x-www-form-urlencoded'], http_build_query([
+				'grant_type' => 'refresh_token', 'refresh_token' => $tokens['refresh_token'], 'client_id' => $clientId,
+			]));
+		$this->assertSame(200, $refresh['status']);
+		$rotated = json_decode($refresh['body'], true, 512, JSON_THROW_ON_ERROR);
+		$this->assertTrue($tokens['access_token'] !== $rotated['access_token']);
+		$this->assertTrue($tokens['refresh_token'] !== $rotated['refresh_token']);
+		$this->assertSame(401, $old->listStatus(), 'Rotation removes the previous access token');
+		$mcp = new McpClient(Credential::bearer($this->uid, $rotated['access_token']));
+		$this->assertSame(200, $mcp->listStatus());
+
+		Server::get(GrantPolicy::class)->setGrant($this->uid, 'files', 'create', true);
+		$folder = Server::get(IRootFolder::class)->getUserFolder($this->uid);
+		$name = 'oauth-lifecycle-' . bin2hex(random_bytes(6)) . '.txt';
+		$arguments = ['path' => '/' . $name, 'content' => 'OAuth confirmed write'];
+		$preview = $mcp->tool('files_create', $arguments);
+		$this->assertTrue($preview->ok(), $preview->describe());
+		$this->assertFalse($folder->nodeExists($name), 'Preview must not write');
+		$written = $mcp->write('files_create', $arguments);
+		$this->assertTrue($written->ok(), $written->describe());
+		$this->assertSame('OAuth confirmed write', $folder->get($name)->getContent());
+
+		$connections = $this->browse('GET', $endpoint . 'api/my/connections');
+		$this->assertSame(200, $connections['status']);
+		$rows = json_decode($connections['body'], true, 512, JSON_THROW_ON_ERROR)['connections'];
+		$this->assertCount(1, $rows);
+		$this->assertSame($clientId, $rows[0]['client']['id']);
+		$revoked = $this->browse('DELETE', $endpoint . 'api/my/connections/' . $rows[0]['id'], null, ['requesttoken: ' . $csrf]);
+		$this->assertSame(200, $revoked['status']);
+		$this->assertSame(['revoked' => true], json_decode($revoked['body'], true));
+		$refused = Http::request('POST', $endpoint, [
+			'Authorization: Bearer ' . $rotated['access_token'],
+			'Content-Type: application/json', 'Accept: application/json, text/event-stream',
+		], json_encode(['jsonrpc' => '2.0', 'id' => 2, 'method' => 'tools/list'], JSON_THROW_ON_ERROR));
+		$this->assertSame(401, $refused['status']);
+		$this->assertStringContainsString('resource_metadata=', $refused['headers']);
+		$refreshRefused = Http::request('POST', $endpoint . 'oauth/token',
+			['Content-Type: application/x-www-form-urlencoded'], http_build_query([
+				'grant_type' => 'refresh_token', 'refresh_token' => $rotated['refresh_token'], 'client_id' => $clientId,
+			]));
+		$this->assertSame(400, $refreshRefused['status']);
+		$this->assertSame('invalid_grant', json_decode($refreshRefused['body'], true)['error']);
+	}
+
 }

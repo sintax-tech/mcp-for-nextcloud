@@ -9,9 +9,9 @@ namespace OCA\Mcp\Tests\Integration\Tables\Rows;
 
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Tables\TablesCellRows;
-use OCA\Mcp\Tools\Tables\Rows\RowCellText;
-use OCA\Mcp\Tools\Tables\Rows\RowsMessages;
-use OCA\Mcp\Tools\Tables\TablesMessages;
+use OCA\Mcp\Modules\Tables\Reading\RowCellText;
+use OCA\Mcp\Modules\Tables\Presentation\RowsMessages;
+use OCA\Mcp\Modules\Tables\Presentation\TablesMessages;
 use PHPUnit\Framework\Attributes\Group;
 
 /**

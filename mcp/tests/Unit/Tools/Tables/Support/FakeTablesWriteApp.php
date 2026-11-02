@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Support;
 
-use OCA\Mcp\Tools\Tables\TablesServices;
+use OCA\Mcp\Modules\Tables\Integration\TablesServices;
 use OCA\Tables\Errors\BadRequestError;
 use OCP\App\IAppManager;
 use OCP\AppFramework\Db\DoesNotExistException;

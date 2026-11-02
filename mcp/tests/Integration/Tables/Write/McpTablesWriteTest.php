@@ -10,8 +10,8 @@ namespace OCA\Mcp\Tests\Integration\Tables\Write;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;
 use OCA\Mcp\Tests\Integration\Tables\TablesCellRows;
-use OCA\Mcp\Tools\Tables\TablesMessages;
-use OCA\Mcp\Tools\Tables\Write\RowWriteMessages;
+use OCA\Mcp\Modules\Tables\Presentation\TablesMessages;
+use OCA\Mcp\Modules\Tables\Presentation\RowWriteMessages;
 use OCP\Server;
 use PHPUnit\Framework\Attributes\Group;
 

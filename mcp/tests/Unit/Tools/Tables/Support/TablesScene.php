@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Support;
 
-use OCA\Mcp\Tools\Tables\Links\TablesLinks;
+use OCA\Mcp\Modules\Tables\TablesLinks;
 use OCP\IURLGenerator;
 use PHPUnit\Framework\TestCase;
 

@@ -7,14 +7,14 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Support;
 
-use OCA\Mcp\Tools\Tables\Columns\ColumnLookup;
-use OCA\Mcp\Tools\Tables\Discovery\DiscoveryShapes;
-use OCA\Mcp\Tools\Tables\Discovery\TablesDiscovery;
-use OCA\Mcp\Tools\Tables\Discovery\ViewsDiscovery;
-use OCA\Mcp\Tools\Tables\Handler\ListColumnsHandler;
-use OCA\Mcp\Tools\Tables\Handler\ListTablesHandler;
-use OCA\Mcp\Tools\Tables\Handler\ListViewsHandler;
-use OCA\Mcp\Tools\Tables\TablesModule;
+use OCA\Mcp\Modules\Tables\Reading\ColumnLookup;
+use OCA\Mcp\Modules\Tables\Reading\DiscoveryShapes;
+use OCA\Mcp\Modules\Tables\Reading\TablesDiscovery;
+use OCA\Mcp\Modules\Tables\Reading\ViewsDiscovery;
+use OCA\Mcp\Modules\Tables\Reading\ListColumnsHandler;
+use OCA\Mcp\Modules\Tables\Reading\ListTablesHandler;
+use OCA\Mcp\Modules\Tables\Reading\ListViewsHandler;
+use OCA\Mcp\Modules\Tables\TablesModule;
 use PHPUnit\Framework\TestCase;
 
 /**

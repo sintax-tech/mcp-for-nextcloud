@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Write;
 
-use OCA\Mcp\Tools\Tables\Write\CellValueDomain;
-use OCA\Mcp\Tools\Tables\Write\RowWriteRefusal;
-use OCA\Mcp\Tools\Tables\Write\UsergroupWhitelist;
+use OCA\Mcp\Modules\Tables\Writing\CellValueDomain;
+use OCA\Mcp\Modules\Tables\Writing\RowWriteRefusal;
+use OCA\Mcp\Modules\Tables\Writing\UsergroupWhitelist;
 use OCP\App\IAppManager;
 use OCP\IGroupManager;
 use OCP\IUser;

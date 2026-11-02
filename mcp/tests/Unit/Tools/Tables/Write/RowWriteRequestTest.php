@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Write;
 
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
-use OCA\Mcp\Tools\Tables\Write\RowWriteRequest;
+use OCA\Mcp\Modules\Tables\Writing\RowWriteRequest;
 use PHPUnit\Framework\TestCase;
 
 /**

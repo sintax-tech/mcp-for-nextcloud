@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Columns;
 
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesDouble;
-use OCA\Mcp\Tools\Tables\Columns\ColumnShape;
+use OCA\Mcp\Modules\Tables\Presentation\ColumnShape;
 use PHPUnit\Framework\TestCase;
 
 /**

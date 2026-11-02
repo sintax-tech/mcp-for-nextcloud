@@ -16,7 +16,6 @@ final class PollsAnonymousIdentity {
 	/**
 	 * Receives the instance secret source; no public fallback or parallel identity lookup exists.
 	 * @param IConfig $config system configuration
-	 * @return void
 	 */
 	public function __construct(private IConfig $config) {
 	}

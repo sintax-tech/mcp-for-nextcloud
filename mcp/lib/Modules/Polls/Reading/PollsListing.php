@@ -26,7 +26,6 @@ final class PollsListing {
 	 * @param PollsSessionGuard $guard both identity checks
 	 * @param PollsShapes $shapes closed projection
 	 * @param PollsCursor $cursor instance MAC
-	 * @return void
 	 */
 	public function __construct(private PollsServices $services, private PollsSessionGuard $guard,
 		private PollsShapes $shapes, private PollsCursor $cursor) {

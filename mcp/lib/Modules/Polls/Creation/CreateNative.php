@@ -21,7 +21,6 @@ class CreateNative {
 	 * @param PollsSessionGuard $guard both native identities and endpoint identity
 	 * @param CreateAdmission $admission independent create grant
 	 * @param CreateSurface $surface exact public write surfaces
-	 * @return void
 	 */
 	public function __construct(private PollsServices $services, private PollsSessionGuard $guard, private CreateAdmission $admission, private CreateSurface $surface) {
 	}
@@ -40,7 +39,6 @@ class CreateNative {
 	 * Revalidates context/grant and the effective native policy; no live-cache freshness is promised.
 	 * @param object $session native global session
 	 * @param string $uid actor
-	 * @return void
 	 * @throws PollsRefusal for revoked or divergent state
 	 */
 	public function check(object $session, string $uid): void {
@@ -55,7 +53,6 @@ class CreateNative {
 	 * Rechecks only identity/grant when deciding whether a partial receipt is still authorized.
 	 * @param object $session native global session
 	 * @param string $uid actor
-	 * @return void
 	 */
 	public function receiptAccess(object $session, string $uid): void {
 		$this->guard->native($session, $uid);

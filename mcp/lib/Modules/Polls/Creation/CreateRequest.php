@@ -66,7 +66,7 @@ final class CreateRequest {
 	/**
 	 * Fixed validation metadata never includes the value or an arbitrary submitted key.
 	 * @param string $field declared field
-	 * @return never
+	 * @return never it always throws
 	 * @throws ArgumentValidationException always
 	 */
 	private static function invalid(string $field): never {

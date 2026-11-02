@@ -21,7 +21,6 @@ final class PollsContext {
 	 * @param PollsServices $services native dependency resolver
 	 * @param PollsSessionGuard $guard session and identity checks
 	 * @param \Psr\Log\LoggerInterface $logger class-only diagnostics, no native messages/content
-	 * @return void
 	 */
 	public function __construct(private PollsServices $services, private PollsSessionGuard $guard, private \Psr\Log\LoggerInterface $logger) {
 	}
@@ -69,7 +68,6 @@ final class PollsContext {
 	 * Logging itself must not replace the original safe refusal.
 	 * @param \Throwable $error native failure
 	 * @param \Throwable|null $prior failure preceding final cleanup
-	 * @return void
 	 */
 	private function diagnose(\Throwable $error, ?\Throwable $prior = null): void {
 		try {

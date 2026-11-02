@@ -21,7 +21,6 @@ class CreateFlow {
 	 * @param CreatePlan $plans stateless MAC and preview
 	 * @param CreateWriter $writer native stage writer
 	 * @param LoggerInterface $logger exception-class-only diagnostics
-	 * @return void
 	 */
 	public function __construct(private CreateNative $native, private CreateNormalizer $normalizer,
 		private CreatePlan $plans, private CreateWriter $writer, private LoggerInterface $logger) {

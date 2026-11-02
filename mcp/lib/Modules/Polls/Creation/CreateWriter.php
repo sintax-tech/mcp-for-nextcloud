@@ -16,7 +16,6 @@ class CreateWriter {
 	 * Receives focused native factories/guards and disposable value normalization.
 	 * @param CreateNative $native native mechanism
 	 * @param CreateNormalizer $normalizer public observable option values
-	 * @return void
 	 */
 	public function __construct(private CreateNative $native, private CreateNormalizer $normalizer) {
 	}
@@ -28,7 +27,6 @@ class CreateWriter {
 	 * @param string $uid authenticated new owner
 	 * @param bool $nine native public layout
 	 * @param CreateAttempt $attempt local effect/receipt state
-	 * @return void
 	 * @throws \Throwable on any native failure or observable divergence, potentially after effects
 	 */
 	public function write(array $request, array $effect, object $session, string $uid, bool $nine, CreateAttempt $attempt): void {

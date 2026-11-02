@@ -14,7 +14,6 @@ final class CreatePollHandler {
 	/**
 	 * Receives the focused effect-aware flow.
 	 * @param CreateFlow $flow preview and confirmed attempt
-	 * @return void
 	 */
 	public function __construct(private CreateFlow $flow) {
 	}

@@ -17,7 +17,6 @@ final class PollsCursor {
 	/**
 	 * Receives the instance MAC.
 	 * @param PlanState $mac HMAC using the instance secret
-	 * @return void
 	 */
 	public function __construct(private PlanState $mac) {
 	}

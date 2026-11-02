@@ -18,7 +18,6 @@ final class ListVotesHandler {
 	 * Receives the checked native context and focused content reader.
 	 * @param PollsContext $context authenticated native scope
 	 * @param PollsContentPage $reader native read/projection flow
-	 * @return void
 	 */
 	public function __construct(private PollsContext $context, private PollsContentPage $reader) {
 	}

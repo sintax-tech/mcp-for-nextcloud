@@ -15,7 +15,6 @@ final class PollsVoteShapes {
 	/**
 	 * Receives anonymous identity reduction.
 	 * @param PollsAnonymousIdentity $anonymous poll-bound HMAC projection
-	 * @return void
 	 */
 	public function __construct(private PollsAnonymousIdentity $anonymous) {
 	}

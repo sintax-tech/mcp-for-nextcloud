@@ -29,7 +29,6 @@ final class PollsContentPage {
 	 * @param PollsResultShapes $results guarded native aggregates
 	 * @param PollsLinkShapes $links editor-only existing URLs
 	 * @param PollsCursor $cursor existing offset MAC
-	 * @return void
 	 */
 	public function __construct(private PollsServices $services, private PollsSessionGuard $guard,
 		private PollsContentSurface $surface, private PollsContentPolicy $policy, private PollsVoteShapes $votes,

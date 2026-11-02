@@ -25,7 +25,6 @@ final class PollsContentSurface {
 	 * Checks required signatures/constants for this operation before collecting protected data.
 	 * Dynamic getters are validated by actual returned types, not method_exists.
 	 * @param string $kind votes, results or links
-	 * @return void
 	 * @throws PollsRefusal for unsupported surfaces
 	 */
 	public function assertSupported(string $kind): void {

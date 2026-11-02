@@ -37,7 +37,6 @@ final class PollsSurface {
 
 	/**
 	 * Refuses unknown shapes before a native domain read.
-	 * @return void
 	 * @throws PollsRefusal when a class, constant, signature or return type is unsupported
 	 */
 	public function assertSupported(): void {
@@ -75,7 +74,6 @@ final class PollsSurface {
 	 * @param list<string> $parameters native parameter types in order
 	 * @param string|list<string>|null $returns allowed native return types; untyped PollService::get exists in 8.6.3 and its actual entity is checked
 	 * @param bool $static whether the native method is static
-	 * @return void
 	 * @throws PollsRefusal when the signature is different
 	 */
 	public function assertMethod(string $class, string $name, array $parameters, string|array|null $returns, bool $static = false): void {

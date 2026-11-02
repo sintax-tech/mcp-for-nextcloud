@@ -23,7 +23,6 @@ final class PollsReading {
 	 * @param PollsSessionGuard $guard native identity checks
 	 * @param PollsShapes $shapes response whitelist
 	 * @param PollsCursor $cursor scope-bound cursor
-	 * @return void
 	 */
 	public function __construct(private PollsServices $services, private PollsSessionGuard $guard,
 		private PollsShapes $shapes, private PollsCursor $cursor) {

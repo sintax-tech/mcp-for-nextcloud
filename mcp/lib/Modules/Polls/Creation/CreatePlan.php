@@ -17,7 +17,6 @@ class CreatePlan {
 	/**
 	 * Receives the existing instance-secret MAC provider.
 	 * @param PlanState $states existing stateless plan mechanism
-	 * @return void
 	 */
 	public function __construct(private PlanState $states) {
 	}

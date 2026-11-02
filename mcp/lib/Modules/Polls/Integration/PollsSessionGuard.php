@@ -15,7 +15,6 @@ final class PollsSessionGuard {
 	/**
 	 * Receives the real endpoint session.
 	 * @param IUserSession $session authenticated Nextcloud session
-	 * @return void
 	 */
 	public function __construct(private IUserSession $session) {
 	}
@@ -23,7 +22,6 @@ final class PollsSessionGuard {
 	/**
 	 * Refuses a background/empty/divergent entry point without changing identity.
 	 * @param string $uid explicit authenticated actor
-	 * @return void
 	 * @throws PollsRefusal when the endpoint session is different
 	 */
 	public function caller(string $uid): void {
@@ -36,7 +34,6 @@ final class PollsSessionGuard {
 	 * Checks both native identities and internal user type before each native operation.
 	 * @param object $native the same UserSession used globally by Polls entities
 	 * @param string $uid authenticated actor
-	 * @return void
 	 * @throws PollsRefusal for stale cache/token/foreign identity
 	 */
 	public function native(object $native, string $uid): void {

@@ -22,7 +22,6 @@ class CreateAdmission {
 	 * @param IUserManager $users resolves the authenticated actor
 	 * @param GrantPolicy $grants exact MCP policy
 	 * @param PollsSurface $surface unchanged common native surface
-	 * @return void
 	 */
 	public function __construct(private IAppManager $apps, private IUserManager $users,
 		private GrantPolicy $grants, private PollsSurface $surface) {

@@ -23,7 +23,6 @@ class PollsServices {
 	 * @param ContainerInterface $container native app service container
 	 * @param GrantPolicy $policy operation grants, also checked on direct handler calls
 	 * @param PollsSurface $surface compatibility guard
-	 * @return void
 	 */
 	public function __construct(private IAppManager $apps, private IUserManager $users,
 		private ContainerInterface $container, private GrantPolicy $policy, private PollsSurface $surface) {

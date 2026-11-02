@@ -20,7 +20,6 @@ final class PollsContentPolicy {
 	 * Receives the existing native resolver and identity guard.
 	 * @param PollsServices $services native dependencies
 	 * @param PollsSessionGuard $guard native identity checks
-	 * @return void
 	 */
 	public function __construct(private PollsServices $services, private PollsSessionGuard $guard) {
 	}

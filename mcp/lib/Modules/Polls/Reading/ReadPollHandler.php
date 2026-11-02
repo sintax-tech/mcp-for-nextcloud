@@ -18,7 +18,6 @@ final class ReadPollHandler {
 	 * Receives the context and this tool's reader.
 	 * @param PollsContext $context native authenticated scope
 	 * @param PollsReading $reader native read flow
-	 * @return void
 	 */
 	public function __construct(private PollsContext $context, private PollsReading $reader) {
 	}

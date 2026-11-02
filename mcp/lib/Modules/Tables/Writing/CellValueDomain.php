@@ -4,7 +4,9 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 declare(strict_types=1);
+
 namespace OCA\Mcp\Modules\Tables\Writing;
+
 /**
  * The value of one written cell in three forms: what the tool accepts, the argument handed to RowService, and the effect
  * the Tables parser of the installed release gives it (RowService::parseValueByColumnType()). The accepted values are the
@@ -17,8 +19,6 @@ namespace OCA\Mcp\Modules\Tables\Writing;
  * {@see RelationWriteGate}. Nothing here calls the Tables app.
  */
 class CellValueDomain {
-	/** Longest text accepted in one cell. */
-	public const MAX_TEXT = 100000;
 	/**
 	 * Receives the user and group check.
 	 *
@@ -29,6 +29,7 @@ class CellValueDomain {
 		private UsergroupWhitelist $usergroups,
 	) {
 	}
+
 	/**
 	 * The argument and the effect of one value.
 	 *
@@ -43,7 +44,7 @@ class CellValueDomain {
 		$type = (string)($column['type'] ?? '');
 		$subtype = (string)($column['subtype'] ?? '');
 		return match ([$type, $subtype]) {
-			['text', ''], ['text', 'line'], ['text', 'long'], ['text', 'rich'] => self::same(self::text($column, $value)),
+			['text', ''], ['text', 'line'], ['text', 'long'], ['text', 'rich'] => self::same(TextCellValue::text($column, $value)),
 			['text', 'link'] => self::same(LinkCellValue::link($column, $value)),
 			['number', ''] => self::number($column, $value, $version),
 			['number', 'stars'], ['number', 'progress'] => self::same(self::range($column, $value)),
@@ -59,6 +60,7 @@ class CellValueDomain {
 			default => throw RowWriteRefusal::value(),
 		};
 	}
+
 	/**
 	 * Whether an effect leaves the cell empty, as RowService counts a mandatory column empty.
 	 *
@@ -72,6 +74,7 @@ class CellValueDomain {
 		}
 		return $effect === null || $effect === '' || $effect === [];
 	}
+
 	/**
 	 * Whether a link value is a JSON object with exactly title, value and providerId "url", an http(s) url and within the
 	 * column's limits: the one form of link the parser and the cell mapper keep as it is.
@@ -83,6 +86,7 @@ class CellValueDomain {
 	public static function isCanonicalLink(array $column, string $json): bool {
 		return LinkCellValue::isCanonicalLink($column, $json);
 	}
+
 	/**
 	 * A value that is the same as argument and effect.
 	 *
@@ -92,23 +96,7 @@ class CellValueDomain {
 	private static function same(mixed $value): array {
 		return ['argument' => $value, 'effect' => $value];
 	}
-	/**
-	 * A text within the column's maximum length.
-	 *
-	 * @param array<string, mixed> $column the column
-	 * @param mixed $value the value
-	 * @return string|null the text, null to empty the cell
-	 * @throws RowWriteRefusal for anything else
-	 */
-	private static function text(array $column, mixed $value): ?string {
-		if ($value === null) {
-			return null;
-		}
-		if (!is_string($value) || !self::fitsText($column, $value)) {
-			throw RowWriteRefusal::value();
-		}
-		return $value;
-	}
+
 	/**
 	 * A finite number within the column's limits ({@see NumberBounds}); null empties the cell only where the number mapper
 	 * keeps it empty ({@see self::keepsEmptyNumbers()}).
@@ -128,6 +116,7 @@ class CellValueDomain {
 		}
 		return ['argument' => $value, 'effect' => (float)$value];
 	}
+
 	/**
 	 * Whether RowCellNumberMapper::applyDataToEntity() of a release keeps a missing number empty: 2.3.2 returns after
 	 * storing null, the earlier pins go on to store (float)null, that is 0. A release between the pins is taken like the
@@ -139,6 +128,7 @@ class CellValueDomain {
 	public static function keepsEmptyNumbers(string $version): bool {
 		return version_compare($version, '2.3.2', '>=');
 	}
+
 	/**
 	 * Stars or progress: an integer within the subtype's range and the column's limits; null is refused, since the parser
 	 * turns it into 0.
@@ -154,6 +144,7 @@ class CellValueDomain {
 		}
 		return $value;
 	}
+
 	/**
 	 * An option of a single selection; the parser gives the id as a string or an integer by release
 	 * ({@see self::parsesOptionAsString()}).
@@ -278,18 +269,4 @@ class CellValueDomain {
 		}
 		return $ids;
 	}
-
-	/**
-	 * Whether a text fits the column's maximum length, as RowService checks it when the column has one, and the tool's.
-	 *
-	 * @param array<string, mixed> $column the column
-	 * @param string $text the text
-	 * @return bool true when it fits
-	 */
-	public static function fitsText(array $column, string $text): bool {
-		$length = mb_strlen($text);
-		$max = $column['textMaxLength'] ?? null;
-		return $length <= self::MAX_TEXT && (!is_numeric($max) || $length <= (int)$max);
-	}
-
 }

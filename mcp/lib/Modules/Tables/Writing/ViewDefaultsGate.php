@@ -136,7 +136,7 @@ class ViewDefaultsGate {
 		$type = (string)($column['type'] ?? '');
 		$subtype = (string)($column['subtype'] ?? '');
 		return match ([$type, $subtype]) {
-			['text', ''], ['text', 'line'], ['text', 'long'], ['text', 'rich'] => CellValueDomain::fitsText($column, $value),
+			['text', ''], ['text', 'line'], ['text', 'long'], ['text', 'rich'] => TextCellValue::fitsText($column, $value),
 			['text', 'link'] => CellValueDomain::isCanonicalLink($column, $value),
 			['number', ''] => is_numeric($value) && NumberBounds::fits($column, (float)$value),
 			['number', 'stars'], ['number', 'progress'] => preg_match('/^\d{1,3}$/', $value) === 1 && NumberBounds::fits($column, (int)$value),

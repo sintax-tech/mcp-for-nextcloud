@@ -2,6 +2,7 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Tables/Writing/TextCellValue.php","fqcn":"OCA\\Mcp\\Modules\\Tables\\Writing\\TextCellValue","target":"stays","owner":"Modules\\Tables","ticket":null},
 		{"path":"lib/Modules/Tables/TablesToolCatalog.php","fqcn":"OCA\\Mcp\\Modules\\Tables\\TablesToolCatalog","target":"stays","owner":"Modules\\Tables","ticket":null},
 		{"path":"lib/Modules/Tables/Tools/ListColumns.php","fqcn":"OCA\\Mcp\\Modules\\Tables\\Tools\\ListColumns","target":"stays","owner":"Modules\\Tables","ticket":null},
 		{"path":"lib/Modules/Tables/Tools/CreateRow.php","fqcn":"OCA\\Mcp\\Modules\\Tables\\Tools\\CreateRow","target":"stays","owner":"Modules\\Tables","ticket":null},

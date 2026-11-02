@@ -32,7 +32,7 @@ final class LinkCellValue {
 			|| !is_string($data['title']) || !is_string($data['value']) || $data['providerId'] !== 'url') {
 			return false;
 		}
-		return self::isWebUrl($data['value']) && self::allowsUrlProvider($column) && CellValueDomain::fitsText($column, $json)
+		return self::isWebUrl($data['value']) && self::allowsUrlProvider($column) && TextCellValue::fitsText($column, $json)
 			&& preg_match(self::LINK_TITLE_PATTERN, $json) !== 1;
 	}
 
@@ -81,5 +81,4 @@ final class LinkCellValue {
 	private static function allowsUrlProvider(array $column): bool {
 		return in_array('url', array_map('trim', explode(',', (string)($column['textAllowedPattern'] ?? ''))), true);
 	}
-
 }

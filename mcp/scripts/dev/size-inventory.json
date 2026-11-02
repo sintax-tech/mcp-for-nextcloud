@@ -31,8 +31,7 @@
 	],
 	"transitional": [
 		{"fqcn":"OCA\\Mcp\\Controller\\CheckoutController","ceiling":562,"expires":"RE-24"},
-		{"fqcn":"OCA\\Mcp\\Service\\Policy\\PolicyWriter","ceiling":1485,"expires":"RE-06d","steps":[{"ticket":"RE-06","ceiling":1300},{"ticket":"RE-06b","ceiling":900},{"ticket":"RE-06c","ceiling":500}]},
-		{"fqcn":"OCA\\Mcp\\Service\\VisibilityGuard","ceiling":750,"expires":"RE-07"},
+		{"fqcn":"OCA\\Mcp\\Service\\Policy\\PolicyWriter","ceiling":900,"expires":"RE-06d","steps":[{"ticket":"RE-06","ceiling":1300},{"ticket":"RE-06b","ceiling":900},{"ticket":"RE-06c","ceiling":500}]},
 		{"fqcn":"OCA\\Mcp\\Tools\\Contacts\\ContactsModule","ceiling":505,"expires":"RE-15"},
 		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckServiceGateway","ceiling":1039,"expires":"RE-26"},
 		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckToolModule","ceiling":1092,"expires":"RE-27"},

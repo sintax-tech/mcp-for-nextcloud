@@ -293,16 +293,6 @@
 			]
 		},
 		{
-			"ceiling": 750,
-			"expires": "RE-07",
-			"nameParts": [
-				"OCA",
-				"Mcp",
-				"Service",
-				"VisibilityGuard"
-			]
-		},
-		{
 			"ceiling": 505,
 			"expires": "RE-15",
 			"nameParts": [

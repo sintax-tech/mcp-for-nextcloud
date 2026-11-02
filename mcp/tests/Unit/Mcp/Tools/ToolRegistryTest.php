@@ -270,7 +270,7 @@ final class ToolRegistryTest extends TestCase {
 	/** A failed read of the policy is no unknown grant: the whole listing fails (503), nothing is silently left out. */
 	public function testAFailedPolicyReadFailsTheWholeListing(): void {
 		$writer = InMemoryConfig::writer($this->config);
-		(new \ReflectionProperty($writer, 'usable'))->setValue($writer, false);
+		(new \ReflectionProperty($writer, 'context'))->getValue($writer)->usable = false;
 		try {
 			$this->registry()->list('alice');
 			$this->fail('A failed read was answered with a partial list');

@@ -85,7 +85,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Tools/Files/FileBackupCopy.php#copy:putcontent:1' => 'D3: mandatory internal backup bytes; never reads policy',
 			'Tools/Contacts/ContactBackup.php#save:newfile:1' => 'D3: mandatory internal vCard backup; never reads policy',
 			'Tools/Calendar/EventRelocator.php#prepare:move:1' => 'DAV: not Files, official CalDAV move',
-			'Access/Policy/PolicyWriter.php#failure:rollback:1' => 'database: not Files, application transaction rollback',
+			'Access/Policy/Transactions/PolicyTransaction.php#failure:rollback:1' => 'database: not Files, application transaction rollback',
 			'Service/Calendar/CalendarSelftestService.php#run:move:1' => 'DAV: not Files, diagnostic CalDAV move',
 		];
 	}

@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Contacts;
+namespace OCA\Mcp\Modules\Contacts\Writing;
 
 use OCA\Mcp\Platform\Dav\DavResult;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

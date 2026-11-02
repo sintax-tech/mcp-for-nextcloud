@@ -12,7 +12,7 @@ use OCA\Mcp\Platform\Backups\BackupCopies;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Tools\Files\BackupPlan;
-use OCA\Mcp\Tools\Contacts\ContactBackup;
+use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Lock\ILockingProvider;

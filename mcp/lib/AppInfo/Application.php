@@ -50,7 +50,7 @@ class Application extends App implements IBootstrap {
 		FilesModule::class,
 		NotesModule::class,
 		CalendarModule::class,
-		\OCA\Mcp\Tools\Contacts\ContactsModule::class,
+		\OCA\Mcp\Modules\Contacts\ContactsModule::class,
 		\OCA\Mcp\Tools\Tasks\TasksModule::class,
 		DeckToolModule::class,
 		TalkModule::class,
@@ -87,15 +87,15 @@ class Application extends App implements IBootstrap {
 			require_once $autoload;
 		}
 		$context->registerService(\OCA\Mcp\Platform\FileAccess\WriteVisibility::class, static fn (ContainerInterface $c): \OCA\Mcp\Platform\FileAccess\WriteVisibility => $c->get(VisibilityGuard::class));
-		$context->registerService(\OCA\Mcp\Tools\Contacts\ContactStore::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Contacts\DavContactStore($c));
+		$context->registerService(\OCA\Mcp\Modules\Contacts\Locating\ContactStore::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Modules\Contacts\Integration\DavContactStore($c));
 		$context->registerService(\OCA\Mcp\Tools\Tasks\TaskStore::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Tasks\DavTaskStore($c));
 		$context->registerService(\OCA\Mcp\Platform\FileAccess\ActorRoot::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Platform\FileAccess\ActorRoot($c->get(\OCP\Files\IRootFolder::class), $c->get(IUserSession::class)));
 		// The tools read the resource scope from the policy snapshot of their operation.
 		$context->registerService(\OCA\Mcp\Access\ResourceScope\ScopeReader::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\ResourceScope\ScopeReader => $c->get(\OCA\Mcp\Access\Grants\GrantPolicy::class));
 		// The Files scope step of the structured-reference filter: the user's Files resource scope of the operation.
 		$context->registerService(\OCA\Mcp\Access\ResourceScope\FileReferenceScope::class, static fn (ContainerInterface $c): \OCA\Mcp\Access\ResourceScope\FileReferenceScope => $c->get(\OCA\Mcp\Access\ResourceScope\FilesReferenceScope::class));
-		$context->registerService(\OCA\Mcp\Tools\Contacts\ContactDav::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Tools\Contacts\EmbeddedCardDavDispatcher(
-			static fn (): \Sabre\DAV\Server => \OCA\Mcp\Tools\Contacts\EmbeddedCardDavServer::create(),
+		$context->registerService(\OCA\Mcp\Modules\Contacts\Writing\ContactDav::class, static fn (ContainerInterface $c) => new \OCA\Mcp\Modules\Contacts\Writing\EmbeddedCardDavDispatcher(
+			static fn (): \Sabre\DAV\Server => \OCA\Mcp\Modules\Contacts\Integration\EmbeddedCardDavServer::create(),
 			new Session($c->get(IUserSession::class)), $c->get(\OCP\IAppConfig::class), $c->get(LoggerInterface::class),
 		));
 		// The Talk references read Deck cards through the same gateway the Deck tools use; it resolves Deck lazily.

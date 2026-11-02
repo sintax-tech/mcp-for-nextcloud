@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Contacts;
+namespace OCA\Mcp\Modules\Contacts\Writing;
 
 use Closure;
 use OCA\Mcp\L10n\Translator;

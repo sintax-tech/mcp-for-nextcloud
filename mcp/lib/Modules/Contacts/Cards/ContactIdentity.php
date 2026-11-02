@@ -6,7 +6,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Contacts;
+namespace OCA\Mcp\Modules\Contacts\Cards;
 
 use Sabre\VObject\Component\VCard;
 

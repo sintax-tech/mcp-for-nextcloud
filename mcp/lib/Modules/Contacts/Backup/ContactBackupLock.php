@@ -6,7 +6,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Contacts;
+namespace OCA\Mcp\Modules\Contacts\Backup;
 
 /**
  * Mutex key for one user's contact-backup folder.

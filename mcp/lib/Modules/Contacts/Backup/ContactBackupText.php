@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Contacts;
+namespace OCA\Mcp\Modules\Contacts\Backup;
 
 /** Fixed tool wording: Contacts backups remain mandatory regardless of the Files switch. */
 final class ContactBackupText {

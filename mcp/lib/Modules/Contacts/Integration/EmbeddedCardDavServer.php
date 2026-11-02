@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Contacts;
+namespace OCA\Mcp\Modules\Contacts\Integration;
 
 use OCA\DAV\AppInfo\PluginManager;
 use OCA\DAV\CalDAV\Auth\CustomPrincipalPlugin;

@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Contacts;
+namespace OCA\Mcp\Modules\Contacts\Cards;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

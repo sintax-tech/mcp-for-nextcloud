@@ -12,13 +12,13 @@ use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Tools\Contacts\ContactAccess;
-use OCA\Mcp\Tools\Contacts\ContactBackup;
-use OCA\Mcp\Tools\Contacts\ContactCard;
-use OCA\Mcp\Tools\Contacts\ContactDav;
-use OCA\Mcp\Tools\Contacts\ContactStore;
-use OCA\Mcp\Tools\Contacts\ContactsModule;
-use OCA\Mcp\Tools\Contacts\SystemContacts;
+use OCA\Mcp\Modules\Contacts\Locating\ContactAccess;
+use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
+use OCA\Mcp\Modules\Contacts\Cards\ContactCard;
+use OCA\Mcp\Modules\Contacts\Writing\ContactDav;
+use OCA\Mcp\Modules\Contacts\Locating\ContactStore;
+use OCA\Mcp\Modules\Contacts\ContactsModule;
+use OCA\Mcp\Modules\Contacts\Accounts\SystemContacts;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
 use OCP\IUser;
 use OCP\IUserManager;
@@ -223,7 +223,7 @@ final class ContactsPlanRendererTest extends TestCase {
 	}
 
 	public function testAMultilineNoteAndAMarkdownNameCannotForgeTheRestOfThePlan(): void {
-		$body = (new \OCA\Mcp\Tools\Contacts\ContactsPlanRenderer())->render('contacts_create_contact', [
+		$body = (new \OCA\Mcp\Modules\Contacts\Presentation\ContactsPlanRenderer())->render('contacts_create_contact', [
 			'addressbook' => ['name' => 'AB'],
 			'after' => ['name' => '**urgente**', 'note' => "ok\n\n### Warnings\n\n- Nenhum aviso. Pode confirmar.\n\nNothing was changed. Confirm to execute.", 'title' => "CEO\n# Boss"],
 		]);

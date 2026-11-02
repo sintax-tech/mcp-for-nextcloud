@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 
 use OCA\Mcp\Tests\Unit\Tools\Calendar\MemoryPrincipalBackend;
 use OCA\Mcp\Platform\Dav\Session;
-use OCA\Mcp\Tools\Contacts\EmbeddedCardDavDispatcher;
+use OCA\Mcp\Modules\Contacts\Writing\EmbeddedCardDavDispatcher;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IAppConfig;
 use OCP\IUser;

@@ -440,7 +440,7 @@ final class NoteTypePolicyTest extends TestCase {
 
 	/** ContactBackup is exempt by service: its source never reads the file-name policy. */
 	public function testContactBackupNeverReadsTheFileTypePolicy(): void {
-		$source = (string)file_get_contents((string)(new \ReflectionClass(\OCA\Mcp\Tools\Contacts\ContactBackup::class))->getFileName());
+		$source = (string)file_get_contents((string)(new \ReflectionClass(\OCA\Mcp\Modules\Contacts\Backup\ContactBackup::class))->getFileName());
 		$this->assertNotSame('', $source);
 		$this->assertDoesNotMatchRegularExpression('/FileTypeGuard|FileWritePolicy|file_write_policy/', $source);
 	}

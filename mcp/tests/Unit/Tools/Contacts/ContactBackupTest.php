@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 
 use DateTimeImmutable;
-use OCA\Mcp\Tools\Contacts\ContactBackup;
+use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\File;

@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Contacts;
+namespace OCA\Mcp\Modules\Contacts;
 
 use InvalidArgumentException;
 use OCA\Mcp\L10n\Translator;
@@ -29,24 +29,24 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	/**
 	 * Receives collection access, CardDAV ports, preserving vCard edits and verified backups.
 	 *
-	 * @param ContactAccess $access collection visibility and write-access resolver
-	 * @param ContactStore $store read-only storage port
-	 * @param ContactDav $dav native DAV write port
-	 * @param ContactCard $cards vCard parser and preserving patch builder
+	 * @param \OCA\Mcp\Modules\Contacts\Locating\ContactAccess $access collection visibility and write-access resolver
+	 * @param \OCA\Mcp\Modules\Contacts\Locating\ContactStore $store read-only storage port
+	 * @param \OCA\Mcp\Modules\Contacts\Writing\ContactDav $dav native DAV write port
+	 * @param \OCA\Mcp\Modules\Contacts\Cards\ContactCard $cards vCard parser and preserving patch builder
 	 * @param SharedGuard $guard shared-owner confirmation policy
-	 * @param ContactBackup $backup verified contact backup service
-	 * @param SystemContacts $system read-only account catalog ("Accounts") governed by the admin enumeration rules
+	 * @param \OCA\Mcp\Modules\Contacts\Backup\ContactBackup $backup verified contact backup service
+	 * @param \OCA\Mcp\Modules\Contacts\Accounts\SystemContacts $system read-only account catalog ("Accounts") governed by the admin enumeration rules
 	 * @param PlanState|null $states HMAC of a creation plan; the container provides it, tests that create pass it
 	 * @return void
 	 */
 	public function __construct(
-		private ContactAccess $access,
-		private ContactStore $store,
-		private ContactDav $dav,
-		private ContactCard $cards,
+		private \OCA\Mcp\Modules\Contacts\Locating\ContactAccess $access,
+		private \OCA\Mcp\Modules\Contacts\Locating\ContactStore $store,
+		private \OCA\Mcp\Modules\Contacts\Writing\ContactDav $dav,
+		private \OCA\Mcp\Modules\Contacts\Cards\ContactCard $cards,
 		private SharedGuard $guard,
-		private ContactBackup $backup,
-		private SystemContacts $system,
+		private \OCA\Mcp\Modules\Contacts\Backup\ContactBackup $backup,
+		private \OCA\Mcp\Modules\Contacts\Accounts\SystemContacts $system,
 		private ?PlanState $states = null,
 	) {}
 
@@ -171,7 +171,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 				. 'Creating a contact repeats the plan_state of that plan: it carries the UID that is stored. The '
 				. 'optional etag prevents overwriting a newer edit.',
 			'Contact deletion is PERMANENT in Nextcloud: there is no contact trash. After '
-				. ContactBackupText::destination()
+				. \OCA\Mcp\Modules\Contacts\Backup\ContactBackupText::destination()
 				. 'native CardDAV DELETE. Backup failure prevents deletion; the result gives the backup '
 				. 'path. Import the .vcf through Contacts to recover it.',
 			'These tools are hidden when the Contacts app is disabled. Writing grants start disabled.',
@@ -206,7 +206,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	public function renderPlan(string $name, array $plan): ?string {
 		// Built on demand and not injected: a contact plan carries no date, so the renderer needs
 		// nothing this module does not already hold, and a constructor parameter would reach every caller.
-		return (new ContactsPlanRenderer())->render($name, $plan);
+		return (new \OCA\Mcp\Modules\Contacts\Presentation\ContactsPlanRenderer())->render($name, $plan);
 	}
 
 	/**
@@ -231,12 +231,12 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 			if ($catalog !== null) {
 				$books[] = [
 					'id' => 0,
-					'uri' => ContactAccess::SYSTEM_URI,
+					'uri' => \OCA\Mcp\Modules\Contacts\Locating\ContactAccess::SYSTEM_URI,
 					'name' => $catalog,
 					'ownerId' => 'system',
 					'ownerPrincipal' => 'principals/system/system',
 					'writable' => false,
-					'path' => ContactAccess::systemPath($userId),
+					'path' => \OCA\Mcp\Modules\Contacts\Locating\ContactAccess::systemPath($userId),
 					'system' => true,
 					'readOnly' => true,
 				];
@@ -306,7 +306,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 			if ($this->system->bookName($userId) === null) {
 				throw new ToolFailure(CommonMessages::notFound());
 			}
-			if (mb_strlen($term) < SystemContacts::MIN_QUERY) {
+			if (mb_strlen($term) < \OCA\Mcp\Modules\Contacts\Accounts\SystemContacts::MIN_QUERY) {
 				throw new ToolFailure(
 					Translator::t('Enter at least 2 characters to search the accounts catalog.')
 				);
@@ -316,7 +316,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 			$books = [$this->access->resolve($userId, $path)];
 		} else {
 			$books = $this->access->visible($userId);
-			if (mb_strlen($term) >= SystemContacts::MIN_QUERY) {
+			if (mb_strlen($term) >= \OCA\Mcp\Modules\Contacts\Accounts\SystemContacts::MIN_QUERY) {
 				$accounts = $this->system->search($userId, $term);
 			}
 		}
@@ -463,9 +463,9 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	 * The write whose behavior lives in its own handler. Other tools stay in this module.
 	 *
 	 * @param string $name registered tool name
-	 * @return Handler\CreateContactHandler|Handler\DeleteContactHandler|null
+	 * @return \OCA\Mcp\Modules\Contacts\Creation\CreateContactHandler|\OCA\Mcp\Modules\Contacts\Deletion\DeleteContactHandler|null
 	 */
-	private function delegated(string $name): Handler\CreateContactHandler|Handler\DeleteContactHandler|null {
+	private function delegated(string $name): \OCA\Mcp\Modules\Contacts\Creation\CreateContactHandler|\OCA\Mcp\Modules\Contacts\Deletion\DeleteContactHandler|null {
 		return match ($name) {
 			'contacts_create_contact' => $this->createHandler(),
 			'contacts_delete_contact' => $this->deleteHandler(),
@@ -473,15 +473,15 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 		};
 	}
 
-	/** @return Handler\CreateContactHandler creation plan, its UID and the confirmed write of that UID */
-	private function createHandler(): Handler\CreateContactHandler {
-		return new Handler\CreateContactHandler($this->access, $this->dav, $this->cards, $this->guard, $this->states,
+	/** @return \OCA\Mcp\Modules\Contacts\Creation\CreateContactHandler creation plan, its UID and the confirmed write of that UID */
+	private function createHandler(): \OCA\Mcp\Modules\Contacts\Creation\CreateContactHandler {
+		return new \OCA\Mcp\Modules\Contacts\Creation\CreateContactHandler($this->access, $this->dav, $this->cards, $this->guard, $this->states,
 			fn (int $bookId, string $uri): array => $this->row($bookId, $uri));
 	}
 
-	/** @return Handler\DeleteContactHandler focused deletion handler using the existing shared preparation and row reader */
-	private function deleteHandler(): Handler\DeleteContactHandler {
-		return new Handler\DeleteContactHandler($this->access, $this->dav, $this->backup,
+	/** @return \OCA\Mcp\Modules\Contacts\Deletion\DeleteContactHandler focused deletion handler using the existing shared preparation and row reader */
+	private function deleteHandler(): \OCA\Mcp\Modules\Contacts\Deletion\DeleteContactHandler {
+		return new \OCA\Mcp\Modules\Contacts\Deletion\DeleteContactHandler($this->access, $this->dav, $this->backup,
 			fn (array $arguments, string $userId): array => $this->prepare('contacts_delete_contact', $arguments, $userId),
 			fn (int $bookId, string $uri): array => $this->row($bookId, $uri));
 	}

@@ -123,7 +123,7 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Contacts/ContactAccess.php",
+			"source": "lib/Modules/Contacts/Locating/ContactAccess.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
 			"line": 90,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -131,7 +131,7 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Contacts/ContactBackup.php",
+			"source": "lib/Modules/Contacts/Backup/ContactBackup.php",
 			"target": "OCA\\Mcp\\Tools\\Files\\FileBackup",
 			"line": 15,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -139,7 +139,7 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Contacts/ContactsModule.php",
+			"source": "lib/Modules/Contacts/ContactsModule.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
 			"line": 397,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -147,7 +147,7 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Contacts/ContactsModule.php",
+			"source": "lib/Modules/Contacts/ContactsModule.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Approval\\SharedGuard",
 			"line": 47,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -155,7 +155,7 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Contacts/Handler/CreateContactHandler.php",
+			"source": "lib/Modules/Contacts/Creation/CreateContactHandler.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
 			"line": 105,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -163,7 +163,7 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Contacts/Handler/CreateContactHandler.php",
+			"source": "lib/Modules/Contacts/Creation/CreateContactHandler.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Approval\\SharedGuard",
 			"line": 48,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
@@ -464,150 +464,6 @@
 			"line": 95,
 			"reason": "Move this native-app reference behind the owning module Integration boundary.",
 			"expires": "RE-28"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/DavContactStore.php",
-			"target": "OCA\\DAV\\CardDAV\\CardDavBackend",
-			"line": 31,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\AppInfo\\PluginManager",
-			"line": 83,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\CalDAV\\Auth\\CustomPrincipalPlugin",
-			"line": 64,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\CardDAV\\HasPhotoPlugin",
-			"line": 75,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\CardDAV\\ImageExportPlugin",
-			"line": 76,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\CardDAV\\MultiGetExportPlugin",
-			"line": 74,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\CardDAV\\PhotoCache",
-			"line": 76,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\CardDAV\\Plugin",
-			"line": 72,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\CardDAV\\Security\\CardDavRateLimitingPlugin",
-			"line": 77,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\CardDAV\\Validation\\CardDavValidatePlugin",
-			"line": 78,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\Connector\\Sabre\\CachingTree",
-			"line": 55,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\Connector\\Sabre\\DavAclPlugin",
-			"line": 66,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\Connector\\Sabre\\ExceptionLoggerPlugin",
-			"line": 70,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\Connector\\Sabre\\LockPlugin",
-			"line": 69,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\Connector\\Sabre\\MaintenancePlugin",
-			"line": 62,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\Connector\\Sabre\\Server",
-			"line": 55,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\Events\\SabrePluginAuthInitEvent",
-			"line": 65,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
-			"target": "OCA\\DAV\\RootCollection",
-			"line": 54,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-15"
 		},
 		{
 			"rule": "native-app",

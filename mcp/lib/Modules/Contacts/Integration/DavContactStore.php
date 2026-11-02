@@ -5,11 +5,12 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Contacts;
+namespace OCA\Mcp\Modules\Contacts\Integration;
 
 use OCA\DAV\CardDAV\CardDavBackend;
 use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\ContainerInterface;
+use OCA\Mcp\Modules\Contacts\Locating\ContactStore;
 
 /** Resolves the Nextcloud 33 CardDAV backend only when a contact tool is used. */
 class DavContactStore implements ContactStore {

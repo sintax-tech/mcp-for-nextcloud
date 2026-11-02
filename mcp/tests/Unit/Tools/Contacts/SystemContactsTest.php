@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 
-use OCA\Mcp\Tools\Contacts\SystemContacts;
+use OCA\Mcp\Modules\Contacts\Accounts\SystemContacts;
 use OCP\Contacts\IManager;
 use OCP\IAddressBook;
 use OCP\IAppConfig;

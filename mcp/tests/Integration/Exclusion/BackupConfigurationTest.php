@@ -13,7 +13,7 @@ use OCA\Mcp\Platform\Backups\BackupCopies;
 use OCA\Mcp\Access\Settings\BackupSettingsWriter;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Tests\Integration\Support\Http;
-use OCA\Mcp\Tools\Contacts\ContactBackup;
+use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
 use OCP\App\IAppManager;
 use OCP\IAppConfig;
 use OCP\Server;

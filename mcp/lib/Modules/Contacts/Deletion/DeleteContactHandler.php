@@ -5,12 +5,12 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Contacts\Handler;
+namespace OCA\Mcp\Modules\Contacts\Deletion;
 
 use Closure;
-use OCA\Mcp\Tools\Contacts\ContactAccess;
-use OCA\Mcp\Tools\Contacts\ContactBackup;
-use OCA\Mcp\Tools\Contacts\ContactDav;
+use OCA\Mcp\Modules\Contacts\Locating\ContactAccess;
+use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
+use OCA\Mcp\Modules\Contacts\Writing\ContactDav;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

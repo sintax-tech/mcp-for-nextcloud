@@ -9,8 +9,8 @@ namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
 use OCA\Mcp\Platform\Dav\DavResult;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
-use OCA\Mcp\Tools\Contacts\ContactDav;
-use OCA\Mcp\Tools\Contacts\ContactStore;
+use OCA\Mcp\Modules\Contacts\Writing\ContactDav;
+use OCA\Mcp\Modules\Contacts\Locating\ContactStore;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
 /**

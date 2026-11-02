@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Contacts;
+namespace OCA\Mcp\Modules\Contacts\Accounts;
 
 use OCP\Contacts\IManager;
 use OCP\IAddressBook;
@@ -202,7 +202,7 @@ class SystemContacts {
 			'nickname' => $this->text($row['NICKNAME'] ?? ''),
 			'emails' => $this->emails($row['EMAIL'] ?? []),
 			'uri' => $uri,
-			'addressbook' => ContactAccess::systemPath($userId),
+			'addressbook' => \OCA\Mcp\Modules\Contacts\Locating\ContactAccess::systemPath($userId),
 			'addressBook' => ['name' => $bookName, 'system' => true],
 			'readOnly' => true,
 		];

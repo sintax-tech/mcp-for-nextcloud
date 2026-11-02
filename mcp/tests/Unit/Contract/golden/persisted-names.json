@@ -33,12 +33,12 @@
     "di": {
         "registerService": [
             "OCA\\Mcp\\Platform\\FileAccess\\WriteVisibility",
-            "OCA\\Mcp\\Tools\\Contacts\\ContactStore",
+            "OCA\\Mcp\\Modules\\Contacts\\Locating\\ContactStore",
             "OCA\\Mcp\\Tools\\Tasks\\TaskStore",
             "OCA\\Mcp\\Platform\\FileAccess\\ActorRoot",
             "OCA\\Mcp\\Access\\ResourceScope\\ScopeReader",
             "OCA\\Mcp\\Access\\ResourceScope\\FileReferenceScope",
-            "OCA\\Mcp\\Tools\\Contacts\\ContactDav",
+            "OCA\\Mcp\\Modules\\Contacts\\Writing\\ContactDav",
             "OCA\\Mcp\\Tools\\Deck\\DeckGatewayInterface",
             "OCA\\Mcp\\Mcp\\Resources\\NoteResource",
             "OCA\\Mcp\\Access\\ResourceScope\\NativeCalendars",
@@ -69,7 +69,7 @@
             "OCA\\Mcp\\Tools\\Files\\FilesModule",
             "OCA\\Mcp\\Modules\\Notes\\NotesModule",
             "OCA\\Mcp\\Modules\\Calendar\\CalendarModule",
-            "OCA\\Mcp\\Tools\\Contacts\\ContactsModule",
+            "OCA\\Mcp\\Modules\\Contacts\\ContactsModule",
             "OCA\\Mcp\\Tools\\Tasks\\TasksModule",
             "OCA\\Mcp\\Tools\\Deck\\DeckToolModule",
             "OCA\\Mcp\\Tools\\Talk\\TalkModule",

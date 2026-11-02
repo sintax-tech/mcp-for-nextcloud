@@ -27,15 +27,22 @@ use OCA\Mcp\Modules\Contacts\Planning\ContactChange;
 use OCA\Mcp\Modules\Contacts\Reading\ListAddressBooksHandler;
 use OCA\Mcp\Modules\Contacts\Reading\ReadContactHandler;
 use OCA\Mcp\Modules\Contacts\Reading\SearchContactsHandler;
+use OCA\Mcp\Modules\Contacts\Tools\CreateContact;
+use OCA\Mcp\Modules\Contacts\Tools\DeleteContact;
+use OCA\Mcp\Modules\Contacts\Tools\EditContact;
+use OCA\Mcp\Modules\Contacts\Tools\ListAddressBooks;
+use OCA\Mcp\Modules\Contacts\Tools\ReadContact;
+use OCA\Mcp\Modules\Contacts\Tools\SearchContacts;
 use OCA\Mcp\Modules\Contacts\Writing\ContactDav;
 use OCP\Contacts\IManager;
 use OCP\IAppConfig;
 use OCP\IGroupManager;
 use OCP\IUserManager;
+use Psr\Container\ContainerInterface;
 
 /**
- * Builds the Contacts module from the services its unit tests used to hand the legacy constructor, wiring each work
- * class the way the app container autowires it.
+ * Builds the Contacts catalog module from the services its unit tests used to hand the legacy constructor, wiring
+ * each tool the way the app container autowires it.
  */
 final class ContactsTestModule {
 	/**
@@ -61,17 +68,14 @@ final class ContactsTestModule {
 	): ContactsModule {
 		$changes = new ContactChange($access, $cards, $notice, $backup);
 		$createPlans = new CreateContactPreview($access, $cards, $notice, $states);
-		return new ContactsModule(
-			new ListAddressBooksHandler($access, $system),
-			new SearchContactsHandler($access, $store, $cards, $system),
-			new ReadContactHandler($access, $cards, $system),
-			$createPlans,
-			new CreateContactHandler($createPlans, $access, $dav, $cards),
-			new EditContactPreview($changes),
-			new EditContactHandler($changes, $access, $dav, $cards),
-			new DeleteContactPreview($changes),
-			new DeleteContactHandler($access, $dav, $backup, $changes),
-		);
+		return new ContactsModule(self::container([
+			ListAddressBooks::class => new ListAddressBooks(new ListAddressBooksHandler($access, $system)),
+			SearchContacts::class => new SearchContacts(new SearchContactsHandler($access, $store, $cards, $system)),
+			ReadContact::class => new ReadContact(new ReadContactHandler($access, $cards, $system)),
+			CreateContact::class => new CreateContact(new CreateContactHandler($createPlans, $access, $dav, $cards), $createPlans),
+			EditContact::class => new EditContact(new EditContactHandler($changes, $access, $dav, $cards), new EditContactPreview($changes)),
+			DeleteContact::class => new DeleteContact(new DeleteContactHandler($access, $dav, $backup, $changes), new DeleteContactPreview($changes)),
+		]));
 	}
 
 	/**
@@ -83,5 +87,27 @@ final class ContactsTestModule {
 	 */
 	public static function system(IManager $contacts, IAppConfig $config, IGroupManager $groups, IUserManager $users): SystemContacts {
 		return new SystemContacts($contacts, new AccountVisibility($config, $groups, $users), new AccountEntry($users));
+	}
+
+	/**
+	 * @param array<string, object> $services instances by id
+	 * @return ContainerInterface a container that only answers those instances
+	 */
+	public static function container(array $services): ContainerInterface {
+		return new class($services) implements ContainerInterface {
+			/** @param array<string, object> $services instances by id */
+			public function __construct(private array $services) {
+			}
+
+			/** {@inheritDoc} */
+			public function get(string $id): mixed {
+				return $this->services[$id] ?? throw new \LogicException("no test service $id");
+			}
+
+			/** {@inheritDoc} */
+			public function has(string $id): bool {
+				return isset($this->services[$id]);
+			}
+		};
 	}
 }

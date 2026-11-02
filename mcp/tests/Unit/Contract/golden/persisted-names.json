@@ -33,12 +33,10 @@
     "di": {
         "registerService": [
             "OCA\\Mcp\\Platform\\FileAccess\\WriteVisibility",
-            "OCA\\Mcp\\Modules\\Contacts\\Locating\\ContactStore",
             "OCA\\Mcp\\Tools\\Tasks\\TaskStore",
             "OCA\\Mcp\\Platform\\FileAccess\\ActorRoot",
             "OCA\\Mcp\\Access\\ResourceScope\\ScopeReader",
             "OCA\\Mcp\\Access\\ResourceScope\\FileReferenceScope",
-            "OCA\\Mcp\\Modules\\Contacts\\Writing\\ContactDav",
             "OCA\\Mcp\\Tools\\Deck\\DeckGatewayInterface",
             "OCA\\Mcp\\Mcp\\Resources\\NoteResource",
             "OCA\\Mcp\\Access\\ResourceScope\\NativeCalendars",
@@ -46,6 +44,8 @@
             "OCA\\Mcp\\Modules\\Calendar\\Writing\\CalendarDav",
             "OCA\\Mcp\\Modules\\Calendar\\Locating\\CalendarStore",
             "OCA\\Mcp\\Modules\\Calendar\\Writing\\EmbeddedDavDispatcher",
+            "OCA\\Mcp\\Modules\\Contacts\\Locating\\ContactStore",
+            "OCA\\Mcp\\Modules\\Contacts\\Writing\\ContactDav",
             "OCA\\Mcp\\Mcp\\Tools\\Discovery\\CapabilityRegistry",
             "OCA\\Mcp\\Mcp\\Tools\\ToolRegistry",
             "OCA\\Mcp\\Mcp\\Resources\\ResourceRegistry",

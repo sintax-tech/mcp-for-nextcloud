@@ -110,7 +110,8 @@ final class MailSendTools {
 	 *     available
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
-		return $this->handler($name)->preview($arguments, $userId);
+		if (!self::handles($name)) { throw new InvalidArgumentException('Unknown tool'); }
+		return (new SendMessagePreview(new MailSendAccount($this->accounts, new MailMessageGateway($this->services)), new MailSendPlan($this->states, $this->grants, $this->apps)))->plan($arguments, $userId);
 	}
 
 	/**

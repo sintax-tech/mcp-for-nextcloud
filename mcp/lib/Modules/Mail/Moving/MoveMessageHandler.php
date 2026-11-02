@@ -42,42 +42,10 @@ final class MoveMessageHandler {
 	/** MCP tool name this handler serves. */
 	public const TOOL = MailMovePlan::TOOL;
 
-	/**
-	 * Receives the locator, the destination, the plan, the server move, the links and the Mail classes.
-	 *
-	 * @param MailMessageLocator $locator message id to the user's own message, folder and account
-	 * @param MailMoveDestination $destinations destination folder and its kind
-	 * @param MailMovePlan $plans the plan and its state
-	 * @param MailMoveStore $store moves the message on the server
-	 * @param MailLinks $links direct links into the Mail app, for the destination folder
-	 * @param IEventDispatcher $events event dispatcher, for the Mail app's event
-	 * @param MailServices $services resolver of the Mail classes
-	 * @return void
-	 */
-	public function __construct(
-		private MailMessageLocator $locator,
-		private MailMoveDestination $destinations,
-		private MailMovePlan $plans,
-		private MailMoveStore $store,
-		private MailLinks $links,
-		private IEventDispatcher $events,
-		private MailServices $services,
-	) {
-	}
+	/** @param MoveMessageContext $context per-call collaborators, including the actor timezone */
+	public function __construct(private MoveMessageContext $context) {}
 
-	/**
-	 * The plan of a call without confirm.
-	 *
-	 * @param array<string, mixed> $arguments validated tool arguments: message_id, mailbox_id
-	 * @param string $userId authenticated user UID
-	 * @return array<string, mixed> the plan
-	 * @throws ToolFailure when the message or the folder is not the user's, or the folder cannot be used
-	 * @throws MailUnavailableException when Mail is not available for the user
-	 */
-	public function preview(array $arguments, string $userId): array {
-		$found = $this->locator->locate($userId, (int)$arguments['message_id']);
-		return $this->plans->plan($userId, $found, $this->destinations->resolve($userId, $found, (int)$arguments['mailbox_id']));
-	}
+
 
 	/**
 	 * The confirmed move.
@@ -92,26 +60,27 @@ final class MoveMessageHandler {
 	 * @throws MailUnavailableException when Mail is not available for the user
 	 */
 	public function handle(array $arguments, string $userId): array {
+		[$locator, $destinations, $plans, $store, $links, $events, $services] = $this->context->forUser($userId);
 		PlanState::require($arguments);
-		$found = $this->locator->locate($userId, (int)$arguments['message_id']);
-		$destination = $this->destinations->resolve($userId, $found, (int)$arguments['mailbox_id']);
-		if (!PlanState::matches($this->plans->state($userId, $found, $destination), $arguments)) {
-			throw new PlanChanged($this->plans->plan($userId, $found, $destination, true));
+		$found = $locator->locate($userId, (int)$arguments['message_id']);
+		$destination = $destinations->resolve($userId, $found, (int)$arguments['mailbox_id']);
+		if (!PlanState::matches($plans->state($userId, $found, $destination), $arguments)) {
+			throw new PlanChanged($plans->plan($userId, $found, $destination, true));
 		}
 		$answer = [
 			'messageId' => (int)$found['message']->getId(),
 			'fromMailboxId' => (int)$found['mailbox']->getId(),
 			'toMailboxId' => (int)$destination['mailbox']->getId(),
-			'toUrl' => $this->links->mailbox((int)$destination['mailbox']->getId()),
+			'toUrl' => $links->mailbox((int)$destination['mailbox']->getId()),
 		];
 		if ($destination['kind'] === MailMoveDestination::SAME) {
 			return ToolResult::json($answer + ['moved' => false, 'notes' => [MailMoveMessages::alreadyThere()]]);
 		}
-		$eventClass = $this->services->deleteEventClass($userId);
-		$newUid = $this->store->move($userId, $found['account'], $found['mailbox'], $found['message'], $destination['mailbox']);
+		$eventClass = $services->deleteEventClass($userId);
+		$newUid = $store->move($userId, $found['account'], $found['mailbox'], $found['message'], $destination['mailbox']);
 		$notes = [];
 		try {
-			$this->events->dispatchTyped(new $eventClass($found['account'], $found['mailbox'], (int)$found['message']->getUid()));
+			$events->dispatchTyped(new $eventClass($found['account'], $found['mailbox'], (int)$found['message']->getUid()));
 		} catch (\Throwable) {
 			// The server already moved the message; the Mail app catches its cache up at its next synchronization.
 			$notes[] = MailMoveMessages::cacheBehind();

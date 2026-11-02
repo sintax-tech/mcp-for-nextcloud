@@ -53,20 +53,7 @@ final class SendMessageHandler {
 	) {
 	}
 
-	/**
-	 * The plan of a call without confirm.
-	 *
-	 * @param array<string, mixed> $arguments validated tool arguments: account_id, to, cc, bcc, subject, body
-	 * @param string $userId authenticated user UID
-	 * @return array<string, mixed> the plan
-	 * @throws ArgumentValidationException for a recipient, subject or text the message cannot carry, or no recipient
-	 * @throws ToolFailure when the account is not the user's or has no Sent folder
-	 * @throws MailUnavailableException when Mail is not available for the user
-	 */
-	public function preview(array $arguments, string $userId): array {
-		$message = MailSendRequest::from($arguments);
-		return $this->plans->plan($userId, $this->accounts->resolve($userId, (int)$arguments['account_id']), $message);
-	}
+
 
 	/**
 	 * The confirmed send.

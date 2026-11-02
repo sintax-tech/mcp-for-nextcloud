@@ -43,8 +43,7 @@ final class CreateDraftHandler {
 	/**
 	 * Receives the account boundary, the Drafts folder, the plan, the save and the links.
 	 *
-	 * @param MailGateway $accounts the user's own accounts
-	 * @param MailDraftFolder $folders the Drafts folder of an account
+	 * @param MailDraftAccount $accounts actor account and Drafts folder
 	 * @param MailDraftPlan $plans the plan and its state
 	 * @param MailDraftStore $store saves the draft through the Mail app
 	 * @param MailLinks $links direct links into the Mail app, for the Drafts folder
@@ -52,8 +51,7 @@ final class CreateDraftHandler {
 	 * @return void
 	 */
 	public function __construct(
-		private MailGateway $accounts,
-		private MailDraftFolder $folders,
+		private MailDraftAccount $accounts,
 		private MailDraftPlan $plans,
 		private MailDraftStore $store,
 		private MailLinks $links,
@@ -61,23 +59,7 @@ final class CreateDraftHandler {
 	) {
 	}
 
-	/**
-	 * The plan of a call without confirm.
-	 *
-	 * @param array<string, mixed> $arguments validated tool arguments: account_id, to, cc, bcc, subject, body
-	 * @param string $userId authenticated user UID
-	 * @return array<string, mixed> the plan
-	 * @throws ArgumentValidationException for a recipient, subject or text the draft cannot carry
-	 * @throws ToolFailure when the draft has Bcc that the installed Mail would drop, or the account is not the user's or
-	 *     has no Drafts folder
-	 * @throws MailUnavailableException when Mail is not available for the user
-	 */
-	public function preview(array $arguments, string $userId): array {
-		$draft = MailDraftRequest::from($arguments);
-		MailDraftBcc::assertKept($draft, $this->apps);
-		[$account, $drafts] = $this->resolve($userId, (int)$arguments['account_id']);
-		return $this->plans->plan($userId, $account, $drafts, $draft);
-	}
+
 
 	/**
 	 * The confirmed draft.
@@ -96,7 +78,7 @@ final class CreateDraftHandler {
 		$draft = MailDraftRequest::from($arguments);
 		// Checked again: Mail may have been replaced by an older release since the plan.
 		MailDraftBcc::assertKept($draft, $this->apps);
-		[$account, $drafts] = $this->resolve($userId, (int)$arguments['account_id']);
+		[$account, $drafts] = $this->accounts->resolve($userId, (int)$arguments['account_id']);
 		if (!PlanState::matches($this->plans->state($userId, $account, $drafts, $draft), $arguments)) {
 			throw new PlanChanged($this->plans->plan($userId, $account, $drafts, $draft, true));
 		}
@@ -111,17 +93,5 @@ final class CreateDraftHandler {
 		]);
 	}
 
-	/**
-	 * The user's own account and its Drafts folder.
-	 *
-	 * @param string $userId authenticated user UID
-	 * @param int $accountId account id asked for
-	 * @return array{object, object} the account and the folder
-	 * @throws ToolFailure when the account is not the user's or has no Drafts folder
-	 * @throws MailUnavailableException when Mail is not available for the user
-	 */
-	private function resolve(string $userId, int $accountId): array {
-		$account = $this->accounts->ownedAccount($userId, $accountId) ?? throw new ToolFailure(MailMessages::accountNotFound());
-		return [$account, $this->folders->of($userId, $account)];
-	}
+
 }

@@ -107,7 +107,7 @@ final class MailMoveTools {
 	 *     not available
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
-		return $this->handler($name, $userId)->preview($arguments, $userId);
+		return (new MoveMessagePreview($this->context($name)))->plan($arguments, $userId);
 	}
 
 	/**
@@ -122,24 +122,16 @@ final class MailMoveTools {
 	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when the move cannot be done, has no known outcome, or Mail is not available
 	 */
 	public function call(string $name, array $arguments, string $userId): array {
-		return $this->handler($name, $userId)->handle($arguments, $userId);
+		return (new MoveMessageHandler($this->context($name)))->handle($arguments, $userId);
 	}
 
 	/**
-	 * The handler of the tool for one user.
-	 *
-	 * @param string $name tool name
-	 * @param string $userId authenticated user UID
-	 * @return MoveMessageHandler the handler
-	 * @throws InvalidArgumentException for a tool this class does not have
+	 * @param string $name published tool name
+	 * @return MoveMessageContext per-call construction shared by the effect and preview
+	 * @throws InvalidArgumentException for another tool
 	 */
-	private function handler(string $name, string $userId): MoveMessageHandler {
-		if (!self::handles($name)) {
-			throw new InvalidArgumentException('Unknown tool');
-		}
-		$messages = new MailMessageGateway($this->services);
-		$locator = new MailMessageLocator($this->accounts, $messages);
-		$plans = new MailMovePlan($this->states, $this->grants, new MailMessageRows($this->timezones->forUser($userId), $this->links));
-		return new MoveMessageHandler($locator, new MailMoveDestination($messages), $plans, new MailMoveStore($this->services), $this->links, $this->events, $this->services);
+	private function context(string $name): MoveMessageContext {
+		if (!self::handles($name)) { throw new InvalidArgumentException('Unknown tool'); }
+		return new MoveMessageContext($this->services, $this->accounts, $this->timezones, $this->links, $this->states, $this->grants, $this->events);
 	}
 }

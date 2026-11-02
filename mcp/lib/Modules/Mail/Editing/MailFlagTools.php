@@ -108,7 +108,7 @@ final class MailFlagTools {
 	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when the message is not the user's, or Mail is not available
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
-		return $this->handler($name, $userId)->preview($arguments, $userId);
+		return (new SetFlagsPreview($this->context($name)))->plan($arguments, $userId);
 	}
 
 	/**
@@ -124,23 +124,16 @@ final class MailFlagTools {
 	 *     Mail is not available
 	 */
 	public function call(string $name, array $arguments, string $userId): array {
-		return $this->handler($name, $userId)->handle($arguments, $userId);
+		return (new SetFlagsHandler($this->context($name)))->handle($arguments, $userId);
 	}
 
 	/**
-	 * The handler of the tool for one user.
-	 *
-	 * @param string $name tool name
-	 * @param string $userId authenticated user UID
-	 * @return SetFlagsHandler the handler
-	 * @throws InvalidArgumentException for a tool this class does not have
+	 * @param string $name published tool name
+	 * @return FlagMessageContext per-call construction shared by the effect and preview
+	 * @throws InvalidArgumentException for another tool
 	 */
-	private function handler(string $name, string $userId): SetFlagsHandler {
-		if (!self::handles($name)) {
-			throw new InvalidArgumentException('Unknown tool');
-		}
-		$locator = new MailMessageLocator($this->accounts, new MailMessageGateway($this->services));
-		$plans = new MailFlagPlan($this->states, $this->grants, new MailMessageRows($this->timezones->forUser($userId), $this->links));
-		return new SetFlagsHandler($locator, $plans, new MailFlagStore($this->services), new MailFlagEvent($this->events), $this->services);
+	private function context(string $name): FlagMessageContext {
+		if (!self::handles($name)) { throw new InvalidArgumentException('Unknown tool'); }
+		return new FlagMessageContext($this->services, $this->accounts, $this->timezones, $this->links, $this->states, $this->grants, $this->events);
 	}
 }

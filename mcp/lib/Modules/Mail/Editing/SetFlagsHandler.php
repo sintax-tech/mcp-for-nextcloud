@@ -35,39 +35,10 @@ final class SetFlagsHandler {
 	/** MCP tool name this handler serves. */
 	public const TOOL = MailFlagPlan::TOOL;
 
-	/**
-	 * Receives the locator, the plan, the server change, the cache notice and the Mail classes.
-	 *
-	 * @param MailMessageLocator $locator message id to the user's own message, folder and account
-	 * @param MailFlagPlan $plans the plan and its state
-	 * @param MailFlagStore $store sets the flags on the server
-	 * @param MailFlagEvent $events tells the Mail app of a changed flag
-	 * @param MailServices $services resolver of the Mail classes
-	 * @return void
-	 */
-	public function __construct(
-		private MailMessageLocator $locator,
-		private MailFlagPlan $plans,
-		private MailFlagStore $store,
-		private MailFlagEvent $events,
-		private MailServices $services,
-	) {
-	}
+	/** @param FlagMessageContext $context per-call collaborators, including the actor timezone */
+	public function __construct(private FlagMessageContext $context) {}
 
-	/**
-	 * The plan of a call without confirm.
-	 *
-	 * @param array<string, mixed> $arguments validated tool arguments: message_id, seen, flagged
-	 * @param string $userId authenticated user UID
-	 * @return array<string, mixed> the plan
-	 * @throws ArgumentValidationException when no flag is asked
-	 * @throws ToolFailure when the message is not the user's
-	 * @throws MailUnavailableException when Mail is not available for the user
-	 */
-	public function preview(array $arguments, string $userId): array {
-		$request = MailFlagRequest::from($arguments);
-		return $this->plans->plan($userId, $this->locator->locate($userId, (int)$arguments['message_id']), $request);
-	}
+
 
 	/**
 	 * The confirmed change.
@@ -81,18 +52,19 @@ final class SetFlagsHandler {
 	 * @throws MailUnavailableException when Mail is not available for the user
 	 */
 	public function handle(array $arguments, string $userId): array {
+		[$locator, $plans, $store, $events, $services] = $this->context->forUser($userId);
 		$request = MailFlagRequest::from($arguments);
 		PlanState::require($arguments);
-		$found = $this->locator->locate($userId, (int)$arguments['message_id']);
-		if (!PlanState::matches($this->plans->state($userId, $found, $request), $arguments)) {
-			throw new PlanChanged($this->plans->plan($userId, $found, $request, true));
+		$found = $locator->locate($userId, (int)$arguments['message_id']);
+		if (!PlanState::matches($plans->state($userId, $found, $request), $arguments)) {
+			throw new PlanChanged($plans->plan($userId, $found, $request, true));
 		}
-		$eventClass = $this->services->flagEventClass($userId);
-		$result = $this->store->apply($userId, $found['account'], $found['mailbox'], $found['message'], $request);
+		$eventClass = $services->flagEventClass($userId);
+		$result = $store->apply($userId, $found['account'], $found['mailbox'], $found['message'], $request);
 		$notes = [];
 		foreach ($result['changed'] as $flag => $set) {
 			try {
-				$this->events->dispatch($eventClass, $found['account'], $found['mailbox'], $found['message'], $flag, $set);
+				$events->dispatch($eventClass, $found['account'], $found['mailbox'], $found['message'], $flag, $set);
 			} catch (\Throwable) {
 				// The server already holds the change; the Mail app catches its cache up at its next synchronization.
 				$notes = [MailFlagMessages::cacheBehind()];

@@ -198,7 +198,7 @@ final class GrantPolicyGroupsTest extends TestCase {
 	public function testAnAbandonedWriterContextFailsEveryReadClosed(): void {
 		$this->alice(['eligible' => '1', 'connected' => '1'], '1');
 		$writer = InMemoryConfig::writer($this->config);
-		(new \ReflectionProperty($writer, 'usable'))->setValue($writer, false);
+		(new \ReflectionProperty($writer, 'context'))->getValue($writer)->usable = false;
 		foreach ([fn () => $this->policy->globalEnabled(), fn () => $this->policy->connected('alice'),
 			fn () => $this->policy->canConnect('alice'), fn () => $this->policy->granted('alice', 'files', 'read'),
 			fn () => $this->policy->flaggedUsers(GrantPolicy::CONNECTED_KEY)] as $read) {

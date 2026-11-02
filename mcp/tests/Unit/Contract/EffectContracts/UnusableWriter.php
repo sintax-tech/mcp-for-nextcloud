@@ -28,12 +28,12 @@ final class UnusableWriter {
 	 * @return T what the request returned
 	 */
 	public static function during(PolicyWriter $writer, \Closure $request): mixed {
-		$usable = new \ReflectionProperty(PolicyWriter::class, 'usable');
-		$usable->setValue($writer, false);
+		$context = (new \ReflectionProperty(PolicyWriter::class, 'context'))->getValue($writer);
+		$context->usable = false;
 		try {
 			return $request();
 		} finally {
-			$usable->setValue($writer, true);
+			$context->usable = true;
 		}
 	}
 }

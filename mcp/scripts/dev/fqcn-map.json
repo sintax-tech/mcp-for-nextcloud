@@ -2,6 +2,13 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Access/Policy/Transactions/PolicyAssembly.php","fqcn":"OCA\\Mcp\\Access\\Policy\\Transactions\\PolicyAssembly","target":"stays","owner":"Access","ticket":null},
+		{"path":"lib/Access/Policy/Transactions/PolicyAttempt.php","fqcn":"OCA\\Mcp\\Access\\Policy\\Transactions\\PolicyAttempt","target":"stays","owner":"Access","ticket":null},
+		{"path":"lib/Access/Policy/Transactions/PolicyContext.php","fqcn":"OCA\\Mcp\\Access\\Policy\\Transactions\\PolicyContext","target":"stays","owner":"Access","ticket":null},
+		{"path":"lib/Access/Policy/Transactions/PolicyExecution.php","fqcn":"OCA\\Mcp\\Access\\Policy\\Transactions\\PolicyExecution","target":"stays","owner":"Access","ticket":null},
+		{"path":"lib/Access/Policy/Transactions/PolicyExecutionContract.php","fqcn":"OCA\\Mcp\\Access\\Policy\\Transactions\\PolicyExecutionContract","target":"stays","owner":"Access","ticket":null},
+		{"path":"lib/Access/Policy/Transactions/PolicyTransaction.php","fqcn":"OCA\\Mcp\\Access\\Policy\\Transactions\\PolicyTransaction","target":"stays","owner":"Access","ticket":null},
+		{"path":"lib/Access/Policy/Transactions/RetryPolicy.php","fqcn":"OCA\\Mcp\\Access\\Policy\\Transactions\\RetryPolicy","target":"stays","owner":"Access","ticket":null},
 		{"path":"lib/Platform/Sharing/TalkShareIds.php","fqcn":"OCA\\Mcp\\Platform\\Sharing\\TalkShareIds","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/Platform/FileAccess/WriteVisibility.php","fqcn":"OCA\\Mcp\\Platform\\FileAccess\\WriteVisibility","target":"stays","owner":"Platform","ticket":null},
 		{"path":"lib/OAuth/Storage/TokenLifetime.php","fqcn":"OCA\\Mcp\\OAuth\\Storage\\TokenLifetime","target":"stays","owner":"OAuth","ticket":null},

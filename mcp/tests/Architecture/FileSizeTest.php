@@ -52,7 +52,7 @@ final class FileSizeTest extends ArchitectureCase {
 		}
 	}
 	public function testCompletedPolicyWriterStepLowersTheEffectiveCeiling(): void {
-		$tickets = new TicketState(self::tickets()->known, [...self::tickets()->completed, 'RE-06']);
+		$tickets = new TicketState(self::tickets()->known, array_values(array_unique([...self::tickets()->completed, 'RE-06'])));
 		$files = self::tree()->files; $path = self::tree()->present('OCA\\Mcp\\Service\\Policy\\PolicyWriter');
 		$files[$path] = str_repeat("// x\n", 1300);
 		self::assertSame([], $this->problems(files: $files, tickets: $tickets));

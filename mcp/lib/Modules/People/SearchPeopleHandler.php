@@ -27,8 +27,9 @@ final class SearchPeopleHandler {
 	public const MIN_TERM = 2;
 	/** Longest accepted search term, in characters. */
 	public const MAX_TERM = 100;
-	/** Default and maximum number of accounts returned. */
+	/** Number of accounts returned when the caller gives no limit. */
 	public const DEFAULT_LIMIT = 10;
+	/** Largest number of accounts a caller may ask for. */
 	public const MAX_LIMIT = 25;
 
 	/** Value of the `type` field of an account row. */

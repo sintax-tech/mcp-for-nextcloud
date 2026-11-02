@@ -140,7 +140,7 @@ final class ConsentHttpTest extends OAuthAccountTestCase {
 			$replay = $this->browse('POST', $url, $post);
 			$this->assertStringContainsString('The authorization request expired.', $replay['body']);
 		} finally {
-			curl_close($this->browser);
+			unset($this->browser);
 			$save($saved);
 		}
 	}

@@ -59,33 +59,7 @@ final class MailSendTools {
 	 * @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}>
 	 */
 	public static function definitions(): array {
-		$recipients = static fn (string $what): array => [
-			'type' => 'array',
-			'maxItems' => MailDraftRequest::MAX_RECIPIENTS,
-			'items' => ['type' => 'string', 'minLength' => 3, 'maxLength' => 254],
-			'description' => $what . ': plain addresses such as name@example.com, without display names; omit for none.',
-		];
-		return [[
-			'name' => SendMessageHandler::TOOL,
-			'description' => MailSendMessages::TOOL_SEND_MESSAGE,
-			'module' => MailModule::MODULE,
-			'operation' => self::OPERATION,
-			'app' => MailServices::APP_ID,
-			'inputSchema' => [
-				'type' => 'object',
-				'properties' => [
-					'account_id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'Id of the account to send from, from mail_list_accounts.'],
-					'to' => $recipients('Recipients'),
-					'cc' => $recipients('Copy recipients'),
-					'bcc' => $recipients('Blind copy recipients, given to the SMTP server only, never in the headers it receives'),
-					'subject' => ['type' => 'string', 'maxLength' => MailDraftRequest::MAX_SUBJECT, 'description' => 'Subject, one line.'],
-					'body' => ['type' => 'string', 'maxLength' => MailDraftRequest::MAX_BODY, 'description' => 'Text of the message, plain text.'],
-					PlanState::ARGUMENT => PlanState::property(),
-				],
-				'required' => ['account_id'],
-				'additionalProperties' => false,
-			],
-		]];
+		return [\OCA\Mcp\Modules\Mail\Tools\SendMessage::definition()->toArray()];
 	}
 
 	/**

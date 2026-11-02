@@ -55,6 +55,21 @@ final class MailCharacterizationTest extends TestCase {
 		$report['folder_success'] = (new \OCA\Mcp\Modules\Mail\Reading\ListMailboxesHandler(new \OCA\Mcp\Modules\Mail\Integration\MailGateway($mailboxes), FakeMailLinks::create($this)))->handle(['account_id' => 1], 'alice');
 		$report['definitions'] = array_map(static function (array $definition): array { unset($definition['requires']); ksort($definition); return $definition; }, $module->definitions());
 		$report['guide'] = $module->guideNotes();
+		// Observe the real registry too: the legacy version gate and the catalog probe both allow PEEK.
+		$policy = InMemoryConfig::policy((new InMemoryConfig())->mock($this), new InMemoryOAuthStore());
+		foreach (['read', 'messages', 'attachments', 'flags', 'move', 'draft', 'send'] as $grant) { $policy->setGrant('alice', 'mail', $grant, true); }
+		$apps = $this->createStub(\OCP\App\IAppManager::class);
+		$apps->method('getAppVersion')->willReturn('5.12.5');
+		$apps->method('isEnabledForUser')->willReturn(true);
+		$users = $this->createStub(\OCP\IUserManager::class);
+		$users->method('get')->willReturn($this->createStub(\OCP\IUser::class));
+		$capabilities = class_exists(MailTestModule::class) ? MailTestModule::capabilities($apps) : null;
+		$registry = new \OCA\Mcp\Mcp\Tools\ToolRegistry([$module], $policy, $apps, $users, new \Psr\Log\NullLogger(), null, $capabilities);
+		$report['peek_enabled_tools'] = array_values(array_filter($registry->list('alice'), static fn (array $tool): bool => str_starts_with($tool['name'], 'mail_')));
+		self::assertSame(array_column($report['definitions'], 'name'), array_column($report['peek_enabled_tools'], 'name'));
+		self::assertSame('mail_read_attachment', $report['peek_enabled_tools'][6]['name']);
+		self::assertSame('mail_set_flags', $report['peek_enabled_tools'][7]['name']);
+
 		foreach ($report['write'] as $write) {
 			self::assertSame([], $write['preview']['outbox']); self::assertSame([], $write['preview']['drafts']); self::assertSame([], $write['preview']['moved']);
 			self::assertArrayNotHasKey('exception', $write['execute']);

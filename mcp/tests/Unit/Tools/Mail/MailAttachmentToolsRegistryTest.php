@@ -140,6 +140,6 @@ final class MailAttachmentToolsRegistryTest extends TestCase {
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$app = (new FakeMailMessageApp())->withAccount(1, 'alice', 'Work', 'alice@example.com');
 		$module = MailMessageToolsRegistryTest::module($this, $app, $version);
-		return [new ToolRegistry([$module], $policy, $apps, $users, $this->createMock(LoggerInterface::class)), $app];
+		return [new ToolRegistry([$module], $policy, $apps, $users, $this->createMock(LoggerInterface::class), null, MailTestModule::capabilities($apps)), $app];
 	}
 }

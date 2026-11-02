@@ -63,50 +63,7 @@ final class MailMessageTools {
 	 * @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, grantAnyOf:list<string>, app:string}>
 	 */
 	public static function definitions(): array {
-		$limit = ['type' => 'integer', 'minimum' => 1, 'maximum' => ListMessagesHandler::MAX_LIMIT, 'default' => ListMessagesHandler::DEFAULT_LIMIT,
-			'description' => 'Messages per page (default 25, at most 100). A page also takes every message of the date it ends on, so it can be longer.'];
-		$cursor = ['type' => 'string', 'minLength' => 1, 'maxLength' => MailCursor::MAX_LENGTH,
-			'description' => 'nextCursor of the previous page, with the same folder and filters; omit for the first page.'];
-		$texts = static fn (string $what): array => ['type' => 'array', 'maxItems' => MailSearchCriteria::MAX_ADDRESSES,
-			'items' => ['type' => 'string', 'minLength' => 1, 'maxLength' => MailSearchCriteria::MAX_TEXT],
-			'description' => "Fragments of the $what name or address: a message matches when any of them matches (as the Mail app's own search). Different fields must all match."];
-		return [
-			self::definition(ListMessagesHandler::TOOL, MailMessages::TOOL_LIST_MESSAGES, [
-				'mailbox_id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'Id of the folder, as mail_list_mailboxes returns it.'],
-				'limit' => $limit,
-				'cursor' => $cursor,
-			], ['mailbox_id']),
-			self::definition(SearchMessagesHandler::TOOL, MailMessages::TOOL_SEARCH_MESSAGES, [
-				'account_id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'Only this account (mail_list_accounts); omit for all of them.'],
-				'mailbox_id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'Only this folder (mail_list_mailboxes); omit for every folder.'],
-				'from' => $texts('sender'),
-				'to' => $texts('recipient'),
-				'cc' => $texts('copy recipient'),
-				'subject' => ['type' => 'string', 'minLength' => 1, 'maxLength' => MailSearchCriteria::MAX_TEXT, 'description' => 'Part of the subject.'],
-				'body' => ['type' => 'string', 'minLength' => 1, 'maxLength' => MailSearchCriteria::MAX_TEXT,
-					'description' => 'Text of the message, searched on the mail server (one search per folder, at most '
-						. MailMessageScope::MAX_BODY_FOLDERS . ' folders). With subject as well, a message matching either is returned.'],
-				'since' => ['type' => 'string', 'minLength' => 10, 'maxLength' => 25,
-					'description' => 'Oldest date, inclusive, as the Mail app stores it (when the mail server received the message): YYYY-MM-DD (start of that day in the user\'s time zone) or an ISO 8601 date and time with offset.'],
-				'until' => ['type' => 'string', 'minLength' => 10, 'maxLength' => 25,
-					'description' => 'Newest date, inclusive, as the Mail app stores it (when the mail server received the message): YYYY-MM-DD (end of that day in the user\'s time zone) or an ISO 8601 date and time with offset.'],
-				'unread' => ['type' => 'boolean', 'description' => 'true for unread messages only, false for read ones only.'],
-				'flagged' => ['type' => 'boolean', 'description' => 'true for flagged messages only, false for unflagged ones only.'],
-				'has_attachments' => ['type' => 'boolean', 'description' => 'true for messages the Mail app found attachments in.'],
-				'limit' => $limit,
-				'cursor' => $cursor,
-			], []),
-			self::definition(ReadMessageHandler::TOOL, MailMessages::TOOL_READ_MESSAGE, [
-				'message_id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'Id of the message, from a listing, a search or a thread.'],
-				'max_chars' => ['type' => 'integer', 'minimum' => 1, 'maximum' => MailBodyText::MAX_CHARS, 'default' => ReadMessageHandler::DEFAULT_MAX_CHARS,
-					'description' => 'Most characters of the body returned (default 20000, at most 100000).'],
-			], ['message_id']),
-			self::definition(ReadThreadHandler::TOOL, MailMessages::TOOL_READ_THREAD, [
-				'message_id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'Id of any message of the conversation.'],
-				'limit' => ['type' => 'integer', 'minimum' => 1, 'maximum' => ReadThreadHandler::MAX_LIMIT, 'default' => ReadThreadHandler::DEFAULT_LIMIT,
-					'description' => 'Most messages returned, newest first (default 50, at most 200).'],
-			], ['message_id']),
-		];
+		return [\OCA\Mcp\Modules\Mail\Tools\ListMessages::definition()->toArray(), \OCA\Mcp\Modules\Mail\Tools\SearchMessages::definition()->toArray(), \OCA\Mcp\Modules\Mail\Tools\ReadMessage::definition()->toArray(), \OCA\Mcp\Modules\Mail\Tools\ReadThread::definition()->toArray()];
 	}
 
 	/**
@@ -130,44 +87,14 @@ final class MailMessageTools {
 	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when a message, folder or account is not found or Mail is not available
 	 */
 	public function call(string $name, array $arguments, string $userId): array {
-		$zone = $this->timezones->forUser($userId);
-		$messages = new MailMessageGateway($this->services);
-		$rows = new MailMessageRows($zone, $this->links);
-		$answer = new MailMessageAnswer($rows);
-		$search = new MailMessageSearch($this->services, $messages);
-		$locator = new MailMessageLocator($this->accounts, $messages);
-		$now = time();
+		$work = new MailMessageReading($this->services, $this->accounts, $this->timezones, $this->links);
 		return match ($name) {
-			ListMessagesHandler::TOOL => (new ListMessagesHandler($this->accounts, $messages, $search, $answer, $now))->handle($arguments, $userId),
-			SearchMessagesHandler::TOOL => (new SearchMessagesHandler($this->accounts, $messages, $search, $answer, $zone, $now))->handle($arguments, $userId),
-			ReadMessageHandler::TOOL => (new ReadMessageHandler($locator, new MailBodyReader($this->services), $rows, $answer))->handle($arguments, $userId),
-			ReadThreadHandler::TOOL => (new ReadThreadHandler($locator, $messages, $rows, $answer))->handle($arguments, $userId),
+			ListMessagesHandler::TOOL => $work->listMessages($arguments, $userId),
+			SearchMessagesHandler::TOOL => $work->searchMessages($arguments, $userId),
+			ReadMessageHandler::TOOL => $work->readMessage($arguments, $userId),
+			ReadThreadHandler::TOOL => $work->readThread($arguments, $userId),
 			default => throw new InvalidArgumentException('Unknown tool'),
 		};
 	}
 
-	/**
-	 * One tool definition with the module, the read operation, the messages grant and the app.
-	 *
-	 * @param string $name tool name
-	 * @param string $description description in tools/list
-	 * @param array<string, mixed> $properties input properties
-	 * @param list<string> $required required properties
-	 * @return array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, grantAnyOf:list<string>, app:string}
-	 */
-	private static function definition(string $name, string $description, array $properties, array $required): array {
-		$schema = ['type' => 'object', 'properties' => $properties, 'additionalProperties' => false];
-		if ($required !== []) {
-			$schema['required'] = $required;
-		}
-		return [
-			'name' => $name,
-			'description' => $description,
-			'module' => MailModule::MODULE,
-			'operation' => 'read',
-			'grantAnyOf' => [self::OPERATION],
-			'app' => MailServices::APP_ID,
-			'inputSchema' => $schema,
-		];
-	}
 }

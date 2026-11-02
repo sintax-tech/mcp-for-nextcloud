@@ -67,24 +67,7 @@ final class MailFlagTools {
 	 * @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}>
 	 */
 	public static function definitions(): array {
-		return [[
-			'name' => SetFlagsHandler::TOOL,
-			'description' => MailFlagMessages::TOOL_SET_FLAGS,
-			'module' => MailModule::MODULE,
-			'operation' => self::OPERATION,
-			'app' => MailServices::APP_ID,
-			'inputSchema' => [
-				'type' => 'object',
-				'properties' => [
-					'message_id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'Id of the message, from a listing, a search or a thread.'],
-					'seen' => ['type' => 'boolean', 'description' => 'true to mark the message read, false to mark it unread; omit to leave it.'],
-					'flagged' => ['type' => 'boolean', 'description' => 'true to flag the message, false to remove the flag; omit to leave it.'],
-					PlanState::ARGUMENT => PlanState::property(),
-				],
-				'required' => ['message_id'],
-				'additionalProperties' => false,
-			],
-		]];
+		return [\OCA\Mcp\Modules\Mail\Tools\SetFlags::definition()->toArray()];
 	}
 
 	/**

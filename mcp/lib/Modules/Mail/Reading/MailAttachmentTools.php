@@ -62,29 +62,8 @@ final class MailAttachmentTools {
 	 * @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, grantAnyOf:list<string>, app:string}>
 	 */
 	public function definitions(): array {
-		if (!MailAttachmentSupport::available($this->apps)) {
-			return [];
-		}
-		return [[
-			'name' => ReadAttachmentHandler::TOOL,
-			'description' => MailAttachmentMessages::TOOL_READ_ATTACHMENT,
-			'module' => MailModule::MODULE,
-			'operation' => 'read',
-			'grantAnyOf' => [self::OPERATION],
-			'app' => MailServices::APP_ID,
-			'inputSchema' => [
-				'type' => 'object',
-				'properties' => [
-					'message_id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'Id of the message, from a listing, a search or a thread.'],
-					'attachment_id' => ['type' => 'string', 'minLength' => 1, 'maxLength' => MailAttachmentPreflight::MAX_ID_LENGTH,
-						'description' => 'Id of the attachment, as the attachments of mail_read_message list it: a MIME part number such as "2" or "2.1".'],
-					'max_chars' => ['type' => 'integer', 'minimum' => 1, 'maximum' => MailBodyText::MAX_CHARS, 'default' => ReadAttachmentHandler::DEFAULT_MAX_CHARS,
-						'description' => 'Most characters of the text returned (default 20000, at most 100000).'],
-				],
-				'required' => ['message_id', 'attachment_id'],
-				'additionalProperties' => false,
-			],
-		]];
+		if (!MailAttachmentSupport::available($this->apps)) { return []; }
+		return [\OCA\Mcp\Modules\Mail\Tools\ReadAttachment::definition()->toArray()];
 	}
 
 	/**

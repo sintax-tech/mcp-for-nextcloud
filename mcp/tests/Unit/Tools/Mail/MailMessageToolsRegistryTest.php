@@ -63,12 +63,7 @@ final class MailMessageToolsRegistryTest extends TestCase {
 		$apps->method('getAppVersion')->willReturn($mailVersion);
 		$links = FakeMailLinks::create($test);
 		$policy ??= InMemoryConfig::policy((new InMemoryConfig())->mock($test), new InMemoryOAuthStore());
-		$flags = new MailFlagTools($app, new MailGateway($app), new UserTimezone($config), $links, new PlanState($config), $policy, $stub(IEventDispatcher::class));
-		return new MailModule(new MailGateway($app), new MailMessageTools($app, new MailGateway($app), new UserTimezone($config), $links),
-			new MailAttachmentTools($app, new MailGateway($app), $apps, $stub(ITempManager::class)), $links, $flags,
-			new MailMoveTools($app, new MailGateway($app), new UserTimezone($config), $links, new PlanState($config), $policy, $stub(IEventDispatcher::class)),
-			new MailDraftTools($app, new MailGateway($app), $links, new PlanState($config), $policy, $apps),
-			new MailSendTools($app, new MailGateway($app), new PlanState($config), $policy, $apps));
+		return MailTestModule::build($app, new UserTimezone($config), $links, new PlanState($config), $policy, $apps, $stub(ITempManager::class), $stub(IEventDispatcher::class));
 	}
 
 	/**

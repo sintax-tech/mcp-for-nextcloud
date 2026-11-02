@@ -66,23 +66,7 @@ final class MailMoveTools {
 	 * @return list<array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}>
 	 */
 	public static function definitions(): array {
-		return [[
-			'name' => MoveMessageHandler::TOOL,
-			'description' => MailMoveMessages::TOOL_MOVE_MESSAGE,
-			'module' => MailModule::MODULE,
-			'operation' => self::OPERATION,
-			'app' => MailServices::APP_ID,
-			'inputSchema' => [
-				'type' => 'object',
-				'properties' => [
-					'message_id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'Id of the message, from a listing, a search or a thread.'],
-					'mailbox_id' => ['type' => 'integer', 'minimum' => 1, 'description' => 'Id of the folder to move it to, from mail_list_mailboxes, of the same account.'],
-					PlanState::ARGUMENT => PlanState::property(),
-				],
-				'required' => ['message_id', 'mailbox_id'],
-				'additionalProperties' => false,
-			],
-		]];
+		return [\OCA\Mcp\Modules\Mail\Tools\MoveMessage::definition()->toArray()];
 	}
 
 	/**

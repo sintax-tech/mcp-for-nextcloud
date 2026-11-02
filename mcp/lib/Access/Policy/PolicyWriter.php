@@ -8,6 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Access\Policy;
 use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use Closure;
+use OCA\Mcp\Access\Grants\Commands\{CellWriter, GlobalCommands, GlobalCommandsContract, GrantCommands, GrantCommandsContract, OverrideCommands, OverrideCommandsContract, UserAdmission};
+use OCA\Mcp\Access\Policy\Credentials\{CauseCommands, CauseCommandsContract, LocalCredentialEffects, LocalCredentialEffectsContract};
 use OCA\Mcp\Access\Policy\Transactions\{PolicyAssembly, PolicyContext, PolicyExecution, PolicyExecutionContract};
 use OCA\Mcp\Db\AuthUsersMapper;
 use OCA\Mcp\Db\GroupGrantsMapper;
@@ -27,7 +29,6 @@ use OCP\IAppConfig;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IUserManager;
-use Throwable;
 
 /**
  * Owns the top-level transaction. Trusted app commands prepare remote observations outside the mutex and
@@ -40,25 +41,35 @@ use Throwable;
  * global auth epoch. Each revocation writes a cleanup event in the same transaction; the physical delete runs after
  * the commit (PolicyEventProcessor), so it never removes a credential issued after the cut.
  */
-class PolicyWriter implements PolicyExecutionContract {
+class PolicyWriter implements PolicyExecutionContract, GlobalCommandsContract, GrantCommandsContract, OverrideCommandsContract, LocalCredentialEffectsContract, CauseCommandsContract {
 	/** Seconds an administrator may undo a command through its receipt (contracts §2.3). */
 	public const RECEIPT_TTL = 600;
 	/** Most users one administrative command may touch. */
 	public const MAX_UIDS = PolicyExecution::MAX_UIDS;
 	/** Most distinct cells one administrative command may write. */
-	public const MAX_CELLS = 2500;
+	public const MAX_CELLS = GrantCommands::MAX_CELLS;
 	/** Seconds a group preview may be saved (contracts §2.3). */
 	public const PREVIEW_TTL = 120;
-
-	/** What a user inherits once an individual Allow of eligibility is removed (inheritances()). */
-	private const INHERITED_ELIGIBLE = 'eligible';
-	private const INHERITED_LOST = 'lost';
-	private const INHERITED_UNKNOWN = 'unknown';
 
 	/** One context shared with the transaction and the remaining local commands. */
 	private PolicyContext $context;
 	/** Execution entry points sharing this writer's official services. */
 	private PolicyExecution $execution;
+
+	/** Shared LocalCredentialEffects participant. */
+	private LocalCredentialEffects $effects;
+	/** Shared CauseCommands participant. */
+	private CauseCommands $causes;
+	/** Shared CellWriter participant. */
+	private CellWriter $cells;
+	/** Shared UserAdmission participant. */
+	private UserAdmission $admission;
+	/** Shared GlobalCommands participant. */
+	private GlobalCommands $globalCommands;
+	/** Shared GrantCommands participant. */
+	private GrantCommands $grantCommands;
+	/** Shared OverrideCommands participant. */
+	private OverrideCommands $overrideCommands;
 
 	/**
 	 * Keeps the historical signature and assembles one execution over one shared context.
@@ -102,6 +113,13 @@ class PolicyWriter implements PolicyExecutionContract {
 	) {
 		$this->context = new PolicyContext();
 		$this->execution = PolicyAssembly::execution($db, $state, $events, $userConfig, $appConfig, $processor, $this->context);
+		$this->effects = new LocalCredentialEffects($this->context, $life, $authUsers, $state);
+		$this->causes = new CauseCommands($this->execution, $rechecks, $this->effects, $this->context);
+		$this->admission = new UserAdmission($users);
+		$this->cells = new CellWriter($this->execution, $this->admission, $config, $appConfig, $this->effects);
+		$this->globalCommands = new GlobalCommands($this->execution, $this->cells);
+		$this->grantCommands = new GrantCommands($this->execution, $this->cells, $this->admission);
+		$this->overrideCommands = new OverrideCommands($this->cells);
 	}
 
 	/** {@inheritDoc} */
@@ -145,60 +163,21 @@ class PolicyWriter implements PolicyExecutionContract {
 		return $this->runInternal([$uid], function (array $observed) use ($uid, $prepare, $classify): array {
 			$causes = $this->rechecks->causes($uid);
 			$before = ['generations' => $this->authUsers->generations($uid), 'causes' => $causes];
-			$classified = $classify === null || $causes === [] ? [] : self::classified($causes, $classify($uid, $causes));
+			$classified = $classify === null || $causes === [] ? [] : CauseCommands::classified($causes, $classify($uid, $causes));
 			return ['before' => $before, 'classified' => $classified, 'snapshot' => $prepare($observed)];
 		}, function (array $prepared, array $current) use ($uid, $apply): bool {
 			if ($this->authUsers->generations($uid) !== $prepared['before']['generations']
 				|| $this->rechecks->causes($uid) !== $prepared['before']['causes']) {
 				throw new SnapshotInvalidated();
 			}
-			$consumed = $this->consumeLocal($uid, $prepared['classified']) > 0;
+			$consumed = $this->causes->consumeLocal($uid, $prepared['classified']) > 0;
 			return $apply($prepared['snapshot'], $current, $this->authUsers->generations($uid)) || $consumed;
 		});
 	}
 
-	/**
-	 * The cause protocol of contracts §3.3.1 for one user, outside issuance: an After event, a deferred After, the
-	 * preflight of a request and the reconciler. The whole cause set R0 is read before the external phase; the
-	 * selected causes are classified there; under the mutex the set must still be R0 (else the attempt is replayed,
-	 * at most twice), and each selected cause is consumed with its exact gen, after the cut its classification
-	 * demands, in one transaction that advances the revision. Causes not selected are compared but never touched.
-	 *
-	 * @param string $uid owner of the causes
-	 * @param Closure(string, list<array>): array<string, bool> $classify CauseClassifier::classify()
-	 * @param (Closure(array): bool)|null $select keeps a cause row of R0; null processes all of them
-	 * @return int causes consumed by this call; 0 also when nothing was selected (no transaction is opened then)
-	 * @throws \InvalidArgumentException for an invalid user id
-	 * @throws PolicyUnavailable when the storage fails, the set keeps changing, a cause cannot be classified, or the
-	 *     outcome is uncertain
-	 */
+	/** {@inheritDoc} */
 	public function processCauses(string $uid, Closure $classify, ?Closure $select = null): int {
-		if (!PolicyEventPayload::validUid($uid)) {
-			throw new \InvalidArgumentException('Invalid user');
-		}
-		$choose = static fn (array $causes): array => $select === null ? $causes : array_values(array_filter($causes, $select));
-		try {
-			if ($choose($this->rechecks->causes($uid)) === []) {
-				return 0;
-			}
-		} catch (PolicyUnavailable $e) {
-			throw $e;
-		} catch (Throwable $e) {
-			throw new PolicyUnavailable('Cannot read recheck causes', previous: $e);
-		}
-		$consumed = 0;
-		$this->runInternal([$uid], function () use ($uid, $classify, $choose): array {
-			$causes = $this->rechecks->causes($uid);
-			$chosen = $choose($causes);
-			return ['causes' => $causes, 'classified' => self::classified($chosen, $chosen === [] ? [] : $classify($uid, $chosen))];
-		}, function (array $prepared) use ($uid, &$consumed): bool {
-			if ($this->rechecks->causes($uid) !== $prepared['causes']) {
-				throw new SnapshotInvalidated();
-			}
-			$consumed = $this->consumeLocal($uid, $prepared['classified']);
-			return $consumed > 0;
-		});
-		return $consumed;
+		return $this->causes->processCauses($uid, $classify, $select);
 	}
 
 	/**
@@ -226,7 +205,7 @@ class PolicyWriter implements PolicyExecutionContract {
 	public function consent(string $uid, Closure $admit, Closure $insertCode, ?Closure $classify = null): bool {
 		$allowed = false;
 		$this->runCredential($uid, function () use ($uid, $admit): ?array {
-			$this->assertUser($uid);
+			$this->admission->assertUser($uid);
 			return $admit();
 		}, function (?array $lifecycles, array $current) use ($uid, $insertCode, &$allowed): bool {
 			$individual = $this->config->getUserValueForUsers(GrantPolicy::APP, GrantPolicy::ELIGIBLE_KEY, [$uid])[$uid] ?? null;
@@ -238,51 +217,16 @@ class PolicyWriter implements PolicyExecutionContract {
 				return false;
 			}
 			$this->holdLifecycles($lifecycles);
-			$changed = $this->writeCell($uid, GrantPolicy::CONNECTED_KEY, '1') !== null;
+			$changed = $this->cells->writeCell($uid, GrantPolicy::CONNECTED_KEY, '1') !== null;
 			$insertCode($this->authUsers->issue($uid), $current['auth_epoch']);
 			return $changed;
 		}, $classify);
 		return $allowed;
 	}
 
-	/**
-	 * Under the mutex of a command whose decision relied on group lifecycles read in its external phase: an issuance
-	 * a group admitted (consent, exchange, refresh), or a reset that leaves a user eligible through a group. Each of
-	 * them must still be active, and this commit renews its gen by a compare-and-set, so the command and a deletion
-	 * of the group are ordered (F1 of the second reading of 1.1.0), without the pre-event ever taking the mutex:
-	 * - a deletion's Before that read the gen before this commit loses its pending_delete transition and judges the
-	 *   holders again, now seeing what this command issued or left (GroupLifecycleListener::markPending());
-	 * - a pending_delete committed after the read below makes the renewal match nothing, and the attempt is replayed,
-	 *   so its external phase reads pending_delete and refuses; one waiting on this row's lock matches nothing once
-	 *   this transaction commits.
-	 *
-	 * A gen other than the one the external phase read is accepted while the row is still active: the revision did
-	 * not move between the phases (run() checks it), and the only lifecycle change that keeps a group active without
-	 * moving the revision is this renewal by another command, so the policy the decision relied on still holds and
-	 * concurrent issuances admitted by one group do not replay each other.
-	 *
-	 * @param list<array{groupId:string, gen:string}> $lifecycles what the external phase read
-	 * @throws SnapshotInvalidated when one of them is no longer active, or moved before its renewal
-	 * @throws \LogicException outside the local phase of an attempt
-	 * @throws \OCP\DB\Exception when a statement fails
-	 */
+	/** {@inheritDoc} */
 	public function holdLifecycles(array $lifecycles): void {
-		$this->localPhase();
-		if ($lifecycles === []) {
-			return;
-		}
-		$groupIds = array_values(array_unique(array_column($lifecycles, 'groupId')));
-		$current = [];
-		foreach ($this->life->forGroups($groupIds) as $row) {
-			$current[$row['groupId']] = $row;
-		}
-		foreach ($groupIds as $gid) {
-			$row = $current[$gid] ?? null;
-			if ($row === null || $row['state'] !== GroupLifeMapper::ACTIVE
-				|| !$this->life->transition($gid, $row['gen'], GroupLifeMapper::ACTIVE, bin2hex(random_bytes(16)))) {
-				throw new SnapshotInvalidated();
-			}
-		}
+		$this->effects->holdLifecycles($lifecycles);
 	}
 
 	/**
@@ -299,7 +243,7 @@ class PolicyWriter implements PolicyExecutionContract {
 			throw new \InvalidArgumentException('Invalid user');
 		}
 		$this->runInternal([$uid], fn () => null, function () use ($uid): bool {
-			$this->revokeUserLocal($uid);
+			$this->effects->revokeUserLocal($uid);
 			return false;
 		});
 	}
@@ -320,7 +264,7 @@ class PolicyWriter implements PolicyExecutionContract {
 		}
 		DecimalCounter::validate($observed, DecimalCounter::MAX);
 		$this->runInternal([$uid], fn () => null, function () use ($uid, $observed): bool {
-			$this->revokeUserLocal($uid, $observed);
+			$this->effects->revokeUserLocal($uid, $observed);
 			return false;
 		});
 	}
@@ -330,120 +274,34 @@ class PolicyWriter implements PolicyExecutionContract {
 		return $this->execution->underMutex($local);
 	}
 
-	/**
-	 * Turns the service switch on or off. Every explicit disable moves the global auth epoch, also when the stored
-	 * value was already off (set outside the app, for instance): every credential issued so far stays invalid, even
-	 * after the service is switched on again. Nothing valid can exist while the service is off, so this is safe.
-	 *
-	 * @param bool $enabled new state of the global service switch
-	 * @throws PolicyUnavailable when the policy storage fails, or the outcome is uncertain ($uncertain = true)
-	 */
+	/** {@inheritDoc} */
 	public function setGlobalEnabled(bool $enabled): void {
-		$this->change(null, GrantPolicy::SERVICE_KEY, $enabled ? '1' : '0');
+		$this->globalCommands->setGlobalEnabled($enabled);
 	}
 
-	/**
-	 * @param string $uid Nextcloud user id
-	 * @param bool $enabled new eligibility; false also revokes the user's connections
-	 * @throws \InvalidArgumentException for a user the server does not know
-	 * @throws PolicyUnavailable when the policy storage fails, or the outcome is uncertain ($uncertain = true)
-	 */
+	/** {@inheritDoc} */
 	public function setEligible(string $uid, bool $enabled): void {
-		$this->change($uid, GrantPolicy::ELIGIBLE_KEY, $enabled ? '1' : '0');
+		$this->grantCommands->setEligible($uid, $enabled);
 	}
 
-	/**
-	 * @param string $uid Nextcloud user id
-	 * @param bool $enabled new personal connection state; false (disconnect) also revokes every credential of the
-	 *     user, repeated or not
-	 * @throws \InvalidArgumentException for a user the server does not know
-	 * @throws PolicyUnavailable when the policy storage fails, or the outcome is uncertain ($uncertain = true)
-	 */
+	/** {@inheritDoc} */
 	public function setConnected(string $uid, bool $enabled): void {
-		$this->change($uid, GrantPolicy::CONNECTED_KEY, $enabled ? '1' : '0');
+		$this->grantCommands->setConnected($uid, $enabled);
 	}
 
-	/**
-	 * Stores an explicit individual allow or deny, which differs from an absent override.
-	 *
-	 * @param string $uid Nextcloud user id
-	 * @param string $module catalog module
-	 * @param string $operation catalog operation of that module
-	 * @param bool $enabled explicit allow (true) or deny (false)
-	 * @throws \InvalidArgumentException for an unknown user, module or operation
-	 * @throws PolicyUnavailable when the policy storage fails, or the outcome is uncertain ($uncertain = true)
-	 */
+	/** {@inheritDoc} */
 	public function setGrant(string $uid, string $module, string $operation, bool $enabled): void {
-		if (!GrantPolicy::inCatalog($module, $operation)) {
-			throw new \InvalidArgumentException('Unknown module or operation');
-		}
-		$this->change($uid, 'grant_' . $module . '_' . $operation, $enabled ? '1' : '0');
+		$this->grantCommands->setGrant($uid, $module, $operation, $enabled);
 	}
 
-	/**
-	 * Removes an individual override through the same transaction; absence remains absence.
-	 *
-	 * @param string $uid Nextcloud user id
-	 * @param string $module catalog module
-	 * @param string $operation catalog operation of that module
-	 * @throws \InvalidArgumentException for an unknown user, module or operation
-	 * @throws PolicyUnavailable when the policy storage fails, or the outcome is uncertain ($uncertain = true)
-	 */
+	/** {@inheritDoc} */
 	public function resetOverride(string $uid, string $module, string $operation): void {
-		if (!GrantPolicy::inCatalog($module, $operation)) {
-			throw new \InvalidArgumentException('Unknown module or operation');
-		}
-		$this->change($uid, 'grant_' . $module . '_' . $operation, null);
+		$this->overrideCommands->resetOverride($uid, $module, $operation);
 	}
 
-	/**
-	 * One administrative command over many user cells, as one transaction: every cell is written or none is. Cells
-	 * whose raw value is already the requested one are no-ops; a command where every cell is a no-op commits nothing
-	 * and leaves the revision as it was. Otherwise it commits one receipt (undoable for RECEIPT_TTL seconds by the
-	 * same administrator) and one audit event, in the same transaction.
-	 *
-	 * @param string $expectedRevision the revision the administrator's page was built from
-	 * @param string $actor uid of the administrator who sent the command
-	 * @param string $action PolicyEventPayload::GRANT_ACTIONS member naming the route
-	 * @param list<array{uid:string, key:string, value:?string}> $cells key from PolicyEventPayload::userKey(); value
-	 *     '1' (allow), '0' (deny) or null (inherit: remove the override). An exact duplicate is dropped; the same cell
-	 *     with two values is refused.
-	 * @param (Closure(string): (list<array{groupId:string, gen:string}>|null))|null $inheritance
-	 *     GrantPolicy::inheritance(), for a cell that removes an individual Allow of eligibility (see writeCell());
-	 *     null cuts on every such removal, as before
-	 * @return array{revision:string, changed:int, receiptId:?string} committed revision, changed cell count, receipt
-	 * @throws \InvalidArgumentException for an invalid revision, cell, unknown user, or more than MAX_UIDS users or
-	 *     MAX_CELLS cells; nothing is written
-	 * @throws PolicyConflict when the expected revision is stale
-	 * @throws PolicyUnavailable when the policy storage fails, the outcome is uncertain ($uncertain = true), or an
-	 *     individual Allow is removed while what the user inherits is unknown (nothing written, nothing cut)
-	 */
+	/** {@inheritDoc} */
 	public function applyCells(string $expectedRevision, string $actor, string $action, array $cells, ?Closure $inheritance = null): array {
-		if (!in_array($action, PolicyEventPayload::GRANT_ACTIONS, true) || !PolicyEventPayload::validUid($actor)) {
-			throw new \InvalidArgumentException('Invalid command');
-		}
-		$cells = self::cells($cells);
-		$uids = array_values(array_unique(array_column($cells, 'uid')));
-		$receiptId = null;
-		$changed = 0;
-		$result = $this->runAdmin($expectedRevision, $uids, function () use ($uids, $cells, $inheritance): array {
-			foreach ($uids as $uid) {
-				$this->assertUser($uid);
-			}
-			return $this->inheritances($cells, $inheritance);
-		}, function (array $inherited, array $current, string $commandId, PolicyOutbox $outbox) use ($cells, $actor, $action, &$receiptId, &$changed): bool {
-			$changes = $this->applyLocal($cells, $inherited);
-			$changed = count($changes);
-			$receiptId = null;
-			if ($changes === []) {
-				return false;
-			}
-			$revision = self::next($current['revision']);
-			$receiptId = $outbox->add(PolicyEventsMapper::KIND_RECEIPT, PolicyEventPayload::receipt($actor, $action, $current['revision'], $revision, $changes));
-			$outbox->add(PolicyEventsMapper::KIND_AUDIT, PolicyEventPayload::audit($actor, $action, $current['revision'], $revision, $receiptId, null, []));
-			return true;
-		});
-		return ['revision' => $result['revision'], 'changed' => $changed, 'receiptId' => $receiptId];
+		return $this->grantCommands->applyCells($expectedRevision, $actor, $action, $cells, $inheritance);
 	}
 
 	/**
@@ -490,9 +348,9 @@ class PolicyWriter implements PolicyExecutionContract {
 					throw new PolicyConflict();
 				}
 			}
-			return $this->inheritances($grantCells, $inheritance);
+			return $this->cells->inheritances($grantCells, $inheritance);
 		}, function (array $inherited, array $current, string $commandId, PolicyOutbox $outbox) use ($grantCells, $scopeCells, $actor, $receiptId, &$changed): bool {
-			$changes = $grantCells === [] ? [] : $this->applyLocal($grantCells, $inherited);
+			$changes = $grantCells === [] ? [] : $this->cells->applyLocal($grantCells, $inherited);
 			$revision = self::next($current['revision']);
 			foreach ($scopeCells as $cell) {
 				$items = PolicyEventPayload::scopeItems($cell['value']);
@@ -528,34 +386,9 @@ class PolicyWriter implements PolicyExecutionContract {
 		return array_values(array_unique(array_column($receipt['changes'], 'uid')));
 	}
 
-	/**
-	 * The service switch from the admin page: same effect as setGlobalEnabled(), behind the expected revision, with
-	 * an audit event when it changes.
-	 *
-	 * @param string $expectedRevision the revision the administrator's page was built from
-	 * @param string $actor uid of the administrator
-	 * @param bool $enabled new state of the global service switch
-	 * @return array{revision:string, changed:bool}
-	 * @throws \InvalidArgumentException for an invalid revision
-	 * @throws PolicyConflict when the expected revision is stale
-	 * @throws PolicyUnavailable when the policy storage fails, or the outcome is uncertain ($uncertain = true)
-	 */
+	/** {@inheritDoc} */
 	public function adminSetGlobalEnabled(string $expectedRevision, string $actor, bool $enabled): array {
-		if (!PolicyEventPayload::validUid($actor)) {
-			throw new \InvalidArgumentException('Invalid command');
-		}
-		$value = $enabled ? '1' : '0';
-		$result = $this->runAdmin($expectedRevision, [], fn () => null,
-			function ($snapshot, array $current, string $commandId, PolicyOutbox $outbox) use ($actor, $value): bool {
-				$change = $this->writeCell(null, GrantPolicy::SERVICE_KEY, $value);
-				if ($change === null) {
-					return false;
-				}
-				$outbox->add(PolicyEventsMapper::KIND_AUDIT, PolicyEventPayload::audit($actor, PolicyEventPayload::ACTION_SERVICE,
-					$current['revision'], self::next($current['revision']), null, null, [$change]));
-				return true;
-			});
-		return ['revision' => $result['revision'], 'changed' => $result['changed']];
+		return $this->globalCommands->adminSetGlobalEnabled($expectedRevision, $actor, $enabled);
 	}
 
 	/**
@@ -676,7 +509,7 @@ class PolicyWriter implements PolicyExecutionContract {
 		}
 		$receiptId = null;
 		$result = $this->runAdmin($expectedRevision, [$uid], function () use ($uid, $module, $items, $resources): void {
-			$this->assertUser($uid);
+			$this->admission->assertUser($uid);
 			$missing = $items === null ? [] : $resources->inaccessible($uid, $module, $items);
 			if ($missing !== []) {
 				usort($missing, DecimalCounter::compare(...));
@@ -791,7 +624,7 @@ class PolicyWriter implements PolicyExecutionContract {
 			}
 			$this->groupGrants->replaceGroup($gid, $grants);
 			foreach ($snapshot['admission']['cuts'] as $uid) {
-				$this->revokeUserLocal($uid);
+				$this->effects->revokeUserLocal($uid);
 			}
 			$outbox->add(PolicyEventsMapper::KIND_AUDIT, PolicyEventPayload::audit($actor, PolicyEventPayload::ACTION_GROUP,
 				$current['revision'], $revision, null, null, [['gid' => $gid, 'key' => PolicyEventPayload::GROUP_KEY,
@@ -983,264 +816,6 @@ class PolicyWriter implements PolicyExecutionContract {
 		$ids = array_map('strval', array_keys($unique));
 		usort($ids, DecimalCounter::compare(...));
 		return $ids;
-	}
-
-	private function change(?string $uid, string $key, ?string $value): void {
-		$uids = $uid === null ? [] : [$uid];
-		$this->runInternal($uids, function () use ($uid): void {
-			if ($uid !== null) {
-				$this->assertUser($uid);
-			}
-		}, fn (): bool => $this->writeCell($uid, $key, $value) !== null);
-	}
-
-	/** @throws \InvalidArgumentException for a user id the server does not know */
-	private function assertUser(string $uid): void {
-		if (!PolicyEventPayload::validUid($uid) || $this->users->get($uid) === null) {
-			throw new \InvalidArgumentException('Unknown user');
-		}
-	}
-
-	/**
-	 * The external phase of a command that may remove an individual Allow of eligibility: what each user of such a cell
-	 * inherits without it. Only cells that set eligibility to absent are read; the raw value before is read under the
-	 * mutex, so a cell that turns out not to remove an Allow ignores its entry. An unknown inheritance is kept, not
-	 * thrown: it refuses the command only if the cell really removes an Allow.
-	 *
-	 * @param list<array{uid:string, key:string, value:?string}> $cells
-	 * @param (Closure(string): (list<array{groupId:string, gen:string}>|null))|null $inheritance
-	 * @return array<string, array{state:string, lifecycles?:list<array{groupId:string, gen:string}>}> by a digest
-	 *     of the uid
-	 */
-	private function inheritances(array $cells, ?Closure $inheritance): array {
-		$inherited = [];
-		if ($inheritance === null) {
-			return $inherited;
-		}
-		foreach ($cells as $cell) {
-			if ($cell['key'] !== GrantPolicy::ELIGIBLE_KEY || $cell['value'] !== null) {
-				continue;
-			}
-			try {
-				$lifecycles = $inheritance($cell['uid']);
-				$inherited[hash('sha256', $cell['uid'])] = $lifecycles === null || $lifecycles === []
-					? ['state' => self::INHERITED_LOST]
-					: ['state' => self::INHERITED_ELIGIBLE, 'lifecycles' => $lifecycles];
-			} catch (PolicyUnavailable) {
-				$inherited[hash('sha256', $cell['uid'])] = ['state' => self::INHERITED_UNKNOWN];
-			}
-		}
-		return $inherited;
-	}
-
-	/**
-	 * Writes user cells under the mutex, reading each key's current raw values for all its users in one batch.
-	 *
-	 * @param list<array{uid:string, key:string, value:?string}> $cells validated, without duplicates
-	 * @param array<string, array{state:string, lifecycles?:list<array{groupId:string, gen:string}>}> $inherited
-	 *     inheritances(), by a digest of the uid
-	 * @return list<array{uid:string, key:string, before:?string, after:?string}> the cells that changed, in order
-	 */
-	private function applyLocal(array $cells, array $inherited = []): array {
-		$byKey = [];
-		foreach ($cells as $cell) {
-			$byKey[$cell['key']][] = $cell['uid'];
-		}
-		$current = [];
-		foreach ($byKey as $key => $uids) {
-			$current[$key] = $this->config->getUserValueForUsers(GrantPolicy::APP, (string)$key, $uids);
-		}
-		$changes = [];
-		foreach ($cells as $cell) {
-			$values = $current[$cell['key']];
-			$before = array_key_exists($cell['uid'], $values) ? (string)$values[$cell['uid']] : null;
-			$change = $this->writeCell($cell['uid'], $cell['key'], $cell['value'], $before,
-				$cell['key'] === GrantPolicy::ELIGIBLE_KEY ? ($inherited[hash('sha256', $cell['uid'])] ?? null) : null);
-			if ($change !== null) {
-				$changes[] = $change;
-			}
-		}
-		return $changes;
-	}
-
-	/**
-	 * Writes one raw value (null removes the key) when it differs from the stored one, and applies the legacy
-	 * revocation scope: switching the service off revokes everyone (global epoch), and a user left without explicit
-	 * eligibility, or disconnecting, is signed out (cut), including on an explicit repeated disable of either.
-	 *
-	 * Removing an individual Allow of eligibility (a reset to inherit, or an undo that restores absence) cuts only when
-	 * the user inherits no eligibility (contracts §3.1: a change that keeps eligibility through another source does
-	 * not cut; §4.1: the reset recalculates inheritance). With $inherited from the external phase: eligible through
-	 * groups keeps the credentials and renews those groups' gens under this mutex (holdLifecycles(), so a deletion
-	 * of one of them sees the user without an individual value), lost cuts, unknown refuses the whole command without
-	 * any write or cut. Without it the removal cuts, as before. An explicit Deny and a disconnect always cut.
-	 *
-	 * @param string|false|null $before the raw value already read in this transaction (null = absent), or false to
-	 *     read it here
-	 * @param array{state:string, lifecycles?:list<array{groupId:string, gen:string}>}|null $inherited what the user
-	 *     inherits without an individual value (inheritances()); null when not prepared
-	 * @return array{uid:?string, key:string, before:?string, after:?string}|null the change, or null for a no-op
-	 * @throws PolicyUnavailable when an individual Allow is removed and the inheritance is unknown
-	 */
-	private function writeCell(?string $uid, string $key, ?string $value, string|false|null $before = false, ?array $inherited = null): ?array {
-		if ($before === false) {
-			// Batch reads preserve presence and legacy MIXED values. Never materialize an inherited default.
-			if ($uid === null) {
-				$before = $this->appConfig->hasKey(GrantPolicy::APP, $key) ? $this->config->getAppValue(GrantPolicy::APP, $key) : null;
-			} else {
-				$values = $this->config->getUserValueForUsers(GrantPolicy::APP, $key, [$uid]);
-				$before = array_key_exists($uid, $values) ? (string)$values[$uid] : null;
-			}
-		}
-		$changed = $before !== $value;
-		$reset = $changed && $uid !== null && $key === GrantPolicy::ELIGIBLE_KEY && $before === '1' && $value === null && $inherited !== null;
-		if ($reset && $inherited['state'] === self::INHERITED_UNKNOWN) {
-			// Before any write: the command rolls back whole, nothing is cut (503).
-			throw new GrantUnknown('Inherited eligibility is unknown');
-		}
-		if ($reset && $inherited['state'] === self::INHERITED_ELIGIBLE) {
-			// Before the write too: a group that left active since the external phase replays the whole attempt.
-			$this->holdLifecycles($inherited['lifecycles'] ?? []);
-		}
-		if ($changed) {
-			if ($uid === null) {
-				$this->config->setAppValue(GrantPolicy::APP, $key, (string)$value);
-			} elseif ($value === null) {
-				$this->config->deleteUserValue($uid, GrantPolicy::APP, $key);
-			} else {
-				$this->config->setUserValue($uid, GrantPolicy::APP, $key, $value);
-			}
-		}
-		if ($key === GrantPolicy::SERVICE_KEY && $value === '0') {
-			// Every explicit disable moves the epoch, as 1.0.8 deleted everything on every disable: an off value
-			// written outside the app must not leave credentials that come back when the service is switched on.
-			$this->revokeAllLocal();
-		} elseif ($reset) {
-			if ($inherited['state'] === self::INHERITED_LOST) {
-				$this->revokeUserLocal($uid);
-			}
-		} elseif ($uid !== null && (($key === GrantPolicy::ELIGIBLE_KEY && ($value === '0' || ($changed && $value !== '1')))
-			|| ($key === GrantPolicy::CONNECTED_KEY && $value === '0'))) {
-			$this->revokeUserLocal($uid);
-		}
-		return $changed ? ['uid' => $uid, 'key' => $key, 'before' => $before, 'after' => $value] : null;
-	}
-
-	/**
-	 * Pairs each selected cause with its classification; a classification that misses a cause is a programming error.
-	 *
-	 * @param list<array{causeKey:string, gen:string}> $causes
-	 * @param array<string, bool> $classification cause_key => cut
-	 * @return list<array{causeKey:string, gen:string, cut:bool}>
-	 */
-	private static function classified(array $causes, array $classification): array {
-		$classified = [];
-		foreach ($causes as $cause) {
-			if (!is_bool($classification[$cause['causeKey']] ?? null)) {
-				throw new \LogicException('Every recheck cause must be classified');
-			}
-			$classified[] = ['causeKey' => $cause['causeKey'], 'gen' => $cause['gen'], 'cut' => $classification[$cause['causeKey']]];
-		}
-		return $classified;
-	}
-
-	/**
-	 * Step 4 of the cause protocol, under the mutex: the cut demanded by any classified cause (at issue_seq read now),
-	 * then the delete of each cause by user, cause and gen. A consumed cause is a policy write (coordinator
-	 * clarification 1), so the attempt advances the revision.
-	 *
-	 * @param list<array{causeKey:string, gen:string, cut:bool}> $classified
-	 * @return int causes deleted
-	 */
-	private function consumeLocal(string $uid, array $classified): int {
-		if ($classified === []) {
-			return 0;
-		}
-		if (in_array(true, array_column($classified, 'cut'), true)) {
-			$this->revokeUserLocal($uid);
-		}
-		$consumed = 0;
-		foreach ($classified as $cause) {
-			if ($this->rechecks->consume($uid, $cause['causeKey'], $cause['gen'])) {
-				++$consumed;
-			}
-		}
-		if ($consumed > 0) {
-			$this->context->attempt->cut = true;
-		}
-		return $consumed;
-	}
-
-	/**
-	 * Cut of one user at $cut (default: issue_seq read now, under the mutex) and its cleanup event.
-	 *
-	 * @throws \LogicException outside the local phase of an attempt
-	 */
-	private function revokeUserLocal(string $uid, ?string $cut = null): void {
-		$local = $this->localPhase();
-		$cut ??= $this->authUsers->generations($uid)['issue_seq'];
-		if ($this->authUsers->cut($uid, $cut)) {
-			$this->context->attempt->cut = true;
-		}
-		$local['outbox']->add(PolicyEventsMapper::KIND_CLEANUP, PolicyEventPayload::cleanupUser($uid, $cut));
-	}
-
-	/**
-	 * Global revocation: advances the auth epoch and writes the cleanup event of the new one.
-	 *
-	 * @throws \LogicException outside the local phase of an attempt
-	 */
-	private function revokeAllLocal(): void {
-		$local = $this->localPhase();
-		$epoch = $this->state->advanceAuthEpoch($local['state']['auth_epoch']);
-		$this->context->attempt->state['auth_epoch'] = $epoch;
-		$this->context->attempt->cut = true;
-		$local['outbox']->add(PolicyEventsMapper::KIND_CLEANUP, PolicyEventPayload::cleanupGlobal($epoch));
-	}
-
-	/**
-	 * Delegates to the single active attempt.
-	 *
-	 * @return array{outbox:PolicyOutbox, state:array, cut:bool}
-	 * @throws \LogicException Outside the local phase of a command.
-	 */
-	private function localPhase(): array {
-		return $this->context->localPhase();
-	}
-
-	/**
-	 * Validates a whole command before anything runs: shapes, keys, values and limits.
-	 *
-	 * @param array<mixed> $cells candidate cells
-	 * @return list<array{uid:string, key:string, value:?string}> the distinct cells, in first-seen order
-	 * @throws \InvalidArgumentException for any invalid cell, a cell asked with two values, or a limit exceeded
-	 */
-	private static function cells(array $cells): array {
-		if ($cells === [] || !array_is_list($cells)) {
-			throw new \InvalidArgumentException('Invalid command');
-		}
-		$distinct = [];
-		$uids = [];
-		foreach ($cells as $cell) {
-			if (!is_array($cell) || !is_string($cell['uid'] ?? null) || !is_string($cell['key'] ?? null)
-				|| !array_key_exists('value', $cell) || !in_array($cell['value'], ['1', '0', null], true)
-				|| !PolicyEventPayload::validUid($cell['uid']) || !PolicyEventPayload::validUserKey($cell['key'])) {
-				throw new \InvalidArgumentException('Invalid command');
-			}
-			$id = hash('sha256', $cell['uid'] . "\0" . $cell['key']);
-			if (array_key_exists($id, $distinct)) {
-				if ($distinct[$id]['value'] !== $cell['value']) {
-					throw new \InvalidArgumentException('Invalid command');
-				}
-				continue;
-			}
-			$distinct[$id] = ['uid' => $cell['uid'], 'key' => $cell['key'], 'value' => $cell['value']];
-			$uids[$cell['uid']] = true;
-			if (count($distinct) > self::MAX_CELLS || count($uids) > self::MAX_UIDS) {
-				throw new \InvalidArgumentException('Invalid command');
-			}
-		}
-		return array_values($distinct);
 	}
 
 	/**

@@ -1,4 +1,282 @@
 {
+    "published": [
+        {
+            "name": "mcp_guide",
+            "title": "Tool guide",
+            "description": "Describes the tools this user can call. Without arguments it lists every module available and the tools of each one; with module it details every tool of that module; with tool it details a single tool. Use it before acting with a tool you do not already know. Reads only: it changes nothing.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "module": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64,
+                        "description": "Module to detail, as named in the list: files, notes, calendar, contacts, tasks, deck, talk, people, logs. Only the modules available to this user are accepted."
+                    },
+                    "tool": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64,
+                        "description": "Single tool to detail, by its technical name (for example files_edit). Takes precedence over module."
+                    }
+                },
+                "additionalProperties": false
+            },
+            "annotations": {
+                "title": "Tool guide",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+            }
+        },
+        {
+            "name": "polls_list_polls",
+            "title": "List polls",
+            "description": "List the polls you may open, with descriptions, deadlines, status and internal links. No votes, results, participant counts or invitation links. Native discovery loads the full collection before paging; a changed list requires restarting.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 25
+                    },
+                    "cursor": {
+                        "type": "string",
+                        "maxLength": 512
+                    }
+                },
+                "additionalProperties": false
+            },
+            "annotations": {
+                "title": "List polls",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+            }
+        },
+        {
+            "name": "polls_read_poll",
+            "title": "Read poll",
+            "description": "Read a poll and one page of its native visible options, with its description, deadlines, status and internal link. No votes, results, participant counts or invitation links. Option locking can change when someone votes and require restarting the options cursor.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "poll_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "options_limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 100
+                    },
+                    "options_cursor": {
+                        "type": "string",
+                        "maxLength": 512
+                    }
+                },
+                "additionalProperties": false,
+                "required": [
+                    "poll_id"
+                ]
+            },
+            "annotations": {
+                "title": "Read poll",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+            }
+        },
+        {
+            "name": "polls_list_votes",
+            "title": "Read poll votes",
+            "description": "Read authorized native votes. scope describes observed native permission (own or all), not an atomic completeness guarantee. Anonymous identities are reduced within each poll; no identity lookup is performed.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "poll_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 50
+                    },
+                    "cursor": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                    },
+                    "option_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    }
+                },
+                "required": [
+                    "poll_id"
+                ],
+                "additionalProperties": false
+            },
+            "annotations": {
+                "title": "Read poll votes",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+            }
+        },
+        {
+            "name": "polls_read_results",
+            "title": "Read poll results",
+            "description": "Read native option aggregates only when native results are visible. Hidden results return options:null, never fabricated zeros or totals from own votes. Native fetch-all and post-fetch output limits apply.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "poll_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 50
+                    },
+                    "cursor": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                    }
+                },
+                "required": [
+                    "poll_id"
+                ],
+                "additionalProperties": false
+            },
+            "annotations": {
+                "title": "Read poll results",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+            }
+        },
+        {
+            "name": "polls_list_links",
+            "title": "Read existing poll links",
+            "description": "Read existing direct participation links only with native edit permission. Links may contain personal credentials or identifiers; disclose only to authorized people. Retrieval creates or sends nothing. Inherited links without URLs and resolvable containers are not covered; opening a link later can have native effects.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "poll_id": {
+                        "type": "integer",
+                        "minimum": 1
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 50
+                    },
+                    "cursor": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                    }
+                },
+                "required": [
+                    "poll_id"
+                ],
+                "additionalProperties": false
+            },
+            "annotations": {
+                "title": "Read existing poll links",
+                "readOnlyHint": true,
+                "destructiveHint": false,
+                "idempotentHint": true,
+                "openWorldHint": false
+            }
+        },
+        {
+            "name": "polls_create_poll",
+            "title": "Create a private poll",
+            "description": "Create one private simple text or date poll owned by you, with 0 to 100 initial options. Requires the separate create grant. No shares, invitations, votes or comments. A plan and confirm are required; creation is not atomic and may remain partial.",
+            "inputSchema": {
+                "type": "object",
+                "required": [
+                    "type",
+                    "title"
+                ],
+                "additionalProperties": false,
+                "properties": {
+                    "type": {
+                        "type": "string",
+                        "enum": [
+                            "textPoll",
+                            "datePoll"
+                        ]
+                    },
+                    "title": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128
+                    },
+                    "options": {
+                        "type": "array",
+                        "maxItems": 100,
+                        "default": [],
+                        "description": "0 to 100 initial options. textPoll items: only text (1..1024 characters). datePoll items: timestamp (positive UTC seconds) and optional duration (0..2678400 seconds). Items and their fields are strictly validated.",
+                        "items": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "text": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1024
+                                },
+                                "timestamp": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 253402214400
+                                },
+                                "duration": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 2678400
+                                }
+                            }
+                        }
+                    },
+                    "plan_state": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 128,
+                        "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                    },
+                    "confirm": {
+                        "type": "boolean",
+                        "description": "Send true only after you have shown the plan of this call to the user and the user explicitly said yes. Without it nothing is changed and the answer is the plan."
+                    }
+                }
+            },
+            "annotations": {
+                "title": "Create a private poll",
+                "readOnlyHint": false,
+                "destructiveHint": false,
+                "idempotentHint": false,
+                "openWorldHint": false
+            }
+        }
+    ],
     "reads": {
         "definitions": [
             {

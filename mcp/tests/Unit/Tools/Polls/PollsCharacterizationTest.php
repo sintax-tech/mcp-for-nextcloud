@@ -8,7 +8,13 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Polls;
 
 use InvalidArgumentException;
+use OCA\Mcp\Access\Guests\GuestRestrictions;
+use OCA\Mcp\Mcp\Tools\ToolRegistry;
+use OCP\App\IAppManager;
+use OCP\IUser;
+use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 
 /**
  * Observed answers of the six Polls tools at the move commit, before the schema, the plan renderer and the catalog
@@ -18,13 +24,37 @@ final class PollsCharacterizationTest extends TestCase {
 	private const FIXTURE = __DIR__ . '/polls-characterization.json';
 
 	public function testTheSplitPreservesTheCharacterizedAnswers(): void {
-		$report = ['reads' => $this->reads(), 'create' => $this->create()];
+		$report = ['published' => $this->published(), 'reads' => $this->reads(), 'create' => $this->create()];
 		$json = json_encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR) . "\n";
 		if (getenv('RE19_FREEZE') === '1') {
 			file_put_contents(self::FIXTURE, $json);
 		}
 		$this->assertFileExists(self::FIXTURE);
 		$this->assertSame(file_get_contents(self::FIXTURE), $json);
+	}
+
+	/**
+	 * What the registry publishes for the Polls module with every grant: names, titles, annotations, schemas and the
+	 * guide, exactly as tools/list serializes them.
+	 *
+	 * @return list<array<string, mixed>>
+	 */
+	private function published(): array {
+		$rig = new PollsTestRig($this);
+		foreach (['read', 'results', 'links', 'create'] as $operation) {
+			$rig->policy->setGrant('alice', 'polls', $operation, true);
+		}
+		$apps = $this->createMock(IAppManager::class);
+		$apps->method('isEnabledForUser')->willReturn(true);
+		$apps->method('getAppVersion')->willReturn('9.3.0');
+		$user = $this->createMock(IUser::class);
+		$user->method('getUID')->willReturn('alice');
+		$users = $this->createMock(IUserManager::class);
+		$users->method('get')->willReturn($user);
+		$guests = $this->createMock(GuestRestrictions::class);
+		$guests->method('allowsApp')->willReturn(true);
+		$registry = new ToolRegistry([$rig->module], $rig->policy, $apps, $users, $this->createMock(LoggerInterface::class), $guests);
+		return $registry->list('alice');
 	}
 
 	/** @return array<string, mixed> */

@@ -15,7 +15,6 @@ use OCA\Mcp\Modules\Calendar\Composing\AttendeeResolver;
 use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
 use OCA\Mcp\Modules\Calendar\Approval\CalendarDraftApproval;
 use OCA\Mcp\Modules\Calendar\CalendarModule;
-use OCA\Mcp\Modules\Calendar\Presentation\CalendarPlanRenderer;
 use OCA\Mcp\Modules\Calendar\Locating\Classification;
 use OCA\Mcp\Modules\Calendar\Composing\DateInput;
 use OCA\Mcp\Modules\Calendar\Composing\EventBuilder;
@@ -101,7 +100,7 @@ final class CalendarEffectsWiring {
 			$logger,
 			$zones,
 		);
-		return new CalendarModule(
+		return \OCA\Mcp\Tests\Unit\Tools\Calendar\CalendarTestModule::build(
 			new ListCalendarsHandler($access),
 			new ListEventsHandler($access, $store, $repository, $classification, new EventExpander(), $mapper, $dates, $time, $logger),
 			new CreateEventDraft($access, $guard, $dav, $store, $repository, $builder, $mapper, $dates, $attendees, $scheduling, $time),
@@ -110,7 +109,6 @@ final class CalendarEffectsWiring {
 			new DeleteEventDraft($access, $guard, $dav, $store, $repository, new TrashPolicy($config), $scheduling),
 			new TransferEventDraft($relocator),
 			new CalendarDraftApproval($scheduling, $builder, $guard, $warnings, $zones),
-			new CalendarPlanRenderer(),
 		);
 	}
 

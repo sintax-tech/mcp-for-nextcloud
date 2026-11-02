@@ -8,9 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Calendar\Reading;
 
 use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
-use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
-use OCA\Mcp\Tools\Calendar\CalendarTool;
 use OCA\Mcp\Modules\Calendar\Locating\Classification;
 use OCA\Mcp\Modules\Calendar\Composing\DateInput;
 use OCA\Mcp\Modules\Calendar\Locating\EventExpander;
@@ -26,7 +24,7 @@ use RuntimeException;
 /**
  * calendar_list_events: occurrences overlapping a window of at most 366 days, capped at 2 000 items.
  */
-final class ListEventsHandler implements CalendarTool {
+final class ListEventsHandler {
 	/** Most items returned by one call; beyond it the list is cut and flagged. */
 	public const MAX_ITEMS = 2000;
 
@@ -54,24 +52,13 @@ final class ListEventsHandler implements CalendarTool {
 	) {}
 
 	/**
-	 * @return array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}
-	 */
-	public function definition(): array {
-		return ToolSchema::definition('calendar_list_events', CalendarMessages::TOOL_LIST_EVENTS, 'read', [
-			'calendar' => ToolSchema::calendar(CalendarMessages::propertyDescription('calendar-optional')),
-			'from' => ToolSchema::date(CalendarMessages::propertyDescription('from')),
-			'to' => ToolSchema::date(CalendarMessages::propertyDescription('to')),
-		]);
-	}
-
-	/**
 	 * @param array{calendar?: string, from?: string, to?: string} $arguments
 	 * @param string $userId authenticated UID
 	 * @return array{content: list<array{type:string, text:string}>} items, plus {truncated, limit} when cut
 	 * @throws \OCA\Mcp\Modules\Calendar\Failures\CalendarException when the calendar is not visible or a limit is exceeded
 	 * @throws \OCA\Mcp\Modules\Calendar\Failures\CalendarArgumentException on invalid dates
 	 */
-	public function execute(array $arguments, string $userId): array {
+	private function read(array $arguments, string $userId): array {
 		[$from, $to] = $this->dates->window($arguments['from'] ?? null, $arguments['to'] ?? null, $this->time->now());
 		$calendars = isset($arguments['calendar'])
 			? [$this->access->resolve($userId, $arguments['calendar'])]
@@ -111,6 +98,6 @@ final class ListEventsHandler implements CalendarTool {
 	 * @throws RuntimeException on any other failure, which the registry reports generically
 	 */
 	public function handle(string $userId, array $arguments): array {
-		return CalendarFailures::run(fn (): array => $this->execute($arguments, $userId));
+		return CalendarFailures::run(fn (): array => $this->read($arguments, $userId));
 	}
 }

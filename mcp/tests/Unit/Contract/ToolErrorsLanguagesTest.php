@@ -250,7 +250,7 @@ final class ToolErrorsLanguagesTest extends TestCase {
 		$moveEvent = new MoveEventDraft($access, $relocator, $guard);
 		$deleteEvent = new DeleteEventDraft($access, $guard, $dav, $store, $repository, new TrashPolicy($config), $scheduling);
 		$transferEvent = new TransferEventDraft($relocator);
-		return new CalendarModule(
+		return \OCA\Mcp\Tests\Unit\Tools\Calendar\CalendarTestModule::build(
 			$listCalendars,
 			$listEvents,
 			$createEvent,

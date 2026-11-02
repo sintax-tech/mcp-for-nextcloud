@@ -150,7 +150,7 @@ final class CreateEventTest extends CalendarTestCase {
 	}
 
 	public function testTheDescriptionTellsTheAgentThatTheCallCanInvitePeople(): void {
-		$definition = $this->writeHandlers['calendar_create_event']->definition();
+		$definition = \OCA\Mcp\Modules\Calendar\Tools\CreateEvent::definition()->toArray();
 
 		$this->assertTrue($definition['destructiveHint']);
 		$this->assertStringContainsString('This call may send invitations to other people', $definition['description']);

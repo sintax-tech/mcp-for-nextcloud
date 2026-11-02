@@ -65,7 +65,7 @@ abstract class CalendarTestCase extends TestCase {
 	protected FakeCalendarDav $dav;
 	protected CalendarModule $module;
 	protected \OCA\Mcp\Mcp\Tools\ToolRegistry $registry;
-	/** @var array<string, \OCA\Mcp\Tools\Calendar\CalendarTool> write handlers exercised directly by domain tests */
+	/** @var array<string, \OCA\Mcp\Modules\Calendar\Approval\CalendarDraft> write handlers exercised directly by domain tests */
 	protected array $writeHandlers = [];
 	/** Value returned by dav/calendarRetentionObligation. */
 	protected string $retention = '';
@@ -168,7 +168,7 @@ abstract class CalendarTestCase extends TestCase {
 			$logger,
 			$zones,
 		);
-		$this->module = new CalendarModule(
+		$this->module = CalendarTestModule::build(
 			$listCalendars,
 			$listEvents,
 			$createEvent,

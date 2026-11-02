@@ -8,8 +8,6 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Calendar\Moving;
 
 use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
-use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
-use OCA\Mcp\Tools\Calendar\CalendarTool;
 use OCA\Mcp\Modules\Calendar\Moving\EventRelocator;
 use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
@@ -28,19 +26,6 @@ final class MoveEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calenda
 		private EventRelocator $relocator,
 		private SharedGuard $guard,
 	) {}
-
-	/**
-	 * @return array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}
-	 */
-	public function definition(): array {
-		return ToolSchema::definition(
-			'calendar_move_event',
-			CalendarMessages::TOOL_MOVE_EVENT . CalendarMessages::PARTICIPANTS_NOT_NOTIFIED . CalendarMessages::SHARED_CONFIRMATION_SUFFIX,
-			'move',
-			['calendar' => ToolSchema::calendar(CalendarMessages::propertyDescription('source-calendar')), 'uid' => ToolSchema::uid(), 'targetCalendar' => ToolSchema::calendar(CalendarMessages::propertyDescription('target-calendar')), 'etag' => ToolSchema::etag(), 'confirm_shared' => SharedGuard::property()],
-			['calendar', 'uid', 'targetCalendar'],
-		);
-	}
 
 	/**
 	 * @param array{calendar: string, uid: string, targetCalendar: string, etag?: string, confirm_shared?: bool} $arguments

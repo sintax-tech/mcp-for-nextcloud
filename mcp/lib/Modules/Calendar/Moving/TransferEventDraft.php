@@ -7,8 +7,6 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Calendar\Moving;
 
-use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
-use OCA\Mcp\Tools\Calendar\CalendarTool;
 use OCA\Mcp\Modules\Calendar\Moving\EventRelocator;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
 
@@ -20,24 +18,6 @@ final class TransferEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Cal
 	 * @param EventRelocator $relocator shared move/transfer logic
 	 */
 	public function __construct(private EventRelocator $relocator) {}
-
-	/**
-	 * @return array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}
-	 */
-	public function definition(): array {
-		return ToolSchema::definition(
-			'calendar_transfer_event',
-			CalendarMessages::TOOL_TRANSFER_EVENT . CalendarMessages::PARTICIPANTS_NOT_NOTIFIED,
-			'transfer',
-			[
-				'calendar' => ToolSchema::calendar(CalendarMessages::propertyDescription('source-calendar')),
-				'uid' => ToolSchema::uid(),
-				'targetCalendar' => ToolSchema::calendar(CalendarMessages::propertyDescription('transfer-calendar')),
-				'etag' => ToolSchema::etag(),
-			],
-			['calendar', 'uid', 'targetCalendar'],
-		);
-	}
 
 	/**
 	 * @param array{calendar: string, uid: string, targetCalendar: string, etag?: string} $arguments

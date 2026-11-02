@@ -36,7 +36,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Tools/Logs/LogRedactor.php#<global>:literal-copy:1' => 'label: allowed HTTP verb for redacted log rendering',
 			'Tools/Logs/LogRedactor.php#<global>:literal-move:1' => 'label: allowed HTTP verb for redacted log rendering',
 			'Tools/Deck/DeckToolModule.php#definitions:literal-move:1' => 'label: move-card operation metadata',
-			'Modules/Calendar/Moving/MoveEventDraft.php#definition:literal-move:1' => 'label: calendar_move_event operation metadata',
+			'Modules/Calendar/Tools/MoveEvent.php#definition:literal-move:1' => 'label: calendar_move_event operation metadata',
 			'Tools/Mail/Move/MailMoveTools.php#<global>:literal-move:1' => 'label: mail_move_message operation metadata',
 			'Tools/Mail/Move/MailMoveCapability.php#assertMoveTouchesOnlyTheMessage:literal-move:1' => 'label: IMAP capability name queried, no write',
 			'Modules/Calendar/Writing/EmbeddedDavDispatcher.php#move:literal-move:1' => 'label: DAV HTTP verb; actual dispatcher is classified separately',

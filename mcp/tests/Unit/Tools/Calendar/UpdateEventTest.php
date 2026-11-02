@@ -201,7 +201,7 @@ final class UpdateEventTest extends CalendarTestCase {
 	}
 
 	public function testUpdateSchemaAcceptsEmptyAttendeesToRemoveEveryone(): void {
-		$schema = $this->writeHandlers['calendar_update_event']->definition()['inputSchema'];
+		$schema = \OCA\Mcp\Modules\Calendar\Tools\UpdateEvent::definition()->inputSchema;
 		$validated = \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator::validate($schema, ['calendar' => self::PERSONAL, 'uid' => 'e', 'attendees' => []]);
 		self::assertSame([], $validated['attendees']);
 	}

@@ -12,7 +12,6 @@ use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
 use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
 use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
-use OCA\Mcp\Tools\Calendar\CalendarTool;
 use OCA\Mcp\Modules\Calendar\Locating\EventRepository;
 use OCA\Mcp\Modules\Calendar\Scheduling\Scheduling;
 use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
@@ -44,26 +43,6 @@ final class DeleteEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calen
 		private TrashPolicy $trash,
 		private Scheduling $scheduling,
 	) {}
-
-	/**
-	 * @return array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string}
-	 */
-	public function definition(): array {
-		return ToolSchema::definition(
-			'calendar_delete_event',
-			CalendarMessages::TOOL_DELETE_EVENT
-			. CalendarMessages::SEND_INVITATIONS_NOTE . CalendarMessages::SHARED_CONFIRMATION_SUFFIX,
-			'delete',
-			[
-				'calendar' => ToolSchema::calendar(),
-				'uid' => ToolSchema::uid(),
-				'etag' => ToolSchema::etag(),
-				'send_invitations' => ToolSchema::sendInvitations(),
-				'confirm_shared' => SharedGuard::property(),
-			],
-			['calendar', 'uid'],
-		);
-	}
 
 	/**
 	 * @param array{calendar: string, uid: string, etag?: string, send_invitations?: bool, confirm_shared?: bool} $arguments

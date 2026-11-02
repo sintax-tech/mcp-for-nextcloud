@@ -14,7 +14,6 @@ use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
 use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
 use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
-use OCA\Mcp\Tools\Calendar\CalendarTool;
 use OCA\Mcp\Modules\Calendar\Locating\Classification;
 use OCA\Mcp\Modules\Calendar\Composing\DateInput;
 use OCA\Mcp\Modules\Calendar\Composing\EventBuilder;
@@ -65,34 +64,6 @@ final class UpdateEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calen
 		private Scheduling $scheduling,
 		private ITimeFactory $time,
 	) {}
-
-	/**
-	 * @return array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string, destructiveHint:bool}
-	 */
-	public function definition(): array {
-		return ToolSchema::definition(
-			'calendar_update_event',
-			CalendarMessages::TOOL_UPDATE_EVENT
-			. CalendarMessages::INVITES_OTHERS . CalendarMessages::SEND_INVITATIONS_NOTE . CalendarMessages::SHARED_CONFIRMATION_SUFFIX,
-			'edit',
-			[
-				'calendar' => ToolSchema::calendar(),
-				'uid' => ToolSchema::uid(),
-				'summary' => ToolSchema::text(CalendarMessages::propertyDescription('updated-summary'), 1, 255),
-				'start' => ToolSchema::date(CalendarMessages::propertyDescription('updated-start')),
-				'end' => ToolSchema::date(CalendarMessages::propertyDescription('updated-end')),
-				'allDay' => ['type' => 'boolean', 'description' => CalendarMessages::PROP_ALL_DAY],
-				'timeZone' => ToolSchema::text(CalendarMessages::propertyDescription('timezone'), 1, 64),
-				'location' => ToolSchema::text(CalendarMessages::propertyDescription('updated-location'), 0, 255),
-				'description' => ToolSchema::text(CalendarMessages::propertyDescription('updated-description'), 0, 65536),
-				'attendees' => ToolSchema::attendees(true),
-				'send_invitations' => ToolSchema::sendInvitations(),
-				'etag' => ToolSchema::etag(),
-				'confirm_shared' => SharedGuard::property(),
-			],
-			['calendar', 'uid'],
-		) + ['destructiveHint' => true];
-	}
 
 	/**
 	 * @param array{calendar: string, uid: string, summary?: string, start?: string, end?: string, allDay?: bool, timeZone?: string, location?: string, description?: string, attendees?: list<string>, send_invitations?: bool, etag?: string, confirm_shared?: bool} $arguments

@@ -14,7 +14,6 @@ use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
 use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
 use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
-use OCA\Mcp\Tools\Calendar\CalendarTool;
 use OCA\Mcp\Modules\Calendar\Locating\Classification;
 use OCA\Mcp\Modules\Calendar\Composing\DateInput;
 use OCA\Mcp\Modules\Calendar\Composing\EventBuilder;
@@ -59,32 +58,6 @@ final class CreateEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calen
 		private Scheduling $scheduling,
 		private ITimeFactory $time,
 	) {}
-
-	/**
-	 * @return array{name:string, description:string, inputSchema:array<string, mixed>, module:string, operation:string, app:string, destructiveHint:bool}
-	 */
-	public function definition(): array {
-		return ToolSchema::definition(
-			'calendar_create_event',
-			CalendarMessages::TOOL_CREATE_EVENT
-			. CalendarMessages::INVITES_OTHERS . CalendarMessages::SHARED_CONFIRMATION_SUFFIX,
-			'create',
-			[
-				'calendar' => ToolSchema::calendar(),
-				'summary' => ToolSchema::text(CalendarMessages::propertyDescription('summary'), 1, 255),
-				'start' => ToolSchema::date(CalendarMessages::propertyDescription('start')),
-				'end' => ToolSchema::date(CalendarMessages::propertyDescription('end')),
-				'allDay' => ['type' => 'boolean', 'default' => false, 'description' => CalendarMessages::PROP_ALL_DAY],
-				'timeZone' => ToolSchema::text(CalendarMessages::propertyDescription('timezone'), 1, 64),
-				'location' => ToolSchema::text(CalendarMessages::propertyDescription('location'), 0, 255),
-				'description' => ToolSchema::text(CalendarMessages::propertyDescription('description'), 0, 65536),
-				'attendees' => ToolSchema::attendees(),
-				'send_invitations' => ToolSchema::sendInvitations(),
-				'confirm_shared' => SharedGuard::property(),
-			],
-			['calendar', 'summary', 'start', 'end'],
-		) + ['destructiveHint' => true];
-	}
 
 	/**
 	 * @param array{calendar: string, summary: string, start: string, end: string, allDay?: bool, timeZone?: string, location?: string, description?: string, attendees?: list<string>, send_invitations?: bool, confirm_shared?: bool} $arguments

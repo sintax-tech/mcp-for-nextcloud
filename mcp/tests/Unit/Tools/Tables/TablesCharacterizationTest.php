@@ -10,8 +10,10 @@ namespace OCA\Mcp\Tests\Unit\Tools\Tables;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesTestModule;
 use OCA\Mcp\Modules\Tables\TablesModule;
 use OCA\Mcp\Modules\Tables\Writing\CellValueDomain;
+use OCA\Mcp\Modules\Tables\Writing\TextCellValue;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\{TablesHandlers, TablesScene, TablesWriteWiring, RowsScene, WriteScene};
 use PHPUnit\Framework\TestCase;
+use OCA\Mcp\Tests\Unit\Contract\Oracle\{DiscoveryHarness, DiscoveryScenario};
 
 /** Frozen observations at the pure move, shared by isolated differential runs after each split. */
 final class TablesCharacterizationTest extends TestCase {
@@ -20,6 +22,17 @@ final class TablesCharacterizationTest extends TestCase {
 		$base = TablesHandlers::module($this, TablesScene::app());
 		$report['definitions'] = array_map(static fn (array $d): array => array_replace(array_fill_keys(['name', 'description', 'module', 'operation', 'app', 'inputSchema'], null), $d), $base->definitions());
 		$report['notes'] = $base->guideNotes();
+		foreach (DiscoveryScenario::all() as $scenario) {
+			$harness = new DiscoveryHarness($this, $scenario);
+			$protocol = (fn () => $this->protocol)->call($harness);
+			$registry = (fn () => $this->tools)->call($protocol);
+			$tables = static fn (array $definitions): array => array_values(array_filter($definitions,
+				static fn (array $definition): bool => str_starts_with($definition['name'], 'tables_')));
+			$report['registry'][$scenario->name] = [
+				'definitions' => $tables($registry->definitions(DiscoveryHarness::USER)),
+				'list' => $tables($registry->list(DiscoveryHarness::USER)),
+			];
+		}
 		foreach (['alice', 'bob', 'carol', 'dave', 'erin', 'frank'] as $uid) {
 			$app = TablesScene::app();
 			$module = TablesHandlers::module($this, $app, $uid);
@@ -67,6 +80,16 @@ final class TablesCharacterizationTest extends TestCase {
 				$report['selection'][$version][$i] = self::observe(fn () => $domain->cell(['type' => 'selection', 'subtype' => '', 'selectionOptions' => [['id' => 2]]], $value, $version, 'alice'));
 			}
 		}
+		foreach ([null, 'abc', 'áβ𝄞', 'abcd', 42] as $i => $value) {
+			$report['text'][$i] = self::observe(fn () => $domain->cell(
+				['type' => 'text', 'subtype' => 'line', 'textMaxLength' => 3], $value, '2.3.2', 'alice'));
+		}
+		$text = class_exists(TextCellValue::class) ? TextCellValue::class : CellValueDomain::class;
+		$report['textBoundaries'] = [
+			'max' => $text::MAX_TEXT,
+			'atCap' => $text::fitsText([], str_repeat('x', 100000)),
+			'overCap' => $text::fitsText([], str_repeat('x', 100001)),
+		];
 		$json = json_encode(self::normalize($report), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR) . "\n";
 		if (getenv('RE17_FREEZE') === '1') {
 			file_put_contents(__DIR__ . '/tables-characterization.json', $json);

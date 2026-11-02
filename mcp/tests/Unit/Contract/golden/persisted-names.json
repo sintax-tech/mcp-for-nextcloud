@@ -73,7 +73,7 @@
             "OCA\\Mcp\\Tools\\Tasks\\TasksModule",
             "OCA\\Mcp\\Tools\\Deck\\DeckToolModule",
             "OCA\\Mcp\\Tools\\Talk\\TalkModule",
-            "OCA\\Mcp\\Tools\\People\\PeopleModule",
+            "OCA\\Mcp\\Modules\\People\\PeopleModule",
             "OCA\\Mcp\\Tools\\Logs\\LogsModule",
             "OCA\\Mcp\\Tools\\Mail\\MailModule",
             "OCA\\Mcp\\Tools\\Tables\\TablesModule",

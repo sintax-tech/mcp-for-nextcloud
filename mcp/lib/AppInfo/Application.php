@@ -61,7 +61,7 @@ class Application extends App implements IBootstrap {
 		\OCA\Mcp\Tools\Tasks\TasksModule::class,
 		DeckToolModule::class,
 		TalkModule::class,
-		\OCA\Mcp\Tools\People\PeopleModule::class,
+		\OCA\Mcp\Modules\People\PeopleModule::class,
 		\OCA\Mcp\Tools\Logs\LogsModule::class,
 		\OCA\Mcp\Tools\Mail\MailModule::class,
 		\OCA\Mcp\Tools\Tables\TablesModule::class,

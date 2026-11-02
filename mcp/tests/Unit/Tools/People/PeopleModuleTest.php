@@ -13,7 +13,7 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
-use OCA\Mcp\Tools\People\PeopleModule;
+use OCA\Mcp\Modules\People\PeopleModule;
 use OCA\Mcp\Mcp\Tools\ToolPresentation;
 use OCP\Collaboration\Collaborators\ISearch;
 use OCP\Share\IShare;

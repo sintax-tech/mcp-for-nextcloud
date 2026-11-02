@@ -16,7 +16,7 @@ final class FileSizeTest extends ArchitectureCase {
 	}
 	public function testAppSourceHasNoNewOversizedFileOrRaisedCeiling(): void {
 		self::assertCount(27, self::json('size-baseline')['final']);
-		self::assertCount(17, self::json('size-baseline')['transitional']);
+		self::assertCount(16, self::json('size-baseline')['transitional']);
 		self::assertSame([], $this->problems());
 		self::assertSame('lib/OAuth/Storage/OAuthStore.php', self::tree()->present('OCA\\Mcp\\OAuth\\OAuthStore'));
 	}
@@ -52,9 +52,9 @@ final class FileSizeTest extends ArchitectureCase {
 		}
 	}
 	public function testCompletedPolicyWriterStepLowersTheEffectiveCeiling(): void {
-		$tickets = new TicketState(self::tickets()->known, [...self::tickets()->completed, 'RE-06']);
+		$tickets = new TicketState(self::tickets()->known, array_values(array_unique([...self::tickets()->completed, 'RE-06b'])));
 		$files = self::tree()->files; $path = self::tree()->present('OCA\\Mcp\\Service\\Policy\\PolicyWriter');
-		$files[$path] = str_repeat("// x\n", 1300);
+		$files[$path] = str_repeat("// x\n", 900);
 		self::assertSame([], $this->problems(files: $files, tickets: $tickets));
 		$files[$path] .= "// x\n";
 		self::assertNotSame([], $this->problems(files: $files, tickets: $tickets));

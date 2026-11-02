@@ -15,7 +15,7 @@ use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\Calendar\ScopeStub;
 use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
 use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
-use OCA\Mcp\Modules\Calendar\Writing\DavResult;
+use OCA\Mcp\Platform\Dav\DavResult;
 use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
 use OCA\Mcp\Modules\Calendar\Writing\TrashPolicy;
 use OCA\Mcp\Access\ResourceScope\FileReferenceScope;

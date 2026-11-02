@@ -139,14 +139,6 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Tools/Contacts/ContactDav.php",
-			"target": "OCA\\Mcp\\Modules\\Calendar\\Writing\\DavResult",
-			"line": 54,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "module-isolation",
 			"source": "lib/Tools/Contacts/ContactsModule.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
 			"line": 397,
@@ -158,30 +150,6 @@
 			"source": "lib/Tools/Contacts/ContactsModule.php",
 			"target": "OCA\\Mcp\\Modules\\Calendar\\Approval\\SharedGuard",
 			"line": 47,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "module-isolation",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavDispatcher.php",
-			"target": "OCA\\Mcp\\Modules\\Calendar\\Writing\\CapturingSapi",
-			"line": 179,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "module-isolation",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavDispatcher.php",
-			"target": "OCA\\Mcp\\Modules\\Calendar\\Writing\\DavResult",
-			"line": 183,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "module-isolation",
-			"source": "lib/Tools/Contacts/EmbeddedCardDavDispatcher.php",
-			"target": "OCA\\Mcp\\Modules\\Calendar\\Writing\\Session",
-			"line": 43,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-15"
 		},

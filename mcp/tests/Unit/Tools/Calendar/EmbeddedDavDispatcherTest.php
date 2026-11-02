@@ -8,10 +8,10 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
 use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
-use OCA\Mcp\Modules\Calendar\Writing\CapturingSapi;
+use OCA\Mcp\Platform\Dav\CapturingSapi;
 use OCA\Mcp\Modules\Calendar\Writing\DavPathBuilder;
 use OCA\Mcp\Modules\Calendar\Writing\EmbeddedDavDispatcher;
-use OCA\Mcp\Modules\Calendar\Writing\Session;
+use OCA\Mcp\Platform\Dav\Session;
 use OCP\IConfig;
 use OCP\IUser;
 use OCP\IUserSession;

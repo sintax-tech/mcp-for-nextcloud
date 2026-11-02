@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Calendar\Writing;
+namespace OCA\Mcp\Platform\Dav;
 
 /**
  * SAPI that keeps Sabre's response instead of handing it to PHP.

@@ -16,7 +16,7 @@ use OCA\Mcp\Modules\Calendar\Locating\CalendarStore;
 use OCA\Mcp\Modules\Calendar\Selftest\CalendarSelftestReader;
 use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
 use OCA\Mcp\Modules\Calendar\Writing\EmbeddedDavDispatcher;
-use OCA\Mcp\Modules\Calendar\Writing\Session;
+use OCA\Mcp\Platform\Dav\Session;
 use OCP\AppFramework\Bootstrap\IRegistrationContext;
 use OCP\IConfig;
 use OCP\IUserSession;

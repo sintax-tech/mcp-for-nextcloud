@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Modules\Calendar\Writing\DavResult;
+use OCA\Mcp\Platform\Dav\DavResult;
 use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Tools\Contacts\ContactAccess;

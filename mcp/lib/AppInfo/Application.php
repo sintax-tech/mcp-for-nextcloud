@@ -19,7 +19,7 @@ use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckServiceGateway;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
 use OCA\Mcp\Tools\Talk\TalkModule;
-use OCA\Mcp\Modules\Calendar\Writing\Session;
+use OCA\Mcp\Platform\Dav\Session;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
 use OCA\Mcp\Modules\Notes\NotesModule;

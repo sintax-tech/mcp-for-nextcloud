@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 
 use OCA\Mcp\Tests\Unit\Tools\Calendar\MemoryPrincipalBackend;
-use OCA\Mcp\Modules\Calendar\Writing\Session;
+use OCA\Mcp\Platform\Dav\Session;
 use OCA\Mcp\Tools\Contacts\EmbeddedCardDavDispatcher;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IAppConfig;

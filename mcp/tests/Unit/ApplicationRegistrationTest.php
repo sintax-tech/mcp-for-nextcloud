@@ -106,7 +106,7 @@ final class ApplicationRegistrationTest extends TestCase {
 		$factories = $this->registeredFactories();
 		$dispatcher = new \OCA\Mcp\Modules\Calendar\Writing\EmbeddedDavDispatcher(
 			static fn () => throw new \RuntimeException('must stay lazy'),
-			new \OCA\Mcp\Modules\Calendar\Writing\Session($this->createMock(\OCP\IUserSession::class)),
+			new \OCA\Mcp\Platform\Dav\Session($this->createMock(\OCP\IUserSession::class)),
 			$this->createMock(IConfig::class), new \Psr\Log\NullLogger());
 		$container = $this->createMock(ContainerInterface::class);
 		$container->expects($this->once())->method('get')->with(\OCA\Mcp\Modules\Calendar\Writing\EmbeddedDavDispatcher::class)->willReturn($dispatcher);

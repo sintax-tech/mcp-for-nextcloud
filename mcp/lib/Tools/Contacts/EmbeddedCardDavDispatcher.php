@@ -9,9 +9,9 @@ namespace OCA\Mcp\Tools\Contacts;
 
 use Closure;
 use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Modules\Calendar\Writing\CapturingSapi;
-use OCA\Mcp\Modules\Calendar\Writing\DavResult;
-use OCA\Mcp\Modules\Calendar\Writing\Session;
+use OCA\Mcp\Platform\Dav\CapturingSapi;
+use OCA\Mcp\Platform\Dav\DavResult;
+use OCA\Mcp\Platform\Dav\Session;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IAppConfig;

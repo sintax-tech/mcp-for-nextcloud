@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Modules\Calendar\Writing;
+namespace OCA\Mcp\Platform\Dav;
 
 use OCP\IUserSession;
 

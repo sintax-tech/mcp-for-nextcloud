@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Tasks;
 
 use OCA\Mcp\Tests\Unit\Tools\Tasks\Handler\TaskListingCase;
-use OCA\Mcp\Modules\Calendar\Writing\DavResult;
+use OCA\Mcp\Platform\Dav\DavResult;
 use OCA\Mcp\Mcp\Confirmation\PlanText;
 use OCA\Mcp\Tools\Tasks\TaskHierarchyLock;
 use OCA\Mcp\Tools\Tasks\TaskHierarchyMessages;

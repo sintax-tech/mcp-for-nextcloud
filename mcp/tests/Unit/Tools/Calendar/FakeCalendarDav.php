@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Calendar;
 
 use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
 use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
-use OCA\Mcp\Modules\Calendar\Writing\DavResult;
+use OCA\Mcp\Platform\Dav\DavResult;
 use Throwable;
 
 /**

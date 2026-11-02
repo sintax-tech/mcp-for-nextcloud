@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
-use OCA\Mcp\Tools\Contacts\ContactCard;
+use OCA\Mcp\Modules\Contacts\Cards\ContactCard;
 use PHPUnit\Framework\TestCase;
 use Sabre\VObject\Component\VCard;
 

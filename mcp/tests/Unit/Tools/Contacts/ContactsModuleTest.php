@@ -8,16 +8,16 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Modules\Calendar\Writing\DavResult;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
+use OCA\Mcp\Platform\Dav\DavResult;
+use OCA\Mcp\Modules\Contacts\Planning\AddressBookShareNotice;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
-use OCA\Mcp\Tools\Contacts\ContactAccess;
-use OCA\Mcp\Tools\Contacts\ContactBackup;
-use OCA\Mcp\Tools\Contacts\ContactCard;
-use OCA\Mcp\Tools\Contacts\ContactDav;
-use OCA\Mcp\Tools\Contacts\ContactStore;
-use OCA\Mcp\Tools\Contacts\ContactsModule;
-use OCA\Mcp\Tools\Contacts\SystemContacts;
+use OCA\Mcp\Modules\Contacts\Locating\ContactAccess;
+use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
+use OCA\Mcp\Modules\Contacts\Cards\ContactCard;
+use OCA\Mcp\Modules\Contacts\Writing\ContactDav;
+use OCA\Mcp\Modules\Contacts\Locating\ContactStore;
+use OCA\Mcp\Modules\Contacts\ContactsModule;
+use OCA\Mcp\Modules\Contacts\Accounts\SystemContacts;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\IUserManager;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -80,12 +80,12 @@ final class ContactsModuleTest extends TestCase {
 		$this->dav = $this->createMock(ContactDav::class);
 		$this->backup = $this->createMock(ContactBackup::class);
 		$this->system = $this->createMock(SystemContacts::class);
-		$this->module = new ContactsModule(
+		$this->module = ContactsTestModule::build(
 			new ContactAccess($this->store),
 			$this->store,
 			$this->dav,
 			new ContactCard(),
-			new SharedGuard($this->createMock(IUserManager::class)),
+			new AddressBookShareNotice($this->createMock(IUserManager::class)),
 			$this->backup,
 			$this->system,
 			new PlanState((new InMemoryConfig())->mock($this)),

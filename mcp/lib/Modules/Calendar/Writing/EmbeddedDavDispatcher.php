@@ -61,13 +61,13 @@ class EmbeddedDavDispatcher implements CalendarDav {
 
 	/**
 	 * @param \Closure(): Server $serverFactory builds one embedded CalDAV server per operation
-	 * @param Session $session session the DAV plugins read the sender from
+	 * @param \OCA\Mcp\Platform\Dav\Session $session session the DAV plugins read the sender from
 	 * @param IConfig $config Nextcloud configuration, for dav/event_size_limit
 	 * @param LoggerInterface $logger receives the exception class and code only, never event content
 	 */
 	public function __construct(
 		private \Closure $serverFactory,
-		private Session $session,
+		private \OCA\Mcp\Platform\Dav\Session $session,
 		private IConfig $config,
 		private LoggerInterface $logger,
 	) {}
@@ -75,7 +75,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function put(string $userId, string $calendarUri, string $objectUri, string $ics, bool $scheduling = false, ?int $sizeLimit = null, array $acceptedStatuses = [201]): DavResult {
+	public function put(string $userId, string $calendarUri, string $objectUri, string $ics, bool $scheduling = false, ?int $sizeLimit = null, array $acceptedStatuses = [201]): \OCA\Mcp\Platform\Dav\DavResult {
 		$path = DavPathBuilder::objectPath($userId, $calendarUri, $objectUri);
 		$this->assertWithinSizeLimit($ics, $sizeLimit);
 		return $this->dispatch('PUT', $path, $userId, [
@@ -87,7 +87,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function update(string $userId, string $calendarUri, string $objectUri, string $etag, string $ics, bool $scheduling = false, ?int $sizeLimit = null, array $acceptedStatuses = [204]): DavResult {
+	public function update(string $userId, string $calendarUri, string $objectUri, string $etag, string $ics, bool $scheduling = false, ?int $sizeLimit = null, array $acceptedStatuses = [204]): \OCA\Mcp\Platform\Dav\DavResult {
 		$path = DavPathBuilder::objectPath($userId, $calendarUri, $objectUri);
 		$this->assertWithinSizeLimit($ics, $sizeLimit);
 		return $this->dispatch('PUT', $path, $userId, [
@@ -99,7 +99,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function delete(string $userId, string $calendarUri, string $objectUri, ?string $etag = null, bool $scheduling = false, array $acceptedStatuses = [204]): DavResult {
+	public function delete(string $userId, string $calendarUri, string $objectUri, ?string $etag = null, bool $scheduling = false, array $acceptedStatuses = [204]): \OCA\Mcp\Platform\Dav\DavResult {
 		$path = DavPathBuilder::objectPath($userId, $calendarUri, $objectUri);
 		$headers = $etag === null ? [] : ['If-Match' => $etag];
 		return $this->dispatch('DELETE', $path, $userId, $headers + $this->schedulingHeaders($scheduling), null, $acceptedStatuses);
@@ -108,7 +108,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function move(string $userId, string $fromCalendarUri, string $objectUri, string $toCalendarUri, ?string $etag = null, array $acceptedStatuses = [201]): DavResult {
+	public function move(string $userId, string $fromCalendarUri, string $objectUri, string $toCalendarUri, ?string $etag = null, array $acceptedStatuses = [201]): \OCA\Mcp\Platform\Dav\DavResult {
 		$source = DavPathBuilder::objectPath($userId, $fromCalendarUri, $objectUri);
 		$destination = DavPathBuilder::objectPath($userId, $toCalendarUri, $objectUri);
 		$headers = [
@@ -122,7 +122,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function mkcalendar(string $userId, string $calendarUri, string $displayName): DavResult {
+	public function mkcalendar(string $userId, string $calendarUri, string $displayName): \OCA\Mcp\Platform\Dav\DavResult {
 		$path = DavPathBuilder::calendarPath($userId, $calendarUri);
 		$body = '<?xml version="1.0" encoding="utf-8" ?>'
 			. '<cal:mkcalendar xmlns:d="DAV:" xmlns:cal="urn:ietf:params:xml:ns:caldav">'
@@ -134,13 +134,13 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	/**
 	 * {@inheritDoc}
 	 */
-	public function deleteCalendar(string $userId, string $calendarUri): DavResult {
+	public function deleteCalendar(string $userId, string $calendarUri): \OCA\Mcp\Platform\Dav\DavResult {
 		$path = DavPathBuilder::calendarPath($userId, $calendarUri);
 		return $this->dispatch('DELETE', $path, $userId, $this->schedulingHeaders(false), null, [204]);
 	}
 
 	/** {@inheritDoc} */
-	public function probeWrite(string $actorUid, string $ownerUid, string $calendarUri, string $objectUri, string $ics): DavResult {
+	public function probeWrite(string $actorUid, string $ownerUid, string $calendarUri, string $objectUri, string $ics): \OCA\Mcp\Platform\Dav\DavResult {
 		$this->assertWithinSizeLimit($ics, null);
 		return $this->dispatch('PUT', DavPathBuilder::objectPath($ownerUid, $calendarUri, $objectUri), $actorUid,
 			['Content-Type' => 'text/calendar; charset=utf-8', 'If-None-Match' => '*'] + $this->schedulingHeaders(false), $ics, [201]);
@@ -178,12 +178,12 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	 * @param string|null $body request body
 	 * @param list<int> $acceptedStatuses statuses that count as success
 	 * @param string|null $destination absolute path for the MOVE Destination header
-	 * @return DavResult the status, and the ETag when the response carried one
+	 * @return \OCA\Mcp\Platform\Dav\DavResult the status, and the ETag when the response carried one
 	 * @throws CalendarException on any pipeline refusal, mapped to a user-facing message
 	 */
-	private function dispatch(string $method, string $path, string $userId, array $headers, ?string $body, array $acceptedStatuses, ?string $destination = null): DavResult {
+	private function dispatch(string $method, string $path, string $userId, array $headers, ?string $body, array $acceptedStatuses, ?string $destination = null): \OCA\Mcp\Platform\Dav\DavResult {
 		$this->assertSessionMatches($userId);
-		CapturingSapi::reset();
+		\OCA\Mcp\Platform\Dav\CapturingSapi::reset();
 		$server = ($this->serverFactory)();
 		$this->pinPrincipal($server, $userId);
 		if ($method === 'DELETE' && ($headers[self::SCHEDULING_HEADER] ?? null) === self::SCHEDULING_OFF) {
@@ -202,7 +202,7 @@ class EmbeddedDavDispatcher implements CalendarDav {
 		// very same objects before the dispatch.
 		$server->httpRequest = $request;
 		$server->httpResponse = $response;
-		$server->sapi = new CapturingSapi();
+		$server->sapi = new \OCA\Mcp\Platform\Dav\CapturingSapi();
 		try {
 			$server->invokeMethod($request, $response, false);
 		} catch (DavException $exception) {
@@ -276,19 +276,19 @@ class EmbeddedDavDispatcher implements CalendarDav {
 	 * @param Response $response response Sabre produced
 	 * @param list<int> $acceptedStatuses statuses that count as success
 	 * @param string $method HTTP method, for the log only
-	 * @return DavResult the status, and the ETag when the response carried one
+	 * @return \OCA\Mcp\Platform\Dav\DavResult the status, and the ETag when the response carried one
 	 * @throws \RuntimeException when the status is not one the caller expected
 	 */
-	private function result(Response $response, array $acceptedStatuses, string $method): DavResult {
+	private function result(Response $response, array $acceptedStatuses, string $method): \OCA\Mcp\Platform\Dav\DavResult {
 		$status = $response->getStatus();
 		if ($status === null) {
-			$status = CapturingSapi::$lastStatus;
+			$status = \OCA\Mcp\Platform\Dav\CapturingSapi::$lastStatus;
 		}
 		if ($status === null || !in_array($status, $acceptedStatuses, true)) {
 			$this->logger->error('MCP calendar: unexpected DAV status', ['app' => 'mcp', 'method' => $method, 'status' => $status]);
 			throw new \RuntimeException(CalendarMessages::DAV_FAILURE);
 		}
-		return new DavResult($status, $response->getHeader('ETag'));
+		return new \OCA\Mcp\Platform\Dav\DavResult($status, $response->getHeader('ETag'));
 	}
 	/**
 	 * Maps a Sabre exception to a user-facing calendar failure, never leaking its message or XML.

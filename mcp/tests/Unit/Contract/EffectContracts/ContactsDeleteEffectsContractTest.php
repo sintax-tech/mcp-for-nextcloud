@@ -16,12 +16,12 @@ use OCA\Mcp\Tests\Unit\Service\BackupDocumentFixture;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tests\Unit\Tools\Tasks\IneffectiveLocks;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Tools\Contacts\ContactAccess;
-use OCA\Mcp\Tools\Contacts\ContactBackup;
-use OCA\Mcp\Tools\Contacts\ContactCard;
-use OCA\Mcp\Tools\Contacts\ContactsModule;
-use OCA\Mcp\Tools\Contacts\SystemContacts;
+use OCA\Mcp\Tests\Unit\Tools\Contacts\ContactsTestModule;
+use OCA\Mcp\Modules\Contacts\Planning\AddressBookShareNotice;
+use OCA\Mcp\Modules\Contacts\Locating\ContactAccess;
+use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
+use OCA\Mcp\Modules\Contacts\Cards\ContactCard;
+use OCA\Mcp\Modules\Contacts\ContactsModule;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Contacts\IManager;
 use OCP\Files\IRootFolder;
@@ -72,10 +72,10 @@ final class ContactsDeleteEffectsContractTest extends TestCase {
 		$time = $this->createMock(ITimeFactory::class);
 		$time->method('now')->willReturnCallback(static fn (): DateTimeImmutable => new DateTimeImmutable(self::NOW));
 		$location = new BackupLocation(BackupDocumentFixture::fromConfig($this, $this->gate->data()->appConfig($this)));
-		return new ContactsModule(new ContactAccess($this->contacts), $this->contacts, $this->contacts, new ContactCard(),
-			new SharedGuard($users),
+		return ContactsTestModule::build(new ContactAccess($this->contacts), $this->contacts, $this->contacts, new ContactCard(),
+			new AddressBookShareNotice($users),
 			new ContactBackup($roots, $time, $this->gate->config(), new IneffectiveLocks(), $location),
-			new SystemContacts($catalog, $this->createMock(IAppConfig::class), $this->createMock(IGroupManager::class), $users));
+			ContactsTestModule::system($catalog, $this->createMock(IAppConfig::class), $this->createMock(IGroupManager::class), $users));
 	}
 
 	/**

@@ -8,7 +8,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 
-use OCA\Mcp\Tools\Contacts\ContactBackupLock;
+use OCA\Mcp\Modules\Contacts\Backup\ContactBackupLock;
 use PHPUnit\Framework\TestCase;
 
 /** The contact-backup mutex has to fit in `file_locks.key` or release cannot find the row. */

@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Integration\Tasks;
 
 use Closure;
 use OCA\Mcp\Modules\Calendar\Writing\CalendarDav;
-use OCA\Mcp\Modules\Calendar\Writing\DavResult;
+use OCA\Mcp\Platform\Dav\DavResult;
 
 /**
  * The container's real CalDAV write port with one hook: the first update runs a closure just before it reaches

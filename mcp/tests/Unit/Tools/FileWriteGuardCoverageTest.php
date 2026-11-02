@@ -83,7 +83,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Tools/Files/FileBackup.php#prepare:copy:1' => 'D3: internal verified backup delegation; never reads policy',
 			'Tools/Files/FileBackupCopy.php#copy:newfile:1' => 'D3: mandatory internal backup creation; never reads policy',
 			'Tools/Files/FileBackupCopy.php#copy:putcontent:1' => 'D3: mandatory internal backup bytes; never reads policy',
-			'Tools/Contacts/ContactBackup.php#save:newfile:1' => 'D3: mandatory internal vCard backup; never reads policy',
+			'Modules/Contacts/Backup/ContactBackup.php#save:newfile:1' => 'D3: mandatory internal vCard backup; never reads policy',
 			'Modules/Calendar/Moving/EventRelocator.php#prepare:move:1' => 'DAV: not Files, official CalDAV move',
 			'Access/Policy/Transactions/PolicyTransaction.php#failure:rollback:1' => 'database: not Files, application transaction rollback',
 			'Modules/Calendar/Selftest/CalendarSelftestService.php#run:move:1' => 'DAV: not Files, diagnostic CalDAV move',
@@ -135,7 +135,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 				self::assertStringContainsString(':literal-', $key, 'A label classification cannot waive a detected call.');
 			}
 			if (str_starts_with($classification, 'D3:')) {
-				self::assertMatchesRegularExpression('~\ATools/(Files/FileBackup(?:Copy)?|Contacts/ContactBackup)\.php#~', $key);
+				self::assertMatchesRegularExpression('~\A(?:Tools/Files/FileBackup(?:Copy)?|Modules/Contacts/Backup/ContactBackup)\.php#~', $key);
 			}
 		}
 	}

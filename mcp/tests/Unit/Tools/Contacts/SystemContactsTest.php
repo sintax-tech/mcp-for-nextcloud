@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 
-use OCA\Mcp\Tools\Contacts\SystemContacts;
+use OCA\Mcp\Modules\Contacts\Accounts\SystemContacts;
 use OCP\Contacts\IManager;
 use OCP\IAddressBook;
 use OCP\IAppConfig;
@@ -77,7 +77,7 @@ final class SystemContactsTest extends TestCase {
 		$groups->method('isInGroup')->willReturnCallback(
 			fn (string $uid, string $gid): bool => in_array($gid, $this->groups[$uid] ?? [], true)
 		);
-		$this->system = new SystemContacts($manager, $config, $groups, $users);
+		$this->system = ContactsTestModule::system($manager, $config, $groups, $users);
 		$this->rows = [
 			$this->row('pedro', 'Paulo Exemplo', ['pedro@example.invalid'], '9'),
 			$this->row('maria', 'Pedro Maria', ['maria@example.invalid'], '9'),

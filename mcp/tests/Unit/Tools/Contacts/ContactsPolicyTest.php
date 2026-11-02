@@ -10,13 +10,12 @@ namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 use InvalidArgumentException;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Tools\Contacts\ContactAccess;
-use OCA\Mcp\Tools\Contacts\ContactBackup;
-use OCA\Mcp\Tools\Contacts\ContactCard;
-use OCA\Mcp\Tools\Contacts\ContactDav;
-use OCA\Mcp\Tools\Contacts\ContactStore;
-use OCA\Mcp\Tools\Contacts\ContactsModule;
+use OCA\Mcp\Modules\Contacts\Planning\AddressBookShareNotice;
+use OCA\Mcp\Modules\Contacts\Locating\ContactAccess;
+use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
+use OCA\Mcp\Modules\Contacts\Cards\ContactCard;
+use OCA\Mcp\Modules\Contacts\Writing\ContactDav;
+use OCA\Mcp\Modules\Contacts\Locating\ContactStore;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\IUser;
@@ -62,14 +61,14 @@ final class ContactsPolicyTest extends TestCase {
 		$store->expects(self::never())->method('card');
 		$users = $this->createMock(IUserManager::class);
 		$users->method('get')->willReturn($this->createMock(IUser::class));
-		$module = new ContactsModule(
+		$module = ContactsTestModule::build(
 			new ContactAccess($store),
 			$store,
 			$this->createMock(ContactDav::class),
 			new ContactCard(),
-			new SharedGuard($users),
+			new AddressBookShareNotice($users),
 			$this->createMock(ContactBackup::class),
-			$this->createMock(\OCA\Mcp\Tools\Contacts\SystemContacts::class)
+			$this->createMock(\OCA\Mcp\Modules\Contacts\Accounts\SystemContacts::class)
 		);
 		$apps = $this->createMock(IAppManager::class);
 		$apps->method('isEnabledForUser')->with('contacts')->willReturn($enabled);

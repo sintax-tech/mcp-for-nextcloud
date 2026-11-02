@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Calendar\Writing;
 
 use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
+use OCA\Mcp\Platform\Dav\DavResult;
 
 /**
  * Writes CalDAV events through the official Nextcloud pipeline.

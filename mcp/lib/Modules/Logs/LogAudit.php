@@ -27,6 +27,12 @@ class LogAudit {
 	/** Arguments recorded by the audit, in this order. */
 	private const AUDITED_ARGUMENTS = ['min_level', 'app', 'user', 'since', 'until', 'contains', 'req_id', 'offset', 'limit'];
 
+	/**
+	 * Records through the core's audit event and the app log.
+	 *
+	 * @param IEventDispatcher $dispatcher dispatcher the audit event is sent on
+	 * @param LoggerInterface $logger app logger that keeps the same line
+	 */
 	public function __construct(private IEventDispatcher $dispatcher, private LoggerInterface $logger) {}
 
 	/**

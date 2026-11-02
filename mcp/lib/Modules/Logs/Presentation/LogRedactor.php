@@ -64,6 +64,9 @@ final class LogRedactor {
 	/** A URL: scheme and host, then the rest. */
 	private const URL = '~^([a-z][a-z0-9+.-]*://[^/?#\s]+)(.*)$~i';
 
+	/**
+	 * Facade only; never instantiated.
+	 */
 	private function __construct() {
 	}
 
@@ -106,7 +109,12 @@ final class LogRedactor {
 		return $head . $prefix . (substr($path, strlen($prefix)) !== '' ? self::HIDDEN : '') . ($cut < strlen($url) ? '?' . self::HIDDEN : '');
 	}
 
-	/** @return string the route prefix of Nextcloud a path starts with, '' when none */
+	/**
+	 * The route prefix of Nextcloud a path starts with, or '' when none matches.
+	 *
+	 * @param string $path path of a URL, without its query
+	 * @return string the matching prefix, or '' when none matches
+	 */
 	private static function routePrefix(string $path): string {
 		foreach (self::ROUTE_PREFIXES as $pattern) {
 			if (preg_match($pattern, $path, $m) === 1) {

@@ -26,6 +26,9 @@ final class LogEnvelope {
 		. 'exception message and user agent is ' . LogRedactor::HIDDEN . ', URLs keep only their route prefix, signatures group '
 		. 'entries by level, app and exception class, topUserAgents is left out, and contains is not available.';
 
+	/**
+	 * Static envelope only; never instantiated.
+	 */
 	private function __construct() {
 	}
 

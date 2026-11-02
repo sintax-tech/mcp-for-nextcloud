@@ -58,20 +58,14 @@ final class LogsModule extends CatalogModule implements RestrictedModule {
 	}
 
 	/**
-	 * @param string $userId authenticated user
-	 * @return bool whether the user passes the role gate and the log is a file
+	 * {@inheritDoc}
 	 */
 	public function permits(string $userId): bool {
 		return $this->access->permits($userId);
 	}
 
 	/**
-	 * Records a call with its outcome, as the registry reports it.
-	 *
-	 * @param string $tool technical name of the tool called
-	 * @param string $userId authenticated user
-	 * @param string $outcome one of the RestrictedModule outcomes
-	 * @param array<string, mixed> $arguments arguments of the call
+	 * {@inheritDoc}
 	 */
 	public function audit(string $tool, string $userId, string $outcome, array $arguments): void {
 		$this->audit->recordCall($tool, $userId, $outcome, $arguments);

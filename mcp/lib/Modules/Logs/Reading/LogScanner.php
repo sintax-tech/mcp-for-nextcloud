@@ -37,6 +37,11 @@ class LogScanner {
 	/** Largest offset a call may start from; at the budget itself nothing is left to read. */
 	public const MAX_OFFSET = self::READ_BUDGET;
 
+	/**
+	 * Reads one window through the module's only reader.
+	 *
+	 * @param LogReader $reader the one reader of the module
+	 */
 	public function __construct(private LogReader $reader) {}
 
 	/**

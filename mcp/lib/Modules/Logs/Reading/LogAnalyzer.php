@@ -168,7 +168,14 @@ final class LogAnalyzer {
 		return mb_substr(preg_replace(['/\d+/', '/#+/'], '#', $path) ?? '', 0, self::SIGNATURE_LIMIT);
 	}
 
-	/** @return string a text field of the entry, redacted; '' when it is missing */
+	/**
+	 * A text field of the entry, redacted, or '' when it is missing.
+	 *
+	 * @param \stdClass $entry one decoded log entry
+	 * @param string $name field read from the entry
+	 * @param int $limit longest result in characters
+	 * @return string the redacted field, or '' when it is missing
+	 */
 	private static function field(\stdClass $entry, string $name, int $limit): string {
 		$value = $entry->{$name} ?? '';
 		// The user agent keeps the versions after a slash, as in logs_list.

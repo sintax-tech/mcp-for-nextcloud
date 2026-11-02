@@ -46,6 +46,9 @@ final class LogTextRedactor {
 	/** Line breaks, tabs and the Unicode line and paragraph separators: each becomes a space. */
 	private const BREAKS = ["\r\n", "\r", "\n", "\t", "\u{2028}", "\u{2029}"];
 
+	/**
+	 * Static redactor only; never instantiated.
+	 */
 	private function __construct() {
 	}
 
@@ -107,7 +110,12 @@ final class LogTextRedactor {
 		return mb_strlen($text) > $limit ? mb_substr($text, 0, $limit) . '…' : $text . ($processingCut ? '…' : '');
 	}
 
-	/** Only our exact canonical /48 output is already redacted; all other CIDRs still need masking. */
+	/**
+	 * Masks an IPv6 token. Only our exact canonical /48 output is already redacted; every other CIDR still needs masking.
+	 *
+	 * @param string $candidate a token that may be an IPv6 address, with an optional CIDR suffix
+	 * @return string|null the masked address, or null when the token is not an address
+	 */
 	private static function maskedIpv6(string $candidate): ?string {
 		$address = explode('/', $candidate, 2)[0];
 		$suffix = '';
@@ -122,7 +130,12 @@ final class LogTextRedactor {
 		return $candidate === $masked ? $candidate : $masked . $suffix;
 	}
 
-	/** @return bool whether the whole string is an IPv6 address */
+	/**
+	 * Whether the whole string is an IPv6 address.
+	 *
+	 * @param string $candidate the whole token to test
+	 * @return bool true when the token is an IPv6 address
+	 */
 	private static function isIpv6(string $candidate): bool {
 		return filter_var($candidate, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6) !== false;
 	}

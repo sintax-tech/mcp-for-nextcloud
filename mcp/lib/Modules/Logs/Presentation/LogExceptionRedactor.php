@@ -22,6 +22,9 @@ final class LogExceptionRedactor {
 	/** Shown in place of a hidden message or of the user's part of a URL. */
 	public const HIDDEN = '[hidden]';
 
+	/**
+	 * Static redactor only; never instantiated.
+	 */
 	private function __construct() {
 	}
 
@@ -71,7 +74,13 @@ final class LogExceptionRedactor {
 		return ['call' => LogTextRedactor::text($class . $function, 300), 'at' => self::place($frame['file'] ?? null, $frame['line'] ?? null)];
 	}
 
-	/** @return string file:line, or '' without a file */
+	/**
+	 * File and line of an exception or of one frame.
+	 *
+	 * @param mixed $file path as the log wrote it; only a non-empty string is kept
+	 * @param mixed $line line as the log wrote it; only an int is kept
+	 * @return string file:line, or '' without a file
+	 */
 	private static function place(mixed $file, mixed $line): string {
 		if (!is_string($file) || $file === '') {
 			return '';

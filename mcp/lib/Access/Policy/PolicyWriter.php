@@ -29,7 +29,6 @@ use OCP\IAppConfig;
 use OCP\IConfig;
 use OCP\IDBConnection;
 use OCP\IUserManager;
-use Throwable;
 
 /**
  * Owns the top-level transaction. Trusted app commands prepare remote observations outside the mutex and

@@ -85,7 +85,7 @@
 			"rule": "layering",
 			"source": "lib/Access/Policy/PolicyWriter.php",
 			"target": "OCA\\Mcp\\OAuth\\Storage\\OAuthStore",
-			"line": 110,
+			"line": 109,
 			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
 			"expires": "RE-06d"
 		},

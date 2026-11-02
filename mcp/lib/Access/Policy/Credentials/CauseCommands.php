@@ -66,7 +66,7 @@ final class CauseCommands implements CauseCommandsContract {
 	/**
 	 * Pairs each selected cause with its classification; a classification that misses a cause is a programming error.
 	 *
-	 * @param list<array{causeKey:string, gen:string}> $causes
+	 * @param list<array{causeKey:string, gen:string}> $causes Selected causes with their exact generations.
 	 * @param array<string, bool> $classification cause_key => cut
 	 * @return list<array{causeKey:string, gen:string, cut:bool}>
 	 * @throws \LogicException When any selected cause lacks a boolean classification.
@@ -88,7 +88,7 @@ final class CauseCommands implements CauseCommandsContract {
 	 * clarification 1), so the attempt advances the revision.
 	 *
 	 * @param string $uid Owner of the selected causes.
-	 * @param list<array{causeKey:string, gen:string, cut:bool}> $classified
+	 * @param list<array{causeKey:string, gen:string, cut:bool}> $classified Selected causes with their generations and cut decisions.
 	 * @return int causes deleted
 	 */
 	public function consumeLocal(string $uid, array $classified): int {

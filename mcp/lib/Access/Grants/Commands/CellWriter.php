@@ -64,8 +64,8 @@ final class CellWriter {
 	 * mutex, so a cell that turns out not to remove an Allow ignores its entry. An unknown inheritance is kept, not
 	 * thrown: it refuses the command only if the cell really removes an Allow.
 	 *
-	 * @param list<array{uid:string, key:string, value:?string}> $cells
-	 * @param (Closure(string): (list<array{groupId:string, gen:string}>|null))|null $inheritance
+	 * @param list<array{uid:string, key:string, value:?string}> $cells Requested raw cell changes.
+	 * @param (Closure(string): (list<array{groupId:string, gen:string}>|null))|null $inheritance Reads inherited group lifecycles for a user.
 	 * @return array<string, array{state:string, lifecycles?:list<array{groupId:string, gen:string}>}> by a digest
 	 *     of the uid
 	 */

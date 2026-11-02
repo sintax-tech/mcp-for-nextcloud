@@ -37,7 +37,7 @@ class ViewsDiscovery {
 	 * The views the user can open, in table then view id order.
 	 *
 	 * @param string $userId authenticated user UID
-	 * @param list<array{table:object, manages:bool}> $tables the tables of {@see TablesDiscovery::tables()}
+	 * @param list<array{table:object, manages:bool}> $tables the tables returned by TablesDiscovery::tables()
 	 * @return list<array{view:object, via:list<string>}> each view and where it was found: table, shared, context
 	 * @throws ToolFailure when the Tables app failed
 	 * @throws TablesUnavailableException when Tables is not available for the user

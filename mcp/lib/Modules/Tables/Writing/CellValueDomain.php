@@ -63,7 +63,7 @@ class CellValueDomain {
 	 * Whether an effect leaves the cell empty, as RowService counts a mandatory column empty.
 	 *
 	 * @param array<string, mixed> $column the column
-	 * @param mixed $effect the effect of {@see self::cell()}
+	 * @param mixed $effect the effect returned by cell()
 	 * @return bool true for an empty cell
 	 */
 	public static function isEmpty(array $column, mixed $effect): bool {

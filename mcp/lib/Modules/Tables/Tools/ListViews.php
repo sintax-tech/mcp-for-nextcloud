@@ -17,7 +17,7 @@ use OCA\Mcp\Modules\Tables\Presentation\TablesMessages;
 /** Publishes and delegates ListViews for Nextcloud Tables. */
 final class ListViews implements Tool {
 	/**
-	 * @param ListViewsHandler $handler the confirmed effect
+	 * @param ListViewsHandler $handler the read operation
 	 */
 	public function __construct(private ListViewsHandler $handler) {
 	}

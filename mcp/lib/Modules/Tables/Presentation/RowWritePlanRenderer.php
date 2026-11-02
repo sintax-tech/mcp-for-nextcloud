@@ -25,7 +25,7 @@ final class RowWritePlanRenderer {
 	/**
 	 * The Markdown body of a plan.
 	 *
-	 * @param array<string, mixed> $plan the plan of {@see RowWritePlan}
+	 * @param array<string, mixed> $plan the plan produced by RowWritePlan
 	 * @return string|null the body, or null when the plan lacks what this renderer needs
 	 */
 	public function render(array $plan): ?string {

@@ -18,7 +18,7 @@ use OCA\Mcp\Modules\Tables\Reading\RowsRequest;
 /** Publishes and delegates ListRows for Nextcloud Tables. */
 final class ListRows implements Tool {
 	/**
-	 * @param ListRowsHandler $handler the confirmed effect
+	 * @param ListRowsHandler $handler the read operation
 	 */
 	public function __construct(private ListRowsHandler $handler) {
 	}

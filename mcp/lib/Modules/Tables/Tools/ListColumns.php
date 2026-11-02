@@ -17,7 +17,7 @@ use OCA\Mcp\Modules\Tables\Presentation\TablesMessages;
 /** Publishes and delegates ListColumns for Nextcloud Tables. */
 final class ListColumns implements Tool {
 	/**
-	 * @param ListColumnsHandler $handler the confirmed effect
+	 * @param ListColumnsHandler $handler the read operation
 	 */
 	public function __construct(private ListColumnsHandler $handler) {
 	}

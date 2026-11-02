@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** OAuth client saving operations.
+/** Register the oauth clients saving unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,16 +10,16 @@
 	'use strict'
 
 	admin.modules.oauthClients = admin.modules.oauthClients || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach serialized OAuth writes, change detection and custom client persistence.
+	 * @param {object} context OAuth controls, confirmed settings and live queue and revision bindings
+	 * @return {void}
 	 */
 	admin.modules.oauthClients.saving = function (context) {
 		/**
 		 * Runs one task of the block after the previous one has finished.
-		 *
-		 * @param {Function} task async work
-		 * @return {Promise<*>} what the task returned
+		 * @template T
+		 * @param {function(): (T|PromiseLike<T>)} task work to run after the previous task settles
+		 * @return {Promise<T>} the result of this queued task
 		 */
 		function enqueue(task) {
 			const run = context.queue.then(task)
@@ -32,8 +32,7 @@
 		 * last, with the revision of that same answer, which is then replaced by the revision and clients the server
 		 * answers with. The policy revision moved, so the matrix is reloaded to keep its own saves valid. An intent
 		 * queued before a reload is dropped (error "stale"); a refused save drops the intents queued behind it.
-		 *
-		 * @param {Function} build (clients) => the changed settings
+		 * @param {function(object[]): object} build derive changed settings from the confirmed clients
 		 * @return {Promise<object>} the settings the server saved
 		 */
 		function put(build) {
@@ -71,7 +70,6 @@
 		 * writeHosts); clients keep their order, with names and redirect URIs trimmed and URIs without duplicates
 		 * (CustomClient::validate, validateUris). Every trim is PHP's own (phpTrim()). A value still holding a control
 		 * character after it, which the server refuses, counts as unsure. False when unsure, so nothing is announced then.
-		 *
 		 * @param {object} change the settings sent (hosts, nativeClientEnabled or customClients)
 		 * @param {object} stored the server's last answer
 		 * @return {boolean}
@@ -108,8 +106,7 @@
 
 		/**
 		 * Saves one change to the list of self-hosted clients.
-		 *
-		 * @param {Function} change (clients) => every client to keep, a new one without id; applied to the clients the
+		 * @param {function(object[]): object[]} change every client to keep, a new one without id; applied to the clients the
 		 *     server confirmed last, when the save's turn comes
 		 * @return {Promise<object|undefined>} the client the server added, if any
 		 */

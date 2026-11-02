@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix eligibility operations.
+/** Register the matrix eligibility unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,15 +10,14 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach connection eligibility rendering and its individual grant changes.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.eligibility = function (context) {
 		/**
 		 * "Can connect" in the levels view: Yes or No in words, its origin as an icon like the module cells, and the popover to
 		 * change it. A disabled account has no control, as in the operations view.
-		 *
 		 * @param {object} user row from the API
 		 * @return {HTMLTableCellElement}
 		 */

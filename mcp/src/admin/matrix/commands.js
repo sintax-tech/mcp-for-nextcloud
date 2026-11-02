@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix commands operations.
+/** Register the matrix commands unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,15 +10,14 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach bulk grant commands, confirmation and receipt-based undo.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.commands = function (context) {
 		/**
 		 * What a bulk change would do: per operation, the users whose saved value differs from the target and that value; users
 		 * with an unavailable or unknown cell are left out, users already set are counted.
-		 *
 		 * @param {string|null} module module id, null for eligibility
 		 * @param {string[]} operationList operation ids, or ["eligible"]
 		 * @param {boolean|Object<string, boolean>} granted the new value of every operation, or one per operation
@@ -56,7 +55,6 @@
 		/**
 		 * Saves a bulk change as one command: the server writes every cell or none, and returns the
 		 * receipt that undoes exactly these cells.
-		 *
 		 * @param {string|null} module module id, null for eligibility
 		 * @param {Array<{operation: string, uids: string[], granted: boolean}>} requests cells to save
 		 * @return {Promise<object>} the saved command: {revision, changed, receiptId}
@@ -79,11 +77,10 @@
 		 * connect" on or off. It confirms exactly what changes, how many are left out and why, and how many already have it,
 		 * sends nothing when nobody changes, saves one command and offers the undo. Every cell is an explicit allow or deny,
 		 * never an inheritance, as the level popover does for a removal (F1).
-		 *
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {string} level a level of src/admin/admin-levels.js; for "Can connect", "read" is on and "none" is off
 		 * @param {string[]} uids the selected users of the page
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function bulk(module, level, uids) {
 			// The plan is computed from the table on screen, so never from one that is being replaced.
@@ -146,10 +143,9 @@
 		/**
 		 * Undoes a bulk change through its receipt: the server puts back each cell's exact saved value,
 		 * absence included, and refuses when anything changed since that change.
-		 *
 		 * @param {string} receiptId receipt of the saved command
 		 * @param {string} savedRevision revision that command committed
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function undoBulk(receiptId, savedRevision) {
 			context.setBulkBusy(true)

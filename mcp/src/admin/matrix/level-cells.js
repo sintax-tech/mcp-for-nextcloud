@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix level cells operations.
+/** Register the matrix level cells unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,16 +10,15 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach level cells, inheritance markers and popover triggers.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.levelCells = function (context) {
 		const INDIVIDUAL_SOURCES = ['individual_allow', 'individual_deny', 'invalid']
 
 		/**
 		 * Where a module's values come from, as a sentence for the tooltip and screen readers.
-		 *
 		 * @param {{source: string, groupIds: string[]}} origin what OCA.Mcp.Admin.levels.originOf() returned
 		 * @return {string}
 		 */
@@ -38,7 +37,6 @@
 		 * from as an icon, so no state depends on colour. An individual value carries a person icon and a group a group icon;
 		 * the default has none. A module the user cannot use keeps the "no entry" mark without a control, and an unknown value
 		 * the dash, as in the operations view. Choosing the cell opens that module's operations for editing.
-		 *
 		 * @param {object} user row from the API
 		 * @param {string} module module id
 		 * @param {string[]} operations the module's operations in the catalog
@@ -101,7 +99,6 @@
 		 * the person would inherit (src/admin/admin-exceptions.js), gets the person icon; individual values that only repeat the
 		 * inheritance are drawn like what they repeat, and while that is not known yet they get no mark. Without the
 		 * classification every individual value is an exception, never fewer.
-		 *
 		 * @param {object} user row from the API
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {string[]} operations the module's operations, or ["eligible"]
@@ -131,9 +128,10 @@
 			return { origin: levels.originOf(operations, repeated), mark: 'redundant' }
 		}
 
-		/** @return {string|null} the icon class of a mark: a person for an exception, a group for a group, none otherwise
-		 * @param {*} origin operation input
-		 * @param {*} mark operation input
+		/** Choose the person or group marker class for a classified inheritance source.
+		 * @return {string|null} the icon class of a mark: a person for an exception, a group for a group, none otherwise
+		 * @param {{source: string, groupIds?: string[]}} origin grant source and contributing groups
+		 * @param {string} mark exception, redundant, pending or inherited source classification
 		 */
 		function markIcon(origin, mark) {
 			if (mark === 'exception') return 'icon-user'
@@ -141,11 +139,11 @@
 			return origin.source === 'group' || origin.source === 'unknown' ? 'icon-group' : null
 		}
 
-		/**
+		/** Describe a classified inheritance source for the tooltip and screen reader.
 		 * @return {string} where a cell's values come from, in words: a screen reader hears "Exception" where the eye sees the
 		 *     person icon, and the inspector says the same
-		 * @param {*} origin operation input
-		 * @param {*} mark operation input
+		 * @param {{source: string, groupIds?: string[]}} origin grant source and contributing groups
+		 * @param {string} mark exception, redundant, pending or inherited source classification
 		 */
 		function markText(origin, mark) {
 			if (mark === 'pending') return t('mcp', 'Set for this person')
@@ -156,7 +154,6 @@
 
 		/**
 		 * The control of a level cell: it opens the popover of src/admin/admin-level-popover.js, where the level is chosen.
-		 *
 		 * @param {object} user row from the API
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {string} className classes of the button

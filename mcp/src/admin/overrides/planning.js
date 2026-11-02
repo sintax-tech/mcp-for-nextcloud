@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Individual override planning operations.
+/** Register the overrides planning unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,12 +10,12 @@
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach override extraction, reset planning and command construction.
+	 * @param {object} context matrix dependencies, selected users and the live reset preview
+	 * @return {void}
 	 */
 	admin.modules.overrides.planning = function (context) {
-		/**
+		/** The cells where the user has an individual override.
 		 * @param {object} user row from the API
 		 * @return {Array<{module: string|null, operation: string, kind: string}>} the cells where the user has an individual override
 		 */
@@ -39,7 +39,6 @@
 		 * Whether the table offers no checkbox for this cell of this user: a disabled account, a user who may not connect (the
 		 * permission columns show one notice instead), a module whose column is hidden or an app that is unavailable to them.
 		 * An override there is still removed by a reset of the row, so the preview says so.
-		 *
 		 * @param {object} user row from the API
 		 * @param {{module: string|null}} cell an override of the user
 		 * @return {boolean}
@@ -56,9 +55,8 @@
 
 		/**
 		 * What a reset removes, computed from the table on screen.
-		 *
 		 * @param {object[]} users users to reset
-		 * @param {Array<{module: string|null, operation: string}>|Function|null} only restrict to these cells, or to the cells a
+		 * @param {Array<{module: string|null, operation: string}>|function(object, object): boolean|null} only restrict to these cells, or to the cells a
 		 *     function (user, cell) keeps; null for every override
 		 * @return {object} {targets, users, cells, allow, deny, invalid, eligibleAllow, eligibleDeny, unseen, without, tooMany}:
 		 *     eligibleDeny counts a Deny and an invalid value of "Can connect", both of which deny now and may stop denying;
@@ -93,7 +91,7 @@
 			return result
 		}
 
-		/**
+		/** Its inherit commands.
 		 * @param {object} result a plan
 		 * @return {Array<{uid: string, module: string|null, operation: string, state: string}>} its inherit commands
 		 */
@@ -106,7 +104,7 @@
 			})))
 		}
 
-		/**
+		/** Whether the preview was read at another revision than the table on screen, so what the table lists.
 		 * @param {object} current the open preview
 		 * @return {boolean} whether the preview was read at another revision than the table on screen, so what the table lists
 		 *     and what the preview shows may not be the same overrides
@@ -115,10 +113,11 @@
 			return current.revision !== null && current.revision !== context.matrix.data()?.revision
 		}
 
-		/** @return {string} key of one cell of one user
-		 * @param {*} uid operation input
-		 * @param {*} module operation input
-		 * @param {*} operation operation input
+		/** Build a stable key for a user, module and operation in a reset impact response.
+		 * @return {string} key of one cell of one user
+		 * @param {string} uid Nextcloud user ID
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {string} operation catalog operation ID
 		 */
 		function afterKey(uid, module, operation) {
 			return uid + '\0' + (module ?? '') + '\0' + operation

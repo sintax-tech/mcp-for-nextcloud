@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose the matrix controls, paging state and catalog through live context bindings.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.session = function (context) {
 		const root = context.root

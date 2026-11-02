@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Individual override preview operations.
+/** Register the overrides preview unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,20 +10,19 @@
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach reset preview opening, read-only impact loading and focus restoration.
+	 * @param {object} context matrix dependencies, selected users and the live reset preview
+	 * @return {void}
 	 */
 	admin.modules.overrides.preview = function (context) {
 		// --- Preview and reset ------------------------------------------------------------------------------------
 
 		/**
 		 * Opens the preview of a reset, or says why there is nothing to reset.
-		 *
 		 * @param {object[]} users users to reset
-		 * @param {Array<{module: string|null, operation: string}>|null} only restrict to these cells
+		 * @param {Array<{module: string|null, operation: string}>|function(object, object): boolean|null} only restrict to these cells
 		 * @param {HTMLElement} trigger control that asked, which gets the focus back when the preview is cancelled
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function start(users, only, trigger) {
 			if (context.saving || context.matrix.isBusy()) {
@@ -51,9 +50,8 @@
 		 * Asks the server what each cell has before and after the reset and redraws the preview with it. Read only. A preview
 		 * that cannot be read leaves every "after" unknown and the warning conservative; it never blocks the reset itself,
 		 * whose command refuses on its own what it cannot determine.
-		 *
 		 * @param {object} current the preview that asked; an answer for a preview that was closed or replaced is dropped
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function loadAfter(current) {
 			try {
@@ -78,8 +76,9 @@
 				: t('mcp', 'The result after the reset is shown.'), current.unavailable)
 		}
 
-		/** @param {boolean} restoreFocus give the focus back to the control that opened the preview
-		 * @return {*} operation result
+		/** Close the current preview or popover and restore focus when requested.
+		 * @param {boolean} restoreFocus give the focus back to the control that opened the preview
+		 * @return {void}
 		 */
 		function close(restoreFocus) {
 			const trigger = context.review?.trigger
@@ -94,9 +93,8 @@
 		/**
 		 * Puts the focus on the control that asked for the reset, or on the first control of the toolbar that can take it, and
 		 * as the last resort on the toolbar itself, so the focus never falls back to the page when a preview goes away.
-		 *
 		 * @param {HTMLElement|undefined} trigger control that opened the preview, which a reload may have replaced
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function focusSomething(trigger) {
 			const usable = (node) => node && node.isConnected !== false && !node.disabled
@@ -107,10 +105,9 @@
 		/**
 		 * Opens the reset preview for exactly these cells of these users, as src/admin/admin-exceptions.js does for the values that only
 		 * repeat what the people inherit. The reset itself is the same command and the same preview as any other.
-		 *
 		 * @param {Array<{uid: string, module: string|null, operation: string}>} cells cells of the users on the page
 		 * @param {HTMLElement} trigger control that asked
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function reviewCells(cells, trigger) {
 			const keys = new Set(cells.map((cell) => context.afterKey(cell.uid, cell.module, cell.operation)))

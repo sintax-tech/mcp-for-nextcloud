@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix requests operations.
+/** Register the matrix requests unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,14 +10,14 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach JSON requests, policy error recovery and the live matrix write lock.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.requests = function (context) {
 		let matrixLocked = false
 
-		/**
+		/** Fetch a JSON API response and reject unsuccessful requests with their response details.
 		 * @param {string} method HTTP method
 		 * @param {string} path path below /apps/mcp
 		 * @param {object} [body] JSON body
@@ -45,7 +45,7 @@
 		}
 
 		/** Reloads the matrix with every matrix write blocked until the new page is on screen.
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function reloadLocked() {
 			matrixLocked = true
@@ -59,7 +59,6 @@
 		/**
 		 * Tells the admin what a failed save means when the policy moved or the storage failed, and reloads
 		 * the matrix in those cases so nothing is written twice.
-		 *
 		 * @param {Error} e error thrown by api()
 		 * @return {Promise<boolean>} whether the error was handled here (the matrix is then reloaded)
 		 */
@@ -75,8 +74,9 @@
 			return true
 		}
 
-		/** @param {string} message error shown to the admin
-		 * @return {*} operation result
+		/** Show an error through the available Nextcloud toast or the browser alert fallback.
+		 * @param {string} message error shown to the admin
+		 * @return {void}
 		 */
 		function notifyError(message) {
 			// The old notification global is gone since Nextcloud 34 and OCP.Toast is deprecated, so without it the browser's own dialog

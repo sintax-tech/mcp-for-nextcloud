@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Compose the overrides editor and start its original effects once.
- * @param {object} admin operation input
- * @return {void} operation result
+ * @param {object} admin shared OCA.Mcp.Admin registry and public surfaces
+ * @return {void}
  */
 (function (admin) {
 	'use strict'

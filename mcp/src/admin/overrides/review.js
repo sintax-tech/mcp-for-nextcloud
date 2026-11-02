@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Individual override review operations.
+/** Register the overrides review unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,12 +10,12 @@
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach reset impact rendering and its confirmation and retry controls.
+	 * @param {object} context matrix dependencies, selected users and the live reset preview
+	 * @return {void}
 	 */
 	admin.modules.overrides.review = function (context) {
-		/**
+		/** What it will be, or "unknown": a missing or null answer is never shown as a value.
 		 * @param {{allowed: boolean|null, source: string, groupIds: string[]}|undefined} outcome the cell after the reset
 		 * @return {string} what it will be, or "Unknown": a missing or null answer is never shown as a value
 		 */
@@ -31,7 +31,7 @@
 			return t('mcp', 'Denied by default')
 		}
 
-		/**
+		/** Describe one user's individual values and the previewed inheritance after their reset.
 		 * @param {{user: object, cells: object[]}} target one user of the plan
 		 * @return {string} "Ana: Can connect: Individual override: allowed → Granted by groups: staff; Notes: edit: …"
 		 */
@@ -50,7 +50,6 @@
 
 		/**
 		 * What the server says about the results of a reset, once it was read.
-		 *
 		 * @param {object} current the open preview
 		 * @return {{changed: number, same: number, unknown: number, lost: number, kept: number, lostUnknown: number}}
 		 */
@@ -78,7 +77,7 @@
 		}
 
 		/** Draws the preview: the exact cells, what each has before and after, what may change and the buttons.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function renderReview() {
 			const result = context.review.plan

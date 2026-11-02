@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** OAuth client cards operations.
+/** Register the oauth clients cards unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,15 +10,14 @@
 	'use strict'
 
 	admin.modules.oauthClients = admin.modules.oauthClients || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach custom client card construction and its edit and deletion controls.
+	 * @param {object} context OAuth controls, confirmed settings and live queue and revision bindings
+	 * @return {void}
 	 */
 	admin.modules.oauthClients.cards = function (context) {
 		/**
 		 * One self-hosted client: name, Enabled, client_id with Copy (once saved), redirect URIs, Save and Delete.
 		 * Saving or deleting replaces only this card, so unsaved edits in the other cards stay.
-		 *
 		 * @param {object} client a stored client, or {id: null, ...} for a new one
 		 * @return {HTMLElement} the card
 		 */
@@ -58,7 +57,8 @@
 			)
 			const card = context.el('div', { className: 'mcp-custom-client' }, rows)
 
-			/** @return {object} the client as edited in the card */
+			/** The client as edited in the card.
+			 * @return {object} the client as edited in the card */
 			function read() {
 				return {
 					id: client.id,
@@ -68,7 +68,8 @@
 				}
 			}
 
-			/** @return {boolean} whether the card holds what the server does not have: any new card, or a changed name or URI list */
+			/** Whether the card holds what the server does not have: any new card, or a changed name or uri list.
+			 * @return {boolean} whether the card holds what the server does not have: any new card, or a changed name or URI list */
 			function edited() {
 				const entry = read()
 				return !saved || entry.name !== client.name || entry.redirectUris.join('\n') !== client.redirectUris.join('\n')

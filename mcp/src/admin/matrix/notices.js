@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix notices operations.
+/** Register the matrix notices unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach the live bulk lock, undo notice state and notice interaction handlers.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.notices = function (context) {
 		/** Seconds the undo of a bulk change stays offered; it waits while the pointer or focus is on it. */
@@ -28,9 +28,8 @@
 		/**
 		 * Locks the "All" menus and the undo while a bulk change or an undo is saving, so an older
 		 * operation can never finish on top of a newer one's notice, undo or focus.
-		 *
 		 * @param {boolean} on whether an operation is running
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function setBulkBusy(on) {
 			bulkBusy = on
@@ -50,7 +49,7 @@
 		}
 
 		/** Clears the notice and forgets the undo it offered.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function hideNotice() {
 			clearTimeout(noticeTimer)
@@ -61,7 +60,7 @@
 		}
 
 		/** Starts the countdown, unless the admin is on the notice or a bulk change is still running.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function armNotice() {
 			clearTimeout(noticeTimer)
@@ -72,10 +71,9 @@
 
 		/**
 		 * Shows a message under the matrix, with an Undo button when an undo is given.
-		 *
 		 * @param {string} message text of the notice
-		 * @param {Function|null} undo restores the previous values
-		 * @return {*} operation result
+		 * @param {(function(): Promise<void>)|null} undo restores the previous values
+		 * @return {void}
 		 */
 		function showNotice(message, undo) {
 			// A newer notice takes the single undo slot; say so instead of dropping the older undo silently.
@@ -87,8 +85,8 @@
 			context.armNotice()
 		}
 
-		/** Install this unit’s original listeners once, at its historical startup phase.
-		 * @return {*} operation result
+		/** Bind undo, notice dismissal and pointer and focus holds on the undo expiry timer.
+		 * @return {void}
 		 */
 		function attachNotices() {
 			notice.addEventListener('mouseenter', () => clearTimeout(noticeTimer))

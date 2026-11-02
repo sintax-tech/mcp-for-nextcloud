@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix elements operations.
+/** Register the matrix elements unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,15 +10,15 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach DOM construction and save feedback animation to the matrix context.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.elements = function (context) {
-		/**
+		/** Restart the saved or failed animation on the supplied feedback element.
 		 * @param {HTMLElement} cell cell that shows the save result
 		 * @param {boolean} ok whether the save worked
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function flash(cell, ok) {
 			cell.classList.remove('mcp-ok', 'mcp-error')
@@ -26,7 +26,7 @@
 			cell.classList.add(ok ? 'mcp-ok' : 'mcp-error')
 		}
 
-		/**
+		/** Create a DOM element, apply its properties and append its child nodes or text.
 		 * @param {string} tag element name
 		 * @param {object} [props] properties to assign
 		 * @param {Array<Node|string>} [children] child nodes or text

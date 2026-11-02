@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** OAuth client recovery operations.
+/** Register the oauth clients recovery unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.oauthClients = admin.modules.oauthClients || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach conflict recovery that refreshes OAuth state without replaying queued writes.
+	 * @param {object} context OAuth controls, confirmed settings and live queue and revision bindings
+	 * @return {void}
 	 */
 	admin.modules.oauthClients.recovery = function (context) {
 		/**
@@ -20,7 +20,6 @@
 		 * confirm it (503 uncertain), shows what is stored now, in the queue's order, and tells the admin nothing was
 		 * overwritten. The cards with unsaved typed changes are kept (see keepUnsaved()). An intent dropped behind such a
 		 * save is handled by that reload.
-		 *
 		 * @param {Error} e error thrown by put()
 		 * @return {Promise<boolean>} whether the error was handled here (the settings are then reloaded)
 		 */
@@ -49,7 +48,6 @@
 		 * The cards of the clients the server has now, with the cards whose typed changes it does not have put back: a
 		 * saved client keeps its edited card in its place, a new card comes after the saved ones, and the edits of a
 		 * client deleted elsewhere come back as a new card. Each card put back says it was not saved.
-		 *
 		 * @param {HTMLElement[]} unsaved cards with typed changes, read before the reload
 		 * @return {HTMLElement[]} the cards to show
 		 */

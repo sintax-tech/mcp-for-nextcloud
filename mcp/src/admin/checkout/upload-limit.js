@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Original upload limit editor.
+/** Register the checkout upload limit unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,15 +10,15 @@
 	'use strict'
 
 	admin.modules.checkout = admin.modules.checkout || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach upload limit loading, display and persistence to the matrix context.
+	 * @param {object} context matrix request and revision dependencies for the upload limit
+	 * @return {void}
 	 */
 	admin.modules.checkout.uploadLimit = function (context) {
 		/**
 		 * Checkout upload limit of the status block, in whole MiB, through GET and PUT /apps/mcp/api/checkout-limit.
 		 * Next to it: the effective limit and PHP's post_max_size ceiling.
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function initCheckoutLimit() {
 			const input = document.getElementById('mcp-checkout-limit')
@@ -27,8 +27,9 @@
 			const info = document.getElementById('mcp-checkout-limit-info')
 			const mib = (bytes) => Math.round(bytes / 1048576 * 10) / 10
 
-			/** @param {object} data limit returned by the API, in bytes
-			 * @return {*} operation result
+			/** Display the configured, effective and PHP upload limits in MiB, rounding the editable value up.
+			 * @param {object} data limit returned by the API, in bytes
+			 * @return {void}
 			 */
 			function show(data) {
 				// Round up and never show 0: a stored value below 1 MiB would fail the field's own min of 1 on the next save.

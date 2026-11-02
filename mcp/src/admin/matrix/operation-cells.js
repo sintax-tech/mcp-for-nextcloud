@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix operation cells operations.
+/** Register the matrix operation cells unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach operation checkboxes and accessible cell state presentation.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.operationCells = function (context) {
 		/**
@@ -29,7 +29,6 @@
 		/**
 		 * Why a user's permission cannot be changed here, or null when it can. The first reason wins:
 		 * a disabled account, then "Can connect" off, then the app (or the log role) unavailable to the user.
-		 *
 		 * @param {object} user row from the API
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @return {string|null} reason shown to the admin
@@ -54,11 +53,10 @@
 
 		/**
 		 * Paints one state on a cell: its class, tooltip and the name read by screen readers.
-		 *
 		 * @param {HTMLTableCellElement} cell the cell
 		 * @param {string} key key of PERMISSION_STATES
 		 * @param {string} [detail] extra sentence (the reason of an unavailable cell)
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function paintState(cell, key, detail) {
 			for (const other of Object.values(PERMISSION_STATES)) {
@@ -70,7 +68,6 @@
 
 		/**
 		 * A permission cell: a checkbox that saves at once, or the unavailable mark with its reason.
-		 *
 		 * @param {object} user row from the API
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {boolean} checked saved value

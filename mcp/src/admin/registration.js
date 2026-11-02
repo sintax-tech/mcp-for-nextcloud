@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** The admin namespace, shared by the independently registered page units.
- * @param {object} root operation input
- * @return {void} operation result
+ * @param {Window|typeof globalThis} root page global on which the single app namespace is initialized
+ * @return {void}
  */
 (function (root) {
 	'use strict'

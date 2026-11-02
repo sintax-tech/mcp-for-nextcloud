@@ -3,18 +3,19 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Compose and start the OAuth clients editor at its original matrix startup phase.
- * @param {object} admin operation input
- * @return {void} operation result
+ * @param {object} admin shared OCA.Mcp.Admin registry and public surfaces
+ * @return {void}
  */
 (function (admin) {
 	'use strict'
 	admin.modules.oauthClients = admin.modules.oauthClients || {}
-	/**
+	/** Attach OAuth startup to the matrix without loading settings until startup calls it.
 	 * @param {object} matrix matrix request, revision and presentation dependencies
 	 * @return {void}
 	 */
 	admin.modules.oauthClients.editor = function (matrix) {
-		/** @return {Promise<void>} initial settings load and original listener registration */
+		/** Initial settings load and original listener registration.
+		 * @return {Promise<void>} initial settings load and original listener registration */
 		async function initOauthClients() {
 			const context = { api: matrix.api, flash: matrix.flash, el: matrix.el,
 				notifyError: matrix.notifyError, oneStep: matrix.oneStep, phpTrim: matrix.phpTrim,
@@ -26,8 +27,9 @@
 			admin.modules.oauthClients.cards(context)
 			matrix.followRevision(() => context.oauthRevision, (revision) => { context.oauthRevision = revision })
 
-			/** @param {object} data settings returned by the API
-			 * @return {*} operation result
+			/** Retain confirmed OAuth settings and update hosts, native client details and custom clients.
+			 * @param {object} data settings returned by the API
+			 * @return {void}
 			 */
 			function show(data) {
 				context.oauthRevision = data.revision
@@ -40,11 +42,11 @@
 				context.customClients = data.customClients
 			}
 
-			/**
+			/** Write and animate the saved or failed outcome beside an OAuth control.
 			 * @param {HTMLElement} status status span next to the control
 			 * @param {boolean} ok whether the save worked
 			 * @param {string} [message] text shown on failure
-			 * @return {*} operation result
+			 * @return {void}
 			 */
 			function report(status, ok, message) {
 				status.textContent = ok ? t('mcp', 'Saved') : (message || t('mcp', 'Not saved'))

@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Original exclusion tags editor.
+/** Register the protection exclusion tags unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,13 +10,13 @@
 	'use strict'
 
 	admin.modules.protection = admin.modules.protection || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach exclusion tag loading, picker validation and persistence to the matrix context.
+	 * @param {object} context matrix request and revision dependencies for exclusion tag settings
+	 * @return {void}
 	 */
 	admin.modules.protection.exclusionTags = function (context) {
-		/**
-		 * @return {Promise<*>} operation result
+		/** Load exclusion tags, mount their picker and register invalid-policy repair controls.
+		 * @return {Promise<void>}
 		 */
 		async function initTagsSection() {
 			const container = document.getElementById('mcp-tags-list')
@@ -33,8 +33,9 @@
 				return
 			}
 
-			/** @param {boolean} isInvalid shows or hides every sign of the unreadable setting
-			 * @return {*} operation result
+			/** Mark invalid exclusion configuration and expose its repair controls.
+			 * @param {boolean} isInvalid shows or hides every sign of the unreadable setting
+			 * @return {void}
 			 */
 			function setInvalidState(isInvalid) {
 				if (invalid) {
@@ -52,7 +53,6 @@
 
 			/**
 			 * The type badge of a tag option, with its explanation in the title.
-			 *
 			 * @param {string} type collaborative, restricted or invisible
 			 * @return {{text: string, title: string, className: string}}
 			 */
@@ -66,8 +66,9 @@
 				return { text: t('mcp', 'Collaborative'), title: t('mcp', 'Users can assign and remove this tag'), className: 'mcp-tag-type-collaborative' }
 			}
 
-			/** @param {string[]} selectedIds warns when a collaborative tag, removable by editors, is selected
-			 * @return {*} operation result
+			/** Show the warning when selected exclusion tags can be removed by ordinary editors.
+			 * @param {string[]} selectedIds warns when a collaborative tag, removable by editors, is selected
+			 * @return {void}
 			 */
 			function updateWarning(selectedIds) {
 				if (!warning) {
@@ -80,9 +81,8 @@
 			/**
 			 * PUT /api/admin/tags with the same payload as before. A failure is explained here and rethrown,
 			 * so the picker rolls the selection back; on success the invalid-setting block goes away.
-			 *
 			 * @param {string[]} tagIds the ids to save
-			 * @return {Promise<*>} operation result
+			 * @return {Promise<void>}
 			 */
 			async function saveTags(tagIds) {
 				try {

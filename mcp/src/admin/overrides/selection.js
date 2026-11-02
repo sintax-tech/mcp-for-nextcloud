@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Individual override selection operations.
+/** Register the overrides selection unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Create the selection toolbar and attach bulk selection controls and their listeners.
+	 * @param {object} context matrix dependencies, selected users and the live reset preview
+	 * @return {void}
 	 */
 	admin.modules.overrides.selection = function (context) {
 		// --- Toolbar: the selection bar, the reset of the selected users, live regions and the preview -------------
@@ -61,13 +61,14 @@
 		toolbar.tabIndex = -1
 		context.anchor.before(toolbar)
 
-		/** @return {object[]} the selected users that are on the page now */
+		/** The selected users that are on the page now.
+		 * @return {object[]} the selected users that are on the page now */
 		function selectedUsers() {
 			return context.pageUsers().filter((user) => context.selected.has(user.uid))
 		}
 
 		/** Keeps the toolbar's counters, the select-all box and the button state in line with the selection and the lock.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function updateToolbar() {
 			const users = context.pageUsers()
@@ -86,7 +87,7 @@
 		}
 
 		/** The choices of the selection bar: "Can connect" first, then every module of the catalog.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function fillModules() {
 			const catalog = context.matrix.data()?.catalog || {}
@@ -98,7 +99,7 @@
 		}
 
 		/** The levels of the chosen module, or Yes and No for "Can connect".
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function fillLevels() {
 			const module = moduleChoice.value || null
@@ -110,7 +111,7 @@
 		}
 
 		/** Sets the chosen level for the selected people, through the matrix's bulk change.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function applySelection() {
 			if (context.saving || context.matrix.isBusy()) {
@@ -124,7 +125,7 @@
 		}
 
 		/** Clears the selection of the page.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function clearAll() {
 			context.selected.clear()
@@ -137,9 +138,8 @@
 
 		/**
 		 * Puts the select-all box in the header of the selection column, which src/admin/matrix/start.js draws again on every render.
-		 *
 		 * @param {HTMLTableCellElement} header the header cell of the selection column
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function decorateHeader(header) {
 			header.append(selectAll)

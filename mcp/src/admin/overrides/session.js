@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Individual override session operations.
+/** Register the overrides session unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose reset selection, preview state and live status announcements.
+	 * @param {object} context matrix dependencies, selected users and the live reset preview
+	 * @return {void}
 	 */
 	admin.modules.overrides.session = function (context) {
 		/** Sources of a cell's origin that are an individual override, by kind. Everything else is inherited. */
@@ -30,7 +30,7 @@
 		let saving = false
 		let sayTimer = null
 
-		/**
+		/** Create a DOM element, apply its properties and append its child nodes or text.
 		 * @param {string} tag element name
 		 * @param {object} [props] properties to assign
 		 * @param {Array<Node|string>} [children] child nodes or text
@@ -45,12 +45,13 @@
 			return node
 		}
 
-		/** @return {object[]} the users of the table on screen */
+		/** The users of the table on screen.
+		 * @return {object[]} the users of the table on screen */
 		function pageUsers() {
 			return context.matrix.data()?.users || []
 		}
 
-		/**
+		/** Name the module permission or the connection eligibility permission.
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {string} operation operation id, "eligible" for "Can connect"
 		 * @return {string} the permission as the table names it
@@ -67,10 +68,9 @@
 		 * Writes into the live regions. A region is cleared at once and written shortly after, so the same text twice in a
 		 * row (a second identical error) is announced again, and a message that was replaced in the meantime never appears.
 		 * The regions are fixed: a status one (polite) and an alert one (assertive), whose role never changes.
-		 *
 		 * @param {string} message text, '' to clear both
 		 * @param {boolean} [error] an error goes to the alert region
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function say(message, error = false) {
 			clearTimeout(sayTimer)

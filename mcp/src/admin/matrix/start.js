@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Compose the matrix and start its original effects in their original order.
- * @param {object} admin operation input
- * @return {void} operation result
+ * @param {object} admin shared OCA.Mcp.Admin registry and public surfaces
+ * @return {void}
  */
 (function (admin) {
 	'use strict'
@@ -52,17 +52,20 @@
 		isBusy: () => context.bulkBusy || context.matrixLocked,
 		setBusy: context.setBulkBusy,
 		labels: () => ({ modules: context.moduleLabels(), operations: context.operationLabels() }),
-		/**
+		/** Show a command result and offer receipt-based undo when the save changed the policy.
 		 * @param {string} message text of the notice
 		 * @param {{receiptId: string|null, revision: string}} saved the saved command
-		 * @return {Function|null} the undo that was offered, to give back to focusUndo()
+		 * @return {(function(): Promise<void>)|null} the undo that was offered, to give back to focusUndo()
 		 */
 		offerUndo(message, saved) {
 			const undo = saved.receiptId === null ? null : () => context.undoBulk(saved.receiptId, saved.revision)
 			context.showNotice(message, undo)
 			return undo
 		},
-		/** @param {Function|null} undo what offerUndo() returned: the focus moves to it while it is still the offered undo */
+		/** Focus the undo control only while it still represents the supplied offer.
+		 * @param {(function(): Promise<void>)|null} undo callback returned by offerUndo
+		 * @return {void}
+		 */
 		focusUndo(undo) {
 			if (undo !== null && context.pendingUndo === undo) {
 				context.undoButton.focus()

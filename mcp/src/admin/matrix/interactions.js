@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix interactions operations.
+/** Register the matrix interactions unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach focus visibility and the service, reload and filter listener installers.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.interactions = function (context) {
 		let searchTimer = null
@@ -22,9 +22,8 @@
 		 * start, the "…" menu at the end, js/admin.css), and inside the block. The browser scrolls a focused control into the
 		 * matrix block, but not out from under those columns, and it leaves one that shows in part where it is, so a cell
 		 * reached by Tab could be hidden (WCAG 2.4.11). Measured on screen, so it holds at any width and in either direction.
-		 *
 		 * @param {FocusEvent} event focusin on the scrolling block of the matrix
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function revealFocus(event) {
 			const wrap = event.currentTarget
@@ -59,8 +58,8 @@
 			}
 		}
 
-		/** Install the original attachService handlers.
-		 * @return {*} operation result
+		/** Bind service switching to policy-aware persistence and a locked matrix reload.
+		 * @return {void}
 		 */
 		function attachService() {
 			context.serviceBox.addEventListener('change', async () => {
@@ -96,8 +95,8 @@
 
 		}
 
-		/** Install the original attachReloads handlers.
-		 * @return {*} operation result
+		/** Bind successful group and scope writes to matrix reloads.
+		 * @return {void}
 		 */
 		function attachReloads() {
 			window.addEventListener('mcp-group-policy-saved', context.reloadLocked)
@@ -105,8 +104,8 @@
 
 		}
 
-		/** Install the original attachInteractions handlers.
-		 * @return {*} operation result
+		/** Bind user search, group and eligibility filters, paging and explicit matrix reload.
+		 * @return {void}
 		 */
 		function attachInteractions() {
 			context.table.parentElement?.addEventListener('focusin', context.revealFocus)

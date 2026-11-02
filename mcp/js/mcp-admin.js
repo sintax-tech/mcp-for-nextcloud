@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** The admin namespace, shared by the independently registered page units.
- * @param {object} root operation input
- * @return {void} operation result
+ * @param {Window|typeof globalThis} root page global on which the single app namespace is initialized
+ * @return {void}
  */
 (function (root) {
 	'use strict'
@@ -1023,9 +1023,9 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose the matrix controls, paging state and catalog through live context bindings.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.session = function (context) {
 		const root = context.root
@@ -1088,7 +1088,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix labels operations.
+/** Register the matrix labels unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -1096,12 +1096,13 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach the translated module, operation and level label catalogs to the matrix context.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.labels = function (context) {
-		/** @return {Object<string, string>} module labels */
+		/** Module labels.
+		 * @return {Object<string, string>} module labels */
 		function moduleLabels() {
 			return {
 				files: t('mcp', 'Files'),
@@ -1118,7 +1119,8 @@
 			}
 		}
 
-		/** @return {Object<string, string>} operation labels */
+		/** Operation labels.
+		 * @return {Object<string, string>} operation labels */
 		function operationLabels() {
 			return {
 				...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(),
@@ -1145,7 +1147,6 @@
 
 		/**
 		 * What each operation lets the AI do, shown as the column tooltip.
-		 *
 		 * @param {string} module module id
 		 * @param {string} operation operation id
 		 * @return {string} description
@@ -1182,7 +1183,8 @@
 			return hints[operation] || ''
 		}
 
-		/** @return {Object<string, string>} names of the access levels of src/admin/admin-levels.js */
+		/** Names of the access levels of src/admin/admin-levels.js.
+		 * @return {Object<string, string>} names of the access levels of src/admin/admin-levels.js */
 		function levelLabels() {
 			return {
 				...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(),
@@ -1212,7 +1214,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix requests operations.
+/** Register the matrix requests unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -1220,14 +1222,14 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach JSON requests, policy error recovery and the live matrix write lock.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.requests = function (context) {
 		let matrixLocked = false
 
-		/**
+		/** Fetch a JSON API response and reject unsuccessful requests with their response details.
 		 * @param {string} method HTTP method
 		 * @param {string} path path below /apps/mcp
 		 * @param {object} [body] JSON body
@@ -1255,7 +1257,7 @@
 		}
 
 		/** Reloads the matrix with every matrix write blocked until the new page is on screen.
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function reloadLocked() {
 			matrixLocked = true
@@ -1269,7 +1271,6 @@
 		/**
 		 * Tells the admin what a failed save means when the policy moved or the storage failed, and reloads
 		 * the matrix in those cases so nothing is written twice.
-		 *
 		 * @param {Error} e error thrown by api()
 		 * @return {Promise<boolean>} whether the error was handled here (the matrix is then reloaded)
 		 */
@@ -1285,8 +1286,9 @@
 			return true
 		}
 
-		/** @param {string} message error shown to the admin
-		 * @return {*} operation result
+		/** Show an error through the available Nextcloud toast or the browser alert fallback.
+		 * @param {string} message error shown to the admin
+		 * @return {void}
 		 */
 		function notifyError(message) {
 			// The old notification global is gone since Nextcloud 34 and OCP.Toast is deprecated, so without it the browser's own dialog
@@ -1311,7 +1313,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix revisions operations.
+/** Register the matrix revisions unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -1319,9 +1321,9 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach revision announcements and subscriptions used to keep settings writes synchronized.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.revisions = function (context) {
 		const REVISION_MOVED = 'mcp-revision-moved'
@@ -1329,10 +1331,9 @@
 		/**
 		 * Tells the other blocks of this page that a write of this page moved the policy revision from `from` to `to`.
 		 * Only the answer of a save qualifies: the server committed it from `from`, so `to` holds that write and nothing else.
-		 *
 		 * @param {string} from revision the write was sent with
 		 * @param {string} to revision the server answered with
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function announce(from, to) {
 			if (typeof from === 'string' && typeof to === 'string' && from !== to) {
@@ -1347,7 +1348,6 @@
 		 * from the settings this block confirmed at `from` made one step itself, and one step in all is that save alone. A
 		 * request that changes nothing commits nothing: its answer is never announced, whatever it shows. Compared as exact
 		 * integers, never as floating-point numbers.
-		 *
 		 * @param {string} from revision the save was sent with
 		 * @param {string} to revision of the answer
 		 * @return {boolean}
@@ -1363,7 +1363,6 @@
 		/**
 		 * PHP's trim() without a character list: removes only " \t\n\r\0\x0B" from both ends. String.prototype.trim()
 		 * keeps NUL and removes Unicode spaces PHP keeps, so it cannot stand in for the server's normalization.
-		 *
 		 * @param {string} text
 		 * @return {string}
 		 */
@@ -1374,10 +1373,9 @@
 		/**
 		 * Keeps a block's own revision in step with the writes of this page: when the block is exactly at the revision a
 		 * write committed from, it takes the one that write made, and its unsaved changes stay valid.
-		 *
-		 * @param {Function} get () => the block's revision
-		 * @param {Function} set (revision) => void
-		 * @return {*} operation result
+		 * @param {function(): (string|null)} get read the block's live revision
+		 * @param {function(string): void} set replace the block's live revision
+		 * @return {void}
 		 */
 		function followRevision(get, set) {
 			window.addEventListener(REVISION_MOVED, (event) => {
@@ -1400,7 +1398,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix elements operations.
+/** Register the matrix elements unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -1408,15 +1406,15 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach DOM construction and save feedback animation to the matrix context.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.elements = function (context) {
-		/**
+		/** Restart the saved or failed animation on the supplied feedback element.
 		 * @param {HTMLElement} cell cell that shows the save result
 		 * @param {boolean} ok whether the save worked
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function flash(cell, ok) {
 			cell.classList.remove('mcp-ok', 'mcp-error')
@@ -1424,7 +1422,7 @@
 			cell.classList.add(ok ? 'mcp-ok' : 'mcp-error')
 		}
 
-		/**
+		/** Create a DOM element, apply its properties and append its child nodes or text.
 		 * @param {string} tag element name
 		 * @param {object} [props] properties to assign
 		 * @param {Array<Node|string>} [children] child nodes or text
@@ -1448,7 +1446,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix loading operations.
+/** Register the matrix loading unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -1456,9 +1454,9 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach matrix fetching, error rendering and group and app filter population.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.loading = function (context) {
 		let loadSeq = 0
@@ -1466,7 +1464,7 @@
 		/**
 		 * Reads the current page from the server and re-renders the table; a failure is shown in the table with a retry.
 		 * The page and its revision always come from the same response, and only the newest request is rendered.
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function load() {
 			const seq = ++loadSeq
@@ -1495,7 +1493,7 @@
 		}
 
 		/** Replaces the body with an error row and a retry button, keeping the last header.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function renderError() {
 			const retry = context.el('button', { type: 'button', textContent: t('mcp', 'Retry'), onclick: context.load })
@@ -1506,7 +1504,7 @@
 		}
 
 		/** Fills the group filter once, keeping the current selection.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function renderGroups() {
 			if (context.state.groupsLoaded) {
@@ -1519,7 +1517,7 @@
 		}
 
 		/** Populate app choices from the actual catalog, preserving a valid selection.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function renderApps() {
 			const labels = context.moduleLabels()
@@ -1551,7 +1549,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix view operations.
+/** Register the matrix view unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -1559,13 +1557,13 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach view switching, column filtering and URL history synchronization.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.view = function (context) {
 		/** Filter only presentation; user queries and permission payloads stay unchanged.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function applyAppFilter() {
 			const app = context.shownApp()
@@ -1588,7 +1586,7 @@
 		}
 
 		/** Read the Access tab's app parameter on reload and history navigation.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function readAppFromHash() {
 			const [tab, query = ''] = window.location.hash.slice(1).split('?')
@@ -1611,22 +1609,23 @@
 			context.applyAppFilter()
 		}
 
-		/** @return {boolean} whether the matrix shows one level per module */
+		/** Whether the matrix shows one level per module.
+		 * @return {boolean} whether the matrix shows one level per module */
 		function isLevelsView() {
 			return context.state.view === 'levels' && Boolean(window.OCA.Mcp.Admin.levels)
 		}
 
-		/** @return {string} the app whose columns are shown alone, '' for all; the levels view always shows every module */
+		/** The app whose columns are shown alone, '' for all; the levels view always shows every module.
+		 * @return {string} the app whose columns are shown alone, '' for all; the levels view always shows every module */
 		function shownApp() {
 			return context.isLevelsView() ? '' : context.state.app
 		}
 
 		/**
 		 * Switches between the levels and the operations view, keeping the page, the filters and the data on screen.
-		 *
 		 * @param {string} view "levels" or "operations"
 		 * @param {string} [app] module to show alone in the operations view
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function setView(view, app) {
 			context.state.view = view
@@ -1644,9 +1643,8 @@
 
 		/**
 		 * Writes the chosen app into the address (#access?app=<module>, no parameter for all apps).
-		 *
 		 * @param {boolean} replace correct the current entry instead of adding a history entry
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function writeAppToHash(replace) {
 			const [tab, query = ''] = window.location.hash.slice(1).split('?')
@@ -1675,8 +1673,8 @@
 			}
 		}
 
-		/** Install this unit’s original listeners once, at its historical startup phase.
-		 * @return {*} operation result
+		/** Bind app and view controls and hash navigation, then apply the current address state.
+		 * @return {void}
 		 */
 		function attachView() {
 			context.appSelect.addEventListener('change', () => {
@@ -1705,7 +1703,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix rendering operations.
+/** Register the matrix rendering unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -1713,16 +1711,16 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach table rendering and sticky header measurement to the matrix context.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.rendering = function (context) {
 		let observedHeaderRow = null
 		let headerObserver = null
 
 		/** Makes the second header row stick right below the first one, whose height depends on the density.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function stickSecondHeaderRow() {
 			const [top, sub] = context.table.tHead.rows
@@ -1740,7 +1738,7 @@
 		 * render there measures zero; showing the tab (or changing density or font size) resizes the row
 		 * and the observer re-sticks the second row below it. A browser without ResizeObserver keeps the
 		 * render-time measure, which is correct whenever the panel is visible.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function observeHeaderRow() {
 			if (!window.ResizeObserver) {
@@ -1759,7 +1757,7 @@
 		}
 
 		/** Renders header and rows from state.data.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function render() {
 			const data = context.state.data
@@ -1866,7 +1864,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix rows operations.
+/** Register the matrix rows unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -1874,14 +1872,14 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach user rows, action menus and the individual exception filter.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.rows = function (context) {
 		const OWN_SOURCES = ['individual_allow', 'individual_deny', 'invalid']
 
-		/**
+		/** Build the user identity, connection, permission and action cells for one matrix row.
 		 * @param {object} user row from the API
 		 * @return {HTMLTableRowElement}
 		 */
@@ -1891,7 +1889,7 @@
 			return row
 		}
 
-		/**
+		/** Build the identity, connection, permission and action cells for a matrix user.
 		 * @param {object} user row from the API
 		 * @return {HTMLTableRowElement}
 		 */
@@ -1945,7 +1943,6 @@
 		 * The second line under a name: "Account disabled", "Connected" (with its mark, in the success colour as text) or, for
 		 * everyone else, the user ID. Being connected is a fact worth seeing; not being connected is the normal case and says
 		 * nothing more than the ID.
-		 *
 		 * @param {object} user row from the API
 		 * @return {HTMLElement}
 		 */
@@ -1963,8 +1960,9 @@
 			return context.el('span', { className: 'mcp-uid', textContent: user.uid })
 		}
 
-		/** @return {HTMLTableCellElement} the cell with the row's actions menu (src/admin/admin-row-actions.js)
-		 * @param {*} user operation input
+		/** Build a user row's actions menu cell when the row actions surface is available.
+		 * @return {HTMLTableCellElement} the cell with the row's actions menu (src/admin/admin-row-actions.js)
+		 * @param {object} user matrix user row with grants, origins and availability
 		 */
 		function actionsCell(user) {
 			const cell = context.el('td', { className: 'mcp-actions-col' })
@@ -1976,7 +1974,6 @@
 		/**
 		 * Whether a user has a real exception on the page (src/admin/admin-exceptions.js): an individual value that differs from what
 		 * they would inherit. null while that is not known.
-		 *
 		 * @param {object} user row from the API
 		 * @return {boolean|null}
 		 */
@@ -1998,7 +1995,7 @@
 		/**
 		 * The "All | With exceptions (N)" filter: it counts the users of this page who have a real exception and, when chosen,
 		 * shows only them. It works on the page on screen, so it says so; nothing is asked of the server.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function applyExceptionsFilter() {
 			if (!context.onlyButtons.exceptions || !context.state.data) return
@@ -2032,7 +2029,6 @@
 		/**
 		 * Why none of a user's permissions can be changed: a disabled account or "Can connect" off. The
 		 * row then shows this one notice across the permission columns instead of a mark in each of them.
-		 *
 		 * @param {object} user row from the API
 		 * @return {string|null} short notice, or null when the permissions are shown cell by cell
 		 */
@@ -2046,7 +2042,8 @@
 			return null
 		}
 
-		/** @return {number} permission columns shown with the current app filter */
+		/** Permission columns shown with the current app filter.
+		 * @return {number} permission columns shown with the current app filter */
 		function visiblePermissionColumns() {
 			if (context.isLevelsView()) {
 				return Object.keys(context.state.data?.catalog || {}).length
@@ -2081,7 +2078,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix operation cells operations.
+/** Register the matrix operation cells unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -2089,9 +2086,9 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach operation checkboxes and accessible cell state presentation.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.operationCells = function (context) {
 		/**
@@ -2108,7 +2105,6 @@
 		/**
 		 * Why a user's permission cannot be changed here, or null when it can. The first reason wins:
 		 * a disabled account, then "Can connect" off, then the app (or the log role) unavailable to the user.
-		 *
 		 * @param {object} user row from the API
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @return {string|null} reason shown to the admin
@@ -2133,11 +2129,10 @@
 
 		/**
 		 * Paints one state on a cell: its class, tooltip and the name read by screen readers.
-		 *
 		 * @param {HTMLTableCellElement} cell the cell
 		 * @param {string} key key of PERMISSION_STATES
 		 * @param {string} [detail] extra sentence (the reason of an unavailable cell)
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function paintState(cell, key, detail) {
 			for (const other of Object.values(PERMISSION_STATES)) {
@@ -2149,7 +2144,6 @@
 
 		/**
 		 * A permission cell: a checkbox that saves at once, or the unavailable mark with its reason.
-		 *
 		 * @param {object} user row from the API
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {boolean} checked saved value
@@ -2250,7 +2244,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix level cells operations.
+/** Register the matrix level cells unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -2258,16 +2252,15 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach level cells, inheritance markers and popover triggers.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.levelCells = function (context) {
 		const INDIVIDUAL_SOURCES = ['individual_allow', 'individual_deny', 'invalid']
 
 		/**
 		 * Where a module's values come from, as a sentence for the tooltip and screen readers.
-		 *
 		 * @param {{source: string, groupIds: string[]}} origin what OCA.Mcp.Admin.levels.originOf() returned
 		 * @return {string}
 		 */
@@ -2286,7 +2279,6 @@
 		 * from as an icon, so no state depends on colour. An individual value carries a person icon and a group a group icon;
 		 * the default has none. A module the user cannot use keeps the "no entry" mark without a control, and an unknown value
 		 * the dash, as in the operations view. Choosing the cell opens that module's operations for editing.
-		 *
 		 * @param {object} user row from the API
 		 * @param {string} module module id
 		 * @param {string[]} operations the module's operations in the catalog
@@ -2349,7 +2341,6 @@
 		 * the person would inherit (src/admin/admin-exceptions.js), gets the person icon; individual values that only repeat the
 		 * inheritance are drawn like what they repeat, and while that is not known yet they get no mark. Without the
 		 * classification every individual value is an exception, never fewer.
-		 *
 		 * @param {object} user row from the API
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {string[]} operations the module's operations, or ["eligible"]
@@ -2379,9 +2370,10 @@
 			return { origin: levels.originOf(operations, repeated), mark: 'redundant' }
 		}
 
-		/** @return {string|null} the icon class of a mark: a person for an exception, a group for a group, none otherwise
-		 * @param {*} origin operation input
-		 * @param {*} mark operation input
+		/** Choose the person or group marker class for a classified inheritance source.
+		 * @return {string|null} the icon class of a mark: a person for an exception, a group for a group, none otherwise
+		 * @param {{source: string, groupIds?: string[]}} origin grant source and contributing groups
+		 * @param {string} mark exception, redundant, pending or inherited source classification
 		 */
 		function markIcon(origin, mark) {
 			if (mark === 'exception') return 'icon-user'
@@ -2389,11 +2381,11 @@
 			return origin.source === 'group' || origin.source === 'unknown' ? 'icon-group' : null
 		}
 
-		/**
+		/** Describe a classified inheritance source for the tooltip and screen reader.
 		 * @return {string} where a cell's values come from, in words: a screen reader hears "Exception" where the eye sees the
 		 *     person icon, and the inspector says the same
-		 * @param {*} origin operation input
-		 * @param {*} mark operation input
+		 * @param {{source: string, groupIds?: string[]}} origin grant source and contributing groups
+		 * @param {string} mark exception, redundant, pending or inherited source classification
 		 */
 		function markText(origin, mark) {
 			if (mark === 'pending') return t('mcp', 'Set for this person')
@@ -2404,7 +2396,6 @@
 
 		/**
 		 * The control of a level cell: it opens the popover of src/admin/admin-level-popover.js, where the level is chosen.
-		 *
 		 * @param {object} user row from the API
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {string} className classes of the button
@@ -2435,7 +2426,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix eligibility operations.
+/** Register the matrix eligibility unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -2443,15 +2434,14 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach connection eligibility rendering and its individual grant changes.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.eligibility = function (context) {
 		/**
 		 * "Can connect" in the levels view: Yes or No in words, its origin as an icon like the module cells, and the popover to
 		 * change it. A disabled account has no control, as in the operations view.
-		 *
 		 * @param {object} user row from the API
 		 * @return {HTMLTableCellElement}
 		 */
@@ -2504,7 +2494,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix notices operations.
+/** Register the matrix notices unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -2512,9 +2502,9 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach the live bulk lock, undo notice state and notice interaction handlers.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.notices = function (context) {
 		/** Seconds the undo of a bulk change stays offered; it waits while the pointer or focus is on it. */
@@ -2530,9 +2520,8 @@
 		/**
 		 * Locks the "All" menus and the undo while a bulk change or an undo is saving, so an older
 		 * operation can never finish on top of a newer one's notice, undo or focus.
-		 *
 		 * @param {boolean} on whether an operation is running
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function setBulkBusy(on) {
 			bulkBusy = on
@@ -2552,7 +2541,7 @@
 		}
 
 		/** Clears the notice and forgets the undo it offered.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function hideNotice() {
 			clearTimeout(noticeTimer)
@@ -2563,7 +2552,7 @@
 		}
 
 		/** Starts the countdown, unless the admin is on the notice or a bulk change is still running.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function armNotice() {
 			clearTimeout(noticeTimer)
@@ -2574,10 +2563,9 @@
 
 		/**
 		 * Shows a message under the matrix, with an Undo button when an undo is given.
-		 *
 		 * @param {string} message text of the notice
-		 * @param {Function|null} undo restores the previous values
-		 * @return {*} operation result
+		 * @param {(function(): Promise<void>)|null} undo restores the previous values
+		 * @return {void}
 		 */
 		function showNotice(message, undo) {
 			// A newer notice takes the single undo slot; say so instead of dropping the older undo silently.
@@ -2589,8 +2577,8 @@
 			context.armNotice()
 		}
 
-		/** Install this unit’s original listeners once, at its historical startup phase.
-		 * @return {*} operation result
+		/** Bind undo, notice dismissal and pointer and focus holds on the undo expiry timer.
+		 * @return {void}
 		 */
 		function attachNotices() {
 			notice.addEventListener('mouseenter', () => clearTimeout(noticeTimer))
@@ -2636,7 +2624,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix commands operations.
+/** Register the matrix commands unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -2644,15 +2632,14 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach bulk grant commands, confirmation and receipt-based undo.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.commands = function (context) {
 		/**
 		 * What a bulk change would do: per operation, the users whose saved value differs from the target and that value; users
 		 * with an unavailable or unknown cell are left out, users already set are counted.
-		 *
 		 * @param {string|null} module module id, null for eligibility
 		 * @param {string[]} operationList operation ids, or ["eligible"]
 		 * @param {boolean|Object<string, boolean>} granted the new value of every operation, or one per operation
@@ -2690,7 +2677,6 @@
 		/**
 		 * Saves a bulk change as one command: the server writes every cell or none, and returns the
 		 * receipt that undoes exactly these cells.
-		 *
 		 * @param {string|null} module module id, null for eligibility
 		 * @param {Array<{operation: string, uids: string[], granted: boolean}>} requests cells to save
 		 * @return {Promise<object>} the saved command: {revision, changed, receiptId}
@@ -2713,11 +2699,10 @@
 		 * connect" on or off. It confirms exactly what changes, how many are left out and why, and how many already have it,
 		 * sends nothing when nobody changes, saves one command and offers the undo. Every cell is an explicit allow or deny,
 		 * never an inheritance, as the level popover does for a removal (F1).
-		 *
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {string} level a level of src/admin/admin-levels.js; for "Can connect", "read" is on and "none" is off
 		 * @param {string[]} uids the selected users of the page
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function bulk(module, level, uids) {
 			// The plan is computed from the table on screen, so never from one that is being replaced.
@@ -2780,10 +2765,9 @@
 		/**
 		 * Undoes a bulk change through its receipt: the server puts back each cell's exact saved value,
 		 * absence included, and refuses when anything changed since that change.
-		 *
 		 * @param {string} receiptId receipt of the saved command
 		 * @param {string} savedRevision revision that command committed
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function undoBulk(receiptId, savedRevision) {
 			context.setBulkBusy(true)
@@ -2826,7 +2810,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix interactions operations.
+/** Register the matrix interactions unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -2834,9 +2818,9 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach focus visibility and the service, reload and filter listener installers.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.interactions = function (context) {
 		let searchTimer = null
@@ -2846,9 +2830,8 @@
 		 * start, the "…" menu at the end, js/admin.css), and inside the block. The browser scrolls a focused control into the
 		 * matrix block, but not out from under those columns, and it leaves one that shows in part where it is, so a cell
 		 * reached by Tab could be hidden (WCAG 2.4.11). Measured on screen, so it holds at any width and in either direction.
-		 *
 		 * @param {FocusEvent} event focusin on the scrolling block of the matrix
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function revealFocus(event) {
 			const wrap = event.currentTarget
@@ -2883,8 +2866,8 @@
 			}
 		}
 
-		/** Install the original attachService handlers.
-		 * @return {*} operation result
+		/** Bind service switching to policy-aware persistence and a locked matrix reload.
+		 * @return {void}
 		 */
 		function attachService() {
 			context.serviceBox.addEventListener('change', async () => {
@@ -2920,8 +2903,8 @@
 
 		}
 
-		/** Install the original attachReloads handlers.
-		 * @return {*} operation result
+		/** Bind successful group and scope writes to matrix reloads.
+		 * @return {void}
 		 */
 		function attachReloads() {
 			window.addEventListener('mcp-group-policy-saved', context.reloadLocked)
@@ -2929,8 +2912,8 @@
 
 		}
 
-		/** Install the original attachInteractions handlers.
-		 * @return {*} operation result
+		/** Bind user search, group and eligibility filters, paging and explicit matrix reload.
+		 * @return {void}
 		 */
 		function attachInteractions() {
 			context.table.parentElement?.addEventListener('focusin', context.revealFocus)
@@ -2992,7 +2975,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Original exclusion tags editor.
+/** Register the protection exclusion tags unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -3000,13 +2983,13 @@
 	'use strict'
 
 	admin.modules.protection = admin.modules.protection || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach exclusion tag loading, picker validation and persistence to the matrix context.
+	 * @param {object} context matrix request and revision dependencies for exclusion tag settings
+	 * @return {void}
 	 */
 	admin.modules.protection.exclusionTags = function (context) {
-		/**
-		 * @return {Promise<*>} operation result
+		/** Load exclusion tags, mount their picker and register invalid-policy repair controls.
+		 * @return {Promise<void>}
 		 */
 		async function initTagsSection() {
 			const container = document.getElementById('mcp-tags-list')
@@ -3023,8 +3006,9 @@
 				return
 			}
 
-			/** @param {boolean} isInvalid shows or hides every sign of the unreadable setting
-			 * @return {*} operation result
+			/** Mark invalid exclusion configuration and expose its repair controls.
+			 * @param {boolean} isInvalid shows or hides every sign of the unreadable setting
+			 * @return {void}
 			 */
 			function setInvalidState(isInvalid) {
 				if (invalid) {
@@ -3042,7 +3026,6 @@
 
 			/**
 			 * The type badge of a tag option, with its explanation in the title.
-			 *
 			 * @param {string} type collaborative, restricted or invisible
 			 * @return {{text: string, title: string, className: string}}
 			 */
@@ -3056,8 +3039,9 @@
 				return { text: t('mcp', 'Collaborative'), title: t('mcp', 'Users can assign and remove this tag'), className: 'mcp-tag-type-collaborative' }
 			}
 
-			/** @param {string[]} selectedIds warns when a collaborative tag, removable by editors, is selected
-			 * @return {*} operation result
+			/** Show the warning when selected exclusion tags can be removed by ordinary editors.
+			 * @param {string[]} selectedIds warns when a collaborative tag, removable by editors, is selected
+			 * @return {void}
 			 */
 			function updateWarning(selectedIds) {
 				if (!warning) {
@@ -3070,9 +3054,8 @@
 			/**
 			 * PUT /api/admin/tags with the same payload as before. A failure is explained here and rethrown,
 			 * so the picker rolls the selection back; on success the invalid-setting block goes away.
-			 *
 			 * @param {string[]} tagIds the ids to save
-			 * @return {Promise<*>} operation result
+			 * @return {Promise<void>}
 			 */
 			async function saveTags(tagIds) {
 				try {
@@ -3138,7 +3121,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Original upload limit editor.
+/** Register the checkout upload limit unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -3146,15 +3129,15 @@
 	'use strict'
 
 	admin.modules.checkout = admin.modules.checkout || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach upload limit loading, display and persistence to the matrix context.
+	 * @param {object} context matrix request and revision dependencies for the upload limit
+	 * @return {void}
 	 */
 	admin.modules.checkout.uploadLimit = function (context) {
 		/**
 		 * Checkout upload limit of the status block, in whole MiB, through GET and PUT /apps/mcp/api/checkout-limit.
 		 * Next to it: the effective limit and PHP's post_max_size ceiling.
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function initCheckoutLimit() {
 			const input = document.getElementById('mcp-checkout-limit')
@@ -3163,8 +3146,9 @@
 			const info = document.getElementById('mcp-checkout-limit-info')
 			const mib = (bytes) => Math.round(bytes / 1048576 * 10) / 10
 
-			/** @param {object} data limit returned by the API, in bytes
-			 * @return {*} operation result
+			/** Display the configured, effective and PHP upload limits in MiB, rounding the editable value up.
+			 * @param {object} data limit returned by the API, in bytes
+			 * @return {void}
 			 */
 			function show(data) {
 				// Round up and never show 0: a stored value below 1 MiB would fail the field's own min of 1 on the next save.
@@ -3214,7 +3198,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Original privacy editor.
+/** Register the logs privacy unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -3222,15 +3206,15 @@
 	'use strict'
 
 	admin.modules.logs = admin.modules.logs || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach log privacy loading and persistence to the matrix context.
+	 * @param {object} context matrix request and revision dependencies for log settings
+	 * @return {void}
 	 */
 	admin.modules.logs.privacy = function (context) {
 		/**
 		 * Server log section: the switch that hides the text of log messages in the log tools, through GET and PUT
 		 * /apps/mcp/api/logs-privacy.
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function initLogsPrivacy() {
 			const box = document.getElementById('mcp-logs-hide-file-names')
@@ -3283,7 +3267,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Original readers editor.
+/** Register the logs readers unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -3291,9 +3275,9 @@
 	'use strict'
 
 	admin.modules.logs = admin.modules.logs || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach log reader group loading, selection and persistence to the matrix context.
+	 * @param {object} context matrix request and revision dependencies for log settings
+	 * @return {void}
 	 */
 	admin.modules.logs.readers = function (context) {
 		/**
@@ -3302,7 +3286,7 @@
 		 * the list it changed (`previous`), so the server answers 409 when another window or administrator
 		 * saved first and a removed group is never put back. A listed group that was deleted shows as an
 		 * option marked "(group removed)", to be removed.
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function initLogsAccess() {
 			const container = document.getElementById('mcp-logs-groups')
@@ -3317,8 +3301,9 @@
 			let picker = null
 			context.followRevision(() => logsRevision, (revision) => { logsRevision = revision })
 
-			/** @param {object} data state returned by the API
-			 * @return {*} operation result
+			/** Apply the loaded settings to their controls and retain the server-confirmed state.
+			 * @param {object} data state returned by the API
+			 * @return {void}
 			 */
 			function show(data) {
 				version = data.version
@@ -3370,10 +3355,9 @@
 
 			/**
 			 * The effective readers, as one line: groups are a gate on top of the per-user grant of the matrix.
-			 *
 			 * @param {string[]} groups the saved group ids
 			 * @param {Array<{id: string, label: string}>} options the known groups, for their display names
-			 * @return {*} operation result
+			 * @return {void}
 			 */
 			function paintSummary(groups, options) {
 				if (!summary) {
@@ -3395,7 +3379,7 @@
 			}
 
 			/** Loads the list again, after a conflict or a failure.
-			 * @return {Promise<*>} operation result
+			 * @return {Promise<void>}
 			 */
 			async function reload() {
 				try {
@@ -3430,9 +3414,9 @@
 	'use strict'
 
 	admin.modules.oauthClients = admin.modules.oauthClients || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose OAuth controls and live confirmed settings, revision, queue and epoch bindings.
+	 * @param {object} context OAuth controls, confirmed settings and live queue and revision bindings
+	 * @return {void}
 	 */
 	admin.modules.oauthClients.session = function (context) {
 		const hostsInput = document.getElementById('mcp-oauth-hosts')
@@ -3485,7 +3469,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** OAuth client saving operations.
+/** Register the oauth clients saving unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -3493,16 +3477,16 @@
 	'use strict'
 
 	admin.modules.oauthClients = admin.modules.oauthClients || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach serialized OAuth writes, change detection and custom client persistence.
+	 * @param {object} context OAuth controls, confirmed settings and live queue and revision bindings
+	 * @return {void}
 	 */
 	admin.modules.oauthClients.saving = function (context) {
 		/**
 		 * Runs one task of the block after the previous one has finished.
-		 *
-		 * @param {Function} task async work
-		 * @return {Promise<*>} what the task returned
+		 * @template T
+		 * @param {function(): (T|PromiseLike<T>)} task work to run after the previous task settles
+		 * @return {Promise<T>} the result of this queued task
 		 */
 		function enqueue(task) {
 			const run = context.queue.then(task)
@@ -3515,8 +3499,7 @@
 		 * last, with the revision of that same answer, which is then replaced by the revision and clients the server
 		 * answers with. The policy revision moved, so the matrix is reloaded to keep its own saves valid. An intent
 		 * queued before a reload is dropped (error "stale"); a refused save drops the intents queued behind it.
-		 *
-		 * @param {Function} build (clients) => the changed settings
+		 * @param {function(object[]): object} build derive changed settings from the confirmed clients
 		 * @return {Promise<object>} the settings the server saved
 		 */
 		function put(build) {
@@ -3554,7 +3537,6 @@
 		 * writeHosts); clients keep their order, with names and redirect URIs trimmed and URIs without duplicates
 		 * (CustomClient::validate, validateUris). Every trim is PHP's own (phpTrim()). A value still holding a control
 		 * character after it, which the server refuses, counts as unsure. False when unsure, so nothing is announced then.
-		 *
 		 * @param {object} change the settings sent (hosts, nativeClientEnabled or customClients)
 		 * @param {object} stored the server's last answer
 		 * @return {boolean}
@@ -3591,8 +3573,7 @@
 
 		/**
 		 * Saves one change to the list of self-hosted clients.
-		 *
-		 * @param {Function} change (clients) => every client to keep, a new one without id; applied to the clients the
+		 * @param {function(object[]): object[]} change every client to keep, a new one without id; applied to the clients the
 		 *     server confirmed last, when the save's turn comes
 		 * @return {Promise<object|undefined>} the client the server added, if any
 		 */
@@ -3614,7 +3595,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** OAuth client recovery operations.
+/** Register the oauth clients recovery unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -3622,9 +3603,9 @@
 	'use strict'
 
 	admin.modules.oauthClients = admin.modules.oauthClients || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach conflict recovery that refreshes OAuth state without replaying queued writes.
+	 * @param {object} context OAuth controls, confirmed settings and live queue and revision bindings
+	 * @return {void}
 	 */
 	admin.modules.oauthClients.recovery = function (context) {
 		/**
@@ -3632,7 +3613,6 @@
 		 * confirm it (503 uncertain), shows what is stored now, in the queue's order, and tells the admin nothing was
 		 * overwritten. The cards with unsaved typed changes are kept (see keepUnsaved()). An intent dropped behind such a
 		 * save is handled by that reload.
-		 *
 		 * @param {Error} e error thrown by put()
 		 * @return {Promise<boolean>} whether the error was handled here (the settings are then reloaded)
 		 */
@@ -3661,7 +3641,6 @@
 		 * The cards of the clients the server has now, with the cards whose typed changes it does not have put back: a
 		 * saved client keeps its edited card in its place, a new card comes after the saved ones, and the edits of a
 		 * client deleted elsewhere come back as a new card. Each card put back says it was not saved.
-		 *
 		 * @param {HTMLElement[]} unsaved cards with typed changes, read before the reload
 		 * @return {HTMLElement[]} the cards to show
 		 */
@@ -3691,7 +3670,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** OAuth client cards operations.
+/** Register the oauth clients cards unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -3699,15 +3678,14 @@
 	'use strict'
 
 	admin.modules.oauthClients = admin.modules.oauthClients || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach custom client card construction and its edit and deletion controls.
+	 * @param {object} context OAuth controls, confirmed settings and live queue and revision bindings
+	 * @return {void}
 	 */
 	admin.modules.oauthClients.cards = function (context) {
 		/**
 		 * One self-hosted client: name, Enabled, client_id with Copy (once saved), redirect URIs, Save and Delete.
 		 * Saving or deleting replaces only this card, so unsaved edits in the other cards stay.
-		 *
 		 * @param {object} client a stored client, or {id: null, ...} for a new one
 		 * @return {HTMLElement} the card
 		 */
@@ -3747,7 +3725,8 @@
 			)
 			const card = context.el('div', { className: 'mcp-custom-client' }, rows)
 
-			/** @return {object} the client as edited in the card */
+			/** The client as edited in the card.
+			 * @return {object} the client as edited in the card */
 			function read() {
 				return {
 					id: client.id,
@@ -3757,7 +3736,8 @@
 				}
 			}
 
-			/** @return {boolean} whether the card holds what the server does not have: any new card, or a changed name or URI list */
+			/** Whether the card holds what the server does not have: any new card, or a changed name or uri list.
+			 * @return {boolean} whether the card holds what the server does not have: any new card, or a changed name or URI list */
 			function edited() {
 				const entry = read()
 				return !saved || entry.name !== client.name || entry.redirectUris.join('\n') !== client.redirectUris.join('\n')
@@ -3839,18 +3819,19 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Compose and start the OAuth clients editor at its original matrix startup phase.
- * @param {object} admin operation input
- * @return {void} operation result
+ * @param {object} admin shared OCA.Mcp.Admin registry and public surfaces
+ * @return {void}
  */
 (function (admin) {
 	'use strict'
 	admin.modules.oauthClients = admin.modules.oauthClients || {}
-	/**
+	/** Attach OAuth startup to the matrix without loading settings until startup calls it.
 	 * @param {object} matrix matrix request, revision and presentation dependencies
 	 * @return {void}
 	 */
 	admin.modules.oauthClients.editor = function (matrix) {
-		/** @return {Promise<void>} initial settings load and original listener registration */
+		/** Initial settings load and original listener registration.
+		 * @return {Promise<void>} initial settings load and original listener registration */
 		async function initOauthClients() {
 			const context = { api: matrix.api, flash: matrix.flash, el: matrix.el,
 				notifyError: matrix.notifyError, oneStep: matrix.oneStep, phpTrim: matrix.phpTrim,
@@ -3862,8 +3843,9 @@
 			admin.modules.oauthClients.cards(context)
 			matrix.followRevision(() => context.oauthRevision, (revision) => { context.oauthRevision = revision })
 
-			/** @param {object} data settings returned by the API
-			 * @return {*} operation result
+			/** Retain confirmed OAuth settings and update hosts, native client details and custom clients.
+			 * @param {object} data settings returned by the API
+			 * @return {void}
 			 */
 			function show(data) {
 				context.oauthRevision = data.revision
@@ -3876,11 +3858,11 @@
 				context.customClients = data.customClients
 			}
 
-			/**
+			/** Write and animate the saved or failed outcome beside an OAuth control.
 			 * @param {HTMLElement} status status span next to the control
 			 * @param {boolean} ok whether the save worked
 			 * @param {string} [message] text shown on failure
-			 * @return {*} operation result
+			 * @return {void}
 			 */
 			function report(status, ok, message) {
 				status.textContent = ok ? t('mcp', 'Saved') : (message || t('mcp', 'Not saved'))
@@ -3945,8 +3927,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Compose the matrix and start its original effects in their original order.
- * @param {object} admin operation input
- * @return {void} operation result
+ * @param {object} admin shared OCA.Mcp.Admin registry and public surfaces
+ * @return {void}
  */
 (function (admin) {
 	'use strict'
@@ -3994,17 +3976,20 @@
 		isBusy: () => context.bulkBusy || context.matrixLocked,
 		setBusy: context.setBulkBusy,
 		labels: () => ({ modules: context.moduleLabels(), operations: context.operationLabels() }),
-		/**
+		/** Show a command result and offer receipt-based undo when the save changed the policy.
 		 * @param {string} message text of the notice
 		 * @param {{receiptId: string|null, revision: string}} saved the saved command
-		 * @return {Function|null} the undo that was offered, to give back to focusUndo()
+		 * @return {(function(): Promise<void>)|null} the undo that was offered, to give back to focusUndo()
 		 */
 		offerUndo(message, saved) {
 			const undo = saved.receiptId === null ? null : () => context.undoBulk(saved.receiptId, saved.revision)
 			context.showNotice(message, undo)
 			return undo
 		},
-		/** @param {Function|null} undo what offerUndo() returned: the focus moves to it while it is still the offered undo */
+		/** Focus the undo control only while it still represents the supplied offer.
+		 * @param {(function(): Promise<void>)|null} undo callback returned by offerUndo
+		 * @return {void}
+		 */
 		focusUndo(undo) {
 			if (undo !== null && context.pendingUndo === undo) {
 				context.undoButton.focus()
@@ -5226,7 +5211,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Individual override session operations.
+/** Register the overrides session unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -5234,9 +5219,9 @@
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose reset selection, preview state and live status announcements.
+	 * @param {object} context matrix dependencies, selected users and the live reset preview
+	 * @return {void}
 	 */
 	admin.modules.overrides.session = function (context) {
 		/** Sources of a cell's origin that are an individual override, by kind. Everything else is inherited. */
@@ -5254,7 +5239,7 @@
 		let saving = false
 		let sayTimer = null
 
-		/**
+		/** Create a DOM element, apply its properties and append its child nodes or text.
 		 * @param {string} tag element name
 		 * @param {object} [props] properties to assign
 		 * @param {Array<Node|string>} [children] child nodes or text
@@ -5269,12 +5254,13 @@
 			return node
 		}
 
-		/** @return {object[]} the users of the table on screen */
+		/** The users of the table on screen.
+		 * @return {object[]} the users of the table on screen */
 		function pageUsers() {
 			return context.matrix.data()?.users || []
 		}
 
-		/**
+		/** Name the module permission or the connection eligibility permission.
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {string} operation operation id, "eligible" for "Can connect"
 		 * @return {string} the permission as the table names it
@@ -5291,10 +5277,9 @@
 		 * Writes into the live regions. A region is cleared at once and written shortly after, so the same text twice in a
 		 * row (a second identical error) is announced again, and a message that was replaced in the meantime never appears.
 		 * The regions are fixed: a status one (polite) and an alert one (assertive), whose role never changes.
-		 *
 		 * @param {string} message text, '' to clear both
 		 * @param {boolean} [error] an error goes to the alert region
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function say(message, error = false) {
 			clearTimeout(sayTimer)
@@ -5329,7 +5314,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Individual override planning operations.
+/** Register the overrides planning unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -5337,12 +5322,12 @@
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach override extraction, reset planning and command construction.
+	 * @param {object} context matrix dependencies, selected users and the live reset preview
+	 * @return {void}
 	 */
 	admin.modules.overrides.planning = function (context) {
-		/**
+		/** The cells where the user has an individual override.
 		 * @param {object} user row from the API
 		 * @return {Array<{module: string|null, operation: string, kind: string}>} the cells where the user has an individual override
 		 */
@@ -5366,7 +5351,6 @@
 		 * Whether the table offers no checkbox for this cell of this user: a disabled account, a user who may not connect (the
 		 * permission columns show one notice instead), a module whose column is hidden or an app that is unavailable to them.
 		 * An override there is still removed by a reset of the row, so the preview says so.
-		 *
 		 * @param {object} user row from the API
 		 * @param {{module: string|null}} cell an override of the user
 		 * @return {boolean}
@@ -5383,9 +5367,8 @@
 
 		/**
 		 * What a reset removes, computed from the table on screen.
-		 *
 		 * @param {object[]} users users to reset
-		 * @param {Array<{module: string|null, operation: string}>|Function|null} only restrict to these cells, or to the cells a
+		 * @param {Array<{module: string|null, operation: string}>|function(object, object): boolean|null} only restrict to these cells, or to the cells a
 		 *     function (user, cell) keeps; null for every override
 		 * @return {object} {targets, users, cells, allow, deny, invalid, eligibleAllow, eligibleDeny, unseen, without, tooMany}:
 		 *     eligibleDeny counts a Deny and an invalid value of "Can connect", both of which deny now and may stop denying;
@@ -5420,7 +5403,7 @@
 			return result
 		}
 
-		/**
+		/** Its inherit commands.
 		 * @param {object} result a plan
 		 * @return {Array<{uid: string, module: string|null, operation: string, state: string}>} its inherit commands
 		 */
@@ -5433,7 +5416,7 @@
 			})))
 		}
 
-		/**
+		/** Whether the preview was read at another revision than the table on screen, so what the table lists.
 		 * @param {object} current the open preview
 		 * @return {boolean} whether the preview was read at another revision than the table on screen, so what the table lists
 		 *     and what the preview shows may not be the same overrides
@@ -5442,10 +5425,11 @@
 			return current.revision !== null && current.revision !== context.matrix.data()?.revision
 		}
 
-		/** @return {string} key of one cell of one user
-		 * @param {*} uid operation input
-		 * @param {*} module operation input
-		 * @param {*} operation operation input
+		/** Build a stable key for a user, module and operation in a reset impact response.
+		 * @return {string} key of one cell of one user
+		 * @param {string} uid Nextcloud user ID
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {string} operation catalog operation ID
 		 */
 		function afterKey(uid, module, operation) {
 			return uid + '\0' + (module ?? '') + '\0' + operation
@@ -5460,7 +5444,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Individual override selection operations.
+/** Register the overrides selection unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -5468,9 +5452,9 @@
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Create the selection toolbar and attach bulk selection controls and their listeners.
+	 * @param {object} context matrix dependencies, selected users and the live reset preview
+	 * @return {void}
 	 */
 	admin.modules.overrides.selection = function (context) {
 		// --- Toolbar: the selection bar, the reset of the selected users, live regions and the preview -------------
@@ -5519,13 +5503,14 @@
 		toolbar.tabIndex = -1
 		context.anchor.before(toolbar)
 
-		/** @return {object[]} the selected users that are on the page now */
+		/** The selected users that are on the page now.
+		 * @return {object[]} the selected users that are on the page now */
 		function selectedUsers() {
 			return context.pageUsers().filter((user) => context.selected.has(user.uid))
 		}
 
 		/** Keeps the toolbar's counters, the select-all box and the button state in line with the selection and the lock.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function updateToolbar() {
 			const users = context.pageUsers()
@@ -5544,7 +5529,7 @@
 		}
 
 		/** The choices of the selection bar: "Can connect" first, then every module of the catalog.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function fillModules() {
 			const catalog = context.matrix.data()?.catalog || {}
@@ -5556,7 +5541,7 @@
 		}
 
 		/** The levels of the chosen module, or Yes and No for "Can connect".
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function fillLevels() {
 			const module = moduleChoice.value || null
@@ -5568,7 +5553,7 @@
 		}
 
 		/** Sets the chosen level for the selected people, through the matrix's bulk change.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function applySelection() {
 			if (context.saving || context.matrix.isBusy()) {
@@ -5582,7 +5567,7 @@
 		}
 
 		/** Clears the selection of the page.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function clearAll() {
 			context.selected.clear()
@@ -5595,9 +5580,8 @@
 
 		/**
 		 * Puts the select-all box in the header of the selection column, which src/admin/matrix/start.js draws again on every render.
-		 *
 		 * @param {HTMLTableCellElement} header the header cell of the selection column
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function decorateHeader(header) {
 			header.append(selectAll)
@@ -5654,7 +5638,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Individual override decoration operations.
+/** Register the overrides decoration unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -5662,9 +5646,9 @@
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach row selection controls and accessible individual override cell markers.
+	 * @param {object} context matrix dependencies, selected users and the live reset preview
+	 * @return {void}
 	 */
 	admin.modules.overrides.decoration = function (context) {
 		// --- Rows and cells -----------------------------------------------------------------------------------------
@@ -5672,10 +5656,9 @@
 		/**
 		 * Adds the selection box to a row. The reset of the whole row is in the row's actions menu (src/admin/admin-row-actions.js),
 		 * through resetUser(), so the row carries no button repeated on every line.
-		 *
 		 * @param {HTMLTableRowElement} row row drawn by matrix/rows.js; its first child is the selection cell
 		 * @param {object} user row from the API
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function decorateRow(row, user) {
 			const slot = row.children[0]
@@ -5689,8 +5672,9 @@
 			context.updateToolbar()
 		}
 
-		/** @return {boolean} whether the user has any individual value a reset would remove
-		 * @param {*} user operation input
+		/** Check whether the user has any individual values that a reset would remove.
+		 * @return {boolean} whether the user has any individual value a reset would remove
+		 * @param {object} user matrix user row with grants, origins and availability
 		 */
 		function hasOverrides(user) {
 			return context.overrideCells(user).length > 0
@@ -5698,10 +5682,9 @@
 
 		/**
 		 * Opens the reset preview for every individual value of one user, as the row's actions menu asks.
-		 *
 		 * @param {object} user row from the API
 		 * @param {HTMLElement} trigger control that asked, which gets the focus back when the preview is cancelled
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function resetUser(user, trigger) {
 			context.start([user], null, trigger)
@@ -5713,13 +5696,12 @@
 		 * person inherits is named but not outlined, and before that is known nothing is outlined. Without the classification
 		 * every individual value is outlined, never fewer. A single value goes back to inheritance from the level popover, a
 		 * whole row from its actions menu.
-		 *
 		 * @param {HTMLTableCellElement} cell the permission cell
 		 * @param {HTMLInputElement|null} box its checkbox, null for an unavailable cell, which has none
 		 * @param {object} user row from the API
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {string} operation operation id, "eligible" for "Can connect"
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function decorateCell(cell, box, user, module, operation) {
 			const origin = module === null ? user.origins?.eligible : user.origins?.grants?.[module]?.[operation]
@@ -5764,7 +5746,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Individual override preview operations.
+/** Register the overrides preview unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -5772,20 +5754,19 @@
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach reset preview opening, read-only impact loading and focus restoration.
+	 * @param {object} context matrix dependencies, selected users and the live reset preview
+	 * @return {void}
 	 */
 	admin.modules.overrides.preview = function (context) {
 		// --- Preview and reset ------------------------------------------------------------------------------------
 
 		/**
 		 * Opens the preview of a reset, or says why there is nothing to reset.
-		 *
 		 * @param {object[]} users users to reset
-		 * @param {Array<{module: string|null, operation: string}>|null} only restrict to these cells
+		 * @param {Array<{module: string|null, operation: string}>|function(object, object): boolean|null} only restrict to these cells
 		 * @param {HTMLElement} trigger control that asked, which gets the focus back when the preview is cancelled
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function start(users, only, trigger) {
 			if (context.saving || context.matrix.isBusy()) {
@@ -5813,9 +5794,8 @@
 		 * Asks the server what each cell has before and after the reset and redraws the preview with it. Read only. A preview
 		 * that cannot be read leaves every "after" unknown and the warning conservative; it never blocks the reset itself,
 		 * whose command refuses on its own what it cannot determine.
-		 *
 		 * @param {object} current the preview that asked; an answer for a preview that was closed or replaced is dropped
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function loadAfter(current) {
 			try {
@@ -5840,8 +5820,9 @@
 				: t('mcp', 'The result after the reset is shown.'), current.unavailable)
 		}
 
-		/** @param {boolean} restoreFocus give the focus back to the control that opened the preview
-		 * @return {*} operation result
+		/** Close the current preview or popover and restore focus when requested.
+		 * @param {boolean} restoreFocus give the focus back to the control that opened the preview
+		 * @return {void}
 		 */
 		function close(restoreFocus) {
 			const trigger = context.review?.trigger
@@ -5856,9 +5837,8 @@
 		/**
 		 * Puts the focus on the control that asked for the reset, or on the first control of the toolbar that can take it, and
 		 * as the last resort on the toolbar itself, so the focus never falls back to the page when a preview goes away.
-		 *
 		 * @param {HTMLElement|undefined} trigger control that opened the preview, which a reload may have replaced
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function focusSomething(trigger) {
 			const usable = (node) => node && node.isConnected !== false && !node.disabled
@@ -5869,10 +5849,9 @@
 		/**
 		 * Opens the reset preview for exactly these cells of these users, as src/admin/admin-exceptions.js does for the values that only
 		 * repeat what the people inherit. The reset itself is the same command and the same preview as any other.
-		 *
 		 * @param {Array<{uid: string, module: string|null, operation: string}>} cells cells of the users on the page
 		 * @param {HTMLElement} trigger control that asked
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function reviewCells(cells, trigger) {
 			const keys = new Set(cells.map((cell) => context.afterKey(cell.uid, cell.module, cell.operation)))
@@ -5889,7 +5868,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Individual override review operations.
+/** Register the overrides review unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -5897,12 +5876,12 @@
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach reset impact rendering and its confirmation and retry controls.
+	 * @param {object} context matrix dependencies, selected users and the live reset preview
+	 * @return {void}
 	 */
 	admin.modules.overrides.review = function (context) {
-		/**
+		/** What it will be, or "unknown": a missing or null answer is never shown as a value.
 		 * @param {{allowed: boolean|null, source: string, groupIds: string[]}|undefined} outcome the cell after the reset
 		 * @return {string} what it will be, or "Unknown": a missing or null answer is never shown as a value
 		 */
@@ -5918,7 +5897,7 @@
 			return t('mcp', 'Denied by default')
 		}
 
-		/**
+		/** Describe one user's individual values and the previewed inheritance after their reset.
 		 * @param {{user: object, cells: object[]}} target one user of the plan
 		 * @return {string} "Ana: Can connect: Individual override: allowed → Granted by groups: staff; Notes: edit: …"
 		 */
@@ -5937,7 +5916,6 @@
 
 		/**
 		 * What the server says about the results of a reset, once it was read.
-		 *
 		 * @param {object} current the open preview
 		 * @return {{changed: number, same: number, unknown: number, lost: number, kept: number, lostUnknown: number}}
 		 */
@@ -5965,7 +5943,7 @@
 		}
 
 		/** Draws the preview: the exact cells, what each has before and after, what may change and the buttons.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function renderReview() {
 			const result = context.review.plan
@@ -6062,7 +6040,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Individual override saving operations.
+/** Register the overrides saving unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -6070,13 +6048,13 @@
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach reset execution and conflict handling without automatic write replay.
+	 * @param {object} context matrix dependencies, selected users and the live reset preview
+	 * @return {void}
 	 */
 	admin.modules.overrides.saving = function (context) {
 		/** Sends the command of the open preview. Nothing is repeated on its own: a retry is the administrator's click.
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function execute() {
 			if (context.review === null || context.saving || context.matrix.isBusy()) {
@@ -6153,8 +6131,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Compose the overrides editor and start its original effects once.
- * @param {object} admin operation input
- * @return {void} operation result
+ * @param {object} admin shared OCA.Mcp.Admin registry and public surfaces
+ * @return {void}
  */
 (function (admin) {
 	'use strict'

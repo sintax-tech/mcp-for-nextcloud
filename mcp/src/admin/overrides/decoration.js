@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Individual override decoration operations.
+/** Register the overrides decoration unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach row selection controls and accessible individual override cell markers.
+	 * @param {object} context matrix dependencies, selected users and the live reset preview
+	 * @return {void}
 	 */
 	admin.modules.overrides.decoration = function (context) {
 		// --- Rows and cells -----------------------------------------------------------------------------------------
@@ -20,10 +20,9 @@
 		/**
 		 * Adds the selection box to a row. The reset of the whole row is in the row's actions menu (src/admin/admin-row-actions.js),
 		 * through resetUser(), so the row carries no button repeated on every line.
-		 *
 		 * @param {HTMLTableRowElement} row row drawn by matrix/rows.js; its first child is the selection cell
 		 * @param {object} user row from the API
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function decorateRow(row, user) {
 			const slot = row.children[0]
@@ -37,8 +36,9 @@
 			context.updateToolbar()
 		}
 
-		/** @return {boolean} whether the user has any individual value a reset would remove
-		 * @param {*} user operation input
+		/** Check whether the user has any individual values that a reset would remove.
+		 * @return {boolean} whether the user has any individual value a reset would remove
+		 * @param {object} user matrix user row with grants, origins and availability
 		 */
 		function hasOverrides(user) {
 			return context.overrideCells(user).length > 0
@@ -46,10 +46,9 @@
 
 		/**
 		 * Opens the reset preview for every individual value of one user, as the row's actions menu asks.
-		 *
 		 * @param {object} user row from the API
 		 * @param {HTMLElement} trigger control that asked, which gets the focus back when the preview is cancelled
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function resetUser(user, trigger) {
 			context.start([user], null, trigger)
@@ -61,13 +60,12 @@
 		 * person inherits is named but not outlined, and before that is known nothing is outlined. Without the classification
 		 * every individual value is outlined, never fewer. A single value goes back to inheritance from the level popover, a
 		 * whole row from its actions menu.
-		 *
 		 * @param {HTMLTableCellElement} cell the permission cell
 		 * @param {HTMLInputElement|null} box its checkbox, null for an unavailable cell, which has none
 		 * @param {object} user row from the API
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {string} operation operation id, "eligible" for "Can connect"
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function decorateCell(cell, box, user, module, operation) {
 			const origin = module === null ? user.origins?.eligible : user.origins?.grants?.[module]?.[operation]

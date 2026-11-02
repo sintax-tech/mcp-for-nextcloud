@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix labels operations.
+/** Register the matrix labels unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,12 +10,13 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach the translated module, operation and level label catalogs to the matrix context.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.labels = function (context) {
-		/** @return {Object<string, string>} module labels */
+		/** Module labels.
+		 * @return {Object<string, string>} module labels */
 		function moduleLabels() {
 			return {
 				files: t('mcp', 'Files'),
@@ -32,7 +33,8 @@
 			}
 		}
 
-		/** @return {Object<string, string>} operation labels */
+		/** Operation labels.
+		 * @return {Object<string, string>} operation labels */
 		function operationLabels() {
 			return {
 				...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(),
@@ -59,7 +61,6 @@
 
 		/**
 		 * What each operation lets the AI do, shown as the column tooltip.
-		 *
 		 * @param {string} module module id
 		 * @param {string} operation operation id
 		 * @return {string} description
@@ -96,7 +97,8 @@
 			return hints[operation] || ''
 		}
 
-		/** @return {Object<string, string>} names of the access levels of src/admin/admin-levels.js */
+		/** Names of the access levels of src/admin/admin-levels.js.
+		 * @return {Object<string, string>} names of the access levels of src/admin/admin-levels.js */
 		function levelLabels() {
 			return {
 				...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(),

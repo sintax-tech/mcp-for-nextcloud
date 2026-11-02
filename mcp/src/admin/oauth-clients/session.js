@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.oauthClients = admin.modules.oauthClients || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose OAuth controls and live confirmed settings, revision, queue and epoch bindings.
+	 * @param {object} context OAuth controls, confirmed settings and live queue and revision bindings
+	 * @return {void}
 	 */
 	admin.modules.oauthClients.session = function (context) {
 		const hostsInput = document.getElementById('mcp-oauth-hosts')

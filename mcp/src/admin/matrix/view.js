@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix view operations.
+/** Register the matrix view unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,13 +10,13 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach view switching, column filtering and URL history synchronization.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.view = function (context) {
 		/** Filter only presentation; user queries and permission payloads stay unchanged.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function applyAppFilter() {
 			const app = context.shownApp()
@@ -39,7 +39,7 @@
 		}
 
 		/** Read the Access tab's app parameter on reload and history navigation.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function readAppFromHash() {
 			const [tab, query = ''] = window.location.hash.slice(1).split('?')
@@ -62,22 +62,23 @@
 			context.applyAppFilter()
 		}
 
-		/** @return {boolean} whether the matrix shows one level per module */
+		/** Whether the matrix shows one level per module.
+		 * @return {boolean} whether the matrix shows one level per module */
 		function isLevelsView() {
 			return context.state.view === 'levels' && Boolean(window.OCA.Mcp.Admin.levels)
 		}
 
-		/** @return {string} the app whose columns are shown alone, '' for all; the levels view always shows every module */
+		/** The app whose columns are shown alone, '' for all; the levels view always shows every module.
+		 * @return {string} the app whose columns are shown alone, '' for all; the levels view always shows every module */
 		function shownApp() {
 			return context.isLevelsView() ? '' : context.state.app
 		}
 
 		/**
 		 * Switches between the levels and the operations view, keeping the page, the filters and the data on screen.
-		 *
 		 * @param {string} view "levels" or "operations"
 		 * @param {string} [app] module to show alone in the operations view
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function setView(view, app) {
 			context.state.view = view
@@ -95,9 +96,8 @@
 
 		/**
 		 * Writes the chosen app into the address (#access?app=<module>, no parameter for all apps).
-		 *
 		 * @param {boolean} replace correct the current entry instead of adding a history entry
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function writeAppToHash(replace) {
 			const [tab, query = ''] = window.location.hash.slice(1).split('?')
@@ -126,8 +126,8 @@
 			}
 		}
 
-		/** Install this unit’s original listeners once, at its historical startup phase.
-		 * @return {*} operation result
+		/** Bind app and view controls and hash navigation, then apply the current address state.
+		 * @return {void}
 		 */
 		function attachView() {
 			context.appSelect.addEventListener('change', () => {

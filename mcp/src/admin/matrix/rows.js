@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix rows operations.
+/** Register the matrix rows unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,14 +10,14 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach user rows, action menus and the individual exception filter.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.rows = function (context) {
 		const OWN_SOURCES = ['individual_allow', 'individual_deny', 'invalid']
 
-		/**
+		/** Build the user identity, connection, permission and action cells for one matrix row.
 		 * @param {object} user row from the API
 		 * @return {HTMLTableRowElement}
 		 */
@@ -27,7 +27,7 @@
 			return row
 		}
 
-		/**
+		/** Build the identity, connection, permission and action cells for a matrix user.
 		 * @param {object} user row from the API
 		 * @return {HTMLTableRowElement}
 		 */
@@ -81,7 +81,6 @@
 		 * The second line under a name: "Account disabled", "Connected" (with its mark, in the success colour as text) or, for
 		 * everyone else, the user ID. Being connected is a fact worth seeing; not being connected is the normal case and says
 		 * nothing more than the ID.
-		 *
 		 * @param {object} user row from the API
 		 * @return {HTMLElement}
 		 */
@@ -99,8 +98,9 @@
 			return context.el('span', { className: 'mcp-uid', textContent: user.uid })
 		}
 
-		/** @return {HTMLTableCellElement} the cell with the row's actions menu (src/admin/admin-row-actions.js)
-		 * @param {*} user operation input
+		/** Build a user row's actions menu cell when the row actions surface is available.
+		 * @return {HTMLTableCellElement} the cell with the row's actions menu (src/admin/admin-row-actions.js)
+		 * @param {object} user matrix user row with grants, origins and availability
 		 */
 		function actionsCell(user) {
 			const cell = context.el('td', { className: 'mcp-actions-col' })
@@ -112,7 +112,6 @@
 		/**
 		 * Whether a user has a real exception on the page (src/admin/admin-exceptions.js): an individual value that differs from what
 		 * they would inherit. null while that is not known.
-		 *
 		 * @param {object} user row from the API
 		 * @return {boolean|null}
 		 */
@@ -134,7 +133,7 @@
 		/**
 		 * The "All | With exceptions (N)" filter: it counts the users of this page who have a real exception and, when chosen,
 		 * shows only them. It works on the page on screen, so it says so; nothing is asked of the server.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function applyExceptionsFilter() {
 			if (!context.onlyButtons.exceptions || !context.state.data) return
@@ -168,7 +167,6 @@
 		/**
 		 * Why none of a user's permissions can be changed: a disabled account or "Can connect" off. The
 		 * row then shows this one notice across the permission columns instead of a mark in each of them.
-		 *
 		 * @param {object} user row from the API
 		 * @return {string|null} short notice, or null when the permissions are shown cell by cell
 		 */
@@ -182,7 +180,8 @@
 			return null
 		}
 
-		/** @return {number} permission columns shown with the current app filter */
+		/** Permission columns shown with the current app filter.
+		 * @return {number} permission columns shown with the current app filter */
 		function visiblePermissionColumns() {
 			if (context.isLevelsView()) {
 				return Object.keys(context.state.data?.catalog || {}).length

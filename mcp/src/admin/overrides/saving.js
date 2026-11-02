@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Individual override saving operations.
+/** Register the overrides saving unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,13 +10,13 @@
 	'use strict'
 
 	admin.modules.overrides = admin.modules.overrides || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach reset execution and conflict handling without automatic write replay.
+	 * @param {object} context matrix dependencies, selected users and the live reset preview
+	 * @return {void}
 	 */
 	admin.modules.overrides.saving = function (context) {
 		/** Sends the command of the open preview. Nothing is repeated on its own: a retry is the administrator's click.
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function execute() {
 			if (context.review === null || context.saving || context.matrix.isBusy()) {

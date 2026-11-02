@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Original readers editor.
+/** Register the logs readers unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.logs = admin.modules.logs || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach log reader group loading, selection and persistence to the matrix context.
+	 * @param {object} context matrix request and revision dependencies for log settings
+	 * @return {void}
 	 */
 	admin.modules.logs.readers = function (context) {
 		/**
@@ -21,7 +21,7 @@
 		 * the list it changed (`previous`), so the server answers 409 when another window or administrator
 		 * saved first and a removed group is never put back. A listed group that was deleted shows as an
 		 * option marked "(group removed)", to be removed.
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function initLogsAccess() {
 			const container = document.getElementById('mcp-logs-groups')
@@ -36,8 +36,9 @@
 			let picker = null
 			context.followRevision(() => logsRevision, (revision) => { logsRevision = revision })
 
-			/** @param {object} data state returned by the API
-			 * @return {*} operation result
+			/** Apply the loaded settings to their controls and retain the server-confirmed state.
+			 * @param {object} data state returned by the API
+			 * @return {void}
 			 */
 			function show(data) {
 				version = data.version
@@ -89,10 +90,9 @@
 
 			/**
 			 * The effective readers, as one line: groups are a gate on top of the per-user grant of the matrix.
-			 *
 			 * @param {string[]} groups the saved group ids
 			 * @param {Array<{id: string, label: string}>} options the known groups, for their display names
-			 * @return {*} operation result
+			 * @return {void}
 			 */
 			function paintSummary(groups, options) {
 				if (!summary) {
@@ -114,7 +114,7 @@
 			}
 
 			/** Loads the list again, after a conflict or a failure.
-			 * @return {Promise<*>} operation result
+			 * @return {Promise<void>}
 			 */
 			async function reload() {
 				try {

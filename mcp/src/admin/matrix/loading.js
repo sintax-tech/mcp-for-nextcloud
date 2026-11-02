@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix loading operations.
+/** Register the matrix loading unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach matrix fetching, error rendering and group and app filter population.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.loading = function (context) {
 		let loadSeq = 0
@@ -20,7 +20,7 @@
 		/**
 		 * Reads the current page from the server and re-renders the table; a failure is shown in the table with a retry.
 		 * The page and its revision always come from the same response, and only the newest request is rendered.
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function load() {
 			const seq = ++loadSeq
@@ -49,7 +49,7 @@
 		}
 
 		/** Replaces the body with an error row and a retry button, keeping the last header.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function renderError() {
 			const retry = context.el('button', { type: 'button', textContent: t('mcp', 'Retry'), onclick: context.load })
@@ -60,7 +60,7 @@
 		}
 
 		/** Fills the group filter once, keeping the current selection.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function renderGroups() {
 			if (context.state.groupsLoaded) {
@@ -73,7 +73,7 @@
 		}
 
 		/** Populate app choices from the actual catalog, preserving a valid selection.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function renderApps() {
 			const labels = context.moduleLabels()

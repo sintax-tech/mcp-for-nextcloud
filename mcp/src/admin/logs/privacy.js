@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Original privacy editor.
+/** Register the logs privacy unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,15 +10,15 @@
 	'use strict'
 
 	admin.modules.logs = admin.modules.logs || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach log privacy loading and persistence to the matrix context.
+	 * @param {object} context matrix request and revision dependencies for log settings
+	 * @return {void}
 	 */
 	admin.modules.logs.privacy = function (context) {
 		/**
 		 * Server log section: the switch that hides the text of log messages in the log tools, through GET and PUT
 		 * /apps/mcp/api/logs-privacy.
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function initLogsPrivacy() {
 			const box = document.getElementById('mcp-logs-hide-file-names')

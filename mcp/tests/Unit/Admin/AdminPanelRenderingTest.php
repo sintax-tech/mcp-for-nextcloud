@@ -28,7 +28,7 @@ final class AdminPanelRenderingTest extends TestCase {
 		$manager = $this->createMock(ITemplateManager::class);
 		$names = [];
 		$expected = [];
-		$manager->expects($this->exactly(80))->method('getTemplate')->willReturnCallback(
+		$manager->expects($this->exactly(240))->method('getTemplate')->willReturnCallback(
 			function (string $appName, string $name, string $renderAs, bool $registerCall) use ($app, &$names, &$expected): ITemplate {
 				$this->assertSame('mcp', $appName);
 				$this->assertSame(TemplateResponse::RENDER_AS_BLANK, $renderAs);
@@ -48,24 +48,28 @@ final class AdminPanelRenderingTest extends TestCase {
 		$renderer = new AdminPanels($manager);
 		for ($flags = 0; $flags < 8; $flags++) {
 			foreach ([null, 7] as $count) {
-				$expected = [
-					'endpoint' => 'https://cloud.test/?a=<tag>&b="quoted"', 'version' => '<release & "version">',
-					'serviceEnabled' => (bool)($flags & 1), 'ocrActive' => (bool)($flags & 2), 'logsAvailable' => (bool)($flags & 4),
-					'ocrUrl' => 'https://apps.test/?a="ocr"&b=<tag>', 'logType' => '<syslog & "remote">',
-					'eligibleUsers' => $count, 'connectedUsers' => $count, 'activeConnections' => 4, 'unsupportedApps' => [],
-					'requesttoken' => 'same-token', 'cspNonce' => 'same-nonce', 'renderAdminPanel' => [$renderer, 'render'],
-				];
-				\OCP\Util::$assets = [];
-				$headers = headers_list();
-				$before = AdminTemplateRuntime::render($app . '/tests/fixtures/admin-template-before.php', $expected);
-				$assets = \OCP\Util::$assets;
-				\OCP\Util::$assets = [];
-				$after = AdminTemplateRuntime::render($app . '/templates/admin.php', $expected);
-				$this->assertSame($before, $after);
-				$this->assertSame([['script', 'mcp', 'mcp-admin'], ['style', 'mcp', 'admin']], $assets);
-				$this->assertSame($assets, \OCP\Util::$assets);
-				$this->assertSame($headers, headers_list());
-				$this->assertSame(['admin/overview', 'admin/access', 'admin/clients', 'admin/protection', 'admin/advanced'], array_splice($names, 0));
+				foreach ([[], [['name' => '<Deck & "cards">', 'installed' => '1.0<old>', 'required' => '2.0&new']],
+					[['name' => '<Deck & "cards">', 'installed' => '1.0<old>', 'required' => '2.0&new'],
+					 ['name' => 'Tables <&> "rows"', 'installed' => '0.1<&>', 'required' => '1.0"new"']]] as $unsupportedApps) {
+					$expected = [
+						'endpoint' => 'https://cloud.test/?a=<tag>&b="quoted"', 'version' => '<release & "version">',
+						'serviceEnabled' => (bool)($flags & 1), 'ocrActive' => (bool)($flags & 2), 'logsAvailable' => (bool)($flags & 4),
+						'ocrUrl' => 'https://apps.test/?a="ocr"&b=<tag>', 'logType' => '<syslog & "remote">',
+						'eligibleUsers' => $count, 'connectedUsers' => $count, 'activeConnections' => 4, 'unsupportedApps' => $unsupportedApps,
+						'requesttoken' => 'same-token', 'cspNonce' => 'same-nonce', 'renderAdminPanel' => [$renderer, 'render'],
+					];
+					\OCP\Util::$assets = [];
+					$headers = headers_list();
+					$before = AdminTemplateRuntime::render($app . '/tests/fixtures/admin-template-before.php', $expected);
+					$assets = \OCP\Util::$assets;
+					\OCP\Util::$assets = [];
+					$after = AdminTemplateRuntime::render($app . '/templates/admin.php', $expected);
+					$this->assertSame($before, $after);
+					$this->assertSame([['script', 'mcp', 'mcp-admin'], ['style', 'mcp', 'admin']], $assets);
+					$this->assertSame($assets, \OCP\Util::$assets);
+					$this->assertSame($headers, headers_list());
+					$this->assertSame(['admin/overview', 'admin/access', 'admin/clients', 'admin/protection', 'admin/advanced'], array_splice($names, 0));
+				}
 			}
 		}
 	}

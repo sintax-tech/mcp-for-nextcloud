@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** Matrix rendering operations.
+/** Register the matrix rendering unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void}
  */
@@ -10,16 +10,16 @@
 	'use strict'
 
 	admin.modules.matrix = admin.modules.matrix || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach table rendering and sticky header measurement to the matrix context.
+	 * @param {object} context matrix controls, loaded policy, write locks and rendering dependencies
+	 * @return {void}
 	 */
 	admin.modules.matrix.rendering = function (context) {
 		let observedHeaderRow = null
 		let headerObserver = null
 
 		/** Makes the second header row stick right below the first one, whose height depends on the density.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function stickSecondHeaderRow() {
 			const [top, sub] = context.table.tHead.rows
@@ -37,7 +37,7 @@
 		 * render there measures zero; showing the tab (or changing density or font size) resizes the row
 		 * and the observer re-sticks the second row below it. A browser without ResizeObserver keeps the
 		 * render-time measure, which is correct whenever the panel is visible.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function observeHeaderRow() {
 			if (!window.ResizeObserver) {
@@ -56,7 +56,7 @@
 		}
 
 		/** Renders header and rows from state.data.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function render() {
 			const data = context.state.data

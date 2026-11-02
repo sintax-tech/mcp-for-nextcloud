@@ -79,7 +79,7 @@ final class MailSendPathContractTest extends TestCase {
 			$this->assertContains($release['bccEnvelope'], ['_bcc', 'removeHeader'], "Mail $version");
 			$this->assertTrue($release['rcptRefusalBeforeData'], "Mail $version");
 		}
-		$services = (string)file_get_contents(__DIR__ . '/../../../../lib/Tools/Mail/MailServices.php');
+		$services = (string)file_get_contents((new \ReflectionClass(\OCA\Mcp\Tools\Mail\MailServices::class))->getFileName());
 		$this->assertStringContainsString('$message->setSendAt(null);', $services);
 		$this->assertStringContainsString("\$message->setType(constant(\$class . '::TYPE_OUTGOING'));", $services);
 	}

@@ -79,7 +79,7 @@ final class MailRoutesContractTest extends TestCase {
 	public function testTheLinksNameTheseRoutes(): void {
 		$this->assertSame('mail.page.mailbox', MailLinks::MAILBOX_ROUTE);
 		$this->assertSame('mail.page.thread', MailLinks::THREAD_ROUTE);
-		$source = (string)file_get_contents(__DIR__ . '/../../../../lib/Tools/Mail/Link/MailLinks.php');
+		$source = (string)file_get_contents((new \ReflectionClass(\OCA\Mcp\Tools\Mail\Link\MailLinks::class))->getFileName());
 		$this->assertStringContainsString("linkToRouteAbsolute(self::MAILBOX_ROUTE, ['id' => ", $source);
 		$this->assertStringContainsString("linkToRouteAbsolute(self::THREAD_ROUTE, ['mailboxId' => ", $source);
 		$this->assertStringContainsString("'id' => (int)\$message->getId()]", $source);

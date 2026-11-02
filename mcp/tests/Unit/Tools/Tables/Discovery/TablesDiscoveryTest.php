@@ -8,8 +8,8 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Discovery;
 
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesScene;
-use OCA\Mcp\Tools\Tables\Discovery\TablesDiscovery;
-use OCA\Mcp\Tools\Tables\TablesUnavailableException;
+use OCA\Mcp\Modules\Tables\Reading\TablesDiscovery;
+use OCA\Mcp\Modules\Tables\TablesUnavailableException;
 use PHPUnit\Framework\TestCase;
 
 /**

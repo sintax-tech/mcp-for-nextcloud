@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables;
 
-use OCA\Mcp\Tools\Tables\TablesText;
+use OCA\Mcp\Modules\Tables\Presentation\TablesText;
 use PHPUnit\Framework\TestCase;
 
 /** Text from the Tables app comes back as valid UTF-8, without control or direction characters, cut to a length. */

@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Tables\Handler;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\FakeTablesApp;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesHandlers;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesScene;
-use OCA\Mcp\Tools\Tables\TablesMessages;
+use OCA\Mcp\Modules\Tables\Presentation\TablesMessages;
 use PHPUnit\Framework\TestCase;
 
 /**

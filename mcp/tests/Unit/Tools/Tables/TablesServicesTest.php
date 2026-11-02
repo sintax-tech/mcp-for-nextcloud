@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables;
 
-use OCA\Mcp\Tools\Tables\TablesServices;
-use OCA\Mcp\Tools\Tables\TablesUnavailableException;
+use OCA\Mcp\Modules\Tables\Integration\TablesServices;
+use OCA\Mcp\Modules\Tables\TablesUnavailableException;
 use OCP\App\IAppManager;
 use OCP\IUser;
 use OCP\IUserManager;

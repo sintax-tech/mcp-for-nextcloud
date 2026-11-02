@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables;
 
-use OCA\Mcp\Tools\Tables\TablesCalls;
-use OCA\Mcp\Tools\Tables\TablesMessages;
+use OCA\Mcp\Modules\Tables\Integration\TablesCalls;
+use OCA\Mcp\Modules\Tables\Presentation\TablesMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Tables\Errors\InternalError;
 use OCA\Tables\Errors\NotFoundError;

@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
+use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesTestModule;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\CriticalFlow;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\FlowRunner;
@@ -16,20 +17,20 @@ use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesScene;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesWriteWiring;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\WriteScene;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
-use OCA\Mcp\Tools\Tables\Handler\CreateRowHandler;
-use OCA\Mcp\Tools\Tables\Handler\UpdateRowHandler;
-use OCA\Mcp\Tools\Tables\Rows\TablesSessionGuard;
-use OCA\Mcp\Tools\Tables\TablesModule;
-use OCA\Mcp\Tools\Tables\Write\CellValueDomain;
-use OCA\Mcp\Tools\Tables\Write\RelationWriteGate;
-use OCA\Mcp\Tools\Tables\Write\RowCurrentState;
-use OCA\Mcp\Tools\Tables\Write\RowWriteColumns;
-use OCA\Mcp\Tools\Tables\Write\RowWriteFlow;
-use OCA\Mcp\Tools\Tables\Write\RowWritePlan;
-use OCA\Mcp\Tools\Tables\Write\RowWritePreflight;
-use OCA\Mcp\Tools\Tables\Write\RowWriter;
-use OCA\Mcp\Tools\Tables\Write\UsergroupWhitelist;
-use OCA\Mcp\Tools\Tables\Write\ViewDefaultsGate;
+use OCA\Mcp\Modules\Tables\Creation\CreateRowHandler;
+use OCA\Mcp\Modules\Tables\Editing\UpdateRowHandler;
+use OCA\Mcp\Modules\Tables\TablesSessionGuard;
+use OCA\Mcp\Modules\Tables\TablesModule;
+use OCA\Mcp\Modules\Tables\Writing\CellValueDomain;
+use OCA\Mcp\Modules\Tables\Writing\RelationWriteGate;
+use OCA\Mcp\Modules\Tables\Writing\RowCurrentState;
+use OCA\Mcp\Modules\Tables\Writing\RowWriteColumns;
+use OCA\Mcp\Modules\Tables\Writing\RowWriteFlow;
+use OCA\Mcp\Modules\Tables\Writing\RowWritePlan;
+use OCA\Mcp\Modules\Tables\Writing\RowWritePreflight;
+use OCA\Mcp\Modules\Tables\Writing\RowWriter;
+use OCA\Mcp\Modules\Tables\Writing\UsergroupWhitelist;
+use OCA\Mcp\Modules\Tables\Writing\ViewDefaultsGate;
 use OCP\App\IAppManager;
 use OCP\IGroupManager;
 use OCP\IUser;
@@ -122,9 +123,9 @@ final class TablesUpdateEffectsContractTest extends TestCase {
 	 */
 	private function module(): TablesModule {
 		$base = TablesHandlers::module($this, TablesScene::app());
-		$property = static fn (string $name): object => (fn (): object => $this->{$name})->call($base);
+		$property = static fn (string $name): object => TablesTestModule::handler($base, $name);
 		$flow = $this->flow();
-		return new TablesModule($property('tables'), $property('views'), $property('columns'), $property('rows'),
+		return TablesTestModule::make($property('tables'), $property('views'), $property('columns'), $property('rows'),
 			new CreateRowHandler($flow), new UpdateRowHandler($flow));
 	}
 

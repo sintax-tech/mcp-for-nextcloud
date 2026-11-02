@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Rows;
 
-use OCA\Mcp\Tools\Tables\Rows\RowSort;
-use OCA\Mcp\Tools\Tables\Rows\RowsRefusal;
+use OCA\Mcp\Modules\Tables\Reading\RowSort;
+use OCA\Mcp\Modules\Tables\Reading\RowsRefusal;
 use PHPUnit\Framework\TestCase;
 
 /** The effective sort: user rules on visible columns, else the saved sort, deduplicated, and the row id as total order. */

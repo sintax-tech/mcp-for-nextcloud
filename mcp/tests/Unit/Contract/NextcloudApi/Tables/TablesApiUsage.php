@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Tables;
 
 /**
  * What the Tables module uses of the Nextcloud Tables app that a scanner of lib/ cannot see, merged into
- * {@see \OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiUsage}: OCA\Mcp\Tools\Tables\TablesServices resolves the
+ * {@see \OCA\Mcp\Tests\Unit\Contract\NextcloudApi\NextcloudApiUsage}: OCA\Mcp\Modules\Tables\Integration\TablesServices resolves the
  * services by class name and the module holds them, and the entities they return, untyped.
  */
 final class TablesApiUsage {
@@ -56,7 +56,7 @@ final class TablesApiUsage {
 		'OCA\\Tables\\Db\\View::getColumnIds' => [],
 		'OCA\\Tables\\Db\\Context::getNodes' => [],
 		'OCA\\Tables\\Db\\Column::jsonSerialize' => [],
-		// Rows (OCA\Mcp\Tools\Tables\Rows\RowReader): the native row permission, the saved rules, the column of a rule,
+		// Rows (OCA\Mcp\Modules\Tables\Reading\RowReader): the native row permission, the saved rules, the column of a rule,
 		// the engine RowService reads rows with, and the row it returns.
 		'OCA\\Tables\\Service\\PermissionsService::canReadRowsByElementId' => ['elementId', 'nodeType', 'userId'],
 		'OCA\\Tables\\Service\\TableService::find' => ['id', 'skipTableEnhancement', 'userId'],
@@ -111,20 +111,20 @@ final class TablesApiUsage {
 		'OCA\\Tables\\Db\\Table::getSort' => [
 			'missing' => ['31', '32', '33', '34'],
 			'fallback' => 'OCA\\Tables\\Db\\Row2Mapper::findAll',
-			'by' => \OCA\Mcp\Tools\Tables\Rows\RowReader::class,
+			'by' => \OCA\Mcp\Modules\Tables\Reading\RowReader::class,
 			'elsewhere' => [
-				'Tools/Tables/Write/RelationWriteGate.php' => 'OCA\\Tables\\Db\\View::getSort',
-				'Tools/Tables/Write/RowWriteState.php' => 'OCA\\Tables\\Db\\View::getSort',
-				'Tools/Tables/Write/ViewDefaultsGate.php' => 'OCA\\Tables\\Db\\View::getSort',
+				'Modules/Tables/Writing/RelationWriteGate.php' => 'OCA\\Tables\\Db\\View::getSort',
+				'Modules/Tables/Writing/RowWriteState.php' => 'OCA\\Tables\\Db\\View::getSort',
+				'Modules/Tables/Writing/ViewDefaultsGate.php' => 'OCA\\Tables\\Db\\View::getSort',
 			],
 		],
 		'OCA\\Tables\\Db\\Table::getSortArray' => [
 			'missing' => ['31', '32', '33', '34'],
 			'fallback' => 'OCA\\Tables\\Db\\Row2Mapper::findAll',
-			'by' => \OCA\Mcp\Tools\Tables\Rows\RowReader::class,
+			'by' => \OCA\Mcp\Modules\Tables\Reading\RowReader::class,
 			'elsewhere' => [
-				'Tools/Tables/Write/RelationWriteGate.php' => 'OCA\\Tables\\Db\\View::getSortArray',
-				'Tools/Tables/Write/ViewDefaultsGate.php' => 'OCA\\Tables\\Db\\View::getSortArray',
+				'Modules/Tables/Writing/RelationWriteGate.php' => 'OCA\\Tables\\Db\\View::getSortArray',
+				'Modules/Tables/Writing/ViewDefaultsGate.php' => 'OCA\\Tables\\Db\\View::getSortArray',
 			],
 		],
 		// Federated tables and views exist from Tables 2.3, after every pin; before, the node TableMapper::find() or
@@ -132,12 +132,12 @@ final class TablesApiUsage {
 		'OCA\\Tables\\Db\\Table::isFederated' => [
 			'missing' => ['31', '32', '33', '34', '35'],
 			'fallback' => 'OCA\\Tables\\Db\\TableMapper::find',
-			'by' => \OCA\Mcp\Tools\Tables\Write\RowWriteColumns::class,
+			'by' => \OCA\Mcp\Modules\Tables\Writing\RowWriteColumns::class,
 		],
 		'OCA\\Tables\\Db\\View::isFederated' => [
 			'missing' => ['31', '32', '33', '34', '35'],
 			'fallback' => 'OCA\\Tables\\Db\\ViewMapper::find',
-			'by' => \OCA\Mcp\Tools\Tables\Write\RowWriteColumns::class,
+			'by' => \OCA\Mcp\Modules\Tables\Writing\RowWriteColumns::class,
 		],
 	];
 

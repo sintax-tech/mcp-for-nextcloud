@@ -18,7 +18,7 @@ declare(strict_types=1);
 
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Tables\Rows\RowsCellScene;
-use OCA\Mcp\Tools\Tables\TablesModule;
+use OCA\Mcp\Modules\Tables\TablesModule;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\IUserManager;

@@ -196,17 +196,6 @@
 			]
 		},
 		{
-			"ceiling": 364,
-			"nameParts": [
-				"OCA",
-				"Mcp",
-				"Tools",
-				"Tables",
-				"Write",
-				"CellValueDomain"
-			]
-		},
-		{
 			"ceiling": 377,
 			"nameParts": [
 				"OCA",

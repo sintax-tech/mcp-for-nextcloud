@@ -12,7 +12,6 @@ use OCA\Mcp\Platform\Time\UserTimezone;
 use OCA\Mcp\Platform\FileAccess\LockMessages;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
-use OCA\Mcp\Tools\Files\FileBackup;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\AppFramework\Utility\ITimeFactory;
 use OCP\Files\IRootFolder;

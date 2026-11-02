@@ -8,10 +8,6 @@ declare(strict_types=1);
 namespace OCA\Mcp\Modules\Contacts;
 
 use InvalidArgumentException;
-use OCA\Mcp\L10n\Translator;
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Schema\DavCollectionSchema as Schema;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\PreviewsWrites;
@@ -19,35 +15,40 @@ use OCA\Mcp\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
 use OCA\Mcp\Mcp\Tools\ToolModule;
-use OCA\Mcp\Mcp\Tools\Results\ToolResult;
-use OCA\Mcp\Mcp\Confirmation\WriteGate;
-use Sabre\VObject\Component\VCard;
+use OCA\Mcp\Modules\Contacts\Backup\ContactBackupText;
+use OCA\Mcp\Modules\Contacts\Creation\{CreateContactHandler, CreateContactPreview};
+use OCA\Mcp\Modules\Contacts\Deletion\{DeleteContactHandler, DeleteContactPreview};
+use OCA\Mcp\Modules\Contacts\Editing\{EditContactHandler, EditContactPreview};
+use OCA\Mcp\Modules\Contacts\Presentation\ContactsPlanRenderer;
+use OCA\Mcp\Modules\Contacts\Reading\{ListAddressBooksHandler, ReadContactHandler, SearchContactsHandler};
 use RuntimeException;
 
 /** Personal CardDAV contacts; writes use the same native ACL/validation pipeline as the web UI. */
 final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes, RendersPlans {
 	/**
-	 * Receives collection access, CardDAV ports, preserving vCard edits and verified backups.
+	 * Receives the work of each tool: the three reads, and the plan and the effect of each write.
 	 *
-	 * @param \OCA\Mcp\Modules\Contacts\Locating\ContactAccess $access collection visibility and write-access resolver
-	 * @param \OCA\Mcp\Modules\Contacts\Locating\ContactStore $store read-only storage port
-	 * @param \OCA\Mcp\Modules\Contacts\Writing\ContactDav $dav native DAV write port
-	 * @param \OCA\Mcp\Modules\Contacts\Cards\ContactCard $cards vCard parser and preserving patch builder
-	 * @param SharedGuard $guard shared-owner confirmation policy
-	 * @param \OCA\Mcp\Modules\Contacts\Backup\ContactBackup $backup verified contact backup service
-	 * @param \OCA\Mcp\Modules\Contacts\Accounts\SystemContacts $system read-only account catalog ("Accounts") governed by the admin enumeration rules
-	 * @param PlanState|null $states HMAC of a creation plan; the container provides it, tests that create pass it
+	 * @param ListAddressBooksHandler $lists own and shared address books plus the accounts catalog
+	 * @param SearchContactsHandler $searches personal contacts first, then the accounts
+	 * @param ReadContactHandler $reads one contact, or the public fields of one account
+	 * @param CreateContactPreview $createPlans the creation plan and the UID it shows
+	 * @param CreateContactHandler $creates the confirmed write of that UID
+	 * @param EditContactPreview $editPlans the edit plan
+	 * @param EditContactHandler $edits the confirmed edit
+	 * @param DeleteContactPreview $deletePlans the deletion plan
+	 * @param DeleteContactHandler $deletes the verified backup followed by the permanent deletion
 	 * @return void
 	 */
 	public function __construct(
-		private \OCA\Mcp\Modules\Contacts\Locating\ContactAccess $access,
-		private \OCA\Mcp\Modules\Contacts\Locating\ContactStore $store,
-		private \OCA\Mcp\Modules\Contacts\Writing\ContactDav $dav,
-		private \OCA\Mcp\Modules\Contacts\Cards\ContactCard $cards,
-		private SharedGuard $guard,
-		private \OCA\Mcp\Modules\Contacts\Backup\ContactBackup $backup,
-		private \OCA\Mcp\Modules\Contacts\Accounts\SystemContacts $system,
-		private ?PlanState $states = null,
+		private ListAddressBooksHandler $lists,
+		private SearchContactsHandler $searches,
+		private ReadContactHandler $reads,
+		private CreateContactPreview $createPlans,
+		private CreateContactHandler $creates,
+		private EditContactPreview $editPlans,
+		private EditContactHandler $edits,
+		private DeleteContactPreview $deletePlans,
+		private DeleteContactHandler $deletes,
 	) {}
 
 	/**
@@ -171,7 +172,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 				. 'Creating a contact repeats the plan_state of that plan: it carries the UID that is stored. The '
 				. 'optional etag prevents overwriting a newer edit.',
 			'Contact deletion is PERMANENT in Nextcloud: there is no contact trash. After '
-				. \OCA\Mcp\Modules\Contacts\Backup\ContactBackupText::destination()
+				. ContactBackupText::destination()
 				. 'native CardDAV DELETE. Backup failure prevents deletion; the result gives the backup '
 				. 'path. Import the .vcf through Contacts to recover it.',
 			'These tools are hidden when the Contacts app is disabled. Writing grants start disabled.',
@@ -189,11 +190,12 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	 * @throws InvalidArgumentException when the tool or supplied fields are invalid
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
-		$handler = $this->delegated($name);
-		if ($handler !== null) {
-			return $handler->preview($arguments, $userId);
-		}
-		return $this->prepare($name, $arguments, $userId)['plan'];
+		return match ($name) {
+			'contacts_create_contact' => $this->createPlans->plan($userId, $arguments),
+			'contacts_edit_contact' => $this->editPlans->plan($userId, $arguments),
+			'contacts_delete_contact' => $this->deletePlans->plan($userId, $arguments),
+			default => throw new InvalidArgumentException('Unknown tool'),
+		};
 	}
 
 	/**
@@ -206,7 +208,7 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	public function renderPlan(string $name, array $plan): ?string {
 		// Built on demand and not injected: a contact plan carries no date, so the renderer needs
 		// nothing this module does not already hold, and a constructor parameter would reach every caller.
-		return (new \OCA\Mcp\Modules\Contacts\Presentation\ContactsPlanRenderer())->render($name, $plan);
+		return (new ContactsPlanRenderer())->render($name, $plan);
 	}
 
 	/**
@@ -221,284 +223,14 @@ final class ContactsModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	 * @throws RuntimeException when the native write or its read-back verification fails
 	 */
 	public function call(string $name, array $arguments, string $userId): array {
-		$handler = $this->delegated($name);
-		if ($handler !== null) {
-			return $handler->handle($arguments, $userId);
-		}
-		if ($name === 'contacts_list_addressbooks') {
-			$books = array_map(static fn ($book) => (array) $book, $this->access->visible($userId));
-			$catalog = $this->system->bookName($userId);
-			if ($catalog !== null) {
-				$books[] = [
-					'id' => 0,
-					'uri' => \OCA\Mcp\Modules\Contacts\Locating\ContactAccess::SYSTEM_URI,
-					'name' => $catalog,
-					'ownerId' => 'system',
-					'ownerPrincipal' => 'principals/system/system',
-					'writable' => false,
-					'path' => \OCA\Mcp\Modules\Contacts\Locating\ContactAccess::systemPath($userId),
-					'system' => true,
-					'readOnly' => true,
-				];
-			}
-			return ToolResult::json($books);
-		}
-		if ($name === 'contacts_search_contacts') {
-			return $this->search($arguments, $userId);
-		}
-		if ($name === 'contacts_read_contact' && $this->access->isSystemPath($userId, $arguments['addressbook'])) {
-			$account = $this->system->find($userId, $arguments['uri']) ?? throw new ToolFailure(CommonMessages::notFound());
-			return ToolResult::json($account);
-		}
-		if ($name === 'contacts_read_contact') {
-			$book = $this->access->resolve($userId, $arguments['addressbook']);
-			$row = $this->row($book->id, $arguments['uri']);
-			return ToolResult::json(
-				$this->cards->item($this->cards->parse($row['data'])) + [
-					'uri' => $row['uri'],
-					'etag' => $row['etag'],
-					'addressbook' => $book->path,
-				]
-			);
-		}
-		$prepared = $this->prepare($name, $arguments, $userId);
-		if (!WriteGate::confirmed($arguments)) {
-			return ToolResult::json($prepared['plan']);
-		}
-		if ($prepared['plan']['shared'] !== [] && ($arguments['confirm_shared'] ?? false) !== true) {
-			throw new ToolFailure(
-				Translator::t('Confirm the change to the shared collection with confirm_shared=true.')
-			);
-		}
-		$book = $prepared['book'];
-		$card = $prepared['card'];
-		$row = $prepared['row'];
-		$result = $this->dav->update($userId, $book->uri, $row['uri'], $row['etag'], $card->serialize());
-		// Read back because native plugins may normalize the card and omit the response ETag.
-		$written = $this->row($book->id, $prepared['uri']);
-		return ToolResult::json(
-			$this->cards->item($this->cards->parse($written['data'])) + [
-				'uri' => $written['uri'],
-				'etag' => $written['etag'],
-				'addressbook' => $book->path,
-				'status' => $result->status,
-			]
-		);
-	}
-
-	/**
-	 * Searches personal and shared books and, without a book or with the catalog path, the read-only accounts.
-	 *
-	 * Personal matches come first. An account whose e-mail equals one of a personal match is not repeated; the
-	 * personal contact gains its accountId instead. Offset and limit apply to the combined list.
-	 *
-	 * @param array<string, mixed> $arguments validated tool arguments
-	 * @param string $userId authenticated user UID
-	 * @return array{content:list<array{type:string, text:string}>, isError?:bool} MCP result
-	 * @throws ToolFailure when the book is foreign, hidden or the catalog needs a search term
-	 */
-	private function search(array $arguments, string $userId): array {
-		$path = $arguments['addressbook'] ?? null;
-		$term = trim((string) ($arguments['query'] ?? ''));
-		$books = [];
-		$accounts = [];
-		if ($path !== null && $this->access->isSystemPath($userId, $path)) {
-			if ($this->system->bookName($userId) === null) {
-				throw new ToolFailure(CommonMessages::notFound());
-			}
-			if (mb_strlen($term) < \OCA\Mcp\Modules\Contacts\Accounts\SystemContacts::MIN_QUERY) {
-				throw new ToolFailure(
-					Translator::t('Enter at least 2 characters to search the accounts catalog.')
-				);
-			}
-			$accounts = $this->system->search($userId, $term);
-		} elseif ($path !== null) {
-			$books = [$this->access->resolve($userId, $path)];
-		} else {
-			$books = $this->access->visible($userId);
-			if (mb_strlen($term) >= \OCA\Mcp\Modules\Contacts\Accounts\SystemContacts::MIN_QUERY) {
-				$accounts = $this->system->search($userId, $term);
-			}
-		}
-		$accountIds = [];
-		foreach ($accounts as $account) {
-			foreach ($account['emails'] as $email) {
-				$accountIds[mb_strtolower($email)] ??= $account['accountId'];
-			}
-		}
-		$limit = $arguments['limit'] ?? 50;
-		$offset = $arguments['offset'] ?? 0;
-		$items = [];
-		$more = false;
-		$matched = 0;
-		foreach ($this->candidates($books, mb_strtolower($term), $accounts, $accountIds) as $item) {
-			if ($matched++ < $offset) {
-				continue;
-			}
-			if (count($items) >= $limit) {
-				$more = true;
-				break;
-			}
-			$items[] = $item;
-		}
-		return ToolResult::json(
-			[
-				'contacts' => $items,
-				'hasMore' => $more,
-				'nextOffset' => $more ? $offset + count($items) : null,
-			]
-		);
-	}
-
-	/**
-	 * Yields matching personal contacts, then the account contacts that no personal contact already covers.
-	 *
-	 * @param list<Calendar> $books authorized personal and shared address books
-	 * @param string $query lower-case search text, empty to list everything
-	 * @param list<array<string, mixed>> $accounts account entries already filtered by the admin rules
-	 * @param array<string, string> $accountIds accountId by lower-case e-mail, to annotate personal contacts
-	 * @return \Generator<int, array<string, mixed>>
-	 */
-	private function candidates(array $books, string $query, array $accounts, array $accountIds): \Generator {
-		$seen = [];
-		foreach ($books as $book) {
-			foreach ($this->store->cards($book->id) as $row) {
-				try {
-					$item = $this->cards->item($this->cards->parse($row['data']));
-				} catch (ToolFailure) {
-					continue;
-				}
-				$search = implode(' ', [$item['name'], $item['organization'], ...$item['emails'], ...$item['phones']]);
-				if ($query !== '' && !str_contains(mb_strtolower($search), $query)) {
-					continue;
-				}
-				unset($item['vcard'], $item['properties']);
-				$item += ['uri' => $row['uri'], 'etag' => $row['etag'], 'addressbook' => $book->path];
-				foreach ($item['emails'] as $email) {
-					$email = mb_strtolower($email);
-					$seen[$email] = true;
-					if (isset($accountIds[$email])) {
-						$item['accountId'] ??= $accountIds[$email];
-					}
-				}
-				yield $item;
-			}
-		}
-		foreach ($accounts as $account) {
-			foreach ($account['emails'] as $email) {
-				if (isset($seen[mb_strtolower($email)])) {
-					continue 2;
-				}
-			}
-			yield $account;
-		}
-	}
-
-	/**
-	 * Prepares contact access, ETag checks and a complete plan without mutating DAV or Files.
-	 *
-	 * @param string $name write tool name
-	 * @param array<string, mixed> $arguments validated tool arguments
-	 * @param string $userId authenticated UID
-	 * @return array{book:Calendar, row:?array, card:?VCard, uri:string, plan:array<string, mixed>}
-	 * @throws ToolFailure when the book, object or ETag cannot be used safely
-	 * @throws InvalidArgumentException when the tool or edit fields are invalid
-	 */
-	private function prepare(string $name, array $arguments, string $userId): array {
-		if (!in_array($name, ['contacts_edit_contact', 'contacts_delete_contact'], true)) {
-			throw new InvalidArgumentException('Unknown tool');
-		}
-		if ($name === 'contacts_edit_contact' && array_intersect(
-			array_keys($arguments),
-			['name', 'organization', 'title', 'note', 'url', 'emails', 'phones']
-		) === []) {
-			throw new InvalidArgumentException(Translator::t('Provide at least one field to change.'));
-		}
-		if ($this->access->isSystemPath($userId, $arguments['addressbook'])) {
-			throw new ToolFailure(Translator::t('Account contacts are read-only; ask the administrator.'));
-		}
-		$book = $this->access->resolve($userId, $arguments['addressbook'], true);
-		$row = $this->row($book->id, $arguments['uri']);
-		if (isset($arguments['etag']) && trim($arguments['etag'], '"') !== trim($row['etag'], '"')) {
-			throw new ToolFailure(CommonMessages::conflict());
-		}
-		$old = $this->cards->parse($row['data']);
-		$before = $this->cards->item($old);
-		$before['vcard'] = $row['data'];
-		$card = $name === 'contacts_delete_contact' ? null : $this->cards->patch($old, $arguments);
-		$uri = $row['uri'];
-		$notice = $this->guard->confirm($book, $userId, []);
-		$shared = $notice === null ? [] : [json_decode($notice['content'][0]['text'], true, 512, JSON_THROW_ON_ERROR)];
-		$plan = [
-			'requiresConfirmation' => true,
-			'message' => Translator::t('Nothing was changed. Show this plan and ask for explicit confirmation.'),
-			'action' => $name,
-			'addressbook' => (array) $book,
-			'etag' => $row['etag'] ?? null,
-			'before' => $before,
-			'after' => $card === null ? null : $this->cards->item($card),
-			'shared' => $shared,
-			'recoverable' => false,
-			'consequence' => Translator::t(
-				'Contacts have no native trash or edit history; review the changes carefully.'
-			),
-		];
-		if ($name === 'contacts_delete_contact') {
-			$plan['permanent'] = true;
-			$plan['warning'] = Translator::t('PERMANENT DELETION: Nextcloud has no contact trash bin.');
-			$plan['consequence'] = $plan['warning'];
-			$plan['backup'] = [
-				'required' => true,
-				'directory' => $this->backup->directory($book->name),
-				'format' => 'vcf',
-				'message' => Translator::t(
-					'A verified vCard copy will be saved before deletion. If the backup fails, nothing will be deleted.'
-				),
-			];
-		}
-		return compact('book', 'row', 'card', 'uri', 'plan');
-	}
-
-	/**
-	 * The write whose behavior lives in its own handler. Other tools stay in this module.
-	 *
-	 * @param string $name registered tool name
-	 * @return \OCA\Mcp\Modules\Contacts\Creation\CreateContactHandler|\OCA\Mcp\Modules\Contacts\Deletion\DeleteContactHandler|null
-	 */
-	private function delegated(string $name): \OCA\Mcp\Modules\Contacts\Creation\CreateContactHandler|\OCA\Mcp\Modules\Contacts\Deletion\DeleteContactHandler|null {
 		return match ($name) {
-			'contacts_create_contact' => $this->createHandler(),
-			'contacts_delete_contact' => $this->deleteHandler(),
-			default => null,
+			'contacts_list_addressbooks' => $this->lists->handle($userId, $arguments),
+			'contacts_search_contacts' => $this->searches->handle($userId, $arguments),
+			'contacts_read_contact' => $this->reads->handle($userId, $arguments),
+			'contacts_create_contact' => $this->creates->handle($userId, $arguments),
+			'contacts_edit_contact' => $this->edits->handle($userId, $arguments),
+			'contacts_delete_contact' => $this->deletes->handle($userId, $arguments),
+			default => throw new InvalidArgumentException('Unknown tool'),
 		};
-	}
-
-	/** @return \OCA\Mcp\Modules\Contacts\Creation\CreateContactHandler creation plan, its UID and the confirmed write of that UID */
-	private function createHandler(): \OCA\Mcp\Modules\Contacts\Creation\CreateContactHandler {
-		return new \OCA\Mcp\Modules\Contacts\Creation\CreateContactHandler($this->access, $this->dav, $this->cards, $this->guard, $this->states,
-			fn (int $bookId, string $uri): array => $this->row($bookId, $uri));
-	}
-
-	/** @return \OCA\Mcp\Modules\Contacts\Deletion\DeleteContactHandler focused deletion handler using the existing shared preparation and row reader */
-	private function deleteHandler(): \OCA\Mcp\Modules\Contacts\Deletion\DeleteContactHandler {
-		return new \OCA\Mcp\Modules\Contacts\Deletion\DeleteContactHandler($this->access, $this->dav, $this->backup,
-			fn (array $arguments, string $userId): array => $this->prepare('contacts_delete_contact', $arguments, $userId),
-			fn (int $bookId, string $uri): array => $this->row($bookId, $uri));
-	}
-
-	/**
-	 * Reads a contact only after rejecting object URI syntax that could address another node.
-	 *
-	 * @param int $bookId authorized address-book ID
-	 * @param string $uri contact object URI
-	 * @return array{uri:string, etag:string, data:string}
-	 * @throws ToolFailure when the URI is malformed or the contact no longer exists
-	 */
-	private function row(int $bookId, string $uri): array {
-		// Reject path syntax even for direct callers; no foreign node can be addressed through the port.
-		if ($uri === '' || $uri === '.' || $uri === '..' || strpbrk($uri, "/\\\x00") !== false) {
-			throw new ToolFailure(CommonMessages::notFound());
-		}
-		return $this->store->card($bookId, $uri) ?? throw new ToolFailure(CommonMessages::notFound());
 	}
 }

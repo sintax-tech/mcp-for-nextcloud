@@ -15,7 +15,7 @@ use OCA\Mcp\Tests\Unit\Service\BackupDocumentFixture;
 use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Tests\Unit\Tools\Tasks\IneffectiveLocks;
 use OCA\Mcp\Tests\Unit\Tools\Contacts\ContactsTestModule;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
+use OCA\Mcp\Modules\Contacts\Planning\AddressBookShareNotice;
 use OCA\Mcp\Modules\Contacts\Locating\ContactAccess;
 use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
 use OCA\Mcp\Modules\Contacts\Cards\ContactCard;
@@ -59,8 +59,8 @@ final class ContactsEffectsContractTest extends TestCase {
 		$catalog = $this->createMock(IManager::class);
 		$catalog->method('getUserAddressBooks')->willReturn([]);
 		$location = new BackupLocation(BackupDocumentFixture::fromConfig($this, $this->gate->data()->appConfig($this)));
-		return new ContactsModule(new ContactAccess($this->contacts), $this->contacts, $this->contacts, new ContactCard(),
-			new SharedGuard($users),
+		return ContactsTestModule::build(new ContactAccess($this->contacts), $this->contacts, $this->contacts, new ContactCard(),
+			new AddressBookShareNotice($users),
 			new ContactBackup($this->createMock(IRootFolder::class), $this->createMock(ITimeFactory::class), $this->gate->config(),
 				new IneffectiveLocks(), $location),
 			ContactsTestModule::system($catalog, $this->createMock(IAppConfig::class), $this->createMock(IGroupManager::class), $users));

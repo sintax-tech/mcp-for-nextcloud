@@ -11,7 +11,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Platform\Dav\DavResult;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
+use OCA\Mcp\Modules\Contacts\Planning\AddressBookShareNotice;
 use OCA\Mcp\Modules\Contacts\Locating\ContactAccess;
 use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
 use OCA\Mcp\Modules\Contacts\Cards\ContactCard;
@@ -61,12 +61,12 @@ final class ContactCreatePlanTest extends TestCase {
 		});
 		$config = new InMemoryConfig();
 		$config->system['secret'] = 'contact-plan-secret';
-		$this->module = new ContactsModule(
+		$this->module = ContactsTestModule::build(
 			new ContactAccess($store),
 			$store,
 			$this->dav,
 			new ContactCard(),
-			new SharedGuard($this->createMock(IUserManager::class)),
+			new AddressBookShareNotice($this->createMock(IUserManager::class)),
 			$this->createMock(ContactBackup::class),
 			$this->createMock(SystemContacts::class),
 			new PlanState($config->mock($this)),

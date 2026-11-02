@@ -123,54 +123,6 @@
 		},
 		{
 			"rule": "module-isolation",
-			"source": "lib/Modules/Contacts/Locating/ContactAccess.php",
-			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
-			"line": 90,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "module-isolation",
-			"source": "lib/Modules/Contacts/Backup/ContactBackup.php",
-			"target": "OCA\\Mcp\\Tools\\Files\\FileBackup",
-			"line": 15,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "module-isolation",
-			"source": "lib/Modules/Contacts/ContactsModule.php",
-			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
-			"line": 397,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "module-isolation",
-			"source": "lib/Modules/Contacts/ContactsModule.php",
-			"target": "OCA\\Mcp\\Modules\\Calendar\\Approval\\SharedGuard",
-			"line": 47,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "module-isolation",
-			"source": "lib/Modules/Contacts/Creation/CreateContactHandler.php",
-			"target": "OCA\\Mcp\\Modules\\Calendar\\Locating\\Calendar",
-			"line": 105,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "module-isolation",
-			"source": "lib/Modules/Contacts/Creation/CreateContactHandler.php",
-			"target": "OCA\\Mcp\\Modules\\Calendar\\Approval\\SharedGuard",
-			"line": 48,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-15"
-		},
-		{
-			"rule": "module-isolation",
 			"source": "lib/Tools/Deck/CardLinkPlan.php",
 			"target": "OCA\\Mcp\\Tools\\Files\\Sharing\\SharePermission",
 			"line": 71,

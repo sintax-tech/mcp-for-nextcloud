@@ -7,11 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Contacts\Locating;
 
-use OCA\Mcp\Modules\Calendar\Locating\Calendar;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 
-/** Uses the Calendar collection descriptor for the identical ownership/shared guard metadata. */
+/** Finds the address books a user can see, and the contacts in them, through the read-only CardDAV port. */
 class ContactAccess {
 	/** Only user principals may own visible address books. */
 	private const PRINCIPAL_PREFIX = 'principals/users/';
@@ -55,7 +54,7 @@ class ContactAccess {
 	 * Lists personal and shared address books, explicitly excluding system principals.
 	 *
 	 * @param string $userId authenticated user UID
-	 * @return list<Calendar>
+	 * @return list<AddressBook>
 	 */
 	public function visible(string $userId): array {
 		$addressbooks = [];
@@ -65,7 +64,7 @@ class ContactAccess {
 				continue;
 			}
 			$ownerId = substr($owner, strlen(self::PRINCIPAL_PREFIX));
-			$addressbooks[] = new Calendar(
+			$addressbooks[] = new AddressBook(
 				$row['id'],
 				$row['uri'],
 				$row['displayName'],
@@ -84,10 +83,10 @@ class ContactAccess {
 	 * @param string $userId authenticated user UID
 	 * @param string $path address-book DAV path returned by the listing tool
 	 * @param bool $write whether to require a writable address book
-	 * @return Calendar
+	 * @return AddressBook
 	 * @throws ToolFailure when the path is foreign, hidden or not writable
 	 */
-	public function resolve(string $userId, string $path, bool $write = false): Calendar {
+	public function resolve(string $userId, string $path, bool $write = false): AddressBook {
 		foreach ($this->visible($userId) as $book) {
 			if (rtrim($book->path, '/') !== rtrim($path, '/')) {
 				continue;
@@ -98,5 +97,21 @@ class ContactAccess {
 			return $book;
 		}
 		throw new ToolFailure(CommonMessages::notFound());
+	}
+
+	/**
+	 * Reads a contact only after rejecting object URI syntax that could address another node.
+	 *
+	 * @param int $bookId authorized address-book ID
+	 * @param string $uri contact object URI
+	 * @return array{uri:string, etag:string, data:string}
+	 * @throws ToolFailure when the URI is malformed or the contact no longer exists
+	 */
+	public function row(int $bookId, string $uri): array {
+		// Reject path syntax even for direct callers; no foreign node can be addressed through the port.
+		if ($uri === '' || $uri === '.' || $uri === '..' || strpbrk($uri, "/\\\x00") !== false) {
+			throw new ToolFailure(CommonMessages::notFound());
+		}
+		return $this->store->card($bookId, $uri) ?? throw new ToolFailure(CommonMessages::notFound());
 	}
 }

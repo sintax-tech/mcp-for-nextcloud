@@ -9,7 +9,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Contacts;
 
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Platform\Dav\DavResult;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
+use OCA\Mcp\Modules\Contacts\Planning\AddressBookShareNotice;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Modules\Contacts\Locating\ContactAccess;
 use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
@@ -80,12 +80,12 @@ final class ContactsModuleTest extends TestCase {
 		$this->dav = $this->createMock(ContactDav::class);
 		$this->backup = $this->createMock(ContactBackup::class);
 		$this->system = $this->createMock(SystemContacts::class);
-		$this->module = new ContactsModule(
+		$this->module = ContactsTestModule::build(
 			new ContactAccess($this->store),
 			$this->store,
 			$this->dav,
 			new ContactCard(),
-			new SharedGuard($this->createMock(IUserManager::class)),
+			new AddressBookShareNotice($this->createMock(IUserManager::class)),
 			$this->backup,
 			$this->system,
 			new PlanState((new InMemoryConfig())->mock($this)),

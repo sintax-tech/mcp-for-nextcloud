@@ -7,9 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Contacts\Deletion;
 
-use Closure;
 use OCA\Mcp\Modules\Contacts\Locating\ContactAccess;
 use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
+use OCA\Mcp\Modules\Contacts\Planning\ContactChange;
 use OCA\Mcp\Modules\Contacts\Writing\ContactDav;
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
@@ -20,34 +20,23 @@ use OCA\Mcp\Mcp\Confirmation\WriteGate;
 /** Deletes one contact only after a mandatory, verified copy and fresh native ACL/ETag checks. */
 final class DeleteContactHandler {
 	/**
-	 * @param ContactAccess $access existing native collection authorization
+	 * @param ContactAccess $access existing native collection authorization and validated contact reader
 	 * @param ContactDav $dav existing conditional CardDAV writer
 	 * @param ContactBackup $backup mandatory contact copy, independent of the Files preference
-	 * @param Closure(array<string, mixed>, string): array<string, mixed> $prepare shared unchanged write preparation
-	 * @param Closure(int, string): array<string, mixed> $readRow existing validated contact URI reader
+	 * @param ContactChange $changes shared unchanged write preparation
 	 */
 	public function __construct(private ContactAccess $access, private ContactDav $dav, private ContactBackup $backup,
-		private Closure $prepare, private Closure $readRow) {
+		private ContactChange $changes) {
 	}
 
 	/**
-	 * @param array<string, mixed> $arguments validated contact address and concurrency fields
 	 * @param string $userId authenticated actor
-	 * @return array<string, mixed> deletion plan, including the current required copy directory
-	 * @throws \Throwable if the existing preparation refuses access or input
-	 */
-	public function preview(array $arguments, string $userId): array {
-		return ($this->prepare)($arguments, $userId)['plan'];
-	}
-
-	/**
 	 * @param array<string, mixed> $arguments validated contact fields and explicit confirmations
-	 * @param string $userId authenticated actor
 	 * @return array<string, mixed> unchanged plan or verified deletion receipt
 	 * @throws \Throwable for denied access, missing confirmation, failed backup or native deletion failure
 	 */
-	public function handle(array $arguments, string $userId): array {
-		$prepared = ($this->prepare)($arguments, $userId);
+	public function handle(string $userId, array $arguments): array {
+		$prepared = $this->changes->prepare('contacts_delete_contact', $arguments, $userId);
 		if (!WriteGate::confirmed($arguments)) {
 			return ToolResult::json($prepared['plan']);
 		}
@@ -67,7 +56,7 @@ final class DeleteContactHandler {
 		if ($currentBook->id !== $book->id || $currentBook->ownerPrincipal !== $book->ownerPrincipal) {
 			throw new ToolFailure(CommonMessages::conflict());
 		}
-		$latest = ($this->readRow)($book->id, $row['uri']);
+		$latest = $this->access->row($book->id, $row['uri']);
 		if ($latest['etag'] !== $row['etag']) {
 			throw new ToolFailure(CommonMessages::conflict());
 		}

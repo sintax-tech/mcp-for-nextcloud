@@ -11,7 +11,7 @@ use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
-use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
+use OCA\Mcp\Modules\Contacts\Planning\AddressBookShareNotice;
 use OCA\Mcp\Modules\Contacts\Locating\ContactAccess;
 use OCA\Mcp\Modules\Contacts\Backup\ContactBackup;
 use OCA\Mcp\Modules\Contacts\Cards\ContactCard;
@@ -209,12 +209,12 @@ final class ContactsPlanRendererTest extends TestCase {
 		$backup = $this->createMock(ContactBackup::class);
 		$backup->method('directory')->willReturn('/MCP backups/Contacts/Personal');
 
-		return new ContactsModule(
+		return ContactsTestModule::build(
 			new ContactAccess($store),
 			$store,
 			$this->createMock(ContactDav::class),
 			new ContactCard(),
-			new SharedGuard($users),
+			new AddressBookShareNotice($users),
 			$backup,
 			// The read-only account directory is not part of what a plan describes, so it stays empty here.
 			$this->createMock(SystemContacts::class),

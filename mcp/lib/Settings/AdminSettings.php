@@ -9,7 +9,7 @@ namespace OCA\Mcp\Settings;
 
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Platform\Compat\AppEnablement;
-use OCA\Mcp\Service\ConnectionList;
+use OCA\Mcp\OAuth\Connections\ConnectionList;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Logs\LogsAccess;
 use OCA\Mcp\Tools\Files\OcrSupport;

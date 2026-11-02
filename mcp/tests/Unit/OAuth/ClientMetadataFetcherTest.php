@@ -6,8 +6,8 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\OAuth;
 
-use OCA\Mcp\OAuth\ClientMetadataFetcher;
-use OCA\Mcp\OAuth\OAuthException;
+use OCA\Mcp\OAuth\Clients\ClientMetadataFetcher;
+use OCA\Mcp\OAuth\Authorization\OAuthException;
 use OCP\Http\Client\IClient;
 use OCP\Http\Client\IClientService;
 use OCP\Http\Client\IResponse;

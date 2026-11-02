@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Controller;
 
 use InvalidArgumentException;
-use OCA\Mcp\Service\ConnectionList;
+use OCA\Mcp\OAuth\Connections\ConnectionList;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http;

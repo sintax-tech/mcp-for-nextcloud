@@ -9,8 +9,8 @@ namespace OCA\Mcp\Migration;
 
 use Closure;
 use OCA\Mcp\Db\OAuthClientsMapper;
-use OCA\Mcp\OAuth\CustomClient;
-use OCA\Mcp\OAuth\NativeClient;
+use OCA\Mcp\OAuth\Clients\CustomClient;
+use OCA\Mcp\OAuth\Clients\NativeClient;
 use OCP\DB\ISchemaWrapper;
 use OCP\DB\Types;
 use OCP\IAppConfig;

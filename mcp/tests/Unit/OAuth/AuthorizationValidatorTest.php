@@ -6,10 +6,10 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\OAuth;
 
-use OCA\Mcp\OAuth\AuthorizationValidator;
-use OCA\Mcp\OAuth\ClientMetadata;
-use OCA\Mcp\OAuth\ClientResolver;
-use OCA\Mcp\OAuth\OAuthException;
+use OCA\Mcp\OAuth\Authorization\AuthorizationValidator;
+use OCA\Mcp\OAuth\Clients\ClientMetadata;
+use OCA\Mcp\OAuth\Clients\ClientResolver;
+use OCA\Mcp\OAuth\Authorization\OAuthException;
 use PHPUnit\Framework\TestCase;
 
 final class AuthorizationValidatorTest extends TestCase {

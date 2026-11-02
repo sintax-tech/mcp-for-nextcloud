@@ -9,9 +9,9 @@ namespace OCA\Mcp\Tests\Unit\Migration;
 
 use OCA\Mcp\Db\OAuthClientsMapper;
 use OCA\Mcp\Migration\Version001100Date20261016000000;
-use OCA\Mcp\OAuth\ClientResolver;
-use OCA\Mcp\OAuth\CustomClient;
-use OCA\Mcp\OAuth\NativeClient;
+use OCA\Mcp\OAuth\Clients\ClientResolver;
+use OCA\Mcp\OAuth\Clients\CustomClient;
+use OCA\Mcp\OAuth\Clients\NativeClient;
 use OCA\Mcp\Tests\Unit\OAuth\ClientsTable;
 use OCP\IAppConfig;
 use OCP\IConfig;

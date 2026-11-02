@@ -7,15 +7,15 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Controller;
 
-use OCA\Mcp\OAuth\AuthorizationRequest;
-use OCA\Mcp\OAuth\AuthorizationValidator;
-use OCA\Mcp\OAuth\CustomClient;
-use OCA\Mcp\OAuth\NativeClient;
-use OCA\Mcp\OAuth\OAuthException;
-use OCA\Mcp\OAuth\RedirectUriMatcher;
-use OCA\Mcp\OAuth\ResourceUrl;
-use OCA\Mcp\OAuth\TokenClientId;
-use OCA\Mcp\OAuth\TokenService;
+use OCA\Mcp\OAuth\Authorization\AuthorizationRequest;
+use OCA\Mcp\OAuth\Authorization\AuthorizationValidator;
+use OCA\Mcp\OAuth\Clients\CustomClient;
+use OCA\Mcp\OAuth\Clients\NativeClient;
+use OCA\Mcp\OAuth\Authorization\OAuthException;
+use OCA\Mcp\OAuth\Authorization\RedirectUriMatcher;
+use OCA\Mcp\OAuth\Tokens\ResourceUrl;
+use OCA\Mcp\OAuth\Tokens\TokenClientId;
+use OCA\Mcp\OAuth\Tokens\TokenService;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCP\AppFramework\Controller;

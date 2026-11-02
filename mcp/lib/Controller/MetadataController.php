@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Controller;
 
-use OCA\Mcp\OAuth\AuthorizationValidator;
-use OCA\Mcp\OAuth\ResourceUrl;
+use OCA\Mcp\OAuth\Authorization\AuthorizationValidator;
+use OCA\Mcp\OAuth\Tokens\ResourceUrl;
 use OCP\AppFramework\Controller;
 use OCP\AppFramework\Http\Attribute\NoCSRFRequired;
 use OCP\AppFramework\Http\Attribute\PublicPage;

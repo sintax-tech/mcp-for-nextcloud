@@ -7,7 +7,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\OAuth\Storage;
 
 use OCA\Mcp\OAuth\Storage\OAuthStore;
-use OCA\Mcp\OAuth\TokenService;
+use OCA\Mcp\OAuth\Tokens\TokenService;
 use OCA\Mcp\Tests\Unit\FakeDatabase;
 use PHPUnit\Framework\TestCase;
 

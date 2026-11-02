@@ -15,7 +15,7 @@ use OCA\Mcp\Migration\Version000800Date20261002010000;
 use OCA\Mcp\Migration\Version001002Date20261008000000;
 use OCA\Mcp\Migration\Version001100Date20261015010000;
 use OCA\Mcp\OAuth\Storage\OAuthStore;
-use OCA\Mcp\OAuth\TokenService;
+use OCA\Mcp\OAuth\Tokens\TokenService;
 use OCA\Mcp\Tests\Unit\SqliteDatabase;
 use OCP\DB\ISchemaWrapper;
 use OCP\Migration\IOutput;

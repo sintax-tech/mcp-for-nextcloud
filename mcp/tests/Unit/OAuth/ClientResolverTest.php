@@ -6,12 +6,12 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\OAuth;
 
-use OCA\Mcp\OAuth\ClientMetadata;
-use OCA\Mcp\OAuth\ClientMetadataFetcher;
-use OCA\Mcp\OAuth\ClientResolver;
-use OCA\Mcp\OAuth\NativeClient;
-use OCA\Mcp\OAuth\OAuthException;
-use OCA\Mcp\OAuth\RedirectUriMatcher;
+use OCA\Mcp\OAuth\Clients\ClientMetadata;
+use OCA\Mcp\OAuth\Clients\ClientMetadataFetcher;
+use OCA\Mcp\OAuth\Clients\ClientResolver;
+use OCA\Mcp\OAuth\Clients\NativeClient;
+use OCA\Mcp\OAuth\Authorization\OAuthException;
+use OCA\Mcp\OAuth\Authorization\RedirectUriMatcher;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use PHPUnit\Framework\TestCase;
 

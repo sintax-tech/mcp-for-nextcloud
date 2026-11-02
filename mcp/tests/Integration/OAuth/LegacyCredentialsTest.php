@@ -6,10 +6,10 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\OAuth;
 
-use OCA\Mcp\OAuth\AccessTokenAuthenticator;
-use OCA\Mcp\OAuth\OAuthException;
+use OCA\Mcp\OAuth\Tokens\AccessTokenAuthenticator;
+use OCA\Mcp\OAuth\Authorization\OAuthException;
 use OCA\Mcp\OAuth\Storage\OAuthStore;
-use OCA\Mcp\OAuth\TokenService;
+use OCA\Mcp\OAuth\Tokens\TokenService;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Integration\Fixtures;
 use OCA\Mcp\Tests\Integration\IntegrationTestCase;

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\OAuth;
 
-use OCA\Mcp\OAuth\TokenClientId;
+use OCA\Mcp\OAuth\Tokens\TokenClientId;
 use OCP\IRequest;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;

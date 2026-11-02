@@ -9,16 +9,16 @@ namespace OCA\Mcp\Tests\Integration\OAuth;
 use OCA\Mcp\Db\AuthUsersMapper;
 use OCA\Mcp\Db\OAuthClientsMapper;
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\OAuth\AccessTokenAuthenticator;
-use OCA\Mcp\OAuth\AuthorizationRequest;
-use OCA\Mcp\OAuth\CustomClient;
-use OCA\Mcp\OAuth\NativeClient;
-use OCA\Mcp\OAuth\OAuthClientsService;
-use OCA\Mcp\OAuth\OAuthException;
+use OCA\Mcp\OAuth\Tokens\AccessTokenAuthenticator;
+use OCA\Mcp\OAuth\Authorization\AuthorizationRequest;
+use OCA\Mcp\OAuth\Clients\CustomClient;
+use OCA\Mcp\OAuth\Clients\NativeClient;
+use OCA\Mcp\OAuth\Clients\OAuthClientsService;
+use OCA\Mcp\OAuth\Authorization\OAuthException;
 use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\OAuth\Storage\TokenHasher;
-use OCA\Mcp\OAuth\TokenOwnerGate;
-use OCA\Mcp\OAuth\TokenService;
+use OCA\Mcp\OAuth\Tokens\TokenOwnerGate;
+use OCA\Mcp\OAuth\Tokens\TokenService;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Policy\CauseProcessor;
 use OCA\Mcp\Access\Policy\PolicyConflict;
@@ -374,10 +374,10 @@ final class OAuthClientsTest extends OAuthAccountTestCase {
 		}
 		$this->assertSame(0, $this->rows($second, $client['clientId']), 'nothing issued after the withdrawal, nothing left from before it');
 		$this->assertNull($this->bearer($tokens));
-		$this->assertFalse(\OCA\Mcp\OAuth\ClientResolver::nativeEnabled(Server::get(OAuthClientsMapper::class)),
+		$this->assertFalse(\OCA\Mcp\OAuth\Clients\ClientResolver::nativeEnabled(Server::get(OAuthClientsMapper::class)),
 			'the native switch in the AppConfig turns nothing on');
 		try {
-			Server::get(\OCA\Mcp\OAuth\ClientResolver::class)->resolve(NativeClient::CLIENT_ID);
+			Server::get(\OCA\Mcp\OAuth\Clients\ClientResolver::class)->resolve(NativeClient::CLIENT_ID);
 			$this->fail('The native client was admitted from the AppConfig');
 		} catch (OAuthException $e) {
 			$this->assertSame('invalid_client', $e->error);

@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\OAuth;
+namespace OCA\Mcp\OAuth\Revocation;
 
 use OCA\Mcp\Access\Policy\CauseProcessor;
 use OCA\Mcp\Access\Policy\PolicyWriter;

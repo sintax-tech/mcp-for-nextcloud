@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\OAuth;
+namespace OCA\Mcp\OAuth\Tokens;
 
 use OCP\IRequest;
 

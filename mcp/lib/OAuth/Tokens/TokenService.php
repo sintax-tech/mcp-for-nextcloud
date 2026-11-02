@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\OAuth;
+namespace OCA\Mcp\OAuth\Tokens;
 
 use OCA\Mcp\Db\AuthUsersMapper;
 use OCA\Mcp\Access\Policy\PolicyEventProcessor;
@@ -47,24 +47,24 @@ class TokenService {
 	 * Consent: turns the user's connection on and stores a one-time code in one atomic command; if either fails,
 	 * neither happens.
 	 *
-	 * @param AuthorizationRequest $request the consented request
+	 * @param \OCA\Mcp\OAuth\Authorization\AuthorizationRequest $request the consented request
 	 * @param string $uid the consenting user
 	 * @return string|null the one-time authorization code, or null when the service is off, the account is disabled
 	 *     or the user is not eligible (nothing was written)
 	 * @throws \InvalidArgumentException for a user the server does not know
-	 * @throws OAuthException invalid_client when, under the mutex, the client was turned off, deleted or withdrawn
+	 * @throws \OCA\Mcp\OAuth\Authorization\OAuthException invalid_client when, under the mutex, the client was turned off, deleted or withdrawn
 	 *     (a redirect URI removed, or turned off and on again) since the request was validated; nothing was written
 	 * @throws PolicyUnavailable when the eligibility is unknown, the policy storage fails or keeps changing; nothing
 	 *     was issued
 	 */
-	public function consent(AuthorizationRequest $request, string $uid): ?string {
+	public function consent(\OCA\Mcp\OAuth\Authorization\AuthorizationRequest $request, string $uid): ?string {
 		$code = $this->hasher->generate('code');
 		$allowed = $this->writer->consent($uid, fn (): ?array => $this->gate->admission($uid, false),
 			function (string $generation, string $epoch) use ($request, $uid, $code): void {
 			// The last word on the client, read from the app's table under the mutex: a withdrawal commits under the
 			// same mutex, so it either precedes this check or deletes this code afterwards.
 			if (!$this->clientAdmitted($request->client->clientId, $request->client->generation, $request->redirectUri)) {
-				throw new OAuthException('invalid_client', 'Unknown or not allowed client');
+				throw new \OCA\Mcp\OAuth\Authorization\OAuthException('invalid_client', 'Unknown or not allowed client');
 			}
 			$now = $this->time->getTime();
 			$this->store->insertCode([
@@ -86,18 +86,18 @@ class TokenService {
 	/**
 	 * @param array<string,mixed> $params form parameters of the token request (grant_type=authorization_code)
 	 * @return array<string,string|int> the token response body
-	 * @throws OAuthException invalid_request / invalid_grant
+	 * @throws \OCA\Mcp\OAuth\Authorization\OAuthException invalid_request / invalid_grant
 	 * @throws PolicyUnavailable when the storage fails or keeps changing; the code is not consumed then
 	 */
 	public function exchangeCode(array $params): array {
 		$get = static fn (string $name): string => is_string($params[$name] ?? null) ? $params[$name] : '';
 		if ($get('code') === '' || $get('code_verifier') === '' || $get('client_id') === '') {
-			throw new OAuthException('invalid_request', 'code, code_verifier and client_id are required');
+			throw new \OCA\Mcp\OAuth\Authorization\OAuthException('invalid_request', 'code, code_verifier and client_id are required');
 		}
 		$hash = $this->hasher->hash($get('code'));
 		$known = $this->read(fn () => $this->store->findCode($hash));
 		if ($known === null) {
-			throw new OAuthException('invalid_grant', 'Invalid authorization code');
+			throw new \OCA\Mcp\OAuth\Authorization\OAuthException('invalid_grant', 'Invalid authorization code');
 		}
 		$uid = (string)$known['user_id'];
 		$observed = $this->read(fn () => $this->authUsers->generations($uid))['issue_seq'];
@@ -110,14 +110,14 @@ class TokenService {
 			$row = $this->store->consumeCode($hash);
 			if ($row === null || (int)$row['expires_at'] < $this->time->getTime() || (string)$row['user_id'] !== $uid
 				|| $row['client_id'] !== $get('client_id') || $row['redirect_uri'] !== $get('redirect_uri')
-				|| !Pkce::verify($get('code_verifier'), (string)$row['code_challenge'])
+				|| !\OCA\Mcp\OAuth\Authorization\Pkce::verify($get('code_verifier'), (string)$row['code_challenge'])
 				|| ($get('resource') !== '' && !ResourceUrl::sameResource($get('resource'), (string)$row['resource']))
 				|| !\OCA\Mcp\OAuth\Storage\CredentialGeneration::live($row, $generations, $state['auth_epoch'])) {
-				$error = new OAuthException('invalid_grant', 'Invalid authorization code');
+				$error = new \OCA\Mcp\OAuth\Authorization\OAuthException('invalid_grant', 'Invalid authorization code');
 				return;
 			}
 			if (!$this->clientAdmitted((string)$row['client_id'], null, (string)$row['redirect_uri'])) {
-				$error = new OAuthException('invalid_grant', 'This client is disabled');
+				$error = new \OCA\Mcp\OAuth\Authorization\OAuthException('invalid_grant', 'This client is disabled');
 				return;
 			}
 			$body = $this->issue($uid, (string)$row['client_id'], (string)$row['resource'], (string)$row['scope'],
@@ -132,23 +132,23 @@ class TokenService {
 	/**
 	 * @param array<string,mixed> $params form parameters of the token request (grant_type=refresh_token)
 	 * @return array<string,string|int> the token response body with a new refresh token
-	 * @throws OAuthException invalid_request / invalid_grant
+	 * @throws \OCA\Mcp\OAuth\Authorization\OAuthException invalid_request / invalid_grant
 	 * @throws PolicyUnavailable when the storage fails or keeps changing; the refresh token is not consumed then
 	 */
 	public function refresh(array $params): array {
 		$get = static fn (string $name): string => is_string($params[$name] ?? null) ? $params[$name] : '';
 		if ($get('refresh_token') === '' || $get('client_id') === '') {
-			throw new OAuthException('invalid_request', 'refresh_token and client_id are required');
+			throw new \OCA\Mcp\OAuth\Authorization\OAuthException('invalid_request', 'refresh_token and client_id are required');
 		}
 		$oldHash = $this->hasher->hash($get('refresh_token'));
 		$row = $this->read(fn () => $this->store->findByRefresh($oldHash));
 		$now = $this->time->getTime();
 		if ($row === null) {
 			$this->replayed($oldHash, $get('client_id'));
-			throw new OAuthException('invalid_grant', 'Invalid refresh token');
+			throw new \OCA\Mcp\OAuth\Authorization\OAuthException('invalid_grant', 'Invalid refresh token');
 		}
 		if ((int)$row['refresh_expires'] < $now || $row['client_id'] !== $get('client_id')) {
-			throw new OAuthException('invalid_grant', 'Invalid refresh token');
+			throw new \OCA\Mcp\OAuth\Authorization\OAuthException('invalid_grant', 'Invalid refresh token');
 		}
 		$uid = (string)$row['user_id'];
 		$observed = $this->read(fn () => $this->authUsers->generations($uid))['issue_seq'];
@@ -181,10 +181,10 @@ class TokenService {
 			$this->replayed($oldHash, $get('client_id'));
 		}
 		if ($disabled) {
-			throw new OAuthException('invalid_grant', 'This client is disabled');
+			throw new \OCA\Mcp\OAuth\Authorization\OAuthException('invalid_grant', 'This client is disabled');
 		}
 		if ($lost || $revoked) {
-			throw new OAuthException('invalid_grant', 'Invalid refresh token');
+			throw new \OCA\Mcp\OAuth\Authorization\OAuthException('invalid_grant', 'Invalid refresh token');
 		}
 		return $this->body($access, $refresh, (string)$row['scope']);
 	}
@@ -232,7 +232,7 @@ class TokenService {
 	 * with PolicyUnavailable and revokes nothing.
 	 *
 	 * @param Closure(array, array):void $local the local statements, given the state row and generations under the mutex
-	 * @throws OAuthException invalid_grant for an unusable owner
+	 * @throws \OCA\Mcp\OAuth\Authorization\OAuthException invalid_grant for an unusable owner
 	 * @throws PolicyUnavailable when the storage fails or keeps changing
 	 */
 	private function asOwner(string $uid, string $observed, \Closure $local): void {
@@ -248,7 +248,7 @@ class TokenService {
 			}, $this->gate->causes());
 		} catch (OwnerNotUsable) {
 			$this->gate->revokeObserved($uid, $observed);
-			throw new OAuthException('invalid_grant', 'MCP access is not allowed for this account');
+			throw new \OCA\Mcp\OAuth\Authorization\OAuthException('invalid_grant', 'MCP access is not allowed for this account');
 		} catch (\InvalidArgumentException|\UnexpectedValueException $e) {
 			// An owner id the generation table refuses, or a digest collision: nothing can be issued for it.
 			throw new PolicyUnavailable('Invalid credential owner', previous: $e);
@@ -309,11 +309,11 @@ class TokenService {
 	 * @return bool false when the administrator withdrew the client
 	 */
 	private function clientAdmitted(string $clientId, ?string $generation, ?string $redirectUri): bool {
-		if ($clientId === NativeClient::CLIENT_ID) {
-			$current = ClientResolver::nativeGeneration($this->clients);
+		if ($clientId === \OCA\Mcp\OAuth\Clients\NativeClient::CLIENT_ID) {
+			$current = \OCA\Mcp\OAuth\Clients\ClientResolver::nativeGeneration($this->clients);
 			return $current !== null && ($generation === null || $generation === $current);
 		}
-		return !CustomClient::owns($clientId) || CustomClient::admits($this->clients, $clientId, $generation, $redirectUri);
+		return !\OCA\Mcp\OAuth\Clients\CustomClient::owns($clientId) || \OCA\Mcp\OAuth\Clients\CustomClient::admits($this->clients, $clientId, $generation, $redirectUri);
 	}
 
 	/**

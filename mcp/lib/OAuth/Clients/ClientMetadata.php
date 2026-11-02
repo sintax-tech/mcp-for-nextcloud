@@ -5,7 +5,9 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\OAuth;
+namespace OCA\Mcp\OAuth\Clients;
+
+use OCA\Mcp\OAuth\Authorization\RedirectUriMatcher;
 
 /** A validated Client ID Metadata Document: the client_id URL, its self-asserted name and its redirect URIs. */
 class ClientMetadata {

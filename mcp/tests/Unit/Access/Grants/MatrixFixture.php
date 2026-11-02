@@ -90,9 +90,9 @@ final class MatrixFixture {
 		return InMemoryConfig::writer($this->policyConfig, $this->oauth);
 	}
 
-	/** @return \OCA\Mcp\OAuth\OAuthClientsService the administrator's OAuth client settings over the writer and the OAuth store of the fixture */
-	public function clients(): \OCA\Mcp\OAuth\OAuthClientsService {
-		return new \OCA\Mcp\OAuth\OAuthClientsService($this->writer(), $this->config->mock($this->test), $this->clients->mapper, $this->oauth);
+	/** @return \OCA\Mcp\OAuth\Clients\OAuthClientsService the administrator's OAuth client settings over the writer and the OAuth store of the fixture */
+	public function clients(): \OCA\Mcp\OAuth\Clients\OAuthClientsService {
+		return new \OCA\Mcp\OAuth\Clients\OAuthClientsService($this->writer(), $this->config->mock($this->test), $this->clients->mapper, $this->oauth);
 	}
 
 	/** @return \OCA\Mcp\Db\PolicyStateMapper the revision the writer reads */

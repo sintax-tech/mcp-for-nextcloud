@@ -52,7 +52,7 @@
             "OCA\\Mcp\\Mcp\\Protocol\\McpProtocol"
         ],
         "registerEventListener": [
-            "OCP\\User\\Events\\UserChangedEvent -> OCA\\Mcp\\OAuth\\UserRevocationListener @0",
+            "OCP\\User\\Events\\UserChangedEvent -> OCA\\Mcp\\OAuth\\Revocation\\UserRevocationListener @0",
             "OCP\\User\\Events\\BeforeUserDeletedEvent -> OCA\\Mcp\\Listener\\UserCauseListener @0",
             "OCP\\User\\Events\\UserDeletedEvent -> OCA\\Mcp\\Listener\\UserCauseListener @0",
             "OCP\\Group\\Events\\BeforeUserRemovedEvent -> OCA\\Mcp\\Listener\\UserCauseListener @0",

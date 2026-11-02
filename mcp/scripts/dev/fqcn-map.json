@@ -2,6 +2,9 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Polls/Presentation/PollsSchema.php","fqcn":"OCA\\Mcp\\Modules\\Polls\\Presentation\\PollsSchema","target":"stays","owner":"Modules\\Polls","ticket":null},
+		{"path":"lib/Modules/Polls/Presentation/PollsGuideNotes.php","fqcn":"OCA\\Mcp\\Modules\\Polls\\Presentation\\PollsGuideNotes","target":"stays","owner":"Modules\\Polls","ticket":null},
+		{"path":"lib/Modules/Polls/Presentation/PollsPlanRenderer.php","fqcn":"OCA\\Mcp\\Modules\\Polls\\Presentation\\PollsPlanRenderer","target":"stays","owner":"Modules\\Polls","ticket":null},
 		{"path":"lib/Modules/Logs/LogsToolCatalog.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\LogsToolCatalog","target":"stays","owner":"Modules\\Logs","ticket":null},
 		{"path":"lib/Modules/Logs/Tools/ListLogs.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Tools\\ListLogs","target":"stays","owner":"Modules\\Logs","ticket":null},
 		{"path":"lib/Modules/Logs/Tools/AnalyzeLogs.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Tools\\AnalyzeLogs","target":"stays","owner":"Modules\\Logs","ticket":null},

@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Polls\Creation;
 
-use OCA\Mcp\Mcp\{Confirmation\PlanState,Confirmation\PlanText};
+use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Modules\Polls\Presentation\CreateMessages;
 
 /** Stateless signed preview; full scalar request/effect is bound before any presentation cut. */
@@ -39,26 +39,5 @@ class CreatePlan {
 		$plan[PlanState::ARGUMENT] = $this->states->of(self::TOOL,$uid,$state);
 		if ($changed) { $plan['warnings'] = [['message' => CreateMessages::planChanged($version)]]; }
 		return $plan;
-	}
-	/**
-	 * Renders every submitted value inertly through the original PlanText contract.
-	 * @param array<string,mixed> $plan structured preview
-	 * @return string readable body only; registry supplies title/warnings/footer
-	 */
-	public static function render(array $plan): string {
-		$lines = ['- '.PlanText::inline((string)$plan['request']['title'],128),
-			'- '.PlanText::inline((string)$plan['request']['type']),'- '.PlanText::inline((string)$plan['target']['owner']),
-			'- version: '.PlanText::inline((string)$plan['version'],2000)];
-		foreach ($plan['options'] as $index=>$row) {
-			$requested = $plan['request']['options'][$index];
-			if (isset($requested['text'])) { $lines[] = '- #'.($index+1).' '.PlanText::inline((string)$requested['text'],1024); }
-			$lines[] = '- #'.($index+1).' '.PlanText::inline($row['text'],1024).' ('.$row['timestamp'].', '.$row['duration'].'s)';
-		}
-		foreach ($plan['persistence']['observable'] as $key=>$value) {
-			$shown = $key === 'description' && $value === '' ? \OCA\Mcp\L10n\Translator::t('No description') : (is_scalar($value) ? (string)$value : 'null');
-			$lines[] = '- '.PlanText::inline($key).': '.PlanText::inline($shown,2000);
-		}
-		foreach ($plan['notes'] as $note) { $lines[] = '- '.PlanText::inline($note,1000); }
-		return implode("\n",$lines);
 	}
 }

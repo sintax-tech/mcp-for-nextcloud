@@ -10,11 +10,11 @@ namespace OCA\Mcp\Modules\Polls;
 use InvalidArgumentException;
 use OCA\Mcp\Modules\Polls\Creation\CreatePlan;
 use OCA\Mcp\Modules\Polls\Creation\CreatePollHandler;
-use OCA\Mcp\Modules\Polls\Presentation\CreateDefinition;
-use OCA\Mcp\Modules\Polls\Presentation\CreateMessages;
-use OCA\Mcp\Modules\Polls\Presentation\PollsContentDefinitions;
 use OCA\Mcp\Modules\Polls\Presentation\PollsContentMessages;
+use OCA\Mcp\Modules\Polls\Presentation\PollsGuideNotes;
 use OCA\Mcp\Modules\Polls\Presentation\PollsMessages;
+use OCA\Mcp\Modules\Polls\Presentation\PollsPlanRenderer;
+use OCA\Mcp\Modules\Polls\Presentation\PollsSchema;
 use OCA\Mcp\Modules\Polls\Reading\ListLinksHandler;
 use OCA\Mcp\Modules\Polls\Reading\ListPollsHandler;
 use OCA\Mcp\Modules\Polls\Reading\ListVotesHandler;
@@ -22,6 +22,7 @@ use OCA\Mcp\Modules\Polls\Reading\ReadPollHandler;
 use OCA\Mcp\Modules\Polls\Reading\ReadResultsHandler;
 use OCA\Mcp\Mcp\{Tools\PreviewsWrites,Tools\RendersPlans};
 use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
+use OCA\Mcp\Mcp\Tools\ToolDefinition;
 use OCA\Mcp\Mcp\Tools\ToolModule;
 
 /** Registers native read handlers; protected votes/results and existing links have independent grants. */
@@ -45,7 +46,7 @@ final class PollsModule implements ToolModule, ToolGuideNotes, PreviewsWrites, R
 	 * @return list<string> guide notes
 	 */
 	public function guideNotes(): array {
-		return [PollsMessages::NOTICE, PollsMessages::READ, PollsContentMessages::COST, PollsContentMessages::LINKS, CreateMessages::TOOL, CreateMessages::NOTE];
+		return PollsGuideNotes::notes();
 	}
 
 	/**
@@ -53,16 +54,15 @@ final class PollsModule implements ToolModule, ToolGuideNotes, PreviewsWrites, R
 	 * @return list<array<string,mixed>> tool definitions
 	 */
 	public function definitions(): array {
-		$page = static fn (string $limit, string $cursor, int $default): array => [
-			$limit => ['type' => 'integer', 'minimum' => 1, 'maximum' => 100, 'default' => $default],
-			$cursor => ['type' => 'string', 'maxLength' => 512],
-		];
-		return [
-			$this->definition(ListPollsHandler::TOOL, PollsMessages::LIST, $page('limit', 'cursor', 25)),
-			$this->definition(ReadPollHandler::TOOL, PollsMessages::READ,
-				['poll_id' => ['type' => 'integer', 'minimum' => 1]] + $page('options_limit', 'options_cursor', 100), ['poll_id']),
-			...PollsContentDefinitions::all(), CreateDefinition::get(),
-		];
+		return array_map(static fn (ToolDefinition $definition): array => $definition->toArray(), [
+			PollsSchema::read(ListPollsHandler::TOOL, PollsMessages::LIST, PollsSchema::page('limit', 'cursor', 25)),
+			PollsSchema::read(ReadPollHandler::TOOL, PollsMessages::READ,
+				['poll_id' => ['type' => 'integer', 'minimum' => 1]] + PollsSchema::page('options_limit', 'options_cursor', 100), ['poll_id']),
+			PollsSchema::content(ListVotesHandler::TOOL, 'results', PollsContentMessages::VOTES, true),
+			PollsSchema::content(ReadResultsHandler::TOOL, 'results', PollsContentMessages::RESULTS, false),
+			PollsSchema::content(ListLinksHandler::TOOL, 'links', PollsContentMessages::LINKS, false),
+			PollsSchema::create(),
+		]);
 	}
 
 	/**
@@ -103,19 +103,7 @@ final class PollsModule implements ToolModule, ToolGuideNotes, PreviewsWrites, R
 	 * @return string|null body or generic fallback for a non-writing tool
 	 */
 	public function renderPlan(string $tool, array $plan): ?string {
-		return $tool === CreatePlan::TOOL ? CreatePlan::render($plan) : null;
+		return (new PollsPlanRenderer())->render($tool, $plan);
 	}
 
-	/**
-	 * Registers a read-only app-gated tool.
-	 * @param string $name tool name
-	 * @param string $description tool description
-	 * @param array<string,mixed> $properties schema properties
-	 * @param list<string> $required required properties
-	 * @return array<string,mixed> definition
-	 */
-	private function definition(string $name, string $description, array $properties, array $required = []): array {
-		return ['name' => $name, 'description' => $description, 'module' => 'polls', 'operation' => 'read', 'app' => 'polls',
-			'inputSchema' => ['type' => 'object', 'properties' => $properties, 'additionalProperties' => false] + ($required === [] ? [] : ['required' => $required])];
-	}
 }

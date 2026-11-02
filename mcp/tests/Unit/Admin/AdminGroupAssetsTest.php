@@ -89,7 +89,7 @@ final class AdminGroupAssetsTest extends TestCase {
 		$app = dirname(__DIR__, 3);
 		$source = AdminSources::readPath($app . '/src/admin/admin-groups.js');
 		preg_match_all("/t\\('mcp', '([^']+)'/", $source, $script);
-		$template = file_get_contents($app . '/templates/admin.php');
+		$template = AdminSources::readPath($app . '/templates/admin.php');
 		$start = strpos($template, 'id="mcp-group-editor"');
 		$block = substr($template, $start, strpos($template, 'id="mcp-block-matrix"') - $start);
 		preg_match_all("/\\\$l->t\\('([^']+)'/", $block, $markup);

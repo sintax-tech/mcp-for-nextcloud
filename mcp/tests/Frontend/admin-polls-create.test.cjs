@@ -28,7 +28,7 @@ test('Polls creation is an explicit independent preset, protected reads do not a
 	assert.equal(levels.levelOf('polls', ops, { read: true, create: true, results: false, links: false }), 'polls_read_create')
 })
 test('the actual admin loads the presets with the levels, before the grants, and all four consumers use the helper', () => {
-	const template = fs.readFileSync(path.join(__dirname, '../../templates/admin.php'), 'utf8')
+	const template = require('./AdminTemplates.cjs').read(path.join(__dirname, '../../templates/admin.php'), 'utf8')
 	assert.equal(template.indexOf("'admin-polls-grants'"), -1)
 	assert.ok(require('./AdminManifest.cjs').loadsBefore('admin/admin-levels.js', 'admin/admin-grants.js'))
 	for (const name of ['admin-grants.js','admin-groups.js','admin-inspector.js','admin-level-popover.js']) {
@@ -84,9 +84,9 @@ test('partial creation message is translated consistently and differs from uncer
 	const partial = 'Poll creation stopped after partial progress. Confirmed items are shown only while authorized. No automatic retry or rollback. Check Polls before repeating.'
 	const uncertain = 'Poll creation is uncertain; do not repeat automatically. Check Polls before trying again.'
 	for (const lang of ['pt_BR', 'es', 'de']) {
-		const json = JSON.parse(fs.readFileSync(path.join(__dirname, '../../l10n', lang + '.json'), 'utf8')).translations
+		const json = JSON.parse(require('./AdminTemplates.cjs').read(path.join(__dirname, '../../l10n', lang + '.json'), 'utf8')).translations
 		let js
-		vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../l10n', lang + '.js'), 'utf8'), { OC: { L10N: { register: (_, map) => { js = map } } } })
+		vm.runInNewContext(require('./AdminTemplates.cjs').read(path.join(__dirname, '../../l10n', lang + '.js'), 'utf8'), { OC: { L10N: { register: (_, map) => { js = map } } } })
 		assert.ok(json[partial], lang)
 		assert.equal(js[partial], json[partial], lang)
 		assert.notEqual(json[partial], partial, lang)

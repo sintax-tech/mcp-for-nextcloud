@@ -25,7 +25,7 @@ final class AdminOcrStatusTest extends TestCase {
 		$policy->method('globalEnabled')->willReturn(true);
 		$urls = $this->createMock(IURLGenerator::class);
 		$urls->method('linkToRouteAbsolute')->willReturn('https://cloud.test/mcp');
-		return (new AdminSettings($policy, $urls, new OcrSupport($apps), $apps, $this->connections(), $this->createMock(\OCA\Mcp\Access\Logs\LogsAccess::class)))->getForm()->getParams();
+		return (new AdminSettings($policy, $urls, new OcrSupport($apps), $apps, $this->connections(), $this->createMock(\OCA\Mcp\Access\Logs\LogsAccess::class), new \OCA\Mcp\Settings\AdminPanels($this->createMock(\OCP\Template\ITemplateManager::class))))->getForm()->getParams();
 	}
 
 	private function connections(): ConnectionList {
@@ -50,17 +50,17 @@ final class AdminOcrStatusTest extends TestCase {
 		$policy->method('connectedUsers')->willReturn(['bob']);
 		$urls = $this->createMock(IURLGenerator::class);
 		$urls->method('linkToRouteAbsolute')->willReturn('https://cloud.test/mcp');
-		$params = (new AdminSettings($policy, $urls, new OcrSupport($apps), $apps, $this->connections(), $this->createMock(\OCA\Mcp\Access\Logs\LogsAccess::class)))->getForm()->getParams();
+		$params = (new AdminSettings($policy, $urls, new OcrSupport($apps), $apps, $this->connections(), $this->createMock(\OCA\Mcp\Access\Logs\LogsAccess::class), new \OCA\Mcp\Settings\AdminPanels($this->createMock(\OCP\Template\ITemplateManager::class))))->getForm()->getParams();
 		$this->assertSame(['0.8.0', 3, 1, 4], [$params['version'], $params['eligibleUsers'], $params['connectedUsers'], $params['activeConnections']]);
 	}
 
 	public function testConnectedUsersCardExplainsItsDefinition(): void {
-		$template = (string)file_get_contents(dirname(__DIR__, 3) . '/templates/admin.php');
+		$template = (string)AdminSources::readPath(dirname(__DIR__, 3) . '/templates/admin.php');
 		$this->assertStringContainsString("Eligible users who activated their connection.", $template);
 	}
 
 	public function testTemplateShowsTheWarningLinkAndOcrmypdfNote(): void {
-		$template = (string)file_get_contents(dirname(__DIR__, 3) . '/templates/admin.php');
+		$template = (string)AdminSources::readPath(dirname(__DIR__, 3) . '/templates/admin.php');
 		$this->assertStringContainsString("\$_['ocrUrl']", $template);
 		$this->assertStringContainsString('ocrmypdf', $template);
 		$this->assertStringContainsString('rel="noopener noreferrer"', $template);

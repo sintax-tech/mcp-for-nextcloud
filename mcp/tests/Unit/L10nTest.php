@@ -130,7 +130,8 @@ final class L10nTest extends TestCase {
 		$keys = [];
 		$dynamic = false;
 		foreach (['templates', 'js'] as $dir) {
-			foreach (glob($this->path($dir . '/*')) ?: [] as $file) {
+			foreach (new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($this->path($dir), \FilesystemIterator::SKIP_DOTS)) as $entry) {
+				$file = $entry->getPathname();
 				if (!is_file($file) || !in_array(pathinfo($file, PATHINFO_EXTENSION), ['php', 'js'], true)) {
 					continue;
 				}

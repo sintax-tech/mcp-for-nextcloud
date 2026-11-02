@@ -123,8 +123,8 @@ final class NextcloudApiContractTest extends TestCase {
 		$cases = [];
 		foreach (self::scanner()->classes() as $class => $files) {
 			foreach (self::checkedMajors() as $major) {
-				// IUserConfig is now required by the transactional writer; NC31 is outside info.xml.
-				if ($class === \OCP\Config\IUserConfig::class && !in_array($major, self::declaredMajors(), true)) {
+				// These public APIs start in NC32, the declared minimum; NC31 remains outside info.xml.
+				if (in_array($class, [\OCP\Config\IUserConfig::class, \OCP\Template\ITemplateManager::class], true) && !in_array($major, self::declaredMajors(), true)) {
 					continue;
 				}
 				if (in_array($class, array_merge(...array_values(NextcloudApiUsage::OUTSIDE_FIXTURES)), true)) {
@@ -187,7 +187,7 @@ final class NextcloudApiContractTest extends TestCase {
 				continue;
 			}
 			foreach ($majors as $major) {
-				if ($class === \OCP\Config\IUserConfig::class && !in_array($major, self::declaredMajors(), true)) {
+				if (in_array($class, [\OCP\Config\IUserConfig::class, \OCP\Template\ITemplateManager::class], true) && !in_array($major, self::declaredMajors(), true)) {
 					continue;
 				}
 				$cases["$class @ $major"] = [$class, $methods, $major];
@@ -384,8 +384,8 @@ final class NextcloudApiContractTest extends TestCase {
 		$cases = [];
 		foreach (array_keys(self::scanner()->constructions()) as $class) {
 			foreach (self::checkedMajors() as $major) {
-				// IUserConfig is now required by the transactional writer; NC31 is outside info.xml.
-				if ($class === \OCP\Config\IUserConfig::class && !in_array($major, self::declaredMajors(), true)) {
+				// These public APIs start in NC32, the declared minimum; NC31 remains outside info.xml.
+				if (in_array($class, [\OCP\Config\IUserConfig::class, \OCP\Template\ITemplateManager::class], true) && !in_array($major, self::declaredMajors(), true)) {
 					continue;
 				}
 				$cases["$class @ $major"] = [$class, $major];

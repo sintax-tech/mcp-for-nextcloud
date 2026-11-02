@@ -22,12 +22,21 @@ use OCP\Settings\ISettings;
  * Admin page in the app's own "MCP for Cloud" section, in blocks: status (endpoint, service switch, version,
  * user summary), OAuth clients, hidden files & tags, OCR, the users × permissions matrix, the groups that may read
  * the server log and the active connections. The matrix, OAuth clients, tags and log groups are loaded and saved by
- * src/admin/admin-grants.js; the connections by src/shared/connections.js, all in js/mcp-admin.js.
+ * src/admin/matrix/start.js; the connections by src/shared/connections.js, all in js/mcp-admin.js.
  */
 class AdminSettings implements ISettings {
 	/** Product name of each optional app with a minimum version, as the administrator knows it in the app list. */
 	public const APP_NAMES = ['deck' => 'Deck', 'spreed' => 'Talk', 'mail' => 'Mail', 'tables' => 'Tables', 'forms' => 'Forms', 'polls' => 'Polls'];
 
+	/**
+	 * @param GrantPolicy $policy current admin grant policy
+	 * @param IURLGenerator $urlGenerator native endpoint URL generator
+	 * @param OcrSupport $ocr optional OCR capability
+	 * @param IAppManager $appManager native app versions and enablement
+	 * @param ConnectionList $connections active client counts
+	 * @param LogsAccess $logs native log availability
+	 * @param AdminPanels $panels public native panel renderer
+	 */
 	public function __construct(
 		private GrantPolicy $policy,
 		private IURLGenerator $urlGenerator,
@@ -35,6 +44,7 @@ class AdminSettings implements ISettings {
 		private IAppManager $appManager,
 		private ConnectionList $connections,
 		private LogsAccess $logs,
+		private AdminPanels $panels,
 	) {}
 
 	/** @return TemplateResponse the rendered settings section */
@@ -48,6 +58,7 @@ class AdminSettings implements ISettings {
 			$eligible = $connected = null;
 		}
 		return new TemplateResponse('mcp', 'admin', [
+			'renderAdminPanel' => [$this->panels, 'render'],
 			'endpoint' => $this->urlGenerator->linkToRouteAbsolute('mcp.mcp.post'),
 			'serviceEnabled' => $this->policy->globalEnabled(),
 			'ocrActive' => $this->ocr->isActive(),

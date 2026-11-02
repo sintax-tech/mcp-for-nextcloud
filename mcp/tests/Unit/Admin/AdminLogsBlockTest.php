@@ -27,7 +27,7 @@ final class AdminLogsBlockTest extends TestCase {
 		$logs->method('available')->willReturn($available);
 		$logs->method('logType')->willReturn($type);
 		return (new AdminSettings($this->createMock(GrantPolicy::class), $urls, new OcrSupport($apps), $apps,
-			$this->createMock(ConnectionList::class), $logs))->getForm()->getParams();
+			$this->createMock(ConnectionList::class), $logs, new \OCA\Mcp\Settings\AdminPanels($this->createMock(\OCP\Template\ITemplateManager::class))))->getForm()->getParams();
 	}
 
 	public function testTheTemplateKnowsWhetherTheLogIsAFileAndWhereItGoesInstead(): void {
@@ -36,7 +36,7 @@ final class AdminLogsBlockTest extends TestCase {
 	}
 
 	public function testTheTemplateExplainsAMissingFileLog(): void {
-		$template = (string)file_get_contents(dirname(__DIR__, 3) . '/templates/admin.php');
+		$template = (string)AdminSources::readPath(dirname(__DIR__, 3) . '/templates/admin.php');
 		$this->assertStringContainsString("if (!\$_['logsAvailable'])", $template);
 		$this->assertStringContainsString('id="mcp-logs-groups"', $template);
 	}

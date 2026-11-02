@@ -17,6 +17,16 @@ final class AdminSources {
 	 */
 	public static function readPath(string $path): string {
 		$app = dirname(__DIR__, 3);
+		if (basename($path) === 'admin.php') {
+			$main = (string)file_get_contents($path);
+			$pattern = <<<'REGEX'
+~<\?php print_unescaped\(\$_\['renderAdminPanel'\]\('([^']+)', \$_\)\); \?>~
+REGEX;
+			return preg_replace_callback($pattern, static function (array $match) use ($app): string {
+				$panel = (string)file_get_contents($app . '/templates/admin/' . $match[1] . '.php');
+				return preg_replace('/^<\?php.*?\?>\n/s', '', $panel) ?? '';
+			}, $main) ?? '';
+		}
 		$groups = match (basename($path)) {
 			'admin-grants.js' => ['matrix', 'oauth-clients', 'protection', 'checkout', 'logs'],
 			'admin-overrides.js' => ['overrides'],

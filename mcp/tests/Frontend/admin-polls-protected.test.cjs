@@ -100,13 +100,13 @@ test('all admin label consumers delegate to the loaded Polls helper and translat
 	for (const file of ['admin-grants.js', 'admin-groups.js', 'admin-inspector.js']) {
 		assert.match(require('./AdminManifest.cjs').script(file), /pollsGrants\?\.operationLabels/)
 	}
-	const template = fs.readFileSync(path.join(__dirname, '../../templates/admin.php'), 'utf8')
+	const template = require('./AdminTemplates.cjs').read(path.join(__dirname, '../../templates/admin.php'), 'utf8')
 	assert.equal(template.indexOf("'admin-polls-grants'"), -1)
 	assert.ok(require('./AdminManifest.cjs').loadsBefore('admin/admin-levels.js', 'admin/admin-grants.js'))
 	for (const [lang, result, anonymous] of [['pt_BR', 'resultados', 'Anônimo'], ['es', 'resultados', 'Anónimo'], ['de', 'Ergebnisse', 'Anonym']]) {
-		const json = JSON.parse(fs.readFileSync(path.join(__dirname, '../../l10n', lang + '.json'), 'utf8')).translations
+		const json = JSON.parse(require('./AdminTemplates.cjs').read(path.join(__dirname, '../../l10n', lang + '.json'), 'utf8')).translations
 		let js
-		vm.runInNewContext(fs.readFileSync(path.join(__dirname, '../../l10n', lang + '.js'), 'utf8'), { OC: { L10N: { register: (_, map) => { js = map } } } })
+		vm.runInNewContext(require('./AdminTemplates.cjs').read(path.join(__dirname, '../../l10n', lang + '.js'), 'utf8'), { OC: { L10N: { register: (_, map) => { js = map } } } })
 		assert.equal(json.results, result)
 		assert.equal(json.Anonymous, anonymous)
 		for (const key of Object.keys(PollsProtectedAdmin.load(['admin-levels.js']).McpAdminPollsGrants.levelLabels())) {

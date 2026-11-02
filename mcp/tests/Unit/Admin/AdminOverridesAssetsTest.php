@@ -99,7 +99,7 @@ final class AdminOverridesAssetsTest extends TestCase {
 			$this->assertMatchesRegularExpression('/sayTimer = setTimeout\(\(\) => \{\s*region\.textContent = message/', $source, $script);
 			$this->assertStringNotContainsString("setAttribute('role', error", $source, "$script: the role never changes at run time");
 		}
-		$this->assertStringContainsString('role="status" aria-live="polite"', (string)file_get_contents($app . '/templates/admin.php'));
+		$this->assertStringContainsString('role="status" aria-live="polite"', (string)AdminSources::readPath($app . '/templates/admin.php'));
 		$overrides = (string)AdminSources::readPath($app . '/src/admin/admin-overrides.js');
 		$this->assertStringContainsString("statusLine.setAttribute('role', 'status')", $overrides);
 		$this->assertStringContainsString("alertLine.setAttribute('role', 'alert')", $overrides);

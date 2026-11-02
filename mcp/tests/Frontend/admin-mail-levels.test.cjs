@@ -33,7 +33,7 @@ function load(files) {
 
 /** @return {string[]} GrantPolicy::CATALOG['mail'], read from the PHP source */
 function mailOperations() {
-	const policy = fs.readFileSync(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
+	const policy = require('./AdminTemplates.cjs').read(path.join(root, 'lib/Access/Grants/GrantCatalog.php'), 'utf8')
 	const line = policy.match(/'mail' => \[([^\]]*)\]/)
 	assert.ok(line, 'the Mail entry of GrantPolicy::CATALOG')
 	return [...line[1].matchAll(/'(\w+)'/g)].map((match) => match[1])
@@ -113,7 +113,7 @@ test('the Mail tooltips describe the seven operations and nothing else', () => {
 	for (const file of ['admin-groups.js', 'admin-inspector.js']) {
 		assert.match(require('./AdminManifest.cjs').script(file), /attachments: t\('mcp', 'attachments'\), flags: t\('mcp', 'flags'\), draft: t\('mcp', 'draft'\), send: t\('mcp', 'send'\)/, file)
 	}
-	const template = fs.readFileSync(path.join(root, 'templates/admin.php'), 'utf8')
+	const template = require('./AdminTemplates.cjs').read(path.join(root, 'templates/admin.php'), 'utf8')
 	assert.equal(template.indexOf("'admin-level-names'"), -1, 'the level names live in the access levels (issue #21)')
 	assert.equal(template.indexOf("'admin-mail-grants'"), -1, 'the Mail warnings live in src/admin/access/levels/mail.js')
 	assert.ok(require('./AdminManifest.cjs').loadsBefore('admin/admin-levels.js', 'admin/admin-grants.js'), 'Mail tooltips load with the levels, before the grants')

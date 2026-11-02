@@ -70,7 +70,7 @@ final class AdminAssetsTest extends TestCase {
 	 */
 	public function testAdminTemplateHasUniqueIdsAndBalancedDivs(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js') . file_get_contents($app . '/src/shared/connections.js') . file_get_contents($app . '/src/admin/admin-tabs.js') . AdminSources::readPath($app . '/src/admin/admin-picker.js') . AdminSources::readPath($app . '/src/admin/admin-groups.js');
 		preg_match_all("/getElementById\\('([^']+)'\\)/", $script, $used);
 		$this->assertNotEmpty($used[1]);
@@ -88,7 +88,7 @@ final class AdminAssetsTest extends TestCase {
 	 */
 	public function testOauthClientsSectionIsPlacedAndTranslated(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$start = strpos($template, 'id="mcp-block-oauth"');
 		$end = strpos($template, 'id="mcp-connections"');
 		$this->assertIsInt($start, 'the OAuth clients block');
@@ -122,7 +122,7 @@ final class AdminAssetsTest extends TestCase {
 	 */
 	public function testAdminPageHasAccessibleTabsMappedToUrlHashes(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 
 		$this->assertStringContainsString("Util::addScript('mcp', 'mcp-admin')", $template);
 		$this->assertContains('admin/admin-tabs.js', file($app . '/src/admin.manifest', FILE_IGNORE_NEW_LINES));
@@ -178,7 +178,7 @@ final class AdminAssetsTest extends TestCase {
 	}
 
 	public function testAdminPageHasTenSectionBlocks(): void {
-		$template = (string)file_get_contents(dirname(__DIR__, 3) . '/templates/admin.php');
+		$template = (string)AdminSources::readPath(dirname(__DIR__, 3) . '/templates/admin.php');
 		// A block may be a drawer (S9), whose heading sits in the drawer head next to its close button, or the matrix,
 		// whose bands above the table are compact (S12).
 		preg_match_all('/<div class="section mcp-block(?: mcp-drawer| mcp-matrix-block)?" id="([^"]+)"[^>]*>\s*(?:<div class="mcp-drawer-head">\s*)?<h2(?: id="[a-z-]+" tabindex="-1")?><\?php p\(\$l->t\(\'([^\']+)\'\)\); \?><\/h2>/', $template, $blocks);
@@ -190,7 +190,7 @@ final class AdminAssetsTest extends TestCase {
 	/** The catalog-driven app selector is labelled and does not alter server-side user filters. */
 	public function testMatrixAppFilterIsLabelledAndOnlyFiltersColumns(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertStringContainsString('<label for="mcp-app">', $template);
 		$this->assertStringContainsString('<select id="mcp-app" disabled>', $template);
 		$script = (string)AdminSources::readPath($app . '/src/admin/admin-grants.js');
@@ -221,7 +221,7 @@ final class AdminAssetsTest extends TestCase {
 		$this->assertStringContainsString("paintState(cell, checked ? 'allowed' : 'denied')", $script);
 		$this->assertStringContainsString("cell.title = detail ? PERMISSION_STATES[key].name() + ': ' + detail : PERMISSION_STATES[key].name()", $script);
 		$this->assertStringContainsString("cell.append(mark, context.el('span', { className: 'mcp-sr-only'", $script);
-		$legend = (string)file_get_contents($app . '/templates/admin.php');
+		$legend = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertStringContainsString('<input type="checkbox" checked disabled aria-hidden="true" tabindex="-1"> <?php p($l->t(\'Allowed\')); ?>', $legend);
 		$this->assertStringContainsString('<input type="checkbox" disabled aria-hidden="true" tabindex="-1"> <?php p($l->t(\'Denied\')); ?>', $legend);
 		$this->assertStringContainsString('<span class="mcp-state-mark" aria-hidden="true">⊘</span> <?php p($l->t(\'Unavailable\')); ?>', $legend);
@@ -254,8 +254,8 @@ final class AdminAssetsTest extends TestCase {
 		$this->assertStringContainsString('if (!bulkBusy && !notice.matches(\':hover\')', $script, 'the undo countdown waits for the lock');
 		$this->assertSame(2, preg_match_all('/setBulkBusy\(true\)\s+try \{/', $script), 'bulk and undo both run under the lock');
 		$this->assertSame(2, preg_match_all('/\} finally \{\s+context\.setBulkBusy\(false\)/', $script), 'the lock is released on failure too');
-		$this->assertStringContainsString('id="mcp-bulk-notice-text" tabindex="-1"', (string)file_get_contents($app . '/templates/admin.php'));
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$this->assertStringContainsString('id="mcp-bulk-notice-text" tabindex="-1"', (string)AdminSources::readPath($app . '/templates/admin.php'));
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertGreaterThan(strpos($template, 'class="mcp-matrix-wrap"'), strpos($template, 'class="mcp-legend"'), 'the legend sits under the table');
 		$this->assertGreaterThan(strpos($template, 'class="mcp-matrix-wrap"'), strpos($template, 'id="mcp-bulk-notice"'), 'the notice sits under the table');
 		$this->assertStringContainsString('<option value="eligible" selected>', $template);
@@ -266,7 +266,7 @@ final class AdminAssetsTest extends TestCase {
 		$this->assertStringContainsString("freshCell.querySelector('input')?.focus()", $script);
 		$css = (string)file_get_contents($app . '/css/admin.css');
 		$this->assertDoesNotMatchRegularExpression('/\\.mcp-bulk-notice \\{[^}]*position: sticky/s', $css, 'the undo notice never covers a row');
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertStringContainsString('id="mcp-bulk-notice" role="status" aria-live="polite"', $template);
 		$this->assertStringContainsString('id="mcp-bulk-undo" hidden', $template);
 		$css = (string)file_get_contents($app . '/css/admin.css');
@@ -311,7 +311,7 @@ final class AdminAssetsTest extends TestCase {
 		$popover = (string)AdminSources::readPath($app . '/src/admin/admin-level-popover.js');
 		$this->assertMatchesRegularExpression("/if \(context\.losesEligibility\(.*?&& !window\.confirm\(.*?\) \{\s*context\.render\(\)\s*return\s*\}/s", $popover);
 		$this->assertLessThan(strpos($popover, "matrix.api('POST', '/api/grants/commands'"), strpos($popover, 'if (context.losesEligibility('), 'asked before the command');
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertStringContainsString('<div id="mcp-level-popover" class="mcp-popover" role="dialog" aria-labelledby="mcp-level-popover-title" hidden></div>', $template);
 	}
 
@@ -321,7 +321,7 @@ final class AdminAssetsTest extends TestCase {
 	 */
 	public function testMatrixRowsCarryOneMenuAndNoRepeatedControls(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		foreach (['Compact rows', 'Users need “Can connect”', 'id="mcp-prev"', 'id="mcp-next"', 'id="mcp-page-info"'] as $gone) {
 			$this->assertStringNotContainsString($gone, $template);
 		}
@@ -402,7 +402,7 @@ final class AdminAssetsTest extends TestCase {
 		foreach (array_diff(array_unique($used[1]), ['mcp-connections-search', 'mcp-count-connections']) as $id) {
 			$this->assertSame(1, substr_count($template, 'id="' . $id . '"'), "id $id must appear exactly once");
 		}
-		$admin = (string)file_get_contents($app . '/templates/admin.php');
+		$admin = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertSame(1, substr_count($admin, 'id="mcp-count-connections"'), 'the admin Status card the script refreshes');
 		$this->assertStringNotContainsString('mcp-count-connections', $template, 'the personal page has no Status card');
 		$this->assertStringNotContainsString('mcp-connections-search', $template, 'the personal list has no user search');
@@ -427,7 +427,7 @@ final class AdminAssetsTest extends TestCase {
 	/** The checkout limit field repeats the controller's ceiling in its max attribute; the two must not drift apart. */
 	public function testCheckoutLimitFieldMaxMatchesTheController(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertSame(1, preg_match('/<input[^>]*id="mcp-checkout-limit"[^>]*>/', $template, $input));
 		$this->assertSame(1, preg_match('/\bmax="(\d+)"/', $input[0], $max));
 		$this->assertSame(\OCA\Mcp\Controller\CheckoutLimitController::MAX_MIB, (int)$max[1]);
@@ -547,7 +547,7 @@ final class AdminAssetsTest extends TestCase {
 	 */
 	public function testLogPrivacyHasItsOwnBlockWithAWiredSwitchAndLearnMore(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertSame(1, substr_count($template, 'id="mcp-block-logs-privacy"'));
 		$this->assertSame(1, substr_count($template, 'class="checkbox" id="mcp-logs-hide-file-names"'), 'the native Nextcloud checkbox');
 		$this->assertSame(1, preg_match('/<button type="button" class="mcp-learn-more" id="mcp-logs-privacy-more" aria-expanded="false" aria-controls="mcp-logs-privacy-detail" hidden>/', $template));
@@ -578,7 +578,7 @@ final class AdminAssetsTest extends TestCase {
 	 * of its tab, so a block can never leak out of its tab and show on every one.
 	 */
 	public function testEveryBlockLivesInsideItsOwnTabPanel(): void {
-		$template = (string)file_get_contents(dirname(__DIR__, 3) . '/templates/admin.php');
+		$template = (string)AdminSources::readPath(dirname(__DIR__, 3) . '/templates/admin.php');
 		// The panel/block structure is plain HTML; the PHP in the template only echoes texts.
 		$html = preg_replace('/<\?php.*?\?>/s', '', $template);
 		$previous = libxml_use_internal_errors(true);
@@ -617,7 +617,7 @@ final class AdminAssetsTest extends TestCase {
 	 */
 	public function testUnreadableTagsSettingIsSignalledInOverviewAndOnTheTab(): void {
 		$app = dirname(__DIR__, 3);
-		$template = (string)file_get_contents($app . '/templates/admin.php');
+		$template = (string)AdminSources::readPath($app . '/templates/admin.php');
 		$this->assertSame(1, preg_match('/<div id="mcp-tags-invalid-overview" class="mcp-tags-warning" role="alert" hidden>/', $template), 'the Overview alert starts hidden and is announced when shown');
 		$this->assertSame(1, substr_count($template, '<a href="#protection">'), 'the alert links to the Data protection tab');
 		$this->assertSame(1, substr_count($template, '<span id="mcp-tab-protection-alert" class="mcp-tab-alert" hidden>'), 'the tab marker');

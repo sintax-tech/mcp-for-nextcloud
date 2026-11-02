@@ -104,7 +104,7 @@ final class CreateFormRequest {
 	/** Throws a client-safe fixed validation rule.
 	 * @param string $field Declared path.
 	 * @param string $rule Fixed rule.
-	 * @return never
+	 * @return never always throws the fixed field validation error
 	 */
 	private static function invalid(string $field, string $rule = 'must match the supported creation schema'): never {
 		$message = $rule === 'exceeds the complete creation response budget'

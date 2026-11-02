@@ -14,7 +14,7 @@ final class EditValues
 {
 	/** Refuses a fixed declared field without reflecting hostile input.
 	 * @param string $field Declared field path.
-	 * @return never
+	 * @return never always throws the fixed field validation error
 	 */
 	public static function invalid(string $field): never
 	{

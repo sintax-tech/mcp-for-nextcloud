@@ -24,5 +24,5 @@ abstract class ArchitectureCase extends TestCase {
 		$ledger = array_values(array_filter(self::json('boundary-exceptions')['exceptions'], $filter));
 		self::assertSame([], BoundaryLedger::problems($violations, $ledger, self::tickets()));
 	}
-	protected static function fixture(string $path, string $code): array { return BoundaryRules::violations(self::tree(), [$path => '<?php ' . $code]); }
+	protected static function fixture(string $path, string $code): array { return BoundaryRules::violations(self::tree(), [$path => '<?php ' . \OCA\Mcp\Tests\Architecture\Inventory\CodeFixture::php($code)]); }
 }

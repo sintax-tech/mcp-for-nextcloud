@@ -98,7 +98,7 @@ final class PathRewrites {
 	public static function nonPhp(array $before, array $after, array $pairs, array $renames = []): array {
 		$problems = [];
 		foreach (array_unique([...array_keys($before), ...array_keys($after)]) as $path) {
-			if (str_ends_with($path, '.php') || in_array($path, MoveEquivalence::ALLOWED_DATA, true)) {
+			if (str_ends_with($path, '.php') || in_array($path, MoveEquivalence::ALLOWED_DATA, true) || BoundaryMoves::handles($path)) {
 				continue;
 			}
 			$changed = ($before[$path] ?? null) !== ($after[$path] ?? null);

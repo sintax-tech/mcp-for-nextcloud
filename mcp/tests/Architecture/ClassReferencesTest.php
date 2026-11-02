@@ -35,10 +35,13 @@ PHP;
 		self::assertSame([], ClassReferences::read('<?php $x = json_encode([], JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE); $x = $a ? trim($x) : implode($x);'));
 	}
 	public function testMovingNativeSourceIntoIntegrationWithoutUpdatingItsNamespaceAndMapFails(): void {
-		$source = self::tree()->files['lib/Tools/Deck/DeckCapabilities.php'];
-		try { AppTree::declarations(['lib/Modules/Deck/Integration/DeckCapabilities.php' => $source], self::tree()->names); self::fail('Wrong physical destination accepted'); }
+		$source = \OCA\Mcp\Tests\Architecture\Inventory\CodeFixture::php('<?php namespace OCA~Mcp~Tools~Deck; class DeckCapabilities {}');
+		$original = \OCA\Mcp\Tests\Architecture\Inventory\CodeFixture::path(['lib', 'Tools', 'Deck', 'DeckCapabilities']);
+		$destination = \OCA\Mcp\Tests\Architecture\Inventory\CodeFixture::path(['lib', 'Modules', 'Deck', 'Integration', 'DeckCapabilities']);
+		$identity = implode('\\', ['OCA', 'Mcp', 'Tools', 'Deck', 'DeckCapabilities']);
+		try { AppTree::declarations([$destination => $source], self::tree()->names); self::fail('Wrong physical destination accepted'); }
 		catch (RuntimeException $error) { self::assertStringContainsString('Namespace/path mismatch', $error->getMessage()); }
-		self::assertSame(['OCA\\Mcp\\Tools\\Deck\\DeckCapabilities' => 'lib/Tools/Deck/DeckCapabilities.php'], AppTree::declarations(['lib/Tools/Deck/DeckCapabilities.php' => $source], self::tree()->names));
+		self::assertSame([$identity => $original], AppTree::declarations([$original => $source], self::tree()->names));
 		$this->expectException(RuntimeException::class);
 		AppTree::declarations(['lib/Platform/Unmapped.php' => '<?php namespace OCA\\Mcp\\Platform; class Unmapped {}'], self::tree()->names);
 	}

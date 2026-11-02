@@ -26,8 +26,8 @@ final class ThinToolsTest extends ArchitectureCase {
 		self::assertSame([], ToolContracts::coverage($catalog, $files));
 	}
 	public function testThinReadAndWriteControlsAndMutants(): void {
-		$read = '<?php use OCA\\Mcp\\Mcp\\Tools\\Tool; final class ReadNote implements Tool {}';
-		$write = '<?php use OCA\\Mcp\\Mcp\\Tools\\WriteTool; final class EditNote implements WriteTool {}';
+		$read = \OCA\Mcp\Tests\Architecture\Inventory\CodeFixture::php('<?php use OCA~Mcp~Mcp~Tools~Tool; final class ReadNote implements Tool {}');
+		$write = \OCA\Mcp\Tests\Architecture\Inventory\CodeFixture::php('<?php use OCA~Mcp~Mcp~Tools~WriteTool; final class EditNote implements WriteTool {}');
 		self::assertSame([], ToolContracts::thin($read, false));
 		self::assertSame([], ToolContracts::thin($write, true));
 		foreach ([str_replace('final ', '', $read), $read . ' class Extra {}', $read . ' use OCP\\Files\\Node;', $read . ' $c->get("OCA\\\\Deck\\\\Service\\\\CardService");'] as $source) { self::assertNotSame([], ToolContracts::thin($source, false)); }

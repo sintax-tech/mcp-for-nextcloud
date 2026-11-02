@@ -42,6 +42,21 @@ final class AppTree {
 		}
 	}
 
+	/** @param array<string,string> $files A revision's source bytes. @param \OCA\Mcp\Scripts\Dev\FqcnMap $map That revision's planned identities. @return self Pure revision index for the move comparator, with the same owner rules. */
+	public static function fromSources(array $files, \OCA\Mcp\Scripts\Dev\FqcnMap $map): self {
+		$copy = (new \ReflectionClass(self::class))->newInstanceWithoutConstructor();
+		$names = [];
+		foreach ($map->entries as $entry) {
+			foreach ([$entry['fqcn'], ...($entry['via'] ?? []), $entry['target'], ...($entry['companions'] ?? [])] as $name) {
+				if (str_starts_with($name, 'OCA\\Mcp\\')) { $names[$name] = $entry; }
+			}
+		}
+		$copy->root = ''; $copy->names = $names;
+		$copy->files = array_filter($files, static fn ($path) => preg_match('#^(lib|src|templates|appinfo)/.*\.(php|js)$#D', $path), ARRAY_FILTER_USE_KEY);
+		$copy->classes = self::declarations($copy->files, $names);
+		return $copy;
+	}
+
 	/** @param array<string,string> $files Sources. @param array<string,array<string,mixed>> $names Map index. @return array<string,string> Verified class-to-file index. */
 	public static function declarations(array $files, array $names): array {
 		$classes = [];

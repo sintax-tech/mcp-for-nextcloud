@@ -62,6 +62,7 @@ final class MoveEquivalence {
 		$php = static fn (array $paths): array => array_values(array_filter($paths, static fn (string $p): bool => str_ends_with($p, '.php')));
 		$this->pair($php($deleted), $php($added));
 		$this->collectRenames();
+		$this->problems = [...$this->problems, ...BoundaryMoves::problems($this->before, $this->after, $this->pairs, $this->renames, $this->map)];
 		$this->problems = [...$this->problems, ...PathRewrites::nonPhp($this->before, $this->after, $this->pairs, $this->renames)];
 		$retired = array_filter($this->libRenames, fn (string $old): bool => !$this->afterIndex->declares($old), ARRAY_FILTER_USE_KEY);
 		$this->problems = [...$this->problems, ...ClassRewrites::stale($this->after, $retired)];

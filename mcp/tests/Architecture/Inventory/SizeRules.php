@@ -18,7 +18,8 @@ final class SizeRules {
 		$seen = [];
 		if (($inventory['limit'] ?? null) !== 300) { $errors[] = 'D6 limit must remain 300'; }
 		foreach (['final', 'transitional'] as $kind) {
-			$original = array_column($baseline[$kind], null, 'fqcn');
+			$original = [];
+			foreach ($baseline[$kind] as $historical) { $original[implode('\\', $historical['nameParts'])] = $historical; }
 			foreach ($inventory[$kind] as $row) {
 				$name = $row['fqcn'];
 				if (isset($seen[$name]) || !isset($original[$name]) || $row['ceiling'] > $original[$name]['ceiling'] || ($row['expires'] ?? null) !== ($original[$name]['expires'] ?? null) || ($row['steps'] ?? []) !== ($original[$name]['steps'] ?? [])) { $errors[] = 'Raised/changed ceiling or membership: ' . $name; }

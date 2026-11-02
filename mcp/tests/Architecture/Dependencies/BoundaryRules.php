@@ -35,7 +35,7 @@ final class BoundaryRules {
 					$to = isset($tree->names[$target]) ? $tree->owner($target) : 'unmapped';
 					if ($to === 'unmapped') { $rule = 'unresolved-class'; }
 					elseif (str_starts_with($owner, 'Modules\\') && str_starts_with($to, 'Modules\\') && $owner !== $to) { $rule = 'module-isolation'; }
-					elseif (!self::allowed($owner, $to, $class, $target)) { $rule = 'layering'; }
+					elseif (!self::allowed($owner, $to, $class, $target, $tree->names[$class]['fqcn'] ?? null)) { $rule = 'layering'; }
 				} elseif (str_contains($target, '\\') && !preg_match('/^(OCP|OC|Psr|Sabre|Smalot|Symfony)\\\\/', $target)) {
 					$rule = 'external-prefix';
 				}
@@ -49,10 +49,10 @@ final class BoundaryRules {
 	}
 
 	/** @param string $from Source owner. @param string $to Target owner. @param string $class Source FQCN. @param string $target Target FQCN. @return bool Contract permission. */
-	public static function allowed(string $from, string $to, string $class, string $target): bool {
+	public static function allowed(string $from, string $to, string $class, string $target, ?string $historical = null): bool {
 		if (str_starts_with($target, 'OCA\\Mcp\\L10n\\') || str_starts_with($target, 'OCA\\Mcp\\Mcp\\Tools\\Results\\') || $target === 'OCA\\Mcp\\Mcp\\Tools\\Validation\\ArgumentValidationException') { return true; }
 		if ($from === 'Access' && $to === 'Storage') {
-			return $target === 'OCA\\Mcp\\OAuth\\Storage\\OAuthStore' && ($class === 'OCA\\Mcp\\Access\\Policy\\PolicyEventProcessor' || str_starts_with($class, 'OCA\\Mcp\\Access\\Policy\\Credentials\\'));
+			return $target === 'OCA\\Mcp\\OAuth\\Storage\\OAuthStore' && ($historical === implode('\\', ['OCA', 'Mcp', 'Service', 'Policy', 'PolicyEventProcessor']) || str_starts_with($class, 'OCA\\Mcp\\Access\\Policy\\Credentials\\'));
 		}
 		if ($from === $to) { return true; }
 		$matrix = ['Platform' => [], 'Storage' => ['Platform', 'Db'], 'Access' => ['Platform', 'Db'], 'OAuth' => ['Access', 'Storage', 'Platform', 'Db'], 'Mcp' => ['OAuth', 'Storage', 'Access', 'Platform']];

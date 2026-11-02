@@ -9,12 +9,22 @@ namespace OCA\Mcp\Modules\Calendar;
 
 use InvalidArgumentException;
 use OCA\Mcp\Modules\Calendar\Creation\CreateEventDraft;
+use OCA\Mcp\Modules\Calendar\Creation\CreateEventHandler;
+use OCA\Mcp\Modules\Calendar\Creation\CreateEventPreview;
 use OCA\Mcp\Modules\Calendar\Deletion\DeleteEventDraft;
+use OCA\Mcp\Modules\Calendar\Deletion\DeleteEventHandler;
+use OCA\Mcp\Modules\Calendar\Deletion\DeleteEventPreview;
 use OCA\Mcp\Modules\Calendar\Reading\ListCalendarsHandler;
 use OCA\Mcp\Modules\Calendar\Reading\ListEventsHandler;
 use OCA\Mcp\Modules\Calendar\Moving\MoveEventDraft;
+use OCA\Mcp\Modules\Calendar\Moving\MoveEventHandler;
+use OCA\Mcp\Modules\Calendar\Moving\MoveEventPreview;
 use OCA\Mcp\Modules\Calendar\Moving\TransferEventDraft;
+use OCA\Mcp\Modules\Calendar\Moving\TransferEventHandler;
+use OCA\Mcp\Modules\Calendar\Moving\TransferEventPreview;
 use OCA\Mcp\Modules\Calendar\Editing\UpdateEventDraft;
+use OCA\Mcp\Modules\Calendar\Editing\UpdateEventHandler;
+use OCA\Mcp\Modules\Calendar\Editing\UpdateEventPreview;
 use OCA\Mcp\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
 use OCA\Mcp\Mcp\Guide\ToolGuideNotes;
@@ -23,20 +33,28 @@ use RuntimeException;
 use OCA\Mcp\Modules\Calendar\Approval\CalendarDraft;
 use OCA\Mcp\Modules\Calendar\Approval\CalendarDraftApproval;
 use OCA\Mcp\Modules\Calendar\Approval\SharedGuard;
-use OCA\Mcp\Modules\Calendar\Failures\CalendarArgumentException;
-use OCA\Mcp\Modules\Calendar\Failures\CalendarException;
+use OCA\Mcp\Modules\Calendar\Presentation\CalendarGuideNotes;
 use OCA\Mcp\Modules\Calendar\Presentation\CalendarPlanRenderer;
 use OCA\Mcp\Tools\Calendar\CalendarTool;
-use OCA\Mcp\Tools\Calendar\ToolSchema;
 
 /**
  * Calendar tool module: every tool is exposed; the registry has already checked the admin grant
  * (writes are off by default), the app and the input schema, and asks {@see self::preview()} for the
- * plan of every write that arrives without `confirm: true`.
+ * plan of every write that arrives without `confirm: true`. Each read, plan and confirmed write has its own work
+ * class; this module only finds it by name.
  */
 final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes, RendersPlans {
-	/** @var array<string, CalendarTool> handlers by tool name */
+	/** @var array<string, CalendarTool> handlers by tool name, read for the published definitions */
 	private array $tools = [];
+
+	/** @var array<string, ListCalendarsHandler|ListEventsHandler> reads by tool name */
+	private array $reads;
+
+	/** @var array<string, CreateEventHandler|UpdateEventHandler|MoveEventHandler|DeleteEventHandler|TransferEventHandler> confirmed writes by tool name */
+	private array $effects;
+
+	/** @var array<string, CreateEventPreview|UpdateEventPreview|MoveEventPreview|DeleteEventPreview|TransferEventPreview> write plans by tool name */
+	private array $plans;
 
 	/**
 	 * @param ListCalendarsHandler $listCalendars calendar_list_calendars
@@ -46,6 +64,8 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	 * @param MoveEventDraft $moveEvent calendar_move_event
 	 * @param DeleteEventDraft $deleteEvent calendar_delete_event
 	 * @param TransferEventDraft $transferEvent calendar_transfer_event
+	 * @param CalendarDraftApproval $approval the confirmation every write goes through
+	 * @param CalendarPlanRenderer|null $planRenderer Markdown of the plans, the default renderer when null
 	 */
 	public function __construct(
 		ListCalendarsHandler $listCalendars,
@@ -55,50 +75,37 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 		MoveEventDraft $moveEvent,
 		DeleteEventDraft $deleteEvent,
 		TransferEventDraft $transferEvent,
-		private CalendarDraftApproval $approval,
+		CalendarDraftApproval $approval,
 		private ?CalendarPlanRenderer $planRenderer = null,
 	) {
 		$this->planRenderer ??= new CalendarPlanRenderer();
 		foreach ([$listCalendars, $listEvents, $createEvent, $updateEvent, $moveEvent, $deleteEvent, $transferEvent] as $tool) {
 			$this->tools[$tool->definition()['name']] = $tool;
 		}
+		$this->reads = ['calendar_list_calendars' => $listCalendars, 'calendar_list_events' => $listEvents];
+		$this->effects = [
+			'calendar_create_event' => new CreateEventHandler($approval, $createEvent),
+			'calendar_update_event' => new UpdateEventHandler($approval, $updateEvent),
+			'calendar_move_event' => new MoveEventHandler($approval, $moveEvent),
+			'calendar_delete_event' => new DeleteEventHandler($approval, $deleteEvent),
+			'calendar_transfer_event' => new TransferEventHandler($approval, $transferEvent),
+		];
+		$this->plans = [
+			'calendar_create_event' => new CreateEventPreview($approval, $createEvent),
+			'calendar_update_event' => new UpdateEventPreview($approval, $updateEvent),
+			'calendar_move_event' => new MoveEventPreview($approval, $moveEvent),
+			'calendar_delete_event' => new DeleteEventPreview($approval, $deleteEvent),
+			'calendar_transfer_event' => new TransferEventPreview($approval, $transferEvent),
+		];
 	}
 
 	/**
 	 * What the schemas cannot say: how an event is found, and why a write here answers with a plan first.
 	 *
-	 * @return list<string>
+	 * @return list<string> behaviour notes of the Calendar tools
 	 */
 	public function guideNotes(): array {
-		return [
-			'Calendars are addressed by path: calendar_list_calendars gives the paths of this user. Events are '
-				. 'addressed by uid, and calendar_list_events gives the uids of a period.',
-			'Every write answers with a plan first: what it would change, the etag of the object as it is now, and '
-				. 'which invitations would go out. Nothing is written until the very same call is repeated with '
-				. 'confirm: true, so show the plan to the user and wait for an explicit yes.',
-			'The plan of a create, update (when the time or the guests change), move or transfer can carry warnings: a '
-				. 'collision with another event of the target calendar, a participant who is busy or whose agenda could '
-				. 'not be checked, and a calendar that is not shared with the participants. Each warning has a type '
-				. '(collision, busy, unverifiable, calendarNotShared) and a message to read to the user. They never block: '
-				. 'tell the user and repeat the call with confirm: true only if the answer is still yes. When '
-				. 'sharedCalendars lists calendars the participants already see and suggestedCalendar is set, offer it; '
-				. 'when there are several, ask the user which one to use and repeat the call with that calendar. Other '
-				. 'people\'s appointments are only ever reported as busy, never with their content. When an update '
-				. 'moves an event, the event\'s own slot is left out of the availability check of the guests it already '
-				. 'has (their copy of the invitation would otherwise make them busy); the collision check always leaves '
-				. 'the event itself out. An appointment of a guest sitting entirely inside the old slot is not reported.',
-			'Dates and times arrive as they will be stored, and are read back in the timezone of the account; a '
-				. 'recurring event is expanded into its occurrences before it reaches the user.',
-			'send_invitations hands the invitation to the CalDAV scheduling of the server. The plan and the result '
-				. 'say whether the server has e-mail invitations switched on (imipEnabled); when it is off, say so to '
-				. 'the user instead of claiming an e-mail was sent.',
-			'A calendar owned by somebody else (a share) needs confirm_shared after asking the user, and a transfer '
-				. 'moves the event there and removes it from here.',
-			'A deleted event goes to the Nextcloud trash bin of the calendar; with retention at 0 the deletion is '
-				. 'refused rather than permanent.',
-			'The writing tools appear only when the administrator granted them to this user; a module showing reads '
-				. 'only means the writing grants are off.',
-		];
+		return CalendarGuideNotes::notes();
 	}
 
 	/**
@@ -111,22 +118,15 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	/**
 	 * The plan of a write, which the registry asks for when the call arrives without `confirm: true`.
 	 *
-	 * The draft itself lives in {@see CalendarDraftApproval}: preparing it is what reads the event, its
-	 * ETag and the calendars it would touch, and nothing is dispatched here.
-	 *
 	 * @param string $name write tool name
 	 * @param array<string, mixed> $arguments arguments validated by the registry
 	 * @param string $userId authenticated UID
 	 * @return array<string, mixed> the plan, as the structured content of a non-error result
 	 * @throws InvalidArgumentException for an unknown tool (-32602)
-	 * @throws RuntimeException wrapping any other failure, which the registry reports generically
 	 */
 	public function preview(string $name, array $arguments, string $userId): array {
-		$tool = $this->tools[$name] ?? throw new InvalidArgumentException('Unknown tool');
-		if (!$tool instanceof CalendarDraft) {
-			throw new InvalidArgumentException('Unknown tool');
-		}
-		return $this->approval->preview($tool, $arguments, $userId);
+		$plans = $this->plans[$name] ?? throw new InvalidArgumentException('Unknown tool');
+		return $plans->plan($userId, $arguments);
 	}
 
 	/**
@@ -141,6 +141,8 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	}
 
 	/**
+	 * Runs a read, or the write the user confirmed.
+	 *
 	 * @param string $name tool name
 	 * @param array<string, mixed> $arguments arguments validated by the registry
 	 * @param string $userId authenticated UID
@@ -149,32 +151,8 @@ final class CalendarModule implements ToolModule, PreviewsWrites, ToolGuideNotes
 	 * @throws RuntimeException wrapping any other failure, which the registry reports generically
 	 */
 	public function call(string $name, array $arguments, string $userId): array {
-		return $this->write($name, $arguments, $userId, fn (CalendarDraft $tool): array => $this->approval->execute($tool, $arguments, $userId));
-	}
-
-	/**
-	 * Resolves the tool and runs a read, or the write the user confirmed.
-	 *
-	 * @param string $name tool name
-	 * @param array<string, mixed> $arguments arguments validated by the registry
-	 * @param string $userId authenticated UID
-	 * @param callable(CalendarDraft): array $run what to do with a write tool
-	 * @return array{content: list<array{type:string, text:string}>, isError?: bool} MCP result
-	 * @throws InvalidArgumentException for an unknown tool (-32602)
-	 * @throws RuntimeException wrapping any other failure, which the registry reports generically
-	 */
-	private function write(string $name, array $arguments, string $userId, callable $run): array {
-		$tool = $this->tools[$name] ?? throw new InvalidArgumentException('Unknown tool');
-		try {
-			return $tool instanceof CalendarDraft ? $run($tool) : $tool->execute($arguments, $userId);
-		} catch (CalendarException $e) {
-			return ToolSchema::error($e->getMessage());
-		} catch (CalendarArgumentException $e) {
-			throw $e;
-		} catch (InvalidArgumentException $e) {
-			// A library InvalidArgumentException must not become -32602 nor leak its message.
-			throw new RuntimeException('Calendar backend failure', 0, $e);
-		}
+		$work = $this->reads[$name] ?? $this->effects[$name] ?? throw new InvalidArgumentException('Unknown tool');
+		return $work->handle($userId, $arguments);
 	}
 
 	/**

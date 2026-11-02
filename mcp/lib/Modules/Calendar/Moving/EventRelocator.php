@@ -43,22 +43,19 @@ class EventRelocator {
 	) {}
 
 	/**
+	 * Validates both sides and prepares the same MOVE for a move and for a transfer, without dispatching it.
+	 *
 	 * @param string $userId acting user
 	 * @param string $sourcePath source calendar path
 	 * @param string $uid event UID
 	 * @param string $targetPath target calendar path
 	 * @param string|null $etag expected ETag
 	 * @param bool $crossOwner true for transfer (owners must differ), false for move (same owner)
-	 * @return array{uid:string, etag:string, from:string, to:string, participantsNotified:bool, note:string} etag is the one the event has in the target calendar
+	 * @return PreparedCalendarWrite the MOVE, whose dispatch answers {uid, etag, from, to, participantsNotified, note}, etag being the one the event has in the target calendar
 	 * @throws CalendarException when a calendar is not writable, the mode does not match the owners,
 	 *                           the event is protected or changed, the target already has it,
 	 *                           or a transfer would carry the guests to another owner
 	 */
-	public function relocate(string $userId, string $sourcePath, string $uid, string $targetPath, ?string $etag, bool $crossOwner): array {
-		return $this->prepare($userId, $sourcePath, $uid, $targetPath, $etag, $crossOwner)->dispatch();
-	}
-
-	/** Validate both sides and prepare the same MOVE used by the internal handlers. */
 	public function prepare(string $userId, string $sourcePath, string $uid, string $targetPath, ?string $etag, bool $crossOwner): PreparedCalendarWrite {
 		$source = $this->access->resolveWritable($userId, $sourcePath);
 		$target = $this->access->resolveWritable($userId, $targetPath);

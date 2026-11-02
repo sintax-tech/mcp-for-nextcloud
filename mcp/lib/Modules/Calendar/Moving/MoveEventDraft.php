@@ -63,7 +63,7 @@ final class MoveEventDraft implements \OCA\Mcp\Modules\Calendar\Approval\Calenda
 	public function prepare(array $arguments, string $userId): \OCA\Mcp\Modules\Calendar\Approval\PreparedCalendarWrite|array {
 		$source = $this->access->resolveWritable($userId, $arguments['calendar']);
 		$target = $this->access->resolveWritable($userId, $arguments['targetCalendar']);
-		// A move never crosses owners: when it would, relocate() still answers with the transfer
+		// A move never crosses owners: when it would, the relocator still answers with the transfer
 		// hint, and that answer needs no gate. Origin and destination are both gated, because
 		// either side can be the shared calendar a valid move is about to touch.
 		if ($source->ownerPrincipal === $target->ownerPrincipal) {

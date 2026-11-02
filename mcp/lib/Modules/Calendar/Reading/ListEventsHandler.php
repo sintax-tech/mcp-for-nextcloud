@@ -19,6 +19,9 @@ use OCA\Mcp\Modules\Calendar\Locating\EventRepository;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
 use OCP\AppFramework\Utility\ITimeFactory;
 use Psr\Log\LoggerInterface;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarArgumentException;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarFailures;
+use RuntimeException;
 
 /**
  * calendar_list_events: occurrences overlapping a window of at most 366 days, capped at 2 000 items.
@@ -96,5 +99,18 @@ final class ListEventsHandler implements CalendarTool {
 			}
 		}
 		return ToolSchema::result($items);
+	}
+
+	/**
+	 * The read as the module answers it: a refusal the user can read becomes an error result.
+	 *
+	 * @param string $userId authenticated user
+	 * @param array<string, mixed> $arguments validated tool arguments
+	 * @return array<string, mixed> the MCP result, or the error result of a refusal the user can read
+	 * @throws CalendarArgumentException on an argument the schema cannot validate (-32602)
+	 * @throws RuntimeException on any other failure, which the registry reports generically
+	 */
+	public function handle(string $userId, array $arguments): array {
+		return CalendarFailures::run(fn (): array => $this->execute($arguments, $userId));
 	}
 }

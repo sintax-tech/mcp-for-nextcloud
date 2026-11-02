@@ -11,6 +11,9 @@ use OCA\Mcp\Modules\Calendar\Locating\ScopedCalendarAccess;
 use OCA\Mcp\Modules\Calendar\Presentation\CalendarMessages;
 use OCA\Mcp\Tools\Calendar\CalendarTool;
 use OCA\Mcp\Tools\Calendar\ToolSchema;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarArgumentException;
+use OCA\Mcp\Modules\Calendar\Failures\CalendarFailures;
+use RuntimeException;
 
 /**
  * calendar_list_calendars: the event calendars the user owns or has been shared.
@@ -39,5 +42,18 @@ final class ListCalendarsHandler implements CalendarTool {
 			$out[] = ['name' => $calendar->name, 'path' => $calendar->path, 'owner' => $calendar->ownerId, 'writable' => $calendar->writable];
 		}
 		return ToolSchema::result($out);
+	}
+
+	/**
+	 * The read as the module answers it: a refusal the user can read becomes an error result.
+	 *
+	 * @param string $userId authenticated user
+	 * @param array<string, mixed> $arguments validated tool arguments
+	 * @return array<string, mixed> the MCP result, or the error result of a refusal the user can read
+	 * @throws CalendarArgumentException on an argument the schema cannot validate (-32602)
+	 * @throws RuntimeException on any other failure, which the registry reports generically
+	 */
+	public function handle(string $userId, array $arguments): array {
+		return CalendarFailures::run(fn (): array => $this->execute($arguments, $userId));
 	}
 }

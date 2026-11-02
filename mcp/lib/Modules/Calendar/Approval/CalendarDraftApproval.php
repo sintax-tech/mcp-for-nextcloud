@@ -38,15 +38,15 @@ final class CalendarDraftApproval {
 	 * move and transfer also carry the scheduling warnings (collision, busy participants, calendars shared with
 	 * them); they inform the user and never stop the confirmed call.
 	 *
+	 * @param string $name published name of the write tool, which the plan names as its action
 	 * @param CalendarDraft $tool write handler
 	 * @param array<string, mixed> $arguments MCP arguments, without confirm
 	 * @param string $userId authenticated UID
 	 * @return array<string, mixed> the plan, as the structured content of a non-error result
 	 * @throws CalendarException when the write would be refused (ACL, calendar not found)
 	 */
-	public function preview(CalendarDraft $tool, array $arguments, string $userId): array {
+	public function preview(string $name, CalendarDraft $tool, array $arguments, string $userId): array {
 		[$prepared, $shared] = $this->prepare($tool, $arguments, $userId);
-		$name = $tool->definition()['name'];
 		return ['requiresConfirmation' => true, 'message' => CalendarMessages::approvalPrompt()]
 			+ $this->plan($name, $prepared, $arguments)
 			+ ['timezone' => $this->zones?->forUser($userId)->getName()]

@@ -8,6 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Access\Policy;
 use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use Closure;
+use OCA\Mcp\Access\Policy\Transactions\{PolicyAssembly, PolicyContext, PolicyExecution, PolicyExecutionContract};
 use OCA\Mcp\Db\AuthUsersMapper;
 use OCA\Mcp\Db\GroupGrantsMapper;
 use OCA\Mcp\Db\GroupLifeMapper;
@@ -39,11 +40,11 @@ use Throwable;
  * global auth epoch. Each revocation writes a cleanup event in the same transaction; the physical delete runs after
  * the commit (PolicyEventProcessor), so it never removes a credential issued after the cut.
  */
-class PolicyWriter {
+class PolicyWriter implements PolicyExecutionContract {
 	/** Seconds an administrator may undo a command through its receipt (contracts §2.3). */
 	public const RECEIPT_TTL = 600;
 	/** Most users one administrative command may touch. */
-	public const MAX_UIDS = 50;
+	public const MAX_UIDS = PolicyExecution::MAX_UIDS;
 	/** Most distinct cells one administrative command may write. */
 	public const MAX_CELLS = 2500;
 	/** Seconds a group preview may be saved (contracts §2.3). */
@@ -54,14 +55,30 @@ class PolicyWriter {
 	private const INHERITED_LOST = 'lost';
 	private const INHERITED_UNKNOWN = 'unknown';
 
-	private bool $usable = true;
+	/** One context shared with the transaction and the remaining local commands. */
+	private PolicyContext $context;
+	/** Execution entry points sharing this writer's official services. */
+	private PolicyExecution $execution;
+
 	/**
-	 * State of the attempt under the mutex, for the revocations a cell write triggers: its outbox, the state row read
-	 * under the mutex and whether a cut or epoch moved (which is a policy change even when no cell changed).
-	 *
-	 * @var array{outbox:PolicyOutbox, state:array{revision:string, lock_seq:string, auth_epoch:string}, cut:bool}|null
+	 * @param IDBConnection $db Official shared connection.
+	 * @param PolicyStateMapper $state Mutex and revision store.
+	 * @param PolicyEventsMapper $events Transactional event mapper.
+	 * @param IConfig $config Official policy config.
+	 * @param IUserConfig $userConfig Official user config/cache service.
+	 * @param IAppConfig $appConfig Official app config/cache service.
+	 * @param IUserManager $users Official account directory.
+	 * @param ITimeFactory $time Official clock.
+	 * @param AuthUsersMapper $authUsers Credential generations.
+	 * @param RecheckMapper $rechecks Pending directory causes.
+	 * @param PolicyEventProcessor $processor Post-commit cleanup/audit delivery.
+	 * @param GroupGrantsMapper $groupGrants Group grants store.
+	 * @param GroupLifeMapper $life Group lifecycle store.
+	 * @param OAuthStore $oauth Credential storage.
+	 * @param ResourceScopeMapper|null $scopes Resource scope storage, when available.
+	 * @param NativeResourceEnumerator|null $resources Official resource access enumerator.
+	 * @param ScopeActivation $activation Active resource families.
 	 */
-	private ?array $local = null;
 
 	public function __construct(
 		private IDBConnection $db,
@@ -81,46 +98,24 @@ class PolicyWriter {
 		private ?ResourceScopeMapper $scopes = null,
 		private ?NativeResourceEnumerator $resources = null,
 		private ScopeActivation $activation = new ScopeActivation(),
-	) {}
+	) {
+		$this->context = new PolicyContext();
+		$this->execution = PolicyAssembly::execution($db, $state, $events, $userConfig, $appConfig, $processor, $this->context);
+	}
 
-	/** Read admission must share the writer's abandoned-context gate. */
+	/** {@inheritDoc} */
 	public function assertUsable(): void {
-		if (!$this->usable) {
-			throw new PolicyUnavailable('Policy context was abandoned');
-		}
+		$this->execution->assertUsable();
 	}
 
-	/**
-	 * Administrative admission; the HTTP adapter supplies the required canonical revision.
-	 * The local callback returns whether raw policy changed; it may throw SnapshotInvalidated when an epoch,
-	 * cause set or single-use row differs from its external observation. A logical command id survives retries.
-	 * @param list<string> $uids every user whose official config cache may be touched
-	 * @param Closure(array,string):mixed $prepare remote work, outside any transaction
-	 * @param Closure(mixed,array,string,PolicyOutbox):bool $apply local work only, under the global mutex
-	 * @return array{revision:string, changed:bool, commandId:string, cleanupPending:bool} cleanupPending: a cleanup or
-	 *     audit event of the commit is not delivered yet (it is retried; the revocation itself is committed)
-	 * @throws PolicyConflict when the expected revision is stale, before or after the retries
-	 * @throws PolicyUnavailable when the policy storage fails, or the outcome is uncertain ($uncertain = true)
-	 */
+	/** {@inheritDoc} */
 	public function runAdmin(string $expectedRevision, array $uids, Closure $prepare, Closure $apply): array {
-		DecimalCounter::validate($expectedRevision);
-		if (count(array_unique($uids)) > self::MAX_UIDS) {
-			throw new \InvalidArgumentException('Too many policy users');
-		}
-		return $this->run($uids, $prepare, $apply, $expectedRevision);
+		return $this->execution->runAdmin($expectedRevision, $uids, $prepare, $apply);
 	}
 
-	/**
-	 * Internal commands (including processed directory events) still validate their observed revision and use CAS.
-	 * Directory observations alone return false and never advance revision.
-	 * @param list<string> $uids
-	 * @param Closure(array,string):mixed $prepare
-	 * @param Closure(mixed,array,string,PolicyOutbox):bool $apply
-	 * @return array{revision:string, changed:bool, commandId:string, cleanupPending:bool}
-	 * @throws PolicyUnavailable when the policy storage fails, or the outcome is uncertain ($uncertain = true)
-	 */
+	/** {@inheritDoc} */
 	public function runInternal(array $uids, Closure $prepare, Closure $apply): array {
-		return $this->run($uids, $prepare, $apply, null);
+		return $this->execution->runInternal($uids, $prepare, $apply);
 	}
 
 	/**
@@ -329,22 +324,9 @@ class PolicyWriter {
 		});
 	}
 
-	/**
-	 * Runs local OAuth statements that are no policy change (revoking one session, or every session of one client)
-	 * under the same mutex as issuance, so they serialize with it in the lock order of contracts §2.1.
-	 *
-	 * @template T
-	 * @param Closure(): T $local local statements only
-	 * @return T what $local returned
-	 * @throws PolicyUnavailable when the policy storage fails, or the outcome is uncertain ($uncertain = true)
-	 */
+	/** {@inheritDoc} */
 	public function underMutex(Closure $local): mixed {
-		$value = null;
-		$this->runInternal([], fn () => null, function () use ($local, &$value): bool {
-			$value = $local();
-			return false;
-		});
-		return $value;
+		return $this->execution->underMutex($local);
 	}
 
 	/**
@@ -585,7 +567,7 @@ class PolicyWriter {
 	 * @param string $actor uid of the administrator
 	 * @param string $gid the group, exact bytes
 	 * @param mixed $grants target set, module => list of operations (PolicyEventPayload::groupGrants())
-	 * @param Closure(array{gid:string, grants:array, current:array, withdraws:bool, holders:list<string>}): array{trusted:bool, members:list<string>, cuts:list<string>, sources?:list<array{groupId:string, state:?string, gen:?string}>} $admit
+	 * @param Closure(array{gid:string, grants:array, current:array, withdraws:bool, holders:list<string>}): array {trusted:bool, members:list<string>, cuts:list<string>, sources?:list<array{groupId:string, state:?string, gen:?string}>} $admit
 	 *     the external phase, without any transaction: the fresh source predicate, the member list and, when the
 	 *     set withdraws eligibility, which of the given holders lose their last source, with the lifecycle of every
 	 *     group those decisions read (GroupGrantsService::admit())
@@ -713,17 +695,9 @@ class PolicyWriter {
 		return ['revision' => $result['revision'], 'changed' => $result['changed'], 'receiptId' => $receiptId];
 	}
 
-	/**
-	 * The revision a command running at $revision commits; an exhausted counter is a storage failure (503).
-	 *
-	 * @throws PolicyUnavailable when $revision is already the largest one a CAS may start from
-	 */
+	/** {@inheritDoc} */
 	public static function next(string $revision): string {
-		try {
-			return DecimalCounter::increment($revision);
-		} catch (\InvalidArgumentException $e) {
-			throw new PolicyUnavailable('Policy revision exhausted', previous: $e);
-		}
+		return PolicyExecution::next($revision);
 	}
 
 	/**
@@ -1191,7 +1165,7 @@ class PolicyWriter {
 			}
 		}
 		if ($consumed > 0) {
-			$this->local['cut'] = true;
+			$this->context->attempt->cut = true;
 		}
 		return $consumed;
 	}
@@ -1205,7 +1179,7 @@ class PolicyWriter {
 		$local = $this->localPhase();
 		$cut ??= $this->authUsers->generations($uid)['issue_seq'];
 		if ($this->authUsers->cut($uid, $cut)) {
-			$this->local['cut'] = true;
+			$this->context->attempt->cut = true;
 		}
 		$local['outbox']->add(PolicyEventsMapper::KIND_CLEANUP, PolicyEventPayload::cleanupUser($uid, $cut));
 	}
@@ -1218,17 +1192,17 @@ class PolicyWriter {
 	private function revokeAllLocal(): void {
 		$local = $this->localPhase();
 		$epoch = $this->state->advanceAuthEpoch($local['state']['auth_epoch']);
-		$this->local['state']['auth_epoch'] = $epoch;
-		$this->local['cut'] = true;
+		$this->context->attempt->state['auth_epoch'] = $epoch;
+		$this->context->attempt->cut = true;
 		$local['outbox']->add(PolicyEventsMapper::KIND_CLEANUP, PolicyEventPayload::cleanupGlobal($epoch));
 	}
 
-	/** @return array{outbox:PolicyOutbox, state:array, cut:bool} */
+	/** Delegates to the single active attempt.
+	 * @return array{outbox:PolicyOutbox, state:array, cut:bool}
+	 * @throws \LogicException Outside the local phase of a command.
+	 */
 	private function localPhase(): array {
-		if ($this->local === null) {
-			throw new \LogicException('Revocations run only in the local phase of a policy command');
-		}
-		return $this->local;
+		return $this->context->localPhase();
 	}
 
 	/**
@@ -1294,192 +1268,5 @@ class PolicyWriter {
 			throw new ReceiptExpired();
 		}
 		return ['revision' => $payload['revision'], 'changes' => $payload['changes']];
-	}
-
-	private function run(array $uids, Closure $prepare, Closure $apply, ?string $expected): array {
-		$this->assertUsable();
-		if ($this->db->inTransaction()) {
-			throw new PolicyUnavailable('Policy writer requires a top-level transaction');
-		}
-		$uids = array_values(array_unique($uids));
-		$commandId = bin2hex(random_bytes(16));
-		for ($attempt = 0; ; ++$attempt) {
-			$owned = false;
-			$committing = false;
-			$committed = false;
-			$result = null;
-			$failure = null;
-			try {
-				$this->clearCaches($uids);
-				$observed = $this->state->state();
-				if ($expected !== null && $expected !== $observed['revision']) {
-					throw new PolicyConflict();
-				}
-				$snapshot = $prepare($observed, $commandId);
-				if ($this->db->inTransaction()) {
-					throw new PolicyUnavailable('External admission opened a transaction');
-				}
-				// Some drivers may throw after beginning a transaction: the catch also checks inTransaction().
-				$owned = true;
-				$this->db->beginTransaction();
-				$this->state->acquire();
-				$current = $this->state->state();
-				if ($current['revision'] !== $observed['revision'] || $current['auth_epoch'] !== $observed['auth_epoch']) {
-					throw new SnapshotInvalidated();
-				}
-				// Local reads must not reuse config populated by remote admission.
-				$this->clearCaches($uids);
-				// A fresh outbox per attempt: a rolled-back attempt leaves no event behind, and ids repeat on retry.
-				$outbox = new PolicyOutbox($commandId);
-				$this->local = ['outbox' => $outbox, 'state' => $current, 'cut' => false];
-				$changed = $apply($snapshot, $current, $commandId, $outbox);
-				if (!is_bool($changed)) {
-					throw new \LogicException('Policy command must report whether raw policy changed');
-				}
-				// A cut or epoch change is a policy write even when no cell changed (coordinator clarification 1).
-				$changed = $changed || $this->local['cut'];
-				$this->local = null;
-				if ($changed) {
-					try {
-						DecimalCounter::validate($current['revision']);
-					} catch (\InvalidArgumentException $e) {
-						throw new PolicyUnavailable('Policy revision exhausted', previous: $e);
-					}
-					$this->state->compareAndSet($current['revision']);
-				}
-				foreach ($outbox->events() as $event) {
-					$this->events->append($event['id'], $event['kind'], $event['payload']);
-				}
-				$revision = $this->state->state()['revision'];
-				$committing = true;
-				$this->db->commit();
-				$committed = true;
-				$owned = false;
-				$result = ['revision' => $revision, 'changed' => $changed, 'commandId' => $commandId];
-			} catch (Throwable $e) {
-				$this->local = null;
-				$failure = $this->failure($e, $owned, $committing, $attempt, $expected);
-			}
-			$this->settle($uids, $committed, $failure);
-			if ($result !== null) {
-				// After the commit: physical cleanup and audit delivery, which never turn the success into an error.
-				$result['cleanupPending'] = !$this->processor->afterCommit($outbox->events());
-				return $result;
-			}
-			if ($failure !== null) {
-				throw $failure;
-			}
-			// At most two waits of 100 ms: total app-owned waiting stays below the 1 s budget.
-			usleep(random_int(25000, 100000));
-		}
-	}
-
-	/**
-	 * Rolls back an attempt the writer owns and classifies its failure.
-	 *
-	 * @return Throwable|null the exception to surface, or null when the whole attempt may be replayed
-	 */
-	private function failure(Throwable $e, bool $owned, bool $committing, int $attempt, ?string $expected): ?Throwable {
-		$retry = $e instanceof SnapshotInvalidated || ($owned && self::retryable($e));
-		if ($owned) {
-			try {
-				if ($this->db->inTransaction()) {
-					$this->db->rollBack();
-				}
-			} catch (Throwable $rollback) {
-				$this->usable = false;
-				return new PolicyUnavailable('Policy rollback failed', $committing, $rollback);
-			}
-		}
-		if ($committing && !$retry) {
-			$this->usable = false;
-			return new PolicyUnavailable('Policy commit outcome is uncertain; reload state', true, $e);
-		}
-		if (!$retry) {
-			if ($e instanceof DatabaseException || $e instanceof \Doctrine\DBAL\Exception || $e instanceof \Doctrine\DBAL\Driver\Exception) {
-				return new PolicyUnavailable(previous: $e);
-			}
-			return $e;
-		}
-		if ($attempt >= 2) {
-			if ($e instanceof SnapshotInvalidated && $expected !== null) {
-				return new PolicyConflict();
-			}
-			return new PolicyUnavailable('Policy storage busy; retry later', previous: $e);
-		}
-		return null;
-	}
-
-	/**
-	 * The cache clear that closes every attempt. If it fails the context is abandoned, but the outcome it reports
-	 * stays honest: after a commit the write is durable, so the caller is told the state is uncertain (reload), never
-	 * merely unavailable; and an attempt's own failure stays chained instead of being replaced by the cache error.
-	 *
-	 * @throws PolicyUnavailable when the caches cannot be cleared
-	 */
-	private function settle(array $uids, bool $committed, ?Throwable $failure): void {
-		try {
-			$this->clearCaches($uids);
-		} catch (PolicyUnavailable $cache) {
-			if ($committed) {
-				throw new PolicyUnavailable('Policy committed, but its caches could not be cleared; reload state', true, $cache->getPrevious() ?? $cache);
-			}
-			if ($failure !== null) {
-				throw new PolicyUnavailable($cache->getMessage(), $failure instanceof PolicyUnavailable && $failure->uncertain, $failure);
-			}
-			throw $cache;
-		}
-	}
-
-	private function clearCaches(array $uids): void {
-		try {
-			foreach ($uids as $uid) {
-				$this->userConfig->clearCache($uid, false);
-			}
-			$this->appConfig->clearCache(false);
-		} catch (Throwable $e) {
-			$this->usable = false;
-			throw new PolicyUnavailable('Cannot clear policy caches; context abandoned', previous: $e);
-		}
-	}
-
-	/**
-	 * Only explicit deadlock/timeout classifications are safe to replay, including at begin/commit. Core leaves the
-	 * reason of some of them unset (PostgreSQL lock_timeout, SQLSTATE 55P03, has no Doctrine class), so a database
-	 * exception without one is classified by the driver error it wraps.
-	 */
-	private static function retryable(Throwable $error): bool {
-		if ($error instanceof DatabaseException) {
-			if (in_array($error->getReason(), [DatabaseException::REASON_DEADLOCK, DatabaseException::REASON_LOCK_WAIT_TIMEOUT], true)) {
-				return true;
-			}
-			return self::wrapsRetryable($error);
-		}
-		// DBAL driver failures can escape core's wrapper at transaction boundaries.
-		if ($error instanceof \Doctrine\DBAL\Exception\DeadlockException || $error instanceof \Doctrine\DBAL\Exception\LockWaitTimeoutException) {
-			return true;
-		}
-		if ($error instanceof \Doctrine\DBAL\Driver\Exception) {
-			$sqlState = $error->getSQLState();
-			return in_array($sqlState, ['40001', '40P01', '55P03'], true)
-				|| ($sqlState === 'HY000' && in_array($error->getCode(), [5, 6, 1205, 1213], true));
-		}
-		return $error instanceof \Doctrine\DBAL\Exception && self::wrapsRetryable($error);
-	}
-
-	/** Follows the chain of a database exception to the driver error it wraps (bounded, never into other types). */
-	private static function wrapsRetryable(Throwable $error): bool {
-		for ($depth = 0, $previous = $error->getPrevious(); $previous !== null && $depth < 5; ++$depth, $previous = $previous->getPrevious()) {
-			if ($previous instanceof \Doctrine\DBAL\Exception\DeadlockException || $previous instanceof \Doctrine\DBAL\Exception\LockWaitTimeoutException) {
-				return true;
-			}
-			if ($previous instanceof \Doctrine\DBAL\Driver\Exception) {
-				return self::retryable($previous);
-			}
-			if (!($previous instanceof DatabaseException || $previous instanceof \Doctrine\DBAL\Exception)) {
-				return false;
-			}
-		}
-		return false;
 	}
 }

@@ -102,8 +102,7 @@ final class RealDeadlockTest extends IntegrationTestCase {
 				}
 			};
 			// Keep all official shared services/connections; only add an observation hook after outbox insertion.
-			$writer = clone Server::get(PolicyWriter::class);
-			(new \ReflectionProperty($writer, 'events'))->setValue($writer, $mapper);
+			$writer = Support\InstrumentedWriter::withEvents(Server::get(PolicyWriter::class), $mapper);
 			try {
 				$result = $writer->runAdmin($before['revision'], [$uid], function ($observed, $command) use (&$commands, &$attempts, $observer, $before, $generations, $uid, $key, &$events): void {
 					$commands[] = $command;

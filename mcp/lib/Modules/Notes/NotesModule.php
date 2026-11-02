@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Notes;
+namespace OCA\Mcp\Modules\Notes;
 
 use InvalidArgumentException;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
@@ -15,11 +15,10 @@ use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\PathGuard;
-use OCA\Mcp\Tools\Notes\Handler\CreateNoteHandler;
-use OCA\Mcp\Tools\Notes\Handler\EditNoteHandler;
-use OCA\Mcp\Tools\Notes\Handler\ListNotesHandler;
-use OCA\Mcp\Tools\Notes\Handler\MoveNoteHandler;
-use OCA\Mcp\Tools\Notes\Handler\SearchNotesHandler;
+use OCA\Mcp\Modules\Notes\{Creation\CreateNoteHandler, Locating\NotesRepository, Moving\MoveNoteHandler, Writing\NoteWrite};
+use OCA\Mcp\Modules\Notes\Editing\{EditNoteHandler, NoteChange, NoteChangePreview, NoteChangeTitle};
+use OCA\Mcp\Modules\Notes\Presentation\{NotesMessages, NotesPlanRenderer};
+use OCA\Mcp\Modules\Notes\Reading\{ListNotesHandler, SearchNotesHandler};
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\PreviewsWrites;

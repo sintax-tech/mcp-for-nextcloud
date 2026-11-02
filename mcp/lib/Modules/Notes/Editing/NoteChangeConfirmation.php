@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Notes;
+namespace OCA\Mcp\Modules\Notes\Editing;
 
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
@@ -16,6 +16,7 @@ use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
 
 /**
  * A confirmed append or replace writes only what its plan showed. It needs the etag and the `plan_state` of that

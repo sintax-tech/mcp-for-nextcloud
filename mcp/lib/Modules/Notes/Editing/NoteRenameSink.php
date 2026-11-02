@@ -6,11 +6,12 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Notes;
+namespace OCA\Mcp\Modules\Notes\Editing;
 
 use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Access\FileTypes\FileTypeDenied;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
+use OCA\Mcp\Modules\Notes\Locating\NoteNames;
 
 /**
  * Fresh policy snapshot of the final basename of a note rename or category move.

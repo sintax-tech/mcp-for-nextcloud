@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Notes;
+namespace OCA\Mcp\Modules\Notes\Locating;
 
 use InvalidArgumentException;
 use OCA\Mcp\Platform\FileAccess\NodeAccess;
@@ -16,6 +16,7 @@ use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Files\IRootFolder;
 use OCP\IConfig;
+use OCA\Mcp\Modules\Notes\Presentation\NotesMessages;
 
 /**
  * The Notes app's files seen through the user's IRootFolder view: the notes folder, lookup by file id

@@ -6,7 +6,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Notes;
+namespace OCA\Mcp\Modules\Notes\Locating;
 
 use InvalidArgumentException;
 use OCA\Mcp\Platform\FileAccess\PathGuard;

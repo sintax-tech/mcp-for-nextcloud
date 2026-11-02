@@ -5,9 +5,11 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Notes;
+namespace OCA\Mcp\Modules\Notes\Editing;
 
-use OCA\Mcp\Tools\Files\UnifiedDiff;
+use OCA\Mcp\Platform\Text\UnifiedDiff;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
+use OCA\Mcp\Modules\Notes\Presentation\NotesMessages;
 
 /**
  * The plan of an append or a replace: sizes, the text the call sends, a bounded diff of the change and the etag to

@@ -6,7 +6,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Notes;
+namespace OCA\Mcp\Modules\Notes\Writing;
 
 use OCA\Mcp\Access\FileTypes\FileTypeDenied;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;

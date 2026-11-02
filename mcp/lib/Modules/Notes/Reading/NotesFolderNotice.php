@@ -6,7 +6,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Notes;
+namespace OCA\Mcp\Modules\Notes\Reading;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\Folder;

@@ -8,7 +8,7 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
 use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\Files\UniqueSnippet;
+use OCA\Mcp\Platform\Text\UniqueSnippet;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;

@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Files;
+namespace OCA\Mcp\Platform\Text;
 
 /**
  * Unified diff between the previous and the new content of a text file, with no external dependency.

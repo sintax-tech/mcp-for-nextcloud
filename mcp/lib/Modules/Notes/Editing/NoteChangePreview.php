@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Notes;
+namespace OCA\Mcp\Modules\Notes\Editing;
 
 use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
@@ -16,6 +16,10 @@ use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\Folder;
+use OCA\Mcp\Modules\Notes\Locating\NoteNames;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
+use OCA\Mcp\Modules\Notes\Presentation\NotesMessages;
+use OCA\Mcp\Modules\Notes\Writing\NoteTypeBoundary;
 
 /**
  * The plan of an append or a replace, the same one whether a call without `confirm` asks for it or a confirmed call

@@ -6,11 +6,10 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Notes\Handler;
+namespace OCA\Mcp\Modules\Notes\Reading;
 
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
-use OCA\Mcp\Tools\Notes\NotesFolderNotice;
-use OCA\Mcp\Tools\Notes\NotesRepository;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 use OCP\Files\File;
 use OCP\Files\Folder;

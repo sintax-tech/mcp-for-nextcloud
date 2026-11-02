@@ -116,7 +116,7 @@
 		{
 			"rule": "layering",
 			"source": "lib/Mcp/Resources/ResourceRegistry.php",
-			"target": "OCA\\Mcp\\Tools\\Notes\\NotesMessages",
+			"target": "OCA\\Mcp\\Modules\\Notes\\Presentation\\NotesMessages",
 			"line": 19,
 			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
 			"expires": "RE-13"
@@ -124,7 +124,7 @@
 		{
 			"rule": "layering",
 			"source": "lib/Mcp/Resources/ResourceRegistry.php",
-			"target": "OCA\\Mcp\\Tools\\Notes\\NotesModule",
+			"target": "OCA\\Mcp\\Modules\\Notes\\NotesModule",
 			"line": 20,
 			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
 			"expires": "RE-13"
@@ -132,7 +132,7 @@
 		{
 			"rule": "layering",
 			"source": "lib/Mcp/Resources/ResourceRegistry.php",
-			"target": "OCA\\Mcp\\Tools\\Notes\\NotesRepository",
+			"target": "OCA\\Mcp\\Modules\\Notes\\Locating\\NotesRepository",
 			"line": 61,
 			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
 			"expires": "RE-13"
@@ -1987,9 +1987,9 @@
 		},
 		{
 			"rule": "native-app",
-			"source": "lib/Tools/Notes/NotesModule.php",
+			"source": "lib/Modules/Notes/NotesModule.php",
 			"target": "OCA\\Files_Trashbin\\Storage",
-			"line": 52,
+			"line": 51,
 			"reason": "Move this native-app reference behind the owning module Integration boundary.",
 			"expires": "RE-13"
 		},

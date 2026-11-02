@@ -16,12 +16,12 @@ use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\FilesMessages;
-use OCA\Mcp\Tools\Files\UnifiedDiff;
+use OCA\Mcp\Platform\Text\UnifiedDiff;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
-use OCA\Mcp\Tools\Notes\NoteChangePlan;
-use OCA\Mcp\Tools\Notes\NotesMessages;
-use OCA\Mcp\Tools\Notes\NotesModule;
-use OCA\Mcp\Tools\Notes\NotesRepository;
+use OCA\Mcp\Modules\Notes\Editing\NoteChangePlan;
+use OCA\Mcp\Modules\Notes\Presentation\NotesMessages;
+use OCA\Mcp\Modules\Notes\NotesModule;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
 use OCA\Mcp\Mcp\Confirmation\PlanChanged;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
@@ -244,7 +244,7 @@ final class NotesPartialEditTest extends TestCase {
 	public function testAnAmbiguousReplaceInALargeNoteIsRefusedQuickly(): void {
 		$started = hrtime(true);
 		try {
-			\OCA\Mcp\Tools\Notes\NoteChange::apply('replace', str_repeat('a', 1048576), ['old' => str_repeat('a', 65536), 'new' => 'X']);
+			\OCA\Mcp\Modules\Notes\Editing\NoteChange::apply('replace', str_repeat('a', 1048576), ['old' => str_repeat('a', 65536), 'new' => 'X']);
 			$this->fail('the replace was accepted');
 		} catch (ToolFailure $e) {
 			$this->assertSame(FilesMessages::snippetAmbiguous(), $e->getMessage());
@@ -257,7 +257,7 @@ final class NotesPartialEditTest extends TestCase {
 	 * character bound but over the byte one is refused in the plan and in the write, and one at the limit goes through.
 	 */
 	public function testThePassageIsLimitedTo64KibInCharactersAndBytes(): void {
-		$limit = \OCA\Mcp\Tools\Files\UniqueSnippet::MAX_BYTES;
+		$limit = \OCA\Mcp\Platform\Text\UniqueSnippet::MAX_BYTES;
 		$this->tree->nodes[self::PATH]['content'] = '<' . str_repeat('a', $limit) . '>' . str_repeat('ç', $limit / 2 + 1);
 		$before = $this->content();
 		try {
@@ -512,7 +512,7 @@ final class NotesPartialEditTest extends TestCase {
 		$root->method('getUserFolder')->willReturnCallback(fn () => $this->tree->rootFolder());
 		$notes = new NotesRepository($root, $this->config->mock($this));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$confirmation = new \OCA\Mcp\Tools\Notes\NoteChangeConfirmation($notes, $access, new PlanState($this->config->mock($this)));
+		$confirmation = new \OCA\Mcp\Modules\Notes\Editing\NoteChangeConfirmation($notes, $access, new PlanState($this->config->mock($this)));
 		$folder = $notes->folder('alice', false);
 		$note = $notes->find($folder, $this->id);
 

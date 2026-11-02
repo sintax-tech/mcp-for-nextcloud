@@ -16,6 +16,7 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use OCP\Lock\LockedException;
+use OCA\Mcp\Platform\Text\UnifiedDiff;
 
 /**
  * Backup, write and report for files_edit and files_replace.

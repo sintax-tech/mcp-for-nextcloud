@@ -11,8 +11,8 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Tools\Notes\NotesModule;
-use OCA\Mcp\Tools\Notes\NotesRepository;
+use OCA\Mcp\Modules\Notes\NotesModule;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
@@ -139,7 +139,7 @@ final class NotesPreviewTest extends TestCase {
 			$this->module->preview('notes_edit', ['id' => $this->ata, 'content' => 'novo', 'title' => 'Outra'], 'alice');
 			$this->fail('the plan accepted a title that is taken');
 		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
-			$this->assertSame(\OCA\Mcp\Tools\Notes\NotesMessages::titleExistsInCategory(), $e->getMessage());
+			$this->assertSame(\OCA\Mcp\Modules\Notes\Presentation\NotesMessages::titleExistsInCategory(), $e->getMessage());
 		}
 		$this->assertNothingWritten();
 	}

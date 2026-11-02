@@ -6,7 +6,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Notes\Handler;
+namespace OCA\Mcp\Modules\Notes\Moving;
 
 use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
@@ -16,11 +16,11 @@ use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use OCA\Mcp\Platform\FileAccess\LockAwareWrite;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Tools\Notes\NoteRenameSink;
-use OCA\Mcp\Tools\Notes\NoteTypeBoundary;
-use OCA\Mcp\Tools\Notes\NoteWrite;
-use OCA\Mcp\Tools\Notes\NotesMessages;
-use OCA\Mcp\Tools\Notes\NotesRepository;
+use OCA\Mcp\Modules\Notes\Editing\NoteRenameSink;
+use OCA\Mcp\Modules\Notes\Writing\NoteTypeBoundary;
+use OCA\Mcp\Modules\Notes\Writing\NoteWrite;
+use OCA\Mcp\Modules\Notes\Presentation\NotesMessages;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;

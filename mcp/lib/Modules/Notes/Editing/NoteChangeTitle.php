@@ -5,12 +5,14 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Notes;
+namespace OCA\Mcp\Modules\Notes\Editing;
 
 use InvalidArgumentException;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
+use OCA\Mcp\Modules\Notes\Presentation\NotesMessages;
 
 /**
  * The rename a new title stands for, checked before anything is written: the plan and the write of notes_edit, in

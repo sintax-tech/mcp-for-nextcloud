@@ -6,13 +6,14 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Notes;
+namespace OCA\Mcp\Modules\Notes\Editing;
 
 use Closure;
 use OCA\Mcp\Access\FileTypes\FileWritePolicyUnavailable;
 use OCA\Mcp\Access\FileTypes\FileTypeDenied;
 use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use OCP\Files\File;
+use OCA\Mcp\Modules\Notes\Writing\NoteTypeBoundary;
 
 /**
  * Puts note bytes only after a fresh policy snapshot of every basename this edit would leave behind.

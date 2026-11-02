@@ -5,13 +5,15 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Notes;
+namespace OCA\Mcp\Modules\Notes\Editing;
 
 use InvalidArgumentException;
-use OCA\Mcp\Tools\Files\UniqueSnippet;
+use OCA\Mcp\Platform\Text\UniqueSnippet;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
+use OCA\Mcp\Modules\Notes\Presentation\NotesMessages;
 
 /**
  * The three ways notes_edit changes the text of a note, which exclude each other: `content` rewrites it whole,

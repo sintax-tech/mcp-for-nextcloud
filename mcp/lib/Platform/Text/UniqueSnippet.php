@@ -5,11 +5,10 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Files;
+namespace OCA\Mcp\Platform\Text;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
-use OCA\Mcp\Platform\Text\SnippetMessages;
 
 /**
  * The single-occurrence replacement that files_replace and notes_edit share: the snippet is located byte for byte

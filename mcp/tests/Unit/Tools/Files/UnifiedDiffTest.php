@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Files;
 
-use OCA\Mcp\Tools\Files\UnifiedDiff;
+use OCA\Mcp\Platform\Text\UnifiedDiff;
 use PHPUnit\Framework\TestCase;
 
 /** The unified diff returned by files_edit, files_replace and the checkout upload. */

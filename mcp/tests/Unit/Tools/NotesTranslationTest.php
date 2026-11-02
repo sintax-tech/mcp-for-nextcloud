@@ -9,9 +9,9 @@ namespace OCA\Mcp\Tests\Unit\Tools;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Tests\Unit\L10n\JsonL10n;
-use OCA\Mcp\Tools\Notes\NotesMessages;
-use OCA\Mcp\Tools\Notes\NotesModule;
-use OCA\Mcp\Tools\Notes\NotesRepository;
+use OCA\Mcp\Modules\Notes\Presentation\NotesMessages;
+use OCA\Mcp\Modules\Notes\NotesModule;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCP\App\IAppManager;

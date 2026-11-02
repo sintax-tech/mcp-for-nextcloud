@@ -211,7 +211,7 @@ final class FilesEditToolsTest extends FilesToolsTestCase {
 	 * snippet under the character bound but over the byte one is refused too; one at the limit is replaced.
 	 */
 	public function testReplaceLimitsTheSnippetTo64KibInCharactersAndBytes(): void {
-		$limit = \OCA\Mcp\Tools\Files\UniqueSnippet::MAX_BYTES;
+		$limit = \OCA\Mcp\Platform\Text\UniqueSnippet::MAX_BYTES;
 		$content = '<' . str_repeat('a', $limit) . '>' . str_repeat('ç', $limit / 2 + 1);
 		$this->tree->addFile('/alice/files/Documentos/grande.txt', $content, 'text/plain');
 		try {

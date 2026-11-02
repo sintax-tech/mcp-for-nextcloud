@@ -6,7 +6,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Notes;
+namespace OCA\Mcp\Modules\Notes\Writing;
 
 use OCA\Mcp\Access\Visibility\VisibilityGuard;
 use OCA\Mcp\Platform\FileAccess\CommonMessages;
@@ -18,6 +18,8 @@ use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Files\File;
 use OCP\Files\Folder;
 use Throwable;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
+use OCA\Mcp\Modules\Notes\Presentation\NotesMessages;
 
 /**
  * Checks and lock wrapping shared by note writes.

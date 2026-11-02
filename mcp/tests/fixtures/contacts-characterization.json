@@ -1,0 +1,3331 @@
+{
+    "definitions": [
+        {
+            "step": "definitions",
+            "arguments": [],
+            "outcome": {
+                "result": [
+                    {
+                        "name": "contacts_list_addressbooks",
+                        "description": "List your own and shared address books plus, when the admin exposes it, the read-only accounts catalog of the instance.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {},
+                            "additionalProperties": false
+                        },
+                        "module": "contacts",
+                        "operation": "read",
+                        "app": "contacts"
+                    },
+                    {
+                        "name": "contacts_search_contacts",
+                        "description": "Search contacts by name, email, phone or organization in one address book or, when \"addressbook\" is omitted, in all of them including the read-only accounts of the instance (colleagues). Account results carry accountId, the user ID to use for invitations, attendees, Deck and Talk. An empty query lists personal contacts only; accounts need a search term of at least 2 characters.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "addressbook": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1024,
+                                    "description": "Address book path returned by List address books. Omit to search all of them."
+                                },
+                                "query": {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 1024,
+                                    "description": "Case-insensitive search text."
+                                },
+                                "limit": {
+                                    "type": "integer",
+                                    "minimum": 1,
+                                    "maximum": 200,
+                                    "default": 50,
+                                    "description": "Maximum results (1-200)."
+                                },
+                                "offset": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "maximum": 1000000,
+                                    "default": 0,
+                                    "description": "Offset among matching results; use nextOffset to continue."
+                                }
+                            },
+                            "additionalProperties": false
+                        },
+                        "module": "contacts",
+                        "operation": "read",
+                        "app": "contacts"
+                    },
+                    {
+                        "name": "contacts_read_contact",
+                        "description": "Read a contact including all vCard properties and its ETag. A contact of the accounts catalog returns only its public fields and accountId, without vCard or ETag.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "addressbook": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1024,
+                                    "description": "Address book path returned by List address books."
+                                },
+                                "uri": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 255,
+                                    "description": "Contact object URI returned by Search contacts."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "addressbook",
+                                "uri"
+                            ]
+                        },
+                        "module": "contacts",
+                        "operation": "read",
+                        "app": "contacts"
+                    },
+                    {
+                        "name": "contacts_create_contact",
+                        "description": "Create a contact in a writable personal or shared address book. The plan_state of the plan carries the contact UID that confirmation stores; send it back with confirm=true. Returns a detailed plan without writing. Show it to the user, wait for explicit approval, then repeat with confirm=true and the optional etag from the plan. Shared collections also require confirm_shared=true.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "addressbook": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1024,
+                                    "description": "Address book path returned by List address books."
+                                },
+                                "plan_state": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "Opaque value of the plan. Send it back unchanged together with confirm: true. If the state changed since the plan, nothing is written and the answer is the new plan."
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1024,
+                                    "description": "Contact name. Omit to preserve its existing value."
+                                },
+                                "organization": {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 1024,
+                                    "description": "Organization company name (first ORG component); existing departments and units are preserved."
+                                },
+                                "title": {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 1024,
+                                    "description": "Contact title. Omit to preserve its existing value."
+                                },
+                                "note": {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 65536,
+                                    "description": "Contact note. Omit to preserve its existing value."
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 1024,
+                                    "description": "Contact url. Omit to preserve its existing value."
+                                },
+                                "emails": {
+                                    "type": "array",
+                                    "maxItems": 50,
+                                    "items": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 1024,
+                                        "description": "Value."
+                                    },
+                                    "description": "Replace the emails in order; existing parameters are preserved. Omit to keep all values, [] to clear them."
+                                },
+                                "phones": {
+                                    "type": "array",
+                                    "maxItems": 50,
+                                    "items": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 1024,
+                                        "description": "Value."
+                                    },
+                                    "description": "Replace the phones in order; existing parameters are preserved. Omit to keep all values, [] to clear them."
+                                },
+                                "confirm_shared": {
+                                    "type": "boolean",
+                                    "description": "Acknowledge changing a collection owned by another person after showing the shared notice."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "addressbook",
+                                "name"
+                            ]
+                        },
+                        "module": "contacts",
+                        "operation": "create",
+                        "app": "contacts"
+                    },
+                    {
+                        "name": "contacts_edit_contact",
+                        "description": "Edit only supplied contact fields, preserving unknown vCard properties. Returns a detailed plan without writing. Show it to the user, wait for explicit approval, then repeat with confirm=true and the optional etag from the plan. Shared collections also require confirm_shared=true.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "addressbook": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1024,
+                                    "description": "Address book path returned by List address books."
+                                },
+                                "uri": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 255,
+                                    "description": "Contact object URI returned by Search contacts."
+                                },
+                                "etag": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "expected etag; if it differs, nothing is changed"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1024,
+                                    "description": "Contact name. Omit to preserve its existing value."
+                                },
+                                "organization": {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 1024,
+                                    "description": "Organization company name (first ORG component); existing departments and units are preserved."
+                                },
+                                "title": {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 1024,
+                                    "description": "Contact title. Omit to preserve its existing value."
+                                },
+                                "note": {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 65536,
+                                    "description": "Contact note. Omit to preserve its existing value."
+                                },
+                                "url": {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 1024,
+                                    "description": "Contact url. Omit to preserve its existing value."
+                                },
+                                "emails": {
+                                    "type": "array",
+                                    "maxItems": 50,
+                                    "items": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 1024,
+                                        "description": "Value."
+                                    },
+                                    "description": "Replace the emails in order; existing parameters are preserved. Omit to keep all values, [] to clear them."
+                                },
+                                "phones": {
+                                    "type": "array",
+                                    "maxItems": 50,
+                                    "items": {
+                                        "type": "string",
+                                        "minLength": 1,
+                                        "maxLength": 1024,
+                                        "description": "Value."
+                                    },
+                                    "description": "Replace the phones in order; existing parameters are preserved. Omit to keep all values, [] to clear them."
+                                },
+                                "confirm_shared": {
+                                    "type": "boolean",
+                                    "description": "Acknowledge changing a collection owned by another person after showing the shared notice."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "addressbook",
+                                "uri"
+                            ]
+                        },
+                        "module": "contacts",
+                        "operation": "edit",
+                        "app": "contacts"
+                    },
+                    {
+                        "name": "contacts_delete_contact",
+                        "description": "Permanently delete a contact after saving a verified vCard backup in your Files. Nextcloud has no contact trash. Returns a detailed plan without writing. Show it to the user, wait for explicit approval, then repeat with confirm=true and the optional etag from the plan. Shared collections also require confirm_shared=true.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "addressbook": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 1024,
+                                    "description": "Address book path returned by List address books."
+                                },
+                                "uri": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 255,
+                                    "description": "Contact object URI returned by Search contacts."
+                                },
+                                "etag": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 128,
+                                    "description": "expected etag; if it differs, nothing is changed"
+                                },
+                                "confirm_shared": {
+                                    "type": "boolean",
+                                    "description": "Acknowledge changing a collection owned by another person after showing the shared notice."
+                                }
+                            },
+                            "additionalProperties": false,
+                            "required": [
+                                "addressbook",
+                                "uri"
+                            ]
+                        },
+                        "module": "contacts",
+                        "operation": "delete",
+                        "app": "contacts"
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "list": [
+        {
+            "step": "call contacts_list_addressbooks",
+            "arguments": [],
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "[\n    {\n        \"id\": 1,\n        \"uri\": \"personal\",\n        \"name\": \"Contatos\",\n        \"ownerId\": \"alice\",\n        \"ownerPrincipal\": \"principals/users/alice\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n    },\n    {\n        \"id\": 2,\n        \"uri\": \"team\",\n        \"name\": \"Equipe\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/team/\"\n    },\n    {\n        \"id\": 3,\n        \"uri\": \"broken\",\n        \"name\": \"Caderno �(\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/broken/\"\n    },\n    {\n        \"id\": 4,\n        \"uri\": \"ro\",\n        \"name\": \"Somente leitura\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": false,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/ro/\"\n    },\n    {\n        \"id\": 0,\n        \"uri\": \"z-server-generated--system\",\n        \"name\": \"Contas\",\n        \"ownerId\": \"system\",\n        \"ownerPrincipal\": \"principals/system/system\",\n        \"writable\": false,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/z-server-generated--system/\",\n        \"system\": true,\n        \"readOnly\": true\n    }\n]"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_list_addressbooks",
+            "arguments": [],
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "[\n    {\n        \"id\": 1,\n        \"uri\": \"personal\",\n        \"name\": \"Contatos\",\n        \"ownerId\": \"alice\",\n        \"ownerPrincipal\": \"principals/users/alice\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n    },\n    {\n        \"id\": 2,\n        \"uri\": \"team\",\n        \"name\": \"Equipe\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/team/\"\n    },\n    {\n        \"id\": 3,\n        \"uri\": \"broken\",\n        \"name\": \"Caderno �(\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/broken/\"\n    },\n    {\n        \"id\": 4,\n        \"uri\": \"ro\",\n        \"name\": \"Somente leitura\",\n        \"ownerId\": \"bob\",\n        \"ownerPrincipal\": \"principals/users/bob\",\n        \"writable\": false,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/ro/\"\n    }\n]"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "search": [
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": [],
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [\n        {\n            \"uid\": \"c1\",\n            \"name\": \"Maria Souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [\n                \"maria@example.invalid\"\n            ],\n            \"phones\": [],\n            \"uri\": \"c1.vcf\",\n            \"etag\": \"\\\"MD5-1\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n        },\n        {\n            \"uid\": \"c2\",\n            \"name\": \"Carla S.\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [\n                \"carla@example.invalid\"\n            ],\n            \"phones\": [],\n            \"uri\": \"c2.vcf\",\n            \"etag\": \"\\\"MD5-2\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n        },\n        {\n            \"uid\": \"t1\",\n            \"name\": \"Tiago Souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [],\n            \"phones\": [\n                \"+55 11 91111-1111\"\n            ],\n            \"uri\": \"t1.vcf\",\n            \"etag\": \"\\\"MD5-3\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\"\n        },\n        {\n            \"uid\": \"b1\",\n            \"name\": \"Bruno\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"caderno quebrado\",\n            \"url\": \"\",\n            \"emails\": [],\n            \"phones\": [],\n            \"uri\": \"b1.vcf\",\n            \"etag\": \"\\\"MD5-4\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/broken/\"\n        },\n        {\n            \"uid\": \"r1\",\n            \"name\": \"Rita\",\n            \"organization\": \"Leitura\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [],\n            \"phones\": [],\n            \"uri\": \"r1.vcf\",\n            \"etag\": \"\\\"MD5-5\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/ro/\"\n        }\n    ],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "query": "s"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [\n        {\n            \"uid\": \"c1\",\n            \"name\": \"Maria Souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [\n                \"maria@example.invalid\"\n            ],\n            \"phones\": [],\n            \"uri\": \"c1.vcf\",\n            \"etag\": \"\\\"MD5-1\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n        },\n        {\n            \"uid\": \"c2\",\n            \"name\": \"Carla S.\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [\n                \"carla@example.invalid\"\n            ],\n            \"phones\": [],\n            \"uri\": \"c2.vcf\",\n            \"etag\": \"\\\"MD5-2\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n        },\n        {\n            \"uid\": \"t1\",\n            \"name\": \"Tiago Souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [],\n            \"phones\": [\n                \"+55 11 91111-1111\"\n            ],\n            \"uri\": \"t1.vcf\",\n            \"etag\": \"\\\"MD5-3\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\"\n        }\n    ],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "query": "Souza"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [\n        {\n            \"uid\": \"c1\",\n            \"name\": \"Maria Souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [\n                \"maria@example.invalid\"\n            ],\n            \"phones\": [],\n            \"uri\": \"c1.vcf\",\n            \"etag\": \"\\\"MD5-1\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n        },\n        {\n            \"uid\": \"t1\",\n            \"name\": \"Tiago Souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [],\n            \"phones\": [\n                \"+55 11 91111-1111\"\n            ],\n            \"uri\": \"t1.vcf\",\n            \"etag\": \"\\\"MD5-3\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\"\n        },\n        {\n            \"uid\": \"ana\",\n            \"accountId\": \"ana\",\n            \"name\": \"ana souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"nickname\": \"\",\n            \"emails\": [\n                \"ana@example.invalid\"\n            ],\n            \"uri\": \"Database:ana.vcf\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/z-server-generated--system/\",\n            \"addressBook\": {\n                \"name\": \"Contas\",\n                \"system\": true\n            },\n            \"readOnly\": true\n        },\n        {\n            \"uid\": \"carla\",\n            \"accountId\": \"carla\",\n            \"name\": \"Carla Souza\",\n            \"organization\": \"Ops\",\n            \"title\": \"\",\n            \"nickname\": \"\",\n            \"emails\": [\n                \"Carla@example.invalid\"\n            ],\n            \"uri\": \"Database:carla.vcf\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/z-server-generated--system/\",\n            \"addressBook\": {\n                \"name\": \"Contas\",\n                \"system\": true\n            },\n            \"readOnly\": true\n        }\n    ],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": [
+                {
+                    "pattern": "Souza",
+                    "properties": [
+                        "FN",
+                        "EMAIL",
+                        "NICKNAME",
+                        "ORG"
+                    ],
+                    "options": {
+                        "enumeration": true,
+                        "fullmatch": true,
+                        "strict_search": false,
+                        "limit": 200
+                    }
+                }
+            ]
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "query": "souza",
+                "limit": 2,
+                "offset": 1
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [\n        {\n            \"uid\": \"t1\",\n            \"name\": \"Tiago Souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [],\n            \"phones\": [\n                \"+55 11 91111-1111\"\n            ],\n            \"uri\": \"t1.vcf\",\n            \"etag\": \"\\\"MD5-3\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\"\n        },\n        {\n            \"uid\": \"ana\",\n            \"accountId\": \"ana\",\n            \"name\": \"ana souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"nickname\": \"\",\n            \"emails\": [\n                \"ana@example.invalid\"\n            ],\n            \"uri\": \"Database:ana.vcf\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/z-server-generated--system/\",\n            \"addressBook\": {\n                \"name\": \"Contas\",\n                \"system\": true\n            },\n            \"readOnly\": true\n        }\n    ],\n    \"hasMore\": true,\n    \"nextOffset\": 3\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": [
+                {
+                    "pattern": "souza",
+                    "properties": [
+                        "FN",
+                        "EMAIL",
+                        "NICKNAME",
+                        "ORG"
+                    ],
+                    "options": {
+                        "enumeration": true,
+                        "fullmatch": true,
+                        "strict_search": false,
+                        "limit": 200
+                    }
+                }
+            ]
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "query": "bob"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [\n        {\n            \"uid\": \"bob\",\n            \"accountId\": \"bob\",\n            \"name\": \"Bob Silva\",\n            \"organization\": \"Equipe\",\n            \"title\": \"Dev\",\n            \"nickname\": \"bobby\",\n            \"emails\": [\n                \"bob@example.invalid\"\n            ],\n            \"uri\": \"Database:bob.vcf\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/z-server-generated--system/\",\n            \"addressBook\": {\n                \"name\": \"Contas\",\n                \"system\": true\n            },\n            \"readOnly\": true\n        }\n    ],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": [
+                {
+                    "pattern": "bob",
+                    "properties": [
+                        "FN",
+                        "EMAIL",
+                        "NICKNAME",
+                        "ORG"
+                    ],
+                    "options": {
+                        "enumeration": true,
+                        "fullmatch": true,
+                        "strict_search": false,
+                        "limit": 200
+                    }
+                }
+            ]
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "query": "carla"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [\n        {\n            \"uid\": \"c2\",\n            \"name\": \"Carla S.\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [\n                \"carla@example.invalid\"\n            ],\n            \"phones\": [],\n            \"uri\": \"c2.vcf\",\n            \"etag\": \"\\\"MD5-2\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n            \"accountId\": \"carla\"\n        }\n    ],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": [
+                {
+                    "pattern": "carla",
+                    "properties": [
+                        "FN",
+                        "EMAIL",
+                        "NICKNAME",
+                        "ORG"
+                    ],
+                    "options": {
+                        "enumeration": true,
+                        "fullmatch": true,
+                        "strict_search": false,
+                        "limit": 200
+                    }
+                }
+            ]
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "query": "b"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Enter at least 2 characters to search the accounts catalog.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "query": "Souza"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [\n        {\n            \"uid\": \"ana\",\n            \"accountId\": \"ana\",\n            \"name\": \"ana souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"nickname\": \"\",\n            \"emails\": [\n                \"ana@example.invalid\"\n            ],\n            \"uri\": \"Database:ana.vcf\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/z-server-generated--system/\",\n            \"addressBook\": {\n                \"name\": \"Contas\",\n                \"system\": true\n            },\n            \"readOnly\": true\n        },\n        {\n            \"uid\": \"carla\",\n            \"accountId\": \"carla\",\n            \"name\": \"Carla Souza\",\n            \"organization\": \"Ops\",\n            \"title\": \"\",\n            \"nickname\": \"\",\n            \"emails\": [\n                \"Carla@example.invalid\"\n            ],\n            \"uri\": \"Database:carla.vcf\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/z-server-generated--system/\",\n            \"addressBook\": {\n                \"name\": \"Contas\",\n                \"system\": true\n            },\n            \"readOnly\": true\n        }\n    ],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": [
+                {
+                    "pattern": "Souza",
+                    "properties": [
+                        "FN",
+                        "EMAIL",
+                        "NICKNAME",
+                        "ORG"
+                    ],
+                    "options": {
+                        "enumeration": true,
+                        "fullmatch": true,
+                        "strict_search": false,
+                        "limit": 200
+                    }
+                }
+            ]
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/team/"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [\n        {\n            \"uid\": \"t1\",\n            \"name\": \"Tiago Souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [],\n            \"phones\": [\n                \"+55 11 91111-1111\"\n            ],\n            \"uri\": \"t1.vcf\",\n            \"etag\": \"\\\"MD5-3\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\"\n        }\n    ],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "query": "91111"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/nope/"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Resource not found in Nextcloud.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/system/"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Resource not found in Nextcloud.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "query": "Souza"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Resource not found in Nextcloud.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "query": "Souza"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [\n        {\n            \"uid\": \"c1\",\n            \"name\": \"Maria Souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [\n                \"maria@example.invalid\"\n            ],\n            \"phones\": [],\n            \"uri\": \"c1.vcf\",\n            \"etag\": \"\\\"MD5-1\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n        },\n        {\n            \"uid\": \"t1\",\n            \"name\": \"Tiago Souza\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"note\": \"\",\n            \"url\": \"\",\n            \"emails\": [],\n            \"phones\": [\n                \"+55 11 91111-1111\"\n            ],\n            \"uri\": \"t1.vcf\",\n            \"etag\": \"\\\"MD5-3\\\"\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\"\n        }\n    ],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "search exact matches": [
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "query": "bob"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [\n        {\n            \"uid\": \"bob\",\n            \"accountId\": \"bob\",\n            \"name\": \"Bob Silva\",\n            \"organization\": \"Equipe\",\n            \"title\": \"Dev\",\n            \"nickname\": \"bobby\",\n            \"emails\": [\n                \"bob@example.invalid\"\n            ],\n            \"uri\": \"Database:bob.vcf\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/z-server-generated--system/\",\n            \"addressBook\": {\n                \"name\": \"Contas\",\n                \"system\": true\n            },\n            \"readOnly\": true\n        }\n    ],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": [
+                {
+                    "pattern": "bob",
+                    "properties": [
+                        "FN",
+                        "EMAIL",
+                        "UID"
+                    ],
+                    "options": {
+                        "enumeration": false,
+                        "fullmatch": true,
+                        "strict_search": true,
+                        "limit": 200
+                    }
+                }
+            ]
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "query": "Carla Souza"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [\n        {\n            \"uid\": \"carla\",\n            \"accountId\": \"carla\",\n            \"name\": \"Carla Souza\",\n            \"organization\": \"Ops\",\n            \"title\": \"\",\n            \"nickname\": \"\",\n            \"emails\": [\n                \"Carla@example.invalid\"\n            ],\n            \"uri\": \"Database:carla.vcf\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/z-server-generated--system/\",\n            \"addressBook\": {\n                \"name\": \"Contas\",\n                \"system\": true\n            },\n            \"readOnly\": true\n        }\n    ],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": [
+                {
+                    "pattern": "Carla Souza",
+                    "properties": [
+                        "FN",
+                        "EMAIL",
+                        "UID"
+                    ],
+                    "options": {
+                        "enumeration": false,
+                        "fullmatch": true,
+                        "strict_search": true,
+                        "limit": 200
+                    }
+                }
+            ]
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "query": "bob@example.invalid"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": [
+                {
+                    "pattern": "bob@example.invalid",
+                    "properties": [
+                        "FN"
+                    ],
+                    "options": {
+                        "enumeration": false,
+                        "fullmatch": true,
+                        "strict_search": true,
+                        "limit": 200
+                    }
+                }
+            ]
+        },
+        {
+            "step": "call contacts_read_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "uri": "Database:bob.vcf"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Resource not found in Nextcloud.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_read_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "uri": "Database:alice.vcf"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"alice\",\n    \"accountId\": \"alice\",\n    \"name\": \"Alice Admin\",\n    \"organization\": \"\",\n    \"title\": \"\",\n    \"nickname\": \"\",\n    \"emails\": [\n        \"alice@example.invalid\"\n    ],\n    \"uri\": \"Database:alice.vcf\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/z-server-generated--system/\",\n    \"addressBook\": {\n        \"name\": \"Contas\",\n        \"system\": true\n    },\n    \"readOnly\": true\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": [
+                {
+                    "pattern": "alice",
+                    "properties": [
+                        "UID"
+                    ],
+                    "options": {
+                        "enumeration": true,
+                        "fullmatch": true,
+                        "strict_search": true,
+                        "limit": 200
+                    }
+                }
+            ]
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "search restricted": [
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "query": "a"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Enter at least 2 characters to search the accounts catalog.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "query": "Souza"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [\n        {\n            \"uid\": \"carla\",\n            \"accountId\": \"carla\",\n            \"name\": \"Carla Souza\",\n            \"organization\": \"Ops\",\n            \"title\": \"\",\n            \"nickname\": \"\",\n            \"emails\": [\n                \"Carla@example.invalid\"\n            ],\n            \"uri\": \"Database:carla.vcf\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/z-server-generated--system/\",\n            \"addressBook\": {\n                \"name\": \"Contas\",\n                \"system\": true\n            },\n            \"readOnly\": true\n        }\n    ],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": [
+                {
+                    "pattern": "Souza",
+                    "properties": [
+                        "FN",
+                        "EMAIL",
+                        "NICKNAME",
+                        "ORG"
+                    ],
+                    "options": {
+                        "enumeration": true,
+                        "fullmatch": true,
+                        "strict_search": false,
+                        "limit": 200
+                    }
+                }
+            ]
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "query": "Souza"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": [
+                {
+                    "pattern": "Souza",
+                    "properties": [
+                        "FN",
+                        "EMAIL",
+                        "NICKNAME",
+                        "ORG"
+                    ],
+                    "options": {
+                        "enumeration": true,
+                        "fullmatch": true,
+                        "strict_search": false,
+                        "limit": 200
+                    }
+                }
+            ]
+        },
+        {
+            "step": "call contacts_search_contacts",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "query": "Alice"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"contacts\": [\n        {\n            \"uid\": \"alice\",\n            \"accountId\": \"alice\",\n            \"name\": \"Alice Admin\",\n            \"organization\": \"\",\n            \"title\": \"\",\n            \"nickname\": \"\",\n            \"emails\": [\n                \"alice@example.invalid\"\n            ],\n            \"uri\": \"Database:alice.vcf\",\n            \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/z-server-generated--system/\",\n            \"addressBook\": {\n                \"name\": \"Contas\",\n                \"system\": true\n            },\n            \"readOnly\": true\n        }\n    ],\n    \"hasMore\": false,\n    \"nextOffset\": null\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": [
+                {
+                    "pattern": "Alice",
+                    "properties": [
+                        "FN",
+                        "EMAIL",
+                        "NICKNAME",
+                        "ORG"
+                    ],
+                    "options": {
+                        "enumeration": true,
+                        "fullmatch": true,
+                        "strict_search": false,
+                        "limit": 200
+                    }
+                }
+            ]
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "read": [
+        {
+            "step": "call contacts_read_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"c1\",\n    \"name\": \"Maria Souza\",\n    \"organization\": \"\",\n    \"title\": \"\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [\n        \"maria@example.invalid\"\n    ],\n    \"phones\": [],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"c1\",\n            \"serialized\": \"UID:c1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Maria Souza\",\n            \"serialized\": \"FN:Maria Souza\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"maria@example.invalid\",\n            \"serialized\": \"EMAIL;TYPE=WORK:maria@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"X-CUSTOM\",\n            \"group\": null,\n            \"value\": \"intocado\",\n            \"serialized\": \"X-CUSTOM;X-PARAM=keep:intocado\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:c1\\r\\nFN:Maria Souza\\r\\nEMAIL;TYPE=WORK:maria@example.invalid\\r\\nX-CUSTOM;X-PARAM=keep:intocado\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"c1.vcf\",\n    \"etag\": \"\\\"MD5-1\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_read_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/team/",
+                "uri": "t1.vcf"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"t1\",\n    \"name\": \"Tiago Souza\",\n    \"organization\": \"\",\n    \"title\": \"\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [],\n    \"phones\": [\n        \"+55 11 91111-1111\"\n    ],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"t1\",\n            \"serialized\": \"UID:t1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Tiago Souza\",\n            \"serialized\": \"FN:Tiago Souza\\r\\n\"\n        },\n        {\n            \"name\": \"TEL\",\n            \"group\": null,\n            \"value\": \"+55 11 91111-1111\",\n            \"serialized\": \"TEL:+55 11 91111-1111\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:t1\\r\\nFN:Tiago Souza\\r\\nTEL:+55 11 91111-1111\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"t1.vcf\",\n    \"etag\": \"\\\"MD5-3\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_read_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "../team/t1.vcf"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Resource not found in Nextcloud.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_read_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "bad.vcf"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "The contact could not be read safely.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_read_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "missing.vcf"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Resource not found in Nextcloud.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_read_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "uri": "Database:bob.vcf"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"bob\",\n    \"accountId\": \"bob\",\n    \"name\": \"Bob Silva\",\n    \"organization\": \"Equipe\",\n    \"title\": \"Dev\",\n    \"nickname\": \"bobby\",\n    \"emails\": [\n        \"bob@example.invalid\"\n    ],\n    \"uri\": \"Database:bob.vcf\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/z-server-generated--system/\",\n    \"addressBook\": {\n        \"name\": \"Contas\",\n        \"system\": true\n    },\n    \"readOnly\": true\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": [
+                {
+                    "pattern": "bob",
+                    "properties": [
+                        "UID"
+                    ],
+                    "options": {
+                        "enumeration": true,
+                        "fullmatch": true,
+                        "strict_search": true,
+                        "limit": 200
+                    }
+                }
+            ]
+        },
+        {
+            "step": "call contacts_read_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "uri": "Guests:gus.vcf"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Resource not found in Nextcloud.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_read_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "uri": "Database:gina.vcf"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Resource not found in Nextcloud.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": [
+                {
+                    "pattern": "gina",
+                    "properties": [
+                        "UID"
+                    ],
+                    "options": {
+                        "enumeration": true,
+                        "fullmatch": true,
+                        "strict_search": true,
+                        "limit": 200
+                    }
+                }
+            ]
+        },
+        {
+            "step": "call contacts_read_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "uri": "bob.vcf"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Resource not found in Nextcloud.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "create": [
+        {
+            "step": "preview contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                    "action": "contacts_create_contact",
+                    "addressbook": {
+                        "id": 1,
+                        "uri": "personal",
+                        "name": "Contatos",
+                        "ownerId": "alice",
+                        "ownerPrincipal": "principals/users/alice",
+                        "writable": true,
+                        "path": "/remote.php/dav/addressbooks/users/alice/personal/"
+                    },
+                    "etag": null,
+                    "before": null,
+                    "after": {
+                        "uid": "MD5-6",
+                        "name": "Nova Pessoa",
+                        "organization": "Firma",
+                        "title": "",
+                        "note": "",
+                        "url": "",
+                        "emails": [
+                            "nova@example.invalid"
+                        ],
+                        "phones": [
+                            "+55 11 92222-2222"
+                        ],
+                        "properties": [
+                            {
+                                "name": "VERSION",
+                                "group": null,
+                                "value": "3.0",
+                                "serialized": "VERSION:3.0\r\n"
+                            },
+                            {
+                                "name": "PRODID",
+                                "group": null,
+                                "value": "-//Sabre//Sabre VObject 4.5.6//EN",
+                                "serialized": "PRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\n"
+                            },
+                            {
+                                "name": "UID",
+                                "group": null,
+                                "value": "MD5-6",
+                                "serialized": "UID:MD5-6\r\n"
+                            },
+                            {
+                                "name": "FN",
+                                "group": null,
+                                "value": "Nova Pessoa",
+                                "serialized": "FN:Nova Pessoa\r\n"
+                            },
+                            {
+                                "name": "ORG",
+                                "group": null,
+                                "value": "Firma",
+                                "serialized": "ORG:Firma\r\n"
+                            },
+                            {
+                                "name": "EMAIL",
+                                "group": null,
+                                "value": "nova@example.invalid",
+                                "serialized": "EMAIL:nova@example.invalid\r\n"
+                            },
+                            {
+                                "name": "TEL",
+                                "group": null,
+                                "value": "+55 11 92222-2222",
+                                "serialized": "TEL:+55 11 92222-2222\r\n"
+                            }
+                        ],
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-6\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
+                    },
+                    "shared": [],
+                    "recoverable": false,
+                    "consequence": "Contacts have no native trash or edit history; review the changes carefully.",
+                    "plan_state": "MD5-6.HMAC-1"
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"requiresConfirmation\": true,\n    \"message\": \"Nothing was changed. Show this plan and ask for explicit confirmation.\",\n    \"action\": \"contacts_create_contact\",\n    \"addressbook\": {\n        \"id\": 1,\n        \"uri\": \"personal\",\n        \"name\": \"Contatos\",\n        \"ownerId\": \"alice\",\n        \"ownerPrincipal\": \"principals/users/alice\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n    },\n    \"etag\": null,\n    \"before\": null,\n    \"after\": {\n        \"uid\": \"MD5-7\",\n        \"name\": \"Nova Pessoa\",\n        \"organization\": \"Firma\",\n        \"title\": \"\",\n        \"note\": \"\",\n        \"url\": \"\",\n        \"emails\": [\n            \"nova@example.invalid\"\n        ],\n        \"phones\": [\n            \"+55 11 92222-2222\"\n        ],\n        \"properties\": [\n            {\n                \"name\": \"VERSION\",\n                \"group\": null,\n                \"value\": \"3.0\",\n                \"serialized\": \"VERSION:3.0\\r\\n\"\n            },\n            {\n                \"name\": \"PRODID\",\n                \"group\": null,\n                \"value\": \"-//Sabre//Sabre VObject 4.5.6//EN\",\n                \"serialized\": \"PRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\n\"\n            },\n            {\n                \"name\": \"UID\",\n                \"group\": null,\n                \"value\": \"MD5-7\",\n                \"serialized\": \"UID:MD5-7\\r\\n\"\n            },\n            {\n                \"name\": \"FN\",\n                \"group\": null,\n                \"value\": \"Nova Pessoa\",\n                \"serialized\": \"FN:Nova Pessoa\\r\\n\"\n            },\n            {\n                \"name\": \"ORG\",\n                \"group\": null,\n                \"value\": \"Firma\",\n                \"serialized\": \"ORG:Firma\\r\\n\"\n            },\n            {\n                \"name\": \"EMAIL\",\n                \"group\": null,\n                \"value\": \"nova@example.invalid\",\n                \"serialized\": \"EMAIL:nova@example.invalid\\r\\n\"\n            },\n            {\n                \"name\": \"TEL\",\n                \"group\": null,\n                \"value\": \"+55 11 92222-2222\",\n                \"serialized\": \"TEL:+55 11 92222-2222\\r\\n\"\n            }\n        ],\n        \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\nUID:MD5-7\\r\\nFN:Nova Pessoa\\r\\nORG:Firma\\r\\nEMAIL:nova@example.invalid\\r\\nTEL:+55 11 92222-2222\\r\\nEND:VCARD\\r\\n\"\n    },\n    \"shared\": [],\n    \"recoverable\": false,\n    \"consequence\": \"Contacts have no native trash or edit history; review the changes carefully.\",\n    \"plan_state\": \"MD5-7.HMAC-2\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "confirm": true,
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Validation\\ArgumentValidationException",
+                        "message": "Invalid argument: plan_state",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "confirm": true,
+                "name": "Outra Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma",
+                "plan_state": "MD5-6.HMAC-1"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Confirmation\\PlanChanged",
+                        "message": "The state changed since the plan",
+                        "code": 0,
+                        "plan": {
+                            "requiresConfirmation": true,
+                            "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                            "action": "contacts_create_contact",
+                            "addressbook": {
+                                "id": 1,
+                                "uri": "personal",
+                                "name": "Contatos",
+                                "ownerId": "alice",
+                                "ownerPrincipal": "principals/users/alice",
+                                "writable": true,
+                                "path": "/remote.php/dav/addressbooks/users/alice/personal/"
+                            },
+                            "etag": null,
+                            "before": null,
+                            "after": {
+                                "uid": "MD5-6",
+                                "name": "Outra Pessoa",
+                                "organization": "Firma",
+                                "title": "",
+                                "note": "",
+                                "url": "",
+                                "emails": [
+                                    "nova@example.invalid"
+                                ],
+                                "phones": [
+                                    "+55 11 92222-2222"
+                                ],
+                                "properties": [
+                                    {
+                                        "name": "VERSION",
+                                        "group": null,
+                                        "value": "3.0",
+                                        "serialized": "VERSION:3.0\r\n"
+                                    },
+                                    {
+                                        "name": "PRODID",
+                                        "group": null,
+                                        "value": "-//Sabre//Sabre VObject 4.5.6//EN",
+                                        "serialized": "PRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\n"
+                                    },
+                                    {
+                                        "name": "UID",
+                                        "group": null,
+                                        "value": "MD5-6",
+                                        "serialized": "UID:MD5-6\r\n"
+                                    },
+                                    {
+                                        "name": "FN",
+                                        "group": null,
+                                        "value": "Outra Pessoa",
+                                        "serialized": "FN:Outra Pessoa\r\n"
+                                    },
+                                    {
+                                        "name": "ORG",
+                                        "group": null,
+                                        "value": "Firma",
+                                        "serialized": "ORG:Firma\r\n"
+                                    },
+                                    {
+                                        "name": "EMAIL",
+                                        "group": null,
+                                        "value": "nova@example.invalid",
+                                        "serialized": "EMAIL:nova@example.invalid\r\n"
+                                    },
+                                    {
+                                        "name": "TEL",
+                                        "group": null,
+                                        "value": "+55 11 92222-2222",
+                                        "serialized": "TEL:+55 11 92222-2222\r\n"
+                                    }
+                                ],
+                                "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-6\r\nFN:Outra Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
+                            },
+                            "shared": [],
+                            "recoverable": false,
+                            "consequence": "Contacts have no native trash or edit history; review the changes carefully.",
+                            "plan_state": "MD5-6.HMAC-3",
+                            "warnings": [
+                                {
+                                    "message": "The creation plan changed. Review the new plan before confirming."
+                                }
+                            ]
+                        }
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "confirm": true,
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma",
+                "plan_state": "MD5-6.HMAC-1"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"MD5-6\",\n    \"name\": \"Nova Pessoa\",\n    \"organization\": \"Firma\",\n    \"title\": \"\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [\n        \"nova@example.invalid\"\n    ],\n    \"phones\": [\n        \"+55 11 92222-2222\"\n    ],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"PRODID\",\n            \"group\": null,\n            \"value\": \"-//Sabre//Sabre VObject 4.5.6//EN\",\n            \"serialized\": \"PRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"MD5-6\",\n            \"serialized\": \"UID:MD5-6\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Nova Pessoa\",\n            \"serialized\": \"FN:Nova Pessoa\\r\\n\"\n        },\n        {\n            \"name\": \"ORG\",\n            \"group\": null,\n            \"value\": \"Firma\",\n            \"serialized\": \"ORG:Firma\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"nova@example.invalid\",\n            \"serialized\": \"EMAIL:nova@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"TEL\",\n            \"group\": null,\n            \"value\": \"+55 11 92222-2222\",\n            \"serialized\": \"TEL:+55 11 92222-2222\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\nUID:MD5-6\\r\\nFN:Nova Pessoa\\r\\nORG:Firma\\r\\nEMAIL:nova@example.invalid\\r\\nTEL:+55 11 92222-2222\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"MD5-6.vcf\",\n    \"etag\": \"\\\"MD5-8\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"status\": 201\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                "put personal/MD5-6.vcf"
+            ],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "confirm": true,
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma",
+                "plan_state": "MD5-6.HMAC-1"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "The resource has changed since the last read (etag differs); nothing was written.",
+                        "code": 412
+                    }
+                ]
+            },
+            "dav": [
+                "put personal/MD5-6.vcf"
+            ],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "confirm": true,
+                "plan_state": "MD5-9.HMAC-4",
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Account contacts are read-only; ask the administrator.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "preview contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/ro/",
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "No access to this resource in Nextcloud.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "preview contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/nope/",
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Resource not found in Nextcloud.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n",
+                    "MD5-6.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-6\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "create shared": [
+        {
+            "step": "preview contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/team/",
+                "confirm_shared": true,
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                    "action": "contacts_create_contact",
+                    "addressbook": {
+                        "id": 2,
+                        "uri": "team",
+                        "name": "Equipe",
+                        "ownerId": "bob",
+                        "ownerPrincipal": "principals/users/bob",
+                        "writable": true,
+                        "path": "/remote.php/dav/addressbooks/users/alice/team/"
+                    },
+                    "etag": null,
+                    "before": null,
+                    "after": {
+                        "uid": "MD5-10",
+                        "name": "Nova Pessoa",
+                        "organization": "Firma",
+                        "title": "",
+                        "note": "",
+                        "url": "",
+                        "emails": [
+                            "nova@example.invalid"
+                        ],
+                        "phones": [
+                            "+55 11 92222-2222"
+                        ],
+                        "properties": [
+                            {
+                                "name": "VERSION",
+                                "group": null,
+                                "value": "3.0",
+                                "serialized": "VERSION:3.0\r\n"
+                            },
+                            {
+                                "name": "PRODID",
+                                "group": null,
+                                "value": "-//Sabre//Sabre VObject 4.5.6//EN",
+                                "serialized": "PRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\n"
+                            },
+                            {
+                                "name": "UID",
+                                "group": null,
+                                "value": "MD5-10",
+                                "serialized": "UID:MD5-10\r\n"
+                            },
+                            {
+                                "name": "FN",
+                                "group": null,
+                                "value": "Nova Pessoa",
+                                "serialized": "FN:Nova Pessoa\r\n"
+                            },
+                            {
+                                "name": "ORG",
+                                "group": null,
+                                "value": "Firma",
+                                "serialized": "ORG:Firma\r\n"
+                            },
+                            {
+                                "name": "EMAIL",
+                                "group": null,
+                                "value": "nova@example.invalid",
+                                "serialized": "EMAIL:nova@example.invalid\r\n"
+                            },
+                            {
+                                "name": "TEL",
+                                "group": null,
+                                "value": "+55 11 92222-2222",
+                                "serialized": "TEL:+55 11 92222-2222\r\n"
+                            }
+                        ],
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-10\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
+                    },
+                    "shared": [
+                        {
+                            "requiresConfirmation": true,
+                            "scope": "shared",
+                            "owner": "bob",
+                            "ownerDisplayName": "Bob Silva",
+                            "resource": "Equipe",
+                            "message": "The calendar 'Equipe' belongs to Bob Silva and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                        }
+                    ],
+                    "recoverable": false,
+                    "consequence": "Contacts have no native trash or edit history; review the changes carefully.",
+                    "plan_state": "MD5-10.HMAC-5"
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/team/",
+                "confirm": true,
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Validation\\ArgumentValidationException",
+                        "message": "Invalid argument: plan_state",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/team/",
+                "confirm": true,
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma",
+                "plan_state": "MD5-10.HMAC-5"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Confirm the change to the shared collection with confirm_shared=true.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/team/",
+                "confirm": true,
+                "confirm_shared": true,
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma",
+                "plan_state": "MD5-10.HMAC-5"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"MD5-10\",\n    \"name\": \"Nova Pessoa\",\n    \"organization\": \"Firma\",\n    \"title\": \"\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [\n        \"nova@example.invalid\"\n    ],\n    \"phones\": [\n        \"+55 11 92222-2222\"\n    ],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"PRODID\",\n            \"group\": null,\n            \"value\": \"-//Sabre//Sabre VObject 4.5.6//EN\",\n            \"serialized\": \"PRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"MD5-10\",\n            \"serialized\": \"UID:MD5-10\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Nova Pessoa\",\n            \"serialized\": \"FN:Nova Pessoa\\r\\n\"\n        },\n        {\n            \"name\": \"ORG\",\n            \"group\": null,\n            \"value\": \"Firma\",\n            \"serialized\": \"ORG:Firma\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"nova@example.invalid\",\n            \"serialized\": \"EMAIL:nova@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"TEL\",\n            \"group\": null,\n            \"value\": \"+55 11 92222-2222\",\n            \"serialized\": \"TEL:+55 11 92222-2222\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\\r\\nUID:MD5-10\\r\\nFN:Nova Pessoa\\r\\nORG:Firma\\r\\nEMAIL:nova@example.invalid\\r\\nTEL:+55 11 92222-2222\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"MD5-10.vcf\",\n    \"etag\": \"\\\"MD5-11\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\",\n    \"status\": 201\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                "put team/MD5-10.vcf"
+            ],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n",
+                    "MD5-10.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-10\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "shared notice with invalid UTF-8": [
+        {
+            "step": "preview contacts_create_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/broken/",
+                "name": "Nova Pessoa",
+                "emails": [
+                    "nova@example.invalid"
+                ],
+                "phones": [
+                    "+55 11 92222-2222"
+                ],
+                "organization": "Firma"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                    "action": "contacts_create_contact",
+                    "addressbook": {
+                        "id": 3,
+                        "uri": "broken",
+                        "name": "<invalid UTF-8 43616465726e6f20c328>",
+                        "ownerId": "bob",
+                        "ownerPrincipal": "principals/users/bob",
+                        "writable": true,
+                        "path": "/remote.php/dav/addressbooks/users/alice/broken/"
+                    },
+                    "etag": null,
+                    "before": null,
+                    "after": {
+                        "uid": "MD5-12",
+                        "name": "Nova Pessoa",
+                        "organization": "Firma",
+                        "title": "",
+                        "note": "",
+                        "url": "",
+                        "emails": [
+                            "nova@example.invalid"
+                        ],
+                        "phones": [
+                            "+55 11 92222-2222"
+                        ],
+                        "properties": [
+                            {
+                                "name": "VERSION",
+                                "group": null,
+                                "value": "3.0",
+                                "serialized": "VERSION:3.0\r\n"
+                            },
+                            {
+                                "name": "PRODID",
+                                "group": null,
+                                "value": "-//Sabre//Sabre VObject 4.5.6//EN",
+                                "serialized": "PRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\n"
+                            },
+                            {
+                                "name": "UID",
+                                "group": null,
+                                "value": "MD5-12",
+                                "serialized": "UID:MD5-12\r\n"
+                            },
+                            {
+                                "name": "FN",
+                                "group": null,
+                                "value": "Nova Pessoa",
+                                "serialized": "FN:Nova Pessoa\r\n"
+                            },
+                            {
+                                "name": "ORG",
+                                "group": null,
+                                "value": "Firma",
+                                "serialized": "ORG:Firma\r\n"
+                            },
+                            {
+                                "name": "EMAIL",
+                                "group": null,
+                                "value": "nova@example.invalid",
+                                "serialized": "EMAIL:nova@example.invalid\r\n"
+                            },
+                            {
+                                "name": "TEL",
+                                "group": null,
+                                "value": "+55 11 92222-2222",
+                                "serialized": "TEL:+55 11 92222-2222\r\n"
+                            }
+                        ],
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nPRODID:-//Sabre//Sabre VObject 4.5.6//EN\r\nUID:MD5-12\r\nFN:Nova Pessoa\r\nORG:Firma\r\nEMAIL:nova@example.invalid\r\nTEL:+55 11 92222-2222\r\nEND:VCARD\r\n"
+                    },
+                    "shared": [
+                        {
+                            "requiresConfirmation": true,
+                            "scope": "shared",
+                            "owner": "bob",
+                            "ownerDisplayName": "Bob Silva",
+                            "resource": "Caderno �(",
+                            "message": "The calendar 'Caderno �(' belongs to Bob Silva and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                        }
+                    ],
+                    "recoverable": false,
+                    "consequence": "Contacts have no native trash or edit history; review the changes carefully.",
+                    "plan_state": "MD5-12.HMAC-6"
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "preview contacts_edit_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/broken/",
+                "uri": "b1.vcf",
+                "title": "Chefe"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                    "action": "contacts_edit_contact",
+                    "addressbook": {
+                        "id": 3,
+                        "uri": "broken",
+                        "name": "<invalid UTF-8 43616465726e6f20c328>",
+                        "ownerId": "bob",
+                        "ownerPrincipal": "principals/users/bob",
+                        "writable": true,
+                        "path": "/remote.php/dav/addressbooks/users/alice/broken/"
+                    },
+                    "etag": "\"MD5-4\"",
+                    "before": {
+                        "uid": "b1",
+                        "name": "Bruno",
+                        "organization": "",
+                        "title": "",
+                        "note": "caderno quebrado",
+                        "url": "",
+                        "emails": [],
+                        "phones": [],
+                        "properties": [
+                            {
+                                "name": "VERSION",
+                                "group": null,
+                                "value": "3.0",
+                                "serialized": "VERSION:3.0\r\n"
+                            },
+                            {
+                                "name": "UID",
+                                "group": null,
+                                "value": "b1",
+                                "serialized": "UID:b1\r\n"
+                            },
+                            {
+                                "name": "FN",
+                                "group": null,
+                                "value": "Bruno",
+                                "serialized": "FN:Bruno\r\n"
+                            },
+                            {
+                                "name": "NOTE",
+                                "group": null,
+                                "value": "caderno quebrado",
+                                "serialized": "NOTE:caderno quebrado\r\n"
+                            }
+                        ],
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                    },
+                    "after": {
+                        "uid": "b1",
+                        "name": "Bruno",
+                        "organization": "",
+                        "title": "Chefe",
+                        "note": "caderno quebrado",
+                        "url": "",
+                        "emails": [],
+                        "phones": [],
+                        "properties": [
+                            {
+                                "name": "VERSION",
+                                "group": null,
+                                "value": "3.0",
+                                "serialized": "VERSION:3.0\r\n"
+                            },
+                            {
+                                "name": "UID",
+                                "group": null,
+                                "value": "b1",
+                                "serialized": "UID:b1\r\n"
+                            },
+                            {
+                                "name": "FN",
+                                "group": null,
+                                "value": "Bruno",
+                                "serialized": "FN:Bruno\r\n"
+                            },
+                            {
+                                "name": "NOTE",
+                                "group": null,
+                                "value": "caderno quebrado",
+                                "serialized": "NOTE:caderno quebrado\r\n"
+                            },
+                            {
+                                "name": "TITLE",
+                                "group": null,
+                                "value": "Chefe",
+                                "serialized": "TITLE:Chefe\r\n"
+                            }
+                        ],
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nTITLE:Chefe\r\nEND:VCARD\r\n"
+                    },
+                    "shared": [
+                        {
+                            "requiresConfirmation": true,
+                            "scope": "shared",
+                            "owner": "bob",
+                            "ownerDisplayName": "Bob Silva",
+                            "resource": "Caderno �(",
+                            "message": "The calendar 'Caderno �(' belongs to Bob Silva and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                        }
+                    ],
+                    "recoverable": false,
+                    "consequence": "Contacts have no native trash or edit history; review the changes carefully."
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "preview contacts_delete_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/broken/",
+                "uri": "b1.vcf"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                    "action": "contacts_delete_contact",
+                    "addressbook": {
+                        "id": 3,
+                        "uri": "broken",
+                        "name": "<invalid UTF-8 43616465726e6f20c328>",
+                        "ownerId": "bob",
+                        "ownerPrincipal": "principals/users/bob",
+                        "writable": true,
+                        "path": "/remote.php/dav/addressbooks/users/alice/broken/"
+                    },
+                    "etag": "\"MD5-4\"",
+                    "before": {
+                        "uid": "b1",
+                        "name": "Bruno",
+                        "organization": "",
+                        "title": "",
+                        "note": "caderno quebrado",
+                        "url": "",
+                        "emails": [],
+                        "phones": [],
+                        "properties": [
+                            {
+                                "name": "VERSION",
+                                "group": null,
+                                "value": "3.0",
+                                "serialized": "VERSION:3.0\r\n"
+                            },
+                            {
+                                "name": "UID",
+                                "group": null,
+                                "value": "b1",
+                                "serialized": "UID:b1\r\n"
+                            },
+                            {
+                                "name": "FN",
+                                "group": null,
+                                "value": "Bruno",
+                                "serialized": "FN:Bruno\r\n"
+                            },
+                            {
+                                "name": "NOTE",
+                                "group": null,
+                                "value": "caderno quebrado",
+                                "serialized": "NOTE:caderno quebrado\r\n"
+                            }
+                        ],
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                    },
+                    "after": null,
+                    "shared": [
+                        {
+                            "requiresConfirmation": true,
+                            "scope": "shared",
+                            "owner": "bob",
+                            "ownerDisplayName": "Bob Silva",
+                            "resource": "Caderno �(",
+                            "message": "The calendar 'Caderno �(' belongs to Bob Silva and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                        }
+                    ],
+                    "recoverable": false,
+                    "consequence": "PERMANENT DELETION: Nextcloud has no contact trash bin.",
+                    "permanent": true,
+                    "warning": "PERMANENT DELETION: Nextcloud has no contact trash bin.",
+                    "backup": {
+                        "required": true,
+                        "directory": "<invalid UTF-8 4d4350206261636b7570732f436f6e74616374732f43616465726e6f20c328>",
+                        "format": "vcf",
+                        "message": "A verified vCard copy will be saved before deletion. If the backup fails, nothing will be deleted."
+                    }
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "edit": [
+        {
+            "step": "call contacts_edit_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/nope/",
+                "uri": "c1.vcf"
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "InvalidArgumentException",
+                        "message": "Provide at least one field to change.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "preview contacts_edit_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "name": "Maria Souza Lima",
+                "emails": []
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                    "action": "contacts_edit_contact",
+                    "addressbook": {
+                        "id": 1,
+                        "uri": "personal",
+                        "name": "Contatos",
+                        "ownerId": "alice",
+                        "ownerPrincipal": "principals/users/alice",
+                        "writable": true,
+                        "path": "/remote.php/dav/addressbooks/users/alice/personal/"
+                    },
+                    "etag": "\"MD5-1\"",
+                    "before": {
+                        "uid": "c1",
+                        "name": "Maria Souza",
+                        "organization": "",
+                        "title": "",
+                        "note": "",
+                        "url": "",
+                        "emails": [
+                            "maria@example.invalid"
+                        ],
+                        "phones": [],
+                        "properties": [
+                            {
+                                "name": "VERSION",
+                                "group": null,
+                                "value": "3.0",
+                                "serialized": "VERSION:3.0\r\n"
+                            },
+                            {
+                                "name": "UID",
+                                "group": null,
+                                "value": "c1",
+                                "serialized": "UID:c1\r\n"
+                            },
+                            {
+                                "name": "FN",
+                                "group": null,
+                                "value": "Maria Souza",
+                                "serialized": "FN:Maria Souza\r\n"
+                            },
+                            {
+                                "name": "EMAIL",
+                                "group": null,
+                                "value": "maria@example.invalid",
+                                "serialized": "EMAIL;TYPE=WORK:maria@example.invalid\r\n"
+                            },
+                            {
+                                "name": "X-CUSTOM",
+                                "group": null,
+                                "value": "intocado",
+                                "serialized": "X-CUSTOM;X-PARAM=keep:intocado\r\n"
+                            }
+                        ],
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    },
+                    "after": {
+                        "uid": "c1",
+                        "name": "Maria Souza Lima",
+                        "organization": "",
+                        "title": "",
+                        "note": "",
+                        "url": "",
+                        "emails": [],
+                        "phones": [],
+                        "properties": [
+                            {
+                                "name": "VERSION",
+                                "group": null,
+                                "value": "3.0",
+                                "serialized": "VERSION:3.0\r\n"
+                            },
+                            {
+                                "name": "UID",
+                                "group": null,
+                                "value": "c1",
+                                "serialized": "UID:c1\r\n"
+                            },
+                            {
+                                "name": "FN",
+                                "group": null,
+                                "value": "Maria Souza Lima",
+                                "serialized": "FN:Maria Souza Lima\r\n"
+                            },
+                            {
+                                "name": "X-CUSTOM",
+                                "group": null,
+                                "value": "intocado",
+                                "serialized": "X-CUSTOM;X-PARAM=keep:intocado\r\n"
+                            }
+                        ],
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    },
+                    "shared": [],
+                    "recoverable": false,
+                    "consequence": "Contacts have no native trash or edit history; review the changes carefully."
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_edit_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "name": "Maria Souza Lima"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"requiresConfirmation\": true,\n    \"message\": \"Nothing was changed. Show this plan and ask for explicit confirmation.\",\n    \"action\": \"contacts_edit_contact\",\n    \"addressbook\": {\n        \"id\": 1,\n        \"uri\": \"personal\",\n        \"name\": \"Contatos\",\n        \"ownerId\": \"alice\",\n        \"ownerPrincipal\": \"principals/users/alice\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n    },\n    \"etag\": \"\\\"MD5-1\\\"\",\n    \"before\": {\n        \"uid\": \"c1\",\n        \"name\": \"Maria Souza\",\n        \"organization\": \"\",\n        \"title\": \"\",\n        \"note\": \"\",\n        \"url\": \"\",\n        \"emails\": [\n            \"maria@example.invalid\"\n        ],\n        \"phones\": [],\n        \"properties\": [\n            {\n                \"name\": \"VERSION\",\n                \"group\": null,\n                \"value\": \"3.0\",\n                \"serialized\": \"VERSION:3.0\\r\\n\"\n            },\n            {\n                \"name\": \"UID\",\n                \"group\": null,\n                \"value\": \"c1\",\n                \"serialized\": \"UID:c1\\r\\n\"\n            },\n            {\n                \"name\": \"FN\",\n                \"group\": null,\n                \"value\": \"Maria Souza\",\n                \"serialized\": \"FN:Maria Souza\\r\\n\"\n            },\n            {\n                \"name\": \"EMAIL\",\n                \"group\": null,\n                \"value\": \"maria@example.invalid\",\n                \"serialized\": \"EMAIL;TYPE=WORK:maria@example.invalid\\r\\n\"\n            },\n            {\n                \"name\": \"X-CUSTOM\",\n                \"group\": null,\n                \"value\": \"intocado\",\n                \"serialized\": \"X-CUSTOM;X-PARAM=keep:intocado\\r\\n\"\n            }\n        ],\n        \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:c1\\r\\nFN:Maria Souza\\r\\nEMAIL;TYPE=WORK:maria@example.invalid\\r\\nX-CUSTOM;X-PARAM=keep:intocado\\r\\nEND:VCARD\\r\\n\"\n    },\n    \"after\": {\n        \"uid\": \"c1\",\n        \"name\": \"Maria Souza Lima\",\n        \"organization\": \"\",\n        \"title\": \"\",\n        \"note\": \"\",\n        \"url\": \"\",\n        \"emails\": [\n            \"maria@example.invalid\"\n        ],\n        \"phones\": [],\n        \"properties\": [\n            {\n                \"name\": \"VERSION\",\n                \"group\": null,\n                \"value\": \"3.0\",\n                \"serialized\": \"VERSION:3.0\\r\\n\"\n            },\n            {\n                \"name\": \"UID\",\n                \"group\": null,\n                \"value\": \"c1\",\n                \"serialized\": \"UID:c1\\r\\n\"\n            },\n            {\n                \"name\": \"FN\",\n                \"group\": null,\n                \"value\": \"Maria Souza Lima\",\n                \"serialized\": \"FN:Maria Souza Lima\\r\\n\"\n            },\n            {\n                \"name\": \"EMAIL\",\n                \"group\": null,\n                \"value\": \"maria@example.invalid\",\n                \"serialized\": \"EMAIL;TYPE=WORK:maria@example.invalid\\r\\n\"\n            },\n            {\n                \"name\": \"X-CUSTOM\",\n                \"group\": null,\n                \"value\": \"intocado\",\n                \"serialized\": \"X-CUSTOM;X-PARAM=keep:intocado\\r\\n\"\n            }\n        ],\n        \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:c1\\r\\nFN:Maria Souza Lima\\r\\nEMAIL;TYPE=WORK:maria@example.invalid\\r\\nX-CUSTOM;X-PARAM=keep:intocado\\r\\nEND:VCARD\\r\\n\"\n    },\n    \"shared\": [],\n    \"recoverable\": false,\n    \"consequence\": \"Contacts have no native trash or edit history; review the changes carefully.\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_edit_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "name": "Maria Souza Lima",
+                "confirm": true,
+                "etag": "\"stale\""
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "The resource has changed since the last read (etag differs); nothing was written.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_edit_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "name": "Maria Souza Lima",
+                "confirm": true,
+                "etag": "MD5-1"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"c1\",\n    \"name\": \"Maria Souza Lima\",\n    \"organization\": \"\",\n    \"title\": \"\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [\n        \"maria@example.invalid\"\n    ],\n    \"phones\": [],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"c1\",\n            \"serialized\": \"UID:c1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Maria Souza Lima\",\n            \"serialized\": \"FN:Maria Souza Lima\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"maria@example.invalid\",\n            \"serialized\": \"EMAIL;TYPE=WORK:maria@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"X-CUSTOM\",\n            \"group\": null,\n            \"value\": \"intocado\",\n            \"serialized\": \"X-CUSTOM;X-PARAM=keep:intocado\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:c1\\r\\nFN:Maria Souza Lima\\r\\nEMAIL;TYPE=WORK:maria@example.invalid\\r\\nX-CUSTOM;X-PARAM=keep:intocado\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"c1.vcf\",\n    \"etag\": \"\\\"MD5-13\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"status\": 204\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                "update personal/c1.vcf"
+            ],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_edit_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "phones": [
+                    "+55 11 93333-3333"
+                ],
+                "note": "Nota",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"c1\",\n    \"name\": \"Maria Souza Lima\",\n    \"organization\": \"\",\n    \"title\": \"\",\n    \"note\": \"Nota\",\n    \"url\": \"\",\n    \"emails\": [\n        \"maria@example.invalid\"\n    ],\n    \"phones\": [\n        \"+55 11 93333-3333\"\n    ],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"c1\",\n            \"serialized\": \"UID:c1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Maria Souza Lima\",\n            \"serialized\": \"FN:Maria Souza Lima\\r\\n\"\n        },\n        {\n            \"name\": \"EMAIL\",\n            \"group\": null,\n            \"value\": \"maria@example.invalid\",\n            \"serialized\": \"EMAIL;TYPE=WORK:maria@example.invalid\\r\\n\"\n        },\n        {\n            \"name\": \"X-CUSTOM\",\n            \"group\": null,\n            \"value\": \"intocado\",\n            \"serialized\": \"X-CUSTOM;X-PARAM=keep:intocado\\r\\n\"\n        },\n        {\n            \"name\": \"NOTE\",\n            \"group\": null,\n            \"value\": \"Nota\",\n            \"serialized\": \"NOTE:Nota\\r\\n\"\n        },\n        {\n            \"name\": \"TEL\",\n            \"group\": null,\n            \"value\": \"+55 11 93333-3333\",\n            \"serialized\": \"TEL:+55 11 93333-3333\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:c1\\r\\nFN:Maria Souza Lima\\r\\nEMAIL;TYPE=WORK:maria@example.invalid\\r\\nX-CUSTOM;X-PARAM=keep:intocado\\r\\nNOTE:Nota\\r\\nTEL:+55 11 93333-3333\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"c1.vcf\",\n    \"etag\": \"\\\"MD5-14\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"status\": 204\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                "update personal/c1.vcf"
+            ],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_edit_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "uri": "Database:bob.vcf",
+                "name": "X",
+                "confirm": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Account contacts are read-only; ask the administrator.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_edit_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/ro/",
+                "uri": "r1.vcf",
+                "name": "X",
+                "confirm": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "No access to this resource in Nextcloud.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_edit_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "missing.vcf",
+                "name": "X",
+                "confirm": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Resource not found in Nextcloud.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza Lima\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nNOTE:Nota\r\nTEL:+55 11 93333-3333\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "edit shared": [
+        {
+            "step": "preview contacts_edit_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/team/",
+                "uri": "t1.vcf",
+                "title": "Chefe",
+                "confirm_shared": true
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                    "action": "contacts_edit_contact",
+                    "addressbook": {
+                        "id": 2,
+                        "uri": "team",
+                        "name": "Equipe",
+                        "ownerId": "bob",
+                        "ownerPrincipal": "principals/users/bob",
+                        "writable": true,
+                        "path": "/remote.php/dav/addressbooks/users/alice/team/"
+                    },
+                    "etag": "\"MD5-3\"",
+                    "before": {
+                        "uid": "t1",
+                        "name": "Tiago Souza",
+                        "organization": "",
+                        "title": "",
+                        "note": "",
+                        "url": "",
+                        "emails": [],
+                        "phones": [
+                            "+55 11 91111-1111"
+                        ],
+                        "properties": [
+                            {
+                                "name": "VERSION",
+                                "group": null,
+                                "value": "3.0",
+                                "serialized": "VERSION:3.0\r\n"
+                            },
+                            {
+                                "name": "UID",
+                                "group": null,
+                                "value": "t1",
+                                "serialized": "UID:t1\r\n"
+                            },
+                            {
+                                "name": "FN",
+                                "group": null,
+                                "value": "Tiago Souza",
+                                "serialized": "FN:Tiago Souza\r\n"
+                            },
+                            {
+                                "name": "TEL",
+                                "group": null,
+                                "value": "+55 11 91111-1111",
+                                "serialized": "TEL:+55 11 91111-1111\r\n"
+                            }
+                        ],
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                    },
+                    "after": {
+                        "uid": "t1",
+                        "name": "Tiago Souza",
+                        "organization": "",
+                        "title": "Chefe",
+                        "note": "",
+                        "url": "",
+                        "emails": [],
+                        "phones": [
+                            "+55 11 91111-1111"
+                        ],
+                        "properties": [
+                            {
+                                "name": "VERSION",
+                                "group": null,
+                                "value": "3.0",
+                                "serialized": "VERSION:3.0\r\n"
+                            },
+                            {
+                                "name": "UID",
+                                "group": null,
+                                "value": "t1",
+                                "serialized": "UID:t1\r\n"
+                            },
+                            {
+                                "name": "FN",
+                                "group": null,
+                                "value": "Tiago Souza",
+                                "serialized": "FN:Tiago Souza\r\n"
+                            },
+                            {
+                                "name": "TEL",
+                                "group": null,
+                                "value": "+55 11 91111-1111",
+                                "serialized": "TEL:+55 11 91111-1111\r\n"
+                            },
+                            {
+                                "name": "TITLE",
+                                "group": null,
+                                "value": "Chefe",
+                                "serialized": "TITLE:Chefe\r\n"
+                            }
+                        ],
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nTITLE:Chefe\r\nEND:VCARD\r\n"
+                    },
+                    "shared": [
+                        {
+                            "requiresConfirmation": true,
+                            "scope": "shared",
+                            "owner": "bob",
+                            "ownerDisplayName": "Bob Silva",
+                            "resource": "Equipe",
+                            "message": "The calendar 'Equipe' belongs to Bob Silva and is shared with you. Changes affect other people. Confirm with the user before continuing and repeat the call with confirm_shared: true."
+                        }
+                    ],
+                    "recoverable": false,
+                    "consequence": "Contacts have no native trash or edit history; review the changes carefully."
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_edit_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/team/",
+                "uri": "t1.vcf",
+                "title": "Chefe",
+                "confirm": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Confirm the change to the shared collection with confirm_shared=true.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_edit_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/team/",
+                "uri": "t1.vcf",
+                "title": "Chefe",
+                "confirm": true,
+                "confirm_shared": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uid\": \"t1\",\n    \"name\": \"Tiago Souza\",\n    \"organization\": \"\",\n    \"title\": \"Chefe\",\n    \"note\": \"\",\n    \"url\": \"\",\n    \"emails\": [],\n    \"phones\": [\n        \"+55 11 91111-1111\"\n    ],\n    \"properties\": [\n        {\n            \"name\": \"VERSION\",\n            \"group\": null,\n            \"value\": \"3.0\",\n            \"serialized\": \"VERSION:3.0\\r\\n\"\n        },\n        {\n            \"name\": \"UID\",\n            \"group\": null,\n            \"value\": \"t1\",\n            \"serialized\": \"UID:t1\\r\\n\"\n        },\n        {\n            \"name\": \"FN\",\n            \"group\": null,\n            \"value\": \"Tiago Souza\",\n            \"serialized\": \"FN:Tiago Souza\\r\\n\"\n        },\n        {\n            \"name\": \"TEL\",\n            \"group\": null,\n            \"value\": \"+55 11 91111-1111\",\n            \"serialized\": \"TEL:+55 11 91111-1111\\r\\n\"\n        },\n        {\n            \"name\": \"TITLE\",\n            \"group\": null,\n            \"value\": \"Chefe\",\n            \"serialized\": \"TITLE:Chefe\\r\\n\"\n        }\n    ],\n    \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:t1\\r\\nFN:Tiago Souza\\r\\nTEL:+55 11 91111-1111\\r\\nTITLE:Chefe\\r\\nEND:VCARD\\r\\n\",\n    \"uri\": \"t1.vcf\",\n    \"etag\": \"\\\"MD5-15\\\"\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\",\n    \"status\": 204\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                "update team/t1.vcf"
+            ],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nTITLE:Chefe\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "delete": [
+        {
+            "step": "preview contacts_delete_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf"
+            },
+            "outcome": {
+                "result": {
+                    "requiresConfirmation": true,
+                    "message": "Nothing was changed. Show this plan and ask for explicit confirmation.",
+                    "action": "contacts_delete_contact",
+                    "addressbook": {
+                        "id": 1,
+                        "uri": "personal",
+                        "name": "Contatos",
+                        "ownerId": "alice",
+                        "ownerPrincipal": "principals/users/alice",
+                        "writable": true,
+                        "path": "/remote.php/dav/addressbooks/users/alice/personal/"
+                    },
+                    "etag": "\"MD5-1\"",
+                    "before": {
+                        "uid": "c1",
+                        "name": "Maria Souza",
+                        "organization": "",
+                        "title": "",
+                        "note": "",
+                        "url": "",
+                        "emails": [
+                            "maria@example.invalid"
+                        ],
+                        "phones": [],
+                        "properties": [
+                            {
+                                "name": "VERSION",
+                                "group": null,
+                                "value": "3.0",
+                                "serialized": "VERSION:3.0\r\n"
+                            },
+                            {
+                                "name": "UID",
+                                "group": null,
+                                "value": "c1",
+                                "serialized": "UID:c1\r\n"
+                            },
+                            {
+                                "name": "FN",
+                                "group": null,
+                                "value": "Maria Souza",
+                                "serialized": "FN:Maria Souza\r\n"
+                            },
+                            {
+                                "name": "EMAIL",
+                                "group": null,
+                                "value": "maria@example.invalid",
+                                "serialized": "EMAIL;TYPE=WORK:maria@example.invalid\r\n"
+                            },
+                            {
+                                "name": "X-CUSTOM",
+                                "group": null,
+                                "value": "intocado",
+                                "serialized": "X-CUSTOM;X-PARAM=keep:intocado\r\n"
+                            }
+                        ],
+                        "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                    },
+                    "after": null,
+                    "shared": [],
+                    "recoverable": false,
+                    "consequence": "PERMANENT DELETION: Nextcloud has no contact trash bin.",
+                    "permanent": true,
+                    "warning": "PERMANENT DELETION: Nextcloud has no contact trash bin.",
+                    "backup": {
+                        "required": true,
+                        "directory": "MCP backups/Contacts/Contatos",
+                        "format": "vcf",
+                        "message": "A verified vCard copy will be saved before deletion. If the backup fails, nothing will be deleted."
+                    }
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_delete_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"requiresConfirmation\": true,\n    \"message\": \"Nothing was changed. Show this plan and ask for explicit confirmation.\",\n    \"action\": \"contacts_delete_contact\",\n    \"addressbook\": {\n        \"id\": 1,\n        \"uri\": \"personal\",\n        \"name\": \"Contatos\",\n        \"ownerId\": \"alice\",\n        \"ownerPrincipal\": \"principals/users/alice\",\n        \"writable\": true,\n        \"path\": \"/remote.php/dav/addressbooks/users/alice/personal/\"\n    },\n    \"etag\": \"\\\"MD5-1\\\"\",\n    \"before\": {\n        \"uid\": \"c1\",\n        \"name\": \"Maria Souza\",\n        \"organization\": \"\",\n        \"title\": \"\",\n        \"note\": \"\",\n        \"url\": \"\",\n        \"emails\": [\n            \"maria@example.invalid\"\n        ],\n        \"phones\": [],\n        \"properties\": [\n            {\n                \"name\": \"VERSION\",\n                \"group\": null,\n                \"value\": \"3.0\",\n                \"serialized\": \"VERSION:3.0\\r\\n\"\n            },\n            {\n                \"name\": \"UID\",\n                \"group\": null,\n                \"value\": \"c1\",\n                \"serialized\": \"UID:c1\\r\\n\"\n            },\n            {\n                \"name\": \"FN\",\n                \"group\": null,\n                \"value\": \"Maria Souza\",\n                \"serialized\": \"FN:Maria Souza\\r\\n\"\n            },\n            {\n                \"name\": \"EMAIL\",\n                \"group\": null,\n                \"value\": \"maria@example.invalid\",\n                \"serialized\": \"EMAIL;TYPE=WORK:maria@example.invalid\\r\\n\"\n            },\n            {\n                \"name\": \"X-CUSTOM\",\n                \"group\": null,\n                \"value\": \"intocado\",\n                \"serialized\": \"X-CUSTOM;X-PARAM=keep:intocado\\r\\n\"\n            }\n        ],\n        \"vcard\": \"BEGIN:VCARD\\r\\nVERSION:3.0\\r\\nUID:c1\\r\\nFN:Maria Souza\\r\\nEMAIL;TYPE=WORK:maria@example.invalid\\r\\nX-CUSTOM;X-PARAM=keep:intocado\\r\\nEND:VCARD\\r\\n\"\n    },\n    \"after\": null,\n    \"shared\": [],\n    \"recoverable\": false,\n    \"consequence\": \"PERMANENT DELETION: Nextcloud has no contact trash bin.\",\n    \"permanent\": true,\n    \"warning\": \"PERMANENT DELETION: Nextcloud has no contact trash bin.\",\n    \"backup\": {\n        \"required\": true,\n        \"directory\": \"MCP backups/Contacts/Contatos\",\n        \"format\": \"vcf\",\n        \"message\": \"A verified vCard copy will be saved before deletion. If the backup fails, nothing will be deleted.\"\n    }\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_delete_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "confirm": true,
+                "etag": "\"stale\""
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "The resource has changed since the last read (etag differs); nothing was written.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_delete_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "name": "Maria Souza Lima",
+                "confirm": true,
+                "etag": "MD5-1"
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uri\": \"c1.vcf\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"deleted\": true,\n    \"permanent\": true,\n    \"recoverable\": false,\n    \"backupPath\": \"/alice/files/MCP backups/Contacts/Contatos/Maria Souza.vcf\",\n    \"message\": \"The contact was permanently deleted. Import the saved vCard through Contacts to recover it.\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                "delete personal/c1.vcf"
+            ],
+            "backups": [
+                {
+                    "user": "alice",
+                    "book": "Contatos",
+                    "name": "Maria Souza",
+                    "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                }
+            ],
+            "searches": []
+        },
+        {
+            "step": "call contacts_delete_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c2.vcf",
+                "confirm": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uri\": \"c2.vcf\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/personal/\",\n    \"deleted\": true,\n    \"permanent\": true,\n    \"recoverable\": false,\n    \"backupPath\": \"/alice/files/MCP backups/Contacts/Contatos/Carla S..vcf\",\n    \"message\": \"The contact was permanently deleted. Import the saved vCard through Contacts to recover it.\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                "delete personal/c2.vcf"
+            ],
+            "backups": [
+                {
+                    "user": "alice",
+                    "book": "Contatos",
+                    "name": "Carla S.",
+                    "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n"
+                }
+            ],
+            "searches": []
+        },
+        {
+            "step": "call contacts_delete_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/z-server-generated--system/",
+                "uri": "Database:bob.vcf",
+                "confirm": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Account contacts are read-only; ask the administrator.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_delete_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/ro/",
+                "uri": "r1.vcf",
+                "confirm": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "No access to this resource in Nextcloud.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "delete shared": [
+        {
+            "step": "call contacts_delete_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/team/",
+                "uri": "t1.vcf",
+                "confirm": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "Confirm the change to the shared collection with confirm_shared=true.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [],
+            "searches": []
+        },
+        {
+            "step": "call contacts_delete_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/team/",
+                "uri": "t1.vcf",
+                "confirm": true,
+                "confirm_shared": true
+            },
+            "outcome": {
+                "result": {
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": "{\n    \"uri\": \"t1.vcf\",\n    \"addressbook\": \"/remote.php/dav/addressbooks/users/alice/team/\",\n    \"deleted\": true,\n    \"permanent\": true,\n    \"recoverable\": false,\n    \"backupPath\": \"/alice/files/MCP backups/Contacts/Equipe/Tiago Souza.vcf\",\n    \"message\": \"The contact was permanently deleted. Import the saved vCard through Contacts to recover it.\"\n}"
+                        }
+                    ]
+                }
+            },
+            "dav": [
+                "delete team/t1.vcf"
+            ],
+            "backups": [
+                {
+                    "user": "alice",
+                    "book": "Equipe",
+                    "name": "Tiago Souza",
+                    "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                }
+            ],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": [],
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "delete when the backup fails": [
+        {
+            "step": "call contacts_delete_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "confirm": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "RuntimeException",
+                        "message": "The backup could not be verified.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [
+                {
+                    "user": "alice",
+                    "book": "Contatos",
+                    "name": "Maria Souza",
+                    "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                }
+            ],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "delete when the card changes during the backup": [
+        {
+            "step": "call contacts_delete_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "confirm": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "The resource has changed since the last read (etag differs); nothing was written.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [
+                {
+                    "user": "alice",
+                    "book": "Contatos",
+                    "name": "Maria Souza",
+                    "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                }
+            ],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nNOTE:outro cliente\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "delete when only the ETag quotes change during the backup": [
+        {
+            "step": "call contacts_delete_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "confirm": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "The resource has changed since the last read (etag differs); nothing was written.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [
+                {
+                    "user": "alice",
+                    "book": "Contatos",
+                    "name": "Maria Souza",
+                    "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                }
+            ],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "delete when the owner changes during the backup": [
+        {
+            "step": "call contacts_delete_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/team/",
+                "uri": "t1.vcf",
+                "confirm": true,
+                "confirm_shared": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "The resource has changed since the last read (etag differs); nothing was written.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [
+                {
+                    "user": "alice",
+                    "book": "Equipe",
+                    "name": "Tiago Souza",
+                    "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                }
+            ],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ],
+    "delete when the book id changes during the backup": [
+        {
+            "step": "call contacts_delete_contact",
+            "arguments": {
+                "addressbook": "/remote.php/dav/addressbooks/users/alice/personal/",
+                "uri": "c1.vcf",
+                "confirm": true
+            },
+            "outcome": {
+                "exception": [
+                    {
+                        "class": "OCA\\Mcp\\Mcp\\Tools\\Results\\ToolFailure",
+                        "message": "The resource has changed since the last read (etag differs); nothing was written.",
+                        "code": 0
+                    }
+                ]
+            },
+            "dav": [],
+            "backups": [
+                {
+                    "user": "alice",
+                    "book": "Contatos",
+                    "name": "Maria Souza",
+                    "vcard": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n"
+                }
+            ],
+            "searches": []
+        },
+        {
+            "cards": {
+                "1": {
+                    "c1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c1\r\nFN:Maria Souza\r\nEMAIL;TYPE=WORK:maria@example.invalid\r\nX-CUSTOM;X-PARAM=keep:intocado\r\nEND:VCARD\r\n",
+                    "c2.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:c2\r\nFN:Carla S.\r\nEMAIL:carla@example.invalid\r\nEND:VCARD\r\n",
+                    "bad.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nEND:VCARD\r\n"
+                },
+                "2": {
+                    "t1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:t1\r\nFN:Tiago Souza\r\nTEL:+55 11 91111-1111\r\nEND:VCARD\r\n"
+                },
+                "3": {
+                    "b1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:b1\r\nFN:Bruno\r\nNOTE:caderno quebrado\r\nEND:VCARD\r\n"
+                },
+                "4": {
+                    "r1.vcf": "BEGIN:VCARD\r\nVERSION:3.0\r\nUID:r1\r\nFN:Rita\r\nORG:Leitura\r\nEND:VCARD\r\n"
+                },
+                "5": []
+            }
+        }
+    ]
+}

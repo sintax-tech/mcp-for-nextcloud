@@ -1,0 +1,2365 @@
+{
+	"version": 1,
+	"exceptions": [
+		{
+			"rule": "external-prefix",
+			"source": "lib/Access/Policy/PolicyWriter.php",
+			"target": "Doctrine\\DBAL\\Driver\\Exception",
+			"line": 1399,
+			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
+			"expires": "RE-06d"
+		},
+		{
+			"rule": "external-prefix",
+			"source": "lib/Access/Policy/PolicyWriter.php",
+			"target": "Doctrine\\DBAL\\Driver\\Exception",
+			"line": 1462,
+			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
+			"expires": "RE-06d"
+		},
+		{
+			"rule": "external-prefix",
+			"source": "lib/Access/Policy/PolicyWriter.php",
+			"target": "Doctrine\\DBAL\\Driver\\Exception",
+			"line": 1476,
+			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
+			"expires": "RE-06d"
+		},
+		{
+			"rule": "external-prefix",
+			"source": "lib/Access/Policy/PolicyWriter.php",
+			"target": "Doctrine\\DBAL\\Exception",
+			"line": 1399,
+			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
+			"expires": "RE-06d"
+		},
+		{
+			"rule": "external-prefix",
+			"source": "lib/Access/Policy/PolicyWriter.php",
+			"target": "Doctrine\\DBAL\\Exception",
+			"line": 1467,
+			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
+			"expires": "RE-06d"
+		},
+		{
+			"rule": "external-prefix",
+			"source": "lib/Access/Policy/PolicyWriter.php",
+			"target": "Doctrine\\DBAL\\Exception",
+			"line": 1479,
+			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
+			"expires": "RE-06d"
+		},
+		{
+			"rule": "external-prefix",
+			"source": "lib/Access/Policy/PolicyWriter.php",
+			"target": "Doctrine\\DBAL\\Exception\\DeadlockException",
+			"line": 1459,
+			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
+			"expires": "RE-06d"
+		},
+		{
+			"rule": "external-prefix",
+			"source": "lib/Access/Policy/PolicyWriter.php",
+			"target": "Doctrine\\DBAL\\Exception\\DeadlockException",
+			"line": 1473,
+			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
+			"expires": "RE-06d"
+		},
+		{
+			"rule": "external-prefix",
+			"source": "lib/Access/Policy/PolicyWriter.php",
+			"target": "Doctrine\\DBAL\\Exception\\LockWaitTimeoutException",
+			"line": 1459,
+			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
+			"expires": "RE-06d"
+		},
+		{
+			"rule": "external-prefix",
+			"source": "lib/Access/Policy/PolicyWriter.php",
+			"target": "Doctrine\\DBAL\\Exception\\LockWaitTimeoutException",
+			"line": 1473,
+			"reason": "Legacy Doctrine catches move to Access/Policy/Transactions in RE-06; preserve RE-06d expiration on retarget. RE-06 may evaluate the public OCP\\DB\\Exception alternative without changing behavior here.",
+			"expires": "RE-06d"
+		},
+		{
+			"rule": "layering",
+			"source": "lib/Access/Policy/PolicyWriter.php",
+			"target": "OCA\\Mcp\\OAuth\\Storage\\OAuthStore",
+			"line": 80,
+			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
+			"expires": "RE-06d"
+		},
+		{
+			"rule": "layering",
+			"source": "lib/Mcp/Resources/ResourceRegistry.php",
+			"target": "OCA\\Mcp\\Tools\\Files\\FilesMessages",
+			"line": 254,
+			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
+			"expires": "RE-21"
+		},
+		{
+			"rule": "layering",
+			"source": "lib/Mcp/Resources/ResourceRegistry.php",
+			"target": "OCA\\Mcp\\Tools\\Files\\FilesModule",
+			"line": 51,
+			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
+			"expires": "RE-21"
+		},
+		{
+			"rule": "layering",
+			"source": "lib/Mcp/Resources/ResourceRegistry.php",
+			"target": "OCA\\Mcp\\Tools\\Files\\TextExtractor",
+			"line": 241,
+			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
+			"expires": "RE-21"
+		},
+		{
+			"rule": "layering",
+			"source": "lib/Mcp/Resources/ResourceRegistry.php",
+			"target": "OCA\\Mcp\\Tools\\Notes\\NotesMessages",
+			"line": 19,
+			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
+			"expires": "RE-13"
+		},
+		{
+			"rule": "layering",
+			"source": "lib/Mcp/Resources/ResourceRegistry.php",
+			"target": "OCA\\Mcp\\Tools\\Notes\\NotesModule",
+			"line": 20,
+			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
+			"expires": "RE-13"
+		},
+		{
+			"rule": "layering",
+			"source": "lib/Mcp/Resources/ResourceRegistry.php",
+			"target": "OCA\\Mcp\\Tools\\Notes\\NotesRepository",
+			"line": 61,
+			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
+			"expires": "RE-13"
+		},
+		{
+			"rule": "layering",
+			"source": "lib/Tools/Files/Handler/CheckoutWriteHandler.php",
+			"target": "OCA\\Mcp\\Controller\\CheckoutController",
+			"line": 182,
+			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
+			"expires": "RE-24"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Contacts/ContactAccess.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\Calendar",
+			"line": 90,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Contacts/ContactBackup.php",
+			"target": "OCA\\Mcp\\Tools\\Files\\FileBackup",
+			"line": 15,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Contacts/ContactDav.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\DavResult",
+			"line": 54,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Contacts/ContactsModule.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\Calendar",
+			"line": 397,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Contacts/ContactsModule.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\SharedGuard",
+			"line": 47,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavDispatcher.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\CapturingSapi",
+			"line": 179,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavDispatcher.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\DavResult",
+			"line": 183,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavDispatcher.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\Session",
+			"line": 43,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Contacts/Handler/CreateContactHandler.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\Calendar",
+			"line": 105,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Contacts/Handler/CreateContactHandler.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\SharedGuard",
+			"line": 48,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Deck/CardLinkPlan.php",
+			"target": "OCA\\Mcp\\Tools\\Files\\Sharing\\SharePermission",
+			"line": 71,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Notes/NoteChange.php",
+			"target": "OCA\\Mcp\\Tools\\Files\\UniqueSnippet",
+			"line": 125,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-13"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Notes/NoteChangePlan.php",
+			"target": "OCA\\Mcp\\Tools\\Files\\UnifiedDiff",
+			"line": 60,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-13"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarException",
+			"line": 154,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-20"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
+			"line": 54,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-20"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\Classification",
+			"line": 172,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-20"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\EventMapper",
+			"line": 172,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-20"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\EventRepository",
+			"line": 55,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-20"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\ScopedCalendarAccess",
+			"line": 53,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-20"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"target": "OCA\\Mcp\\Tools\\Deck\\DeckGatewayInterface",
+			"line": 52,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-20"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Talk/ReferenceLinker.php",
+			"target": "OCA\\Mcp\\Tools\\Deck\\DeckToolModule",
+			"line": 110,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-20"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/Handler/ListTasksHandler.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarException",
+			"line": 59,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/Handler/ListTasksHandler.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
+			"line": 51,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/Handler/ListTasksHandler.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\ScopedCalendarAccess",
+			"line": 50,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/Handler/ReadTaskHandler.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarException",
+			"line": 38,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/Handler/ReadTaskHandler.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\ScopedCalendarAccess",
+			"line": 33,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/ParentTitles.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\Calendar",
+			"line": 41,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/ParentTitles.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
+			"line": 28,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TaskData.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\DateInput",
+			"line": 175,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TaskHierarchy.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\Calendar",
+			"line": 129,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TaskHierarchy.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
+			"line": 45,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TaskObjects.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
+			"line": 30,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TaskParentStep.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\Calendar",
+			"line": 97,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TaskWriteFlow.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\Calendar",
+			"line": 157,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TaskWriteFlow.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarDav",
+			"line": 53,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TaskWriteFlow.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
+			"line": 52,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TaskWriteFlow.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\ScopedCalendarAccess",
+			"line": 51,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TaskWriteFlow.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\SharedGuard",
+			"line": 56,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TaskWriteFlow.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\TrashPolicy",
+			"line": 57,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TaskWriteFlow.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\TrashedObject",
+			"line": 180,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TasksModule.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarDav",
+			"line": 57,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TasksModule.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
+			"line": 55,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TasksModule.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\ScopedCalendarAccess",
+			"line": 54,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TasksModule.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\SharedGuard",
+			"line": 59,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "module-isolation",
+			"source": "lib/Tools/Tasks/TasksModule.php",
+			"target": "OCA\\Mcp\\Tools\\Calendar\\TrashPolicy",
+			"line": 60,
+			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
+			"expires": "RE-15b"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Access/Guests/GuestRestrictions.php",
+			"target": "OCA\\Guests\\AppWhitelist",
+			"line": 133,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-28"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Access/Guests/GuestRestrictions.php",
+			"target": "OCA\\Guests\\Config",
+			"line": 162,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-28"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Access/Guests/GuestRestrictions.php",
+			"target": "OCA\\Guests\\GuestManager",
+			"line": 161,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-28"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Access/Guests/GuestRestrictions.php",
+			"target": "OCA\\Guests\\RestrictionManager",
+			"line": 95,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-28"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Service/Calendar/DavCalendarSelftestReader.php",
+			"target": "OCA\\DAV\\CalDAV\\CalDavBackend",
+			"line": 31,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-16"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Calendar/DavCalendarStore.php",
+			"target": "OCA\\DAV\\CalDAV\\CalDavBackend",
+			"line": 48,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-16"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Calendar/EmbeddedCalDavServerFactory.php",
+			"target": "OCA\\DAV\\CalDAV\\EmbeddedCalDavServer",
+			"line": 29,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-16"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Calendar/EmbeddedCalDavServerFactory.php",
+			"target": "OCA\\DAV\\CalDAV\\InvitationResponse\\InvitationResponseServer",
+			"line": 31,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-16"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Calendar/EmbeddedCalDavServerFactory.php",
+			"target": "OCA\\DAV\\CalDAV\\Schedule\\IMipPlugin",
+			"line": 33,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-16"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/DavContactStore.php",
+			"target": "OCA\\DAV\\CardDAV\\CardDavBackend",
+			"line": 31,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\AppInfo\\PluginManager",
+			"line": 83,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\CalDAV\\Auth\\CustomPrincipalPlugin",
+			"line": 64,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\CardDAV\\HasPhotoPlugin",
+			"line": 75,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\CardDAV\\ImageExportPlugin",
+			"line": 76,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\CardDAV\\MultiGetExportPlugin",
+			"line": 74,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\CardDAV\\PhotoCache",
+			"line": 76,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\CardDAV\\Plugin",
+			"line": 72,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\CardDAV\\Security\\CardDavRateLimitingPlugin",
+			"line": 77,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\CardDAV\\Validation\\CardDavValidatePlugin",
+			"line": 78,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\Connector\\Sabre\\CachingTree",
+			"line": 55,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\Connector\\Sabre\\DavAclPlugin",
+			"line": 66,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\Connector\\Sabre\\ExceptionLoggerPlugin",
+			"line": 70,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\Connector\\Sabre\\LockPlugin",
+			"line": 69,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\Connector\\Sabre\\MaintenancePlugin",
+			"line": 62,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\Connector\\Sabre\\Server",
+			"line": 55,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\Events\\SabrePluginAuthInitEvent",
+			"line": 65,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Contacts/EmbeddedCardDavServer.php",
+			"target": "OCA\\DAV\\RootCollection",
+			"line": 54,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/BoardRecipientResolver.php",
+			"target": "OCA\\Deck\\Db\\Acl",
+			"line": 113,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/BoardRecipientResolver.php",
+			"target": "OCA\\Deck\\NoPermissionException",
+			"line": 129,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/CardCriteria.php",
+			"target": "OCA\\Deck\\Db\\Acl",
+			"line": 113,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/CardCriteria.php",
+			"target": "OCA\\Deck\\Db\\Card",
+			"line": 140,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/CardFormatter.php",
+			"target": "OCA\\Deck\\Db\\Board",
+			"line": 54,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/CardFormatter.php",
+			"target": "OCA\\Deck\\Db\\Card",
+			"line": 149,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/CardFormatter.php",
+			"target": "OCA\\Deck\\Db\\Stack",
+			"line": 69,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/CardLinkPolicy.php",
+			"target": "OCA\\Guests\\GuestManager",
+			"line": 70,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/CardReferenceFilter.php",
+			"target": "OCA\\Deck\\Db\\Acl",
+			"line": 103,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/CardReferenceFilter.php",
+			"target": "OCA\\Deck\\Db\\Card",
+			"line": 91,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/CardReferenceFilter.php",
+			"target": "OCA\\Deck\\Db\\CardMapper",
+			"line": 102,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/CardReferenceFilter.php",
+			"target": "OCA\\Deck\\Db\\Stack",
+			"line": 121,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/CardReferenceFilter.php",
+			"target": "OCA\\Deck\\Db\\StackMapper",
+			"line": 122,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/CardReferenceFilter.php",
+			"target": "OCA\\Deck\\NoPermissionException",
+			"line": 63,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/CardReferenceFilter.php",
+			"target": "OCA\\Deck\\Service\\PermissionService",
+			"line": 103,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckCapabilities.php",
+			"target": "OCA\\Deck\\Db\\Card",
+			"line": 51,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckCapabilities.php",
+			"target": "OCA\\Deck\\Db\\CardMapper",
+			"line": 51,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckCapabilities.php",
+			"target": "OCA\\Deck\\Service\\CardService",
+			"line": 50,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckCardFileGateway.php",
+			"target": "OCA\\Deck\\Db\\Acl",
+			"line": 51,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckCardFileGateway.php",
+			"target": "OCA\\Deck\\Db\\Card",
+			"line": 32,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckCardFileGateway.php",
+			"target": "OCA\\Deck\\Db\\CardMapper",
+			"line": 51,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckCardFileGateway.php",
+			"target": "OCA\\Deck\\NoPermissionException",
+			"line": 110,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckCardFileGateway.php",
+			"target": "OCA\\Deck\\Service\\AttachmentService",
+			"line": 134,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckCardFileGateway.php",
+			"target": "OCA\\Deck\\Service\\PermissionService",
+			"line": 51,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckCardFileGateway.php",
+			"target": "OCA\\Deck\\Sharing\\DeckShareProvider",
+			"line": 107,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckDependencyGateway.php",
+			"target": "OCA\\Deck\\Db\\Acl",
+			"line": 74,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckDependencyGateway.php",
+			"target": "OCA\\Deck\\Db\\Card",
+			"line": 38,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckDependencyGateway.php",
+			"target": "OCA\\Deck\\Db\\CardMapper",
+			"line": 74,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckDependencyGateway.php",
+			"target": "OCA\\Deck\\NoPermissionException",
+			"line": 77,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckDependencyGateway.php",
+			"target": "OCA\\Deck\\Service\\CardService",
+			"line": 121,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckDependencyGateway.php",
+			"target": "OCA\\Deck\\Service\\PermissionService",
+			"line": 74,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckErrors.php",
+			"target": "OCA\\Deck\\ArchivedItemException",
+			"line": 37,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckErrors.php",
+			"target": "OCA\\Deck\\BadRequestException",
+			"line": 41,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckErrors.php",
+			"target": "OCA\\Deck\\Exceptions\\ConflictException",
+			"line": 33,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckErrors.php",
+			"target": "OCA\\Deck\\NoPermissionException",
+			"line": 28,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckErrors.php",
+			"target": "OCA\\Deck\\StatusException",
+			"line": 37,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckFailureLog.php",
+			"target": "OCA\\Deck\\ArchivedItemException",
+			"line": 35,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckFailureLog.php",
+			"target": "OCA\\Deck\\Exceptions\\ConflictException",
+			"line": 36,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckFailureLog.php",
+			"target": "OCA\\Deck\\NoPermissionException",
+			"line": 34,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckGatewayInterface.php",
+			"target": "OCA\\Deck\\Db\\Assignment",
+			"line": 445,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckGatewayInterface.php",
+			"target": "OCA\\Deck\\Db\\Board",
+			"line": 475,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckGatewayInterface.php",
+			"target": "OCA\\Deck\\Db\\Card",
+			"line": 443,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckGatewayInterface.php",
+			"target": "OCA\\Deck\\Db\\Label",
+			"line": 137,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckGatewayInterface.php",
+			"target": "OCA\\Deck\\Db\\Stack",
+			"line": 473,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckLabelGateway.php",
+			"target": "OCA\\Deck\\Db\\Acl",
+			"line": 67,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckLabelGateway.php",
+			"target": "OCA\\Deck\\Db\\Board",
+			"line": 47,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckLabelGateway.php",
+			"target": "OCA\\Deck\\Db\\CardMapper",
+			"line": 64,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckLabelGateway.php",
+			"target": "OCA\\Deck\\Db\\Label",
+			"line": 31,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckLabelGateway.php",
+			"target": "OCA\\Deck\\Db\\LabelMapper",
+			"line": 86,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckLabelGateway.php",
+			"target": "OCA\\Deck\\Db\\Stack",
+			"line": 80,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckLabelGateway.php",
+			"target": "OCA\\Deck\\Db\\StackMapper",
+			"line": 81,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckLabelGateway.php",
+			"target": "OCA\\Deck\\NoPermissionException",
+			"line": 49,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckLabelGateway.php",
+			"target": "OCA\\Deck\\Service\\CardService",
+			"line": 132,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckLabelGateway.php",
+			"target": "OCA\\Deck\\Service\\PermissionService",
+			"line": 65,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckRecipientDirectory.php",
+			"target": "OCA\\Circles\\Model\\Member",
+			"line": 132,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckRecipientDirectory.php",
+			"target": "OCA\\Deck\\Db\\Acl",
+			"line": 43,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckRecipientDirectory.php",
+			"target": "OCA\\Deck\\Db\\AclMapper",
+			"line": 46,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckRecipientDirectory.php",
+			"target": "OCA\\Deck\\Service\\CirclesService",
+			"line": 106,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceContext.php",
+			"target": "OCA\\Deck\\Service\\BoardService",
+			"line": 51,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\Db\\Acl",
+			"line": 884,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\Db\\Assignment",
+			"line": 280,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\Db\\AssignmentMapper",
+			"line": 924,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\Db\\Board",
+			"line": 876,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\Db\\BoardMapper",
+			"line": 809,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\Db\\Card",
+			"line": 1032,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\Db\\CardMapper",
+			"line": 1000,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\Db\\Stack",
+			"line": 774,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\Db\\StackMapper",
+			"line": 1013,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\Model\\OptionalNullableValue",
+			"line": 355,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\NoPermissionException",
+			"line": 972,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\Service\\AssignmentService",
+			"line": 283,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\Service\\BoardService",
+			"line": 976,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\Service\\CardService",
+			"line": 405,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\Service\\PermissionService",
+			"line": 870,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckServiceGateway.php",
+			"target": "OCA\\Deck\\Service\\StackService",
+			"line": 632,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-26"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckToolModule.php",
+			"target": "OCA\\Deck\\Db\\Card",
+			"line": 871,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DeckToolModule.php",
+			"target": "OCA\\Deck\\Db\\Stack",
+			"line": 798,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/DependencyNodeSource.php",
+			"target": "OCA\\Deck\\Db\\Card",
+			"line": 14,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/Handler/AbstractHandler.php",
+			"target": "OCA\\Deck\\Db\\Assignment",
+			"line": 212,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/Handler/AbstractHandler.php",
+			"target": "OCA\\Deck\\Db\\Stack",
+			"line": 231,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/Handler/CreateBoardHandler.php",
+			"target": "OCA\\Deck\\Db\\Board",
+			"line": 102,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/Handler/EditCardHandler.php",
+			"target": "OCA\\Deck\\Db\\Acl",
+			"line": 170,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/Handler/EditCardHandler.php",
+			"target": "OCA\\Deck\\Db\\Card",
+			"line": 214,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/Handler/FollowupCardsHandler.php",
+			"target": "OCA\\Deck\\Db\\Card",
+			"line": 97,
+			"reason": "Move this native-app PHPDoc type behind the Deck Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/Handler/ListBoardsHandler.php",
+			"target": "OCA\\Deck\\Db\\Board",
+			"line": 58,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/Handler/ListCardsHandler.php",
+			"target": "OCA\\Deck\\Db\\Card",
+			"line": 65,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/Handler/ListStacksHandler.php",
+			"target": "OCA\\Deck\\Db\\Stack",
+			"line": 59,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Deck/NativeCardFileLink.php",
+			"target": "OCA\\Deck\\Sharing\\DeckShareProvider",
+			"line": 49,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-27"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Files/Deletion/DeleteBackendGate.php",
+			"target": "OCA\\Files_Trashbin\\Storage",
+			"line": 69,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-22"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Files/Deletion/DeleteBackendGate.php",
+			"target": "OCA\\Files_Trashbin\\Trash\\ITrashManager",
+			"line": 66,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-22"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Files/Deletion/DeleteBackendGate.php",
+			"target": "OCA\\Files_Trashbin\\Trash\\LegacyTrashBackend",
+			"line": 68,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-22"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Files/Deletion/DeleteTrashVeto.php",
+			"target": "OCA\\Files_Trashbin\\Events\\MoveToTrashEvent",
+			"line": 35,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-22"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Files/Deletion/TrashReceiptVerifier.php",
+			"target": "OCA\\Files_Trashbin\\Trash\\ITrashManager",
+			"line": 23,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-22"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Files/MoveReport.php",
+			"target": "OCA\\Files_Versions\\Versions\\IVersionManager",
+			"line": 22,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-23"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Files/VersionRestore.php",
+			"target": "OCA\\Files_Versions\\Versions\\IVersionManager",
+			"line": 42,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-21"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Files/VersionTools.php",
+			"target": "OCA\\Files_Versions\\Versions\\IVersionManager",
+			"line": 38,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-21"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Creation/CreateFormReadback.php",
+			"target": "OCA\\Forms\\Constants",
+			"line": 29,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Creation/CreateFormReadback.php",
+			"target": "OCA\\Forms\\Db\\Form",
+			"line": 33,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Creation/CreateNativeArguments.php",
+			"target": "OCA\\Forms\\Db\\AnswerMapper",
+			"line": 23,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Creation/CreateNativeArguments.php",
+			"target": "OCA\\Forms\\Db\\OptionMapper",
+			"line": 26,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Creation/CreateNativeArguments.php",
+			"target": "OCA\\Forms\\Db\\QuestionMapper",
+			"line": 22,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Creation/CreateNativeArguments.php",
+			"target": "OCA\\Forms\\Db\\ShareMapper",
+			"line": 51,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Creation/CreateNativeArguments.php",
+			"target": "OCA\\Forms\\Db\\SubmissionMapper",
+			"line": 22,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Creation/CreateNativeArguments.php",
+			"target": "OCA\\Forms\\Db\\UploadedFileMapper",
+			"line": 23,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Creation/CreateNativeArguments.php",
+			"target": "OCA\\Forms\\Service\\ConfirmationEmailService",
+			"line": 47,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Creation/CreateNativeThrottle.php",
+			"target": "OCA\\Forms\\Exception\\NoSuchFormException",
+			"line": 32,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Creation/FormsCreateNativeFactory.php",
+			"target": "OCA\\Forms\\Controller\\ApiController",
+			"line": 41,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Creation/FormsCreateNativeFactory.php",
+			"target": "OCA\\Forms\\Helper\\FilePathHelper",
+			"line": 41,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Creation/FormsCreateNativeFactory.php",
+			"target": "OCA\\Forms\\Service\\ConfigService",
+			"line": 37,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Creation/FormsCreateNativeFactory.php",
+			"target": "OCA\\Forms\\Service\\SubmissionService",
+			"line": 39,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Discovery/FormCandidates.php",
+			"target": "OCA\\Forms\\Db\\Form",
+			"line": 21,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Discovery/FormListOrder.php",
+			"target": "OCA\\Forms\\Db\\Form",
+			"line": 28,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Discovery/FormReauthorizer.php",
+			"target": "OCA\\Forms\\Db\\Form",
+			"line": 22,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Editing/EditNativeFactory.php",
+			"target": "OCA\\Forms\\Controller\\ApiController",
+			"line": 38,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Editing/EditNativeFactory.php",
+			"target": "OCA\\Forms\\Db\\ShareMapper",
+			"line": 38,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Editing/EditNativeFactory.php",
+			"target": "OCA\\Forms\\Service\\ConfigService",
+			"line": 34,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Editing/EditNativeFactory.php",
+			"target": "OCA\\Forms\\Service\\SubmissionService",
+			"line": 36,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Editing/EditState.php",
+			"target": "OCA\\Forms\\Constants",
+			"line": 24,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Editing/EditState.php",
+			"target": "OCA\\Forms\\Db\\Form",
+			"line": 25,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/FormsCalls.php",
+			"target": "OCA\\Forms\\Exception\\NoSuchFormException",
+			"line": 24,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/FormsIdentityProbe.php",
+			"target": "OCA\\Forms\\Constants",
+			"line": 37,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/FormsIdentityProbe.php",
+			"target": "OCA\\Forms\\Db\\Form",
+			"line": 33,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/FormsServices.php",
+			"target": "OCA\\Forms\\Db\\FormMapper",
+			"line": 21,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/FormsServices.php",
+			"target": "OCA\\Forms\\Service\\FormsService",
+			"line": 20,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Handler/ReadFormHandler.php",
+			"target": "OCA\\Forms\\Constants",
+			"line": 35,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Handler/ReadFormHandler.php",
+			"target": "OCA\\Forms\\Db\\Form",
+			"line": 36,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Links/FormDirectLinks.php",
+			"target": "OCA\\Forms\\Constants",
+			"line": 30,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Links/FormDirectLinks.php",
+			"target": "OCA\\Forms\\Db\\Form",
+			"line": 28,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Links/PublicLinkShaper.php",
+			"target": "OCA\\Forms\\Constants",
+			"line": 31,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Results/AnswerShape.php",
+			"target": "OCA\\Forms\\Db\\Answer",
+			"line": 27,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Results/ResultsAccess.php",
+			"target": "OCA\\Forms\\Constants",
+			"line": 32,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Results/ResultsAccess.php",
+			"target": "OCA\\Forms\\Db\\Form",
+			"line": 31,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Results/ResultsReadFlow.php",
+			"target": "OCA\\Forms\\Exception\\NoSuchFormException",
+			"line": 71,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Results/ResultsSchema.php",
+			"target": "OCA\\Forms\\Db\\Option",
+			"line": 34,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Results/ResultsSchema.php",
+			"target": "OCA\\Forms\\Db\\Question",
+			"line": 28,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Results/SubmissionReads.php",
+			"target": "OCA\\Forms\\Db\\AnswerMapper",
+			"line": 28,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Results/SubmissionReads.php",
+			"target": "OCA\\Forms\\Db\\OptionMapper",
+			"line": 28,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Results/SubmissionReads.php",
+			"target": "OCA\\Forms\\Db\\QuestionMapper",
+			"line": 28,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Results/SubmissionReads.php",
+			"target": "OCA\\Forms\\Db\\Submission",
+			"line": 62,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Results/SubmissionReads.php",
+			"target": "OCA\\Forms\\Db\\SubmissionMapper",
+			"line": 28,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Results/SubmissionShape.php",
+			"target": "OCA\\Forms\\Db\\Answer",
+			"line": 31,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Structure/FormFieldWhitelist.php",
+			"target": "OCA\\Forms\\Constants",
+			"line": 37,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Forms/Structure/FormFieldWhitelist.php",
+			"target": "OCA\\Forms\\Db\\Form",
+			"line": 32,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-18"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\AddressList",
+			"line": 66,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\Db\\LocalMessage",
+			"line": 63,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\Db\\MailboxMapper",
+			"line": 33,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\Db\\MessageMapper",
+			"line": 36,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\Events\\MessageDeletedEvent",
+			"line": 51,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\Events\\MessageFlaggedEvent",
+			"line": 48,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\Exception\\ClientException",
+			"line": 78,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\IMAP\\IMAPClientFactory",
+			"line": 42,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\IMAP\\MessageMapper",
+			"line": 45,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\IMAP\\Search\\Provider",
+			"line": 69,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\Model\\NewMessageData",
+			"line": 57,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\Service\\AccountService",
+			"line": 30,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\Service\\MailManager",
+			"line": 39,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\Service\\MailTransmission",
+			"line": 54,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\Service\\OutboxService",
+			"line": 60,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\Service\\Search\\Flag",
+			"line": 75,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Mail/MailServices.php",
+			"target": "OCA\\Mail\\Service\\Search\\SearchQuery",
+			"line": 72,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-25"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Notes/NotesModule.php",
+			"target": "OCA\\Files_Trashbin\\Storage",
+			"line": 52,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-13"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/Create/CreateSurface.php",
+			"target": "OCA\\Polls\\Db\\PollMapper",
+			"line": 20,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/Create/CreateSurface.php",
+			"target": "OCA\\Polls\\Db\\UserMapper",
+			"line": 20,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/Create/CreateSurface.php",
+			"target": "OCA\\Polls\\Db\\VoteMapper",
+			"line": 20,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/Create/CreateSurface.php",
+			"target": "OCA\\Polls\\Model\\Settings\\AppSettings",
+			"line": 15,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/Create/CreateSurface.php",
+			"target": "OCA\\Polls\\Model\\SimpleOption",
+			"line": 17,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsCalls.php",
+			"target": "OCA\\Polls\\Exceptions\\ForbiddenException",
+			"line": 19,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsCalls.php",
+			"target": "OCA\\Polls\\Exceptions\\NotFoundException",
+			"line": 20,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsContentSurface.php",
+			"target": "OCA\\Polls\\Db\\Share",
+			"line": 21,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsContentSurface.php",
+			"target": "OCA\\Polls\\Db\\Vote",
+			"line": 19,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsContentSurface.php",
+			"target": "OCA\\Polls\\Model\\User\\Anon",
+			"line": 17,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsContentSurface.php",
+			"target": "OCA\\Polls\\Service\\ShareService",
+			"line": 15,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsContentSurface.php",
+			"target": "OCA\\Polls\\Service\\VoteService",
+			"line": 13,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsSurface.php",
+			"target": "OCA\\Polls\\Db\\Option",
+			"line": 24,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsSurface.php",
+			"target": "OCA\\Polls\\Db\\OptionMapper",
+			"line": 32,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsSurface.php",
+			"target": "OCA\\Polls\\Db\\Poll",
+			"line": 22,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsSurface.php",
+			"target": "OCA\\Polls\\Db\\PollMapper",
+			"line": 32,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsSurface.php",
+			"target": "OCA\\Polls\\Helper\\Container",
+			"line": 28,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsSurface.php",
+			"target": "OCA\\Polls\\Model\\UserBase",
+			"line": 26,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsSurface.php",
+			"target": "OCA\\Polls\\Service\\OptionService",
+			"line": 20,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsSurface.php",
+			"target": "OCA\\Polls\\Service\\PollService",
+			"line": 18,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsSurface.php",
+			"target": "OCA\\Polls\\Service\\VoteService",
+			"line": 33,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Polls/PollsSurface.php",
+			"target": "OCA\\Polls\\UserSession",
+			"line": 16,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-19"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Tables/TablesCalls.php",
+			"target": "OCA\\Tables\\Errors\\NotFoundError",
+			"line": 21,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-17"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Tables/TablesCalls.php",
+			"target": "OCA\\Tables\\Errors\\PermissionError",
+			"line": 22,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-17"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Tables/TablesServices.php",
+			"target": "OCA\\Tables\\AppInfo\\Application",
+			"line": 59,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-17"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Tables/TablesServices.php",
+			"target": "OCA\\Tables\\Db\\ColumnMapper",
+			"line": 44,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-17"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Tables/TablesServices.php",
+			"target": "OCA\\Tables\\Db\\Row2Mapper",
+			"line": 41,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-17"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Tables/TablesServices.php",
+			"target": "OCA\\Tables\\Db\\TableMapper",
+			"line": 53,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-17"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Tables/TablesServices.php",
+			"target": "OCA\\Tables\\Db\\ViewMapper",
+			"line": 50,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-17"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Tables/TablesServices.php",
+			"target": "OCA\\Tables\\Helper\\ColumnsHelper",
+			"line": 56,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-17"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Tables/TablesServices.php",
+			"target": "OCA\\Tables\\Service\\ColumnService",
+			"line": 32,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-17"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Tables/TablesServices.php",
+			"target": "OCA\\Tables\\Service\\ContextService",
+			"line": 38,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-17"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Tables/TablesServices.php",
+			"target": "OCA\\Tables\\Service\\PermissionsService",
+			"line": 35,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-17"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Tables/TablesServices.php",
+			"target": "OCA\\Tables\\Service\\RowService",
+			"line": 47,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-17"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Tables/TablesServices.php",
+			"target": "OCA\\Tables\\Service\\TableService",
+			"line": 26,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-17"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Tables/TablesServices.php",
+			"target": "OCA\\Tables\\Service\\ViewService",
+			"line": 29,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-17"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Talk/TalkServices.php",
+			"target": "OCA\\Talk\\Chat\\ChatManager",
+			"line": 24,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-20"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Talk/TalkServices.php",
+			"target": "OCA\\Talk\\Manager",
+			"line": 23,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-20"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Talk/TalkServices.php",
+			"target": "OCA\\Talk\\Model\\Attendee",
+			"line": 27,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-20"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Talk/TalkServices.php",
+			"target": "OCA\\Talk\\Room",
+			"line": 28,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-20"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Talk/TalkServices.php",
+			"target": "OCA\\Talk\\Service\\ParticipantService",
+			"line": 25,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-20"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Talk/TalkServices.php",
+			"target": "OCA\\Talk\\Service\\RoomService",
+			"line": 26,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-20"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Talk/TalkServices.php",
+			"target": "OCA\\Talk\\Webinary",
+			"line": 29,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-20"
+		},
+		{
+			"rule": "native-app",
+			"source": "lib/Tools/Tasks/DavTaskStore.php",
+			"target": "OCA\\DAV\\CalDAV\\CalDavBackend",
+			"line": 34,
+			"reason": "Move this native-app reference behind the owning module Integration boundary.",
+			"expires": "RE-15b"
+		}
+	]
+}

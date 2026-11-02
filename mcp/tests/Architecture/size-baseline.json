@@ -1,0 +1,483 @@
+{
+	"base": "46006682",
+	"limit": 300,
+	"final": [
+		{
+			"ceiling": 598,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Controller",
+				"GrantsController"
+			]
+		},
+		{
+			"ceiling": 354,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Db",
+				"GroupLifeMapper"
+			]
+		},
+		{
+			"ceiling": 471,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Db",
+				"ResourceScopeMapper"
+			]
+		},
+		{
+			"ceiling": 384,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Listener",
+				"GroupLifecycleListener"
+			]
+		},
+		{
+			"ceiling": 377,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"OAuth",
+				"OAuthStore"
+			]
+		},
+		{
+			"ceiling": 354,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"OAuth",
+				"TokenService"
+			]
+		},
+		{
+			"ceiling": 420,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Service",
+				"Calendar",
+				"CalendarSelftestService"
+			]
+		},
+		{
+			"ceiling": 484,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Service",
+				"GrantPolicy"
+			]
+		},
+		{
+			"ceiling": 547,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Service",
+				"McpProtocol"
+			]
+		},
+		{
+			"ceiling": 451,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Service",
+				"Policy",
+				"PolicyEventPayload"
+			]
+		},
+		{
+			"ceiling": 448,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Calendar",
+				"CalendarMessages"
+			]
+		},
+		{
+			"ceiling": 541,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Calendar",
+				"CalendarPlanRenderer"
+			]
+		},
+		{
+			"ceiling": 317,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Calendar",
+				"EmbeddedDavDispatcher"
+			]
+		},
+		{
+			"ceiling": 382,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Calendar",
+				"Scheduling",
+				"PlanWarnings"
+			]
+		},
+		{
+			"ceiling": 436,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Common",
+				"LockAwareWrite"
+			]
+		},
+		{
+			"ceiling": 441,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Common",
+				"OutputReferenceFilter"
+			]
+		},
+		{
+			"ceiling": 312,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Contacts",
+				"SystemContacts"
+			]
+		},
+		{
+			"ceiling": 483,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Deck",
+				"DeckGatewayInterface"
+			]
+		},
+		{
+			"ceiling": 550,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Deck",
+				"DeckMessages"
+			]
+		},
+		{
+			"ceiling": 572,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Deck",
+				"DeckPlanRenderer"
+			]
+		},
+		{
+			"ceiling": 341,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Files",
+				"FileCreation"
+			]
+		},
+		{
+			"ceiling": 310,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Logs",
+				"LogRedactor"
+			]
+		},
+		{
+			"ceiling": 364,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Tables",
+				"Write",
+				"CellValueDomain"
+			]
+		},
+		{
+			"ceiling": 377,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Talk",
+				"TalkPlanRenderer"
+			]
+		},
+		{
+			"ceiling": 386,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Tasks",
+				"TaskData"
+			]
+		},
+		{
+			"ceiling": 406,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Tasks",
+				"TasksPlanRenderer"
+			]
+		},
+		{
+			"ceiling": 414,
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"ToolGuide"
+			]
+		}
+	],
+	"transitional": [
+		{
+			"ceiling": 562,
+			"expires": "RE-24",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Controller",
+				"CheckoutController"
+			]
+		},
+		{
+			"ceiling": 1485,
+			"expires": "RE-06d",
+			"steps": [
+				{
+					"ticket": "RE-06",
+					"ceiling": 1300
+				},
+				{
+					"ticket": "RE-06b",
+					"ceiling": 900
+				},
+				{
+					"ticket": "RE-06c",
+					"ceiling": 500
+				}
+			],
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Service",
+				"Policy",
+				"PolicyWriter"
+			]
+		},
+		{
+			"ceiling": 750,
+			"expires": "RE-07",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Service",
+				"VisibilityGuard"
+			]
+		},
+		{
+			"ceiling": 505,
+			"expires": "RE-15",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Contacts",
+				"ContactsModule"
+			]
+		},
+		{
+			"ceiling": 1039,
+			"expires": "RE-26",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Deck",
+				"DeckServiceGateway"
+			]
+		},
+		{
+			"ceiling": 1092,
+			"expires": "RE-27",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Deck",
+				"DeckToolModule"
+			]
+		},
+		{
+			"ceiling": 983,
+			"expires": "RE-21c",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Files",
+				"FilesMessages"
+			]
+		},
+		{
+			"ceiling": 755,
+			"expires": "RE-21b",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Files",
+				"FilesModule"
+			]
+		},
+		{
+			"ceiling": 612,
+			"expires": "RE-21c",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Files",
+				"FilesPlanRenderer"
+			]
+		},
+		{
+			"ceiling": 312,
+			"expires": "RE-21d",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Files",
+				"Handler",
+				"ImageSearchHandler"
+			]
+		},
+		{
+			"ceiling": 448,
+			"expires": "RE-21d",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Files",
+				"ImageTools"
+			]
+		},
+		{
+			"ceiling": 1106,
+			"expires": "RE-23",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Files",
+				"Reorganization"
+			]
+		},
+		{
+			"ceiling": 554,
+			"expires": "RE-22",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Files",
+				"Sharing",
+				"ShareWriter"
+			]
+		},
+		{
+			"ceiling": 357,
+			"expires": "RE-25",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Mail",
+				"MailServices"
+			]
+		},
+		{
+			"ceiling": 627,
+			"expires": "RE-13",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Notes",
+				"NotesModule"
+			]
+		},
+		{
+			"ceiling": 547,
+			"expires": "RE-20",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Talk",
+				"Messages"
+			]
+		},
+		{
+			"ceiling": 844,
+			"expires": "RE-20",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Talk",
+				"TalkModule"
+			]
+		},
+		{
+			"ceiling": 306,
+			"expires": "RE-15b",
+			"nameParts": [
+				"OCA",
+				"Mcp",
+				"Tools",
+				"Tasks",
+				"TasksModule"
+			]
+		}
+	]
+}

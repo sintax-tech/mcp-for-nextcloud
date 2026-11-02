@@ -30,7 +30,7 @@ final class NoFileDeletionTest extends TestCase {
 	 * @return list<string> every source file of the Files module
 	 */
 	private function filesSources(): array {
-		$found = FileDeletionGuard::sources(__DIR__ . '/../../../lib/Tools/Files');
+		$found = \OCA\Mcp\Tests\Architecture\Inventory\FilesSources::all(dirname(__DIR__, 3));
 		$this->assertNotSame([], $found);
 		return $found;
 	}
@@ -40,7 +40,7 @@ final class NoFileDeletionTest extends TestCase {
 	 * and it has to sit there and nowhere else: a removal anywhere else in the module fails the test.
 	 */
 	public function testNoFilesHandlerDeletesANode(): void {
-		FileDeletionGuard::assertNoNodeDeletion($this->filesSources(), __DIR__ . '/../../../' . self::ALLOWED_EMPTY_FOLDER_REMOVAL);
+		FileDeletionGuard::assertNoNodeDeletion($this->filesSources(), \OCA\Mcp\Tests\Architecture\Inventory\FilesSources::sink(dirname(__DIR__, 3), 'OCA\\Mcp\\Tools\\Files\\Handler\\UndoBatchHandler'));
 	}
 
 	/**
@@ -50,17 +50,7 @@ final class NoFileDeletionTest extends TestCase {
 	public function testEveryUnlinkIsOverAPhpTemporaryPath(): void {
 		$sources = $this->filesSources();
 		$sources[] = (string)(new \ReflectionClass(CheckoutController::class))->getFileName();
-		foreach (array_unique($sources) as $file) {
-			if (!is_string($file) || !is_file($file)) {
-				continue;
-			}
-			$source = (string)file_get_contents($file);
-			if (!str_contains($source, 'unlink(')) {
-				continue;
-			}
-			$this->assertStringContainsString('getTemporaryFile(', $source,
-				basename($file) . ' unlinks something but never creates a temporary file');
-		}
+		\OCA\Mcp\Tests\Architecture\Inventory\FilesDeletionPolicy::assertTemporaryUnlinks(array_values(array_unique($sources)));
 	}
 
 	/**
@@ -72,13 +62,7 @@ final class NoFileDeletionTest extends TestCase {
 	 * ban keeps catching a future cleanup that would touch a file of the user.
 	 */
 	public function testBackupsAreNeverPurgedNorRotated(): void {
-		foreach ($this->filesSources() as $file) {
-			$source = (string)file_get_contents($file);
-			foreach (['purge', 'rotate', 'retention', 'prune', 'cleanup', 'cleanupBackup'] as $word) {
-				$this->assertStringNotContainsStringIgnoringCase($word, $source,
-					basename($file) . " mentions '$word'; backups are never cleaned up");
-			}
-		}
+		\OCA\Mcp\Tests\Architecture\Inventory\FilesDeletionPolicy::assertBackups($this->filesSources());
 		$this->assertTrue(class_exists(\OCA\Mcp\Tools\Files\FileBackup::class));
 	}
 

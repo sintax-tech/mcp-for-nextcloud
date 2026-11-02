@@ -398,7 +398,6 @@ final class ToolGuide {
 		}
 		return null;
 	}
-
 	/**
 	 * @param string $markdown the guide as readable markdown
 	 * @param array<string, mixed> $data the same guide as structured content

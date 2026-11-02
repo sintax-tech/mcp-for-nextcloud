@@ -107,6 +107,7 @@ final class RepositoryMoveFixture {
 			token_get_all($changed, TOKEN_PARSE);
 			$after[$path === $old ? $new : $path] = $changed;
 		}
+		$after[\OCA\Mcp\Scripts\Dev\BoundaryMoves::PATH] = \OCA\Mcp\Scripts\Dev\BoundaryMoves::retarget($before, $after, [$old => $new], [$oldClass => $newClass], $map);
 		return [$before, $after, $map, $old, $new];
 	}
 	/**

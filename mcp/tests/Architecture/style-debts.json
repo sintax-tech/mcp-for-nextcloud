@@ -1,0 +1,51 @@
+{
+    "templates/admin-backups.php": {
+        "issues": {
+            "strict_types": 1
+        },
+        "expires": "RE-28",
+        "reason": "Exact legacy style fingerprints; remove on rewrite, never extend to new code."
+    },
+    "templates/admin-file-write-policy-overview.php": {
+        "issues": {
+            "strict_types": 1
+        },
+        "expires": "RE-28",
+        "reason": "Exact legacy style fingerprints; remove on rewrite, never extend to new code."
+    },
+    "templates/admin-file-write-policy.php": {
+        "issues": {
+            "strict_types": 1
+        },
+        "expires": "RE-28",
+        "reason": "Exact legacy style fingerprints; remove on rewrite, never extend to new code."
+    },
+    "templates/admin.php": {
+        "issues": {
+            "strict_types": 1
+        },
+        "expires": "RE-28",
+        "reason": "Exact legacy style fingerprints; remove on rewrite, never extend to new code."
+    },
+    "templates/consent.php": {
+        "issues": {
+            "strict_types": 1
+        },
+        "expires": "RE-28",
+        "reason": "Exact legacy style fingerprints; remove on rewrite, never extend to new code."
+    },
+    "templates/oauth-redirect.php": {
+        "issues": {
+            "strict_types": 1
+        },
+        "expires": "RE-28",
+        "reason": "Exact legacy style fingerprints; remove on rewrite, never extend to new code."
+    },
+    "templates/personal.php": {
+        "issues": {
+            "strict_types": 1
+        },
+        "expires": "RE-28",
+        "reason": "Exact legacy style fingerprints; remove on rewrite, never extend to new code."
+    }
+}

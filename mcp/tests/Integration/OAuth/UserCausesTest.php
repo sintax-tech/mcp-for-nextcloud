@@ -17,7 +17,7 @@ use OCA\Mcp\Listener\UserCauseListener;
 use OCA\Mcp\OAuth\Storage\CredentialGeneration;
 use OCA\Mcp\OAuth\Storage\OAuthStore;
 use OCA\Mcp\OAuth\Storage\TokenHasher;
-use OCA\Mcp\OAuth\TokenService;
+use OCA\Mcp\OAuth\Tokens\TokenService;
 use OCA\Mcp\Access\Policy\CauseProcessor;
 use OCA\Mcp\Access\Policy\PolicyUnavailable;
 use OCA\Mcp\Access\Policy\PolicyWriter;

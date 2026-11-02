@@ -8,7 +8,7 @@ namespace OCA\Mcp\Tests\Unit\OAuth;
 
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 
-use OCA\Mcp\OAuth\UserRevocationListener;
+use OCA\Mcp\OAuth\Revocation\UserRevocationListener;
 use OCA\Mcp\Access\Policy\CauseProcessor;
 use OCA\Mcp\Access\Policy\PolicyWriter;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;

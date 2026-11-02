@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\OAuth;
+namespace OCA\Mcp\OAuth\Tokens;
 
 /** The owner of a credential is gone, disabled or no longer allowed to connect, as read in the external phase. */
 final class OwnerNotUsable extends \RuntimeException {

@@ -9,10 +9,10 @@ namespace OCA\Mcp\Controller;
 
 use InvalidArgumentException;
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\OAuth\ClientMetadataFetcher;
-use OCA\Mcp\OAuth\CustomClient;
-use OCA\Mcp\OAuth\NativeClient;
-use OCA\Mcp\OAuth\OAuthClientsService;
+use OCA\Mcp\OAuth\Clients\ClientMetadataFetcher;
+use OCA\Mcp\OAuth\Clients\CustomClient;
+use OCA\Mcp\OAuth\Clients\NativeClient;
+use OCA\Mcp\OAuth\Clients\OAuthClientsService;
 use OCA\Mcp\Access\Grants\GrantMatrix;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Logs\LogsAccess;

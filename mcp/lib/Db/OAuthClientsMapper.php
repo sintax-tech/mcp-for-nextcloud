@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Db;
 
-use OCA\Mcp\OAuth\CustomClient;
-use OCA\Mcp\OAuth\NativeClient;
+use OCA\Mcp\OAuth\Clients\CustomClient;
+use OCA\Mcp\OAuth\Clients\NativeClient;
 use OCA\Mcp\Platform\Numbers\DecimalCounter;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;

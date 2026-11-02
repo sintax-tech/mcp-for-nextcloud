@@ -8,8 +8,8 @@ namespace OCA\Mcp\Tests\Integration\OAuth;
 
 use OCA\Mcp\Db\OAuthClientsMapper;
 use OCA\Mcp\Db\PolicyStateMapper;
-use OCA\Mcp\OAuth\CustomClient;
-use OCA\Mcp\OAuth\OAuthClientsService;
+use OCA\Mcp\OAuth\Clients\CustomClient;
+use OCA\Mcp\OAuth\Clients\OAuthClientsService;
 use OCA\Mcp\Tests\Integration\Support\Http;
 use OCA\Mcp\Tests\Integration\Support\LoginFactory;
 use OCA\Mcp\Access\Grants\GrantPolicy;

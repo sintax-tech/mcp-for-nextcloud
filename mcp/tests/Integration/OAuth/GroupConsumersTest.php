@@ -140,7 +140,7 @@ final class GroupConsumersTest extends OAuthAccountTestCase {
 		}];
 		Server::get(IGroupManager::class)->addBackend(new HookOnExistsGroupBackend($this->probe));
 		try {
-			Server::get(\OCA\Mcp\OAuth\TokenService::class)->consent($this->request(), $this->uid);
+			Server::get(\OCA\Mcp\OAuth\Tokens\TokenService::class)->consent($this->request(), $this->uid);
 			$this->fail('A consent issued on a group being deleted');
 		} catch (PolicyUnavailable) {
 		}

@@ -214,7 +214,7 @@ final class ScopeRoutesTest extends TestCase {
 		$grants = new \OCA\Mcp\Controller\GrantsController('mcp', $request, $this->createMock(\OCA\Mcp\Access\Grants\GrantMatrix::class),
 			$this->createMock(\OCA\Mcp\Access\Grants\GrantPolicy::class), $this->fx->userManager(), $this->createMock(\OCP\IConfig::class),
 			$this->createMock(\OCA\Mcp\Access\Logs\LogsAccess::class), $this->fx->writer(false), $this->fx->state, $session,
-				$this->createMock(\OCA\Mcp\Access\Policy\GroupGrantsService::class), $this->createMock(\OCA\Mcp\OAuth\OAuthClientsService::class));
+				$this->createMock(\OCA\Mcp\Access\Policy\GroupGrantsService::class), $this->createMock(\OCA\Mcp\OAuth\Clients\OAuthClientsService::class));
 
 		$response = $grants->undo();
 

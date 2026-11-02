@@ -67,7 +67,7 @@ final class ApplicationRegistrationTest extends TestCase {
 			$middlewares[] = [$class, $global];
 		});
 		(new \ReflectionClass(Application::class))->newInstanceWithoutConstructor()->register($context);
-		$this->assertSame([[\OCA\Mcp\OAuth\UserRevocationListener::class, 0]], $events[\OCP\User\Events\UserChangedEvent::class]);
+		$this->assertSame([[\OCA\Mcp\OAuth\Revocation\UserRevocationListener::class, 0]], $events[\OCP\User\Events\UserChangedEvent::class]);
 		// Account deletion and group removal go through recheck causes, at the default priority (never reordered).
 		foreach ([\OCP\User\Events\BeforeUserDeletedEvent::class, \OCP\User\Events\UserDeletedEvent::class,
 			\OCP\Group\Events\BeforeUserRemovedEvent::class, \OCP\Group\Events\UserRemovedEvent::class] as $event) {

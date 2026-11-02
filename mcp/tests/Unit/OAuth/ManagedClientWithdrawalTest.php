@@ -10,18 +10,18 @@ namespace OCA\Mcp\Tests\Unit\OAuth;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 
 use OCA\Mcp\Controller\OAuthController;
-use OCA\Mcp\OAuth\AccessTokenAuthenticator;
-use OCA\Mcp\OAuth\AuthorizationValidator;
-use OCA\Mcp\OAuth\ClientMetadataFetcher;
-use OCA\Mcp\OAuth\ClientResolver;
-use OCA\Mcp\OAuth\CustomClient;
-use OCA\Mcp\OAuth\NativeClient;
-use OCA\Mcp\OAuth\OAuthClientsService;
-use OCA\Mcp\OAuth\OAuthException;
-use OCA\Mcp\OAuth\ResourceUrl;
+use OCA\Mcp\OAuth\Tokens\AccessTokenAuthenticator;
+use OCA\Mcp\OAuth\Authorization\AuthorizationValidator;
+use OCA\Mcp\OAuth\Clients\ClientMetadataFetcher;
+use OCA\Mcp\OAuth\Clients\ClientResolver;
+use OCA\Mcp\OAuth\Clients\CustomClient;
+use OCA\Mcp\OAuth\Clients\NativeClient;
+use OCA\Mcp\OAuth\Clients\OAuthClientsService;
+use OCA\Mcp\OAuth\Authorization\OAuthException;
+use OCA\Mcp\OAuth\Tokens\ResourceUrl;
 use OCA\Mcp\OAuth\Storage\TokenHasher;
-use OCA\Mcp\OAuth\TokenOwnerGate;
-use OCA\Mcp\OAuth\TokenService;
+use OCA\Mcp\OAuth\Tokens\TokenOwnerGate;
+use OCA\Mcp\OAuth\Tokens\TokenService;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCP\AppFramework\Http\TemplateResponse;
@@ -187,7 +187,7 @@ final class ManagedClientWithdrawalTest extends TestCase {
 	}
 
 	private function consentCode(string $clientId, string $redirect): string {
-		return $this->tokens->consent(new \OCA\Mcp\OAuth\AuthorizationRequest(
+		return $this->tokens->consent(new \OCA\Mcp\OAuth\Authorization\AuthorizationRequest(
 			CustomClient::owns($clientId) ? CustomClient::metadata(CustomClient::find($this->table->mapper, $clientId)) : NativeClient::metadata((string)ClientResolver::nativeGeneration($this->table->mapper)),
 			$redirect, 'xyz', self::CHALLENGE, self::RESOURCE, 'mcp'), 'alice');
 	}
@@ -407,8 +407,8 @@ final class ManagedClientWithdrawalTest extends TestCase {
 		$this->data->app['mcp'][NativeClient::CONFIG_KEY] = '1';
 
 		$this->assertInstanceOf(TemplateResponse::class, $this->controller->consent($pending, 'allow'));
-		$this->assertRefused(fn () => $this->tokens->consent(new \OCA\Mcp\OAuth\AuthorizationRequest(
-			new \OCA\Mcp\OAuth\ClientMetadata($client['clientId'], 'QwenPaw', [self::URI_X], '1'), self::URI_X, 'xyz', self::CHALLENGE,
+		$this->assertRefused(fn () => $this->tokens->consent(new \OCA\Mcp\OAuth\Authorization\AuthorizationRequest(
+			new \OCA\Mcp\OAuth\Clients\ClientMetadata($client['clientId'], 'QwenPaw', [self::URI_X], '1'), self::URI_X, 'xyz', self::CHALLENGE,
 			self::RESOURCE, 'mcp'), 'alice'), 'invalid_client');
 		$this->assertSame([], $this->store->codes, 'nothing is issued after the withdrawal');
 
@@ -427,7 +427,7 @@ final class ManagedClientWithdrawalTest extends TestCase {
 		$this->clients->update((string)$this->data->revision, null, true, null);
 		$this->assertSame('consent', $this->controller->consent($pending, $decision)->getTemplateName());
 		// The same decision is taken again under the mutex, from the table: a request of generation 1 issues nothing.
-		$this->assertRefused(fn () => $this->tokens->consent(new \OCA\Mcp\OAuth\AuthorizationRequest(NativeClient::metadata('1'),
+		$this->assertRefused(fn () => $this->tokens->consent(new \OCA\Mcp\OAuth\Authorization\AuthorizationRequest(NativeClient::metadata('1'),
 			'http://localhost:53421/oauth/callback', 'xyz', self::CHALLENGE, self::RESOURCE, 'mcp'), 'alice'), 'invalid_client');
 		$this->assertSame([], $this->store->codes);
 		$this->assertSame('oauth-redirect', $this->controller->consent($this->openConsent(NativeClient::CLIENT_ID,

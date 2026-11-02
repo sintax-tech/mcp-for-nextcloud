@@ -10,9 +10,9 @@ namespace OCA\Mcp\Tests\Unit\Admin;
 use OCA\Mcp\Tests\Unit\Access\Grants\MatrixFixture;
 
 use OCA\Mcp\Controller\GrantsController;
-use OCA\Mcp\OAuth\ClientMetadataFetcher;
-use OCA\Mcp\OAuth\CustomClient;
-use OCA\Mcp\OAuth\NativeClient;
+use OCA\Mcp\OAuth\Clients\ClientMetadataFetcher;
+use OCA\Mcp\OAuth\Clients\CustomClient;
+use OCA\Mcp\OAuth\Clients\NativeClient;
 use OCP\AppFramework\Http\JSONResponse;
 use OCP\IRequest;
 use PHPUnit\Framework\TestCase;

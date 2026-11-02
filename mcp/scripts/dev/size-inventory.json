@@ -23,7 +23,6 @@
 		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckMessages","ceiling":550},
 		{"fqcn":"OCA\\Mcp\\Tools\\Deck\\DeckPlanRenderer","ceiling":572},
 		{"fqcn":"OCA\\Mcp\\Tools\\Files\\FileCreation","ceiling":341},
-		{"fqcn":"OCA\\Mcp\\Modules\\Tables\\Writing\\CellValueDomain","ceiling":364},
 		{"fqcn":"OCA\\Mcp\\Tools\\Talk\\TalkPlanRenderer","ceiling":377},
 		{"fqcn":"OCA\\Mcp\\Tools\\Tasks\\TaskData","ceiling":386},
 		{"fqcn":"OCA\\Mcp\\Tools\\Tasks\\TasksPlanRenderer","ceiling":406},

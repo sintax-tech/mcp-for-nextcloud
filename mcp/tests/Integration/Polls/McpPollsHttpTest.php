@@ -52,6 +52,8 @@ final class McpPollsHttpTest extends IntegrationTestCase {
 	/** Basic/Bearer catalogue and identical closed read shapes; whitelist and no Polls database writes. @return void */
 	public function testHttpCatalogueAclAndReadOnlyDatabase(): void {
 		$before=PollsScene::snapshot();$ids=PollsScene::ids();
+		// Only the seeded polls are configured with showResults never; polls created by other tests of the cell keep the native default.
+		$scene=array_values(array_intersect_key($ids,array_flip(['private','shared','open','hidden-options','long-text'])));
 		foreach (['basic','bearer'] as $kind) {
 			foreach (PollsScene::USERS as $actor) {
 				$response=Http::request('POST',Http::BASE.'/index.php/apps/mcp/',[
@@ -70,7 +72,7 @@ final class McpPollsHttpTest extends IntegrationTestCase {
 				foreach ($body['polls'] as $poll) {
 					$this->assertSame(['id','created','url','type','votingVariant','title','description','access','showResults','expire','isAnonymous','isRealAnonymous','isArchived','isExpired','permissions'],array_keys($poll));
 					$this->assertStringContainsString('/apps/polls/vote/'.$poll['id'],$poll['url']);
-					$this->assertSame('never',$poll['showResults']);
+					if (in_array($poll['id'],$scene,true)) {$this->assertSame('never',$poll['showResults']);}
 				}
 			}
 		}

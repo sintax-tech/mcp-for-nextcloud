@@ -37,7 +37,9 @@ final class FileSizeTest extends ArchitectureCase {
 		foreach ($live['final'] as $index => $row) {
 			if (str_ends_with($row['fqcn'], '\\GrantPolicy') || str_ends_with($row['fqcn'], '\\McpProtocol')) { $revived = $live; $revived['final'][$index]['ceiling'] = $row['ceiling'] + 1; self::assertNotSame([], $this->problems($revived)); }
 		}
-		$paths = self::json('source-size-baseline'); $paths[array_key_first($paths)]['ceiling']++;
+		self::assertSame([], SizeRules::problems(self::tree(), $live, self::json('size-baseline'), self::json('source-size-baseline'), self::tickets()));
+		$source = array_key_first(array_filter(self::tree()->files, static fn (string $path): bool => str_starts_with($path, 'src/'), ARRAY_FILTER_USE_KEY));
+		$paths = [$source => ['ceiling' => substr_count(self::tree()->files[$source], "\n"), 'expires' => 'RE-28']]; $paths[$source]['ceiling']++;
 		self::assertNotSame([], SizeRules::problems(self::tree(), $live, self::json('size-baseline'), $paths, self::tickets()));
 		foreach ([$raised, $added, $swapped, $promoted] as $mutant) { self::assertNotSame([], $this->problems($mutant)); }
 		$files = self::tree()->files; $path = self::tree()->present($live['transitional'][0]['fqcn']);

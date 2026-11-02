@@ -7,9 +7,19 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Results;
 
-use OCA\Mcp\Tools\Forms\Results\{ResultsAccess, SubmissionReads, ResultsSchema, ResultsReadFlow, SubmissionShape, AnswerShape, ResultsBudget, ResultsMessages, SubmissionCursor, SubmissionOrder};
+use OCA\Mcp\Modules\Forms\Integration\ResultsAccess;
+use OCA\Mcp\Modules\Forms\Integration\SubmissionReads;
+use OCA\Mcp\Modules\Forms\Integration\ResultsSchema;
+use OCA\Mcp\Modules\Forms\Integration\ResultsReadFlow;
+use OCA\Mcp\Modules\Forms\Integration\SubmissionShape;
+use OCA\Mcp\Modules\Forms\Integration\AnswerShape;
+use OCA\Mcp\Modules\Forms\Presentation\ResultsBudget;
+use OCA\Mcp\Modules\Forms\Presentation\ResultsMessages;
+use OCA\Mcp\Modules\Forms\Reading\SubmissionCursor;
+use OCA\Mcp\Modules\Forms\Reading\SubmissionOrder;
 use OCA\Mcp\Modules\Forms\ResultFileAccess;
-use OCA\Mcp\Tools\Forms\Handler\{ListSubmissionsHandler, ReadSubmissionHandler};
+use OCA\Mcp\Modules\Forms\Reading\ListSubmissionsHandler;
+use OCA\Mcp\Modules\Forms\Reading\ReadSubmissionHandler;
 use OCA\Mcp\Modules\Forms\Integration\FormsServices;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

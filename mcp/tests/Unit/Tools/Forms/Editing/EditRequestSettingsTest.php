@@ -7,7 +7,9 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Editing;
 
-use OCA\Mcp\Tools\Forms\Editing\{EditRequest,EditSettings,EditValues};
+use OCA\Mcp\Modules\Forms\Editing\EditRequest;
+use OCA\Mcp\Modules\Forms\Editing\EditSettings;
+use OCA\Mcp\Modules\Forms\Editing\EditValues;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
 use PHPUnit\Framework\TestCase;
 

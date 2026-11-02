@@ -90,8 +90,8 @@ final class FormsModule implements ToolModule, ToolGuideNotes, \OCA\Mcp\Mcp\Tool
 	 */
 	public function renderPlan(string $tool, array $plan): ?string {
 		return match ($tool) {
-			'forms_update_question', 'forms_update_option' => (new \OCA\Mcp\Modules\Forms\Editing\EditPlanRenderer())->render($plan),
-			default => (new \OCA\Mcp\Modules\Forms\Creation\CreateFormPlanRenderer())->render($plan),
+			'forms_update_question', 'forms_update_option' => (new \OCA\Mcp\Modules\Forms\Presentation\EditPlanRenderer())->render($plan),
+			default => (new \OCA\Mcp\Modules\Forms\Presentation\CreateFormPlanRenderer())->render($plan),
 		};
 	}
 }

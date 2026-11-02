@@ -11,12 +11,26 @@ require_once __DIR__.'/EditingFixture.php';
 
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
-use OCA\Mcp\Tools\Forms\Creation\{CreateFormContext,CreateFormFlow,CreateFormPlan,CreateFormRequest,CreateFormWriter,FormsCreateNativeFactory};
+use OCA\Mcp\Modules\Forms\Creation\CreateFormContext;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormFlow;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormPlan;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormRequest;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormWriter;
+use OCA\Mcp\Modules\Forms\Integration\FormsCreateNativeFactory;
 use OCA\Mcp\Modules\Forms\FormsModule;
-use OCA\Mcp\Tools\Forms\Handler\{CreateFormHandler,ListFormsHandler,ReadFormHandler,ListSubmissionsHandler,ReadSubmissionHandler};
+use OCA\Mcp\Modules\Forms\Creation\CreateFormHandler;
+use OCA\Mcp\Modules\Forms\Reading\ListFormsHandler;
+use OCA\Mcp\Modules\Forms\Reading\ReadFormHandler;
+use OCA\Mcp\Modules\Forms\Reading\ListSubmissionsHandler;
+use OCA\Mcp\Modules\Forms\Reading\ReadSubmissionHandler;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
-use OCA\Mcp\Tools\Forms\Editing\{EditFlow,EditNativeFactory,EditState,EditPlan,EditWriter};
-use OCA\Mcp\Tools\Forms\Handler\{EditQuestionHandler,EditOptionHandler};
+use OCA\Mcp\Modules\Forms\Editing\EditFlow;
+use OCA\Mcp\Modules\Forms\Integration\EditNativeFactory;
+use OCA\Mcp\Modules\Forms\Integration\EditState;
+use OCA\Mcp\Modules\Forms\Editing\EditPlan;
+use OCA\Mcp\Modules\Forms\Editing\EditWriter;
+use OCA\Mcp\Modules\Forms\Editing\EditQuestionHandler;
+use OCA\Mcp\Modules\Forms\Editing\EditOptionHandler;
 use PHPUnit\Framework\TestCase;
 
 /** Exercises the actual module's preview and renderer through the common readability contract. */

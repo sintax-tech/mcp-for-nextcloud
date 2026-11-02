@@ -5,7 +5,9 @@
  */
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Editing;
-use OCA\Mcp\Tools\Forms\Editing\{EditContext,EditPolicyBoundary,EditNativeFactory};
+use OCA\Mcp\Modules\Forms\Editing\EditContext;
+use OCA\Mcp\Modules\Forms\Editing\EditPolicyBoundary;
+use OCA\Mcp\Modules\Forms\Integration\EditNativeFactory;
 use OCA\Mcp\Modules\Forms\Integration\FormsServices;
 use OCA\Mcp\Access\Guests\GuestRestrictions;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

@@ -9,7 +9,11 @@ namespace OCA\Mcp\Tests\Unit\Tools\Forms\Editing;
 
 require_once __DIR__ . '/EditingFixture.php';
 require_once dirname(__DIR__) . '/Creation/NativeNoSuchFormException.php';
-use OCA\Mcp\Tools\Forms\Editing\{EditWriter, EditNativeFactory, EditState, EditPlan, EditRequest};
+use OCA\Mcp\Modules\Forms\Editing\EditWriter;
+use OCA\Mcp\Modules\Forms\Integration\EditNativeFactory;
+use OCA\Mcp\Modules\Forms\Integration\EditState;
+use OCA\Mcp\Modules\Forms\Editing\EditPlan;
+use OCA\Mcp\Modules\Forms\Editing\EditRequest;
 use OCA\Mcp\Modules\Forms\Integration\CreateNativeThrottle;
 use OCA\Mcp\Mcp\{Confirmation\PlanState, Tools\Results\ToolFailure};
 use OCA\Mcp\Tests\Unit\InMemoryConfig;

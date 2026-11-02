@@ -24,8 +24,7 @@ use OCA\Mcp\Modules\Notes\Presentation\NotesMessages;
 /**
  * Checks and lock wrapping shared by note writes.
  *
- * Create, edit, move and the module's delete path all use this implementation. The module methods that remain
- * only delegate here.
+ * The edit, move and delete handlers all use this implementation.
  */
 final class NoteWrite {
 	/**

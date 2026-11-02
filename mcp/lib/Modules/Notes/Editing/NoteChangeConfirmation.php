@@ -68,7 +68,7 @@ final class NoteChangeConfirmation {
 	}
 
 	/**
-	 * The write itself, for the module to run inside its lock check: the note is read once more right before
+	 * The write itself, for the edit handler to run inside its lock check: the note is read once more right before
 	 * putContent(), so a change since {@see self::content()} is not overwritten.
 	 *
 	 * @param Folder|null $root notes folder

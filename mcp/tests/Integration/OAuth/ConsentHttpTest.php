@@ -183,7 +183,7 @@ final class ConsentHttpTest extends OAuthAccountTestCase {
 		$this->assertTrue($written->ok(), $written->describe());
 		$this->assertSame('OAuth confirmed write', $folder->get($name)->getContent());
 
-		$connections = $this->browse('GET', $endpoint . 'api/my/connections');
+		$connections = $this->browse('GET', $endpoint . 'api/my/connections', null, ['requesttoken: ' . $csrf]);
 		$this->assertSame(200, $connections['status']);
 		$rows = json_decode($connections['body'], true, 512, JSON_THROW_ON_ERROR)['connections'];
 		$this->assertCount(1, $rows);

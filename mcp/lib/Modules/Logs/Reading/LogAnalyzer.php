@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Modules\Logs\Reading;
 
+use OCA\Mcp\Modules\Logs\LogLevels;
 use OCA\Mcp\Modules\Logs\Presentation\LogRedactor;
 
 /**
@@ -28,7 +29,7 @@ final class LogAnalyzer {
 	/** Longest signature, in characters. */
 	public const SIGNATURE_LIMIT = 200;
 	/** Level names, highest first, by the number the core writes. */
-	public const LEVELS = [4 => 'fatal', 3 => 'error', 2 => 'warning', 1 => 'info', 0 => 'debug'];
+	public const LEVELS = LogLevels::NAMES;
 	/**
 	 * Paths that name a file of somebody, under any webroot ("/nextcloud/remote.php/…"); what is kept before the fold:
 	 * - the account of a WebDAV path (files, uploads, trashbin, versions, comments, systemtags-relations);

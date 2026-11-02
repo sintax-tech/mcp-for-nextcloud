@@ -2,6 +2,9 @@
 	"base": "46006682",
 	"psr4": {"OCA\\Mcp\\": "lib/"},
 	"entries": [
+		{"path":"lib/Modules/Logs/LogLevels.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\LogLevels","target":"stays","owner":"Modules\\Logs","ticket":null},
+		{"path":"lib/Modules/Logs/Presentation/LogTextRedactor.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Presentation\\LogTextRedactor","target":"stays","owner":"Modules\\Logs","ticket":null},
+		{"path":"lib/Modules/Logs/Presentation/LogExceptionRedactor.php","fqcn":"OCA\\Mcp\\Modules\\Logs\\Presentation\\LogExceptionRedactor","target":"stays","owner":"Modules\\Logs","ticket":null},
 		{"path":"lib/Modules/Notes/Reading/NoteResourceReader.php","fqcn":"OCA\\Mcp\\Modules\\Notes\\Reading\\NoteResourceReader","target":"stays","owner":"Modules\\Notes","ticket":null},
 		{"path":"lib/Modules/Notes/NotesRegistration.php","fqcn":"OCA\\Mcp\\Modules\\Notes\\NotesRegistration","target":"stays","owner":"Modules\\Notes","ticket":null},
 		{"path":"lib/Mcp/Resources/NoteResource.php","fqcn":"OCA\\Mcp\\Mcp\\Resources\\NoteResource","target":"stays","owner":"Mcp","ticket":null},

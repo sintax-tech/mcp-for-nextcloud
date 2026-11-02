@@ -206,16 +206,6 @@
 			]
 		},
 		{
-			"ceiling": 310,
-			"nameParts": [
-				"OCA",
-				"Mcp",
-				"Tools",
-				"Logs",
-				"LogRedactor"
-			]
-		},
-		{
 			"ceiling": 364,
 			"nameParts": [
 				"OCA",

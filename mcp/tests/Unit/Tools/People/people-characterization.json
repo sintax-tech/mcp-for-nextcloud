@@ -1,0 +1,877 @@
+{
+    "cases": {
+        "users_only": {
+            "answer": {
+                "ok": [
+                    {
+                        "type": "user",
+                        "uid": "vendas",
+                        "displayName": "Vendas"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "vera",
+                        "displayName": "Vera Lima",
+                        "email": "vera@example.invalid"
+                    }
+                ],
+                "raw": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"vendas\",\n        \"displayName\": \"Vendas\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"vera\",\n        \"displayName\": \"Vera Lima\",\n        \"email\": \"vera@example.invalid\"\n    }\n]"
+            },
+            "search": [
+                "vendas",
+                [
+                    0
+                ],
+                false,
+                10,
+                0
+            ],
+            "log": []
+        },
+        "groups_asked": {
+            "answer": {
+                "ok": [
+                    {
+                        "type": "user",
+                        "uid": "vendas",
+                        "displayName": "Vendas"
+                    },
+                    {
+                        "type": "group",
+                        "id": "vendas",
+                        "displayName": "Vendas"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "vera",
+                        "displayName": "Vera Lima",
+                        "email": "vera@example.invalid"
+                    },
+                    {
+                        "type": "group",
+                        "id": "vendas-2",
+                        "displayName": "Vendas Regionais"
+                    }
+                ],
+                "raw": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"vendas\",\n        \"displayName\": \"Vendas\"\n    },\n    {\n        \"type\": \"group\",\n        \"id\": \"vendas\",\n        \"displayName\": \"Vendas\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"vera\",\n        \"displayName\": \"Vera Lima\",\n        \"email\": \"vera@example.invalid\"\n    },\n    {\n        \"type\": \"group\",\n        \"id\": \"vendas-2\",\n        \"displayName\": \"Vendas Regionais\"\n    }\n]"
+            },
+            "search": [
+                "vendas",
+                [
+                    0,
+                    1
+                ],
+                false,
+                10,
+                0
+            ],
+            "log": []
+        },
+        "groups_false_explicit": {
+            "answer": {
+                "ok": [
+                    {
+                        "type": "user",
+                        "uid": "vendas",
+                        "displayName": "Vendas"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "vera",
+                        "displayName": "Vera Lima",
+                        "email": "vera@example.invalid"
+                    }
+                ],
+                "raw": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"vendas\",\n        \"displayName\": \"Vendas\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"vera\",\n        \"displayName\": \"Vera Lima\",\n        \"email\": \"vera@example.invalid\"\n    }\n]"
+            },
+            "search": [
+                "vendas",
+                [
+                    0
+                ],
+                false,
+                10,
+                0
+            ],
+            "log": []
+        },
+        "limit_default": {
+            "answer": {
+                "ok": [
+                    {
+                        "type": "user",
+                        "uid": "u1",
+                        "displayName": "User 1"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u2",
+                        "displayName": "User 2"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u3",
+                        "displayName": "User 3"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u4",
+                        "displayName": "User 4"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u5",
+                        "displayName": "User 5"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u6",
+                        "displayName": "User 6"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u7",
+                        "displayName": "User 7"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u8",
+                        "displayName": "User 8"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u9",
+                        "displayName": "User 9"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u10",
+                        "displayName": "User 10"
+                    }
+                ],
+                "raw": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"u1\",\n        \"displayName\": \"User 1\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u2\",\n        \"displayName\": \"User 2\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u3\",\n        \"displayName\": \"User 3\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u4\",\n        \"displayName\": \"User 4\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u5\",\n        \"displayName\": \"User 5\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u6\",\n        \"displayName\": \"User 6\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u7\",\n        \"displayName\": \"User 7\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u8\",\n        \"displayName\": \"User 8\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u9\",\n        \"displayName\": \"User 9\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u10\",\n        \"displayName\": \"User 10\"\n    }\n]"
+            },
+            "search": [
+                "user",
+                [
+                    0
+                ],
+                false,
+                10,
+                0
+            ],
+            "log": []
+        },
+        "limit_one": {
+            "answer": {
+                "ok": [
+                    {
+                        "type": "user",
+                        "uid": "u1",
+                        "displayName": "User 1"
+                    }
+                ],
+                "raw": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"u1\",\n        \"displayName\": \"User 1\"\n    }\n]"
+            },
+            "search": [
+                "user",
+                [
+                    0
+                ],
+                false,
+                1,
+                0
+            ],
+            "log": []
+        },
+        "limit_max": {
+            "answer": {
+                "ok": [
+                    {
+                        "type": "user",
+                        "uid": "u1",
+                        "displayName": "User 1"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u2",
+                        "displayName": "User 2"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u3",
+                        "displayName": "User 3"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u4",
+                        "displayName": "User 4"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u5",
+                        "displayName": "User 5"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u6",
+                        "displayName": "User 6"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u7",
+                        "displayName": "User 7"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u8",
+                        "displayName": "User 8"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u9",
+                        "displayName": "User 9"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u10",
+                        "displayName": "User 10"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u11",
+                        "displayName": "User 11"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u12",
+                        "displayName": "User 12"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u13",
+                        "displayName": "User 13"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u14",
+                        "displayName": "User 14"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u15",
+                        "displayName": "User 15"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u16",
+                        "displayName": "User 16"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u17",
+                        "displayName": "User 17"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u18",
+                        "displayName": "User 18"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u19",
+                        "displayName": "User 19"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u20",
+                        "displayName": "User 20"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u21",
+                        "displayName": "User 21"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u22",
+                        "displayName": "User 22"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u23",
+                        "displayName": "User 23"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u24",
+                        "displayName": "User 24"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u25",
+                        "displayName": "User 25"
+                    }
+                ],
+                "raw": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"u1\",\n        \"displayName\": \"User 1\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u2\",\n        \"displayName\": \"User 2\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u3\",\n        \"displayName\": \"User 3\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u4\",\n        \"displayName\": \"User 4\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u5\",\n        \"displayName\": \"User 5\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u6\",\n        \"displayName\": \"User 6\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u7\",\n        \"displayName\": \"User 7\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u8\",\n        \"displayName\": \"User 8\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u9\",\n        \"displayName\": \"User 9\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u10\",\n        \"displayName\": \"User 10\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u11\",\n        \"displayName\": \"User 11\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u12\",\n        \"displayName\": \"User 12\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u13\",\n        \"displayName\": \"User 13\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u14\",\n        \"displayName\": \"User 14\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u15\",\n        \"displayName\": \"User 15\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u16\",\n        \"displayName\": \"User 16\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u17\",\n        \"displayName\": \"User 17\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u18\",\n        \"displayName\": \"User 18\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u19\",\n        \"displayName\": \"User 19\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u20\",\n        \"displayName\": \"User 20\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u21\",\n        \"displayName\": \"User 21\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u22\",\n        \"displayName\": \"User 22\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u23\",\n        \"displayName\": \"User 23\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u24\",\n        \"displayName\": \"User 24\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u25\",\n        \"displayName\": \"User 25\"\n    }\n]"
+            },
+            "search": [
+                "user",
+                [
+                    0
+                ],
+                false,
+                25,
+                0
+            ],
+            "log": []
+        },
+        "limit_zero": {
+            "answer": {
+                "refused": "invalid-argument",
+                "message": "Invalid search term or limit"
+            },
+            "search": null,
+            "log": []
+        },
+        "limit_above_max": {
+            "answer": {
+                "refused": "invalid-argument",
+                "message": "Invalid search term or limit"
+            },
+            "search": null,
+            "log": []
+        },
+        "limit_negative": {
+            "answer": {
+                "refused": "invalid-argument",
+                "message": "Invalid search term or limit"
+            },
+            "search": null,
+            "log": []
+        },
+        "query_empty": {
+            "answer": {
+                "refused": "invalid-argument",
+                "message": "Invalid search term or limit"
+            },
+            "search": null,
+            "log": []
+        },
+        "query_blank": {
+            "answer": {
+                "refused": "invalid-argument",
+                "message": "Invalid search term or limit"
+            },
+            "search": null,
+            "log": []
+        },
+        "query_one_char": {
+            "answer": {
+                "refused": "invalid-argument",
+                "message": "Invalid search term or limit"
+            },
+            "search": null,
+            "log": []
+        },
+        "query_two_chars": {
+            "answer": {
+                "ok": [
+                    {
+                        "type": "user",
+                        "uid": "u1",
+                        "displayName": "User 1"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u2",
+                        "displayName": "User 2"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u3",
+                        "displayName": "User 3"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u4",
+                        "displayName": "User 4"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u5",
+                        "displayName": "User 5"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u6",
+                        "displayName": "User 6"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u7",
+                        "displayName": "User 7"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u8",
+                        "displayName": "User 8"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u9",
+                        "displayName": "User 9"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u10",
+                        "displayName": "User 10"
+                    }
+                ],
+                "raw": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"u1\",\n        \"displayName\": \"User 1\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u2\",\n        \"displayName\": \"User 2\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u3\",\n        \"displayName\": \"User 3\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u4\",\n        \"displayName\": \"User 4\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u5\",\n        \"displayName\": \"User 5\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u6\",\n        \"displayName\": \"User 6\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u7\",\n        \"displayName\": \"User 7\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u8\",\n        \"displayName\": \"User 8\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u9\",\n        \"displayName\": \"User 9\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u10\",\n        \"displayName\": \"User 10\"\n    }\n]"
+            },
+            "search": [
+                "ab",
+                [
+                    0
+                ],
+                false,
+                10,
+                0
+            ],
+            "log": []
+        },
+        "query_padded": {
+            "answer": {
+                "ok": [
+                    {
+                        "type": "user",
+                        "uid": "u1",
+                        "displayName": "User 1"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u2",
+                        "displayName": "User 2"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u3",
+                        "displayName": "User 3"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u4",
+                        "displayName": "User 4"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u5",
+                        "displayName": "User 5"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u6",
+                        "displayName": "User 6"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u7",
+                        "displayName": "User 7"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u8",
+                        "displayName": "User 8"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u9",
+                        "displayName": "User 9"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u10",
+                        "displayName": "User 10"
+                    }
+                ],
+                "raw": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"u1\",\n        \"displayName\": \"User 1\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u2\",\n        \"displayName\": \"User 2\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u3\",\n        \"displayName\": \"User 3\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u4\",\n        \"displayName\": \"User 4\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u5\",\n        \"displayName\": \"User 5\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u6\",\n        \"displayName\": \"User 6\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u7\",\n        \"displayName\": \"User 7\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u8\",\n        \"displayName\": \"User 8\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u9\",\n        \"displayName\": \"User 9\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u10\",\n        \"displayName\": \"User 10\"\n    }\n]"
+            },
+            "search": [
+                "ab",
+                [
+                    0
+                ],
+                false,
+                10,
+                0
+            ],
+            "log": []
+        },
+        "query_100": {
+            "answer": {
+                "ok": [
+                    {
+                        "type": "user",
+                        "uid": "u1",
+                        "displayName": "User 1"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u2",
+                        "displayName": "User 2"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u3",
+                        "displayName": "User 3"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u4",
+                        "displayName": "User 4"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u5",
+                        "displayName": "User 5"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u6",
+                        "displayName": "User 6"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u7",
+                        "displayName": "User 7"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u8",
+                        "displayName": "User 8"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u9",
+                        "displayName": "User 9"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u10",
+                        "displayName": "User 10"
+                    }
+                ],
+                "raw": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"u1\",\n        \"displayName\": \"User 1\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u2\",\n        \"displayName\": \"User 2\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u3\",\n        \"displayName\": \"User 3\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u4\",\n        \"displayName\": \"User 4\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u5\",\n        \"displayName\": \"User 5\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u6\",\n        \"displayName\": \"User 6\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u7\",\n        \"displayName\": \"User 7\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u8\",\n        \"displayName\": \"User 8\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u9\",\n        \"displayName\": \"User 9\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u10\",\n        \"displayName\": \"User 10\"\n    }\n]"
+            },
+            "search": [
+                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+                [
+                    0
+                ],
+                false,
+                10,
+                0
+            ],
+            "log": []
+        },
+        "query_101": {
+            "answer": {
+                "refused": "invalid-argument",
+                "message": "Invalid search term or limit"
+            },
+            "search": null,
+            "log": []
+        },
+        "query_multibyte": {
+            "answer": {
+                "ok": [
+                    {
+                        "type": "user",
+                        "uid": "u1",
+                        "displayName": "User 1"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u2",
+                        "displayName": "User 2"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u3",
+                        "displayName": "User 3"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u4",
+                        "displayName": "User 4"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u5",
+                        "displayName": "User 5"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u6",
+                        "displayName": "User 6"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u7",
+                        "displayName": "User 7"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u8",
+                        "displayName": "User 8"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u9",
+                        "displayName": "User 9"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "u10",
+                        "displayName": "User 10"
+                    }
+                ],
+                "raw": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"u1\",\n        \"displayName\": \"User 1\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u2\",\n        \"displayName\": \"User 2\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u3\",\n        \"displayName\": \"User 3\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u4\",\n        \"displayName\": \"User 4\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u5\",\n        \"displayName\": \"User 5\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u6\",\n        \"displayName\": \"User 6\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u7\",\n        \"displayName\": \"User 7\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u8\",\n        \"displayName\": \"User 8\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u9\",\n        \"displayName\": \"User 9\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"u10\",\n        \"displayName\": \"User 10\"\n    }\n]"
+            },
+            "search": [
+                "çã",
+                [
+                    0
+                ],
+                false,
+                10,
+                0
+            ],
+            "log": []
+        },
+        "query_missing": {
+            "answer": {
+                "refused": "invalid-argument",
+                "message": "Invalid search term or limit"
+            },
+            "search": null,
+            "log": []
+        },
+        "emails": {
+            "answer": {
+                "ok": [
+                    {
+                        "type": "user",
+                        "uid": "a1",
+                        "displayName": "A One",
+                        "email": "a1@example.invalid"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "a2",
+                        "displayName": "A Two"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "a3",
+                        "displayName": "A Three"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "a4",
+                        "displayName": "A Four"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "a5",
+                        "displayName": "A Five"
+                    },
+                    {
+                        "type": "user",
+                        "uid": "a6",
+                        "displayName": "A Six"
+                    }
+                ],
+                "raw": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"a1\",\n        \"displayName\": \"A One\",\n        \"email\": \"a1@example.invalid\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"a2\",\n        \"displayName\": \"A Two\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"a3\",\n        \"displayName\": \"A Three\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"a4\",\n        \"displayName\": \"A Four\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"a5\",\n        \"displayName\": \"A Five\"\n    },\n    {\n        \"type\": \"user\",\n        \"uid\": \"a6\",\n        \"displayName\": \"A Six\"\n    }\n]"
+            },
+            "search": [
+                "aa",
+                [
+                    0
+                ],
+                false,
+                10,
+                0
+            ],
+            "log": []
+        },
+        "dedupe_and_empty_id": {
+            "answer": {
+                "ok": [
+                    {
+                        "type": "user",
+                        "uid": "x",
+                        "displayName": "X"
+                    },
+                    {
+                        "type": "group",
+                        "id": "x",
+                        "displayName": "Group X"
+                    }
+                ],
+                "raw": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"x\",\n        \"displayName\": \"X\"\n    },\n    {\n        \"type\": \"group\",\n        \"id\": \"x\",\n        \"displayName\": \"Group X\"\n    }\n]"
+            },
+            "search": [
+                "xx",
+                [
+                    0,
+                    1
+                ],
+                false,
+                10,
+                0
+            ],
+            "log": []
+        },
+        "label_falls_back_to_id": {
+            "answer": {
+                "ok": [
+                    {
+                        "type": "user",
+                        "uid": "nolabel",
+                        "displayName": "nolabel"
+                    },
+                    {
+                        "type": "group",
+                        "id": "nogroup",
+                        "displayName": "nogroup"
+                    }
+                ],
+                "raw": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"nolabel\",\n        \"displayName\": \"nolabel\"\n    },\n    {\n        \"type\": \"group\",\n        \"id\": \"nogroup\",\n        \"displayName\": \"nogroup\"\n    }\n]"
+            },
+            "search": [
+                "no",
+                [
+                    0,
+                    1
+                ],
+                false,
+                10,
+                0
+            ],
+            "log": []
+        },
+        "non_array_match_skipped": {
+            "answer": {
+                "ok": [
+                    {
+                        "type": "user",
+                        "uid": "ok",
+                        "displayName": "Ok"
+                    }
+                ],
+                "raw": "[\n    {\n        \"type\": \"user\",\n        \"uid\": \"ok\",\n        \"displayName\": \"Ok\"\n    }\n]"
+            },
+            "search": [
+                "ok",
+                [
+                    0
+                ],
+                false,
+                10,
+                0
+            ],
+            "log": []
+        },
+        "empty_result": {
+            "answer": {
+                "ok": [],
+                "raw": "[]"
+            },
+            "search": [
+                "nobody",
+                [
+                    0
+                ],
+                false,
+                10,
+                0
+            ],
+            "log": []
+        },
+        "core_failure": {
+            "answer": {
+                "refused": "other",
+                "message": "The search for people failed; try again.",
+                "kind": "ToolFailure"
+            },
+            "search": [
+                "secret-term-leak",
+                [
+                    0
+                ],
+                false,
+                10,
+                0
+            ],
+            "log": [
+                [
+                    "MCP people search failed",
+                    {
+                        "app": "mcp",
+                        "exception_class": "RuntimeException"
+                    }
+                ]
+            ]
+        },
+        "unknown_tool": {
+            "answer": {
+                "refused": "invalid-argument",
+                "message": "Unknown tool"
+            },
+            "search": null,
+            "log": []
+        }
+    },
+    "definitions": [
+        {
+            "description": "Searches the accounts of this Nextcloud by name, account ID or e-mail and returns their account IDs (uid), display names and, when available, e-mail; every row carries a type, \"user\" for an account. Use it whenever you are not sure of someone's account ID. Groups are not searched by default: to also match groups, pass include_groups: true, and the group rows come back with the type \"group\" and the group ID, which is what a share takes as group:<id>.",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "query": {
+                        "type": "string",
+                        "minLength": 2,
+                        "maxLength": 100,
+                        "description": "Name, account ID or e-mail to look for (2 to 100 characters)."
+                    },
+                    "limit": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 25,
+                        "default": 10,
+                        "description": "Maximum number of accounts returned (default 10, at most 25)."
+                    },
+                    "include_groups": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Also match groups, for sharing with a group: they come back with the type \"group\" and the group ID (default false)."
+                    }
+                },
+                "required": [
+                    "query"
+                ],
+                "additionalProperties": false
+            },
+            "module": "people",
+            "name": "users_search",
+            "operation": "read"
+        }
+    ],
+    "guide_notes": [
+        "Before acting on a person (inviting, mentioning, messaging), when the user did not give the account ID, call users_search and confirm with the user when more than one account matches. Never invent an ID.",
+        "users_search follows the sharing settings of the administrator: it may return nobody for a partial term.",
+        "To share something with a whole group, call users_search with include_groups: true and take the ID of the row whose type is \"group\": a share takes it as group:<id>. Groups are not searched without that argument, and the same administrator restrictions of accounts apply to them."
+    ]
+}

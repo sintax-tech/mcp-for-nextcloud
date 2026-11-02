@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** picker session operations.
+/** Register the picker session unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -12,12 +12,12 @@
 	let pickerCount = 0
 
 	admin.modules.picker = admin.modules.picker || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Mount picker elements with a page-unique ID and expose live selection and control state.
+	 * @param {object} context picker specification, mounted controls and live selection bindings
+	 * @return {void}
 	 */
 	admin.modules.picker.session = function (context) {
-		/**
+		/** Create a DOM element, apply its properties and append its child nodes or text.
 		 * @param {string} tag tag name
 		 * @param {object} attrs attributes; textContent sets text, and any aria-* name becomes an attribute
 		 * @param {Array<Node|string>} children
@@ -77,8 +77,9 @@
 		container.setAttribute('aria-busy', 'false')
 		container.replaceChildren(fallback, box, list)
 
-		/** @param {string} text status text for the save feedback element
-		 * @return {*} operation result
+		/** Write save feedback into the picker's optional status element.
+		 * @param {string} text status text for the save feedback element
+		 * @return {void}
 		 */
 		function setStatus(text) {
 			if (context.spec.status) {

@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** level_popover session operations.
+/** Register the level popover session unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.levelPopover = admin.modules.levelPopover || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose the active popover state and attach matrix user and grant lookups.
+	 * @param {object} context matrix and level catalogs, popover element and live active cell bindings
+	 * @return {void}
 	 */
 	admin.modules.levelPopover.session = function (context) {
 		/** Individual sources of the API; anything else is inherited. */
@@ -21,11 +21,11 @@
 		/** The open popover: {uid, module, trigger, inherited, loading, unavailable, saving}, or null. */
 		let current = null
 
-		/**
-		 * @param {*} tag operation input
-		 * @param {*} props operation input
-		 * @param {*} children operation input
-		 * @return {*} operation result
+		/** Create a DOM element, apply its properties and append its child nodes or text.
+		 * @param {string} tag HTML element tag name
+		 * @param {object} [props] DOM properties assigned to the element
+		 * @param {Array<Node|string>} [children] child nodes and text appended in order
+		 * @return {HTMLElement}
 		 */
 		function el(tag, props, children) {
 			const node = document.createElement(tag)
@@ -36,33 +36,37 @@
 			return node
 		}
 
-		/** @return {object|undefined} the user of the table on screen
-		 * @param {*} uid operation input
+		/** Find a user row in the matrix's currently loaded page.
+		 * @return {object|undefined} the user of the table on screen
+		 * @param {string} uid Nextcloud user ID
 		 */
 		function userOf(uid) {
 			return context.matrix.data()?.users.find((user) => user.uid === uid)
 		}
 
-		/** @return {string[]} the operations of a module, or ["eligible"] for "Can connect" (module null)
-		 * @param {*} module operation input
+		/** Read the module operation catalog, using eligibility for the connection cell.
+		 * @return {string[]} the operations of a module, or ["eligible"] for "Can connect" (module null)
+		 * @param {string|null} module catalog module ID, null for connection eligibility
 		 */
 		function operationsOf(module) {
 			return module === null ? ['eligible'] : context.matrix.data().catalog[module]
 		}
 
-		/** @return {boolean|null} the effective value of one operation
-		 * @param {*} user operation input
-		 * @param {*} module operation input
-		 * @param {*} operation operation input
+		/** Read a user's effective eligibility or operation value from the matrix row.
+		 * @return {boolean|null} the effective value of one operation
+		 * @param {object} user matrix user row with grants, origins and availability
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {string} operation catalog operation ID
 		 */
 		function valueOf(user, module, operation) {
 			return module === null ? user.eligible : user.grants[module][operation]
 		}
 
-		/** @return {{source: string, groupIds: string[]}} the origin of one operation
-		 * @param {*} user operation input
-		 * @param {*} module operation input
-		 * @param {*} operation operation input
+		/** Read the cell's grant origin, falling back to the default source.
+		 * @return {{source: string, groupIds: string[]}} the origin of one operation
+		 * @param {object} user matrix user row with grants, origins and availability
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {string} operation catalog operation ID
 		 */
 		function originOfCell(user, module, operation) {
 			const origin = module === null ? user.origins?.eligible : user.origins?.grants?.[module]?.[operation]

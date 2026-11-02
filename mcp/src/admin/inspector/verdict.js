@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** inspector verdict operations.
+/** Register the inspector verdict unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -10,16 +10,15 @@
 	'use strict'
 
 	admin.modules.inspector = admin.modules.inspector || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach general blocking verdicts and the matching administrator remedies.
+	 * @param {object} context inspector controls, live request sequences and attached presentation operations
+	 * @return {void}
 	 */
 	admin.modules.inspector.verdict = function (context) {
 		const GENERAL = ['account', 'service', 'eligibility', 'connection']
 
 		/**
 		 * The general check that blocks every operation, or null when none does: every operation must be blocked by it.
-		 *
 		 * @param {Array<object>} operations the operations of the answer
 		 * @return {string|null} a gate of GENERAL, or eligibility_unknown
 		 */
@@ -31,8 +30,8 @@
 		}
 
 		/** What to do about a general check that blocks, when the administrator or the person can do something.
-		 * @param {*} gate operation input
-		 * @return {*} operation result
+		 * @param {string} gate effective access blocking gate code
+		 * @return {string} translated remedy, or an empty string when none applies
 		 */
 		function remedy(gate) {
 			return {
@@ -45,7 +44,6 @@
 		/**
 		 * What the operations say once no general check blocks: the tools can be used when one operation is allowed, it is
 		 * not confirmed when none is and one cannot be read, and nothing can be used when every one is blocked.
-		 *
 		 * @param {Array<object>} operations the operations of the answer, not empty
 		 * @return {string} usable, unknown, none_granted (every one blocked by its grant) or none
 		 */
@@ -56,8 +54,8 @@
 		}
 
 		/** The verdict and the four general checks: passed, the one that blocks, or not checked after it.
-		 * @param {*} operations operation input
-		 * @return {*} operation result
+		 * @param {object[]} operations effective access rows returned by the inspector
+		 * @return {HTMLElement[]}
 		 */
 		function renderVerdict(operations) {
 			// An answer without operations confirms nothing, not even the general checks.

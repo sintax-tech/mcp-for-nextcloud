@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** level_popover entry operations.
+/** Register the level popover entry unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -10,14 +10,14 @@
 	'use strict'
 
 	admin.modules.levelPopover = admin.modules.levelPopover || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach popover placement, opening and closing while retaining the active cell.
+	 * @param {object} context matrix and level catalogs, popover element and live active cell bindings
+	 * @return {void}
 	 */
 	admin.modules.levelPopover.entry = function (context) {
 		/** Places the popover under the cell it belongs to, inside the matrix block, and brings all of it into view.
-		 * @param {*} trigger operation input
-		 * @return {*} operation result
+		 * @param {HTMLElement|null|undefined} trigger control that opened the drawer or popover and may receive focus again
+		 * @return {void}
 		 */
 		function place(trigger) {
 			const block = context.popover.offsetParent || context.popover.parentElement
@@ -32,11 +32,10 @@
 
 		/**
 		 * Opens the popover of one cell.
-		 *
 		 * @param {HTMLElement} trigger the level button of the cell
 		 * @param {string} uid user of the row
 		 * @param {string|null} module module id, null for "Can connect"
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function open(trigger, uid, module) {
 			if (context.current !== null) {
@@ -56,8 +55,9 @@
 			context.loadInherited(context.current)
 		}
 
-		/** @param {boolean} restoreFocus give the focus back to the cell that opened the popover
-		 * @return {*} operation result
+		/** Close the current preview or popover and restore focus when requested.
+		 * @param {boolean} restoreFocus give the focus back to the cell that opened the popover
+		 * @return {void}
 		 */
 		function close(restoreFocus) {
 			if (context.current === null) {

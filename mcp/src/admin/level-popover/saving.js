@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** level_popover saving operations.
+/** Register the level popover saving unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -10,15 +10,14 @@
 	'use strict'
 
 	admin.modules.levelPopover = admin.modules.levelPopover || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach command persistence, inherited value loading and matrix focus restoration.
+	 * @param {object} context matrix and level catalogs, popover element and live active cell bindings
+	 * @return {void}
 	 */
 	admin.modules.levelPopover.saving = function (context) {
 		/**
 		 * Sends the commands as one, confirming first when "Can connect" is taken away, and offers the receipt as the undo. The
 		 * matrix is reloaded afterwards with every write blocked until it is on screen.
-		 *
 		 * @param {Array<object>} commands what planLevel(), planInherit() or planOperation() returned
 		 * @param {string} message the notice that names what was saved
 		 * @return {Promise<void>}
@@ -73,9 +72,9 @@
 		}
 
 		/** Gives the focus back to the cell the popover was opened from, in the table drawn after a save.
-		 * @param {*} uid operation input
-		 * @param {*} module operation input
-		 * @return {*} operation result
+		 * @param {string} uid Nextcloud user ID
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @return {void}
 		 */
 		function focusCell(uid, module) {
 			const table = document.getElementById('mcp-matrix')
@@ -88,8 +87,8 @@
 		/**
 		 * Asks what the person inherits, read only. An answer read at another revision than the table on screen is not used,
 		 * so a level is never sent as "inherit" on the strength of a policy that is not the one shown.
-		 * @param {*} open operation input
-		 * @return {Promise<*>} operation result
+		 * @param {object} open active popover snapshot whose identity guards the pending read
+		 * @return {Promise<void>}
 		 */
 		async function loadInherited(open) {
 			const user = context.userOf(open.uid)

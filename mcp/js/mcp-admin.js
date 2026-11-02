@@ -20,7 +20,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** picker session operations.
+/** Register the picker session unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -30,12 +30,12 @@
 	let pickerCount = 0
 
 	admin.modules.picker = admin.modules.picker || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Mount picker elements with a page-unique ID and expose live selection and control state.
+	 * @param {object} context picker specification, mounted controls and live selection bindings
+	 * @return {void}
 	 */
 	admin.modules.picker.session = function (context) {
-		/**
+		/** Create a DOM element, apply its properties and append its child nodes or text.
 		 * @param {string} tag tag name
 		 * @param {object} attrs attributes; textContent sets text, and any aria-* name becomes an attribute
 		 * @param {Array<Node|string>} children
@@ -95,8 +95,9 @@
 		container.setAttribute('aria-busy', 'false')
 		container.replaceChildren(fallback, box, list)
 
-		/** @param {string} text status text for the save feedback element
-		 * @return {*} operation result
+		/** Write save feedback into the picker's optional status element.
+		 * @param {string} text status text for the save feedback element
+		 * @return {void}
 		 */
 		function setStatus(text) {
 			if (context.spec.status) {
@@ -130,7 +131,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** picker list operations.
+/** Register the picker list unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -138,18 +139,19 @@
 	'use strict'
 
 	admin.modules.picker = admin.modules.picker || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach list visibility, filtering, keyboard movement and option rendering.
+	 * @param {object} context picker specification, mounted controls and live selection bindings
+	 * @return {void}
 	 */
 	admin.modules.picker.list = function (context) {
-		/** @return {HTMLElement[]} the list items the filter currently shows */
+		/** The list items the filter currently shows.
+		 * @return {HTMLElement[]} the list items the filter currently shows */
 		function visibleItems() {
 			return Array.from(context.list.querySelectorAll('[role="option"]')).filter((item) => !item.hidden)
 		}
 
-		/**
-		 * @return {*} operation result
+		/** Show the option list when options exist and update the combobox expanded state.
+		 * @return {void}
 		 */
 		function openList() {
 			if (context.options.length === 0) {
@@ -159,8 +161,8 @@
 			context.input.setAttribute('aria-expanded', 'true')
 		}
 
-		/**
-		 * @return {*} operation result
+		/** Hide the option list and clear its active descendant and keyboard selection.
+		 * @return {void}
 		 */
 		function closeList() {
 			context.list.hidden = true
@@ -172,8 +174,9 @@
 			}
 		}
 
-		/** @param {number} delta keyboard steps within the visible options, wrapping around
-		 * @return {*} operation result
+		/** Move the active option through visible items with wraparound and scroll it into view.
+		 * @param {number} delta keyboard steps within the visible options, wrapping around
+		 * @return {void}
 		 */
 		function moveActive(delta) {
 			const items = context.visibleItems()
@@ -189,7 +192,7 @@
 		}
 
 		/** Rebuilds the option items and keeps the current filter applied.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function renderList() {
 			const activeId = context.visibleItems()[context.activeIndex]?.dataset.optionId
@@ -223,7 +226,7 @@
 		}
 
 		/** Filters with a plain substring on the labels; typing never creates an option.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function applyFilter() {
 			const query = context.input.value.trim().toLowerCase()
@@ -250,7 +253,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** picker rendering operations.
+/** Register the picker rendering unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -258,13 +261,13 @@
 	'use strict'
 
 	admin.modules.picker = admin.modules.picker || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach selected chips, fallback display and save lock presentation.
+	 * @param {object} context picker specification, mounted controls and live selection bindings
+	 * @return {void}
 	 */
 	admin.modules.picker.rendering = function (context) {
 		/** Rebuilds the chips of the selected options.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function renderChips() {
 			context.chips.replaceChildren()
@@ -292,7 +295,7 @@
 		}
 
 		/** Shows every control part, the empty text or the fallback text as the state asks.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function paint() {
 			if (context.fallbackText !== null) {
@@ -309,8 +312,9 @@
 			context.renderList()
 		}
 
-		/** @param {boolean} locked locks every control while a save runs
-		 * @return {*} operation result
+		/** Lock picker controls during persistence and update its accessible busy state.
+		 * @param {boolean} locked locks every control while a save runs
+		 * @return {void}
 		 */
 		function setBusy(locked) {
 			context.busy = locked
@@ -331,7 +335,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** picker saving operations.
+/** Register the picker saving unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -339,18 +343,17 @@
 	'use strict'
 
 	admin.modules.picker = admin.modules.picker || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach confirmed selection persistence, rollback and option toggling.
+	 * @param {object} context picker specification, mounted controls and live selection bindings
+	 * @return {void}
 	 */
 	admin.modules.picker.saving = function (context) {
 		/**
 		 * Persists a new selection: confirms first when the caller asks, locks the control, keeps the
 		 * previous state on failure and reports through the status element and the onError hook.
-		 *
 		 * @param {Set<string>} next the intended selection
 		 * @param {boolean} force permits an explicit save while the options show a fallback
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function commit(next, force = false) {
 			if (context.busy || (context.fallbackText !== null && !force)) {
@@ -395,8 +398,9 @@
 			}
 		}
 
-		/** @param {string} id option to add to or drop from the selection
-		 * @return {*} operation result
+		/** Add or remove an option from the picker selection and start its save.
+		 * @param {string} id option to add to or drop from the selection
+		 * @return {void}
 		 */
 		function toggle(id) {
 			const next = new Set(context.selected)
@@ -424,7 +428,8 @@
 (function (admin) {
 	'use strict'
 
-	/**
+	/** Mount an independent multi-select picker and return its selection and persistence controls.
+	 * @template T
 	 * @param {object} spec
 	 * @param {HTMLElement} spec.container mount point; its children are replaced by the control
 	 * @param {Array<{id: string, label: string, badge?: {text: string, title?: string, className?: string}}>} spec.options
@@ -434,18 +439,19 @@
 	 * @param {string} spec.listLabel accessible label of the listbox
 	 * @param {string} spec.emptyOptionsText shown when there are no options at all
 	 * @param {string} spec.noMatchText shown when the filter matches no option
-	 * @param {(nextIds: string[], previousIds: string[]) => Promise<*>} spec.save persists the selection
+	 * @param {(nextIds: string[], previousIds: string[]) => Promise<T>} spec.save persists the selection
 	 *        and throws on failure; any value it resolves with reaches onSaved
 	 * @param {(nextIds: string[]) => boolean|Promise<boolean>} [spec.confirmSave] a false answer cancels
 	 *        the change without an error (for example the empty-selection confirmation)
-	 * @param {(result: *) => void|Promise<void>} [spec.onSaved] runs after a successful save
-	 * @param {(error: *) => void|Promise<void>} [spec.onError] runs after a failed save; it may call
+	 * @param {(result: T) => void|Promise<void>} [spec.onSaved] runs after a successful save
+	 * @param {(error: Error) => void|Promise<void>} [spec.onError] runs after a failed save; it may call
 	 *        setOptions to resynchronize the control (for example after a conflict)
 	 * @param {(selectedIds: string[]) => void} [spec.onChange] runs whenever the shown selection changes
 	 * @param {HTMLElement} [spec.status] element that receives the saving/saved/error feedback
 	 * @param {number} [spec.clearSavedAfterMs] clears the "Saved" status after this many ms
 	 * @param {string} [spec.errorStatus] status text after a failed save (default: the "Not saved" text)
-	 * @return {*} operation result
+	 * @return {{setOptions: function(object[], string[]): void, commit: function(object=): Promise<void>,
+	 *     showFallback: function(string): void, getSelected: function(): string[]}} mounted picker controls
 	 */
 	function create(spec) {
 		const context = { spec }
@@ -520,9 +526,9 @@
 		return {
 			/**
 			 * Replaces the options and the selection, for example after a reload or a server answer.
-			 *
-			 * @param {Array} nextOptions same shape as spec.options
-			 * @param {string[]} nextSelectedIds
+			 * @param {object[]} nextOptions same shape as spec.options
+			 * @param {string[]} nextSelectedIds IDs retained when present in nextOptions
+			 * @return {void}
 			 */
 			setOptions(nextOptions, nextSelectedIds) {
 				context.options = nextOptions
@@ -533,16 +539,24 @@
 				}
 				context.paint()
 			},
-			/** Saves again; force bypasses the fallback message, keeping confirmation and locking. */
+			/** Saves again; force bypasses the fallback message, keeping confirmation and locking.
+			 * @param {{force?: boolean}} [options] explicit save options
+			 * @return {Promise<void>} resolves after the attempt or cancellation
+			 */
 			commit({ force = false } = {}) {
 				return context.commit(new Set(context.selected), force)
 			},
-			/** Shows a plain message instead of the control, for a load failure or an empty option list. */
+			/** Shows a plain message instead of the control, for a load failure or an empty option list.
+			 * @param {string} text fallback explanation
+			 * @return {void}
+			 */
 			showFallback(text) {
 				context.fallbackText = text
 				context.paint()
 			},
-			/** @return {string[]} the currently selected option ids */
+			/** Read the picker's currently selected option IDs.
+			 * @return {string[]} selected IDs in selection order
+			 */
 			getSelected() {
 				return Array.from(context.selected)
 			},
@@ -4012,7 +4026,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** level_popover session operations.
+/** Register the level popover session unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -4020,9 +4034,9 @@
 	'use strict'
 
 	admin.modules.levelPopover = admin.modules.levelPopover || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose the active popover state and attach matrix user and grant lookups.
+	 * @param {object} context matrix and level catalogs, popover element and live active cell bindings
+	 * @return {void}
 	 */
 	admin.modules.levelPopover.session = function (context) {
 		/** Individual sources of the API; anything else is inherited. */
@@ -4031,11 +4045,11 @@
 		/** The open popover: {uid, module, trigger, inherited, loading, unavailable, saving}, or null. */
 		let current = null
 
-		/**
-		 * @param {*} tag operation input
-		 * @param {*} props operation input
-		 * @param {*} children operation input
-		 * @return {*} operation result
+		/** Create a DOM element, apply its properties and append its child nodes or text.
+		 * @param {string} tag HTML element tag name
+		 * @param {object} [props] DOM properties assigned to the element
+		 * @param {Array<Node|string>} [children] child nodes and text appended in order
+		 * @return {HTMLElement}
 		 */
 		function el(tag, props, children) {
 			const node = document.createElement(tag)
@@ -4046,33 +4060,37 @@
 			return node
 		}
 
-		/** @return {object|undefined} the user of the table on screen
-		 * @param {*} uid operation input
+		/** Find a user row in the matrix's currently loaded page.
+		 * @return {object|undefined} the user of the table on screen
+		 * @param {string} uid Nextcloud user ID
 		 */
 		function userOf(uid) {
 			return context.matrix.data()?.users.find((user) => user.uid === uid)
 		}
 
-		/** @return {string[]} the operations of a module, or ["eligible"] for "Can connect" (module null)
-		 * @param {*} module operation input
+		/** Read the module operation catalog, using eligibility for the connection cell.
+		 * @return {string[]} the operations of a module, or ["eligible"] for "Can connect" (module null)
+		 * @param {string|null} module catalog module ID, null for connection eligibility
 		 */
 		function operationsOf(module) {
 			return module === null ? ['eligible'] : context.matrix.data().catalog[module]
 		}
 
-		/** @return {boolean|null} the effective value of one operation
-		 * @param {*} user operation input
-		 * @param {*} module operation input
-		 * @param {*} operation operation input
+		/** Read a user's effective eligibility or operation value from the matrix row.
+		 * @return {boolean|null} the effective value of one operation
+		 * @param {object} user matrix user row with grants, origins and availability
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {string} operation catalog operation ID
 		 */
 		function valueOf(user, module, operation) {
 			return module === null ? user.eligible : user.grants[module][operation]
 		}
 
-		/** @return {{source: string, groupIds: string[]}} the origin of one operation
-		 * @param {*} user operation input
-		 * @param {*} module operation input
-		 * @param {*} operation operation input
+		/** Read the cell's grant origin, falling back to the default source.
+		 * @return {{source: string, groupIds: string[]}} the origin of one operation
+		 * @param {object} user matrix user row with grants, origins and availability
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {string} operation catalog operation ID
 		 */
 		function originOfCell(user, module, operation) {
 			const origin = module === null ? user.origins?.eligible : user.origins?.grants?.[module]?.[operation]
@@ -4093,7 +4111,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** level_popover planning operations.
+/** Register the level popover planning unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -4101,15 +4119,14 @@
 	'use strict'
 
 	admin.modules.levelPopover = admin.modules.levelPopover || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach level, inheritance and individual operation command planning.
+	 * @param {object} context matrix and level catalogs, popover element and live active cell bindings
+	 * @return {void}
 	 */
 	admin.modules.levelPopover.planning = function (context) {
 		/**
 		 * What each operation would be without the person's individual values: the preview's "after" for an individual cell,
 		 * the value on screen for any other. null when the preview has not answered (or could not).
-		 *
 		 * @param {object} user row of the table
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {Array<object>|null} cells the preview's cells, null without an answer
@@ -4137,7 +4154,6 @@
 		 * The commands that give a set of target values: one per operation whose value changes. Taking an operation away is
 		 * always an explicit deny. Giving one is "inherit" only when it is an individual value and the preview says the person
 		 * inherits it allowed, otherwise an explicit allow: a later change of the inheritance can then only narrow the access.
-		 *
 		 * @param {object} user row of the table
 		 * @param {string|null} module module id, null for "Can connect"
 		 * @param {Object<string, boolean>} target value wanted per operation
@@ -4161,11 +4177,12 @@
 			return commands
 		}
 
-		/** @return {Array<object>} the commands that give a module one level
-		 * @param {*} user operation input
-		 * @param {*} module operation input
-		 * @param {*} level operation input
-		 * @param {*} inherited operation input
+		/** Plan only the individual changes needed to set the requested level against inheritance.
+		 * @return {Array<object>} the commands that give a module one level
+		 * @param {object} user matrix user row with grants, origins and availability
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {string} level permission level ID
+		 * @param {object|null} inherited inherited values read for the active cell, null while unknown
 		 */
 		function planLevel(user, module, level, inherited) {
 			const operations = context.operationsOf(module)
@@ -4173,9 +4190,10 @@
 			return context.planTarget(user, module, Object.fromEntries(operations.map((operation) => [operation, allowed.includes(operation)])), inherited)
 		}
 
-		/** @return {Array<object>} the commands that give every individual value of a module back to inheritance
-		 * @param {*} user operation input
-		 * @param {*} module operation input
+		/** Plan removal of the cell's individual values so its inheritance applies.
+		 * @return {Array<object>} the commands that give every individual value of a module back to inheritance
+		 * @param {object} user matrix user row with grants, origins and availability
+		 * @param {string|null} module catalog module ID, null for connection eligibility
 		 */
 		function planInherit(user, module) {
 			return context.operationsOf(module)
@@ -4183,11 +4201,12 @@
 				.map((operation) => ({ uid: user.uid, module, operation, state: 'inherit' }))
 		}
 
-		/** @return {Array<object>} the command that sets one operation to inherit, allow or deny, or none when it already is
-		 * @param {*} user operation input
-		 * @param {*} module operation input
-		 * @param {*} operation operation input
-		 * @param {*} state operation input
+		/** Plan the change to one individual operation value or its inheritance.
+		 * @return {Array<object>} the command that sets one operation to inherit, allow or deny, or none when it already is
+		 * @param {object} user matrix user row with grants, origins and availability
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {string} operation catalog operation ID
+		 * @param {"allow"|"deny"|"inherit"} state desired individual operation setting
 		 */
 		function planOperation(user, module, operation, state) {
 			const source = context.originOfCell(user, module, operation).source
@@ -4197,7 +4216,6 @@
 
 		/**
 		 * Whether the commands take "Can connect" away from someone who has it now; an inherit whose result is unknown counts.
-		 *
 		 * @param {object} user row of the table
 		 * @param {Array<object>} commands the commands to send
 		 * @param {object|null} inherited what inheritedValues() returned for "Can connect"
@@ -4220,7 +4238,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** level_popover wording operations.
+/** Register the level popover wording unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -4228,21 +4246,23 @@
 	'use strict'
 
 	admin.modules.levelPopover = admin.modules.levelPopover || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach permission names, level summaries and inheritance source descriptions.
+	 * @param {object} context matrix and level catalogs, popover element and live active cell bindings
+	 * @return {void}
 	 */
 	admin.modules.levelPopover.wording = function (context) {
-		/** @return {string} module name, or "Can connect"
-		 * @param {*} module operation input
+		/** Name the module permission or the connection eligibility permission.
+		 * @return {string} module name, or "Can connect"
+		 * @param {string|null} module catalog module ID, null for connection eligibility
 		 */
 		function permissionName(module) {
 			return module === null ? t('mcp', 'Can connect') : context.matrix.labels().modules[module] || module
 		}
 
-		/** @return {string} name of a level of src/admin/admin-levels.js, or Yes / No for "Can connect"
-		 * @param {*} module operation input
-		 * @param {*} level operation input
+		/** Translate a level name, using Yes and No for connection eligibility.
+		 * @return {string} name of a level of src/admin/admin-levels.js, or Yes / No for "Can connect"
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {string} level permission level ID
 		 */
 		function levelName(module, level) {
 			if (module === null) {
@@ -4251,9 +4271,10 @@
 			return { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }[level] || level
 		}
 
-		/** @return {string} the level these values are, for any module, "Can connect" included
-		 * @param {*} module operation input
-		 * @param {*} values operation input
+		/** Calculate a level from the module's catalog and effective operation values.
+		 * @return {string} the level these values are, for any module, "Can connect" included
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {Object<string, boolean|null>} values effective operation values indexed by operation ID
 		 */
 		function levelOfValues(module, values) {
 			if (module === null) {
@@ -4262,8 +4283,9 @@
 			return context.levels.levelOf(module, context.operationsOf(module), values)
 		}
 
-		/** @return {string} where an inherited value comes from
-		 * @param {*} origin operation input
+		/** Describe the inherited grant source and any contributing groups.
+		 * @return {string} where an inherited value comes from
+		 * @param {{source: string, groupIds?: string[]}} origin grant source and contributing groups
 		 */
 		function sourceName(origin) {
 			if (origin.source === 'group') return t('mcp', 'Granted by groups: {groups}', { groups: origin.groupIds.join(', ') }, undefined, { escape: false })
@@ -4271,7 +4293,8 @@
 			return t('mcp', 'Default')
 		}
 
-		/** @return {string} the "Inherited" line of the popover */
+		/** The "inherited" line of the popover.
+		 * @return {string} the "Inherited" line of the popover */
 		function inheritedLine() {
 			if (context.current.loading) return t('mcp', 'Checking what this person inherits…')
 			if (context.current.unavailable || context.current.inherited === null) return t('mcp', 'What this person inherits could not be read.')
@@ -4283,9 +4306,10 @@
 			return t('mcp', 'Inherits: {level} ({source})', { level: context.levelName(context.current.module, level), source: context.sourceName(origin) }, undefined, { escape: false })
 		}
 
-		/** @return {string} description of a level: the operations it allows
-		 * @param {*} module operation input
-		 * @param {*} level operation input
+		/** Describe the operations included in a selectable permission level.
+		 * @return {string} description of a level: the operations it allows
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {string} level permission level ID
 		 */
 		function levelDescription(module, level) {
 			if (module === null) {
@@ -4305,7 +4329,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** level_popover rendering operations.
+/** Register the level popover rendering unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -4313,16 +4337,16 @@
 	'use strict'
 
 	admin.modules.levelPopover = admin.modules.levelPopover || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach popover drawing, operation controls and focus-preserving redraws.
+	 * @param {object} context matrix and level catalogs, popover element and live active cell bindings
+	 * @return {void}
 	 */
 	admin.modules.levelPopover.rendering = function (context) {
 		/** A pressed button carries a check mark besides aria-pressed, so the choice never depends on colour.
-		 * @param {*} text operation input
-		 * @param {*} pressed operation input
-		 * @param {*} onclick operation input
-		 * @return {*} operation result
+		 * @param {string} text visible choice label
+		 * @param {boolean} pressed whether this choice is currently selected
+		 * @param {function(MouseEvent): Promise<void>} onclick handler invoked when the control is clicked
+		 * @return {HTMLButtonElement}
 		 */
 		function stateButton(text, pressed, onclick) {
 			const children = []
@@ -4337,9 +4361,10 @@
 			return button
 		}
 
-		/** @return {HTMLElement|null} the control of the popover drawn with this focus key
-		 * @param {*} node operation input
-		 * @param {*} key operation input
+		/** Find a descendant carrying the logical focus key saved before redraw.
+		 * @return {HTMLElement|null} the control of the popover drawn with this focus key
+		 * @param {HTMLElement} node root whose descendants are searched
+		 * @param {string} key logical focus key to find
 		 */
 		function findFocusKey(node, key) {
 			for (const child of node.children || []) {
@@ -4352,7 +4377,7 @@
 		}
 
 		/** Draws the popover again, keeping the focus on the same control.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function render() {
 			// Drawing again replaces every control: the one that had the focus gets it back, so the answer of the preview
@@ -4369,7 +4394,7 @@
 		}
 
 		/** Draws the popover for the user and module open, from the table on screen.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function draw() {
 			const user = context.userOf(context.current.uid)
@@ -4427,10 +4452,10 @@
 		}
 
 		/** The advanced block: every operation of the module with Inherit, Allow and Deny.
-		 * @param {*} user operation input
-		 * @param {*} module operation input
-		 * @param {*} operations operation input
-		 * @return {*} operation result
+		 * @param {object} user matrix user row with grants, origins and availability
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {string[]} operations module operations exposed as individual controls
+		 * @return {HTMLElement}
 		 */
 		function operationsBlock(user, module, operations) {
 			const names = context.matrix.labels().operations
@@ -4475,7 +4500,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** level_popover saving operations.
+/** Register the level popover saving unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -4483,15 +4508,14 @@
 	'use strict'
 
 	admin.modules.levelPopover = admin.modules.levelPopover || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach command persistence, inherited value loading and matrix focus restoration.
+	 * @param {object} context matrix and level catalogs, popover element and live active cell bindings
+	 * @return {void}
 	 */
 	admin.modules.levelPopover.saving = function (context) {
 		/**
 		 * Sends the commands as one, confirming first when "Can connect" is taken away, and offers the receipt as the undo. The
 		 * matrix is reloaded afterwards with every write blocked until it is on screen.
-		 *
 		 * @param {Array<object>} commands what planLevel(), planInherit() or planOperation() returned
 		 * @param {string} message the notice that names what was saved
 		 * @return {Promise<void>}
@@ -4546,9 +4570,9 @@
 		}
 
 		/** Gives the focus back to the cell the popover was opened from, in the table drawn after a save.
-		 * @param {*} uid operation input
-		 * @param {*} module operation input
-		 * @return {*} operation result
+		 * @param {string} uid Nextcloud user ID
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @return {void}
 		 */
 		function focusCell(uid, module) {
 			const table = document.getElementById('mcp-matrix')
@@ -4561,8 +4585,8 @@
 		/**
 		 * Asks what the person inherits, read only. An answer read at another revision than the table on screen is not used,
 		 * so a level is never sent as "inherit" on the strength of a policy that is not the one shown.
-		 * @param {*} open operation input
-		 * @return {Promise<*>} operation result
+		 * @param {object} open active popover snapshot whose identity guards the pending read
+		 * @return {Promise<void>}
 		 */
 		async function loadInherited(open) {
 			const user = context.userOf(open.uid)
@@ -4596,7 +4620,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** level_popover entry operations.
+/** Register the level popover entry unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -4604,14 +4628,14 @@
 	'use strict'
 
 	admin.modules.levelPopover = admin.modules.levelPopover || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach popover placement, opening and closing while retaining the active cell.
+	 * @param {object} context matrix and level catalogs, popover element and live active cell bindings
+	 * @return {void}
 	 */
 	admin.modules.levelPopover.entry = function (context) {
 		/** Places the popover under the cell it belongs to, inside the matrix block, and brings all of it into view.
-		 * @param {*} trigger operation input
-		 * @return {*} operation result
+		 * @param {HTMLElement|null|undefined} trigger control that opened the drawer or popover and may receive focus again
+		 * @return {void}
 		 */
 		function place(trigger) {
 			const block = context.popover.offsetParent || context.popover.parentElement
@@ -4626,11 +4650,10 @@
 
 		/**
 		 * Opens the popover of one cell.
-		 *
 		 * @param {HTMLElement} trigger the level button of the cell
 		 * @param {string} uid user of the row
 		 * @param {string|null} module module id, null for "Can connect"
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function open(trigger, uid, module) {
 			if (context.current !== null) {
@@ -4650,8 +4673,9 @@
 			context.loadInherited(context.current)
 		}
 
-		/** @param {boolean} restoreFocus give the focus back to the cell that opened the popover
-		 * @return {*} operation result
+		/** Close the current preview or popover and restore focus when requested.
+		 * @param {boolean} restoreFocus give the focus back to the cell that opened the popover
+		 * @return {void}
 		 */
 		function close(restoreFocus) {
 			if (context.current === null) {
@@ -8076,7 +8100,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** inspector session operations.
+/** Register the inspector session unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -8084,9 +8108,9 @@
 	'use strict'
 
 	admin.modules.inspector = admin.modules.inspector || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose inspector controls, live request sequences and access result state.
+	 * @param {object} context inspector controls, live request sequences and attached presentation operations
+	 * @return {void}
 	 */
 	admin.modules.inspector.session = function (context) {
 		const form = document.getElementById('mcp-inspector-form')
@@ -8117,11 +8141,11 @@
 
 		const asked = { calendars: 0, path: 0, calendar: 0 }
 
-		/**
-		 * @param {*} tag operation input
-		 * @param {*} props operation input
-		 * @param {*} children operation input
-		 * @return {*} operation result
+		/** Create a DOM element, apply its properties and append its child nodes or text.
+		 * @param {string} tag HTML element tag name
+		 * @param {object} [props] DOM properties assigned to the element
+		 * @param {Array<Node|string>} [children] child nodes and text appended in order
+		 * @return {HTMLElement}
 		 */
 		function el(tag, props = {}, children = []) {
 			const node = document.createElement(tag)
@@ -8130,10 +8154,10 @@
 			return node
 		}
 
-		/**
-		 * @param {*} message operation input
-		 * @param {boolean} error operation input
-		 * @return {*} operation result
+		/** Write inspection feedback into the existing status or alert live region.
+		 * @param {string} message feedback text; an empty string clears the message
+		 * @param {boolean} [error=false] announce through the alert region instead of the status region
+		 * @return {void}
 		 */
 		function say(message, error = false) {
 			status.textContent = ''
@@ -8141,10 +8165,10 @@
 			;(error ? alert : status).textContent = message
 		}
 
-		/**
-		 * @param {*} path operation input
-		 * @param {*} query operation input
-		 * @return {Promise<*>} operation result
+		/** Fetch a JSON API response and reject unsuccessful requests with their response details.
+		 * @param {string} path API path below /apps/mcp
+		 * @param {Object<string, string>|null|undefined} query URL query parameters when present
+		 * @return {Promise<object>}
 		 */
 		async function get(path, query) {
 			const response = await fetch(OC.generateUrl('/apps/mcp' + path) + '?' + new URLSearchParams(query), {
@@ -8155,9 +8179,9 @@
 			return data
 		}
 
-		/**
-		 * @param {*} error operation input
-		 * @return {*} operation result
+		/** Translate a failed resource request into an administrator-facing explanation.
+		 * @param {Error & {status?: number, data?: object}} error request failure with optional HTTP status and response details
+		 * @return {string}
 		 */
 		function failure(error) {
 			if (error.status === 403) return t('mcp', 'Only administrators can inspect access.')
@@ -8166,11 +8190,11 @@
 			return t('mcp', 'The inspection failed. Try again.')
 		}
 
-		/**
-		 * @param {*} kind operation input
-		 * @param {*} mine operation input
-		 * @param {*} user operation input
-		 * @return {*} operation result
+		/** Check whether a resource response belongs to an older request or a different inspected user.
+		 * @param {string} kind resource request channel whose sequence is checked
+		 * @param {number} mine sequence captured when this request began
+		 * @param {string} user user ID captured when the resource request began
+		 * @return {boolean}
 		 */
 		function stale(kind, mine, user) {
 			return mine !== asked[kind] || user !== inspected
@@ -8208,7 +8232,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** inspector wording operations.
+/** Register the inspector wording unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -8216,30 +8240,30 @@
 	'use strict'
 
 	admin.modules.inspector = admin.modules.inspector || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach translated access decisions, blocking gates and inheritance explanations.
+	 * @param {object} context inspector controls, live request sequences and attached presentation operations
+	 * @return {void}
 	 */
 	admin.modules.inspector.wording = function (context) {
-		/**
-		 * @param {*} module operation input
-		 * @return {*} operation result
+		/** Resolve the translated module label, falling back to its catalog ID.
+		 * @param {string} module catalog module ID
+		 * @return {string}
 		 */
 		function moduleName(module) {
 			return { files: t('mcp', 'Files'), notes: t('mcp', 'Notes'), deck: t('mcp', 'Deck'), calendar: t('mcp', 'Calendar'), contacts: t('mcp', 'Contacts'), tasks: t('mcp', 'Tasks'), talk: t('mcp', 'Talk'), people: t('mcp', 'People'), logs: t('mcp', 'Server log'), mail: t('mcp', 'Mail'), tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls') }[module] || module
 		}
 
-		/**
-		 * @param {*} operation operation input
-		 * @return {*} operation result
+		/** Resolve the translated operation label, falling back to its catalog ID.
+		 * @param {string} operation catalog operation ID
+		 * @return {string}
 		 */
 		function operationName(operation) {
 			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 		}
 
 		/** The first check that blocks, by the code of the effective access (EffectiveResult::blockingGate).
-		 * @param {*} gate operation input
-		 * @return {*} operation result
+		 * @param {string} gate effective access blocking gate code
+		 * @return {string}
 		 */
 		function gateText(gate) {
 			return {
@@ -8261,8 +8285,8 @@
 		/**
 		 * Where one operation's value comes from, in words. An individual value that only repeats what the person inherits
 		 * says what it repeats, as the matrix does.
-		 * @param {*} row operation input
-		 * @return {*} operation result
+		 * @param {object} row grant row returned by the API
+		 * @return {string}
 		 */
 		function grantText(row) {
 			const kind = context.kinds?.get(row.module + '/' + row.operation)
@@ -8272,9 +8296,9 @@
 			return context.sourceText(row.grant)
 		}
 
-		/**
-		 * @param {*} grant operation input
-		 * @return {*} operation result
+		/** Describe a grant's source and contributing group IDs.
+		 * @param {object} grant grant source, allowed value and contributing groups
+		 * @return {string}
 		 */
 		function sourceText(grant) {
 			const groups = (grant.groupIds || []).join(', ')
@@ -8288,17 +8312,17 @@
 			}[grant.source] || grant.source
 		}
 
-		/**
-		 * @param {*} allowed operation input
-		 * @return {*} operation result
+		/** Translate an allowed, blocked or unknown effective access decision.
+		 * @param {boolean|null} allowed effective access decision, null when it cannot be confirmed
+		 * @return {string}
 		 */
 		function resultText(allowed) {
 			return allowed === true ? t('mcp', 'Allowed') : allowed === false ? t('mcp', 'Blocked') : t('mcp', 'Unknown')
 		}
 
 		/** What a path or calendar answer means, from its codes (AccessInspector, CalendarAccessExplainer).
-		 * @param {*} answer operation input
-		 * @return {*} operation result
+		 * @param {object} answer resource explanation returned by the inspector
+		 * @return {string}
 		 */
 		function explanation(answer) {
 			const checks = { policy: t('mcp', 'the MCP policy'), native_acl: t('mcp', 'the Nextcloud permissions'), exclusion: t('mcp', 'the exclusion tags'), resource_scope_unknown: t('mcp', 'the resource scope'), grant_unknown: t('mcp', 'a group grant'), eligibility_unknown: t('mcp', 'a group eligibility') }
@@ -8331,7 +8355,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** inspector verdict operations.
+/** Register the inspector verdict unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -8339,16 +8363,15 @@
 	'use strict'
 
 	admin.modules.inspector = admin.modules.inspector || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach general blocking verdicts and the matching administrator remedies.
+	 * @param {object} context inspector controls, live request sequences and attached presentation operations
+	 * @return {void}
 	 */
 	admin.modules.inspector.verdict = function (context) {
 		const GENERAL = ['account', 'service', 'eligibility', 'connection']
 
 		/**
 		 * The general check that blocks every operation, or null when none does: every operation must be blocked by it.
-		 *
 		 * @param {Array<object>} operations the operations of the answer
 		 * @return {string|null} a gate of GENERAL, or eligibility_unknown
 		 */
@@ -8360,8 +8383,8 @@
 		}
 
 		/** What to do about a general check that blocks, when the administrator or the person can do something.
-		 * @param {*} gate operation input
-		 * @return {*} operation result
+		 * @param {string} gate effective access blocking gate code
+		 * @return {string} translated remedy, or an empty string when none applies
 		 */
 		function remedy(gate) {
 			return {
@@ -8374,7 +8397,6 @@
 		/**
 		 * What the operations say once no general check blocks: the tools can be used when one operation is allowed, it is
 		 * not confirmed when none is and one cannot be read, and nothing can be used when every one is blocked.
-		 *
 		 * @param {Array<object>} operations the operations of the answer, not empty
 		 * @return {string} usable, unknown, none_granted (every one blocked by its grant) or none
 		 */
@@ -8385,8 +8407,8 @@
 		}
 
 		/** The verdict and the four general checks: passed, the one that blocks, or not checked after it.
-		 * @param {*} operations operation input
-		 * @return {*} operation result
+		 * @param {object[]} operations effective access rows returned by the inspector
+		 * @return {HTMLElement[]}
 		 */
 		function renderVerdict(operations) {
 			// An answer without operations confirms nothing, not even the general checks.
@@ -8444,7 +8466,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** inspector rendering operations.
+/** Register the inspector rendering unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -8452,16 +8474,16 @@
 	'use strict'
 
 	admin.modules.inspector = admin.modules.inspector || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach effective access tables, module summaries and individual grant explanations.
+	 * @param {object} context inspector controls, live request sequences and attached presentation operations
+	 * @return {void}
 	 */
 	admin.modules.inspector.rendering = function (context) {
 		/**
 		 * One line per module: the level the grants give, where it comes from, the resource scope and what blocks it. While a
 		 * general check blocks everything, the lines say what will apply once it is fixed, without repeating it on each.
-		 * @param {*} operations operation input
-		 * @return {*} operation result
+		 * @param {object[]} operations effective access rows returned by the inspector
+		 * @return {HTMLElement}
 		 */
 		function renderModules(operations) {
 			const general = context.generalBlock(operations) !== null
@@ -8499,8 +8521,8 @@
 		/**
 		 * Where a module's individual values come from, as the matrix says it: an exception when one of them differs from what
 		 * the person inherits, what they repeat when every one only repeats it, and "set for this person" until that is known.
-		 * @param {*} rows operation input
-		 * @return {*} operation result
+		 * @param {object[]} rows effective access rows for one module
+		 * @return {string}
 		 */
 		function individualText(rows) {
 			const individual = rows.filter((row) => row.grant?.source === 'individual_allow' || row.grant?.source === 'individual_deny')
@@ -8519,9 +8541,9 @@
 			return text + ' — ' + t('mcp', 'also set for this person, with the same value')
 		}
 
-		/**
-		 * @param {*} data operation input
-		 * @return {*} operation result
+		/** Store and draw the inspected access result, catalog, verdict and operation details.
+		 * @param {object} data settings or access response returned by the API
+		 * @return {void}
 		 */
 		function renderAccess(data) {
 			context.shown = data
@@ -8551,7 +8573,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** inspector inspection operations.
+/** Register the inspector inspection unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -8559,17 +8581,17 @@
 	'use strict'
 
 	admin.modules.inspector = admin.modules.inspector || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach access inspection, inherited value classification and resource explanation requests.
+	 * @param {object} context inspector controls, live request sequences and attached presentation operations
+	 * @return {void}
 	 */
 	admin.modules.inspector.inspection = function (context) {
 		/**
 		 * Asks what the individual values of the answer on screen repeat, then draws it again; an answer for another person
 		 * or another inspection is dropped.
-		 * @param {*} data operation input
-		 * @param {*} mine operation input
-		 * @return {Promise<*>} operation result
+		 * @param {object} data effective access response being classified
+		 * @param {number} mine inspection sequence captured before the read
+		 * @return {Promise<void>}
 		 */
 		async function classifyShown(data, mine) {
 			const exceptions = window.OCA.Mcp.Admin.exceptions
@@ -8593,8 +8615,8 @@
 			if (hadFocus) again?.querySelector?.('summary')?.focus?.()
 		}
 
-		/**
-		 * @return {Promise<*>} operation result
+		/** Read effective access for the entered user and initialize its resource inspection controls.
+		 * @return {Promise<void>}
 		 */
 		async function inspect() {
 			const uid = context.user.value.trim()
@@ -8630,8 +8652,8 @@
 			}
 		}
 
-		/**
-		 * @return {Promise<*>} operation result
+		/** Load calendars or task lists for the current user while discarding stale responses.
+		 * @return {Promise<void>}
 		 */
 		async function loadCalendars() {
 			const module = context.calendarModule.value
@@ -8650,13 +8672,13 @@
 			}
 		}
 
-		/**
-		 * @param {*} kind operation input
-		 * @param {*} target operation input
-		 * @param {*} path operation input
-		 * @param {*} query operation input
-		 * @param {*} module operation input
-		 * @return {Promise<*>} operation result
+		/** Read and present one resource access explanation if its user and request are still current.
+		 * @param {"path"|"calendar"} kind resource request sequence channel
+		 * @param {HTMLElement} target result element receiving the explanation
+		 * @param {string} path API path below /apps/mcp
+		 * @param {Object<string, string>} query user, resource and operation query parameters
+		 * @param {string} module catalog module ID
+		 * @return {Promise<void>}
 		 */
 		async function explain(kind, target, path, query, module) {
 			const mine = ++context.asked[kind]
@@ -8688,7 +8710,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** inspector drawer operations.
+/** Register the inspector drawer unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -8696,9 +8718,9 @@
 	'use strict'
 
 	admin.modules.inspector = admin.modules.inspector || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach inspector placement, opening, closing and focus restoration.
+	 * @param {object} context inspector controls, live request sequences and attached presentation operations
+	 * @return {void}
 	 */
 	admin.modules.inspector.drawer = function (context) {
 		const drawerTitle = document.getElementById('mcp-inspector-title')
@@ -8712,7 +8734,7 @@
 		 * behind it (backdrop-filter on #content-vue), which makes that box, not the window, the one it is placed in: its top
 		 * would then be counted from the box, one header too low. The offset is measured, not assumed, since a theme may turn
 		 * the blur off.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function placeDrawer() {
 			context.root.style?.removeProperty?.('top')
@@ -8726,9 +8748,8 @@
 		/**
 		 * Opens the drawer; the focus goes back to `trigger` when it closes. Only one drawer is open at a time: when the
 		 * administrator keeps a draft of the resource scope, its drawer stays and this one does not open.
-		 *
 		 * @return {boolean} whether the drawer opened
-		 * @param {*} trigger operation input
+		 * @param {HTMLElement|null|undefined} trigger control that opened the drawer or popover and may receive focus again
 		 */
 		function openDrawer(trigger) {
 			if (window.OCA.Mcp.Admin.scope?.close?.() === false) {
@@ -8747,7 +8768,6 @@
 
 		/**
 		 * Closes the drawer and gives the focus back. The inspector only reads, so nothing can be lost.
-		 *
 		 * @return {boolean} always true: the drawer is closed now
 		 */
 		function closeDrawer() {
@@ -8765,8 +8785,8 @@
 		/**
 		 * Gives the focus back to the control that opened the drawer, or, when the table was drawn again and that control is
 		 * gone, to the same row's "…" button, then to the drawer's own button on the Access tab: never to the page.
-		 * @param {*} target operation input
-		 * @return {*} operation result
+		 * @param {HTMLElement|null|undefined} target control to receive focus
+		 * @return {void}
 		 */
 		function focusBack(target) {
 			if (target && target.isConnected !== false) {
@@ -8796,8 +8816,8 @@
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
 /** Compose the inspector editor and start its original effects once.
- * @param {object} admin operation input
- * @return {void} operation result
+ * @param {object} admin shared OCA.Mcp.Admin registry and public surfaces
+ * @return {void}
  */
 (function (admin) {
 	'use strict'

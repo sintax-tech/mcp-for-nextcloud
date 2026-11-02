@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** picker list operations.
+/** Register the picker list unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -10,18 +10,19 @@
 	'use strict'
 
 	admin.modules.picker = admin.modules.picker || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach list visibility, filtering, keyboard movement and option rendering.
+	 * @param {object} context picker specification, mounted controls and live selection bindings
+	 * @return {void}
 	 */
 	admin.modules.picker.list = function (context) {
-		/** @return {HTMLElement[]} the list items the filter currently shows */
+		/** The list items the filter currently shows.
+		 * @return {HTMLElement[]} the list items the filter currently shows */
 		function visibleItems() {
 			return Array.from(context.list.querySelectorAll('[role="option"]')).filter((item) => !item.hidden)
 		}
 
-		/**
-		 * @return {*} operation result
+		/** Show the option list when options exist and update the combobox expanded state.
+		 * @return {void}
 		 */
 		function openList() {
 			if (context.options.length === 0) {
@@ -31,8 +32,8 @@
 			context.input.setAttribute('aria-expanded', 'true')
 		}
 
-		/**
-		 * @return {*} operation result
+		/** Hide the option list and clear its active descendant and keyboard selection.
+		 * @return {void}
 		 */
 		function closeList() {
 			context.list.hidden = true
@@ -44,8 +45,9 @@
 			}
 		}
 
-		/** @param {number} delta keyboard steps within the visible options, wrapping around
-		 * @return {*} operation result
+		/** Move the active option through visible items with wraparound and scroll it into view.
+		 * @param {number} delta keyboard steps within the visible options, wrapping around
+		 * @return {void}
 		 */
 		function moveActive(delta) {
 			const items = context.visibleItems()
@@ -61,7 +63,7 @@
 		}
 
 		/** Rebuilds the option items and keeps the current filter applied.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function renderList() {
 			const activeId = context.visibleItems()[context.activeIndex]?.dataset.optionId
@@ -95,7 +97,7 @@
 		}
 
 		/** Filters with a plain substring on the labels; typing never creates an option.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function applyFilter() {
 			const query = context.input.value.trim().toLowerCase()

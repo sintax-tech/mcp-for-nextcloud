@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** inspector session operations.
+/** Register the inspector session unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.inspector = admin.modules.inspector || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Expose inspector controls, live request sequences and access result state.
+	 * @param {object} context inspector controls, live request sequences and attached presentation operations
+	 * @return {void}
 	 */
 	admin.modules.inspector.session = function (context) {
 		const form = document.getElementById('mcp-inspector-form')
@@ -43,11 +43,11 @@
 
 		const asked = { calendars: 0, path: 0, calendar: 0 }
 
-		/**
-		 * @param {*} tag operation input
-		 * @param {*} props operation input
-		 * @param {*} children operation input
-		 * @return {*} operation result
+		/** Create a DOM element, apply its properties and append its child nodes or text.
+		 * @param {string} tag HTML element tag name
+		 * @param {object} [props] DOM properties assigned to the element
+		 * @param {Array<Node|string>} [children] child nodes and text appended in order
+		 * @return {HTMLElement}
 		 */
 		function el(tag, props = {}, children = []) {
 			const node = document.createElement(tag)
@@ -56,10 +56,10 @@
 			return node
 		}
 
-		/**
-		 * @param {*} message operation input
-		 * @param {boolean} error operation input
-		 * @return {*} operation result
+		/** Write inspection feedback into the existing status or alert live region.
+		 * @param {string} message feedback text; an empty string clears the message
+		 * @param {boolean} [error=false] announce through the alert region instead of the status region
+		 * @return {void}
 		 */
 		function say(message, error = false) {
 			status.textContent = ''
@@ -67,10 +67,10 @@
 			;(error ? alert : status).textContent = message
 		}
 
-		/**
-		 * @param {*} path operation input
-		 * @param {*} query operation input
-		 * @return {Promise<*>} operation result
+		/** Fetch a JSON API response and reject unsuccessful requests with their response details.
+		 * @param {string} path API path below /apps/mcp
+		 * @param {Object<string, string>|null|undefined} query URL query parameters when present
+		 * @return {Promise<object>}
 		 */
 		async function get(path, query) {
 			const response = await fetch(OC.generateUrl('/apps/mcp' + path) + '?' + new URLSearchParams(query), {
@@ -81,9 +81,9 @@
 			return data
 		}
 
-		/**
-		 * @param {*} error operation input
-		 * @return {*} operation result
+		/** Translate a failed resource request into an administrator-facing explanation.
+		 * @param {Error & {status?: number, data?: object}} error request failure with optional HTTP status and response details
+		 * @return {string}
 		 */
 		function failure(error) {
 			if (error.status === 403) return t('mcp', 'Only administrators can inspect access.')
@@ -92,11 +92,11 @@
 			return t('mcp', 'The inspection failed. Try again.')
 		}
 
-		/**
-		 * @param {*} kind operation input
-		 * @param {*} mine operation input
-		 * @param {*} user operation input
-		 * @return {*} operation result
+		/** Check whether a resource response belongs to an older request or a different inspected user.
+		 * @param {string} kind resource request channel whose sequence is checked
+		 * @param {number} mine sequence captured when this request began
+		 * @param {string} user user ID captured when the resource request began
+		 * @return {boolean}
 		 */
 		function stale(kind, mine, user) {
 			return mine !== asked[kind] || user !== inspected

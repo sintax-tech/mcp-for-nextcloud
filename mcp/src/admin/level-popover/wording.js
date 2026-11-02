@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** level_popover wording operations.
+/** Register the level popover wording unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -10,21 +10,23 @@
 	'use strict'
 
 	admin.modules.levelPopover = admin.modules.levelPopover || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach permission names, level summaries and inheritance source descriptions.
+	 * @param {object} context matrix and level catalogs, popover element and live active cell bindings
+	 * @return {void}
 	 */
 	admin.modules.levelPopover.wording = function (context) {
-		/** @return {string} module name, or "Can connect"
-		 * @param {*} module operation input
+		/** Name the module permission or the connection eligibility permission.
+		 * @return {string} module name, or "Can connect"
+		 * @param {string|null} module catalog module ID, null for connection eligibility
 		 */
 		function permissionName(module) {
 			return module === null ? t('mcp', 'Can connect') : context.matrix.labels().modules[module] || module
 		}
 
-		/** @return {string} name of a level of src/admin/admin-levels.js, or Yes / No for "Can connect"
-		 * @param {*} module operation input
-		 * @param {*} level operation input
+		/** Translate a level name, using Yes and No for connection eligibility.
+		 * @return {string} name of a level of src/admin/admin-levels.js, or Yes / No for "Can connect"
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {string} level permission level ID
 		 */
 		function levelName(module, level) {
 			if (module === null) {
@@ -33,9 +35,10 @@
 			return { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }[level] || level
 		}
 
-		/** @return {string} the level these values are, for any module, "Can connect" included
-		 * @param {*} module operation input
-		 * @param {*} values operation input
+		/** Calculate a level from the module's catalog and effective operation values.
+		 * @return {string} the level these values are, for any module, "Can connect" included
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {Object<string, boolean|null>} values effective operation values indexed by operation ID
 		 */
 		function levelOfValues(module, values) {
 			if (module === null) {
@@ -44,8 +47,9 @@
 			return context.levels.levelOf(module, context.operationsOf(module), values)
 		}
 
-		/** @return {string} where an inherited value comes from
-		 * @param {*} origin operation input
+		/** Describe the inherited grant source and any contributing groups.
+		 * @return {string} where an inherited value comes from
+		 * @param {{source: string, groupIds?: string[]}} origin grant source and contributing groups
 		 */
 		function sourceName(origin) {
 			if (origin.source === 'group') return t('mcp', 'Granted by groups: {groups}', { groups: origin.groupIds.join(', ') }, undefined, { escape: false })
@@ -53,7 +57,8 @@
 			return t('mcp', 'Default')
 		}
 
-		/** @return {string} the "Inherited" line of the popover */
+		/** The "inherited" line of the popover.
+		 * @return {string} the "Inherited" line of the popover */
 		function inheritedLine() {
 			if (context.current.loading) return t('mcp', 'Checking what this person inherits…')
 			if (context.current.unavailable || context.current.inherited === null) return t('mcp', 'What this person inherits could not be read.')
@@ -65,9 +70,10 @@
 			return t('mcp', 'Inherits: {level} ({source})', { level: context.levelName(context.current.module, level), source: context.sourceName(origin) }, undefined, { escape: false })
 		}
 
-		/** @return {string} description of a level: the operations it allows
-		 * @param {*} module operation input
-		 * @param {*} level operation input
+		/** Describe the operations included in a selectable permission level.
+		 * @return {string} description of a level: the operations it allows
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {string} level permission level ID
 		 */
 		function levelDescription(module, level) {
 			if (module === null) {

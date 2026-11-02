@@ -9,7 +9,8 @@
 (function (admin) {
 	'use strict'
 
-	/**
+	/** Mount an independent multi-select picker and return its selection and persistence controls.
+	 * @template T
 	 * @param {object} spec
 	 * @param {HTMLElement} spec.container mount point; its children are replaced by the control
 	 * @param {Array<{id: string, label: string, badge?: {text: string, title?: string, className?: string}}>} spec.options
@@ -19,18 +20,19 @@
 	 * @param {string} spec.listLabel accessible label of the listbox
 	 * @param {string} spec.emptyOptionsText shown when there are no options at all
 	 * @param {string} spec.noMatchText shown when the filter matches no option
-	 * @param {(nextIds: string[], previousIds: string[]) => Promise<*>} spec.save persists the selection
+	 * @param {(nextIds: string[], previousIds: string[]) => Promise<T>} spec.save persists the selection
 	 *        and throws on failure; any value it resolves with reaches onSaved
 	 * @param {(nextIds: string[]) => boolean|Promise<boolean>} [spec.confirmSave] a false answer cancels
 	 *        the change without an error (for example the empty-selection confirmation)
-	 * @param {(result: *) => void|Promise<void>} [spec.onSaved] runs after a successful save
-	 * @param {(error: *) => void|Promise<void>} [spec.onError] runs after a failed save; it may call
+	 * @param {(result: T) => void|Promise<void>} [spec.onSaved] runs after a successful save
+	 * @param {(error: Error) => void|Promise<void>} [spec.onError] runs after a failed save; it may call
 	 *        setOptions to resynchronize the control (for example after a conflict)
 	 * @param {(selectedIds: string[]) => void} [spec.onChange] runs whenever the shown selection changes
 	 * @param {HTMLElement} [spec.status] element that receives the saving/saved/error feedback
 	 * @param {number} [spec.clearSavedAfterMs] clears the "Saved" status after this many ms
 	 * @param {string} [spec.errorStatus] status text after a failed save (default: the "Not saved" text)
-	 * @return {*} operation result
+	 * @return {{setOptions: function(object[], string[]): void, commit: function(object=): Promise<void>,
+	 *     showFallback: function(string): void, getSelected: function(): string[]}} mounted picker controls
 	 */
 	function create(spec) {
 		const context = { spec }
@@ -105,9 +107,9 @@
 		return {
 			/**
 			 * Replaces the options and the selection, for example after a reload or a server answer.
-			 *
-			 * @param {Array} nextOptions same shape as spec.options
-			 * @param {string[]} nextSelectedIds
+			 * @param {object[]} nextOptions same shape as spec.options
+			 * @param {string[]} nextSelectedIds IDs retained when present in nextOptions
+			 * @return {void}
 			 */
 			setOptions(nextOptions, nextSelectedIds) {
 				context.options = nextOptions
@@ -118,16 +120,24 @@
 				}
 				context.paint()
 			},
-			/** Saves again; force bypasses the fallback message, keeping confirmation and locking. */
+			/** Saves again; force bypasses the fallback message, keeping confirmation and locking.
+			 * @param {{force?: boolean}} [options] explicit save options
+			 * @return {Promise<void>} resolves after the attempt or cancellation
+			 */
 			commit({ force = false } = {}) {
 				return context.commit(new Set(context.selected), force)
 			},
-			/** Shows a plain message instead of the control, for a load failure or an empty option list. */
+			/** Shows a plain message instead of the control, for a load failure or an empty option list.
+			 * @param {string} text fallback explanation
+			 * @return {void}
+			 */
 			showFallback(text) {
 				context.fallbackText = text
 				context.paint()
 			},
-			/** @return {string[]} the currently selected option ids */
+			/** Read the picker's currently selected option IDs.
+			 * @return {string[]} selected IDs in selection order
+			 */
 			getSelected() {
 				return Array.from(context.selected)
 			},

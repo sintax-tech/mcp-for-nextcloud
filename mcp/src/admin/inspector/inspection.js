@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** inspector inspection operations.
+/** Register the inspector inspection unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -10,17 +10,17 @@
 	'use strict'
 
 	admin.modules.inspector = admin.modules.inspector || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach access inspection, inherited value classification and resource explanation requests.
+	 * @param {object} context inspector controls, live request sequences and attached presentation operations
+	 * @return {void}
 	 */
 	admin.modules.inspector.inspection = function (context) {
 		/**
 		 * Asks what the individual values of the answer on screen repeat, then draws it again; an answer for another person
 		 * or another inspection is dropped.
-		 * @param {*} data operation input
-		 * @param {*} mine operation input
-		 * @return {Promise<*>} operation result
+		 * @param {object} data effective access response being classified
+		 * @param {number} mine inspection sequence captured before the read
+		 * @return {Promise<void>}
 		 */
 		async function classifyShown(data, mine) {
 			const exceptions = window.OCA.Mcp.Admin.exceptions
@@ -44,8 +44,8 @@
 			if (hadFocus) again?.querySelector?.('summary')?.focus?.()
 		}
 
-		/**
-		 * @return {Promise<*>} operation result
+		/** Read effective access for the entered user and initialize its resource inspection controls.
+		 * @return {Promise<void>}
 		 */
 		async function inspect() {
 			const uid = context.user.value.trim()
@@ -81,8 +81,8 @@
 			}
 		}
 
-		/**
-		 * @return {Promise<*>} operation result
+		/** Load calendars or task lists for the current user while discarding stale responses.
+		 * @return {Promise<void>}
 		 */
 		async function loadCalendars() {
 			const module = context.calendarModule.value
@@ -101,13 +101,13 @@
 			}
 		}
 
-		/**
-		 * @param {*} kind operation input
-		 * @param {*} target operation input
-		 * @param {*} path operation input
-		 * @param {*} query operation input
-		 * @param {*} module operation input
-		 * @return {Promise<*>} operation result
+		/** Read and present one resource access explanation if its user and request are still current.
+		 * @param {"path"|"calendar"} kind resource request sequence channel
+		 * @param {HTMLElement} target result element receiving the explanation
+		 * @param {string} path API path below /apps/mcp
+		 * @param {Object<string, string>} query user, resource and operation query parameters
+		 * @param {string} module catalog module ID
+		 * @return {Promise<void>}
 		 */
 		async function explain(kind, target, path, query, module) {
 			const mine = ++context.asked[kind]

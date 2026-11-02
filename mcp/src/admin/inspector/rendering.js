@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** inspector rendering operations.
+/** Register the inspector rendering unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -10,16 +10,16 @@
 	'use strict'
 
 	admin.modules.inspector = admin.modules.inspector || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach effective access tables, module summaries and individual grant explanations.
+	 * @param {object} context inspector controls, live request sequences and attached presentation operations
+	 * @return {void}
 	 */
 	admin.modules.inspector.rendering = function (context) {
 		/**
 		 * One line per module: the level the grants give, where it comes from, the resource scope and what blocks it. While a
 		 * general check blocks everything, the lines say what will apply once it is fixed, without repeating it on each.
-		 * @param {*} operations operation input
-		 * @return {*} operation result
+		 * @param {object[]} operations effective access rows returned by the inspector
+		 * @return {HTMLElement}
 		 */
 		function renderModules(operations) {
 			const general = context.generalBlock(operations) !== null
@@ -57,8 +57,8 @@
 		/**
 		 * Where a module's individual values come from, as the matrix says it: an exception when one of them differs from what
 		 * the person inherits, what they repeat when every one only repeats it, and "set for this person" until that is known.
-		 * @param {*} rows operation input
-		 * @return {*} operation result
+		 * @param {object[]} rows effective access rows for one module
+		 * @return {string}
 		 */
 		function individualText(rows) {
 			const individual = rows.filter((row) => row.grant?.source === 'individual_allow' || row.grant?.source === 'individual_deny')
@@ -77,9 +77,9 @@
 			return text + ' — ' + t('mcp', 'also set for this person, with the same value')
 		}
 
-		/**
-		 * @param {*} data operation input
-		 * @return {*} operation result
+		/** Store and draw the inspected access result, catalog, verdict and operation details.
+		 * @param {object} data settings or access response returned by the API
+		 * @return {void}
 		 */
 		function renderAccess(data) {
 			context.shown = data

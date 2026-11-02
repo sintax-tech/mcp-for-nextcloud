@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** inspector wording operations.
+/** Register the inspector wording unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -10,30 +10,30 @@
 	'use strict'
 
 	admin.modules.inspector = admin.modules.inspector || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach translated access decisions, blocking gates and inheritance explanations.
+	 * @param {object} context inspector controls, live request sequences and attached presentation operations
+	 * @return {void}
 	 */
 	admin.modules.inspector.wording = function (context) {
-		/**
-		 * @param {*} module operation input
-		 * @return {*} operation result
+		/** Resolve the translated module label, falling back to its catalog ID.
+		 * @param {string} module catalog module ID
+		 * @return {string}
 		 */
 		function moduleName(module) {
 			return { files: t('mcp', 'Files'), notes: t('mcp', 'Notes'), deck: t('mcp', 'Deck'), calendar: t('mcp', 'Calendar'), contacts: t('mcp', 'Contacts'), tasks: t('mcp', 'Tasks'), talk: t('mcp', 'Talk'), people: t('mcp', 'People'), logs: t('mcp', 'Server log'), mail: t('mcp', 'Mail'), tables: t('mcp', 'Tables'), forms: t('mcp', 'Forms'), polls: t('mcp', 'Polls') }[module] || module
 		}
 
-		/**
-		 * @param {*} operation operation input
-		 * @return {*} operation result
+		/** Resolve the translated operation label, falling back to its catalog ID.
+		 * @param {string} operation catalog operation ID
+		 * @return {string}
 		 */
 		function operationName(operation) {
 			return { ...window.OCA.Mcp.Admin.pollsGrants?.operationLabels(), results: t('mcp', 'results'), read: t('mcp', 'read'), edit: t('mcp', 'edit'), create: t('mcp', 'create'), move: t('mcp', 'move'), delete: t('mcp', 'delete'), transfer: t('mcp', 'transfer'), reply: t('mcp', 'reply'), attach: t('mcp', 'attach'), quote: t('mcp', 'quote'), share: t('mcp', 'share'), link: t('mcp', 'link'), restore: t('mcp', 'restore'), messages: t('mcp', 'messages'), attachments: t('mcp', 'attachments'), flags: t('mcp', 'flags'), draft: t('mcp', 'draft'), send: t('mcp', 'send') }[operation] || operation
 		}
 
 		/** The first check that blocks, by the code of the effective access (EffectiveResult::blockingGate).
-		 * @param {*} gate operation input
-		 * @return {*} operation result
+		 * @param {string} gate effective access blocking gate code
+		 * @return {string}
 		 */
 		function gateText(gate) {
 			return {
@@ -55,8 +55,8 @@
 		/**
 		 * Where one operation's value comes from, in words. An individual value that only repeats what the person inherits
 		 * says what it repeats, as the matrix does.
-		 * @param {*} row operation input
-		 * @return {*} operation result
+		 * @param {object} row grant row returned by the API
+		 * @return {string}
 		 */
 		function grantText(row) {
 			const kind = context.kinds?.get(row.module + '/' + row.operation)
@@ -66,9 +66,9 @@
 			return context.sourceText(row.grant)
 		}
 
-		/**
-		 * @param {*} grant operation input
-		 * @return {*} operation result
+		/** Describe a grant's source and contributing group IDs.
+		 * @param {object} grant grant source, allowed value and contributing groups
+		 * @return {string}
 		 */
 		function sourceText(grant) {
 			const groups = (grant.groupIds || []).join(', ')
@@ -82,17 +82,17 @@
 			}[grant.source] || grant.source
 		}
 
-		/**
-		 * @param {*} allowed operation input
-		 * @return {*} operation result
+		/** Translate an allowed, blocked or unknown effective access decision.
+		 * @param {boolean|null} allowed effective access decision, null when it cannot be confirmed
+		 * @return {string}
 		 */
 		function resultText(allowed) {
 			return allowed === true ? t('mcp', 'Allowed') : allowed === false ? t('mcp', 'Blocked') : t('mcp', 'Unknown')
 		}
 
 		/** What a path or calendar answer means, from its codes (AccessInspector, CalendarAccessExplainer).
-		 * @param {*} answer operation input
-		 * @return {*} operation result
+		 * @param {object} answer resource explanation returned by the inspector
+		 * @return {string}
 		 */
 		function explanation(answer) {
 			const checks = { policy: t('mcp', 'the MCP policy'), native_acl: t('mcp', 'the Nextcloud permissions'), exclusion: t('mcp', 'the exclusion tags'), resource_scope_unknown: t('mcp', 'the resource scope'), grant_unknown: t('mcp', 'a group grant'), eligibility_unknown: t('mcp', 'a group eligibility') }

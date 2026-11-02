@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** picker saving operations.
+/** Register the picker saving unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -10,18 +10,17 @@
 	'use strict'
 
 	admin.modules.picker = admin.modules.picker || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach confirmed selection persistence, rollback and option toggling.
+	 * @param {object} context picker specification, mounted controls and live selection bindings
+	 * @return {void}
 	 */
 	admin.modules.picker.saving = function (context) {
 		/**
 		 * Persists a new selection: confirms first when the caller asks, locks the control, keeps the
 		 * previous state on failure and reports through the status element and the onError hook.
-		 *
 		 * @param {Set<string>} next the intended selection
 		 * @param {boolean} force permits an explicit save while the options show a fallback
-		 * @return {Promise<*>} operation result
+		 * @return {Promise<void>}
 		 */
 		async function commit(next, force = false) {
 			if (context.busy || (context.fallbackText !== null && !force)) {
@@ -66,8 +65,9 @@
 			}
 		}
 
-		/** @param {string} id option to add to or drop from the selection
-		 * @return {*} operation result
+		/** Add or remove an option from the picker selection and start its save.
+		 * @param {string} id option to add to or drop from the selection
+		 * @return {void}
 		 */
 		function toggle(id) {
 			const next = new Set(context.selected)

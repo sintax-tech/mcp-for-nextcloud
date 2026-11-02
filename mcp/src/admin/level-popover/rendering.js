@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** level_popover rendering operations.
+/** Register the level popover rendering unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -10,16 +10,16 @@
 	'use strict'
 
 	admin.modules.levelPopover = admin.modules.levelPopover || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach popover drawing, operation controls and focus-preserving redraws.
+	 * @param {object} context matrix and level catalogs, popover element and live active cell bindings
+	 * @return {void}
 	 */
 	admin.modules.levelPopover.rendering = function (context) {
 		/** A pressed button carries a check mark besides aria-pressed, so the choice never depends on colour.
-		 * @param {*} text operation input
-		 * @param {*} pressed operation input
-		 * @param {*} onclick operation input
-		 * @return {*} operation result
+		 * @param {string} text visible choice label
+		 * @param {boolean} pressed whether this choice is currently selected
+		 * @param {function(MouseEvent): Promise<void>} onclick handler invoked when the control is clicked
+		 * @return {HTMLButtonElement}
 		 */
 		function stateButton(text, pressed, onclick) {
 			const children = []
@@ -34,9 +34,10 @@
 			return button
 		}
 
-		/** @return {HTMLElement|null} the control of the popover drawn with this focus key
-		 * @param {*} node operation input
-		 * @param {*} key operation input
+		/** Find a descendant carrying the logical focus key saved before redraw.
+		 * @return {HTMLElement|null} the control of the popover drawn with this focus key
+		 * @param {HTMLElement} node root whose descendants are searched
+		 * @param {string} key logical focus key to find
 		 */
 		function findFocusKey(node, key) {
 			for (const child of node.children || []) {
@@ -49,7 +50,7 @@
 		}
 
 		/** Draws the popover again, keeping the focus on the same control.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function render() {
 			// Drawing again replaces every control: the one that had the focus gets it back, so the answer of the preview
@@ -66,7 +67,7 @@
 		}
 
 		/** Draws the popover for the user and module open, from the table on screen.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function draw() {
 			const user = context.userOf(context.current.uid)
@@ -124,10 +125,10 @@
 		}
 
 		/** The advanced block: every operation of the module with Inherit, Allow and Deny.
-		 * @param {*} user operation input
-		 * @param {*} module operation input
-		 * @param {*} operations operation input
-		 * @return {*} operation result
+		 * @param {object} user matrix user row with grants, origins and availability
+		 * @param {string|null} module catalog module ID, null for connection eligibility
+		 * @param {string[]} operations module operations exposed as individual controls
+		 * @return {HTMLElement}
 		 */
 		function operationsBlock(user, module, operations) {
 			const names = context.matrix.labels().operations

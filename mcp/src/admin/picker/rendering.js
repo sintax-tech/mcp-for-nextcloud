@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** picker rendering operations.
+/** Register the picker rendering unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -10,13 +10,13 @@
 	'use strict'
 
 	admin.modules.picker = admin.modules.picker || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach selected chips, fallback display and save lock presentation.
+	 * @param {object} context picker specification, mounted controls and live selection bindings
+	 * @return {void}
 	 */
 	admin.modules.picker.rendering = function (context) {
 		/** Rebuilds the chips of the selected options.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function renderChips() {
 			context.chips.replaceChildren()
@@ -44,7 +44,7 @@
 		}
 
 		/** Shows every control part, the empty text or the fallback text as the state asks.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function paint() {
 			if (context.fallbackText !== null) {
@@ -61,8 +61,9 @@
 			context.renderList()
 		}
 
-		/** @param {boolean} locked locks every control while a save runs
-		 * @return {*} operation result
+		/** Lock picker controls during persistence and update its accessible busy state.
+		 * @param {boolean} locked locks every control while a save runs
+		 * @return {void}
 		 */
 		function setBusy(locked) {
 			context.busy = locked

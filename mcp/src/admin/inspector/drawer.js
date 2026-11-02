@@ -2,7 +2,7 @@
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
  */
-/** inspector drawer operations.
+/** Register the inspector drawer unit on the shared app namespace.
  * @param {object} admin app registry
  * @return {void} registers the focused operations
  */
@@ -10,9 +10,9 @@
 	'use strict'
 
 	admin.modules.inspector = admin.modules.inspector || {}
-	/**
-	 * @param {object} context operation input
-	 * @return {void} operation result
+	/** Attach inspector placement, opening, closing and focus restoration.
+	 * @param {object} context inspector controls, live request sequences and attached presentation operations
+	 * @return {void}
 	 */
 	admin.modules.inspector.drawer = function (context) {
 		const drawerTitle = document.getElementById('mcp-inspector-title')
@@ -26,7 +26,7 @@
 		 * behind it (backdrop-filter on #content-vue), which makes that box, not the window, the one it is placed in: its top
 		 * would then be counted from the box, one header too low. The offset is measured, not assumed, since a theme may turn
 		 * the blur off.
-		 * @return {*} operation result
+		 * @return {void}
 		 */
 		function placeDrawer() {
 			context.root.style?.removeProperty?.('top')
@@ -40,9 +40,8 @@
 		/**
 		 * Opens the drawer; the focus goes back to `trigger` when it closes. Only one drawer is open at a time: when the
 		 * administrator keeps a draft of the resource scope, its drawer stays and this one does not open.
-		 *
 		 * @return {boolean} whether the drawer opened
-		 * @param {*} trigger operation input
+		 * @param {HTMLElement|null|undefined} trigger control that opened the drawer or popover and may receive focus again
 		 */
 		function openDrawer(trigger) {
 			if (window.OCA.Mcp.Admin.scope?.close?.() === false) {
@@ -61,7 +60,6 @@
 
 		/**
 		 * Closes the drawer and gives the focus back. The inspector only reads, so nothing can be lost.
-		 *
 		 * @return {boolean} always true: the drawer is closed now
 		 */
 		function closeDrawer() {
@@ -79,8 +77,8 @@
 		/**
 		 * Gives the focus back to the control that opened the drawer, or, when the table was drawn again and that control is
 		 * gone, to the same row's "…" button, then to the drawer's own button on the Access tab: never to the page.
-		 * @param {*} target operation input
-		 * @return {*} operation result
+		 * @param {HTMLElement|null|undefined} target control to receive focus
+		 * @return {void}
 		 */
 		function focusBack(target) {
 			if (target && target.isConnected !== false) {

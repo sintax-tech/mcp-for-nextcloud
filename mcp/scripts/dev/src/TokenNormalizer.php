@@ -71,7 +71,7 @@ final class TokenNormalizer {
 	 * @return NormalizedSource the stream, the class names, strings and location-dependent constructs of the source
 	 */
 	public function normalize(string $code, array $renames = [], ?string $path = null, array $paths = []): NormalizedSource {
-		$tokens = $this->significant($code);
+		$tokens = $this->significant(FormsSourceReaders::prepare($code, $path, $paths));
 		$scope = new ImportScope();
 		$stream = [];
 		$references = [];

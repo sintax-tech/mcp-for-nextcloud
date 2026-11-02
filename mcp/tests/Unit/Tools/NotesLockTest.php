@@ -14,8 +14,8 @@ use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Platform\FileAccess\LockWriteFailure;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Tools\Notes\NotesModule;
-use OCA\Mcp\Tools\Notes\NotesRepository;
+use OCA\Mcp\Modules\Notes\NotesModule;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
@@ -23,6 +23,7 @@ use OCP\Files\Lock\ILock;
 use OCP\IUser;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
+use OCA\Mcp\Tests\Unit\Tools\Notes\NotesTestModule;
 
 /**
  * A note open in Text (directly, or in Notes in rich mode) is locked by files_lock. The incident of 08/10/2026: an
@@ -48,7 +49,7 @@ final class NotesLockTest extends TestCase {
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
 		$this->locks = new FakeLockManager();
-		$this->module = new NotesModule(new NotesRepository($root, (new InMemoryConfig())->mock($this)), $apps, $users,
+		$this->module = NotesTestModule::build(new NotesRepository($root, (new InMemoryConfig())->mock($this)), $apps, $users,
 			new SharedWriteGuard($access), $access, null, $this->locks->service($this));
 	}
 

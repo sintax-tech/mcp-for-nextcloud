@@ -11,10 +11,10 @@ final class ModuleIsolationTest extends ArchitectureCase {
 	public function testLiveModulesDoNotGainCrossModuleEdges(): void { $this->assertBoundary('module-isolation'); }
 	public function testGroupedAliasFqcnAndLiteralReferencesFail(): void {
 		foreach ([
-			'use OCA~Mcp~Tools~Files\\{UniqueSnippet, UnifiedDiff as Diff};',
-			'$x = new \\OCA~Mcp~Tools~Files~UniqueSnippet();',
-			'$x = \'OCA~Mcp~Tools~Files~UniqueSnippet\';',
-			'/** @param \\OCA~Mcp~Tools~Files~UniqueSnippet $x */ function x($x) {}',
+			'use OCA~Mcp~Tools~Files\\{TextExtractor, FilesMessages as Messages};',
+			'$x = new \\OCA~Mcp~Tools~Files~TextExtractor();',
+			'$x = \'OCA~Mcp~Tools~Files~TextExtractor\';',
+			'/** @param \\OCA~Mcp~Tools~Files~TextExtractor $x */ function x($x) {}',
 		] as $code) { self::assertNotSame([], self::fixture('lib/Modules/Notes/Reading/X.php', $code)); }
 		self::assertSame([], self::fixture('lib/Modules/Notes/X.php', 'use OCA~Mcp~Access~Grants~GrantPolicy; use OCA~Mcp~Tools~Notes~NotesRepository;'));
 	}

@@ -36,8 +36,78 @@ final class ThinToolsTest extends ArchitectureCase {
 		self::assertNotSame([], ToolContracts::coverage([], ['ToolClass']));
 		self::assertSame(1, ToolContracts::workCount(new \ReflectionClass(OneWorkTool::class)));
 		self::assertSame(2, ToolContracts::workCount(new \ReflectionClass(TwoWorkTool::class)));
+		self::assertSame([], ToolContracts::delegation(new \ReflectionClass(OneWorkTool::class), false));
+		self::assertSame([], ToolContracts::delegation(new \ReflectionClass(PlannedWriteTool::class), true));
+		foreach (\OCA\Mcp\Modules\Notes\NotesToolCatalog::TOOLS as $tool) {
+			self::assertSame([], ToolContracts::delegation(new \ReflectionClass($tool), $tool::definition()->operation !== 'read'), $tool);
+		}
+		foreach ([[TwoWorkTool::class, false], [OneWorkTool::class, true], [ThreeWorkWriteTool::class, true], [PreviewCallsEffectTool::class, true], [SamePlanAndEffectMutant::class, true], [UnusedReadMutant::class, false], [LineCommentReadMutant::class, false], [BlockCommentReadMutant::class, false], [StringReadMutant::class, false], [HeredocReadMutant::class, false]] as [$class, $write]) {
+			self::assertNotSame([], ToolContracts::delegation(new \ReflectionClass($class), $write), $class);
+		}
 	}
 }
 
-final class OneWorkTool { public function __construct(public \stdClass $work) {} }
-final class TwoWorkTool { public function __construct(public \stdClass $work, public \stdClass $other) {} }
+final class EffectWork { public function run(): array { return []; } }
+final class PlanWork { public function plan(): array { return []; } }
+final class OneWorkTool { public function __construct(public EffectWork $work) {} public function execute(): mixed { return $this->work->run(); } }
+final class TwoWorkTool { public function __construct(public EffectWork $work, public PlanWork $other) {} public function execute(): mixed { return [$this->work->run(), $this->other->plan()]; } }
+final class PlannedWriteTool {
+	public function __construct(public EffectWork $effect, public PlanWork $plan) {}
+	public function execute(): mixed { return $this->effect->run(); }
+	public function preview(): mixed { return $this->plan->plan(); }
+}
+final class ThreeWorkWriteTool {
+	public function __construct(public EffectWork $effect, public PlanWork $plan, public \stdClass $extra) {}
+	public function execute(): mixed { return $this->effect->run(); }
+	public function preview(): mixed { return $this->plan->plan(); }
+}
+final class PreviewCallsEffectTool {
+	public function __construct(public EffectWork $effect, public PlanWork $plan) {}
+	public function execute(): mixed { return $this->effect->run(); }
+	public function preview(): mixed { return $this->effect->run(); }
+}
+/** Review mutant M1 of RE-13: DeleteNote whose plan dependency is the effect handler, so preview would delete. */
+final class SamePlanAndEffectMutant {
+	public function __construct(private \OCA\Mcp\Modules\Notes\Deletion\DeleteNoteHandler $deletes, private \OCA\Mcp\Modules\Notes\Deletion\DeleteNoteHandler $plans) {}
+	public function execute(array $arguments, string $userId): array { return $this->deletes->handle($userId, $arguments); }
+	public function preview(array $arguments, string $userId): array { return $this->plans->handle($userId, $arguments); }
+}
+/** Review mutant M2 of RE-13: ReadNote that reads its dependency and never calls it. */
+final class UnusedReadMutant {
+	public function __construct(private \OCA\Mcp\Modules\Notes\Reading\ReadNoteHandler $reads) {}
+	public function execute(): array { $unused = $this->reads; return []; }
+}
+/** Review mutant M5 of RE-13: the only delegation is a line comment. */
+final class LineCommentReadMutant {
+	public function __construct(private \OCA\Mcp\Modules\Notes\Reading\ReadNoteHandler $reads) {}
+	public function execute(array $arguments, string $userId): array {
+		// return NodeAccess::run(fn (): array => ToolResult::json($this->reads->handle($userId, $arguments)));
+		return [];
+	}
+}
+/** M5 variant: the only delegation is inside a block comment. */
+final class BlockCommentReadMutant {
+	public function __construct(private \OCA\Mcp\Modules\Notes\Reading\ReadNoteHandler $reads) {}
+	public function execute(array $arguments, string $userId): array {
+		/* return $this->reads->handle($userId, $arguments); */
+		return [];
+	}
+}
+/** M5 variant: the only delegation is the text of quoted strings. */
+final class StringReadMutant {
+	public function __construct(private \OCA\Mcp\Modules\Notes\Reading\ReadNoteHandler $reads) {}
+	public function execute(array $arguments, string $userId): array {
+		return ['$this->reads->handle($userId, $arguments)', "call \$this->reads->handle(\$userId)"];
+	}
+}
+/** M5 variant: the only delegation is the text of a heredoc and a nowdoc. */
+final class HeredocReadMutant {
+	public function __construct(private \OCA\Mcp\Modules\Notes\Reading\ReadNoteHandler $reads) {}
+	public function execute(array $arguments, string $userId): array {
+		return [<<<TEXT
+			\$this->reads->handle(\$userId)
+			TEXT, <<<'TEXT'
+			$this->reads->handle($userId)
+			TEXT];
+	}
+}

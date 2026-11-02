@@ -35,10 +35,10 @@ use OCA\Mcp\Tools\Calendar\SharedGuard;
 use OCA\Mcp\Tools\Calendar\TrashPolicy;
 use OCA\Mcp\Tools\Deck\DeckGatewayInterface;
 use OCA\Mcp\Tools\Deck\DeckToolModule;
-use OCA\Mcp\Tools\Notes\NotesModule;
+use OCA\Mcp\Modules\Notes\NotesModule;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Tools\Notes\NotesRepository;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
 use OCA\Mcp\Tools\Talk\ActorNames;
 use OCA\Mcp\Tools\Talk\ConversationReader;
 use OCA\Mcp\Tools\Talk\ConversationResolver;
@@ -64,6 +64,7 @@ use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
 use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
+use OCA\Mcp\Tests\Unit\Tools\Notes\NotesTestModule;
 
 /**
  * A failure the server refuses to run is the most read text of the app: it is what the person sees when
@@ -196,7 +197,7 @@ final class ToolErrorsLanguagesTest extends TestCase {
 		$root = $this->createMock(IRootFolder::class);
 		$root->method('getUserFolder')->willReturn($this->createMock(Folder::class));
 		$repository = new NotesRepository($root, $this->createMock(IConfig::class));
-		return new NotesModule($repository, $this->appManager(), $this->userManager(), $this->createMock(SharedWriteGuard::class), $this->createMock(NodeAccessInfo::class));
+		return NotesTestModule::build($repository, $this->appManager(), $this->userManager(), $this->createMock(SharedWriteGuard::class), $this->createMock(NodeAccessInfo::class));
 	}
 
 	/**

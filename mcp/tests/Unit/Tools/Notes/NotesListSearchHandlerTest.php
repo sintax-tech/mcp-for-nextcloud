@@ -14,8 +14,8 @@ use OCA\Mcp\Tests\Unit\Tools\FakeUsers;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Tools\Notes\NotesModule;
-use OCA\Mcp\Tools\Notes\NotesRepository;
+use OCA\Mcp\Modules\Notes\NotesModule;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
@@ -100,7 +100,7 @@ final class NotesListSearchHandlerTest extends TestCase {
 		$users = $this->createMock(IUserManager::class);
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$module = new NotesModule(new NotesRepository($root, $this->config->mock($this)), $apps, $users,
+		$module = NotesTestModule::build(new NotesRepository($root, $this->config->mock($this)), $apps, $users,
 			new SharedWriteGuard($access), $access);
 		$published = WriteGate::publish(array_column($module->definitions(), null, 'name')[$name]);
 		return $module->call($name, ArgumentValidator::validate($published['inputSchema'], $arguments), 'alice');

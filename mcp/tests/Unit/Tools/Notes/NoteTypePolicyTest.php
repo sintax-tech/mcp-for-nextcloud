@@ -19,9 +19,9 @@ use OCA\Mcp\Access\FileTypes\FileTypeGuard;
 use OCA\Mcp\Access\FileTypes\FileTypeMessages;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Tools\Notes\NoteContentSink;
-use OCA\Mcp\Tools\Notes\NotesModule;
-use OCA\Mcp\Tools\Notes\NotesRepository;
+use OCA\Mcp\Modules\Notes\Editing\NoteContentSink;
+use OCA\Mcp\Modules\Notes\NotesModule;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use OCP\App\IAppManager;
@@ -95,7 +95,7 @@ final class NoteTypePolicyTest extends TestCase {
 		$users = $this->createMock(IUserManager::class);
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$this->module = new NotesModule(
+		$this->module = NotesTestModule::build(
 			new NotesRepository($root, $this->config->mock($this)),
 			$apps,
 			$users,

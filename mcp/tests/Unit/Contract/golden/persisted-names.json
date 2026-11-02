@@ -45,6 +45,7 @@
             "OCA\\Mcp\\Tools\\Calendar\\CalendarStore",
             "OCA\\Mcp\\Tools\\Calendar\\EmbeddedDavDispatcher",
             "OCA\\Mcp\\Tools\\Deck\\DeckGatewayInterface",
+            "OCA\\Mcp\\Mcp\\Resources\\NoteResource",
             "OCA\\Mcp\\Mcp\\Tools\\Discovery\\CapabilityRegistry",
             "OCA\\Mcp\\Mcp\\Tools\\ToolRegistry",
             "OCA\\Mcp\\Mcp\\Resources\\ResourceRegistry",
@@ -66,7 +67,7 @@
         ],
         "MODULES": [
             "OCA\\Mcp\\Tools\\Files\\FilesModule",
-            "OCA\\Mcp\\Tools\\Notes\\NotesModule",
+            "OCA\\Mcp\\Modules\\Notes\\NotesModule",
             "OCA\\Mcp\\Tools\\Calendar\\CalendarModule",
             "OCA\\Mcp\\Tools\\Contacts\\ContactsModule",
             "OCA\\Mcp\\Tools\\Tasks\\TasksModule",

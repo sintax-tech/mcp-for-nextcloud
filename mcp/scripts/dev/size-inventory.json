@@ -44,7 +44,6 @@
 		{"fqcn":"OCA\\Mcp\\Tools\\Files\\Reorganization","ceiling":1106,"expires":"RE-23"},
 		{"fqcn":"OCA\\Mcp\\Tools\\Files\\Sharing\\ShareWriter","ceiling":554,"expires":"RE-22"},
 		{"fqcn":"OCA\\Mcp\\Tools\\Mail\\MailServices","ceiling":357,"expires":"RE-25"},
-		{"fqcn":"OCA\\Mcp\\Tools\\Notes\\NotesModule","ceiling":627,"expires":"RE-13"},
 		{"fqcn":"OCA\\Mcp\\Tools\\Talk\\Messages","ceiling":547,"expires":"RE-20"},
 		{"fqcn":"OCA\\Mcp\\Tools\\Talk\\TalkModule","ceiling":844,"expires":"RE-20"},
 		{"fqcn":"OCA\\Mcp\\Tools\\Tasks\\TasksModule","ceiling":306,"expires":"RE-15b"}

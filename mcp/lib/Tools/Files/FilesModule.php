@@ -186,7 +186,7 @@ class FilesModule implements ToolModule, PreviewsWrites, RendersPlans, ToolGuide
 				'description' => FilesMessages::replaceTool(),
 				'inputSchema' => self::schema([
 					'path' => $path,
-					'old' => ['type' => 'string', 'minLength' => 1, 'maxLength' => UniqueSnippet::MAX_BYTES, 'description' => FilesMessages::oldSnippet()],
+					'old' => ['type' => 'string', 'minLength' => 1, 'maxLength' => \OCA\Mcp\Platform\Text\UniqueSnippet::MAX_BYTES, 'description' => FilesMessages::oldSnippet()],
 					'new' => ['type' => 'string', 'description' => FilesMessages::newSnippet()],
 					'etag' => $etag,
 					'confirm_shared' => $confirmShared,

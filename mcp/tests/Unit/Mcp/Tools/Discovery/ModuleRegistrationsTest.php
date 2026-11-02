@@ -25,7 +25,7 @@ use Psr\Log\LoggerInterface;
 final class ModuleRegistrationsTest extends TestCase {
 	/** Legacy modules and catalogs without a registration contribute nothing. */
 	public function testOnlyRegistrationsOfCatalogModulesRun(): void {
-		self::assertSame([], ModuleRegistrations::of(Application::MODULES));
+		self::assertSame([\OCA\Mcp\Modules\Notes\NotesRegistration::class], array_map(static fn (object $registration): string => $registration::class, ModuleRegistrations::of(Application::MODULES)));
 		self::assertSame([], ModuleRegistrations::of([ProbeModule::class]));
 		$registrations = ModuleRegistrations::of([ProbeModule::class, RegisteredProbeModule::class]);
 		self::assertCount(1, $registrations);

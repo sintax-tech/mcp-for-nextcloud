@@ -16,9 +16,6 @@ use OCA\Mcp\Platform\FileAccess\PathGuard;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\TextExtractor;
-use OCA\Mcp\Tools\Notes\NotesMessages;
-use OCA\Mcp\Tools\Notes\NotesModule;
-use OCA\Mcp\Tools\Notes\NotesRepository;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Mcp\Guide\ToolGuide;
 use OCA\Mcp\Mcp\Tools\ToolPresentation;
@@ -58,7 +55,7 @@ class ResourceRegistry {
 		private IRootFolder $rootFolder,
 		private VisibilityGuard $visibilityGuard,
 		private TextExtractor $textExtractor,
-		private NotesRepository $notesRepo,
+		private NoteResource $notes,
 		private ToolGuide $guide,
 		private FilesAccessGuard $filesGuard,
 		private ?GuestRestrictions $guests = null,
@@ -280,20 +277,14 @@ class ResourceRegistry {
 		}
 		$id = (int)$rawId;
 
-		return NodeAccess::run(function () use ($uri, $id, $userId): array {
-			$notesFolder = $this->notesRepo->folder($userId, false);
-			$note = $this->notesRepo->find($notesFolder, $id);
-			$this->visibilityGuard->assertVisible($note);
-
-			return [
-				'contents' => [
-					[
-						'uri' => $uri,
-						'mimeType' => 'text/markdown',
-						'text' => $this->notesRepo->read($note),
-					],
+		return NodeAccess::run(fn (): array => [
+			'contents' => [
+				[
+					'uri' => $uri,
+					'mimeType' => 'text/markdown',
+					'text' => $this->notes->read($userId, $id),
 				],
-			];
-		});
+			],
+		]);
 	}
 }

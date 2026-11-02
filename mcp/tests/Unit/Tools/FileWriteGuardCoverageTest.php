@@ -29,7 +29,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Service/Calendar/CalendarSelftestService.php#run:literal-move:3' => 'label: self-test report detail key',
 			'Service/Calendar/CalendarSelftestMessages.php#detail:literal-move:1' => 'label: report message lookup key',
 			'Mcp/Tools/ToolPresentation.php#<global>:literal-move:1' => 'label: destructive-operation presentation catalog',
-			'Tools/Notes/NotesModule.php#definitions:literal-move:1' => 'label: notes_move operation metadata',
+			'Modules/Notes/Tools/MoveNote.php#definition:literal-move:1' => 'label: notes_move operation metadata',
 			'Tools/Files/FilesModule.php#definitions:literal-move:1' => 'label: files_move operation metadata',
 			'Tools/Files/FilesModule.php#definitions:literal-move:2' => 'label: files_move_batch operation metadata',
 			'Tools/Files/FilesModule.php#definitions:literal-move:3' => 'label: files_undo_batch operation metadata',
@@ -74,12 +74,11 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Tools/Files/VersionRestore.php#writeVersion:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Files\\FileContentTypePolicyTest::testSinkDenialAfterBackupOnRestoreKeepsTheOriginalAndTheBackup',
 			'Tools/Files/Reorganization.php#createFolders:newfolder:1' => 'directory: type not applicable; T15-6 must preflight associated files first',
 			'Platform/FileAccess/NodeAccess.php#ensureFolder:newfolder:1' => 'directory: auxiliary folder, not a file; callers preflight associated files',
-			'Tools/Notes/Handler/CreateNoteHandler.php#handle:newfile:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testCreateRefusesBeforeCreatingACategory',
-			'Tools/Notes/Handler/EditNoteHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testWholeEditRefusesADeniedTitleBeforeWritingContent',
-			'Tools/Notes/Handler/MoveNoteHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testMoveRefusesBeforeCreatingACategory',
-			'Tools/Notes/NoteContentSink.php#whole:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testWholeEditRefusesADeniedTitleBeforeWritingContent',
-			'Tools/Notes/NoteContentSink.php#partial:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testPartialWriterRefusesBeforePutContent',
-			'Tools/Notes/NotesModule.php#call:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testMoveDelegationIsGuarded',
+			'Modules/Notes/Creation/CreateNoteHandler.php#handle:newfile:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testCreateRefusesBeforeCreatingACategory',
+			'Modules/Notes/Editing/EditNoteHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testWholeEditRefusesADeniedTitleBeforeWritingContent',
+			'Modules/Notes/Moving/MoveNoteHandler.php#handle:move:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testMoveRefusesBeforeCreatingACategory',
+			'Modules/Notes/Editing/NoteContentSink.php#whole:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testWholeEditRefusesADeniedTitleBeforeWritingContent',
+			'Modules/Notes/Editing/NoteContentSink.php#partial:putcontent:1' => 'guarded: OCA\\Mcp\\Tests\\Unit\\Tools\\Notes\\NoteTypePolicyTest::testPartialWriterRefusesBeforePutContent',
 			'Tools/Files/FileBackup.php#copy:copy:1' => 'D3: delegates to the verified internal recovery copier; never reads file type policy',
 			'Tools/Files/FileBackup.php#prepare:copy:1' => 'D3: internal verified backup delegation; never reads policy',
 			'Tools/Files/FileBackupCopy.php#copy:newfile:1' => 'D3: mandatory internal backup creation; never reads policy',
@@ -109,7 +108,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 		$calls = FileWriteSinkInventory::calls(FileWriteSinkInventory::sources(__DIR__ . '/../../../lib'));
 		$literals = array_values(array_filter($calls, static fn (string $call): bool => str_contains($call, ':literal-')));
 		self::assertCount(21, $literals);
-		self::assertCount(46, array_diff($calls, $literals));
+		self::assertCount(45, array_diff($calls, $literals));
 		foreach ($calls as $call) {
 			self::assertDoesNotMatchRegularExpression('/:(?:literal-)?(?:writestream|fputs):/', $call);
 		}

@@ -11,8 +11,8 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Platform\FileAccess\NodeAccessInfo;
 use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
-use OCA\Mcp\Tools\Notes\NotesModule;
-use OCA\Mcp\Tools\Notes\NotesRepository;
+use OCA\Mcp\Modules\Notes\NotesModule;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
@@ -21,6 +21,7 @@ use OCP\IUserManager;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use OCA\Mcp\Tests\Unit\Tools\Notes\NotesTestModule;
 
 /**
  * Covers the content of the Notes plans and the guarantee that a plan leaves the tree untouched: no
@@ -49,7 +50,7 @@ final class NotesPreviewTest extends TestCase {
 		$this->users = $this->createMock(IUserManager::class);
 		$this->users->method('get')->willReturn($this->createMock(IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$this->module = new NotesModule(new NotesRepository($root, $this->config->mock($this)), $apps, $this->users,
+		$this->module = NotesTestModule::build(new NotesRepository($root, $this->config->mock($this)), $apps, $this->users,
 			new SharedWriteGuard($access), $access);
 		$this->before = $this->tree->nodes;
 	}
@@ -139,7 +140,7 @@ final class NotesPreviewTest extends TestCase {
 			$this->module->preview('notes_edit', ['id' => $this->ata, 'content' => 'novo', 'title' => 'Outra'], 'alice');
 			$this->fail('the plan accepted a title that is taken');
 		} catch (\OCA\Mcp\Mcp\Tools\Results\ToolFailure $e) {
-			$this->assertSame(\OCA\Mcp\Tools\Notes\NotesMessages::titleExistsInCategory(), $e->getMessage());
+			$this->assertSame(\OCA\Mcp\Modules\Notes\Presentation\NotesMessages::titleExistsInCategory(), $e->getMessage());
 		}
 		$this->assertNothingWritten();
 	}

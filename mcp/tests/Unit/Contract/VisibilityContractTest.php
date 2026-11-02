@@ -19,8 +19,8 @@ use OCA\Mcp\Platform\FileAccess\SharedWriteGuard;
 use OCA\Mcp\Tools\Files\FilesMessages;
 use OCA\Mcp\Tools\Files\FilesModule;
 use OCA\Mcp\Tools\Files\Reorganization;
-use OCA\Mcp\Tools\Notes\NotesModule;
-use OCA\Mcp\Tools\Notes\NotesRepository;
+use OCA\Mcp\Modules\Notes\NotesModule;
+use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
 use OCA\Mcp\Tools\Talk\AttachmentAccess;
 use OCA\Mcp\Tools\Talk\Conversation;
 use OCA\Mcp\Tools\Talk\ConversationAccessException;
@@ -137,6 +137,20 @@ final class VisibilityContractTest extends TestCase {
 			$name = $type instanceof \ReflectionNamedType ? $type->getName() : null;
 			if ($name === null || $type->isBuiltin()) {
 				$args[] = $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : ($name === 'string' ? 'mcp' : null);
+				continue;
+			}
+			if ($name === \Psr\Container\ContainerInterface::class) {
+				// A catalog module resolves its tools lazily; they are built here the same way as everything else.
+				$args[] = new class(fn (string $id): object => $this->build($id)) implements \Psr\Container\ContainerInterface {
+					public function __construct(private \Closure $build) {
+					}
+					public function get(string $id): mixed {
+						return ($this->build)($id);
+					}
+					public function has(string $id): bool {
+						return class_exists($id);
+					}
+				};
 				continue;
 			}
 			if ($name === \OCA\Mcp\Platform\FileAccess\ActorRoot::class) {

@@ -28,7 +28,13 @@ final class DiAcyclicTest extends TestCase {
 
 	public function testEveryRegisteredFactoryAndEveryModuleRootIsConstructed(): void {
 		$resolver = $this->resolver();
-		$resolver->resolveAll(Application::MODULES);
+		$tools = [];
+		foreach (Application::MODULES as $module) {
+			if (is_subclass_of($module, \OCA\Mcp\Mcp\Tools\CatalogModule::class)) { $tools = [...$tools, ...$module::catalog()]; }
+		}
+		// A catalog resolves its tools lazily: building them here proves every work class is autowired or registered.
+		$resolver->resolveAll([...Application::MODULES, ...$tools]);
+		self::assertNotEmpty($tools);
 		self::assertCount(13, Application::MODULES);
 		$captured = array_keys($resolver->factories); $invoked = array_keys($resolver->invoked); sort($captured); sort($invoked);
 		self::assertSame($captured, $invoked);
@@ -64,7 +70,7 @@ final class DiAcyclicTest extends TestCase {
 	public static function wrongFactory(): object { return new \stdClass(); }
 
 	public function testMissingPortsFailWithoutGenericInternalDoubles(): void {
-		foreach ([WriteVisibility::class, NativeCalendars::class] as $port) {
+		foreach ([WriteVisibility::class, NativeCalendars::class, \OCA\Mcp\Mcp\Resources\NoteResource::class] as $port) {
 			$factories = Registrations::capture($this); unset($factories[$port]);
 			try { $this->resolver($factories)->get($port); self::fail('Missing port resolved'); }
 			catch (LogicException $error) { self::assertStringContainsString('Missing internal binding', $error->getMessage()); }

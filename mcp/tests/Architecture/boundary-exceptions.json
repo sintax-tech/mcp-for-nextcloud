@@ -93,7 +93,7 @@
 			"rule": "layering",
 			"source": "lib/Mcp/Resources/ResourceRegistry.php",
 			"target": "OCA\\Mcp\\Tools\\Files\\FilesMessages",
-			"line": 254,
+			"line": 251,
 			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
 			"expires": "RE-21"
 		},
@@ -101,7 +101,7 @@
 			"rule": "layering",
 			"source": "lib/Mcp/Resources/ResourceRegistry.php",
 			"target": "OCA\\Mcp\\Tools\\Files\\FilesModule",
-			"line": 51,
+			"line": 48,
 			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
 			"expires": "RE-21"
 		},
@@ -109,33 +109,9 @@
 			"rule": "layering",
 			"source": "lib/Mcp/Resources/ResourceRegistry.php",
 			"target": "OCA\\Mcp\\Tools\\Files\\TextExtractor",
-			"line": 241,
+			"line": 238,
 			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
 			"expires": "RE-21"
-		},
-		{
-			"rule": "layering",
-			"source": "lib/Mcp/Resources/ResourceRegistry.php",
-			"target": "OCA\\Mcp\\Tools\\Notes\\NotesMessages",
-			"line": 19,
-			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
-			"expires": "RE-13"
-		},
-		{
-			"rule": "layering",
-			"source": "lib/Mcp/Resources/ResourceRegistry.php",
-			"target": "OCA\\Mcp\\Tools\\Notes\\NotesModule",
-			"line": 20,
-			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
-			"expires": "RE-13"
-		},
-		{
-			"rule": "layering",
-			"source": "lib/Mcp/Resources/ResourceRegistry.php",
-			"target": "OCA\\Mcp\\Tools\\Notes\\NotesRepository",
-			"line": 61,
-			"reason": "Invert this legacy upward dependency through a lower-layer contract.",
-			"expires": "RE-13"
 		},
 		{
 			"rule": "layering",
@@ -232,22 +208,6 @@
 			"line": 71,
 			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
 			"expires": "RE-27"
-		},
-		{
-			"rule": "module-isolation",
-			"source": "lib/Tools/Notes/NoteChange.php",
-			"target": "OCA\\Mcp\\Tools\\Files\\UniqueSnippet",
-			"line": 125,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-13"
-		},
-		{
-			"rule": "module-isolation",
-			"source": "lib/Tools/Notes/NoteChangePlan.php",
-			"target": "OCA\\Mcp\\Tools\\Files\\UnifiedDiff",
-			"line": 60,
-			"reason": "Replace this legacy cross-module dependency with a lower-layer port or shared value.",
-			"expires": "RE-13"
 		},
 		{
 			"rule": "module-isolation",
@@ -2000,14 +1960,6 @@
 			"line": 72,
 			"reason": "Move this native-app reference behind the owning module Integration boundary.",
 			"expires": "RE-25"
-		},
-		{
-			"rule": "native-app",
-			"source": "lib/Tools/Notes/NotesModule.php",
-			"target": "OCA\\Files_Trashbin\\Storage",
-			"line": 52,
-			"reason": "Move this native-app reference behind the owning module Integration boundary.",
-			"expires": "RE-13"
 		},
 		{
 			"rule": "native-app",

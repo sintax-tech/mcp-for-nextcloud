@@ -14,7 +14,7 @@ use OCA\Mcp\Tests\Unit\Contract\Oracle\FlowRunner;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\GoldenFile;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\VolatileFields;
 use OCA\Mcp\Tests\Unit\Tools\FakeTree;
-use OCA\Mcp\Tools\Notes\NotesMessages;
+use OCA\Mcp\Modules\Notes\Presentation\NotesMessages;
 use PHPUnit\Framework\TestCase;
 
 /**

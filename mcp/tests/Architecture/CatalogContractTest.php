@@ -18,9 +18,11 @@ final class CatalogContractTest extends ArchitectureCase {
 		$builder = new ModuleBuilder($this);
 		foreach (Application::MODULES as $class) {
 			if (is_subclass_of($class, CatalogModule::class)) {
-				self::assertNotNull($class::registration(), 'Migrated module must have a registration');
-				$registration = new ($class::registration())();
-				foreach ($registration->probes() as $probe) {
+				$namespace = substr($class, 0, (int)strrpos($class, '\\'));
+				$own = array_values(array_filter(array_keys(self::tree()->classes), static fn (string $c): bool => str_starts_with($c, $namespace . '\\')));
+				self::assertSame([], ToolContracts::registration($class::registration(), $own, $namespace, $this->bindings($class::registration())), $class);
+				$probes = $class::registration() === null ? [] : (new ($class::registration())())->probes();
+				foreach ($probes as $probe) {
 					$r = (new \ReflectionClass($probe))->newInstanceWithoutConstructor();
 					$capabilities = [...$capabilities, ...$r->keys()];
 				}
@@ -34,6 +36,31 @@ final class CatalogContractTest extends ArchitectureCase {
 		$names = array_column($golden['tools/list']['body']['result']['tools'], 'name');
 		self::assertSame(array_values(array_diff($names, ['mcp_status', 'mcp_guide', 'search', 'fetch'])), array_column($definitions, 'name'));
 	}
+	public function testARegistrationExistsExactlyWhenTheModuleBindsSomethingOrHasAProbe(): void {
+		$here = __NAMESPACE__;
+		self::assertSame([], ToolContracts::registration(null, [PortlessWork::class], $here));
+		self::assertNotSame([], ToolContracts::registration(null, [PortlessWork::class, PortWork::class], $here));
+		self::assertSame([], ToolContracts::registration(\OCA\Mcp\Modules\Notes\NotesRegistration::class, [PortWork::class], $here, $this->bindings(\OCA\Mcp\Modules\Notes\NotesRegistration::class)));
+		self::assertSame(1, $this->bindings(\OCA\Mcp\Modules\Notes\NotesRegistration::class));
+		self::assertSame(0, $this->bindings(EmptyRegistrationFixture::class));
+		self::assertNotSame([], ToolContracts::registration(EmptyRegistrationFixture::class, [PortlessWork::class], $here, $this->bindings(EmptyRegistrationFixture::class)));
+		self::assertNotSame([], ToolContracts::registration(\stdClass::class, [], $here));
+		self::assertNull(RestrictedCatalogFixture::registration());
+		self::assertSame([], ToolContracts::registration(RestrictedCatalogFixture::registration(), [RestrictedCatalogFixture::class, PortlessWork::class], $here));
+		self::assertNotSame([], ToolContracts::registration(RestrictedCatalogFixture::registration(), [RestrictedCatalogFixture::class, PortWork::class], $here));
+	}
+	/**
+	 * @param string|null $registration a module registration
+	 * @return int services it registers, counted on a recording context
+	 */
+	private function bindings(?string $registration): int {
+		if ($registration === null) { return 0; }
+		$count = 0;
+		$context = $this->createMock(\OCP\AppFramework\Bootstrap\IRegistrationContext::class);
+		$context->method('registerService')->willReturnCallback(static function () use (&$count): void { $count++; });
+		(new $registration())->register($context);
+		return $count;
+	}
 	public function testCatalogMutantsAreRejectedAndCleanFixturePasses(): void {
 		$read = ['name' => 'notes_read_note', 'module' => 'notes', 'operation' => 'read'];
 		self::assertSame([], ToolContracts::catalog([$read], []));
@@ -43,4 +70,17 @@ final class CatalogContractTest extends ArchitectureCase {
 		$names = ['notes_read_note', 'notes_edit_note'];
 		self::assertNotSame([], ToolContracts::catalog([array_replace($read, ['name' => 'notes_edit_note', 'operation' => 'edit']), $read], [], $names));
 	}
+}
+
+final class PortlessWork { public function run(): string { return ''; } }
+final class PortWork implements \OCA\Mcp\Mcp\Resources\NoteResource { public function read(string $userId, int $id): string { return ''; } }
+final class RestrictedCatalogFixture extends \OCA\Mcp\Mcp\Tools\CatalogModule implements \OCA\Mcp\Mcp\Tools\RestrictedModule {
+	public static function catalog(): array { return []; }
+	public function permits(string $userId): bool { return true; }
+	public function audit(string $tool, string $userId, string $outcome, array $arguments): void {}
+}
+/** Review control M3 of RE-13: a registration that binds nothing and has no probe. */
+final class EmptyRegistrationFixture implements \OCA\Mcp\Mcp\Tools\ModuleRegistration {
+	public function register(\OCP\AppFramework\Bootstrap\IRegistrationContext $context): void {}
+	public function probes(): array { return []; }
 }

@@ -69,9 +69,36 @@ final class ToolContracts {
 		$definition = $class::definition();
 		$errors = self::thin((string)file_get_contents($r->getFileName()), $definition->operation !== 'read');
 		if (!$r->isFinal() || !$r->implementsInterface(Tool::class) || ($definition->operation !== 'read' && !$r->implementsInterface(WriteTool::class))) { $errors[] = 'Invalid reflected tool interface: ' . $class; }
-		if (self::workCount($r) !== 1) { $errors[] = 'Tool must delegate to one work dependency: ' . $class; }
+		$errors = [...$errors, ...self::delegation($r, $definition->operation !== 'read')];
 		return $errors;
 	}
+	/**
+	 * A read tool has one work collaborator; a write tool has two, the effect and the plan. Each method calls exactly one
+	 * of them, and a write's preview never calls the class its execute calls.
+	 *
+	 * @param ReflectionClass $class Tool reflection. @param bool $write Definition is a write. @return list<string> Delegation violations.
+	 */
+	public static function delegation(ReflectionClass $class, bool $write): array {
+		$errors = [];
+		$expected = $write ? 2 : 1;
+		if (self::workCount($class) !== $expected) {
+			$errors[] = ($write ? 'Write tool must delegate to one effect and one plan dependency: ' : 'Tool must delegate to one work dependency: ') . $class->getName();
+		}
+		$work = array_map(static fn ($p) => $p->getName(), array_filter($class->getConstructor()?->getParameters() ?? [], static fn ($p) => $p->getType() instanceof \ReflectionNamedType && !$p->getType()->isBuiltin()));
+		$lines = file((string)$class->getFileName()) ?: [];
+		$used = [];
+		foreach ($write ? ['execute', 'preview'] : ['execute'] as $name) {
+			if (!$class->hasMethod($name)) { $errors[] = 'Tool method missing: ' . $class->getName() . '::' . $name; continue; }
+			$method = $class->getMethod($name);
+			$body = implode('', array_slice($lines, $method->getStartLine() - 1, $method->getEndLine() - $method->getStartLine() + 1));
+			preg_match_all('/\$this\??->\s*(\w+)/', $body, $matches);
+			$used[$name] = array_values(array_unique(array_intersect($matches[1], $work)));
+			if (count($used[$name]) !== 1) { $errors[] = 'Tool method must call one work dependency: ' . $class->getName() . '::' . $name; }
+		}
+		if (isset($used['execute'], $used['preview']) && $used['execute'] === $used['preview']) { $errors[] = 'Plan and effect must be different dependencies: ' . $class->getName(); }
+		return $errors;
+	}
+
 	/** @param ReflectionClass $class Tool reflection. @return int Constructor work collaborators. */
 	public static function workCount(ReflectionClass $class): int {
 		return count(array_filter($class->getConstructor()?->getParameters() ?? [], static fn ($p) => $p->getType() instanceof \ReflectionNamedType && !$p->getType()->isBuiltin()));

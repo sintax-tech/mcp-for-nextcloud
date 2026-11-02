@@ -36,8 +36,28 @@ final class ThinToolsTest extends ArchitectureCase {
 		self::assertNotSame([], ToolContracts::coverage([], ['ToolClass']));
 		self::assertSame(1, ToolContracts::workCount(new \ReflectionClass(OneWorkTool::class)));
 		self::assertSame(2, ToolContracts::workCount(new \ReflectionClass(TwoWorkTool::class)));
+		self::assertSame([], ToolContracts::delegation(new \ReflectionClass(OneWorkTool::class), false));
+		self::assertSame([], ToolContracts::delegation(new \ReflectionClass(PlannedWriteTool::class), true));
+		foreach ([[TwoWorkTool::class, false], [OneWorkTool::class, true], [ThreeWorkWriteTool::class, true], [PreviewCallsEffectTool::class, true]] as [$class, $write]) {
+			self::assertNotSame([], ToolContracts::delegation(new \ReflectionClass($class), $write), $class);
+		}
 	}
 }
 
-final class OneWorkTool { public function __construct(public \stdClass $work) {} }
-final class TwoWorkTool { public function __construct(public \stdClass $work, public \stdClass $other) {} }
+final class OneWorkTool { public function __construct(public \stdClass $work) {} public function execute(): mixed { return $this->work; } }
+final class TwoWorkTool { public function __construct(public \stdClass $work, public \stdClass $other) {} public function execute(): mixed { return [$this->work, $this->other]; } }
+final class PlannedWriteTool {
+	public function __construct(public \stdClass $effect, public \stdClass $plan) {}
+	public function execute(): mixed { return $this->effect; }
+	public function preview(): mixed { return $this->plan; }
+}
+final class ThreeWorkWriteTool {
+	public function __construct(public \stdClass $effect, public \stdClass $plan, public \stdClass $extra) {}
+	public function execute(): mixed { return $this->effect; }
+	public function preview(): mixed { return $this->plan; }
+}
+final class PreviewCallsEffectTool {
+	public function __construct(public \stdClass $effect, public \stdClass $plan) {}
+	public function execute(): mixed { return $this->effect; }
+	public function preview(): mixed { return $this->effect; }
+}

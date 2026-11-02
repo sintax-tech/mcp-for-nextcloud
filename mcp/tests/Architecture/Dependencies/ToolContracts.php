@@ -73,8 +73,9 @@ final class ToolContracts {
 		return $errors;
 	}
 	/**
-	 * A read tool has one work collaborator; a write tool has two, the effect and the plan. Each method calls exactly one
-	 * of them, and a write's preview never calls the class its execute calls.
+	 * A read tool has one work collaborator; a write tool has two of different classes, the effect and the plan. Each
+	 * method calls a method of exactly one of them, and a write's preview never calls the collaborator its execute
+	 * calls. A property read without a call does not count as delegating.
 	 *
 	 * @param ReflectionClass $class Tool reflection. @param bool $write Definition is a write. @return list<string> Delegation violations.
 	 */
@@ -84,18 +85,25 @@ final class ToolContracts {
 		if (self::workCount($class) !== $expected) {
 			$errors[] = ($write ? 'Write tool must delegate to one effect and one plan dependency: ' : 'Tool must delegate to one work dependency: ') . $class->getName();
 		}
-		$work = array_map(static fn ($p) => $p->getName(), array_filter($class->getConstructor()?->getParameters() ?? [], static fn ($p) => $p->getType() instanceof \ReflectionNamedType && !$p->getType()->isBuiltin()));
+		$types = [];
+		foreach ($class->getConstructor()?->getParameters() ?? [] as $parameter) {
+			$type = $parameter->getType();
+			if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) { $types[$parameter->getName()] = $type->getName(); }
+		}
+		if ($write && count($types) === 2 && count(array_unique($types)) !== 2) { $errors[] = 'Plan and effect must be different classes: ' . $class->getName(); }
 		$lines = file((string)$class->getFileName()) ?: [];
-		$used = [];
+		$called = [];
 		foreach ($write ? ['execute', 'preview'] : ['execute'] as $name) {
 			if (!$class->hasMethod($name)) { $errors[] = 'Tool method missing: ' . $class->getName() . '::' . $name; continue; }
 			$method = $class->getMethod($name);
 			$body = implode('', array_slice($lines, $method->getStartLine() - 1, $method->getEndLine() - $method->getStartLine() + 1));
-			preg_match_all('/\$this\??->\s*(\w+)/', $body, $matches);
-			$used[$name] = array_values(array_unique(array_intersect($matches[1], $work)));
-			if (count($used[$name]) !== 1) { $errors[] = 'Tool method must call one work dependency: ' . $class->getName() . '::' . $name; }
+			preg_match_all('/\$this\??->\s*(\w+)\s*\??->\s*\w+\s*\(/', $body, $calls);
+			preg_match_all('/\$this\??->\s*(\w+)/', $body, $reads);
+			$called[$name] = array_values(array_unique(array_intersect($calls[1], array_keys($types))));
+			$touched = array_values(array_unique(array_intersect($reads[1], array_keys($types))));
+			if (count($called[$name]) !== 1 || $touched !== $called[$name]) { $errors[] = 'Tool method must call one work dependency: ' . $class->getName() . '::' . $name; }
 		}
-		if (isset($used['execute'], $used['preview']) && $used['execute'] === $used['preview']) { $errors[] = 'Plan and effect must be different dependencies: ' . $class->getName(); }
+		if (isset($called['execute'], $called['preview']) && $called['execute'] === $called['preview']) { $errors[] = 'Plan and effect must be different dependencies: ' . $class->getName(); }
 		return $errors;
 	}
 

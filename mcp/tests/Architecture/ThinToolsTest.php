@@ -38,26 +38,42 @@ final class ThinToolsTest extends ArchitectureCase {
 		self::assertSame(2, ToolContracts::workCount(new \ReflectionClass(TwoWorkTool::class)));
 		self::assertSame([], ToolContracts::delegation(new \ReflectionClass(OneWorkTool::class), false));
 		self::assertSame([], ToolContracts::delegation(new \ReflectionClass(PlannedWriteTool::class), true));
-		foreach ([[TwoWorkTool::class, false], [OneWorkTool::class, true], [ThreeWorkWriteTool::class, true], [PreviewCallsEffectTool::class, true]] as [$class, $write]) {
+		foreach (\OCA\Mcp\Modules\Notes\NotesToolCatalog::TOOLS as $tool) {
+			self::assertSame([], ToolContracts::delegation(new \ReflectionClass($tool), $tool::definition()->operation !== 'read'), $tool);
+		}
+		foreach ([[TwoWorkTool::class, false], [OneWorkTool::class, true], [ThreeWorkWriteTool::class, true], [PreviewCallsEffectTool::class, true], [SamePlanAndEffectMutant::class, true], [UnusedReadMutant::class, false]] as [$class, $write]) {
 			self::assertNotSame([], ToolContracts::delegation(new \ReflectionClass($class), $write), $class);
 		}
 	}
 }
 
-final class OneWorkTool { public function __construct(public \stdClass $work) {} public function execute(): mixed { return $this->work; } }
-final class TwoWorkTool { public function __construct(public \stdClass $work, public \stdClass $other) {} public function execute(): mixed { return [$this->work, $this->other]; } }
+final class EffectWork { public function run(): array { return []; } }
+final class PlanWork { public function plan(): array { return []; } }
+final class OneWorkTool { public function __construct(public EffectWork $work) {} public function execute(): mixed { return $this->work->run(); } }
+final class TwoWorkTool { public function __construct(public EffectWork $work, public PlanWork $other) {} public function execute(): mixed { return [$this->work->run(), $this->other->plan()]; } }
 final class PlannedWriteTool {
-	public function __construct(public \stdClass $effect, public \stdClass $plan) {}
-	public function execute(): mixed { return $this->effect; }
-	public function preview(): mixed { return $this->plan; }
+	public function __construct(public EffectWork $effect, public PlanWork $plan) {}
+	public function execute(): mixed { return $this->effect->run(); }
+	public function preview(): mixed { return $this->plan->plan(); }
 }
 final class ThreeWorkWriteTool {
-	public function __construct(public \stdClass $effect, public \stdClass $plan, public \stdClass $extra) {}
-	public function execute(): mixed { return $this->effect; }
-	public function preview(): mixed { return $this->plan; }
+	public function __construct(public EffectWork $effect, public PlanWork $plan, public \stdClass $extra) {}
+	public function execute(): mixed { return $this->effect->run(); }
+	public function preview(): mixed { return $this->plan->plan(); }
 }
 final class PreviewCallsEffectTool {
-	public function __construct(public \stdClass $effect, public \stdClass $plan) {}
-	public function execute(): mixed { return $this->effect; }
-	public function preview(): mixed { return $this->effect; }
+	public function __construct(public EffectWork $effect, public PlanWork $plan) {}
+	public function execute(): mixed { return $this->effect->run(); }
+	public function preview(): mixed { return $this->effect->run(); }
+}
+/** Review mutant M1 of RE-13: DeleteNote whose plan dependency is the effect handler, so preview would delete. */
+final class SamePlanAndEffectMutant {
+	public function __construct(private \OCA\Mcp\Modules\Notes\Deletion\DeleteNoteHandler $deletes, private \OCA\Mcp\Modules\Notes\Deletion\DeleteNoteHandler $plans) {}
+	public function execute(array $arguments, string $userId): array { return $this->deletes->handle($userId, $arguments); }
+	public function preview(array $arguments, string $userId): array { return $this->plans->handle($userId, $arguments); }
+}
+/** Review mutant M2 of RE-13: ReadNote that reads its dependency and never calls it. */
+final class UnusedReadMutant {
+	public function __construct(private \OCA\Mcp\Modules\Notes\Reading\ReadNoteHandler $reads) {}
+	public function execute(): array { $unused = $this->reads; return []; }
 }

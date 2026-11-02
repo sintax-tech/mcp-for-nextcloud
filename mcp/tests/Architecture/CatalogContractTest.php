@@ -18,9 +18,11 @@ final class CatalogContractTest extends ArchitectureCase {
 		$builder = new ModuleBuilder($this);
 		foreach (Application::MODULES as $class) {
 			if (is_subclass_of($class, CatalogModule::class)) {
-				self::assertNotNull($class::registration(), 'Migrated module must have a registration');
-				$registration = new ($class::registration())();
-				foreach ($registration->probes() as $probe) {
+				$namespace = substr($class, 0, (int)strrpos($class, '\\'));
+				$own = array_values(array_filter(array_keys(self::tree()->classes), static fn (string $c): bool => str_starts_with($c, $namespace . '\\')));
+				self::assertSame([], ToolContracts::registration($class::registration(), $own, $namespace), $class);
+				$probes = $class::registration() === null ? [] : (new ($class::registration())())->probes();
+				foreach ($probes as $probe) {
 					$r = (new \ReflectionClass($probe))->newInstanceWithoutConstructor();
 					$capabilities = [...$capabilities, ...$r->keys()];
 				}
@@ -34,6 +36,13 @@ final class CatalogContractTest extends ArchitectureCase {
 		$names = array_column($golden['tools/list']['body']['result']['tools'], 'name');
 		self::assertSame(array_values(array_diff($names, ['mcp_status', 'mcp_guide', 'search', 'fetch'])), array_column($definitions, 'name'));
 	}
+	public function testARegistrationIsNeededExactlyWhenTheModuleBindsAPortOrAProbe(): void {
+		$here = __NAMESPACE__;
+		self::assertSame([], ToolContracts::registration(null, [PortlessWork::class], $here));
+		self::assertNotSame([], ToolContracts::registration(null, [PortlessWork::class, PortWork::class], $here));
+		self::assertSame([], ToolContracts::registration(\OCA\Mcp\Modules\Notes\NotesRegistration::class, [PortWork::class], $here));
+		self::assertNotSame([], ToolContracts::registration(\stdClass::class, [], $here));
+	}
 	public function testCatalogMutantsAreRejectedAndCleanFixturePasses(): void {
 		$read = ['name' => 'notes_read_note', 'module' => 'notes', 'operation' => 'read'];
 		self::assertSame([], ToolContracts::catalog([$read], []));
@@ -44,3 +53,6 @@ final class CatalogContractTest extends ArchitectureCase {
 		self::assertNotSame([], ToolContracts::catalog([array_replace($read, ['name' => 'notes_edit_note', 'operation' => 'edit']), $read], [], $names));
 	}
 }
+
+final class PortlessWork { public function run(): string { return ''; } }
+final class PortWork implements \OCA\Mcp\Mcp\Resources\NoteResource { public function read(string $userId, int $id): string { return ''; } }

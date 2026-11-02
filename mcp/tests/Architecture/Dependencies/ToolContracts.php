@@ -99,6 +99,30 @@ final class ToolContracts {
 		return $errors;
 	}
 
+	/** Interfaces a module implements as a module or a tool, which never need a binding of their own. */
+	private const MODULE_INTERFACES = [Tool::class, WriteTool::class, \OCA\Mcp\Mcp\Tools\ToolModule::class, \OCA\Mcp\Mcp\Tools\PreviewsWrites::class, \OCA\Mcp\Mcp\Tools\RendersPlans::class, \OCA\Mcp\Mcp\Guide\ToolGuideNotes::class, \OCA\Mcp\Mcp\Tools\ModuleRegistration::class];
+
+	/**
+	 * A catalog module needs a registration exactly when one of its classes implements an app interface declared
+	 * outside the module (a port another layer resolves, or a capability probe); otherwise `null` is its registration.
+	 *
+	 * @param string|null $registration What the module's registration() answers. @param list<class-string> $classes Classes of the module. @param string $namespace Namespace of the module. @return list<string> Registration violations.
+	 */
+	public static function registration(?string $registration, array $classes, string $namespace): array {
+		if ($registration !== null) {
+			return is_subclass_of($registration, \OCA\Mcp\Mcp\Tools\ModuleRegistration::class) ? [] : ['Registration is not a ModuleRegistration: ' . $registration];
+		}
+		$errors = [];
+		foreach ($classes as $class) {
+			foreach (class_implements($class) ?: [] as $interface) {
+				if (str_starts_with($interface, 'OCA\\Mcp\\') && !str_starts_with($interface, $namespace . '\\') && !in_array($interface, self::MODULE_INTERFACES, true)) {
+					$errors[] = 'Port or probe without a registration: ' . $class . ' implements ' . $interface;
+				}
+			}
+		}
+		return $errors;
+	}
+
 	/** @param ReflectionClass $class Tool reflection. @return int Constructor work collaborators. */
 	public static function workCount(ReflectionClass $class): int {
 		return count(array_filter($class->getConstructor()?->getParameters() ?? [], static fn ($p) => $p->getType() instanceof \ReflectionNamedType && !$p->getType()->isBuiltin()));

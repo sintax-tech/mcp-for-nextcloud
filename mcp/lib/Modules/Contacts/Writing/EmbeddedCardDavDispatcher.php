@@ -52,7 +52,7 @@ class EmbeddedCardDavDispatcher implements ContactDav {
 	 * @param string $bookUri address-book URI in the acting user home
 	 * @param string $uri contact object URI within the address book
 	 * @param string $vcard complete serialized vCard
-	 * @return DavResult
+	 * @return DavResult the native status and the new ETag
 	 * @throws ToolFailure when native DAV rejects the path, ACL, data or precondition
 	 * @throws RuntimeException when the authenticated session or native response is unexpected
 	 */
@@ -68,7 +68,7 @@ class EmbeddedCardDavDispatcher implements ContactDav {
 	 * @param string $uri contact object URI within the address book
 	 * @param string $etag current object ETag required by If-Match
 	 * @param string $vcard complete serialized vCard
-	 * @return DavResult
+	 * @return DavResult the native status and the new ETag
 	 * @throws ToolFailure when native DAV rejects the path, ACL, data or precondition
 	 * @throws RuntimeException when the authenticated session or native response is unexpected
 	 */
@@ -83,7 +83,7 @@ class EmbeddedCardDavDispatcher implements ContactDav {
 	 * @param string $bookUri address-book URI in the acting user home
 	 * @param string $uri contact object URI within the address book
 	 * @param string $etag current object ETag required by If-Match
-	 * @return DavResult
+	 * @return DavResult the native status
 	 * @throws ToolFailure when native DAV rejects the path, ACL, data or precondition
 	 * @throws RuntimeException when the authenticated session or native response is unexpected
 	 */
@@ -101,7 +101,7 @@ class EmbeddedCardDavDispatcher implements ContactDav {
 	 * @param array<string, string> $headers HTTP preconditions
 	 * @param string|null $body complete vCard, or null for deletion
 	 * @param int $status expected native response status
-	 * @return DavResult
+	 * @return DavResult the native status and the response ETag
 	 * @throws ToolFailure when size, path, native ACL, validation or precondition checks refuse the write
 	 * @throws RuntimeException when the session or native server response is unexpected
 	 */

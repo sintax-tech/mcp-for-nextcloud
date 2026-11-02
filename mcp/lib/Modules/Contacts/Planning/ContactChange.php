@@ -38,7 +38,7 @@ final class ContactChange {
 	 * @param string $name write tool name
 	 * @param array<string, mixed> $arguments validated tool arguments
 	 * @param string $userId authenticated UID
-	 * @return array{book:AddressBook, row:?array, card:?VCard, uri:string, plan:array<string, mixed>}
+	 * @return array{book:AddressBook, row:?array, card:?VCard, uri:string, plan:array<string, mixed>} the address book, the current row, the patched card, the URI and the plan
 	 * @throws ToolFailure when the book, object or ETag cannot be used safely
 	 * @throws InvalidArgumentException when the tool or edit fields are invalid
 	 */

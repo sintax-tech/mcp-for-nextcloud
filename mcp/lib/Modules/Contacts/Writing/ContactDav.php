@@ -20,7 +20,7 @@ interface ContactDav {
 	 * @param string $bookUri address-book URI in the acting user home
 	 * @param string $uri contact object URI within the address book
 	 * @param string $vcard complete serialized vCard
-	 * @return DavResult
+	 * @return DavResult the native status and the new ETag
 	 * @throws ToolFailure when native DAV rejects the path, ACL, data or precondition
 	 * @throws RuntimeException when the authenticated session or native response is unexpected
 	 */
@@ -34,7 +34,7 @@ interface ContactDav {
 	 * @param string $uri contact object URI within the address book
 	 * @param string $etag current object ETag required by If-Match
 	 * @param string $vcard complete serialized vCard
-	 * @return DavResult
+	 * @return DavResult the native status and the new ETag
 	 * @throws ToolFailure when native DAV rejects the path, ACL, data or precondition
 	 * @throws RuntimeException when the authenticated session or native response is unexpected
 	 */
@@ -47,7 +47,7 @@ interface ContactDav {
 	 * @param string $bookUri address-book URI in the acting user home
 	 * @param string $uri contact object URI within the address book
 	 * @param string $etag current object ETag required by If-Match
-	 * @return DavResult
+	 * @return DavResult the native status
 	 * @throws ToolFailure when native DAV rejects the path, ACL, data or precondition
 	 * @throws RuntimeException when the authenticated session or native response is unexpected
 	 */

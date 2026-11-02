@@ -47,7 +47,7 @@ final class EmbeddedCardDavServer {
 	/**
 	 * Builds a fresh embedded CardDAV server with the native core plugins and ACL.
 	 *
-	 * @return DavServer
+	 * @return DavServer a server with the native CardDAV and ACL plugins
 	 * @throws ContainerExceptionInterface when a native DAV dependency cannot be resolved
 	 */
 	public static function create(): DavServer {

@@ -25,7 +25,7 @@ class DavContactStore implements ContactStore {
 	/**
 	 * Resolves the native CardDAV backend only when a contact read is requested.
 	 *
-	 * @return CardDavBackend
+	 * @return CardDavBackend the core CardDAV backend, resolved on first use
 	 * @throws ContainerExceptionInterface when the core backend cannot be resolved
 	 */
 	private function backend(): CardDavBackend {
@@ -36,7 +36,7 @@ class DavContactStore implements ContactStore {
 	 * Lists the address books visible to the authenticated user principal.
 	 *
 	 * @param string $principal authenticated user principal URI
-	 * @return list<array{id:int, uri:string, displayName:string, ownerPrincipal:string, readOnly:bool}>
+	 * @return list<array{id:int, uri:string, displayName:string, ownerPrincipal:string, readOnly:bool}> the address books of the principal
 	 * @throws ContainerExceptionInterface when the core backend cannot be resolved
 	 */
 	public function books(string $principal): array {
@@ -58,7 +58,7 @@ class DavContactStore implements ContactStore {
 	 * Lists the contacts stored in one authorized address book.
 	 *
 	 * @param int $bookId ID of an authorized address book
-	 * @return list<array{uri:string, etag:string, data:string}>
+	 * @return list<array{uri:string, etag:string, data:string}> every contact of the address book
 	 * @throws ContainerExceptionInterface when the core backend cannot be resolved
 	 */
 	public function cards(int $bookId): array {
@@ -70,7 +70,7 @@ class DavContactStore implements ContactStore {
 	 *
 	 * @param int $bookId ID of an authorized address book
 	 * @param string $uri contact object URI within the address book
-	 * @return array{uri:string, etag:string, data:string}|null
+	 * @return array{uri:string, etag:string, data:string}|null the contact, or null when it does not exist
 	 * @throws ContainerExceptionInterface when the core backend cannot be resolved
 	 */
 	public function card(int $bookId, string $uri): ?array {
@@ -82,7 +82,7 @@ class DavContactStore implements ContactStore {
 	 * Normalizes a native CardDAV object into the read-only contact port shape.
 	 *
 	 * @param array<string, mixed> $row native CardDAV object
-	 * @return array{uri:string, etag:string, data:string}
+	 * @return array{uri:string, etag:string, data:string} the fields the tools read from a core card row
 	 */
 	private function row(array $row): array {
 		return [

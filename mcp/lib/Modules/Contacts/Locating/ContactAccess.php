@@ -33,7 +33,7 @@ class ContactAccess {
 	 * DAV path under which the tools expose the system catalog ("Accounts") to one user.
 	 *
 	 * @param string $userId authenticated user UID
-	 * @return string
+	 * @return string the path of the catalog for that user
 	 */
 	public static function systemPath(string $userId): string {
 		return self::PATH_PREFIX . rawurlencode($userId) . '/' . self::SYSTEM_URI . '/';
@@ -44,7 +44,7 @@ class ContactAccess {
 	 *
 	 * @param string $userId authenticated user UID
 	 * @param string $path address-book path given to a tool
-	 * @return bool
+	 * @return bool whether the path is the catalog
 	 */
 	public function isSystemPath(string $userId, string $path): bool {
 		return rtrim($path, '/') === rtrim(self::systemPath($userId), '/');
@@ -54,7 +54,7 @@ class ContactAccess {
 	 * Lists personal and shared address books, explicitly excluding system principals.
 	 *
 	 * @param string $userId authenticated user UID
-	 * @return list<AddressBook>
+	 * @return list<AddressBook> the address books owned by user principals
 	 */
 	public function visible(string $userId): array {
 		$addressbooks = [];
@@ -83,7 +83,7 @@ class ContactAccess {
 	 * @param string $userId authenticated user UID
 	 * @param string $path address-book DAV path returned by the listing tool
 	 * @param bool $write whether to require a writable address book
-	 * @return AddressBook
+	 * @return AddressBook the address book at that path
 	 * @throws ToolFailure when the path is foreign, hidden or not writable
 	 */
 	public function resolve(string $userId, string $path, bool $write = false): AddressBook {
@@ -104,7 +104,7 @@ class ContactAccess {
 	 *
 	 * @param int $bookId authorized address-book ID
 	 * @param string $uri contact object URI
-	 * @return array{uri:string, etag:string, data:string}
+	 * @return array{uri:string, etag:string, data:string} the stored contact
 	 * @throws ToolFailure when the URI is malformed or the contact no longer exists
 	 */
 	public function row(int $bookId, string $uri): array {

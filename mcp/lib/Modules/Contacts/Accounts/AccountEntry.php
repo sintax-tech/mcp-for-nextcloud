@@ -65,7 +65,7 @@ final class AccountEntry {
 
 	/**
 	 * @param mixed $value EMAIL property, a string, a list of strings or a list of typed values
-	 * @return list<string>
+	 * @return list<string> every non-empty e-mail address, in order
 	 */
 	private function emails(mixed $value): array {
 		$emails = [];

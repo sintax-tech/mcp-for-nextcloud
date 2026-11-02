@@ -72,7 +72,7 @@ final class AccountVisibility {
 	 *
 	 * @param string $key setting key of the core app
 	 * @param bool $default value when the admin never changed it
-	 * @return bool
+	 * @return bool whether the setting is on
 	 */
 	public function flag(string $key, bool $default): bool {
 		return $this->config->getValueString('core', $key, $default ? 'yes' : 'no') === 'yes';
@@ -83,7 +83,7 @@ final class AccountVisibility {
 	 *
 	 * @param IUser $viewer authenticated user
 	 * @param string $accountId UID of the other account
-	 * @return bool
+	 * @return bool whether both accounts share a group
 	 */
 	private function sharesGroup(IUser $viewer, string $accountId): bool {
 		foreach ($this->groups->getUserGroupIds($viewer) as $groupId) {

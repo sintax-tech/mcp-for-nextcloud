@@ -148,7 +148,7 @@ class SystemContacts {
 	 * Keeps only the rows that come from the system address book.
 	 *
 	 * @param array<int, mixed> $rows rows returned by the manager for every registered address book
-	 * @return list<array<string, mixed>>
+	 * @return list<array<string, mixed>> the rows of the system address book only
 	 */
 	private function fromSystemBook(array $rows): array {
 		$keys = [];

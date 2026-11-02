@@ -234,7 +234,10 @@ final class ContactsPlanRenderer {
 		return $text === '' ? null : PlanText::inline($text, self::EXCERPT);
 	}
 
-	/** @param string $field key of a contact field */
+	/**
+	 * @param string $field key of a contact field
+	 * @return string the translated label of the field
+	 */
 	private function label(string $field): string {
 		// One literal per call: the translation tool extracts the source texts from here.
 		return match ($field) {
@@ -249,17 +252,26 @@ final class ContactsPlanRenderer {
 		};
 	}
 
-	/** @param mixed $value raw plan value */
+	/**
+	 * @param mixed $value raw plan value
+	 * @return string the trimmed text of a scalar, empty otherwise
+	 */
 	private function text(mixed $value): string {
 		return is_scalar($value) ? trim((string) $value) : '';
 	}
 
-	/** @param string $text the name a person recognizes @return string the name in bold, inert as Markdown */
+	/**
+	 * @param string $text the name a person recognizes
+	 * @return string the name in bold, inert as Markdown
+	 */
 	private function strong(string $text): string {
 		return PlanText::strong($text);
 	}
 
-	/** @param string $text the name of a collection, read as a name and not as an id @return string the name in italics, inert as Markdown */
+	/**
+	 * @param string $text the name of a collection, read as a name and not as an id
+	 * @return string the name in italics, inert as Markdown
+	 */
 	private function emphasis(string $text): string {
 		return PlanText::em($text);
 	}

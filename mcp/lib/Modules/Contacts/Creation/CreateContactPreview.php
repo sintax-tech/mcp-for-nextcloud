@@ -54,7 +54,7 @@ final class CreateContactPreview {
 	 *
 	 * @param string $userId authenticated user UID
 	 * @param array<string, mixed> $arguments validated tool arguments
-	 * @return array{book:AddressBook, card:VCard, uri:string, plan:array<string, mixed>}
+	 * @return array{book:AddressBook, card:VCard, uri:string, plan:array<string, mixed>} the address book, the new card, its URI and the plan
 	 * @throws ToolFailure when the address book is the accounts catalog, hidden or not writable
 	 * @throws LogicException when no plan state was provided
 	 */

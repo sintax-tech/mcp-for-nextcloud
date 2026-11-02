@@ -27,7 +27,7 @@ class ContactCard {
 	 * Reads a vCard with the identity properties required for safe contact operations.
 	 *
 	 * @param string $data complete serialized DAV object
-	 * @return VCard
+	 * @return VCard the parsed card
 	 * @throws ToolFailure when the vCard is malformed or lacks required identity properties
 	 */
 	public function parse(string $data): VCard {
@@ -47,7 +47,7 @@ class ContactCard {
 	 *
 	 * @param array<string, mixed> $arguments validated tool arguments; omitted editable fields remain unchanged
 	 * @param string $uid contact UID chosen once for the plan and the confirmed write
-	 * @return VCard
+	 * @return VCard the new card with the given UID
 	 */
 	public function create(array $arguments, string $uid): VCard {
 		return (new ContactIdentity())->card($this, $arguments, $uid);
@@ -58,7 +58,7 @@ class ContactCard {
 	 *
 	 * @param VCard $original original object, which remains unchanged
 	 * @param array<string, mixed> $arguments validated tool arguments; omitted editable fields remain unchanged
-	 * @return VCard
+	 * @return VCard a copy of the card with only the supplied fields changed
 	 */
 	public function patch(VCard $original, array $arguments): VCard {
 		$card = clone $original;
@@ -101,7 +101,7 @@ class ContactCard {
 	 * Returns understood fields, every original property and the complete serialized vCard.
 	 *
 	 * @param VCard $card parsed contact card
-	 * @return array<string, mixed>
+	 * @return array<string, mixed> the public fields of the card, its properties and its text
 	 */
 	public function item(VCard $card): array {
 		$item = ['uid' => (string) $card->UID];

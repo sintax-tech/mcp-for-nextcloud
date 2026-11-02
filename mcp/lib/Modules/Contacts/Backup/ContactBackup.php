@@ -30,6 +30,7 @@ class ContactBackup {
 	 * @param ITimeFactory $time clock for timestamps
 	 * @param IConfig $config Nextcloud configuration
 	 * @param ILockingProvider $locks application mutex provider for unique backups
+	 * @param \OCA\Mcp\Platform\Backups\BackupLocation|null $backupLocation the configured backup folder; null keeps the default one
 	 * @return void
 	 */
 	public function __construct(
@@ -44,7 +45,7 @@ class ContactBackup {
 	 * Builds the actor-relative backup directory using a safe address-book name.
 	 *
 	 * @param string $bookName address-book display name for the backup directory
-	 * @return string
+	 * @return string the folder, relative to the user's Files, where the copy goes
 	 */
 	public function directory(string $bookName): string {
 		return ContactBackupDirectory::path($this->backupLocation, $this->segment($bookName));

@@ -104,7 +104,7 @@ final class SearchContactsHandler {
 	 * @param string $query lower-case search text, empty to list everything
 	 * @param list<array<string, mixed>> $accounts account entries already filtered by the admin rules
 	 * @param array<string, string> $accountIds accountId by lower-case e-mail, to annotate personal contacts
-	 * @return \Generator<int, array<string, mixed>>
+	 * @return \Generator<int, array<string, mixed>> the personal matches, then the accounts not already covered
 	 */
 	private function candidates(array $books, string $query, array $accounts, array $accountIds): \Generator {
 		$seen = [];

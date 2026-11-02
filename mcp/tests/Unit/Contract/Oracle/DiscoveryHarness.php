@@ -20,7 +20,7 @@ use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\InstalledApp;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
 use OCA\Mcp\Tools\Files\TextExtractor;
-use OCA\Mcp\Modules\Notes\Locating\NotesRepository;
+use OCA\Mcp\Mcp\Resources\NoteResource;
 use OCA\Mcp\Mcp\Tools\ToolRegistry;
 use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
@@ -78,7 +78,7 @@ final class DiscoveryHarness {
 		$modules = (new ModuleBuilder($test, $scenario->deckDependencies))->modules(Application::MODULES);
 		$registry = new ToolRegistry($modules, $policy, $apps, $users, $logger, $guests);
 		$resources = new ResourceRegistry($registry, $policy, $apps, $users, $this->mock(IRootFolder::class), $this->mock(VisibilityGuard::class),
-			$this->mock(TextExtractor::class), $this->mock(NotesRepository::class), $registry->guide(), $this->mock(FilesAccessGuard::class), $guests);
+			$this->mock(TextExtractor::class), $this->mock(NoteResource::class), $registry->guide(), $this->mock(FilesAccessGuard::class), $guests);
 		$installed = $this->mock(IAppManager::class);
 		InstalledApp::mock($installed);
 		$this->protocol = new McpProtocol($registry, new PromptCatalog(), $policy, $logger, $installed, $resources);

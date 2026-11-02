@@ -25,6 +25,7 @@ use OCP\Files\IRootFolder;
 use OCP\IUser;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
+use OCA\Mcp\Tests\Unit\Tools\Notes\NotesTestModule;
 
 final class NotesModuleTest extends TestCase {
 	private FakeTree $tree;
@@ -49,7 +50,7 @@ final class NotesModuleTest extends TestCase {
 		$users = $this->createMock(IUserManager::class);
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$this->module = new NotesModule(new NotesRepository($root, $this->config->mock($this)), $apps, $users,
+		$this->module = NotesTestModule::build(new NotesRepository($root, $this->config->mock($this)), $apps, $users,
 			new SharedWriteGuard($access), $access);
 	}
 
@@ -453,7 +454,7 @@ final class NotesModuleTest extends TestCase {
 		$users = $this->createMock(IUserManager::class);
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$module = new NotesModule(
+		$module = NotesTestModule::build(
 			new NotesRepository($root, $this->config->mock($this)),
 			$apps,
 			$users,
@@ -482,7 +483,7 @@ final class NotesModuleTest extends TestCase {
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
 		$repo = new NotesRepository($root, $this->config->mock($this), $guard);
-		$module = new NotesModule($repo, $apps, $users, new SharedWriteGuard($access), $access);
+		$module = NotesTestModule::build($repo, $apps, $users, new SharedWriteGuard($access), $access);
 
 		$list = json_decode($module->call('notes_list', [], 'alice')['content'][0]['text'], true);
 		$ids = array_column($list, 'id');
@@ -584,7 +585,7 @@ final class NotesModuleTest extends TestCase {
 		$users = $this->createMock(IUserManager::class);
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		return new NotesModule(new NotesRepository($root, $this->config->mock($this), $guard), $apps, $users,
+		return NotesTestModule::build(new NotesRepository($root, $this->config->mock($this), $guard), $apps, $users,
 			new SharedWriteGuard($access), $access, $guard);
 	}
 

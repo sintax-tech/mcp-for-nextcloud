@@ -64,7 +64,7 @@ final class DiAcyclicTest extends TestCase {
 	public static function wrongFactory(): object { return new \stdClass(); }
 
 	public function testMissingPortsFailWithoutGenericInternalDoubles(): void {
-		foreach ([WriteVisibility::class, NativeCalendars::class] as $port) {
+		foreach ([WriteVisibility::class, NativeCalendars::class, \OCA\Mcp\Mcp\Resources\NoteResource::class] as $port) {
 			$factories = Registrations::capture($this); unset($factories[$port]);
 			try { $this->resolver($factories)->get($port); self::fail('Missing port resolved'); }
 			catch (LogicException $error) { self::assertStringContainsString('Missing internal binding', $error->getMessage()); }

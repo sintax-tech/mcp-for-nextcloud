@@ -18,6 +18,7 @@ use OCP\App\IAppManager;
 use OCP\Files\IRootFolder;
 use OCP\IUserManager;
 use PHPUnit\Framework\TestCase;
+use OCA\Mcp\Tests\Unit\Tools\Notes\NotesTestModule;
 
 /**
  * What the user of the Notes module sees comes out in the language of the account; what the model reads
@@ -76,7 +77,7 @@ final class NotesTranslationTest extends TestCase {
 
 	/** The descriptions are read by the model, so they never change with the language of the account. */
 	public function testDescriptionsAreFixedEnglish(): void {
-		$module = new NotesModule(
+		$module = NotesTestModule::build(
 			$this->createMock(NotesRepository::class),
 			$this->createMock(IAppManager::class),
 			$this->createMock(IUserManager::class),

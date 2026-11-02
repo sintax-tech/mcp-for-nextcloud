@@ -95,7 +95,7 @@ final class NoteTypePolicyTest extends TestCase {
 		$users = $this->createMock(IUserManager::class);
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$this->module = new NotesModule(
+		$this->module = NotesTestModule::build(
 			new NotesRepository($root, $this->config->mock($this)),
 			$apps,
 			$users,

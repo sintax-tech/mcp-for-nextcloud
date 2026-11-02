@@ -26,6 +26,7 @@ use OCP\IUser;
 use OCP\IUserManager;
 use OCP\SystemTag\ISystemTagObjectMapper;
 use PHPUnit\Framework\TestCase;
+use OCA\Mcp\Tests\Unit\Tools\Notes\NotesTestModule;
 
 /**
  * Effect contract of the Notes module (RE-01): the partial edit of a note, frozen through the endpoint with a fake
@@ -66,7 +67,7 @@ final class NotesEffectsContractTest extends TestCase {
 		$users = $this->createMock(IUserManager::class);
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		return new NotesModule(new NotesRepository($root, $this->gate->config(), $guard), $apps, $users,
+		return NotesTestModule::build(new NotesRepository($root, $this->gate->config(), $guard), $apps, $users,
 			new SharedWriteGuard($access), $access, $guard, (new FakeLockManager())->service($this),
 			new PlanState($this->gate->config()), FileTypePolicyFixture::off($this));
 	}

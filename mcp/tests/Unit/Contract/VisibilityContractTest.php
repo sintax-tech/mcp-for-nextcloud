@@ -139,6 +139,20 @@ final class VisibilityContractTest extends TestCase {
 				$args[] = $parameter->isDefaultValueAvailable() ? $parameter->getDefaultValue() : ($name === 'string' ? 'mcp' : null);
 				continue;
 			}
+			if ($name === \Psr\Container\ContainerInterface::class) {
+				// A catalog module resolves its tools lazily; they are built here the same way as everything else.
+				$args[] = new class(fn (string $id): object => $this->build($id)) implements \Psr\Container\ContainerInterface {
+					public function __construct(private \Closure $build) {
+					}
+					public function get(string $id): mixed {
+						return ($this->build)($id);
+					}
+					public function has(string $id): bool {
+						return class_exists($id);
+					}
+				};
+				continue;
+			}
 			if ($name === \OCA\Mcp\Platform\FileAccess\ActorRoot::class) {
 				$args[] = FilesActorRootFixture::create($this, $this->tree->rootFolder());
 				continue;

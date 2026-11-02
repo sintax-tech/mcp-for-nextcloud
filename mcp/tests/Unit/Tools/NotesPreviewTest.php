@@ -21,6 +21,7 @@ use OCP\IUserManager;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use OCA\Mcp\Tests\Unit\Tools\Notes\NotesTestModule;
 
 /**
  * Covers the content of the Notes plans and the guarantee that a plan leaves the tree untouched: no
@@ -49,7 +50,7 @@ final class NotesPreviewTest extends TestCase {
 		$this->users = $this->createMock(IUserManager::class);
 		$this->users->method('get')->willReturn($this->createMock(IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
-		$this->module = new NotesModule(new NotesRepository($root, $this->config->mock($this)), $apps, $this->users,
+		$this->module = NotesTestModule::build(new NotesRepository($root, $this->config->mock($this)), $apps, $this->users,
 			new SharedWriteGuard($access), $access);
 		$this->before = $this->tree->nodes;
 	}

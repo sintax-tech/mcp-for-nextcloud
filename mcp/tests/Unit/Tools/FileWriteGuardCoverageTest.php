@@ -29,7 +29,7 @@ final class FileWriteGuardCoverageTest extends TestCase {
 			'Service/Calendar/CalendarSelftestService.php#run:literal-move:3' => 'label: self-test report detail key',
 			'Service/Calendar/CalendarSelftestMessages.php#detail:literal-move:1' => 'label: report message lookup key',
 			'Mcp/Tools/ToolPresentation.php#<global>:literal-move:1' => 'label: destructive-operation presentation catalog',
-			'Modules/Notes/NotesModule.php#definitions:literal-move:1' => 'label: notes_move operation metadata',
+			'Modules/Notes/Tools/MoveNote.php#definition:literal-move:1' => 'label: notes_move operation metadata',
 			'Tools/Files/FilesModule.php#definitions:literal-move:1' => 'label: files_move operation metadata',
 			'Tools/Files/FilesModule.php#definitions:literal-move:2' => 'label: files_move_batch operation metadata',
 			'Tools/Files/FilesModule.php#definitions:literal-move:3' => 'label: files_undo_batch operation metadata',

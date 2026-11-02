@@ -280,7 +280,7 @@ final class NotesFolderTest extends TestCase {
 		$users->method('get')->willReturn($this->createMock(IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($this, FakeUsers::DEFAULTS), $this->tree->shareManager());
 		$config = $this->config->mock($this);
-		$module = new NotesModule(new NotesRepository($this->root(), $config, $this->guard, $this->resolver()), $apps, $users,
+		$module = NotesTestModule::build(new NotesRepository($this->root(), $config, $this->guard, $this->resolver()), $apps, $users,
 			new SharedWriteGuard($access), $access, $this->guard);
 		$definition = array_column($module->definitions(), null, 'name')[$name];
 		$published = WriteGate::publish($definition);

@@ -25,6 +25,7 @@ use OCP\IUserManager;
 use OCP\SystemTag\ISystemTagObjectMapper;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
+use OCA\Mcp\Tests\Unit\Tools\Notes\NotesTestModule;
 
 /**
  * The Notes module of one request for the Notes effect contracts, wired as the container autowires it (the real
@@ -62,7 +63,7 @@ final class NotesWritesWiring {
 		$users = self::mock($test, IUserManager::class);
 		$users->method('get')->willReturn(self::mock($test, IUser::class));
 		$access = new NodeAccessInfo(FakeUsers::manager($test, FakeUsers::DEFAULTS), $tree->shareManager());
-		return new NotesModule(new NotesRepository($root, $gate->config(), $guard), $apps, $users,
+		return NotesTestModule::build(new NotesRepository($root, $gate->config(), $guard), $apps, $users,
 			new SharedWriteGuard($access), $access, $guard, ($locks ?? new FakeLockManager())->service($test),
 			new PlanState($gate->config()), FileTypePolicyFixture::off($test));
 	}

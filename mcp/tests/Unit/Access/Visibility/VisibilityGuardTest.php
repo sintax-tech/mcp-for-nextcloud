@@ -517,6 +517,18 @@ final class VisibilityGuardTest extends TestCase {
 		$this->assertSame(['42'], $guard->getHiddenTagIds());
 	}
 
+	public function testFirstSaveRefusesUnreadableConfigurationWithoutWriting(): void {
+		$config = $this->createMock(\OCP\IConfig::class);
+		$config->expects($this->once())->method('getAppValue')
+			->with('mcp', VisibilityGuard::CONFIG_KEY, '[]')
+			->willThrowException(new \RuntimeException('/private/config'));
+		$config->expects($this->never())->method('setAppValue');
+		$guard = new VisibilityGuard($config, $this->tagMapper);
+
+		$this->expectException(HiddenTagsUnavailableException::class);
+		$guard->setHiddenTagIds([]);
+	}
+
 	public function testExplicitRemovalOfAllTagsNeedsNoTagManager(): void {
 		$this->config->app['mcp'][VisibilityGuard::CONFIG_KEY] = '["42"]';
 		$guard = new VisibilityGuard($this->config->mock($this), $this->tagMapper, null, $this->failingTagManager());

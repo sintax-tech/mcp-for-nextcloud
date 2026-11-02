@@ -80,7 +80,7 @@ final class FormsEffectsContractTest extends TestCase {
 		$flow = new CreateFormFlow($factory, new CreateFormPlan(new PlanState($this->gate->config())), $writer);
 		$unused = static fn (string $class): object => (new \ReflectionClass($class))->newInstanceWithoutConstructor();
 		$edits = $this->getMockBuilder(EditFlow::class)->disableOriginalConstructor()->getMock();
-		return new FormsModule($unused(ListFormsHandler::class), $unused(ReadFormHandler::class), $unused(ListSubmissionsHandler::class),
+		return \OCA\Mcp\Tests\Unit\Tools\Forms\FormsTestModule::build($unused(ListFormsHandler::class), $unused(ReadFormHandler::class), $unused(ListSubmissionsHandler::class),
 			$unused(ReadSubmissionHandler::class), new CreateFormHandler($flow), new EditQuestionHandler($edits), new EditOptionHandler($edits));
 	}
 
@@ -171,7 +171,7 @@ final class FormsEffectsContractTest extends TestCase {
 		$edits = new EditFlow($factory, $states, $plans, new EditWriter($factory, $states, $plans, $throttle));
 		$unused = static fn (string $class): object => (new \ReflectionClass($class))->newInstanceWithoutConstructor();
 		$create = $this->getMockBuilder(CreateFormFlow::class)->disableOriginalConstructor()->getMock();
-		return new FormsModule($unused(ListFormsHandler::class), $unused(ReadFormHandler::class), $unused(ListSubmissionsHandler::class),
+		return \OCA\Mcp\Tests\Unit\Tools\Forms\FormsTestModule::build($unused(ListFormsHandler::class), $unused(ReadFormHandler::class), $unused(ListSubmissionsHandler::class),
 			$unused(ReadSubmissionHandler::class), new CreateFormHandler($create), new EditQuestionHandler($edits), new EditOptionHandler($edits));
 	}
 

@@ -57,7 +57,7 @@ final class AllFormsPlanContract extends TestCase {
 		$editFactory = $this->createMock(EditNativeFactory::class); $editFactory->method('open')->willReturn($fixture->context());
 		$editWriter = $this->createMock(EditWriter::class); $editWriter->expects(self::never())->method('write');
 		$edits = new EditFlow($editFactory, new EditState(), new EditPlan(new PlanState((new InMemoryConfig())->mock($this))), $editWriter);
-		$module = new FormsModule((new \ReflectionClass(ListFormsHandler::class))->newInstanceWithoutConstructor(), (new \ReflectionClass(ReadFormHandler::class))->newInstanceWithoutConstructor(), (new \ReflectionClass(ListSubmissionsHandler::class))->newInstanceWithoutConstructor(), (new \ReflectionClass(ReadSubmissionHandler::class))->newInstanceWithoutConstructor(), new CreateFormHandler($flow), new EditQuestionHandler($edits), new EditOptionHandler($edits));
+		$module = \OCA\Mcp\Tests\Unit\Tools\Forms\FormsTestModule::build((new \ReflectionClass(ListFormsHandler::class))->newInstanceWithoutConstructor(), (new \ReflectionClass(ReadFormHandler::class))->newInstanceWithoutConstructor(), (new \ReflectionClass(ListSubmissionsHandler::class))->newInstanceWithoutConstructor(), (new \ReflectionClass(ReadSubmissionHandler::class))->newInstanceWithoutConstructor(), new CreateFormHandler($flow), new EditQuestionHandler($edits), new EditOptionHandler($edits));
 		$args = ['title' => 'New form', 'description' => 'Description', 'questions' => [['type' => 'short', 'text' => 'Email', 'validation' => 'email'], ['type' => 'dropdown', 'text' => 'Choice', 'options' => ['A', str_repeat('z', 1024)]]]];
 		$plan = $module->preview('forms_create_form', $args, 'alice');
 		$this->assertEveryWriteToolHasAReadablePlan($module, ['forms_create_form' => $plan,

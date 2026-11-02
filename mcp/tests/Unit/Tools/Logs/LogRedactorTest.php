@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Logs;
 
-use OCA\Mcp\Tools\Logs\LogRedactor;
+use OCA\Mcp\Modules\Logs\Presentation\LogRedactor;
 use PHPUnit\Framework\TestCase;
 
 /** What leaves the server log on its way to the model: personal data minimized, diagnostic value kept. */

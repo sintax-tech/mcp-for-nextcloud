@@ -5,7 +5,9 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Logs;
+namespace OCA\Mcp\Modules\Logs\Reading;
+
+use OCA\Mcp\Modules\Logs\Presentation\LogRedactor;
 
 /**
  * The summary of logs_analyze over the entries of one window that passed the filters: totals by level, app and user,

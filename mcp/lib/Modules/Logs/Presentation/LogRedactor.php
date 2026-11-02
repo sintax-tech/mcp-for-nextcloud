@@ -5,7 +5,9 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Logs;
+namespace OCA\Mcp\Modules\Logs\Presentation;
+
+use OCA\Mcp\Modules\Logs\Reading\LogAnalyzer;
 
 /**
  * Minimizes what a log entry carries before it reaches the model, without losing its diagnostic value.

@@ -7,10 +7,10 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Logs;
 
-use OCA\Mcp\Tools\Logs\LogFilter;
-use OCA\Mcp\Tools\Logs\LogReader;
-use OCA\Mcp\Tools\Logs\LogScanner;
-use OCA\Mcp\Tools\Logs\LogTime;
+use OCA\Mcp\Modules\Logs\Reading\LogFilter;
+use OCA\Mcp\Modules\Logs\Reading\LogReader;
+use OCA\Mcp\Modules\Logs\Reading\LogScanner;
+use OCA\Mcp\Modules\Logs\Reading\LogTime;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCP\Log\ILogFactory;
 use OCP\Log\IWriter;

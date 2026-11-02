@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Logs;
+namespace OCA\Mcp\Modules\Logs;
 
 use OCA\Mcp\Mcp\Tools\RestrictedModule;
 use OCP\EventDispatcher\IEventDispatcher;

@@ -5,8 +5,15 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Logs;
+namespace OCA\Mcp\Modules\Logs;
 
+use OCA\Mcp\Modules\Logs\Presentation\LogEnvelope;
+use OCA\Mcp\Modules\Logs\Presentation\LogRedactor;
+use OCA\Mcp\Modules\Logs\Reading\LogAnalyzer;
+use OCA\Mcp\Modules\Logs\Reading\LogFilter;
+use OCA\Mcp\Modules\Logs\Reading\LogReader;
+use OCA\Mcp\Modules\Logs\Reading\LogScanner;
+use OCA\Mcp\Modules\Logs\Reading\LogTime;
 use InvalidArgumentException;
 use OCA\Mcp\Access\Logs\LogFileNames;
 use OCA\Mcp\Access\Logs\LogsAccess;

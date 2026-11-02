@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Logs;
+namespace OCA\Mcp\Modules\Logs\Reading;
 
 use OCA\Mcp\L10n\Translator;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;

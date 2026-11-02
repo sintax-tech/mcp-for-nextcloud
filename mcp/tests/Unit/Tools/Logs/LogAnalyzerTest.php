@@ -7,8 +7,8 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Logs;
 
-use OCA\Mcp\Tools\Logs\LogAnalyzer;
-use OCA\Mcp\Tools\Logs\LogTime;
+use OCA\Mcp\Modules\Logs\Reading\LogAnalyzer;
+use OCA\Mcp\Modules\Logs\Reading\LogTime;
 use PHPUnit\Framework\TestCase;
 
 final class LogAnalyzerTest extends TestCase {

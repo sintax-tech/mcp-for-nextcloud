@@ -5,7 +5,7 @@
  */
 declare(strict_types=1);
 
-namespace OCA\Mcp\Tools\Logs;
+namespace OCA\Mcp\Modules\Logs\Presentation;
 
 use OCA\Mcp\Mcp\Tools\Results\ToolResult;
 

@@ -16,6 +16,8 @@ use OCA\Mcp\Tests\Unit\Tools\Mail\Plans\MailPlanRendererTest;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Write\TablesPlanRendererTest;
 use OCA\Mcp\Tests\Unit\Tools\Talk\TalkPlanRendererTest;
 use OCA\Mcp\Tests\Unit\Tools\Tasks\TasksPlanRendererTest;
+use OCA\Mcp\Mcp\Confirmation\WriteGate;
+use OCA\Mcp\Mcp\Tools\CatalogModule;
 use OCA\Mcp\Mcp\Tools\PreviewsWrites;
 use OCA\Mcp\Mcp\Tools\RendersPlans;
 use PHPUnit\Framework\TestCase;
@@ -53,11 +55,29 @@ final class WritePlanContractTest extends TestCase {
 		$covered = self::contractTests();
 		foreach (Application::MODULES as $module) {
 			if (in_array($module, self::READ_ONLY, true)) {
-				self::assertFalse(is_subclass_of($module, PreviewsWrites::class), $module . ' previews writes, so it is not read-only');
+				self::assertFalse(self::writes($module), $module . ' publishes a write, so it is not read-only');
 				continue;
 			}
 			self::assertArrayHasKey($module, $covered, $module . ' is registered but has no readability contract test');
 		}
+	}
+
+	/** A catalog module is read-only by its catalog, since its base always answers previews; a legacy module by its interfaces. */
+	public function testReadOnlyIsDecidedByTheCatalogOfACatalogModule(): void {
+		self::assertFalse(self::writes(\OCA\Mcp\Tests\Unit\Mcp\Tools\Catalog\RegisteredProbeModule::class));
+		self::assertTrue(self::writes(\OCA\Mcp\Tests\Unit\Mcp\Tools\Catalog\ProbeModule::class));
+		self::assertTrue(self::writes(\OCA\Mcp\Modules\Notes\NotesModule::class));
+	}
+
+	/**
+	 * @param class-string $module registered module
+	 * @return bool whether it publishes a write: a write tool in its catalog, or the preview interface of a legacy module
+	 */
+	private static function writes(string $module): bool {
+		if (is_subclass_of($module, CatalogModule::class)) {
+			return array_filter($module::toolDefinitions(), static fn ($definition): bool => WriteGate::isWrite($definition->toArray())) !== [];
+		}
+		return is_subclass_of($module, PreviewsWrites::class);
 	}
 
 	public function testEveryWritingModuleDeclaresItsPlanText(): void {

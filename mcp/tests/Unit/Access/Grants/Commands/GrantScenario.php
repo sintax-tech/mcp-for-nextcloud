@@ -123,7 +123,7 @@ final class GrantScenario extends TestCase {
 		$record = compact('appConfig', 'userValues', 'configAccess', 'result', 'error', 'trace', 'row', 'events', 'generations', 'causes', 'attempts', 'outside', 'usable', 'inside');
 		// Replace only random logical command IDs, retaining their bijection, suffixes and retry relationships.
 		$encoded = json_encode($record, JSON_THROW_ON_ERROR);
-		$seen = []; $encoded = preg_replace_callback('/\b[a-f0-9]{32}\b/', static function ($match) use (&$seen): string { return $seen[$match[0]] ??= 'command-' . (count($seen) + 1); }, $encoded);
+		$seen = []; $encoded = preg_replace_callback('/\b[a-f0-9]{32}\b/', static function ($match) use (&$seen): string { if ($match[0] === str_repeat('a', 32)) { return $match[0]; } return $seen[$match[0]] ??= 'command-' . (count($seen) + 1); }, $encoded);
 		return json_decode($encoded, true, 512, JSON_THROW_ON_ERROR);
 	}
 

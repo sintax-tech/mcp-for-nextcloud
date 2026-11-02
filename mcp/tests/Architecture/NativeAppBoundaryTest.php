@@ -36,9 +36,9 @@ final class NativeAppBoundaryTest extends ArchitectureCase {
 	public function testDynamicSiteRejectsChangedPrefixOrCallerSet(): void {
 		$path = 'lib/Tools/Forms/Results/SubmissionReads.php';
 		$source = self::tree()->files[$path];
-		self::assertCount(4, array_filter(self::fixture($path, substr($source, 5)), static fn ($e) => $e['kind'] === 'dynamic-prefix'));
+		self::assertCount(4, \OCA\Mcp\Tests\Architecture\Dependencies\DynamicReferences::resolve($path, $source, ['target' => 'OCA\\Forms\\Db\\', 'line' => 28]));
 		foreach ([str_replace('SubmissionMapper', 'OtherMapper', $source), str_replace(" . \$name);", " . \$name . 'Other');", $source), str_replace('Forms\\\\Db', 'Forms\\\\Other', $source)] as $mutant) {
-			try { self::fixture($path, substr($mutant, 5)); self::fail('Dynamic change accepted'); }
+			try { \OCA\Mcp\Tests\Architecture\Dependencies\DynamicReferences::resolve($path, $mutant, ['target' => 'OCA\\Forms\\Db\\', 'line' => 28]); self::fail('Dynamic change accepted'); }
 			catch (RuntimeException $error) { self::assertStringContainsString('dynamic', strtolower($error->getMessage())); }
 		}
 	}

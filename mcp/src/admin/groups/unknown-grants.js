@@ -14,7 +14,7 @@
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.groups.unknown_grants = function (context) {
+	admin.modules.groups.unknownGrants = function (context) {
 		const UnknownGroupGrants = class UnknownGroupGrants {
 			/** @returns {object|null} Textual warning for a directory row.
 			 * @param {*} group operation input

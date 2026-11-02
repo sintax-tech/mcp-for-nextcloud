@@ -9,12 +9,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.level_popover = admin.modules.level_popover || {}
+	admin.modules.levelPopover = admin.modules.levelPopover || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.level_popover.rendering = function (context) {
+	admin.modules.levelPopover.rendering = function (context) {
 		/** A pressed button carries a check mark besides aria-pressed, so the choice never depends on colour.
 		 * @param {*} text operation input
 		 * @param {*} pressed operation input
@@ -34,7 +34,6 @@
 			return button
 		}
 
-
 		/** @return {HTMLElement|null} the control of the popover drawn with this focus key
 		 * @param {*} node operation input
 		 * @param {*} key operation input
@@ -48,7 +47,6 @@
 			}
 			return null
 		}
-
 
 		/** Draws the popover again, keeping the focus on the same control.
 		 * @return {*} operation result
@@ -66,7 +64,6 @@
 				(context.popover.querySelector('input:checked') || context.popover.querySelector('input'))?.focus()
 			}
 		}
-
 
 		/** Draws the popover for the user and module open, from the table on screen.
 		 * @return {*} operation result
@@ -125,7 +122,6 @@
 			body.push(context.el('p', { className: 'mcp-popover-hint', textContent: t('mcp', 'Saved when chosen. You can undo for 10 seconds.') }))
 			context.popover.replaceChildren(...body)
 		}
-
 
 		/** The advanced block: every operation of the module with Inherit, Allow and Deny.
 		 * @param {*} user operation input

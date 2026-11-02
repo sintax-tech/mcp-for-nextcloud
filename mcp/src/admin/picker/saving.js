@@ -66,7 +66,6 @@
 			}
 		}
 
-
 		/** @param {string} id option to add to or drop from the selection
 		 * @return {*} operation result
 		 */

@@ -26,7 +26,6 @@
 			return context.dirty(state) ? saved + ' (' + t('mcp', 'not saved') + ')' : saved
 		}
 
-
 		/** The module tabs of the drawer (WAI-ARIA tabs: the arrow keys, Home and End move between them).
 		 * @return {*} operation result
 		 */
@@ -50,7 +49,6 @@
 			}))
 		}
 
-
 		/** Shows one module's section and marks its tab.
 		 * @param {*} module operation input
 		 * @param {*} focus operation input
@@ -65,7 +63,6 @@
 			context.renderTabs()
 			if (focus) document.getElementById('mcp-scope-tab-' + module)?.focus?.()
 		}
-
 
 		/**
 		 * Puts the open drawer right under the Nextcloud header. A drawer is position: fixed, but Nextcloud 35 blurs the content
@@ -83,7 +80,6 @@
 			if (Math.abs(shift) >= 1) context.root.style.top = (parseFloat(getComputedStyle(context.root).top) - shift) + 'px'
 		}
 
-
 		/** Opens the drawer; the focus goes back to `trigger` when it closes.
 		 * @param {*} trigger operation input
 		 * @return {*} operation result
@@ -100,12 +96,10 @@
 			context.placeDrawer()
 		}
 
-
 		/** @return {boolean} whether a module has a draft that is not saved */
 		function hasDraft() {
 			return Object.values(context.modules).some(context.dirty)
 		}
-
 
 		/** Drops the drafts the administrator agreed to lose, so they never come back when the drawer opens again.
 		 * @return {*} operation result
@@ -117,7 +111,6 @@
 			context.tabs?.replaceChildren()
 			context.container.replaceChildren()
 		}
-
 
 		/**
 		 * Closes the drawer, asking first when a draft of a module would be lost.
@@ -140,7 +133,6 @@
 			return true
 		}
 
-
 		/**
 		 * Whether the drafts of the open user may be lost to open another one (or the same one read again): asked, never
 		 * assumed.
@@ -150,7 +142,6 @@
 		function mayReplace() {
 			return !context.hasDraft() || window.confirm(t('mcp', 'Open another person? The changes that are not saved for {user} are lost.', { user: context.uid }, undefined, { escape: false }))
 		}
-
 
 		/**
 		 * Gives the focus back to the control that opened the drawer, or, when the table was drawn again and that control is

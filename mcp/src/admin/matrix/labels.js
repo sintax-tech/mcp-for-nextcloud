@@ -32,7 +32,6 @@
 			}
 		}
 
-
 		/** @return {Object<string, string>} operation labels */
 		function operationLabels() {
 			return {
@@ -57,7 +56,6 @@
 				send: t('mcp', 'send'),
 			}
 		}
-
 
 		/**
 		 * What each operation lets the AI do, shown as the column tooltip.
@@ -97,7 +95,6 @@
 			}
 			return hints[operation] || ''
 		}
-
 
 		/** @return {Object<string, string>} names of the access levels of src/admin/admin-levels.js */
 		function levelLabels() {

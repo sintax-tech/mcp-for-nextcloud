@@ -112,7 +112,7 @@ class AdminManifest {
 		if (!entry) throw Error('Missing declared operation: ' + declaration)
 		const source = AdminManifest.fragment(entry)
 		const dependencies = entry.startsWith('admin/oauth-clients/') ? AdminManifest.fragments().filter(p => p.startsWith('admin/oauth-clients/') && p !== entry).map(p => AdminManifest.fragment(p)).join(';\n') + ';\n' : ''
-		const address = entry.split('/')[1].replaceAll('-', '_') + '.' + path.basename(entry, '.js').replaceAll('-', '_')
+		const address = [entry.split('/')[1], path.basename(entry, '.js')].map(part => part.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase())).join('.')
 		const operations = [...source.matchAll(/^\t\t(?:async )?function (\w+)\(/gm)].map(m => m[1])
 		return ';\n' + AdminManifest.fragment('admin/registration.js') + ';\n' + dependencies + source + `;\n(function () {
 			const target = globalThis

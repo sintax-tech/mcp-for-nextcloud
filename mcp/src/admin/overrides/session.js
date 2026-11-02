@@ -30,7 +30,6 @@
 		let saving = false
 		let sayTimer = null
 
-
 		/**
 		 * @param {string} tag element name
 		 * @param {object} [props] properties to assign
@@ -46,12 +45,10 @@
 			return node
 		}
 
-
 		/** @return {object[]} the users of the table on screen */
 		function pageUsers() {
 			return context.matrix.data()?.users || []
 		}
-
 
 		/**
 		 * @param {string|null} module module id, null for "Can connect"
@@ -65,7 +62,6 @@
 			const labels = context.matrix.labels()
 			return (labels.modules[module] || module) + ': ' + (labels.operations[operation] || operation)
 		}
-
 
 		/**
 		 * Writes into the live regions. A region is cleared at once and written shortly after, so the same text twice in a

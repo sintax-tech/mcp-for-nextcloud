@@ -56,7 +56,6 @@
 			}
 		}
 
-
 		/** Reads one module again from the server; its draft is replaced by the saved scope and its revision.
 		 * @param {*} state operation input
 		 * @return {Promise<*>} operation result
@@ -67,7 +66,6 @@
 				mode: data.mode, savedMode: data.mode, items: [...data.items], savedItems: [...data.items] })
 			context.rerender(state)
 		}
-
 
 		/**
 		 * The policy revision moved (a save, an undo, a conflict): the three modules are read again. A module with an

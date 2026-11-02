@@ -9,12 +9,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	admin.modules.oauthClients = admin.modules.oauthClients || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.oauth_clients.cards = function (context) {
+	admin.modules.oauthClients.cards = function (context) {
 		/**
 		 * One self-hosted client: name, Enabled, client_id with Copy (once saved), redirect URIs, Save and Delete.
 		 * Saving or deleting replaces only this card, so unsaved edits in the other cards stay.

@@ -21,7 +21,6 @@
 		let returnFocus = null
 		let returnRow = null
 
-
 		/**
 		 * Puts the open drawer right under the Nextcloud header. A drawer is position: fixed, but Nextcloud 35 blurs the content
 		 * behind it (backdrop-filter on #content-vue), which makes that box, not the window, the one it is placed in: its top
@@ -37,7 +36,6 @@
 			const shift = rect.top - header
 			if (Math.abs(shift) >= 1) context.root.style.top = (parseFloat(getComputedStyle(context.root).top) - shift) + 'px'
 		}
-
 
 		/**
 		 * Opens the drawer; the focus goes back to `trigger` when it closes. Only one drawer is open at a time: when the
@@ -61,7 +59,6 @@
 			return true
 		}
 
-
 		/**
 		 * Closes the drawer and gives the focus back. The inspector only reads, so nothing can be lost.
 		 *
@@ -78,7 +75,6 @@
 			window.dispatchEvent?.(new Event('mcp-drawer-closed'))
 			return true
 		}
-
 
 		/**
 		 * Gives the focus back to the control that opened the drawer, or, when the table was drawn again and that control is

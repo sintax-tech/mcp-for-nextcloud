@@ -20,7 +20,6 @@
 			return Array.from(context.list.querySelectorAll('[role="option"]')).filter((item) => !item.hidden)
 		}
 
-
 		/**
 		 * @return {*} operation result
 		 */
@@ -31,7 +30,6 @@
 			context.list.hidden = false
 			context.input.setAttribute('aria-expanded', 'true')
 		}
-
 
 		/**
 		 * @return {*} operation result
@@ -45,7 +43,6 @@
 				item.classList.remove('mcp-picker-active')
 			}
 		}
-
 
 		/** @param {number} delta keyboard steps within the visible options, wrapping around
 		 * @return {*} operation result
@@ -62,7 +59,6 @@
 			context.input.setAttribute('aria-activedescendant', items[context.activeIndex].id)
 			items[context.activeIndex].scrollIntoView({ block: 'nearest' })
 		}
-
 
 		/** Rebuilds the option items and keeps the current filter applied.
 		 * @return {*} operation result
@@ -97,7 +93,6 @@
 				context.input.setAttribute('aria-activedescendant', items[context.activeIndex].id)
 			}
 		}
-
 
 		/** Filters with a plain substring on the labels; typing never creates an option.
 		 * @return {*} operation result

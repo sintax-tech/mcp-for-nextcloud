@@ -9,12 +9,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.level_popover = admin.modules.level_popover || {}
+	admin.modules.levelPopover = admin.modules.levelPopover || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.level_popover.saving = function (context) {
+	admin.modules.levelPopover.saving = function (context) {
 		/**
 		 * Sends the commands as one, confirming first when "Can connect" is taken away, and offers the receipt as the undo. The
 		 * matrix is reloaded afterwards with every write blocked until it is on screen.
@@ -72,7 +72,6 @@
 			context.focusCell(open.uid, open.module)
 		}
 
-
 		/** Gives the focus back to the cell the popover was opened from, in the table drawn after a save.
 		 * @param {*} uid operation input
 		 * @param {*} module operation input
@@ -85,7 +84,6 @@
 			const cell = [...(row?.cells || [])].find((candidate) => candidate.dataset.levelKey === key)
 			cell?.querySelector('button')?.focus()
 		}
-
 
 		/**
 		 * Asks what the person inherits, read only. An answer read at another revision than the table on screen is not used,

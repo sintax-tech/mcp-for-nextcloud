@@ -53,7 +53,6 @@
 			return { changes: changes.filter((change) => change.previous.size > 0), users, unavailable, unchanged }
 		}
 
-
 		/**
 		 * Saves a bulk change as one command: the server writes every cell or none, and returns the
 		 * receipt that undoes exactly these cells.
@@ -74,7 +73,6 @@
 			context.announce(sent, saved.revision)
 			return saved
 		}
-
 
 		/**
 		 * The selection bar's "Set" (src/admin/overrides/start.js): gives the selected users one level of a module, or turns "Can
@@ -144,7 +142,6 @@
 				context.undoButton.focus()
 			}
 		}
-
 
 		/**
 		 * Undoes a bulk change through its receipt: the server puts back each cell's exact saved value,

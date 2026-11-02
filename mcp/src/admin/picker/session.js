@@ -77,7 +77,6 @@
 		container.setAttribute('aria-busy', 'false')
 		container.replaceChildren(fallback, box, list)
 
-
 		/** @param {string} text status text for the save feedback element
 		 * @return {*} operation result
 		 */

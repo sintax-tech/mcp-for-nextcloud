@@ -17,7 +17,6 @@
 	admin.modules.matrix.revisions = function (context) {
 		const REVISION_MOVED = 'mcp-revision-moved'
 
-
 		/**
 		 * Tells the other blocks of this page that a write of this page moved the policy revision from `from` to `to`.
 		 * Only the answer of a save qualifies: the server committed it from `from`, so `to` holds that write and nothing else.
@@ -31,7 +30,6 @@
 				window.dispatchEvent(new CustomEvent(REVISION_MOVED, { detail: { from, to } }))
 			}
 		}
-
 
 		/**
 		 * Whether `to` is exactly one commit after `from`. The OAuth clients and server-log saves answer with the revision of
@@ -53,7 +51,6 @@
 			}
 		}
 
-
 		/**
 		 * PHP's trim() without a character list: removes only " \t\n\r\0\x0B" from both ends. String.prototype.trim()
 		 * keeps NUL and removes Unicode spaces PHP keeps, so it cannot stand in for the server's normalization.
@@ -64,7 +61,6 @@
 		function phpTrim(text) {
 			return text.replace(/^[ \t\n\r\x00\x0B]+|[ \t\n\r\x00\x0B]+$/g, '')
 		}
-
 
 		/**
 		 * Keeps a block's own revision in step with the writes of this page: when the block is exactly at the revision a

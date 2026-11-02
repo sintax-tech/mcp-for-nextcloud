@@ -9,12 +9,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.level_popover = admin.modules.level_popover || {}
+	admin.modules.levelPopover = admin.modules.levelPopover || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.level_popover.session = function (context) {
+	admin.modules.levelPopover.session = function (context) {
 		/** Individual sources of the API; anything else is inherited. */
 		const INDIVIDUAL = ['individual_allow', 'individual_deny', 'invalid']
 
@@ -36,7 +36,6 @@
 			return node
 		}
 
-
 		/** @return {object|undefined} the user of the table on screen
 		 * @param {*} uid operation input
 		 */
@@ -44,14 +43,12 @@
 			return context.matrix.data()?.users.find((user) => user.uid === uid)
 		}
 
-
 		/** @return {string[]} the operations of a module, or ["eligible"] for "Can connect" (module null)
 		 * @param {*} module operation input
 		 */
 		function operationsOf(module) {
 			return module === null ? ['eligible'] : context.matrix.data().catalog[module]
 		}
-
 
 		/** @return {boolean|null} the effective value of one operation
 		 * @param {*} user operation input
@@ -61,7 +58,6 @@
 		function valueOf(user, module, operation) {
 			return module === null ? user.eligible : user.grants[module][operation]
 		}
-
 
 		/** @return {{source: string, groupIds: string[]}} the origin of one operation
 		 * @param {*} user operation input

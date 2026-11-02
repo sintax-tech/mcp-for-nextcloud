@@ -18,7 +18,6 @@
 		return
 	}
 
-
 	const context = { matrix, table, anchor }
 	admin.sessions.overrides = context
 	admin.modules.overrides.session(context)

@@ -35,7 +35,6 @@
 			return cells
 		}
 
-
 		/**
 		 * Whether the table offers no checkbox for this cell of this user: a disabled account, a user who may not connect (the
 		 * permission columns show one notice instead), a module whose column is hidden or an app that is unavailable to them.
@@ -54,7 +53,6 @@
 			}
 			return user.eligible === false || !(cell.module in (context.matrix.data()?.catalog || {})) || user.appsEnabled?.[cell.module] === false
 		}
-
 
 		/**
 		 * What a reset removes, computed from the table on screen.
@@ -95,7 +93,6 @@
 			return result
 		}
 
-
 		/**
 		 * @param {object} result a plan
 		 * @return {Array<{uid: string, module: string|null, operation: string, state: string}>} its inherit commands
@@ -109,7 +106,6 @@
 			})))
 		}
 
-
 		/**
 		 * @param {object} current the open preview
 		 * @return {boolean} whether the preview was read at another revision than the table on screen, so what the table lists
@@ -118,7 +114,6 @@
 		function outdated(current) {
 			return current.revision !== null && current.revision !== context.matrix.data()?.revision
 		}
-
 
 		/** @return {string} key of one cell of one user
 		 * @param {*} uid operation input

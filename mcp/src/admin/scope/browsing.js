@@ -67,7 +67,6 @@
 			return picker
 		}
 
-
 		/**
 		 * @param {*} state operation input
 		 * @param {*} item operation input
@@ -90,7 +89,6 @@
 			})
 			return add
 		}
-
 
 		/**
 		 * @param {*} state operation input

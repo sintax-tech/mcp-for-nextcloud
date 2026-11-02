@@ -18,7 +18,6 @@
 		let observedHeaderRow = null
 		let headerObserver = null
 
-
 		/** Makes the second header row stick right below the first one, whose height depends on the density.
 		 * @return {*} operation result
 		 */
@@ -32,7 +31,6 @@
 				cell.style.top = offset + 'px'
 			}
 		}
-
 
 		/**
 		 * Re-measures the first header row whenever it resizes. The Access panel starts hidden, so the
@@ -56,7 +54,6 @@
 			observedHeaderRow = top
 			headerObserver.observe(top)
 		}
-
 
 		/** Renders header and rows from state.data.
 		 * @return {*} operation result

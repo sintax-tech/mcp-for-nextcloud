@@ -48,6 +48,7 @@ admin/level-popover/planning.js
 admin/level-popover/wording.js
 admin/level-popover/rendering.js
 admin/level-popover/saving.js
+admin/level-popover/entry.js
 admin/level-popover/start.js
 admin/admin-exceptions.js
 admin/admin-row-actions.js
@@ -72,6 +73,7 @@ admin/scope/drawer.js
 admin/scope/rendering.js
 admin/scope/browsing.js
 admin/scope/saving.js
+admin/scope/entry.js
 admin/scope/start.js
 admin/inspector/session.js
 admin/inspector/wording.js

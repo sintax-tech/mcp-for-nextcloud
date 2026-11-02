@@ -28,7 +28,6 @@
 			if (focusId) document.getElementById(focusId)?.focus?.()
 		}
 
-
 		/**
 		 * @param {*} state operation input
 		 * @return {*} operation result
@@ -94,7 +93,6 @@
 			section.append(context.el('p', { id: 'mcp-scope-line-' + module, className: 'mcp-scope-line', textContent: state.line || '', tabIndex: -1 }))
 			return section
 		}
-
 
 		/**
 		 * @param {*} state operation input

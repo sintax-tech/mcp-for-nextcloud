@@ -185,7 +185,6 @@
 		return { ready, submit, aggregate }
 	}
 
-
 	admin.fileWritePolicy.mount = mount
 	if (scope.document) mount(scope.document, scope.fetch.bind(scope), scope.t,
 		scope.OC.generateUrl('/apps/mcp/api/file-write-policy'), () => scope.OC.requestToken, scope.MutationObserver)

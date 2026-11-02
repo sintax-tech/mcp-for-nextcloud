@@ -95,7 +95,6 @@
 		container.setAttribute('aria-busy', 'false')
 		container.replaceChildren(fallback, box, list)
 
-
 		/** @param {string} text status text for the save feedback element
 		 * @return {*} operation result
 		 */
@@ -149,7 +148,6 @@
 			return Array.from(context.list.querySelectorAll('[role="option"]')).filter((item) => !item.hidden)
 		}
 
-
 		/**
 		 * @return {*} operation result
 		 */
@@ -160,7 +158,6 @@
 			context.list.hidden = false
 			context.input.setAttribute('aria-expanded', 'true')
 		}
-
 
 		/**
 		 * @return {*} operation result
@@ -174,7 +171,6 @@
 				item.classList.remove('mcp-picker-active')
 			}
 		}
-
 
 		/** @param {number} delta keyboard steps within the visible options, wrapping around
 		 * @return {*} operation result
@@ -191,7 +187,6 @@
 			context.input.setAttribute('aria-activedescendant', items[context.activeIndex].id)
 			items[context.activeIndex].scrollIntoView({ block: 'nearest' })
 		}
-
 
 		/** Rebuilds the option items and keeps the current filter applied.
 		 * @return {*} operation result
@@ -226,7 +221,6 @@
 				context.input.setAttribute('aria-activedescendant', items[context.activeIndex].id)
 			}
 		}
-
 
 		/** Filters with a plain substring on the labels; typing never creates an option.
 		 * @return {*} operation result
@@ -297,7 +291,6 @@
 			}
 		}
 
-
 		/** Shows every control part, the empty text or the fallback text as the state asks.
 		 * @return {*} operation result
 		 */
@@ -315,7 +308,6 @@
 			context.renderChips()
 			context.renderList()
 		}
-
 
 		/** @param {boolean} locked locks every control while a save runs
 		 * @return {*} operation result
@@ -402,7 +394,6 @@
 				}
 			}
 		}
-
 
 		/** @param {string} id option to add to or drop from the selection
 		 * @return {*} operation result
@@ -1127,7 +1118,6 @@
 			}
 		}
 
-
 		/** @return {Object<string, string>} operation labels */
 		function operationLabels() {
 			return {
@@ -1152,7 +1142,6 @@
 				send: t('mcp', 'send'),
 			}
 		}
-
 
 		/**
 		 * What each operation lets the AI do, shown as the column tooltip.
@@ -1192,7 +1181,6 @@
 			}
 			return hints[operation] || ''
 		}
-
 
 		/** @return {Object<string, string>} names of the access levels of src/admin/admin-levels.js */
 		function levelLabels() {
@@ -1239,7 +1227,6 @@
 	admin.modules.matrix.requests = function (context) {
 		let matrixLocked = false
 
-
 		/**
 		 * @param {string} method HTTP method
 		 * @param {string} path path below /apps/mcp
@@ -1267,7 +1254,6 @@
 			})
 		}
 
-
 		/** Reloads the matrix with every matrix write blocked until the new page is on screen.
 		 * @return {Promise<*>} operation result
 		 */
@@ -1279,7 +1265,6 @@
 				matrixLocked = false
 			}
 		}
-
 
 		/**
 		 * Tells the admin what a failed save means when the policy moved or the storage failed, and reloads
@@ -1299,7 +1284,6 @@
 			await context.reloadLocked()
 			return true
 		}
-
 
 		/** @param {string} message error shown to the admin
 		 * @return {*} operation result
@@ -1342,7 +1326,6 @@
 	admin.modules.matrix.revisions = function (context) {
 		const REVISION_MOVED = 'mcp-revision-moved'
 
-
 		/**
 		 * Tells the other blocks of this page that a write of this page moved the policy revision from `from` to `to`.
 		 * Only the answer of a save qualifies: the server committed it from `from`, so `to` holds that write and nothing else.
@@ -1356,7 +1339,6 @@
 				window.dispatchEvent(new CustomEvent(REVISION_MOVED, { detail: { from, to } }))
 			}
 		}
-
 
 		/**
 		 * Whether `to` is exactly one commit after `from`. The OAuth clients and server-log saves answer with the revision of
@@ -1378,7 +1360,6 @@
 			}
 		}
 
-
 		/**
 		 * PHP's trim() without a character list: removes only " \t\n\r\0\x0B" from both ends. String.prototype.trim()
 		 * keeps NUL and removes Unicode spaces PHP keeps, so it cannot stand in for the server's normalization.
@@ -1389,7 +1370,6 @@
 		function phpTrim(text) {
 			return text.replace(/^[ \t\n\r\x00\x0B]+|[ \t\n\r\x00\x0B]+$/g, '')
 		}
-
 
 		/**
 		 * Keeps a block's own revision in step with the writes of this page: when the block is exactly at the revision a
@@ -1444,7 +1424,6 @@
 			cell.classList.add(ok ? 'mcp-ok' : 'mcp-error')
 		}
 
-
 		/**
 		 * @param {string} tag element name
 		 * @param {object} [props] properties to assign
@@ -1484,7 +1463,6 @@
 	admin.modules.matrix.loading = function (context) {
 		let loadSeq = 0
 
-
 		/**
 		 * Reads the current page from the server and re-renders the table; a failure is shown in the table with a retry.
 		 * The page and its revision always come from the same response, and only the newest request is rendered.
@@ -1516,7 +1494,6 @@
 			}
 		}
 
-
 		/** Replaces the body with an error row and a retry button, keeping the last header.
 		 * @return {*} operation result
 		 */
@@ -1527,7 +1504,6 @@
 			context.table.tBodies[0].replaceChildren(context.el('tr', {}, [cell]))
 			context.applyAppFilter()
 		}
-
 
 		/** Fills the group filter once, keeping the current selection.
 		 * @return {*} operation result
@@ -1541,7 +1517,6 @@
 			}
 			context.state.groupsLoaded = true
 		}
-
 
 		/** Populate app choices from the actual catalog, preserving a valid selection.
 		 * @return {*} operation result
@@ -1612,7 +1587,6 @@
 			context.stickSecondHeaderRow()
 		}
 
-
 		/** Read the Access tab's app parameter on reload and history navigation.
 		 * @return {*} operation result
 		 */
@@ -1637,18 +1611,15 @@
 			context.applyAppFilter()
 		}
 
-
 		/** @return {boolean} whether the matrix shows one level per module */
 		function isLevelsView() {
 			return context.state.view === 'levels' && Boolean(window.OCA.Mcp.Admin.levels)
 		}
 
-
 		/** @return {string} the app whose columns are shown alone, '' for all; the levels view always shows every module */
 		function shownApp() {
 			return context.isLevelsView() ? '' : context.state.app
 		}
-
 
 		/**
 		 * Switches between the levels and the operations view, keeping the page, the filters and the data on screen.
@@ -1670,7 +1641,6 @@
 			}
 			context.writeAppToHash(false)
 		}
-
 
 		/**
 		 * Writes the chosen app into the address (#access?app=<module>, no parameter for all apps).
@@ -1704,7 +1674,6 @@
 				window.location.hash = next
 			}
 		}
-
 
 		/** Install this unit’s original listeners once, at its historical startup phase.
 		 * @return {*} operation result
@@ -1752,7 +1721,6 @@
 		let observedHeaderRow = null
 		let headerObserver = null
 
-
 		/** Makes the second header row stick right below the first one, whose height depends on the density.
 		 * @return {*} operation result
 		 */
@@ -1766,7 +1734,6 @@
 				cell.style.top = offset + 'px'
 			}
 		}
-
 
 		/**
 		 * Re-measures the first header row whenever it resizes. The Access panel starts hidden, so the
@@ -1790,7 +1757,6 @@
 			observedHeaderRow = top
 			headerObserver.observe(top)
 		}
-
 
 		/** Renders header and rows from state.data.
 		 * @return {*} operation result
@@ -1915,7 +1881,6 @@
 	admin.modules.matrix.rows = function (context) {
 		const OWN_SOURCES = ['individual_allow', 'individual_deny', 'invalid']
 
-
 		/**
 		 * @param {object} user row from the API
 		 * @return {HTMLTableRowElement}
@@ -1925,7 +1890,6 @@
 			window.OCA.Mcp.Admin.overrides?.decorateRow(row, user)
 			return row
 		}
-
 
 		/**
 		 * @param {object} user row from the API
@@ -1977,7 +1941,6 @@
 			return row
 		}
 
-
 		/**
 		 * The second line under a name: "Account disabled", "Connected" (with its mark, in the success colour as text) or, for
 		 * everyone else, the user ID. Being connected is a fact worth seeing; not being connected is the normal case and says
@@ -2000,7 +1963,6 @@
 			return context.el('span', { className: 'mcp-uid', textContent: user.uid })
 		}
 
-
 		/** @return {HTMLTableCellElement} the cell with the row's actions menu (src/admin/admin-row-actions.js)
 		 * @param {*} user operation input
 		 */
@@ -2010,7 +1972,6 @@
 			if (button) cell.append(button)
 			return cell
 		}
-
 
 		/**
 		 * Whether a user has a real exception on the page (src/admin/admin-exceptions.js): an individual value that differs from what
@@ -2033,7 +1994,6 @@
 			if (kinds.includes('exception')) return true
 			return kinds.includes('pending') ? null : false
 		}
-
 
 		/**
 		 * The "All | With exceptions (N)" filter: it counts the users of this page who have a real exception and, when chosen,
@@ -2069,7 +2029,6 @@
 			}
 		}
 
-
 		/**
 		 * Why none of a user's permissions can be changed: a disabled account or "Can connect" off. The
 		 * row then shows this one notice across the permission columns instead of a mark in each of them.
@@ -2086,7 +2045,6 @@
 			}
 			return null
 		}
-
 
 		/** @return {number} permission columns shown with the current app filter */
 		function visiblePermissionColumns() {
@@ -2135,7 +2093,7 @@
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.matrix.operation_cells = function (context) {
+	admin.modules.matrix.operationCells = function (context) {
 		/**
 		 * The states a permission cell can show, drawn in one place: allowed and denied are a checkbox
 		 * (checked or empty), unavailable is a "no entry" mark that never looks like an empty checkbox.
@@ -2146,7 +2104,6 @@
 			denied: { className: 'mcp-state-denied', name: () => t('mcp', 'Denied') },
 			unavailable: { className: 'mcp-state-unavailable', name: () => t('mcp', 'Unavailable') },
 		}
-
 
 		/**
 		 * Why a user's permission cannot be changed here, or null when it can. The first reason wins:
@@ -2174,7 +2131,6 @@
 			return null
 		}
 
-
 		/**
 		 * Paints one state on a cell: its class, tooltip and the name read by screen readers.
 		 *
@@ -2190,7 +2146,6 @@
 			cell.classList.add(PERMISSION_STATES[key].className)
 			cell.title = detail ? PERMISSION_STATES[key].name() + ': ' + detail : PERMISSION_STATES[key].name()
 		}
-
 
 		/**
 		 * A permission cell: a checkbox that saves at once, or the unavailable mark with its reason.
@@ -2307,9 +2262,8 @@
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.matrix.level_cells = function (context) {
+	admin.modules.matrix.levelCells = function (context) {
 		const INDIVIDUAL_SOURCES = ['individual_allow', 'individual_deny', 'invalid']
-
 
 		/**
 		 * Where a module's values come from, as a sentence for the tooltip and screen readers.
@@ -2326,7 +2280,6 @@
 			default: return t('mcp', 'Default')
 			}
 		}
-
 
 		/**
 		 * One module of one user in the levels view: the level as a word (None, Read, Edit, Full, Custom) and where it comes
@@ -2391,7 +2344,6 @@
 			return cell
 		}
 
-
 		/**
 		 * Where a cell's values come from and how to mark it. Only a real exception, an individual value that differs from what
 		 * the person would inherit (src/admin/admin-exceptions.js), gets the person icon; individual values that only repeat the
@@ -2427,7 +2379,6 @@
 			return { origin: levels.originOf(operations, repeated), mark: 'redundant' }
 		}
 
-
 		/** @return {string|null} the icon class of a mark: a person for an exception, a group for a group, none otherwise
 		 * @param {*} origin operation input
 		 * @param {*} mark operation input
@@ -2437,7 +2388,6 @@
 			if (mark === 'pending') return null
 			return origin.source === 'group' || origin.source === 'unknown' ? 'icon-group' : null
 		}
-
 
 		/**
 		 * @return {string} where a cell's values come from, in words: a screen reader hears "Exception" where the eye sees the
@@ -2451,7 +2401,6 @@
 			if (mark === 'redundant') return context.originText(origin) + ' — ' + t('mcp', 'also set for this person, with the same value')
 			return context.originText(origin)
 		}
-
 
 		/**
 		 * The control of a level cell: it opens the popover of src/admin/admin-level-popover.js, where the level is chosen.
@@ -2578,7 +2527,6 @@
 		/** True while a bulk change or its undo saves and the matrix reloads: only one runs at a time. */
 		let bulkBusy = false
 
-
 		/**
 		 * Locks the "All" menus and the undo while a bulk change or an undo is saving, so an older
 		 * operation can never finish on top of a newer one's notice, undo or focus.
@@ -2603,7 +2551,6 @@
 			}
 		}
 
-
 		/** Clears the notice and forgets the undo it offered.
 		 * @return {*} operation result
 		 */
@@ -2615,7 +2562,6 @@
 			undoButton.hidden = true
 		}
 
-
 		/** Starts the countdown, unless the admin is on the notice or a bulk change is still running.
 		 * @return {*} operation result
 		 */
@@ -2625,7 +2571,6 @@
 				noticeTimer = setTimeout(context.hideNotice, UNDO_SECONDS * 1000)
 			}
 		}
-
 
 		/**
 		 * Shows a message under the matrix, with an Undo button when an undo is given.
@@ -2643,7 +2588,6 @@
 			notice.classList.add('mcp-notice-on')
 			context.armNotice()
 		}
-
 
 		/** Install this unit’s original listeners once, at its historical startup phase.
 		 * @return {*} operation result
@@ -2743,7 +2687,6 @@
 			return { changes: changes.filter((change) => change.previous.size > 0), users, unavailable, unchanged }
 		}
 
-
 		/**
 		 * Saves a bulk change as one command: the server writes every cell or none, and returns the
 		 * receipt that undoes exactly these cells.
@@ -2764,7 +2707,6 @@
 			context.announce(sent, saved.revision)
 			return saved
 		}
-
 
 		/**
 		 * The selection bar's "Set" (src/admin/overrides/start.js): gives the selected users one level of a module, or turns "Can
@@ -2835,7 +2777,6 @@
 			}
 		}
 
-
 		/**
 		 * Undoes a bulk change through its receipt: the server puts back each cell's exact saved value,
 		 * absence included, and refuses when anything changed since that change.
@@ -2900,7 +2841,6 @@
 	admin.modules.matrix.interactions = function (context) {
 		let searchTimer = null
 
-
 		/**
 		 * Keeps the control that takes the focus clear of the sticky columns of its row (the selection box and the name at the
 		 * start, the "…" menu at the end, js/admin.css), and inside the block. The browser scrolls a focused control into the
@@ -2942,7 +2882,6 @@
 				wrap.scrollLeft += Math.min(rect.right - right + 4, rect.left - left)
 			}
 		}
-
 
 		/** Install the original attachService handlers.
 		 * @return {*} operation result
@@ -3065,7 +3004,7 @@
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.protection.exclusion_tags = function (context) {
+	admin.modules.protection.exclusionTags = function (context) {
 		/**
 		 * @return {Promise<*>} operation result
 		 */
@@ -3211,7 +3150,7 @@
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.checkout.upload_limit = function (context) {
+	admin.modules.checkout.uploadLimit = function (context) {
 		/**
 		 * Checkout upload limit of the status block, in whole MiB, through GET and PUT /apps/mcp/api/checkout-limit.
 		 * Next to it: the effective limit and PHP's post_max_size ceiling.
@@ -3490,12 +3429,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	admin.modules.oauthClients = admin.modules.oauthClients || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.oauth_clients.session = function (context) {
+	admin.modules.oauthClients.session = function (context) {
 		const hostsInput = document.getElementById('mcp-oauth-hosts')
 		const hostsSave = document.getElementById('mcp-oauth-hosts-save')
 		const hostsStatus = document.getElementById('mcp-oauth-hosts-status')
@@ -3553,12 +3492,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	admin.modules.oauthClients = admin.modules.oauthClients || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.oauth_clients.saving = function (context) {
+	admin.modules.oauthClients.saving = function (context) {
 		/**
 		 * Runs one task of the block after the previous one has finished.
 		 *
@@ -3570,7 +3509,6 @@
 			context.queue = run.catch(() => {})
 			return run
 		}
-
 
 		/**
 		 * Sends one change when its turn comes: the body is built then by `build`, from the clients the server confirmed
@@ -3608,7 +3546,6 @@
 				}
 			})
 		}
-
 
 		/**
 		 * Whether a request differs from the settings stored at the block's revision, compared the way the server compares
@@ -3652,7 +3589,6 @@
 			return false
 		}
 
-
 		/**
 		 * Saves one change to the list of self-hosted clients.
 		 *
@@ -3685,12 +3621,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	admin.modules.oauthClients = admin.modules.oauthClients || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.oauth_clients.recovery = function (context) {
+	admin.modules.oauthClients.recovery = function (context) {
 		/**
 		 * When a save failed because the page was out of date (409, or 428 without a revision) or the server could not
 		 * confirm it (503 uncertain), shows what is stored now, in the queue's order, and tells the admin nothing was
@@ -3720,7 +3656,6 @@
 			}
 			return true
 		}
-
 
 		/**
 		 * The cards of the clients the server has now, with the cards whose typed changes it does not have put back: a
@@ -3763,12 +3698,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	admin.modules.oauthClients = admin.modules.oauthClients || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.oauth_clients.cards = function (context) {
+	admin.modules.oauthClients.cards = function (context) {
 		/**
 		 * One self-hosted client: name, Enabled, client_id with Copy (once saved), redirect URIs, Save and Delete.
 		 * Saving or deleting replaces only this card, so unsaved edits in the other cards stay.
@@ -3909,22 +3844,22 @@
  */
 (function (admin) {
 	'use strict'
-	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	admin.modules.oauthClients = admin.modules.oauthClients || {}
 	/**
 	 * @param {object} matrix matrix request, revision and presentation dependencies
 	 * @return {void}
 	 */
-	admin.modules.oauth_clients.editor = function (matrix) {
+	admin.modules.oauthClients.editor = function (matrix) {
 		/** @return {Promise<void>} initial settings load and original listener registration */
 		async function initOauthClients() {
 			const context = { api: matrix.api, flash: matrix.flash, el: matrix.el,
 				notifyError: matrix.notifyError, oneStep: matrix.oneStep, phpTrim: matrix.phpTrim,
 				announce: matrix.announce, load: matrix.load }
 			admin.sessions.oauthClients = context
-			admin.modules.oauth_clients.session(context)
-			admin.modules.oauth_clients.saving(context)
-			admin.modules.oauth_clients.recovery(context)
-			admin.modules.oauth_clients.cards(context)
+			admin.modules.oauthClients.session(context)
+			admin.modules.oauthClients.saving(context)
+			admin.modules.oauthClients.recovery(context)
+			admin.modules.oauthClients.cards(context)
 			matrix.followRevision(() => context.oauthRevision, (revision) => { context.oauthRevision = revision })
 
 			/** @param {object} data settings returned by the API
@@ -3940,7 +3875,6 @@
 				context.redirects.replaceChildren(...data.nativeRedirectUris.map((uri) => context.el('li', {}, [context.el('code', { textContent: uri })])))
 				context.customClients = data.customClients
 			}
-
 
 			/**
 			 * @param {HTMLElement} status status span next to the control
@@ -3999,7 +3933,8 @@
 				} finally {
 					context.nativeBox.disabled = false
 				}
-			})		}
+			})
+		}
 		matrix.initOauthClients = initOauthClients
 	}
 })((globalThis.window || globalThis).OCA.Mcp.Admin)
@@ -4028,17 +3963,17 @@
 	admin.modules.matrix.view(context)
 	admin.modules.matrix.rendering(context)
 	admin.modules.matrix.rows(context)
-	admin.modules.matrix.operation_cells(context)
-	admin.modules.matrix.level_cells(context)
+	admin.modules.matrix.operationCells(context)
+	admin.modules.matrix.levelCells(context)
 	admin.modules.matrix.eligibility(context)
 	admin.modules.matrix.notices(context)
 	admin.modules.matrix.commands(context)
 	admin.modules.matrix.interactions(context)
-	admin.modules.protection.exclusion_tags(context)
-	admin.modules.checkout.upload_limit(context)
+	admin.modules.protection.exclusionTags(context)
+	admin.modules.checkout.uploadLimit(context)
 	admin.modules.logs.privacy(context)
 	admin.modules.logs.readers(context)
-	admin.modules.oauth_clients.editor(context)
+	admin.modules.oauthClients.editor(context)
 	context.attachView()
 	context.attachExceptions()
 	context.attachNotices()
@@ -4099,12 +4034,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.level_popover = admin.modules.level_popover || {}
+	admin.modules.levelPopover = admin.modules.levelPopover || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.level_popover.session = function (context) {
+	admin.modules.levelPopover.session = function (context) {
 		/** Individual sources of the API; anything else is inherited. */
 		const INDIVIDUAL = ['individual_allow', 'individual_deny', 'invalid']
 
@@ -4126,7 +4061,6 @@
 			return node
 		}
 
-
 		/** @return {object|undefined} the user of the table on screen
 		 * @param {*} uid operation input
 		 */
@@ -4134,14 +4068,12 @@
 			return context.matrix.data()?.users.find((user) => user.uid === uid)
 		}
 
-
 		/** @return {string[]} the operations of a module, or ["eligible"] for "Can connect" (module null)
 		 * @param {*} module operation input
 		 */
 		function operationsOf(module) {
 			return module === null ? ['eligible'] : context.matrix.data().catalog[module]
 		}
-
 
 		/** @return {boolean|null} the effective value of one operation
 		 * @param {*} user operation input
@@ -4151,7 +4083,6 @@
 		function valueOf(user, module, operation) {
 			return module === null ? user.eligible : user.grants[module][operation]
 		}
-
 
 		/** @return {{source: string, groupIds: string[]}} the origin of one operation
 		 * @param {*} user operation input
@@ -4184,12 +4115,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.level_popover = admin.modules.level_popover || {}
+	admin.modules.levelPopover = admin.modules.levelPopover || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.level_popover.planning = function (context) {
+	admin.modules.levelPopover.planning = function (context) {
 		/**
 		 * What each operation would be without the person's individual values: the preview's "after" for an individual cell,
 		 * the value on screen for any other. null when the preview has not answered (or could not).
@@ -4216,7 +4147,6 @@
 			}
 			return out
 		}
-
 
 		/**
 		 * The commands that give a set of target values: one per operation whose value changes. Taking an operation away is
@@ -4246,7 +4176,6 @@
 			return commands
 		}
 
-
 		/** @return {Array<object>} the commands that give a module one level
 		 * @param {*} user operation input
 		 * @param {*} module operation input
@@ -4259,7 +4188,6 @@
 			return context.planTarget(user, module, Object.fromEntries(operations.map((operation) => [operation, allowed.includes(operation)])), inherited)
 		}
 
-
 		/** @return {Array<object>} the commands that give every individual value of a module back to inheritance
 		 * @param {*} user operation input
 		 * @param {*} module operation input
@@ -4269,7 +4197,6 @@
 				.filter((operation) => context.INDIVIDUAL.includes(context.originOfCell(user, module, operation).source))
 				.map((operation) => ({ uid: user.uid, module, operation, state: 'inherit' }))
 		}
-
 
 		/** @return {Array<object>} the command that sets one operation to inherit, allow or deny, or none when it already is
 		 * @param {*} user operation input
@@ -4282,7 +4209,6 @@
 			const now = source === 'individual_allow' ? 'allow' : source === 'individual_deny' || source === 'invalid' ? 'deny' : 'inherit'
 			return now === state ? [] : [{ uid: user.uid, module, operation, state }]
 		}
-
 
 		/**
 		 * Whether the commands take "Can connect" away from someone who has it now; an inherit whose result is unknown counts.
@@ -4316,19 +4242,18 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.level_popover = admin.modules.level_popover || {}
+	admin.modules.levelPopover = admin.modules.levelPopover || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.level_popover.wording = function (context) {
+	admin.modules.levelPopover.wording = function (context) {
 		/** @return {string} module name, or "Can connect"
 		 * @param {*} module operation input
 		 */
 		function permissionName(module) {
 			return module === null ? t('mcp', 'Can connect') : context.matrix.labels().modules[module] || module
 		}
-
 
 		/** @return {string} name of a level of src/admin/admin-levels.js, or Yes / No for "Can connect"
 		 * @param {*} module operation input
@@ -4341,7 +4266,6 @@
 			return { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }[level] || level
 		}
 
-
 		/** @return {string} the level these values are, for any module, "Can connect" included
 		 * @param {*} module operation input
 		 * @param {*} values operation input
@@ -4353,7 +4277,6 @@
 			return context.levels.levelOf(module, context.operationsOf(module), values)
 		}
 
-
 		/** @return {string} where an inherited value comes from
 		 * @param {*} origin operation input
 		 */
@@ -4362,7 +4285,6 @@
 			if (origin.source === 'unknown') return t('mcp', 'Unknown')
 			return t('mcp', 'Default')
 		}
-
 
 		/** @return {string} the "Inherited" line of the popover */
 		function inheritedLine() {
@@ -4375,7 +4297,6 @@
 			const origin = sources.some((value) => value.source === 'unknown') ? { source: 'unknown', groupIds: [] } : group || { source: 'default', groupIds: [] }
 			return t('mcp', 'Inherits: {level} ({source})', { level: context.levelName(context.current.module, level), source: context.sourceName(origin) }, undefined, { escape: false })
 		}
-
 
 		/** @return {string} description of a level: the operations it allows
 		 * @param {*} module operation input
@@ -4406,12 +4327,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.level_popover = admin.modules.level_popover || {}
+	admin.modules.levelPopover = admin.modules.levelPopover || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.level_popover.rendering = function (context) {
+	admin.modules.levelPopover.rendering = function (context) {
 		/** A pressed button carries a check mark besides aria-pressed, so the choice never depends on colour.
 		 * @param {*} text operation input
 		 * @param {*} pressed operation input
@@ -4431,7 +4352,6 @@
 			return button
 		}
 
-
 		/** @return {HTMLElement|null} the control of the popover drawn with this focus key
 		 * @param {*} node operation input
 		 * @param {*} key operation input
@@ -4445,7 +4365,6 @@
 			}
 			return null
 		}
-
 
 		/** Draws the popover again, keeping the focus on the same control.
 		 * @return {*} operation result
@@ -4463,7 +4382,6 @@
 				(context.popover.querySelector('input:checked') || context.popover.querySelector('input'))?.focus()
 			}
 		}
-
 
 		/** Draws the popover for the user and module open, from the table on screen.
 		 * @return {*} operation result
@@ -4523,7 +4441,6 @@
 			context.popover.replaceChildren(...body)
 		}
 
-
 		/** The advanced block: every operation of the module with Inherit, Allow and Deny.
 		 * @param {*} user operation input
 		 * @param {*} module operation input
@@ -4580,12 +4497,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.level_popover = admin.modules.level_popover || {}
+	admin.modules.levelPopover = admin.modules.levelPopover || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.level_popover.saving = function (context) {
+	admin.modules.levelPopover.saving = function (context) {
 		/**
 		 * Sends the commands as one, confirming first when "Can connect" is taken away, and offers the receipt as the undo. The
 		 * matrix is reloaded afterwards with every write blocked until it is on screen.
@@ -4643,7 +4560,6 @@
 			context.focusCell(open.uid, open.module)
 		}
 
-
 		/** Gives the focus back to the cell the popover was opened from, in the table drawn after a save.
 		 * @param {*} uid operation input
 		 * @param {*} module operation input
@@ -4656,7 +4572,6 @@
 			const cell = [...(row?.cells || [])].find((candidate) => candidate.dataset.levelKey === key)
 			cell?.querySelector('button')?.focus()
 		}
-
 
 		/**
 		 * Asks what the person inherits, read only. An answer read at another revision than the table on screen is not used,
@@ -4691,7 +4606,7 @@
 	}
 })((globalThis.window || globalThis).OCA.Mcp.Admin)
 ;
-/* admin/level-popover/start.js */
+/* admin/level-popover/entry.js */
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
@@ -4703,12 +4618,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.level_popover = admin.modules.level_popover || {}
+	admin.modules.levelPopover = admin.modules.levelPopover || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.level_popover.entry = function (context) {
+	admin.modules.levelPopover.entry = function (context) {
 		/** Places the popover under the cell it belongs to, inside the matrix block, and brings all of it into view.
 		 * @param {*} trigger operation input
 		 * @return {*} operation result
@@ -4723,7 +4638,6 @@
 			// Its height is capped (js/admin.css) and it scrolls inside: the page only moves as far as showing all of it takes.
 			context.popover.scrollIntoView?.({ block: 'nearest', inline: 'nearest' })
 		}
-
 
 		/**
 		 * Opens the popover of one cell.
@@ -4751,7 +4665,6 @@
 			context.loadInherited(context.current)
 		}
 
-
 		/** @param {boolean} restoreFocus give the focus back to the cell that opened the popover
 		 * @return {*} operation result
 		 */
@@ -4770,11 +4683,11 @@
 			window.dispatchEvent?.(new Event('mcp-level-popover-closed'))
 		}
 
-
 		Object.assign(context, { place, open, close })
 	}
 })((globalThis.window || globalThis).OCA.Mcp.Admin)
 ;
+/* admin/level-popover/start.js */
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
@@ -4792,15 +4705,14 @@
 		return
 	}
 
-
 	const context = { matrix, levels, popover }
 	admin.sessions.levelPopover = context
-	admin.modules.level_popover.session(context)
-	admin.modules.level_popover.planning(context)
-	admin.modules.level_popover.wording(context)
-	admin.modules.level_popover.rendering(context)
-	admin.modules.level_popover.saving(context)
-	admin.modules.level_popover.entry(context)
+	admin.modules.levelPopover.session(context)
+	admin.modules.levelPopover.planning(context)
+	admin.modules.levelPopover.wording(context)
+	admin.modules.levelPopover.rendering(context)
+	admin.modules.levelPopover.saving(context)
+	admin.modules.levelPopover.entry(context)
 
 	// Opening "Operations" makes it taller: it comes back into view whole (toggle does not bubble, so it is caught here).
 	context.popover.addEventListener('toggle', () => context.popover.scrollIntoView?.({ block: 'nearest', inline: 'nearest' }), true)
@@ -5342,7 +5254,6 @@
 		let saving = false
 		let sayTimer = null
 
-
 		/**
 		 * @param {string} tag element name
 		 * @param {object} [props] properties to assign
@@ -5358,12 +5269,10 @@
 			return node
 		}
 
-
 		/** @return {object[]} the users of the table on screen */
 		function pageUsers() {
 			return context.matrix.data()?.users || []
 		}
-
 
 		/**
 		 * @param {string|null} module module id, null for "Can connect"
@@ -5377,7 +5286,6 @@
 			const labels = context.matrix.labels()
 			return (labels.modules[module] || module) + ': ' + (labels.operations[operation] || operation)
 		}
-
 
 		/**
 		 * Writes into the live regions. A region is cleared at once and written shortly after, so the same text twice in a
@@ -5454,7 +5362,6 @@
 			return cells
 		}
 
-
 		/**
 		 * Whether the table offers no checkbox for this cell of this user: a disabled account, a user who may not connect (the
 		 * permission columns show one notice instead), a module whose column is hidden or an app that is unavailable to them.
@@ -5473,7 +5380,6 @@
 			}
 			return user.eligible === false || !(cell.module in (context.matrix.data()?.catalog || {})) || user.appsEnabled?.[cell.module] === false
 		}
-
 
 		/**
 		 * What a reset removes, computed from the table on screen.
@@ -5514,7 +5420,6 @@
 			return result
 		}
 
-
 		/**
 		 * @param {object} result a plan
 		 * @return {Array<{uid: string, module: string|null, operation: string, state: string}>} its inherit commands
@@ -5528,7 +5433,6 @@
 			})))
 		}
 
-
 		/**
 		 * @param {object} current the open preview
 		 * @return {boolean} whether the preview was read at another revision than the table on screen, so what the table lists
@@ -5537,7 +5441,6 @@
 		function outdated(current) {
 			return current.revision !== null && current.revision !== context.matrix.data()?.revision
 		}
-
 
 		/** @return {string} key of one cell of one user
 		 * @param {*} uid operation input
@@ -5786,14 +5689,12 @@
 			context.updateToolbar()
 		}
 
-
 		/** @return {boolean} whether the user has any individual value a reset would remove
 		 * @param {*} user operation input
 		 */
 		function hasOverrides(user) {
 			return context.overrideCells(user).length > 0
 		}
-
 
 		/**
 		 * Opens the reset preview for every individual value of one user, as the row's actions menu asks.
@@ -5805,7 +5706,6 @@
 		function resetUser(user, trigger) {
 			context.start([user], null, trigger)
 		}
-
 
 		/**
 		 * Names the state of a cell (individual allow, individual deny or inherited) for the tooltip and the screen reader, and
@@ -5909,7 +5809,6 @@
 			context.loadAfter(context.review)
 		}
 
-
 		/**
 		 * Asks the server what each cell has before and after the reset and redraws the preview with it. Read only. A preview
 		 * that cannot be read leaves every "after" unknown and the warning conservative; it never blocks the reset itself,
@@ -5941,7 +5840,6 @@
 				: t('mcp', 'The result after the reset is shown.'), current.unavailable)
 		}
 
-
 		/** @param {boolean} restoreFocus give the focus back to the control that opened the preview
 		 * @return {*} operation result
 		 */
@@ -5955,7 +5853,6 @@
 			}
 		}
 
-
 		/**
 		 * Puts the focus on the control that asked for the reset, or on the first control of the toolbar that can take it, and
 		 * as the last resort on the toolbar itself, so the focus never falls back to the page when a preview goes away.
@@ -5968,7 +5865,6 @@
 			const target = [trigger, context.resetSelected, context.selectAll].find(usable) || context.toolbar
 			target.focus()
 		}
-
 
 		/**
 		 * Opens the reset preview for exactly these cells of these users, as src/admin/admin-exceptions.js does for the values that only
@@ -6022,7 +5918,6 @@
 			return t('mcp', 'Denied by default')
 		}
 
-
 		/**
 		 * @param {{user: object, cells: object[]}} target one user of the plan
 		 * @return {string} "Ana: Can connect: Individual override: allowed → Granted by groups: staff; Notes: edit: …"
@@ -6039,7 +5934,6 @@
 			})
 			return t('mcp', '{user}: {permissions}', { user: target.user.displayName, permissions: parts.join('; ') }, undefined, { escape: false })
 		}
-
 
 		/**
 		 * What the server says about the results of a reset, once it was read.
@@ -6069,7 +5963,6 @@
 			}
 			return out
 		}
-
 
 		/** Draws the preview: the exact cells, what each has before and after, what may change and the buttons.
 		 * @return {*} operation result
@@ -6275,7 +6168,6 @@
 		return
 	}
 
-
 	const context = { matrix, table, anchor }
 	admin.sessions.overrides = context
 	admin.modules.overrides.session(context)
@@ -6307,7 +6199,7 @@
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.groups.unknown_grants = function (context) {
+	admin.modules.groups.unknownGrants = function (context) {
 		const UnknownGroupGrants = class UnknownGroupGrants {
 			/** @returns {object|null} Textual warning for a directory row.
 			 * @param {*} group operation input
@@ -6429,7 +6321,6 @@
 		const unknown = () => t('mcp', 'Unknown count')
 		const count = (value) => value === null || value === undefined ? unknown() : String(value)
 		const untrusted = () => t('mcp', 'This group comes from a source that cannot guarantee group identity (for example LDAP). Grant MCP access to its members individually.')
-
 
 		/**
 		 * @param {*} tag operation input
@@ -7188,7 +7079,7 @@
 
 	const context = { root }
 	admin.sessions.groups = context
-	admin.modules.groups.unknown_grants(context)
+	admin.modules.groups.unknownGrants(context)
 	admin.modules.groups.session(context)
 	admin.modules.groups.directory(context)
 	admin.modules.groups.drafts(context)
@@ -7246,7 +7137,6 @@
 		let modules = {}
 		/** Page event of a write this page committed: detail {from, to}; src/admin/matrix/start.js sends and follows it too. */
 		const REVISION_MOVED = 'mcp-revision-moved'
-
 
 		/**
 		 * @param {*} tag operation input
@@ -7359,7 +7249,6 @@
 			return out
 		}
 
-
 		/**
 		 * A message of one module: shown under it and announced through the page's live regions, which exist from the
 		 * start (a region created with its text already in it is not reliably announced).
@@ -7372,7 +7261,6 @@
 			state.line = message
 			if (message !== '') context.say(context.title(state.module) + ': ' + message, error)
 		}
-
 
 		/** @return {boolean} whether the draft differs from what is saved
 		 * @param {*} state operation input
@@ -7469,7 +7357,6 @@
 			}
 		}
 
-
 		/** Reads one module again from the server; its draft is replaced by the saved scope and its revision.
 		 * @param {*} state operation input
 		 * @return {Promise<*>} operation result
@@ -7480,7 +7367,6 @@
 				mode: data.mode, savedMode: data.mode, items: [...data.items], savedItems: [...data.items] })
 			context.rerender(state)
 		}
-
 
 		/**
 		 * The policy revision moved (a save, an undo, a conflict): the three modules are read again. A module with an
@@ -7538,7 +7424,6 @@
 			return context.dirty(state) ? saved + ' (' + t('mcp', 'not saved') + ')' : saved
 		}
 
-
 		/** The module tabs of the drawer (WAI-ARIA tabs: the arrow keys, Home and End move between them).
 		 * @return {*} operation result
 		 */
@@ -7562,7 +7447,6 @@
 			}))
 		}
 
-
 		/** Shows one module's section and marks its tab.
 		 * @param {*} module operation input
 		 * @param {*} focus operation input
@@ -7577,7 +7461,6 @@
 			context.renderTabs()
 			if (focus) document.getElementById('mcp-scope-tab-' + module)?.focus?.()
 		}
-
 
 		/**
 		 * Puts the open drawer right under the Nextcloud header. A drawer is position: fixed, but Nextcloud 35 blurs the content
@@ -7595,7 +7478,6 @@
 			if (Math.abs(shift) >= 1) context.root.style.top = (parseFloat(getComputedStyle(context.root).top) - shift) + 'px'
 		}
 
-
 		/** Opens the drawer; the focus goes back to `trigger` when it closes.
 		 * @param {*} trigger operation input
 		 * @return {*} operation result
@@ -7612,12 +7494,10 @@
 			context.placeDrawer()
 		}
 
-
 		/** @return {boolean} whether a module has a draft that is not saved */
 		function hasDraft() {
 			return Object.values(context.modules).some(context.dirty)
 		}
-
 
 		/** Drops the drafts the administrator agreed to lose, so they never come back when the drawer opens again.
 		 * @return {*} operation result
@@ -7629,7 +7509,6 @@
 			context.tabs?.replaceChildren()
 			context.container.replaceChildren()
 		}
-
 
 		/**
 		 * Closes the drawer, asking first when a draft of a module would be lost.
@@ -7652,7 +7531,6 @@
 			return true
 		}
 
-
 		/**
 		 * Whether the drafts of the open user may be lost to open another one (or the same one read again): asked, never
 		 * assumed.
@@ -7662,7 +7540,6 @@
 		function mayReplace() {
 			return !context.hasDraft() || window.confirm(t('mcp', 'Open another person? The changes that are not saved for {user} are lost.', { user: context.uid }, undefined, { escape: false }))
 		}
-
 
 		/**
 		 * Gives the focus back to the control that opened the drawer, or, when the table was drawn again and that control is
@@ -7714,7 +7591,6 @@
 			context.renderTabs()
 			if (focusId) document.getElementById(focusId)?.focus?.()
 		}
-
 
 		/**
 		 * @param {*} state operation input
@@ -7781,7 +7657,6 @@
 			section.append(context.el('p', { id: 'mcp-scope-line-' + module, className: 'mcp-scope-line', textContent: state.line || '', tabIndex: -1 }))
 			return section
 		}
-
 
 		/**
 		 * @param {*} state operation input
@@ -7884,7 +7759,6 @@
 			return picker
 		}
 
-
 		/**
 		 * @param {*} state operation input
 		 * @param {*} item operation input
@@ -7907,7 +7781,6 @@
 			})
 			return add
 		}
-
 
 		/**
 		 * @param {*} state operation input
@@ -7980,7 +7853,6 @@
 			}
 		}
 
-
 		/**
 		 * @param {*} state operation input
 		 * @param {*} error operation input
@@ -8019,7 +7891,6 @@
 			context.rerender(state, 'mcp-scope-line-' + state.module)
 		}
 
-
 		/**
 		 * @param {*} state operation input
 		 * @param {*} receiptId operation input
@@ -8035,7 +7906,6 @@
 			}, context.UNDO_SECONDS * 1000)
 		}
 
-
 		/** Removes an expired undo once neither the pointer nor the focus holds it; the focus never falls to the page.
 		 * @param {*} state operation input
 		 * @param {*} offer operation input
@@ -8047,7 +7917,6 @@
 			state.undo = null
 			context.rerender(state, focused ? 'mcp-scope-line-' + state.module : undefined)
 		}
-
 
 		/**
 		 * @param {*} state operation input
@@ -8081,7 +7950,6 @@
 			context.rerender(state, 'mcp-scope-line-' + state.module)
 		}
 
-
 		/**
 		 * Tells the other blocks of the page that a write of this panel moved the revision from `from` to `to`.
 		 *
@@ -8099,7 +7967,7 @@
 	}
 })((globalThis.window || globalThis).OCA.Mcp.Admin)
 ;
-/* admin/scope/start.js */
+/* admin/scope/entry.js */
 /*
  * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
  * SPDX-License-Identifier: AGPL-3.0-or-later
@@ -8138,7 +8006,6 @@
 			button.addEventListener('click', () => open(target, module, button))
 			return button
 		}
-
 
 		/**
 		 * Opens the drawer on one user, at one module when given.
@@ -8203,6 +8070,11 @@
 	}
 })((globalThis.window || globalThis).OCA.Mcp.Admin)
 ;
+/* admin/scope/start.js */
+/*
+ * SPDX-FileCopyrightText: 2026 Sintax (Jhonatan Jaworski) <contato@sintax.tech>
+ * SPDX-License-Identifier: AGPL-3.0-or-later
+ */
 /** Compose the scope editor and start its original effects once.
  * @param {object} admin operation input
  * @return {void} operation result
@@ -8266,7 +8138,6 @@
 		let shown = null
 
 		const asked = { calendars: 0, path: 0, calendar: 0 }
-
 
 		/**
 		 * @param {*} tag operation input
@@ -8510,7 +8381,6 @@
 			return GENERAL.includes(gate) || gate === 'eligibility_unknown' ? gate : null
 		}
 
-
 		/** What to do about a general check that blocks, when the administrator or the person can do something.
 		 * @param {*} gate operation input
 		 * @return {*} operation result
@@ -8522,7 +8392,6 @@
 				connection: t('mcp', 'They turn it on in their personal settings, under MCP for Cloud.'),
 			}[gate] || ''
 		}
-
 
 		/**
 		 * What the operations say once no general check blocks: the tools can be used when one operation is allowed, it is
@@ -8536,7 +8405,6 @@
 			if (operations.some((row) => row.allowed !== false)) return 'unknown'
 			return operations.every((row) => row.blockingGate === 'grant') ? 'none_granted' : 'none'
 		}
-
 
 		/** The verdict and the four general checks: passed, the one that blocks, or not checked after it.
 		 * @param {*} operations operation input
@@ -8650,7 +8518,6 @@
 			return general ? context.el('div', {}, [context.el('p', { className: 'mcp-hint', textContent: t('mcp', 'What each module grants, once the general check is fixed:') }), list]) : list
 		}
 
-
 		/**
 		 * Where a module's individual values come from, as the matrix says it: an exception when one of them differs from what
 		 * the person inherits, what they repeat when every one only repeats it, and "set for this person" until that is known.
@@ -8673,7 +8540,6 @@
 			}[origin.source] || t('mcp', 'Default')
 			return text + ' — ' + t('mcp', 'also set for this person, with the same value')
 		}
-
 
 		/**
 		 * @param {*} data operation input
@@ -8749,7 +8615,6 @@
 			if (hadFocus) again?.querySelector?.('summary')?.focus?.()
 		}
 
-
 		/**
 		 * @return {Promise<*>} operation result
 		 */
@@ -8787,7 +8652,6 @@
 			}
 		}
 
-
 		/**
 		 * @return {Promise<*>} operation result
 		 */
@@ -8807,7 +8671,6 @@
 				context.say(context.failure(error), true)
 			}
 		}
-
 
 		/**
 		 * @param {*} kind operation input
@@ -8866,7 +8729,6 @@
 		let returnFocus = null
 		let returnRow = null
 
-
 		/**
 		 * Puts the open drawer right under the Nextcloud header. A drawer is position: fixed, but Nextcloud 35 blurs the content
 		 * behind it (backdrop-filter on #content-vue), which makes that box, not the window, the one it is placed in: its top
@@ -8882,7 +8744,6 @@
 			const shift = rect.top - header
 			if (Math.abs(shift) >= 1) context.root.style.top = (parseFloat(getComputedStyle(context.root).top) - shift) + 'px'
 		}
-
 
 		/**
 		 * Opens the drawer; the focus goes back to `trigger` when it closes. Only one drawer is open at a time: when the
@@ -8906,7 +8767,6 @@
 			return true
 		}
 
-
 		/**
 		 * Closes the drawer and gives the focus back. The inspector only reads, so nothing can be lost.
 		 *
@@ -8923,7 +8783,6 @@
 			window.dispatchEvent?.(new Event('mcp-drawer-closed'))
 			return true
 		}
-
 
 		/**
 		 * Gives the focus back to the control that opened the drawer, or, when the table was drawn again and that control is
@@ -9472,7 +9331,6 @@
 			&& JSON.stringify([...new Set(value.extensions)].sort()) === JSON.stringify(value.extensions)
 	}
 
-
 	admin.fileWritePolicy = { phpTrim, extensions, validPolicy }
 })((globalThis.window || globalThis), (globalThis.window || globalThis).OCA.Mcp.Admin)
 ;
@@ -9663,7 +9521,6 @@
 		}).finally(() => { busy = false; render() })
 		return { ready, submit, aggregate }
 	}
-
 
 	admin.fileWritePolicy.mount = mount
 	if (scope.document) mount(scope.document, scope.fetch.bind(scope), scope.t,

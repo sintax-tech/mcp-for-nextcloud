@@ -14,7 +14,7 @@
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.protection.exclusion_tags = function (context) {
+	admin.modules.protection.exclusionTags = function (context) {
 		/**
 		 * @return {Promise<*>} operation result
 		 */

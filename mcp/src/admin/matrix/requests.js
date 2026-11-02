@@ -17,7 +17,6 @@
 	admin.modules.matrix.requests = function (context) {
 		let matrixLocked = false
 
-
 		/**
 		 * @param {string} method HTTP method
 		 * @param {string} path path below /apps/mcp
@@ -45,7 +44,6 @@
 			})
 		}
 
-
 		/** Reloads the matrix with every matrix write blocked until the new page is on screen.
 		 * @return {Promise<*>} operation result
 		 */
@@ -57,7 +55,6 @@
 				matrixLocked = false
 			}
 		}
-
 
 		/**
 		 * Tells the admin what a failed save means when the policy moved or the storage failed, and reloads
@@ -77,7 +74,6 @@
 			await context.reloadLocked()
 			return true
 		}
-
 
 		/** @param {string} message error shown to the admin
 		 * @return {*} operation result

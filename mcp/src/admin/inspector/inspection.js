@@ -44,7 +44,6 @@
 			if (hadFocus) again?.querySelector?.('summary')?.focus?.()
 		}
 
-
 		/**
 		 * @return {Promise<*>} operation result
 		 */
@@ -82,7 +81,6 @@
 			}
 		}
 
-
 		/**
 		 * @return {Promise<*>} operation result
 		 */
@@ -102,7 +100,6 @@
 				context.say(context.failure(error), true)
 			}
 		}
-
 
 		/**
 		 * @param {*} kind operation input

@@ -47,7 +47,6 @@
 			context.loadAfter(context.review)
 		}
 
-
 		/**
 		 * Asks the server what each cell has before and after the reset and redraws the preview with it. Read only. A preview
 		 * that cannot be read leaves every "after" unknown and the warning conservative; it never blocks the reset itself,
@@ -79,7 +78,6 @@
 				: t('mcp', 'The result after the reset is shown.'), current.unavailable)
 		}
 
-
 		/** @param {boolean} restoreFocus give the focus back to the control that opened the preview
 		 * @return {*} operation result
 		 */
@@ -93,7 +91,6 @@
 			}
 		}
 
-
 		/**
 		 * Puts the focus on the control that asked for the reset, or on the first control of the toolbar that can take it, and
 		 * as the last resort on the toolbar itself, so the focus never falls back to the page when a preview goes away.
@@ -106,7 +103,6 @@
 			const target = [trigger, context.resetSelected, context.selectAll].find(usable) || context.toolbar
 			target.focus()
 		}
-
 
 		/**
 		 * Opens the reset preview for exactly these cells of these users, as src/admin/admin-exceptions.js does for the values that only

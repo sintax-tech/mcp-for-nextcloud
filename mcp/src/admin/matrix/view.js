@@ -38,7 +38,6 @@
 			context.stickSecondHeaderRow()
 		}
 
-
 		/** Read the Access tab's app parameter on reload and history navigation.
 		 * @return {*} operation result
 		 */
@@ -63,18 +62,15 @@
 			context.applyAppFilter()
 		}
 
-
 		/** @return {boolean} whether the matrix shows one level per module */
 		function isLevelsView() {
 			return context.state.view === 'levels' && Boolean(window.OCA.Mcp.Admin.levels)
 		}
 
-
 		/** @return {string} the app whose columns are shown alone, '' for all; the levels view always shows every module */
 		function shownApp() {
 			return context.isLevelsView() ? '' : context.state.app
 		}
-
 
 		/**
 		 * Switches between the levels and the operations view, keeping the page, the filters and the data on screen.
@@ -96,7 +92,6 @@
 			}
 			context.writeAppToHash(false)
 		}
-
 
 		/**
 		 * Writes the chosen app into the address (#access?app=<module>, no parameter for all apps).
@@ -130,7 +125,6 @@
 				window.location.hash = next
 			}
 		}
-
 
 		/** Install this unit’s original listeners once, at its historical startup phase.
 		 * @return {*} operation result

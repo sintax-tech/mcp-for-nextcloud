@@ -56,7 +56,6 @@
 		const count = (value) => value === null || value === undefined ? unknown() : String(value)
 		const untrusted = () => t('mcp', 'This group comes from a source that cannot guarantee group identity (for example LDAP). Grant MCP access to its members individually.')
 
-
 		/**
 		 * @param {*} tag operation input
 		 * @param {*} props operation input

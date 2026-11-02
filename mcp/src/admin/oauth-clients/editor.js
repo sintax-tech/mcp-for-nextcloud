@@ -8,22 +8,22 @@
  */
 (function (admin) {
 	'use strict'
-	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	admin.modules.oauthClients = admin.modules.oauthClients || {}
 	/**
 	 * @param {object} matrix matrix request, revision and presentation dependencies
 	 * @return {void}
 	 */
-	admin.modules.oauth_clients.editor = function (matrix) {
+	admin.modules.oauthClients.editor = function (matrix) {
 		/** @return {Promise<void>} initial settings load and original listener registration */
 		async function initOauthClients() {
 			const context = { api: matrix.api, flash: matrix.flash, el: matrix.el,
 				notifyError: matrix.notifyError, oneStep: matrix.oneStep, phpTrim: matrix.phpTrim,
 				announce: matrix.announce, load: matrix.load }
 			admin.sessions.oauthClients = context
-			admin.modules.oauth_clients.session(context)
-			admin.modules.oauth_clients.saving(context)
-			admin.modules.oauth_clients.recovery(context)
-			admin.modules.oauth_clients.cards(context)
+			admin.modules.oauthClients.session(context)
+			admin.modules.oauthClients.saving(context)
+			admin.modules.oauthClients.recovery(context)
+			admin.modules.oauthClients.cards(context)
 			matrix.followRevision(() => context.oauthRevision, (revision) => { context.oauthRevision = revision })
 
 			/** @param {object} data settings returned by the API
@@ -39,7 +39,6 @@
 				context.redirects.replaceChildren(...data.nativeRedirectUris.map((uri) => context.el('li', {}, [context.el('code', { textContent: uri })])))
 				context.customClients = data.customClients
 			}
-
 
 			/**
 			 * @param {HTMLElement} status status span next to the control
@@ -98,7 +97,8 @@
 				} finally {
 					context.nativeBox.disabled = false
 				}
-			})		}
+			})
+		}
 		matrix.initOauthClients = initOauthClients
 	}
 })((globalThis.window || globalThis).OCA.Mcp.Admin)

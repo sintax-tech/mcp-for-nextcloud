@@ -17,7 +17,6 @@
 	admin.modules.matrix.rows = function (context) {
 		const OWN_SOURCES = ['individual_allow', 'individual_deny', 'invalid']
 
-
 		/**
 		 * @param {object} user row from the API
 		 * @return {HTMLTableRowElement}
@@ -27,7 +26,6 @@
 			window.OCA.Mcp.Admin.overrides?.decorateRow(row, user)
 			return row
 		}
-
 
 		/**
 		 * @param {object} user row from the API
@@ -79,7 +77,6 @@
 			return row
 		}
 
-
 		/**
 		 * The second line under a name: "Account disabled", "Connected" (with its mark, in the success colour as text) or, for
 		 * everyone else, the user ID. Being connected is a fact worth seeing; not being connected is the normal case and says
@@ -102,7 +99,6 @@
 			return context.el('span', { className: 'mcp-uid', textContent: user.uid })
 		}
 
-
 		/** @return {HTMLTableCellElement} the cell with the row's actions menu (src/admin/admin-row-actions.js)
 		 * @param {*} user operation input
 		 */
@@ -112,7 +108,6 @@
 			if (button) cell.append(button)
 			return cell
 		}
-
 
 		/**
 		 * Whether a user has a real exception on the page (src/admin/admin-exceptions.js): an individual value that differs from what
@@ -135,7 +130,6 @@
 			if (kinds.includes('exception')) return true
 			return kinds.includes('pending') ? null : false
 		}
-
 
 		/**
 		 * The "All | With exceptions (N)" filter: it counts the users of this page who have a real exception and, when chosen,
@@ -171,7 +165,6 @@
 			}
 		}
 
-
 		/**
 		 * Why none of a user's permissions can be changed: a disabled account or "Can connect" off. The
 		 * row then shows this one notice across the permission columns instead of a mark in each of them.
@@ -188,7 +181,6 @@
 			}
 			return null
 		}
-
 
 		/** @return {number} permission columns shown with the current app filter */
 		function visiblePermissionColumns() {

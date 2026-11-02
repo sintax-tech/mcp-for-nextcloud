@@ -17,7 +17,6 @@
 	admin.modules.matrix.interactions = function (context) {
 		let searchTimer = null
 
-
 		/**
 		 * Keeps the control that takes the focus clear of the sticky columns of its row (the selection box and the name at the
 		 * start, the "…" menu at the end, js/admin.css), and inside the block. The browser scrolls a focused control into the
@@ -59,7 +58,6 @@
 				wrap.scrollLeft += Math.min(rect.right - right + 4, rect.left - left)
 			}
 		}
-
 
 		/** Install the original attachService handlers.
 		 * @return {*} operation result

@@ -26,7 +26,6 @@
 			cell.classList.add(ok ? 'mcp-ok' : 'mcp-error')
 		}
 
-
 		/**
 		 * @param {string} tag element name
 		 * @param {object} [props] properties to assign

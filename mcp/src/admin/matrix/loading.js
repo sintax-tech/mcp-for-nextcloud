@@ -17,7 +17,6 @@
 	admin.modules.matrix.loading = function (context) {
 		let loadSeq = 0
 
-
 		/**
 		 * Reads the current page from the server and re-renders the table; a failure is shown in the table with a retry.
 		 * The page and its revision always come from the same response, and only the newest request is rendered.
@@ -49,7 +48,6 @@
 			}
 		}
 
-
 		/** Replaces the body with an error row and a retry button, keeping the last header.
 		 * @return {*} operation result
 		 */
@@ -60,7 +58,6 @@
 			context.table.tBodies[0].replaceChildren(context.el('tr', {}, [cell]))
 			context.applyAppFilter()
 		}
-
 
 		/** Fills the group filter once, keeping the current selection.
 		 * @return {*} operation result
@@ -74,7 +71,6 @@
 			}
 			context.state.groupsLoaded = true
 		}
-
 
 		/** Populate app choices from the actual catalog, preserving a valid selection.
 		 * @return {*} operation result

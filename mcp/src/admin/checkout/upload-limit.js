@@ -14,7 +14,7 @@
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.checkout.upload_limit = function (context) {
+	admin.modules.checkout.uploadLimit = function (context) {
 		/**
 		 * Checkout upload limit of the status block, in whole MiB, through GET and PUT /apps/mcp/api/checkout-limit.
 		 * Next to it: the effective limit and PHP's post_max_size ceiling.

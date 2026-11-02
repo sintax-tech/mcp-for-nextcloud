@@ -41,7 +41,6 @@
 		/** Page event of a write this page committed: detail {from, to}; src/admin/matrix/start.js sends and follows it too. */
 		const REVISION_MOVED = 'mcp-revision-moved'
 
-
 		/**
 		 * @param {*} tag operation input
 		 * @param {*} props operation input
@@ -153,7 +152,6 @@
 			return out
 		}
 
-
 		/**
 		 * A message of one module: shown under it and announced through the page's live regions, which exist from the
 		 * start (a region created with its text already in it is not reliably announced).
@@ -166,7 +164,6 @@
 			state.line = message
 			if (message !== '') context.say(context.title(state.module) + ': ' + message, error)
 		}
-
 
 		/** @return {boolean} whether the draft differs from what is saved
 		 * @param {*} state operation input

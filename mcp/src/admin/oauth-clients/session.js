@@ -9,12 +9,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	admin.modules.oauthClients = admin.modules.oauthClients || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.oauth_clients.session = function (context) {
+	admin.modules.oauthClients.session = function (context) {
 		const hostsInput = document.getElementById('mcp-oauth-hosts')
 		const hostsSave = document.getElementById('mcp-oauth-hosts-save')
 		const hostsStatus = document.getElementById('mcp-oauth-hosts-status')

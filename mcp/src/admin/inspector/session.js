@@ -43,7 +43,6 @@
 
 		const asked = { calendars: 0, path: 0, calendar: 0 }
 
-
 		/**
 		 * @param {*} tag operation input
 		 * @param {*} props operation input

@@ -9,12 +9,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	admin.modules.oauthClients = admin.modules.oauthClients || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.oauth_clients.saving = function (context) {
+	admin.modules.oauthClients.saving = function (context) {
 		/**
 		 * Runs one task of the block after the previous one has finished.
 		 *
@@ -26,7 +26,6 @@
 			context.queue = run.catch(() => {})
 			return run
 		}
-
 
 		/**
 		 * Sends one change when its turn comes: the body is built then by `build`, from the clients the server confirmed
@@ -64,7 +63,6 @@
 				}
 			})
 		}
-
 
 		/**
 		 * Whether a request differs from the settings stored at the block's revision, compared the way the server compares
@@ -107,7 +105,6 @@
 			}
 			return false
 		}
-
 
 		/**
 		 * Saves one change to the list of self-hosted clients.

@@ -30,7 +30,6 @@
 			return GENERAL.includes(gate) || gate === 'eligibility_unknown' ? gate : null
 		}
 
-
 		/** What to do about a general check that blocks, when the administrator or the person can do something.
 		 * @param {*} gate operation input
 		 * @return {*} operation result
@@ -42,7 +41,6 @@
 				connection: t('mcp', 'They turn it on in their personal settings, under MCP for Cloud.'),
 			}[gate] || ''
 		}
-
 
 		/**
 		 * What the operations say once no general check blocks: the tools can be used when one operation is allowed, it is
@@ -56,7 +54,6 @@
 			if (operations.some((row) => row.allowed !== false)) return 'unknown'
 			return operations.every((row) => row.blockingGate === 'grant') ? 'none_granted' : 'none'
 		}
-
 
 		/** The verdict and the four general checks: passed, the one that blocks, or not checked after it.
 		 * @param {*} operations operation input

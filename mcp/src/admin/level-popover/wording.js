@@ -9,19 +9,18 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.level_popover = admin.modules.level_popover || {}
+	admin.modules.levelPopover = admin.modules.levelPopover || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.level_popover.wording = function (context) {
+	admin.modules.levelPopover.wording = function (context) {
 		/** @return {string} module name, or "Can connect"
 		 * @param {*} module operation input
 		 */
 		function permissionName(module) {
 			return module === null ? t('mcp', 'Can connect') : context.matrix.labels().modules[module] || module
 		}
-
 
 		/** @return {string} name of a level of src/admin/admin-levels.js, or Yes / No for "Can connect"
 		 * @param {*} module operation input
@@ -34,7 +33,6 @@
 			return { ...window.OCA.Mcp.Admin.pollsGrants?.levelLabels(), forms_write: t('mcp', 'Read and write forms'), forms_write_results: t('mcp', 'Read and write forms and read responses'), none: t('mcp', 'None'), read: t('mcp', 'Read'), edit: t('mcp', 'Edit'), full: t('mcp', 'Full'), custom: t('mcp', 'Custom'), unknown: t('mcp', 'Unknown') }[level] || level
 		}
 
-
 		/** @return {string} the level these values are, for any module, "Can connect" included
 		 * @param {*} module operation input
 		 * @param {*} values operation input
@@ -46,7 +44,6 @@
 			return context.levels.levelOf(module, context.operationsOf(module), values)
 		}
 
-
 		/** @return {string} where an inherited value comes from
 		 * @param {*} origin operation input
 		 */
@@ -55,7 +52,6 @@
 			if (origin.source === 'unknown') return t('mcp', 'Unknown')
 			return t('mcp', 'Default')
 		}
-
 
 		/** @return {string} the "Inherited" line of the popover */
 		function inheritedLine() {
@@ -68,7 +64,6 @@
 			const origin = sources.some((value) => value.source === 'unknown') ? { source: 'unknown', groupIds: [] } : group || { source: 'default', groupIds: [] }
 			return t('mcp', 'Inherits: {level} ({source})', { level: context.levelName(context.current.module, level), source: context.sourceName(origin) }, undefined, { escape: false })
 		}
-
 
 		/** @return {string} description of a level: the operations it allows
 		 * @param {*} module operation input

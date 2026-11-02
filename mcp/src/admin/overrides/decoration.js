@@ -37,14 +37,12 @@
 			context.updateToolbar()
 		}
 
-
 		/** @return {boolean} whether the user has any individual value a reset would remove
 		 * @param {*} user operation input
 		 */
 		function hasOverrides(user) {
 			return context.overrideCells(user).length > 0
 		}
-
 
 		/**
 		 * Opens the reset preview for every individual value of one user, as the row's actions menu asks.
@@ -56,7 +54,6 @@
 		function resetUser(user, trigger) {
 			context.start([user], null, trigger)
 		}
-
 
 		/**
 		 * Names the state of a cell (individual allow, individual deny or inherited) for the tooltip and the screen reader, and

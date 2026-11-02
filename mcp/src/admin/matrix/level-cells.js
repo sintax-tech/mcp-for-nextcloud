@@ -14,9 +14,8 @@
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.matrix.level_cells = function (context) {
+	admin.modules.matrix.levelCells = function (context) {
 		const INDIVIDUAL_SOURCES = ['individual_allow', 'individual_deny', 'invalid']
-
 
 		/**
 		 * Where a module's values come from, as a sentence for the tooltip and screen readers.
@@ -33,7 +32,6 @@
 			default: return t('mcp', 'Default')
 			}
 		}
-
 
 		/**
 		 * One module of one user in the levels view: the level as a word (None, Read, Edit, Full, Custom) and where it comes
@@ -98,7 +96,6 @@
 			return cell
 		}
 
-
 		/**
 		 * Where a cell's values come from and how to mark it. Only a real exception, an individual value that differs from what
 		 * the person would inherit (src/admin/admin-exceptions.js), gets the person icon; individual values that only repeat the
@@ -134,7 +131,6 @@
 			return { origin: levels.originOf(operations, repeated), mark: 'redundant' }
 		}
 
-
 		/** @return {string|null} the icon class of a mark: a person for an exception, a group for a group, none otherwise
 		 * @param {*} origin operation input
 		 * @param {*} mark operation input
@@ -144,7 +140,6 @@
 			if (mark === 'pending') return null
 			return origin.source === 'group' || origin.source === 'unknown' ? 'icon-group' : null
 		}
-
 
 		/**
 		 * @return {string} where a cell's values come from, in words: a screen reader hears "Exception" where the eye sees the
@@ -158,7 +153,6 @@
 			if (mark === 'redundant') return context.originText(origin) + ' — ' + t('mcp', 'also set for this person, with the same value')
 			return context.originText(origin)
 		}
-
 
 		/**
 		 * The control of a level cell: it opens the popover of src/admin/admin-level-popover.js, where the level is chosen.

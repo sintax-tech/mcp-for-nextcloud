@@ -43,7 +43,6 @@
 			}
 		}
 
-
 		/** Shows every control part, the empty text or the fallback text as the state asks.
 		 * @return {*} operation result
 		 */
@@ -61,7 +60,6 @@
 			context.renderChips()
 			context.renderList()
 		}
-
 
 		/** @param {boolean} locked locks every control while a save runs
 		 * @return {*} operation result

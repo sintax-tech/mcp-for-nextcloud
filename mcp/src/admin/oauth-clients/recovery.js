@@ -9,12 +9,12 @@
 (function (admin) {
 	'use strict'
 
-	admin.modules.oauth_clients = admin.modules.oauth_clients || {}
+	admin.modules.oauthClients = admin.modules.oauthClients || {}
 	/**
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.oauth_clients.recovery = function (context) {
+	admin.modules.oauthClients.recovery = function (context) {
 		/**
 		 * When a save failed because the page was out of date (409, or 428 without a revision) or the server could not
 		 * confirm it (503 uncertain), shows what is stored now, in the queue's order, and tells the admin nothing was
@@ -44,7 +44,6 @@
 			}
 			return true
 		}
-
 
 		/**
 		 * The cards of the clients the server has now, with the cards whose typed changes it does not have put back: a

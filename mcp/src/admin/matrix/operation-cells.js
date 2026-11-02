@@ -14,7 +14,7 @@
 	 * @param {object} context operation input
 	 * @return {void} operation result
 	 */
-	admin.modules.matrix.operation_cells = function (context) {
+	admin.modules.matrix.operationCells = function (context) {
 		/**
 		 * The states a permission cell can show, drawn in one place: allowed and denied are a checkbox
 		 * (checked or empty), unavailable is a "no entry" mark that never looks like an empty checkbox.
@@ -25,7 +25,6 @@
 			denied: { className: 'mcp-state-denied', name: () => t('mcp', 'Denied') },
 			unavailable: { className: 'mcp-state-unavailable', name: () => t('mcp', 'Unavailable') },
 		}
-
 
 		/**
 		 * Why a user's permission cannot be changed here, or null when it can. The first reason wins:
@@ -53,7 +52,6 @@
 			return null
 		}
 
-
 		/**
 		 * Paints one state on a cell: its class, tooltip and the name read by screen readers.
 		 *
@@ -69,7 +67,6 @@
 			cell.classList.add(PERMISSION_STATES[key].className)
 			cell.title = detail ? PERMISSION_STATES[key].name() + ': ' + detail : PERMISSION_STATES[key].name()
 		}
-
 
 		/**
 		 * A permission cell: a checkbox that saves at once, or the unavailable mark with its reason.

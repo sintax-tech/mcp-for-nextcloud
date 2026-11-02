@@ -54,7 +54,6 @@
 			return general ? context.el('div', {}, [context.el('p', { className: 'mcp-hint', textContent: t('mcp', 'What each module grants, once the general check is fixed:') }), list]) : list
 		}
 
-
 		/**
 		 * Where a module's individual values come from, as the matrix says it: an exception when one of them differs from what
 		 * the person inherits, what they repeat when every one only repeats it, and "set for this person" until that is known.
@@ -77,7 +76,6 @@
 			}[origin.source] || t('mcp', 'Default')
 			return text + ' — ' + t('mcp', 'also set for this person, with the same value')
 		}
-
 
 		/**
 		 * @param {*} data operation input

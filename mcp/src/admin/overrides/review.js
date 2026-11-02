@@ -31,7 +31,6 @@
 			return t('mcp', 'Denied by default')
 		}
 
-
 		/**
 		 * @param {{user: object, cells: object[]}} target one user of the plan
 		 * @return {string} "Ana: Can connect: Individual override: allowed → Granted by groups: staff; Notes: edit: …"
@@ -48,7 +47,6 @@
 			})
 			return t('mcp', '{user}: {permissions}', { user: target.user.displayName, permissions: parts.join('; ') }, undefined, { escape: false })
 		}
-
 
 		/**
 		 * What the server says about the results of a reset, once it was read.
@@ -78,7 +76,6 @@
 			}
 			return out
 		}
-
 
 		/** Draws the preview: the exact cells, what each has before and after, what may change and the buttons.
 		 * @return {*} operation result

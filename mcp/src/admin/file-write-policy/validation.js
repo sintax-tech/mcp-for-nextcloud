@@ -50,6 +50,5 @@
 			&& JSON.stringify([...new Set(value.extensions)].sort()) === JSON.stringify(value.extensions)
 	}
 
-
 	admin.fileWritePolicy = { phpTrim, extensions, validPolicy }
 })((globalThis.window || globalThis), (globalThis.window || globalThis).OCA.Mcp.Admin)

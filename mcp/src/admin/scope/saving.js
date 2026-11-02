@@ -43,7 +43,6 @@
 			}
 		}
 
-
 		/**
 		 * @param {*} state operation input
 		 * @param {*} error operation input
@@ -82,7 +81,6 @@
 			context.rerender(state, 'mcp-scope-line-' + state.module)
 		}
 
-
 		/**
 		 * @param {*} state operation input
 		 * @param {*} receiptId operation input
@@ -98,7 +96,6 @@
 			}, context.UNDO_SECONDS * 1000)
 		}
 
-
 		/** Removes an expired undo once neither the pointer nor the focus holds it; the focus never falls to the page.
 		 * @param {*} state operation input
 		 * @param {*} offer operation input
@@ -110,7 +107,6 @@
 			state.undo = null
 			context.rerender(state, focused ? 'mcp-scope-line-' + state.module : undefined)
 		}
-
 
 		/**
 		 * @param {*} state operation input
@@ -143,7 +139,6 @@
 			state.line = line
 			context.rerender(state, 'mcp-scope-line-' + state.module)
 		}
-
 
 		/**
 		 * Tells the other blocks of the page that a write of this panel moved the revision from `from` to `to`.

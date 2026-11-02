@@ -13,7 +13,7 @@
 
 	const context = { root }
 	admin.sessions.groups = context
-	admin.modules.groups.unknown_grants(context)
+	admin.modules.groups.unknownGrants(context)
 	admin.modules.groups.session(context)
 	admin.modules.groups.directory(context)
 	admin.modules.groups.drafts(context)

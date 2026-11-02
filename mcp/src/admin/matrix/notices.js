@@ -25,7 +25,6 @@
 		/** True while a bulk change or its undo saves and the matrix reloads: only one runs at a time. */
 		let bulkBusy = false
 
-
 		/**
 		 * Locks the "All" menus and the undo while a bulk change or an undo is saving, so an older
 		 * operation can never finish on top of a newer one's notice, undo or focus.
@@ -50,7 +49,6 @@
 			}
 		}
 
-
 		/** Clears the notice and forgets the undo it offered.
 		 * @return {*} operation result
 		 */
@@ -62,7 +60,6 @@
 			undoButton.hidden = true
 		}
 
-
 		/** Starts the countdown, unless the admin is on the notice or a bulk change is still running.
 		 * @return {*} operation result
 		 */
@@ -72,7 +69,6 @@
 				noticeTimer = setTimeout(context.hideNotice, UNDO_SECONDS * 1000)
 			}
 		}
-
 
 		/**
 		 * Shows a message under the matrix, with an Undo button when an undo is given.
@@ -90,7 +86,6 @@
 			notice.classList.add('mcp-notice-on')
 			context.armNotice()
 		}
-
 
 		/** Install this unit’s original listeners once, at its historical startup phase.
 		 * @return {*} operation result

@@ -12,7 +12,7 @@ use RuntimeException;
 final class DynamicReferences {
 	/** @param string $path Physical source. @param string $source Source bytes. @param array<string,mixed> $edge Prefix diagnostic. @return list<string> Exact classes. */
 	public static function resolve(string $path, string $source, array $edge): array {
-		if ($path !== 'lib/Tools/Forms/Results/SubmissionReads.php' || $edge['target'] !== 'OCA\\Forms\\Db\\') { throw new RuntimeException('Unreviewed dynamic class prefix: ' . $path . ':' . $edge['line']); }
+		if ($path !== 'lib/Modules/Forms/Integration/SubmissionReads.php' || $edge['target'] !== 'OCA\\Forms\\Db\\') { throw new RuntimeException('Unreviewed dynamic class prefix: ' . $path . ':' . $edge['line']); }
 		$tokens = token_get_all($source);
 		$code = implode('', array_map(static fn ($t) => is_array($t) ? (in_array($t[0], [T_WHITESPACE, T_COMMENT, T_DOC_COMMENT], true) ? '' : $t[1]) : $t, $tokens));
 		$site = <<<'PHP'

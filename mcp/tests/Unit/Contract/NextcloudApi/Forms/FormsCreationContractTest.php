@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Forms;
 
-use OCA\Mcp\Tools\Forms\Creation\CreateFormTypes;
+use OCA\Mcp\Modules\Forms\Creation\CreateFormTypes;
 use PHPUnit\Framework\TestCase;
 
 /** Verifies explicit native constructor variants and sequential behavior in all four SHA-bound pins, not runtime. */
@@ -53,7 +53,7 @@ final class FormsCreationContractTest extends TestCase {
 	 * @return void
 	 */
 	public function testProductFactoryUsesFreshActorCapturingCollaborators(): void {
-		$source = file_get_contents(__DIR__ . '/../../../../../lib/Tools/Forms/Creation/FormsCreateNativeFactory.php');
+		$source = file_get_contents(__DIR__ . '/../../../../../lib/Modules/Forms/Integration/FormsCreateNativeFactory.php');
 		self::assertStringContainsString("new \\OCA\\Forms\\Service\\ConfigService('forms',", $source);
 		self::assertStringContainsString('new \\OCA\\Forms\\Service\\SubmissionService(...$native)', $source);
 		self::assertStringContainsString('new \\OCA\\Forms\\Controller\\ApiController(...$args)', $source);

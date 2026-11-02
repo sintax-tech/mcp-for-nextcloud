@@ -63,7 +63,7 @@ final class ResultsBudgetTest extends TestCase {
 	public function testActiveStructureBoundary(): void {
 		$rows=[];for($i=1;$i<=2000;$i++){$rows[]=NativeResults::entity('Question',['id'=>$i,'formId'=>5,'order'=>$i,'type'=>'short','name'=>'','text'=>'']);}
 		$reads=$this->createMock(SubmissionReads::class);$reads->method('questions')->willReturnCallback(static function()use(&$rows):array{return $rows;});$reads->method('options')->willReturn([]);
-		$schema=new \OCA\Mcp\Tools\Forms\Results\ResultsSchema($reads);self::assertCount(2000,$schema->active(5));$rows[]=NativeResults::entity('Question',['id'=>2001,'formId'=>5,'order'=>2001,'type'=>'short','name'=>'','text'=>'']);
+		$schema=new \OCA\Mcp\Modules\Forms\Integration\ResultsSchema($reads);self::assertCount(2000,$schema->active(5));$rows[]=NativeResults::entity('Question',['id'=>2001,'formId'=>5,'order'=>2001,'type'=>'short','name'=>'','text'=>'']);
 		$this->expectException(ToolFailure::class);$schema->active(5);
 	}
 

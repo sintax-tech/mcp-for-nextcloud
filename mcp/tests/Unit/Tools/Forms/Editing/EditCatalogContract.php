@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Forms\Editing;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
-use OCA\Mcp\Tools\Forms\FormsModule;
+use OCA\Mcp\Modules\Forms\FormsModule;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use PHPUnit\Framework\Assert;
 use PHPUnit\Framework\TestCase;

@@ -6,7 +6,7 @@
 declare(strict_types=1);
 namespace OCA\Mcp\Tests\Integration\Forms\Editing;
 
-use OCA\Mcp\Tools\Forms\Editing\EditContext;
+use OCA\Mcp\Modules\Forms\Editing\EditContext;
 
 /** Discriminates the actual fresh config collaborator's app scope within one native process, avoiding cross-SAPI cache assumptions. */
 final class EditScopedConfigProbe {

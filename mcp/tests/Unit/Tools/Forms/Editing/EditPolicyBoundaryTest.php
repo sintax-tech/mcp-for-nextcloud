@@ -11,7 +11,7 @@ use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Access\Policy\{PolicyOperationContext,PolicyResolver,PolicyWriter};
 use OCA\Mcp\Access\ResourceScope\ScopeGuard;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
-use OCA\Mcp\Tools\Forms\Editing\EditPolicyBoundary;
+use OCA\Mcp\Modules\Forms\Editing\EditPolicyBoundary;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use PHPUnit\Framework\TestCase;
 

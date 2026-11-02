@@ -8,7 +8,7 @@ declare(strict_types=1);
 /** Isolated real native service context probe; session changes are test-only, never a product impersonation mechanism. */
 use OCA\Forms\Db\Form;
 use OCA\Forms\Service\FormsService;
-use OCA\Mcp\Tools\Forms\FormsIdentityProbe;
+use OCA\Mcp\Modules\Forms\Integration\FormsIdentityProbe;
 use OCA\Mcp\Tests\Integration\Forms\FormsScene;
 use OCP\IUserManager;
 use OCP\IUserSession;

@@ -10,7 +10,7 @@ namespace OCA\Mcp\Tests\Unit\Tools\Forms\Creation;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
 use OCA\Mcp\Tools\Forms\Creation\{CreateFormContext,CreateFormFlow,CreateFormPlan,CreateFormRequest,CreateFormWriter,FormsCreateNativeFactory};
-use OCA\Mcp\Tools\Forms\FormsModule;
+use OCA\Mcp\Modules\Forms\FormsModule;
 use OCA\Mcp\Tools\Forms\Handler\{CreateFormHandler,ListFormsHandler,ReadFormHandler,ListSubmissionsHandler,ReadSubmissionHandler};
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use PHPUnit\Framework\TestCase;

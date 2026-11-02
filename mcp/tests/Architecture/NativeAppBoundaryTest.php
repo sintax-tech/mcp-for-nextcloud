@@ -34,7 +34,7 @@ final class NativeAppBoundaryTest extends ArchitectureCase {
 		self::assertSame([], ClassReferences::read('<?php /** {@see \\OCA\\Mcp\\Mcp\\Confirmation\\PlanState} @return object as an OCA\\Files\\File */ function x() {}'));
 	}
 	public function testDynamicSiteRejectsChangedPrefixOrCallerSet(): void {
-		$path = 'lib/Tools/Forms/Results/SubmissionReads.php';
+		$path = 'lib/Modules/Forms/Integration/SubmissionReads.php';
 		$source = self::tree()->files[$path];
 		self::assertCount(4, \OCA\Mcp\Tests\Architecture\Dependencies\DynamicReferences::resolve($path, $source, ['target' => 'OCA\\Forms\\Db\\', 'line' => 28]));
 		foreach ([str_replace('SubmissionMapper', 'OtherMapper', $source), str_replace(" . \$name);", " . \$name . 'Other');", $source), str_replace('Forms\\\\Db', 'Forms\\\\Other', $source)] as $mutant) {

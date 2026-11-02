@@ -11,7 +11,7 @@ require_once __DIR__ . '/EditingFixture.php';
 
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException;
-use OCA\Mcp\Tools\Forms\Creation\CreateNativeThrottle;
+use OCA\Mcp\Modules\Forms\Integration\CreateNativeThrottle;
 use OCA\Mcp\Tools\Forms\Editing\{EditFlow, EditNativeFactory, EditPlan, EditSettings, EditState, EditWriter};
 use OCA\Mcp\Tools\Forms\Handler\{EditOptionHandler, EditQuestionHandler};
 use OCA\Mcp\Mcp\Confirmation\PlanState;

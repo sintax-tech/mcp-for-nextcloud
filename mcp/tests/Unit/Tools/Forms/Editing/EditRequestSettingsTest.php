@@ -59,7 +59,7 @@ final class EditRequestSettingsTest extends TestCase {
 	 * @return void
 	 */
 	public function testPublishedSchemaMatchesSupportedSettingValues(): void {
-		$schema=\OCA\Mcp\Tools\Forms\Editing\EditTools::definitions()[0]['inputSchema'];
+		$schema=\OCA\Mcp\Modules\Forms\Presentation\EditTools::definitions()[0]['inputSchema'];
 		foreach ([['validationType'=>'email'],['dateMin'=>null],['dateRange'=>false],['allowedFileExtensions'=>['png']]] as $settings) {
 			$args=['form_id'=>1,'question_id'=>2,'changes'=>['settings'=>$settings]];
 			$valid=\OCA\Mcp\Mcp\Tools\Validation\ArgumentValidator::validate($schema,$args);

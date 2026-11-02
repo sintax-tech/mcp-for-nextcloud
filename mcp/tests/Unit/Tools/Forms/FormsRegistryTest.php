@@ -10,11 +10,11 @@ namespace OCA\Mcp\Tests\Unit\Tools\Forms;
 use OCA\Mcp\Access\Grants\GrantPolicy;
 use OCA\Mcp\Tests\Unit\InMemoryConfig;
 use OCA\Mcp\Tests\Unit\OAuth\Storage\InMemoryOAuthStore;
-use OCA\Mcp\Tools\Forms\FormsModule;
-use OCA\Mcp\Tools\Forms\FormsServices;
-use OCA\Mcp\Tools\Forms\FormsIdentityProbe;
-use OCA\Mcp\Tools\Forms\Handler\ListFormsHandler;
-use OCA\Mcp\Tools\Forms\Handler\ReadFormHandler;
+use OCA\Mcp\Modules\Forms\FormsModule;
+use OCA\Mcp\Modules\Forms\Integration\FormsServices;
+use OCA\Mcp\Modules\Forms\Integration\FormsIdentityProbe;
+use OCA\Mcp\Modules\Forms\Reading\ListFormsHandler;
+use OCA\Mcp\Modules\Forms\Reading\ReadFormHandler;
 use OCA\Mcp\Mcp\Confirmation\WriteGate;
 use PHPUnit\Framework\TestCase;
 

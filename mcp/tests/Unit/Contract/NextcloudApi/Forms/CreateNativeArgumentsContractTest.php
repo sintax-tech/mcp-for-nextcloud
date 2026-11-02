@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Forms;
 
-use OCA\Mcp\Tools\Forms\Creation\CreateNativeArguments;
+use OCA\Mcp\Modules\Forms\Integration\CreateNativeArguments;
 use PHPUnit\Framework\TestCase;
 
 /** Compares the actual production argument maps against every complete SHA-bound native constructor signature. */
@@ -47,7 +47,7 @@ final class CreateNativeArgumentsContractTest extends TestCase {
 	 * @return void
 	 */
 	public function testFactoryConsumesTheTestedMaps(): void {
-		$source = file_get_contents(__DIR__ . '/../../../../../lib/Tools/Forms/Creation/FormsCreateNativeFactory.php');
+		$source = file_get_contents(__DIR__ . '/../../../../../lib/Modules/Forms/Integration/FormsCreateNativeFactory.php');
 		self::assertStringContainsString('$native = CreateNativeArguments::submission($version, $get, $this->session, $read[\'service\']);', $source);
 		self::assertStringContainsString('$args = CreateNativeArguments::controller($version, $get, $this->session, $read, $config, $submission, $native);', $source);
 		self::assertStringContainsString('new \\OCA\\Forms\\Service\\SubmissionService(...$native)', $source);

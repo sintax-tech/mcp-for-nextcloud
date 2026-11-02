@@ -7,7 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\NextcloudApi\Forms;
 
-use OCA\Mcp\Tools\Forms\Results\ResultsTypes;
+use OCA\Mcp\Modules\Forms\Reading\ResultsTypes;
 use PHPUnit\Framework\TestCase;
 
 /** Compares actual pinned native answer-type values with the independently maintained MCP projection whitelist. */

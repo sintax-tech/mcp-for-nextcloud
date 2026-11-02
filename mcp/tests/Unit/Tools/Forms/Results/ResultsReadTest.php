@@ -8,9 +8,9 @@ declare(strict_types=1);
 namespace OCA\Mcp\Tests\Unit\Tools\Forms\Results;
 
 use OCA\Mcp\Tools\Forms\Results\{ResultsAccess, SubmissionReads, ResultsSchema, ResultsReadFlow, SubmissionShape, AnswerShape, ResultsBudget, ResultsMessages, SubmissionCursor, SubmissionOrder};
-use OCA\Mcp\Tools\Forms\Attachments\ResultFileAccess;
+use OCA\Mcp\Modules\Forms\ResultFileAccess;
 use OCA\Mcp\Tools\Forms\Handler\{ListSubmissionsHandler, ReadSubmissionHandler};
-use OCA\Mcp\Tools\Forms\FormsServices;
+use OCA\Mcp\Modules\Forms\Integration\FormsServices;
 use OCA\Mcp\Mcp\Confirmation\PlanState;
 use OCA\Mcp\Mcp\Tools\Results\ToolFailure;
 use OCA\Mcp\Access\Grants\GrantPolicy;
@@ -99,7 +99,7 @@ final class ResultsReadTest extends TestCase {
 	 */
 	public function testNativeFutureTypeWithoutAnswerStillRefuses(): void {
 		self::assertContains('future', \OCA\Forms\Constants::ANSWER_TYPES);
-		self::assertNotContains('future', \OCA\Mcp\Tools\Forms\Results\ResultsTypes::SUPPORTED);
+		self::assertNotContains('future', \OCA\Mcp\Modules\Forms\Reading\ResultsTypes::SUPPORTED);
 		$this->state->questions[]=NativeResults::entity('Question',['id'=>10,'formId'=>5,'order'=>2,'type'=>'future','name'=>'n','text'=>'Unknown']);
 		$this->refused(fn()=>$this->call(),'structure');$this->refused(fn()=>$this->call(['submission_id'=>1],false),'structure');
 	}

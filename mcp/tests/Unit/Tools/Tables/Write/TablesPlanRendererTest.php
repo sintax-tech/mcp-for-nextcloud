@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables\Write;
 
+use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesTestModule;
 use OCA\Mcp\Tests\Unit\Tools\AssertsReadablePlans;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\FakeTablesWriteApp;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesHandlers;
@@ -62,8 +63,8 @@ final class TablesPlanRendererTest extends TestCase {
 	 */
 	private function module(FakeTablesWriteApp $app): TablesModule {
 		$base = TablesHandlers::module($this, TablesScene::app());
-		$property = static fn (string $name): object => (fn (): object => $this->{$name})->call($base);
-		return new TablesModule($property('tables'), $property('views'), $property('columns'), $property('rows'), ...TablesWriteWiring::handlers($this, $app, 'alice'));
+		$property = static fn (string $name): object => TablesTestModule::handler($base, $name);
+		return TablesTestModule::make($property('tables'), $property('views'), $property('columns'), $property('rows'), ...TablesWriteWiring::handlers($this, $app, 'alice'));
 	}
 
 	/**

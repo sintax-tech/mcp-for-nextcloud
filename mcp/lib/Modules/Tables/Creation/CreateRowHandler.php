@@ -29,20 +29,6 @@ final class CreateRowHandler {
 	}
 
 	/**
-	 * The plan of the creation.
-	 *
-	 * @param array<string, mixed> $arguments validated tool arguments
-	 * @param string $userId authenticated user UID
-	 * @return array<string, mixed> the plan
-	 * @throws \OCA\Mcp\Mcp\Tools\Validation\ArgumentValidationException for malformed arguments
-	 * @throws \OCA\Mcp\Mcp\Tools\Results\ToolFailure when the creation is refused
-	 * @throws \OCA\Mcp\Modules\Tables\TablesUnavailableException when Tables is not available for the user
-	 */
-	public function preview(array $arguments, string $userId): array {
-		return $this->flow->preview(self::TOOL, $arguments, $userId, false);
-	}
-
-	/**
 	 * The confirmed creation.
 	 *
 	 * @param array<string, mixed> $arguments validated tool arguments

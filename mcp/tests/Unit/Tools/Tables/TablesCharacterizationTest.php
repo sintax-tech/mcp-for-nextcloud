@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Tools\Tables;
 
+use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesTestModule;
 use OCA\Mcp\Modules\Tables\TablesModule;
 use OCA\Mcp\Modules\Tables\Writing\CellValueDomain;
 use OCA\Mcp\Tests\Unit\Tools\Tables\Support\{TablesHandlers, TablesScene, TablesWriteWiring, RowsScene, WriteScene};
@@ -17,7 +18,7 @@ final class TablesCharacterizationTest extends TestCase {
 	public function testTheSplitPreservesTheCharacterizedAnswers(): void {
 		$report = [];
 		$base = TablesHandlers::module($this, TablesScene::app());
-		$report['definitions'] = $base->definitions();
+		$report['definitions'] = array_map(static fn (array $d): array => array_replace(array_fill_keys(['name', 'description', 'module', 'operation', 'app', 'inputSchema'], null), $d), $base->definitions());
 		$report['notes'] = $base->guideNotes();
 		foreach (['alice', 'bob', 'carol', 'dave', 'erin', 'frank'] as $uid) {
 			$app = TablesScene::app();
@@ -74,8 +75,8 @@ final class TablesCharacterizationTest extends TestCase {
 	}
 
 	private function writes(TablesModule $base, object $app, string $uid): TablesModule {
-		$property = static fn (string $name): object => (fn (): object => $this->{$name})->call($base);
-		return new TablesModule($property('tables'), $property('views'), $property('columns'), $property('rows'), ...TablesWriteWiring::handlers($this, $app, $uid));
+		$property = static fn (string $name): object => TablesTestModule::handler($base, $name);
+		return TablesTestModule::make($property('tables'), $property('views'), $property('columns'), $property('rows'), ...TablesWriteWiring::handlers($this, $app, $uid));
 	}
 
 	private static function normalize(mixed $value): mixed {

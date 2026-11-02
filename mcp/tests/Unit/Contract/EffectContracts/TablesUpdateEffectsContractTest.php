@@ -7,6 +7,7 @@ declare(strict_types=1);
 
 namespace OCA\Mcp\Tests\Unit\Contract\EffectContracts;
 
+use OCA\Mcp\Tests\Unit\Tools\Tables\Support\TablesTestModule;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\CriticalFlow;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\EffectsGate;
 use OCA\Mcp\Tests\Unit\Contract\Oracle\FlowRunner;
@@ -122,9 +123,9 @@ final class TablesUpdateEffectsContractTest extends TestCase {
 	 */
 	private function module(): TablesModule {
 		$base = TablesHandlers::module($this, TablesScene::app());
-		$property = static fn (string $name): object => (fn (): object => $this->{$name})->call($base);
+		$property = static fn (string $name): object => TablesTestModule::handler($base, $name);
 		$flow = $this->flow();
-		return new TablesModule($property('tables'), $property('views'), $property('columns'), $property('rows'),
+		return TablesTestModule::make($property('tables'), $property('views'), $property('columns'), $property('rows'),
 			new CreateRowHandler($flow), new UpdateRowHandler($flow));
 	}
 

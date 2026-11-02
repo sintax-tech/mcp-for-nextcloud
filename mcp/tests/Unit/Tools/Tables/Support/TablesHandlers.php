@@ -40,7 +40,7 @@ final class TablesHandlers {
 	public static function module(TestCase $test, FakeTablesApp $app, ?string $sessionUser = 'alice'): TablesModule {
 		$links = TablesScene::links($test);
 		$shapes = new DiscoveryShapes($links);
-		return new TablesModule(
+		return TablesTestModule::make(
 			new ListTablesHandler(new TablesDiscovery($app), $shapes),
 			new ListViewsHandler(new TablesDiscovery($app), new ViewsDiscovery($app), $shapes),
 			new ListColumnsHandler(new ColumnLookup($app), $links),
